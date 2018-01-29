@@ -9,4 +9,3 @@ let package = Package(
            dependencies: ["libmongoc"])
   ]
 )
-
