@@ -6,7 +6,6 @@ all:
 	swift build -v $(CFLAGS) $(LDFLAGS)
 
 test:
-	swift build -v $(CFLAGS) $(LDFLAGS)
 	swift test -v $(CFLAGS) $(LDFLAGS)
 
 clean:
