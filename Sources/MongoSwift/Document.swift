@@ -1,7 +1,7 @@
 import Foundation
 import libbson
 
-public class Document {
+public class Document: ExpressibleByDictionaryLiteral {
     internal var data: UnsafeMutablePointer<bson_t>!
 
     public init() {
@@ -10,6 +10,20 @@ public class Document {
 
     public init(fromData bsonData: UnsafeMutablePointer<bson_t>) {
         data = bsonData
+    }
+
+    public init(_ doc: [String: BsonValue]) {
+        data = bson_new()
+        for (key, value) in doc {
+            self[key] = value
+        }
+    }
+
+   public required init(dictionaryLiteral doc: (String, BsonValue)...) {
+        data = bson_new()
+        for (k, v) in doc {
+            self[k] = v
+        }
     }
 
     deinit {

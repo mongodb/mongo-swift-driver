@@ -36,5 +36,15 @@ final class DocumentTests: XCTestCase {
         XCTAssertEqual(intArrays.count, 2)
         XCTAssertEqual(intArrays[0], [Int32(1), Int32(2)])
         XCTAssertEqual(intArrays[1], [Int32(3), Int32(4)])
+
+        let doc2: Document = ["hi": true, "hello": "hi", "cat": Int32(2)]
+        XCTAssertEqual(doc2["hi"] as? Bool, true)
+        XCTAssertEqual(doc2["hello"] as? String, "hi")
+        XCTAssertEqual(doc2["cat"] as? Int32, 2)
+
+        let doc3 = Document(["hi": true, "hello": "hi", "cat": Int32(2)])
+        XCTAssertEqual(doc3["hi"] as? Bool, true)
+        XCTAssertEqual(doc3["hello"] as? String, "hi")
+        XCTAssertEqual(doc3["cat"] as? Int32, 2)
     }
 }
