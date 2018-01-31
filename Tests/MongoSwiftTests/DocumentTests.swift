@@ -19,7 +19,7 @@ final class DocumentTests: XCTestCase {
         doc["double"] = Double(15)
         doc["array1"] = [Int32(1), Int32(2)]
         doc["array2"] = ["string1", "string2"]
-        doc["decimal128"] = Decimal128("2")
+        doc["decimal128"] = Decimal128("2.0")
         doc["nestedarray"] = [[Int32(1), Int32(2)], [Int32(3), Int32(4)]]
 
         XCTAssertEqual(doc["string"] as? String, "test string")
@@ -30,6 +30,7 @@ final class DocumentTests: XCTestCase {
         XCTAssertEqual(doc["double"] as? Double, 15)
         XCTAssertEqual(doc["array1"] as! [Int32], [1, 2])
         XCTAssertEqual(doc["array2"] as! [String], ["string1", "string2"])
+        XCTAssertEqual(doc["decimal128"] as? Decimal128, Decimal128("2.0"))
 
         guard let nestedArray = doc["nestedarray"] else { return }
         let intArrays = nestedArray as! [[Int32]]
