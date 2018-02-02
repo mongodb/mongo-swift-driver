@@ -29,10 +29,30 @@ public protocol BsonValue {
     var bsonType: BsonType { get }
 }
 
-extension String: BsonValue {
-    public var bsonType: BsonType { return .string }
+extension Array: BsonValue {
+    public var bsonType: BsonType { return .array }
 }
 
 extension Bool: BsonValue {
     public var bsonType: BsonType { return .boolean }
+}
+
+extension Double: BsonValue {
+    public var bsonType: BsonType { return .double }
+}
+
+extension Int: BsonValue {
+    public var bsonType: BsonType { return .int32 }
+}
+
+extension Int32: BsonValue {
+    public var bsonType: BsonType { return .int32 }
+}
+
+extension Int64: BsonValue {
+    public var bsonType: BsonType { return .int64 }
+}
+
+extension String: BsonValue {
+    public var bsonType: BsonType { return .string }
 }
