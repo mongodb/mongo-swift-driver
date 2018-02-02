@@ -37,21 +37,12 @@ extension Bool: BsonValue {
     public var bsonType: BsonType { return .boolean }
 }
 
-// class wrapping string representation of BSON value
-class Decimal128: BsonValue, Equatable {
-    var data = ""
-    init(_ data: String) {
-        self.data = data
-    }
-    public var bsonType: BsonType { return .decimal128 }
-
-    static func == (lhs: Decimal128, rhs: Decimal128) -> Bool {
-        return lhs.data == rhs.data
-    }
-}
-
 extension Double: BsonValue {
     public var bsonType: BsonType { return .double }
+}
+
+extension Int: BsonValue {
+    public var bsonType: BsonType { return .int32 }
 }
 
 extension Int32: BsonValue {

@@ -72,19 +72,11 @@ public class Document: ExpressibleByDictionaryLiteral {
                     case BSON_TYPE_BOOL:
                         return bson_iter_bool(&iter)
 
-                    case BSON_TYPE_DECIMAL128:
-                        let decimal128 = UnsafeMutablePointer<bson_decimal128_t>.allocate(capacity: 1)
-                        let stringVal = UnsafeMutablePointer<Int8>.allocate(capacity: Int(BSON_DECIMAL128_STRING))
-                        precondition(bson_iter_decimal128(&iter, decimal128), retrieveErrorMsg("Decimal128"))
-                        // this returns void so I guess we can't make sure it worked..
-                        bson_decimal128_to_string(decimal128, stringVal)
-                        return Decimal128(String(cString: stringVal))
-
                     case BSON_TYPE_DOUBLE:
                         return bson_iter_double(&iter)
 
                     case BSON_TYPE_INT32:
-                        return bson_iter_int32(&iter)
+                        return Int(bson_iter_int32(&iter))
 
                     case BSON_TYPE_INT64:
                         return bson_iter_int64(&iter)
@@ -124,16 +116,13 @@ public class Document: ExpressibleByDictionaryLiteral {
             case (.boolean, let val as Bool):
                 res = bson_append_bool(data, key, keySize, val)
 
-            case (.decimal128, let val as Decimal128):
-                let decimal128 = UnsafeMutablePointer<bson_decimal128_t>.allocate(capacity: 1)
-                precondition(bson_decimal128_from_string(val.data, decimal128),
-                    "Failed to parse Decimal128 string \(val.data)")
-                res = bson_append_decimal128(data, key, keySize, decimal128)
-
             case (.double, let val as Double):
                 res = bson_append_double(data, key, keySize, val)
 
             case (.int32, let val as Int32):
+                res = bson_append_int32(data, key, keySize, val)
+
+            case (.int32, let val as Int):
                 res = bson_append_int32(data, key, keySize, Int32(val))
 
             case (.int64, let val as Int64):
