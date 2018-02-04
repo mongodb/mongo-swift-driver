@@ -19,6 +19,8 @@ final class DocumentTests: XCTestCase {
         doc["int32"] = Int32(5)
         doc["int64"] = Int64(10)
         doc["double"] = Double(15)
+        doc["minkey"] = MinKey()
+        doc["maxkey"] = MaxKey()
         doc["array1"] = [1, 2]
         doc["array2"] = ["string1", "string2"]
         doc["nestedarray"] = [[1, 2], [Int32(3), Int32(4)]]
@@ -30,6 +32,8 @@ final class DocumentTests: XCTestCase {
         XCTAssertEqual(doc["int32"] as? Int, 5)
         XCTAssertEqual(doc["int64"] as? Int64, 10)
         XCTAssertEqual(doc["double"] as? Double, 15)
+        XCTAssertEqual(doc["minkey"] as? MinKey, MinKey())
+        XCTAssertEqual(doc["maxkey"] as? MaxKey, MaxKey())
         XCTAssertEqual(doc["array1"] as! [Int], [1, 2])
         XCTAssertEqual(doc["array2"] as! [String], ["string1", "string2"])
 

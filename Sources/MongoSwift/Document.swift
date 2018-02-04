@@ -81,6 +81,12 @@ public class Document: ExpressibleByDictionaryLiteral {
                     case BSON_TYPE_INT64:
                         return bson_iter_int64(&iter)
 
+                    case BSON_TYPE_MINKEY:
+                        return MinKey()
+
+                    case BSON_TYPE_MAXKEY:
+                        return MaxKey()
+
                     case BSON_TYPE_UTF8:
                         let len = UnsafeMutablePointer<UInt32>.allocate(capacity: 1)
                         let value = bson_iter_utf8(&iter, len)
@@ -128,6 +134,12 @@ public class Document: ExpressibleByDictionaryLiteral {
 
             case (.int64, let val as Int64):
                 res = bson_append_int64(data, key, keySize, val)
+
+            case (.minKey, _ as MinKey):
+                res = bson_append_minkey(data, key, keySize)
+
+            case (.maxKey, _ as MaxKey):
+                res = bson_append_maxkey(data, key, keySize)
 
             case (.string, let val as String):
                 res = bson_append_utf8(data, key, keySize, val, Int32(val.count))

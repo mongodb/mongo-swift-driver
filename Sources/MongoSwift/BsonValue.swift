@@ -53,6 +53,16 @@ extension Int64: BsonValue {
     public var bsonType: BsonType { return .int64 }
 }
 
+class MaxKey: BsonValue, Equatable {
+    public var bsonType: BsonType { return .maxKey }
+    static func == (lhs: MaxKey, rhs: MaxKey) -> Bool { return true }
+}
+
+class MinKey: BsonValue, Equatable {
+    public var bsonType: BsonType { return .minKey }
+    static func == (lhs: MinKey, rhs: MinKey) -> Bool { return true }
+}
+
 extension String: BsonValue {
     public var bsonType: BsonType { return .string }
 }
