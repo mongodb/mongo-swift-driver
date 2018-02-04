@@ -71,6 +71,9 @@ let optsMap: [String: NSRegularExpression.Options] = [
     "x": .allowCommentsAndWhitespace
 ]
 
+// note that there is a BSON regexp option 'l' that NSRegularExpression
+// doesn't support. The flag will be dropped if BSON containing it is parsed,
+// and it will be ignored if passed into optionsFromString
 extension NSRegularExpression: BsonValue {
     public var bsonType: BsonType { return .regularExpression }
 
