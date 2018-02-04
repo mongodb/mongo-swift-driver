@@ -63,6 +63,30 @@ class MinKey: BsonValue, Equatable {
     static func == (lhs: MinKey, rhs: MinKey) -> Bool { return true }
 }
 
+let optsMap: [String: NSRegularExpression.Options] = [
+    "i": .caseInsensitive,
+    "m": .anchorsMatchLines,
+    "s": .dotMatchesLineSeparators,
+    "u": .useUnicodeWordBoundaries,
+    "x": .allowCommentsAndWhitespace
+]
+
+extension NSRegularExpression: BsonValue {
+    public var bsonType: BsonType { return .regularExpression }
+
+    static func optionsFromString(_ options: String) -> NSRegularExpression.Options {
+        var opts: NSRegularExpression.Options = []
+        for o in options { opts.update(with: optsMap[String(o)]!) }
+        return opts
+    }
+
+    public var stringOptions: String {
+        var opts = ""
+        for (str, o) in optsMap { if options.contains(o) { opts += str } }
+        return String(opts.sorted())
+    }
+}
+
 extension String: BsonValue {
     public var bsonType: BsonType { return .string }
 }

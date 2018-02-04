@@ -87,6 +87,20 @@ public class Document: ExpressibleByDictionaryLiteral {
                     case BSON_TYPE_MAXKEY:
                         return MaxKey()
 
+                    case BSON_TYPE_REGEX:
+
+                        let options = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: 1)
+                        guard let pattern = bson_iter_regex(&iter, options) else {
+                            preconditionFailure(retrieveErrorMsg("regular expression pattern"))
+                        }
+                        guard let stringOptions = options.pointee else {
+                            preconditionFailure(retrieveErrorMsg("regular expression options"))
+                        }
+
+                        let opts = NSRegularExpression.optionsFromString(String(cString: stringOptions))
+                        do { return try NSRegularExpression(pattern: String(cString: pattern), options: opts)
+                        } catch { return nil }
+
                     case BSON_TYPE_UTF8:
                         let len = UnsafeMutablePointer<UInt32>.allocate(capacity: 1)
                         let value = bson_iter_utf8(&iter, len)
@@ -135,11 +149,14 @@ public class Document: ExpressibleByDictionaryLiteral {
             case (.int64, let val as Int64):
                 res = bson_append_int64(data, key, keySize, val)
 
+            case (.maxKey, _ as MaxKey):
+                res = bson_append_maxkey(data, key, keySize)
+
             case (.minKey, _ as MinKey):
                 res = bson_append_minkey(data, key, keySize)
 
-            case (.maxKey, _ as MaxKey):
-                res = bson_append_maxkey(data, key, keySize)
+            case (.regularExpression, let val as NSRegularExpression):
+                res = bson_append_regex(data, key, keySize, val.pattern, val.stringOptions)
 
             case (.string, let val as String):
                 res = bson_append_utf8(data, key, keySize, val, Int32(val.count))

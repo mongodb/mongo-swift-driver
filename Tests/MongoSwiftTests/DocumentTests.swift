@@ -12,6 +12,7 @@ final class DocumentTests: XCTestCase {
     func testDocument() {
 
         let doc = Document()
+        let opts = NSRegularExpression.optionsFromString("imx")
         doc["string"] = "test string"
         doc["true"] = true
         doc["false"] = false
@@ -21,6 +22,10 @@ final class DocumentTests: XCTestCase {
         doc["double"] = Double(15)
         doc["minkey"] = MinKey()
         doc["maxkey"] = MaxKey()
+
+        do { doc["regex"] = try NSRegularExpression(pattern: "^abc", options: opts)
+        } catch { }
+
         doc["array1"] = [1, 2]
         doc["array2"] = ["string1", "string2"]
         doc["nestedarray"] = [[1, 2], [Int32(3), Int32(4)]]
@@ -34,6 +39,11 @@ final class DocumentTests: XCTestCase {
         XCTAssertEqual(doc["double"] as? Double, 15)
         XCTAssertEqual(doc["minkey"] as? MinKey, MinKey())
         XCTAssertEqual(doc["maxkey"] as? MaxKey, MaxKey())
+
+        let regex = doc["regex"] as! NSRegularExpression
+        XCTAssertEqual(regex.pattern as? String, "^abc")
+        XCTAssertEqual(regex.stringOptions as? String, "imx")
+
         XCTAssertEqual(doc["array1"] as! [Int], [1, 2])
         XCTAssertEqual(doc["array2"] as! [String], ["string1", "string2"])
 
