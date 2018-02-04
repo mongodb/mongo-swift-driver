@@ -72,6 +72,10 @@ public class Document: ExpressibleByDictionaryLiteral {
                     case BSON_TYPE_BOOL:
                         return bson_iter_bool(&iter)
 
+                    case BSON_TYPE_DATE_TIME:
+                        let ms = bson_iter_date_time(&iter)
+                        return Date(msSinceEpoch: ms)
+
                     case BSON_TYPE_DOUBLE:
                         return bson_iter_double(&iter)
 
@@ -135,6 +139,10 @@ public class Document: ExpressibleByDictionaryLiteral {
 
             case (.boolean, let val as Bool):
                 res = bson_append_bool(data, key, keySize, val)
+
+            case (.dateTime, let val as Date):
+                let seconds = val.timeIntervalSince1970 * 1000
+                res = bson_append_date_time(data, key, keySize, Int64(seconds))
 
             case (.double, let val as Double):
                 res = bson_append_double(data, key, keySize, val)

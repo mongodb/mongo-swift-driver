@@ -37,6 +37,16 @@ extension Bool: BsonValue {
     public var bsonType: BsonType { return .boolean }
 }
 
+extension Date: BsonValue {
+    public var bsonType: BsonType { return .dateTime }
+
+    init(msSinceEpoch: Int64) {
+        self.init(timeIntervalSince1970: Double(msSinceEpoch / 1000))
+    }
+
+    public var msSinceEpoch: Int64 { return Int64(self.timeIntervalSince1970 * 1000) }
+}
+
 extension Double: BsonValue {
     public var bsonType: BsonType { return .double }
 }

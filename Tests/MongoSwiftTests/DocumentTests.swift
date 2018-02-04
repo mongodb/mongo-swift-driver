@@ -22,6 +22,7 @@ final class DocumentTests: XCTestCase {
         doc["double"] = Double(15)
         doc["minkey"] = MinKey()
         doc["maxkey"] = MaxKey()
+        doc["date"] = Date(timeIntervalSince1970: 5000)
 
         do { doc["regex"] = try NSRegularExpression(pattern: "^abc", options: opts)
         } catch { }
@@ -39,6 +40,7 @@ final class DocumentTests: XCTestCase {
         XCTAssertEqual(doc["double"] as? Double, 15)
         XCTAssertEqual(doc["minkey"] as? MinKey, MinKey())
         XCTAssertEqual(doc["maxkey"] as? MaxKey, MaxKey())
+        XCTAssertEqual(doc["date"] as? Date, Date(timeIntervalSince1970: 5000))
 
         let regex = doc["regex"] as! NSRegularExpression
         XCTAssertEqual(regex.pattern as? String, "^abc")
