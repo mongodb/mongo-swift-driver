@@ -1,4 +1,5 @@
 import Foundation
+import libbson
 
 public enum BsonType: Int {
     case invalid = 0x00,
@@ -73,7 +74,10 @@ class MinKey: BsonValue, Equatable {
     static func == (lhs: MinKey, rhs: MinKey) -> Bool { return true }
 }
 
-let optsMap: [Character: NSRegularExpression.Options] = [
+// note that there is a BSON regexp option 'l' that NSRegularExpression
+// doesn't support. The flag will be dropped if BSON containing it is parsed,
+// and it will be ignored if passed into optionsFromString.
+let regexOptsMap: [Character: NSRegularExpression.Options] = [
     "i": .caseInsensitive,
     "m": .anchorsMatchLines,
     "s": .dotMatchesLineSeparators,
@@ -81,25 +85,37 @@ let optsMap: [Character: NSRegularExpression.Options] = [
     "x": .allowCommentsAndWhitespace
 ]
 
-// note that there is a BSON regexp option 'l' that NSRegularExpression
-// doesn't support. The flag will be dropped if BSON containing it is parsed,
-// and it will be ignored if passed into optionsFromString
 extension NSRegularExpression: BsonValue {
     public var bsonType: BsonType { return .regularExpression }
 
+    static func fromBSON(_ iter: inout bson_iter_t) throws -> NSRegularExpression {
+        let options = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: 1)
+        guard let pattern = bson_iter_regex(&iter, options) else {
+            preconditionFailure("Failed to retrieve regular expression pattern")
+        }
+        guard let stringOptions = options.pointee else {
+            preconditionFailure("Failed to retrieve regular expression options")
+        }
+
+        let opts = NSRegularExpression.optionsFromString(String(cString: stringOptions))
+        return try self.init(pattern: String(cString: pattern), options: opts)
+    }
+
+    // Convert a string of options flags into an equivalent NSRegularExpression.Options.
     static func optionsFromString(_ stringOptions: String) -> NSRegularExpression.Options {
         var optsObj: NSRegularExpression.Options = []
         for o in stringOptions {
-            if let value = optsMap[o] {
+            if let value = regexOptsMap[o] {
                  optsObj.update(with: value)
             }
         }
         return optsObj
     }
 
+    // Convert this instance's Options object into an alphabetically-sorted string of characters.
     public var stringOptions: String {
         var optsString = ""
-        for (char, o) in optsMap { if options.contains(o) { optsString += String(char) } }
+        for (char, o) in regexOptsMap { if options.contains(o) { optsString += String(char) } }
         return String(optsString.sorted())
     }
 }

@@ -73,8 +73,7 @@ public class Document: ExpressibleByDictionaryLiteral {
                         return bson_iter_bool(&iter)
 
                     case BSON_TYPE_DATE_TIME:
-                        let ms = bson_iter_date_time(&iter)
-                        return Date(msSinceEpoch: ms)
+                        return Date(msSinceEpoch: bson_iter_date_time(&iter))
 
                     case BSON_TYPE_DOUBLE:
                         return bson_iter_double(&iter)
@@ -92,18 +91,11 @@ public class Document: ExpressibleByDictionaryLiteral {
                         return MaxKey()
 
                     case BSON_TYPE_REGEX:
-
-                        let options = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: 1)
-                        guard let pattern = bson_iter_regex(&iter, options) else {
-                            preconditionFailure(retrieveErrorMsg("regular expression pattern"))
+                        do { return try NSRegularExpression.fromBSON(&iter)
+                        } catch {
+                            preconditionFailure("Failed to create an NSRegularExpression object " +
+                                "from regex data stored for key \(key)")
                         }
-                        guard let stringOptions = options.pointee else {
-                            preconditionFailure(retrieveErrorMsg("regular expression options"))
-                        }
-
-                        let opts = NSRegularExpression.optionsFromString(String(cString: stringOptions))
-                        do { return try NSRegularExpression(pattern: String(cString: pattern), options: opts)
-                        } catch { return nil }
 
                     case BSON_TYPE_UTF8:
                         let len = UnsafeMutablePointer<UInt32>.allocate(capacity: 1)
