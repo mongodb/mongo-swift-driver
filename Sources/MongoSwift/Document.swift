@@ -1,8 +1,10 @@
 import Foundation
 import libbson
 
-public class Document: ExpressibleByDictionaryLiteral {
+public class Document: BsonValue, ExpressibleByDictionaryLiteral {
     internal var data: UnsafeMutablePointer<bson_t>!
+
+    public var bsonType: BsonType { return .document }
 
     public init() {
         data = bson_new()
@@ -24,6 +26,10 @@ public class Document: ExpressibleByDictionaryLiteral {
         for (k, v) in doc {
             self[k] = v
         }
+    }
+
+    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {
+        return bson_append_document(data, key, Int32(key.count), self.data)
     }
 
     deinit {
@@ -48,32 +54,24 @@ public class Document: ExpressibleByDictionaryLiteral {
 
                     switch itype {
                     case BSON_TYPE_ARRAY:
-
-                        let arrayLen = UnsafeMutablePointer<UInt32>.allocate(capacity: 1)
-                        let array = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
-                        bson_iter_array(&iter, arrayLen, array)
-
-                        // since an array is a nested object with keys '0', '1', etc., 
-                        // create a new Document using the array data so we can recursively parse
-                        guard let b = bson_new_from_data(array.pointee, Int(arrayLen.pointee)) else {
-                            preconditionFailure("Failed to create a BSON object from array data stored for key \(key)")
-                        }
-
-                        let arrayDoc = Document(fromData: b)
-
-                        var i = 0
-                        var result = [BsonValue]()
-                        while let v = arrayDoc[String(i)] {
-                            result.append(v)
-                            i += 1
-                        }
-                        return result
+                        return [BsonValue].fromBSON(&iter)
 
                     case BSON_TYPE_BOOL:
                         return bson_iter_bool(&iter)
 
                     case BSON_TYPE_DATE_TIME:
                         return Date(msSinceEpoch: bson_iter_date_time(&iter))
+
+                    case BSON_TYPE_DOCUMENT:
+                        let docLen = UnsafeMutablePointer<UInt32>.allocate(capacity: 1)
+                        let document = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
+                        bson_iter_document(&iter, docLen, document)
+
+                        let docData = UnsafeMutablePointer<bson_t>.allocate(capacity: 1)
+                        precondition(bson_init_static(docData, document.pointee, Int(docLen.pointee)),
+                            "Failed to create a bson_t from document data")
+
+                        return Document(fromData: docData)
 
                     case BSON_TYPE_DOUBLE:
                         return bson_iter_double(&iter)
@@ -90,12 +88,21 @@ public class Document: ExpressibleByDictionaryLiteral {
                     case BSON_TYPE_MAXKEY:
                         return MaxKey()
 
+                    case BSON_TYPE_NULL:
+                        return nil
+
+                    case BSON_TYPE_OID:
+                        return ObjectId.fromBSON(&iter)
+
                     case BSON_TYPE_REGEX:
                         do { return try NSRegularExpression.fromBSON(&iter)
                         } catch {
                             preconditionFailure("Failed to create an NSRegularExpression object " +
                                 "from regex data stored for key \(key)")
                         }
+
+                    case BSON_TYPE_TIMESTAMP:
+                        return Timestamp.fromBSON(&iter)
 
                     case BSON_TYPE_UTF8:
                         let len = UnsafeMutablePointer<UInt32>.allocate(capacity: 1)
@@ -116,56 +123,14 @@ public class Document: ExpressibleByDictionaryLiteral {
         }
 
         set(newValue) {
-            guard let value = newValue else { return }
-            let keySize = Int32(key.count)
-            var res = false
 
-            switch (value.bsonType, value) {
-
-            case (.array, let val as [BsonValue]):
-                // An array is just a document with keys '0', '1', etc.
-                // corresponding to indexes
-                let arr = Document()
-                for (i, v) in val.enumerated() { arr[String(i)] = v }
-                res = bson_append_array(data, key, keySize, arr.data)
-
-            case (.boolean, let val as Bool):
-                res = bson_append_bool(data, key, keySize, val)
-
-            case (.dateTime, let val as Date):
-                let seconds = val.timeIntervalSince1970 * 1000
-                res = bson_append_date_time(data, key, keySize, Int64(seconds))
-
-            case (.double, let val as Double):
-                res = bson_append_double(data, key, keySize, val)
-
-            case (.int32, _):
-                if let val = value as? Int {
-                    res = bson_append_int32(data, key, keySize, Int32(val))
-                } else if let val = value as? Int32 {
-                    res = bson_append_int32(data, key, keySize, val)
-                }
-
-            case (.int64, let val as Int64):
-                res = bson_append_int64(data, key, keySize, val)
-
-            case (.maxKey, _ as MaxKey):
-                res = bson_append_maxkey(data, key, keySize)
-
-            case (.minKey, _ as MinKey):
-                res = bson_append_minkey(data, key, keySize)
-
-            case (.regularExpression, let val as NSRegularExpression):
-                res = bson_append_regex(data, key, keySize, val.pattern, val.stringOptions)
-
-            case (.string, let val as String):
-                res = bson_append_utf8(data, key, keySize, val, Int32(val.count))
-
-            default:
-                print("default")
+            guard let value = newValue else {
+                let res = bson_append_null(data, key, Int32(key.count))
+                precondition(res, "Failed to set the value for key \(key) to null")
                 return
             }
 
+            let res = value.bsonAppend(data: data, key: key)
             precondition(res, "Failed to set the value for key '\(key)' to" +
                 " \(String(describing: newValue)) with BSON type \(value.bsonType)")
 
