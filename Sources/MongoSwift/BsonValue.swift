@@ -64,6 +64,65 @@ extension Array: BsonValue {
     }
 }
 
+public enum BsonSubtype: Int {
+    case binary = 0x00,
+    function = 0x01,
+    binaryDeprecated = 0x02,
+    uuidDeprecated = 0x03,
+    uuid = 0x04,
+    md5 = 0x05,
+    user = 0x06
+}
+
+class Binary: BsonValue, Equatable {
+    public var bsonType: BsonType { return .binary }
+    var data: Data
+    var subtype: BsonSubtype
+
+    init(data: Data, subtype: BsonSubtype) {
+        self.data = data
+        self.subtype = subtype
+    }
+
+    init(base64: String, subtype: BsonSubtype) {
+        guard let dataObj = Data(base64Encoded: base64) else {
+            preconditionFailure("failed to create Data object from base64 string \(base64)")
+        }
+        self.data = dataObj
+        self.subtype = subtype
+    }
+
+    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {
+        let subtype = bson_subtype_t(UInt32(self.subtype.rawValue))
+        let length = self.data.count
+        let byteArray = [UInt8](self.data)
+        return bson_append_binary(data, key, Int32(key.count), subtype, byteArray, UInt32(length))
+    }
+
+    static func fromBSON(_ iter: inout bson_iter_t) -> Binary {
+        let subtypePointer = UnsafeMutablePointer<bson_subtype_t>.allocate(capacity: 1)
+        let lengthPointer = UnsafeMutablePointer<UInt32>.allocate(capacity: 1)
+        let dataPointer = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
+        bson_iter_binary(&iter, subtypePointer, lengthPointer, dataPointer)
+
+        guard let data = dataPointer.pointee else {
+            preconditionFailure("failed to retrieve data stored for binary BSON value")
+        }
+
+        let dataObj = Data(bytes: data, count: Int(lengthPointer.pointee))
+
+        guard let subtype = BsonSubtype(rawValue: Int(subtypePointer.pointee.rawValue)) else {
+            preconditionFailure("failed to retrieve binary subtype for BSON value")
+        }
+
+        return Binary(data: dataObj, subtype: subtype)
+    }
+
+    static func == (lhs: Binary, rhs: Binary) -> Bool {
+        return lhs.data == rhs.data && lhs.subtype == rhs.subtype
+    }
+}
+
 extension Bool: BsonValue {
     public var bsonType: BsonType { return .boolean }
     public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {
@@ -84,6 +143,34 @@ extension Date: BsonValue {
         let seconds = self.timeIntervalSince1970 * 1000
         return bson_append_date_time(data, key, Int32(key.count), Int64(seconds))
     }
+}
+
+class Decimal128: BsonValue, Equatable {
+    var data: String
+    init(_ data: String) {
+        self.data = data
+    }
+    public var bsonType: BsonType { return .decimal128 }
+
+    static func == (lhs: Decimal128, rhs: Decimal128) -> Bool {
+        return lhs.data == rhs.data
+    }
+
+    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {
+        let value = UnsafeMutablePointer<bson_decimal128_t>.allocate(capacity: 1)
+        precondition(bson_decimal128_from_string(self.data, value),
+            "Failed to parse Decimal128 string \(self.data)")
+        return bson_append_decimal128(data, key, Int32(key.count), value)
+    }
+
+     static func fromBSON(_ iter: inout bson_iter_t) -> Decimal128 {
+        let value = UnsafeMutablePointer<bson_decimal128_t>.allocate(capacity: 1)
+        precondition(bson_iter_decimal128(&iter, value), "Failed to retrieve Decimal128 value")
+        let stringValue = UnsafeMutablePointer<Int8>.allocate(capacity: Int(BSON_DECIMAL128_STRING))
+        bson_decimal128_to_string(value, stringValue)
+        return Decimal128(String(cString: stringValue))
+     }
+
 }
 
 extension Double: BsonValue {

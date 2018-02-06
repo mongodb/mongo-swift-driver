@@ -51,10 +51,12 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral {
                 let ikey = String(cString: bson_iter_key(&iter))
                 if ikey == key {
                     let itype = bson_iter_type(&iter)
-
                     switch itype {
                     case BSON_TYPE_ARRAY:
                         return [BsonValue].fromBSON(&iter)
+
+                    case BSON_TYPE_BINARY:
+                        return Binary.fromBSON(&iter)
 
                     case BSON_TYPE_BOOL:
                         return bson_iter_bool(&iter)
@@ -64,6 +66,30 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral {
 
                     case BSON_TYPE_DATE_TIME:
                         return Date(msSinceEpoch: bson_iter_date_time(&iter))
+
+                    // DBPointer is deprecated, so convert to a DBRef doc.
+                    case BSON_TYPE_DBPOINTER:
+                        let lengthP = UnsafeMutablePointer<UInt32>.allocate(capacity: 1)
+                        let collectionPP = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: 1)
+                        let oidPP = UnsafeMutablePointer<UnsafePointer<bson_oid_t>?>.allocate(capacity: 1)
+                        bson_iter_dbpointer(&iter, lengthP, collectionPP, oidPP)
+
+                        guard let oidP = oidPP.pointee else {
+                            preconditionFailure(retrieveErrorMsg("DBPointer ObjectId"))
+                        }
+                        guard let collectionP = collectionPP.pointee else {
+                            preconditionFailure(retrieveErrorMsg("DBPointer collection name"))
+                        }
+
+                        let dbRef: Document = [
+                            "$ref": String(cString: collectionP),
+                            "$id": ObjectId(from: oidP)
+                        ]
+
+                        return dbRef
+
+                    case BSON_TYPE_DECIMAL128:
+                        return Decimal128.fromBSON(&iter)
 
                     case BSON_TYPE_DOCUMENT:
                         let docLen = UnsafeMutablePointer<UInt32>.allocate(capacity: 1)
@@ -91,7 +117,8 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral {
                     case BSON_TYPE_MAXKEY:
                         return MaxKey()
 
-                    case BSON_TYPE_NULL:
+                    // Since Undefined is deprecated, convert to null if we encounter it. 
+                    case BSON_TYPE_NULL, BSON_TYPE_UNDEFINED:
                         return nil
 
                     case BSON_TYPE_OID:
@@ -103,6 +130,15 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral {
                             preconditionFailure("Failed to create an NSRegularExpression object " +
                                 "from regex data stored for key \(key)")
                         }
+
+                    // Since Symbol is deprecated, return as a string instead. 
+                    case BSON_TYPE_SYMBOL:
+                        let len = UnsafeMutablePointer<UInt32>.allocate(capacity: 1)
+                        let value = bson_iter_symbol(&iter, len)
+                        guard let strValue = value else {
+                            preconditionFailure(retrieveErrorMsg("Symbol"))
+                        }
+                        return String(cString: strValue)
 
                     case BSON_TYPE_TIMESTAMP:
                         return Timestamp.fromBSON(&iter)
