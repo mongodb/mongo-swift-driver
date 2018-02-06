@@ -10,8 +10,6 @@ final class DocumentTests: XCTestCase {
     }
 
     func testDocument() {
-
-        // compilation times out if the document is much longer than this...
         let doc: Document = [
             "string": "test string",
             "true": true,
@@ -23,7 +21,15 @@ final class DocumentTests: XCTestCase {
             "minkey": MinKey(),
             "maxkey": MaxKey(),
             "date": Date(timeIntervalSince1970: 5000),
-            "timestamp": Timestamp(timestamp: 5, inc: 10)
+            "timestamp": Timestamp(timestamp: 5, inc: 10),
+            "nestedarray": [[1, 2] as [Int], [Int32(3), Int32(4)] as [Int32]] as [BsonValue],
+            "nesteddoc": ["a": 1, "b": 2, "c": false, "d": [3, 4] as [Int]] as Document,
+            "oid": ObjectId(from: "507f1f77bcf86cd799439011"),
+            "array1": [1, 2] as [Int],
+            "array2": ["string1", "string2"] as [String],
+            "null": nil,
+            "code": JavascriptCode(code: "console.log('hi');"),
+            "codewscope": JavascriptCode(code: "console.log(x);", scope: ["x": 2] as Document)
         ]
 
         let regex: NSRegularExpression?
@@ -37,11 +43,6 @@ final class DocumentTests: XCTestCase {
         }
 
         doc["regex"] = regex
-        doc["oid"] = ObjectId(from: "507f1f77bcf86cd799439011")
-        doc["array1"] = [1, 2]
-        doc["array2"] = ["string1", "string2"]
-        doc["nestedarray"] = [[1, 2], [Int32(3), Int32(4)]]
-        doc["nesteddoc"] = ["a": 1, "b": 2, "c": false, "d": [3, 4]] as Document
 
         XCTAssertEqual(doc["string"] as? String, "test string")
         XCTAssertEqual(doc["true"] as? Bool, true)
@@ -57,6 +58,16 @@ final class DocumentTests: XCTestCase {
         XCTAssertEqual(doc["oid"] as? ObjectId, ObjectId(from: "507f1f77bcf86cd799439011"))
         XCTAssertEqual(doc["array1"] as! [Int], [1, 2])
         XCTAssertEqual(doc["array2"] as! [String], ["string1", "string2"])
+        XCTAssertNil(doc["null"])
+
+        let code = doc["code"] as! JavascriptCode
+        XCTAssertEqual(code.code, "console.log('hi');")
+        XCTAssertNil(code.scope)
+
+        let codewscope = doc["codewscope"] as! JavascriptCode
+        XCTAssertEqual(codewscope.code, "console.log(x);")
+        let scope = codewscope.scope as! Document
+        XCTAssertEqual(scope["x"] as! Int, 2)
 
         guard let nestedArray = doc["nestedarray"] else { return }
         let intArrays = nestedArray as! [[Int]]
@@ -78,5 +89,6 @@ final class DocumentTests: XCTestCase {
         XCTAssertEqual(doc2["hi"] as? Bool, true)
         XCTAssertEqual(doc2["hello"] as? String, "hi")
         XCTAssertEqual(doc2["cat"] as? Int, 2)
+
     }
 }

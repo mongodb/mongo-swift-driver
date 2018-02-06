@@ -114,6 +114,50 @@ extension Int64: BsonValue {
     }
 }
 
+// for this to be equatable, documents have to be as well
+class JavascriptCode: BsonValue {
+    var code = ""
+    var scope: Document?
+
+    public var bsonType: BsonType {
+        if self.scope != nil { return .javascriptWithScope }
+        return .javascript
+    }
+
+    init(code: String, scope: Document? = nil) {
+        self.code = code
+        self.scope = scope
+    }
+
+    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {
+        if let s = self.scope {
+            return bson_append_code_with_scope(data, key, Int32(key.count), self.code, s.data)
+        }
+        return bson_append_code(data, key, Int32(key.count), self.code)
+    }
+
+    static func fromBSON(_ iter: inout bson_iter_t) -> JavascriptCode {
+
+        let length = UnsafeMutablePointer<UInt32>.allocate(capacity: 1)
+
+        if bson_iter_type(&iter) == BSON_TYPE_CODE {
+            let code = String(cString: bson_iter_code(&iter, length))
+            return JavascriptCode(code: code)
+        }
+
+        let scopeLength = UnsafeMutablePointer<UInt32>.allocate(capacity: 1)
+        let scopePointer = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
+        let scopeData = UnsafeMutablePointer<bson_t>.allocate(capacity: 1)
+        let code = String(cString: bson_iter_codewscope(&iter, length, scopeLength, scopePointer))
+
+        precondition(bson_init_static(scopeData, scopePointer.pointee, Int(scopeLength.pointee)),
+                            "Failed to create a bson_t from scope data")
+
+        let scopeDoc = Document(fromData: scopeData)
+        return JavascriptCode(code: code, scope: scopeDoc)
+    }
+}
+
 class MaxKey: BsonValue, Equatable {
     public var bsonType: BsonType { return .maxKey }
     public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {

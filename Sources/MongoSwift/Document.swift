@@ -16,12 +16,12 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral {
 
     public init(_ doc: [String: BsonValue]) {
         data = bson_new()
-        for (key, value) in doc {
-            self[key] = value
+        for (k, v) in doc {
+            self[k] = v
         }
     }
 
-   public required init(dictionaryLiteral doc: (String, BsonValue)...) {
+   public required init(dictionaryLiteral doc: (String, BsonValue?)...) {
         data = bson_new()
         for (k, v) in doc {
             self[k] = v
@@ -58,6 +58,9 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral {
 
                     case BSON_TYPE_BOOL:
                         return bson_iter_bool(&iter)
+
+                    case BSON_TYPE_CODE, BSON_TYPE_CODEWSCOPE:
+                        return JavascriptCode.fromBSON(&iter)
 
                     case BSON_TYPE_DATE_TIME:
                         return Date(msSinceEpoch: bson_iter_date_time(&iter))
