@@ -23,6 +23,11 @@ public struct ListDatabasesOptions: BsonEncodable {
     }
 }
 
+public enum MongoError: Error {
+  case invalidUri(message: String)
+  case invalidClient()
+}
+
 // A MongoDB Client
 public class Client {
     private var _client = OpaquePointer(bitPattern: 1)
@@ -47,8 +52,8 @@ public class Client {
     }
 
     /**
-     * Cleanup the internal mongoc_client_t
-     */
+    * Cleanup the internal mongoc_client_t
+    */
     deinit {
         close()
     }
@@ -66,8 +71,8 @@ public class Client {
     }
 
     /**
-     * Close the client
-     */
+    * Close the client
+    */
     func close() {
         guard let client = self._client else {
             return
