@@ -25,6 +25,8 @@ public struct ListDatabasesOptions: BsonEncodable {
 public enum MongoError: Error {
   case invalidUri(message: String)
   case invalidClient()
+  case invalidResponse()
+  case invalidCursor()
 }
 
 // A MongoDB Client
@@ -95,7 +97,12 @@ public class Client {
    * - Returns: A cursor over documents describing the databases matching provided criteria
    */
   func listDatabases(options: ListDatabasesOptions? = nil) throws -> Cursor {
-    return Cursor()
+    var error = bson_error_t()
+    guard let cursor = mongoc_client_find_databases(self._client, &error) else {
+      throw MongoError.invalidResponse()
+    }
+
+    return Cursor(fromCursor: cursor)
   }
 
   /**
