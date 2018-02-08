@@ -42,15 +42,15 @@ final class DocumentTests: XCTestCase {
             "maxkey": MaxKey(),
             "date": Date(timeIntervalSince1970: 5000),
             "timestamp": Timestamp(timestamp: 5, inc: 10),
-            "nestedarray": [[1, 2] as [Int], [Int32(3), Int32(4)] as [Int32]] as [BsonValue],
-            "nesteddoc": ["a": 1, "b": 2, "c": false, "d": [3, 4] as [Int]] as Document,
+            "nestedarray": [[1, 2], [Int32(3), Int32(4)]] as [[Int32]],
+            "nesteddoc": ["a": 1, "b": 2, "c": false, "d": [3, 4]] as Document,
             "oid": ObjectId(from: "507f1f77bcf86cd799439011"),
             "regex": regex,
-            "array1": [1, 2] as [Int],
-            "array2": ["string1", "string2"] as [String],
+            "array1": [1, 2],
+            "array2": ["string1", "string2"],
             "null": nil,
-            "code": JavascriptCode(code: "console.log('hi');"),
-            "codewscope": JavascriptCode(code: "console.log(x);", scope: ["x": 2] as Document),
+            "code": CodeWithScope(code: "console.log('hi');"),
+            "codewscope": CodeWithScope(code: "console.log(x);", scope: ["x": 2]),
             "binary0": Binary(data: testData, subtype: BsonSubtype.binary),
             "binary1": Binary(data: testData, subtype: BsonSubtype.function),
             "binary2": Binary(data: testData, subtype: BsonSubtype.binaryDeprecated),
@@ -82,15 +82,15 @@ final class DocumentTests: XCTestCase {
         XCTAssertEqual(doc["array2"] as! [String], ["string1", "string2"])
         XCTAssertNil(doc["null"])
 
-        guard let code = doc["code"] as? JavascriptCode else {
-            XCTAssert(false, "Failed to get JavascriptCode value")
+        guard let code = doc["code"] as? CodeWithScope else {
+            XCTAssert(false, "Failed to get CodeWithScope value")
             return
         }
         XCTAssertEqual(code.code, "console.log('hi');")
         XCTAssertNil(code.scope)
 
-        guard let codewscope = doc["codewscope"] as? JavascriptCode else {
-            XCTAssert(false, "Failed to get JavascriptCode with scope value")
+        guard let codewscope = doc["codewscope"] as? CodeWithScope else {
+            XCTAssert(false, "Failed to get CodeWithScope with scope value")
             return
         }
         XCTAssertEqual(codewscope.code, "console.log(x);")
