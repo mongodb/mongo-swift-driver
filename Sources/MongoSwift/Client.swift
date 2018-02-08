@@ -26,6 +26,8 @@ public struct ListDatabasesOptions: BsonEncodable {
 public enum MongoError: Error {
   case invalidUri(message: String)
   case invalidClient()
+  case invalidResponse()
+  case invalidCursor()
 }
 
 // A MongoDB Client
