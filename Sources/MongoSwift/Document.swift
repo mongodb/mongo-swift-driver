@@ -1,7 +1,7 @@
 import Foundation
 import libbson
 
-public class Document: BsonValue, ExpressibleByDictionaryLiteral {
+public class Document: BsonValue, ExpressibleByDictionaryLiteral, CustomStringConvertible {
     internal var data: UnsafeMutablePointer<bson_t>!
 
     public var bsonType: BsonType { return .document }
@@ -34,6 +34,15 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral {
 
     deinit {
         bson_destroy(data)
+    }
+
+    public var description: String {
+        let json = bson_as_relaxed_extended_json(self.data, nil)
+        guard let jsonData = json else {
+            return String()
+        }
+
+        return String(cString: jsonData)
     }
 
     subscript(key: String) -> BsonValue? {
@@ -118,7 +127,7 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral {
                     case BSON_TYPE_MAXKEY:
                         return MaxKey()
 
-                    // Since Undefined is deprecated, convert to null if we encounter it. 
+                    // Since Undefined is deprecated, convert to null if we encounter it.
                     case BSON_TYPE_NULL, BSON_TYPE_UNDEFINED:
                         return nil
 
@@ -132,7 +141,7 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral {
                                 "from regex data stored for key \(key)")
                         }
 
-                    // Since Symbol is deprecated, return as a string instead. 
+                    // Since Symbol is deprecated, return as a string instead.
                     case BSON_TYPE_SYMBOL:
                         var length: UInt32 = 0
                         let value = bson_iter_symbol(&iter, &length)
