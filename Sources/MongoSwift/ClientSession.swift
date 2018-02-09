@@ -5,7 +5,7 @@ public struct SessionOptions {
     let causalConsistency: Bool?
 }
 
-public class ClientSession {
+public class ClientSession: BsonEncodable {
     /**
      * A session for ordering sequential operations. This class wraps a mongoc_session_t
      * type.
@@ -29,14 +29,14 @@ public class ClientSession {
      * The server session id for this session
      */
     var sessionId: Document {
-        return Document()
+            return Document()
     }
 
     /**
      * The cluster time returned by the last operation executed in this session
      */
     var clusterTime: Int64 {
-        return Int64()
+            return Int64()
     }
 
     /**
@@ -44,5 +44,11 @@ public class ClientSession {
      */
     var operationTime: Int64 {
         return Int64()
+    }
+
+    public func encode(to encoder: BsonEncoder) {
+        encoder.encode(sessionId, key: "sessionId")
+        encoder.encode(clusterTime, key: "clusterTime")
+        encoder.encode(operationTime, key: "operationTime")
     }
 }

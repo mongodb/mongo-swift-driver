@@ -5,7 +5,8 @@ import XCTest
 final class DocumentTests: XCTestCase {
     static var allTests: [(String, (DocumentTests) -> () throws -> Void)] {
         return [
-            ("testDocument", testDocument)
+            ("testDocument", testDocument),
+            ("testEncoder", testEncoder)
         ]
     }
 
@@ -129,6 +130,35 @@ final class DocumentTests: XCTestCase {
         XCTAssertEqual(doc2["hi"] as? Bool, true)
         XCTAssertEqual(doc2["hello"] as? String, "hi")
         XCTAssertEqual(doc2["cat"] as? Int, 2)
+
+    }
+
+    func testEncoder() {
+        let encoder = BsonEncoder()
+
+        let test = TestStruct(sessionid: nil, nameOnly: true, id: "hi", arr: ["a", "b"])
+        let testData = encoder.encode(test)
+        let testDoc = Document(fromData: testData)
+
+        XCTAssertNil(testDoc["sessionid"])
+        XCTAssertEqual(testDoc["nameOnly"] as? Bool, true)
+        XCTAssertEqual(testDoc["id"] as? String, "hi")
+        XCTAssertEqual(testDoc["arr"] as! [String], ["a", "b"])
+
+        let f: Document = ["a": 10]
+        let session = ClientSession()
+        let options = ListDatabasesOptions(filter: f, nameOnly: true, session: session)
+        let optionsData = encoder.encode(options)
+        let optionsDoc = Document(fromData: optionsData)
+        XCTAssertEqual(optionsDoc["nameOnly"] as? Bool, true)
+
+        let filterDoc = optionsDoc["filter"] as! Document
+        XCTAssertEqual(filterDoc["a"] as? Int, 10)
+        XCTAssertEqual(optionsDoc["nameOnly"] as? Bool, true)
+        let sessionDoc = optionsDoc["session"] as! Document
+        XCTAssertEqual(sessionDoc["clusterTime"] as? Int64, 0)
+        XCTAssertEqual(sessionDoc["operationTime"] as? Int64, 0)
+        // sessionId is an empty doc right now, don't really have a way to compare 
 
     }
 }
