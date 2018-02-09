@@ -8,14 +8,9 @@ public protocol BsonEncodable {
 public class BsonEncoder {
     private var _document: UnsafeMutablePointer<bson_t>!
 
-    // init(fromBsonT: UnsafeMutablePointer<bson_t>) {
-    //     _document = fromBsonT
-    // }
-
     // since we have a lot of optional options we want to encode only
     // when they're non-nil, val is BsonValue? type so encode(to:) methods
     // can avoid checking each value individually
-
     func encode(_ val: BsonValue?, key: String) {
         if let v = val {
             assert(v.bsonAppend(data: _document, key: key))
