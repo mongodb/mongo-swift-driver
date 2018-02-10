@@ -10,12 +10,18 @@ final class ClientTests: XCTestCase {
   }
 
   func testClient() {
-    let client = try! Client(connectionString: "mongodb://localhost:27017/")
-    print("GOT HERE")
+    guard let client = try? Client(connectionString: "mongodb://localhost:27017/") else {
+      print("failed to create a client")
+      return
+    }
 
-    let databases = try! client.listDatabases()
+    guard let databases = try? client.listDatabases() else {
+      print("failed to list databases")
+      return
+    }
+
     for database in databases {
-      print("\(database["name"] as! String)")
+      print(database)
     }
   }
 }
