@@ -135,23 +135,14 @@ final class DocumentTests: XCTestCase {
 
     func testEncoder() {
         let encoder = BsonEncoder()
+        let options = ListDatabasesOptions(filter: Document(["a": 10]), nameOnly: true, session: ClientSession())
+        let optionsDoc: Document
+        do { optionsDoc = try encoder.encode(options) } catch {
+            XCTAssert(false, "Failed to encode options")
+            return
+        }
 
-        let test = TestStruct(sessionid: nil, nameOnly: true, id: "hi", arr: ["a", "b"])
-        let testData = encoder.encode(test)
-        let testDoc = Document(fromData: testData)
-
-        XCTAssertNil(testDoc["sessionid"])
-        XCTAssertEqual(testDoc["nameOnly"] as? Bool, true)
-        XCTAssertEqual(testDoc["id"] as? String, "hi")
-        XCTAssertEqual(testDoc["arr"] as! [String], ["a", "b"])
-
-        let f: Document = ["a": 10]
-        let session = ClientSession()
-        let options = ListDatabasesOptions(filter: f, nameOnly: true, session: session)
-        let optionsData = encoder.encode(options)
-        let optionsDoc = Document(fromData: optionsData)
         XCTAssertEqual(optionsDoc["nameOnly"] as? Bool, true)
-
         let filterDoc = optionsDoc["filter"] as! Document
         XCTAssertEqual(filterDoc["a"] as? Int, 10)
         XCTAssertEqual(optionsDoc["nameOnly"] as? Bool, true)

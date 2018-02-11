@@ -32,6 +32,10 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, CustomStringCo
         return bson_append_document(data, key, Int32(key.count), self.data)
     }
 
+    public func getData() -> UnsafeMutablePointer<bson_t> {
+        return data
+    }
+
     deinit {
         bson_destroy(data)
     }
