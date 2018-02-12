@@ -125,6 +125,55 @@ public class Database {
     }
 
     /**
+     * Access a collection within this database.
+     *
+     * - Parameters:
+     *   - name: the name of the collection to get
+     *
+     * - Returns: the requested `Collection`
+     */
+    func collection(name: String) throws -> Collection {
+        guard let collection = mongoc_database_get_collection(_database, name) else {
+            return Collection()
+        }
+        return Collection(fromCollection: collection)
+    }
+
+    /**
+     * Creates a collection in this database with the specified options
+     *
+     * - Parameters:
+     *   - name: the name of the collection
+     *   - options: optional settings
+     *
+     * - Returns: the newly created `Collection`
+     */
+    func createCollection(name: String, options: CreateCollectionOptions? = nil) throws -> Collection {
+        var error = bson_error_t()
+        guard let collection = mongoc_database_create_collection(_database, name, nil, &error) else {
+            return Collection()
+        }
+        return Collection(fromCollection: collection)
+    }
+
+    /**
+     * List all collections in this database
+     *
+     * - Parameters:
+     *   - filter: Optional criteria to filter results by
+     *   - options: Optional settings
+     *
+     * - Returns: a `Cursor` over an array of collections
+     */
+    func listCollections(options: ListCollectionsOptions? = nil) throws -> Cursor {
+        var error = bson_error_t()
+        guard let collections = mongoc_database_find_collections(_database, nil, &error) else {
+            return Cursor()
+        }
+        return Cursor(fromCursor: collections)
+    }
+
+    /**
      * Issue a MongoDB command against this database
      *
      * - Parameters:
