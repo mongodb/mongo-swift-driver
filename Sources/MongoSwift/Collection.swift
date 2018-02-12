@@ -302,6 +302,10 @@ public class Collection {
         self._collection = fromCollection
     }
 
+    public init(fromCollection: OpaquePointer) {
+        _collection = fromCollection
+    }
+
     /**
         Deinitializes a Collection, cleaning up the internal mongoc_collection_t
      */
