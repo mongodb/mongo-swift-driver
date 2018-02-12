@@ -28,6 +28,16 @@ public enum MongoError: Error {
     case invalidClient()
     case invalidResponse()
     case invalidCursor()
+    case invalidDatabase(message: String)
+    case createCollectionError(message: String)
+}
+
+public func toErrorString(_ error: bson_error_t) -> String {
+    var e = error
+    return withUnsafeBytes(of: &e.message) { (rawPtr) -> String in
+        let ptr = rawPtr.baseAddress!.assumingMemoryBound(to: CChar.self)
+        return String(cString: ptr)
+    }
 }
 
 // A MongoDB Client
@@ -81,7 +91,7 @@ public class Client {
         }
 
         mongoc_client_destroy(client)
-        self._client = nil
+        _client = nil
     }
 
     /**

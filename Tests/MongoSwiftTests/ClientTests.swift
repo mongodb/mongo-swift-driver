@@ -18,12 +18,6 @@ final class ClientTests: XCTestCase {
 
         guard let databases = try? client.listDatabases() else {
             XCTAssert(false, "failed to list databases")
-            return
-        }
-
-        for database in databases {
-            print(database)
-        }
     }
 
     func testListDatabases() {
