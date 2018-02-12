@@ -103,14 +103,18 @@ public class Client {
     }
 
     /**
-     * Gets a Database instance for the given database name.
-     *
-     * - Parameters:
-     *   - name: the name of the database to retrieve
-     *
-     * - Returns: a `Database` corresponding to the provided database name
-     */
+    * Gets a Database instance for the given database name.
+    *
+    * - Parameters:
+    *   - name: the name of the database to retrieve
+    *
+    * - Returns: a `Database` corresponding to the provided database name
+    */
     func db(name: String) throws -> Database {
-        return Database()
+        guard let db = mongoc_client_get_database(_client, name) else {
+            throw MongoError.invalidClient()
+        }
+        return Database(fromDatabase: db)
     }
+
 }

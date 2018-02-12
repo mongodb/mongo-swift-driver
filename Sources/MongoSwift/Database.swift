@@ -1,3 +1,5 @@
+import libmongoc
+
 public struct RunCommandOptions {
     /// A session to associate with this operation
     let session: ClientSession?
@@ -55,17 +57,22 @@ public struct CreateCollectionOptions {
 
 // A MongoDB Database
 public class Database {
+    private var _database = OpaquePointer(bitPattern: 1)
 
     /**
      * Initializes a new Database instance, not meant to be instantiated directly
      */
-    public init() {
+    public init(fromDatabase: OpaquePointer) {
+        _database = fromDatabase
     }
 
     /**
      * Deinitializes a Database, cleaning up the internal mongoc_database_t
      */
     deinit {
+        guard let database = _database else { return }
+        mongoc_database_destroy(database)
+        _database = nil
     }
 
     /**
@@ -77,7 +84,10 @@ public class Database {
      * - Returns: the requested `Collection`
      */
     func collection(name: String) throws -> Collection {
-        return Collection()
+        guard let collection = mongoc_database_get_collection(_database, name) else {
+            return Collection()
+        }
+        return Collection(fromCollection: collection)
     }
 
     /**
@@ -90,7 +100,11 @@ public class Database {
      * - Returns: the newly created `Collection`
      */
     func createCollection(name: String, options: CreateCollectionOptions? = nil) throws -> Collection {
-        return Collection()
+        var error = bson_error_t()
+        guard let collection = mongoc_database_create_collection(_database, name, nil, &error) else {
+            return Collection()
+        }
+        return Collection(fromCollection: collection)
     }
 
     /**
@@ -103,7 +117,11 @@ public class Database {
      * - Returns: a `Cursor` over an array of collections
      */
     func listCollections(options: ListCollectionsOptions? = nil) throws -> Cursor {
-        return Cursor()
+        var error = bson_error_t()
+        guard let collections = mongoc_database_find_collections(_database, nil, &error) else {
+            return Cursor()
+        }
+        return Cursor(fromCursor: collections)
     }
 
     /**
@@ -116,6 +134,7 @@ public class Database {
      * - Returns: The server response for the command
      */
     func runCommand(command: Document, options: RunCommandOptions? = nil) throws -> Document {
+        //mongoc_database_command(database, nil, )
         return Document()
     }
 }
