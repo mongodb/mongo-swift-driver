@@ -85,7 +85,7 @@ public class Database {
      */
     func collection(name: String) throws -> Collection {
         guard let collection = mongoc_database_get_collection(_database, name) else {
-            return Collection()
+            throw MongoError.invalidDatabase(message: "could not get collection")
         }
         return Collection(fromCollection: collection)
     }
@@ -102,7 +102,7 @@ public class Database {
     func createCollection(name: String, options: CreateCollectionOptions? = nil) throws -> Collection {
         var error = bson_error_t()
         guard let collection = mongoc_database_create_collection(_database, name, nil, &error) else {
-            return Collection()
+            throw MongoError.createCollectionError(message: toErrorString(error))
         }
         return Collection(fromCollection: collection)
     }
@@ -119,56 +119,7 @@ public class Database {
     func listCollections(options: ListCollectionsOptions? = nil) throws -> Cursor {
         var error = bson_error_t()
         guard let collections = mongoc_database_find_collections(_database, nil, &error) else {
-            return Cursor()
-        }
-        return Cursor(fromCursor: collections)
-    }
-
-    /**
-     * Access a collection within this database.
-     *
-     * - Parameters:
-     *   - name: the name of the collection to get
-     *
-     * - Returns: the requested `Collection`
-     */
-    func collection(name: String) throws -> Collection {
-        guard let collection = mongoc_database_get_collection(_database, name) else {
-            return Collection()
-        }
-        return Collection(fromCollection: collection)
-    }
-
-    /**
-     * Creates a collection in this database with the specified options
-     *
-     * - Parameters:
-     *   - name: the name of the collection
-     *   - options: optional settings
-     *
-     * - Returns: the newly created `Collection`
-     */
-    func createCollection(name: String, options: CreateCollectionOptions? = nil) throws -> Collection {
-        var error = bson_error_t()
-        guard let collection = mongoc_database_create_collection(_database, name, nil, &error) else {
-            return Collection()
-        }
-        return Collection(fromCollection: collection)
-    }
-
-    /**
-     * List all collections in this database
-     *
-     * - Parameters:
-     *   - filter: Optional criteria to filter results by
-     *   - options: Optional settings
-     *
-     * - Returns: a `Cursor` over an array of collections
-     */
-    func listCollections(options: ListCollectionsOptions? = nil) throws -> Cursor {
-        var error = bson_error_t()
-        guard let collections = mongoc_database_find_collections(_database, nil, &error) else {
-            return Cursor()
+            throw MongoError.invalidDatabase(message: toErrorString(error))
         }
         return Cursor(fromCursor: collections)
     }
@@ -183,7 +134,11 @@ public class Database {
      * - Returns: The server response for the command
      */
     func runCommand(command: Document, options: RunCommandOptions? = nil) throws -> Document {
-        //mongoc_database_command(database, nil, )
+
+        // guard let response = mongoc_database_command(_database, mongoc_query_flags_t(0), nil, nil, nil, command.data, nil, nil) else {
+        //     return Document()
+        // }
+
         return Document()
     }
 }

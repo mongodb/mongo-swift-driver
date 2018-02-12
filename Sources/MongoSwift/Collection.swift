@@ -310,7 +310,12 @@ public class Collection {
         Deinitializes a Collection, cleaning up the internal mongoc_collection_t
      */
     deinit {
-        mongoc_collection_destroy(_collection)
+        guard let collection = _collection else {
+            return
+        }
+
+        mongoc_collection_destroy(collection)
+        _collection = nil
     }
 
     /**
