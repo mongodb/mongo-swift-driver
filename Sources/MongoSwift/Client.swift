@@ -13,17 +13,10 @@ public struct ListDatabasesOptions: BsonEncodable {
     /// An optional session to use for this operation
     let session: ClientSession?
 
-    public func encode(to encoder: BsonEncoder) {
-        encoder.encode(filter, key: "filter")
-        encoder.encode(nameOnly, key: "nameOnly")
-
-        // this is kinda weird, but I'm not sure how else to do this
-        if let sessionVal = session {
-            let sessionEncoder = BsonEncoder()
-            let sessionData = sessionEncoder.encode(sessionVal)
-            let sessionDoc = Document(fromData: sessionData)
-            encoder.encode(sessionDoc, key: "session")
-        }
+    public func encode(to encoder: BsonEncoder) throws {
+        try encoder.encode(filter, forKey: "filter")
+        try encoder.encode(nameOnly, forKey: "nameOnly")
+        try encoder.encode(session, forKey: "session")
     }
 }
 

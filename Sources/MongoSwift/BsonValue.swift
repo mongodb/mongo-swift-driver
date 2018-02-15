@@ -302,6 +302,39 @@ class MinKey: BsonValue, Equatable {
     static func == (lhs: MinKey, rhs: MinKey) -> Bool { return true }
 }
 
+extension NSNumber: BsonValue {
+    public var bsonType: BsonType {
+        switch self {
+        case _ as Int:
+            return .int32
+        case _ as Int32:
+            return .int32
+        case _ as Int64:
+            return .int64
+        case _ as Double:
+            return .double
+        default:
+            preconditionFailure("NSNumber with value \(self) and type " +
+                "\(type(of: self)) couldn't be cast to a BSON type")
+        }
+    }
+
+    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {
+        var res: Bool = false
+        switch bsonType {
+        case .int32:
+            res = bson_append_int32(data, key, Int32(key.count), Int32(self))
+        case .int64:
+            res = bson_append_int64(data, key, Int32(key.count), Int64(self))
+        case .double:
+            res = bson_append_double(data, key, Int32(key.count), self.doubleValue)
+        default:
+            break
+        }
+        return res
+    }
+}
+
 /// A class to represent the BSON ObjectId type
 class ObjectId: BsonValue, Equatable {
     public var bsonType: BsonType { return .objectId }
@@ -402,6 +435,14 @@ extension String: BsonValue {
     public var bsonType: BsonType { return .string }
     public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {
         return bson_append_utf8(data, key, Int32(key.count), self, Int32(self.count))
+    }
+}
+
+extension NSString: BsonValue {
+    public var bsonType: BsonType { return .string }
+    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {
+        let s = String(self)
+        return bson_append_utf8(data, key, Int32(key.count), String(s), Int32(s.count))
     }
 }
 

@@ -46,9 +46,10 @@ public class ClientSession: BsonEncodable {
         return Int64()
     }
 
-    public func encode(to encoder: BsonEncoder) {
-        encoder.encode(sessionId, key: "sessionId")
-        encoder.encode(clusterTime, key: "clusterTime")
-        encoder.encode(operationTime, key: "operationTime")
+    public func encode(to encoder: BsonEncoder) throws {
+        try encoder.encode(sessionId, forKey: "sessionId")
+        try encoder.encode(clusterTime, forKey: "clusterTime")
+        try encoder.encode(operationTime, forKey: "operationTime")
     }
+
 }

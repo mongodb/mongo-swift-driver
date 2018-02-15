@@ -5,8 +5,7 @@ import XCTest
 final class DocumentTests: XCTestCase {
     static var allTests: [(String, (DocumentTests) -> () throws -> Void)] {
         return [
-            ("testDocument", testDocument),
-            ("testEncoder", testEncoder)
+            ("testDocument", testDocument)
         ]
     }
 
@@ -130,26 +129,6 @@ final class DocumentTests: XCTestCase {
         XCTAssertEqual(doc2["hi"] as? Bool, true)
         XCTAssertEqual(doc2["hello"] as? String, "hi")
         XCTAssertEqual(doc2["cat"] as? Int, 2)
-
-    }
-
-    func testEncoder() {
-        let encoder = BsonEncoder()
-        let options = ListDatabasesOptions(filter: Document(["a": 10]), nameOnly: true, session: ClientSession())
-        let optionsDoc: Document
-        do { optionsDoc = try encoder.encode(options) } catch {
-            XCTAssert(false, "Failed to encode options")
-            return
-        }
-
-        XCTAssertEqual(optionsDoc["nameOnly"] as? Bool, true)
-        let filterDoc = optionsDoc["filter"] as! Document
-        XCTAssertEqual(filterDoc["a"] as? Int, 10)
-        XCTAssertEqual(optionsDoc["nameOnly"] as? Bool, true)
-        let sessionDoc = optionsDoc["session"] as! Document
-        XCTAssertEqual(sessionDoc["clusterTime"] as? Int64, 0)
-        XCTAssertEqual(sessionDoc["operationTime"] as? Int64, 0)
-        // sessionId is an empty doc right now, don't really have a way to compare 
 
     }
 }
