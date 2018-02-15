@@ -63,27 +63,6 @@ public class BsonEncoder {
 
 }
 
-/// A private class wrapping a Swift array so we can pass it by reference for 
-/// encoder storage purposes. We use this rather than NSMutableArray because
-/// it allows us to more easily preserve type information. 
-private class MutableArray {
-    fileprivate var array = [Any]()
-    fileprivate func append(_ value: Any) {
-        array.append(value)
-    }
-}
-
-/// A private class wrapping a Swift dictionary so we can pass it by reference
-/// for encoder storage purposes. We use this rather than NSMutableDictionary 
-/// because it allows us to more easily preserve type information. 
-private class MutableDictionary {
-    fileprivate var dictionary = [String: Any]()
-    subscript(key: String) -> Any? {
-        get { return dictionary[key] }
-        set(newValue) { dictionary[key] = newValue }
-    }
-}
-
 /// A private class for use by BsonEncoder. _BsonEncoder handles storage for the 
 /// encoder and provides encoding containers. 
 private class _BsonEncoder {
@@ -118,7 +97,7 @@ private struct _BsonEncodingStorage {
     // _BsonEncodingStorage. Should only be called when all values have been encoded.
     fileprivate mutating func popContainer() -> Document {
         defer {container = MutableDictionary()}
-        return dictToDocument(container)
+        return container.asDocument()
     }
 }
 
@@ -234,38 +213,44 @@ private struct _BsonUnkeyedEncodingContainer {
     }
 }
 
-/**
-* Converts a `MutableDictionary` to a BSON document. Should only be called if you're sure sure the dictionary 
-* only has values that can be successfully cast to BSON values. 
-*
-* - Parameters: 
-*   - dict: a `MutableDictionary` with `String` keys and `BsonValue` values
-*
-* - Returns: A BSON `Document` containing the data from arr. 
-*/
-private func dictToDocument(_ dict: MutableDictionary) -> Document {
-    let doc = Document()
-    for (k, v) in dict.dictionary {
-        doc[k] = getBsonValue(v)
+/// A private class wrapping a Swift array so we can pass it by reference for 
+/// encoder storage purposes. We use this rather than NSMutableArray because
+/// it allows us to more easily preserve type information. 
+private class MutableArray {
+    var array = [Any]()
+    fileprivate func append(_ value: Any) {
+        array.append(value)
     }
-    return doc
+
+    /// Converts self to a `Document` where keys "0", "1", etc.
+    /// correspond to array indices. 
+    func asDocument() -> Document {
+        let doc = Document()
+        for (i, v) in array.enumerated() {
+            doc[String(i)] = getBsonValue(v)
+        }
+        return doc
+    }
 }
 
-/**
-* Converts a `MutableArray` to a BSON document, where the keys "0", "1", etc. correspond to array indices. 
-* Should only be used if you're sure the array only contains values that can be successfully cast to BSON values.
-*
-* - Parameters: 
-*   - arr: a `MutableArray` containing only `BsonValue`s
-*
-* - Returns: A BSON `Document` containing the data from arr. 
-*/
-private func arrayToDocument(_ arr: MutableArray) -> Document {
-    let doc = Document()
-    for (i, v) in arr.array.enumerated() {
-        doc[String(i)] = getBsonValue(v)
+/// A private class wrapping a Swift dictionary so we can pass it by reference
+/// for encoder storage purposes. We use this rather than NSMutableDictionary 
+/// because it allows us to more easily preserve type information. 
+private class MutableDictionary {
+    var dictionary = [String: Any]()
+    subscript(key: String) -> Any? {
+        get { return dictionary[key] }
+        set(newValue) { dictionary[key] = newValue }
     }
-    return doc
+
+    /// Converts self to a `Document` with equivalent key-value pairs.
+    func asDocument() -> Document {
+        let doc = Document()
+        for (k, v) in dictionary {
+            doc[k] = getBsonValue(v)
+        }
+        return doc
+    }
 }
 
 /**
@@ -280,9 +265,9 @@ private func arrayToDocument(_ arr: MutableArray) -> Document {
 private func getBsonValue(_ value: Any) -> BsonValue {
     switch value {
     case let val as MutableDictionary:
-        return dictToDocument(val)
+        return val.asDocument()
     case let val as MutableArray:
-        return arrayToDocument(val)
+        return val.asDocument()
     case let val as BsonValue:
         return val
     default:
