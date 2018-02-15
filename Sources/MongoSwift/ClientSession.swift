@@ -29,14 +29,14 @@ public class ClientSession: BsonEncodable {
      * The server session id for this session
      */
     var sessionId: Document {
-            return Document()
+        return Document()
     }
 
     /**
      * The cluster time returned by the last operation executed in this session
      */
     var clusterTime: Int64 {
-            return Int64()
+        return Int64()
     }
 
     /**

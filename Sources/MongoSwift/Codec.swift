@@ -215,7 +215,7 @@ private struct _BsonUnkeyedEncodingContainer {
 
 /// A private class wrapping a Swift array so we can pass it by reference for 
 /// encoder storage purposes. We use this rather than NSMutableArray because
-/// it allows us to more easily preserve type information. 
+/// it allows us to preserve Swift type information. 
 private class MutableArray {
     var array = [Any]()
     fileprivate func append(_ value: Any) {
@@ -235,7 +235,7 @@ private class MutableArray {
 
 /// A private class wrapping a Swift dictionary so we can pass it by reference
 /// for encoder storage purposes. We use this rather than NSMutableDictionary 
-/// because it allows us to more easily preserve type information. 
+/// because it allows us to preserve Swift type information.
 private class MutableDictionary {
     var dictionary = [String: Any]()
     subscript(key: String) -> Any? {
