@@ -18,7 +18,7 @@ public protocol BsonEncodable: BsonValue {
 extension BsonEncodable {
     public var bsonType: BsonType { return .document }
     public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {
-        // Use a BsonEncoder to get a Ddcument, and then call Document.bsonAppend. 
+        // Use a BsonEncoder to get a Document, and then call Document.bsonAppend. 
         let encoder = BsonEncoder()
         do {
             let doc: Document = try encoder.encode(self)
@@ -63,6 +63,27 @@ public class BsonEncoder {
 
 }
 
+/// A private class wrapping a Swift array so we can pass it by reference for 
+/// encoder storage purposes. We use this rather than NSMutableArray because
+/// it allows us to more easily preserve type information. 
+private class MutableArray {
+    fileprivate var array = [Any]()
+    fileprivate func append(_ value: Any) {
+        array.append(value)
+    }
+}
+
+/// A private class wrapping a Swift dictionary so we can pass it by reference
+/// for encoder storage purposes. We use this rather than NSMutableDictionary 
+/// because it allows us to more easily preserve type information. 
+private class MutableDictionary {
+    fileprivate var dictionary = [String: Any]()
+    subscript(key: String) -> Any? {
+        get { return dictionary[key] }
+        set(newValue) { dictionary[key] = newValue }
+    }
+}
+
 /// A private class for use by BsonEncoder. _BsonEncoder handles storage for the 
 /// encoder and provides encoding containers. 
 private class _BsonEncoder {
@@ -76,27 +97,27 @@ private class _BsonEncoder {
 
     /// Get a top-container into which BSON values can be encoded.
     fileprivate func container() -> _BsonKeyedEncodingContainer {
-        let topContainer: NSMutableDictionary = storage.getContainer()
+        let topContainer: MutableDictionary = storage.getContainer()
         return _BsonKeyedEncodingContainer(referencing: self, wrapping: topContainer)
     }
 }
 
-/// A wrapper around the top-level NSMutableDictionary, handling its creation and storage. 
+/// A wrapper around the top-level MutableDictionary, handling its creation and storage. 
 private struct _BsonEncodingStorage {
 
     /// A top-level container representing a BSON document. 
-    fileprivate var container = NSMutableDictionary()
+    fileprivate var container = MutableDictionary()
 
     /// Creates a new top-level container and saves it, and returns the container 
     /// for use by a _BsonEncoder. 
-    fileprivate mutating func getContainer() -> NSMutableDictionary {
+    fileprivate mutating func getContainer() -> MutableDictionary {
         return container
     }
 
     /// Returns the current container as a Document, and disassociates it from this 
     // _BsonEncodingStorage. Should only be called when all values have been encoded.
     fileprivate mutating func popContainer() -> Document {
-        defer {container = NSMutableDictionary()}
+        defer {container = MutableDictionary()}
         return dictToDocument(container)
     }
 }
@@ -107,10 +128,10 @@ private struct _BsonKeyedEncodingContainer {
     private let encoder: _BsonEncoder
 
     /// The container we're writing to.
-    private let container: NSMutableDictionary
+    private let container: MutableDictionary
 
     /// Initializes a new keyed coding container with the provided encoder and container. 
-    fileprivate init(referencing encoder: _BsonEncoder, wrapping container: NSMutableDictionary) {
+    fileprivate init(referencing encoder: _BsonEncoder, wrapping container: MutableDictionary) {
         self.encoder = encoder
         self.container = container
     }
@@ -147,14 +168,14 @@ private struct _BsonKeyedEncodingContainer {
 
     /// Create a new nested container and store it in this container under the provided key. 
     private mutating func nestedContainer(forKey key: String) -> _BsonKeyedEncodingContainer {
-        let dictionary = NSMutableDictionary()
+        let dictionary = MutableDictionary()
         container[key] = dictionary
         return _BsonKeyedEncodingContainer(referencing: encoder, wrapping: dictionary)
     }
 
     /// Create a new nested unkeyed container and store it in this container under the provided key. 
     private mutating func nestedUnkeyedContainer(forKey key: String) -> _BsonUnkeyedEncodingContainer {
-        let array = NSMutableArray()
+        let array = MutableArray()
         container[key] = array
         return _BsonUnkeyedEncodingContainer(referencing: encoder, wrapping: array)
     }
@@ -166,16 +187,16 @@ private struct _BsonUnkeyedEncodingContainer {
     private let encoder: _BsonEncoder
 
     /// The container we're writing to.
-    private let container: NSMutableArray
+    private let container: MutableArray
 
     /// Initializes a new unkeyed coding container with the provided encoder and container. 
-    fileprivate init(referencing encoder: _BsonEncoder, wrapping container: NSMutableArray) {
+    fileprivate init(referencing encoder: _BsonEncoder, wrapping container: MutableArray) {
         self.encoder = encoder
         self.container = container
     }
 
     /// Adds nil to the end of this container.  
-    mutating func encodeNil() { container.add(NSNull()) }
+    mutating func encodeNil() { container.append(NSNull()) }
 
     /// Adds value to the end of this container.
     mutating func encode(_ value: BsonValue) throws {
@@ -187,70 +208,61 @@ private struct _BsonUnkeyedEncodingContainer {
             var nested = nestedUnkeyedContainer()
             for e in val { try nested.encode(e) }
 
-        // If it's a map, create a new nested, keyed container, stored at the end of this container,
-        //  and copy in key-value pairs.
-        case let val as [String: BsonValue]:
-            var nested = nestedContainer()
-            for (k, v) in val { try nested.encode(v, forKey: k) }
-
         case let val as BsonEncodable:
             let encoder = BsonEncoder()
             try val.encode(to: encoder)
-            container.add(encoder._encoder.storage.popContainer())
+            container.append(encoder._encoder.storage.popContainer())
 
         // Otherwise it must be a single value, so just add value to the end of the container. 
         default:
-            container.add(value)
+            container.append(value)
         }
     }
 
     /// Create a new nested container and store it at the end of this container. 
     private mutating func nestedContainer() -> _BsonKeyedEncodingContainer {
-        let dictionary = NSMutableDictionary()
-        container.add(dictionary)
+        let dictionary = MutableDictionary()
+        container.append(dictionary)
         return _BsonKeyedEncodingContainer(referencing: encoder, wrapping: dictionary)
     }
 
     /// Create a new nested array and store it at the end of this container.
     private mutating func nestedUnkeyedContainer() -> _BsonUnkeyedEncodingContainer {
-        let array = NSMutableArray()
-        container.add(array)
+        let array = MutableArray()
+        container.append(array)
         return _BsonUnkeyedEncodingContainer(referencing: encoder, wrapping: array)
     }
 }
 
 /**
-* Converts an `NSDictionary` to a BSON document. Should only be called if you're sure sure the dictionary 
-* only contains `String` keys and `BsonValue` values, i.e. when the `NSDictionary` came from a 
-* `BsonKeyedCodingContainer`.  
+* Converts a `MutableDictionary` to a BSON document. Should only be called if you're sure sure the dictionary 
+* only has values that can be successfully cast to BSON values. 
 *
 * - Parameters: 
-*   - arr: an `NSDictionary` with `String` keys and `BsonValue` values
+*   - dict: a `MutableDictionary` with `String` keys and `BsonValue` values
 *
 * - Returns: A BSON `Document` containing the data from arr. 
 */
-private func dictToDocument(_ dict: NSDictionary) -> Document {
+private func dictToDocument(_ dict: MutableDictionary) -> Document {
     let doc = Document()
-    for (k, v) in dict {
-        guard let key = k as? String else { preconditionFailure("Could not cast key to string") }
-        doc[key] = getBsonValue(v)
+    for (k, v) in dict.dictionary {
+        doc[k] = getBsonValue(v)
     }
     return doc
 }
 
 /**
-* Converts an `NSArray` to a BSON document, where the keys "0", "1", etc. correspond to array indices. 
-* Should only be called if you're sure sure the array only contains `BsonValue`s, i.e. when the `NSArray`
-* came from a `BsonUnkeyedCodingContainer`.  
+* Converts a `MutableArray` to a BSON document, where the keys "0", "1", etc. correspond to array indices. 
+* Should only be used if you're sure the array only contains values that can be successfully cast to BSON values.
 *
 * - Parameters: 
-*   - arr: an `NSArray` containing only `BsonValue`s
+*   - arr: a `MutableArray` containing only `BsonValue`s
 *
 * - Returns: A BSON `Document` containing the data from arr. 
 */
-private func arrayToDocument(_ arr: NSArray) -> Document {
+private func arrayToDocument(_ arr: MutableArray) -> Document {
     let doc = Document()
-    for (i, v) in arr.enumerated() {
+    for (i, v) in arr.array.enumerated() {
         doc[String(i)] = getBsonValue(v)
     }
     return doc
@@ -261,15 +273,15 @@ private func arrayToDocument(_ arr: NSArray) -> Document {
 * array or document.) Should only be used when you're sure the casting will succeed. 
 *
 * - Parameters:
-*   - value: A value that is a `NSDictionary`, `NSArray`, or `BsonValue`.
+*   - value: A value that is known to be a `MutableDictionary`, `MutableArray`, or `BsonValue`.
 *
 * - Returns: A `BsonValue` equivalent to value. 
 */
 private func getBsonValue(_ value: Any) -> BsonValue {
     switch value {
-    case let val as NSDictionary:
+    case let val as MutableDictionary:
         return dictToDocument(val)
-    case let val as NSArray:
+    case let val as MutableArray:
         return arrayToDocument(val)
     case let val as BsonValue:
         return val

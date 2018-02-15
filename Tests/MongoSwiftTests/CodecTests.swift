@@ -5,12 +5,12 @@ import XCTest
 final class CodecTests: XCTestCase {
     static var allTests: [(String, (CodecTests) -> () throws -> Void)] {
         return [
-            ("encodeTestStructs", encodeTestStructs),
-            ("encodeListDatabasesOptions", encodeListDatabasesOptions)
+            ("testEncodeStructs", testEncodeStructs),
+            ("testEncodeListDatabasesOptions", testEncodeListDatabasesOptions)
         ]
     }
 
-    func encodeTestStructs() {
+    func testEncodeStructs() {
 
         struct TestClass: BsonEncodable {
             let val1 = "a"
@@ -83,7 +83,7 @@ final class CodecTests: XCTestCase {
         }
     }
 
-    func encodeListDatabasesOptions() {
+    func testEncodeListDatabasesOptions() {
         let encoder = BsonEncoder()
         let options = ListDatabasesOptions(filter: Document(["a": 10]), nameOnly: true, session: ClientSession())
         do {
