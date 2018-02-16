@@ -134,11 +134,14 @@ public class Database {
      * - Returns: The server response for the command
      */
     func runCommand(command: Document, options: RunCommandOptions? = nil) throws -> Document {
+        var error = bson_error_t()
+        let reply: UnsafeMutablePointer<bson_t> = bson_new()
 
-        // guard let response = mongoc_database_command(_database, mongoc_query_flags_t(0), nil, nil, nil, command.data, nil, nil) else {
-        //     return Document()
-        // }
-
-        return Document()
+        // not sure we should be using command_simple, but we don't support any of the extra 
+        // stuff just plain command takes. (neither of these take anything about a session though?)
+        if !mongoc_database_command_simple(_database, command.data, nil, reply, &error) {
+            throw MongoError.runCommandError(message: toErrorString(error))
+        }
+        return Document(fromData: reply)
     }
 }

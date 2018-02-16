@@ -30,6 +30,7 @@ public enum MongoError: Error {
     case invalidCursor()
     case invalidDatabase(message: String)
     case createCollectionError(message: String)
+    case runCommandError(message: String)
 }
 
 public func toErrorString(_ error: bson_error_t) -> String {
