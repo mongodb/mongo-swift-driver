@@ -686,7 +686,8 @@ fill_data_fields:
       memcpy (&l, iter->raw + iter->d1, sizeof (l));
       l = BSON_UINT32_FROM_LE (l);
 
-      if ((l > len) || (l > (len - o))) {
+      /* Check valid string length. l counts '\0' but not 4 bytes for itself. */
+      if (l == 0 || l > (len - o - 4)) {
          iter->err_off = o;
          goto mark_invalid;
       }

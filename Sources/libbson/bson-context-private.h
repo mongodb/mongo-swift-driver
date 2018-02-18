@@ -27,7 +27,8 @@ BSON_BEGIN_DECLS
 
 
 struct _bson_context_t {
-   bson_context_flags_t flags : 7;
+   /* flags are defined in bson_context_flags_t */
+   int flags : 7;
    bool pidbe_once : 1;
    uint8_t pidbe[2];
    uint8_t md5[3];

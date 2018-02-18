@@ -47,8 +47,8 @@ static bson_context_t gContextDefault;
 
 
 #ifdef BSON_HAVE_SYSCALL_TID
-static uint16_t
-gettid (void)
+static long
+bson_gettid (void)
 {
    return syscall (SYS_gettid);
 }
@@ -327,7 +327,7 @@ _bson_context_init (bson_context_t *context,    /* IN */
    unsigned int real_seed;
    bson_oid_t oid;
 
-   context->flags = flags;
+   context->flags = (int) flags;
    context->oid_get_host = _bson_context_get_oid_host_cached;
    context->oid_get_pid = _bson_context_get_oid_pid_cached;
    context->oid_get_seq32 = _bson_context_get_oid_seq32;
@@ -347,8 +347,9 @@ _bson_context_init (bson_context_t *context,    /* IN */
    seed[2] = _bson_getpid ();
    real_seed = seed[0] ^ seed[1] ^ seed[2];
 
-#ifdef BSON_OS_WIN32
+#ifndef BSON_HAVE_RAND_R
    /* ms's runtime is multithreaded by default, so no rand_r */
+   /* no rand_r on android either */
    srand (real_seed);
    context->seq32 = rand () & 0x007FFFF0;
 #elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__DragonFly__) || \
@@ -378,10 +379,10 @@ _bson_context_init (bson_context_t *context,    /* IN */
    } else {
 #ifdef BSON_HAVE_SYSCALL_TID
       if ((flags & BSON_CONTEXT_USE_TASK_ID)) {
-         int32_t tid;
+         uint16_t tid;
 
          /* This call is always successful */
-         tid = gettid ();
+         tid = (uint16_t) bson_gettid ();
          pid = BSON_UINT16_TO_BE (tid);
       } else
 #endif

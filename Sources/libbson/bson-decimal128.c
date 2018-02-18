@@ -264,7 +264,7 @@ bson_decimal128_to_string (const bson_decimal128_t *dec, /* IN  */
          *(str_out++) = '.';
       }
 
-      for (i = 0; i < significand_digits; i++) {
+      for (i = 0; i < significand_digits && (str_out - str) < 36; i++) {
          *(str_out++) = *(significand_read++) + '0';
       }
       /* Exponent */
@@ -273,7 +273,7 @@ bson_decimal128_to_string (const bson_decimal128_t *dec, /* IN  */
    } else {
       /* Regular format with no decimal place */
       if (exponent >= 0) {
-         for (i = 0; i < significand_digits; i++) {
+         for (i = 0; i < significand_digits && (str_out - str) < 36; i++) {
             *(str_out++) = *(significand_read++) + '0';
          }
          *str_out = '\0';
@@ -281,7 +281,9 @@ bson_decimal128_to_string (const bson_decimal128_t *dec, /* IN  */
          int32_t radix_position = significand_digits + exponent;
 
          if (radix_position > 0) { /* non-zero digits before radix */
-            for (i = 0; i < radix_position; i++) {
+            for (i = 0;
+                 i < radix_position && (str_out - str) < BSON_DECIMAL128_STRING;
+                 i++) {
                *(str_out++) = *(significand_read++) + '0';
             }
          } else { /* leading zero before radix point */
@@ -293,7 +295,9 @@ bson_decimal128_to_string (const bson_decimal128_t *dec, /* IN  */
             *(str_out++) = '0';
          }
 
-         for (i = 0; i < significand_digits - BSON_MAX (radix_position - 1, 0);
+         for (i = 0;
+              (i < significand_digits - BSON_MAX (radix_position - 1, 0)) &&
+              (str_out - str) < BSON_DECIMAL128_STRING;
               i++) {
             *(str_out++) = *(significand_read++) + '0';
          }
