@@ -1,12 +1,12 @@
 #!/bin/sh
 
-TARBALL_URL=https://github.com/mongodb/mongo-c-driver/releases/download/1.8.2/mongo-c-driver-1.8.2.tar.gz
+TARBALL_URL=https://github.com/mongodb/mongo-c-driver/releases/download/1.9.2/mongo-c-driver-1.9.2.tar.gz
 TARBALL_NAME=`basename $TARBALL_URL`
 TARBALL_DIR=`basename -s .tar.gz $TARBALL_NAME`
 
-PWD=`pwd`
-BSONROOT=$PWD/../Sources/libbson
-MONGOCROOT=$PWD/../Sources/libmongoc
+SCRIPT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+BSONROOT=$SCRIPT_ROOT/../Sources/libbson
+MONGOCROOT=$SCRIPT_ROOT/../Sources/libmongoc
 
 echo "REMOVING any previously vendored libmongoc code"
 rm -rf $BSONROOT/include
