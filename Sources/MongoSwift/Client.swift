@@ -3,7 +3,7 @@ public struct ClientOptions {
     let retryWrites: Bool?
 }
 
-public struct ListDatabasesOptions {
+public struct ListDatabasesOptions: BsonEncodable {
     /// An optional filter for the returned databases
     let filter: Document?
 
@@ -12,6 +12,12 @@ public struct ListDatabasesOptions {
 
     /// An optional session to use for this operation
     let session: ClientSession?
+
+    public func encode(to encoder: BsonEncoder) throws {
+        try encoder.encode(filter, forKey: "filter")
+        try encoder.encode(nameOnly, forKey: "nameOnly")
+        try encoder.encode(session, forKey: "session")
+    }
 }
 
 // A MongoDB Client
