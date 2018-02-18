@@ -206,6 +206,9 @@ bson_utf8_validate (const char *utf8, /* IN */
             continue;
          } else if (c == 0) {
             /* Two-byte representation for NULL. */
+            if (!allow_null) {
+               return false;
+            }
             continue;
          }
          return false;

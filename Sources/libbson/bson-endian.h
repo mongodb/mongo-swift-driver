@@ -210,7 +210,7 @@ __bson_uint64_swap_slow (uint64_t v) /* IN */
  *--------------------------------------------------------------------------
  */
 
-BSON_STATIC_ASSERT (sizeof (double) == sizeof (uint64_t));
+BSON_STATIC_ASSERT2 (sizeof_uint64_t, sizeof (double) == sizeof (uint64_t));
 
 static BSON_INLINE double
 __bson_double_swap_slow (double v) /* IN */

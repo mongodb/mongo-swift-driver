@@ -1574,7 +1574,7 @@ bson_append_regex (bson_t *bson,
 
    r =  _bson_append (bson,
                       5,
-                      (1 + key_length + 1 + regex_len + options_sorted->len),
+                      (1 + key_length + 1 + regex_len + options_sorted->len + 1),
                       1,
                       &type,
                       key_length,
