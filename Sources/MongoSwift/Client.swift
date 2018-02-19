@@ -15,18 +15,27 @@ public struct ListDatabasesOptions: BsonEncodable {
   /// An optional session to use for this operation
   let session: ClientSession?
 
-  public func encode(to encoder: BsonEncoder) throws {
-    try encoder.encode(filter, forKey: "filter")
-    try encoder.encode(nameOnly, forKey: "nameOnly")
-    try encoder.encode(session, forKey: "session")
+  /// Convenience constructor for basic construction
+  public init(filter: Document? = nil, nameOnly: Bool? = nil, session: ClientSession? = nil) {
+    self.filter = filter
+    self.nameOnly = nameOnly
+    self.session = session
   }
-}
 
-public enum MongoError: Error {
-  case invalidUri(message: String)
-  case invalidClient()
-  case invalidResponse()
-  case invalidCursor()
+  /// Specifies how to encode this type to a `BsonEncoder`
+  public func encode(to encoder: BsonEncoder) throws {
+    if let filter = self.filter {
+      try encoder.encode(filter, forKey: "filter")
+    }
+
+    if let nameOnly = self.nameOnly {
+      try encoder.encode(nameOnly, forKey: "nameOnly")
+    }
+
+    if let session = self.session {
+      try encoder.encode(session, forKey: "session")
+    }
+  }
 }
 
 // A MongoDB Client
@@ -43,12 +52,7 @@ public class Client {
   public init(connectionString: String = "mongodb://localhost:27017", options: ClientOptions? = nil) throws {
     var error = bson_error_t()
     guard let uri = mongoc_uri_new_with_error(connectionString, &error) else {
-      let errorMessage = withUnsafeBytes(of: &error.message) { (rawPtr) -> String in
-        let ptr = rawPtr.baseAddress!.assumingMemoryBound(to: CChar.self)
-        return String(cString: ptr)
-      }
-
-      throw MongoError.invalidUri(message: errorMessage)
+      throw MongoError.invalidUri(message: toErrorString(error))
     }
 
     self._client = mongoc_client_new_from_uri(uri)
@@ -97,8 +101,13 @@ public class Client {
    * - Returns: A cursor over documents describing the databases matching provided criteria
    */
   func listDatabases(options: ListDatabasesOptions? = nil) throws -> Cursor {
-    var error = bson_error_t()
-    guard let cursor = mongoc_client_find_databases(self._client, &error) else {
+    let encoder = BsonEncoder()
+    var opts: UnsafeMutablePointer<bson_t>? = nil
+    if let _options = options {
+      opts = (try encoder.encode(_options)).getData()
+    }
+
+    guard let cursor = mongoc_client_find_databases_with_opts(self._client, opts) else {
       throw MongoError.invalidResponse()
     }
 

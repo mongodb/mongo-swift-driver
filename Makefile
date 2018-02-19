@@ -12,6 +12,12 @@ all:
 test:
 	swift test -v $(CFLAGS) $(LDFLAGS) $(FILTERARG)
 
+lint:
+	swiftlint
+
+format:
+	swiftformat --disable trailingCommas  --indent 2 .
+
 clean:
 	rm -rf Packages
 	rm -rf .build
