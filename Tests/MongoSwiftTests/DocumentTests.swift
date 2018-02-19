@@ -5,7 +5,8 @@ import XCTest
 final class DocumentTests: XCTestCase {
     static var allTests: [(String, (DocumentTests) -> () throws -> Void)] {
         return [
-            ("testDocument", testDocument)
+            ("testDocument", testDocument),
+            ("testEquatable", testEquatable)
         ]
     }
 
@@ -130,5 +131,12 @@ final class DocumentTests: XCTestCase {
         XCTAssertEqual(doc2["hello"] as? String, "hi")
         XCTAssertEqual(doc2["cat"] as? Int, 2)
 
+    }
+
+    func testEquatable() {
+        XCTAssertEqual(
+            ["hi": true, "hello": "hi", "cat": 2] as Document,
+            ["hi": true, "hello": "hi", "cat": 2] as Document
+        )
     }
 }
