@@ -11,7 +11,7 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
     }
 
     public init(fromData bsonData: UnsafeMutablePointer<bson_t>) {
-        data = bsonData
+        data = bson_copy(bsonData)
     }
 
     public init(_ doc: [String: BsonValue?]) {
