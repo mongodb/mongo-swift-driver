@@ -190,3 +190,9 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, CustomStringCo
         }
     }
 }
+
+extension Document: Equatable {
+    public static func == (lhs: Document, rhs: Document) -> Bool {
+        return bson_compare(lhs.getData(), rhs.getData()) == 0
+    }
+}
