@@ -21,8 +21,12 @@ extension BsonEncodable {
         // Use a BsonEncoder to get a Document, and then call Document.bsonAppend. 
         let encoder = BsonEncoder()
         do {
-            let doc: Document = try encoder.encode(self)
-            return doc.bsonAppend(data: data, key: key)
+            if let d = try encoder.encode(self) {
+                return d.bsonAppend(data: data, key: key)
+            }
+
+            return true
+
         } catch {
             return false
         }
@@ -33,6 +37,24 @@ extension BsonEncodable {
 public class BsonEncoder {
     fileprivate var _encoder = _BsonEncoder()
 
+    public enum NilEncodingStrategy {
+        /// If a provided value is nil, do not encode it.
+        /// If a top-level container is empty, do not encode it.
+        case omit
+
+        /// Encode nil values if they are present. If a top-level
+        /// container is empty, encode an empty document.
+        case include
+    }
+
+    /// The strategy to use for encoding nil values. Defaults to `omit`.
+    open var nilEncodingStrategy: NilEncodingStrategy = .omit
+
+    // Create a new BsonEncoder, optionally passing in a NilEncodingStrategy.
+    public init(nilStrategy: NilEncodingStrategy = .omit) {
+        self.nilEncodingStrategy = nilStrategy
+    }
+
     /**
     * Encodes value using this BsonEncoder. 
     *
@@ -41,9 +63,24 @@ public class BsonEncoder {
     * 
     * - Returns: a `Document` containing the serialized BSON data. 
     */
-    public func encode(_ value: BsonEncodable) throws -> Document {
-        try value.encode(to: self)
-        return _encoder.storage.popContainer()
+    public func encode(_ value: BsonEncodable?) throws -> Document? {
+        guard let v = value else {
+            switch self.nilEncodingStrategy {
+            case .omit:
+                return nil
+            case .include:
+                return Document()
+            }
+        }
+
+        try v.encode(to: self)
+        let doc = _encoder.storage.popContainer()
+
+        if self.nilEncodingStrategy == .omit && doc == [:] as Document {
+            return nil
+        }
+
+        return doc
     }
 
     /**
@@ -58,6 +95,9 @@ public class BsonEncoder {
         if let v = value {
             var container = _encoder.container()
             try container.encode(v, forKey: key)
+        } else if self.nilEncodingStrategy == .include {
+            var container = _encoder.container()
+            container.encodeNil(forKey: key)
         }
     }
 
@@ -262,7 +302,7 @@ private class MutableDictionary {
 *
 * - Returns: A `BsonValue` equivalent to value. 
 */
-private func getBsonValue(_ value: Any) -> BsonValue {
+private func getBsonValue(_ value: Any) -> BsonValue? {
     switch value {
     case let val as MutableDictionary:
         return val.asDocument()
@@ -270,6 +310,8 @@ private func getBsonValue(_ value: Any) -> BsonValue {
         return val.asDocument()
     case let val as BsonValue:
         return val
+    case _ as NSNull:
+        return nil
     default:
         preconditionFailure("Value \(value) with type \(type(of: value)) didn't match any expected types")
     }

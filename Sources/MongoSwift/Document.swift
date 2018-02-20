@@ -1,7 +1,7 @@
 import Foundation
 import libbson
 
-public class Document: BsonValue, ExpressibleByDictionaryLiteral, CustomStringConvertible {
+public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral, CustomStringConvertible {
     internal var data: UnsafeMutablePointer<bson_t>!
 
     public var bsonType: BsonType { return .document }
@@ -25,6 +25,13 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, CustomStringCo
         data = bson_new()
         for (k, v) in doc {
             self[k] = v as? BsonValue
+        }
+    }
+
+    public required init(arrayLiteral elements: BsonValue...) {
+        data = bson_new()
+        for (i, elt) in elements.enumerated() {
+            self[String(i)] = elt
         }
     }
 
@@ -195,4 +202,11 @@ extension Document: Equatable {
     public static func == (lhs: Document, rhs: Document) -> Bool {
         return bson_compare(lhs.getData(), rhs.getData()) == 0
     }
+}
+
+public func getDataOrNil(_ doc: Document?) -> UnsafeMutablePointer<bson_t>? {
+    if let d = doc {
+        return d.getData()
+    }
+    return nil
 }
