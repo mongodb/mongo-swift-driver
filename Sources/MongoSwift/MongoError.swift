@@ -4,8 +4,11 @@ public enum MongoError: Error {
     case invalidUri(message: String)
     case invalidClient()
     case invalidResponse()
-    case invalidCursor()
     case bsonParseError(domain: UInt32, code: UInt32, message: String)
+    case invalidCursor(message: String)
+    case invalidDatabase(message: String)
+    case createCollectionError(message: String)
+    case runCommandError(message: String)
 }
 
 public func toErrorString(_ error: bson_error_t) -> String {

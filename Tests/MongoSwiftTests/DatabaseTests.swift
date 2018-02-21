@@ -12,7 +12,7 @@ final class DatabaseTests: XCTestCase {
     func testDatabase() {
     	do {
     		let client = try Client(connectionString: "mongodb://localhost:27017/")
-    		let db = try client.db(name: "test")
+    		let db = try client.db("test")
 
     		// generate a collection name based on current datetime,
     		// so we won't choose a name that already exists 
@@ -27,8 +27,7 @@ final class DatabaseTests: XCTestCase {
         	try db.listCollections()
 
     	} catch {
-    		XCTAssert(false, "Error: \(error)")
-    		return
+    		XCTFail("Error: \(error)")
     	}
     }
 }

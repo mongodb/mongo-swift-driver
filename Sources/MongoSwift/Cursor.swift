@@ -10,7 +10,11 @@ public class Cursor: Sequence, IteratorProtocol {
     /**
      * Initializes a new Cursor instance, not meant to be instantiated directly
      */
-    public init(fromCursor: OpaquePointer) {
+    public init(fromCursor: OpaquePointer) throws {
+        var error = bson_error_t()
+        if mongoc_cursor_error(fromCursor, &error) {
+            throw MongoError.invalidCursor(message: toErrorString(error))
+        }
         _cursor = fromCursor
     }
 

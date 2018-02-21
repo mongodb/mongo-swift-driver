@@ -23,24 +23,6 @@ public struct ListDatabasesOptions: BsonEncodable {
     }
 }
 
-public enum MongoError: Error {
-    case invalidUri(message: String)
-    case invalidClient()
-    case invalidResponse()
-    case invalidCursor()
-    case invalidDatabase(message: String)
-    case createCollectionError(message: String)
-    case runCommandError(message: String)
-}
-
-public func toErrorString(_ error: bson_error_t) -> String {
-    var e = error
-    return withUnsafeBytes(of: &e.message) { (rawPtr) -> String in
-        let ptr = rawPtr.baseAddress!.assumingMemoryBound(to: CChar.self)
-        return String(cString: ptr)
-    }
-}
-
 // A MongoDB Client
 public class Client {
     private var _client = OpaquePointer(bitPattern: 1)
@@ -110,7 +92,7 @@ public class Client {
             throw MongoError.invalidResponse()
         }
 
-        return Cursor(fromCursor: cursor)
+        return try Cursor(fromCursor: cursor)
     }
 
     /**
@@ -121,7 +103,7 @@ public class Client {
      *
      * - Returns: a `Database` corresponding to the provided database name
      */
-    func db(name: String) throws -> Database {
+    func db(_ name: String) throws -> Database {
         guard let db = mongoc_client_get_database(_client, name) else {
             throw MongoError.invalidClient()
         }

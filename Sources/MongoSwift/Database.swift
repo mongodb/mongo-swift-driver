@@ -63,16 +63,16 @@ public class Database {
      * Initializes a new Database instance, not meant to be instantiated directly
      */
     public init(fromDatabase: OpaquePointer) {
-        _database = fromDatabase
+        self._database = fromDatabase
     }
 
     /**
      * Deinitializes a Database, cleaning up the internal mongoc_database_t
      */
     deinit {
-        guard let database = _database else { return }
+        guard let database = self._database else { return }
         mongoc_database_destroy(database)
-        _database = nil
+        self._database = nil
     }
 
     /**
@@ -84,8 +84,8 @@ public class Database {
      * - Returns: the requested `Collection`
      */
     func collection(name: String) throws -> Collection {
-        guard let collection = mongoc_database_get_collection(_database, name) else {
-            throw MongoError.invalidDatabase(message: "could not get collection")
+        guard let collection = mongoc_database_get_collection(self._database, name) else {
+            throw MongoError.invalidDatabase(message: "Could not get collection")
         }
         return Collection(fromCollection: collection)
     }
@@ -101,7 +101,7 @@ public class Database {
      */
     func createCollection(name: String, options: CreateCollectionOptions? = nil) throws -> Collection {
         var error = bson_error_t()
-        guard let collection = mongoc_database_create_collection(_database, name, nil, &error) else {
+        guard let collection = mongoc_database_create_collection(self._database, name, nil, &error) else {
             throw MongoError.createCollectionError(message: toErrorString(error))
         }
         return Collection(fromCollection: collection)
@@ -117,11 +117,10 @@ public class Database {
      * - Returns: a `Cursor` over an array of collections
      */
     func listCollections(options: ListCollectionsOptions? = nil) throws -> Cursor {
-        var error = bson_error_t()
-        guard let collections = mongoc_database_find_collections(_database, nil, &error) else {
-            throw MongoError.invalidDatabase(message: toErrorString(error))
+        guard let collections = mongoc_database_find_collections_with_opts(self._database, nil) else {
+            throw MongoError.invalidResponse()
         }
-        return Cursor(fromCursor: collections)
+        return try Cursor(fromCursor: collections)
     }
 
     /**
@@ -137,9 +136,7 @@ public class Database {
         var error = bson_error_t()
         let reply: UnsafeMutablePointer<bson_t> = bson_new()
 
-        // not sure we should be using command_simple, but we don't support any of the extra 
-        // stuff just plain command takes. (neither of these take anything about a session though?)
-        if !mongoc_database_command_simple(_database, command.data, nil, reply, &error) {
+        if !mongoc_database_command_with_opts(self._database, command.data, nil, nil, reply, &error) {
             throw MongoError.runCommandError(message: toErrorString(error))
         }
         return Document(fromData: reply)
