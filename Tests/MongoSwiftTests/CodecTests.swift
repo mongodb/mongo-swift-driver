@@ -6,7 +6,8 @@ final class CodecTests: XCTestCase {
     static var allTests: [(String, (CodecTests) -> () throws -> Void)] {
         return [
             ("testEncodeStructs", testEncodeStructs),
-            ("testEncodeListDatabasesOptions", testEncodeListDatabasesOptions)
+            ("testEncodeListDatabasesOptions", testEncodeListDatabasesOptions),
+            ("testNilEncodingStrategy", testNilEncodingStrategy)
         ]
     }
 
@@ -41,45 +42,23 @@ final class CodecTests: XCTestCase {
         let v = TestClass()
         let enc = BsonEncoder()
         do {
-            let res: Document = try enc.encode(v)
+            guard let res = try enc.encode(v) else {
+                XCTFail("Failed to encode value")
+                return
+            }
 
-            XCTAssertEqual(res["val1"] as? String, "a")
-            XCTAssertEqual(res["val2"] as? Int, 0)
+            let expected: Document = [
+                "val2": 0,
+                "val3": [1, 2, [3, 4] as Document] as Document,
+                "val5": [3, ["y": 2, "x": 1] as Document] as Document,
+                "val4": ["y": 2, "x": 1] as Document,
+                "val1": "a"
+            ]
 
-            guard let val3 = res["val3"] as? Document else {
-                XCTAssert(false, "Failed to get val3 from document")
-                return
-            }
-            XCTAssertEqual(val3["0"] as? Int, 1)
-            XCTAssertEqual(val3["1"] as? Int, 2)
-            guard let val32 = val3["2"] as? Document else {
-                XCTAssert(false, "Failed to get val3[2] from document")
-                return
-            }
-            XCTAssertEqual(val32["0"] as? Int, 3)
-            XCTAssertEqual(val32["1"] as? Int, 4)
-
-            guard let val4 = res["val4"] as? Document else {
-                XCTAssert(false, "Failed to get val4 from document")
-                return
-            }
-            XCTAssertEqual(val4["x"] as? Int, 1)
-            XCTAssertEqual(val4["y"] as? Int, 2)
-
-            guard let val5 = res["val5"] as? Document else {
-                XCTAssert(false, "Failed to get val5 from document")
-                return
-            }
-            XCTAssertEqual(val5["0"] as? Int, 3)
-            guard let val51 = val5["1"] as? Document else {
-                XCTAssert(false, "Failed to get val5[1] from document")
-                return
-            }
-            XCTAssertEqual(val51["x"] as? Int, 1)
-            XCTAssertEqual(val51["y"] as? Int, 2)
+            XCTAssertEqual(res, expected)
 
         } catch {
-            XCTAssert(false, "failed to encode document")
+            XCTFail("failed to encode document")
         }
     }
 
@@ -87,22 +66,32 @@ final class CodecTests: XCTestCase {
         let encoder = BsonEncoder()
         let options = ListDatabasesOptions(filter: Document(["a": 10]), nameOnly: true, session: ClientSession())
         do {
-            let optionsDoc = try encoder.encode(options)
-            XCTAssertEqual(optionsDoc["nameOnly"] as? Bool, true)
-            guard let filterDoc = optionsDoc["filter"] as? Document else {
-                XCTAssert(false, "Failed to get filter document")
+            guard let optionsDoc = try encoder.encode(options) else {
+                XCTFail("Failed to encode options")
                 return
             }
-            XCTAssertEqual(filterDoc["a"] as? Int, 10)
-            guard let sessionDoc = optionsDoc["session"] as? Document else {
-                XCTAssert(false, "Failed to get session document")
-                return
-            }
-            XCTAssertEqual(sessionDoc["clusterTime"] as? Int64, 0)
-            XCTAssertEqual(sessionDoc["operationTime"] as? Int64, 0)
+
+            let expectedSession: Document = ["sessionId": Document(), "clusterTime": Int64(0), "operationTime": Int64(0)]
+            XCTAssertEqual(optionsDoc, ["session": expectedSession, "filter": ["a": 10] as Document, "nameOnly": true] as Document)
 
         } catch {
-            XCTAssert(false, "Failed to encode options")
+            XCTFail("Failed to encode options")
         }
+    }
+
+    func testNilEncodingStrategy() {
+        let encoderNoNils = BsonEncoder()
+        let encoderWithNils = BsonEncoder(nilStrategy: .include)
+
+        // Even if the object exists, don't bother encoding it if its properties are all nil
+        let emptyOptions = ListDatabasesOptions(filter: nil, nameOnly: nil, session: nil)
+        XCTAssertNil(try encoderNoNils.encode(emptyOptions))
+
+        XCTAssertEqual(try encoderWithNils.encode(emptyOptions) as? Document,
+            ["session": nil, "filter": nil, "nameOnly": nil] as Document)
+
+        let options = ListDatabasesOptions(filter: nil, nameOnly: true, session: nil)
+        XCTAssertEqual(try encoderNoNils.encode(options), ["nameOnly": true] as Document)
+        XCTAssertEqual(try encoderWithNils.encode(options), ["session": nil, "filter": nil, "nameOnly": true])
     }
 }
