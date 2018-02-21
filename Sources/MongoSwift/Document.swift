@@ -67,6 +67,13 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
         return String(cString: jsonData)
     }
 
+    /// Returns a copy of the raw BSON data represented as Data
+    var rawBson: Data {
+        let data = bson_get_data(self.data)
+        let length = self.data.pointee.len
+        return Data(bytes: data!, count: Int(length))
+    }
+
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
         if !bson_append_document(data, key, Int32(key.count), self.data) {
             throw bsonEncodeError(value: self, forKey: key)
