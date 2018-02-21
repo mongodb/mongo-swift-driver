@@ -7,5 +7,6 @@ let package = Package(
                dependencies: ["libbson"]),
         Target(name: "MongoSwift",
                dependencies: ["libmongoc"])
-    ]
+    ],
+    exclude: ["Tests/Specs"]
 )
