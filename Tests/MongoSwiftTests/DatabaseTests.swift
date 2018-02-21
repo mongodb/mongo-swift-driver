@@ -21,7 +21,7 @@ final class DatabaseTests: XCTestCase {
         	let command: Document = ["create": collname]
         	let res: Document = try db.runCommand(command: command)
 
-        	XCTAssertEqual(res["ok"] as? Double, 1.0)
+        	XCTAssertEqual(res, ["ok": 1.0] as Document)
 
         	try db.collection(name: collname)
         	try db.listCollections()
