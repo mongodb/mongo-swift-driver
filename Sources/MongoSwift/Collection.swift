@@ -1,3 +1,5 @@
+import libmongoc
+
 public struct AggregateOptions {
     /// Enables writing to temporary files. When set to true, aggregation stages
     /// can write data to the _tmp subdirectory in the dbPath directory
