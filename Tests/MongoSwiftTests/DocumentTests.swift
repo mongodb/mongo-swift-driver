@@ -161,24 +161,24 @@ final class DocumentTests: XCTestCase {
 
                 for valid in validCases {
                     guard let validCase = valid as? [String: Any] else {
-                        XCTAssert(false, "Unable to interpet valid case as dictionary")
+                        XCTFail("Unable to interpret valid case as dictionary")
                         return
                     }
 
                     guard let extJson = validCase["canonical_extjson"] as? String else {
-                        XCTAssert(false, "Unable to interpet canonical extjson as string")
+                        XCTFail("Unable to interpret canonical extjson as string")
                         return
                     }
 
                     // print("valid case: \(extJson)")
                     guard let doc = try? Document(fromJson: extJson) else {
-                        XCTAssert(false, "Unable to parse extended json as Document")
+                        XCTFail("Unable to parse extended json as Document")
                         return
                     }
                 }
             }
         } catch {
-            XCTAssert(false, "Test failed")
+            XCTFail("Test setup failed")
         }
     }
 }
