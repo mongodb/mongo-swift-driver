@@ -21,8 +21,8 @@ extension BsonEncodable {
         // Use a BsonEncoder to get a Document, and then call Document.bsonAppend. 
         let encoder = BsonEncoder()
         do {
-            if let d = try encoder.encode(self) {
-                return d.bsonAppend(data: data, key: key)
+            if let doc = try encoder.encode(self) {
+                return doc.bsonAppend(data: data, key: key)
             }
 
             return true
@@ -65,12 +65,7 @@ public class BsonEncoder {
     */
     public func encode(_ value: BsonEncodable?) throws -> Document? {
         guard let v = value else {
-            switch self.nilEncodingStrategy {
-            case .omit:
-                return nil
-            case .include:
-                return Document()
-            }
+            return self.nilEncodingStrategy == .include ? Document() : nil
         }
 
         try v.encode(to: self)
