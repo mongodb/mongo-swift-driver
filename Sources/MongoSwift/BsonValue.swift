@@ -65,7 +65,7 @@ extension Array: BsonValue {
         let array = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
         bson_iter_array(&bson, &length, array)
 
-        // since an array is a nested object with keys '0', '1', etc., 
+        // since an array is a nested object with keys '0', '1', etc.,
         // create a new Document using the array data so we can recursively parse
         guard let arrayData = bson_new_from_data(array.pointee, Int(length)) else {
             preconditionFailure("Failed to create a bson_t from array data")
@@ -214,9 +214,9 @@ extension Double: BsonValue {
     }
 }
 
-/// An extension of Int to represent the BSON Int32 type. 
+/// An extension of Int to represent the BSON Int32 type.
 /// While the bitwidth of Int is machine-dependent, we assume for simplicity
-/// that it is always 32 bits. Use Int64 if 64 bits are needed.   
+/// that it is always 32 bits. Use Int64 if 64 bits are needed.
 extension Int: BsonValue {
     public var bsonType: BsonType { return .int32 }
     public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {
@@ -345,7 +345,7 @@ class ObjectId: BsonValue, Equatable {
 
 }
 
-// A mapping of regex option characters to their equivalent NSRegularExpression option. 
+// A mapping of regex option characters to their equivalent NSRegularExpression option.
 // note that there is a BSON regexp option 'l' that NSRegularExpression
 // doesn't support. The flag will be dropped if BSON containing it is parsed,
 // and it will be ignored if passed into optionsFromString.
@@ -417,7 +417,7 @@ class Timestamp: BsonValue, Equatable {
     }
 
     // assumes that values can successfully be converted to UInt32
-    // w/o loss of precision 
+    // w/o loss of precision
     init(timestamp: Int, inc: Int) {
         self.timestamp = UInt32(timestamp)
         self.increment = UInt32(inc)
