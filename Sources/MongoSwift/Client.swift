@@ -47,8 +47,8 @@ public class Client {
     }
 
     /**
-    * Cleanup the internal mongoc_client_t
-    */
+     * Cleanup the internal mongoc_client_t
+     */
     deinit {
         close()
     }
@@ -66,15 +66,15 @@ public class Client {
     }
 
     /**
-    * Close the client
-    */
+     * Close the client
+     */
     func close() {
         guard let client = self._client else {
             return
         }
 
         mongoc_client_destroy(client)
-        _client = nil
+        self._client = nil
     }
 
     /**

@@ -1,5 +1,3 @@
-import libmongoc
-
 public struct AggregateOptions {
     /// Enables writing to temporary files. When set to true, aggregation stages
     /// can write data to the _tmp subdirectory in the dbPath directory
@@ -294,28 +292,16 @@ public struct IndexOptions {
 
 // A MongoDB Collection
 public class Collection {
-    private var _collection = OpaquePointer(bitPattern: 1)
-
     /**
         Initializes a new Collection instance, not meant to be instantiated directly
      */
     public init() {
     }
 
-    public init(fromCollection: OpaquePointer) {
-        _collection = fromCollection
-    }
-
     /**
         Deinitializes a Collection, cleaning up the internal mongoc_collection_t
      */
     deinit {
-        guard let collection = _collection else {
-            return
-        }
-
-        mongoc_collection_destroy(collection)
-        _collection = nil
     }
 
     /**
