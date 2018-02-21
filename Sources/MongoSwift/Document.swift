@@ -74,6 +74,13 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
         return Data(bytes: data!, count: Int(length))
     }
 
+    /**
+     * Constructs a `Document` from raw BSON data
+     */
+    public init(fromBson: Data) {
+        data = bson_new_from_data([UInt8](fromBson), fromBson.count)
+    }
+
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
         if !bson_append_document(data, key, Int32(key.count), self.data) {
             throw bsonEncodeError(value: self, forKey: key)
