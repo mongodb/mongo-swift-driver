@@ -33,6 +33,30 @@ extension BsonEncodable {
     }
 }
 
+func unwrap(_ any: Any) -> Any {
+
+    let mirror = Mirror(reflecting: any)
+    if mirror.displayStyle != .optional {
+        return any
+    }
+
+    if mirror.children.count == 0 { return NSNull() }
+    let (_, some) = mirror.children.first!
+    return some
+}
+
+/// Extension of BsonEncodable to provide a default encode(to encoder: BsonEncoder) implementation.
+extension BsonEncodable {
+    public func encode(to encoder: BsonEncoder) throws {
+        let mirror = Mirror(reflecting: self)
+        for (key, value) in mirror.children {
+            guard let key = key else { continue }
+            let v = unwrap(value)
+            try encoder.encode(v as? BsonValue, forKey: key)
+        }
+    }
+}
+
 /// A BsonEncoder for encoding BsonEncodable types to BSON documents. 
 public class BsonEncoder {
     fileprivate var _encoder = _BsonEncoder()
