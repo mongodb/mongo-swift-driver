@@ -33,8 +33,8 @@ extension BsonEncodable {
     }
 }
 
+/// Extracts the underlying value, converting it to a non-optional if it is optional.
 func unwrap(_ any: Any) -> Any {
-
     let mirror = Mirror(reflecting: any)
     if mirror.displayStyle != .optional {
         return any
