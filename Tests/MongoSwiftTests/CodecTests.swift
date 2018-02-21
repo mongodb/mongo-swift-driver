@@ -43,7 +43,7 @@ final class CodecTests: XCTestCase {
         let enc = BsonEncoder()
         do {
             guard let res = try enc.encode(v) else {
-                XCTAssert(false, "Failed to encode value")
+                XCTFail("Failed to encode value")
                 return
             }
 
@@ -58,7 +58,7 @@ final class CodecTests: XCTestCase {
             XCTAssertEqual(res, expected)
 
         } catch {
-            XCTAssert(false, "failed to encode document")
+            XCTFail("failed to encode document")
         }
     }
 
@@ -67,7 +67,7 @@ final class CodecTests: XCTestCase {
         let options = ListDatabasesOptions(filter: Document(["a": 10]), nameOnly: true, session: ClientSession())
         do {
             guard let optionsDoc = try encoder.encode(options) else {
-                XCTAssert(false, "Failed to encode options")
+                XCTFail("Failed to encode options")
                 return
             }
 
@@ -75,7 +75,7 @@ final class CodecTests: XCTestCase {
             XCTAssertEqual(optionsDoc, ["session": expectedSession, "filter": ["a": 10] as Document, "nameOnly": true] as Document)
 
         } catch {
-            XCTAssert(false, "Failed to encode options")
+            XCTFail("Failed to encode options")
         }
     }
 
