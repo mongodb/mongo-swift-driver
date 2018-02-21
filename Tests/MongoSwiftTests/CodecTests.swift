@@ -26,23 +26,6 @@ final class CodecTests: XCTestCase {
             let y = 2
         }
 
-        struct ListDatabasesOptions: BsonEncodable {
-        /// An optional filter for the returned databases
-        let filter: Document?
-
-        /// Optionally indicate whether only names should be returned
-        let nameOnly: Bool?
-
-        /// An optional session to use for this operation
-        let session: ClientSession?
-
-        // public func encode(to encoder: BsonEncoder) throws {
-        //     try encoder.encode(filter, forKey: "filter")
-        //     try encoder.encode(nameOnly, forKey: "nameOnly")
-        //     try encoder.encode(session, forKey: "session")
-        // }
-        }
-
         let v = TestClass()
         let enc = BsonEncoder()
         do {
