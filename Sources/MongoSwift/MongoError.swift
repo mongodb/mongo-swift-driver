@@ -5,6 +5,7 @@ public enum MongoError: Error {
     case invalidClient()
     case invalidResponse()
     case invalidCursor()
+    case bsonParseError(domain: UInt32, code: UInt32, message: String)
 }
 
 public func toErrorString(_ error: bson_error_t) -> String {

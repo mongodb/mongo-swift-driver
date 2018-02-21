@@ -6,7 +6,8 @@ final class DocumentTests: XCTestCase {
     static var allTests: [(String, (DocumentTests) -> () throws -> Void)] {
         return [
             ("testDocument", testDocument),
-            ("testEquatable", testEquatable)
+            ("testEquatable", testEquatable),
+            ("testExtendedJSON", testExtendedJSON)
         ]
     }
 
@@ -138,5 +139,46 @@ final class DocumentTests: XCTestCase {
             ["hi": true, "hello": "hi", "cat": 2] as Document,
             ["hi": true, "hello": "hi", "cat": 2] as Document
         )
+    }
+
+    func testExtendedJSON() {
+        do {
+            var testFiles = try FileManager.default.contentsOfDirectory(atPath: "Tests/Specs/bson-corpus/tests")
+            testFiles = testFiles.filter { $0.hasSuffix(".json") }
+
+            for fileName in testFiles {
+                let testFilePath = URL(fileURLWithPath: "Tests/Specs/bson-corpus/tests/\(fileName)")
+                let testFileData = try String(contentsOf: testFilePath, encoding: .utf8)
+                let testFileJson = try JSONSerialization.jsonObject(with: testFileData.data(using: .utf8)!, options: [])
+                guard let json = testFileJson as? [String: Any] else {
+                    XCTAssert(false, "Unable to convert json to dictionary")
+                    return
+                }
+
+                guard let validCases = json["valid"] as? [Any] else {
+                    continue // there are no valid cases defined in this file
+                }
+
+                for valid in validCases {
+                    guard let validCase = valid as? [String: Any] else {
+                        XCTFail("Unable to interpret valid case as dictionary")
+                        return
+                    }
+
+                    guard let extJson = validCase["canonical_extjson"] as? String else {
+                        XCTFail("Unable to interpret canonical extjson as string")
+                        return
+                    }
+
+                    // print("valid case: \(extJson)")
+                    guard let doc = try? Document(fromJson: extJson) else {
+                        XCTFail("Unable to parse extended json as Document")
+                        return
+                    }
+                }
+            }
+        } catch {
+            XCTFail("Test setup failed")
+        }
     }
 }

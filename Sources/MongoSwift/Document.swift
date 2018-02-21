@@ -21,7 +21,7 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
         }
     }
 
-   public required init(dictionaryLiteral doc: (String, Any?)...) {
+    public required init(dictionaryLiteral doc: (String, Any?)...) {
         data = bson_new()
         for (k, v) in doc {
             self[k] = v as? BsonValue
@@ -33,6 +33,28 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
         for (i, elt) in elements.enumerated() {
             self[String(i)] = elt
         }
+    }
+
+    /**
+     * Constructs a new `Document` from the provided JSON text
+     *
+     * - Parameters:
+     *   - json: a JSON document to parse into a `Document`
+     *
+     * - Returns: the parsed `Document`
+     */
+    public init(fromJson: String) throws {
+        var error = bson_error_t()
+        let buf = Array(fromJson.utf8)
+        guard let bson = bson_new_from_json(buf, buf.count, &error) else {
+            throw MongoError.bsonParseError(
+                domain: error.domain,
+                code: error.code,
+                message: toErrorString(error)
+            )
+        }
+
+        data = bson
     }
 
     public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {
