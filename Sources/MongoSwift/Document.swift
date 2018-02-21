@@ -57,6 +57,16 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
         data = bson
     }
 
+    /// Returns a canonical extended JSON representation of this Document
+    var extendedJson: String {
+        let json = bson_as_canonical_extended_json(self.data, nil)
+        guard let jsonData = json else {
+            return String()
+        }
+
+        return String(cString: jsonData)
+    }
+
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
         if !bson_append_document(data, key, Int32(key.count), self.data) {
             throw bsonEncodeError(value: self, forKey: key)
