@@ -39,14 +39,13 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
      * Constructs a new `Document` from the provided JSON text
      *
      * - Parameters:
-     *   - fromJSON: a JSON document to parse into a `Document`
+     *   - fromJSON: a JSON document as Data to parse into a `Document`
      *
      * - Returns: the parsed `Document`
      */
-    public init(fromJSON: String) throws {
+    public init(fromJSON: Data) throws {
         var error = bson_error_t()
-        let buf = Array(fromJSON.utf8)
-        guard let bson = bson_new_from_json(buf, buf.count, &error) else {
+        guard let bson = bson_new_from_json([UInt8](fromJSON), fromJSON.count, &error) else {
             throw MongoError.bsonParseError(
                 domain: error.domain,
                 code: error.code,
@@ -55,6 +54,18 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
         }
 
         data = bson
+    }
+
+    /// Convenience initializer for constructing a `Document` from a `String`
+    public convenience init(fromJSON json: String) throws {
+        try self.init(fromJSON: json.data(using: .utf8)!)
+    }
+
+    /**
+     * Constructs a `Document` from raw BSON data
+     */
+    public init(fromBSON: Data) {
+        data = bson_new_from_data([UInt8](fromBSON), fromBSON.count)
     }
 
     /// Returns a relaxed extended JSON representation of this Document
@@ -82,13 +93,6 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
         let data = bson_get_data(self.data)
         let length = self.data.pointee.len
         return Data(bytes: data!, count: Int(length))
-    }
-
-    /**
-     * Constructs a `Document` from raw BSON data
-     */
-    public init(fromBSON: Data) {
-        data = bson_new_from_data([UInt8](fromBSON), fromBSON.count)
     }
 
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
