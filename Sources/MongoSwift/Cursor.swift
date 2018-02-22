@@ -42,7 +42,7 @@ public class Cursor: Sequence, IteratorProtocol {
 
         if !mongoc_cursor_next(self._cursor, out) {
             if mongoc_cursor_error(self._cursor, &error) {
-                print("cursor error: (domain: \(error.domain), code: \(error.code), message: \(error.message))")
+                print("cursor error: (domain: \(error.domain), code: \(error.code), message: \(toErrorString(error)))")
             }
 
             return nil

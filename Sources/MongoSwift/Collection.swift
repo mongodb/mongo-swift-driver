@@ -1,6 +1,6 @@
 import libmongoc
 
-public struct AggregateOptions {
+public struct AggregateOptions: BsonEncodable {
     /// Enables writing to temporary files. When set to true, aggregation stages
     /// can write data to the _tmp subdirectory in the dbPath directory
     let allowDiskUse: Bool?
@@ -26,7 +26,7 @@ public struct AggregateOptions {
     // let hint: Optional<(String | Document)>
 }
 
-public struct CountOptions {
+public struct CountOptions: BsonEncodable {
     /// Specifies a collation.
     let collation: Document?
 
@@ -43,7 +43,7 @@ public struct CountOptions {
     let skip: Int64?
 }
 
-public struct DistinctOptions {
+public struct DistinctOptions: BsonEncodable {
     /// Specifies a collation.
     let collation: Document?
 
@@ -79,9 +79,10 @@ public enum CursorType {
      * - SeeAlso: https://docs.mongodb.com/meta-driver/latest/legacy/mongodb-wire-protocol/#op-query
      */
     case tailableAwait
+
 }
 
-public struct FindOptions {
+public struct FindOptions: BsonEncodable {
     /// Get partial results from a mongos if some shards are down (instead of throwing an error).
     let allowPartialResults: Bool?
 
@@ -95,7 +96,8 @@ public struct FindOptions {
     let comment: String?
 
     /// Indicates the type of cursor to use. This value includes both the tailable and awaitData options.
-    let cursorType: CursorType?
+    // commenting this out until we decide how to properly encode 
+    // let cursorType: CursorType?
 
     /// The index to use.
     // let hint: Optional<(String | Document)>
@@ -141,12 +143,12 @@ public struct FindOptions {
     let sort: Document?
 }
 
-public struct InsertOneOptions {
+public struct InsertOneOptions: BsonEncodable {
     /// If true, allows the write to opt-out of document level validation.
     let bypassDocumentValidation: Bool?
 }
 
-public struct InsertManyOptions {
+public struct InsertManyOptions: BsonEncodable {
     /// If true, allows the write to opt-out of document level validation.
     let bypassDocumentValidation: Bool?
 
@@ -156,7 +158,7 @@ public struct InsertManyOptions {
     let ordered: Bool = true
 }
 
-public struct UpdateOptions {
+public struct UpdateOptions: BsonEncodable {
     /// A set of filters specifying to which array elements an update should apply.
     let arrayFilters: [Document]?
 
@@ -170,7 +172,7 @@ public struct UpdateOptions {
     let upsert: Bool?
 }
 
-public struct ReplaceOptions {
+public struct ReplaceOptions: BsonEncodable {
     /// If true, allows the write to opt-out of document level validation.
     let bypassDocumentValidation: Bool?
 
@@ -181,7 +183,7 @@ public struct ReplaceOptions {
     let upsert: Bool?
 }
 
-public struct DeleteOptions {
+public struct DeleteOptions: BsonEncodable {
     /// Specifies a collation.
     let collation: Document?
 }
@@ -221,7 +223,7 @@ public struct IndexModel {
     let options: IndexOptions?
 }
 
-public struct IndexOptions {
+public struct IndexOptions: BsonEncodable {
     /// Optionally tells the server to build the index in the background and not block
     /// other tasks.
     let background: Bool?
@@ -329,8 +331,14 @@ public class Collection {
      *
      * - Returns: A `Cursor` with the results
      */
-    func find(filter: Document, options: FindOptions? = nil) throws -> Cursor {
-        return Cursor()
+    func find(_ filter: Document, options: FindOptions? = nil) throws -> Cursor {
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
+        guard let cursor = mongoc_collection_find_with_opts(
+            self._collection, filter.getData(), getDataOrNil(opts), nil) else {
+            throw MongoError.invalidResponse()
+        }
+        return Cursor(fromCursor: cursor)
     }
 
     /**
@@ -342,8 +350,15 @@ public class Collection {
      *
      * - Returns: A `Cursor` with the results
      */
-    func aggregate(pipeline: [Document], options: AggregateOptions? = nil) throws -> Cursor {
-        return Cursor()
+    func aggregate(_ pipeline: [Document], options: AggregateOptions? = nil) throws -> Cursor {
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
+        let pipeline: Document = ["pipeline": pipeline]
+        guard let cursor = mongoc_collection_aggregate(
+            self._collection, MONGOC_QUERY_NONE, pipeline.getData(), getDataOrNil(opts), nil) else {
+            throw MongoError.invalidResponse()
+        }
+        return Cursor(fromCursor: cursor)
     }
 
     /**
@@ -355,8 +370,18 @@ public class Collection {
      *
      * - Returns: The count of the documents that matched the filter
      */
-    func count(filter: Document, options: CountOptions? = nil) throws -> Int {
-        return 0
+    func count(_ filter: Document, options: CountOptions? = nil) throws -> Int {
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
+        var error = bson_error_t()
+
+        // because we already encode skip and limit in the options, pass in 0s so we don't get duplicate parameters. 
+        let count = mongoc_collection_count_with_opts(
+            self._collection, MONGOC_QUERY_NONE, filter.getData(), 0, 0, getDataOrNil(opts), nil, &error)
+
+        if count == -1 { throw MongoError.commandError(message: toErrorString(error)) }
+
+        return Int(count)
     }
 
     /**
@@ -384,7 +409,14 @@ public class Collection {
      * - Returns: The optional result of attempting to perform the insert. If the write concern
      *            is unacknowledged, nil is returned
      */
-    func insertOne(document: Document, options: InsertOneOptions? = nil) throws -> InsertOneResult? {
+    func insertOne(_ document: Document, options: InsertOneOptions? = nil) throws -> InsertOneResult? {
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
+        var error = bson_error_t()
+        if !mongoc_collection_insert_one(self._collection, document.getData(), getDataOrNil(opts), nil, &error) {
+            throw MongoError.writeError(message: toErrorString(error))
+        }
+        if let _id = document["_id"] { return InsertOneResult(insertedId: _id) }
         return nil
     }
 
@@ -399,7 +431,7 @@ public class Collection {
      * - Returns: The optional result of attempting to performing the insert. If the write concern
      *            is unacknowledged, nil is returned
      */
-    func insertMany(documents: [Document], options: InsertManyOptions? = nil) throws -> InsertManyResult? {
+    func insertMany(_ documents: [Document], options: InsertManyOptions? = nil) throws -> InsertManyResult? {
         return nil
     }
 
@@ -458,7 +490,7 @@ public class Collection {
      * - Returns: The optional result of performing the deletion. If the write concern is
      *            unacknowledged, nil is returned
      */
-    func deleteOne(filter: Document, options: DeleteOptions?) throws -> DeleteResult? {
+    func deleteOne(_ filter: Document, options: DeleteOptions?) throws -> DeleteResult? {
         return nil
     }
 
@@ -472,7 +504,7 @@ public class Collection {
      * - Returns: The optional result of performing the deletion. If the write concern is
      *            unacknowledged, nil is returned
      */
-    func deleteMany(filter: Document, options: DeleteOptions?) throws -> DeleteResult? {
+    func deleteMany(_ filter: Document, options: DeleteOptions?) throws -> DeleteResult? {
         return nil
     }
 

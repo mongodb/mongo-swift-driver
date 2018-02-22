@@ -7,6 +7,7 @@ public enum MongoError: Error {
     case invalidCursor(message: String)
     case invalidCollection(message: String)
     case commandError(message: String)
+    case writeError(message: String)
     case bsonParseError(domain: UInt32, code: UInt32, message: String)
     case bsonEncodeError(message: String)
 }
