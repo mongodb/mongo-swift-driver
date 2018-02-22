@@ -91,10 +91,6 @@ public class Client {
         guard let cursor = mongoc_client_find_databases_with_opts(self._client, getDataOrNil(opts)) else {
             throw MongoError.invalidResponse()
         }
-        if let error = getCursorError(cursor) {
-            throw MongoError.invalidCursor(message: toErrorString(error))
-        }
-
         return Cursor(fromCursor: cursor)
     }
 

@@ -17,9 +17,3 @@ public func toErrorString(_ error: bson_error_t) -> String {
         return String(cString: ptr)
     }
 }
-
-public func getCursorError(_ cursor: OpaquePointer) -> bson_error_t? {
-    var error = bson_error_t()
-    if mongoc_cursor_error(cursor, &error) { return error }
-    return nil
-}

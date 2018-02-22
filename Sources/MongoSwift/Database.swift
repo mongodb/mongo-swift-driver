@@ -124,9 +124,6 @@ public class Database {
         guard let collections = mongoc_database_find_collections_with_opts(self._database, getDataOrNil(opts)) else {
             throw MongoError.invalidResponse()
         }
-        if let error = getCursorError(collections) {
-            throw MongoError.invalidCursor(message: toErrorString(error))
-        }
         return Cursor(fromCursor: collections)
     }
 
