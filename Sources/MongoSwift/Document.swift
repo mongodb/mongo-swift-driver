@@ -59,7 +59,7 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
 
     public func bsonAppend(data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
         if !bson_append_document(data, key, Int32(key.count), self.data) {
-            throw bsonAppendError(value: self, forKey: key)
+            throw bsonEncodeError(value: self, forKey: key)
         }
     }
 
