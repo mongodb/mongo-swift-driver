@@ -40,7 +40,7 @@ public protocol BsonValue {
     *
     * - Returns: A `Bool` indicating whether the value was successfully appended.
     */
-    func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool
+    func bsonAppend(data: UnsafeMutablePointer<bson_t>, forKey key: String) throws
 }
 
 /// An extension of Array type to represent the BSON array type
@@ -82,11 +82,13 @@ extension Array: BsonValue {
         return result
     }
 
-    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {
+    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
         // An array is just a document with keys '0', '1', etc. corresponding to indexes
         let arr = Document()
         for (i, v) in self.enumerated() { arr[String(i)] = v as? BsonValue }
-        return bson_append_array(data, key, Int32(key.count), arr.data)
+        if !bson_append_array(data, key, Int32(key.count), arr.data) {
+            throw bsonAppendError(value: self, forKey: key)
+        }
     }
 }
 
@@ -127,11 +129,13 @@ class Binary: BsonValue, Equatable {
         self.subtype = BsonSubtype(rawValue: Int(subtype))!
     }
 
-    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {
+    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
         let subtype = bson_subtype_t(UInt32(self.subtype.rawValue))
         let length = self.data.count
         let byteArray = [UInt8](self.data)
-        return bson_append_binary(data, key, Int32(key.count), subtype, byteArray, UInt32(length))
+        if !bson_append_binary(data, key, Int32(key.count), subtype, byteArray, UInt32(length)) {
+            throw bsonAppendError(value: self, forKey: key)
+        }
     }
 
     static func from(bson: inout bson_iter_t) -> Binary {
@@ -156,8 +160,10 @@ class Binary: BsonValue, Equatable {
 /// An extension of Bool to represent the BSON Boolean type
 extension Bool: BsonValue {
     public var bsonType: BsonType { return .boolean }
-    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {
-        return bson_append_bool(data, key, Int32(key.count), self)
+    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
+        if !bson_append_bool(data, key, Int32(key.count), self) {
+            throw bsonAppendError(value: self, forKey: key)
+        }
     }
 }
 
@@ -171,9 +177,11 @@ extension Date: BsonValue {
 
     public var msSinceEpoch: Int64 { return Int64(self.timeIntervalSince1970 * 1000) }
 
-    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {
+    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
         let seconds = self.timeIntervalSince1970 * 1000
-        return bson_append_date_time(data, key, Int32(key.count), Int64(seconds))
+        if !bson_append_date_time(data, key, Int32(key.count), Int64(seconds)) {
+            throw bsonAppendError(value: self, forKey: key)
+        }
     }
 }
 
@@ -189,11 +197,13 @@ class Decimal128: BsonValue, Equatable {
         return lhs.data == rhs.data
     }
 
-    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {
+    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
         var value: bson_decimal128_t = bson_decimal128_t()
         precondition(bson_decimal128_from_string(self.data, &value),
             "Failed to parse Decimal128 string \(self.data)")
-        return bson_append_decimal128(data, key, Int32(key.count), &value)
+        if !bson_append_decimal128(data, key, Int32(key.count), &value) {
+            throw bsonAppendError(value: self, forKey: key)
+        }
     }
 
      static func from(bson: inout bson_iter_t) -> Decimal128 {
@@ -209,8 +219,10 @@ class Decimal128: BsonValue, Equatable {
 /// An extension of Double to represent the BSON Double type
 extension Double: BsonValue {
     public var bsonType: BsonType { return .double }
-    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {
-        return bson_append_double(data, key, Int32(key.count), self)
+    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
+        if !bson_append_double(data, key, Int32(key.count), self) {
+            throw bsonAppendError(value: self, forKey: key)
+        }
     }
 }
 
@@ -219,24 +231,30 @@ extension Double: BsonValue {
 /// that it is always 32 bits. Use Int64 if 64 bits are needed.
 extension Int: BsonValue {
     public var bsonType: BsonType { return .int32 }
-    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {
-        return bson_append_int32(data, key, Int32(key.count), Int32(self))
+    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
+        if !bson_append_int32(data, key, Int32(key.count), Int32(self)) {
+            throw bsonAppendError(value: self, forKey: key)
+        }
     }
 }
 
 /// An extension of Int32 to represent the BSON Int32 type
 extension Int32: BsonValue {
     public var bsonType: BsonType { return .int32 }
-    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {
-        return bson_append_int32(data, key, Int32(key.count), self)
+    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
+        if !bson_append_int32(data, key, Int32(key.count), self) {
+            throw bsonAppendError(value: self, forKey: key)
+        }
     }
 }
 
 /// An extension of Int64 to represent the BSON Int64 type
 extension Int64: BsonValue {
     public var bsonType: BsonType { return .int64 }
-    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {
-        return bson_append_int64(data, key, Int32(key.count), self)
+    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
+        if !bson_append_int64(data, key, Int32(key.count), self) {
+            throw bsonAppendError(value: self, forKey: key)
+        }
     }
 }
 
@@ -256,11 +274,16 @@ class CodeWithScope: BsonValue {
         self.scope = scope
     }
 
-    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {
+    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
         if let s = self.scope {
-            return bson_append_code_with_scope(data, key, Int32(key.count), self.code, s.data)
+            if !bson_append_code_with_scope(data, key, Int32(key.count), self.code, s.data) {
+                throw bsonAppendError(value: self, forKey: key)
+            }
+        } else {
+            if !bson_append_code(data, key, Int32(key.count), self.code) {
+                throw bsonAppendError(value: self, forKey: key)
+            }
         }
-        return bson_append_code(data, key, Int32(key.count), self.code)
     }
 
     static func from(bson: inout bson_iter_t) -> CodeWithScope {
@@ -286,8 +309,10 @@ class CodeWithScope: BsonValue {
 /// A class to represent the BSON MaxKey type
 class MaxKey: BsonValue, Equatable {
     public var bsonType: BsonType { return .maxKey }
-    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {
-        return bson_append_maxkey(data, key, Int32(key.count))
+    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
+        if !bson_append_maxkey(data, key, Int32(key.count)) {
+            throw bsonAppendError(value: self, forKey: key)
+        }
     }
 
     static func == (lhs: MaxKey, rhs: MaxKey) -> Bool { return true }
@@ -296,8 +321,10 @@ class MaxKey: BsonValue, Equatable {
 /// A class to represent the BSON MinKey type
 class MinKey: BsonValue, Equatable {
     public var bsonType: BsonType { return .minKey }
-    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {
-        return bson_append_minkey(data, key, Int32(key.count))
+    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
+        if !bson_append_minkey(data, key, Int32(key.count)) {
+            throw bsonAppendError(value: self, forKey: key)
+        }
     }
     static func == (lhs: MinKey, rhs: MinKey) -> Bool { return true }
 }
@@ -324,8 +351,10 @@ class ObjectId: BsonValue, Equatable {
         self.oid = oid
     }
 
-    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {
-        return bson_append_oid(data, key, Int32(key.count), &self.oid)
+    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
+        if !bson_append_oid(data, key, Int32(key.count), &self.oid) {
+            throw bsonAppendError(value: self, forKey: key)
+        }
     }
 
     static func from(bson: inout bson_iter_t) -> ObjectId {
@@ -361,8 +390,10 @@ let regexOptsMap: [Character: NSRegularExpression.Options] = [
 extension NSRegularExpression: BsonValue {
     public var bsonType: BsonType { return .regularExpression }
 
-    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {
-        return bson_append_regex(data, key, Int32(key.count), self.pattern, self.stringOptions)
+    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
+        if !bson_append_regex(data, key, Int32(key.count), self.pattern, self.stringOptions) {
+            throw bsonAppendError(value: self, forKey: key)
+        }
     }
 
     static func from(bson: inout bson_iter_t) throws -> NSRegularExpression {
@@ -400,8 +431,10 @@ extension NSRegularExpression: BsonValue {
 /// An extension of String to represent the BSON string type
 extension String: BsonValue {
     public var bsonType: BsonType { return .string }
-    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {
-        return bson_append_utf8(data, key, Int32(key.count), self, Int32(self.count))
+    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
+        if !bson_append_utf8(data, key, Int32(key.count), self, Int32(self.count)) {
+            throw bsonAppendError(value: self, forKey: key)
+        }
     }
 }
 
@@ -423,8 +456,10 @@ class Timestamp: BsonValue, Equatable {
         self.increment = UInt32(inc)
     }
 
-    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {
-        return bson_append_timestamp(data, key, Int32(key.count), self.timestamp, self.increment)
+    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
+        if !bson_append_timestamp(data, key, Int32(key.count), self.timestamp, self.increment) {
+            throw bsonAppendError(value: self, forKey: key)
+        }
     }
 
     static func from(bson: inout bson_iter_t) -> Timestamp {
