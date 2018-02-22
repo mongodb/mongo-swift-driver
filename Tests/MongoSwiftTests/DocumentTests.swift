@@ -143,9 +143,9 @@ final class DocumentTests: XCTestCase {
     }
 
     func testRawBSON() {
-        let doc = try? Document(fromJson: "{\"a\" : [{\"$numberInt\": \"10\"}]}")
-        let rawBson = doc!.rawBson
-        let fromRawBson = Document(fromBson: rawBson)
+        let doc = try? Document(fromJSON: "{\"a\" : [{\"$numberInt\": \"10\"}]}")
+        let rawBson = doc!.rawBSON
+        let fromRawBson = Document(fromBSON: rawBson)
         XCTAssertEqual(doc, fromRawBson)
     }
 
@@ -178,7 +178,7 @@ final class DocumentTests: XCTestCase {
                         return
                     }
 
-                    guard let doc = try? Document(fromJson: extJson) else {
+                    guard let doc = try? Document(fromJSON: extJson) else {
                         XCTFail("Unable to parse extended json as Document")
                         return
                     }

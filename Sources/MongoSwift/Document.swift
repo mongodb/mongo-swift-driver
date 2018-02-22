@@ -39,13 +39,13 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
      * Constructs a new `Document` from the provided JSON text
      *
      * - Parameters:
-     *   - json: a JSON document to parse into a `Document`
+     *   - fromJSON: a JSON document to parse into a `Document`
      *
      * - Returns: the parsed `Document`
      */
-    public init(fromJson: String) throws {
+    public init(fromJSON: String) throws {
         var error = bson_error_t()
-        let buf = Array(fromJson.utf8)
+        let buf = Array(fromJSON.utf8)
         guard let bson = bson_new_from_json(buf, buf.count, &error) else {
             throw MongoError.bsonParseError(
                 domain: error.domain,
@@ -58,7 +58,7 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
     }
 
     /// Returns a canonical extended JSON representation of this Document
-    var extendedJson: String {
+    var extendedJSON: String {
         let json = bson_as_canonical_extended_json(self.data, nil)
         guard let jsonData = json else {
             return String()
@@ -68,7 +68,7 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
     }
 
     /// Returns a copy of the raw BSON data represented as Data
-    var rawBson: Data {
+    var rawBSON: Data {
         let data = bson_get_data(self.data)
         let length = self.data.pointee.len
         return Data(bytes: data!, count: Int(length))
@@ -77,8 +77,8 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
     /**
      * Constructs a `Document` from raw BSON data
      */
-    public init(fromBson: Data) {
-        data = bson_new_from_data([UInt8](fromBson), fromBson.count)
+    public init(fromBSON: Data) {
+        data = bson_new_from_data([UInt8](fromBSON), fromBSON.count)
     }
 
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
