@@ -57,8 +57,18 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
         data = bson
     }
 
-    /// Returns a canonical extended JSON representation of this Document
+    /// Returns a relaxed extended JSON representation of this Document
     var extendedJSON: String {
+        let json = bson_as_relaxed_extended_json(self.data, nil)
+        guard let jsonData = json else {
+            return String()
+        }
+
+        return String(cString: jsonData)
+    }
+
+    /// Returns a canonical extended JSON representation of this Document
+    var canonicalExtendedJSON: String {
         let json = bson_as_canonical_extended_json(self.data, nil)
         guard let jsonData = json else {
             return String()
@@ -96,12 +106,7 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
     }
 
     public var description: String {
-        let json = bson_as_relaxed_extended_json(self.data, nil)
-        guard let jsonData = json else {
-            return String()
-        }
-
-        return String(cString: jsonData)
+        return self.extendedJSON
     }
 
     subscript(key: String) -> BsonValue? {
