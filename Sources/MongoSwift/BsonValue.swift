@@ -279,10 +279,8 @@ class CodeWithScope: BsonValue {
             if !bson_append_code_with_scope(data, key, Int32(key.count), self.code, s.data) {
                 throw bsonAppendError(value: self, forKey: key)
             }
-        } else {
-            if !bson_append_code(data, key, Int32(key.count), self.code) {
-                throw bsonAppendError(value: self, forKey: key)
-            }
+        } else if !bson_append_code(data, key, Int32(key.count), self.code) {
+            throw bsonAppendError(value: self, forKey: key)
         }
     }
 
