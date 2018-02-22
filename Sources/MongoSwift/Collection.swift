@@ -416,7 +416,6 @@ public class Collection {
         if !mongoc_collection_insert_one(self._collection, document.getData(), getDataOrNil(opts), nil, &error) {
             throw MongoError.writeError(message: toErrorString(error))
         }
-        if let _id = document["_id"] { return InsertOneResult(insertedId: _id) }
         return nil
     }
 
@@ -432,6 +431,19 @@ public class Collection {
      *            is unacknowledged, nil is returned
      */
     func insertMany(_ documents: [Document], options: InsertManyOptions? = nil) throws -> InsertManyResult? {
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
+        var error = bson_error_t()
+        var arrayData = bson_new()
+        defer { bson_destroy(arrayData) }
+
+        // let docData = documents.map { UnsafePointer($0.getData()) }
+        // let ptr = UnsafeMutablePointer(mutating: docData)
+
+        // if !mongoc_collection_insert_many(self._collection, ptr, documents.count, getDataOrNil(opts), nil, &error) {
+        //     throw MongoError.writeError(message: toErrorString(error))
+        // }
+
         return nil
     }
 
@@ -447,6 +459,13 @@ public class Collection {
      *            is unacknowledged, nil is returned
      */
     func replaceOne(filter: Document, replacement: Document, options: ReplaceOptions? = nil) throws -> UpdateResult? {
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
+        var error = bson_error_t()
+        if !mongoc_collection_replace_one(
+            self._collection, filter.getData(), replacement.getData(), getDataOrNil(opts), nil, &error) {
+            throw MongoError.writeError(message: toErrorString(error))
+        }
         return nil
     }
 
@@ -462,6 +481,13 @@ public class Collection {
      *            unacknowledged, nil is returned
      */
     func updateOne(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
+        var error = bson_error_t()
+        if !mongoc_collection_update_one(
+            self._collection, filter.getData(), update.getData(), getDataOrNil(opts), nil, &error) {
+            throw MongoError.writeError(message: toErrorString(error))
+        }
         return nil
     }
 
@@ -477,6 +503,13 @@ public class Collection {
      *            concern is unacknowledged, nil is returned
      */
     func updateMany(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
+        var error = bson_error_t()
+        if !mongoc_collection_update_many(
+            self._collection, filter.getData(), update.getData(), getDataOrNil(opts), nil, &error) {
+            throw MongoError.writeError(message: toErrorString(error))
+        }
         return nil
     }
 
@@ -491,6 +524,12 @@ public class Collection {
      *            unacknowledged, nil is returned
      */
     func deleteOne(_ filter: Document, options: DeleteOptions?) throws -> DeleteResult? {
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
+        var error = bson_error_t()
+        if !mongoc_collection_delete_one(self._collection, filter.getData(), getDataOrNil(opts), nil, &error) {
+            throw MongoError.writeError(message: toErrorString(error))
+        }
         return nil
     }
 
@@ -505,6 +544,12 @@ public class Collection {
      *            unacknowledged, nil is returned
      */
     func deleteMany(_ filter: Document, options: DeleteOptions?) throws -> DeleteResult? {
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
+        var error = bson_error_t()
+        if !mongoc_collection_delete_many(self._collection, filter.getData(), getDataOrNil(opts), nil, &error) {
+            throw MongoError.writeError(message: toErrorString(error))
+        }
         return nil
     }
 
@@ -517,6 +562,7 @@ public class Collection {
      * - Returns: The name of the created index
      */
     func createIndex(model: IndexModel) throws -> String {
+        // http://mongoc.org/libmongoc/current/mongoc_collection_create_index_with_opts.html
         return "index_name"
     }
 
@@ -530,6 +576,7 @@ public class Collection {
      * - Returns: The name of the created index
      */
     func createIndex(keys: Document, options: IndexOptions? = nil) throws -> String {
+        // http://mongoc.org/libmongoc/current/mongoc_collection_create_index_with_opts.html
         return try createIndex(model: IndexModel(keys: keys, options: options))
     }
 
@@ -542,6 +589,7 @@ public class Collection {
      * - Returns: The names of all the indexes that were created
      */
     func createIndexes(models: [IndexModel]) throws -> [String] {
+        // http://mongoc.org/libmongoc/current/mongoc_collection_create_index_with_opts.html
         return ["index_name"]
     }
 
@@ -554,7 +602,11 @@ public class Collection {
      * - Returns: The result of the command returned from the server
      */
     func dropIndex(name: String) throws -> Document {
-        return Document()
+        var error = bson_error_t()
+        if !mongoc_collection_drop_index(self._collection, name, &error) {
+            throw MongoError.writeError(message: toErrorString(error))
+        }
+        return ["ok": 1] // the drop index function just returns a bool
     }
 
     /**
@@ -597,6 +649,9 @@ public class Collection {
      * - Returns: A `Cursor` over a collection of index names
      */
     func listIndexes() throws -> Cursor {
-        return Cursor()
+        guard let cursor = mongoc_collection_find_indexes_with_opts(self._collection, nil) else {
+            throw MongoError.commandError(message: "Failed to get list of indexes")
+        }
+        return Cursor(fromCursor: cursor)
     }
 }
