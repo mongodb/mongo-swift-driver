@@ -57,8 +57,10 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
         data = bson
     }
 
-    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, key: String) -> Bool {
-        return bson_append_document(data, key, Int32(key.count), self.data)
+    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
+        if !bson_append_document(data, key, Int32(key.count), self.data) {
+            throw bsonEncodeError(value: self, forKey: key)
+        }
     }
 
     public func getData() -> UnsafeMutablePointer<bson_t> {
@@ -207,14 +209,17 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
         set(newValue) {
 
             guard let value = newValue else {
-                let res = bson_append_null(data, key, Int32(key.count))
-                precondition(res, "Failed to set the value for key \(key) to null")
+                if !bson_append_null(data, key, Int32(key.count)) {
+                    preconditionFailure("Failed to set the value for key \(key) to null")
+                }
                 return
             }
 
-            let res = value.bsonAppend(data: data, key: key)
-            precondition(res, "Failed to set the value for key '\(key)' to" +
-                " \(String(describing: newValue)) with BSON type \(value.bsonType)")
+            do {
+                try value.encode(to: data, forKey: key)
+            } catch {
+                preconditionFailure("Failed to set the value for key \(key) to \(value)")
+            }
 
         }
     }
