@@ -1,11 +1,11 @@
 import libmongoc
 
-public struct RunCommandOptions {
+public struct RunCommandOptions: BsonEncodable {
     /// A session to associate with this operation
     let session: ClientSession?
 }
 
-public struct ListCollectionsOptions {
+public struct ListCollectionsOptions: BsonEncodable {
     /// A filter to match collections against
     let filter: Document?
 
@@ -16,7 +16,7 @@ public struct ListCollectionsOptions {
     let session: ClientSession?
 }
 
-public struct CreateCollectionOptions {
+public struct CreateCollectionOptions: BsonEncodable {
     /// Indicates whether this will be a capped collection
     let capped: Bool?
 
@@ -83,9 +83,9 @@ public class Database {
      *
      * - Returns: the requested `Collection`
      */
-    func collection(name: String) throws -> Collection {
+    func collection(_ name: String) throws -> Collection {
         guard let collection = mongoc_database_get_collection(self._database, name) else {
-            throw MongoError.invalidDatabase(message: "Could not get collection")
+            throw MongoError.invalidCollection(message: "Could not get collection '\(name)'")
         }
         return Collection(fromCollection: collection)
     }
@@ -99,9 +99,11 @@ public class Database {
      *
      * - Returns: the newly created `Collection`
      */
-    func createCollection(name: String, options: CreateCollectionOptions? = nil) throws -> Collection {
+    func createCollection(_ name: String, options: CreateCollectionOptions? = nil) throws -> Collection {
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
         var error = bson_error_t()
-        guard let collection = mongoc_database_create_collection(self._database, name, nil, &error) else {
+        guard let collection = mongoc_database_create_collection(self._database, name, getDataOrNil(opts), &error) else {
             throw MongoError.createCollectionError(message: toErrorString(error))
         }
         return Collection(fromCollection: collection)
@@ -117,10 +119,15 @@ public class Database {
      * - Returns: a `Cursor` over an array of collections
      */
     func listCollections(options: ListCollectionsOptions? = nil) throws -> Cursor {
-        guard let collections = mongoc_database_find_collections_with_opts(self._database, nil) else {
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
+        guard let collections = mongoc_database_find_collections_with_opts(self._database, getDataOrNil(opts)) else {
             throw MongoError.invalidResponse()
         }
-        return try Cursor(fromCursor: collections)
+        if let error = getCursorError(collections) {
+            throw MongoError.invalidCursor(message: toErrorString(error))
+        }
+        return Cursor(fromCursor: collections)
     }
 
     /**
@@ -133,10 +140,11 @@ public class Database {
      * - Returns: The server response for the command
      */
     func runCommand(command: Document, options: RunCommandOptions? = nil) throws -> Document {
-        var error = bson_error_t()
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
         let reply: UnsafeMutablePointer<bson_t> = bson_new()
-
-        if !mongoc_database_command_with_opts(self._database, command.data, nil, nil, reply, &error) {
+        var error = bson_error_t()
+        if !mongoc_database_command_with_opts(self._database, command.data, nil, getDataOrNil(opts), reply, &error) {
             throw MongoError.runCommandError(message: toErrorString(error))
         }
         return Document(fromData: reply)
