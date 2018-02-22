@@ -104,7 +104,7 @@ public class Database {
         let opts = try encoder.encode(options)
         var error = bson_error_t()
         guard let collection = mongoc_database_create_collection(self._database, name, getDataOrNil(opts), &error) else {
-            throw MongoError.createCollectionError(message: toErrorString(error))
+            throw MongoError.commandError(message: toErrorString(error))
         }
         return Collection(fromCollection: collection)
     }
@@ -145,7 +145,7 @@ public class Database {
         let reply: UnsafeMutablePointer<bson_t> = bson_new()
         var error = bson_error_t()
         if !mongoc_database_command_with_opts(self._database, command.data, nil, getDataOrNil(opts), reply, &error) {
-            throw MongoError.runCommandError(message: toErrorString(error))
+            throw MongoError.commandError(message: toErrorString(error))
         }
         return Document(fromData: reply)
     }
