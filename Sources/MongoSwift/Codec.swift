@@ -17,11 +17,11 @@ public protocol BsonEncodable: BsonValue {
 /// Extension of BSONEncodable to make it actually implement BsonValue.
 extension BsonEncodable {
     public var bsonType: BsonType { return .document }
-    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
+    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
         // Use a BsonEncoder to get a Document, and then call Document.bsonAppend. 
         let encoder = BsonEncoder()
         if let doc = try encoder.encode(self) {
-            try doc.bsonAppend(data: data, forKey: key)
+            try doc.encode(to: data, forKey: key)
         }
     }
 }

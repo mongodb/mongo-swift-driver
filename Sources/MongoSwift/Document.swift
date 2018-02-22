@@ -57,7 +57,7 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
         data = bson
     }
 
-    public func bsonAppend(data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
+    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
         if !bson_append_document(data, key, Int32(key.count), self.data) {
             throw bsonEncodeError(value: self, forKey: key)
         }
@@ -216,7 +216,7 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
             }
 
             do {
-                try value.bsonAppend(data: data, forKey: key)
+                try value.encode(to: data, forKey: key)
             } catch {
                 preconditionFailure("Failed to set the value for key \(key) to \(value)")
             }
