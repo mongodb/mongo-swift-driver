@@ -19,24 +19,11 @@ final class CodecTests: XCTestCase {
             let val3 = [1, 2, [3, 4]] as [Any]
             let val4 = TestClass2()
             let val5 = [3, TestClass2()] as [Any]
-
-            public func encode(to encoder: BsonEncoder) throws {
-                try encoder.encode(val1, forKey: "val1")
-                try encoder.encode(val2, forKey: "val2")
-                try encoder.encode(val3, forKey: "val3")
-                try encoder.encode(val4, forKey: "val4")
-                try encoder.encode(val5, forKey: "val5")
-            }
         }
 
         struct TestClass2: BsonEncodable {
             let x = 1
             let y = 2
-
-            public func encode(to encoder: BsonEncoder) throws {
-                try encoder.encode(x, forKey: "x")
-                try encoder.encode(y, forKey: "y")
-            }
         }
 
         let v = TestClass()
@@ -71,8 +58,7 @@ final class CodecTests: XCTestCase {
                 return
             }
 
-            let expectedSession: Document = ["sessionId": Document(), "clusterTime": Int64(0), "operationTime": Int64(0)]
-            XCTAssertEqual(optionsDoc, ["session": expectedSession, "filter": ["a": 10] as Document, "nameOnly": true] as Document)
+            XCTAssertEqual(optionsDoc, ["session": Document(), "filter": ["a": 10] as Document, "nameOnly": true] as Document)
 
         } catch {
             XCTFail("Failed to encode options")

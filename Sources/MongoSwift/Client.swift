@@ -21,13 +21,6 @@ public struct ListDatabasesOptions: BsonEncodable {
         self.nameOnly = nameOnly
         self.session = session
     }
-
-    /// Specifies how to encode this type to a `BsonEncoder`
-    public func encode(to encoder: BsonEncoder) throws {
-        try encoder.encode(self.filter, forKey: "filter")
-        try encoder.encode(self.nameOnly, forKey: "nameOnly")
-        try encoder.encode(self.session, forKey: "session")
-    }
 }
 
 // A MongoDB Client
