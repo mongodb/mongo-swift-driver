@@ -2,18 +2,59 @@ import Foundation
 @testable import MongoSwift
 import XCTest
 
+/// Useful extensions to the Data type for testing purposes
+extension Data {
+    init?(hexString: String) {
+        let len = hexString.count / 2
+        var data = Data(capacity: len)
+        for i in 0..<len {
+            let j = hexString.index(hexString.startIndex, offsetBy: i*2)
+            let k = hexString.index(j, offsetBy: 2)
+            let bytes = hexString[j..<k]
+            if var num = UInt8(bytes, radix: 16) {
+                data.append(&num, count: 1)
+            } else {
+                return nil
+            }
+        }
+
+        self = data
+    }
+
+    var hexDescription: String {
+        return reduce("") {$0 + String(format: "%02x", $1)}
+    }
+}
+
+/// Cleans and normalizes a given JSON string for comparison purposes
+func clean(json: String) -> String {
+    do {
+        let object = try JSONSerialization.jsonObject(with: json.data(using: .utf8)!, options: [])
+        let data = try JSONSerialization.data(withJSONObject: object, options: [])
+
+        guard let string = String(data: data, encoding: .utf8) else {
+            print("Unable to convert JSON data to Data: \(json)")
+            return String()
+        }
+
+        return string
+    } catch {
+        print("Failed to clean string: \(json)")
+        return String()
+    }
+}
+
 final class DocumentTests: XCTestCase {
     static var allTests: [(String, (DocumentTests) -> () throws -> Void)] {
         return [
             ("testDocument", testDocument),
             ("testEquatable", testEquatable),
             ("testRawBSON", testRawBSON),
-            ("testExtendedJSON", testExtendedJSON)
+            ("testBSONCorpus", testBSONCorpus)
         ]
     }
 
     func testDocument() {
-
         // A Data object to pass into test BSON Binary objects
         guard let testData = Data(base64Encoded: "//8=") else {
             XCTAssert(false, "Failed to create test binary data")
@@ -149,7 +190,18 @@ final class DocumentTests: XCTestCase {
         XCTAssertEqual(doc, fromRawBson)
     }
 
-    func testExtendedJSON() {
+    // swiftlint:disable:next cyclomatic_complexity
+    func testBSONCorpus() {
+        let SKIPPED_CORPUS_TESTS = [
+            /* CDRIVER-1879, can't make Code with embedded NIL */
+            "Javascript Code": ["Embedded nulls"],
+            "Javascript Code with Scope": ["Unicode and embedded null in code string, empty scope"],
+            /* CDRIVER-2223, legacy extended JSON $date syntax uses numbers */
+            "Top-level document validity": ["Bad $date (number, not string or hash)"],
+            /* VS 2013 and older is imprecise stackoverflow.com/questions/32232331 */
+            "Double type": ["1.23456789012345677E+18", "-1.23456789012345677E+18"]
+        ]
+
         do {
             var testFiles = try FileManager.default.contentsOfDirectory(atPath: "Tests/Specs/bson-corpus/tests")
             testFiles = testFiles.filter { $0.hasSuffix(".json") }
@@ -163,6 +215,7 @@ final class DocumentTests: XCTestCase {
                     return
                 }
 
+                let testFileDescription = json["description"] as? String ?? "no description"
                 guard let validCases = json["valid"] as? [Any] else {
                     continue // there are no valid cases defined in this file
                 }
@@ -173,19 +226,88 @@ final class DocumentTests: XCTestCase {
                         return
                     }
 
-                    guard let extJson = validCase["canonical_extjson"] as? String else {
-                        XCTFail("Unable to interpret canonical extjson as string")
+                    let description = validCase["description"] as? String ?? "no description"
+                    if SKIPPED_CORPUS_TESTS[testFileDescription] != nil {
+                        if let skippedTests = SKIPPED_CORPUS_TESTS[testFileDescription] {
+                            if skippedTests.contains(description) {
+                                continue
+                            }
+                        }
+                    }
+
+                    let cB = validCase["canonical_bson"] as? String ?? ""
+                    guard let cBData = Data(hexString: cB) else {
+                        XCTFail("Unable to interpret canonical_bson as Data")
                         return
                     }
 
-                    guard let doc = try? Document(fromJSON: extJson) else {
-                        XCTFail("Unable to parse extended json as Document")
+                    let cEJ = validCase["canonical_extjson"] as? String ?? ""
+                    guard let cEJData = cEJ.data(using: .utf8) else {
+                        XCTFail("Unable to interpret canonical_extjson as Data")
                         return
+                    }
+
+                    let lossy = validCase["lossy"] as? Bool ?? false
+
+                    // for cB input:
+                    // native_to_bson( bson_to_native(cB) ) = cB
+                    XCTAssertEqual(Document(fromBSON: cBData).rawBSON, cBData)
+
+                    // native_to_canonical_extended_json( bson_to_native(cB) ) = cEJ
+                    XCTAssertEqual(clean(json: Document(fromBSON: cBData).canonicalExtendedJSON), clean(json: cEJ))
+
+                    // native_to_relaxed_extended_json( bson_to_native(cB) ) = rEJ (if rEJ exists)
+                    if let rEJ = validCase["relaxed_extjson"] as? String {
+                        XCTAssertEqual(clean(json: Document(fromBSON: cBData).extendedJSON), clean(json: rEJ))
+                    }
+
+                    // for cEJ input:
+                    // native_to_canonical_extended_json( json_to_native(cEJ) ) = cEJ
+                    XCTAssertEqual(clean(json: try Document(fromJSON: cEJData).canonicalExtendedJSON), clean(json: cEJ))
+
+                    // native_to_canonical_extended_json( json_to_native(cEJ) ) = cEJ
+                    if !lossy {
+                        XCTAssertEqual(try Document(fromJSON: cEJData).rawBSON, cBData)
+                    }
+
+                    // for dB input (if it exists):
+                    if let dB = validCase["degenerate_bson"] as? String {
+                        guard let dBData = Data(hexString: dB) else {
+                            XCTFail("Unable to interpret degenerate_bson as Data")
+                            return
+                        }
+
+                        // bson_to_canonical_extended_json(dB) = cEJ
+                        XCTAssertEqual(
+                            clean(json: try Document(fromBSON: dBData).canonicalExtendedJSON), clean(json: cEJ)
+                        )
+
+                        // bson_to_relaxed_extended_json(dB) = rEJ (if rEJ exists)
+                        if let rEJ = validCase["relaxed_extjson"] as? String {
+                            XCTAssertEqual(clean(json: Document(fromBSON: dBData).extendedJSON), clean(json: rEJ))
+                        }
+                    }
+
+                    // for dEJ input (if it exists):
+                    if let dEJ = validCase["degenerate_extjson"] as? String {
+                        // native_to_canonical_extended_json( json_to_native(dEJ) ) = cEJ
+                        XCTAssertEqual(clean(json: try Document(fromJSON: dEJ).canonicalExtendedJSON), clean(json: cEJ))
+
+                        // native_to_bson( json_to_native(dEJ) ) = cB (unless lossy)
+                        if !lossy {
+                            XCTAssertEqual(try Document(fromJSON: dEJ).rawBSON, cBData)
+                        }
+                    }
+
+                    // for rEJ input (if it exists):
+                    if let rEJ = validCase["relaxed_extjson"] as? String {
+                        // native_to_relaxed_extended_json( json_to_native(rEJ) ) = rEJ
+                        XCTAssertEqual(clean(json: try Document(fromJSON: rEJ).extendedJSON), clean(json: rEJ))
                     }
                 }
             }
         } catch {
-            XCTFail("Test setup failed")
+            XCTFail("Test setup failed: \(error)")
         }
     }
 }
