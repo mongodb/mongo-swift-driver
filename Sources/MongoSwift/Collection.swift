@@ -96,7 +96,7 @@ public struct FindOptions: BsonEncodable {
     let comment: String?
 
     /// Indicates the type of cursor to use. This value includes both the tailable and awaitData options.
-    // commenting this out until we decide how to properly encode 
+    // commenting this out until we decide how to encode cursorType.
     // let cursorType: CursorType?
 
     /// The index to use.
@@ -197,11 +197,29 @@ public struct InsertOneResult {
 public struct InsertManyResult {
     /// Map of the index of the inserted document to the id of the inserted document.
     let insertedIds: [Int64: Any]
+
+    init?(from: Document) {
+        guard let inserted = from["insertedIds"] as? [Any] else { return nil }
+        var ids = [Int64: Any]()
+        for (i, id) in inserted.enumerated() {
+            ids[Int64(i)] = id
+        }
+        self.insertedIds = ids
+    }
 }
 
 public struct DeleteResult {
     /// The number of documents that were deleted.
     let deletedCount: Int64
+
+    init?(from: Document) {
+        guard let deletedCount = from["deletedCount"] as? Int else { return nil }
+        self.deletedCount = Int64(deletedCount)
+    }
+
+    init(deletedCount: Int64) {
+        self.deletedCount = deletedCount
+    }
 }
 
 public struct UpdateResult {
@@ -213,6 +231,17 @@ public struct UpdateResult {
 
     /// The identifier of the inserted document if an upsert took place.
     let upsertedId: Any
+
+    /// For initializing an UpdateResult from a server reply. The reply
+    /// contains matchedCount, modifiedCount, and optionally upsertedId. 
+    init?(from: Document) {
+         guard let matched = from["matchedCount"] as? Int, let modified = from["modifiedCount"] as? Int else {
+            return nil
+         }
+         self.matchedCount = Int64(matched)
+         self.modifiedCount = Int64(modified)
+         self.upsertedId = from["upsertedId"] as Any
+    }
 }
 
 public struct IndexModel {
@@ -320,6 +349,10 @@ public class Collection {
      * Drops this collection from its parent database
      */
     func drop() throws {
+        var error = bson_error_t()
+        if !mongoc_collection_drop(self._collection, &error) {
+            throw MongoError.commandError(message: toErrorString(error))
+        }
     }
 
     /**
@@ -334,10 +367,7 @@ public class Collection {
     func find(_ filter: Document, options: FindOptions? = nil) throws -> Cursor {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
-        guard let cursor = mongoc_collection_find_with_opts(
-            self._collection, filter.getData(), getDataOrNil(opts), nil) else {
-            throw MongoError.invalidResponse()
-        }
+        let cursor = mongoc_collection_find_with_opts(self._collection, filter.getData(), getDataOrNil(opts), nil)!
         return Cursor(fromCursor: cursor)
     }
 
@@ -354,10 +384,8 @@ public class Collection {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
         let pipeline: Document = ["pipeline": pipeline]
-        guard let cursor = mongoc_collection_aggregate(
-            self._collection, MONGOC_QUERY_NONE, pipeline.getData(), getDataOrNil(opts), nil) else {
-            throw MongoError.invalidResponse()
-        }
+        let cursor = mongoc_collection_aggregate(
+            self._collection, MONGOC_QUERY_NONE, pipeline.getData(), getDataOrNil(opts), nil)!
         return Cursor(fromCursor: cursor)
     }
 
@@ -374,8 +402,8 @@ public class Collection {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
         var error = bson_error_t()
-
-        // because we already encode skip and limit in the options, pass in 0s so we don't get duplicate parameters. 
+        // because we already encode skip and limit in the options, 
+        // pass in 0s so we don't get duplicate parameter errors. 
         let count = mongoc_collection_count_with_opts(
             self._collection, MONGOC_QUERY_NONE, filter.getData(), 0, 0, getDataOrNil(opts), nil, &error)
 
@@ -385,7 +413,7 @@ public class Collection {
     }
 
     /**
-     * Finds the distinct values for a specified field accross the collection
+     * Finds the distinct values for a specified field across the collection
      *
      * - Parameters:
      *   - fieldName: The field for which the distinct values will be found
@@ -395,6 +423,7 @@ public class Collection {
      * - Returns: A 'Cursor' containing the distinct values for the specified criteria
      */
     func distinct(fieldName: String, filter: Document, options: DistinctOptions? = nil) throws -> Cursor {
+        // This needs to be implemented using mongoc_collection_read_command_with_opts. 
         return Cursor()
     }
 
@@ -414,9 +443,11 @@ public class Collection {
         let opts = try encoder.encode(options)
         var error = bson_error_t()
         if !mongoc_collection_insert_one(self._collection, document.getData(), getDataOrNil(opts), nil, &error) {
-            throw MongoError.writeError(message: toErrorString(error))
+            throw MongoError.commandError(message: toErrorString(error))
         }
-        return nil
+        // Only return a result if we know the _id of the inserted document.
+        guard let _id = document["_id"] else { return nil }
+        return InsertOneResult(insertedId: _id)
     }
 
     /**
@@ -433,18 +464,14 @@ public class Collection {
     func insertMany(_ documents: [Document], options: InsertManyOptions? = nil) throws -> InsertManyResult? {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
+        var docPointers = documents.map { UnsafePointer($0.data) }
+        let reply = Document()
         var error = bson_error_t()
-        var arrayData = bson_new()
-        defer { bson_destroy(arrayData) }
-
-        // let docData = documents.map { UnsafePointer($0.getData()) }
-        // let ptr = UnsafeMutablePointer(mutating: docData)
-
-        // if !mongoc_collection_insert_many(self._collection, ptr, documents.count, getDataOrNil(opts), nil, &error) {
-        //     throw MongoError.writeError(message: toErrorString(error))
-        // }
-
-        return nil
+        if !mongoc_collection_insert_many(
+            self._collection, &docPointers, documents.count, getDataOrNil(opts), reply.getData(), &error) {
+            throw MongoError.commandError(message: toErrorString(error))
+        }
+        return InsertManyResult(from: reply)
     }
 
     /**
@@ -461,12 +488,13 @@ public class Collection {
     func replaceOne(filter: Document, replacement: Document, options: ReplaceOptions? = nil) throws -> UpdateResult? {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
+        let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_replace_one(
-            self._collection, filter.getData(), replacement.getData(), getDataOrNil(opts), nil, &error) {
-            throw MongoError.writeError(message: toErrorString(error))
+            self._collection, filter.getData(), replacement.getData(), getDataOrNil(opts), reply.getData(), &error) {
+            throw MongoError.commandError(message: toErrorString(error))
         }
-        return nil
+        return UpdateResult(from: reply)
     }
 
     /**
@@ -483,12 +511,13 @@ public class Collection {
     func updateOne(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
+        let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_update_one(
-            self._collection, filter.getData(), update.getData(), getDataOrNil(opts), nil, &error) {
-            throw MongoError.writeError(message: toErrorString(error))
+            self._collection, filter.getData(), update.getData(), getDataOrNil(opts), reply.getData(), &error) {
+            throw MongoError.commandError(message: toErrorString(error))
         }
-        return nil
+        return UpdateResult(from: reply)
     }
 
     /**
@@ -505,12 +534,13 @@ public class Collection {
     func updateMany(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
+        let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_update_many(
-            self._collection, filter.getData(), update.getData(), getDataOrNil(opts), nil, &error) {
-            throw MongoError.writeError(message: toErrorString(error))
+            self._collection, filter.getData(), update.getData(), getDataOrNil(opts), reply.getData(), &error) {
+            throw MongoError.commandError(message: toErrorString(error))
         }
-        return nil
+        return UpdateResult(from: reply)
     }
 
     /**
@@ -523,14 +553,16 @@ public class Collection {
      * - Returns: The optional result of performing the deletion. If the write concern is
      *            unacknowledged, nil is returned
      */
-    func deleteOne(_ filter: Document, options: DeleteOptions?) throws -> DeleteResult? {
+    func deleteOne(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
+        let reply = Document()
         var error = bson_error_t()
-        if !mongoc_collection_delete_one(self._collection, filter.getData(), getDataOrNil(opts), nil, &error) {
-            throw MongoError.writeError(message: toErrorString(error))
+        if !mongoc_collection_delete_one(
+            self._collection, filter.getData(), getDataOrNil(opts), reply.getData(), &error) {
+            throw MongoError.commandError(message: toErrorString(error))
         }
-        return nil
+        return DeleteResult(from: reply)
     }
 
     /**
@@ -543,14 +575,16 @@ public class Collection {
      * - Returns: The optional result of performing the deletion. If the write concern is
      *            unacknowledged, nil is returned
      */
-    func deleteMany(_ filter: Document, options: DeleteOptions?) throws -> DeleteResult? {
+    func deleteMany(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
+        let reply = Document()
         var error = bson_error_t()
-        if !mongoc_collection_delete_many(self._collection, filter.getData(), getDataOrNil(opts), nil, &error) {
-            throw MongoError.writeError(message: toErrorString(error))
+        if !mongoc_collection_delete_many(
+            self._collection, filter.getData(), getDataOrNil(opts), reply.getData(), &error) {
+            throw MongoError.commandError(message: toErrorString(error))
         }
-        return nil
+        return DeleteResult(from: reply)
     }
 
     /**
@@ -562,7 +596,7 @@ public class Collection {
      * - Returns: The name of the created index
      */
     func createIndex(model: IndexModel) throws -> String {
-        // http://mongoc.org/libmongoc/current/mongoc_collection_create_index_with_opts.html
+        // This will be implemented using mongoc_collection_write_command_with_opts.
         return "index_name"
     }
 
@@ -576,7 +610,6 @@ public class Collection {
      * - Returns: The name of the created index
      */
     func createIndex(keys: Document, options: IndexOptions? = nil) throws -> String {
-        // http://mongoc.org/libmongoc/current/mongoc_collection_create_index_with_opts.html
         return try createIndex(model: IndexModel(keys: keys, options: options))
     }
 
@@ -589,7 +622,7 @@ public class Collection {
      * - Returns: The names of all the indexes that were created
      */
     func createIndexes(models: [IndexModel]) throws -> [String] {
-        // http://mongoc.org/libmongoc/current/mongoc_collection_create_index_with_opts.html
+        // This will be implemented using mongoc_collection_write_command_with_opts.
         return ["index_name"]
     }
 
@@ -604,9 +637,11 @@ public class Collection {
     func dropIndex(name: String) throws -> Document {
         var error = bson_error_t()
         if !mongoc_collection_drop_index(self._collection, name, &error) {
-            throw MongoError.writeError(message: toErrorString(error))
+            throw MongoError.commandError(message: toErrorString(error))
         }
-        return ["ok": 1] // the drop index function just returns a bool
+        // the drop index function just returns a bool so I'm not sure
+        // what to put in this document
+        return ["ok": 1]
     }
 
     /**
@@ -631,6 +666,7 @@ public class Collection {
      * - Returns: The result of the command returned from the server
      */
     func dropIndex(model: IndexModel) throws -> Document {
+        // This will be implemented using mongoc_collection_write_command_with_opts.
         return Document()
     }
 
@@ -640,6 +676,7 @@ public class Collection {
      * - Returns: The result of the command returned from the server
      */
     func dropIndexes() throws -> Document {
+        // This will be implemented using mongoc_collection_write_command_with_opts.
         return Document()
     }
 
@@ -649,9 +686,7 @@ public class Collection {
      * - Returns: A `Cursor` over a collection of index names
      */
     func listIndexes() throws -> Cursor {
-        guard let cursor = mongoc_collection_find_indexes_with_opts(self._collection, nil) else {
-            throw MongoError.commandError(message: "Failed to get list of indexes")
-        }
+        let cursor = mongoc_collection_find_indexes_with_opts(self._collection, nil)!
         return Cursor(fromCursor: cursor)
     }
 }
