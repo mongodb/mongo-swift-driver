@@ -44,6 +44,10 @@ func clean(json: String) -> String {
     }
 }
 
+func assertJsonEqual(_ lhs: String, _ rhs: String) {
+    XCTAssertEqual(clean(json: lhs), clean(json: rhs))
+}
+
 final class DocumentTests: XCTestCase {
     static var allTests: [(String, (DocumentTests) -> () throws -> Void)] {
         return [
@@ -227,11 +231,9 @@ final class DocumentTests: XCTestCase {
                     }
 
                     let description = validCase["description"] as? String ?? "no description"
-                    if SKIPPED_CORPUS_TESTS[testFileDescription] != nil {
-                        if let skippedTests = SKIPPED_CORPUS_TESTS[testFileDescription] {
-                            if skippedTests.contains(description) {
-                                continue
-                            }
+                    if let skippedTests = SKIPPED_CORPUS_TESTS[testFileDescription] {
+                        if skippedTests.contains(description) {
+                            continue
                         }
                     }
 
@@ -254,16 +256,16 @@ final class DocumentTests: XCTestCase {
                     XCTAssertEqual(Document(fromBSON: cBData).rawBSON, cBData)
 
                     // native_to_canonical_extended_json( bson_to_native(cB) ) = cEJ
-                    XCTAssertEqual(clean(json: Document(fromBSON: cBData).canonicalExtendedJSON), clean(json: cEJ))
+                    assertJsonEqual(Document(fromBSON: cBData).canonicalExtendedJSON, cEJ)
 
                     // native_to_relaxed_extended_json( bson_to_native(cB) ) = rEJ (if rEJ exists)
                     if let rEJ = validCase["relaxed_extjson"] as? String {
-                        XCTAssertEqual(clean(json: Document(fromBSON: cBData).extendedJSON), clean(json: rEJ))
+                        assertJsonEqual(Document(fromBSON: cBData).extendedJSON, rEJ)
                     }
 
                     // for cEJ input:
                     // native_to_canonical_extended_json( json_to_native(cEJ) ) = cEJ
-                    XCTAssertEqual(clean(json: try Document(fromJSON: cEJData).canonicalExtendedJSON), clean(json: cEJ))
+                    assertJsonEqual(try Document(fromJSON: cEJData).canonicalExtendedJSON, cEJ)
 
                     // native_to_canonical_extended_json( json_to_native(cEJ) ) = cEJ
                     if !lossy {
@@ -278,20 +280,18 @@ final class DocumentTests: XCTestCase {
                         }
 
                         // bson_to_canonical_extended_json(dB) = cEJ
-                        XCTAssertEqual(
-                            clean(json: try Document(fromBSON: dBData).canonicalExtendedJSON), clean(json: cEJ)
-                        )
+                        assertJsonEqual(try Document(fromBSON: dBData).canonicalExtendedJSON, cEJ)
 
                         // bson_to_relaxed_extended_json(dB) = rEJ (if rEJ exists)
                         if let rEJ = validCase["relaxed_extjson"] as? String {
-                            XCTAssertEqual(clean(json: Document(fromBSON: dBData).extendedJSON), clean(json: rEJ))
+                            assertJsonEqual(Document(fromBSON: dBData).extendedJSON, rEJ)
                         }
                     }
 
                     // for dEJ input (if it exists):
                     if let dEJ = validCase["degenerate_extjson"] as? String {
                         // native_to_canonical_extended_json( json_to_native(dEJ) ) = cEJ
-                        XCTAssertEqual(clean(json: try Document(fromJSON: dEJ).canonicalExtendedJSON), clean(json: cEJ))
+                        assertJsonEqual(try Document(fromJSON: dEJ).canonicalExtendedJSON, cEJ)
 
                         // native_to_bson( json_to_native(dEJ) ) = cB (unless lossy)
                         if !lossy {
@@ -302,7 +302,7 @@ final class DocumentTests: XCTestCase {
                     // for rEJ input (if it exists):
                     if let rEJ = validCase["relaxed_extjson"] as? String {
                         // native_to_relaxed_extended_json( json_to_native(rEJ) ) = rEJ
-                        XCTAssertEqual(clean(json: try Document(fromJSON: rEJ).extendedJSON), clean(json: rEJ))
+                        assertJsonEqual(try Document(fromJSON: rEJ).extendedJSON, rEJ)
                     }
                 }
             }
