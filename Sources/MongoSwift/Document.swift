@@ -39,14 +39,13 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
      * Constructs a new `Document` from the provided JSON text
      *
      * - Parameters:
-     *   - json: a JSON document to parse into a `Document`
+     *   - fromJSON: a JSON document as Data to parse into a `Document`
      *
      * - Returns: the parsed `Document`
      */
-    public init(fromJson: String) throws {
+    public init(fromJSON: Data) throws {
         var error = bson_error_t()
-        let buf = Array(fromJson.utf8)
-        guard let bson = bson_new_from_json(buf, buf.count, &error) else {
+        guard let bson = bson_new_from_json([UInt8](fromJSON), fromJSON.count, &error) else {
             throw MongoError.bsonParseError(
                 domain: error.domain,
                 code: error.code,
@@ -55,6 +54,45 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
         }
 
         data = bson
+    }
+
+    /// Convenience initializer for constructing a `Document` from a `String`
+    public convenience init(fromJSON json: String) throws {
+        try self.init(fromJSON: json.data(using: .utf8)!)
+    }
+
+    /**
+     * Constructs a `Document` from raw BSON data
+     */
+    public init(fromBSON: Data) {
+        data = bson_new_from_data([UInt8](fromBSON), fromBSON.count)
+    }
+
+    /// Returns a relaxed extended JSON representation of this Document
+    var extendedJSON: String {
+        let json = bson_as_relaxed_extended_json(self.data, nil)
+        guard let jsonData = json else {
+            return String()
+        }
+
+        return String(cString: jsonData)
+    }
+
+    /// Returns a canonical extended JSON representation of this Document
+    var canonicalExtendedJSON: String {
+        let json = bson_as_canonical_extended_json(self.data, nil)
+        guard let jsonData = json else {
+            return String()
+        }
+
+        return String(cString: jsonData)
+    }
+
+    /// Returns a copy of the raw BSON data represented as Data
+    var rawBSON: Data {
+        let data = bson_get_data(self.data)
+        let length = self.data.pointee.len
+        return Data(bytes: data!, count: Int(length))
     }
 
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
@@ -72,12 +110,7 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
     }
 
     public var description: String {
-        let json = bson_as_relaxed_extended_json(self.data, nil)
-        guard let jsonData = json else {
-            return String()
-        }
-
-        return String(cString: jsonData)
+        return self.extendedJSON
     }
 
     subscript(key: String) -> BsonValue? {

@@ -7,6 +7,7 @@ final class DocumentTests: XCTestCase {
         return [
             ("testDocument", testDocument),
             ("testEquatable", testEquatable),
+            ("testRawBSON", testRawBSON),
             ("testExtendedJSON", testExtendedJSON)
         ]
     }
@@ -141,6 +142,13 @@ final class DocumentTests: XCTestCase {
         )
     }
 
+    func testRawBSON() {
+        let doc = try? Document(fromJSON: "{\"a\" : [{\"$numberInt\": \"10\"}]}")
+        let rawBson = doc!.rawBSON
+        let fromRawBson = Document(fromBSON: rawBson)
+        XCTAssertEqual(doc, fromRawBson)
+    }
+
     func testExtendedJSON() {
         do {
             var testFiles = try FileManager.default.contentsOfDirectory(atPath: "Tests/Specs/bson-corpus/tests")
@@ -170,8 +178,7 @@ final class DocumentTests: XCTestCase {
                         return
                     }
 
-                    // print("valid case: \(extJson)")
-                    guard let doc = try? Document(fromJson: extJson) else {
+                    guard let doc = try? Document(fromJSON: extJson) else {
                         XCTFail("Unable to parse extended json as Document")
                         return
                     }
