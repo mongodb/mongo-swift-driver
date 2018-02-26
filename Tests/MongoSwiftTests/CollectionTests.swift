@@ -5,119 +5,152 @@ import XCTest
 final class CollectionTests: XCTestCase {
     static var allTests: [(String, (CollectionTests) -> () throws -> Void)] {
         return [
-            ("testCollection", testCollection)
+            ("testCount", testCount),
+            ("testInsertOne", testInsertOne),
+            ("testAggregate", testAggregate),
+            ("testDrop", testDrop),
+            ("testInsertMany", testInsertMany),
+            ("testFind", testFind),
+            ("testDeleteOne", testDeleteOne),
+            ("testDeleteMany", testDeleteMany),
+            ("testReplaceOne", testReplaceOne),
+            ("testUpdateOne", testUpdateOne),
+            ("testUpdateMany", testUpdateMany)
         ]
     }
 
-    func testCollection() {
-    	do {
-            let client = try Client(connectionString: "mongodb://localhost:27017/")
-            let db = try client.db("local")
-            let collName = "coll" + String(describing: Date())
-            let coll = try db.createCollection(collName)
+    let collName = "coll" + String(describing: Date())
+    let doc1: Document = ["_id": 1, "cat": "dog"]
+    let doc2: Document = ["_id": 2, "cat": "cat"]
 
-            // Test count 
-            XCTAssertEqual(try coll.count([:]), 0)
+    func testCount() throws {
+        let client = try Client()
+        let coll = try client.db("local").collection(collName)
+        try coll.insertOne(doc1)
+        XCTAssertEqual(try coll.count(), 1)
 
-            // Test count with options
-            let options = CountOptions(limit: 5, maxTimeMS: 1000, skip: 5)
-            let countWithOptions = try coll.count([:], options: options)
-            XCTAssertEqual(countWithOptions, 0)
+        let options = CountOptions(limit: 5, maxTimeMS: 1000, skip: 5)
+        let countWithOptions = try coll.count(options: options)
+        XCTAssertEqual(countWithOptions, 0)
+        try coll.drop()
+    }
 
-            // Test insertOne
-            let doc1: Document = ["_id": 1, "cat": "dog"]
-            guard let result: InsertOneResult = try coll.insertOne(doc1) else {
-            	XCTFail("No result from insertion")
-            	return
-            }
-            XCTAssertEqual(result.insertedId as? Int, 1)
+    func testInsertOne() throws {
+        let client = try Client()
+        let coll = try client.db("local").collection(collName)
+        guard let result: InsertOneResult = try coll.insertOne(doc1) else {
+            XCTFail("No result from insertion")
+            return
+        }
+        XCTAssertEqual(result.insertedId as? Int, 1)
 
-            let doc2: Document = ["_id": 2, "cat": "cat"]
-            try coll.insertOne(doc2)
+        try coll.insertOne(doc2)
+        XCTAssertEqual(try coll.count(), 2)
+        try coll.drop()
+    }
 
-            // Test non-zero count
-            XCTAssertEqual(try coll.count([:]), 2)
+    func testAggregate() throws {
+        let client = try Client()
+        let coll = try client.db("local").collection(collName)
+        try coll.insertMany([doc1, doc2])
+        let agg = Array(try coll.aggregate([["$project": ["_id": 0, "cat": 1] as Document]]))
+        XCTAssertEqual(agg, [["cat": "dog"], ["cat": "cat"]] as [Document])
+        try coll.drop()
+    }
 
-            // Test aggregate with a basic pipeline
-            let agg = try coll.aggregate([["$project": ["_id": 0, "cat": 1] as Document]])
-            let docs = Array(agg)
-            XCTAssertEqual(docs, [["cat": "dog"], ["cat": "cat"]] as [Document])
+    func testDrop() throws {
+        let client = try Client()
+        let coll = try client.db("local").collection(collName)
+        try coll.insertMany([doc1, doc2])
+        try coll.drop()
+        XCTAssertEqual(try coll.count(), 0)
+    }
 
-            // Test drop
-            try coll.drop()
-            XCTAssertEqual(try coll.count([:]), 0)
+    func testInsertMany() throws {
+        let client = try Client()
+        let coll = try client.db("local").collection(collName)
+        try coll.insertMany([doc1, doc2])
+        XCTAssertEqual(try coll.count(), 2)
+        try coll.drop()
+    }
 
-            // Test insertMany
-            try coll.insertMany([doc1, doc2])
-            XCTAssertEqual(try coll.count([:]), 2)
+    func testFind() throws {
+        let client = try Client()
+        let coll = try client.db("local").collection(collName)
+        try coll.insertMany([doc1, doc2])
+        let findResult = try coll.find(["cat": "cat"])
+        XCTAssertEqual(findResult.next(), ["_id": 2, "cat": "cat"])
+        XCTAssertNil(findResult.next())
+        try coll.drop()
+    }
 
-            // Test find
-            let findResult = try coll.find(["cat": "cat"])
-            XCTAssertEqual(findResult.next(), ["_id": 2, "cat": "cat"])
-            XCTAssertNil(findResult.next())
+    func testDeleteOne() throws {
+        let client = try Client()
+        let coll = try client.db("local").collection(collName)
+        try coll.insertMany([doc1, doc2])
+        guard let deleteOneResult = try coll.deleteOne(["cat": "cat"]) else {
+            XCTFail("No result from deleteOne")
+            return
+        }
+        XCTAssertEqual(deleteOneResult.deletedCount, 1)
+        try coll.drop()
+    }
 
-            // Test deleteOne
-            guard let deleteOneResult = try coll.deleteOne(["cat": "cat"]) else {
-                XCTFail("No result from deleteOne")
-                return
-            }
-            XCTAssertEqual(deleteOneResult.deletedCount, 1)
+    func testDeleteMany() throws {
+        let client = try Client()
+        let coll = try client.db("local").collection(collName)
+        try coll.insertMany([doc1, doc2])
+        guard let deleteManyResult = try coll.deleteMany([:]) else {
+            XCTFail("No result from deleteMany")
+            return
+        }
+        XCTAssertEqual(deleteManyResult.deletedCount, 2)
+        try coll.drop()
+    }
 
-            // Test deleteMany 
-            try coll.insertOne(doc2)
-            guard let deleteManyResult = try coll.deleteMany([:]) else {
-                XCTFail("No result from deleteMany")
-                return
-            }
-            XCTAssertEqual(deleteManyResult.deletedCount, 2)
+    func testReplaceOne() throws {
+        let client = try Client()
+        let coll = try client.db("local").collection(collName)
+        try coll.insertOne(doc1)
+        guard let replaceOneResult: UpdateResult = try coll.replaceOne(
+            filter: ["_id": 1], replacement: ["apple": "banana"]) else {
+            XCTFail("No result from replaceOne")
+            return
+        }
 
-            // We can't actually create indexes yet, but test that trying to drop the existing
-            //  _id index fails:
-            do {
-                try coll.dropIndex(name: "_id_")
-                XCTFail("Dropping _id_ index should fail")
-            } catch is MongoError {
-                print("error")
-            }
+        XCTAssertEqual(replaceOneResult.matchedCount, 1)
+        XCTAssertEqual(replaceOneResult.modifiedCount, 1)
+        try coll.drop()
+    }
 
-            // Test replaceOne 
-            try coll.insertOne(doc1)
-            guard let replaceOneResult: UpdateResult = try coll.replaceOne(
-                filter: ["_id": 1], replacement: ["apple": "banana"]) else {
-                XCTFail("No result from replaceOne")
-                return
-            }
+    func testUpdateOne() throws {
+        let client = try Client()
+        let coll = try client.db("local").collection(collName)
+        try coll.insertMany([doc1, doc2])
+        guard let updateOneResult: UpdateResult = try coll.updateOne(
+            filter: ["_id": 2], update: ["$set": ["apple": "banana"] as Document]) else {
+            XCTFail("No result from updateOne")
+            return
+        }
 
-            XCTAssertEqual(replaceOneResult.matchedCount, 1)
-            XCTAssertEqual(replaceOneResult.modifiedCount, 1)
+        XCTAssertEqual(updateOneResult.matchedCount, 1)
+        XCTAssertEqual(updateOneResult.modifiedCount, 1)
+        try coll.drop()
 
-            // Test updateOne
-            try coll.insertOne(doc2)
-            guard let updateOneResult: UpdateResult = try coll.updateOne(
-                filter: ["_id": 2], update: ["$set": ["apple": "banana"] as Document]) else {
-                XCTFail("No result from updateOne")
-                return
-            }
+    }
 
-            XCTAssertEqual(updateOneResult.matchedCount, 1)
-            XCTAssertEqual(updateOneResult.modifiedCount, 1)
+    func testUpdateMany() throws {
+        let client = try Client()
+        let coll = try client.db("local").collection(collName)
+        try coll.insertMany([doc1, doc2])
+        guard let updateManyResult: UpdateResult = try coll.updateMany(
+            filter: [:], update: ["$set": ["apple": "pear"] as Document]) else {
+            XCTFail("No result from updateMany")
+            return
+        }
 
-            // test that updates worked
-            XCTAssertEqual(try coll.count(["apple": "banana"]), 2)
-
-            // Test updateMany
-            guard let updateManyResult: UpdateResult = try coll.updateMany(
-                filter: [:], update: ["$set": ["apple": "pear"] as Document]) else {
-                XCTFail("No result from updateMany")
-                return
-            }
-
-            XCTAssertEqual(updateManyResult.matchedCount, 2)
-            XCTAssertEqual(updateManyResult.modifiedCount, 2)
-
-            try coll.drop()
-    	} catch {
-    		XCTFail("Error: \(error)")
-    	}
+        XCTAssertEqual(updateManyResult.matchedCount, 2)
+        XCTAssertEqual(updateManyResult.modifiedCount, 2)
+        try coll.drop()
     }
 }

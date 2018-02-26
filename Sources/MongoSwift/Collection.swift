@@ -274,14 +274,14 @@ public struct InsertOneResult {
 
 public struct InsertManyResult {
     /// Map of the index of the inserted document to the id of the inserted document.
-    let insertedIds: [Int64: Any]
+    let insertedIds: [Int64: String]
 
     /// Given a server response to an insertMany command, creates a corresponding
     /// `InsertManyResult`. If the `from` Document does not have an `insertedIds`
     /// field, the initialization will fail.
     init?(from: Document) {
-        guard let inserted = from["insertedIds"] as? [Any] else { return nil }
-        var ids = [Int64: Any]()
+        guard let inserted = from["insertedIds"] as? [String] else { return nil }
+        var ids = [Int64: String]()
         for (i, id) in inserted.enumerated() {
             ids[Int64(i)] = id
         }
@@ -291,23 +291,23 @@ public struct InsertManyResult {
 
 public struct DeleteResult {
     /// The number of documents that were deleted.
-    let deletedCount: Int64
+    let deletedCount: Int
 
     /// Given a server response to a delete command, creates a corresponding
     /// `DeleteResult`. If the `from` Document does not have a `deletedCount`
     /// field, the initialization will fail.
     init?(from: Document) {
         guard let deletedCount = from["deletedCount"] as? Int else { return nil }
-        self.deletedCount = Int64(deletedCount)
+        self.deletedCount = deletedCount
     }
 }
 
 public struct UpdateResult {
     /// The number of documents that matched the filter.
-    let matchedCount: Int64
+    let matchedCount: Int
 
     /// The number of documents that were modified.
-    let modifiedCount: Int64
+    let modifiedCount: Int
 
     /// The identifier of the inserted document if an upsert took place.
     let upsertedId: Any
@@ -320,8 +320,8 @@ public struct UpdateResult {
          guard let matched = from["matchedCount"] as? Int, let modified = from["modifiedCount"] as? Int else {
             return nil
          }
-         self.matchedCount = Int64(matched)
-         self.modifiedCount = Int64(modified)
+         self.matchedCount = matched
+         self.modifiedCount = modified
          self.upsertedId = from["upsertedId"] as Any
     }
 }
@@ -481,7 +481,9 @@ public class Collection {
     func find(_ filter: Document, options: FindOptions? = nil) throws -> Cursor {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
-        let cursor = mongoc_collection_find_with_opts(self._collection, filter.getData(), getDataOrNil(opts), nil)!
+        guard let cursor = mongoc_collection_find_with_opts(self._collection, filter.getData(), getDataOrNil(opts), nil) else {
+            throw MongoError.invalidResponse()
+        }
         return Cursor(fromCursor: cursor)
     }
 
@@ -498,8 +500,10 @@ public class Collection {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
         let pipeline: Document = ["pipeline": pipeline]
-        let cursor = mongoc_collection_aggregate(
-            self._collection, MONGOC_QUERY_NONE, pipeline.getData(), getDataOrNil(opts), nil)!
+        guard let cursor = mongoc_collection_aggregate(
+            self._collection, MONGOC_QUERY_NONE, pipeline.getData(), getDataOrNil(opts), nil) else {
+            throw MongoError.invalidResponse()
+        }
         return Cursor(fromCursor: cursor)
     }
 
@@ -512,7 +516,7 @@ public class Collection {
      *
      * - Returns: The count of the documents that matched the filter
      */
-    func count(_ filter: Document, options: CountOptions? = nil) throws -> Int {
+    func count(_ filter: Document = [:], options: CountOptions? = nil) throws -> Int {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
         var error = bson_error_t()
@@ -537,7 +541,7 @@ public class Collection {
      * - Returns: A 'Cursor' containing the distinct values for the specified criteria
      */
     func distinct(fieldName: String, filter: Document, options: DistinctOptions? = nil) throws -> Cursor {
-        // This needs to be implemented using mongoc_collection_read_command_with_opts. 
+        // TODO: SWIFT-35
         return Cursor()
     }
 
@@ -710,7 +714,7 @@ public class Collection {
      * - Returns: The name of the created index
      */
     func createIndex(model: IndexModel) throws -> String {
-        // This will be implemented using mongoc_collection_write_command_with_opts.
+        // TODO: SWIFT-35 
         return "index_name"
     }
 
@@ -736,7 +740,7 @@ public class Collection {
      * - Returns: The names of all the indexes that were created
      */
     func createIndexes(models: [IndexModel]) throws -> [String] {
-        // This will be implemented using mongoc_collection_write_command_with_opts.
+        // TODO: SWIFT-35
         return ["index_name"]
     }
 
@@ -749,13 +753,8 @@ public class Collection {
      * - Returns: The result of the command returned from the server
      */
     func dropIndex(name: String) throws -> Document {
-        var error = bson_error_t()
-        if !mongoc_collection_drop_index(self._collection, name, &error) {
-            throw MongoError.commandError(message: toErrorString(error))
-        }
-        // the drop index function just returns a bool so I'm not sure
-        // what to put in this document
-        return ["ok": 1]
+        // TODO: SWIFT-35
+        return Document()
     }
 
     /**
@@ -780,7 +779,7 @@ public class Collection {
      * - Returns: The result of the command returned from the server
      */
     func dropIndex(model: IndexModel) throws -> Document {
-        // This will be implemented using mongoc_collection_write_command_with_opts.
+        // TODO: SWIFT-35
         return Document()
     }
 
@@ -790,7 +789,7 @@ public class Collection {
      * - Returns: The result of the command returned from the server
      */
     func dropIndexes() throws -> Document {
-        // This will be implemented using mongoc_collection_write_command_with_opts.
+        // TODO: SWIFT-35
         return Document()
     }
 
@@ -800,7 +799,9 @@ public class Collection {
      * - Returns: A `Cursor` over a collection of index names
      */
     func listIndexes() throws -> Cursor {
-        let cursor = mongoc_collection_find_indexes_with_opts(self._collection, nil)!
+        guard let cursor = mongoc_collection_find_indexes_with_opts(self._collection, nil) else {
+            throw MongoError.invalidResponse()
+        }
         return Cursor(fromCursor: cursor)
     }
 }
