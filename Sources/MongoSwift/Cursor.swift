@@ -3,6 +3,7 @@ import libmongoc
 // A Cursor
 public class Cursor: Sequence, IteratorProtocol {
     private var _cursor = OpaquePointer(bitPattern: 1)
+    private var _client: Client?
 
     /// get rid of this
     init() {}
@@ -10,8 +11,9 @@ public class Cursor: Sequence, IteratorProtocol {
     /**
      * Initializes a new Cursor instance, not meant to be instantiated directly
      */
-    public init(fromCursor: OpaquePointer) {
+    public init(fromCursor: OpaquePointer, client: Client) {
         self._cursor = fromCursor
+        self._client = client
     }
 
     /**
@@ -31,6 +33,7 @@ public class Cursor: Sequence, IteratorProtocol {
 
         mongoc_cursor_destroy(cursor)
         self._cursor = nil
+        self._client = nil
     }
 
     /**

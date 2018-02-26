@@ -440,11 +440,13 @@ public struct IndexOptions: BsonEncodable {
 // A MongoDB Collection
 public class Collection {
     private var _collection = OpaquePointer(bitPattern: 1)
+    private var _client: Client?
     /**
         Initializes a new Collection instance, not meant to be instantiated directly
      */
-    public init(fromCollection: OpaquePointer) {
+    public init(fromCollection: OpaquePointer, client: Client) {
         self._collection = fromCollection
+        self._client = client
     }
 
     /**
@@ -457,6 +459,7 @@ public class Collection {
 
         mongoc_collection_destroy(collection)
         self._collection = nil
+        self._client = nil
     }
 
     /**
@@ -484,7 +487,10 @@ public class Collection {
         guard let cursor = mongoc_collection_find_with_opts(self._collection, filter.data, getDataOrNil(opts), nil) else {
             throw MongoError.invalidResponse()
         }
-        return Cursor(fromCursor: cursor)
+        guard let client = self._client else {
+            throw MongoError.invalidClient()
+        }
+        return Cursor(fromCursor: cursor, client: client)
     }
 
     /**
@@ -504,7 +510,10 @@ public class Collection {
             self._collection, MONGOC_QUERY_NONE, pipeline.data, getDataOrNil(opts), nil) else {
             throw MongoError.invalidResponse()
         }
-        return Cursor(fromCursor: cursor)
+        guard let client = self._client else {
+            throw MongoError.invalidClient()
+        }
+        return Cursor(fromCursor: cursor, client: client)
     }
 
     /**
@@ -802,6 +811,9 @@ public class Collection {
         guard let cursor = mongoc_collection_find_indexes_with_opts(self._collection, nil) else {
             throw MongoError.invalidResponse()
         }
-        return Cursor(fromCursor: cursor)
+        guard let client = self._client else {
+            throw MongoError.invalidClient()
+        }
+        return Cursor(fromCursor: cursor, client: client)
     }
 }

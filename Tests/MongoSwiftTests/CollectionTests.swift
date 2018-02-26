@@ -23,9 +23,12 @@ final class CollectionTests: XCTestCase {
     let doc1: Document = ["_id": 1, "cat": "dog"]
     let doc2: Document = ["_id": 2, "cat": "cat"]
 
+    func getCollection() throws -> MongoSwift.Collection {
+        return try Client().db("local").collection(collName)
+    }
+
     func testCount() throws {
-        let client = try Client()
-        let coll = try client.db("local").collection(collName)
+        let coll = try getCollection()
         try coll.insertOne(doc1)
         XCTAssertEqual(try coll.count(), 1)
 
@@ -36,8 +39,7 @@ final class CollectionTests: XCTestCase {
     }
 
     func testInsertOne() throws {
-        let client = try Client()
-        let coll = try client.db("local").collection(collName)
+        let coll = try getCollection()
         guard let result: InsertOneResult = try coll.insertOne(doc1) else {
             XCTFail("No result from insertion")
             return
@@ -50,8 +52,7 @@ final class CollectionTests: XCTestCase {
     }
 
     func testAggregate() throws {
-        let client = try Client()
-        let coll = try client.db("local").collection(collName)
+        let coll = try getCollection()
         try coll.insertMany([doc1, doc2])
         let agg = Array(try coll.aggregate([["$project": ["_id": 0, "cat": 1] as Document]]))
         XCTAssertEqual(agg, [["cat": "dog"], ["cat": "cat"]] as [Document])
@@ -59,24 +60,21 @@ final class CollectionTests: XCTestCase {
     }
 
     func testDrop() throws {
-        let client = try Client()
-        let coll = try client.db("local").collection(collName)
+        let coll = try getCollection()
         try coll.insertMany([doc1, doc2])
         try coll.drop()
         XCTAssertEqual(try coll.count(), 0)
     }
 
     func testInsertMany() throws {
-        let client = try Client()
-        let coll = try client.db("local").collection(collName)
+        let coll = try getCollection()
         try coll.insertMany([doc1, doc2])
         XCTAssertEqual(try coll.count(), 2)
         try coll.drop()
     }
 
     func testFind() throws {
-        let client = try Client()
-        let coll = try client.db("local").collection(collName)
+        let coll = try getCollection()
         try coll.insertMany([doc1, doc2])
         let findResult = try coll.find(["cat": "cat"])
         XCTAssertEqual(findResult.next(), ["_id": 2, "cat": "cat"])
@@ -85,8 +83,7 @@ final class CollectionTests: XCTestCase {
     }
 
     func testDeleteOne() throws {
-        let client = try Client()
-        let coll = try client.db("local").collection(collName)
+        let coll = try getCollection()
         try coll.insertMany([doc1, doc2])
         guard let deleteOneResult = try coll.deleteOne(["cat": "cat"]) else {
             XCTFail("No result from deleteOne")
@@ -97,8 +94,7 @@ final class CollectionTests: XCTestCase {
     }
 
     func testDeleteMany() throws {
-        let client = try Client()
-        let coll = try client.db("local").collection(collName)
+        let coll = try getCollection()
         try coll.insertMany([doc1, doc2])
         guard let deleteManyResult = try coll.deleteMany([:]) else {
             XCTFail("No result from deleteMany")
@@ -109,8 +105,7 @@ final class CollectionTests: XCTestCase {
     }
 
     func testReplaceOne() throws {
-        let client = try Client()
-        let coll = try client.db("local").collection(collName)
+        let coll = try getCollection()
         try coll.insertOne(doc1)
         guard let replaceOneResult: UpdateResult = try coll.replaceOne(
             filter: ["_id": 1], replacement: ["apple": "banana"]) else {
@@ -124,8 +119,7 @@ final class CollectionTests: XCTestCase {
     }
 
     func testUpdateOne() throws {
-        let client = try Client()
-        let coll = try client.db("local").collection(collName)
+        let coll = try getCollection()
         try coll.insertMany([doc1, doc2])
         guard let updateOneResult: UpdateResult = try coll.updateOne(
             filter: ["_id": 2], update: ["$set": ["apple": "banana"] as Document]) else {
@@ -140,8 +134,7 @@ final class CollectionTests: XCTestCase {
     }
 
     func testUpdateMany() throws {
-        let client = try Client()
-        let coll = try client.db("local").collection(collName)
+        let coll = try getCollection()
         try coll.insertMany([doc1, doc2])
         guard let updateManyResult: UpdateResult = try coll.updateMany(
             filter: [:], update: ["$set": ["apple": "pear"] as Document]) else {
