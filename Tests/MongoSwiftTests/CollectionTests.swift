@@ -11,19 +11,18 @@ final class CollectionTests: XCTestCase {
 
     func testCollection() {
     	do {
-    		let client = try Client(connectionString: "mongodb://localhost:27017/")
-    		let db = try client.db("local")
+            let client = try Client(connectionString: "mongodb://localhost:27017/")
+            let db = try client.db("local")
             let collName = "coll" + String(describing: Date())
             let coll = try db.createCollection(collName)
 
             // Test count 
-            let count = try coll.count([:])
-            XCTAssertEqual(count, 0)
+            XCTAssertEqual(try coll.count([:]), 0)
 
             // Test count with options
-            let options = CountOptions(collation: [:], limit: 5, maxTimeMS: 1000, skip: 5)
+            let options = CountOptions(limit: 5, maxTimeMS: 1000, skip: 5)
             let countWithOptions = try coll.count([:], options: options)
-            XCTAssertEqual(count, 0)
+            XCTAssertEqual(countWithOptions, 0)
 
             // Test insertOne
             let doc1: Document = ["_id": 1, "cat": "dog"]
@@ -40,10 +39,9 @@ final class CollectionTests: XCTestCase {
             XCTAssertEqual(try coll.count([:]), 2)
 
             // Test aggregate with a basic pipeline
-            let stage1: Document = ["$project": ["_id": 0, "cat": 1] as Document]
-            let agg = try coll.aggregate([stage1])
+            let agg = try coll.aggregate([["$project": ["_id": 0, "cat": 1] as Document]])
             let docs = Array(agg)
-            XCTAssertEqual(docs, [["cat": "dog"] as Document, ["cat": "cat"] as Document])
+            XCTAssertEqual(docs, [["cat": "dog"], ["cat": "cat"]] as [Document])
 
             // Test drop
             try coll.drop()

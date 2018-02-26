@@ -24,6 +24,17 @@ public struct AggregateOptions: BsonEncodable {
 
     /// The index to use for the aggregation. The hint does not apply to $lookup and $graphLookup stages.
     // let hint: Optional<(String | Document)>
+
+    /// Convenience initializer allowing any/all parameters to be optional
+    public init(allowDiskUse: Bool? = nil, batchSize: Int32? = nil, bypassDocumentValidation: Bool? = nil,
+                collation: Document? = nil, maxTimeMS: Int64? = nil, comment: String? = nil) {
+        self.allowDiskUse = allowDiskUse
+        self.batchSize = batchSize
+        self.bypassDocumentValidation = bypassDocumentValidation
+        self.collation = collation
+        self.maxTimeMS = maxTimeMS
+        self.comment = comment
+    }
 }
 
 public struct CountOptions: BsonEncodable {
@@ -41,6 +52,14 @@ public struct CountOptions: BsonEncodable {
 
     /// The number of documents to skip before counting.
     let skip: Int64?
+
+    /// Convenience initializer allowing any/all parameters to be optional
+    public init(collation: Document? = nil, limit: Int64? = nil, maxTimeMS: Int64? = nil, skip: Int64? = nil) {
+        self.collation = collation
+        self.limit = limit
+        self.maxTimeMS = maxTimeMS
+        self.skip = skip
+    }
 }
 
 public struct DistinctOptions: BsonEncodable {
@@ -49,6 +68,12 @@ public struct DistinctOptions: BsonEncodable {
 
     /// The maximum amount of time to allow the query to run.
     let maxTimeMS: Int64?
+
+    /// Convenience initializer allowing any/all parameters to be optional
+    public init(collation: Document? = nil, maxTimeMS: Int64? = nil) {
+        self.collation = collation
+        self.maxTimeMS = maxTimeMS
+    }
 }
 
 public enum CursorType {
@@ -141,11 +166,39 @@ public struct FindOptions: BsonEncodable {
 
     /// The order in which to return matching documents.
     let sort: Document?
+
+    /// Convenience initializer allowing any/all parameters to be optional
+    public init(allowPartialResults: Bool? = nil, batchSize: Int32? = nil, collation: Document? = nil,
+                comment: String? = nil, limit: Int64? = nil, max: Document? = nil, maxAwaitTimeMS: Int64? = nil,
+                maxScan: Int64? = nil, maxTimeMS: Int64? = nil, min: Document? = nil, noCursorTimeout: Bool? = nil,
+                projection: Document? = nil, returnKey: Bool? = nil, showRecordId: Bool? = nil, skip: Int64? = nil,
+                sort: Document? = nil) {
+        self.allowPartialResults = allowPartialResults
+        self.batchSize = batchSize
+        self.collation = collation
+        self.comment = comment
+        self.limit = limit
+        self.max = max
+        self.maxAwaitTimeMS = maxAwaitTimeMS
+        self.maxScan = maxScan
+        self.maxTimeMS = maxTimeMS
+        self.min = min
+        self.noCursorTimeout = noCursorTimeout
+        self.projection = projection
+        self.returnKey = returnKey
+        self.showRecordId = showRecordId
+        self.skip = skip
+        self.sort = sort
+    }
 }
 
 public struct InsertOneOptions: BsonEncodable {
     /// If true, allows the write to opt-out of document level validation.
     let bypassDocumentValidation: Bool?
+
+    public init(bypassDocumentValidation: Bool? = nil) {
+        self.bypassDocumentValidation = bypassDocumentValidation
+    }
 }
 
 public struct InsertManyOptions: BsonEncodable {
@@ -155,7 +208,12 @@ public struct InsertManyOptions: BsonEncodable {
     /// If true, when an insert fails, return without performing the remaining
     /// writes. If false, when a write fails, continue with the remaining writes, if any.
     /// Defaults to true.
-    let ordered: Bool = true
+    var ordered: Bool = true
+
+    public init(bypassDocumentValidation: Bool? = nil, ordered: Bool? = true) {
+        self.bypassDocumentValidation = bypassDocumentValidation
+        if let o = ordered { self.ordered = o }
+    }
 }
 
 public struct UpdateOptions: BsonEncodable {
@@ -170,6 +228,15 @@ public struct UpdateOptions: BsonEncodable {
 
     /// When true, creates a new document if no document matches the query.
     let upsert: Bool?
+
+    /// Convenience initializer allowing any/all parameters to be optional
+    public init(arrayFilters: [Document]? = nil, bypassDocumentValidation: Bool? = nil, collation: Document? = nil,
+                upsert: Bool? = nil) {
+        self.arrayFilters = arrayFilters
+        self.bypassDocumentValidation = bypassDocumentValidation
+        self.collation = collation
+        self.upsert = upsert
+    }
 }
 
 public struct ReplaceOptions: BsonEncodable {
@@ -181,11 +248,22 @@ public struct ReplaceOptions: BsonEncodable {
 
     /// When true, creates a new document if no document matches the query.
     let upsert: Bool?
+
+    /// Convenience initializer allowing any/all parameters to be optional
+    public init(bypassDocumentValidation: Bool? = nil, collation: Document? = nil, upsert: Bool? = nil) {
+        self.bypassDocumentValidation = bypassDocumentValidation
+        self.collation = collation
+        self.upsert = upsert
+    }
 }
 
 public struct DeleteOptions: BsonEncodable {
     /// Specifies a collation.
     let collation: Document?
+
+    public init(collation: Document? = nil) {
+        self.collation = collation
+    }
 }
 
 public struct InsertOneResult {
@@ -198,6 +276,9 @@ public struct InsertManyResult {
     /// Map of the index of the inserted document to the id of the inserted document.
     let insertedIds: [Int64: Any]
 
+    /// Given a server response to an insertMany command, creates a corresponding
+    /// `InsertManyResult`. If the `from` Document does not have an `insertedIds`
+    /// field, the initialization will fail.
     init?(from: Document) {
         guard let inserted = from["insertedIds"] as? [Any] else { return nil }
         var ids = [Int64: Any]()
@@ -212,13 +293,12 @@ public struct DeleteResult {
     /// The number of documents that were deleted.
     let deletedCount: Int64
 
+    /// Given a server response to a delete command, creates a corresponding
+    /// `DeleteResult`. If the `from` Document does not have a `deletedCount`
+    /// field, the initialization will fail.
     init?(from: Document) {
         guard let deletedCount = from["deletedCount"] as? Int else { return nil }
         self.deletedCount = Int64(deletedCount)
-    }
-
-    init(deletedCount: Int64) {
-        self.deletedCount = deletedCount
     }
 }
 
@@ -232,8 +312,10 @@ public struct UpdateResult {
     /// The identifier of the inserted document if an upsert took place.
     let upsertedId: Any
 
-    /// For initializing an UpdateResult from a server reply. The reply
-    /// contains matchedCount, modifiedCount, and optionally upsertedId. 
+    /// Given a server response to an update command, creates a corresponding
+    /// `UpdateResult`. If the `from` Document does not have `matchedCount` and
+    /// `modifiedCount` fields, the initialization will fail. The document may
+    /// optionally have an `upsertedId` field. 
     init?(from: Document) {
          guard let matched = from["matchedCount"] as? Int, let modified = from["modifiedCount"] as? Int else {
             return nil
@@ -250,6 +332,12 @@ public struct IndexModel {
 
     /// Contains the options for the index.
     let options: IndexOptions?
+
+    /// Convenience initializer providing a default `options` value
+    public init(keys: Document, options: IndexOptions? = nil) {
+        self.keys = keys
+        self.options = options
+    }
 }
 
 public struct IndexOptions: BsonEncodable {
@@ -321,6 +409,32 @@ public struct IndexOptions: BsonEncodable {
     /// If not specified, no collation is sent and the default collation of the collection
     /// server-side is used.
     let collation: Document?
+
+    public init(background: Bool? = nil, expireAfter: Int32? = nil, name: String? = nil, sparse: Bool? = nil,
+                storageEngine: String? = nil, unique: Bool? = nil, version: Int32? = nil,
+                defaultLanguage: String? = nil, languageOverride: String? = nil, textVersion: Int32? = nil,
+                weights: Document? = nil, sphereVersion: Int32? = nil, bits: Int32? = nil, max: Double? = nil,
+                min: Double? = nil, bucketSize: Int32? = nil, partialFilterExpression: Document? = nil,
+                collation: Document? = nil) {
+        self.background = background
+        self.expireAfter = expireAfter
+        self.name = name
+        self.sparse = sparse
+        self.storageEngine = storageEngine
+        self.unique = unique
+        self.version = version
+        self.defaultLanguage = defaultLanguage
+        self.languageOverride = languageOverride
+        self.textVersion = textVersion
+        self.weights = weights
+        self.sphereVersion = sphereVersion
+        self.bits = bits
+        self.max = max
+        self.min = min
+        self.bucketSize = bucketSize
+        self.partialFilterExpression = partialFilterExpression
+        self.collation = collation
+    }
 }
 
 // A MongoDB Collection
