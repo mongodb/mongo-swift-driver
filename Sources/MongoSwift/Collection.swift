@@ -339,10 +339,8 @@ public struct IndexModel: BsonEncodable {
         self.options = options
     }
 
-    /// Gets the name for this index. If there is a name in `options`, use that --
-    /// otherwise get the server generated name. 
-    internal var name: String {
-        if let name = options?.name { return name }
+    /// Gets the default name for this index.
+    internal var defaultName: String {
         return String(cString: mongoc_collection_keys_to_index_string(self.keys.data))
     }
 
@@ -351,7 +349,9 @@ public struct IndexModel: BsonEncodable {
         // so encode the options directly to this encoder first
         try self.options?.encode(to: encoder)
         try encoder.encode(keys, forKey: "key")
-        try encoder.encode(name, forKey: "name")
+        if self.options?.name == nil {
+            try encoder.encode(self.defaultName, forKey: "name")
+        }
     }
 
 }
@@ -810,7 +810,7 @@ public class Collection {
             throw MongoError.commandError(message: toErrorString(error))
         }
 
-        return models.map { $0.name }
+        return models.map { $0.options?.name ?? $0.defaultName }
     }
 
      /**
