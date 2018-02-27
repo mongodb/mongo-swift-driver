@@ -110,7 +110,9 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
     }
 
     deinit {
+        guard let data = self.data else { return }
         bson_destroy(data)
+        self.data = nil
     }
 
     public var description: String {
