@@ -326,7 +326,7 @@ public struct UpdateResult {
     }
 }
 
-public struct IndexModel {
+public struct IndexModel: BsonEncodable {
     /// Contains the required keys for the index.
     let keys: Document
 
@@ -339,17 +339,19 @@ public struct IndexModel {
         self.options = options
     }
 
+    /// Gets the name for this index. If there is a name in `options`, use that --
+    /// otherwise get the server generated name. 
     internal var name: String {
         if let name = options?.name { return name }
         return String(cString: mongoc_collection_keys_to_index_string(self.keys.data))
     }
 
-    internal func asDocument() throws -> Document {
-        let encoder = BsonEncoder()
-        let opts = try encoder.encode(self.options) ?? Document()
-        opts["key"] = self.keys
-        opts["name"] = self.name
-        return opts
+    public func encode(to encoder: BsonEncoder) throws {
+        // we need a flat document containing key, name, and options,
+        // so encode the options directly to this encoder first
+        try self.options?.encode(to: encoder)
+        try encoder.encode(keys, forKey: "key")
+        try encoder.encode(name, forKey: "name")
     }
 
 }
@@ -800,7 +802,7 @@ public class Collection {
         let collName = String(cString: mongoc_collection_get_name(self._collection))
         let command: Document = [
             "createIndexes": collName,
-            "indexes": try models.map { try $0.asDocument() }
+            "indexes": try models.map { try BsonEncoder().encode($0) }
         ]
         let reply = Document()
         var error = bson_error_t()
