@@ -338,6 +338,20 @@ public struct IndexModel {
         self.keys = keys
         self.options = options
     }
+
+    internal var name: String {
+        if let name = options?.name { return name }
+        return String(cString: mongoc_collection_keys_to_index_string(self.keys.data))
+    }
+
+    internal func asDocument() throws -> Document {
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(self.options) ?? Document()
+        opts["key"] = self.keys
+        opts["name"] = self.name
+        return opts
+    }
+
 }
 
 public struct IndexOptions: BsonEncodable {
@@ -737,20 +751,7 @@ public class Collection {
      * - Returns: The name of the created index
      */
     func createIndex(model: IndexModel) throws -> String {
-        // TODO: SWIFT-35 
-        //return "index_name"
-        let command: Document = [
-            "keyPatterns": model.keys
-        ]
-        let reply = Document()
-        var error = bson_error_t()
-        if !mongoc_collection_write_command_with_opts(self._collection, command.data, nil, reply.data, &error) {
-            throw MongoError.commandError(message: toErrorString(error))
-        }
-
-        print("reply: \(reply)")
-
-        return ""
+        return try createIndexes(models: [model])[0]
     }
 
     /**
@@ -775,8 +776,20 @@ public class Collection {
      * - Returns: The names of all the indexes that were created
      */
     func createIndexes(models: [IndexModel]) throws -> [String] {
-        // TODO: SWIFT-35
-        return ["index_name"]
+        let collName = String(cString: mongoc_collection_get_name(self._collection))
+
+        let command: Document = [
+            "createIndexes": collName,
+            "indexes": try models.map { try $0.asDocument() }
+        ]
+
+        let reply = Document()
+        var error = bson_error_t()
+        if !mongoc_collection_write_command_with_opts(self._collection, command.data, nil, reply.data, &error) {
+            throw MongoError.commandError(message: toErrorString(error))
+        }
+
+        return models.map { $0.name }
     }
 
      /**

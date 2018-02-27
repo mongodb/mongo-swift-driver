@@ -16,7 +16,16 @@ final class CollectionTests: XCTestCase {
             ("testReplaceOne", testReplaceOne),
             ("testUpdateOne", testUpdateOne),
             ("testUpdateMany", testUpdateMany),
-            ("testDistinct", testDistinct)
+            ("testDistinct", testDistinct),
+            ("testCreateIndexFromModel", testCreateIndexFromModel),
+            ("testCreateIndexesFromModels", testCreateIndexesFromModels),
+            ("testCreateIndexFromKeys", testCreateIndexFromKeys),
+            ("testCreateIndexesFromKeys", testCreateIndexesFromKeys),
+            ("testDropIndexByName", testDropIndexByName),
+            ("testDropIndexByModel", testDropIndexByModel),
+            ("testDropIndexByKeys", testDropIndexByKeys),
+            ("testDropAllIndexes", testDropAllIndexes),
+            ("testListIndexes", testListIndexes)
         ]
     }
 
@@ -29,7 +38,7 @@ final class CollectionTests: XCTestCase {
     override func setUp() {
         super.setUp()
         do {
-            coll = try Client().db("collectionTest").collection("coll1")
+            coll = try Client().db("collectionTest").createCollection("coll1")
         } catch {
             XCTFail("Setup failed: \(error)")
         }
@@ -157,16 +166,56 @@ final class CollectionTests: XCTestCase {
     }
 
     func testDistinct() throws {
-        // let coll = try getCollection()
-        // try coll.insertMany([doc1, doc2])
+        //try coll.insertMany([doc1, doc2])
         // let distinct = try coll.distinct(fieldName: "cat", filter: [:])
-        // try coll.drop()
+        // print("distinct")
     }
 
     func testCreateIndexFromModel() throws {
-        let coll = try getCollection()
         try coll.insertMany([doc1, doc2])
-        try coll.createIndex(keys: ["cat": 1])
+        let model = IndexModel(keys: ["cat": 1])
+        let result = try coll.createIndex(model: model)
+        XCTAssertEqual(result, "cat_1")
+
+        let indexes = try coll.listIndexes()
+        XCTAssertEqual(indexes.next()?["name"] as? String, "_id_")
+        XCTAssertEqual(indexes.next()?["name"] as? String, "cat_1")
+        XCTAssertNil(indexes.next())
     }
 
+    func testCreateIndexesFromModels() throws {
+
+    }
+
+    func testCreateIndexFromKeys() throws {
+
+    }
+
+    func testCreateIndexesFromKeys() throws {
+    }
+
+    func testDropIndexByName() throws {
+    }
+
+    func testDropIndexByModel() throws {
+    }
+
+    func testDropIndexByKeys() throws {
+    }
+
+    func testDropAllIndexes() throws {
+        // create a few indexes first...
+
+        // now there should only be _id_ left
+        let indexes = try coll.listIndexes()
+        XCTAssertEqual(indexes.next()?["name"] as? String, "_id_")
+        XCTAssertNil(indexes.next())
+    }
+
+    func testListIndexes() throws {
+        let indexes = try coll.listIndexes()
+        // New collection, so expect just the _id_ index to exist. 
+        XCTAssertEqual(indexes.next()?["name"] as? String, "_id_")
+        XCTAssertNil(indexes.next())
+    }
 }
