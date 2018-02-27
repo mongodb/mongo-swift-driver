@@ -576,6 +576,7 @@ public class Collection {
         var error = bson_error_t()
         if !mongoc_collection_read_command_with_opts(
             self._collection, command.data, nil, getDataOrNil(opts), reply.data, &error) {
+            print("error: \(toErrorString(error))")
             throw MongoError.commandError(message: toErrorString(error))
         }
         print("reply: \(reply)")
@@ -777,12 +778,10 @@ public class Collection {
      */
     func createIndexes(models: [IndexModel]) throws -> [String] {
         let collName = String(cString: mongoc_collection_get_name(self._collection))
-
         let command: Document = [
             "createIndexes": collName,
             "indexes": try models.map { try $0.asDocument() }
         ]
-
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_write_command_with_opts(self._collection, command.data, nil, reply.data, &error) {
@@ -798,11 +797,12 @@ public class Collection {
      * - Parameters:
      *   - name: The name of the index to drop
      *
-     * - Returns: The result of the command returned from the server
      */
-    func dropIndex(name: String) throws -> Document {
-        // TODO: SWIFT-35
-        return Document()
+    func dropIndex(name: String) throws {
+        var error = bson_error_t()
+        if !mongoc_collection_drop_index(self._collection, name, &error) {
+            throw MongoError.commandError(message: toErrorString(error))
+        }
     }
 
     /**
@@ -827,8 +827,16 @@ public class Collection {
      * - Returns: The result of the command returned from the server
      */
     func dropIndex(model: IndexModel) throws -> Document {
-        // TODO: SWIFT-35
-        return Document()
+        let collName = String(cString: mongoc_collection_get_name(self._collection))
+        let command: Document = ["dropIndexes": collName, "index": model.keys]
+        let reply = Document()
+        var error = bson_error_t()
+        if !mongoc_collection_write_command_with_opts(self._collection, command.data, nil, reply.data, &error) {
+            print(toErrorString(error))
+            throw MongoError.commandError(message: toErrorString(error))
+        }
+
+        return reply
     }
 
     /**
@@ -837,8 +845,16 @@ public class Collection {
      * - Returns: The result of the command returned from the server
      */
     func dropIndexes() throws -> Document {
-        // TODO: SWIFT-35
-        return Document()
+        let collName = String(cString: mongoc_collection_get_name(self._collection))
+        let command: Document = ["dropIndexes": collName, "index": "*"]
+        let reply = Document()
+        var error = bson_error_t()
+        if !mongoc_collection_write_command_with_opts(self._collection, command.data, nil, reply.data, &error) {
+            print(toErrorString(error))
+            throw MongoError.commandError(message: toErrorString(error))
+        }
+
+        return reply
     }
 
     /**

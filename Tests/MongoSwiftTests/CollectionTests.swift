@@ -30,7 +30,6 @@ final class CollectionTests: XCTestCase {
     }
 
     var coll: MongoSwift.Collection!
-
     let doc1: Document = ["_id": 1, "cat": "dog"]
     let doc2: Document = ["_id": 2, "cat": "cat"]
 
@@ -39,6 +38,7 @@ final class CollectionTests: XCTestCase {
         super.setUp()
         do {
             coll = try Client().db("collectionTest").createCollection("coll1")
+            try coll.insertMany([doc1, doc2])
         } catch {
             XCTFail("Setup failed: \(error)")
         }
@@ -66,14 +66,14 @@ final class CollectionTests: XCTestCase {
     }
 
     func testCount() throws {
-        try coll.insertOne(doc1)
-        XCTAssertEqual(try coll.count(), 1)
+        XCTAssertEqual(try coll.count(), 2)
         let options = CountOptions(limit: 5, maxTimeMS: 1000, skip: 5)
         let countWithOptions = try coll.count(options: options)
         XCTAssertEqual(countWithOptions, 0)
     }
 
     func testInsertOne() throws {
+        try coll.deleteMany([:])
         guard let result = try coll.insertOne(doc1) else {
             XCTFail("No result from insertion")
             return
@@ -85,13 +85,11 @@ final class CollectionTests: XCTestCase {
     }
 
     func testAggregate() throws {
-        try coll.insertMany([doc1, doc2])
         let agg = Array(try coll.aggregate([["$project": ["_id": 0, "cat": 1] as Document]]))
         XCTAssertEqual(agg, [["cat": "dog"], ["cat": "cat"]] as [Document])
     }
 
     func testDrop() throws {
-        try coll.insertMany([doc1, doc2])
         try coll.drop()
         XCTAssertEqual(try coll.count(), 0)
         // insert something so we don't error when trying to drop
@@ -100,19 +98,16 @@ final class CollectionTests: XCTestCase {
     }
 
     func testInsertMany() throws {
-        try coll.insertMany([doc1, doc2])
         XCTAssertEqual(try coll.count(), 2)
     }
 
     func testFind() throws {
-        try coll.insertMany([doc1, doc2])
         let findResult = try coll.find(["cat": "cat"])
         XCTAssertEqual(findResult.next(), ["_id": 2, "cat": "cat"])
         XCTAssertNil(findResult.next())
     }
 
     func testDeleteOne() throws {
-        try coll.insertMany([doc1, doc2])
         guard let deleteOneResult = try coll.deleteOne(["cat": "cat"]) else {
             XCTFail("No result from deleteOne")
             return
@@ -121,7 +116,6 @@ final class CollectionTests: XCTestCase {
     }
 
     func testDeleteMany() throws {
-        try coll.insertMany([doc1, doc2])
         guard let deleteManyResult = try coll.deleteMany([:]) else {
             XCTFail("No result from deleteMany")
             return
@@ -130,7 +124,6 @@ final class CollectionTests: XCTestCase {
     }
 
     func testReplaceOne() throws {
-        try coll.insertOne(doc1)
         guard let replaceOneResult = try coll.replaceOne(
             filter: ["_id": 1], replacement: ["apple": "banana"]) else {
             XCTFail("No result from replaceOne")
@@ -142,7 +135,6 @@ final class CollectionTests: XCTestCase {
     }
 
     func testUpdateOne() throws {
-        try coll.insertMany([doc1, doc2])
         guard let updateOneResult = try coll.updateOne(
             filter: ["_id": 2], update: ["$set": ["apple": "banana"] as Document]) else {
             XCTFail("No result from updateOne")
@@ -154,7 +146,6 @@ final class CollectionTests: XCTestCase {
     }
 
     func testUpdateMany() throws {
-        try coll.insertMany([doc1, doc2])
         guard let updateManyResult = try coll.updateMany(
             filter: [:], update: ["$set": ["apple": "pear"] as Document]) else {
             XCTFail("No result from updateMany")
@@ -166,13 +157,11 @@ final class CollectionTests: XCTestCase {
     }
 
     func testDistinct() throws {
-        //try coll.insertMany([doc1, doc2])
-        // let distinct = try coll.distinct(fieldName: "cat", filter: [:])
-        // print("distinct")
+        let distinct = try coll.distinct(fieldName: "cat", filter: [:])
+        print("distinct")
     }
 
     func testCreateIndexFromModel() throws {
-        try coll.insertMany([doc1, doc2])
         let model = IndexModel(keys: ["cat": 1])
         let result = try coll.createIndex(model: model)
         XCTAssertEqual(result, "cat_1")
@@ -184,27 +173,95 @@ final class CollectionTests: XCTestCase {
     }
 
     func testCreateIndexesFromModels() throws {
+        let model1 = IndexModel(keys: ["cat": 1])
+        let model2 = IndexModel(keys: ["cat": -1])
+        let result = try coll.createIndexes(models: [model1, model2])
+        XCTAssertEqual(result, ["cat_1", "cat_-1"])
 
+        let indexes = try coll.listIndexes()
+        XCTAssertEqual(indexes.next()?["name"] as? String, "_id_")
+        XCTAssertEqual(indexes.next()?["name"] as? String, "cat_1")
+        XCTAssertEqual(indexes.next()?["name"] as? String, "cat_-1")
+        XCTAssertNil(indexes.next())
     }
 
     func testCreateIndexFromKeys() throws {
+        var model = IndexModel(keys: ["cat": 1])
+        var result = try coll.createIndex(model: model)
+        XCTAssertEqual(result, "cat_1")
 
+        let indexOptions = IndexOptions(name: "blah", unique: true)
+        model = IndexModel(keys: ["cat": -1], options: indexOptions)
+        result = try coll.createIndex(model: model)
+        XCTAssertEqual(result, "blah")
+
+        let indexes = try coll.listIndexes()
+        XCTAssertEqual(indexes.next()?["name"] as? String, "_id_")
+        XCTAssertEqual(indexes.next()?["name"] as? String, "cat_1")
+
+        let thirdIndex = indexes.next()
+        XCTAssertNil(indexes.next(), "Expected only three indexes")
+        XCTAssertEqual(thirdIndex?["name"] as? String, "blah")
+        XCTAssertEqual(thirdIndex?["unique"] as? Bool, true)
     }
 
     func testCreateIndexesFromKeys() throws {
+        let result = try coll.createIndex(keys: ["cat": 1])
+        XCTAssertEqual(result, "cat_1")
+
+        let indexes = try coll.listIndexes()
+        XCTAssertEqual(indexes.next()?["name"] as? String, "_id_")
+        XCTAssertEqual(indexes.next()?["name"] as? String, "cat_1")
+        XCTAssertNil(indexes.next())
     }
 
     func testDropIndexByName() throws {
+        let model = IndexModel(keys: ["cat": 1])
+        let result = try coll.createIndex(model: model)
+        XCTAssertEqual(result, "cat_1")
+
+        try coll.dropIndex(name: "cat_1")
+
+        // now there should only be _id_ left
+        let indexes = try coll.listIndexes()
+        XCTAssertEqual(indexes.next()?["name"] as? String, "_id_")
+        XCTAssertNil(indexes.next())
     }
 
     func testDropIndexByModel() throws {
+        let model = IndexModel(keys: ["cat": 1])
+        let result = try coll.createIndex(model: model)
+        XCTAssertEqual(result, "cat_1")
+
+        try coll.dropIndex(name: "cat_1")
+
+        // now there should only be _id_ left
+        let indexes = try coll.listIndexes()
+        XCTAssertEqual(indexes.next()?["name"] as? String, "_id_")
+        XCTAssertNil(indexes.next())
     }
 
     func testDropIndexByKeys() throws {
+        let model = IndexModel(keys: ["cat": 1])
+        let result = try coll.createIndex(model: model)
+        XCTAssertEqual(result, "cat_1")
+
+        let dropResult = try coll.dropIndex(keys: ["cat": 1])
+        XCTAssertEqual(dropResult["ok"] as? Double, 1.0)
+
+        // now there should only be _id_ left
+        let indexes = try coll.listIndexes()
+        XCTAssertEqual(indexes.next()?["name"] as? String, "_id_")
+        XCTAssertNil(indexes.next())
     }
 
     func testDropAllIndexes() throws {
-        // create a few indexes first...
+        let model = IndexModel(keys: ["cat": 1])
+        let result = try coll.createIndex(model: model)
+        XCTAssertEqual(result, "cat_1")
+
+        let dropResult = try coll.dropIndexes()
+        XCTAssertEqual(dropResult["ok"] as? Double, 1.0)
 
         // now there should only be _id_ left
         let indexes = try coll.listIndexes()
