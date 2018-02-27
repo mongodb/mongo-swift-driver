@@ -158,7 +158,8 @@ final class CollectionTests: XCTestCase {
 
     func testDistinct() throws {
         let distinct = try coll.distinct(fieldName: "cat", filter: [:])
-        print("distinct")
+        XCTAssertEqual(distinct.next(), ["values": ["dog", "cat"], "ok": 1.0] as Document)
+        XCTAssertNil(distinct.next())
     }
 
     func testCreateIndexFromModel() throws {
@@ -233,7 +234,8 @@ final class CollectionTests: XCTestCase {
         let result = try coll.createIndex(model: model)
         XCTAssertEqual(result, "cat_1")
 
-        try coll.dropIndex(name: "cat_1")
+        let dropResult = try coll.dropIndex(model: model)
+        XCTAssertEqual(dropResult["ok"] as? Double, 1.0)
 
         // now there should only be _id_ left
         let indexes = try coll.listIndexes()

@@ -564,6 +564,10 @@ public class Collection {
      * - Returns: A 'Cursor' containing the distinct values for the specified criteria
      */
     func distinct(fieldName: String, filter: Document, options: DistinctOptions? = nil) throws -> Cursor {
+        guard let client = self._client else {
+            throw MongoError.invalidClient()
+        }
+
         let collName = String(cString: mongoc_collection_get_name(self._collection))
         let command: Document = [
             "distinct": collName,
@@ -572,15 +576,31 @@ public class Collection {
         ]
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
+
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_read_command_with_opts(
             self._collection, command.data, nil, getDataOrNil(opts), reply.data, &error) {
-            print("error: \(toErrorString(error))")
             throw MongoError.commandError(message: toErrorString(error))
         }
-        print("reply: \(reply)")
-        return Cursor()
+
+        let fakeReply: Document = [
+            "ok": 1,
+            "cursor": [
+                "id": 0,
+                "ns": "",
+                "firstBatch": [reply]
+            ] as Document
+        ]
+
+        // mongoc_cursor_new_from_command_reply will bson_destroy the data we pass in,
+        // so copy it to avoid destroying twice (already done in Document deinit)
+        let fakeData = bson_copy(fakeReply.data)
+        guard let newCursor = mongoc_cursor_new_from_command_reply(client._client, fakeData, 0) else {
+            throw MongoError.invalidResponse()
+        }
+
+        return Cursor(fromCursor: newCursor, client: client)
     }
 
     /**
