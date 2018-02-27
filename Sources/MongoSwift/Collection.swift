@@ -550,7 +550,21 @@ public class Collection {
      * - Returns: A 'Cursor' containing the distinct values for the specified criteria
      */
     func distinct(fieldName: String, filter: Document, options: DistinctOptions? = nil) throws -> Cursor {
-        // TODO: SWIFT-35
+        let collName = String(cString: mongoc_collection_get_name(self._collection))
+        let command: Document = [
+            "distinct": collName,
+            "key": fieldName,
+            "query": filter
+        ]
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
+        let reply = Document()
+        var error = bson_error_t()
+        if !mongoc_collection_read_command_with_opts(
+            self._collection, command.data, nil, getDataOrNil(opts), reply.data, &error) {
+            throw MongoError.commandError(message: toErrorString(error))
+        }
+        print("reply: \(reply)")
         return Cursor()
     }
 
@@ -724,7 +738,19 @@ public class Collection {
      */
     func createIndex(model: IndexModel) throws -> String {
         // TODO: SWIFT-35 
-        return "index_name"
+        //return "index_name"
+        let command: Document = [
+            "keyPatterns": model.keys
+        ]
+        let reply = Document()
+        var error = bson_error_t()
+        if !mongoc_collection_write_command_with_opts(self._collection, command.data, nil, reply.data, &error) {
+            throw MongoError.commandError(message: toErrorString(error))
+        }
+
+        print("reply: \(reply)")
+
+        return ""
     }
 
     /**

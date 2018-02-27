@@ -15,7 +15,8 @@ final class CollectionTests: XCTestCase {
             ("testDeleteMany", testDeleteMany),
             ("testReplaceOne", testReplaceOne),
             ("testUpdateOne", testUpdateOne),
-            ("testUpdateMany", testUpdateMany)
+            ("testUpdateMany", testUpdateMany),
+            ("testDistinct", testDistinct)
         ]
     }
 
@@ -154,4 +155,18 @@ final class CollectionTests: XCTestCase {
         XCTAssertEqual(updateManyResult.matchedCount, 2)
         XCTAssertEqual(updateManyResult.modifiedCount, 2)
     }
+
+    func testDistinct() throws {
+        // let coll = try getCollection()
+        // try coll.insertMany([doc1, doc2])
+        // let distinct = try coll.distinct(fieldName: "cat", filter: [:])
+        // try coll.drop()
+    }
+
+    func testCreateIndexFromModel() throws {
+        let coll = try getCollection()
+        try coll.insertMany([doc1, doc2])
+        try coll.createIndex(keys: ["cat": 1])
+    }
+
 }
