@@ -63,7 +63,7 @@ public class Database {
     /**
      * Initializes a new Database instance, not meant to be instantiated directly
      */
-    public init(fromDatabase: OpaquePointer, client: Client) {
+    internal init(fromDatabase: OpaquePointer, client: Client) {
         self._database = fromDatabase
         self._client = client
     }

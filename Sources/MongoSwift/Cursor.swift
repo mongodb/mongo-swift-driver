@@ -6,12 +6,13 @@ public class Cursor: Sequence, IteratorProtocol {
     private var _client: Client?
 
     /// get rid of this
+    /// TODO: SWIFT-35
     init() {}
 
     /**
      * Initializes a new Cursor instance, not meant to be instantiated directly
      */
-    public init(fromCursor: OpaquePointer, client: Client) {
+    internal init(fromCursor: OpaquePointer, client: Client) {
         self._cursor = fromCursor
         self._client = client
     }

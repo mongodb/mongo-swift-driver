@@ -40,7 +40,7 @@ final class CollectionTests: XCTestCase {
 
     func testInsertOne() throws {
         let coll = try getCollection()
-        guard let result: InsertOneResult = try coll.insertOne(doc1) else {
+        guard let result = try coll.insertOne(doc1) else {
             XCTFail("No result from insertion")
             return
         }
@@ -107,7 +107,7 @@ final class CollectionTests: XCTestCase {
     func testReplaceOne() throws {
         let coll = try getCollection()
         try coll.insertOne(doc1)
-        guard let replaceOneResult: UpdateResult = try coll.replaceOne(
+        guard let replaceOneResult = try coll.replaceOne(
             filter: ["_id": 1], replacement: ["apple": "banana"]) else {
             XCTFail("No result from replaceOne")
             return
@@ -121,7 +121,7 @@ final class CollectionTests: XCTestCase {
     func testUpdateOne() throws {
         let coll = try getCollection()
         try coll.insertMany([doc1, doc2])
-        guard let updateOneResult: UpdateResult = try coll.updateOne(
+        guard let updateOneResult = try coll.updateOne(
             filter: ["_id": 2], update: ["$set": ["apple": "banana"] as Document]) else {
             XCTFail("No result from updateOne")
             return
@@ -136,7 +136,7 @@ final class CollectionTests: XCTestCase {
     func testUpdateMany() throws {
         let coll = try getCollection()
         try coll.insertMany([doc1, doc2])
-        guard let updateManyResult: UpdateResult = try coll.updateMany(
+        guard let updateManyResult = try coll.updateMany(
             filter: [:], update: ["$set": ["apple": "pear"] as Document]) else {
             XCTFail("No result from updateMany")
             return

@@ -279,7 +279,7 @@ public struct InsertManyResult {
     /// Given a server response to an insertMany command, creates a corresponding
     /// `InsertManyResult`. If the `from` Document does not have an `insertedIds`
     /// field, the initialization will fail.
-    init?(from: Document) {
+    internal init?(from: Document) {
         guard let inserted = from["insertedIds"] as? [String] else { return nil }
         var ids = [Int64: String]()
         for (i, id) in inserted.enumerated() {
@@ -296,7 +296,7 @@ public struct DeleteResult {
     /// Given a server response to a delete command, creates a corresponding
     /// `DeleteResult`. If the `from` Document does not have a `deletedCount`
     /// field, the initialization will fail.
-    init?(from: Document) {
+    internal init?(from: Document) {
         guard let deletedCount = from["deletedCount"] as? Int else { return nil }
         self.deletedCount = deletedCount
     }
@@ -316,7 +316,7 @@ public struct UpdateResult {
     /// `UpdateResult`. If the `from` Document does not have `matchedCount` and
     /// `modifiedCount` fields, the initialization will fail. The document may
     /// optionally have an `upsertedId` field. 
-    init?(from: Document) {
+    internal init?(from: Document) {
          guard let matched = from["matchedCount"] as? Int, let modified = from["modifiedCount"] as? Int else {
             return nil
          }
@@ -444,7 +444,7 @@ public class Collection {
     /**
         Initializes a new Collection instance, not meant to be instantiated directly
      */
-    public init(fromCollection: OpaquePointer, client: Client) {
+    internal init(fromCollection: OpaquePointer, client: Client) {
         self._collection = fromCollection
         self._client = client
     }
