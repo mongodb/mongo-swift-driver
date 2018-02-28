@@ -773,8 +773,8 @@ public class Collection {
      *
      * - Returns: The name of the created index
      */
-    func createIndex(model: IndexModel) throws -> String {
-        return try createIndexes(models: [model])[0]
+    func createIndex(_ forModel: IndexModel) throws -> String {
+        return try createIndexes([forModel])[0]
     }
 
     /**
@@ -786,8 +786,8 @@ public class Collection {
      *
      * - Returns: The name of the created index
      */
-    func createIndex(keys: Document, options: IndexOptions? = nil) throws -> String {
-        return try createIndex(model: IndexModel(keys: keys, options: options))
+    func createIndex(_ keys: Document, options: IndexOptions? = nil) throws -> String {
+        return try createIndex(IndexModel(keys: keys, options: options))
     }
 
     /**
@@ -798,19 +798,18 @@ public class Collection {
      *
      * - Returns: The names of all the indexes that were created
      */
-    func createIndexes(models: [IndexModel]) throws -> [String] {
+    func createIndexes(_ forModels: [IndexModel]) throws -> [String] {
         let collName = String(cString: mongoc_collection_get_name(self._collection))
         let command: Document = [
             "createIndexes": collName,
-            "indexes": try models.map { try BsonEncoder().encode($0) }
+            "indexes": try forModels.map { try BsonEncoder().encode($0) }
         ]
-        let reply = Document()
         var error = bson_error_t()
-        if !mongoc_collection_write_command_with_opts(self._collection, command.data, nil, reply.data, &error) {
+        if !mongoc_collection_write_command_with_opts(self._collection, command.data, nil, nil, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
 
-        return models.map { $0.options?.name ?? $0.defaultName }
+        return forModels.map { $0.options?.name ?? $0.defaultName }
     }
 
      /**
@@ -820,7 +819,7 @@ public class Collection {
      *   - name: The name of the index to drop
      *
      */
-    func dropIndex(name: String) throws {
+    func dropIndex(_ name: String) throws {
         var error = bson_error_t()
         if !mongoc_collection_drop_index(self._collection, name, &error) {
             throw MongoError.commandError(message: toErrorString(error))
@@ -836,7 +835,7 @@ public class Collection {
      *
      * - Returns: The result of the command returned from the server
      */
-    func dropIndex(keys: Document, options: IndexOptions? = nil) throws -> Document {
+    func dropIndex(_ keys: Document, options: IndexOptions? = nil) throws -> Document {
         return try dropIndex(model: IndexModel(keys: keys, options: options))
     }
 
@@ -848,7 +847,7 @@ public class Collection {
      *
      * - Returns: The result of the command returned from the server
      */
-    func dropIndex(model: IndexModel) throws -> Document {
+    func dropIndex(_ model: IndexModel) throws -> Document {
         return try _dropIndexes(keys: model.keys)
     }
 

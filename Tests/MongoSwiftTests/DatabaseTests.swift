@@ -33,6 +33,9 @@ final class DatabaseTests: XCTestCase {
             let opts = ListCollectionsOptions(filter: ["type": "view"] as Document, batchSize: nil, session: nil)
             let views = try db.listCollections(options: opts)
 
+            try coll1.drop()
+            try coll2.drop()
+
     	} catch {
     		XCTFail("Error: \(error)")
     	}
