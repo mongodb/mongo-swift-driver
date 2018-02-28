@@ -444,9 +444,9 @@ public class Collection {
     /**
         Initializes a new Collection instance, not meant to be instantiated directly
      */
-    internal init(fromCollection: OpaquePointer, client: Client) {
+    internal init(fromCollection: OpaquePointer, withClient: Client) {
         self._collection = fromCollection
-        self._client = client
+        self._client = withClient
     }
 
     /**
@@ -490,7 +490,7 @@ public class Collection {
         guard let client = self._client else {
             throw MongoError.invalidClient()
         }
-        return Cursor(fromCursor: cursor, client: client)
+        return Cursor(fromCursor: cursor, withClient: client)
     }
 
     /**
@@ -513,7 +513,7 @@ public class Collection {
         guard let client = self._client else {
             throw MongoError.invalidClient()
         }
-        return Cursor(fromCursor: cursor, client: client)
+        return Cursor(fromCursor: cursor, withClient: client)
     }
 
     /**
@@ -814,6 +814,6 @@ public class Collection {
         guard let client = self._client else {
             throw MongoError.invalidClient()
         }
-        return Cursor(fromCursor: cursor, client: client)
+        return Cursor(fromCursor: cursor, withClient: client)
     }
 }

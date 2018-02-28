@@ -63,9 +63,9 @@ public class Database {
     /**
      * Initializes a new Database instance, not meant to be instantiated directly
      */
-    internal init(fromDatabase: OpaquePointer, client: Client) {
+    internal init(fromDatabase: OpaquePointer, withClient: Client) {
         self._database = fromDatabase
-        self._client = client
+        self._client = withClient
     }
 
     /**
@@ -93,7 +93,7 @@ public class Database {
         guard let client = self._client else {
             throw MongoError.invalidClient()
         }
-        return Collection(fromCollection: collection, client: client)
+        return Collection(fromCollection: collection, withClient: client)
     }
 
     /**
@@ -115,7 +115,7 @@ public class Database {
         guard let client = self._client else {
             throw MongoError.invalidClient()
         }
-        return Collection(fromCollection: collection, client: client)
+        return Collection(fromCollection: collection, withClient: client)
     }
 
     /**
@@ -136,7 +136,7 @@ public class Database {
         guard let client = self._client else {
             throw MongoError.invalidClient()
         }
-        return Cursor(fromCursor: collections, client: client)
+        return Cursor(fromCursor: collections, withClient: client)
     }
 
     /**

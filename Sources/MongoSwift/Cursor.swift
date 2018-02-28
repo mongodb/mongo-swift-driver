@@ -12,9 +12,9 @@ public class Cursor: Sequence, IteratorProtocol {
     /**
      * Initializes a new Cursor instance, not meant to be instantiated directly
      */
-    internal init(fromCursor: OpaquePointer, client: Client) {
+    internal init(fromCursor: OpaquePointer, withClient: Client) {
         self._cursor = fromCursor
-        self._client = client
+        self._client = withClient
     }
 
     /**

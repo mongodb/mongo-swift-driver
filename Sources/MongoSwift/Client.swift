@@ -91,7 +91,7 @@ public class Client {
         guard let cursor = mongoc_client_find_databases_with_opts(self._client, getDataOrNil(opts)) else {
             throw MongoError.invalidResponse()
         }
-        return Cursor(fromCursor: cursor, client: self)
+        return Cursor(fromCursor: cursor, withClient: self)
     }
 
     /**
@@ -106,6 +106,6 @@ public class Client {
         guard let db = mongoc_client_get_database(self._client, name) else {
             throw MongoError.invalidClient()
         }
-        return Database(fromDatabase: db, client: self)
+        return Database(fromDatabase: db, withClient: self)
     }
 }
