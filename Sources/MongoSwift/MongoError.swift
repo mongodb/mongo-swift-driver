@@ -1,7 +1,7 @@
 import Foundation
 import libmongoc
 
-public enum MongoError: LocalizedError {
+public enum MongoError {
     case invalidUri(message: String)
     case invalidClient()
     case invalidResponse()
@@ -12,7 +12,7 @@ public enum MongoError: LocalizedError {
     case bsonEncodeError(message: String)
 }
 
-extension MongoError {
+extension MongoError: LocalizedError {
     public var errorDescription: String? {
         switch self {
         case let .invalidUri(message), let .invalidCursor(message),
