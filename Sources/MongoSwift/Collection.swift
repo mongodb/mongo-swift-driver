@@ -858,10 +858,10 @@ public class Collection {
      * - Returns: The result of the command returned from the server
      */
     func dropIndexes() throws -> Document {
-        return try _dropIndexes(keys: nil)
+        return try _dropIndexes()
     }
 
-    private func _dropIndexes(keys: Document?) throws -> Document {
+    private func _dropIndexes(keys: Document? = nil) throws -> Document {
         let collName = String(cString: mongoc_collection_get_name(self._collection))
         let command: Document = ["dropIndexes": collName, "index": keys ?? "*"]
         let reply = Document()
