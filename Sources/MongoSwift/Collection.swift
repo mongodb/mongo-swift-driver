@@ -602,7 +602,7 @@ public class Collection {
             throw MongoError.invalidResponse()
         }
 
-        return Cursor(fromCursor: newCursor, client: client)
+        return Cursor(fromCursor: newCursor, withClient: client)
     }
 
     /**
