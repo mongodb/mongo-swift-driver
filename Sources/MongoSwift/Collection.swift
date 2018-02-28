@@ -849,16 +849,7 @@ public class Collection {
      * - Returns: The result of the command returned from the server
      */
     func dropIndex(model: IndexModel) throws -> Document {
-        let collName = String(cString: mongoc_collection_get_name(self._collection))
-        let command: Document = ["dropIndexes": collName, "index": model.keys]
-        let reply = Document()
-        var error = bson_error_t()
-        if !mongoc_collection_write_command_with_opts(self._collection, command.data, nil, reply.data, &error) {
-            print(toErrorString(error))
-            throw MongoError.commandError(message: toErrorString(error))
-        }
-
-        return reply
+        return try _dropIndexes(keys: model.keys)
     }
 
     /**
@@ -867,12 +858,15 @@ public class Collection {
      * - Returns: The result of the command returned from the server
      */
     func dropIndexes() throws -> Document {
+        return try _dropIndexes(keys: nil)
+    }
+
+    private func _dropIndexes(keys: Document?) throws -> Document {
         let collName = String(cString: mongoc_collection_get_name(self._collection))
-        let command: Document = ["dropIndexes": collName, "index": "*"]
+        let command: Document = ["dropIndexes": collName, "index": keys ?? "*"]
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_write_command_with_opts(self._collection, command.data, nil, reply.data, &error) {
-            print(toErrorString(error))
             throw MongoError.commandError(message: toErrorString(error))
         }
 
