@@ -3,15 +3,18 @@ import libmongoc
 // A Cursor
 public class Cursor: Sequence, IteratorProtocol {
     private var _cursor = OpaquePointer(bitPattern: 1)
+    private var _client: Client?
 
     /// get rid of this
+    /// TODO: SWIFT-35
     init() {}
 
     /**
      * Initializes a new Cursor instance, not meant to be instantiated directly
      */
-    public init(fromCursor: OpaquePointer) {
+    internal init(fromCursor: OpaquePointer, withClient: Client) {
         self._cursor = fromCursor
+        self._client = withClient
     }
 
     /**
@@ -31,6 +34,7 @@ public class Cursor: Sequence, IteratorProtocol {
 
         mongoc_cursor_destroy(cursor)
         self._cursor = nil
+        self._client = nil
     }
 
     /**
@@ -42,7 +46,7 @@ public class Cursor: Sequence, IteratorProtocol {
 
         if !mongoc_cursor_next(self._cursor, out) {
             if mongoc_cursor_error(self._cursor, &error) {
-                print("cursor error: (domain: \(error.domain), code: \(error.code), message: \(error.message))")
+                print("cursor error: (domain: \(error.domain), code: \(error.code), message: \(toErrorString(error)))")
             }
 
             return nil

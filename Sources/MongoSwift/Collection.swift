@@ -1,6 +1,6 @@
 import libmongoc
 
-public struct AggregateOptions {
+public struct AggregateOptions: BsonEncodable {
     /// Enables writing to temporary files. When set to true, aggregation stages
     /// can write data to the _tmp subdirectory in the dbPath directory
     let allowDiskUse: Bool?
@@ -24,9 +24,20 @@ public struct AggregateOptions {
 
     /// The index to use for the aggregation. The hint does not apply to $lookup and $graphLookup stages.
     // let hint: Optional<(String | Document)>
+
+    /// Convenience initializer allowing any/all parameters to be optional
+    public init(allowDiskUse: Bool? = nil, batchSize: Int32? = nil, bypassDocumentValidation: Bool? = nil,
+                collation: Document? = nil, maxTimeMS: Int64? = nil, comment: String? = nil) {
+        self.allowDiskUse = allowDiskUse
+        self.batchSize = batchSize
+        self.bypassDocumentValidation = bypassDocumentValidation
+        self.collation = collation
+        self.maxTimeMS = maxTimeMS
+        self.comment = comment
+    }
 }
 
-public struct CountOptions {
+public struct CountOptions: BsonEncodable {
     /// Specifies a collation.
     let collation: Document?
 
@@ -41,14 +52,28 @@ public struct CountOptions {
 
     /// The number of documents to skip before counting.
     let skip: Int64?
+
+    /// Convenience initializer allowing any/all parameters to be optional
+    public init(collation: Document? = nil, limit: Int64? = nil, maxTimeMS: Int64? = nil, skip: Int64? = nil) {
+        self.collation = collation
+        self.limit = limit
+        self.maxTimeMS = maxTimeMS
+        self.skip = skip
+    }
 }
 
-public struct DistinctOptions {
+public struct DistinctOptions: BsonEncodable {
     /// Specifies a collation.
     let collation: Document?
 
     /// The maximum amount of time to allow the query to run.
     let maxTimeMS: Int64?
+
+    /// Convenience initializer allowing any/all parameters to be optional
+    public init(collation: Document? = nil, maxTimeMS: Int64? = nil) {
+        self.collation = collation
+        self.maxTimeMS = maxTimeMS
+    }
 }
 
 public enum CursorType {
@@ -79,9 +104,10 @@ public enum CursorType {
      * - SeeAlso: https://docs.mongodb.com/meta-driver/latest/legacy/mongodb-wire-protocol/#op-query
      */
     case tailableAwait
+
 }
 
-public struct FindOptions {
+public struct FindOptions: BsonEncodable {
     /// Get partial results from a mongos if some shards are down (instead of throwing an error).
     let allowPartialResults: Bool?
 
@@ -95,7 +121,8 @@ public struct FindOptions {
     let comment: String?
 
     /// Indicates the type of cursor to use. This value includes both the tailable and awaitData options.
-    let cursorType: CursorType?
+    // commenting this out until we decide how to encode cursorType.
+    // let cursorType: CursorType?
 
     /// The index to use.
     // let hint: Optional<(String | Document)>
@@ -139,24 +166,57 @@ public struct FindOptions {
 
     /// The order in which to return matching documents.
     let sort: Document?
+
+    /// Convenience initializer allowing any/all parameters to be optional
+    public init(allowPartialResults: Bool? = nil, batchSize: Int32? = nil, collation: Document? = nil,
+                comment: String? = nil, limit: Int64? = nil, max: Document? = nil, maxAwaitTimeMS: Int64? = nil,
+                maxScan: Int64? = nil, maxTimeMS: Int64? = nil, min: Document? = nil, noCursorTimeout: Bool? = nil,
+                projection: Document? = nil, returnKey: Bool? = nil, showRecordId: Bool? = nil, skip: Int64? = nil,
+                sort: Document? = nil) {
+        self.allowPartialResults = allowPartialResults
+        self.batchSize = batchSize
+        self.collation = collation
+        self.comment = comment
+        self.limit = limit
+        self.max = max
+        self.maxAwaitTimeMS = maxAwaitTimeMS
+        self.maxScan = maxScan
+        self.maxTimeMS = maxTimeMS
+        self.min = min
+        self.noCursorTimeout = noCursorTimeout
+        self.projection = projection
+        self.returnKey = returnKey
+        self.showRecordId = showRecordId
+        self.skip = skip
+        self.sort = sort
+    }
 }
 
-public struct InsertOneOptions {
+public struct InsertOneOptions: BsonEncodable {
     /// If true, allows the write to opt-out of document level validation.
     let bypassDocumentValidation: Bool?
+
+    public init(bypassDocumentValidation: Bool? = nil) {
+        self.bypassDocumentValidation = bypassDocumentValidation
+    }
 }
 
-public struct InsertManyOptions {
+public struct InsertManyOptions: BsonEncodable {
     /// If true, allows the write to opt-out of document level validation.
     let bypassDocumentValidation: Bool?
 
     /// If true, when an insert fails, return without performing the remaining
     /// writes. If false, when a write fails, continue with the remaining writes, if any.
     /// Defaults to true.
-    let ordered: Bool = true
+    var ordered: Bool = true
+
+    public init(bypassDocumentValidation: Bool? = nil, ordered: Bool? = true) {
+        self.bypassDocumentValidation = bypassDocumentValidation
+        if let o = ordered { self.ordered = o }
+    }
 }
 
-public struct UpdateOptions {
+public struct UpdateOptions: BsonEncodable {
     /// A set of filters specifying to which array elements an update should apply.
     let arrayFilters: [Document]?
 
@@ -168,9 +228,18 @@ public struct UpdateOptions {
 
     /// When true, creates a new document if no document matches the query.
     let upsert: Bool?
+
+    /// Convenience initializer allowing any/all parameters to be optional
+    public init(arrayFilters: [Document]? = nil, bypassDocumentValidation: Bool? = nil, collation: Document? = nil,
+                upsert: Bool? = nil) {
+        self.arrayFilters = arrayFilters
+        self.bypassDocumentValidation = bypassDocumentValidation
+        self.collation = collation
+        self.upsert = upsert
+    }
 }
 
-public struct ReplaceOptions {
+public struct ReplaceOptions: BsonEncodable {
     /// If true, allows the write to opt-out of document level validation.
     let bypassDocumentValidation: Bool?
 
@@ -179,11 +248,22 @@ public struct ReplaceOptions {
 
     /// When true, creates a new document if no document matches the query.
     let upsert: Bool?
+
+    /// Convenience initializer allowing any/all parameters to be optional
+    public init(bypassDocumentValidation: Bool? = nil, collation: Document? = nil, upsert: Bool? = nil) {
+        self.bypassDocumentValidation = bypassDocumentValidation
+        self.collation = collation
+        self.upsert = upsert
+    }
 }
 
-public struct DeleteOptions {
+public struct DeleteOptions: BsonEncodable {
     /// Specifies a collation.
     let collation: Document?
+
+    public init(collation: Document? = nil) {
+        self.collation = collation
+    }
 }
 
 public struct InsertOneResult {
@@ -194,23 +274,56 @@ public struct InsertOneResult {
 
 public struct InsertManyResult {
     /// Map of the index of the inserted document to the id of the inserted document.
-    let insertedIds: [Int64: Any]
+    let insertedIds: [Int64: String]
+
+    /// Given a server response to an insertMany command, creates a corresponding
+    /// `InsertManyResult`. If the `from` Document does not have an `insertedIds`
+    /// field, the initialization will fail.
+    internal init?(from: Document) {
+        guard let inserted = from["insertedIds"] as? [String] else { return nil }
+        var ids = [Int64: String]()
+        for (i, id) in inserted.enumerated() {
+            ids[Int64(i)] = id
+        }
+        self.insertedIds = ids
+    }
 }
 
 public struct DeleteResult {
     /// The number of documents that were deleted.
-    let deletedCount: Int64
+    let deletedCount: Int
+
+    /// Given a server response to a delete command, creates a corresponding
+    /// `DeleteResult`. If the `from` Document does not have a `deletedCount`
+    /// field, the initialization will fail.
+    internal init?(from: Document) {
+        guard let deletedCount = from["deletedCount"] as? Int else { return nil }
+        self.deletedCount = deletedCount
+    }
 }
 
 public struct UpdateResult {
     /// The number of documents that matched the filter.
-    let matchedCount: Int64
+    let matchedCount: Int
 
     /// The number of documents that were modified.
-    let modifiedCount: Int64
+    let modifiedCount: Int
 
     /// The identifier of the inserted document if an upsert took place.
     let upsertedId: Any
+
+    /// Given a server response to an update command, creates a corresponding
+    /// `UpdateResult`. If the `from` Document does not have `matchedCount` and
+    /// `modifiedCount` fields, the initialization will fail. The document may
+    /// optionally have an `upsertedId` field. 
+    internal init?(from: Document) {
+         guard let matched = from["matchedCount"] as? Int, let modified = from["modifiedCount"] as? Int else {
+            return nil
+         }
+         self.matchedCount = matched
+         self.modifiedCount = modified
+         self.upsertedId = from["upsertedId"] as Any
+    }
 }
 
 public struct IndexModel {
@@ -219,9 +332,15 @@ public struct IndexModel {
 
     /// Contains the options for the index.
     let options: IndexOptions?
+
+    /// Convenience initializer providing a default `options` value
+    public init(keys: Document, options: IndexOptions? = nil) {
+        self.keys = keys
+        self.options = options
+    }
 }
 
-public struct IndexOptions {
+public struct IndexOptions: BsonEncodable {
     /// Optionally tells the server to build the index in the background and not block
     /// other tasks.
     let background: Bool?
@@ -290,16 +409,44 @@ public struct IndexOptions {
     /// If not specified, no collation is sent and the default collation of the collection
     /// server-side is used.
     let collation: Document?
+
+    public init(background: Bool? = nil, expireAfter: Int32? = nil, name: String? = nil, sparse: Bool? = nil,
+                storageEngine: String? = nil, unique: Bool? = nil, version: Int32? = nil,
+                defaultLanguage: String? = nil, languageOverride: String? = nil, textVersion: Int32? = nil,
+                weights: Document? = nil, sphereVersion: Int32? = nil, bits: Int32? = nil, max: Double? = nil,
+                min: Double? = nil, bucketSize: Int32? = nil, partialFilterExpression: Document? = nil,
+                collation: Document? = nil) {
+        self.background = background
+        self.expireAfter = expireAfter
+        self.name = name
+        self.sparse = sparse
+        self.storageEngine = storageEngine
+        self.unique = unique
+        self.version = version
+        self.defaultLanguage = defaultLanguage
+        self.languageOverride = languageOverride
+        self.textVersion = textVersion
+        self.weights = weights
+        self.sphereVersion = sphereVersion
+        self.bits = bits
+        self.max = max
+        self.min = min
+        self.bucketSize = bucketSize
+        self.partialFilterExpression = partialFilterExpression
+        self.collation = collation
+    }
 }
 
 // A MongoDB Collection
 public class Collection {
     private var _collection = OpaquePointer(bitPattern: 1)
+    private var _client: Client?
     /**
         Initializes a new Collection instance, not meant to be instantiated directly
      */
-    public init(fromCollection: OpaquePointer) {
+    internal init(fromCollection: OpaquePointer, withClient: Client) {
         self._collection = fromCollection
+        self._client = withClient
     }
 
     /**
@@ -312,12 +459,17 @@ public class Collection {
 
         mongoc_collection_destroy(collection)
         self._collection = nil
+        self._client = nil
     }
 
     /**
      * Drops this collection from its parent database
      */
     func drop() throws {
+        var error = bson_error_t()
+        if !mongoc_collection_drop(self._collection, &error) {
+            throw MongoError.commandError(message: toErrorString(error))
+        }
     }
 
     /**
@@ -329,8 +481,16 @@ public class Collection {
      *
      * - Returns: A `Cursor` with the results
      */
-    func find(filter: Document, options: FindOptions? = nil) throws -> Cursor {
-        return Cursor()
+    func find(_ filter: Document, options: FindOptions? = nil) throws -> Cursor {
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
+        guard let cursor = mongoc_collection_find_with_opts(self._collection, filter.data, getDataOrNil(opts), nil) else {
+            throw MongoError.invalidResponse()
+        }
+        guard let client = self._client else {
+            throw MongoError.invalidClient()
+        }
+        return Cursor(fromCursor: cursor, withClient: client)
     }
 
     /**
@@ -342,8 +502,18 @@ public class Collection {
      *
      * - Returns: A `Cursor` with the results
      */
-    func aggregate(pipeline: [Document], options: AggregateOptions? = nil) throws -> Cursor {
-        return Cursor()
+    func aggregate(_ pipeline: [Document], options: AggregateOptions? = nil) throws -> Cursor {
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
+        let pipeline: Document = ["pipeline": pipeline]
+        guard let cursor = mongoc_collection_aggregate(
+            self._collection, MONGOC_QUERY_NONE, pipeline.data, getDataOrNil(opts), nil) else {
+            throw MongoError.invalidResponse()
+        }
+        guard let client = self._client else {
+            throw MongoError.invalidClient()
+        }
+        return Cursor(fromCursor: cursor, withClient: client)
     }
 
     /**
@@ -355,12 +525,22 @@ public class Collection {
      *
      * - Returns: The count of the documents that matched the filter
      */
-    func count(filter: Document, options: CountOptions? = nil) throws -> Int {
-        return 0
+    func count(_ filter: Document = [:], options: CountOptions? = nil) throws -> Int {
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
+        var error = bson_error_t()
+        // because we already encode skip and limit in the options, 
+        // pass in 0s so we don't get duplicate parameter errors. 
+        let count = mongoc_collection_count_with_opts(
+            self._collection, MONGOC_QUERY_NONE, filter.data, 0, 0, getDataOrNil(opts), nil, &error)
+
+        if count == -1 { throw MongoError.commandError(message: toErrorString(error)) }
+
+        return Int(count)
     }
 
     /**
-     * Finds the distinct values for a specified field accross the collection
+     * Finds the distinct values for a specified field across the collection
      *
      * - Parameters:
      *   - fieldName: The field for which the distinct values will be found
@@ -370,6 +550,7 @@ public class Collection {
      * - Returns: A 'Cursor' containing the distinct values for the specified criteria
      */
     func distinct(fieldName: String, filter: Document, options: DistinctOptions? = nil) throws -> Cursor {
+        // TODO: SWIFT-35
         return Cursor()
     }
 
@@ -384,8 +565,16 @@ public class Collection {
      * - Returns: The optional result of attempting to perform the insert. If the write concern
      *            is unacknowledged, nil is returned
      */
-    func insertOne(document: Document, options: InsertOneOptions? = nil) throws -> InsertOneResult? {
-        return nil
+    func insertOne(_ document: Document, options: InsertOneOptions? = nil) throws -> InsertOneResult? {
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
+        var error = bson_error_t()
+        if !mongoc_collection_insert_one(self._collection, document.data, getDataOrNil(opts), nil, &error) {
+            throw MongoError.commandError(message: toErrorString(error))
+        }
+        // Only return a result if we know the _id of the inserted document.
+        guard let _id = document["_id"] else { return nil }
+        return InsertOneResult(insertedId: _id)
     }
 
     /**
@@ -399,8 +588,17 @@ public class Collection {
      * - Returns: The optional result of attempting to performing the insert. If the write concern
      *            is unacknowledged, nil is returned
      */
-    func insertMany(documents: [Document], options: InsertManyOptions? = nil) throws -> InsertManyResult? {
-        return nil
+    func insertMany(_ documents: [Document], options: InsertManyOptions? = nil) throws -> InsertManyResult? {
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
+        var docPointers = documents.map { UnsafePointer($0.data) }
+        let reply = Document()
+        var error = bson_error_t()
+        if !mongoc_collection_insert_many(
+            self._collection, &docPointers, documents.count, getDataOrNil(opts), reply.data, &error) {
+            throw MongoError.commandError(message: toErrorString(error))
+        }
+        return InsertManyResult(from: reply)
     }
 
     /**
@@ -415,7 +613,15 @@ public class Collection {
      *            is unacknowledged, nil is returned
      */
     func replaceOne(filter: Document, replacement: Document, options: ReplaceOptions? = nil) throws -> UpdateResult? {
-        return nil
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
+        let reply = Document()
+        var error = bson_error_t()
+        if !mongoc_collection_replace_one(
+            self._collection, filter.data, replacement.data, getDataOrNil(opts), reply.data, &error) {
+            throw MongoError.commandError(message: toErrorString(error))
+        }
+        return UpdateResult(from: reply)
     }
 
     /**
@@ -430,7 +636,15 @@ public class Collection {
      *            unacknowledged, nil is returned
      */
     func updateOne(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
-        return nil
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
+        let reply = Document()
+        var error = bson_error_t()
+        if !mongoc_collection_update_one(
+            self._collection, filter.data, update.data, getDataOrNil(opts), reply.data, &error) {
+            throw MongoError.commandError(message: toErrorString(error))
+        }
+        return UpdateResult(from: reply)
     }
 
     /**
@@ -445,7 +659,15 @@ public class Collection {
      *            concern is unacknowledged, nil is returned
      */
     func updateMany(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
-        return nil
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
+        let reply = Document()
+        var error = bson_error_t()
+        if !mongoc_collection_update_many(
+            self._collection, filter.data, update.data, getDataOrNil(opts), reply.data, &error) {
+            throw MongoError.commandError(message: toErrorString(error))
+        }
+        return UpdateResult(from: reply)
     }
 
     /**
@@ -458,8 +680,16 @@ public class Collection {
      * - Returns: The optional result of performing the deletion. If the write concern is
      *            unacknowledged, nil is returned
      */
-    func deleteOne(filter: Document, options: DeleteOptions?) throws -> DeleteResult? {
-        return nil
+    func deleteOne(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
+        let reply = Document()
+        var error = bson_error_t()
+        if !mongoc_collection_delete_one(
+            self._collection, filter.data, getDataOrNil(opts), reply.data, &error) {
+            throw MongoError.commandError(message: toErrorString(error))
+        }
+        return DeleteResult(from: reply)
     }
 
     /**
@@ -472,8 +702,16 @@ public class Collection {
      * - Returns: The optional result of performing the deletion. If the write concern is
      *            unacknowledged, nil is returned
      */
-    func deleteMany(filter: Document, options: DeleteOptions?) throws -> DeleteResult? {
-        return nil
+    func deleteMany(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
+        let reply = Document()
+        var error = bson_error_t()
+        if !mongoc_collection_delete_many(
+            self._collection, filter.data, getDataOrNil(opts), reply.data, &error) {
+            throw MongoError.commandError(message: toErrorString(error))
+        }
+        return DeleteResult(from: reply)
     }
 
     /**
@@ -485,6 +723,7 @@ public class Collection {
      * - Returns: The name of the created index
      */
     func createIndex(model: IndexModel) throws -> String {
+        // TODO: SWIFT-35 
         return "index_name"
     }
 
@@ -510,6 +749,7 @@ public class Collection {
      * - Returns: The names of all the indexes that were created
      */
     func createIndexes(models: [IndexModel]) throws -> [String] {
+        // TODO: SWIFT-35
         return ["index_name"]
     }
 
@@ -522,6 +762,7 @@ public class Collection {
      * - Returns: The result of the command returned from the server
      */
     func dropIndex(name: String) throws -> Document {
+        // TODO: SWIFT-35
         return Document()
     }
 
@@ -547,6 +788,7 @@ public class Collection {
      * - Returns: The result of the command returned from the server
      */
     func dropIndex(model: IndexModel) throws -> Document {
+        // TODO: SWIFT-35
         return Document()
     }
 
@@ -556,6 +798,7 @@ public class Collection {
      * - Returns: The result of the command returned from the server
      */
     func dropIndexes() throws -> Document {
+        // TODO: SWIFT-35
         return Document()
     }
 
@@ -565,6 +808,12 @@ public class Collection {
      * - Returns: A `Cursor` over a collection of index names
      */
     func listIndexes() throws -> Cursor {
-        return Cursor()
+        guard let cursor = mongoc_collection_find_indexes_with_opts(self._collection, nil) else {
+            throw MongoError.invalidResponse()
+        }
+        guard let client = self._client else {
+            throw MongoError.invalidClient()
+        }
+        return Cursor(fromCursor: cursor, withClient: client)
     }
 }

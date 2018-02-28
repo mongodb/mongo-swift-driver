@@ -58,12 +58,14 @@ public struct CreateCollectionOptions: BsonEncodable {
 // A MongoDB Database
 public class Database {
     private var _database = OpaquePointer(bitPattern: 1)
+    private var _client: Client?
 
     /**
      * Initializes a new Database instance, not meant to be instantiated directly
      */
-    public init(fromDatabase: OpaquePointer) {
+    internal init(fromDatabase: OpaquePointer, withClient: Client) {
         self._database = fromDatabase
+        self._client = withClient
     }
 
     /**
@@ -73,6 +75,7 @@ public class Database {
         guard let database = self._database else { return }
         mongoc_database_destroy(database)
         self._database = nil
+        self._client = nil
     }
 
     /**
@@ -87,7 +90,10 @@ public class Database {
         guard let collection = mongoc_database_get_collection(self._database, name) else {
             throw MongoError.invalidCollection(message: "Could not get collection '\(name)'")
         }
-        return Collection(fromCollection: collection)
+        guard let client = self._client else {
+            throw MongoError.invalidClient()
+        }
+        return Collection(fromCollection: collection, withClient: client)
     }
 
     /**
@@ -106,7 +112,10 @@ public class Database {
         guard let collection = mongoc_database_create_collection(self._database, name, getDataOrNil(opts), &error) else {
             throw MongoError.commandError(message: toErrorString(error))
         }
-        return Collection(fromCollection: collection)
+        guard let client = self._client else {
+            throw MongoError.invalidClient()
+        }
+        return Collection(fromCollection: collection, withClient: client)
     }
 
     /**
@@ -124,7 +133,10 @@ public class Database {
         guard let collections = mongoc_database_find_collections_with_opts(self._database, getDataOrNil(opts)) else {
             throw MongoError.invalidResponse()
         }
-        return Cursor(fromCursor: collections)
+        guard let client = self._client else {
+            throw MongoError.invalidClient()
+        }
+        return Cursor(fromCursor: collections, withClient: client)
     }
 
     /**

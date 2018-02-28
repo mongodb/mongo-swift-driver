@@ -105,10 +105,6 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
         }
     }
 
-    public func getData() -> UnsafeMutablePointer<bson_t> {
-        return data
-    }
-
     deinit {
         guard let data = self.data else { return }
         bson_destroy(data)
@@ -266,13 +262,13 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
 
 extension Document: Equatable {
     public static func == (lhs: Document, rhs: Document) -> Bool {
-        return bson_compare(lhs.getData(), rhs.getData()) == 0
+        return bson_compare(lhs.data, rhs.data) == 0
     }
 }
 
 public func getDataOrNil(_ doc: Document?) -> UnsafeMutablePointer<bson_t>? {
     if let d = doc {
-        return d.getData()
+        return d.data
     }
     return nil
 }
