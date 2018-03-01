@@ -79,6 +79,16 @@ public class Database {
     }
 
     /**
+     * Drops this database.
+     */
+    func drop() throws {
+        var error = bson_error_t()
+        if !mongoc_database_drop(self._database, &error) {
+            throw MongoError.commandError(message: toErrorString(error))
+        }
+    }
+
+    /**
      * Access a collection within this database.
      *
      * - Parameters:

@@ -58,8 +58,8 @@ final class CollectionTests: XCTestCase {
     override class func tearDown() {
         super.tearDown()
         do {
-            print("drop DB")
-            // TODO SWIFT-46: drop database here
+            let db = try Client().db("collectionTest")
+            try db.drop()
         } catch {
             XCTFail("Dropping test database collectionTest failed: \(error)")
         }
