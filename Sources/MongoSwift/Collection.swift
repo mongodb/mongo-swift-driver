@@ -484,7 +484,7 @@ public class Collection {
     func find(_ filter: Document, options: FindOptions? = nil) throws -> Cursor {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
-        guard let cursor = mongoc_collection_find_with_opts(self._collection, filter.data, getDataOrNil(opts), nil) else {
+        guard let cursor = mongoc_collection_find_with_opts(self._collection, filter.data, opts?.data, nil) else {
             throw MongoError.invalidResponse()
         }
         guard let client = self._client else {
@@ -507,7 +507,7 @@ public class Collection {
         let opts = try encoder.encode(options)
         let pipeline: Document = ["pipeline": pipeline]
         guard let cursor = mongoc_collection_aggregate(
-            self._collection, MONGOC_QUERY_NONE, pipeline.data, getDataOrNil(opts), nil) else {
+            self._collection, MONGOC_QUERY_NONE, pipeline.data, opts?.data, nil) else {
             throw MongoError.invalidResponse()
         }
         guard let client = self._client else {
@@ -532,7 +532,7 @@ public class Collection {
         // because we already encode skip and limit in the options, 
         // pass in 0s so we don't get duplicate parameter errors. 
         let count = mongoc_collection_count_with_opts(
-            self._collection, MONGOC_QUERY_NONE, filter.data, 0, 0, getDataOrNil(opts), nil, &error)
+            self._collection, MONGOC_QUERY_NONE, filter.data, 0, 0, opts?.data, nil, &error)
 
         if count == -1 { throw MongoError.commandError(message: toErrorString(error)) }
 
@@ -569,7 +569,7 @@ public class Collection {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
         var error = bson_error_t()
-        if !mongoc_collection_insert_one(self._collection, document.data, getDataOrNil(opts), nil, &error) {
+        if !mongoc_collection_insert_one(self._collection, document.data, opts?.data, nil, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
         // Only return a result if we know the _id of the inserted document.
@@ -595,7 +595,7 @@ public class Collection {
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_insert_many(
-            self._collection, &docPointers, documents.count, getDataOrNil(opts), reply.data, &error) {
+            self._collection, &docPointers, documents.count, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
         return InsertManyResult(from: reply)
@@ -618,7 +618,7 @@ public class Collection {
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_replace_one(
-            self._collection, filter.data, replacement.data, getDataOrNil(opts), reply.data, &error) {
+            self._collection, filter.data, replacement.data, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
         return UpdateResult(from: reply)
@@ -641,7 +641,7 @@ public class Collection {
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_update_one(
-            self._collection, filter.data, update.data, getDataOrNil(opts), reply.data, &error) {
+            self._collection, filter.data, update.data, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
         return UpdateResult(from: reply)
@@ -664,7 +664,7 @@ public class Collection {
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_update_many(
-            self._collection, filter.data, update.data, getDataOrNil(opts), reply.data, &error) {
+            self._collection, filter.data, update.data, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
         return UpdateResult(from: reply)
@@ -686,7 +686,7 @@ public class Collection {
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_delete_one(
-            self._collection, filter.data, getDataOrNil(opts), reply.data, &error) {
+            self._collection, filter.data, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
         return DeleteResult(from: reply)
@@ -708,7 +708,7 @@ public class Collection {
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_delete_many(
-            self._collection, filter.data, getDataOrNil(opts), reply.data, &error) {
+            self._collection, filter.data, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
         return DeleteResult(from: reply)

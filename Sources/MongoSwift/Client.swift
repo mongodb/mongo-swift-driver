@@ -88,7 +88,7 @@ public class Client {
     func listDatabases(options: ListDatabasesOptions? = nil) throws -> Cursor {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
-        guard let cursor = mongoc_client_find_databases_with_opts(self._client, getDataOrNil(opts)) else {
+        guard let cursor = mongoc_client_find_databases_with_opts(self._client, opts?.data) else {
             throw MongoError.invalidResponse()
         }
         return Cursor(fromCursor: cursor, withClient: self)
