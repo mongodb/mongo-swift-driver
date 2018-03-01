@@ -25,7 +25,7 @@ public struct ListDatabasesOptions: BsonEncodable {
 
 // A MongoDB Client
 public class Client {
-    private var _client = OpaquePointer(bitPattern: 1)
+    internal var _client = OpaquePointer(bitPattern: 1)
 
     /**
      * Create a new client connection to a MongoDB server

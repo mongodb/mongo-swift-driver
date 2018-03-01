@@ -5,10 +5,6 @@ public class Cursor: Sequence, IteratorProtocol {
     private var _cursor = OpaquePointer(bitPattern: 1)
     private var _client: Client?
 
-    /// get rid of this
-    /// TODO: SWIFT-35
-    init() {}
-
     /**
      * Initializes a new Cursor instance, not meant to be instantiated directly
      */

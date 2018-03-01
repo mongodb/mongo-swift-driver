@@ -326,7 +326,7 @@ public struct UpdateResult {
     }
 }
 
-public struct IndexModel {
+public struct IndexModel: BsonEncodable {
     /// Contains the required keys for the index.
     let keys: Document
 
@@ -338,6 +338,22 @@ public struct IndexModel {
         self.keys = keys
         self.options = options
     }
+
+    /// Gets the default name for this index.
+    internal var defaultName: String {
+        return String(cString: mongoc_collection_keys_to_index_string(self.keys.data))
+    }
+
+    public func encode(to encoder: BsonEncoder) throws {
+        // we need a flat document containing key, name, and options,
+        // so encode the options directly to this encoder first
+        try self.options?.encode(to: encoder)
+        try encoder.encode(keys, forKey: "key")
+        if self.options?.name == nil {
+            try encoder.encode(self.defaultName, forKey: "name")
+        }
+    }
+
 }
 
 public struct IndexOptions: BsonEncodable {
@@ -550,8 +566,43 @@ public class Collection {
      * - Returns: A 'Cursor' containing the distinct values for the specified criteria
      */
     func distinct(fieldName: String, filter: Document, options: DistinctOptions? = nil) throws -> Cursor {
-        // TODO: SWIFT-35
-        return Cursor()
+        guard let client = self._client else {
+            throw MongoError.invalidClient()
+        }
+
+        let collName = String(cString: mongoc_collection_get_name(self._collection))
+        let command: Document = [
+            "distinct": collName,
+            "key": fieldName,
+            "query": filter
+        ]
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
+
+        let reply = Document()
+        var error = bson_error_t()
+        if !mongoc_collection_read_command_with_opts(
+            self._collection, command.data, nil, getDataOrNil(opts), reply.data, &error) {
+            throw MongoError.commandError(message: toErrorString(error))
+        }
+
+        let fakeReply: Document = [
+            "ok": 1,
+            "cursor": [
+                "id": 0,
+                "ns": "",
+                "firstBatch": [reply]
+            ] as Document
+        ]
+
+        // mongoc_cursor_new_from_command_reply will bson_destroy the data we pass in,
+        // so copy it to avoid destroying twice (already done in Document deinit)
+        let fakeData = bson_copy(fakeReply.data)
+        guard let newCursor = mongoc_cursor_new_from_command_reply(client._client, fakeData, 0) else {
+            throw MongoError.invalidResponse()
+        }
+
+        return Cursor(fromCursor: newCursor, withClient: client)
     }
 
     /**
@@ -722,9 +773,8 @@ public class Collection {
      *
      * - Returns: The name of the created index
      */
-    func createIndex(model: IndexModel) throws -> String {
-        // TODO: SWIFT-35 
-        return "index_name"
+    func createIndex(_ forModel: IndexModel) throws -> String {
+        return try createIndexes([forModel])[0]
     }
 
     /**
@@ -736,8 +786,8 @@ public class Collection {
      *
      * - Returns: The name of the created index
      */
-    func createIndex(keys: Document, options: IndexOptions? = nil) throws -> String {
-        return try createIndex(model: IndexModel(keys: keys, options: options))
+    func createIndex(_ keys: Document, options: IndexOptions? = nil) throws -> String {
+        return try createIndex(IndexModel(keys: keys, options: options))
     }
 
     /**
@@ -748,9 +798,18 @@ public class Collection {
      *
      * - Returns: The names of all the indexes that were created
      */
-    func createIndexes(models: [IndexModel]) throws -> [String] {
-        // TODO: SWIFT-35
-        return ["index_name"]
+    func createIndexes(_ forModels: [IndexModel]) throws -> [String] {
+        let collName = String(cString: mongoc_collection_get_name(self._collection))
+        let command: Document = [
+            "createIndexes": collName,
+            "indexes": try forModels.map { try BsonEncoder().encode($0) }
+        ]
+        var error = bson_error_t()
+        if !mongoc_collection_write_command_with_opts(self._collection, command.data, nil, nil, &error) {
+            throw MongoError.commandError(message: toErrorString(error))
+        }
+
+        return forModels.map { $0.options?.name ?? $0.defaultName }
     }
 
      /**
@@ -759,11 +818,12 @@ public class Collection {
      * - Parameters:
      *   - name: The name of the index to drop
      *
-     * - Returns: The result of the command returned from the server
      */
-    func dropIndex(name: String) throws -> Document {
-        // TODO: SWIFT-35
-        return Document()
+    func dropIndex(_ name: String) throws {
+        var error = bson_error_t()
+        if !mongoc_collection_drop_index(self._collection, name, &error) {
+            throw MongoError.commandError(message: toErrorString(error))
+        }
     }
 
     /**
@@ -775,7 +835,7 @@ public class Collection {
      *
      * - Returns: The result of the command returned from the server
      */
-    func dropIndex(keys: Document, options: IndexOptions? = nil) throws -> Document {
+    func dropIndex(_ keys: Document, options: IndexOptions? = nil) throws -> Document {
         return try dropIndex(model: IndexModel(keys: keys, options: options))
     }
 
@@ -787,9 +847,8 @@ public class Collection {
      *
      * - Returns: The result of the command returned from the server
      */
-    func dropIndex(model: IndexModel) throws -> Document {
-        // TODO: SWIFT-35
-        return Document()
+    func dropIndex(_ model: IndexModel) throws -> Document {
+        return try _dropIndexes(keys: model.keys)
     }
 
     /**
@@ -798,8 +857,19 @@ public class Collection {
      * - Returns: The result of the command returned from the server
      */
     func dropIndexes() throws -> Document {
-        // TODO: SWIFT-35
-        return Document()
+        return try _dropIndexes()
+    }
+
+    private func _dropIndexes(keys: Document? = nil) throws -> Document {
+        let collName = String(cString: mongoc_collection_get_name(self._collection))
+        let command: Document = ["dropIndexes": collName, "index": keys ?? "*"]
+        let reply = Document()
+        var error = bson_error_t()
+        if !mongoc_collection_write_command_with_opts(self._collection, command.data, nil, reply.data, &error) {
+            throw MongoError.commandError(message: toErrorString(error))
+        }
+
+        return reply
     }
 
     /**
