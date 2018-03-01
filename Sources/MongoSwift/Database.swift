@@ -109,7 +109,7 @@ public class Database {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
         var error = bson_error_t()
-        guard let collection = mongoc_database_create_collection(self._database, name, getDataOrNil(opts), &error) else {
+        guard let collection = mongoc_database_create_collection(self._database, name, opts?.data, &error) else {
             throw MongoError.commandError(message: toErrorString(error))
         }
         guard let client = self._client else {
@@ -130,7 +130,7 @@ public class Database {
     func listCollections(options: ListCollectionsOptions? = nil) throws -> Cursor {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
-        guard let collections = mongoc_database_find_collections_with_opts(self._database, getDataOrNil(opts)) else {
+        guard let collections = mongoc_database_find_collections_with_opts(self._database, opts?.data) else {
             throw MongoError.invalidResponse()
         }
         guard let client = self._client else {
@@ -153,7 +153,7 @@ public class Database {
         let opts = try encoder.encode(options)
         let reply: UnsafeMutablePointer<bson_t> = bson_new()
         var error = bson_error_t()
-        if !mongoc_database_command_with_opts(self._database, command.data, nil, getDataOrNil(opts), reply, &error) {
+        if !mongoc_database_command_with_opts(self._database, command.data, nil, opts?.data, reply, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
         return Document(fromData: reply)

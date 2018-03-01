@@ -1,19 +1,39 @@
 import Foundation
 import libbson
 
+/// A class representing the BSON document type
 public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral, CustomStringConvertible {
     internal var data: UnsafeMutablePointer<bson_t>!
 
     public var bsonType: BsonType { return .document }
 
+    /// Initialize a new, empty document
     public init() {
         data = bson_new()
     }
 
-    public init(fromData bsonData: UnsafeMutablePointer<bson_t>) {
+    /**
+     * Initializes a `Document` from a pointer to a bson_t. Uses a copy
+     * of `bsonData`, so the caller is responsible for freeing the original
+     * memory. 
+     * 
+     * - Parameters:
+     *   - bsonData: a UnsafeMutablePointer<bson_t>
+     *
+     * - Returns: a new `Document`
+     */
+    internal init(fromData bsonData: UnsafeMutablePointer<bson_t>) {
         data = bson_copy(bsonData)
     }
 
+    /**
+     * Initializes a `Document` from a [String: BsonValue?] 
+     *
+     * - Parameters:
+     *   - doc: a [String: BsonValue?]
+     *
+     * - Returns: a new `Document`
+     */
     public init(_ doc: [String: BsonValue?]) {
         data = bson_new()
         for (k, v) in doc {
@@ -21,14 +41,34 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
         }
     }
 
-    public required init(dictionaryLiteral doc: (String, Any?)...) {
+    /**
+     * Initializes a `Document` using a dictionary literal where the 
+     * keys are `String`s and the values are `BsonValue?`s. For example:
+     * `d: Document = ["a" : 1 ]`
+     *
+     * - Parameters:
+     *   - dictionaryLiteral: a [String: BsonValue?]
+     *
+     * - Returns: a new `Document`
+     */
+    public required init(dictionaryLiteral doc: (String, BsonValue?)...) {
         data = bson_new()
         for (k, v) in doc {
-            self[k] = v as? BsonValue
+            self[k] = v
         }
     }
-
-    public required init(arrayLiteral elements: BsonValue...) {
+    /**
+     * Initializes a `Document` using an array literal where the values
+     * are `BsonValue`s. Values are stored under a string of their 
+     * index in the array. For example:
+     * `d: Document = ["a", "b"]` will become `["0": "a", "1": "b"]`
+     *
+     * - Parameters:
+     *   - arrayLiteral: a [BsonValue?]
+     *
+     * - Returns: a new `Document`
+     */
+    public required init(arrayLiteral elements: BsonValue?...) {
         data = bson_new()
         for (i, elt) in elements.enumerated() {
             self[String(i)] = elt
@@ -115,6 +155,15 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
         return self.extendedJSON
     }
 
+    /**
+     * Allows setting values and retrieving values using subscript syntax.
+     * For example:
+     * 
+     *  let d = Document()
+     *  d["a"] = 1
+     *  print(d["a"]) // prints 1
+     * 
+     */
     subscript(key: String) -> BsonValue? {
         get {
             var iter: bson_iter_t = bson_iter_t()
@@ -260,15 +309,9 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
     }
 }
 
+/// An extension of `Document` to make it `Equatable`. 
 extension Document: Equatable {
     public static func == (lhs: Document, rhs: Document) -> Bool {
         return bson_compare(lhs.data, rhs.data) == 0
     }
-}
-
-public func getDataOrNil(_ doc: Document?) -> UnsafeMutablePointer<bson_t>? {
-    if let d = doc {
-        return d.data
-    }
-    return nil
 }
