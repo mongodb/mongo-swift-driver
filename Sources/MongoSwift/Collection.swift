@@ -582,7 +582,7 @@ public class Collection {
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_read_command_with_opts(
-            self._collection, command.data, nil, getDataOrNil(opts), reply.data, &error) {
+            self._collection, command.data, nil, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
 
@@ -836,7 +836,7 @@ public class Collection {
      * - Returns: The result of the command returned from the server
      */
     func dropIndex(_ keys: Document, options: IndexOptions? = nil) throws -> Document {
-        return try dropIndex(model: IndexModel(keys: keys, options: options))
+        return try dropIndex(IndexModel(keys: keys, options: options))
     }
 
     /**
