@@ -1,6 +1,7 @@
+import Foundation
 import libmongoc
 
-public enum MongoError: Error {
+public enum MongoError {
     case invalidUri(message: String)
     case invalidClient()
     case invalidResponse()
@@ -9,6 +10,19 @@ public enum MongoError: Error {
     case commandError(message: String)
     case bsonParseError(domain: UInt32, code: UInt32, message: String)
     case bsonEncodeError(message: String)
+}
+
+extension MongoError: LocalizedError {
+    public var errorDescription: String? {
+        switch self {
+        case let .invalidUri(message), let .invalidCursor(message),
+            let .invalidCollection(message), let .commandError(message),
+            let .bsonParseError(_, _, message), let .bsonEncodeError(message):
+            return message
+        default:
+            return nil
+        }
+    }
 }
 
 public func toErrorString(_ error: bson_error_t) -> String {
