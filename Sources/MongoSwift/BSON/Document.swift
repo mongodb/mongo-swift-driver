@@ -98,6 +98,11 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
         }
     }
 
+    public convenience init(fromJSONFile file: URL) throws {
+        let jsonString = try String(contentsOf: file, encoding: .utf8)
+        try self.init(fromJSON: jsonString)
+    }
+
     /// Convenience initializer for constructing a `Document` from a `String`
     public convenience init(fromJSON json: String) throws {
         try self.init(fromJSON: json.data(using: .utf8)!)
@@ -325,7 +330,7 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
      * having to cast and unwrap values from the Document when you know what type they will be. 
      * For example:
      *      let d: Document = ["x": 1]
-     *      let x: Int = try d.getTyped("x")
+     *      let x: Int = try d.get("x")
      *
      *  - Params:
      *      - key: The key under which the value you are looking up is stored
@@ -336,7 +341,7 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
      *      - A MongoError.typeError if the value cannot be cast to type T or is not in the `Document`
      *
      */ 
-    internal func getTyped<T: BsonValue>(_ key: String) throws -> T {
+    internal func get<T: BsonValue>(_ key: String) throws -> T {
         guard let value = self[key] as? T else {
             throw MongoError.typeError(message: "Could not cast value for key \(key) to type \(T.self)")
         }
