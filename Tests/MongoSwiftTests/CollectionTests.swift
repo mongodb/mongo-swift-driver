@@ -83,7 +83,7 @@ final class CollectionTests: XCTestCase {
         // try inserting a document without an ID to verify one is generated and returned
         let docNoId: Document = ["x": 1]
         let noIdResult = try coll.insertOne(docNoId)
-        XCTAssertNotNil(result?.insertedId)
+        XCTAssertNotNil(noIdResult?.insertedId)
     }
 
     func testAggregate() throws {
@@ -116,6 +116,9 @@ final class CollectionTests: XCTestCase {
        XCTAssertEqual(insertedIds[2], "10")
        XCTAssertEqual(insertedIds[3], "11")
 
+       let v = docNoId1["_id"] as? ObjectId
+       XCTAssertNotNil(docNoId1["_id"] as Any)
+       XCTAssertNotNil(docNoId2["_id"])
     }
 
     func testFind() throws {

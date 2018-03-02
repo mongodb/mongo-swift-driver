@@ -628,13 +628,11 @@ public class Collection {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
         var error = bson_error_t()
-        let doc = document
-        if doc["_id"] == nil { doc["_id"] = ObjectId() }
-        if !mongoc_collection_insert_one(self._collection, doc.data, opts?.data, nil, &error) {
+        if document["_id"] == nil { document["_id"] = ObjectId() }
+        if !mongoc_collection_insert_one(self._collection, document.data, opts?.data, nil, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
-        if let id = doc["_id"] { return InsertOneResult(insertedId: id) }
-        return nil
+        return InsertOneResult(insertedId: document["_id"] as Any)
     }
 
     /**
@@ -652,25 +650,18 @@ public class Collection {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
 
-        var docsWithIds = [Document]()
-        for doc in documents {
-            if doc["_id"] == nil {
-                let docCopy = doc
-                docCopy["_id"] = ObjectId()
-                docsWithIds.append(docCopy)
-            } else {
-               docsWithIds.append(doc)
-            }
+        for doc in documents where doc["_id"] == nil {
+            doc["_id"] = ObjectId()
         }
 
-        var docPointers = docsWithIds.map { UnsafePointer($0.data) }
+        var docPointers = documents.map { UnsafePointer($0.data) }
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_insert_many(
             self._collection, &docPointers, documents.count, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
-        return InsertManyResult(fromArray: docsWithIds.map { $0["_id"] as Any })
+        return InsertManyResult(fromArray: documents.map { $0["_id"] as Any })
     }
 
     /**
