@@ -25,21 +25,86 @@ private struct CrudTestFile {
         self.data = try document.getTyped("data")
 
         let tests: [Document] = try document.getTyped("tests")
-        self.tests = try tests.map { try CrudTest(fromDocument: $0) }
+        self.tests = try tests.map { try makeCrudTest($0) }
 
 	}
 }
 
-/// A container for one of the tests contained in a .json file. 
-private struct CrudTest {
+private func makeCrudTest(_ doc: Document) throws -> CrudTest {
+	let operation: Document = try doc.getTyped("operation")
+	let opName: String = try operation.getTyped("name")
+	switch opName {
+	case "aggregate":
+		return try AggregateTest(doc)
+	case "bulkWrite":
+		return try BulkWriteTest(doc)
+	case "count":
+		return try CountTest(doc)
+	case "deleteMany":
+		return try DeleteManyTest(doc)
+	case "deleteOne":
+		return try DeleteOneTest(doc)
+	case "distinct":
+		return try DistinctTest(doc)
+	case "find":
+		return try FindTest(doc)
+	case "findOneAndDelete":
+		return try FindOneAndDeleteTest(doc)
+	case "findOneAndReplace":
+		return try FindOneAndReplaceTest(doc)
+	case "findOneAndUpdate":
+		return try FindOneAndUpdateTest(doc)
+	case "insertMany":
+		return try InsertManyTest(doc)
+	case "insertOne":
+		return try InsertOneTest(doc)
+	case "replaceOne":
+		return try ReplaceOneTest(doc)
+	case "updateMany":
+		return try UpdateManyTest(doc)
+	case "updateOne":
+		return try UpdateOneTest(doc)
+	default:
+		return try CrudTest(doc)
+	}
+}
+
+private class CrudTest {
+
 	let description: String
 	let operationName: String
 	let args: Document
 	let result: BsonValue?
 	let collection: Document?
 
+	var collation: Document? { return self.args["collation"] as? Document }
+
+	var skip: Int64? {
+		let skipAsInt = self.args["skip"] as? Int
+		if let s = skipAsInt { return Int64(s) }
+		return nil
+	}
+
+	var limit: Int64? {
+		let limitAsInt = self.args["limit"] as? Int
+		if let l = limitAsInt { return Int64(l) }
+		return nil
+	}
+
+	var batchSize: Int32? {
+		let batchSizeAsInt = self.args["batchSize"] as? Int
+		if let b = batchSizeAsInt { return Int32(b) }
+		return nil
+	}
+
+	var sort: Document? { return self.args["sort"] as? Document }
+
+	func execute(_ coll: MongoSwift.Collection, database: Database) throws {
+		XCTFail("Unimplemented")
+	}
+
 	/// Initializes a new `CrudTest` from a `Document`. 
-	public init(fromDocument test: Document) throws {
+	public init(_ test: Document) throws {
 		self.description = try test.getTyped("description")
 		let operation: Document = try test.getTyped("operation")
 		self.operationName = try operation.getTyped("name")
@@ -50,107 +115,74 @@ private struct CrudTest {
 		self.collection = outcome["collection"] as? Document
 	}
 
-	func execute(_ coll: MongoSwift.Collection, database: Database) throws {
-		print("------------\nExecuting test: \(self.description)")
+}
 
-		var skip: Int64?
-		let skipAsInt = self.args["skip"] as? Int
-		if let s = skipAsInt { skip = Int64(s) }
+private class AggregateTest: CrudTest {
+	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
+		let pipeline: [Document] = try self.args.getTyped("pipeline")
+		let options = AggregateOptions(batchSize: self.batchSize, collation: self.collation)
+		let result = try coll.aggregate(pipeline, options: options)
+		if let coll = self.collection {
+			let expectedData: [Document] = try coll.getTyped("data")
+			if let name = coll["name"] as? String {
+				let testColl = try database.collection(name)
+				let results = try testColl.find([:])
+				let resultsArray = Array(results)
+				//XCTAssertEqual(resultsArray, expectedData)
+			} else {
 
-		var limit: Int64?
-		let limitAsInt = self.args["limit"] as? Int
-		if let l = limitAsInt { limit = Int64(l) }
-
-		let collation = self.args["collation"] as? Document
-
-		var batchSize: Int32?
-		let batchSizeAsInt = self.args["batchSize"] as? Int
-		if let l = batchSizeAsInt { batchSize = Int32(l) }
-
-		let sort = try self.args["sort"] as? Document
-
-		switch self.operationName {
-
-		case "distinct":
-			let filter = try self.args["filter"] as? Document
-			let fieldName: String = try self.args.getTyped("fieldName")
-			let options = DistinctOptions(collation: collation)
-			let distinct = try coll.distinct(fieldName: fieldName, filter: filter ?? [:], options: options)
-			XCTAssertEqual(distinct.next(), ["values": self.result, "ok": 1.0] as Document)
-			XCTAssertNil(distinct.next())
-
-		case "find":
-			let filter: Document = try self.args.getTyped("filter")
-			let options = FindOptions(batchSize: batchSize, collation: collation,
-									limit: limit, skip: skip, sort: sort)
-			let result = try coll.find(filter, options: options)
+			}
+		} else {
 			let resultArray: [Document] = Array(result)
 			XCTAssertEqual(resultArray, self.result as! [Document])
-
-		case "count":
-			let filter: Document = try self.args.getTyped("filter")
-			let options = CountOptions(collation: collation, limit: limit, skip: skip)
-			let result = try coll.count(filter, options: options)
-			XCTAssertEqual(result, self.result as? Int)
-
-		case "aggregate":
-			let pipeline: [Document] = try self.args.getTyped("pipeline")
-			let options = AggregateOptions(batchSize: batchSize, collation: collation)
-			let result = try coll.aggregate(pipeline, options: options)
-			if let coll = self.collection {
-				let expectedData: [Document] = try coll.getTyped("data")
-				if let name = coll["name"] as? String {
-					let testColl = try database.collection(name)
-					let results = try testColl.find([:])
-					let resultsArray = Array(results)
-					//XCTAssertEqual(resultsArray, expectedData)
-				} else {
-
-				}
-			} else {
-				let resultArray: [Document] = Array(result)
-				XCTAssertEqual(resultArray, self.result as! [Document])
-			}
-
-		case "bulkWrite":
-			print("bulkWrite")
-
-		case "deleteMany":
-			print("deleteMany")
-
-		case "deleteOne":
-			print("deleteOne")
-
-		case "findOneAndDelete":
-			print("findOneAndDelete")
-
-		case "findOneAndReplace":
-			print("findOneAndReplace")
-
-		case "findOneAndUpdate":
-			print("findOneAndUpdate")
-
-		case "insertMany":
-			print("insertMany")
-
-		case "insertOne":
-			print("insertOne")
-
-		case "replaceOne":
-			print("replaceOne")
-
-		case "updateMany":
-			print("updateMany")
-
-		case "updateOne":
-			print("updateOne")
-
-		default:
-			XCTFail("Operation name '\(self.operationName)' did not match any expected values")
 		}
-
 	}
 }
+
+private class BulkWriteTest: CrudTest {}
+
+private class CountTest: CrudTest {
+	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
+		let filter: Document = try self.args.getTyped("filter")
+		let options = CountOptions(collation: self.collation, limit: self.limit, skip: self.skip)
+		let result = try coll.count(filter, options: options)
+		XCTAssertEqual(result, self.result as? Int)
+	}
+}
+
+private class DeleteManyTest: CrudTest {}
+private class DeleteOneTest: CrudTest {}
+
+private class DistinctTest: CrudTest {
+	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
+		let filter = try self.args["filter"] as? Document
+		let fieldName: String = try self.args.getTyped("fieldName")
+		let options = DistinctOptions(collation: self.collation)
+		let distinct = try coll.distinct(fieldName: fieldName, filter: filter ?? [:], options: options)
+		XCTAssertEqual(distinct.next(), ["values": self.result, "ok": 1.0] as Document)
+		XCTAssertNil(distinct.next())
+	}
+}
+
+private class FindTest: CrudTest {
+	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
+		print("Executing test: \(self.description)")
+		let filter: Document = try self.args.getTyped("filter")
+		let options = FindOptions(batchSize: batchSize, collation: collation, limit: self.limit, skip: self.skip, sort: self.sort)
+		let result = try coll.find(filter, options: options)
+		let resultArray: [Document] = Array(result)
+		XCTAssertEqual(resultArray, self.result as! [Document])
+	}
+}
+
+private class FindOneAndDeleteTest: CrudTest {}
+private class FindOneAndReplaceTest: CrudTest {}
+private class FindOneAndUpdateTest: CrudTest {}
+private class InsertManyTest: CrudTest {}
+private class InsertOneTest: CrudTest {}
+private class ReplaceOneTest: CrudTest {}
+private class UpdateManyTest: CrudTest {}
+private class UpdateOneTest: CrudTest {}
 
 private func parseFiles(atPath path: String) throws -> [CrudTestFile] {
 	var tests = [CrudTestFile]()
@@ -193,7 +225,7 @@ final class CrudTests: XCTestCase {
     	for file in testFiles {
     		let collection = try db.collection("\(file.name.components(separatedBy: ".")[0])")
     		try collection.insertMany(file.data)
-    		print("\n\n\n------------\nExecuting tests from file \(forPath)/\(file.name)...")
+    		print("\n------------\nExecuting tests from file \(forPath)/\(file.name)...\n")
     		for test in file.tests {
     			try test.execute(collection, database: db)
     		}
