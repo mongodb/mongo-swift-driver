@@ -22,13 +22,14 @@ final class CrudTests: XCTestCase {
 
     func doTest(forPath: String) throws {
     	let db = try Client().db("crudTests")
-    	for file in try parseFiles(atPath: forPath)[0...1] {
+    	for file in try parseFiles(atPath: forPath) {
     		let collection = try db.collection("\(file.name)")
-    		try collection.insertMany(file.data)
     		print("\n------------\nExecuting tests from file \(forPath)/\(file.name).json...\n")
     		for test in file.tests {
     			print("Executing test: \(test.description)")
+    			try collection.insertMany(file.data)
     			try test.execute(collection, database: db)
+    			try collection.drop()
     		}
     	}
     	print()
@@ -125,8 +126,6 @@ private class AggregateTest: CrudTest {
 	}
 }
 
-private class BulkWriteTest: CrudTest {}
-
 private class CountTest: CrudTest {
 	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
 		let filter: Document = try self.args.get("filter")
@@ -136,8 +135,25 @@ private class CountTest: CrudTest {
 	}
 }
 
-private class DeleteManyTest: CrudTest {}
-private class DeleteOneTest: CrudTest {}
+private class DeleteManyTest: CrudTest {
+	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
+		let filter: Document = try self.args.get("filter")
+		let options = DeleteOptions() // DeleteOptions(collation: self.collation)
+		let result = try coll.deleteMany(filter, options: options)
+		let expected = self.result as? Document
+		XCTAssertEqual(result?.deletedCount, expected?["deletedCount"] as? Int)
+	}
+}
+
+private class DeleteOneTest: CrudTest {
+	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
+		let filter: Document = try self.args.get("filter")
+		let options = DeleteOptions() // DeleteOptions(collation: self.collation)
+		let result = try coll.deleteOne(filter, options: options)
+		let expected = self.result as? Document
+		XCTAssertEqual(result?.deletedCount, expected?["deletedCount"] as? Int)
+	}
+}
 
 private class DistinctTest: CrudTest {
 	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
@@ -160,38 +176,31 @@ private class FindTest: CrudTest {
 	}
 }
 
-private class FindOneAndDeleteTest: CrudTest {}
-private class FindOneAndReplaceTest: CrudTest {}
-private class FindOneAndUpdateTest: CrudTest {}
-
-private class InsertManyTest: CrudTest {
-	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
-		let documents: [Document] = try self.args.get("documents")
-		print("documents: \(documents)")
-		if let result = try coll.insertMany(documents) {
-
-		} else {
-
-		}
-
-		// guard let expectedIds = InsertManyResult(from: expectedDoc)?.insertedIds else {
-		// 	XCTFail("Could not create InsertManyResult from expected result")
-		// 	return
-		// }
-		//XCTAssertEqual(result?.insertedIds, expectedResult.insertedIds)
-	}
-}
+private class InsertManyTest: CrudTest {}
 
 private class InsertOneTest: CrudTest {
-	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
-		let doc: Document = try self.args.get("document")
-		let result = try coll.insertOne(doc)
-		XCTAssertEqual(doc["_id"] as! Int, result?.insertedId as! Int)
-	}
-
+	// override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
+	// 	let doc: Document = try self.args.get("document")
+	// 	let result = try coll.insertOne(doc)
+	// 	XCTAssertEqual(doc["_id"] as! Int, result?.insertedId as! Int)
+	// }
 }
 
-private class ReplaceOneTest: CrudTest {}
+private class ReplaceOneTest: CrudTest {
+	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
+		let filter: Document = try self.args.get("filter")
+		let replacement: Document = try self.args.get("replacement")
+		let options = ReplaceOptions(collation: self.collation, upsert: self.args["upsert"] as? Bool)
+		let result = try coll.replaceOne(filter: filter, replacement: replacement, options: options)
+		let expectedResult = self.result as? Document
+		XCTAssertEqual(result?.matchedCount, expectedResult?["matchedCount"] as? Int)
+		XCTAssertEqual(result?.modifiedCount, expectedResult?["modifiedCount"] as? Int)
+		XCTAssertEqual(result?.upsertedId as? Int, expectedResult?["upsertedId"] as? Int)
+		if let upserted = result?.upsertedId as? Int {
+			XCTAssertEqual(expectedResult?["upsertedCount"] as? Int, 1)
+		}
+	}
+}
 
 private class UpdateManyTest: CrudTest {
 	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
@@ -203,11 +212,6 @@ private class UpdateManyTest: CrudTest {
 		let expectedResult = self.result as? Document
 		XCTAssertEqual(result?.matchedCount, expectedResult?["matchedCount"] as? Int)
 		XCTAssertEqual(result?.modifiedCount, expectedResult?["modifiedCount"] as? Int)
-		// print("upserted; \(result?.upsertedId)")
-		// if expectedResult?["upsertedCount"] as? Int > 0 {
-		// 	print(expectedResult?["upsertedCount"] as Any)
-		// 	//XCTAssertEqual((result?.upsertedId as [Any]).count, 1)
-		// }
 	}
 }
 
@@ -224,6 +228,29 @@ private class UpdateOneTest: CrudTest {
 		if let id = result?.upsertedId as? Int {
 			XCTAssertEqual(expected?["upsertedId"] as? Int, id)
 		}
+	}
+}
+
+/// We don't support these, so leave unimplemented. 
+private class BulkWriteTest: CrudTest {
+	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
+		print("Skipping, findOneAndDelete unsupported")
+	}
+}
+
+private class FindOneAndDeleteTest: CrudTest {
+	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
+		print("Skipping, findOneAndDelete unsupported")
+	}
+}
+private class FindOneAndReplaceTest: CrudTest {
+	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
+		print("Skipping, findOneAndReplace unsupported")
+	}
+}
+private class FindOneAndUpdateTest: CrudTest {
+	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
+		print("Skipping, findOneAndUpdate unsupported")
 	}
 }
 

@@ -738,6 +738,8 @@ public class MongoCollection {
         let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
+        print("filter: \(filter)")
+        print("opts: \(opts ?? Document())")
         if !mongoc_collection_delete_one(
             self._collection, filter.data, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
