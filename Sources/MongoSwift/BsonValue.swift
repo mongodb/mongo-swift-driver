@@ -340,13 +340,12 @@ class MinKey: BsonValue, Equatable {
 }
 
 /// A class to represent the BSON ObjectId type
-class ObjectId: BsonValue, Equatable {
+class ObjectId: BsonValue, Equatable, CustomStringConvertible {
     public var bsonType: BsonType { return .objectId }
     var oid: bson_oid_t
 
     init() {
         var oid: bson_oid_t = bson_oid_t()
-        // the second parameter should be a bson_context_t, but for now use nil
         bson_oid_init(&oid, nil)
         self.oid = oid
     }
@@ -374,13 +373,13 @@ class ObjectId: BsonValue, Equatable {
         return ObjectId(from: oid.pointee)
     }
 
-    public var asString: String {
+    public var description: String {
         var data: Int8 = 0
         bson_oid_to_string(&self.oid, &data)
         return String(cString: &data)
     }
 
-    static func == (lhs: ObjectId, rhs: ObjectId) -> Bool { return lhs.asString == rhs.asString }
+    static func == (lhs: ObjectId, rhs: ObjectId) -> Bool { return lhs.description == rhs.description }
 
 }
 

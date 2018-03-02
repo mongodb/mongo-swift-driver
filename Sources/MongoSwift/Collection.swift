@@ -276,16 +276,24 @@ public struct InsertManyResult {
     /// Map of the index of the inserted document to the id of the inserted document.
     let insertedIds: [Int64: String]
 
-    /// Given a server response to an insertMany command, creates a corresponding
-    /// `InsertManyResult`. If the `from` Document does not have an `insertedIds`
-    /// field, the initialization will fail.
-    internal init?(from: Document) {
-        guard let inserted = from["insertedIds"] as? [String] else { return nil }
-        var ids = [Int64: String]()
-        for (i, id) in inserted.enumerated() {
-            ids[Int64(i)] = id
+    /// Given an ordered array of insertedIds, creates a corresponding InsertManyResult. 
+    /// Fails and returns nil if any of the object Ids cannot be converted to a string. 
+    internal init?(fromArray arr: [Any]) {
+        var inserted = [Int64: String]()
+        for (i, id) in arr.enumerated() {
+            let index = Int64(i)
+            switch id {
+            case let stringId as String:
+                inserted[index] = stringId
+            case let intId as Int:
+                inserted[index] = String(intId)
+            case let objectId as ObjectId:
+                inserted[index] = objectId.description
+            default:
+                return nil
+            }
         }
-        self.insertedIds = ids
+        self.insertedIds = inserted
     }
 }
 
@@ -620,12 +628,13 @@ public class Collection {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
         var error = bson_error_t()
-        if !mongoc_collection_insert_one(self._collection, document.data, opts?.data, nil, &error) {
+        let doc = document
+        if doc["_id"] == nil { doc["_id"] = ObjectId() }
+        if !mongoc_collection_insert_one(self._collection, doc.data, opts?.data, nil, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
-        // Only return a result if we know the _id of the inserted document.
-        guard let _id = document["_id"] else { return nil }
-        return InsertOneResult(insertedId: _id)
+        if let id = doc["_id"] { return InsertOneResult(insertedId: id) }
+        return nil
     }
 
     /**
@@ -642,14 +651,26 @@ public class Collection {
     func insertMany(_ documents: [Document], options: InsertManyOptions? = nil) throws -> InsertManyResult? {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
-        var docPointers = documents.map { UnsafePointer($0.data) }
+
+        var docsWithIds = [Document]()
+        for doc in documents {
+            if doc["_id"] == nil {
+                let docCopy = doc
+                docCopy["_id"] = ObjectId()
+                docsWithIds.append(docCopy)
+            } else {
+               docsWithIds.append(doc)
+            }
+        }
+
+        var docPointers = docsWithIds.map { UnsafePointer($0.data) }
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_insert_many(
             self._collection, &docPointers, documents.count, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
-        return InsertManyResult(from: reply)
+        return InsertManyResult(fromArray: docsWithIds.map { $0["_id"] as Any })
     }
 
     /**

@@ -79,6 +79,11 @@ final class CollectionTests: XCTestCase {
 
         try coll.insertOne(doc2)
         XCTAssertEqual(try coll.count(), 2)
+
+        // try inserting a document without an ID to verify one is generated and returned
+        let docNoId: Document = ["x": 1]
+        let noIdResult = try coll.insertOne(docNoId)
+        XCTAssertNotNil(result?.insertedId)
     }
 
     func testAggregate() throws {
@@ -96,6 +101,21 @@ final class CollectionTests: XCTestCase {
 
     func testInsertMany() throws {
         XCTAssertEqual(try coll.count(), 2)
+
+        // try inserting a mix of documents with and without IDs to verify they are generated
+        let docNoId1: Document = ["x": 1]
+        let docNoId2: Document = ["x": 2]
+        let docId1: Document = ["_id": 10, "x": 8]
+        let docId2: Document = ["_id": 11, "x": 9]
+        let result = try coll.insertMany([docNoId1, docNoId2, docId1, docId2])
+        guard let insertedIds = result?.insertedIds else {
+            XCTFail("No insertedIds in InsertManyResult")
+            return
+        }
+       XCTAssertEqual(insertedIds.count, 4)
+       XCTAssertEqual(insertedIds[2], "10")
+       XCTAssertEqual(insertedIds[3], "11")
+
     }
 
     func testFind() throws {
@@ -228,7 +248,6 @@ final class CollectionTests: XCTestCase {
         XCTAssertEqual(result, "cat_1")
 
         let dropResult = try coll.dropIndex(["cat": 1])
-        print("dropResult: \(dropResult)")
         XCTAssertEqual(dropResult["ok"] as? Double, 1.0)
 
         // now there should only be _id_ left
@@ -244,7 +263,6 @@ final class CollectionTests: XCTestCase {
 
         let dropResult = try coll.dropIndexes()
         XCTAssertEqual(dropResult["ok"] as? Double, 1.0)
-        print("result here: \(dropResult)")
 
         // now there should only be _id_ left
         let indexes = try coll.listIndexes()
