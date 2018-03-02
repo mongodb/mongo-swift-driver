@@ -342,22 +342,21 @@ class MinKey: BsonValue, Equatable {
 /// A class to represent the BSON ObjectId type
 class ObjectId: BsonValue, Equatable, CustomStringConvertible {
     public var bsonType: BsonType { return .objectId }
-    var oid: bson_oid_t
+    private var oid: bson_oid_t
 
     init() {
-        var oid: bson_oid_t = bson_oid_t()
-        bson_oid_init(&oid, nil)
-        self.oid = oid
+        self.oid = bson_oid_t()
+        bson_oid_init(&self.oid, nil)
     }
 
-    init(from: bson_oid_t) {
-        self.oid = from
+    init(from: UnsafePointer<bson_oid_t>) {
+        self.oid = bson_oid_t()
+        bson_oid_copy(from, &self.oid)
     }
 
     init(from: String) {
-        var oid: bson_oid_t = bson_oid_t()
-        bson_oid_init_from_string(&oid, from)
-        self.oid = oid
+        self.oid = bson_oid_t()
+        bson_oid_init_from_string(&self.oid, from)
     }
 
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
@@ -370,16 +369,20 @@ class ObjectId: BsonValue, Equatable, CustomStringConvertible {
         guard let oid = bson_iter_oid(&bson) else {
             preconditionFailure("Failed to retrieve ObjectID value")
         }
-        return ObjectId(from: oid.pointee)
+        return ObjectId(from: oid)
     }
 
     public var description: String {
-        var data: Int8 = 0
-        bson_oid_to_string(&self.oid, &data)
-        return String(cString: &data)
+        var str = Data(count: 25)
+        return str.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<Int8>) in
+            bson_oid_to_string(&self.oid, bytes)
+            return String(cString: bytes)
+        }
     }
 
-    static func == (lhs: ObjectId, rhs: ObjectId) -> Bool { return lhs.description == rhs.description }
+    static func == (lhs: ObjectId, rhs: ObjectId) -> Bool {
+        return lhs.description == rhs.description
+    }
 
 }
 

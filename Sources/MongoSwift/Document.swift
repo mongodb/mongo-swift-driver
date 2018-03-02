@@ -219,7 +219,7 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
 
                         let dbRef: Document = [
                             "$ref": String(cString: collectionP),
-                            "$id": ObjectId(from: oidP.pointee)
+                            "$id": ObjectId(from: oidP)
                         ]
 
                         return dbRef
