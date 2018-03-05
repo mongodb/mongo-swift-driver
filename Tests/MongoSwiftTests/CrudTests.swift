@@ -2,6 +2,19 @@
 import Foundation
 import XCTest
 
+// Files to skip because we don't currently support the operations they test.
+private var skippedFiles = [
+	"bulkWrite-arrayFilters",
+	"findOneAndDelete-collation",
+	"findOneAndDelete",
+	"findOneAndReplace-collation",
+	"findOneAndReplace-upsert",
+	"findOneAndReplace",
+	"findOneAndUpdate-arrayFilters",
+	"findOneAndUpdate-collation",
+	"findOneAndUpdate"
+]
+
 final class CrudTests: XCTestCase {
 
 	static var allTests: [(String, (CrudTests) -> () throws -> Void)] {
@@ -11,6 +24,7 @@ final class CrudTests: XCTestCase {
         ]
     }
 
+    // Teardown at the very end of the suite by dropping the "crudTests" db.
     override class func tearDown() {
         super.tearDown()
         do {
@@ -20,25 +34,41 @@ final class CrudTests: XCTestCase {
         }
     }
 
-    func doTest(forPath: String) throws {
+    // Run tests for .json files at the provided path
+    func doTests(forPath: String) throws {
     	let db = try Client().db("crudTests")
     	for file in try parseFiles(atPath: forPath) {
+    		// later on when running with different server versions, this would
+    		// be the place to check file.minServerVersion/maxServerVersion
+
+    		// create a new collection for this file's tests
     		let collection = try db.collection("\(file.name)")
+
     		print("\n------------\nExecuting tests from file \(forPath)/\(file.name).json...\n")
+
+    		// For each file, execute the test cases contained in it
     		for test in file.tests {
+
     			print("Executing test: \(test.description)")
+
+    			// for each test case, insert data anew, and then drop it all after
     			try collection.insertMany(file.data)
-    			try test.execute(collection, database: db)
+    			try test.execute(usingCollection: collection)
+    			try test.verifyData(testCollection: collection, db: db)
     			try collection.drop()
     		}
     	}
-    	print()
+    	print() // for readability of results
     }
 
+    // Go through each .json file at the given path and parse the information in it.
+    // Store the info in a CrudTestFile struct
     private func parseFiles(atPath path: String) throws -> [CrudTestFile] {
 		var tests = [CrudTestFile]()
 		let testFiles = try FileManager.default.contentsOfDirectory(atPath: path).filter { $0.hasSuffix(".json") }
 		for fileName in testFiles {
+			let name = fileName.components(separatedBy: ".")[0]
+			if skippedFiles.contains(name) { continue }
 			let testFilePath = URL(fileURLWithPath: "\(path)/\(fileName)")
 			let asDocument = try Document(fromJSONFile: testFilePath)
 	        tests.append(try CrudTestFile(fromDocument: asDocument, name: fileName))
@@ -46,14 +76,15 @@ final class CrudTests: XCTestCase {
 		return tests
 	}
 
+	// Run all the tests at the /read path
     func testReads() throws {
-    	try doTest(forPath: "Tests/Specs/crud/tests/read")
+    	try doTests(forPath: "Tests/Specs/crud/tests/read")
     }
 
+	// Run all the tests at the /write path
     func testWrites() throws {
-    	try doTest(forPath: "Tests/Specs/crud/tests/write")
+    	try doTests(forPath: "Tests/Specs/crud/tests/write")
     }
-
 }
 
 /// A container for the data from a single .json file. 
@@ -75,26 +106,47 @@ private struct CrudTestFile {
 	}
 }
 
+/// Initializes a new `CrudTest` of the appropriate subclass from a `Document` 
 private func makeCrudTest(_ doc: Document) throws -> CrudTest {
 	let operation: Document = try doc.get("operation")
 	let opName: String = try operation.get("name")
-	guard let type = testTypeMap[opName] else { throw TypeError(message: "Unknown operation \(opName)") }
+	guard let type = testTypeMap[opName] else {
+		throw TestError(message: "Unknown operation name \(opName)")
+	}
 	return try type.init(doc)
 }
 
+// Maps operation names to the appropriate test class to use for them. 
+private var testTypeMap: [String: CrudTest.Type] = [
+	"aggregate": AggregateTest.self,
+	"count": CountTest.self,
+	"deleteMany": DeleteTest.self,
+	"deleteOne": DeleteTest.self,
+	"distinct": DistinctTest.self,
+	"find": FindTest.self,
+	"insertMany": InsertManyTest.self,
+	"insertOne": InsertOneTest.self,
+	"replaceOne": ReplaceOneTest.self,
+	"updateMany": UpdateTest.self,
+	"updateOne": UpdateTest.self
+]
+
+/// An abstract class to represent a single test within a CrudTestFile. Subclasses must
+/// implement the `execute` method themselves. 
 private class CrudTest {
 	let description: String
 	let operationName: String
 	let args: Document
 	let result: BsonValue?
-	let outCollection: Document?
+	let collection: Document?
 	var collation: Document? { return self.args["collation"] as? Document }
 	var sort: Document? { return self.args["sort"] as? Document }
 	var skip: Int64? { if let s = self.args["skip"] as? Int { return Int64(s) } else { return nil } }
 	var limit: Int64? { if let l = self.args["limit"] as? Int { return Int64(l) } else { return nil } }
 	var batchSize: Int32? { if let b = self.args["batchSize"] as? Int { return Int32(b) } else { return nil } }
+	var upsert: Bool? { return self.args["upsert"] as? Bool }
 
-		/// Initializes a new `CrudTest` from a `Document`. 
+	/// Initializes a new `CrudTest` from a `Document`. 
 	required init(_ test: Document) throws {
 		self.description = try test.get("description")
 		let operation: Document = try test.get("operation")
@@ -102,32 +154,61 @@ private class CrudTest {
 		self.args = try operation.get("arguments")
 		let outcome: Document = try test.get("outcome")
 		self.result = outcome["result"]
-		self.outCollection = outcome["collection"] as? Document
+		self.collection = outcome["collection"] as? Document
 	}
 
-	func execute(_ coll: MongoSwift.Collection, database: Database) throws { XCTFail("Unimplemented") }
+	// Subclasses should implement `execute` according to the particular operation(s) they are for. 
+	func execute(usingCollection coll: MongoSwift.Collection) throws { XCTFail("Unimplemented") }
+
+	// If the test has a `collection` field in its `outcome`, verify that the expected
+	// data is present. If there is no `collection` field, do nothing. 
+	func verifyData(testCollection coll: MongoSwift.Collection, db: Database) throws {
+		guard let collection = self.collection else { return } // no data to verify
+		let expectedData: [Document] = try collection.get("data")
+		var collToCheck = coll
+		if let name = collection["name"] as? String {
+			collToCheck = try db.collection(name)
+		}
+		let result = Array(try collToCheck.find([:]))
+		XCTAssertEqual(result, expectedData)
+	}
+
+	// Given an `UpdateResult`, verify that it matches the expected results in this `CrudTest`. 
+	// Meant for use by subclasses whose operations return `UpdateResult`s, such as `UpdateTest` 
+	// and `ReplaceOneTest`. 
+	func verifyUpdateResult(_ result: UpdateResult?) {
+		guard let result = result else {
+			XCTFail("Missing update result")
+			return
+		}
+		let expected = self.result as? Document
+		XCTAssertEqual(result.matchedCount, expected?["matchedCount"] as? Int)
+		XCTAssertEqual(result.modifiedCount, expected?["modifiedCount"] as? Int)
+		if let id = result.upsertedId as? Int {
+			XCTAssertEqual(expected?["upsertedId"] as? Int, id)
+		}
+	}
 }
 
+/// A class for executing `aggregate` tests
 private class AggregateTest: CrudTest {
-	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
+	override func execute(usingCollection coll: MongoSwift.Collection) throws {
 		let pipeline: [Document] = try self.args.get("pipeline")
 		let options = AggregateOptions(batchSize: self.batchSize, collation: self.collation)
 		let cursor = try coll.aggregate(pipeline, options: options)
-		if let out = self.outCollection {
-			// we need to iterate the cursor once in order to make the aggregation happen
+		if let _ = self.collection {
+			// this is $out case, we need to iterate the cursor once in 
+			// order to make the aggregation happen
 			XCTAssertEqual(cursor.next(), nil)
-			let expectedData: [Document] = try out.get("data")
-			let outColl = try database.collection(out["name"] as? String ?? "crudTests")
-			let result = Array(try outColl.find([:]))
-			XCTAssertEqual(result, expectedData)
 		} else {
 			XCTAssertEqual(Array(cursor), self.result as! [Document])
 		}
 	}
 }
 
+/// A class for executing `count` tests
 private class CountTest: CrudTest {
-	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
+	override func execute(usingCollection coll: MongoSwift.Collection) throws {
 		let filter: Document = try self.args.get("filter")
 		let options = CountOptions(collation: self.collation, limit: self.limit, skip: self.skip)
 		let result = try coll.count(filter, options: options)
@@ -135,28 +216,26 @@ private class CountTest: CrudTest {
 	}
 }
 
-private class DeleteManyTest: CrudTest {
-	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
+/// A class for executing `deleteOne` and `deleteMany` tests
+private class DeleteTest: CrudTest {
+	override func execute(usingCollection coll: MongoSwift.Collection) throws {
 		let filter: Document = try self.args.get("filter")
+		// TODO: once CDRIVER-2527 done, send collation here 
 		let options = DeleteOptions() // DeleteOptions(collation: self.collation)
-		let result = try coll.deleteMany(filter, options: options)
+		let result: DeleteResult?
+		if self.operationName == "deleteOne" {
+			result = try coll.deleteOne(filter, options: options)
+		} else {
+			result = try coll.deleteMany(filter, options: options)
+		}
 		let expected = self.result as? Document
 		XCTAssertEqual(result?.deletedCount, expected?["deletedCount"] as? Int)
 	}
 }
 
-private class DeleteOneTest: CrudTest {
-	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
-		let filter: Document = try self.args.get("filter")
-		let options = DeleteOptions() // DeleteOptions(collation: self.collation)
-		let result = try coll.deleteOne(filter, options: options)
-		let expected = self.result as? Document
-		XCTAssertEqual(result?.deletedCount, expected?["deletedCount"] as? Int)
-	}
-}
-
+/// A class for executing `distinct` tests
 private class DistinctTest: CrudTest {
-	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
+	override func execute(usingCollection coll: MongoSwift.Collection) throws {
 		let filter = self.args["filter"] as? Document
 		let fieldName: String = try self.args.get("fieldName")
 		let options = DistinctOptions(collation: self.collation)
@@ -166,8 +245,9 @@ private class DistinctTest: CrudTest {
 	}
 }
 
+/// A class for executing `find` tests
 private class FindTest: CrudTest {
-	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
+	override func execute(usingCollection coll: MongoSwift.Collection) throws {
 		let filter: Document = try self.args.get("filter")
 		let options = FindOptions(batchSize: batchSize, collation: collation, limit: self.limit,
 									skip: self.skip, sort: self.sort)
@@ -176,103 +256,53 @@ private class FindTest: CrudTest {
 	}
 }
 
-private class InsertManyTest: CrudTest {}
+/// A class for executing `insertMany` tests
+private class InsertManyTest: CrudTest {
+	// override func execute(usingCollection coll: MongoSwift.Collection) throws {
+	// 	let docs: [Document] = try self.args.get("documents")
+	// 	try coll.insertMany(docs)
+	// 	//XCTAssertEqual(doc["_id"] as? Int, result?.insertedId as! Int)
+	// }
+}
 
+/// A Class for executing `insertOne` tests
 private class InsertOneTest: CrudTest {
-	// override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
+	// override func execute(usingCollection coll: MongoSwift.Collection) throws {
 	// 	let doc: Document = try self.args.get("document")
 	// 	let result = try coll.insertOne(doc)
 	// 	XCTAssertEqual(doc["_id"] as! Int, result?.insertedId as! Int)
 	// }
 }
 
+/// A class for executing `replaceOne` tests
 private class ReplaceOneTest: CrudTest {
-	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
+	override func execute(usingCollection coll: MongoSwift.Collection) throws {
 		let filter: Document = try self.args.get("filter")
 		let replacement: Document = try self.args.get("replacement")
-		let options = ReplaceOptions(collation: self.collation, upsert: self.args["upsert"] as? Bool)
+		let options = ReplaceOptions(collation: self.collation, upsert: self.upsert)
 		let result = try coll.replaceOne(filter: filter, replacement: replacement, options: options)
-		let expectedResult = self.result as? Document
-		XCTAssertEqual(result?.matchedCount, expectedResult?["matchedCount"] as? Int)
-		XCTAssertEqual(result?.modifiedCount, expectedResult?["modifiedCount"] as? Int)
-		XCTAssertEqual(result?.upsertedId as? Int, expectedResult?["upsertedId"] as? Int)
-		if let upserted = result?.upsertedId as? Int {
-			XCTAssertEqual(expectedResult?["upsertedCount"] as? Int, 1)
-		}
+		self.verifyUpdateResult(result)
 	}
 }
 
-private class UpdateManyTest: CrudTest {
-	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
+/// A class for executing `updateOne` and `updateMany` tests
+private class UpdateTest: CrudTest {
+	override func execute(usingCollection coll: MongoSwift.Collection) throws {
 		let filter: Document = try self.args.get("filter")
 		let update: Document = try self.args.get("update")
 		let arrayFilters = self.args["arrayFilters"] as? [Document]
-		let options = UpdateOptions(arrayFilters: arrayFilters, collation: self.collation)
-		let result = try coll.updateMany(filter: filter, update: update, options: options)
-		let expectedResult = self.result as? Document
-		XCTAssertEqual(result?.matchedCount, expectedResult?["matchedCount"] as? Int)
-		XCTAssertEqual(result?.modifiedCount, expectedResult?["modifiedCount"] as? Int)
-	}
-}
-
-private class UpdateOneTest: CrudTest {
-	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
-		let filter: Document = try self.args.get("filter")
-		let update: Document = try self.args.get("update")
-		let arrayFilters = self.args["arrayFilters"] as? [Document]
-		let options = UpdateOptions(arrayFilters: arrayFilters, collation: self.collation)
-		let result = try coll.updateOne(filter: filter, update: update, options: options)
-		let expected = self.result as? Document
-		XCTAssertEqual(result?.matchedCount, expected?["matchedCount"] as? Int)
-		XCTAssertEqual(result?.modifiedCount, expected?["modifiedCount"] as? Int)
-		if let id = result?.upsertedId as? Int {
-			XCTAssertEqual(expected?["upsertedId"] as? Int, id)
+		let options = UpdateOptions(arrayFilters: arrayFilters, collation: self.collation, upsert: self.upsert)
+		let result: UpdateResult?
+		if self.operationName == "updateOne" {
+			result = try coll.updateOne(filter: filter, update: update, options: options)
+		} else {
+			result = try coll.updateMany(filter: filter, update: update, options: options)
 		}
+		self.verifyUpdateResult(result)
 	}
 }
 
-/// We don't support these, so leave unimplemented. 
-private class BulkWriteTest: CrudTest {
-	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
-		print("Skipping, findOneAndDelete unsupported")
-	}
-}
-
-private class FindOneAndDeleteTest: CrudTest {
-	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
-		print("Skipping, findOneAndDelete unsupported")
-	}
-}
-private class FindOneAndReplaceTest: CrudTest {
-	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
-		print("Skipping, findOneAndReplace unsupported")
-	}
-}
-private class FindOneAndUpdateTest: CrudTest {
-	override func execute(_ coll: MongoSwift.Collection, database: Database) throws {
-		print("Skipping, findOneAndUpdate unsupported")
-	}
-}
-
-private var testTypeMap: [String: CrudTest.Type] = [
-	"aggregate": AggregateTest.self,
-	"bulkWrite": BulkWriteTest.self,
-	"count": CountTest.self,
-	"deleteMany": DeleteManyTest.self,
-	"deleteOne": DeleteOneTest.self,
-	"distinct": DistinctTest.self,
-	"find": FindTest.self,
-	"findOneAndDelete": FindOneAndDeleteTest.self,
-	"findOneAndReplace": FindOneAndReplaceTest.self,
-	"findOneAndUpdate": FindOneAndUpdateTest.self,
-	"insertMany": InsertManyTest.self,
-	"insertOne": InsertOneTest.self,
-	"replaceOne": ReplaceOneTest.self,
-	"updateMany": UpdateManyTest.self,
-	"updateOne": UpdateOneTest.self
-]
-
-private struct TypeError: LocalizedError {
+private struct TestError: LocalizedError {
 	var message: String
 	public var errorDescription: String { return self.message }
 }
