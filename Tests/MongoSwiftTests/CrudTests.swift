@@ -12,7 +12,10 @@ private var skippedFiles = [
 	"findOneAndReplace",
 	"findOneAndUpdate-arrayFilters",
 	"findOneAndUpdate-collation",
-	"findOneAndUpdate"
+	"findOneAndUpdate",
+	// TODO: once CDRIVER-2527 changes available, stop skipping these 
+	"deleteMany-collation",
+	"deleteOne-collation"
 ]
 
 final class CrudTests: XCTestCase {
@@ -220,8 +223,7 @@ private class CountTest: CrudTest {
 private class DeleteTest: CrudTest {
 	override func execute(usingCollection coll: MongoSwift.Collection) throws {
 		let filter: Document = try self.args.get("filter")
-		// TODO: once CDRIVER-2527 done, send collation here 
-		let options = DeleteOptions() // DeleteOptions(collation: self.collation)
+		let options = DeleteOptions(collation: self.collation)
 		let result: DeleteResult?
 		if self.operationName == "deleteOne" {
 			result = try coll.deleteOne(filter, options: options)
@@ -258,20 +260,34 @@ private class FindTest: CrudTest {
 
 /// A class for executing `insertMany` tests
 private class InsertManyTest: CrudTest {
-	// override func execute(usingCollection coll: MongoSwift.Collection) throws {
-	// 	let docs: [Document] = try self.args.get("documents")
-	// 	try coll.insertMany(docs)
-	// 	//XCTAssertEqual(doc["_id"] as? Int, result?.insertedId as! Int)
-	// }
+	override func execute(usingCollection coll: MongoSwift.Collection) throws {
+		let docs: [Document] = try self.args.get("documents")
+		let result = try coll.insertMany(docs)
+
+		guard let insertedIds = result?.insertedIds else {
+			XCTFail("InsertManyResult missing insertedIds")
+			return
+		}
+
+		// Convert the result's [Int64: String] to [String: Int] 
+		let reformattedResults = Document()
+		for (index, id) in insertedIds {
+			reformattedResults[String(index)] = Int(id)
+		}
+
+		let expected = self.result as? Document
+		let expectedIds = expected?["insertedIds"] as? Document
+		XCTAssertEqual(expectedIds, reformattedResults)
+	}
 }
 
 /// A Class for executing `insertOne` tests
 private class InsertOneTest: CrudTest {
-	// override func execute(usingCollection coll: MongoSwift.Collection) throws {
-	// 	let doc: Document = try self.args.get("document")
-	// 	let result = try coll.insertOne(doc)
-	// 	XCTAssertEqual(doc["_id"] as! Int, result?.insertedId as! Int)
-	// }
+	override func execute(usingCollection coll: MongoSwift.Collection) throws {
+		let doc: Document = try self.args.get("document")
+		let result = try coll.insertOne(doc)
+		XCTAssertEqual(doc["_id"] as? Int, result?.insertedId as? Int)
+	}
 }
 
 /// A class for executing `replaceOne` tests
