@@ -63,6 +63,7 @@ extension Array: BsonValue {
     internal static func from(bson: inout bson_iter_t) -> [BsonValue] {
         var length: UInt32 = 0
         let array = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
+        defer { array.deallocate(capacity: 1) }
         bson_iter_array(&bson, &length, array)
 
         // since an array is a nested object with keys '0', '1', etc.,
@@ -142,6 +143,7 @@ class Binary: BsonValue, Equatable {
         var subtype: bson_subtype_t = bson_subtype_t(rawValue: 0)
         var length: UInt32 = 0
         let dataPointer = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
+        defer { dataPointer.deallocate(capacity: 1) }
         bson_iter_binary(&bson, &subtype, &length, dataPointer)
 
         guard let data = dataPointer.pointee else {
@@ -295,6 +297,7 @@ class CodeWithScope: BsonValue {
 
         var scopeLength: UInt32 = 0
         let scopePointer = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
+        defer { scopePointer.deallocate(capacity: 1) }
         let code = String(cString: bson_iter_codewscope(&bson, &length, &scopeLength, scopePointer))
         guard let scopeData = bson_new_from_data(scopePointer.pointee, Int(scopeLength)) else {
             preconditionFailure("Failed to create a bson_t from scope data")
@@ -396,6 +399,7 @@ extension NSRegularExpression: BsonValue {
 
     internal static func from(bson: inout bson_iter_t) throws -> NSRegularExpression {
         let options = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: 1)
+        defer { options.deallocate(capacity: 1) }
         guard let pattern = bson_iter_regex(&bson, options) else {
             preconditionFailure("Failed to retrieve regular expression pattern")
         }
