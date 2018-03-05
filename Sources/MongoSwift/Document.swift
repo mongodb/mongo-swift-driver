@@ -199,9 +199,15 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
                     case BSON_TYPE_DBPOINTER:
                         var length: UInt32 = 0
                         let collectionPP = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: 1)
-                        defer { collectionPP.deallocate(capacity: 1) }
+                        defer {
+                            collectionPP.deinitialize(count: 1)
+                            collectionPP.deallocate(capacity: 1)
+                        }
                         let oidPP = UnsafeMutablePointer<UnsafePointer<bson_oid_t>?>.allocate(capacity: 1)
-                        defer { oidPP.deallocate(capacity: 1) }
+                        defer {
+                            oidPP.deinitialize(count: 1)
+                            oidPP.deallocate(capacity: 1)
+                        }
                         bson_iter_dbpointer(&iter, &length, collectionPP, oidPP)
 
                         guard let oidP = oidPP.pointee else {
@@ -224,7 +230,10 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
                     case BSON_TYPE_DOCUMENT:
                         var length: UInt32 = 0
                         let document = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
-                        defer { document.deallocate(capacity: 1) }
+                        defer {
+                            document.deinitialize(count: 1)
+                            document.deallocate(capacity: 1)
+                        }
 
                         bson_iter_document(&iter, &length, document)
 
