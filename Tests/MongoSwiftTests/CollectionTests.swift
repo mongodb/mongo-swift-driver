@@ -117,7 +117,7 @@ final class CollectionTests: XCTestCase {
        XCTAssertEqual(insertedIds[3], "11")
 
        let v = docNoId1["_id"] as? ObjectId
-       XCTAssertNotNil(docNoId1["_id"] as Any)
+       XCTAssertNotNil(docNoId1["_id"])
        XCTAssertNotNil(docNoId2["_id"])
     }
 
