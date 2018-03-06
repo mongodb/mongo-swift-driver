@@ -11,7 +11,7 @@ final class ClientTests: XCTestCase {
     }
 
     func testClient() {
-        guard let client = try? Client(connectionString: "mongodb://localhost:27017/") else {
+        guard let client = try? MongoClient(connectionString: "mongodb://localhost:27017/") else {
             XCTAssert(false, "failed to create a client")
             return
         }
@@ -27,7 +27,7 @@ final class ClientTests: XCTestCase {
     }
 
     func testListDatabases() {
-        guard let client = try? Client(connectionString: "mongodb://localhost:27017/") else {
+        guard let client = try? MongoClient(connectionString: "mongodb://localhost:27017/") else {
             XCTAssert(false, "failed to create a client")
             return
         }

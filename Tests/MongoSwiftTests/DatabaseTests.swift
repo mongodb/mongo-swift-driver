@@ -10,7 +10,7 @@ final class DatabaseTests: XCTestCase {
     }
 
     func testDatabase() throws {
-		let client = try Client(connectionString: "mongodb://localhost:27017/")
+		let client = try MongoClient(connectionString: "mongodb://localhost:27017/")
 		let db = try client.db("testDB")
 
         // create collection using runCommand
