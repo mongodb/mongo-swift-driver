@@ -44,17 +44,20 @@ final class CrudTests: XCTestCase {
     		// later on when running with different server versions, this would
     		// be the place to check file.minServerVersion/maxServerVersion
 
-    		// create a new collection for this file's tests
-    		let collection = try db.collection("\(file.name)")
-
     		print("\n------------\nExecuting tests from file \(forPath)/\(file.name).json...\n")
 
     		// For each file, execute the test cases contained in it
-    		for test in file.tests {
+    		for (i, test) in file.tests.enumerated() {
 
     			print("Executing test: \(test.description)")
 
-    			// for each test case, insert data anew, and then drop it all after
+    			// for each test case:
+    			// 1) create a unique collection to use
+    			// 2) insert the data specified by this test file 
+    			// 3) execute the test according to the type's execute method
+    			// 4) verify that expected data is present
+    			// 5) drop the collection to clean up
+    			let collection = try db.collection("\(file.name)+\(i)")
     			try collection.insertMany(file.data)
     			try test.execute(usingCollection: collection)
     			try test.verifyData(testCollection: collection, db: db)
@@ -64,8 +67,8 @@ final class CrudTests: XCTestCase {
     	print() // for readability of results
     }
 
-    // Go through each .json file at the given path and parse the information in it.
-    // Store the info in a CrudTestFile struct
+    // Go through each .json file at the given path and parse the information in it
+    // into a corresponding CrudTestFile with a [CrudTest]
     private func parseFiles(atPath path: String) throws -> [CrudTestFile] {
 		var tests = [CrudTestFile]()
 		let testFiles = try FileManager.default.contentsOfDirectory(atPath: path).filter { $0.hasSuffix(".json") }
@@ -166,8 +169,9 @@ private class CrudTest {
 	// If the test has a `collection` field in its `outcome`, verify that the expected
 	// data is present. If there is no `collection` field, do nothing. 
 	func verifyData(testCollection coll: MongoSwift.Collection, db: Database) throws {
-		guard let collection = self.collection else { return } // no data to verify
+		guard let collection = self.collection else { return } // only  some tests have data to verify
 		let expectedData: [Document] = try collection.get("data")
+		// if a name is not specified, check the current collection
 		var collToCheck = coll
 		if let name = collection["name"] as? String {
 			collToCheck = try db.collection(name)
@@ -187,9 +191,7 @@ private class CrudTest {
 		let expected = self.result as? Document
 		XCTAssertEqual(result.matchedCount, expected?["matchedCount"] as? Int)
 		XCTAssertEqual(result.modifiedCount, expected?["modifiedCount"] as? Int)
-		if let id = result.upsertedId as? Int {
-			XCTAssertEqual(expected?["upsertedId"] as? Int, id)
-		}
+		XCTAssertEqual(result.upsertedId as? Int, expected?["upsertedId"] as? Int)
 	}
 }
 
@@ -199,11 +201,15 @@ private class AggregateTest: CrudTest {
 		let pipeline: [Document] = try self.args.get("pipeline")
 		let options = AggregateOptions(batchSize: self.batchSize, collation: self.collation)
 		let cursor = try coll.aggregate(pipeline, options: options)
-		if let _ = self.collection {
-			// this is $out case, we need to iterate the cursor once in 
-			// order to make the aggregation happen
+		if self.collection != nil {
+			// this is $out case - we need to iterate the cursor once in 
+			// order to make the aggregation happen. there is nothing in
+			// the cursor to verify, but verifyData() will check that the
+			// $out collection has the new data.
 			XCTAssertEqual(cursor.next(), nil)
 		} else {
+			// if not $out, verify that the cursor contains the expected documents. 
+			// swiftlint:disable:next force_cast (if it's an AggregateTest, result will always be [Document])
 			XCTAssertEqual(Array(cursor), self.result as! [Document])
 		}
 	}
@@ -231,6 +237,7 @@ private class DeleteTest: CrudTest {
 			result = try coll.deleteMany(filter, options: options)
 		}
 		let expected = self.result as? Document
+		// the only value in a DeleteResult is `deletedCount`
 		XCTAssertEqual(result?.deletedCount, expected?["deletedCount"] as? Int)
 	}
 }
@@ -242,6 +249,7 @@ private class DistinctTest: CrudTest {
 		let fieldName: String = try self.args.get("fieldName")
 		let options = DistinctOptions(collation: self.collation)
 		let distinct = try coll.distinct(fieldName: fieldName, filter: filter ?? [:], options: options)
+		// `distinct` returns a cursor with just one document: {values: [values...], ok: 1.0 }
 		XCTAssertEqual(distinct.next(), ["values": self.result, "ok": 1.0] as Document)
 		XCTAssertNil(distinct.next())
 	}
@@ -254,6 +262,7 @@ private class FindTest: CrudTest {
 		let options = FindOptions(batchSize: batchSize, collation: collation, limit: self.limit,
 									skip: self.skip, sort: self.sort)
 		let result = try Array(coll.find(filter, options: options))
+		// swiftlint:disable:next force_cast (if it's a FindTest, result will always be [Document])
 		XCTAssertEqual(result, self.result as! [Document])
 	}
 }
@@ -269,15 +278,15 @@ private class InsertManyTest: CrudTest {
 			return
 		}
 
-		// Convert the result's [Int64: String] to [String: Int] 
+		// Convert the result's [Int64: String] to [String: Int], the format
+		// they're stored in in the json files
 		let reformattedResults = Document()
 		for (index, id) in insertedIds {
 			reformattedResults[String(index)] = Int(id)
 		}
 
 		let expected = self.result as? Document
-		let expectedIds = expected?["insertedIds"] as? Document
-		XCTAssertEqual(expectedIds, reformattedResults)
+		XCTAssertEqual(expected?["insertedIds"] as? Document, reformattedResults)
 	}
 }
 
