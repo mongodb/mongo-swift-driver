@@ -60,7 +60,7 @@ extension Array: BsonValue {
     *
     * - Returns: A `[BsonValue]` corresponding to the array
     */
-    static func from(bson: inout bson_iter_t) -> [BsonValue] {
+    internal static func from(bson: inout bson_iter_t) -> [BsonValue] {
         var length: UInt32 = 0
         let array = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
         bson_iter_array(&bson, &length, array)
@@ -138,7 +138,7 @@ class Binary: BsonValue, Equatable {
         }
     }
 
-    static func from(bson: inout bson_iter_t) -> Binary {
+    internal static func from(bson: inout bson_iter_t) -> Binary {
         var subtype: bson_subtype_t = bson_subtype_t(rawValue: 0)
         var length: UInt32 = 0
         let dataPointer = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
@@ -284,7 +284,7 @@ class CodeWithScope: BsonValue {
         }
     }
 
-    static func from(bson: inout bson_iter_t) -> CodeWithScope {
+    internal static func from(bson: inout bson_iter_t) -> CodeWithScope {
 
         var length: UInt32 = 0
 
@@ -355,7 +355,7 @@ class ObjectId: BsonValue, Equatable {
         }
     }
 
-    static func from(bson: inout bson_iter_t) -> ObjectId {
+    internal static func from(bson: inout bson_iter_t) -> ObjectId {
         guard let oid = bson_iter_oid(&bson) else {
             preconditionFailure("Failed to retrieve ObjectID value")
         }
@@ -394,7 +394,7 @@ extension NSRegularExpression: BsonValue {
         }
     }
 
-    static func from(bson: inout bson_iter_t) throws -> NSRegularExpression {
+    internal static func from(bson: inout bson_iter_t) throws -> NSRegularExpression {
         let options = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: 1)
         guard let pattern = bson_iter_regex(&bson, options) else {
             preconditionFailure("Failed to retrieve regular expression pattern")
@@ -460,7 +460,7 @@ class Timestamp: BsonValue, Equatable {
         }
     }
 
-    static func from(bson: inout bson_iter_t) -> Timestamp {
+    internal static func from(bson: inout bson_iter_t) -> Timestamp {
         var t: UInt32 = 0
         var i: UInt32 = 0
         bson_iter_timestamp(&bson, &t, &i)

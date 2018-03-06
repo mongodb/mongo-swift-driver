@@ -25,7 +25,7 @@ extension MongoError: LocalizedError {
     }
 }
 
-public func toErrorString(_ error: bson_error_t) -> String {
+internal func toErrorString(_ error: bson_error_t) -> String {
     var e = error
     return withUnsafeBytes(of: &e.message) { (rawPtr) -> String in
         let ptr = rawPtr.baseAddress!.assumingMemoryBound(to: CChar.self)
@@ -33,7 +33,7 @@ public func toErrorString(_ error: bson_error_t) -> String {
     }
 }
 
-public func bsonEncodeError(value: BsonValue, forKey: String) -> MongoError {
+internal func bsonEncodeError(value: BsonValue, forKey: String) -> MongoError {
     return MongoError.bsonEncodeError(message:
         "Failed to set value for key \(forKey) to \(value) with BSON type \(value.bsonType)")
 }
