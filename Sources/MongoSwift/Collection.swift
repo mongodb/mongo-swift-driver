@@ -267,31 +267,21 @@ public struct DeleteOptions: BsonEncodable {
 }
 
 public struct InsertOneResult {
-    /// The identifier that was inserted. If the server generated the identifier, this value
-    /// will be null as the driver does not have access to that data.
-    let insertedId: Any
+    /// The identifier that was inserted. If the document doesn't have an identifier, this value
+    /// will be generated and added to the document before insertion.
+    let insertedId: BsonValue
 }
 
 public struct InsertManyResult {
     /// Map of the index of the inserted document to the id of the inserted document.
-    let insertedIds: [Int64: String]
+    let insertedIds: [Int64: BsonValue]
 
     /// Given an ordered array of insertedIds, creates a corresponding InsertManyResult. 
-    /// Fails and returns nil if any of the object Ids cannot be converted to a string. 
-    internal init?(fromArray arr: [Any]) {
-        var inserted = [Int64: String]()
+    internal init(fromArray arr: [BsonValue]) {
+        var inserted = [Int64: BsonValue]()
         for (i, id) in arr.enumerated() {
             let index = Int64(i)
-            switch id {
-            case let stringId as String:
-                inserted[index] = stringId
-            case let intId as Int:
-                inserted[index] = String(intId)
-            case let objectId as ObjectId:
-                inserted[index] = objectId.description
-            default:
-                return nil
-            }
+            inserted[index] = id
         }
         self.insertedIds = inserted
     }
@@ -632,7 +622,7 @@ public class Collection {
         if !mongoc_collection_insert_one(self._collection, document.data, opts?.data, nil, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
-        return InsertOneResult(insertedId: document["_id"] as Any)
+        return InsertOneResult(insertedId: document["_id"]!)
     }
 
     /**
@@ -661,7 +651,7 @@ public class Collection {
             self._collection, &docPointers, documents.count, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
-        return InsertManyResult(fromArray: documents.map { $0["_id"] as Any })
+        return InsertManyResult(fromArray: documents.map { $0["_id"]! })
     }
 
     /**
