@@ -278,11 +278,10 @@ private class InsertManyTest: CrudTest {
 			return
 		}
 
-		// Convert the result's [Int64: String] to [String: Int], the format
-		// they're stored in in the json files
+		// Convert the result's [Int64: BsonValue] to a Document for easy comparison
 		let reformattedResults = Document()
 		for (index, id) in insertedIds {
-			reformattedResults[String(index)] = Int(id)
+			reformattedResults[String(index)] = id
 		}
 
 		let expected = self.result as? Document
