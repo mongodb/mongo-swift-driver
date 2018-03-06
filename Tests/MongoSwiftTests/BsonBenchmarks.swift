@@ -10,17 +10,20 @@ let fullBsonFile = URL(fileURLWithPath: basePath + "full_bson.json")
 final class BsonBenchmarkTests: XCTestCase {
     static var allTests: [(String, (BsonBenchmarkTests) -> () throws -> Void)] {
         return [
-            ("testFlatEncoding", testFlatEncoding),
-            ("testFlatDecoding", testFlatDecoding),
-            ("testDeepEncoding", testDeepEncoding),
-            ("testDeepDecoding", testDeepDecoding),
-            ("testFullEncoding", testFullEncoding),
-            ("testFullDecoding", testFullDecoding)
+            ("testBenchmarkFlatEncoding", testBenchmarkFlatEncoding),
+            ("testBenchmarkFlatDecoding", testBenchmarkFlatDecoding),
+            ("testBenchmarkDeepEncoding", testBenchmarkDeepEncoding),
+            ("testBenchmarkDeepDecoding", testBenchmarkDeepDecoding),
+            ("testBenchmarkFullEncoding", testBenchmarkFullEncoding),
+            ("testBenchmarkFullDecoding", testBenchmarkFullDecoding)
         ]
     }
 
     let iterations = 10000
 
+    // Read in the file, and then serialize its JSON by creating 
+    // a `Document`, which wraps the encoded data in a `bson_t`. 
+    // Repeat serialization 10,000 times. 
     func doEncodingTest(file: URL) throws {
         let jsonString = try String(contentsOf: file, encoding: .utf8)
         measure {
@@ -31,6 +34,10 @@ final class BsonBenchmarkTests: XCTestCase {
         }
     }
 
+    // Read in the file, and then serialize its JSON by creating
+    // a `Document`, which wraps the encoded data in a `bson_t`. 
+    // Deserialize the data by converting it to extended JSON. 
+    // Repeat deserialization 10,000 times.
     func doDecodingTest(file: URL) throws {
         let jsonString = try String(contentsOf: file, encoding: .utf8)
         let document = try Document(fromJSON: jsonString)
@@ -40,27 +47,27 @@ final class BsonBenchmarkTests: XCTestCase {
             }
         }
     }
-    func testFlatEncoding() throws {
+    func testBenchmarkFlatEncoding() throws {
         try doEncodingTest(file: flatBsonFile)
     }
 
-    func testFlatDecoding() throws {
+    func testBenchmarkFlatDecoding() throws {
         try doDecodingTest(file: flatBsonFile)
     }
 
-    func testDeepEncoding() throws {
+    func testBenchmarkDeepEncoding() throws {
         try doEncodingTest(file: deepBsonFile)
     }
 
-    func testDeepDecoding() throws {
+    func testBenchmarkDeepDecoding() throws {
         try doDecodingTest(file: deepBsonFile)
     }
 
-    func testFullEncoding() throws {
+    func testBenchmarkFullEncoding() throws {
         try doEncodingTest(file: fullBsonFile)
     }
 
-    func testFullDecoding() throws {
+    func testBenchmarkFullDecoding() throws {
         try doDecodingTest(file: fullBsonFile)
     }
 
