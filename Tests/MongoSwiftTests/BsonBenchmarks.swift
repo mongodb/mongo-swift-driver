@@ -10,12 +10,12 @@ let fullBsonFile = URL(fileURLWithPath: basePath + "full_bson.json")
 final class BsonBenchmarkTests: XCTestCase {
     static var allTests: [(String, (BsonBenchmarkTests) -> () throws -> Void)] {
         return [
-            ("testBenchmarkFlatEncoding", testBenchmarkFlatEncoding),
-            ("testBenchmarkFlatDecoding", testBenchmarkFlatDecoding),
-            ("testBenchmarkDeepEncoding", testBenchmarkDeepEncoding),
-            ("testBenchmarkDeepDecoding", testBenchmarkDeepDecoding),
-            ("testBenchmarkFullEncoding", testBenchmarkFullEncoding),
-            ("testBenchmarkFullDecoding", testBenchmarkFullDecoding)
+            ("testFlatEncoding", testFlatEncoding),
+            ("testFlatDecoding", testFlatDecoding),
+            ("testDeepEncoding", testDeepEncoding),
+            ("testDeepDecoding", testDeepDecoding),
+            ("testFullEncoding", testFullEncoding),
+            ("testFullDecoding", testFullDecoding)
         ]
     }
 
@@ -47,27 +47,27 @@ final class BsonBenchmarkTests: XCTestCase {
             }
         }
     }
-    func testBenchmarkFlatEncoding() throws {
+    func testFlatEncoding() throws {
         try doEncodingTest(file: flatBsonFile)
     }
 
-    func testBenchmarkFlatDecoding() throws {
+    func testFlatDecoding() throws {
         try doDecodingTest(file: flatBsonFile)
     }
 
-    func testBenchmarkDeepEncoding() throws {
+    func testDeepEncoding() throws {
         try doEncodingTest(file: deepBsonFile)
     }
 
-    func testBenchmarkDeepDecoding() throws {
+    func testDeepDecoding() throws {
         try doDecodingTest(file: deepBsonFile)
     }
 
-    func testBenchmarkFullEncoding() throws {
+    func testFullEncoding() throws {
         try doEncodingTest(file: fullBsonFile)
     }
 
-    func testBenchmarkFullDecoding() throws {
+    func testFullDecoding() throws {
         try doDecodingTest(file: fullBsonFile)
     }
 
