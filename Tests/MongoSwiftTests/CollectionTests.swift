@@ -113,8 +113,8 @@ final class CollectionTests: XCTestCase {
             return
         }
        XCTAssertEqual(insertedIds.count, 4)
-       XCTAssertEqual(insertedIds[2], "10")
-       XCTAssertEqual(insertedIds[3], "11")
+       XCTAssertEqual(insertedIds[2] as? Int, 10)
+       XCTAssertEqual(insertedIds[3] as? Int, 11)
 
        XCTAssertNotNil(docNoId1["_id"] as? ObjectId)
        XCTAssertNotNil(docNoId2["_id"] as? ObjectId)
