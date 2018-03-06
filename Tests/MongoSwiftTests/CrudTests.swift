@@ -18,7 +18,7 @@ private var skippedFiles = [
     "deleteOne-collation"
 ]
 
-private extension Document {
+internal extension Document {
     convenience init(fromJSONFile file: URL) throws {
         let jsonString = try String(contentsOf: file, encoding: .utf8)
         try self.init(fromJSON: jsonString)

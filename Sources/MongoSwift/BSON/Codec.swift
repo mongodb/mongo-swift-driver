@@ -26,7 +26,7 @@ extension BsonEncodable {
     }
 
     public static func from(iter: inout bson_iter_t) -> BsonValue {
-        // in the future we should use a BsonDecoder here 
+        // in the future we should use a BsonDecoder here
         return Document.from(iter: &iter)
     }
 }

@@ -192,7 +192,7 @@ public class Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral
             guard let value = newValue else {
                 if !bson_append_null(data, key, Int32(key.count)) {
                     preconditionFailure("Failed to set the value for key \(key) to null")
-                }
+                }`
                 return
             }
 
