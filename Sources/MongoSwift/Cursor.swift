@@ -38,6 +38,10 @@ public class Cursor: Sequence, IteratorProtocol {
      */
     public func next() -> Document? {
         let out = UnsafeMutablePointer<UnsafePointer<bson_t>?>.allocate(capacity: 1)
+        defer {
+            out.deinitialize(count: 1)
+            out.deallocate(capacity: 1)
+        }
         var error = bson_error_t()
 
         if !mongoc_cursor_next(self._cursor, out) {
