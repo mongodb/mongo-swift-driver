@@ -184,14 +184,10 @@ private class CrudTest {
 	// Meant for use by subclasses whose operations return `UpdateResult`s, such as `UpdateTest` 
 	// and `ReplaceOneTest`. 
 	func verifyUpdateResult(_ result: UpdateResult?) {
-		guard let result = result else {
-			XCTFail("Missing update result")
-			return
-		}
 		let expected = self.result as? Document
-		XCTAssertEqual(result.matchedCount, expected?["matchedCount"] as? Int)
-		XCTAssertEqual(result.modifiedCount, expected?["modifiedCount"] as? Int)
-		XCTAssertEqual(result.upsertedId as? Int, expected?["upsertedId"] as? Int)
+		XCTAssertEqual(result?.matchedCount, expected?["matchedCount"] as? Int)
+		XCTAssertEqual(result?.modifiedCount, expected?["modifiedCount"] as? Int)
+		XCTAssertEqual(result?.upsertedId as? Int, expected?["upsertedId"] as? Int)
 	}
 }
 
