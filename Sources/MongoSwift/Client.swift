@@ -24,7 +24,7 @@ public struct ListDatabasesOptions: BsonEncodable {
 }
 
 // A MongoDB Client
-public class Client {
+public class MongoClient {
     internal var _client = OpaquePointer(bitPattern: 1)
 
     /**
@@ -83,29 +83,29 @@ public class Client {
      * - Parameters:
      *   - options: Optional settings
      *
-     * - Returns: A cursor over documents describing the databases matching provided criteria
+     * - Returns: A `MongoCursor` over documents describing the databases matching provided criteria
      */
-    func listDatabases(options: ListDatabasesOptions? = nil) throws -> Cursor {
+    func listDatabases(options: ListDatabasesOptions? = nil) throws -> MongoCursor {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
         guard let cursor = mongoc_client_find_databases_with_opts(self._client, opts?.data) else {
             throw MongoError.invalidResponse()
         }
-        return Cursor(fromCursor: cursor, withClient: self)
+        return MongoCursor(fromCursor: cursor, withClient: self)
     }
 
     /**
-     * Gets a Database instance for the given database name.
+     * Gets a MongoDatabase instance for the given database name.
      *
      * - Parameters:
      *   - name: the name of the database to retrieve
      *
-     * - Returns: a `Database` corresponding to the provided database name
+     * - Returns: a `MongoDatabase` corresponding to the provided database name
      */
-    func db(_ name: String) throws -> Database {
+    func db(_ name: String) throws -> MongoDatabase {
         guard let db = mongoc_client_get_database(self._client, name) else {
             throw MongoError.invalidClient()
         }
-        return Database(fromDatabase: db, withClient: self)
+        return MongoDatabase(fromDatabase: db, withClient: self)
     }
 }

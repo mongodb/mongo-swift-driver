@@ -29,7 +29,7 @@ final class CollectionTests: XCTestCase {
         ]
     }
 
-    var coll: MongoSwift.Collection!
+    var coll: MongoCollection!
     let doc1: Document = ["_id": 1, "cat": "dog"]
     let doc2: Document = ["_id": 2, "cat": "cat"]
 
@@ -37,7 +37,7 @@ final class CollectionTests: XCTestCase {
     override func setUp() {
         super.setUp()
         do {
-            coll = try Client().db("collectionTest").createCollection("coll1")
+            coll = try MongoClient().db("collectionTest").createCollection("coll1")
             try coll.insertMany([doc1, doc2])
         } catch {
             XCTFail("Setup failed: \(error)")
@@ -58,7 +58,7 @@ final class CollectionTests: XCTestCase {
     override class func tearDown() {
         super.tearDown()
         do {
-            let db = try Client().db("collectionTest")
+            let db = try MongoClient().db("collectionTest")
             try db.drop()
         } catch {
             XCTFail("Dropping test database collectionTest failed: \(error)")

@@ -452,19 +452,19 @@ public struct IndexOptions: BsonEncodable {
 }
 
 // A MongoDB Collection
-public class Collection {
+public class MongoCollection {
     private var _collection = OpaquePointer(bitPattern: 1)
-    private var _client: Client?
+    private var _client: MongoClient?
     /**
-        Initializes a new Collection instance, not meant to be instantiated directly
+        Initializes a new MongoCollection instance, not meant to be instantiated directly
      */
-    internal init(fromCollection: OpaquePointer, withClient: Client) {
+    internal init(fromCollection: OpaquePointer, withClient: MongoClient) {
         self._collection = fromCollection
         self._client = withClient
     }
 
     /**
-        Deinitializes a Collection, cleaning up the internal mongoc_collection_t
+        Deinitializes a MongoCollection, cleaning up the internal mongoc_collection_t
      */
     deinit {
         guard let collection = self._collection else {
@@ -493,9 +493,9 @@ public class Collection {
      *   - filter: A `Document` that should match the query
      *   - options: Optional settings
      *
-     * - Returns: A `Cursor` with the results
+     * - Returns: A `MongoCursor` with the results
      */
-    func find(_ filter: Document, options: FindOptions? = nil) throws -> Cursor {
+    func find(_ filter: Document, options: FindOptions? = nil) throws -> MongoCursor {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
         guard let cursor = mongoc_collection_find_with_opts(self._collection, filter.data, opts?.data, nil) else {
@@ -504,7 +504,7 @@ public class Collection {
         guard let client = self._client else {
             throw MongoError.invalidClient()
         }
-        return Cursor(fromCursor: cursor, withClient: client)
+        return MongoCursor(fromCursor: cursor, withClient: client)
     }
 
     /**
@@ -514,9 +514,9 @@ public class Collection {
      *   - pipeline: The pipeline of aggregation operations to perform
      *   - options: Optional settings
      *
-     * - Returns: A `Cursor` with the results
+     * - Returns: A `MongoCursor` with the results
      */
-    func aggregate(_ pipeline: [Document], options: AggregateOptions? = nil) throws -> Cursor {
+    func aggregate(_ pipeline: [Document], options: AggregateOptions? = nil) throws -> MongoCursor {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
         let pipeline: Document = ["pipeline": pipeline]
@@ -527,7 +527,7 @@ public class Collection {
         guard let client = self._client else {
             throw MongoError.invalidClient()
         }
-        return Cursor(fromCursor: cursor, withClient: client)
+        return MongoCursor(fromCursor: cursor, withClient: client)
     }
 
     /**
@@ -561,9 +561,9 @@ public class Collection {
      *   - filter: The filter that documents must match in order to be considered for this operation
      *   - options: Optional settings
      *
-     * - Returns: A 'Cursor' containing the distinct values for the specified criteria
+     * - Returns: A 'MongoCursor' containing the distinct values for the specified criteria
      */
-    func distinct(fieldName: String, filter: Document, options: DistinctOptions? = nil) throws -> Cursor {
+    func distinct(fieldName: String, filter: Document, options: DistinctOptions? = nil) throws -> MongoCursor {
         guard let client = self._client else {
             throw MongoError.invalidClient()
         }
@@ -600,7 +600,7 @@ public class Collection {
             throw MongoError.invalidResponse()
         }
 
-        return Cursor(fromCursor: newCursor, withClient: client)
+        return MongoCursor(fromCursor: newCursor, withClient: client)
     }
 
     /**
@@ -877,15 +877,15 @@ public class Collection {
     /**
      * Returns a list of the indexes currently on this collection
      *
-     * - Returns: A `Cursor` over a collection of index names
+     * - Returns: A `MongoCursor` over a collection of index names
      */
-    func listIndexes() throws -> Cursor {
+    func listIndexes() throws -> MongoCursor {
         guard let cursor = mongoc_collection_find_indexes_with_opts(self._collection, nil) else {
             throw MongoError.invalidResponse()
         }
         guard let client = self._client else {
             throw MongoError.invalidClient()
         }
-        return Cursor(fromCursor: cursor, withClient: client)
+        return MongoCursor(fromCursor: cursor, withClient: client)
     }
 }

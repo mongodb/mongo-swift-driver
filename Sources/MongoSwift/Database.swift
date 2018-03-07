@@ -56,20 +56,20 @@ public struct CreateCollectionOptions: BsonEncodable {
 }
 
 // A MongoDB Database
-public class Database {
+public class MongoDatabase {
     private var _database = OpaquePointer(bitPattern: 1)
-    private var _client: Client?
+    private var _client: MongoClient?
 
     /**
-     * Initializes a new Database instance, not meant to be instantiated directly
+     * Initializes a new MongoDatabase instance, not meant to be instantiated directly
      */
-    internal init(fromDatabase: OpaquePointer, withClient: Client) {
+    internal init(fromDatabase: OpaquePointer, withClient: MongoClient) {
         self._database = fromDatabase
         self._client = withClient
     }
 
     /**
-     * Deinitializes a Database, cleaning up the internal mongoc_database_t
+     * Deinitializes a MongoDatabase, cleaning up the internal mongoc_database_t
      */
     deinit {
         guard let database = self._database else { return }
@@ -94,16 +94,16 @@ public class Database {
      * - Parameters:
      *   - name: the name of the collection to get
      *
-     * - Returns: the requested `Collection`
+     * - Returns: the requested `MongoCollection`
      */
-    func collection(_ name: String) throws -> Collection {
+    func collection(_ name: String) throws -> MongoCollection {
         guard let collection = mongoc_database_get_collection(self._database, name) else {
             throw MongoError.invalidCollection(message: "Could not get collection '\(name)'")
         }
         guard let client = self._client else {
             throw MongoError.invalidClient()
         }
-        return Collection(fromCollection: collection, withClient: client)
+        return MongoCollection(fromCollection: collection, withClient: client)
     }
 
     /**
@@ -113,9 +113,9 @@ public class Database {
      *   - name: the name of the collection
      *   - options: optional settings
      *
-     * - Returns: the newly created `Collection`
+     * - Returns: the newly created `MongoCollection`
      */
-    func createCollection(_ name: String, options: CreateCollectionOptions? = nil) throws -> Collection {
+    func createCollection(_ name: String, options: CreateCollectionOptions? = nil) throws -> MongoCollection {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
         var error = bson_error_t()
@@ -125,7 +125,7 @@ public class Database {
         guard let client = self._client else {
             throw MongoError.invalidClient()
         }
-        return Collection(fromCollection: collection, withClient: client)
+        return MongoCollection(fromCollection: collection, withClient: client)
     }
 
     /**
@@ -135,9 +135,9 @@ public class Database {
      *   - filter: Optional criteria to filter results by
      *   - options: Optional settings
      *
-     * - Returns: a `Cursor` over an array of collections
+     * - Returns: a `MongoCursor` over an array of collections
      */
-    func listCollections(options: ListCollectionsOptions? = nil) throws -> Cursor {
+    func listCollections(options: ListCollectionsOptions? = nil) throws -> MongoCursor {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
         guard let collections = mongoc_database_find_collections_with_opts(self._database, opts?.data) else {
@@ -146,7 +146,7 @@ public class Database {
         guard let client = self._client else {
             throw MongoError.invalidClient()
         }
-        return Cursor(fromCursor: collections, withClient: client)
+        return MongoCursor(fromCursor: collections, withClient: client)
     }
 
     /**

@@ -1,20 +1,20 @@
 import libmongoc
 
 // A Cursor
-public class Cursor: Sequence, IteratorProtocol {
+public class MongoCursor: Sequence, IteratorProtocol {
     private var _cursor = OpaquePointer(bitPattern: 1)
-    private var _client: Client?
+    private var _client: MongoClient?
 
     /**
-     * Initializes a new Cursor instance, not meant to be instantiated directly
+     * Initializes a new MongoCursor instance, not meant to be instantiated directly
      */
-    internal init(fromCursor: OpaquePointer, withClient: Client) {
+    internal init(fromCursor: OpaquePointer, withClient: MongoClient) {
         self._cursor = fromCursor
         self._client = withClient
     }
 
     /**
-     * Deinitializes a Cursor, cleaning up the internal mongoc_cursor_t
+     * Deinitializes a MongoCursor, cleaning up the internal mongoc_cursor_t
      */
     deinit {
         close()
