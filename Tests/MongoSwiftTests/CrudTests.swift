@@ -1,6 +1,7 @@
 @testable import MongoSwift
 import Foundation
-import XCTest
+import Quick
+import Nimble
 
 // Files to skip because we don't currently support the operations they test.
 private var skippedFiles = [
@@ -25,53 +26,62 @@ private extension Document {
     }
 }
 
-final class CrudTests: XCTestCase {
+final class CrudTests: QuickSpec {
 
-    static var allTests: [(String, (CrudTests) -> () throws -> Void)] {
-        return [
-            ("testReads", testReads),
-            ("testWrites", testWrites)
-        ]
+    override func setUp() {
+        continueAfterFailure = false
     }
 
-    // Teardown at the very end of the suite by dropping the "crudTests" db.
-    override class func tearDown() {
-        super.tearDown()
-        do {
-            try MongoClient().db("crudTests").drop()
-        } catch {
-            XCTFail("Dropping test db crudTests failed: \(error)")
+    override func spec() {
+
+        beforeSuite {
+            expect { try MongoClient().db("crudTests").drop() }.toNot(throwError())
         }
-    }
 
-    // Run tests for .json files at the provided path
-    func doTests(forPath: String) throws {
-        let db = try MongoClient().db("crudTests")
-        for file in try parseFiles(atPath: forPath) {
-            // later on when running with different server versions, this would
-            // be the place to check file.minServerVersion/maxServerVersion
+        afterSuite {
+            expect { try MongoClient().db("crudTests").drop() }.toNot(throwError())
+        }
 
-            print("\n------------\nExecuting tests from file \(forPath)/\(file.name).json...\n")
+        // Run tests for .json files at the provided path
+        func doTests(forPath: String) throws {
+            let db = try MongoClient().db("crudTests")
+            for file in try parseFiles(atPath: forPath) {
+                // later on when running with different server versions, this would
+                // be the place to check file.minServerVersion/maxServerVersion
 
-            // For each file, execute the test cases contained in it
-            for (i, test) in file.tests.enumerated() {
+                print("\n------------\nExecuting tests from file \(forPath)/\(file.name).json...\n")
 
-                print("Executing test: \(test.description)")
+                // For each file, execute the test cases contained in it
+                for (i, test) in file.tests.enumerated() {
 
-                // for each test case:
-                // 1) create a unique collection to use
-                // 2) insert the data specified by this test file 
-                // 3) execute the test according to the type's execute method
-                // 4) verify that expected data is present
-                // 5) drop the collection to clean up
-                let collection = try db.collection("\(file.name)+\(i)")
-                _ = try collection.insertMany(file.data)
-                try test.execute(usingCollection: collection)
-                try test.verifyData(testCollection: collection, db: db)
-                try collection.drop()
+                    print("Executing test: \(test.description)")
+
+                    // for each test case:
+                    // 1) create a unique collection to use
+                    // 2) insert the data specified by this test file
+                    // 3) execute the test according to the type's execute method
+                    // 4) verify that expected data is present
+                    // 5) drop the collection to clean up
+                    let collection = try db.collection("\(file.name)+\(i)")
+                    try collection.insertMany(file.data)
+                    try test.execute(usingCollection: collection)
+                    try test.verifyData(testCollection: collection, db: db)
+                    try collection.drop()
+                }
             }
+            print() // for readability of results
         }
-        print() // for readability of results
+
+        // Run all the tests at the /read path
+        it("Should pass read CRUD tests") {
+            expect { try doTests(forPath: "Tests/Specs/crud/tests/read") }.toNot(throwError())
+        }
+
+        // Run all the tests at the /write path
+        it("Should pass write CRUD tests") {
+            expect { try doTests(forPath: "Tests/Specs/crud/tests/write") }.toNot(throwError())
+        }
+
     }
 
     // Go through each .json file at the given path and parse the information in it
@@ -87,16 +97,6 @@ final class CrudTests: XCTestCase {
             tests.append(try CrudTestFile(fromDocument: asDocument, name: fileName))
         }
         return tests
-    }
-
-    // Run all the tests at the /read path
-    func testReads() throws {
-        try doTests(forPath: "Tests/Specs/crud/tests/read")
-    }
-
-    // Run all the tests at the /write path
-    func testWrites() throws {
-        try doTests(forPath: "Tests/Specs/crud/tests/write")
     }
 }
 
@@ -171,7 +171,7 @@ private class CrudTest {
     }
 
     // Subclasses should implement `execute` according to the particular operation(s) they are for. 
-    func execute(usingCollection coll: MongoCollection) throws { XCTFail("Unimplemented") }
+    func execute(usingCollection coll: MongoCollection) throws { throw TestError(message: "Unimplemented") }
 
     // If the test has a `collection` field in its `outcome`, verify that the expected
     // data is present. If there is no `collection` field, do nothing. 
@@ -184,7 +184,7 @@ private class CrudTest {
             collToCheck = try db.collection(name)
         }
         let result = Array(try collToCheck.find([:]))
-        XCTAssertEqual(result, expectedData)
+        expect(result).to(equal(expectedData))
     }
 
     // Given an `UpdateResult`, verify that it matches the expected results in this `CrudTest`. 
@@ -192,9 +192,15 @@ private class CrudTest {
     // and `ReplaceOneTest`. 
     func verifyUpdateResult(_ result: UpdateResult?) {
         let expected = self.result as? Document
-        XCTAssertEqual(result?.matchedCount, expected?["matchedCount"] as? Int)
-        XCTAssertEqual(result?.modifiedCount, expected?["modifiedCount"] as? Int)
-        XCTAssertEqual(result?.upsertedId as? Int, expected?["upsertedId"] as? Int)
+        expect(result?.matchedCount).to(equal(expected?["matchedCount"] as? Int))
+        expect(result?.modifiedCount).to(equal(expected?["modifiedCount"] as? Int))
+        let upsertedId = result?.upsertedId as? Int
+        if upsertedId != nil {
+            expect(upsertedId).to(equal(expected?["upsertedId"] as? Int))
+        } else {
+            expect(expected?["upsertedId"] as? Int).to(beNil())
+        }
+
     }
 }
 
@@ -209,11 +215,11 @@ private class AggregateTest: CrudTest {
             // order to make the aggregation happen. there is nothing in
             // the cursor to verify, but verifyData() will check that the
             // $out collection has the new data.
-            XCTAssertEqual(cursor.next(), nil)
+            expect(cursor.next()).to(beNil())
         } else {
             // if not $out, verify that the cursor contains the expected documents. 
             // swiftlint:disable:next force_cast (if it's an AggregateTest, result will always be [Document])
-            XCTAssertEqual(Array(cursor), self.result as! [Document])
+            expect(Array(cursor)).to(equal(self.result as? [Document]))
         }
     }
 }
@@ -224,7 +230,7 @@ private class CountTest: CrudTest {
         let filter: Document = try self.args.get("filter")
         let options = CountOptions(collation: self.collation, limit: self.limit, skip: self.skip)
         let result = try coll.count(filter, options: options)
-        XCTAssertEqual(result, self.result as? Int)
+        expect(result).to(equal(self.result as? Int))
     }
 }
 
@@ -241,7 +247,7 @@ private class DeleteTest: CrudTest {
         }
         let expected = self.result as? Document
         // the only value in a DeleteResult is `deletedCount`
-        XCTAssertEqual(result?.deletedCount, expected?["deletedCount"] as? Int)
+        expect(result?.deletedCount).to(equal(expected?["deletedCount"] as? Int))
     }
 }
 
@@ -253,8 +259,8 @@ private class DistinctTest: CrudTest {
         let options = DistinctOptions(collation: self.collation)
         let distinct = try coll.distinct(fieldName: fieldName, filter: filter ?? [:], options: options)
         // `distinct` returns a cursor with just one document: {values: [values...], ok: 1.0 }
-        XCTAssertEqual(distinct.next(), ["values": self.result, "ok": 1.0] as Document)
-        XCTAssertNil(distinct.next())
+        expect(distinct.next()).to(equal(["values": self.result, "ok": 1.0] as Document))
+        expect(distinct.next()).to(beNil())
     }
 }
 
@@ -266,7 +272,7 @@ private class FindTest: CrudTest {
                                     skip: self.skip, sort: self.sort)
         let result = try Array(coll.find(filter, options: options))
         // swiftlint:disable:next force_cast (if it's a FindTest, result will always be [Document])
-        XCTAssertEqual(result, self.result as! [Document])
+        expect(result).to(equal(self.result as? [Document]))
     }
 }
 
@@ -276,19 +282,17 @@ private class InsertManyTest: CrudTest {
         let docs: [Document] = try self.args.get("documents")
         let result = try coll.insertMany(docs)
 
-        guard let insertedIds = result?.insertedIds else {
-            XCTFail("InsertManyResult missing insertedIds")
-            return
-        }
+        let insertedIds = result?.insertedIds
+        expect(insertedIds).toNot(beNil())
 
         // Convert the result's [Int64: BsonValue] to a Document for easy comparison
         let reformattedResults = Document()
-        for (index, id) in insertedIds {
+        for (index, id) in insertedIds! {
             reformattedResults[String(index)] = id
         }
 
         let expected = self.result as? Document
-        XCTAssertEqual(expected?["insertedIds"] as? Document, reformattedResults)
+        expect(reformattedResults).to(equal(expected?["insertedIds"] as? Document))
     }
 }
 
@@ -297,7 +301,7 @@ private class InsertOneTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection) throws {
         let doc: Document = try self.args.get("document")
         let result = try coll.insertOne(doc)
-        XCTAssertEqual(doc["_id"] as? Int, result?.insertedId as? Int)
+        expect(doc["_id"] as? Int).to(equal(result?.insertedId as? Int))
     }
 }
 

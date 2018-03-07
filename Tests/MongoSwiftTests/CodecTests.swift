@@ -1,38 +1,31 @@
-import Foundation
 @testable import MongoSwift
-import XCTest
+import Quick
+import Nimble
 
-final class CodecTests: XCTestCase {
-    static var allTests: [(String, (CodecTests) -> () throws -> Void)] {
-        return [
-            ("testEncodeStructs", testEncodeStructs),
-            ("testEncodeListDatabasesOptions", testEncodeListDatabasesOptions),
-            ("testNilEncodingStrategy", testNilEncodingStrategy)
-        ]
+struct TestClass: BsonEncodable {
+    let val1 = "a"
+    let val2 = 0
+    let val3 = [1, 2, [3, 4]] as [Any]
+    let val4 = TestClass2()
+    let val5 = [3, TestClass2()] as [Any]
+}
+
+struct TestClass2: BsonEncodable {
+    let x = 1
+    let y = 2
+}
+
+class CodecTests: QuickSpec {
+
+    override func setUp() {
+         continueAfterFailure = false
     }
 
-    func testEncodeStructs() {
+    override func spec() {
 
-        struct TestClass: BsonEncodable {
-            let val1 = "a"
-            let val2 = 0
-            let val3 = [1, 2, [3, 4]] as [Any]
-            let val4 = TestClass2()
-            let val5 = [3, TestClass2()] as [Any]
-        }
-
-        struct TestClass2: BsonEncodable {
-            let x = 1
-            let y = 2
-        }
-
-        let v = TestClass()
-        let enc = BsonEncoder()
-        do {
-            guard let res = try enc.encode(v) else {
-                XCTFail("Failed to encode value")
-                return
-            }
+        it("Should correctly encode test structs") {
+            let v = TestClass()
+            let enc = BsonEncoder()
 
             let expected: Document = [
                 "val2": 0,
@@ -42,42 +35,33 @@ final class CodecTests: XCTestCase {
                 "val1": "a"
             ]
 
-            XCTAssertEqual(res, expected)
-
-        } catch {
-            XCTFail("failed to encode document")
+            expect { try enc.encode(v) }.to(equal(expected))
         }
-    }
 
-    func testEncodeListDatabasesOptions() {
-        let encoder = BsonEncoder()
-        let options = ListDatabasesOptions(filter: Document(["a": 10]), nameOnly: true, session: ClientSession())
-        do {
-            guard let optionsDoc = try encoder.encode(options) else {
-                XCTFail("Failed to encode options")
-                return
-            }
+        it("Should correctly encode ListDatabasesOptions") {
+            let encoder = BsonEncoder()
+            let options = ListDatabasesOptions(filter: Document(["a": 10]), nameOnly: true, session: ClientSession())
 
-            XCTAssertEqual(optionsDoc, ["session": Document(), "filter": ["a": 10] as Document, "nameOnly": true] as Document)
-
-        } catch {
-            XCTFail("Failed to encode options")
+            let expected: Document = ["session": Document(), "filter": ["a": 10] as Document, "nameOnly": true]
+            expect { try encoder.encode(options) }.to(equal(expected))
         }
-    }
 
-    func testNilEncodingStrategy() {
-        let encoderNoNils = BsonEncoder()
-        let encoderWithNils = BsonEncoder(nilStrategy: .include)
+        it("Should correctly follow the nil encoding strategy") {
+            let encoderNoNils = BsonEncoder()
+            let encoderWithNils = BsonEncoder(nilStrategy: .include)
+            let emptyOptions = ListDatabasesOptions(filter: nil, nameOnly: nil, session: nil)
 
-        // Even if the object exists, don't bother encoding it if its properties are all nil
-        let emptyOptions = ListDatabasesOptions(filter: nil, nameOnly: nil, session: nil)
-        XCTAssertNil(try encoderNoNils.encode(emptyOptions))
+            // Even if the object exists, don't bother encoding it if its properties are all nil
+            expect { try encoderNoNils.encode(emptyOptions) }.to(beNil())
 
-        XCTAssertEqual(try encoderWithNils.encode(emptyOptions),
-            ["session": nil, "filter": nil, "nameOnly": nil] as Document)
+            expect { try encoderWithNils.encode(emptyOptions) }
+            .to(equal(["session": nil, "filter": nil, "nameOnly": nil] as Document))
 
-        let options = ListDatabasesOptions(filter: nil, nameOnly: true, session: nil)
-        XCTAssertEqual(try encoderNoNils.encode(options), ["nameOnly": true] as Document)
-        XCTAssertEqual(try encoderWithNils.encode(options), ["session": nil, "filter": nil, "nameOnly": true])
+            let options = ListDatabasesOptions(filter: nil, nameOnly: true, session: nil)
+            expect { try encoderNoNils.encode(options) }.to(equal(["nameOnly": true]))
+            expect { try encoderWithNils.encode(options) }
+            .to(equal(["session": nil, "filter": nil, "nameOnly": true]))
+
+        }
     }
 }
