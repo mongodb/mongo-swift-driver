@@ -107,8 +107,8 @@ public enum BsonSubtype: Int {
     user = 0x06
 }
 
-/// A class to represent the BSON Binary type
-class Binary: BsonValue, Equatable {
+/// A struct to represent the BSON Binary type
+struct Binary: BsonValue, Equatable {
     public var bsonType: BsonType { return .binary }
     var data: Data
     var subtype: BsonSubtype
@@ -193,8 +193,8 @@ extension Date: BsonValue {
     }
 }
 
-/// A class to represent the BSON Decimal128 type
-class Decimal128: BsonValue, Equatable {
+/// A struct to represent the BSON Decimal128 type
+struct Decimal128: BsonValue, Equatable {
     var data: String
     init(_ data: String) {
         self.data = data
@@ -217,9 +217,12 @@ class Decimal128: BsonValue, Equatable {
      static func from(bson: inout bson_iter_t) -> Decimal128 {
         var value: bson_decimal128_t = bson_decimal128_t()
         precondition(bson_iter_decimal128(&bson, &value), "Failed to retrieve Decimal128 value")
-        var stringValue: Int8 = 0
-        bson_decimal128_to_string(&value, &stringValue)
-        return Decimal128(String(cString: &stringValue))
+
+        var str = Data(count: Int(BSON_DECIMAL128_STRING))
+        return Decimal128(str.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<Int8>) in
+            bson_decimal128_to_string(&value, bytes)
+            return String(cString: bytes)
+        })
      }
 
 }
@@ -266,8 +269,8 @@ extension Int64: BsonValue {
     }
 }
 
-/// A class to represent the BSON Code and CodeWithScope types
-class CodeWithScope: BsonValue {
+/// A struct to represent the BSON Code and CodeWithScope types
+struct CodeWithScope: BsonValue {
     var code = ""
     var scope: Document?
 
@@ -316,8 +319,8 @@ class CodeWithScope: BsonValue {
     }
 }
 
-/// A class to represent the BSON MaxKey type
-class MaxKey: BsonValue, Equatable {
+/// A struct to represent the BSON MaxKey type
+struct MaxKey: BsonValue, Equatable {
     public var bsonType: BsonType { return .maxKey }
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
         if !bson_append_maxkey(data, key, Int32(key.count)) {
@@ -328,8 +331,8 @@ class MaxKey: BsonValue, Equatable {
     static func == (lhs: MaxKey, rhs: MaxKey) -> Bool { return true }
 }
 
-/// A class to represent the BSON MinKey type
-class MinKey: BsonValue, Equatable {
+/// A struct to represent the BSON MinKey type
+struct MinKey: BsonValue, Equatable {
     public var bsonType: BsonType { return .minKey }
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
         if !bson_append_minkey(data, key, Int32(key.count)) {
@@ -340,25 +343,23 @@ class MinKey: BsonValue, Equatable {
 }
 
 /// A class to represent the BSON ObjectId type
-class ObjectId: BsonValue, Equatable {
+class ObjectId: BsonValue, Equatable, CustomStringConvertible {
     public var bsonType: BsonType { return .objectId }
-    var oid: bson_oid_t
+    private var oid: bson_oid_t
 
     init() {
-        var oid: bson_oid_t = bson_oid_t()
-        // the second parameter should be a bson_context_t, but for now use nil
-        bson_oid_init(&oid, nil)
-        self.oid = oid
+        self.oid = bson_oid_t()
+        bson_oid_init(&self.oid, nil)
     }
 
-    init(from: bson_oid_t) {
-        self.oid = from
+    internal init(from: UnsafePointer<bson_oid_t>) {
+        self.oid = bson_oid_t()
+        bson_oid_copy(from, &self.oid)
     }
 
     init(from: String) {
-        var oid: bson_oid_t = bson_oid_t()
-        bson_oid_init_from_string(&oid, from)
-        self.oid = oid
+        self.oid = bson_oid_t()
+        bson_oid_init_from_string(&self.oid, from)
     }
 
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
@@ -371,16 +372,20 @@ class ObjectId: BsonValue, Equatable {
         guard let oid = bson_iter_oid(&bson) else {
             preconditionFailure("Failed to retrieve ObjectID value")
         }
-        return ObjectId(from: oid.pointee)
+        return ObjectId(from: oid)
     }
 
-    public var asString: String {
-        var data: Int8 = 0
-        bson_oid_to_string(&self.oid, &data)
-        return String(cString: &data)
+    public var description: String {
+        var str = Data(count: 25)
+        return str.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<Int8>) in
+            bson_oid_to_string(&self.oid, bytes)
+            return String(cString: bytes)
+        }
     }
 
-    static func == (lhs: ObjectId, rhs: ObjectId) -> Bool { return lhs.asString == rhs.asString }
+    static func == (lhs: ObjectId, rhs: ObjectId) -> Bool {
+        return lhs.description == rhs.description
+    }
 
 }
 
@@ -452,8 +457,8 @@ extension String: BsonValue {
     }
 }
 
-/// A class to represent the BSON Timestamp type
-class Timestamp: BsonValue, Equatable {
+/// A struct to represent the BSON Timestamp type
+struct Timestamp: BsonValue, Equatable {
     public var bsonType: BsonType { return .timestamp }
     var timestamp: UInt32 = 0
     var increment: UInt32 = 0
