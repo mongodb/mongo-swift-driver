@@ -1,7 +1,3 @@
-########################################
-# Evergreen Template for MongoDB Drivers
-########################################
-
 # When a task that used to pass starts to fail
 # Go through all versions that may have been skipped to detect
 # when the task started failing
@@ -100,57 +96,46 @@ functions:
           fi
           echo "{ \"releases\": { \"default\": \"$MONGODB_BINARIES\" }}" > $MONGO_ORCHESTRATION_HOME/orchestration.config
 
-  "upload release":
-    - command: s3.put
-      params:
-        aws_key: ${aws_key}
-        aws_secret: ${aws_secret}
-        local_file: ${project}.tar.gz
-        remote_file: ${UPLOAD_BUCKET}/${project}-${CURRENT_VERSION}.tar.gz
-        bucket: mciuploads
-        permissions: public-read
-        content_type: ${content_type|application/x-gzip}
-
   # Upload build artifacts that other tasks may depend on
   # Note this URL needs to be totally unique, while predictable for the next task
   # so it can automatically download the artifacts
-  "upload build":
-    # Compress and upload the entire build directory
-    - command: archive.targz_pack
-      params:
-        # Example: mongo_c_driver_releng_9dfb7d741efbca16faa7859b9349d7a942273e43_16_11_08_19_29_52.tar.gz
-        target: "${build_id}.tar.gz"
-        source_dir: ${PROJECT_DIRECTORY}/
-        include:
-          - "./**"
-    - command: s3.put
-      params:
-        aws_key: ${aws_key}
-        aws_secret: ${aws_secret}
-        local_file: ${build_id}.tar.gz
-        # Example: /mciuploads/${UPLOAD_BUCKET}/gcc49/9dfb7d741efbca16faa7859b9349d7a942273e43/debug-compile-nosasl-nossl/mongo_c_driver_releng_9dfb7d741efbca16faa7859b9349d7a942273e43_16_11_08_19_29_52.tar.gz
-        remote_file: ${UPLOAD_BUCKET}/${build_variant}/${revision}/${task_name}/${build_id}.tar.gz
-        bucket: mciuploads
-        permissions: public-read
-        content_type: ${content_type|application/x-gzip}
+  # "upload build":
+  #   # Compress and upload the entire build directory
+  #   - command: archive.targz_pack
+  #     params:
+  #       # Example: mongo_c_driver_releng_9dfb7d741efbca16faa7859b9349d7a942273e43_16_11_08_19_29_52.tar.gz
+  #       target: "${build_id}.tar.gz"
+  #       source_dir: ${PROJECT_DIRECTORY}/
+  #       include:
+  #         - "./**"
+  #   - command: s3.put
+  #     params:
+  #       aws_key: ${aws_key}
+  #       aws_secret: ${aws_secret}
+  #       local_file: ${build_id}.tar.gz
+  #       # Example: /mciuploads/${UPLOAD_BUCKET}/gcc49/9dfb7d741efbca16faa7859b9349d7a942273e43/debug-compile-nosasl-nossl/mongo_c_driver_releng_9dfb7d741efbca16faa7859b9349d7a942273e43_16_11_08_19_29_52.tar.gz
+  #       remote_file: ${UPLOAD_BUCKET}/${build_variant}/${revision}/${task_name}/${build_id}.tar.gz
+  #       bucket: mciuploads
+  #       permissions: public-read
+  #       content_type: ${content_type|application/x-gzip}
 
-  "fetch build":
-    - command: shell.exec
-      params:
-        continue_on_err: true
-        script: "set -o xtrace && rm -rf ${PROJECT_DIRECTORY}"
-    - command: s3.get
-      params:
-        aws_key: ${aws_key}
-        aws_secret: ${aws_secret}
-        remote_file: ${UPLOAD_BUCKET}/${build_variant}/${revision}/${BUILD_NAME}/${build_id}.tar.gz
-        bucket: mciuploads
-        local_file: build.tar.gz
-    - command: shell.exec
-      params:
-        continue_on_err: true
-        # EVG-1105: Use s3.get extract_to: ./
-        script: "set -o xtrace && cd .. && rm -rf ${PROJECT_DIRECTORY} && mkdir ${PROJECT_DIRECTORY}/ && tar xf build.tar.gz -C ${PROJECT_DIRECTORY}/"
+  # "fetch build":
+  #   - command: shell.exec
+  #     params:
+  #       continue_on_err: true
+  #       script: "set -o xtrace && rm -rf ${PROJECT_DIRECTORY}"
+  #   - command: s3.get
+  #     params:
+  #       aws_key: ${aws_key}
+  #       aws_secret: ${aws_secret}
+  #       remote_file: ${UPLOAD_BUCKET}/${build_variant}/${revision}/${BUILD_NAME}/${build_id}.tar.gz
+  #       bucket: mciuploads
+  #       local_file: build.tar.gz
+  #   - command: shell.exec
+  #     params:
+  #       continue_on_err: true
+  #       # EVG-1105: Use s3.get extract_to: ./
+  #       script: "set -o xtrace && cd .. && rm -rf ${PROJECT_DIRECTORY} && mkdir ${PROJECT_DIRECTORY}/ && tar xf build.tar.gz -C ${PROJECT_DIRECTORY}/"
 
   "exec compile script" :
     - command: shell.exec
@@ -169,145 +154,6 @@ functions:
         script: |
           ${PREPARE_SHELL}
           [ -f ${PROJECT_DIRECTORY}/${file} ] && sh ${PROJECT_DIRECTORY}/${file} || echo "${PROJECT_DIRECTORY}/${file} not available, skipping"
-
-  "upload docs" :
-    - command: shell.exec
-      params:
-        silent: true
-        script: |
-           export AWS_ACCESS_KEY_ID=${aws_key}
-           export AWS_SECRET_ACCESS_KEY=${aws_secret}
-           aws s3 cp ${PROJECT_DIRECTORY}/doc/html s3://mciuploads/${UPLOAD_BUCKET}/docs/${CURRENT_VERSION} --recursive --acl public-read --region us-east-1
-    - command: s3.put
-      params:
-        aws_key: ${aws_key}
-        aws_secret: ${aws_secret}
-        local_file:  ${PROJECT_DIRECTORY}/doc/html/index.html
-        remote_file: ${UPLOAD_BUCKET}/docs/${CURRENT_VERSION}/index.html
-        bucket: mciuploads
-        permissions: public-read
-        content_type: text/html
-        display_name: "Rendered docs"
-
-  "upload coverage" :
-    - command: shell.exec
-      params:
-        silent: true
-        script: |
-           export AWS_ACCESS_KEY_ID=${aws_key}
-           export AWS_SECRET_ACCESS_KEY=${aws_secret}
-           aws s3 cp ${PROJECT_DIRECTORY}/coverage s3://mciuploads/${UPLOAD_BUCKET}/${build_variant}/${revision}/${version_id}/${build_id}/coverage/ --recursive --acl public-read --region us-east-1
-    - command: s3.put
-      params:
-        aws_key: ${aws_key}
-        aws_secret: ${aws_secret}
-        local_file:  ${PROJECT_DIRECTORY}/coverage/index.html
-        remote_file: ${UPLOAD_BUCKET}/${build_variant}/${revision}/${version_id}/${build_id}/coverage/index.html
-        bucket: mciuploads
-        permissions: public-read
-        content_type: text/html
-        display_name: "Coverage Report"
-
-  "upload scan artifacts" :
-    - command: shell.exec
-      type: test
-      params:
-        script: |
-          cd
-          if find ${PROJECT_DIRECTORY}/scan -name \*.html | grep -q html; then
-            (cd ${PROJECT_DIRECTORY}/scan && find . -name index.html -exec echo "<li><a href='{}'>{}</a></li>" \;) >> scan.html
-          else
-            echo "No issues found" > scan.html
-          fi
-    - command: shell.exec
-      params:
-        silent: true
-        script: |
-           export AWS_ACCESS_KEY_ID=${aws_key}
-           export AWS_SECRET_ACCESS_KEY=${aws_secret}
-           aws s3 cp ${PROJECT_DIRECTORY}/scan s3://mciuploads/${UPLOAD_BUCKET}/${build_variant}/${revision}/${version_id}/${build_id}/scan/ --recursive --acl public-read --region us-east-1
-    - command: s3.put
-      params:
-        aws_key: ${aws_key}
-        aws_secret: ${aws_secret}
-        local_file:  ${PROJECT_DIRECTORY}/scan.html
-        remote_file: ${UPLOAD_BUCKET}/${build_variant}/${revision}/${version_id}/${build_id}/scan/index.html
-        bucket: mciuploads
-        permissions: public-read
-        content_type: text/html
-        display_name: "Scan Build Report"
-
-  "upload mo artifacts":
-    - command: shell.exec
-      params:
-        script: |
-          ${PREPARE_SHELL}
-          find $MONGO_ORCHESTRATION_HOME -name \*.log | xargs tar czf mongodb-logs.tar.gz
-    - command: s3.put
-      params:
-        aws_key: ${aws_key}
-        aws_secret: ${aws_secret}
-        local_file: mongodb-logs.tar.gz
-        remote_file: ${UPLOAD_BUCKET}/${build_variant}/${revision}/${version_id}/${build_id}/logs/${task_id}-${execution}-mongodb-logs.tar.gz
-        bucket: mciuploads
-        permissions: public-read
-        content_type: ${content_type|application/x-gzip}
-        display_name: "mongodb-logs.tar.gz"
-    - command: s3.put
-      params:
-        aws_key: ${aws_key}
-        aws_secret: ${aws_secret}
-        local_file: ${DRIVERS_TOOLS}/.evergreen/orchestration/server.log
-        remote_file: ${UPLOAD_BUCKET}/${build_variant}/${revision}/${version_id}/${build_id}/logs/${task_id}-${execution}-orchestration.log
-        bucket: mciuploads
-        permissions: public-read
-        content_type: ${content_type|text/plain}
-        display_name: "orchestration.log"
-
-  "upload working dir":
-    - command: archive.targz_pack
-      params:
-        target: "working-dir.tar.gz"
-        source_dir: ${PROJECT_DIRECTORY}/
-        include:
-          - "./**"
-    - command: s3.put
-      params:
-        aws_key: ${aws_key}
-        aws_secret: ${aws_secret}
-        local_file: working-dir.tar.gz
-        remote_file: ${UPLOAD_BUCKET}/${build_variant}/${revision}/${version_id}/${build_id}/artifacts/${task_id}-${execution}-working-dir.tar.gz
-        bucket: mciuploads
-        permissions: public-read
-        content_type: ${content_type|application/x-gzip}
-        display_name: "working-dir.tar.gz"
-    - command: archive.targz_pack
-      params:
-        target: "drivers-dir.tar.gz"
-        source_dir: ${DRIVERS_TOOLS}
-        include:
-          - "./**"
-        exclude_files:
-          # Windows cannot read the mongod *.lock files because they are locked.
-          - "*.lock"
-    - command: s3.put
-      params:
-        aws_key: ${aws_key}
-        aws_secret: ${aws_secret}
-        local_file: drivers-dir.tar.gz
-        remote_file: ${UPLOAD_BUCKET}/${build_variant}/${revision}/${version_id}/${build_id}/artifacts/${task_id}-${execution}-drivers-dir.tar.gz
-        bucket: mciuploads
-        permissions: public-read
-        content_type: ${content_type|application/x-gzip}
-        display_name: "drivers-dir.tar.gz"
-
-  "upload test results":
-    - command: attach.results
-      params:
-        file_location: "${PROJECT_DIRECTORY}/test-results.json"
-    - command: attach.results
-      params:
-        file_location: "${DRIVERS_TOOLS}/results.json"
 
   "bootstrap mongo-orchestration":
     - command: shell.exec
@@ -362,13 +208,6 @@ functions:
             chmod +x $i
           done
 
-  "init test-results":
-    - command: shell.exec
-      params:
-        script: |
-          ${PREPARE_SHELL}
-          echo '{"results": [{ "status": "FAIL", "test_file": "Build", "log_raw": "No test-results.json found was created"  } ]}' > ${PROJECT_DIRECTORY}/test-results.json
-
   "install dependencies":
     - command: shell.exec
       params:
@@ -382,16 +221,11 @@ functions:
 pre:
   - func: "fetch source"
   - func: "prepare resources"
-  # - func: "windows fix"
   - func: "fix absolute paths"
-  - func: "init test-results"
   - func: "make files executable"
   - func: "install dependencies"
 
 post:
-  # - func: "upload working dir"
-  # - func: "upload mo artifacts"
-  # - func: "upload test results"
   - func: "stop mongo-orchestration"
   - func: "cleanup"
 
@@ -591,7 +425,6 @@ axes:
         variables:
            VERSION: "2.6"
 
-  # OSes that support versions of MongoDB>=2.6 with SSL.
   - id: os-fully-featured
     display_name: OS
     values:
@@ -600,121 +433,6 @@ axes:
         run_on: macos-1012
         variables:
           COMPILE_ENV: DEVELOPER_DIR=/Applications/Xcode9.2.app
-
-      # - id: ubuntu1204-test
-      #   display_name: "Ubuntu 12.04"
-      #   run_on: ubuntu1204-test
-
-      # - id: suse11-x86-64-test
-      #   display_name: "SUSE 11 (x86_64)"
-      #   run_on: suse11-test
-
-      # - id: linux-64-amzn-test
-      #   display_name: "Amazon Linux (Enterprise)"
-      #   run_on: linux-64-amzn-test
-
-  # OSes that support versions of MongoDB without SSL.
-  # - id: os-nossl
-  #   display_name: OS
-  #   values:
-  #     - id: archlinux-test
-  #       display_name: "Archlinux"
-  #       run_on: archlinux-test
-
-  #     - id: macos-1012
-  #       display_name: "macOS 10.12"
-  #       run_on: macos-1012
-
-  # - id: os-windows
-  #   display_name: OS
-  #   values:
-  #     - id: windows-64-vs2010-test
-  #       display_name: "Windows (VS2010)"
-  #       run_on: windows-64-vs2010-test
-
-  #     - id: windows-64-vs2013-test
-  #       display_name: "Windows (VS2013)"
-  #       run_on: windows-64-vs2013-test
-
-  #     - id: windows-64-vs2015-test
-  #       display_name: "Windows (VS2015)"
-  #       run_on: windows-64-vs2015-test
-
-  # OSes that support versions of MongoDB>=2.6 with SSL.
-  # - id: os-requires-26
-  #   display_name: OS
-  #   values:
-  #     - id: ubuntu-14.04
-  #       display_name: "Ubuntu 14.04"
-  #       run_on: ubuntu1404-test
-
-  #     - id: rhel70
-  #       display_name: "RHEL 7.0"
-  #       run_on: rhel70-small
-
-  #     - id: debian71-test
-  #       display_name: "Debian 7.1"
-  #       run_on: debian71-test
-
-  # OSes that support versions of MongoDB>=3.2 with SSL.
-  # - id: os-requires-32
-  #   display_name: OS
-  #   values:
-  #     - id: suse12-x86-64-test
-  #       display_name: "SUSE 12 (x86_64)"
-  #       run_on: suse12-test
-
-  #     - id: ubuntu-16.04
-  #       display_name: "Ubuntu 16.04"
-  #       run_on: ubuntu1604-test
-
-  #     - id: rhel71-power8-test
-  #       display_name: "RHEL 7.1 (POWER8)"
-  #       run_on: rhel71-power8-test
-
-  # OSes that introduced support for SSL with MongoDB>=3.2.
-  # - id: os-ssl-requires-32
-  #   display_name: OS
-  #   values:
-  #     - id: macos-1012
-  #       display_name: "macOS 10.12"
-  #       run_on: macos-1012
-
-  # OSes that support versions of MongoDB>=3.4 with SSL.
-  # - id: os-requires-34
-  #   display_name: OS
-  #   values:
-  #     - id: debian81-test
-  #       display_name: "Debian 8.1"
-  #       run_on: debian81-test
-
-  #     - id: rhel72-zseries-test
-  #       display_name: "RHEL 7.2 (zSeries)"
-  #       run_on: rhel72-zseries-test
-
-  #     - id: suse12-zseries-test
-  #       display_name: "SUSE 12 (zSeries)"
-  #       run_on: suse12-zseries-test
-
-  #     - id: ubuntu1604-arm64-small
-  #       display_name: "Ubuntu 16.04 (ARM64)"
-  #       run_on: ubuntu1604-arm64-small
-
-  #     - id: ubuntu1604-power8-test
-  #       display_name: "Ubuntu 16.04 (POWER8)"
-  #       run_on: ubuntu1604-power8-test
-
-  #     - id: ubuntu1604-zseries-small
-  #       display_name: "Ubuntu 16.04 (zSeries)"
-  #       run_on: ubuntu1604-zseries-small
-
-  # OSes that support versions of MongoDB>=4.0 with SSL.
-  # - id: os-requires-40
-  #   display_name: OS
-  #   values:
-  #     - id: debian92-test
-  #       display_name: "Debian 9.2"
-  #       run_on: debian92-test
 
   - id: topology
     display_name: Topology
@@ -771,18 +489,9 @@ axes:
 
 
 buildvariants:
-
-# Test packaging and other release related routines
-# - name: releng-release-archive-creator
-#   display_name: "** Release Archive Creator"
-#   run_on:
-#     - ubuntu1404-build
-#   tasks:
-#     - ".releng" # Run all tasks with the "releng" tag
-
-
 - matrix_name: "tests-all"
-  matrix_spec: {"os-fully-featured": "*", auth: "*", ssl: "*" }
+#  matrix_spec: {"os-fully-featured": "*", auth: "*", ssl: "*" } // reenable when SSL support is added to the driver
+  matrix_spec: {"os-fully-featured": "*", auth: "noauth", ssl: "nossl" }
   display_name: "${os-fully-featured} ${auth} ${ssl}"
   tasks:
      - name: "test-latest-replica_set"
@@ -804,148 +513,3 @@ buildvariants:
      - name: "test-2.6-sharded_cluster"
      - name: "test-2.6-standalone"
 
-# - matrix_name: "tests-nossl"
-#   matrix_spec: {"os-nossl": "*", auth: "*", ssl: "nossl" }
-#   display_name: "${os-nossl} ${auth} ${ssl}"
-#   tasks:
-#      - name: "test-latest-replica_set"
-#      - name: "test-latest-sharded_cluster"
-#      - name: "test-latest-standalone"
-#      - name: "test-3.6-replica_set"
-#      - name: "test-3.6-sharded_cluster"
-#      - name: "test-3.6-standalone"
-#      - name: "test-3.4-replica_set"
-#      - name: "test-3.4-sharded_cluster"
-#      - name: "test-3.4-standalone"
-#      - name: "test-3.2-replica_set"
-#      - name: "test-3.2-sharded_cluster"
-#      - name: "test-3.2-standalone"
-#      - name: "test-3.0-replica_set"
-#      - name: "test-3.0-sharded_cluster"
-#      - name: "test-3.0-standalone"
-#      - name: "test-2.6-replica_set"
-#      - name: "test-2.6-sharded_cluster"
-#      - name: "test-2.6-standalone"
-
-# - matrix_name: "tests-os-requires-26"
-#   matrix_spec: {"os-requires-26": "*", auth: "*", ssl: "*" }
-#   display_name: "${os-requires-26} ${auth} ${ssl}"
-#   tasks:
-#      - name: "test-latest-replica_set"
-#      - name: "test-latest-sharded_cluster"
-#      - name: "test-latest-standalone"
-#      - name: "test-3.6-replica_set"
-#      - name: "test-3.6-sharded_cluster"
-#      - name: "test-3.6-standalone"
-#      - name: "test-3.4-replica_set"
-#      - name: "test-3.4-sharded_cluster"
-#      - name: "test-3.4-standalone"
-#      - name: "test-3.2-replica_set"
-#      - name: "test-3.2-sharded_cluster"
-#      - name: "test-3.2-standalone"
-#      - name: "test-3.0-replica_set"
-#      - name: "test-3.0-sharded_cluster"
-#      - name: "test-3.0-standalone"
-#      - name: "test-2.6-replica_set"
-#      - name: "test-2.6-sharded_cluster"
-#      - name: "test-2.6-standalone"
-
-# - matrix_name: "tests-os-requires-32"
-#   matrix_spec: {"os-requires-32": "*", auth: "*", ssl: "*" }
-#   display_name: "${os-requires-32} ${auth} ${ssl}"
-#   tasks:
-#      - name: "test-latest-replica_set"
-#      - name: "test-latest-sharded_cluster"
-#      - name: "test-latest-standalone"
-#      - name: "test-3.6-replica_set"
-#      - name: "test-3.6-sharded_cluster"
-#      - name: "test-3.6-standalone"
-#      - name: "test-3.4-replica_set"
-#      - name: "test-3.4-sharded_cluster"
-#      - name: "test-3.4-standalone"
-#      - name: "test-3.2-replica_set"
-#      - name: "test-3.2-sharded_cluster"
-#      - name: "test-3.2-standalone"
-
-# - matrix_name: "tests-ssl-requires-32"
-#   matrix_spec: {"os-ssl-requires-32": "*", auth: "*", ssl: "ssl" }
-#   display_name: "${os-ssl-requires-32} ${auth} ${ssl}"
-#   tasks:
-#      - name: "test-latest-replica_set"
-#      - name: "test-latest-sharded_cluster"
-#      - name: "test-latest-standalone"
-#      - name: "test-3.6-replica_set"
-#      - name: "test-3.6-sharded_cluster"
-#      - name: "test-3.6-standalone"
-#      - name: "test-3.4-replica_set"
-#      - name: "test-3.4-sharded_cluster"
-#      - name: "test-3.4-standalone"
-#      - name: "test-3.2-replica_set"
-#      - name: "test-3.2-sharded_cluster"
-#      - name: "test-3.2-standalone"
-
-# - matrix_name: "tests-os-requires-34"
-#   matrix_spec: {"os-requires-34": "*", auth: "*", ssl: "*" }
-#   display_name: "${os-requires-34} ${auth} ${ssl}"
-#   tasks:
-#      - name: "test-latest-replica_set"
-#      - name: "test-latest-sharded_cluster"
-#      - name: "test-latest-standalone"
-#      - name: "test-3.6-replica_set"
-#      - name: "test-3.6-sharded_cluster"
-#      - name: "test-3.6-standalone"
-#      - name: "test-3.4-replica_set"
-#      - name: "test-3.4-sharded_cluster"
-#      - name: "test-3.4-standalone"
-
-# - matrix_name: "tests-os-requires-40"
-#   matrix_spec: {"os-requires-40": "*", auth: "*", ssl: "*" }
-#   display_name: "${os-requires-40} ${auth} ${ssl}"
-#   tasks:
-#      - name: "test-latest-replica_set"
-#      - name: "test-latest-sharded_cluster"
-#      - name: "test-latest-standalone"
-
-# Storage Engine Tests on Amazon Linux (Enterprise)
-# - matrix_name: "tests-storage-engines"
-#   matrix_spec: {"os-fully-featured": "linux-64-amzn-test", storage-engine: "*" }
-#   display_name: "${os-fully-featured} ${storage-engine}"
-#   rules:
-#     - if:
-#         os-fully-featured: "*"
-#         storage-engine: ["mmapv1", "inmemory"]
-#       then:
-#         add_tasks:
-#           - "test-latest-standalone"
-#           - "test-3.6-standalone"
-#           - "test-3.4-standalone"
-#           - "test-3.2-standalone"
-#     - if:
-#         os-fully-featured: "*"
-#         storage-engine: "wiredtiger"
-#       then:
-#         add_tasks:
-#           - "test-3.0-standalone"
-
-# - matrix_name: "tests-windows"
-#   matrix_spec: {os-windows: "*", auth: "*", ssl: "*" }
-#   display_name: "${os-windows} ${auth} ${ssl}"
-#   tasks:
-#      - name: "test-latest-replica_set"
-#      - name: "test-latest-sharded_cluster"
-#      - name: "test-latest-standalone"
-#      - name: "test-3.6-replica_set"
-#      - name: "test-3.6-sharded_cluster"
-#      - name: "test-3.6-standalone"
-#      - name: "test-3.4-replica_set"
-#      - name: "test-3.4-sharded_cluster"
-#      - name: "test-3.4-standalone"
-#      - name: "test-3.2-replica_set"
-#      - name: "test-3.2-sharded_cluster"
-#      - name: "test-3.2-standalone"
-#      - name: "test-3.0-replica_set"
-#      - name: "test-3.0-sharded_cluster"
-#      - name: "test-3.0-standalone"
-#      - name: "test-2.6-replica_set"
-#      - name: "test-2.6-sharded_cluster"
-#      - name: "test-2.6-standalone"
