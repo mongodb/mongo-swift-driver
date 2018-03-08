@@ -26,6 +26,28 @@ public enum BsonType: Int {
     maxKey = 0x7f
 }
 
+internal let BsonTypeMap: [UInt32: BsonValue.Type] = [
+    0x01: Double.self,
+    0x02: String.self,
+    0x03: Document.self,
+    0x04: [BsonValue].self,
+    0x05: Binary.self,
+    0x07: ObjectId.self,
+    0x08: Bool.self,
+    0x09: Date.self,
+    0x0b: NSRegularExpression.self,
+    0x0c: DBPointer.self,
+    0x0d: CodeWithScope.self,
+    0x0e: Symbol.self,
+    0x0f: CodeWithScope.self,
+    0x10: Int.self,
+    0x11: Timestamp.self,
+    0x12: Int64.self,
+    0x13: Decimal128.self,
+    0xff: MinKey.self,
+    0x7f: MaxKey.self
+]
+
 /// A protocol all types representing BsonTypes must implement
 public protocol BsonValue {
 
@@ -41,6 +63,16 @@ public protocol BsonValue {
     * - Returns: A `Bool` indicating whether the value was successfully appended.
     */
     func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws
+
+    /**
+    * Given a bson_iter_t known to have a next value, returns the next value in the iterator. 
+    *
+    * - Parameters: 
+    *   - iter: A `bson_iter_t` to read the next value from
+    * 
+    * - Returns: A BsonValue 
+    */
+    static func from(iter: inout bson_iter_t) -> BsonValue
 }
 
 /// An extension of Array type to represent the BSON array type
@@ -60,14 +92,14 @@ extension Array: BsonValue {
     *
     * - Returns: A `[BsonValue]` corresponding to the array
     */
-    internal static func from(bson: inout bson_iter_t) -> [BsonValue] {
+    public static func from(iter: inout bson_iter_t) -> BsonValue {
         var length: UInt32 = 0
         let array = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
         defer {
             array.deinitialize(count: 1)
             array.deallocate(capacity: 1)
         }
-        bson_iter_array(&bson, &length, array)
+        bson_iter_array(&iter, &length, array)
 
         // since an array is a nested object with keys '0', '1', etc.,
         // create a new Document using the array data so we can recursively parse
@@ -142,7 +174,7 @@ struct Binary: BsonValue, Equatable {
         }
     }
 
-    internal static func from(bson: inout bson_iter_t) -> Binary {
+    public static func from(iter: inout bson_iter_t) -> BsonValue {
         var subtype: bson_subtype_t = bson_subtype_t(rawValue: 0)
         var length: UInt32 = 0
         let dataPointer = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
@@ -150,7 +182,7 @@ struct Binary: BsonValue, Equatable {
             dataPointer.deinitialize(count: 1)
             dataPointer.deallocate(capacity: 1)
         }
-        bson_iter_binary(&bson, &subtype, &length, dataPointer)
+        bson_iter_binary(&iter, &subtype, &length, dataPointer)
 
         guard let data = dataPointer.pointee else {
             preconditionFailure("failed to retrieve data stored for binary BSON value")
@@ -173,6 +205,10 @@ extension Bool: BsonValue {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
+
+    public static func from(iter: inout bson_iter_t) -> BsonValue {
+        return bson_iter_bool(&iter)
+    }
 }
 
 /// An extension of Date to represent the BSON Datetime type
@@ -190,6 +226,53 @@ extension Date: BsonValue {
         if !bson_append_date_time(data, key, Int32(key.count), Int64(seconds)) {
             throw bsonEncodeError(value: self, forKey: key)
         }
+    }
+
+    public static func from(iter: inout bson_iter_t) -> BsonValue {
+        return Date(msSinceEpoch: bson_iter_date_time(&iter))
+    }
+}
+
+/// An internal struct to represent the deprecated DBPointer type. While DBPointers cannot 
+/// be created, we may need to parse them into `Document`s, and this provides a place for that logic.
+internal struct DBPointer: BsonValue {
+
+    public var bsonType: BsonType { return .dbPointer }
+
+    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
+        throw MongoError.bsonEncodeError(message: "DBPointers are deprecated; use a DBRef instead")
+    }
+
+    public static func from(iter: inout bson_iter_t) -> BsonValue {
+        var length: UInt32 = 0
+        let collectionPP = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: 1)
+        defer {
+            collectionPP.deinitialize(count: 1)
+            collectionPP.deallocate(capacity: 1)
+        }
+        let oidPP = UnsafeMutablePointer<UnsafePointer<bson_oid_t>?>.allocate(capacity: 1)
+        defer {
+            oidPP.deinitialize(count: 1)
+            oidPP.deallocate(capacity: 1)
+        }
+        bson_iter_dbpointer(&iter, &length, collectionPP, oidPP)
+
+        guard let key = bson_iter_key(&iter) else {
+            preconditionFailure("Failed to retrieve key for DBPointer value")
+        }
+        guard let oidP = oidPP.pointee else {
+            preconditionFailure(retrieveErrorMsg(type: "DBPointer ObjectId", key: String(cString: key)))
+        }
+        guard let collectionP = collectionPP.pointee else {
+            preconditionFailure(retrieveErrorMsg(type: "DBPointer collection name", key: String(cString: key)))
+        }
+
+        let dbRef: Document = [
+            "$ref": String(cString: collectionP),
+            "$id": ObjectId(from: oidP)
+        ]
+
+        return dbRef
     }
 }
 
@@ -214,9 +297,9 @@ struct Decimal128: BsonValue, Equatable {
         }
     }
 
-     static func from(bson: inout bson_iter_t) -> Decimal128 {
+    public static func from(iter: inout bson_iter_t) -> BsonValue {
         var value: bson_decimal128_t = bson_decimal128_t()
-        precondition(bson_iter_decimal128(&bson, &value), "Failed to retrieve Decimal128 value")
+        precondition(bson_iter_decimal128(&iter, &value), "Failed to retrieve Decimal128 value")
 
         var str = Data(count: Int(BSON_DECIMAL128_STRING))
         return Decimal128(str.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<Int8>) in
@@ -235,6 +318,10 @@ extension Double: BsonValue {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
+
+    public static func from(iter: inout bson_iter_t) -> BsonValue {
+        return bson_iter_double(&iter)
+    }
 }
 
 /// An extension of Int to represent the BSON Int32 type.
@@ -247,6 +334,10 @@ extension Int: BsonValue {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
+
+    public static func from(iter: inout bson_iter_t) -> BsonValue {
+        return Int(bson_iter_int32(&iter))
+    }
 }
 
 /// An extension of Int32 to represent the BSON Int32 type
@@ -257,6 +348,10 @@ extension Int32: BsonValue {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
+
+    public static func from(iter: inout bson_iter_t) -> BsonValue {
+        return bson_iter_int32(&iter)
+    }
 }
 
 /// An extension of Int64 to represent the BSON Int64 type
@@ -266,6 +361,10 @@ extension Int64: BsonValue {
         if !bson_append_int64(data, key, Int32(key.count), self) {
             throw bsonEncodeError(value: self, forKey: key)
         }
+    }
+
+    public static func from(iter: inout bson_iter_t) -> BsonValue {
+        return bson_iter_int64(&iter)
     }
 }
 
@@ -295,12 +394,12 @@ struct CodeWithScope: BsonValue {
         }
     }
 
-    internal static func from(bson: inout bson_iter_t) -> CodeWithScope {
+    public static func from(iter: inout bson_iter_t) -> BsonValue {
 
         var length: UInt32 = 0
 
-        if bson_iter_type(&bson) == BSON_TYPE_CODE {
-            let code = String(cString: bson_iter_code(&bson, &length))
+        if bson_iter_type(&iter) == BSON_TYPE_CODE {
+            let code = String(cString: bson_iter_code(&iter, &length))
             return CodeWithScope(code: code)
         }
 
@@ -310,7 +409,7 @@ struct CodeWithScope: BsonValue {
             scopePointer.deinitialize(count: 1)
             scopePointer.deallocate(capacity: 1)
         }
-        let code = String(cString: bson_iter_codewscope(&bson, &length, &scopeLength, scopePointer))
+        let code = String(cString: bson_iter_codewscope(&iter, &length, &scopeLength, scopePointer))
         guard let scopeData = bson_new_from_data(scopePointer.pointee, Int(scopeLength)) else {
             preconditionFailure("Failed to create a bson_t from scope data")
         }
@@ -328,6 +427,8 @@ struct MaxKey: BsonValue, Equatable {
         }
     }
 
+    public static func from(iter: inout bson_iter_t) -> BsonValue { return MaxKey() }
+
     static func == (lhs: MaxKey, rhs: MaxKey) -> Bool { return true }
 }
 
@@ -339,6 +440,9 @@ struct MinKey: BsonValue, Equatable {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
+
+    public static func from(iter: inout bson_iter_t) -> BsonValue { return MinKey() }
+
     static func == (lhs: MinKey, rhs: MinKey) -> Bool { return true }
 }
 
@@ -368,8 +472,8 @@ class ObjectId: BsonValue, Equatable, CustomStringConvertible {
         }
     }
 
-    internal static func from(bson: inout bson_iter_t) -> ObjectId {
-        guard let oid = bson_iter_oid(&bson) else {
+    public static func from(iter: inout bson_iter_t) -> BsonValue {
+        guard let oid = bson_iter_oid(&iter) else {
             preconditionFailure("Failed to retrieve ObjectID value")
         }
         return ObjectId(from: oid)
@@ -411,21 +515,27 @@ extension NSRegularExpression: BsonValue {
         }
     }
 
-    internal static func from(bson: inout bson_iter_t) throws -> NSRegularExpression {
+    public static func from(iter: inout bson_iter_t) -> BsonValue {
         let options = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: 1)
         defer {
             options.deinitialize(count: 1)
             options.deallocate(capacity: 1)
         }
-        guard let pattern = bson_iter_regex(&bson, options) else {
+        guard let pattern = bson_iter_regex(&iter, options) else {
             preconditionFailure("Failed to retrieve regular expression pattern")
         }
+        let patternString = String(cString: pattern)
         guard let stringOptions = options.pointee else {
             preconditionFailure("Failed to retrieve regular expression options")
         }
-
-        let opts = NSRegularExpression.optionsFromString(String(cString: stringOptions))
-        return try self.init(pattern: String(cString: pattern), options: opts)
+        let optionsString = String(cString: stringOptions)
+        let opts = NSRegularExpression.optionsFromString(optionsString)
+        do {
+            return try self.init(pattern: patternString, options: opts)
+        } catch {
+            preconditionFailure("Failed to initialize NSRegularExpression with " +
+                "pattern '\(patternString)'' and options '\(optionsString)'")
+        }
     }
 
     // Convert a string of options flags into an equivalent NSRegularExpression.Options
@@ -455,6 +565,41 @@ extension String: BsonValue {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
+
+    public static func from(iter: inout bson_iter_t) -> BsonValue {
+        var length: UInt32 = 0
+        let value = bson_iter_utf8(&iter, &length)
+        guard let strValue = value else {
+            guard let key = bson_iter_key(&iter) else {
+                preconditionFailure("Failed to retrieve key for UTF-8 value")
+            }
+            preconditionFailure(retrieveErrorMsg(type: "UTF-8", key: String(cString: key)))
+        }
+
+        return String(cString: strValue)
+    }
+}
+
+/// An internal struct to represent the deprecated Symbol type. While Symbols cannot be
+/// created, we may need to parse them into `String`s, and this provides a place for that logic.
+internal struct Symbol: BsonValue {
+    public var bsonType: BsonType { return .symbol }
+    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
+        throw MongoError.bsonEncodeError(message: "Symbols are deprecated; use a string instead")
+    }
+
+    public static func from(iter: inout bson_iter_t) -> BsonValue {
+        var length: UInt32 = 0
+        let value = bson_iter_symbol(&iter, &length)
+        guard let strValue = value else {
+            guard let key = bson_iter_key(&iter) else {
+                preconditionFailure("Failed to retrieve key for Symbol value")
+            }
+            preconditionFailure(retrieveErrorMsg(type: "Symbol", key: String(cString: key)))
+        }
+
+        return String(cString: strValue)
+    }
 }
 
 /// A struct to represent the BSON Timestamp type
@@ -481,10 +626,10 @@ struct Timestamp: BsonValue, Equatable {
         }
     }
 
-    internal static func from(bson: inout bson_iter_t) -> Timestamp {
+    public static func from(iter: inout bson_iter_t) -> BsonValue {
         var t: UInt32 = 0
         var i: UInt32 = 0
-        bson_iter_timestamp(&bson, &t, &i)
+        bson_iter_timestamp(&iter, &t, &i)
         return Timestamp(timestamp: t, inc: i)
     }
 
@@ -492,4 +637,8 @@ struct Timestamp: BsonValue, Equatable {
         return lhs.timestamp == rhs.timestamp && lhs.increment == rhs.increment
     }
 
+}
+
+func retrieveErrorMsg(type: String, key: String) -> String {
+    return "Failed to retrieve the \(type) value for key '\(key)'"
 }

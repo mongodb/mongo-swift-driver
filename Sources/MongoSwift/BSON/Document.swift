@@ -2,10 +2,40 @@ import Foundation
 import libbson
 
 /// A class representing the BSON document type
-public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral, CustomStringConvertible {
+public class Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral {
     internal var data: UnsafeMutablePointer<bson_t>!
 
-    public var bsonType: BsonType { return .document }
+    /// Returns a [String] containing the keys in this `Document`. 
+    public var keys: [String] {
+        var iter: bson_iter_t = bson_iter_t()
+        if !bson_iter_init(&iter, data) { return [] }
+        var keys = [String]()
+        while bson_iter_next(&iter) {
+            keys.append(String(cString: bson_iter_key(&iter)))
+        }
+        return keys
+    }
+
+    /// Returns a [BsonValue?] containing the values stored in this `Document`. 
+    public var values: [BsonValue?] {
+        var iter: bson_iter_t = bson_iter_t()
+        if !bson_iter_init(&iter, data) { return [] }
+        var values = [BsonValue?]()
+        while bson_iter_next(&iter) {
+            let type = bson_iter_type(&iter)
+            guard let typeToReturn = BsonTypeMap[type.rawValue] else {
+                values.append(nil)
+                continue
+            }
+            values.append(typeToReturn.from(iter: &iter))
+
+        }
+        return values
+    }
+
+    /// Returns the number of (key, value) pairs stored at the top level
+    /// of this document. 
+    public var count: Int { return Int(bson_count_keys(self.data)) }
 
     /// Initialize a new, empty document
     public init() {
@@ -139,20 +169,10 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
         return Data(bytes: data!, count: Int(length))
     }
 
-    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
-        if !bson_append_document(data, key, Int32(key.count), self.data) {
-            throw bsonEncodeError(value: self, forKey: key)
-        }
-    }
-
     deinit {
         guard let data = self.data else { return }
         bson_destroy(data)
         self.data = nil
-    }
-
-    public var description: String {
-        return self.extendedJSON
     }
 
     /**
@@ -164,141 +184,16 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
      *  print(d["a"]) // prints 1
      * 
      */
-    subscript(key: String) -> BsonValue? {
+    public subscript(key: String) -> BsonValue? {
         get {
             var iter: bson_iter_t = bson_iter_t()
-            if !bson_iter_init(&iter, data) {
-                return nil
+            if !bson_iter_init(&iter, data) { return nil }
+
+            if bson_iter_find(&iter, key.cString(using: .utf8)) {
+                let type = bson_iter_type(&iter)
+                guard let typeToReturn = BsonTypeMap[type.rawValue] else { return nil }
+                return typeToReturn.from(iter: &iter)
             }
-
-            func retrieveErrorMsg(_ type: String) -> String {
-                return "Failed to retrieve the \(type) value for key '\(key)'"
-            }
-
-            while bson_iter_next(&iter) {
-                let ikey = String(cString: bson_iter_key(&iter))
-                if ikey == key {
-                    let itype = bson_iter_type(&iter)
-                    switch itype {
-                    case BSON_TYPE_ARRAY:
-                        return [BsonValue].from(bson: &iter)
-
-                    case BSON_TYPE_BINARY:
-                        return Binary.from(bson: &iter)
-
-                    case BSON_TYPE_BOOL:
-                        return bson_iter_bool(&iter)
-
-                    case BSON_TYPE_CODE, BSON_TYPE_CODEWSCOPE:
-                        return CodeWithScope.from(bson: &iter)
-
-                    case BSON_TYPE_DATE_TIME:
-                        return Date(msSinceEpoch: bson_iter_date_time(&iter))
-
-                    // DBPointer is deprecated, so convert to a DBRef doc.
-                    case BSON_TYPE_DBPOINTER:
-                        var length: UInt32 = 0
-                        let collectionPP = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: 1)
-                        defer {
-                            collectionPP.deinitialize(count: 1)
-                            collectionPP.deallocate(capacity: 1)
-                        }
-                        let oidPP = UnsafeMutablePointer<UnsafePointer<bson_oid_t>?>.allocate(capacity: 1)
-                        defer {
-                            oidPP.deinitialize(count: 1)
-                            oidPP.deallocate(capacity: 1)
-                        }
-                        bson_iter_dbpointer(&iter, &length, collectionPP, oidPP)
-
-                        guard let oidP = oidPP.pointee else {
-                            preconditionFailure(retrieveErrorMsg("DBPointer ObjectId"))
-                        }
-                        guard let collectionP = collectionPP.pointee else {
-                            preconditionFailure(retrieveErrorMsg("DBPointer collection name"))
-                        }
-
-                        let dbRef: Document = [
-                            "$ref": String(cString: collectionP),
-                            "$id": ObjectId(from: oidP)
-                        ]
-
-                        return dbRef
-
-                    case BSON_TYPE_DECIMAL128:
-                        return Decimal128.from(bson: &iter)
-
-                    case BSON_TYPE_DOCUMENT:
-                        var length: UInt32 = 0
-                        let document = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
-                        defer {
-                            document.deinitialize(count: 1)
-                            document.deallocate(capacity: 1)
-                        }
-
-                        bson_iter_document(&iter, &length, document)
-
-                        guard let docData = bson_new_from_data(document.pointee, Int(length)) else {
-                            preconditionFailure("Failed to create a bson_t from document data")
-                        }
-
-                        return Document(fromData: docData)
-
-                    case BSON_TYPE_DOUBLE:
-                        return bson_iter_double(&iter)
-
-                    case BSON_TYPE_INT32:
-                        return Int(bson_iter_int32(&iter))
-
-                    case BSON_TYPE_INT64:
-                        return bson_iter_int64(&iter)
-
-                    case BSON_TYPE_MINKEY:
-                        return MinKey()
-
-                    case BSON_TYPE_MAXKEY:
-                        return MaxKey()
-
-                    // Since Undefined is deprecated, convert to null if we encounter it.
-                    case BSON_TYPE_NULL, BSON_TYPE_UNDEFINED:
-                        return nil
-
-                    case BSON_TYPE_OID:
-                        return ObjectId.from(bson: &iter)
-
-                    case BSON_TYPE_REGEX:
-                        do { return try NSRegularExpression.from(bson: &iter)
-                        } catch {
-                            preconditionFailure("Failed to create an NSRegularExpression object " +
-                                "from regex data stored for key \(key)")
-                        }
-
-                    // Since Symbol is deprecated, return as a string instead.
-                    case BSON_TYPE_SYMBOL:
-                        var length: UInt32 = 0
-                        let value = bson_iter_symbol(&iter, &length)
-                        guard let strValue = value else {
-                            preconditionFailure(retrieveErrorMsg("Symbol"))
-                        }
-                        return String(cString: strValue)
-
-                    case BSON_TYPE_TIMESTAMP:
-                        return Timestamp.from(bson: &iter)
-
-                    case BSON_TYPE_UTF8:
-                        var length: UInt32 = 0
-                        let value = bson_iter_utf8(&iter, &length)
-                        guard let strValue = value else {
-                            preconditionFailure(retrieveErrorMsg("UTF-8"))
-                        }
-
-                        return String(cString: strValue)
-
-                    default:
-                        return nil
-                    }
-                }
-            }
-
             return nil
         }
 
@@ -321,9 +216,76 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
     }
 }
 
+extension Document: BsonValue {
+    public var bsonType: BsonType { return .document }
+
+    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
+        if !bson_append_document(data, key, Int32(key.count), self.data) {
+            throw bsonEncodeError(value: self, forKey: key)
+        }
+    }
+
+    public static func from(iter: inout bson_iter_t) -> BsonValue {
+        var length: UInt32 = 0
+        let document = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
+        defer {
+            document.deinitialize(count: 1)
+            document.deallocate(capacity: 1)
+        }
+
+        bson_iter_document(&iter, &length, document)
+
+        guard let docData = bson_new_from_data(document.pointee, Int(length)) else {
+            preconditionFailure("Failed to create a bson_t from document data")
+        }
+
+        return Document(fromData: docData)
+    }
+
+}
+
 /// An extension of `Document` to make it `Equatable`. 
 extension Document: Equatable {
     public static func == (lhs: Document, rhs: Document) -> Bool {
         return bson_compare(lhs.data, rhs.data) == 0
+    }
+}
+
+/// An extension of `Document` to make it convertible to a string.
+extension Document: CustomStringConvertible {
+    public var description: String {
+        return self.extendedJSON
+    }
+}
+
+/// An extension of `Document` to make it conform to the `Sequence` protocol.
+/// This allows you to iterate through the (key, value) pairs, for example:
+/// let doc: Document = ["a": 1, "b": 2]
+/// for (key, value) in doc {
+///     ...
+/// }
+extension Document: Sequence {
+    public func makeIterator() -> DocumentIterator {
+        return DocumentIterator(forDocument: self)
+    }
+
+    public class DocumentIterator: IteratorProtocol {
+        internal var iter: bson_iter_t
+
+        internal init(forDocument doc: Document) {
+            self.iter = bson_iter_t()
+            bson_iter_init(&self.iter, doc.data)
+        }
+
+        public func next() -> (String, BsonValue?)? {
+            if bson_iter_next(&self.iter) {
+                let key = String(cString: bson_iter_key(&iter))
+                let type = bson_iter_type(&iter)
+                guard let typeToReturn = BsonTypeMap[type.rawValue] else { return nil }
+                let value = typeToReturn.from(iter: &iter)
+                return (key, value)
+            }
+            return nil
+        }
     }
 }

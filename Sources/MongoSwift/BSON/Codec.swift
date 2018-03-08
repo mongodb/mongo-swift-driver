@@ -24,6 +24,10 @@ extension BsonEncodable {
             try doc.encode(to: data, forKey: key)
         }
     }
+
+    public static func from(iter: inout bson_iter_t) -> BsonValue {
+        return Document.from(iter: &iter)
+    }
 }
 
 /// Extracts the underlying value, converting it to a non-optional if it is optional.
