@@ -159,7 +159,7 @@ final class CollectionTests: XCTestCase {
 
     func testDistinct() throws {
         let distinct = try coll.distinct(fieldName: "cat", filter: [:])
-        XCTAssertEqual(distinct.next(), ["values": ["dog", "cat"], "ok": 1.0] as Document)
+        XCTAssertEqual((distinct.next()?["values"] as? [String])!, ["dog", "cat"])
         XCTAssertNil(distinct.next())
     }
 
@@ -274,7 +274,7 @@ final class CollectionTests: XCTestCase {
 
     func testListIndexes() throws {
         let indexes = try coll.listIndexes()
-        // New collection, so expect just the _id_ index to exist. 
+        // New collection, so expect just the _id_ index to exist.
         XCTAssertEqual(indexes.next()?["name"] as? String, "_id_")
         XCTAssertNil(indexes.next())
     }
