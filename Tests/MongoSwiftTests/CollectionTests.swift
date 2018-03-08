@@ -159,7 +159,7 @@ final class CollectionTests: XCTestCase {
 
     func testDistinct() throws {
         let distinct = try coll.distinct(fieldName: "cat", filter: [:])
-        XCTAssertEqual((distinct.next()?["values"] as? [String])!, ["dog", "cat"])
+        XCTAssertEqual(((distinct.next()?["values"] as? [String])!).sorted(), ["cat", "dog"])
         XCTAssertNil(distinct.next())
     }
 
