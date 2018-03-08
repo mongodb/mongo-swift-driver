@@ -184,7 +184,7 @@ public class Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral
      *  print(d["a"]) // prints 1
      * 
      */
-    public subscript(key: String) -> BsonValue? {
+    subscript(key: String) -> BsonValue? {
         get {
             var iter: bson_iter_t = bson_iter_t()
             if !bson_iter_init(&iter, data) { return nil }
