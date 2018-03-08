@@ -25,11 +25,5 @@ if [ "$SSL" != "nossl" ]; then
    export MONGOC_TEST_SSL_CA_FILE="$DRIVERS_TOOLS/.evergreen/x509gen/ca.pem"
 fi
 
-echo "TESTING WHETHER MONGO IS RUNNING:"
-echo "SSL: ${SSL}"
-ps aux | grep "mongo"
-mongo test --eval "printjson(db.getCollectionNames())"
-echo "\n\n\n"
-
 echo "Running $AUTH tests over $SSL, connecting to $MONGODB_URI"
 make test
