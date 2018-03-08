@@ -5,25 +5,8 @@ import XCTest
 final class ClientTests: XCTestCase {
     static var allTests: [(String, (ClientTests) -> () throws -> Void)] {
         return [
-            ("testClient", testClient),
             ("testListDatabases", testListDatabases)
         ]
-    }
-
-    func testClient() {
-        guard let client = try? MongoClient(connectionString: "mongodb://localhost:27017/") else {
-            XCTAssert(false, "failed to create a client")
-            return
-        }
-
-        guard let databases = try? client.listDatabases() else {
-            XCTAssert(false, "failed to list databases")
-            return
-        }
-
-        for database in databases {
-            print(database)
-        }
     }
 
     func testListDatabases() {
@@ -37,10 +20,6 @@ final class ClientTests: XCTestCase {
             return
         }
 
-        XCTAssertEqual(Array(databases) as [Document], [
-            ["name": "admin"] as Document,
-            ["name": "config"] as Document,
-            ["name": "local"] as Document
-        ])
+        XCTAssertTrue(!Array(databases).isEmpty)
     }
 }
