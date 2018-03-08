@@ -20,6 +20,8 @@ final class ClientTests: XCTestCase {
             return
         }
 
-        XCTAssertTrue(Array(databases).contains(["name": "admin"] as Document))
+        // swiftlint:disable:next force_cast
+        let dbNames: [String] = Array(databases).map { $0["name"] as! String }
+        XCTAssertTrue(dbNames.contains("admin"))
     }
 }
