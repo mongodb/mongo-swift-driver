@@ -319,6 +319,29 @@ public class Document: BsonValue, ExpressibleByDictionaryLiteral, ExpressibleByA
 
         }
     }
+
+    /**
+     * Allows retrieving and strongly typing a value at the same time. This means you can avoid
+     * having to cast and unwrap values from the Document when you know what type they will be. 
+     * For example:
+     *      let d: Document = ["x": 1]
+     *      let x: Int = try d.get("x")
+     *
+     *  - Params:
+     *      - key: The key under which the value you are looking up is stored
+     *      - T: Any type conforming to the `BsonValue` protocol
+     *  - Returns:
+     *      - The value stored under key, as type T 
+     *  - Throws:
+     *      - A MongoError.typeError if the value cannot be cast to type T or is not in the `Document`
+     *
+     */ 
+    public func get<T: BsonValue>(_ key: String) throws -> T {
+        guard let value = self[key] as? T else {
+            throw MongoError.typeError(message: "Could not cast value for key \(key) to type \(T.self)")
+        }
+        return value
+    }
 }
 
 /// An extension of `Document` to make it `Equatable`. 
