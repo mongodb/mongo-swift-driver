@@ -48,6 +48,12 @@ internal let BsonTypeMap: [UInt32: BsonValue.Type] = [
     0x7f: MaxKey.self
 ]
 
+internal func nextBsonValue(iter: inout bson_iter_t) -> BsonValue? {
+    let type = bson_iter_type(&iter)
+    guard let typeToReturn = BsonTypeMap[type.rawValue] else { return nil }
+    return typeToReturn.from(iter: &iter)
+}
+
 /// A protocol all types representing BsonTypes must implement
 public protocol BsonValue {
 

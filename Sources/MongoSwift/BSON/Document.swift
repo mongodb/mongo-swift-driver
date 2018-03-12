@@ -22,13 +22,7 @@ public class Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral
         if !bson_iter_init(&iter, data) { return [] }
         var values = [BsonValue?]()
         while bson_iter_next(&iter) {
-            let type = bson_iter_type(&iter)
-            guard let typeToReturn = BsonTypeMap[type.rawValue] else {
-                values.append(nil)
-                continue
-            }
-            values.append(typeToReturn.from(iter: &iter))
-
+            values.append(nextBsonValue(iter: &iter))
         }
         return values
     }
@@ -190,9 +184,7 @@ public class Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral
             if !bson_iter_init(&iter, data) { return nil }
 
             if bson_iter_find(&iter, key.cString(using: .utf8)) {
-                let type = bson_iter_type(&iter)
-                guard let typeToReturn = BsonTypeMap[type.rawValue] else { return nil }
-                return typeToReturn.from(iter: &iter)
+                return nextBsonValue(iter: &iter)
             }
             return nil
         }
@@ -279,11 +271,8 @@ extension Document: Sequence {
 
         public func next() -> (String, BsonValue?)? {
             if bson_iter_next(&self.iter) {
-                let key = String(cString: bson_iter_key(&iter))
-                let type = bson_iter_type(&iter)
-                guard let typeToReturn = BsonTypeMap[type.rawValue] else { return nil }
-                let value = typeToReturn.from(iter: &iter)
-                return (key, value)
+                let key = String(cString: bson_iter_key(&self.iter))
+                return (key, nextBsonValue(iter: &self.iter))
             }
             return nil
         }
