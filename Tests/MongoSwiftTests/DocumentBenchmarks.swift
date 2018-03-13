@@ -6,13 +6,18 @@ let tweetFile = URL(fileURLWithPath: basePath + "tweet.json")
 let smallFile = URL(fileURLWithPath: basePath + "small_doc.json")
 let largeFile = URL(fileURLWithPath: basePath + "large_doc.json")
 
+func setup() throws -> (MongoDatabase, MongoCollection) {
+    let db = try MongoClient().db("perftest")
+    try db.drop()
+    return (db, try db.createCollection("corpus"))
+}
+
 public class SingleDocumentBenchmarks: XCTestCase {
 
     // average: 0.757 vs 0.711768
     func testRunCommand() throws {
         // setup 
-        let client = try MongoClient()
-        let db = try client.db("benchmarks")
+        let (db, _) = try setup()
         let command: Document = ["ismaster": true]
 
         measure {
@@ -26,11 +31,8 @@ public class SingleDocumentBenchmarks: XCTestCase {
     // average: 1.305 vs 1.094534
     func testFindOneById() throws {
         // setup
-        let client = try MongoClient()
-        let db = try client.db("perftest")
-        try db.drop()
+        let (db, collection) = try setup()
         let jsonString = try String(contentsOf: tweetFile, encoding: .utf8)
-        let collection = try db.createCollection("corpus")
 
         // Insert the document 10,000 times to the 'perftest' database in the 'corpus'
         //  collection using sequential _id values. (1 to 10,000)
@@ -59,10 +61,7 @@ public class SingleDocumentBenchmarks: XCTestCase {
     }
 
     func doInsertOneTest(file: URL, numDocs: Int) throws {
-        let client = try MongoClient()
-        let db = try client.db("perftest")
-        try db.drop()
-        let collection = try db.createCollection("corpus")
+        let (db, collection) = try setup()
         let jsonString = try String(contentsOf: file, encoding: .utf8)
 
         // Insert the document with the insertOne CRUD method. DO NOT manually add an _id field;
@@ -110,10 +109,7 @@ public class MultiDocumentBenchmarks: XCTestCase {
     // average: 0.027 vs 0.000988
     func testFindManyAndEmptyCursor() throws {
         // setup
-        let client = try MongoClient()
-        let db = try client.db("perftest")
-        try db.drop()
-        let collection = try db.createCollection("corpus")
+        let (db, collection) = try setup()
         let jsonString = try String(contentsOf: tweetFile, encoding: .utf8)
         for _ in 1...10000 {
             _ = try collection.insertOne(try Document(fromJSON: jsonString))
@@ -134,10 +130,7 @@ public class MultiDocumentBenchmarks: XCTestCase {
 
     func doBulkInsertTest(file: URL, numDocs: Int) throws {
         // setup
-        let client = try MongoClient()
-        let db = try client.db("perftest")
-        try db.drop()
-        let collection = try db.createCollection("corpus")
+        let (db, collection) = try setup()
         let jsonString = try String(contentsOf: file, encoding: .utf8)
 
         // Do an ordered 'insert_many' with `numDocs` copies of the document.
