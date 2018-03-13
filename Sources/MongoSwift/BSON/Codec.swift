@@ -282,7 +282,7 @@ private class MutableArray {
     /// Converts self to a `Document` where keys "0", "1", etc.
     /// correspond to array indices. 
     func asDocument() -> Document {
-        let doc = Document()
+        var doc = Document()
         for (i, v) in array.enumerated() {
             doc[String(i)] = getBsonValue(v)
         }
@@ -302,7 +302,7 @@ private class MutableDictionary {
 
     /// Converts self to a `Document` with equivalent key-value pairs.
     func asDocument() -> Document {
-        let doc = Document()
+        var doc = Document()
         for (k, v) in dictionary {
             doc[k] = getBsonValue(v)
         }

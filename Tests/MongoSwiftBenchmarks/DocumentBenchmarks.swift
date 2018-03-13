@@ -36,7 +36,7 @@ public class SingleDocumentBenchmarks: XCTestCase {
         //  collection using sequential _id values. (1 to 10,000)
         var toInsert = [Document]()
         for i in 1...10000 {
-            let document = try Document(fromJSON: jsonString)
+            var document = try Document(fromJSON: jsonString)
             document["_id"] = i
             toInsert.append(document)
         }

@@ -166,6 +166,6 @@ public class MongoDatabase {
         if !mongoc_database_command_with_opts(self._database, command.data, nil, opts?.data, reply, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
-        return Document(fromData: reply)
+        return Document(fromPointer: reply)
     }
 }
