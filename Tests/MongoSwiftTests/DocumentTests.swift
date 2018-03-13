@@ -108,6 +108,12 @@ final class DocumentTests: XCTestCase {
             "binary6": Binary(data: testData, subtype: BsonSubtype.user)
         ]
 
+        XCTAssertEqual(doc.count, 28)
+        XCTAssertEqual(doc.keys, ["string", "true", "false", "int", "int32", "int64", "double", "decimal128",
+                                "minkey", "maxkey", "date", "timestamp", "nestedarray", "nesteddoc", "oid",
+                                "regex", "array1", "array2", "null", "code", "codewscope", "binary0", "binary1",
+                                "binary2", "binary3", "binary4", "binary5", "binary6"])
+
         XCTAssertEqual(doc["string"] as? String, "test string")
         XCTAssertEqual(doc["true"] as? Bool, true)
         XCTAssertEqual(doc["false"] as? Bool, false)
@@ -177,6 +183,26 @@ final class DocumentTests: XCTestCase {
         XCTAssertEqual(doc2["hi"] as? Bool, true)
         XCTAssertEqual(doc2["hello"] as? String, "hi")
         XCTAssertEqual(doc2["cat"] as? Int, 2)
+
+    }
+
+    func testIterator() {
+        let doc: Document = [
+            "string": "test string",
+            "true": true,
+            "false": false,
+            "int": 25,
+            "int32": Int32(5),
+            "int64": Int64(10),
+            "double": Double(15),
+            "decimal128": Decimal128("1.2E+10"),
+            "minkey": MinKey(),
+            "maxkey": MaxKey(),
+            "date": Date(timeIntervalSince1970: 5000),
+            "timestamp": Timestamp(timestamp: 5, inc: 10)
+        ]
+
+        for (k, v) in doc { }
 
     }
 
