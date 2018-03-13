@@ -181,9 +181,7 @@ public class Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral
     subscript(key: String) -> BsonValue? {
         get {
             var iter: bson_iter_t = bson_iter_t()
-            if !bson_iter_init(&iter, data) { return nil }
-
-            if bson_iter_find(&iter, key.cString(using: .utf8)) {
+            if bson_iter_init_find(&iter, self.data, key.cString(using: .utf8)) {
                 return nextBsonValue(iter: &iter)
             }
             return nil
