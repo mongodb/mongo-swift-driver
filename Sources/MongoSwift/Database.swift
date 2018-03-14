@@ -158,7 +158,7 @@ public class MongoDatabase {
      *
      * - Returns: The server response for the command
      */
-    func runCommand(command: Document, options: RunCommandOptions? = nil) throws -> Document {
+    func runCommand(_ command: Document, options: RunCommandOptions? = nil) throws -> Document {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
         let reply: UnsafeMutablePointer<bson_t> = bson_new()

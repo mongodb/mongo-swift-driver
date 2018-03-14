@@ -22,7 +22,7 @@ public class SingleDocumentBenchmarks: XCTestCase {
         measure {
             // Run the command {ismaster:true} 10,000 times, reading (and discarding) the result each time.
             for _ in 1...10000 {
-                 do { _ = try db.runCommand(command: command) } catch { XCTFail("error \(error)") }
+                 do { _ = try db.runCommand(command) } catch { XCTFail("error \(error)") }
             }
         }
     }
