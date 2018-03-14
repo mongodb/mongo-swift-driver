@@ -14,7 +14,6 @@ func setup() throws -> (MongoDatabase, MongoCollection) {
 
 public class SingleDocumentBenchmarks: XCTestCase {
 
-    // average: 0.757 vs 0.711768
     func testRunCommand() throws {
         // setup 
         let (db, _) = try setup()
@@ -28,7 +27,6 @@ public class SingleDocumentBenchmarks: XCTestCase {
         }
     }
 
-    // average: 1.305 vs 1.094534
     func testFindOneById() throws {
         // setup
         let (db, collection) = try setup()
@@ -36,11 +34,14 @@ public class SingleDocumentBenchmarks: XCTestCase {
 
         // Insert the document 10,000 times to the 'perftest' database in the 'corpus'
         //  collection using sequential _id values. (1 to 10,000)
+        var toInsert = [Document]()
         for i in 1...10000 {
             let document = try Document(fromJSON: jsonString)
             document["_id"] = i
-            _ = try collection.insertOne(document)
+            toInsert.append(document)
         }
+
+        _ = try collection.insertMany(toInsert)
 
         // make sure the documents were actually inserted
         XCTAssertEqual(try collection.count([:]), 10000)
@@ -93,12 +94,10 @@ public class SingleDocumentBenchmarks: XCTestCase {
         try db.drop()
     }
 
-    // average: 1.429 vs 1.099623
     func testSmallDocInsertOne() throws {
         try doInsertOneTest(file: smallFile, numDocs: 10000)
     }
 
-    // average: 0.688 vs 0.430373
     func testLargeDocInsertOne() throws {
         try doInsertOneTest(file: largeFile, numDocs: 10)
     }
@@ -106,7 +105,6 @@ public class SingleDocumentBenchmarks: XCTestCase {
 
 public class MultiDocumentBenchmarks: XCTestCase {
 
-    // average: 0.027 vs 0.000988
     func testFindManyAndEmptyCursor() throws {
         // setup
         let (db, collection) = try setup()
@@ -121,7 +119,7 @@ public class MultiDocumentBenchmarks: XCTestCase {
         // Issue a find command on the 'corpus' collection with an empty filter expression. 
         // Retrieve (and discard) all documents from the cursor.
         measure {
-            do { for _ in try collection.find([:]) {} } catch { XCTFail("error \(error)") }
+            do { for _ in try collection.find() {} } catch { XCTFail("error \(error)") }
         }
 
         // teardown
@@ -159,12 +157,10 @@ public class MultiDocumentBenchmarks: XCTestCase {
         try db.drop()
     }
 
-    // average: 0.189 vs 0.244671
     func testSmallDocBulkInsert() throws {
         try doBulkInsertTest(file: smallFile, numDocs: 10000)
     }
 
-    // average: 0.696 vs 0.32657
     func testLargeDocBulkInsert() throws {
         try doBulkInsertTest(file: largeFile, numDocs: 10)
     }

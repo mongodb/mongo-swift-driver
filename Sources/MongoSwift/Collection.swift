@@ -495,7 +495,7 @@ public class MongoCollection {
      *
      * - Returns: A `MongoCursor` with the results
      */
-    func find(_ filter: Document, options: FindOptions? = nil) throws -> MongoCursor {
+    func find(_ filter: Document = [:], options: FindOptions? = nil) throws -> MongoCursor {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
         guard let cursor = mongoc_collection_find_with_opts(self._collection, filter.data, opts?.data, nil) else {
