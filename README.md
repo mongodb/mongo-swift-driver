@@ -112,10 +112,9 @@ for d in documents {
 
 ### Work With and Modify Documents
 ```swift
-let doc: Document = ["a": 1, "b": 2, "c": 3]
+var doc: Document = ["a": 1, "b": 2, "c": 3]
 
 print(doc) // prints `{"a" : 1, "b" : 2, "c" : 3}`
-
 print(doc["a"] ?? "") // prints `1`
 
 // Set a new value
