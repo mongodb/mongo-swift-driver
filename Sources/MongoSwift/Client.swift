@@ -104,7 +104,7 @@ public class MongoClient {
     public func listDatabases(options: ListDatabasesOptions? = nil) throws -> MongoCursor {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
-        guard let cursor = mongoc_client_find_databases_with_opts(self._client, opts?.data) else {
+        guard let cursor = mongoc_client_find_databases_with_opts(try unwrapClient(), opts?.data) else {
             throw MongoError.invalidResponse()
         }
         return MongoCursor(fromCursor: cursor, withClient: self)
@@ -119,9 +119,16 @@ public class MongoClient {
      * - Returns: a `MongoDatabase` corresponding to the provided database name
      */
     public func db(_ name: String) throws -> MongoDatabase {
-        guard let db = mongoc_client_get_database(self._client, name) else {
+        guard let db = mongoc_client_get_database(try unwrapClient(), name) else {
             throw MongoError.invalidClient()
         }
         return MongoDatabase(fromDatabase: db, withClient: self)
+    }
+
+    internal func unwrapClient() throws -> OpaquePointer {
+        guard let client = self._client else {
+            throw MongoError.invalidClient()
+        }
+        return client
     }
 }

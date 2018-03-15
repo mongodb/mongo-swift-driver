@@ -103,10 +103,10 @@ public class MongoDatabase {
      * Deinitializes a MongoDatabase, cleaning up the internal mongoc_database_t
      */
     deinit {
+        self._client = nil
         guard let database = self._database else { return }
         mongoc_database_destroy(database)
         self._database = nil
-        self._client = nil
     }
 
     /**
@@ -114,7 +114,7 @@ public class MongoDatabase {
      */
     public func drop() throws {
         var error = bson_error_t()
-        if !mongoc_database_drop(self._database, &error) {
+        if !mongoc_database_drop(try unwrapDatabase(), &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
     }
@@ -128,12 +128,13 @@ public class MongoDatabase {
      * - Returns: the requested `MongoCollection`
      */
     public func collection(_ name: String) throws -> MongoCollection {
-        guard let collection = mongoc_database_get_collection(self._database, name) else {
+        guard let collection = mongoc_database_get_collection(try unwrapDatabase(), name) else {
             throw MongoError.invalidCollection(message: "Could not get collection '\(name)'")
         }
         guard let client = self._client else {
             throw MongoError.invalidClient()
         }
+        _ = try client.unwrapClient()
         return MongoCollection(fromCollection: collection, withClient: client)
     }
 
@@ -150,12 +151,13 @@ public class MongoDatabase {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
         var error = bson_error_t()
-        guard let collection = mongoc_database_create_collection(self._database, name, opts?.data, &error) else {
+        guard let collection = mongoc_database_create_collection(try unwrapDatabase(), name, opts?.data, &error) else {
             throw MongoError.commandError(message: toErrorString(error))
         }
         guard let client = self._client else {
             throw MongoError.invalidClient()
         }
+        _ = try client.unwrapClient()
         return MongoCollection(fromCollection: collection, withClient: client)
     }
 
@@ -171,12 +173,13 @@ public class MongoDatabase {
     public func listCollections(options: ListCollectionsOptions? = nil) throws -> MongoCursor {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
-        guard let collections = mongoc_database_find_collections_with_opts(self._database, opts?.data) else {
+        guard let collections = mongoc_database_find_collections_with_opts(try unwrapDatabase(), opts?.data) else {
             throw MongoError.invalidResponse()
         }
         guard let client = self._client else {
             throw MongoError.invalidClient()
         }
+        _ = try client.unwrapClient()
         return MongoCursor(fromCursor: collections, withClient: client)
     }
 
@@ -194,9 +197,16 @@ public class MongoDatabase {
         let opts = try encoder.encode(options)
         let reply: UnsafeMutablePointer<bson_t> = bson_new()
         var error = bson_error_t()
-        if !mongoc_database_command_with_opts(self._database, command.data, nil, opts?.data, reply, &error) {
+        if !mongoc_database_command_with_opts(try unwrapDatabase(), command.data, nil, opts?.data, reply, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
         return Document(fromPointer: reply)
+    }
+
+    internal func unwrapDatabase() throws -> OpaquePointer {
+        guard let database = self._database else {
+            throw MongoError.invalidDatabase()
+        }
+        return database
     }
 }

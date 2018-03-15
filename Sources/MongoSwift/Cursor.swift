@@ -24,13 +24,13 @@ public class MongoCursor: Sequence, IteratorProtocol {
      * Close the cursor
      */
     public func close() {
+        self._client = nil
         guard let cursor = self._cursor else {
             return
         }
 
         mongoc_cursor_destroy(cursor)
         self._cursor = nil
-        self._client = nil
     }
 
     /**
@@ -43,15 +43,24 @@ public class MongoCursor: Sequence, IteratorProtocol {
             out.deallocate(capacity: 1)
         }
         var error = bson_error_t()
+        do { let cursor = try unwrapCursor()
 
-        if !mongoc_cursor_next(self._cursor, out) {
-            if mongoc_cursor_error(self._cursor, &error) {
+        if !mongoc_cursor_next(cursor, out) {
+            if mongoc_cursor_error(cursor, &error) {
                 print("cursor error: (domain: \(error.domain), code: \(error.code), message: \(toErrorString(error)))")
             }
 
             return nil
         }
 
-        return Document(fromPointer: UnsafeMutablePointer(mutating: out.pointee!))
+        return Document(fromData: UnsafeMutablePointer(mutating: out.pointee!))
+        } catch { return nil }
+    }
+
+    internal func unwrapCursor() throws -> OpaquePointer {
+        guard let cursor = self._cursor else {
+            throw MongoError.invalidCursor(message: "Invalid cursor")
+        }
+        return cursor
     }
 }

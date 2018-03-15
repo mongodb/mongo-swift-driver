@@ -470,13 +470,13 @@ public class MongoCollection {
         Deinitializes a MongoCollection, cleaning up the internal mongoc_collection_t
      */
     deinit {
+        self._client = nil
         guard let collection = self._collection else {
             return
         }
 
         mongoc_collection_destroy(collection)
         self._collection = nil
-        self._client = nil
     }
 
     /**
@@ -501,12 +501,13 @@ public class MongoCollection {
     public func find(_ filter: Document = [:], options: FindOptions? = nil) throws -> MongoCursor {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
-        guard let cursor = mongoc_collection_find_with_opts(self._collection, filter.data, opts?.data, nil) else {
+        guard let cursor = mongoc_collection_find_with_opts(try unwrapCollection(), filter.data, opts?.data, nil) else {
             throw MongoError.invalidResponse()
         }
         guard let client = self._client else {
             throw MongoError.invalidClient()
         }
+        _ = try client.unwrapClient()
         return MongoCursor(fromCursor: cursor, withClient: client)
     }
 
@@ -524,12 +525,13 @@ public class MongoCollection {
         let opts = try encoder.encode(options)
         let pipeline: Document = ["pipeline": pipeline]
         guard let cursor = mongoc_collection_aggregate(
-            self._collection, MONGOC_QUERY_NONE, pipeline.data, opts?.data, nil) else {
+            try unwrapCollection(), MONGOC_QUERY_NONE, pipeline.data, opts?.data, nil) else {
             throw MongoError.invalidResponse()
         }
         guard let client = self._client else {
             throw MongoError.invalidClient()
         }
+        _ = try client.unwrapClient()
         return MongoCursor(fromCursor: cursor, withClient: client)
     }
 
@@ -549,7 +551,7 @@ public class MongoCollection {
         // because we already encode skip and limit in the options,
         // pass in 0s so we don't get duplicate parameter errors.
         let count = mongoc_collection_count_with_opts(
-            self._collection, MONGOC_QUERY_NONE, filter.data, 0, 0, opts?.data, nil, &error)
+            try unwrapCollection(), MONGOC_QUERY_NONE, filter.data, 0, 0, opts?.data, nil, &error)
 
         if count == -1 { throw MongoError.commandError(message: toErrorString(error)) }
 
@@ -570,8 +572,10 @@ public class MongoCollection {
         guard let client = self._client else {
             throw MongoError.invalidClient()
         }
+        let clientPointer = try client.unwrapClient()
+        let collection = try unwrapCollection()
 
-        let collName = String(cString: mongoc_collection_get_name(self._collection))
+        let collName = String(cString: mongoc_collection_get_name(collection))
         let command: Document = [
             "distinct": collName,
             "key": fieldName,
@@ -583,7 +587,7 @@ public class MongoCollection {
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_read_command_with_opts(
-            self._collection, command.data, nil, opts?.data, reply.data, &error) {
+            collection, command.data, nil, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
 
@@ -599,7 +603,7 @@ public class MongoCollection {
         // mongoc_cursor_new_from_command_reply will bson_destroy the data we pass in,
         // so copy it to avoid destroying twice (already done in Document deinit)
         let fakeData = bson_copy(fakeReply.data)
-        guard let newCursor = mongoc_cursor_new_from_command_reply(client._client, fakeData, 0) else {
+        guard let newCursor = mongoc_cursor_new_from_command_reply(clientPointer, fakeData, 0) else {
             throw MongoError.invalidResponse()
         }
 
@@ -624,7 +628,8 @@ public class MongoCollection {
         if document["_id"] == nil {
             try ObjectId().encode(to: document.data, forKey: "_id")
         }
-        if !mongoc_collection_insert_one(self._collection, document.data, opts?.data, nil, &error) {
+        if !mongoc_collection_insert_one(try unwrapCollection(), document.data, opts?.data, nil, &error) {
+
             throw MongoError.commandError(message: toErrorString(error))
         }
         return InsertOneResult(insertedId: document["_id"]!)
@@ -652,7 +657,7 @@ public class MongoCollection {
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_insert_many(
-            self._collection, &docPointers, documents.count, opts?.data, reply.data, &error) {
+            try unwrapCollection(), &docPointers, documents.count, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
         return InsertManyResult(fromArray: documents.map { $0["_id"]! })
@@ -675,7 +680,7 @@ public class MongoCollection {
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_replace_one(
-            self._collection, filter.data, replacement.data, opts?.data, reply.data, &error) {
+            try unwrapCollection(), filter.data, replacement.data, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
         return UpdateResult(from: reply)
@@ -698,7 +703,7 @@ public class MongoCollection {
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_update_one(
-            self._collection, filter.data, update.data, opts?.data, reply.data, &error) {
+            try unwrapCollection(), filter.data, update.data, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
         return UpdateResult(from: reply)
@@ -721,7 +726,7 @@ public class MongoCollection {
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_update_many(
-            self._collection, filter.data, update.data, opts?.data, reply.data, &error) {
+            try unwrapCollection(), filter.data, update.data, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
         return UpdateResult(from: reply)
@@ -743,7 +748,7 @@ public class MongoCollection {
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_delete_one(
-            self._collection, filter.data, opts?.data, reply.data, &error) {
+            try unwrapCollection(), filter.data, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
         return DeleteResult(from: reply)
@@ -765,7 +770,7 @@ public class MongoCollection {
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_delete_many(
-            self._collection, filter.data, opts?.data, reply.data, &error) {
+            try unwrapCollection(), filter.data, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
         return DeleteResult(from: reply)
@@ -805,13 +810,14 @@ public class MongoCollection {
      * - Returns: The names of all the indexes that were created
      */
     public func createIndexes(_ forModels: [IndexModel]) throws -> [String] {
-        let collName = String(cString: mongoc_collection_get_name(self._collection))
+        let collection = try unwrapCollection()
+        let collName = String(cString: mongoc_collection_get_name(collection))
         let command: Document = [
             "createIndexes": collName,
             "indexes": try forModels.map { try BsonEncoder().encode($0) }
         ]
         var error = bson_error_t()
-        if !mongoc_collection_write_command_with_opts(self._collection, command.data, nil, nil, &error) {
+        if !mongoc_collection_write_command_with_opts(collection, command.data, nil, nil, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
 
@@ -827,7 +833,7 @@ public class MongoCollection {
      */
     public func dropIndex(_ name: String) throws {
         var error = bson_error_t()
-        if !mongoc_collection_drop_index(self._collection, name, &error) {
+        if !mongoc_collection_drop_index(try unwrapCollection(), name, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
     }
@@ -867,11 +873,12 @@ public class MongoCollection {
     }
 
     private func _dropIndexes(keys: Document? = nil) throws -> Document {
-        let collName = String(cString: mongoc_collection_get_name(self._collection))
+        let collection = try unwrapCollection()
+        let collName = String(cString: mongoc_collection_get_name(collection))
         let command: Document = ["dropIndexes": collName, "index": keys ?? "*"]
         let reply = Document()
         var error = bson_error_t()
-        if !mongoc_collection_write_command_with_opts(self._collection, command.data, nil, reply.data, &error) {
+        if !mongoc_collection_write_command_with_opts(collection, command.data, nil, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
 
@@ -884,12 +891,20 @@ public class MongoCollection {
      * - Returns: A `MongoCursor` over a collection of index names
      */
     public func listIndexes() throws -> MongoCursor {
-        guard let cursor = mongoc_collection_find_indexes_with_opts(self._collection, nil) else {
+        guard let cursor = mongoc_collection_find_indexes_with_opts(try unwrapCollection(), nil) else {
             throw MongoError.invalidResponse()
         }
         guard let client = self._client else {
             throw MongoError.invalidClient()
         }
+        _ = try client.unwrapClient()
         return MongoCursor(fromCursor: cursor, withClient: client)
+    }
+
+    internal func unwrapCollection() throws -> OpaquePointer {
+        guard let collection = self._collection else {
+            throw MongoError.invalidCollection(message: "Invalid collection")
+        }
+        return collection
     }
 }
