@@ -8,11 +8,13 @@ let package = Package(
     dependencies: [
         .package(url: "ssh://git@github.com/10gen/swift-bson", .branch("master")),
         .package(url: "ssh://git@github.com/10gen/swift-mongoc", .branch("master")),
-        .package(url: "https://github.com/Quick/Quick.git", majorVersion: 1, minor: 2),
-        .package(url: "https://github.com/Quick/Nimble.git", majorVersion: 7)
+        //.package(url: "https://github.com/Quick/Quick.git", from: "1.2.0"),
+        .package(url: "../Quick", .branch("test")),
+        .package(url: "https://github.com/Quick/Nimble.git", from: "7.0.3")
     ],
     targets: [
         .target(name: "MongoSwift", dependencies: ["libmongoc"]),
-        .testTarget(name: "MongoSwiftTests", dependencies: ["MongoSwift"])
+        .testTarget(name: "MongoSwiftTests", dependencies: ["MongoSwift", "Nimble", "Quick"])
+        //.testTarget(name: "MongoSwiftBenchmarks", dependencies: ["MongoSwift"])
     ]
 )

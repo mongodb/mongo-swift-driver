@@ -25,7 +25,7 @@ class DatabaseTests: QuickSpec {
 
             // create collection using runCommand
             let command: Document = ["create": "coll1"]
-            expect { try db.runCommand(command: command) }.to(equal(["ok": 1.0]))
+            expect { try db.runCommand(command) }.to(equal(["ok": 1.0]))
             expect { try db.collection("coll1") }.toNot(throwError())
 
             // create collection using createCollection

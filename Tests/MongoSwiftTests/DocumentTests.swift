@@ -184,6 +184,7 @@ class DocumentTests: QuickSpec {
             ]
 
             for (_, _) in doc { }
+
         }
 
         it("Should correctly create a document from raw BSON") {
