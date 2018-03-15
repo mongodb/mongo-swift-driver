@@ -17,18 +17,18 @@ final class DatabaseTests: XCTestCase {
     	let command: Document = ["create": "coll1"]
         let res = try db.runCommand(command)
         XCTAssertEqual(res["ok"] as? Double, 1.0)
-        let coll1 = try db.collection("coll1")
+        _ = try db.collection("coll1")
 
         // create collection using createCollection
-        let coll2 = try db.createCollection("coll2")
+        _ = try db.createCollection("coll2")
 
-    	let collections = try db.listCollections()
+    	_ = try db.listCollections()
 
         let opts = ListCollectionsOptions(filter: ["type": "view"] as Document, batchSize: nil, session: nil)
-        let views = try db.listCollections(options: opts)
+        _ = try db.listCollections(options: opts)
 
         try db.drop()
         let dbs = try client.listDatabases(options: ListDatabasesOptions(nameOnly: true))
-        XCTAssertFalse(dbs.contains {$0 as? String == "testDB"})
+        XCTAssertFalse(dbs.contains {$0["name"] as? String == "testDB"})
     }
 }
