@@ -46,9 +46,7 @@ public class MongoClient {
         }
 
         self._client = mongoc_client_new_from_uri(uri)
-        if self._client == nil {
-            throw MongoError.invalidClient()
-        }
+        _ = try unwrapClient()
     }
 
     /**
@@ -128,9 +126,6 @@ public class MongoClient {
     /// This function should be called rather than accessing self._client directly.
     /// It ensures that the `OpaquePointer` to a `mongoc_database_t` is still valid. 
     internal func unwrapClient() throws -> OpaquePointer {
-        guard let client = self._client else {
-            throw MongoError.invalidClient()
-        }
-        return client
+        return try unwrap(self._client, elseThrow: MongoError.invalidClient())
     }
 }

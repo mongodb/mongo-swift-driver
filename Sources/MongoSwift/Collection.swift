@@ -491,9 +491,11 @@ public class MongoCollection {
         }
     }
 
-    func getName() throws -> String {
-        let collection = try unwrapCollection()
-        return String(cString: mongoc_collection_get_name(collection))
+    /**
+     * Gets the name of this collection. Assumes that self._collection is valid.
+     */
+    internal func getName() -> String {
+        return String(cString: mongoc_collection_get_name(self._collection))
     }
 
     /**
@@ -511,9 +513,7 @@ public class MongoCollection {
         guard let cursor = mongoc_collection_find_with_opts(try unwrapCollection(), filter.data, opts?.data, nil) else {
             throw MongoError.invalidResponse()
         }
-        guard let client = self._client else {
-            throw MongoError.invalidClient()
-        }
+        let client = try unwrap(self._client, elseThrow: MongoError.invalidClient())
         _ = try client.unwrapClient()
         return MongoCursor(fromCursor: cursor, withClient: client)
     }
@@ -535,9 +535,7 @@ public class MongoCollection {
             try unwrapCollection(), MONGOC_QUERY_NONE, pipeline.data, opts?.data, nil) else {
             throw MongoError.invalidResponse()
         }
-        guard let client = self._client else {
-            throw MongoError.invalidClient()
-        }
+        let client = try unwrap(self._client, elseThrow: MongoError.invalidClient())
         _ = try client.unwrapClient()
         return MongoCursor(fromCursor: cursor, withClient: client)
     }
@@ -576,14 +574,12 @@ public class MongoCollection {
      * - Returns: A 'MongoCursor' containing the distinct values for the specified criteria
      */
     public func distinct(fieldName: String, filter: Document, options: DistinctOptions? = nil) throws -> MongoCursor {
-        guard let client = self._client else {
-            throw MongoError.invalidClient()
-        }
+        let client = try unwrap(self._client, elseThrow: MongoError.invalidClient())
         let clientPointer = try client.unwrapClient()
         let collection = try unwrapCollection()
 
         let command: Document = [
-            "distinct": try getName(),
+            "distinct": getName(),
             "key": fieldName,
             "query": filter
         ]
@@ -818,7 +814,7 @@ public class MongoCollection {
     public func createIndexes(_ forModels: [IndexModel]) throws -> [String] {
         let collection = try unwrapCollection()
         let command: Document = [
-            "createIndexes": try getName(),
+            "createIndexes": getName(),
             "indexes": try forModels.map { try BsonEncoder().encode($0) }
         ]
         var error = bson_error_t()
@@ -879,7 +875,7 @@ public class MongoCollection {
 
     private func _dropIndexes(keys: Document? = nil) throws -> Document {
         let collection = try unwrapCollection()
-        let command: Document = ["dropIndexes": try getName(), "index": keys ?? "*"]
+        let command: Document = ["dropIndexes": getName(), "index": keys ?? "*"]
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_write_command_with_opts(collection, command.data, nil, reply.data, &error) {
@@ -898,9 +894,7 @@ public class MongoCollection {
         guard let cursor = mongoc_collection_find_indexes_with_opts(try unwrapCollection(), nil) else {
             throw MongoError.invalidResponse()
         }
-        guard let client = self._client else {
-            throw MongoError.invalidClient()
-        }
+        let client = try unwrap(self._client, elseThrow: MongoError.invalidClient())
         _ = try client.unwrapClient()
         return MongoCursor(fromCursor: cursor, withClient: client)
     }
@@ -908,9 +902,6 @@ public class MongoCollection {
     /// This function should be called rather than accessing self._collection directly.
     /// It ensures that the `OpaquePointer` to a `mongoc_collection_t` is still valid. 
     internal func unwrapCollection() throws -> OpaquePointer {
-        guard let collection = self._collection else {
-            throw MongoError.invalidCollection()
-        }
-        return collection
+        return try unwrap(self._collection, elseThrow: MongoError.invalidCollection())
     }
 }

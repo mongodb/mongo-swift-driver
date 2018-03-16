@@ -132,9 +132,8 @@ public class MongoDatabase {
         guard let collection = mongoc_database_get_collection(try unwrapDatabase(), name) else {
             throw MongoError.invalidCollection()
         }
-        guard let client = self._client else {
-            throw MongoError.invalidClient()
-        }
+
+        let client = try unwrap(self._client, elseThrow: MongoError.invalidClient())
         _ = try client.unwrapClient()
         return MongoCollection(fromCollection: collection, withClient: client)
     }
@@ -155,9 +154,8 @@ public class MongoDatabase {
         guard let collection = mongoc_database_create_collection(try unwrapDatabase(), name, opts?.data, &error) else {
             throw MongoError.commandError(message: toErrorString(error))
         }
-        guard let client = self._client else {
-            throw MongoError.invalidClient()
-        }
+
+        let client = try unwrap(self._client, elseThrow: MongoError.invalidClient())
         _ = try client.unwrapClient()
         return MongoCollection(fromCollection: collection, withClient: client)
     }
@@ -177,9 +175,7 @@ public class MongoDatabase {
         guard let collections = mongoc_database_find_collections_with_opts(try unwrapDatabase(), opts?.data) else {
             throw MongoError.invalidResponse()
         }
-        guard let client = self._client else {
-            throw MongoError.invalidClient()
-        }
+        let client = try unwrap(self._client, elseThrow: MongoError.invalidClient())
         _ = try client.unwrapClient()
         return MongoCursor(fromCursor: collections, withClient: client)
     }
@@ -207,9 +203,6 @@ public class MongoDatabase {
     /// This function should be called rather than accessing self._database directly.
     /// It ensures that the `OpaquePointer` to a `mongoc_database_t` is still valid. 
     internal func unwrapDatabase() throws -> OpaquePointer {
-        guard let database = self._database else {
-            throw MongoError.invalidDatabase()
-        }
-        return database
+        return try unwrap(self._database, elseThrow: MongoError.invalidDatabase())
     }
 }
