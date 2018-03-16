@@ -458,6 +458,7 @@ public struct IndexOptions: BsonEncodable {
 public class MongoCollection {
     private var _collection = OpaquePointer(bitPattern: 1)
     private var _client: MongoClient?
+
     /**
         Initializes a new MongoCollection instance, not meant to be instantiated directly
      */
@@ -487,6 +488,11 @@ public class MongoCollection {
         if !mongoc_collection_drop(self._collection, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
+    }
+
+    func getName() throws -> String {
+        let collection = try unwrapCollection()
+        return String(cString: mongoc_collection_get_name(collection))
     }
 
     /**
@@ -575,9 +581,8 @@ public class MongoCollection {
         let clientPointer = try client.unwrapClient()
         let collection = try unwrapCollection()
 
-        let collName = String(cString: mongoc_collection_get_name(collection))
         let command: Document = [
-            "distinct": collName,
+            "distinct": try getName(),
             "key": fieldName,
             "query": filter
         ]
@@ -811,9 +816,8 @@ public class MongoCollection {
      */
     public func createIndexes(_ forModels: [IndexModel]) throws -> [String] {
         let collection = try unwrapCollection()
-        let collName = String(cString: mongoc_collection_get_name(collection))
         let command: Document = [
-            "createIndexes": collName,
+            "createIndexes": try getName(),
             "indexes": try forModels.map { try BsonEncoder().encode($0) }
         ]
         var error = bson_error_t()
@@ -874,8 +878,7 @@ public class MongoCollection {
 
     private func _dropIndexes(keys: Document? = nil) throws -> Document {
         let collection = try unwrapCollection()
-        let collName = String(cString: mongoc_collection_get_name(collection))
-        let command: Document = ["dropIndexes": collName, "index": keys ?? "*"]
+        let command: Document = ["dropIndexes": try getName(), "index": keys ?? "*"]
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_write_command_with_opts(collection, command.data, nil, reply.data, &error) {
