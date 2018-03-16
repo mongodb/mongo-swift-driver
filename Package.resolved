@@ -1,0 +1,25 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "libbson",
+        "repositoryURL": "ssh://git@github.com/10gen/swift-bson",
+        "state": {
+          "branch": "master",
+          "revision": "725977b1c0d3a9f7938d0bec0522edc6cdc95f83",
+          "version": null
+        }
+      },
+      {
+        "package": "libmongoc",
+        "repositoryURL": "ssh://git@github.com/10gen/swift-mongoc",
+        "state": {
+          "branch": "master",
+          "revision": "5e804353cdf36afda932aae831384f5c5afa88c3",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}
