@@ -94,6 +94,8 @@ let db = try client.db("myDB")
 let collection = try db.createCollection("myCollection")
 ```
 
+Note: we have included the client `connectionString` for clarity, but if connecting to the default `"mongodb://localhost:27017"`it may be omitted: `let client = try MongoClient()`.
+
 ### Create and Insert a Document
 ```swift
 let doc: Document = ["_id": 100, "a": 1, "b": 2, "c": 3]
