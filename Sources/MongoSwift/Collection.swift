@@ -460,7 +460,8 @@ public class MongoCollection {
     private var _client: MongoClient?
 
     /**
-        Initializes a new MongoCollection instance, not meant to be instantiated directly
+     *  Initializes a new MongoCollection instance. This assumes the caller has checked
+     *  the validity of the collection pointer and the client's internal pointer.
      */
     internal init(fromCollection: OpaquePointer, withClient: MongoClient) {
         self._collection = fromCollection

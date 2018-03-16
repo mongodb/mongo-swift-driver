@@ -6,7 +6,8 @@ public class MongoCursor: Sequence, IteratorProtocol {
     private var _client: MongoClient?
 
     /**
-     * Initializes a new MongoCursor instance, not meant to be instantiated directly
+     *  Initializes a new MongoCursor instance. This assumes the caller has checked
+     *  the validity of the cursor pointer and the client's internal pointer.
      */
     internal init(fromCursor: OpaquePointer, withClient: MongoClient) {
         self._cursor = fromCursor

@@ -92,7 +92,8 @@ public class MongoDatabase {
     private var _client: MongoClient?
 
     /**
-     * Initializes a new MongoDatabase instance, not meant to be instantiated directly
+     *  Initializes a new MongoDatabase instance. This assumes the caller has checked
+     *  the validity of the database pointer and the client's internal pointer.
      */
     internal init(fromDatabase: OpaquePointer, withClient: MongoClient) {
         self._database = fromDatabase
