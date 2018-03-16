@@ -129,7 +129,7 @@ public class MongoDatabase {
      */
     public func collection(_ name: String) throws -> MongoCollection {
         guard let collection = mongoc_database_get_collection(try unwrapDatabase(), name) else {
-            throw MongoError.invalidCollection(message: "Could not get collection '\(name)'")
+            throw MongoError.invalidCollection()
         }
         guard let client = self._client else {
             throw MongoError.invalidClient()
@@ -203,6 +203,8 @@ public class MongoDatabase {
         return Document(fromPointer: reply)
     }
 
+    /// This function should be called rather than accessing self._database directly.
+    /// It ensures that the `OpaquePointer` to a `mongoc_database_t` is still valid. 
     internal func unwrapDatabase() throws -> OpaquePointer {
         guard let database = self._database else {
             throw MongoError.invalidDatabase()

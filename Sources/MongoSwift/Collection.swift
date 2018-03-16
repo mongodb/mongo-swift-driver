@@ -901,9 +901,11 @@ public class MongoCollection {
         return MongoCursor(fromCursor: cursor, withClient: client)
     }
 
+    /// This function should be called rather than accessing self._collection directly.
+    /// It ensures that the `OpaquePointer` to a `mongoc_collection_t` is still valid. 
     internal func unwrapCollection() throws -> OpaquePointer {
         guard let collection = self._collection else {
-            throw MongoError.invalidCollection(message: "Invalid collection")
+            throw MongoError.invalidCollection()
         }
         return collection
     }

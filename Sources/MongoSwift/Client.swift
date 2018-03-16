@@ -30,7 +30,7 @@ public struct ListDatabasesOptions: BsonEncodable {
 
 // A MongoDB Client
 public class MongoClient {
-    internal var _client = OpaquePointer(bitPattern: 1)
+    private var _client = OpaquePointer(bitPattern: 1)
 
     /**
      * Create a new client connection to a MongoDB server
@@ -125,6 +125,8 @@ public class MongoClient {
         return MongoDatabase(fromDatabase: db, withClient: self)
     }
 
+    /// This function should be called rather than accessing self._client directly.
+    /// It ensures that the `OpaquePointer` to a `mongoc_database_t` is still valid. 
     internal func unwrapClient() throws -> OpaquePointer {
         guard let client = self._client else {
             throw MongoError.invalidClient()
