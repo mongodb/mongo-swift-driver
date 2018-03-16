@@ -65,7 +65,7 @@ final class CrudTests: XCTestCase {
                 // 4) verify that expected data is present
                 // 5) drop the collection to clean up
                 let collection = try db.collection("\(file.name)+\(i)")
-                try collection.insertMany(file.data)
+                _ = try collection.insertMany(file.data)
                 try test.execute(usingCollection: collection)
                 try test.verifyData(testCollection: collection, db: db)
                 try collection.drop()

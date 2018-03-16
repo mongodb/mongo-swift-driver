@@ -38,7 +38,7 @@ final class CollectionTests: XCTestCase {
         super.setUp()
         do {
             coll = try MongoClient().db("collectionTest").createCollection("coll1")
-            try coll.insertMany([doc1, doc2])
+            _ = try coll.insertMany([doc1, doc2])
         } catch {
             XCTFail("Setup failed: \(error)")
         }
@@ -73,11 +73,11 @@ final class CollectionTests: XCTestCase {
     }
 
     func testInsertOne() throws {
-        try coll.deleteMany([:])
+        _ = try coll.deleteMany([:])
         let result = try coll.insertOne(doc1)
         XCTAssertEqual(result?.insertedId as? Int, 1)
 
-        try coll.insertOne(doc2)
+        _ = try coll.insertOne(doc2)
         XCTAssertEqual(try coll.count(), 2)
 
         // try inserting a document without an ID to verify one is generated and returned
@@ -96,7 +96,7 @@ final class CollectionTests: XCTestCase {
         XCTAssertEqual(try coll.count(), 0)
         // insert something so we don't error when trying to drop
         // in the cleanup func
-        try coll.insertOne(doc1)
+        _ = try coll.insertOne(doc1)
     }
 
     func testInsertMany() throws {

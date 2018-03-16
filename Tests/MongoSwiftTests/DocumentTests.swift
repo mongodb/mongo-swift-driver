@@ -202,7 +202,7 @@ final class DocumentTests: XCTestCase {
             "timestamp": Timestamp(timestamp: 5, inc: 10)
         ]
 
-        for (k, v) in doc { }
+        for (_, _) in doc { }
 
     }
 
@@ -306,7 +306,7 @@ final class DocumentTests: XCTestCase {
                         }
 
                         // bson_to_canonical_extended_json(dB) = cEJ
-                        assertJsonEqual(try Document(fromBSON: dBData).canonicalExtendedJSON, cEJ)
+                        assertJsonEqual(Document(fromBSON: dBData).canonicalExtendedJSON, cEJ)
 
                         // bson_to_relaxed_extended_json(dB) = rEJ (if rEJ exists)
                         if let rEJ = validCase["relaxed_extjson"] as? String {

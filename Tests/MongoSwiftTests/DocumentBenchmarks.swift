@@ -67,7 +67,7 @@ public class SingleDocumentBenchmarks: XCTestCase {
 
         // Insert the document with the insertOne CRUD method. DO NOT manually add an _id field;
         // leave it to the driver or database. Repeat this `numDocs` times.
-        measureMetrics([XCTPerformanceMetric_WallClockTime],
+        measureMetrics([XCTPerformanceMetric.wallClockTime],
             automaticallyStartMeasuring: false, for: {
                 do {
                     // since we can't re-insert the same object, create `numDocs`
@@ -133,7 +133,7 @@ public class MultiDocumentBenchmarks: XCTestCase {
 
         // Do an ordered 'insert_many' with `numDocs` copies of the document.
         // DO NOT manually add an _id field; leave it to the driver or database.
-        measureMetrics([XCTPerformanceMetric_WallClockTime],
+        measureMetrics([XCTPerformanceMetric.wallClockTime],
             automaticallyStartMeasuring: false, for: {
                 do {
                     var documents = [Document]()

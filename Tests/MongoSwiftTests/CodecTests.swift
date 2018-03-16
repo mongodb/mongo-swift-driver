@@ -73,7 +73,7 @@ final class CodecTests: XCTestCase {
         let emptyOptions = ListDatabasesOptions(filter: nil, nameOnly: nil, session: nil)
         XCTAssertNil(try encoderNoNils.encode(emptyOptions))
 
-        XCTAssertEqual(try encoderWithNils.encode(emptyOptions) as? Document,
+        XCTAssertEqual(try encoderWithNils.encode(emptyOptions),
             ["session": nil, "filter": nil, "nameOnly": nil] as Document)
 
         let options = ListDatabasesOptions(filter: nil, nameOnly: true, session: nil)
