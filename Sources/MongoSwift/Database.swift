@@ -81,7 +81,7 @@ public class MongoDatabase {
     /**
      * Drops this database.
      */
-    func drop() throws {
+    public func drop() throws {
         var error = bson_error_t()
         if !mongoc_database_drop(self._database, &error) {
             throw MongoError.commandError(message: toErrorString(error))
@@ -96,7 +96,7 @@ public class MongoDatabase {
      *
      * - Returns: the requested `MongoCollection`
      */
-    func collection(_ name: String) throws -> MongoCollection {
+    public func collection(_ name: String) throws -> MongoCollection {
         guard let collection = mongoc_database_get_collection(self._database, name) else {
             throw MongoError.invalidCollection(message: "Could not get collection '\(name)'")
         }
@@ -115,7 +115,7 @@ public class MongoDatabase {
      *
      * - Returns: the newly created `MongoCollection`
      */
-    func createCollection(_ name: String, options: CreateCollectionOptions? = nil) throws -> MongoCollection {
+    public func createCollection(_ name: String, options: CreateCollectionOptions? = nil) throws -> MongoCollection {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
         var error = bson_error_t()
@@ -137,7 +137,7 @@ public class MongoDatabase {
      *
      * - Returns: a `MongoCursor` over an array of collections
      */
-    func listCollections(options: ListCollectionsOptions? = nil) throws -> MongoCursor {
+    public func listCollections(options: ListCollectionsOptions? = nil) throws -> MongoCursor {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
         guard let collections = mongoc_database_find_collections_with_opts(self._database, opts?.data) else {
@@ -158,7 +158,7 @@ public class MongoDatabase {
      *
      * - Returns: The server response for the command
      */
-    func runCommand(_ command: Document, options: RunCommandOptions? = nil) throws -> Document {
+    public func runCommand(_ command: Document, options: RunCommandOptions? = nil) throws -> Document {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
         let reply: UnsafeMutablePointer<bson_t> = bson_new()

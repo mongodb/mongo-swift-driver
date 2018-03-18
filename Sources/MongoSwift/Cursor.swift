@@ -23,7 +23,7 @@ public class MongoCursor: Sequence, IteratorProtocol {
     /**
      * Close the cursor
      */
-    func close() {
+    public func close() {
         guard let cursor = self._cursor else {
             return
         }
