@@ -61,14 +61,14 @@ public class MongoClient {
      *
      * - Returns: A `ClientSession` instance
      */
-    func startSession(options: SessionOptions) throws -> ClientSession {
+    public func startSession(options: SessionOptions) throws -> ClientSession {
         return ClientSession()
     }
 
     /**
      * Close the client
      */
-    func close() {
+    public func close() {
         guard let client = self._client else {
             return
         }
@@ -85,7 +85,7 @@ public class MongoClient {
      *
      * - Returns: A `MongoCursor` over documents describing the databases matching provided criteria
      */
-    func listDatabases(options: ListDatabasesOptions? = nil) throws -> MongoCursor {
+    public func listDatabases(options: ListDatabasesOptions? = nil) throws -> MongoCursor {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
         guard let cursor = mongoc_client_find_databases_with_opts(self._client, opts?.data) else {
@@ -102,7 +102,7 @@ public class MongoClient {
      *
      * - Returns: a `MongoDatabase` corresponding to the provided database name
      */
-    func db(_ name: String) throws -> MongoDatabase {
+    public func db(_ name: String) throws -> MongoDatabase {
         guard let db = mongoc_client_get_database(self._client, name) else {
             throw MongoError.invalidClient()
         }
