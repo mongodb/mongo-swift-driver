@@ -1,26 +1,18 @@
 @testable import MongoSwift
-import Quick
 import Nimble
+import XCTest
 
-class ClientTests: QuickSpec {
-
-    override func setUp() {
-         continueAfterFailure = false
+final class ClientTests: XCTestCase {
+    static var allTests: [(String, (ClientTests) -> () throws -> Void)] {
+        return [
+            ("testListDatabases", testListDatabases)
+        ]
     }
 
-    override func spec() {
-
-        it("Should successfully connect to a client") {
-            expect { try MongoClient() }.toNot(throwError())
-        }
-
-        it("Should correctly list databases") {
-            let client = try? MongoClient()
-            expect(client).toNot(beNil())
-            let databases = try? client!.listDatabases(options: ListDatabasesOptions(nameOnly: true))
-            expect(databases).toNot(beNil())
-            let expectedDbs: [Document] = [["name": "admin"], ["name": "config"], ["name": "local"]]
-            expect(Array(databases!) as [Document]).to(equal(expectedDbs))
-        }
+    func testListDatabases() throws {
+        let client = try MongoClient()
+        let databases = try client.listDatabases(options: ListDatabasesOptions(nameOnly: true))
+        let expectedDbs: [Document] = [["name": "admin"], ["name": "config"], ["name": "local"]]
+        expect(Array(databases) as [Document]).to(equal(expectedDbs))
     }
 }
