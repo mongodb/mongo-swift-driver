@@ -1,5 +1,5 @@
-import Foundation
 @testable import MongoSwift
+import Nimble
 import XCTest
 
 final class ClientTests: XCTestCase {
@@ -9,17 +9,10 @@ final class ClientTests: XCTestCase {
         ]
     }
 
-    func testListDatabases() {
-        guard let client = try? MongoClient(connectionString: "mongodb://localhost:27017/") else {
-            XCTAssert(false, "failed to create a client")
-            return
-        }
-
-        guard let databases = try? client.listDatabases(options: ListDatabasesOptions(nameOnly: true)) else {
-            XCTAssert(false, "failed to list databases")
-            return
-        }
-
-        XCTAssertTrue(!Array(databases).isEmpty)
+    func testListDatabases() throws {
+        let client = try MongoClient()
+        let databases = try client.listDatabases(options: ListDatabasesOptions(nameOnly: true))
+        let expectedDbs: [Document] = [["name": "admin"], ["name": "config"], ["name": "local"]]
+        expect(Array(databases) as [Document]).to(equal(expectedDbs))
     }
 }

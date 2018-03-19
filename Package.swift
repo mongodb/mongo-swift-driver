@@ -7,11 +7,12 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "ssh://git@github.com/10gen/swift-bson", .branch("master")),
-        .package(url: "ssh://git@github.com/10gen/swift-mongoc", .branch("master"))
+        .package(url: "ssh://git@github.com/10gen/swift-mongoc", .branch("master")),
+        .package(url: "https://github.com/Quick/Nimble.git", from: "7.0.3")
     ],
     targets: [
         .target(name: "MongoSwift", dependencies: ["libmongoc"]),
-        .testTarget(name: "MongoSwiftTests", dependencies: ["MongoSwift"])
+        .testTarget(name: "MongoSwiftTests", dependencies: ["MongoSwift", "Nimble"]),
+        .testTarget(name: "MongoSwiftBenchmarks", dependencies: ["MongoSwift"])
     ]
 )
-

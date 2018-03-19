@@ -3,8 +3,12 @@
 CFLAGS =
 LDFLAGS =
 
+# If FILTER is not provided, a default filter of `MongoSwiftTests` will be used.
+# Else, any test matching the filter in *either target* (MongoSwiftTests or MongoSwiftBenchmarks) will run.
 ifdef FILTER
 	FILTERARG = --filter $(FILTER)
+else
+	FILTERARG = --filter MongoSwiftTests
 endif
 
 all:
@@ -13,6 +17,9 @@ all:
 
 test:
 	swift test -v $(CFLAGS) $(LDFLAGS) $(FILTERARG)
+
+benchmark:
+	swift test -v $(CFLAGS) $(LDFLAGS) --filter MongoSwiftBenchmarks
 
 lint:
 	swiftlint

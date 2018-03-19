@@ -1,5 +1,6 @@
 @testable import MongoSwift
 import Foundation
+import Nimble
 import XCTest
 
 // Files to skip because we don't currently support the operations they test.
@@ -40,7 +41,7 @@ final class CrudTests: XCTestCase {
         do {
             try MongoClient().db("crudTests").drop()
         } catch {
-            XCTFail("Dropping test db crudTests failed: \(error)")
+            print("Dropping test db crudTests failed: \(error)")
         }
     }
 
@@ -177,14 +178,12 @@ private class CrudTest {
     // data is present. If there is no `collection` field, do nothing. 
     func verifyData(testCollection coll: MongoCollection, db: MongoDatabase) throws {
         guard let collection = self.collection else { return } // only  some tests have data to verify
-        let expectedData: [Document] = try collection.get("data")
         // if a name is not specified, check the current collection
         var collToCheck = coll
         if let name = collection["name"] as? String {
             collToCheck = try db.collection(name)
         }
-        let result = Array(try collToCheck.find([:]))
-        XCTAssertEqual(result, expectedData)
+        expect(Array(try collToCheck.find([:]))).to(equal(try collection.get("data")))
     }
 
     // Given an `UpdateResult`, verify that it matches the expected results in this `CrudTest`. 
@@ -192,9 +191,14 @@ private class CrudTest {
     // and `ReplaceOneTest`. 
     func verifyUpdateResult(_ result: UpdateResult?) {
         let expected = self.result as? Document
-        XCTAssertEqual(result?.matchedCount, expected?["matchedCount"] as? Int)
-        XCTAssertEqual(result?.modifiedCount, expected?["modifiedCount"] as? Int)
-        XCTAssertEqual(result?.upsertedId as? Int, expected?["upsertedId"] as? Int)
+        expect(result?.matchedCount).to(equal(expected?["matchedCount"] as? Int))
+        expect(result?.modifiedCount).to(equal(expected?["modifiedCount"] as? Int))
+        let upsertedId = result?.upsertedId as? Int
+        if upsertedId != nil {
+            expect(upsertedId).to(equal(expected?["upsertedId"] as? Int))
+        } else {
+            expect(expected?["upsertedId"] as? Int).to(beNil())
+        }
     }
 }
 
@@ -209,11 +213,10 @@ private class AggregateTest: CrudTest {
             // order to make the aggregation happen. there is nothing in
             // the cursor to verify, but verifyData() will check that the
             // $out collection has the new data.
-            XCTAssertEqual(cursor.next(), nil)
+            expect(cursor.next()).to(beNil())
         } else {
             // if not $out, verify that the cursor contains the expected documents. 
-            // swiftlint:disable:next force_cast (if it's an AggregateTest, result will always be [Document])
-            XCTAssertEqual(Array(cursor), self.result as! [Document])
+            expect(Array(cursor)).to(equal(self.result as? [Document]))
         }
     }
 }
@@ -224,7 +227,7 @@ private class CountTest: CrudTest {
         let filter: Document = try self.args.get("filter")
         let options = CountOptions(collation: self.collation, limit: self.limit, skip: self.skip)
         let result = try coll.count(filter, options: options)
-        XCTAssertEqual(result, self.result as? Int)
+        expect(result).to(equal(self.result as? Int))
     }
 }
 
@@ -241,7 +244,7 @@ private class DeleteTest: CrudTest {
         }
         let expected = self.result as? Document
         // the only value in a DeleteResult is `deletedCount`
-        XCTAssertEqual(result?.deletedCount, expected?["deletedCount"] as? Int)
+        expect(result?.deletedCount).to(equal(expected?["deletedCount"] as? Int))
     }
 }
 
@@ -253,8 +256,8 @@ private class DistinctTest: CrudTest {
         let options = DistinctOptions(collation: self.collation)
         let distinct = try coll.distinct(fieldName: fieldName, filter: filter ?? [:], options: options)
         // `distinct` returns a cursor with just one document: {values: [values...], ok: 1.0 }
-        XCTAssertEqual(distinct.next(), ["values": self.result, "ok": 1.0] as Document)
-        XCTAssertNil(distinct.next())
+        expect(distinct.next()).to(equal(["values": self.result, "ok": 1.0] as Document))
+        expect(distinct.next()).to(beNil())
     }
 }
 
@@ -265,8 +268,7 @@ private class FindTest: CrudTest {
         let options = FindOptions(batchSize: batchSize, collation: collation, limit: self.limit,
                                     skip: self.skip, sort: self.sort)
         let result = try Array(coll.find(filter, options: options))
-        // swiftlint:disable:next force_cast (if it's a FindTest, result will always be [Document])
-        XCTAssertEqual(result, self.result as! [Document])
+        expect(result).to(equal(self.result as? [Document]))
     }
 }
 
@@ -276,19 +278,17 @@ private class InsertManyTest: CrudTest {
         let docs: [Document] = try self.args.get("documents")
         let result = try coll.insertMany(docs)
 
-        guard let insertedIds = result?.insertedIds else {
-            XCTFail("InsertManyResult missing insertedIds")
-            return
-        }
+        let insertedIds = result?.insertedIds
+        expect(insertedIds).toNot(beNil())
 
         // Convert the result's [Int64: BsonValue] to a Document for easy comparison
         let reformattedResults = Document()
-        for (index, id) in insertedIds {
+        for (index, id) in insertedIds! {
             reformattedResults[String(index)] = id
         }
 
         let expected = self.result as? Document
-        XCTAssertEqual(expected?["insertedIds"] as? Document, reformattedResults)
+        expect(reformattedResults).to(equal(expected?["insertedIds"] as? Document))
     }
 }
 
@@ -297,7 +297,7 @@ private class InsertOneTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection) throws {
         let doc: Document = try self.args.get("document")
         let result = try coll.insertOne(doc)
-        XCTAssertEqual(doc["_id"] as? Int, result?.insertedId as? Int)
+        expect(doc["_id"] as? Int).to(equal(result?.insertedId as? Int))
     }
 }
 

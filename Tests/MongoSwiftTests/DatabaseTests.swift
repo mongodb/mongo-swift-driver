@@ -1,5 +1,5 @@
-import Foundation
 @testable import MongoSwift
+import Nimble
 import XCTest
 
 final class DatabaseTests: XCTestCase {
@@ -9,26 +9,28 @@ final class DatabaseTests: XCTestCase {
         ]
     }
 
-    func testDatabase() throws {
-		let client = try MongoClient(connectionString: "mongodb://localhost:27017/")
-		let db = try client.db("testDB")
+    override func setUp() {
+        continueAfterFailure = false
+    }
 
-        // create collection using runCommand
-    	let command: Document = ["create": "coll1"]
-        let res = try db.runCommand(command)
-        XCTAssertEqual(res["ok"] as? Double, 1.0)
-        _ = try db.collection("coll1")
+    func testDatabase() throws {
+        let client = try MongoClient(connectionString: "mongodb://localhost:27017/")
+        let db = try client.db("testDB")
+
+        let command: Document = ["create": "coll1"]
+        expect(try db.runCommand(command)).to(equal(["ok": 1.0]))
+        expect(try db.collection("coll1")).toNot(throwError())
 
         // create collection using createCollection
-        _ = try db.createCollection("coll2")
-
-    	_ = try db.listCollections()
+        expect(try db.createCollection("coll2")).toNot(throwError())
+        expect(try (Array(db.listCollections()) as [Document]).count).to(equal(2))
 
         let opts = ListCollectionsOptions(filter: ["type": "view"] as Document, batchSize: nil, session: nil)
-        _ = try db.listCollections(options: opts)
+        expect(try db.listCollections(options: opts)).to(beEmpty())
 
-        try db.drop()
+        expect(try db.drop()).toNot(throwError())
         let dbs = try client.listDatabases(options: ListDatabasesOptions(nameOnly: true))
-        XCTAssertFalse(dbs.contains {$0["name"] as? String == "testDB"})
+        let names = (Array(dbs) as [Document]).map { $0["name"] as? String ?? "" }
+        expect(names).toNot(contain(["testDB"]))
     }
 }

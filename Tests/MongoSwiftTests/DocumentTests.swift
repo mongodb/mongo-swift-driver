@@ -1,5 +1,6 @@
 import Foundation
 @testable import MongoSwift
+import Nimble
 import XCTest
 
 /// Useful extensions to the Data type for testing purposes
@@ -27,25 +28,42 @@ extension Data {
 }
 
 /// Cleans and normalizes a given JSON string for comparison purposes
-func clean(json: String) -> String {
+func clean(json: String?) -> String {
+
+    guard let str = json else { return "" }
     do {
-        let object = try JSONSerialization.jsonObject(with: json.data(using: .utf8)!, options: [])
+        let object = try JSONSerialization.jsonObject(with: str.data(using: .utf8)!, options: [])
         let data = try JSONSerialization.data(withJSONObject: object, options: [])
 
         guard let string = String(data: data, encoding: .utf8) else {
-            print("Unable to convert JSON data to Data: \(json)")
+            print("Unable to convert JSON data to Data: \(str)")
             return String()
         }
 
         return string
     } catch {
-        print("Failed to clean string: \(json)")
+        print("Failed to clean string: \(str)")
         return String()
     }
 }
 
-func assertJsonEqual(_ lhs: String, _ rhs: String) {
-    XCTAssertEqual(clean(json: lhs), clean(json: rhs))
+// Adds a custom "cleanEqual" predicate that compares two JSON strings for equality after normalizing
+// them with the "clean" function
+public func cleanEqual(_ expectedValue: String?) -> Predicate<String> {
+    return Predicate.define("cleanEqual <\(stringify(expectedValue))>") { actualExpression, msg in
+        let actualValue = try actualExpression.evaluate()
+        let matches = clean(json: actualValue) == clean(json: expectedValue) && expectedValue != nil
+        if expectedValue == nil || actualValue == nil {
+            if expectedValue == nil && actualValue != nil {
+                return PredicateResult(
+                    status: .fail,
+                    message: msg.appendedBeNilHint()
+                )
+            }
+            return PredicateResult(status: .fail, message: msg)
+        }
+        return PredicateResult(status: PredicateStatus(bool: matches), message: msg)
+    }
 }
 
 final class DocumentTests: XCTestCase {
@@ -53,28 +71,23 @@ final class DocumentTests: XCTestCase {
         return [
             ("testDocument", testDocument),
             ("testEquatable", testEquatable),
+            ("testIterator", testIterator),
             ("testRawBSON", testRawBSON),
             ("testBSONCorpus", testBSONCorpus)
         ]
     }
 
-    func testDocument() {
+    func testDocument() throws {
         // A Data object to pass into test BSON Binary objects
         guard let testData = Data(base64Encoded: "//8=") else {
-            XCTAssert(false, "Failed to create test binary data")
+            XCTFail("Failed to create test binary data")
             return
         }
 
         // Since the NSRegularExpression constructor can throw, create the
         // regex separately first
-        let regex: NSRegularExpression?
         let opts = NSRegularExpression.optionsFromString("imx")
-        do {
-            regex = try NSRegularExpression(pattern: "^abc", options: opts)
-        } catch {
-            XCTAssert(false, "Failed to create test NSRegularExpression")
-            return
-        }
+        let regex = try NSRegularExpression(pattern: "^abc", options: opts)
 
         // Set up test document values
         let doc: Document = [
@@ -108,82 +121,55 @@ final class DocumentTests: XCTestCase {
             "binary6": Binary(data: testData, subtype: BsonSubtype.user)
         ]
 
-        XCTAssertEqual(doc.count, 28)
-        XCTAssertEqual(doc.keys, ["string", "true", "false", "int", "int32", "int64", "double", "decimal128",
+        expect(doc.count).to(equal(28))
+        expect(doc.keys).to(equal(["string", "true", "false", "int", "int32", "int64", "double", "decimal128",
                                 "minkey", "maxkey", "date", "timestamp", "nestedarray", "nesteddoc", "oid",
                                 "regex", "array1", "array2", "null", "code", "codewscope", "binary0", "binary1",
-                                "binary2", "binary3", "binary4", "binary5", "binary6"])
+                                "binary2", "binary3", "binary4", "binary5", "binary6"]))
 
-        XCTAssertEqual(doc["string"] as? String, "test string")
-        XCTAssertEqual(doc["true"] as? Bool, true)
-        XCTAssertEqual(doc["false"] as? Bool, false)
-        XCTAssertEqual(doc["int"] as? Int, 25)
-        XCTAssertEqual(doc["int32"] as? Int, 5)
-        XCTAssertEqual(doc["int64"] as? Int64, 10)
-        XCTAssertEqual(doc["double"] as? Double, 15)
-        XCTAssertEqual(doc["decimal128"] as? Decimal128, Decimal128("1.2E+10"))
-        XCTAssertEqual(doc["minkey"] as? MinKey, MinKey())
-        XCTAssertEqual(doc["maxkey"] as? MaxKey, MaxKey())
-        XCTAssertEqual(doc["date"] as? Date, Date(timeIntervalSince1970: 5000))
-        XCTAssertEqual(doc["timestamp"] as? Timestamp, Timestamp(timestamp: 5, inc: 10))
-        XCTAssertEqual(doc["oid"] as? ObjectId, ObjectId(from: "507f1f77bcf86cd799439011"))
+        expect(doc["string"] as? String).to(equal("test string"))
+        expect(doc["true"] as? Bool).to(beTrue())
+        expect(doc["false"] as? Bool).to(beFalse())
+        expect(doc["int"] as? Int).to(equal(25))
+        expect(doc["int32"] as? Int).to(equal(5))
+        expect(doc["int64"] as? Int64).to(equal(10))
+        expect(doc["double"] as? Double).to(equal(15))
+        expect(doc["decimal128"] as? Decimal128).to(equal(Decimal128("1.2E+10")))
+        expect(doc["minkey"] as? MinKey).to(beAnInstanceOf(MinKey.self))
+        expect(doc["maxkey"] as? MaxKey).to(beAnInstanceOf(MaxKey.self))
+        expect(doc["date"] as? Date).to(equal(Date(timeIntervalSince1970: 5000)))
+        expect(doc["timestamp"] as? Timestamp).to(equal(Timestamp(timestamp: 5, inc: 10)))
+        expect(doc["oid"] as? ObjectId).to(equal(ObjectId(from: "507f1f77bcf86cd799439011")))
 
-        let regexReturned = doc["regex"] as! NSRegularExpression
-        XCTAssertEqual(regexReturned.pattern as String, "^abc")
-        XCTAssertEqual(regexReturned.stringOptions as String, "imx")
+        let regexReturned = doc["regex"] as? NSRegularExpression
+        expect(regexReturned?.pattern).to(equal("^abc"))
+        expect(regexReturned?.stringOptions).to(equal("imx"))
 
-        XCTAssertEqual(doc["array1"] as! [Int], [1, 2])
-        XCTAssertEqual(doc["array2"] as! [String], ["string1", "string2"])
-        XCTAssertNil(doc["null"])
+        expect(doc["array1"] as? [Int]).to(equal([1, 2]))
+        expect(doc["array2"] as? [String]).to(equal(["string1", "string2"]))
+        expect(doc["null"]).to(beNil())
 
-        guard let code = doc["code"] as? CodeWithScope else {
-            XCTAssert(false, "Failed to get CodeWithScope value")
-            return
-        }
-        XCTAssertEqual(code.code, "console.log('hi');")
-        XCTAssertNil(code.scope)
+        let code = doc["code"] as? CodeWithScope
+        expect(code?.code).to(equal("console.log('hi');"))
+        expect(code?.scope).to(beNil())
 
-        guard let codewscope = doc["codewscope"] as? CodeWithScope else {
-            XCTAssert(false, "Failed to get CodeWithScope with scope value")
-            return
-        }
-        XCTAssertEqual(codewscope.code, "console.log(x);")
-        guard let scope = codewscope.scope else {
-            XCTAssert(false, "Failed to get scope value")
-            return
-        }
-        XCTAssertEqual(scope["x"] as? Int, 2)
+        let codewscope = doc["codewscope"] as? CodeWithScope
+        expect(codewscope?.code).to(equal("console.log(x);"))
+        expect(codewscope?.scope).to(equal(["x": 2]))
 
-        XCTAssertEqual(doc["binary0"] as? Binary, Binary(data: testData, subtype: BsonSubtype.binary))
-        XCTAssertEqual(doc["binary1"] as? Binary, Binary(data: testData, subtype: BsonSubtype.function))
-        XCTAssertEqual(doc["binary2"] as? Binary, Binary(data: testData, subtype: BsonSubtype.binaryDeprecated))
-        XCTAssertEqual(doc["binary3"] as? Binary, Binary(data: testData, subtype: BsonSubtype.uuidDeprecated))
-        XCTAssertEqual(doc["binary4"] as? Binary, Binary(data: testData, subtype: BsonSubtype.uuid))
-        XCTAssertEqual(doc["binary5"] as? Binary, Binary(data: testData, subtype: BsonSubtype.md5))
-        XCTAssertEqual(doc["binary6"] as? Binary, Binary(data: testData, subtype: BsonSubtype.user))
+        expect(doc["binary0"] as? Binary).to(equal(Binary(data: testData, subtype: BsonSubtype.binary)))
+        expect(doc["binary1"] as? Binary).to(equal(Binary(data: testData, subtype: BsonSubtype.function)))
+        expect(doc["binary2"] as? Binary).to(equal(Binary(data: testData, subtype: BsonSubtype.binaryDeprecated)))
+        expect(doc["binary3"] as? Binary).to(equal(Binary(data: testData, subtype: BsonSubtype.uuidDeprecated)))
+        expect(doc["binary4"] as? Binary).to(equal(Binary(data: testData, subtype: BsonSubtype.uuid)))
+        expect(doc["binary5"] as? Binary).to(equal(Binary(data: testData, subtype: BsonSubtype.md5)))
+        expect(doc["binary6"] as? Binary).to(equal(Binary(data: testData, subtype: BsonSubtype.user)))
 
-        guard let nestedArray = doc["nestedarray"] as? [[Int]] else {
-            XCTAssert(false, "Failed to get nested array")
-            return
-        }
-        XCTAssertEqual(nestedArray.count, 2)
-        XCTAssertEqual(nestedArray[0], [1, 2])
-        XCTAssertEqual(nestedArray[1], [3, 4])
+        let nestedArray = doc["nestedarray"] as? [[Int]]
+        expect(nestedArray?[0]).to(equal([1, 2]))
+        expect(nestedArray?[1]).to(equal([3, 4]))
 
-        guard let nestedDoc = doc["nesteddoc"] as? Document else {
-            XCTAssert(false, "Failed to get nested document")
-            return
-        }
-        XCTAssertEqual(nestedDoc["a"] as? Int, 1)
-        XCTAssertEqual(nestedDoc["b"] as? Int, 2)
-        XCTAssertEqual(nestedDoc["c"] as? Bool, false)
-        XCTAssertEqual(nestedDoc["d"] as! [Int], [3, 4])
-
-        let doc2 = Document(["hi": true, "hello": "hi", "cat": 2])
-        XCTAssertEqual(doc2["hi"] as? Bool, true)
-        XCTAssertEqual(doc2["hello"] as? String, "hi")
-        XCTAssertEqual(doc2["cat"] as? Int, 2)
-
+        expect(doc["nesteddoc"] as? Document).to(equal(["a": 1, "b": 2, "c": false, "d": [3, 4]]))
     }
 
     func testIterator() {
@@ -207,21 +193,18 @@ final class DocumentTests: XCTestCase {
     }
 
     func testEquatable() {
-        XCTAssertEqual(
-            ["hi": true, "hello": "hi", "cat": 2] as Document,
-            ["hi": true, "hello": "hi", "cat": 2] as Document
-        )
+        expect(["hi": true, "hello": "hi", "cat": 2] as Document)
+        .to(equal(["hi": true, "hello": "hi", "cat": 2] as Document))
     }
 
-    func testRawBSON() {
-        let doc = try? Document(fromJSON: "{\"a\" : [{\"$numberInt\": \"10\"}]}")
-        let rawBson = doc!.rawBSON
-        let fromRawBson = Document(fromBSON: rawBson)
-        XCTAssertEqual(doc, fromRawBson)
+    func testRawBSON() throws {
+        let doc = try Document(fromJSON: "{\"a\" : [{\"$numberInt\": \"10\"}]}")
+        let fromRawBson = Document(fromBSON: doc.rawBSON)
+        expect(doc).to(equal(fromRawBson))
     }
 
     // swiftlint:disable:next cyclomatic_complexity
-    func testBSONCorpus() {
+    func testBSONCorpus() throws {
         let SKIPPED_CORPUS_TESTS = [
             /* CDRIVER-1879, can't make Code with embedded NIL */
             "Javascript Code": ["Embedded nulls"],
@@ -232,108 +215,104 @@ final class DocumentTests: XCTestCase {
             "Double type": ["1.23456789012345677E+18", "-1.23456789012345677E+18"]
         ]
 
-        do {
-            var testFiles = try FileManager.default.contentsOfDirectory(atPath: "Tests/Specs/bson-corpus/tests")
-            testFiles = testFiles.filter { $0.hasSuffix(".json") }
+        var testFiles = try FileManager.default.contentsOfDirectory(atPath: "Tests/Specs/bson-corpus/tests")
+        testFiles = testFiles.filter { $0.hasSuffix(".json") }
 
-            for fileName in testFiles {
-                let testFilePath = URL(fileURLWithPath: "Tests/Specs/bson-corpus/tests/\(fileName)")
-                let testFileData = try String(contentsOf: testFilePath, encoding: .utf8)
-                let testFileJson = try JSONSerialization.jsonObject(with: testFileData.data(using: .utf8)!, options: [])
-                guard let json = testFileJson as? [String: Any] else {
-                    XCTAssert(false, "Unable to convert json to dictionary")
+        for fileName in testFiles {
+            let testFilePath = URL(fileURLWithPath: "Tests/Specs/bson-corpus/tests/\(fileName)")
+            let testFileData = try String(contentsOf: testFilePath, encoding: .utf8)
+            let testFileJson = try JSONSerialization.jsonObject(with: testFileData.data(using: .utf8)!, options: [])
+            guard let json = testFileJson as? [String: Any] else {
+                XCTFail("Unable to convert json to dictionary")
+                return
+            }
+
+            let testFileDescription = json["description"] as? String ?? "no description"
+            guard let validCases = json["valid"] as? [Any] else {
+                continue // there are no valid cases defined in this file
+            }
+
+            for valid in validCases {
+                guard let validCase = valid as? [String: Any] else {
+                    XCTFail("Unable to interpret valid case as dictionary")
                     return
                 }
 
-                let testFileDescription = json["description"] as? String ?? "no description"
-                guard let validCases = json["valid"] as? [Any] else {
-                    continue // there are no valid cases defined in this file
+                let description = validCase["description"] as? String ?? "no description"
+                if let skippedTests = SKIPPED_CORPUS_TESTS[testFileDescription] {
+                    if skippedTests.contains(description) {
+                        continue
+                    }
                 }
 
-                for valid in validCases {
-                    guard let validCase = valid as? [String: Any] else {
-                        XCTFail("Unable to interpret valid case as dictionary")
+                let cB = validCase["canonical_bson"] as? String ?? ""
+                guard let cBData = Data(hexString: cB) else {
+                    XCTFail("Unable to interpret canonical_bson as Data")
+                    return
+                }
+
+                let cEJ = validCase["canonical_extjson"] as? String ?? ""
+                guard let cEJData = cEJ.data(using: .utf8) else {
+                    XCTFail("Unable to interpret canonical_extjson as Data")
+                    return
+                }
+
+                let lossy = validCase["lossy"] as? Bool ?? false
+
+                // for cB input:
+                // native_to_bson( bson_to_native(cB) ) = cB
+                expect(Document(fromBSON: cBData).rawBSON).to(equal(cBData))
+
+                // native_to_canonical_extended_json( bson_to_native(cB) ) = cEJ
+                expect(Document(fromBSON: cBData).canonicalExtendedJSON).to(cleanEqual(cEJ))
+
+                // native_to_relaxed_extended_json( bson_to_native(cB) ) = rEJ (if rEJ exists)
+                if let rEJ = validCase["relaxed_extjson"] as? String {
+                     expect(Document(fromBSON: cBData).extendedJSON).to(cleanEqual(rEJ))
+                }
+
+                // for cEJ input:
+                // native_to_canonical_extended_json( json_to_native(cEJ) ) = cEJ
+                expect(try Document(fromJSON: cEJData).canonicalExtendedJSON).to(cleanEqual(cEJ))
+
+                // native_to_canonical_extended_json( json_to_native(cEJ) ) = cEJ
+                if !lossy {
+                    expect(try Document(fromJSON: cEJData).rawBSON).to(equal(cBData))
+                }
+
+                // for dB input (if it exists):
+                if let dB = validCase["degenerate_bson"] as? String {
+                    guard let dBData = Data(hexString: dB) else {
+                        XCTFail("Unable to interpret degenerate_bson as Data")
                         return
                     }
 
-                    let description = validCase["description"] as? String ?? "no description"
-                    if let skippedTests = SKIPPED_CORPUS_TESTS[testFileDescription] {
-                        if skippedTests.contains(description) {
-                            continue
-                        }
-                    }
+                    // bson_to_canonical_extended_json(dB) = cEJ
+                    expect(Document(fromBSON: dBData).canonicalExtendedJSON).to(cleanEqual(cEJ))
 
-                    let cB = validCase["canonical_bson"] as? String ?? ""
-                    guard let cBData = Data(hexString: cB) else {
-                        XCTFail("Unable to interpret canonical_bson as Data")
-                        return
-                    }
-
-                    let cEJ = validCase["canonical_extjson"] as? String ?? ""
-                    guard let cEJData = cEJ.data(using: .utf8) else {
-                        XCTFail("Unable to interpret canonical_extjson as Data")
-                        return
-                    }
-
-                    let lossy = validCase["lossy"] as? Bool ?? false
-
-                    // for cB input:
-                    // native_to_bson( bson_to_native(cB) ) = cB
-                    XCTAssertEqual(Document(fromBSON: cBData).rawBSON, cBData)
-
-                    // native_to_canonical_extended_json( bson_to_native(cB) ) = cEJ
-                    assertJsonEqual(Document(fromBSON: cBData).canonicalExtendedJSON, cEJ)
-
-                    // native_to_relaxed_extended_json( bson_to_native(cB) ) = rEJ (if rEJ exists)
+                    // bson_to_relaxed_extended_json(dB) = rEJ (if rEJ exists)
                     if let rEJ = validCase["relaxed_extjson"] as? String {
-                        assertJsonEqual(Document(fromBSON: cBData).extendedJSON, rEJ)
+                        expect(Document(fromBSON: dBData).extendedJSON).to(cleanEqual(rEJ))
                     }
+                }
 
-                    // for cEJ input:
-                    // native_to_canonical_extended_json( json_to_native(cEJ) ) = cEJ
-                    assertJsonEqual(try Document(fromJSON: cEJData).canonicalExtendedJSON, cEJ)
+                // for dEJ input (if it exists):
+                if let dEJ = validCase["degenerate_extjson"] as? String {
+                    // native_to_canonical_extended_json( json_to_native(dEJ) ) = cEJ
+                    expect(try Document(fromJSON: dEJ).canonicalExtendedJSON).to(cleanEqual(cEJ))
 
-                    // native_to_canonical_extended_json( json_to_native(cEJ) ) = cEJ
+                    // native_to_bson( json_to_native(dEJ) ) = cB (unless lossy)
                     if !lossy {
-                        XCTAssertEqual(try Document(fromJSON: cEJData).rawBSON, cBData)
+                        expect(try Document(fromJSON: dEJ).rawBSON).to(equal(cBData))
                     }
+                }
 
-                    // for dB input (if it exists):
-                    if let dB = validCase["degenerate_bson"] as? String {
-                        guard let dBData = Data(hexString: dB) else {
-                            XCTFail("Unable to interpret degenerate_bson as Data")
-                            return
-                        }
-
-                        // bson_to_canonical_extended_json(dB) = cEJ
-                        assertJsonEqual(Document(fromBSON: dBData).canonicalExtendedJSON, cEJ)
-
-                        // bson_to_relaxed_extended_json(dB) = rEJ (if rEJ exists)
-                        if let rEJ = validCase["relaxed_extjson"] as? String {
-                            assertJsonEqual(Document(fromBSON: dBData).extendedJSON, rEJ)
-                        }
-                    }
-
-                    // for dEJ input (if it exists):
-                    if let dEJ = validCase["degenerate_extjson"] as? String {
-                        // native_to_canonical_extended_json( json_to_native(dEJ) ) = cEJ
-                        assertJsonEqual(try Document(fromJSON: dEJ).canonicalExtendedJSON, cEJ)
-
-                        // native_to_bson( json_to_native(dEJ) ) = cB (unless lossy)
-                        if !lossy {
-                            XCTAssertEqual(try Document(fromJSON: dEJ).rawBSON, cBData)
-                        }
-                    }
-
-                    // for rEJ input (if it exists):
-                    if let rEJ = validCase["relaxed_extjson"] as? String {
-                        // native_to_relaxed_extended_json( json_to_native(rEJ) ) = rEJ
-                        assertJsonEqual(try Document(fromJSON: rEJ).extendedJSON, rEJ)
-                    }
+                // for rEJ input (if it exists):
+                if let rEJ = validCase["relaxed_extjson"] as? String {
+                    // native_to_relaxed_extended_json( json_to_native(rEJ) ) = rEJ
+                    expect(try Document(fromJSON: rEJ).extendedJSON).to(cleanEqual(rEJ))
                 }
             }
-        } catch {
-            XCTFail("Test setup failed: \(error)")
         }
     }
 }
