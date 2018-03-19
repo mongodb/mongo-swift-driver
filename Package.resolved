@@ -11,15 +11,6 @@
         }
       },
       {
-        "package": "Quick",
-        "repositoryURL": "/Users/kaitlinmahar/Quick",
-        "state": {
-          "branch": "test",
-          "revision": "6c22812bfd5a354384a5c5447e3e7840483b1c0b",
-          "version": null
-        }
-      },
-      {
         "package": "libbson",
         "repositoryURL": "ssh://git@github.com/10gen/swift-bson",
         "state": {
