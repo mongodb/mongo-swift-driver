@@ -283,7 +283,7 @@ private class InsertManyTest: CrudTest {
 
         // Convert the result's [Int64: BsonValue] to a Document for easy comparison
         var reformattedResults = Document()
-        for (index, id) in insertedIds {
+        for (index, id) in insertedIds! {
             reformattedResults[String(index)] = id
         }
 
