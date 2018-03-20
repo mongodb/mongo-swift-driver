@@ -2,3 +2,4 @@ disabled_rules:
   - file_length
   - function_body_length
   - identifier_name
+  - todo
