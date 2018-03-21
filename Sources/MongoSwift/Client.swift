@@ -47,6 +47,17 @@ public class MongoClient {
     }
 
     /**
+     * Create a new client from an existing `mongoc_client_t`.
+     * Do not use this initialier unless you know what you are doing.
+     *
+     * - Parameters:
+     *   - fromPointer: the `mongoc_client_t` to store and use internally
+     */
+    public init(fromPointer: OpaquePointer) {
+        self._client = fromPointer
+    }
+
+    /**
      * Cleanup the internal mongoc_client_t
      */
     deinit {
