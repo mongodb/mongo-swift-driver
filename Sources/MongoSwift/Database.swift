@@ -3,6 +3,11 @@ import libmongoc
 public struct RunCommandOptions: BsonEncodable {
     /// A session to associate with this operation
     let session: ClientSession?
+
+    /// Convenience initializer allowing session to be omitted or optional
+    public init(session: ClientSession? = nil) {
+        self.session = session
+    }
 }
 
 public struct ListCollectionsOptions: BsonEncodable {
@@ -14,6 +19,13 @@ public struct ListCollectionsOptions: BsonEncodable {
 
     /// A session to associate with this operation
     let session: ClientSession?
+
+    /// Convenience initializer allowing any/all parameters to be omitted or optional
+    public init(batchSize: Int? = nil, filter: Document? = nil, session: ClientSession? = nil) {
+        self.batchSize = batchSize
+        self.filter = filter
+        self.session = session
+    }
 }
 
 public struct CreateCollectionOptions: BsonEncodable {
@@ -53,6 +65,25 @@ public struct CreateCollectionOptions: BsonEncodable {
 
     /// A session to associate with this operation
     let session: ClientSession?
+
+    /// Convenience initializer allowing any/all parameters to be omitted or optional
+    public init(autoIndexId: Bool? = nil, capped: Bool? = nil, collation: Document? = nil,
+                indexOptionDefaults: Document? = nil, max: IntType? = nil, session: ClientSession? = nil,
+                size: IntType? = nil, storageEngine: Document? = nil, validationAction: String? = nil,
+                validationLevel: String? = nil, validator: Document? = nil, viewOn: String? = nil) {
+        self.autoIndexId = autoIndexId
+        self.capped = capped
+        self.collation = collation
+        self.indexOptionDefaults = indexOptionDefaults
+        self.max = max?.int64Value
+        self.session = session
+        self.size = size?.int64Value
+        self.storageEngine = storageEngine
+        self.validationAction = validationAction
+        self.validationLevel = validationLevel
+        self.validator = validator
+        self.viewOn = viewOn
+    }
 }
 
 // A MongoDB Database

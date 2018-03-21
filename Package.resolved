@@ -12,19 +12,19 @@
       },
       {
         "package": "libbson",
-        "repositoryURL": "ssh://git@github.com/10gen/swift-bson",
+        "repositoryURL": "https://github.com/mongodb/swift-bson",
         "state": {
           "branch": "master",
-          "revision": "725977b1c0d3a9f7938d0bec0522edc6cdc95f83",
+          "revision": "077a71336aead18a26223b6c3c07f94478c7921a",
           "version": null
         }
       },
       {
         "package": "libmongoc",
-        "repositoryURL": "ssh://git@github.com/10gen/swift-mongoc",
+        "repositoryURL": "https://github.com/mongodb/swift-mongoc",
         "state": {
           "branch": "master",
-          "revision": "5e804353cdf36afda932aae831384f5c5afa88c3",
+          "revision": "b30d530dde407048a371a86fdbae77895e8635dd",
           "version": null
         }
       }

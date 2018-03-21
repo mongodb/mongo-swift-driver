@@ -26,13 +26,13 @@ public struct AggregateOptions: BsonEncodable {
     // let hint: Optional<(String | Document)>
 
     /// Convenience initializer allowing any/all parameters to be optional
-    public init(allowDiskUse: Bool? = nil, batchSize: Int32? = nil, bypassDocumentValidation: Bool? = nil,
-                collation: Document? = nil, maxTimeMS: Int64? = nil, comment: String? = nil) {
+    public init(allowDiskUse: Bool? = nil, batchSize: IntType? = nil, bypassDocumentValidation: Bool? = nil,
+                collation: Document? = nil, maxTimeMS: IntType? = nil, comment: String? = nil) {
         self.allowDiskUse = allowDiskUse
-        self.batchSize = batchSize
+        self.batchSize = batchSize?.int32Value
         self.bypassDocumentValidation = bypassDocumentValidation
         self.collation = collation
-        self.maxTimeMS = maxTimeMS
+        self.maxTimeMS = maxTimeMS?.int64Value
         self.comment = comment
     }
 }
@@ -54,11 +54,11 @@ public struct CountOptions: BsonEncodable {
     let skip: Int64?
 
     /// Convenience initializer allowing any/all parameters to be optional
-    public init(collation: Document? = nil, limit: Int64? = nil, maxTimeMS: Int64? = nil, skip: Int64? = nil) {
+    public init(collation: Document? = nil, limit: IntType? = nil, maxTimeMS: IntType? = nil, skip: IntType? = nil) {
         self.collation = collation
-        self.limit = limit
-        self.maxTimeMS = maxTimeMS
-        self.skip = skip
+        self.limit = limit?.int64Value
+        self.maxTimeMS = maxTimeMS?.int64Value
+        self.skip = skip?.int64Value
     }
 }
 
@@ -70,9 +70,9 @@ public struct DistinctOptions: BsonEncodable {
     let maxTimeMS: Int64?
 
     /// Convenience initializer allowing any/all parameters to be optional
-    public init(collation: Document? = nil, maxTimeMS: Int64? = nil) {
+    public init(collation: Document? = nil, maxTimeMS: IntType? = nil) {
         self.collation = collation
-        self.maxTimeMS = maxTimeMS
+        self.maxTimeMS = maxTimeMS?.int64Value
     }
 }
 
@@ -168,26 +168,26 @@ public struct FindOptions: BsonEncodable {
     let sort: Document?
 
     /// Convenience initializer allowing any/all parameters to be optional
-    public init(allowPartialResults: Bool? = nil, batchSize: Int32? = nil, collation: Document? = nil,
-                comment: String? = nil, limit: Int64? = nil, max: Document? = nil, maxAwaitTimeMS: Int64? = nil,
-                maxScan: Int64? = nil, maxTimeMS: Int64? = nil, min: Document? = nil, noCursorTimeout: Bool? = nil,
-                projection: Document? = nil, returnKey: Bool? = nil, showRecordId: Bool? = nil, skip: Int64? = nil,
+    public init(allowPartialResults: Bool? = nil, batchSize: IntType? = nil, collation: Document? = nil,
+                comment: String? = nil, limit: IntType? = nil, max: Document? = nil, maxAwaitTimeMS: IntType? = nil,
+                maxScan: IntType? = nil, maxTimeMS: IntType? = nil, min: Document? = nil, noCursorTimeout: Bool? = nil,
+                projection: Document? = nil, returnKey: Bool? = nil, showRecordId: Bool? = nil, skip: IntType? = nil,
                 sort: Document? = nil) {
         self.allowPartialResults = allowPartialResults
-        self.batchSize = batchSize
+        self.batchSize = batchSize?.int32Value
         self.collation = collation
         self.comment = comment
-        self.limit = limit
+        self.limit = limit?.int64Value
         self.max = max
-        self.maxAwaitTimeMS = maxAwaitTimeMS
-        self.maxScan = maxScan
-        self.maxTimeMS = maxTimeMS
+        self.maxAwaitTimeMS = maxAwaitTimeMS?.int64Value
+        self.maxScan = maxScan?.int64Value
+        self.maxTimeMS = maxTimeMS?.int64Value
         self.min = min
         self.noCursorTimeout = noCursorTimeout
         self.projection = projection
         self.returnKey = returnKey
         self.showRecordId = showRecordId
-        self.skip = skip
+        self.skip = skip?.int64Value
         self.sort = sort
     }
 }
@@ -196,6 +196,7 @@ public struct InsertOneOptions: BsonEncodable {
     /// If true, allows the write to opt-out of document level validation.
     let bypassDocumentValidation: Bool?
 
+    /// Convenience initializer allowing bypassDocumentValidation to be omitted or optional
     public init(bypassDocumentValidation: Bool? = nil) {
         self.bypassDocumentValidation = bypassDocumentValidation
     }
@@ -210,6 +211,7 @@ public struct InsertManyOptions: BsonEncodable {
     /// Defaults to true.
     var ordered: Bool = true
 
+    /// Convenience initializer allowing any/all parameters to be omitted or optional
     public init(bypassDocumentValidation: Bool? = nil, ordered: Bool? = true) {
         self.bypassDocumentValidation = bypassDocumentValidation
         if let o = ordered { self.ordered = o }
@@ -261,6 +263,7 @@ public struct DeleteOptions: BsonEncodable {
     /// Specifies a collation.
     let collation: Document?
 
+    /// Convenience initializer allowing collation to be omitted or optional
     public init(collation: Document? = nil) {
         self.collation = collation
     }
@@ -424,28 +427,29 @@ public struct IndexOptions: BsonEncodable {
     /// server-side is used.
     let collation: Document?
 
-    public init(background: Bool? = nil, expireAfter: Int32? = nil, name: String? = nil, sparse: Bool? = nil,
-                storageEngine: String? = nil, unique: Bool? = nil, version: Int32? = nil,
-                defaultLanguage: String? = nil, languageOverride: String? = nil, textVersion: Int32? = nil,
-                weights: Document? = nil, sphereVersion: Int32? = nil, bits: Int32? = nil, max: Double? = nil,
-                min: Double? = nil, bucketSize: Int32? = nil, partialFilterExpression: Document? = nil,
+    /// Convenience initializer allowing any/all parameters to be omitted or optional
+    public init(background: Bool? = nil, expireAfter: IntType? = nil, name: String? = nil, sparse: Bool? = nil,
+                storageEngine: String? = nil, unique: Bool? = nil, version: IntType? = nil,
+                defaultLanguage: String? = nil, languageOverride: String? = nil, textVersion: IntType? = nil,
+                weights: Document? = nil, sphereVersion: IntType? = nil, bits: IntType? = nil, max: Double? = nil,
+                min: Double? = nil, bucketSize: IntType? = nil, partialFilterExpression: Document? = nil,
                 collation: Document? = nil) {
         self.background = background
-        self.expireAfter = expireAfter
+        self.expireAfter = expireAfter?.int32Value
         self.name = name
         self.sparse = sparse
         self.storageEngine = storageEngine
         self.unique = unique
-        self.version = version
+        self.version = version?.int32Value
         self.defaultLanguage = defaultLanguage
         self.languageOverride = languageOverride
-        self.textVersion = textVersion
+        self.textVersion = textVersion?.int32Value
         self.weights = weights
-        self.sphereVersion = sphereVersion
-        self.bits = bits
+        self.sphereVersion = sphereVersion?.int32Value
+        self.bits = bits?.int32Value
         self.max = max
         self.min = min
-        self.bucketSize = bucketSize
+        self.bucketSize = bucketSize?.int32Value
         self.partialFilterExpression = partialFilterExpression
         self.collation = collation
     }
