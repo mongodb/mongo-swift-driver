@@ -53,7 +53,7 @@ import PackageDescription
 let package = Package(
     name: "MyPackage",
     dependencies: [
-        .package(url: "https://github.com/10gen/mongo-swift-driver.git", from: "0.0.1"),
+        .package(url: "https://github.com/mongodb/mongo-swift-driver.git", from: "master"),
     ],
     targets: [
         Target(
@@ -77,7 +77,7 @@ platform :ios, '11.0'
 use_frameworks!
 
 target 'MyApp' do
-    pod 'MongoSwift', '~> 0.0.1'
+    pod 'MongoSwift', '~> 0'
 end
 ```
 
