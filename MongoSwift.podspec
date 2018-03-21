@@ -10,8 +10,6 @@ Pod::Spec.new do |spec|
     :branch => "master"
   }
 
-  # TODO: we must support ios as well
-  spec.platform   = :osx, "10.12"
   spec.swift_version = "4"
   spec.requires_arc = true
   spec.source_files = "Sources/MongoSwift/**/*.swift"
