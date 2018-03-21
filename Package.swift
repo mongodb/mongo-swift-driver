@@ -6,8 +6,8 @@ let package = Package(
         .library(name: "MongoSwift", targets: ["MongoSwift"])
     ],
     dependencies: [
-        .package(url: "ssh://git@github.com/10gen/swift-bson", .branch("master")),
-        .package(url: "ssh://git@github.com/10gen/swift-mongoc", .branch("master")),
+        .package(url: "https://github.com/mongodb/swift-bson", .branch("master")),
+        .package(url: "https://github.com/mongodb/swift-mongoc", .branch("master")),
         .package(url: "https://github.com/Quick/Nimble.git", from: "7.0.3")
     ],
     targets: [

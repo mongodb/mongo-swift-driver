@@ -1,12 +1,15 @@
 Pod::Spec.new do |spec|
   spec.name       = "MongoSwift"
   spec.version    = "0.0.1"
-  spec.summary    = "Some description"
-  spec.homepage   = "https://github.com/10gen/mongo-swift-driver"
-  spec.license    = 'Apache License 2.0'
-  spec.author     = { "mbroadst" => "mbroadst@mongodb.com" }
+  spec.summary    = "The Swift driver for MongoDB"
+  spec.homepage   = "https://github.com/mongodb/mongo-swift-driver"
+  spec.license    = 'AGPL 3.0'
+  spec.authors    = {
+    "Matt Broadstone" => "mbroadst@mongodb.com",
+    "Kaitlin Mahar" => "kaitlin.mahar@mongodb.com"
+  }
   spec.source     = {
-    :git => "ssh://git@github.com/10gen/mongo-swift-driver.git",
+    :git => "https://github.com/mongodb/mongo-swift-driver.git",
     :branch => "master"
   }
 
@@ -20,8 +23,8 @@ Pod::Spec.new do |spec|
 
   # checkout module definitions for libmongoc and libbson
   spec.prepare_command = <<-EOT
-  git clone --depth 1 ssh://git@github.com/10gen/swift-bson Sources/libbson
-  git clone --depth 1 ssh://git@github.com/10gen/swift-mongoc Sources/libmongoc
+  git clone --depth 1 https://github.com/mongodb/swift-bson Sources/libbson
+  git clone --depth 1 https://github.com/mongodb/swift-mongoc Sources/libmongoc
   EOT
 
   # dynamically find paths for libmongoc
