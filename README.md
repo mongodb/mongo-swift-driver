@@ -34,8 +34,10 @@ On a Mac, you can install both components at once using [Homebrew](https://brew.
 `brew install mongo-c-driver`
 
 Or on Linux, use `apt-get` to install each:
-`apt get libbson-dev`
- `apt get libmongoc-dev`
+```
+apt get libbson-dev
+apt get libmongoc-dev
+```
 
 Next, see instructions for installation with either Swift Package Manager or CocoaPods in the following sections.
 
@@ -105,7 +107,7 @@ print(result?.insertedId ?? "") // prints `100`
 
 ### Find Documents
 ```swift
-let query = ["a": 1]
+let query: Document = ["a": 1]
 let documents = try collection.find(query)
 for d in documents {
     print(d)
