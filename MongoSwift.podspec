@@ -13,6 +13,10 @@ Pod::Spec.new do |spec|
     :branch => "master"
   }
 
+  spec.ios.deployment_target = "11.2"
+  spec.tvos.deployment_target = "9.1"
+  spec.osx.deployment_target = "10.10"
+
   spec.swift_version = "4"
   spec.requires_arc = true
   spec.source_files = "Sources/MongoSwift/**/*.swift"
@@ -23,8 +27,8 @@ Pod::Spec.new do |spec|
 
   # checkout module definitions for libmongoc and libbson
   spec.prepare_command = <<-EOT
-  git clone --depth 1 https://github.com/mongodb/swift-bson Sources/libbson
-  git clone --depth 1 https://github.com/mongodb/swift-mongoc Sources/libmongoc
+  [[ -d Sources/libbson ]] || git clone --depth 1 https://github.com/mongodb/swift-bson Sources/libbson
+  [[ -d Sources/libmongoc ]] || git clone --depth 1 https://github.com/mongodb/swift-mongoc Sources/libmongoc
   EOT
 
   # dynamically find paths for libmongoc
