@@ -113,7 +113,7 @@ extension Array: BsonValue {
             preconditionFailure("Failed to create a bson_t from array data")
         }
 
-        let arrayDoc = Document(fromData: arrayData)
+        let arrayDoc = Document(fromPointer: arrayData)
 
         var i = 0
         var result = [BsonValue]()
@@ -126,7 +126,7 @@ extension Array: BsonValue {
 
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
         // An array is just a document with keys '0', '1', etc. corresponding to indexes
-        let arr = Document()
+        var arr = Document()
         for (i, v) in self.enumerated() { arr[String(i)] = v as? BsonValue }
         if !bson_append_array(data, key, Int32(key.count), arr.data) {
             throw bsonEncodeError(value: self, forKey: key)
@@ -419,7 +419,7 @@ struct CodeWithScope: BsonValue {
         guard let scopeData = bson_new_from_data(scopePointer.pointee, Int(scopeLength)) else {
             preconditionFailure("Failed to create a bson_t from scope data")
         }
-        let scopeDoc = Document(fromData: scopeData)
+        let scopeDoc = Document(fromPointer: scopeData)
         return CodeWithScope(code: code, scope: scopeDoc)
     }
 }

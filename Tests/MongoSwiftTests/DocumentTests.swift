@@ -203,6 +203,15 @@ final class DocumentTests: XCTestCase {
         expect(doc).to(equal(fromRawBson))
     }
 
+    func testValueBehavior() {
+        let doc1: Document = ["a": 1]
+        var doc2 = doc1
+        doc2["b"] = 2
+        XCTAssertEqual(doc2["b"] as? Int, 2)
+        XCTAssertNil(doc1["b"])
+        XCTAssertNotEqual(doc1, doc2)
+    }
+
     // swiftlint:disable:next cyclomatic_complexity
     func testBSONCorpus() throws {
         let SKIPPED_CORPUS_TESTS = [

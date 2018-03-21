@@ -52,6 +52,6 @@ public class MongoCursor: Sequence, IteratorProtocol {
             return nil
         }
 
-        return Document(fromData: UnsafeMutablePointer(mutating: out.pointee!))
+        return Document(fromPointer: UnsafeMutablePointer(mutating: out.pointee!))
     }
 }

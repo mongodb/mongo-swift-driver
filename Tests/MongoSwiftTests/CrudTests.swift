@@ -20,7 +20,7 @@ private var skippedFiles = [
 ]
 
 private extension Document {
-    convenience init(fromJSONFile file: URL) throws {
+    init(fromJSONFile file: URL) throws {
         let jsonString = try String(contentsOf: file, encoding: .utf8)
         try self.init(fromJSON: jsonString)
     }
@@ -282,7 +282,7 @@ private class InsertManyTest: CrudTest {
         expect(insertedIds).toNot(beNil())
 
         // Convert the result's [Int64: BsonValue] to a Document for easy comparison
-        let reformattedResults = Document()
+        var reformattedResults = Document()
         for (index, id) in insertedIds! {
             reformattedResults[String(index)] = id
         }

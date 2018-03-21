@@ -1,9 +1,29 @@
 import Foundation
 import libbson
 
+internal class DocumentStorage {
+    internal var pointer: UnsafeMutablePointer<bson_t>!
+
+    init() {
+        self.pointer = bson_new()
+    }
+
+    init(fromPointer pointer: UnsafeMutablePointer<bson_t>) {
+        self.pointer = bson_copy(pointer)
+    }
+
+    deinit {
+        guard let pointer = self.pointer else { return }
+        bson_destroy(pointer)
+        self.pointer = nil
+    }
+}
+
 /// A class representing the BSON document type
-public class Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral {
-    internal var data: UnsafeMutablePointer<bson_t>!
+public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral {
+    internal var storage: DocumentStorage
+
+    internal var data: UnsafeMutablePointer<bson_t>! { return storage.pointer }
 
     /// Returns a [String] containing the keys in this `Document`. 
     public var keys: [String] {
@@ -33,7 +53,7 @@ public class Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral
 
     /// Initialize a new, empty document
     public init() {
-        data = bson_new()
+        self.storage = DocumentStorage()
     }
 
     /**
@@ -42,12 +62,12 @@ public class Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral
      * memory. 
      * 
      * - Parameters:
-     *   - bsonData: a UnsafeMutablePointer<bson_t>
+     *   - fromPointer: a UnsafeMutablePointer<bson_t>
      *
      * - Returns: a new `Document`
      */
-    internal init(fromData bsonData: UnsafeMutablePointer<bson_t>) {
-        data = bson_copy(bsonData)
+    internal init(fromPointer pointer: UnsafeMutablePointer<bson_t>) {
+        self.storage = DocumentStorage(fromPointer: pointer)
     }
 
     /**
@@ -59,7 +79,7 @@ public class Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral
      * - Returns: a new `Document`
      */
     public init(_ doc: [String: BsonValue?]) {
-        data = bson_new()
+        self.storage = DocumentStorage()
         for (k, v) in doc {
             self[k] = v
         }
@@ -75,8 +95,8 @@ public class Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral
      *
      * - Returns: a new `Document`
      */
-    public required init(dictionaryLiteral doc: (String, BsonValue?)...) {
-        data = bson_new()
+    public init(dictionaryLiteral doc: (String, BsonValue?)...) {
+        self.storage = DocumentStorage()
         for (k, v) in doc {
             self[k] = v
         }
@@ -92,8 +112,8 @@ public class Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral
      *
      * - Returns: a new `Document`
      */
-    public required init(arrayLiteral elements: BsonValue?...) {
-        data = bson_new()
+    public init(arrayLiteral elements: BsonValue?...) {
+        self.storage = DocumentStorage()
         for (i, elt) in elements.enumerated() {
             self[String(i)] = elt
         }
@@ -108,7 +128,7 @@ public class Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral
      * - Returns: the parsed `Document`
      */
     public init(fromJSON: Data) throws {
-        data = try fromJSON.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) in
+        self.storage = DocumentStorage(fromPointer: try fromJSON.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) in
             var error = bson_error_t()
             guard let bson = bson_new_from_json(bytes, fromJSON.count, &error) else {
                 throw MongoError.bsonParseError(
@@ -119,11 +139,11 @@ public class Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral
             }
 
             return bson
-        }
+        })
     }
 
     /// Convenience initializer for constructing a `Document` from a `String`
-    public convenience init(fromJSON json: String) throws {
+    public init(fromJSON json: String) throws {
         try self.init(fromJSON: json.data(using: .utf8)!)
     }
 
@@ -131,9 +151,9 @@ public class Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral
      * Constructs a `Document` from raw BSON data
      */
     public init(fromBSON: Data) {
-        data = fromBSON.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) in
+        self.storage = DocumentStorage(fromPointer: fromBSON.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) in
             return bson_new_from_data(bytes, fromBSON.count)
-        }
+        })
     }
 
     /// Returns a relaxed extended JSON representation of this Document
@@ -163,12 +183,6 @@ public class Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral
         return Data(bytes: data!, count: Int(length))
     }
 
-    deinit {
-        guard let data = self.data else { return }
-        bson_destroy(data)
-        self.data = nil
-    }
-
     /**
      * Allows setting values and retrieving values using subscript syntax.
      * For example:
@@ -188,16 +202,27 @@ public class Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral
         }
 
         set(newValue) {
+            // this happens if someone has copied the document and modifies it.
+            // for example: 
+            //  let doc1: Document = ["a": 1]
+            //  var doc2 = doc1 
+            //  doc2["b"] = 2
+            // to provide value semantics, i.e. prevent changes to doc2 from
+            // modifying doc1, we make a copy of the bson_t and let the 
+            // copy/copies of the document keep the original
+            if !isKnownUniquelyReferenced(&self.storage) {
+                self.storage = DocumentStorage(fromPointer: self.data)
+            }
 
             guard let value = newValue else {
-                if !bson_append_null(data, key, Int32(key.count)) {
+                if !bson_append_null(self.data, key, Int32(key.count)) {
                     preconditionFailure("Failed to set the value for key \(key) to null")
                 }
                 return
             }
 
             do {
-                try value.encode(to: data, forKey: key)
+                try value.encode(to: self.data, forKey: key)
             } catch {
                 preconditionFailure("Failed to set the value for key \(key) to \(value)")
             }
@@ -252,7 +277,7 @@ extension Document: BsonValue {
             preconditionFailure("Failed to create a bson_t from document data")
         }
 
-        return Document(fromData: docData)
+        return Document(fromPointer: docData)
     }
 
 }

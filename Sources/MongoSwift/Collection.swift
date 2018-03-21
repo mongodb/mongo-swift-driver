@@ -618,7 +618,9 @@ public class MongoCollection {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
         var error = bson_error_t()
-        if document["_id"] == nil { document["_id"] = ObjectId() }
+        if document["_id"] == nil {
+            try ObjectId().encode(to: document.data, forKey: "_id")
+        }
         if !mongoc_collection_insert_one(self._collection, document.data, opts?.data, nil, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
@@ -641,9 +643,8 @@ public class MongoCollection {
         let opts = try encoder.encode(options)
 
         for doc in documents where doc["_id"] == nil {
-            doc["_id"] = ObjectId()
+            try ObjectId().encode(to: doc.data, forKey: "_id")
         }
-
         var docPointers = documents.map { UnsafePointer($0.data) }
         let reply = Document()
         var error = bson_error_t()
