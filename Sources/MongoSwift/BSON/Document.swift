@@ -1,7 +1,7 @@
 import Foundation
 import libbson
 
-internal class BsonT {
+internal class DocumentStorage {
     internal var pointer: UnsafeMutablePointer<bson_t>!
 
     init() {
@@ -21,9 +21,9 @@ internal class BsonT {
 
 /// A class representing the BSON document type
 public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral {
-    internal var bson_t: BsonT
+    internal var storage: DocumentStorage
 
-    internal var data: UnsafeMutablePointer<bson_t>! { return bson_t.pointer }
+    internal var data: UnsafeMutablePointer<bson_t>! { return storage.pointer }
 
     /// Returns a [String] containing the keys in this `Document`. 
     public var keys: [String] {
@@ -53,7 +53,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
 
     /// Initialize a new, empty document
     public init() {
-        self.bson_t = BsonT()
+        self.storage = DocumentStorage()
     }
 
     /**
@@ -67,7 +67,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      * - Returns: a new `Document`
      */
     internal init(fromPointer pointer: UnsafeMutablePointer<bson_t>) {
-        self.bson_t = BsonT(fromPointer: pointer)
+        self.storage = DocumentStorage(fromPointer: pointer)
     }
 
     /**
@@ -79,7 +79,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      * - Returns: a new `Document`
      */
     public init(_ doc: [String: BsonValue?]) {
-        self.bson_t = BsonT()
+        self.storage = DocumentStorage()
         for (k, v) in doc {
             self[k] = v
         }
@@ -96,7 +96,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      * - Returns: a new `Document`
      */
     public init(dictionaryLiteral doc: (String, BsonValue?)...) {
-        self.bson_t = BsonT()
+        self.storage = DocumentStorage()
         for (k, v) in doc {
             self[k] = v
         }
@@ -113,7 +113,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      * - Returns: a new `Document`
      */
     public init(arrayLiteral elements: BsonValue?...) {
-        self.bson_t = BsonT()
+        self.storage = DocumentStorage()
         for (i, elt) in elements.enumerated() {
             self[String(i)] = elt
         }
@@ -128,7 +128,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      * - Returns: the parsed `Document`
      */
     public init(fromJSON: Data) throws {
-        self.bson_t = BsonT(fromPointer: try fromJSON.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) in
+        self.storage = DocumentStorage(fromPointer: try fromJSON.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) in
             var error = bson_error_t()
             guard let bson = bson_new_from_json(bytes, fromJSON.count, &error) else {
                 throw MongoError.bsonParseError(
@@ -151,7 +151,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      * Constructs a `Document` from raw BSON data
      */
     public init(fromBSON: Data) {
-        self.bson_t = BsonT(fromPointer: fromBSON.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) in
+        self.storage = DocumentStorage(fromPointer: fromBSON.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) in
             return bson_new_from_data(bytes, fromBSON.count)
         })
     }
@@ -210,8 +210,8 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
             // to provide value semantics, i.e. prevent changes to doc2 from
             // modifying doc1, we make a copy of the bson_t and let the 
             // copy/copies of the document keep the original
-            if !isKnownUniquelyReferenced(&self.bson_t) {
-                self.bson_t = BsonT(fromPointer: self.data)
+            if !isKnownUniquelyReferenced(&self.storage) {
+                self.storage = DocumentStorage(fromPointer: self.data)
             }
 
             guard let value = newValue else {
