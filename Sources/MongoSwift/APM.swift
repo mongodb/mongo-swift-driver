@@ -168,9 +168,18 @@ public enum MongoEvent: String {
 /// An extension of MongoClient to add command monitoring and 
 /// server discovery and monitoring capabilities. 
 extension MongoClient {
-    /// Enables notifications for this client, meaning notifications
-    /// about command events will be posted to the default NotificationCenter.
-    /// If no specific event types are provided, all events will be posted. 
+    /* 
+     *  Enables notifications for this client, meaning notifications
+     *  about command events will be posted to the default NotificationCenter.
+     *  If no specific event types are provided, all events will be posted. 
+     *
+     *  Calling this function will reset all previously enabled events - i.e.
+     *  calling
+     *      client.enableNotifications(forEvents: [.commandStarted])
+     *      client.enableNotifications(forEvents: [.commandSucceeded])
+     *
+     *  will result in only posting notifications for .commandSucceeded events.
+     */
     public func enableNotifications(forEvents events: [MongoEvent] =
         [.commandStarted, .commandSucceeded, .commandFailed]) throws {
         guard let client = self._client else { throw MongoError.invalidClient() }
