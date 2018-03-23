@@ -145,11 +145,19 @@ private struct CMTest {
         case "find":
             // TODO SWIFT-63: use "hint" if provided
             let modifiers = self.args["modifiers"] as? Document
-            let options = FindOptions(batchSize: self.args["batchSize"] as? Int64,
+            var batchSize: Int32?
+            if let size = self.args["batchSize"] as? Int64 {
+                batchSize = Int32(size)
+            }
+            var maxTime: Int64?
+            if let max = modifiers?["$maxTimeMS"] as? Int {
+                maxTime = Int64(max)
+            }
+            let options = FindOptions(batchSize: batchSize,
                                         comment: modifiers?["$comment"] as? String,
                                         limit: self.args["limit"] as? Int64,
                                         max: modifiers?["$max"] as? Document,
-                                        maxTimeMS: modifiers?["$maxTimeMS"] as? Int,
+                                        maxTimeMS: maxTime,
                                         min: modifiers?["$min"] as? Document,
                                         returnKey: modifiers?["$returnKey"] as? Bool,
                                         showRecordId: modifiers?["$showDiskLoc"] as? Bool,
