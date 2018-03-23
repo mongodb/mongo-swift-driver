@@ -68,16 +68,16 @@ public struct CreateCollectionOptions: BsonEncodable {
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional
     public init(autoIndexId: Bool? = nil, capped: Bool? = nil, collation: Document? = nil,
-                indexOptionDefaults: Document? = nil, max: IntType? = nil, session: ClientSession? = nil,
-                size: IntType? = nil, storageEngine: Document? = nil, validationAction: String? = nil,
+                indexOptionDefaults: Document? = nil, max: Int64? = nil, session: ClientSession? = nil,
+                size: Int64? = nil, storageEngine: Document? = nil, validationAction: String? = nil,
                 validationLevel: String? = nil, validator: Document? = nil, viewOn: String? = nil) {
         self.autoIndexId = autoIndexId
         self.capped = capped
         self.collation = collation
         self.indexOptionDefaults = indexOptionDefaults
-        self.max = max?.int64Value
+        self.max = max
         self.session = session
-        self.size = size?.int64Value
+        self.size = size
         self.storageEngine = storageEngine
         self.validationAction = validationAction
         self.validationLevel = validationLevel
