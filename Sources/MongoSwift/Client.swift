@@ -3,6 +3,11 @@ import libmongoc
 public struct ClientOptions {
     /// Determines whether the client should retry supported write operations
     let retryWrites: Bool?
+
+    /// Convenience initializer allowing retryWrites to be omitted or optional
+    public init(retryWrites: Bool? = nil) {
+        self.retryWrites = retryWrites
+    }
 }
 
 public struct ListDatabasesOptions: BsonEncodable {

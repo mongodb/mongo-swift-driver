@@ -25,7 +25,7 @@ final class DatabaseTests: XCTestCase {
         expect(try db.createCollection("coll2")).toNot(throwError())
         expect(try (Array(db.listCollections()) as [Document]).count).to(equal(2))
 
-        let opts = ListCollectionsOptions(filter: ["type": "view"] as Document, batchSize: nil, session: nil)
+        let opts = ListCollectionsOptions(filter: ["type": "view"] as Document)
         expect(try db.listCollections(options: opts)).to(beEmpty())
 
         expect(try db.drop()).toNot(throwError())

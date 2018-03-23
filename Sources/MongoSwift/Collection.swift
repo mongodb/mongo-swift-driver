@@ -196,6 +196,7 @@ public struct InsertOneOptions: BsonEncodable {
     /// If true, allows the write to opt-out of document level validation.
     let bypassDocumentValidation: Bool?
 
+    /// Convenience initializer allowing bypassDocumentValidation to be omitted or optional
     public init(bypassDocumentValidation: Bool? = nil) {
         self.bypassDocumentValidation = bypassDocumentValidation
     }
@@ -210,6 +211,7 @@ public struct InsertManyOptions: BsonEncodable {
     /// Defaults to true.
     var ordered: Bool = true
 
+    /// Convenience initializer allowing any/all parameters to be omitted or optional
     public init(bypassDocumentValidation: Bool? = nil, ordered: Bool? = true) {
         self.bypassDocumentValidation = bypassDocumentValidation
         if let o = ordered { self.ordered = o }
@@ -261,6 +263,7 @@ public struct DeleteOptions: BsonEncodable {
     /// Specifies a collation.
     let collation: Document?
 
+     /// Convenience initializer allowing collation to be omitted or optional
     public init(collation: Document? = nil) {
         self.collation = collation
     }
