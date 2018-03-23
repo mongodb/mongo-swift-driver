@@ -81,12 +81,6 @@ public protocol BsonValue {
     static func from(iter: inout bson_iter_t) -> BsonValue
 }
 
-/// A protocol for types that can be represented as Int32 and Int64 values. 
-public protocol IntType {
-    var int32Value: Int32 { get }
-    var int64Value: Int64 { get }
-}
-
 /// An extension of Array type to represent the BSON array type
 extension Array: BsonValue {
     public var bsonType: BsonType { return .array }
@@ -339,7 +333,7 @@ extension Double: BsonValue {
 /// An extension of Int to represent the BSON Int32 type.
 /// While the bitwidth of Int is machine-dependent, we assume for simplicity
 /// that it is always 32 bits. Use Int64 if 64 bits are needed.
-extension Int: BsonValue, IntType {
+extension Int: BsonValue {
     public var bsonType: BsonType { return .int32 }
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
         if !bson_append_int32(data, key, Int32(key.count), Int32(self)) {
@@ -350,13 +344,10 @@ extension Int: BsonValue, IntType {
     public static func from(iter: inout bson_iter_t) -> BsonValue {
         return Int(bson_iter_int32(&iter))
     }
-
-    public var int32Value: Int32 { return Int32(self) }
-    public var int64Value: Int64 { return Int64(self) }
 }
 
 /// An extension of Int32 to represent the BSON Int32 type
-extension Int32: BsonValue, IntType {
+extension Int32: BsonValue {
     public var bsonType: BsonType { return .int32 }
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
         if !bson_append_int32(data, key, Int32(key.count), self) {
@@ -367,13 +358,10 @@ extension Int32: BsonValue, IntType {
     public static func from(iter: inout bson_iter_t) -> BsonValue {
         return bson_iter_int32(&iter)
     }
-
-    public var int32Value: Int32 { return self }
-    public var int64Value: Int64 { return Int64(self) }
 }
 
 /// An extension of Int64 to represent the BSON Int64 type
-extension Int64: BsonValue, IntType {
+extension Int64: BsonValue {
     public var bsonType: BsonType { return .int64 }
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
         if !bson_append_int64(data, key, Int32(key.count), self) {
@@ -384,9 +372,6 @@ extension Int64: BsonValue, IntType {
     public static func from(iter: inout bson_iter_t) -> BsonValue {
         return bson_iter_int64(&iter)
     }
-
-    public var int32Value: Int32 { return Int32(self) }
-    public var int64Value: Int64 { return self }
 }
 
 /// A struct to represent the BSON Code and CodeWithScope types
