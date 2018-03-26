@@ -21,7 +21,7 @@ final class CommandMonitoringTests: XCTestCase {
 
     func testCommandMonitoring() throws {
         let client = try MongoClient()
-        try client.enableNotifications()
+        try client.enableCommandMonitoring()
         let testFiles = try FileManager.default.contentsOfDirectory(atPath: cmPath).filter { $0.hasSuffix(".json") }
         for filename in testFiles {
             // read in the file data and parse into a struct

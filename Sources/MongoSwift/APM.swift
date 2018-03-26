@@ -19,104 +19,105 @@ public struct ConnectionId {
 /// An event published when a command starts. The event is stored under the key `event`
 /// in the `userInfo` property of `Notification`s posted under the name .commandStarted.
 public struct CommandStartedEvent {
-    /// An internal opaque pointer to a mongoc_apm_command_started_t 
-    internal let _event: OpaquePointer
-
-    /// An internal initializer for a CommandStartedEvent
-    internal init(_ event: OpaquePointer) {
-        self._event = event
-    }
-
     /// The command.
-    var command: Document {
-        let commandData = UnsafeMutablePointer(mutating: mongoc_apm_command_started_get_command(self._event)!)
-        return Document(fromPointer: commandData)
-    }
+    let command: Document
 
     /// The database name.
-    var databaseName: String { return String(cString: mongoc_apm_command_started_get_database_name(self._event)) }
+    let databaseName: String
 
     /// The command name.
-    var commandName: String { return String(cString: mongoc_apm_command_started_get_command_name(self._event)) }
+    let commandName: String
 
     /// The driver generated request id.
-    var requestId: Int64 { return mongoc_apm_command_started_get_request_id(self._event) }
+    let requestId: Int64
 
     /// The driver generated operation id. This is used to link events together such
     /// as bulk write operations.
-    var operationId: Int64? { return mongoc_apm_command_started_get_operation_id(self._event) }
+    let operationId: Int64?
 
     /// The connection id for the command.
-    var connectionId: ConnectionId { return ConnectionId(mongoc_apm_command_started_get_host(self._event)) }
+    let connectionId: ConnectionId
+
+    /// An internal initializer for creating a CommandStartedEvent from a mongoc_apm_command_started_t 
+    internal init(_ event: OpaquePointer) {
+        let commandData = UnsafeMutablePointer(mutating: mongoc_apm_command_started_get_command(event)!)
+        self.command = Document(fromPointer: commandData)
+        self.databaseName = String(cString: mongoc_apm_command_started_get_database_name(event))
+        self.commandName = String(cString: mongoc_apm_command_started_get_command_name(event))
+        self.requestId = mongoc_apm_command_started_get_request_id(event)
+        self.operationId = mongoc_apm_command_started_get_operation_id(event)
+        self.connectionId = ConnectionId(mongoc_apm_command_started_get_host(event))
+    }
 }
 
-/// An event published when a command succeed. The event is stored under the key `event`
+/// An event published when a command succeeds. The event is stored under the key `event`
 /// in the `userInfo` property of `Notification`s posted under the name .commandSucceeded.
 public struct CommandSucceededEvent {
-    /// An internal opaque pointer to a mongoc_apm_command_succeeded_t 
-    internal let _event: OpaquePointer
-
-    /// An internal initializer for a CommandSucceededEvent
-    internal init(_ event: OpaquePointer) {
-        self._event = event
-    }
-
     /// The execution time of the event, in microseconds.
-    var duration: Int64 { return mongoc_apm_command_succeeded_get_duration(self._event) }
+    let duration: Int64
 
     /// The command reply.
-    var reply: Document {
-        let replyData = UnsafeMutablePointer(mutating: mongoc_apm_command_succeeded_get_reply(self._event)!)
-        return Document(fromPointer: replyData)
-    }
+    let reply: Document
 
     /// The command name.
-    var commandName: String { return String(cString: mongoc_apm_command_succeeded_get_command_name(self._event)) }
+    let commandName: String
 
     /// The driver generated request id.
-    var requestId: Int64 { return mongoc_apm_command_succeeded_get_request_id(self._event) }
+    let requestId: Int64
 
     /// The driver generated operation id. This is used to link events together such
     /// as bulk write operations.
-    var operationId: Int64? { return mongoc_apm_command_succeeded_get_operation_id(self._event) }
+    let operationId: Int64?
 
     /// The connection id for the command.
-    var connectionId: ConnectionId { return ConnectionId(mongoc_apm_command_succeeded_get_host(self._event)) }
+    let connectionId: ConnectionId
+
+    /// An internal initializer for creating a CommandSucceededEvent from a mongoc_apm_command_succeeded_t
+    internal init(_ event: OpaquePointer) {
+        self.duration = mongoc_apm_command_succeeded_get_duration(event)
+        let replyData = UnsafeMutablePointer(mutating: mongoc_apm_command_succeeded_get_reply(event)!)
+        self.reply = Document(fromPointer: replyData)
+        self.commandName = String(cString: mongoc_apm_command_succeeded_get_command_name(event))
+        self.requestId = mongoc_apm_command_succeeded_get_request_id(event)
+        self.operationId = mongoc_apm_command_succeeded_get_operation_id(event)
+        self.connectionId = ConnectionId(mongoc_apm_command_succeeded_get_host(event))
+    }
 }
 
 /// An event published when a command fails. The event is stored under the key `event`
 /// in the `userInfo` property of `Notification`s posted under the name .commandFailed.
 public struct CommandFailedEvent {
-    /// An internal opaque pointer to a mongoc_apm_command_failed_t 
-    internal let _event: OpaquePointer
-
-    /// An internal initializer for a CommandFailedEvent
-    internal init(_ event: OpaquePointer) {
-        self._event = event
-    }
 
     /// The execution time of the event, in microseconds.
-    var duration: Int64 { return mongoc_apm_command_failed_get_duration(self._event) }
+    let duration: Int64
 
     /// The command name.
-    var commandName: String { return String(cString: mongoc_apm_command_failed_get_command_name(self._event)) }
+    let commandName: String
 
     /// The failure, represented as a MongoError. 
-    var failure: MongoError {
-        var error = bson_error_t()
-        mongoc_apm_command_failed_get_error(self._event, &error)
-        return MongoError.commandError(message: toErrorString(error))
-    }
+    let failure: MongoError
 
     /// The client generated request id.
-    var requestId: Int64 { return mongoc_apm_command_failed_get_request_id(self._event) }
+    let requestId: Int64
 
     /// The driver generated operation id. This is used to link events together such
     /// as bulk write operations.
-    var operationId: Int64? { return mongoc_apm_command_failed_get_operation_id(self._event) }
+    let operationId: Int64?
 
     /// The connection id for the command.
-    var connectionId: ConnectionId { return ConnectionId(mongoc_apm_command_failed_get_host(self._event)) }
+    let connectionId: ConnectionId
+
+    /// An internal initializer for creating a CommandFailedEvent from a mongoc_apm_command_failed_t 
+    internal init(_ event: OpaquePointer) {
+        self.duration = mongoc_apm_command_failed_get_duration(event)
+        self.commandName = String(cString: mongoc_apm_command_failed_get_command_name(event))
+        var error = bson_error_t()
+        mongoc_apm_command_failed_get_error(event, &error)
+        self.failure = MongoError.commandError(message: toErrorString(error))
+        self.requestId = mongoc_apm_command_failed_get_request_id(event)
+        self.operationId = mongoc_apm_command_failed_get_operation_id(event)
+        self.connectionId = ConnectionId(mongoc_apm_command_failed_get_host(event))
+    }
 }
 
 /// An internal callback that will be set for "command started" events if the user 
@@ -126,7 +127,14 @@ internal func commandStarted(_event: OpaquePointer?) {
     guard let event = _event else { return }
     let eventStruct = CommandStartedEvent(event)
     let notification = Notification(name: .commandStarted, userInfo: ["event": eventStruct])
-    NotificationCenter.default.post(notification)
+    guard let context = mongoc_apm_command_started_get_context(event) else {
+        print("missing context")
+        return
+    }
+    let pointer = context.assumingMemoryBound(to: NotificationCenter.self)
+    let center = pointer.pointee
+    //NotificationCenter.default.post(notification)
+    center.post(notification)
 }
 
 /// An internal callback that will be set for "command succeeded" events if the user 
@@ -169,8 +177,9 @@ public enum MongoEvent: String {
 /// server discovery and monitoring capabilities. 
 extension MongoClient {
     /* 
-     *  Enables notifications for this client, meaning notifications
-     *  about command events will be posted to the default NotificationCenter.
+     *  Enables command monitoring for this client, meaning notifications
+     *  about command events will be posted to the supplied NotificationCenter -
+     *  or if one is not provided, the default NotificationCenter.
      *  If no specific event types are provided, all events will be posted. 
      *
      *  Calling this function will reset all previously enabled events - i.e.
@@ -180,8 +189,9 @@ extension MongoClient {
      *
      *  will result in only posting notifications for .commandSucceeded events.
      */
-    public func enableNotifications(forEvents events: [MongoEvent] =
-        [.commandStarted, .commandSucceeded, .commandFailed]) throws {
+    public func enableCommandMonitoring(
+        forEvents events: [MongoEvent] = [.commandStarted, .commandSucceeded, .commandFailed],
+        usingCenter center: NotificationCenter = NotificationCenter.default) throws {
         guard let client = self._client else { throw MongoError.invalidClient() }
         let callbacks = mongoc_apm_callbacks_new()
         for event in events {
@@ -194,12 +204,13 @@ extension MongoClient {
                 mongoc_apm_set_command_failed_cb(callbacks, commandFailed)
             }
         }
-        mongoc_client_set_apm_callbacks(client, callbacks, nil)
+        var center = center
+        mongoc_client_set_apm_callbacks(client, callbacks, &center)
         mongoc_apm_callbacks_destroy(callbacks)
     }
 
     /// Disables all notification types for this client.
-    public func disableNotifications() throws {
+    public func disableCommandMonitoring() throws {
         guard let client = self._client else { throw MongoError.invalidClient() }
         mongoc_client_set_apm_callbacks(client, nil, nil)
     }
