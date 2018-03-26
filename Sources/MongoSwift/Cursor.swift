@@ -38,7 +38,7 @@ public class MongoCursor: Sequence, IteratorProtocol {
      */
     public func next() -> Document? {
         do {
-            let cursor = try unwrapCursor()
+            _ = try unwrapCursor()
         } catch {
             print("error unwrapping cursor")
             return nil
