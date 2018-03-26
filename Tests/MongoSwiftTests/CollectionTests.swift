@@ -139,15 +139,6 @@ final class CollectionTests: XCTestCase {
         expect(findResult.next()).to(beNil())
     }
 
-    func testCursorIteration() throws {
-        let findResult1 = try coll.find(["cat": "cat"])
-        while let _  = try findResult1.nextOrError() { }
-
-        let findResult2 = try coll.find(["cat": "cat"])
-        for _ in findResult2 { }
-        XCTAssertNil(findResult2.getError())
-    }
-
     func testDeleteOne() throws {
         expect(try self.coll.deleteOne(["cat": "cat"])?.deletedCount).to(equal(1))
     }

@@ -6,8 +6,7 @@ public class MongoCursor: Sequence, IteratorProtocol {
     private var _client: MongoClient?
 
     /**
-     *  Initializes a new MongoCursor instance. This assumes the caller has checked
-     *  the validity of the cursor pointer and the client's internal pointer.
+     * Initializes a new MongoCursor instance, not meant to be instantiated directly
      */
     internal init(fromCursor: OpaquePointer, withClient: MongoClient) {
         self._cursor = fromCursor
@@ -35,61 +34,32 @@ public class MongoCursor: Sequence, IteratorProtocol {
     }
 
     /**
-     * Returns the next document in this cursor, or nil. Throws an error if one
-     * occurs. (Compared to next(), which returns nil and requires manually checking
-     * for an error afterward.)
-     *
-     */
-    func nextOrError() throws -> Document? {
-        let out = UnsafeMutablePointer<UnsafePointer<bson_t>?>.allocate(capacity: 1)
-        defer {
-            out.deinitialize(count: 1)
-            out.deallocate(capacity: 1)
-        }
-        let cursor = try unwrapCursor()
-        if !mongoc_cursor_next(cursor, out) {
-            var error = bson_error_t()
-            if mongoc_cursor_error(cursor, &error) {
-                throw MongoError.invalidCursor(message: toErrorString(error))
-            }
-            return nil
-        }
-        return Document(fromData: UnsafeMutablePointer(mutating: out.pointee!))
-    }
-
-    /**
-     *  Returns the error that occurred while iterating this cursor, if one exists. 
-     *  This function should be called after next() returns nil. 
-     *
-     */
-    func getError() -> Error? {
-        do {
-            var error = bson_error_t()
-            if mongoc_cursor_error(try unwrapCursor(), &error) {
-                return MongoError.invalidCursor(message: toErrorString(error))
-            }
-            return nil
-        } catch { return error }
-    }
-
-    /**
-     * Returns the next document in this cursor, or nil. 
-     * Once the cursor returns nil, getError() should be called to check if there were any errors
-     * iterating the cursor. 
-     * 
-     * This function, part of `IteratorProtocol`, allows you to iterate a cursor with a `for` loop: 
-     *      `for doc in cursor { ... }`
+     * Returns the next document in this cursor, or nil
      */
     public func next() -> Document? {
+        do {
+            let cursor = try unwrapCursor()
+        } catch {
+            print("error unwrapping cursor")
+            return nil
+        }
+
         let out = UnsafeMutablePointer<UnsafePointer<bson_t>?>.allocate(capacity: 1)
         defer {
             out.deinitialize(count: 1)
             out.deallocate(capacity: 1)
         }
-        do {
-            if !mongoc_cursor_next(try unwrapCursor(), out) { return nil }
-            return Document(fromData: UnsafeMutablePointer(mutating: out.pointee!))
-        } catch { return nil }
+        var error = bson_error_t()
+
+        if !mongoc_cursor_next(self._cursor, out) {
+            if mongoc_cursor_error(self._cursor, &error) {
+                print("cursor error: (domain: \(error.domain), code: \(error.code), message: \(toErrorString(error)))")
+            }
+
+            return nil
+        }
+
+        return Document(fromData: UnsafeMutablePointer(mutating: out.pointee!))
     }
 
     /// This function should be called rather than accessing self._cursor directly.
