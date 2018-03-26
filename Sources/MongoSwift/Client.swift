@@ -88,7 +88,6 @@ public class MongoClient {
         guard let client = self._client else {
             return
         }
-
         mongoc_client_destroy(client)
         self._client = nil
     }

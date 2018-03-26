@@ -11,7 +11,8 @@ let VERSION = "3.6"
 final class CommandMonitoringTests: XCTestCase {
     static var allTests: [(String, (CommandMonitoringTests) -> () throws -> Void)] {
         return [
-            ("testCommandMonitoring", testCommandMonitoring)
+            ("testCommandMonitoring", testCommandMonitoring),
+            ("testAlternateNotificationCenters", testAlternateNotificationCenters)
         ]
     }
 
@@ -77,6 +78,25 @@ final class CommandMonitoringTests: XCTestCase {
                 try db.drop()
             }
         }
+    }
+
+    func testAlternateNotificationCenters() throws {
+        let client = try MongoClient()
+        let db = try client.db("commandTest")
+        let collection = try db.createCollection("coll1")
+        let customCenter = NotificationCenter()
+        try client.enableCommandMonitoring(usingCenter: customCenter)
+        var eventCount = 0
+        let observer = customCenter.addObserver(forName: nil, object: nil, queue: nil) { (notif) in
+            print("event: \(notif)")
+            eventCount += 1
+        }
+
+        _ = try collection.insertOne(["x": 1])
+        expect(eventCount).to(beGreaterThan(0))
+        customCenter.removeObserver(observer)
+
+        try db.drop()
     }
 }
 
