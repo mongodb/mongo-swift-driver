@@ -38,7 +38,7 @@ public struct CommandStartedEvent {
     /// The connection id for the command.
     let connectionId: ConnectionId
 
-    /// An internal initializer for creating a CommandStartedEvent from a mongoc_apm_command_started_t 
+    /// An internal initializer for creating a CommandStartedEvent from a mongoc_apm_command_started_t
     internal init(_ event: OpaquePointer) {
         let commandData = UnsafeMutablePointer(mutating: mongoc_apm_command_started_get_command(event)!)
         self.command = Document(fromPointer: commandData)
@@ -94,7 +94,7 @@ public struct CommandFailedEvent {
     /// The command name.
     let commandName: String
 
-    /// The failure, represented as a MongoError. 
+    /// The failure, represented as a MongoError.
     let failure: MongoError
 
     /// The client generated request id.
@@ -107,7 +107,7 @@ public struct CommandFailedEvent {
     /// The connection id for the command.
     let connectionId: ConnectionId
 
-    /// An internal initializer for creating a CommandFailedEvent from a mongoc_apm_command_failed_t 
+    /// An internal initializer for creating a CommandFailedEvent from a mongoc_apm_command_failed_t
     internal init(_ event: OpaquePointer) {
         self.duration = mongoc_apm_command_failed_get_duration(event)
         self.commandName = String(cString: mongoc_apm_command_failed_get_command_name(event))
@@ -120,9 +120,9 @@ public struct CommandFailedEvent {
     }
 }
 
-/// An internal callback that will be set for "command started" events if the user 
-/// enables those notifications. This function generates a new `Notification` and posts 
-/// it to the default NotificationCenter for the app. 
+/// An internal callback that will be set for "command started" events if the user
+/// enables those notifications. This function generates a new `Notification` and posts
+/// it to the default NotificationCenter for the app.
 internal func commandStarted(_event: OpaquePointer?) {
     guard let event = _event else { return }
     let eventStruct = CommandStartedEvent(event)
@@ -131,35 +131,46 @@ internal func commandStarted(_event: OpaquePointer?) {
         print("missing context")
         return
     }
-    let pointer = context.assumingMemoryBound(to: NotificationCenter.self)
-    let center = pointer.pointee
-    //NotificationCenter.default.post(notification)
+
+    let center = Unmanaged<NotificationCenter>.fromOpaque(context).takeUnretainedValue()
     center.post(notification)
 }
 
-/// An internal callback that will be set for "command succeeded" events if the user 
-/// enables those notifications. This function generates a new `Notification` and posts 
-/// it to the default NotificationCenter for the app. 
+/// An internal callback that will be set for "command succeeded" events if the user
+/// enables those notifications. This function generates a new `Notification` and posts
+/// it to the default NotificationCenter for the app.
 internal func commandSucceeded(_event: OpaquePointer?) {
     guard let event = _event else { return }
     let eventStruct = CommandSucceededEvent(event)
     let notification = Notification(name: .commandSucceeded, userInfo: ["event": eventStruct])
-    NotificationCenter.default.post(notification)
+    guard let context = mongoc_apm_command_succeeded_get_context(event) else {
+        print("missing context")
+        return
+    }
+
+    let center = Unmanaged<NotificationCenter>.fromOpaque(context).takeUnretainedValue()
+    center.post(notification)
 }
 
-/// An internal callback that will be set for "command failed" events if the user 
-/// enables those notifications. This function generates a new `Notification` and posts 
-/// it to the default NotificationCenter for the app. 
+/// An internal callback that will be set for "command failed" events if the user
+/// enables those notifications. This function generates a new `Notification` and posts
+/// it to the default NotificationCenter for the app.
 internal func commandFailed(_event: OpaquePointer?) {
     guard let event = _event else { return }
     let eventStruct = CommandFailedEvent(event)
     let notification = Notification(name: .commandFailed, userInfo: ["event": eventStruct])
-    NotificationCenter.default.post(notification)
+    guard let context = mongoc_apm_command_failed_get_context(event) else {
+        print("missing context")
+        return
+    }
+
+    let center = Unmanaged<NotificationCenter>.fromOpaque(context).takeUnretainedValue()
+    center.post(notification)
 }
 
-/// Extend Notification.Name to have class properties corresponding to each type 
+/// Extend Notification.Name to have class properties corresponding to each type
 /// of event. This allows creating notifications and observers using the same ".x" names
-/// as those passed into `enableNotifications`. 
+/// as those passed into `enableNotifications`.
 extension Notification.Name {
     static let commandStarted = Notification.Name(MongoEvent.commandStarted.rawValue)
     static let commandSucceeded = Notification.Name(MongoEvent.commandSucceeded.rawValue)
@@ -173,14 +184,14 @@ public enum MongoEvent: String {
     case commandFailed
 }
 
-/// An extension of MongoClient to add command monitoring and 
-/// server discovery and monitoring capabilities. 
+/// An extension of MongoClient to add command monitoring and
+/// server discovery and monitoring capabilities.
 extension MongoClient {
-    /* 
+    /*
      *  Enables command monitoring for this client, meaning notifications
      *  about command events will be posted to the supplied NotificationCenter -
      *  or if one is not provided, the default NotificationCenter.
-     *  If no specific event types are provided, all events will be posted. 
+     *  If no specific event types are provided, all events will be posted.
      *
      *  Calling this function will reset all previously enabled events - i.e.
      *  calling
@@ -204,8 +215,8 @@ extension MongoClient {
                 mongoc_apm_set_command_failed_cb(callbacks, commandFailed)
             }
         }
-        var center = center
-        mongoc_client_set_apm_callbacks(client, callbacks, &center)
+
+        mongoc_client_set_apm_callbacks(client, callbacks, Unmanaged.passUnretained(center).toOpaque())
         mongoc_apm_callbacks_destroy(callbacks)
     }
 
