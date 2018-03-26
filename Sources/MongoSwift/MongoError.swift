@@ -4,9 +4,10 @@ import libmongoc
 public enum MongoError {
     case invalidUri(message: String)
     case invalidClient()
+    case invalidDatabase()
     case invalidResponse()
+    case invalidCollection()
     case invalidCursor(message: String)
-    case invalidCollection(message: String)
     case commandError(message: String)
     case bsonParseError(domain: UInt32, code: UInt32, message: String)
     case bsonEncodeError(message: String)
@@ -17,12 +18,17 @@ extension MongoError: LocalizedError {
     public var errorDescription: String? {
         switch self {
         case let .invalidUri(message), let .invalidCursor(message),
-            let .invalidCollection(message), let .commandError(message),
-            let .bsonParseError(_, _, message), let .bsonEncodeError(message),
-            let .typeError(message):
+            let .commandError(message), let .bsonParseError(_, _, message),
+            let .bsonEncodeError(message), let .typeError(message):
             return message
-        default:
-            return nil
+        case .invalidCollection:
+            return "Invalid collection"
+        case .invalidClient:
+            return "Invalid client"
+        case .invalidDatabase:
+            return "Invalid database"
+        case .invalidResponse:
+            return "Invalid response"
         }
     }
 }

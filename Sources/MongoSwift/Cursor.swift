@@ -24,19 +24,26 @@ public class MongoCursor: Sequence, IteratorProtocol {
      * Close the cursor
      */
     public func close() {
+        self._client = nil
         guard let cursor = self._cursor else {
             return
         }
 
         mongoc_cursor_destroy(cursor)
         self._cursor = nil
-        self._client = nil
     }
 
     /**
      * Returns the next document in this cursor, or nil
      */
     public func next() -> Document? {
+        do {
+            _ = try unwrapCursor()
+        } catch {
+            print("error unwrapping cursor")
+            return nil
+        }
+
         let out = UnsafeMutablePointer<UnsafePointer<bson_t>?>.allocate(capacity: 1)
         defer {
             out.deinitialize(count: 1)
@@ -53,5 +60,11 @@ public class MongoCursor: Sequence, IteratorProtocol {
         }
 
         return Document(fromPointer: UnsafeMutablePointer(mutating: out.pointee!))
+    }
+
+    /// This function should be called rather than accessing self._cursor directly.
+    /// It ensures that the `OpaquePointer` to a `mongoc_cursor_t` is still valid. 
+    internal func unwrapCursor() throws -> OpaquePointer {
+        return try unwrap(self._cursor, elseThrow: MongoError.invalidCursor(message: "Invalid cursor"))
     }
 }
