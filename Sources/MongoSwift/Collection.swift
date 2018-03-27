@@ -458,6 +458,12 @@ public struct IndexOptions: BsonEncodable {
 public class MongoCollection {
     private var _collection = OpaquePointer(bitPattern: 1)
     private var _client: MongoClient?
+
+    /// The name of this collection.
+    public var name: String {
+        return String(cString: mongoc_collection_get_name(self._collection))
+    }
+
     /**
         Initializes a new MongoCollection instance, not meant to be instantiated directly
      */

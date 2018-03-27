@@ -26,7 +26,8 @@ final class CollectionTests: XCTestCase {
             ("testDropIndexByModel", testDropIndexByModel),
             ("testDropIndexByKeys", testDropIndexByKeys),
             ("testDropAllIndexes", testDropAllIndexes),
-            ("testListIndexes", testListIndexes)
+            ("testListIndexes", testListIndexes),
+            ("testGetName", testGetName)
         ]
     }
 
@@ -262,5 +263,9 @@ final class CollectionTests: XCTestCase {
         // New collection, so expect just the _id_ index to exist. 
         expect(indexes.next()?["name"] as? String).to(equal("_id_"))
         expect(indexes.next()).to(beNil())
+    }
+
+    func testGetName() {
+        expect(self.coll.name).to(equal("coll1"))
     }
 }
