@@ -1,3 +1,4 @@
+import Foundation
 import libmongoc
 
 public struct ClientOptions {
@@ -31,6 +32,9 @@ public struct ListDatabasesOptions: BsonEncodable {
 // A MongoDB Client
 public class MongoClient {
     internal var _client = OpaquePointer(bitPattern: 1)
+
+    /// If command monitoring is enabled, stores the NotificationCenter events are posted to.
+    internal var notificationCenter: NotificationCenter?
 
     /**
      * Create a new client connection to a MongoDB server
@@ -88,6 +92,10 @@ public class MongoClient {
         guard let client = self._client else {
             return
         }
+
+        // this is defined in the APM extension to Client
+        self.disableCommandMonitoring()
+
         mongoc_client_destroy(client)
         self._client = nil
     }

@@ -203,7 +203,7 @@ extension MongoClient {
      */
     public func enableCommandMonitoring(
         forEvents events: [MongoEvent] = [.commandStarted, .commandSucceeded, .commandFailed],
-        usingCenter center: NotificationCenter = NotificationCenter.default) throws {
+        usingCenter center: NotificationCenter = NotificationCenter.default) {
         let callbacks = mongoc_apm_callbacks_new()
         for event in events {
             switch event {
@@ -215,13 +215,14 @@ extension MongoClient {
                 mongoc_apm_set_command_failed_cb(callbacks, commandFailed)
             }
         }
-
-        mongoc_client_set_apm_callbacks(self._client, callbacks, Unmanaged.passRetained(center).toOpaque())
+        self.notificationCenter = center
+        mongoc_client_set_apm_callbacks(self._client, callbacks, Unmanaged.passUnretained(center).toOpaque())
         mongoc_apm_callbacks_destroy(callbacks)
     }
 
     /// Disables all notification types for this client.
-    public func disableCommandMonitoring() throws {
+    public func disableCommandMonitoring() {
         mongoc_client_set_apm_callbacks(self._client, nil, nil)
+        self.notificationCenter = nil
     }
 }
