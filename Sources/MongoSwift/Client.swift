@@ -34,6 +34,8 @@ public class MongoClient {
     internal var _client = OpaquePointer(bitPattern: 1)
 
     /// If command monitoring is enabled, stores the NotificationCenter events are posted to.
+    /// We store it so we know it will remain reference-counted for as long as monitoring is enabled,
+    /// because the callbacks we set rely on its existence.
     internal var notificationCenter: NotificationCenter?
 
     /**
