@@ -42,7 +42,7 @@ public struct ServerDescription {
     /// The hostname or IP and the port number that the client connects to. Note that this is not the
     /// server's ismaster.me field, in the case that the server reports an address different from the 
     /// address the client uses.
-    let connectionId: ConnectionId = ConnectionId()
+    let connectionId: ConnectionId
 
     /// The last error related to this server.
     let error: MongoError? = nil
@@ -122,7 +122,7 @@ public struct TopologyDescription {
     let maxElectionId: ObjectId? = nil
 
     /// The servers comprising this topology. By default, a single server at localhost:270107.
-    let servers: [ServerDescription] = [ServerDescription()]
+    let servers: [ServerDescription] = [ServerDescription(connectionId: ConnectionId())]
 
     /// For single-threaded clients, indicates whether the topology must be re-scanned.
     let stale: Bool = false
