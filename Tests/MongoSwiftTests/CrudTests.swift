@@ -19,7 +19,7 @@ private var skippedFiles = [
     "deleteOne-collation"
 ]
 
-private extension Document {
+internal extension Document {
     init(fromJSONFile file: URL) throws {
         let jsonString = try String(contentsOf: file, encoding: .utf8)
         try self.init(fromJSON: jsonString)
@@ -329,7 +329,7 @@ private class UpdateTest: CrudTest {
     }
 }
 
-private struct TestError: LocalizedError {
+internal struct TestError: LocalizedError {
     var message: String
     public var errorDescription: String { return self.message }
 }
