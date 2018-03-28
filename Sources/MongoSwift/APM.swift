@@ -33,7 +33,7 @@ public struct CommandStartedEvent {
 
     /// The driver generated operation id. This is used to link events together such
     /// as bulk write operations.
-    let operationId: Int64?
+    let operationId: Int64
 
     /// The connection id for the command.
     let connectionId: ConnectionId
@@ -67,7 +67,7 @@ public struct CommandSucceededEvent {
 
     /// The driver generated operation id. This is used to link events together such
     /// as bulk write operations.
-    let operationId: Int64?
+    let operationId: Int64
 
     /// The connection id for the command.
     let connectionId: ConnectionId
@@ -102,7 +102,7 @@ public struct CommandFailedEvent {
 
     /// The driver generated operation id. This is used to link events together such
     /// as bulk write operations.
-    let operationId: Int64?
+    let operationId: Int64
 
     /// The connection id for the command.
     let connectionId: ConnectionId
