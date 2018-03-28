@@ -275,6 +275,6 @@ final class CollectionTests: XCTestCase {
 
         let findResult2 = try coll.find(["cat": "cat"])
         for _ in findResult2 { }
-        expect(findResult2.getError()).to(beNil())
+        expect(findResult2.error).to(beNil())
     }
 }
