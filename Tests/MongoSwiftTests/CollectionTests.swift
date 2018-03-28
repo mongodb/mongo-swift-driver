@@ -268,4 +268,13 @@ final class CollectionTests: XCTestCase {
     func testGetName() {
         expect(self.coll.name).to(equal("coll1"))
     }
+
+    func testCursorIteration() throws {
+        let findResult1 = try coll.find(["cat": "cat"])
+        while let _  = try findResult1.nextOrError() { }
+
+        let findResult2 = try coll.find(["cat": "cat"])
+        for _ in findResult2 { }
+        expect(findResult2.error).to(beNil())
+    }
 }
