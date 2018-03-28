@@ -96,7 +96,7 @@ public class MongoClient {
         }
 
         // this is defined in the APM extension to Client
-        self.disableCommandMonitoring()
+        self.disableMonitoring()
 
         mongoc_client_destroy(client)
         self._client = nil
