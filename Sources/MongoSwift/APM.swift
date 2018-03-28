@@ -38,62 +38,61 @@ public enum ServerType: String {
 
 /// A struct describing a mongod or mongos process.
 public struct ServerDescription {
-
     /// The hostname or IP and the port number that the client connects to. Note that this is not the
     /// server's ismaster.me field, in the case that the server reports an address different from the 
     /// address the client uses.
     let connectionId: ConnectionId
 
     /// The last error related to this server.
-    let error: MongoError? = nil
+    let error: MongoError? = nil // currently we will never set this
 
     /// The duration of the server's last ismaster call.
-    let roundTripTime: Int64? = nil
+    var roundTripTime: Int64?
 
     /// The "lastWriteDate" from the server's most recent ismaster response.
-    let lastWriteDate: Date? = nil
+    var lastWriteDate: Date?
 
     /// The last opTime reported by the server. Only mongos and shard servers 
     /// record this field when monitoring config servers as replica sets.
-    let opTime: ObjectId? = nil
+    var opTime: ObjectId?
 
     /// The type of this server.
-    let type: ServerType = .unknown
+    var type: ServerType = .unknown
 
     /// The wire protocol version range supported by the server.
-    let minWireVersion: Int32 = 0
-    let maxWireVersion: Int32 = 0
+    var minWireVersion: Int32 = 0
+    var maxWireVersion: Int32 = 0
 
     /// The hostname or IP and the port number that this server was configured with in the replica set.
-    let me: ConnectionId? = nil
+    var me: ConnectionId?
 
     /// Hosts, arbiters, passives: sets of addresses. This server's opinion of the replica set's members, if any.
-    let hosts: [ConnectionId] = []
-    let arbiters: [ConnectionId] = []
+    var hosts: [ConnectionId] = []
+    var arbiters: [ConnectionId] = []
     /// "Passives" are priority-zero replica set members that cannot become primary. 
     /// The client treats them precisely the same as other members.
-    let passives: [ConnectionId] = []
+    var passives: [ConnectionId] = []
 
     /// Tags for this server.
-    let tags: [String: String] = [:]
+    var tags: [String: String] = [:]
 
     /// The replica set name.
-    let setName: String? = nil
+    var setName: String?
 
     /// The replica set version.
-    let setVersion: Int64? = nil
+    var setVersion: Int64?
 
     /// The election ID where this server was elected, if this is a replica set member that believes it is primary.
-    let electionId: ObjectId? = nil
+    var electionId: ObjectId?
 
     /// This server's opinion of who the primary is. 
-    let primary: ConnectionId? = nil
+    var primary: ConnectionId?
 
     /// When this server was last checked.
-    let lastUpdateTime: Date? = nil
+    let lastUpdateTime: Date? = nil // currently we will never set this
 
     /// The logicalSessionTimeoutMinutes value for this server.
-    let logicalSessionTimeoutMinutes: Int64? = nil
+    var logicalSessionTimeoutMinutes: Int64?
 }
 
 /// The possible types for a topology. The raw values correspond to the values libmongoc uses. 
@@ -113,27 +112,27 @@ public struct TopologyDescription {
     let type: TopologyType
 
     /// The replica set name. 
-    let setName: String? = nil
+    var setName: String?
 
     /// The largest setVersion ever reported by a primary.
-    let maxSetVersion: Int64? = nil
+    var maxSetVersion: Int64?
 
     /// The largest electionId ever reported by a primary.
-    let maxElectionId: ObjectId? = nil
+    var maxElectionId: ObjectId?
 
     /// The servers comprising this topology. By default, a single server at localhost:270107.
-    let servers: [ServerDescription] = [ServerDescription(connectionId: ConnectionId())]
+    var servers: [ServerDescription] = [ServerDescription(connectionId: ConnectionId())]
 
     /// For single-threaded clients, indicates whether the topology must be re-scanned.
-    let stale: Bool = false
+    let stale: Bool = false // currently we will never set this
 
     /// Exists if any server's wire protocol version range is incompatible with the client's.
-    let compatibilityError: MongoError? = nil
+    let compatibilityError: MongoError? = nil // currently we will never set this
 
     /// The logicalSessionTimeoutMinutes value for this topology. This value is the minimum
     /// of the logicalSessionTimeoutMinutes values across all the servers in `servers`, 
     /// or nil if any of them are nil.
-    let logicalSessionTimeoutMinutes: Int64? = nil
+    var logicalSessionTimeoutMinutes: Int64?
 
     /// Determines if the topology has a readable server available.
     // (this function should take in an optional ReadPreference, but we have yet to implement that type.) 
