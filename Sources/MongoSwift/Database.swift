@@ -91,6 +91,11 @@ public class MongoDatabase {
     private var _database = OpaquePointer(bitPattern: 1)
     private var _client: MongoClient?
 
+    /// The name of this database.
+    public var name: String {
+        return String(cString: mongoc_database_get_name(self._database))
+    }
+
     /**
      * Initializes a new MongoDatabase instance, not meant to be instantiated directly
      */
