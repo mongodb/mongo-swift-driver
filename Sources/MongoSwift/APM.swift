@@ -15,6 +15,12 @@ public struct ConnectionId {
         self.port = hostData.port
     }
 
+    internal init(_ hostAndPort: String) {
+        let parts = hostAndPort.split(separator: ":")
+        self.host = String(parts[0])
+        self.port = UInt16(parts[1])!
+    }
+
     /// Initializes a ConnectionId at localhost:27017, the default host/port.
     internal init() {
         self.host = "localhost"
@@ -23,7 +29,7 @@ public struct ConnectionId {
 }
 
 /// The possible types for a server. The raw values correspond to the values libmongoc uses. 
-/// (We don't use these strings directly because Swift convention is to use lowercase for enums.)
+/// (We don't use these strings directly because Swift convention is to use lowercase enums.)
 public enum ServerType: String {
     case standalone = "Standalone"
     case mongos = "Mongos"
@@ -89,10 +95,71 @@ public struct ServerDescription {
     var primary: ConnectionId?
 
     /// When this server was last checked.
-    let lastUpdateTime: Date? = nil // currently we will never set this
+    let lastUpdateTime: Date? = nil // currently, this will never be set
 
     /// The logicalSessionTimeoutMinutes value for this server.
     var logicalSessionTimeoutMinutes: Int64?
+
+    internal init(connectionId: ConnectionId) {
+        self.connectionId = connectionId
+    }
+
+    internal init(_ description: OpaquePointer) {
+        self.connectionId = ConnectionId(mongoc_server_description_host(description))
+        self.roundTripTime = mongoc_server_description_round_trip_time(description)
+
+        let isMasterData =  UnsafeMutablePointer(mutating: mongoc_server_description_ismaster(description)!)
+        let isMaster = Document(fromPointer: isMasterData)
+
+        if let lastWrite = isMaster["lastWrite"] as? Document {
+            self.lastWriteDate = lastWrite["lastWriteDate"] as? Date
+            self.opTime = lastWrite["opTime"] as? ObjectId
+        }
+
+        let serverType = String(cString: mongoc_server_description_type(description))
+        self.type = ServerType(rawValue: serverType)!
+
+        if let minVersion = isMaster["minWireVersion"] as? Int32 {
+            self.minWireVersion = minVersion
+        }
+
+        if let maxVersion = isMaster["maxWireVersion"] as? Int32 {
+            self.maxWireVersion = maxVersion
+        }
+
+        if let me = isMaster["me"] as? String {
+            self.me = ConnectionId(me)
+        }
+
+        if let hosts = isMaster["hosts"] as? [String] {
+            self.hosts = hosts.map { ConnectionId($0) }
+        }
+
+        if let passives = isMaster["passives"] as? [String] {
+            self.passives = passives.map { ConnectionId($0) }
+        }
+
+        if let arbiters = isMaster["arbiters"] as? [String] {
+            self.arbiters = arbiters.map { ConnectionId($0) }
+        }
+
+        if let tags = isMaster["tags"] as? Document {
+            for (k, v) in tags {
+                self.tags[k] = v as? String
+            }
+        }
+
+        self.setName = isMaster["setName"] as? String
+        self.setVersion = isMaster["setVersion"] as? Int64
+        self.electionId = isMaster["electionId"] as? ObjectId
+
+        if let primary = isMaster["primary"] as? String {
+            self.primary = ConnectionId(primary)
+        }
+
+        self.logicalSessionTimeoutMinutes = isMaster["logicalSessionTimeoutMinutes"] as? Int64
+
+    }
 }
 
 /// The possible types for a topology. The raw values correspond to the values libmongoc uses. 
@@ -124,10 +191,10 @@ public struct TopologyDescription {
     var servers: [ServerDescription] = [ServerDescription(connectionId: ConnectionId())]
 
     /// For single-threaded clients, indicates whether the topology must be re-scanned.
-    let stale: Bool = false // currently we will never set this
+    let stale: Bool = false // currently, this will never be set
 
     /// Exists if any server's wire protocol version range is incompatible with the client's.
-    let compatibilityError: MongoError? = nil // currently we will never set this
+    let compatibilityError: MongoError? = nil // currently, this will never be set
 
     /// The logicalSessionTimeoutMinutes value for this topology. This value is the minimum
     /// of the logicalSessionTimeoutMinutes values across all the servers in `servers`, 
@@ -140,6 +207,10 @@ public struct TopologyDescription {
 
     /// Determines if the topology has a writable server available.
     func hasWritableServer() -> Bool { return true }
+
+    internal init(_ description: OpaquePointer) {
+        self.type = TopologyType(rawValue: mongoc_topology_description_type(description))
+    }
 }
 
 /// An event published when a command starts. The event is stored under the key `event`
