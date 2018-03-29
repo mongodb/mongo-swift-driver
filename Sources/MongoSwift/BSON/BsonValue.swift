@@ -467,6 +467,10 @@ class ObjectId: BsonValue, Equatable, CustomStringConvertible {
         bson_oid_copy(from, &self.oid)
     }
 
+    internal init(from: bson_oid_t) {
+        self.oid = from
+    }
+
     init(from: String) {
         self.oid = bson_oid_t()
         bson_oid_init_from_string(&self.oid, from)
