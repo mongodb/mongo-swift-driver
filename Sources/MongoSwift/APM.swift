@@ -2,7 +2,7 @@ import Foundation
 import libmongoc
 
 /// A struct representing a server connection, consisting of a host and port.
-public struct ConnectionId {
+public struct ConnectionId: Equatable {
     let host: String
     let port: UInt16
 
@@ -25,6 +25,10 @@ public struct ConnectionId {
     internal init() {
         self.host = "localhost"
         self.port = 27017
+    }
+
+    public static func ==(lhs: ConnectionId, rhs: ConnectionId) -> Bool {
+        return lhs.host == rhs.host && rhs.port == lhs.port
     }
 }
 
@@ -238,13 +242,6 @@ public struct TopologyDescription {
         let buffer = UnsafeBufferPointer(start: serverData, count: size)
         if size > 0 {
             self.servers = Array(buffer).map { ServerDescription($0!) }
-        }
-
-        let timeoutValues = self.servers.map { $0.logicalSessionTimeoutMinutes }
-        if timeoutValues.contains (where: { $0 == nil }) {
-            self.logicalSessionTimeoutMinutes = nil
-        } else {
-            self.logicalSessionTimeoutMinutes = timeoutValues.map { $0! }.min()
         }
     }
 }
