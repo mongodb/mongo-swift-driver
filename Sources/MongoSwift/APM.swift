@@ -105,22 +105,12 @@ public struct ServerDescription {
         self.connectionId = connectionId
     }
 
-    /// An internal initializer to create a `ServerDescription` from an OpaquePointer to a
-    /// mongoc_server_description_t.
-    internal init(_ description: OpaquePointer) {
-        self.connectionId = ConnectionId(mongoc_server_description_host(description))
-        self.roundTripTime = mongoc_server_description_round_trip_time(description)
-
-        let isMasterData =  UnsafeMutablePointer(mutating: mongoc_server_description_ismaster(description)!)
-        let isMaster = Document(fromPointer: isMasterData)
-
+    /// An internal function to handle parsing isMaster and setting ServerDescription attributes appropriately.
+    internal mutating func parseIsMaster(_ isMaster: Document) {
         if let lastWrite = isMaster["lastWrite"] as? Document {
             self.lastWriteDate = lastWrite["lastWriteDate"] as? Date
             self.opTime = lastWrite["opTime"] as? ObjectId
         }
-
-        let serverType = String(cString: mongoc_server_description_type(description))
-        self.type = ServerType(rawValue: serverType)!
 
         if let minVersion = isMaster["minWireVersion"] as? Int32 {
             self.minWireVersion = minVersion
@@ -163,6 +153,20 @@ public struct ServerDescription {
         self.logicalSessionTimeoutMinutes = isMaster["logicalSessionTimeoutMinutes"] as? Int64
 
     }
+
+    /// An internal initializer to create a `ServerDescription` from an OpaquePointer to a
+    /// mongoc_server_description_t.
+    internal init(_ description: OpaquePointer) {
+        self.connectionId = ConnectionId(mongoc_server_description_host(description))
+        self.roundTripTime = mongoc_server_description_round_trip_time(description)
+
+        let isMasterData =  UnsafeMutablePointer(mutating: mongoc_server_description_ismaster(description)!)
+        let isMaster = Document(fromPointer: isMasterData)
+        self.parseIsMaster(isMaster)
+
+        let serverType = String(cString: mongoc_server_description_type(description))
+        self.type = ServerType(rawValue: serverType)!
+    }
 }
 
 /// The possible types for a topology. The raw values correspond to the values libmongoc uses. 
@@ -182,7 +186,7 @@ public struct TopologyDescription {
     let type: TopologyType
 
     /// The replica set name. 
-    var setName: String?
+    var setName: String? { return self.servers[0].setName }
 
     /// The largest setVersion ever reported by a primary.
     var maxSetVersion: Int64?
@@ -202,7 +206,14 @@ public struct TopologyDescription {
     /// The logicalSessionTimeoutMinutes value for this topology. This value is the minimum
     /// of the logicalSessionTimeoutMinutes values across all the servers in `servers`, 
     /// or nil if any of them are nil.
-    var logicalSessionTimeoutMinutes: Int64?
+    var logicalSessionTimeoutMinutes: Int64? {
+        let timeoutValues = self.servers.map { $0.logicalSessionTimeoutMinutes }
+        if timeoutValues.contains (where: { $0 == nil }) {
+            return nil
+        } else {
+            return timeoutValues.map { $0! }.min()
+        }
+    }
 
     /// Determines if the topology has a readable server available.
     // (this function should take in an optional ReadPreference, but we have yet to implement that type.) 
@@ -228,8 +239,6 @@ public struct TopologyDescription {
         if size > 0 {
             self.servers = Array(buffer).map { ServerDescription($0!) }
         }
-
-        self.setName = self.servers[0].setName
 
         let timeoutValues = self.servers.map { $0.logicalSessionTimeoutMinutes }
         if timeoutValues.contains (where: { $0 == nil }) {
