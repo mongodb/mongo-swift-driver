@@ -5,21 +5,43 @@ import XCTest
 
 final class SDAMMonitoringTests: XCTestCase {
 
-	func testMonitoring() throws {
-		let client = try MongoClient()
-		client.enableMonitoring(forEvents: [.serverDescriptionChanged, .serverOpening, .serverClosed, .topologyDescriptionChanged,
-										.topologyOpening, .topologyClosed, .serverHeartbeatStarted, .serverHeartbeatSucceeded, .serverHeartbeatFailed])
+    override func setUp() {
+        self.continueAfterFailure = false
+    }
 
-		let center = NotificationCenter.default
+    // Basic test based on the "standalone" spec test for SDAM monitoring
+    func testMonitoring() throws {
+        let client = try MongoClient()
+        try client.initializeMonitoring(forEvents: .serverMonitoring)
 
-		let observer = center.addObserver(forName: nil, object: nil, queue: nil) { (notif) in
-			print("NOTIF: \(notif)")
+        let center = NotificationCenter.default
+        var receivedEvents = [Event]()
+
+        let observer = center.addObserver(forName: nil, object: nil, queue: nil) { (notif) in
+            guard let event = notif.userInfo?["event"] as? Event else {
+                XCTFail("Notification \(notif) did not contain an event")
+                return
+            }
+            // heartbeat events are not deterministic for every run since they're time dependent, so ignore them
+            if event as? ServerHeartbeatStartedEvent == nil,
+                event as? ServerHeartbeatSucceededEvent == nil,
+                event as? ServerHeartbeatFailedEvent == nil {
+                receivedEvents.append(event)
+            }
         }
 
+        // do some basic operations
         let db = try client.db("testing")
-        let coll = try db.createCollection("testColl")
-        _ = try coll.insertOne(["x": 1])
-
+        _ = try db.createCollection("testColl")
         try db.drop()
-	}
+
+        center.removeObserver(observer)
+
+        expect(receivedEvents.count).to(equal(5))
+        expect(receivedEvents[0]).to(beAnInstanceOf(TopologyOpeningEvent.self))
+        expect(receivedEvents[1]).to(beAnInstanceOf(TopologyDescriptionChangedEvent.self))
+        expect(receivedEvents[2]).to(beAnInstanceOf(ServerOpeningEvent.self))
+        expect(receivedEvents[3]).to(beAnInstanceOf(ServerDescriptionChangedEvent.self))
+        expect(receivedEvents[4]).to(beAnInstanceOf(TopologyDescriptionChangedEvent.self))
+    }
 }

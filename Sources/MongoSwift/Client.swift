@@ -33,10 +33,11 @@ public struct ListDatabasesOptions: BsonEncodable {
 public class MongoClient {
     internal var _client = OpaquePointer(bitPattern: 1)
 
-    /// If command monitoring is enabled, stores the NotificationCenter events are posted to.
-    /// We store it so we know it will remain reference-counted for as long as monitoring is enabled,
-    /// because the callbacks we set rely on its existence.
+    /// If command and/or server monitoring is enabled, stores the NotificationCenter events are posted to.
     internal var notificationCenter: NotificationCenter?
+
+    /// Indicates whether we have already set callbacks for this client. Defaults to false.
+    internal var callbacksSet = false
 
     /**
      * Create a new client connection to a MongoDB server
