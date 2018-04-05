@@ -26,14 +26,14 @@ final class SDAMTests: XCTestCase {
     // Basic test based on the "standalone" spec test for SDAM monitoring:
     // https://github.com/mongodb/specifications/blob/master/source/server-discovery-and-monitoring/tests/monitoring/standalone.json
     func testMonitoring() throws {
-        let client = try MongoClient()
-        try client.initializeMonitoring(forEvents: .serverMonitoring)
+        let client = try MongoClient(options: ClientOptions(eventMonitoring: true))
+        client.enableMonitoring(forEvents: .serverMonitoring)
 
         let center = NotificationCenter.default
-        var receivedEvents = [Event]()
+        var receivedEvents = [MongoEvent]()
 
         let observer = center.addObserver(forName: nil, object: nil, queue: nil) { (notif) in
-            guard let event = notif.userInfo?["event"] as? Event else {
+            guard let event = notif.userInfo?["event"] as? MongoEvent else {
                 XCTFail("Notification \(notif) did not contain an event")
                 return
             }
