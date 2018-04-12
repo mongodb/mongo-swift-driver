@@ -14,8 +14,7 @@ final class ClientTests: XCTestCase {
     func testListDatabases() throws {
         let client = try MongoClient()
         let databases = try client.listDatabases(options: ListDatabasesOptions(nameOnly: true))
-        let expectedDbs: [Document] = [["name": "admin"], ["name": "config"], ["name": "local"]]
-        expect(Array(databases) as [Document]).to(equal(expectedDbs))
+        expect((Array(databases) as [Document]).count).to(beGreaterThan(0))
     }
 
     func testOpaqueInitialization() throws {

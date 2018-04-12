@@ -23,6 +23,12 @@ final class CommandMonitoringTests: XCTestCase {
     func testCommandMonitoring() throws {
         let client = try MongoClient(options: ClientOptions(eventMonitoring: true))
         client.enableMonitoring(forEvents: .commandMonitoring)
+        guard let resourcePath = Bundle(for: type(of: self)).resourcePath else {
+            XCTFail("Missing resource path")
+            return
+        }
+
+        let cmPath = resourcePath + "/command-monitoring/tests"
         let testFiles = try FileManager.default.contentsOfDirectory(atPath: cmPath).filter { $0.hasSuffix(".json") }
         for filename in testFiles {
             // read in the file data and parse into a struct

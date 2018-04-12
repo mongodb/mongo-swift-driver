@@ -2,7 +2,7 @@ import Foundation
 @testable import MongoSwift
 import XCTest
 
-let basePath = "Tests/Specs/benchmarking/data/"
+let basePath = (Bundle(for: BsonBenchmarkTests.self).resourcePath ?? "") + "/data/"
 let flatBsonFile = URL(fileURLWithPath: basePath + "flat_bson.json")
 let flatSize = 75.31
 let deepBsonFile = URL(fileURLWithPath: basePath + "deep_bson.json")
