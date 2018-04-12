@@ -105,7 +105,7 @@ final class DocumentTests: XCTestCase {
             "timestamp": Timestamp(timestamp: 5, inc: 10),
             "nestedarray": [[1, 2], [Int32(3), Int32(4)]] as [[Int32]],
             "nesteddoc": ["a": 1, "b": 2, "c": false, "d": [3, 4]] as Document,
-            "oid": ObjectId(from: "507f1f77bcf86cd799439011"),
+            "oid": ObjectId(fromString: "507f1f77bcf86cd799439011"),
             "regex": regex,
             "array1": [1, 2],
             "array2": ["string1", "string2"],
@@ -139,7 +139,7 @@ final class DocumentTests: XCTestCase {
         expect(doc["maxkey"] as? MaxKey).to(beAnInstanceOf(MaxKey.self))
         expect(doc["date"] as? Date).to(equal(Date(timeIntervalSince1970: 5000)))
         expect(doc["timestamp"] as? Timestamp).to(equal(Timestamp(timestamp: 5, inc: 10)))
-        expect(doc["oid"] as? ObjectId).to(equal(ObjectId(from: "507f1f77bcf86cd799439011")))
+        expect(doc["oid"] as? ObjectId).to(equal(ObjectId(fromString: "507f1f77bcf86cd799439011")))
 
         let regexReturned = doc["regex"] as? NSRegularExpression
         expect(regexReturned?.pattern).to(equal("^abc"))

@@ -1,13 +1,23 @@
 import Foundation
 import libmongoc
 
-public struct ClientOptions {
+public struct ClientOptions: BsonEncodable {
     /// Determines whether the client should retry supported write operations
     let retryWrites: Bool?
 
+    /// Indicates whether this client should be set up to enable monitoring 
+    /// command and server discovery and monitoring events.
+    let eventMonitoring: Bool
+
     /// Convenience initializer allowing retryWrites to be omitted or optional
-    public init(retryWrites: Bool? = nil) {
+    public init(retryWrites: Bool? = nil, eventMonitoring: Bool = false) {
         self.retryWrites = retryWrites
+        self.eventMonitoring = eventMonitoring
+    }
+
+    /// Custom `encode`, because we don't want to actually send the `eventMonitoring` option
+    public func encode(to encoder: BsonEncoder) throws {
+        try encoder.encode(retryWrites, forKey: "retryWrites")
     }
 }
 
@@ -33,10 +43,11 @@ public struct ListDatabasesOptions: BsonEncodable {
 public class MongoClient {
     internal var _client = OpaquePointer(bitPattern: 1)
 
-    /// If command monitoring is enabled, stores the NotificationCenter events are posted to.
-    /// We store it so we know it will remain reference-counted for as long as monitoring is enabled,
-    /// because the callbacks we set rely on its existence.
+    /// If command and/or server monitoring is enabled, stores the NotificationCenter events are posted to.
     internal var notificationCenter: NotificationCenter?
+
+    /// If command and/or server monitoring is enabled, indicates what event types notifications will be posted for. 
+    internal var monitoringEventTypes: [MongoEventType]?
 
     /**
      * Create a new client connection to a MongoDB server
@@ -54,6 +65,11 @@ public class MongoClient {
         self._client = mongoc_client_new_from_uri(uri)
         if self._client == nil {
             throw MongoError.invalidClient()
+        }
+
+        // if the user passed in this option, set up all the monitoring callbacks 
+        if let opts = options, opts.eventMonitoring {
+            self.initializeMonitoring()
         }
     }
 
@@ -96,7 +112,7 @@ public class MongoClient {
         }
 
         // this is defined in the APM extension to Client
-        self.disableCommandMonitoring()
+        self.disableMonitoring()
 
         mongoc_client_destroy(client)
         self._client = nil

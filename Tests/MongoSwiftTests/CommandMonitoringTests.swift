@@ -21,8 +21,8 @@ final class CommandMonitoringTests: XCTestCase {
     }
 
     func testCommandMonitoring() throws {
-        let client = try MongoClient()
-        client.enableCommandMonitoring()
+        let client = try MongoClient(options: ClientOptions(eventMonitoring: true))
+        client.enableMonitoring(forEvents: .commandMonitoring)
         let testFiles = try FileManager.default.contentsOfDirectory(atPath: cmPath).filter { $0.hasSuffix(".json") }
         for filename in testFiles {
             // read in the file data and parse into a struct
@@ -81,11 +81,11 @@ final class CommandMonitoringTests: XCTestCase {
     }
 
     func testAlternateNotificationCenters() throws {
-        let client = try MongoClient()
+        let client = try MongoClient(options: ClientOptions(eventMonitoring: true))
         let db = try client.db("commandTest")
         let collection = try db.createCollection("coll1")
         let customCenter = NotificationCenter()
-        client.enableCommandMonitoring(usingCenter: customCenter)
+        client.enableMonitoring(forEvents: .commandMonitoring, usingCenter: customCenter)
         var eventCount = 0
         let observer = customCenter.addObserver(forName: nil, object: nil, queue: nil) { (_) in
             eventCount += 1

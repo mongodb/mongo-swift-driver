@@ -275,7 +275,7 @@ internal struct DBPointer: BsonValue {
 
         let dbRef: Document = [
             "$ref": String(cString: collectionP),
-            "$id": ObjectId(from: oidP)
+            "$id": ObjectId(fromPointer: oidP)
         ]
 
         return dbRef
@@ -452,28 +452,39 @@ struct MinKey: BsonValue, Equatable {
     static func == (lhs: MinKey, rhs: MinKey) -> Bool { return true }
 }
 
-/// A class to represent the BSON ObjectId type
-class ObjectId: BsonValue, Equatable, CustomStringConvertible {
+/// A struct to represent the BSON ObjectId type
+struct ObjectId: BsonValue, Equatable, CustomStringConvertible {
     public var bsonType: BsonType { return .objectId }
-    private var oid: bson_oid_t
+    var oid: String
 
+    /// Initializes a new ObjectId
     init() {
-        self.oid = bson_oid_t()
-        bson_oid_init(&self.oid, nil)
+        var oid_t = bson_oid_t()
+        bson_oid_init(&oid_t, nil)
+        self.init(fromPointer: &oid_t)
     }
 
-    internal init(from: UnsafePointer<bson_oid_t>) {
-        self.oid = bson_oid_t()
-        bson_oid_copy(from, &self.oid)
+    /// Initializes an ObjectId from a string
+    init(fromString oid: String) {
+        self.oid = oid
     }
 
-    init(from: String) {
-        self.oid = bson_oid_t()
-        bson_oid_init_from_string(&self.oid, from)
+    /// Initializes an ObjectId from an UnsafePointer<bson_oid_t> by copying the data
+    /// from it to a string
+    internal init(fromPointer oid_t: UnsafePointer<bson_oid_t>) {
+        var str = Data(count: 25)
+        self.oid = str.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<Int8>) in
+            bson_oid_to_string(oid_t, bytes)
+            return String(cString: bytes)
+        }
     }
 
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
-        if !bson_append_oid(data, key, Int32(key.count), &self.oid) {
+        // create a new bson_oid_t with self.oid
+        var oid = bson_oid_t()
+        bson_oid_init_from_string(&oid, self.oid)
+        // encode the bson_oid_t to the bson_t
+        if !bson_append_oid(data, key, Int32(key.count), &oid) {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
@@ -482,19 +493,15 @@ class ObjectId: BsonValue, Equatable, CustomStringConvertible {
         guard let oid = bson_iter_oid(&iter) else {
             preconditionFailure("Failed to retrieve ObjectID value")
         }
-        return ObjectId(from: oid)
+        return ObjectId(fromPointer: oid)
     }
 
     public var description: String {
-        var str = Data(count: 25)
-        return str.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<Int8>) in
-            bson_oid_to_string(&self.oid, bytes)
-            return String(cString: bytes)
-        }
+        return self.oid
     }
 
     static func == (lhs: ObjectId, rhs: ObjectId) -> Bool {
-        return lhs.description == rhs.description
+        return lhs.oid == rhs.oid
     }
 
 }
