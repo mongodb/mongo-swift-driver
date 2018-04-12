@@ -7,6 +7,12 @@ The official [MongoDB](https://www.mongodb.com/) driver for Swift.
     - [FIRST: Install the MongoDB C Driver](#first-install-the-mongodb-c-driver)
     -  [NEXT: Install the Driver Using Swift Package Manager](#next-install-the-driver-using-swift-package-manager)
     - [OR: Install the Driver Using CocoaPods](#or-install-the-driver-using-cocoapods)
+- [Building](#building)
+    - [From the command line](#from-the-command-line)
+    - [In Xcode](#in-xcode)
+- [Testing](#testing)
+    - [From the command line](#from-the-command-line-1)
+    - [In Xcode](#in-xcode-1)
 - [Example Usage](#example-usage)
     - [Connect to MongoDB and Create a Collection](#connect-to-mongodb-and-create-a-collection)
     - [Create and Insert a Document](#create-and-insert-a-document)
@@ -84,6 +90,31 @@ end
 ```
 
 Finally, run `pod install` to install your project's dependencies. 
+
+## Building
+
+### From the command line
+Run `make` in the base directory. See the `Makefile` for more information.
+
+### In Xcode
+Build as usual by navigating to `Product -> Build` from the menu bar.
+
+## Running Tests
+**NOTE**: `ClientTests`, `CollectionTests`, `CommandMonitoringTests`, `CrudTests`, and `DatabaseTests` all require a mongod instance to be running on the default host/port, `localhost:27017`. The remainder of the tests are for the BSON library, and should succeed regardless of whether a mongod is running.
+
+Additionally, please note that each benchmark test runs for a minimum of 1 minute and therefore **the entire benchmark suite will take around 20-30 minutes to complete**.
+
+### From the command line 
+Tests can be run from the command line with `make test`. By default, this will run all the tests excluding the benchmarks.
+
+To only run particular tests, use the `FILTER` argument, which is passed as the `filter` argument to `swift test`. This will run test cases with names matching a regular expression, formatted as follows: `<test-target>.<test-case>` or `<test-target>.<test-case>/<test>`.
+
+For example, `make test FILTER=ClientTests` will run `MongoSwiftTests.ClientTests/*`. Or, `make test FILTER=testInsertOne` will only run `MongoSwiftTests.CollectionTests/testInsertOne`. 
+
+To run all of the benchmarks, use `make benchmark` (equivalent to `FILTER=MongoSwiftBenchmarks`). To run a particular benchmark, use the `FILTER` argument to specify the name. To have the benchmark results all printed out at the end, run with `make benchmark | python Tests/MongoSwiftBenchmarks/benchmark.py`.
+
+### In Xcode
+Test as usual by navigating to `Product -> Test` from the menu bar.
 
 ## Example Usage
 
