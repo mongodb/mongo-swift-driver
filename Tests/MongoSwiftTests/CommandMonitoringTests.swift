@@ -2,7 +2,6 @@
 import Nimble
 import XCTest
 
-let cmPath = "Tests/Specs/command-monitoring/tests"
 let center =  NotificationCenter.default
 
 // TODO: don't hardcode this
