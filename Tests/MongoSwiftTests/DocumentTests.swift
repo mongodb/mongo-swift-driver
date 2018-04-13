@@ -224,11 +224,7 @@ final class DocumentTests: XCTestCase {
             "Double type": ["1.23456789012345677E+18", "-1.23456789012345677E+18"]
         ]
 
-        guard let resourcePath = Bundle(for: type(of: self)).resourcePath else {
-            XCTFail("Missing resource path")
-            return
-        }
-        let testFilesPath = resourcePath + "/bson-corpus/tests"
+        let testFilesPath = self.getSpecsPath() + "/bson-corpus/tests"
         var testFiles = try FileManager.default.contentsOfDirectory(atPath: testFilesPath)
         testFiles = testFiles.filter { $0.hasSuffix(".json") }
 

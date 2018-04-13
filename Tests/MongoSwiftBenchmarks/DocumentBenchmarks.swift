@@ -3,11 +3,11 @@ import Foundation
 import XCTest
 import Nimble
 
-let tweetFile = URL(fileURLWithPath: basePath + "tweet.json")
+let tweetFile = URL(fileURLWithPath: basePath + "/tweet.json")
 let tweetSize = 16.22
-let smallFile = URL(fileURLWithPath: basePath + "small_doc.json")
+let smallFile = URL(fileURLWithPath: basePath + "/small_doc.json")
 let smallSize = 2.75
-let largeFile = URL(fileURLWithPath: basePath + "large_doc.json")
+let largeFile = URL(fileURLWithPath: basePath + "/large_doc.json")
 let largeSize = 27.31
 
 let commandSize = 0.16
