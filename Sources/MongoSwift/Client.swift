@@ -14,11 +14,17 @@ public struct ClientOptions: Encodable {
     /// the server's default read concern will be used.
     public let readConcern: ReadConcern?
 
+    /// Specifies a WriteConcern to use for the client. If one is not specified,
+    /// the server's default write concern will be used.
+    let writeConcern: WriteConcern?
+
     /// Convenience initializer allowing any/all to be omitted or optional
-    public init(eventMonitoring: Bool = false, readConcern: ReadConcern? = nil, retryWrites: Bool? = nil) {
+    public init(eventMonitoring: Bool = false, readConcern: ReadConcern? = nil, retryWrites: Bool? = nil,
+                writeConcern: WriteConcern? = nil) {
         self.retryWrites = retryWrites
         self.eventMonitoring = eventMonitoring
         self.readConcern = readConcern
+        self.writeConcern = writeConcern
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -50,6 +56,16 @@ public struct DatabaseOptions {
     /// A read concern to set on the retrieved database. If one is not specified,
     /// the database will inherit the client's read concern. 
     public let readConcern: ReadConcern?
+
+    /// A write concern to set on the retrieved database. If one is not specified,
+    /// the database will inherit the client's write concern.
+    public let writeConcern: WriteConcern?
+
+    /// Convenience initializer allowing any/all arguments to be omitted or optional
+    public init(readConcern: ReadConcern? = nil, writeConcern: WriteConcern? = nil) {
+        self.readConcern = readConcern
+        self.writeConcern = writeConcern
+    }
 }
 
 /// A MongoDB Client.
@@ -69,6 +85,15 @@ public class MongoClient {
         let rcObj = ReadConcern(from: readConcern)
         if rcObj.isDefault { return nil }
         return rcObj
+    }
+
+    /// The write concern set on this client, or nil if one is not set.
+    public var writeConcern: WriteConcern? {
+        // per libmongoc docs, we don't need to handle freeing this ourselves
+        let writeConcern = mongoc_client_get_write_concern(self._client)
+        let wcObj = WriteConcern(writeConcern)
+        if wcObj.isDefault { return nil }
+        return wcObj
     }
 
     /**
@@ -94,6 +119,11 @@ public class MongoClient {
         // if a readConcern is provided, set it on the client
         if let rc = options?.readConcern {
             mongoc_client_set_read_concern(self._client, rc._readConcern)
+        }
+
+        // if a writeConcern is provided, set it on the client
+        if let wc = options?.writeConcern {
+            mongoc_client_set_write_concern(self._client, wc._writeConcern)
         }
 
         if options?.eventMonitoring == true { self.initializeMonitoring() }
@@ -177,6 +207,10 @@ public class MongoClient {
 
         if let rc = options?.readConcern {
             mongoc_database_set_read_concern(db, rc._readConcern)
+        }
+
+        if let wc = options?.writeConcern {
+            mongoc_database_set_write_concern(db, wc._writeConcern)
         }
 
         return MongoDatabase(fromDatabase: db, withClient: self)
