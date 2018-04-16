@@ -102,7 +102,7 @@ We do not provide or maintain an already-generated `.xcodeproj` in our repositor
 **To generate the `.xcodeproj` file**:
 1. Install the Ruby gem `xcodeproj` with `gem install xcodeproj` (you may need to `sudo`)
 2. Run `make project`
-3. You're ready to go! Open `MongoSwift.xcodeproj` with it and build and test as normal.
+3. You're ready to go! Open `MongoSwift.xcodeproj` and build and test as normal.
 
 Why is this necessary? The project requires a customized "copy resources" build phase to include various test `.json` files. By default, this phase is not included when you run `swift package generate-xcodeproj`. So `make project` first generates the project, and then uses `xcodeproj` to manually add the files to the appropriate targets (see `add_json_files.rb`). 
 
