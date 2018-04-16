@@ -12,8 +12,13 @@ else
 endif
 
 all:
-	swift package generate-xcodeproj
 	swift build -v $(CFLAGS) $(LDFLAGS)
+
+project:
+	swift package generate-xcodeproj
+	@# use xcodeproj to add .json files to the project
+	@gem list xcodeproj -i > /dev/null || gem install xcodeproj || { echo "ERROR: Failed to locate or install the ruby gem xcodeproj; please install yourself with 'gem install xcodeproj' (you may need to use sudo)"; exit 1; }
+	ruby add_json_files.rb
 
 test:
 	swift test -v $(CFLAGS) $(LDFLAGS) $(FILTERARG)

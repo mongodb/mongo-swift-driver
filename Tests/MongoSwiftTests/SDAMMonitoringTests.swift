@@ -33,16 +33,16 @@ final class SDAMTests: XCTestCase {
         var receivedEvents = [MongoEvent]()
 
         let observer = center.addObserver(forName: nil, object: nil, queue: nil) { (notif) in
+
+            if !["serverDescriptionChanged", "serverOpening", "serverClosed", "topologyDescriptionChanged",
+                "topologyOpening", "topologyClosed"].contains(notif.name.rawValue) { return }
+
             guard let event = notif.userInfo?["event"] as? MongoEvent else {
                 XCTFail("Notification \(notif) did not contain an event")
                 return
             }
-            // heartbeat events are not deterministic for every run since they're time dependent, so ignore them
-            if event as? ServerHeartbeatStartedEvent == nil,
-                event as? ServerHeartbeatSucceededEvent == nil,
-                event as? ServerHeartbeatFailedEvent == nil {
-                receivedEvents.append(event)
-            }
+
+            receivedEvents.append(event)
         }
         // do some basic operations
         let db = try client.db("testing")

@@ -224,11 +224,12 @@ final class DocumentTests: XCTestCase {
             "Double type": ["1.23456789012345677E+18", "-1.23456789012345677E+18"]
         ]
 
-        var testFiles = try FileManager.default.contentsOfDirectory(atPath: "Tests/Specs/bson-corpus/tests")
+        let testFilesPath = self.getSpecsPath() + "/bson-corpus/tests"
+        var testFiles = try FileManager.default.contentsOfDirectory(atPath: testFilesPath)
         testFiles = testFiles.filter { $0.hasSuffix(".json") }
 
         for fileName in testFiles {
-            let testFilePath = URL(fileURLWithPath: "Tests/Specs/bson-corpus/tests/\(fileName)")
+            let testFilePath = URL(fileURLWithPath: "\(testFilesPath)/\(fileName)")
             let testFileData = try String(contentsOf: testFilePath, encoding: .utf8)
             let testFileJson = try JSONSerialization.jsonObject(with: testFileData.data(using: .utf8)!, options: [])
             guard let json = testFileJson as? [String: Any] else {

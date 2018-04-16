@@ -92,12 +92,14 @@ final class CrudTests: XCTestCase {
 
     // Run all the tests at the /read path
     func testReads() throws {
-        try doTests(forPath: "Tests/Specs/crud/tests/read")
+        let testFilesPath = self.getSpecsPath() + "/crud/tests/read"
+        try doTests(forPath: testFilesPath)
     }
 
     // Run all the tests at the /write path
     func testWrites() throws {
-        try doTests(forPath: "Tests/Specs/crud/tests/write")
+        let testFilesPath = self.getSpecsPath() + "/crud/tests/write"
+        try doTests(forPath: testFilesPath)
     }
 }
 

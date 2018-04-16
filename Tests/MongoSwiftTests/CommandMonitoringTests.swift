@@ -2,7 +2,6 @@
 import Nimble
 import XCTest
 
-let cmPath = "Tests/Specs/command-monitoring/tests"
 let center =  NotificationCenter.default
 
 // TODO: don't hardcode this
@@ -23,6 +22,8 @@ final class CommandMonitoringTests: XCTestCase {
     func testCommandMonitoring() throws {
         let client = try MongoClient(options: ClientOptions(eventMonitoring: true))
         client.enableMonitoring(forEvents: .commandMonitoring)
+
+        let cmPath = self.getSpecsPath() + "/command-monitoring/tests"
         let testFiles = try FileManager.default.contentsOfDirectory(atPath: cmPath).filter { $0.hasSuffix(".json") }
         for filename in testFiles {
             // read in the file data and parse into a struct
@@ -59,6 +60,9 @@ final class CommandMonitoringTests: XCTestCase {
                 // 2. Add an observer that looks for all events
                 var expectedEvents = test.expectations
                 let observer = center.addObserver(forName: nil, object: nil, queue: nil) { (notif) in
+                    // ignore if it doesn't match one of the names we're looking for
+                    if !["commandStarted", "commandSucceeded", "commandFailed"].contains(notif.name.rawValue) { return }
+
                     // remove the next expectation for this test and verify it matches the received event
                     if expectedEvents.count > 0 {
                         expectedEvents.removeFirst().compare(to: notif, testContext: &test.context)

@@ -2,15 +2,16 @@ import Foundation
 @testable import MongoSwift
 import XCTest
 
-let basePath = "Tests/Specs/benchmarking/data/"
-let flatBsonFile = URL(fileURLWithPath: basePath + "flat_bson.json")
+let basePath = XCTestCase.getSpecsPath()
+let flatBsonFile = URL(fileURLWithPath: basePath + "/flat_bson.json")
 let flatSize = 75.31
-let deepBsonFile = URL(fileURLWithPath: basePath + "deep_bson.json")
+let deepBsonFile = URL(fileURLWithPath: basePath + "/deep_bson.json")
 let deepSize = 19.64
-let fullBsonFile = URL(fileURLWithPath: basePath + "full_bson.json")
+let fullBsonFile = URL(fileURLWithPath: basePath + "/full_bson.json")
 let fullSize = 57.34
 
 final class BsonBenchmarkTests: XCTestCase {
+
     static var allTests: [(String, (BsonBenchmarkTests) -> () throws -> Void)] {
         return [
             ("testFlatEncoding", testFlatEncoding),
