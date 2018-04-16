@@ -6,19 +6,27 @@ import libbson
 /// place of a BSONValue.
 public protocol BsonEncodable: BsonValue {
     /**
-    * Encodes this value to a BsonEncoder.
-    *
-    * - Parameters:
-    *   - to: A `BsonEncoder` with which to encode this value
-    */
+     * Encodes this value to a BsonEncoder.
+     *
+     * - Parameters:
+     *   - to: A `BsonEncoder` with which to encode this value
+     */
     func encode(to encoder: BsonEncoder) throws
+
+    /**
+     * Returns a list of fields that should be skipped when encoding 
+     * this type. This method only needs to be implemented if there
+     * are fields to skip and this type is utilizing the default 
+     * `encode(to encoder: BsonEncoder)` implementation. 
+     */
+    var skipFields: [String] { get }
 }
 
 /// Extension of BSONEncodable to make it actually implement BsonValue.
 extension BsonEncodable {
     public var bsonType: BsonType { return .document }
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
-        // Use a BsonEncoder to get a Document, and then call Document.bsonAppend. 
+        // Use a BsonEncoder to get a Document, and then call Document.encode. 
         let encoder = BsonEncoder()
         if let doc = try encoder.encode(self) {
             try doc.encode(to: data, forKey: key)
@@ -43,16 +51,21 @@ func unwrap(_ any: Any) -> Any {
     return some
 }
 
-/// Extension of BsonEncodable to provide a default encode(to encoder: BsonEncoder) implementation.
+/// Extension of BsonEncodable to provide a default encode(to encoder: BsonEncoder) implementation
+/// and default skipFields value.
 extension BsonEncodable {
     public func encode(to encoder: BsonEncoder) throws {
         let mirror = Mirror(reflecting: self)
         for (key, value) in mirror.children {
             guard let key = key else { continue }
+            if self.skipFields.contains(key) { continue }
             let v = unwrap(value)
             try encoder.encode(v as? BsonValue, forKey: key)
         }
     }
+
+    // By default, skip no fields
+    public var skipFields: [String] { return [] }
 }
 
 /// A BsonEncoder for encoding BsonEncodable types to BSON documents. 

@@ -4,10 +4,16 @@ public struct RunCommandOptions: BsonEncodable {
     /// A session to associate with this operation
     public let session: ClientSession?
 
+    /// An optional ReadConcern to use for this operation
+    let readConcern: ReadConcern?
+
     /// Convenience initializer allowing session to be omitted or optional
-    public init(session: ClientSession? = nil) {
+    public init(readConcern: ReadConcern? = nil, session: ClientSession? = nil) {
+        self.readConcern = readConcern
         self.session = session
     }
+
+    public var skipFields: [String] { return ["readConcern"] }
 }
 
 public struct ListCollectionsOptions: BsonEncodable {
@@ -66,16 +72,22 @@ public struct CreateCollectionOptions: BsonEncodable {
     /// A session to associate with this operation
     public let session: ClientSession?
 
+    /// A read concern to set on the returned collection. If one is not specified, it will inherit
+    /// the database's read concern.
+    let readConcern: ReadConcern?
+
     /// Convenience initializer allowing any/all parameters to be omitted or optional
     public init(autoIndexId: Bool? = nil, capped: Bool? = nil, collation: Document? = nil,
-                indexOptionDefaults: Document? = nil, max: Int64? = nil, session: ClientSession? = nil,
-                size: Int64? = nil, storageEngine: Document? = nil, validationAction: String? = nil,
-                validationLevel: String? = nil, validator: Document? = nil, viewOn: String? = nil) {
+                indexOptionDefaults: Document? = nil, max: Int64? = nil, readConcern: ReadConcern? = nil,
+                session: ClientSession? = nil, size: Int64? = nil, storageEngine: Document? = nil,
+                validationAction: String? = nil, validationLevel: String? = nil, validator: Document? = nil,
+                viewOn: String? = nil) {
         self.autoIndexId = autoIndexId
         self.capped = capped
         self.collation = collation
         self.indexOptionDefaults = indexOptionDefaults
         self.max = max
+        self.readConcern = readConcern
         self.session = session
         self.size = size
         self.storageEngine = storageEngine
@@ -84,6 +96,14 @@ public struct CreateCollectionOptions: BsonEncodable {
         self.validator = validator
         self.viewOn = viewOn
     }
+
+    public var skipFields: [String] { return ["readConcern"] }
+}
+
+public struct CollectionOptions {
+    /// A read concern to set on the returned collection. If one is not specified,
+    /// the collection will inherit the database's read concern.
+    let readConcern: ReadConcern?
 }
 
 // A MongoDB Database
@@ -94,6 +114,13 @@ public class MongoDatabase {
     /// The name of this database.
     public var name: String {
         return String(cString: mongoc_database_get_name(self._database))
+    }
+
+    /// The readConcern set on this database.
+    public var readConcern: ReadConcern {
+        // per libmongoc docs, we don't need to handle freeing this ourselves
+        let readConcern = mongoc_database_get_read_concern(self._database)
+        return ReadConcern(readConcern)
     }
 
     /**
@@ -132,10 +159,15 @@ public class MongoDatabase {
      *
      * - Returns: the requested `MongoCollection`
      */
-    public func collection(_ name: String) throws -> MongoCollection {
+    public func collection(_ name: String, options: CollectionOptions? = nil) throws -> MongoCollection {
         guard let collection = mongoc_database_get_collection(self._database, name) else {
             throw MongoError.invalidCollection(message: "Could not get collection '\(name)'")
         }
+
+        if let rc = options?.readConcern {
+            mongoc_collection_set_read_concern(collection, rc._readConcern)
+        }
+
         guard let client = self._client else {
             throw MongoError.invalidClient()
         }
@@ -155,9 +187,15 @@ public class MongoDatabase {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
         var error = bson_error_t()
+
         guard let collection = mongoc_database_create_collection(self._database, name, opts?.data, &error) else {
             throw MongoError.commandError(message: toErrorString(error))
         }
+
+        if let rc = options?.readConcern {
+            mongoc_collection_set_read_concern(collection, rc._readConcern)
+        }
+
         guard let client = self._client else {
             throw MongoError.invalidClient()
         }
@@ -196,12 +234,12 @@ public class MongoDatabase {
      */
     public func runCommand(_ command: Document, options: RunCommandOptions? = nil) throws -> Document {
         let encoder = BsonEncoder()
-        let opts = try encoder.encode(options)
-        let reply: UnsafeMutablePointer<bson_t> = bson_new()
+        let opts = try ReadConcern.append(options?.readConcern, to: try encoder.encode(options), callerRC: self.readConcern)
+        let reply = Document()
         var error = bson_error_t()
-        if !mongoc_database_command_with_opts(self._database, command.data, nil, opts?.data, reply, &error) {
+        if !mongoc_database_command_with_opts(self._database, command.data, nil, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
-        return Document(fromPointer: reply)
+        return reply
     }
 }

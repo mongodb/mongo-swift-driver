@@ -9,16 +9,21 @@ public struct ClientOptions: BsonEncodable {
     /// command and server discovery and monitoring events.
     public let eventMonitoring: Bool
 
-    /// Convenience initializer allowing retryWrites to be omitted or optional
-    public init(retryWrites: Bool? = nil, eventMonitoring: Bool = false) {
+    /// Specifies a ReadConcern to use for the client. If one is not specified,
+    /// the server's default read concern will be used.
+    let readConcern: ReadConcern?
+
+    /// Convenience initializer allowing any/all to be omitted or optional
+    public init(eventMonitoring: Bool = false, readConcern: ReadConcern? = nil, retryWrites: Bool? = nil) {
         self.retryWrites = retryWrites
         self.eventMonitoring = eventMonitoring
+        self.readConcern = readConcern
     }
 
-    /// Custom `encode`, because we don't want to actually send the `eventMonitoring` option
-    public func encode(to encoder: BsonEncoder) throws {
-        try encoder.encode(retryWrites, forKey: "retryWrites")
-    }
+    /// `eventMonitoring` is a field that we set on the MongoClient, and `readConcern`
+    /// is used to set a default read concern for the client after it's created, so neither
+    /// of them should be encoded with the client options.
+    public var skipFields: [String] { return ["eventMonitoring", "readConcern"] }
 }
 
 public struct ListDatabasesOptions: BsonEncodable {
@@ -39,6 +44,12 @@ public struct ListDatabasesOptions: BsonEncodable {
     }
 }
 
+public struct DatabaseOptions {
+    /// A read concern to set on the retrieved database. If one is not specified,
+    /// the database will inherit the client's read concern. 
+    let readConcern: ReadConcern?
+}
+
 // A MongoDB Client
 public class MongoClient {
     internal var _client: OpaquePointer?
@@ -48,6 +59,13 @@ public class MongoClient {
 
     /// If command and/or server monitoring is enabled, indicates what event types notifications will be posted for.
     internal var monitoringEventTypes: [MongoEventType]?
+
+    /// The read concern set on this client.
+    public var readConcern: ReadConcern {
+        // per libmongoc docs, we don't need to handle freeing this ourselves
+        let readConcern = mongoc_client_get_read_concern(self._client)
+        return ReadConcern(readConcern)
+    }
 
     /**
      * Create a new client connection to a MongoDB server
@@ -67,10 +85,12 @@ public class MongoClient {
             throw MongoError.invalidClient()
         }
 
-        // if the user passed in this option, set up all the monitoring callbacks
-        if let opts = options, opts.eventMonitoring {
-            self.initializeMonitoring()
+        // if a readConcern is provided, set it on the client
+        if let rc = options?.readConcern {
+            mongoc_client_set_read_concern(self._client, rc._readConcern)
         }
+
+        if options?.eventMonitoring == true { self.initializeMonitoring() }
     }
 
     /**
@@ -140,13 +160,19 @@ public class MongoClient {
      *
      * - Parameters:
      *   - name: the name of the database to retrieve
+     *   - options: Optional settings
      *
      * - Returns: a `MongoDatabase` corresponding to the provided database name
      */
-    public func db(_ name: String) throws -> MongoDatabase {
+    public func db(_ name: String, options: DatabaseOptions? = nil) throws -> MongoDatabase {
         guard let db = mongoc_client_get_database(self._client, name) else {
             throw MongoError.invalidClient()
         }
+
+        if let rc = options?.readConcern {
+            mongoc_database_set_read_concern(db, rc._readConcern)
+        }
+
         return MongoDatabase(fromDatabase: db, withClient: self)
     }
 }
