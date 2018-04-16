@@ -8,13 +8,18 @@ public struct RunCommandOptions: Encodable {
     /// An optional ReadConcern to use for this operation
     let readConcern: ReadConcern?
 
+    /// An optional WriteConcern to use for this operation
+    let writeConcern: WriteConcern?
+
     /// Convenience initializer allowing session to be omitted or optional
-    public init(readConcern: ReadConcern? = nil, session: ClientSession? = nil) {
+    public init(readConcern: ReadConcern? = nil, session: ClientSession? = nil,
+                writeConcern: WriteConcern? = nil) {
         self.readConcern = readConcern
         self.session = session
+        self.writeConcern = writeConcern
     }
 
-    // Encode everything except readConcern
+    // Encode everything except readConcern and writeConcern
     private enum CodingKeys: String, CodingKey {
         case session
     }
@@ -82,12 +87,16 @@ public struct CreateCollectionOptions: Encodable {
     /// the database's read concern.
     let readConcern: ReadConcern?
 
+    /// A write concern to set on the returned collection. If one is not specified, it will inherit
+    /// the database's write concern.
+    let writeConcern: WriteConcern?
+
     /// Convenience initializer allowing any/all parameters to be omitted or optional
     public init(autoIndexId: Bool? = nil, capped: Bool? = nil, collation: Document? = nil,
                 indexOptionDefaults: Document? = nil, max: Int64? = nil, readConcern: ReadConcern? = nil,
                 session: ClientSession? = nil, size: Int64? = nil, storageEngine: Document? = nil,
                 validationAction: String? = nil, validationLevel: String? = nil, validator: Document? = nil,
-                viewOn: String? = nil) {
+                viewOn: String? = nil, writeConcern: WriteConcern? = nil) {
         self.autoIndexId = autoIndexId
         self.capped = capped
         self.collation = collation
@@ -101,9 +110,10 @@ public struct CreateCollectionOptions: Encodable {
         self.validationLevel = validationLevel
         self.validator = validator
         self.viewOn = viewOn
+        self.writeConcern = writeConcern
     }
 
-    // Encode everything except readConcern
+    // Encode everything except readConcern and writeconcern
     private enum CodingKeys: String, CodingKey {
         case autoIndexId, capped, collation, indexOptionDefaults, max, session,
             size, storageEngine, validationAction, validationLevel, validator, viewOn
@@ -115,6 +125,17 @@ public struct CollectionOptions {
     /// A read concern to set on the returned collection. If one is not specified,
     /// the collection will inherit the database's read concern.
     let readConcern: ReadConcern?
+
+    /// A write concern to set on the returned collection. If one is not specified,
+    /// the collection will inherit the database's write concern.
+    let writeConcern: WriteConcern?
+
+    public init(readConcern: ReadConcern? = nil, writeConcern: WriteConcern? = nil) {
+        self.readConcern = readConcern
+        self.writeConcern = writeConcern
+    }
+
+    public var skipFields: [String] { return ["readConcern", "writeConcern"] }
 }
 
 /// A MongoDB Database
@@ -134,6 +155,15 @@ public class MongoDatabase {
         let rcObj = ReadConcern(readConcern)
         if rcObj.isDefault { return nil }
         return rcObj
+    }
+
+    /// The `WriteConcern` set on this database, or `nil` if one is not set.
+    public var writeConcern: WriteConcern? {
+        // per libmongoc docs, we don't need to handle freeing this ourselves
+        let writeConcern = mongoc_database_get_write_concern(self._database)
+        let wcObj = WriteConcern(writeConcern)
+        if wcObj.isDefault { return nil }
+        return wcObj
     }
 
     /// Initializes a new `MongoDatabase` instance, not meant to be instantiated directly.
@@ -192,6 +222,10 @@ public class MongoDatabase {
             mongoc_collection_set_read_concern(collection, rc._readConcern)
         }
 
+        if let wc = options?.writeConcern {
+            mongoc_collection_set_write_concern(collection, wc._writeConcern)
+        }
+
         guard let client = self._client else {
             throw MongoError.invalidClient()
         }
@@ -238,6 +272,10 @@ public class MongoDatabase {
             mongoc_collection_set_read_concern(collection, rc._readConcern)
         }
 
+        if let wc = options?.writeConcern {
+            mongoc_collection_set_write_concern(collection, wc._writeConcern)
+        }
+
         guard let client = self._client else {
             throw MongoError.invalidClient()
         }
@@ -276,10 +314,11 @@ public class MongoDatabase {
      */
     public func runCommand(_ command: Document, options: RunCommandOptions? = nil) throws -> Document {
         let encoder = BsonEncoder()
-        let opts = try ReadConcern.append(options?.readConcern, to: try encoder.encode(options), callerRC: self.readConcern)
+        let withRC = try ReadConcern.append(options?.readConcern, to: try encoder.encode(options), callerRC: self.readConcern)
+        let withWC = try WriteConcern.append(options?.writeConcern, to: withRC, callerWC: self.writeConcern)
         let reply = Document()
         var error = bson_error_t()
-        if !mongoc_database_command_with_opts(self._database, command.data, nil, opts?.data, reply.data, &error) {
+        if !mongoc_database_command_with_opts(self._database, command.data, nil, withWC?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
         return reply

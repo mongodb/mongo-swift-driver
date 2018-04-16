@@ -23,6 +23,7 @@ public enum MongoError {
     case typeError(message: String)
     /// Thrown when there is an error involving a `ReadConcern`. 
     case readConcernError(message: String)
+    case writeConcernError(message: String)
 }
 
 /// An extension of `MongoError` to support printing out descriptive error messages.
@@ -32,7 +33,8 @@ extension MongoError: LocalizedError {
         case let .invalidUri(message), let .invalidCursor(message),
             let .invalidCollection(message), let .commandError(message),
             let .bsonParseError(_, _, message), let .bsonEncodeError(message),
-            let .typeError(message):
+            let .typeError(message), let .readConcernError(message),
+            let .writeConcernError(message):
             return message
         default:
             return nil
