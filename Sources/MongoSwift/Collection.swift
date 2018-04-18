@@ -456,7 +456,7 @@ public struct IndexOptions: BsonEncodable {
 
 // A MongoDB Collection
 public class MongoCollection {
-    private var _collection = OpaquePointer(bitPattern: 1)
+    private var _collection: OpaquePointer?
     private var _client: MongoClient?
 
     /// The name of this collection.
@@ -476,13 +476,12 @@ public class MongoCollection {
         Deinitializes a MongoCollection, cleaning up the internal mongoc_collection_t
      */
     deinit {
+        self._client = nil
         guard let collection = self._collection else {
             return
         }
-
         mongoc_collection_destroy(collection)
         self._collection = nil
-        self._client = nil
     }
 
     /**

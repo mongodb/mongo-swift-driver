@@ -7,7 +7,8 @@ final class ClientTests: XCTestCase {
     static var allTests: [(String, (ClientTests) -> () throws -> Void)] {
         return [
             ("testListDatabases", testListDatabases),
-            ("testOpaqueInitialization", testOpaqueInitialization)
+            ("testOpaqueInitialization", testOpaqueInitialization),
+            ("testFailedClientInitialization", testFailedClientInitialization)
         ]
     }
 
@@ -37,5 +38,10 @@ final class ClientTests: XCTestCase {
         let docs = Array(findResult)
         expect(docs[0]["test"] as? Int).to(equal(42))
         try db.drop()
+    }
+
+    func testFailedClientInitialization() {
+        // check that we fail gracefully with an error if passing in an invalid URI
+        expect(try MongoClient(connectionString: "abcd")).to(throwError())
     }
 }
