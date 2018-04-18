@@ -88,7 +88,7 @@ public struct CreateCollectionOptions: BsonEncodable {
 
 // A MongoDB Database
 public class MongoDatabase {
-    private var _database = OpaquePointer(bitPattern: 1)
+    private var _database: OpaquePointer?
     private var _client: MongoClient?
 
     /// The name of this database.
@@ -108,10 +108,10 @@ public class MongoDatabase {
      * Deinitializes a MongoDatabase, cleaning up the internal mongoc_database_t
      */
     deinit {
+        self._client = nil
         guard let database = self._database else { return }
         mongoc_database_destroy(database)
         self._database = nil
-        self._client = nil
     }
 
     /**

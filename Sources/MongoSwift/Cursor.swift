@@ -2,7 +2,7 @@ import libmongoc
 
 // A Cursor
 public class MongoCursor: Sequence, IteratorProtocol {
-    private var _cursor = OpaquePointer(bitPattern: 1)
+    private var _cursor: OpaquePointer?
     private var _client: MongoClient?
 
     /**
@@ -24,13 +24,12 @@ public class MongoCursor: Sequence, IteratorProtocol {
      * Close the cursor
      */
     public func close() {
+        self._client = nil
         guard let cursor = self._cursor else {
             return
         }
-
         mongoc_cursor_destroy(cursor)
         self._cursor = nil
-        self._client = nil
     }
 
     /**

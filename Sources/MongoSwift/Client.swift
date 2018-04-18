@@ -41,7 +41,7 @@ public struct ListDatabasesOptions: BsonEncodable {
 
 // A MongoDB Client
 public class MongoClient {
-    internal var _client = OpaquePointer(bitPattern: 1)
+    internal var _client: OpaquePointer?
 
     /// If command and/or server monitoring is enabled, stores the NotificationCenter events are posted to.
     internal var notificationCenter: NotificationCenter?
@@ -75,7 +75,7 @@ public class MongoClient {
 
     /**
      * Create a new client from an existing `mongoc_client_t`.
-     * Do not use this initialier unless you know what you are doing.
+     * Do not use this initializer unless you know what you are doing.
      *
      * - Parameters:
      *   - fromPointer: the `mongoc_client_t` to store and use internally
