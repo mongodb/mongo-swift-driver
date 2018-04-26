@@ -146,18 +146,18 @@ public enum BsonSubtype: Int {
 }
 
 /// A struct to represent the BSON Binary type
-struct Binary: BsonValue, Equatable {
+public struct Binary: BsonValue, Equatable {
     public var bsonType: BsonType { return .binary }
     var data: Data
     var subtype: BsonSubtype
 
-    init(data: Data, subtype: BsonSubtype) {
+    public init(data: Data, subtype: BsonSubtype) {
         self.data = data
         self.subtype = subtype
     }
 
     // Initialize a Binary instance from a base64 string
-    init(base64: String, subtype: BsonSubtype) {
+    public init(base64: String, subtype: BsonSubtype) {
         guard let dataObj = Data(base64Encoded: base64) else {
             preconditionFailure("failed to create Data object from base64 string \(base64)")
         }
@@ -166,7 +166,7 @@ struct Binary: BsonValue, Equatable {
     }
 
     // Initialize a Binary instance from a Data object
-    init(data: Data, subtype: UInt32) {
+    public init(data: Data, subtype: UInt32) {
         self.data = data
         self.subtype = BsonSubtype(rawValue: Int(subtype))!
     }
@@ -198,7 +198,7 @@ struct Binary: BsonValue, Equatable {
         return Binary(data: dataObj, subtype: subtype.rawValue)
     }
 
-    static func == (lhs: Binary, rhs: Binary) -> Bool {
+    public static func == (lhs: Binary, rhs: Binary) -> Bool {
         return lhs.data == rhs.data && lhs.subtype == rhs.subtype
     }
 }
@@ -221,7 +221,7 @@ extension Bool: BsonValue {
 extension Date: BsonValue {
     public var bsonType: BsonType { return .dateTime }
 
-    init(msSinceEpoch: Int64) {
+    public init(msSinceEpoch: Int64) {
         self.init(timeIntervalSince1970: Double(msSinceEpoch / 1000))
     }
 
@@ -283,14 +283,16 @@ internal struct DBPointer: BsonValue {
 }
 
 /// A struct to represent the BSON Decimal128 type
-struct Decimal128: BsonValue, Equatable {
+public struct Decimal128: BsonValue, Equatable {
     var data: String
-    init(_ data: String) {
+
+    public init(_ data: String) {
         self.data = data
     }
+
     public var bsonType: BsonType { return .decimal128 }
 
-    static func == (lhs: Decimal128, rhs: Decimal128) -> Bool {
+    public static func == (lhs: Decimal128, rhs: Decimal128) -> Bool {
         return lhs.data == rhs.data
     }
 
@@ -375,7 +377,7 @@ extension Int64: BsonValue {
 }
 
 /// A struct to represent the BSON Code and CodeWithScope types
-struct CodeWithScope: BsonValue {
+public struct CodeWithScope: BsonValue {
     var code = ""
     var scope: Document?
 
@@ -385,7 +387,7 @@ struct CodeWithScope: BsonValue {
     }
 
     // Initialize a CodeWithScope with an optional scope value
-    init(code: String, scope: Document? = nil) {
+    public init(code: String, scope: Document? = nil) {
         self.code = code
         self.scope = scope
     }
@@ -425,7 +427,7 @@ struct CodeWithScope: BsonValue {
 }
 
 /// A struct to represent the BSON MaxKey type
-struct MaxKey: BsonValue, Equatable {
+public struct MaxKey: BsonValue, Equatable {
     public var bsonType: BsonType { return .maxKey }
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
         if !bson_append_maxkey(data, key, Int32(key.count)) {
@@ -435,11 +437,11 @@ struct MaxKey: BsonValue, Equatable {
 
     public static func from(iter: inout bson_iter_t) -> BsonValue { return MaxKey() }
 
-    static func == (lhs: MaxKey, rhs: MaxKey) -> Bool { return true }
+    public static func == (lhs: MaxKey, rhs: MaxKey) -> Bool { return true }
 }
 
 /// A struct to represent the BSON MinKey type
-struct MinKey: BsonValue, Equatable {
+public struct MinKey: BsonValue, Equatable {
     public var bsonType: BsonType { return .minKey }
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
         if !bson_append_minkey(data, key, Int32(key.count)) {
@@ -449,23 +451,23 @@ struct MinKey: BsonValue, Equatable {
 
     public static func from(iter: inout bson_iter_t) -> BsonValue { return MinKey() }
 
-    static func == (lhs: MinKey, rhs: MinKey) -> Bool { return true }
+    public static func == (lhs: MinKey, rhs: MinKey) -> Bool { return true }
 }
 
 /// A struct to represent the BSON ObjectId type
-struct ObjectId: BsonValue, Equatable, CustomStringConvertible {
+public struct ObjectId: BsonValue, Equatable, CustomStringConvertible {
     public var bsonType: BsonType { return .objectId }
     var oid: String
 
     /// Initializes a new ObjectId
-    init() {
+    public init() {
         var oid_t = bson_oid_t()
         bson_oid_init(&oid_t, nil)
         self.init(fromPointer: &oid_t)
     }
 
     /// Initializes an ObjectId from a string
-    init(fromString oid: String) {
+    public init(fromString oid: String) {
         self.oid = oid
     }
 
@@ -500,7 +502,7 @@ struct ObjectId: BsonValue, Equatable, CustomStringConvertible {
         return self.oid
     }
 
-    static func == (lhs: ObjectId, rhs: ObjectId) -> Bool {
+    public static func == (lhs: ObjectId, rhs: ObjectId) -> Bool {
         return lhs.oid == rhs.oid
     }
 
@@ -616,19 +618,19 @@ internal struct Symbol: BsonValue {
 }
 
 /// A struct to represent the BSON Timestamp type
-struct Timestamp: BsonValue, Equatable {
+public struct Timestamp: BsonValue, Equatable {
     public var bsonType: BsonType { return .timestamp }
     var timestamp: UInt32 = 0
     var increment: UInt32 = 0
 
-    init(timestamp: UInt32, inc: UInt32) {
+    public init(timestamp: UInt32, inc: UInt32) {
         self.timestamp = timestamp
         self.increment = inc
     }
 
     // assumes that values can successfully be converted to UInt32
     // w/o loss of precision
-    init(timestamp: Int, inc: Int) {
+    public init(timestamp: Int, inc: Int) {
         self.timestamp = UInt32(timestamp)
         self.increment = UInt32(inc)
     }
@@ -646,7 +648,7 @@ struct Timestamp: BsonValue, Equatable {
         return Timestamp(timestamp: t, inc: i)
     }
 
-    static func == (lhs: Timestamp, rhs: Timestamp) -> Bool {
+    public static func == (lhs: Timestamp, rhs: Timestamp) -> Bool {
         return lhs.timestamp == rhs.timestamp && lhs.increment == rhs.increment
     }
 
