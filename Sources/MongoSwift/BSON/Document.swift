@@ -157,7 +157,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     }
 
     /// Returns a relaxed extended JSON representation of this Document
-    var extendedJSON: String {
+    public var extendedJSON: String {
         let json = bson_as_relaxed_extended_json(self.data, nil)
         guard let jsonData = json else {
             return String()
@@ -167,7 +167,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     }
 
     /// Returns a canonical extended JSON representation of this Document
-    var canonicalExtendedJSON: String {
+    public var canonicalExtendedJSON: String {
         let json = bson_as_canonical_extended_json(self.data, nil)
         guard let jsonData = json else {
             return String()
@@ -177,7 +177,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     }
 
     /// Returns a copy of the raw BSON data represented as Data
-    var rawBSON: Data {
+    public var rawBSON: Data {
         let data = bson_get_data(self.data)
         let length = self.data.pointee.len
         return Data(bytes: data!, count: Int(length))

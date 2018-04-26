@@ -3,24 +3,24 @@ import libmongoc
 public struct AggregateOptions: BsonEncodable {
     /// Enables writing to temporary files. When set to true, aggregation stages
     /// can write data to the _tmp subdirectory in the dbPath directory
-    let allowDiskUse: Bool?
+    public let allowDiskUse: Bool?
 
     /// The number of documents to return per batch.
-    let batchSize: Int32?
+    public let batchSize: Int32?
 
     /// If true, allows the write to opt-out of document level validation. This only applies
     /// when the $out stage is specified.
-    let bypassDocumentValidation: Bool?
+    public let bypassDocumentValidation: Bool?
 
     /// Specifies a collation.
-    let collation: Document?
+    public let collation: Document?
 
     /// The maximum amount of time to allow the query to run.
-    let maxTimeMS: Int64?
+    public let maxTimeMS: Int64?
 
     /// Enables users to specify an arbitrary string to help trace the operation through
     /// the database profiler, currentOp and logs. The default is to not send a value.
-    let comment: String?
+    public let comment: String?
 
     /// The index to use for the aggregation. The hint does not apply to $lookup and $graphLookup stages.
     // let hint: Optional<(String | Document)>
@@ -39,19 +39,19 @@ public struct AggregateOptions: BsonEncodable {
 
 public struct CountOptions: BsonEncodable {
     /// Specifies a collation.
-    let collation: Document?
+    public let collation: Document?
 
     /// The index to use.
     // let hint: Optional<(String | Document)>
 
     /// The maximum number of documents to count.
-    let limit: Int64?
+    public let limit: Int64?
 
     /// The maximum amount of time to allow the query to run.
-    let maxTimeMS: Int64?
+    public let maxTimeMS: Int64?
 
     /// The number of documents to skip before counting.
-    let skip: Int64?
+    public let skip: Int64?
 
     /// Convenience initializer allowing any/all parameters to be optional
     public init(collation: Document? = nil, limit: Int64? = nil, maxTimeMS: Int64? = nil, skip: Int64? = nil) {
@@ -64,10 +64,10 @@ public struct CountOptions: BsonEncodable {
 
 public struct DistinctOptions: BsonEncodable {
     /// Specifies a collation.
-    let collation: Document?
+    public let collation: Document?
 
     /// The maximum amount of time to allow the query to run.
-    let maxTimeMS: Int64?
+    public let maxTimeMS: Int64?
 
     /// Convenience initializer allowing any/all parameters to be optional
     public init(collation: Document? = nil, maxTimeMS: Int64? = nil) {
@@ -109,16 +109,16 @@ public enum CursorType {
 
 public struct FindOptions: BsonEncodable {
     /// Get partial results from a mongos if some shards are down (instead of throwing an error).
-    let allowPartialResults: Bool?
+    public let allowPartialResults: Bool?
 
     /// The number of documents to return per batch.
-    let batchSize: Int32?
+    public let batchSize: Int32?
 
     /// Specifies a collation.
-    let collation: Document?
+    public let collation: Document?
 
     /// Attaches a comment to the query.
-    let comment: String?
+    public let comment: String?
 
     /// Indicates the type of cursor to use. This value includes both the tailable and awaitData options.
     // commenting this out until we decide how to encode cursorType.
@@ -128,44 +128,44 @@ public struct FindOptions: BsonEncodable {
     // let hint: Optional<(String | Document)>
 
     /// The maximum number of documents to return.
-    let limit: Int64?
+    public let limit: Int64?
 
     /// The exclusive upper bound for a specific index.
-    let max: Document?
+    public let max: Document?
 
     /// The maximum amount of time for the server to wait on new documents to satisfy a tailable cursor
     /// query. This only applies to a TAILABLE_AWAIT cursor. When the cursor is not a TAILABLE_AWAIT cursor,
     /// this option is ignored.
-    let maxAwaitTimeMS: Int64?
+    public let maxAwaitTimeMS: Int64?
 
     /// Maximum number of documents or index keys to scan when executing the query.
-    let maxScan: Int64?
+    public let maxScan: Int64?
 
     /// The maximum amount of time to allow the query to run.
-    let maxTimeMS: Int64?
+    public let maxTimeMS: Int64?
 
     /// The inclusive lower bound for a specific index.
-    let min: Document?
+    public let min: Document?
 
     /// The server normally times out idle cursors after an inactivity period (10 minutes)
     /// to prevent excess memory use. Set this option to prevent that.
-    let noCursorTimeout: Bool?
+    public let noCursorTimeout: Bool?
 
     /// Limits the fields to return for all matching documents.
-    let projection: Document?
+    public let projection: Document?
 
     /// If true, returns only the index keys in the resulting documents.
-    let returnKey: Bool?
+    public let returnKey: Bool?
 
     /// Determines whether to return the record identifier for each document. If true, adds a field $recordId
     /// to the returned documents.
-    let showRecordId: Bool?
+    public let showRecordId: Bool?
 
     /// The number of documents to skip before returning.
-    let skip: Int64?
+    public let skip: Int64?
 
     /// The order in which to return matching documents.
-    let sort: Document?
+    public let sort: Document?
 
     /// Convenience initializer allowing any/all parameters to be optional
     public init(allowPartialResults: Bool? = nil, batchSize: Int32? = nil, collation: Document? = nil,
@@ -194,7 +194,7 @@ public struct FindOptions: BsonEncodable {
 
 public struct InsertOneOptions: BsonEncodable {
     /// If true, allows the write to opt-out of document level validation.
-    let bypassDocumentValidation: Bool?
+    public let bypassDocumentValidation: Bool?
 
     /// Convenience initializer allowing bypassDocumentValidation to be omitted or optional
     public init(bypassDocumentValidation: Bool? = nil) {
@@ -204,12 +204,12 @@ public struct InsertOneOptions: BsonEncodable {
 
 public struct InsertManyOptions: BsonEncodable {
     /// If true, allows the write to opt-out of document level validation.
-    let bypassDocumentValidation: Bool?
+    public let bypassDocumentValidation: Bool?
 
     /// If true, when an insert fails, return without performing the remaining
     /// writes. If false, when a write fails, continue with the remaining writes, if any.
     /// Defaults to true.
-    var ordered: Bool = true
+    public var ordered: Bool = true
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional
     public init(bypassDocumentValidation: Bool? = nil, ordered: Bool? = true) {
@@ -220,16 +220,16 @@ public struct InsertManyOptions: BsonEncodable {
 
 public struct UpdateOptions: BsonEncodable {
     /// A set of filters specifying to which array elements an update should apply.
-    let arrayFilters: [Document]?
+    public let arrayFilters: [Document]?
 
     /// If true, allows the write to opt-out of document level validation.
-    let bypassDocumentValidation: Bool?
+    public let bypassDocumentValidation: Bool?
 
     /// Specifies a collation.
-    let collation: Document?
+    public let collation: Document?
 
     /// When true, creates a new document if no document matches the query.
-    let upsert: Bool?
+    public let upsert: Bool?
 
     /// Convenience initializer allowing any/all parameters to be optional
     public init(arrayFilters: [Document]? = nil, bypassDocumentValidation: Bool? = nil, collation: Document? = nil,
@@ -243,13 +243,13 @@ public struct UpdateOptions: BsonEncodable {
 
 public struct ReplaceOptions: BsonEncodable {
     /// If true, allows the write to opt-out of document level validation.
-    let bypassDocumentValidation: Bool?
+    public let bypassDocumentValidation: Bool?
 
     /// Specifies a collation.
-    let collation: Document?
+    public let collation: Document?
 
     /// When true, creates a new document if no document matches the query.
-    let upsert: Bool?
+    public let upsert: Bool?
 
     /// Convenience initializer allowing any/all parameters to be optional
     public init(bypassDocumentValidation: Bool? = nil, collation: Document? = nil, upsert: Bool? = nil) {
@@ -261,7 +261,7 @@ public struct ReplaceOptions: BsonEncodable {
 
 public struct DeleteOptions: BsonEncodable {
     /// Specifies a collation.
-    let collation: Document?
+    public let collation: Document?
 
      /// Convenience initializer allowing collation to be omitted or optional
     public init(collation: Document? = nil) {
@@ -272,12 +272,12 @@ public struct DeleteOptions: BsonEncodable {
 public struct InsertOneResult {
     /// The identifier that was inserted. If the document doesn't have an identifier, this value
     /// will be generated and added to the document before insertion.
-    let insertedId: BsonValue
+    public let insertedId: BsonValue
 }
 
 public struct InsertManyResult {
     /// Map of the index of the inserted document to the id of the inserted document.
-    let insertedIds: [Int64: BsonValue]
+    public let insertedIds: [Int64: BsonValue]
 
     /// Given an ordered array of insertedIds, creates a corresponding InsertManyResult.
     internal init(fromArray arr: [BsonValue]) {
@@ -292,7 +292,7 @@ public struct InsertManyResult {
 
 public struct DeleteResult {
     /// The number of documents that were deleted.
-    let deletedCount: Int
+    public let deletedCount: Int
 
     /// Given a server response to a delete command, creates a corresponding
     /// `DeleteResult`. If the `from` Document does not have a `deletedCount`
@@ -305,13 +305,13 @@ public struct DeleteResult {
 
 public struct UpdateResult {
     /// The number of documents that matched the filter.
-    let matchedCount: Int
+    public let matchedCount: Int
 
     /// The number of documents that were modified.
-    let modifiedCount: Int
+    public let modifiedCount: Int
 
     /// The identifier of the inserted document if an upsert took place.
-    let upsertedId: Any
+    public let upsertedId: Any
 
     /// Given a server response to an update command, creates a corresponding
     /// `UpdateResult`. If the `from` Document does not have `matchedCount` and
@@ -329,10 +329,10 @@ public struct UpdateResult {
 
 public struct IndexModel: BsonEncodable {
     /// Contains the required keys for the index.
-    let keys: Document
+    public let keys: Document
 
     /// Contains the options for the index.
-    let options: IndexOptions?
+    public let options: IndexOptions?
 
     /// Convenience initializer providing a default `options` value
     public init(keys: Document, options: IndexOptions? = nil) {
@@ -360,11 +360,11 @@ public struct IndexModel: BsonEncodable {
 public struct IndexOptions: BsonEncodable {
     /// Optionally tells the server to build the index in the background and not block
     /// other tasks.
-    let background: Bool?
+    public let background: Bool?
 
     /// Optionally specifies the length in time, in seconds, for documents to remain in
     /// a collection.
-    let expireAfter: Int32?
+    public let expireAfter: Int32?
 
     /**
      * Optionally specify a specific name for the index outside of the default generated
@@ -375,57 +375,57 @@ public struct IndexOptions: BsonEncodable {
      *
      * - Example: For an index of name: 1, age: -1, the generated name would be "name_1_age_-1".
      */
-    let name: String?
+    public let name: String?
 
     /// Optionally tells the index to only reference documents with the specified field in
     /// the index.
-    let sparse: Bool?
+    public let sparse: Bool?
 
     /// Optionally used only in MongoDB 3.0.0 and higher. Specifies the storage engine
     /// to store the index in.
-    let storageEngine: String?
+    public let storageEngine: String?
 
     /// Optionally forces the index to be unique.
-    let unique: Bool?
+    public let unique: Bool?
 
     /// Optionally specifies the index version number, either 0 or 1.
-    let version: Int32?
+    public let version: Int32?
 
     /// Optionally specifies the default language for text indexes. Is english if none is provided.
-    let defaultLanguage: String?
+    public let defaultLanguage: String?
 
     /// Optionally Specifies the field in the document to override the language.
-    let languageOverride: String?
+    public let languageOverride: String?
 
     /// Optionally provides the text index version number.
-    let textVersion: Int32?
+    public let textVersion: Int32?
 
     /// Optionally specifies fields in the index and their corresponding weight values.
-    let weights: Document?
+    public let weights: Document?
 
     /// Optionally specifies the 2dsphere index version number.
-    let sphereVersion: Int32?
+    public let sphereVersion: Int32?
 
     /// Optionally specifies the precision of the stored geo hash in the 2d index, from 1 to 32.
-    let bits: Int32?
+    public let bits: Int32?
 
     /// Optionally sets the maximum boundary for latitude and longitude in the 2d index.
-    let max: Double?
+    public let max: Double?
 
     /// Optionally sets the minimum boundary for latitude and longitude in the index in a 2d index.
-    let min: Double?
+    public let min: Double?
 
     /// Optionally specifies the number of units within which to group the location values in a geo haystack index.
-    let bucketSize: Int32?
+    public let bucketSize: Int32?
 
     /// Optionally specifies a filter for use in a partial index. Only documents that match the
     /// filter expression are included in the index.
-    let partialFilterExpression: Document?
+    public let partialFilterExpression: Document?
 
     /// Optionally specifies a collation to use for the index in MongoDB 3.4 and higher.
     /// If not specified, no collation is sent and the default collation of the collection
     /// server-side is used.
-    let collation: Document?
+    public let collation: Document?
 
     public init(background: Bool? = nil, expireAfter: Int32? = nil, name: String? = nil, sparse: Bool? = nil,
                 storageEngine: String? = nil, unique: Bool? = nil, version: Int32? = nil,

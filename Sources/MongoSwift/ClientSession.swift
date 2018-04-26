@@ -2,7 +2,7 @@ public struct SessionOptions {
     /**
      * Specify whether read operations should be causally ordered within the session
      */
-    let causalConsistency: Bool?
+    public let causalConsistency: Bool?
 }
 
 public class ClientSession: BsonEncodable {

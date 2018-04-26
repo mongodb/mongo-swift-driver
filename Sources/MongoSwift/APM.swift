@@ -3,7 +3,7 @@ import libmongoc
 
 /// A protocol for monitoring events to implement, specifying their type and name.
 public protocol MongoEvent {
-    /// The MongoEventType corresponding to the event. This event will be posted if 
+    /// The MongoEventType corresponding to the event. This event will be posted if
     /// monitoring is enabled for its eventType.
     static var eventType: MongoEventType { get }
 
@@ -28,23 +28,23 @@ public struct CommandStartedEvent: MongoEvent, InitializableFromOpaquePointer {
     public static var eventName: Notification.Name { return .commandStarted }
 
     /// The command.
-    let command: Document
+    public let command: Document
 
     /// The database name.
-    let databaseName: String
+    public let databaseName: String
 
     /// The command name.
-    let commandName: String
+    public let commandName: String
 
     /// The driver generated request id.
-    let requestId: Int64
+    public let requestId: Int64
 
     /// The driver generated operation id. This is used to link events together such
     /// as bulk write operations.
-    let operationId: Int64
+    public let operationId: Int64
 
     /// The connection id for the command.
-    let connectionId: ConnectionId
+    public let connectionId: ConnectionId
 
     /// Initializes a CommandStartedEvent from an OpaquePointer to a mongoc_apm_command_started_t
     fileprivate init(_ event: OpaquePointer) {
@@ -68,23 +68,23 @@ public struct CommandSucceededEvent: MongoEvent, InitializableFromOpaquePointer 
     public static var eventName: Notification.Name { return .commandSucceeded }
 
     /// The execution time of the event, in microseconds.
-    let duration: Int64
+    public let duration: Int64
 
     /// The command reply.
-    let reply: Document
+    public let reply: Document
 
     /// The command name.
-    let commandName: String
+    public let commandName: String
 
     /// The driver generated request id.
-    let requestId: Int64
+    public let requestId: Int64
 
     /// The driver generated operation id. This is used to link events together such
     /// as bulk write operations.
-    let operationId: Int64
+    public let operationId: Int64
 
     /// The connection id for the command.
-    let connectionId: ConnectionId
+    public let connectionId: ConnectionId
 
     /// Initializes a CommandSucceededEvent from an OpaquePointer to a mongoc_apm_command_succeeded_t
     fileprivate init(_ event: OpaquePointer) {
@@ -108,23 +108,23 @@ public struct CommandFailedEvent: MongoEvent, InitializableFromOpaquePointer {
     public static var eventName: Notification.Name { return .commandFailed }
 
     /// The execution time of the event, in microseconds.
-    let duration: Int64
+    public let duration: Int64
 
     /// The command name.
-    let commandName: String
+    public let commandName: String
 
     /// The failure, represented as a MongoError.
-    let failure: MongoError
+    public let failure: MongoError
 
     /// The client generated request id.
-    let requestId: Int64
+    public let requestId: Int64
 
     /// The driver generated operation id. This is used to link events together such
     /// as bulk write operations.
-    let operationId: Int64
+    public let operationId: Int64
 
     /// The connection id for the command.
-    let connectionId: ConnectionId
+    public let connectionId: ConnectionId
 
     /// Initializes a CommandFailedEvent from an OpaquePointer to a mongoc_apm_command_failed_t
     fileprivate init(_ event: OpaquePointer) {
@@ -144,20 +144,20 @@ public struct ServerDescriptionChangedEvent: MongoEvent, InitializableFromOpaque
     /// The type of this event.
     public static var eventType: MongoEventType { return .serverMonitoring }
 
-    /// The name this event will be posted under. 
+    /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .serverDescriptionChanged }
 
     /// The connection ID (host/port pair) of the server.
-    let connectionId: ConnectionId
+    public let connectionId: ConnectionId
 
     /// A unique identifier for the topology.
-    let topologyId: ObjectId
+    public let topologyId: ObjectId
 
     /// The previous server description.
-    let previousDescription: ServerDescription
+    public let previousDescription: ServerDescription
 
     /// The new server description.
-    let newDescription: ServerDescription
+    public let newDescription: ServerDescription
 
     /// Initializes a ServerDescriptionChangedEvent from an OpaquePointer to a mongoc_server_changed_t
     fileprivate init(_ event: OpaquePointer) {
@@ -175,14 +175,14 @@ public struct ServerOpeningEvent: MongoEvent, InitializableFromOpaquePointer {
     /// The type of this event.
     public static var eventType: MongoEventType { return .serverMonitoring }
 
-    /// The name this event will be posted under. 
+    /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .serverOpening }
 
     /// The connection ID (host/port pair) of the server.
-    let connectionId: ConnectionId
+    public let connectionId: ConnectionId
 
     /// A unique identifier for the topology.
-    let topologyId: ObjectId
+    public let topologyId: ObjectId
 
     /// Initializes a ServerOpeningEvent from an OpaquePointer to a mongoc_apm_server_opening_t
     fileprivate init(_ event: OpaquePointer) {
@@ -198,14 +198,14 @@ public struct ServerClosedEvent: MongoEvent, InitializableFromOpaquePointer {
     /// The type of this event.
     public static var eventType: MongoEventType { return .serverMonitoring }
 
-    /// The name this event will be posted under. 
+    /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .serverClosed }
 
     /// The connection ID (host/port pair) of the server.
-    let connectionId: ConnectionId
+    public let connectionId: ConnectionId
 
     /// A unique identifier for the topology.
-    let topologyId: ObjectId
+    public let topologyId: ObjectId
 
     /// Initializes a TopologyClosedEvent from an OpaquePointer to a mongoc_apm_topology_closed_t
     fileprivate init(_ event: OpaquePointer) {
@@ -221,17 +221,17 @@ public struct TopologyDescriptionChangedEvent: MongoEvent, InitializableFromOpaq
     /// The type of this event.
     public static var eventType: MongoEventType { return .serverMonitoring }
 
-    /// The name this event will be posted under. 
+    /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .topologyDescriptionChanged }
 
     /// A unique identifier for the topology.
-    let topologyId: ObjectId
+    public let topologyId: ObjectId
 
     /// The old topology description.
-    let previousDescription: TopologyDescription
+    public let previousDescription: TopologyDescription
 
     /// The new topology description.
-    let newDescription: TopologyDescription
+    public let newDescription: TopologyDescription
 
     /// Initializes a TopologyDescriptionChangedEvent from an OpaquePointer to a mongoc_apm_topology_changed_t
     fileprivate init(_ event: OpaquePointer) {
@@ -248,11 +248,11 @@ public struct TopologyOpeningEvent: MongoEvent, InitializableFromOpaquePointer {
     /// The type of this event.
     public static var eventType: MongoEventType { return .serverMonitoring }
 
-    /// The name this event will be posted under. 
+    /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .topologyOpening }
 
     /// A unique identifier for the topology.
-    let topologyId: ObjectId
+    public let topologyId: ObjectId
 
     /// Initializes a TopologyOpeningEvent from an OpaquePointer to a mongoc_apm_topology_opening_t
     fileprivate init(_ event: OpaquePointer) {
@@ -271,7 +271,7 @@ public struct TopologyClosedEvent: MongoEvent, InitializableFromOpaquePointer {
     public static var eventName: Notification.Name { return .topologyClosed }
 
     /// A unique identifier for the topology.
-    let topologyId: ObjectId
+    public let topologyId: ObjectId
 
     /// Initializes a TopologyClosedEvent from an OpaquePointer to a mongoc_apm_topology_closed_t
     fileprivate init(_ event: OpaquePointer) {
@@ -291,7 +291,7 @@ public struct ServerHeartbeatStartedEvent: MongoEvent, InitializableFromOpaquePo
     public static var eventName: Notification.Name { return .serverHeartbeatStarted }
 
     /// The connection ID (host/port pair) of the server.
-    let connectionId: ConnectionId
+    public let connectionId: ConnectionId
 
     /// Initializes a ServerHeartbeatStartedEvent from an OpaquePointer to a mongoc_apm_server_heartbeat_started_t
     fileprivate init(_ event: OpaquePointer) {
@@ -308,13 +308,13 @@ public struct ServerHeartbeatSucceededEvent: MongoEvent, InitializableFromOpaque
     public static var eventName: Notification.Name { return .serverHeartbeatSucceeded }
 
     /// The execution time of the event, in microseconds.
-    let duration: Int64
+    public let duration: Int64
 
     /// The command reply.
-    let reply: Document
+    public let reply: Document
 
     /// The connection ID (host/port pair) of the server.
-    let connectionId: ConnectionId
+    public let connectionId: ConnectionId
 
     /// Initializes a ServerHeartbeatSucceededEvent from an OpaquePointer to a mongoc_apm_server_heartbeat_succeeded_t
     fileprivate init(_ event: OpaquePointer) {
@@ -330,17 +330,17 @@ public struct ServerHeartbeatFailedEvent: MongoEvent, InitializableFromOpaquePoi
     /// The type of this event.
     public static var eventType: MongoEventType { return .serverMonitoring }
 
-    /// The name this event will be posted under. 
+    /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .serverHeartbeatFailed }
 
     /// The execution time of the event, in microseconds.
-    let duration: Int64
+    public let duration: Int64
 
-    /// The failure. 
-    let failure: MongoError
+    /// The failure.
+    public let failure: MongoError
 
     /// The connection ID (host/port pair) of the server.
-    let connectionId: ConnectionId
+    public let connectionId: ConnectionId
 
     /// Initializes a ServerHeartbeatFailedEvent from an OpaquePointer to a mongoc_apm_server_heartbeat_failed_t
     fileprivate init(_ event: OpaquePointer) {
@@ -352,75 +352,100 @@ public struct ServerHeartbeatFailedEvent: MongoEvent, InitializableFromOpaquePoi
     }
 }
 
-/// Callbacks that will be set for events with the corresponding names if the user enables 
-/// notifications for those events. These functions generate new `Notification`s and post 
+/// Callbacks that will be set for events with the corresponding names if the user enables
+/// notifications for those events. These functions generate new `Notification`s and post
 /// them to the `NotificationCenter` that was by the user, or `NotificationCenter.default`
 /// if none was specified.
 
 /// A callback that will be set for "command started" events if the user enables command monitoring.
 private func commandStarted(_event: OpaquePointer?) {
-    postNotification(type: CommandStartedEvent.self, _event: _event, contextFunc: mongoc_apm_command_started_get_context)
+    postNotification(type: CommandStartedEvent.self,
+                     _event: _event,
+                     contextFunc: mongoc_apm_command_started_get_context)
 }
 
 /// A callback that will be set for "command succeeded" events if the user enables command monitoring.
 private func commandSucceeded(_event: OpaquePointer?) {
-    postNotification(type: CommandSucceededEvent.self, _event: _event, contextFunc: mongoc_apm_command_succeeded_get_context)
+    postNotification(type: CommandSucceededEvent.self,
+                     _event: _event,
+                     contextFunc: mongoc_apm_command_succeeded_get_context)
 }
 
 /// A callback that will be set for "command failed" events if the user enables command monitoring.
 private func commandFailed(_event: OpaquePointer?) {
-    postNotification(type: CommandFailedEvent.self, _event: _event, contextFunc: mongoc_apm_command_failed_get_context)
+    postNotification(type: CommandFailedEvent.self,
+                     _event: _event,
+                     contextFunc: mongoc_apm_command_failed_get_context)
 }
 
 /// A callback that will be set for "server description changed" events if the user enables server monitoring.
 private func serverDescriptionChanged(_event: OpaquePointer?) {
-    postNotification(type: ServerDescriptionChangedEvent.self, _event: _event, contextFunc: mongoc_apm_server_changed_get_context)
+    postNotification(type: ServerDescriptionChangedEvent.self,
+                     _event: _event,
+                     contextFunc: mongoc_apm_server_changed_get_context)
 }
 
 /// A callback that will be set for "server opening" events if the user enables server monitoring.
 private func serverOpening(_event: OpaquePointer?) {
-    postNotification(type: ServerOpeningEvent.self, _event: _event, contextFunc: mongoc_apm_server_opening_get_context)
+    postNotification(type: ServerOpeningEvent.self,
+                     _event: _event,
+                     contextFunc: mongoc_apm_server_opening_get_context)
 }
 
 /// A callback that will be set for "server closed" events if the user enables server monitoring.
 private func serverClosed(_event: OpaquePointer?) {
-    postNotification(type: ServerClosedEvent.self, _event: _event, contextFunc: mongoc_apm_server_closed_get_context)
+    postNotification(type: ServerClosedEvent.self,
+                     _event: _event,
+                     contextFunc: mongoc_apm_server_closed_get_context)
 }
 
 /// A callback that will be set for "topology description changed" events if the user enables server monitoring.
 private func topologyDescriptionChanged(_event: OpaquePointer?) {
-    postNotification(type: TopologyDescriptionChangedEvent.self, _event: _event, contextFunc: mongoc_apm_topology_changed_get_context)
+    postNotification(type: TopologyDescriptionChangedEvent.self,
+                     _event: _event,
+                     contextFunc: mongoc_apm_topology_changed_get_context)
 }
 
 /// A callback that will be set for "topology opening" events if the user enables server monitoring.
 private func topologyOpening(_event: OpaquePointer?) {
-    postNotification(type: TopologyOpeningEvent.self, _event: _event, contextFunc: mongoc_apm_topology_opening_get_context)
+    postNotification(type: TopologyOpeningEvent.self,
+                     _event: _event,
+                     contextFunc: mongoc_apm_topology_opening_get_context)
 }
 
 /// A callback that will be set for "topology closed" events if the user enables server monitoring.
 private func topologyClosed(_event: OpaquePointer?) {
-    postNotification(type: TopologyClosedEvent.self, _event: _event, contextFunc: mongoc_apm_topology_closed_get_context)
+    postNotification(type: TopologyClosedEvent.self,
+                     _event: _event,
+                     contextFunc: mongoc_apm_topology_closed_get_context)
 }
 
 /// A callback that will be set for "server heartbeat started" events if the user enables server monitoring.
 private func serverHeartbeatStarted(_event: OpaquePointer?) {
-    postNotification(type: ServerHeartbeatStartedEvent.self, _event: _event, contextFunc: mongoc_apm_server_heartbeat_started_get_context)
+    postNotification(type: ServerHeartbeatStartedEvent.self,
+                     _event: _event,
+                     contextFunc: mongoc_apm_server_heartbeat_started_get_context)
 }
 
 /// A callback that will be set for "server heartbeat succeeded" events if the user enables server monitoring.
 private func serverHeartbeatSucceeded(_event: OpaquePointer?) {
-    postNotification(type: ServerHeartbeatSucceededEvent.self, _event: _event, contextFunc: mongoc_apm_server_heartbeat_succeeded_get_context)
+    postNotification(type: ServerHeartbeatSucceededEvent.self,
+                     _event: _event,
+                     contextFunc: mongoc_apm_server_heartbeat_succeeded_get_context)
 }
 
 /// A callback that will be set for "server heartbeat failed" events if the user enables server monitoring.
 private func serverHeartbeatFailed(_event: OpaquePointer?) {
-    postNotification(type: ServerHeartbeatFailedEvent.self, _event: _event, contextFunc: mongoc_apm_server_heartbeat_failed_get_context)
+    postNotification(type: ServerHeartbeatFailedEvent.self,
+                     _event: _event,
+                     contextFunc: mongoc_apm_server_heartbeat_failed_get_context)
 }
 
-/// Posts a Notification with the specified name, containing an event of type T generated using the provided _event 
+/// Posts a Notification with the specified name, containing an event of type T generated using the provided _event
 /// and context function.
 private func postNotification<T: MongoEvent>(type: T.Type, _event: OpaquePointer?,
-                                            contextFunc: (OpaquePointer) -> UnsafeMutableRawPointer!) where T: InitializableFromOpaquePointer {
+                                             contextFunc: (OpaquePointer) -> UnsafeMutableRawPointer!
+                                            ) where T: InitializableFromOpaquePointer {
     guard let event = _event else {
         preconditionFailure("Missing event pointer for \(type)")
     }
@@ -490,7 +515,7 @@ extension MongoClient {
         mongoc_apm_callbacks_destroy(callbacks)
     }
 
-    /*  
+    /*
      *  Disables monitoring for this MongoClient. Notifications can be reenabled using MongoClient.enableMonitoring.
      */
     public func disableMonitoring() {
@@ -511,7 +536,7 @@ extension MongoClient {
      *
      */
     public func enableMonitoring(forEvents eventType: MongoEventType? = nil,
-                                usingCenter center: NotificationCenter = NotificationCenter.default) {
+                                 usingCenter center: NotificationCenter = NotificationCenter.default) {
         if let type = eventType {
             self.monitoringEventTypes = [type]
         } else {

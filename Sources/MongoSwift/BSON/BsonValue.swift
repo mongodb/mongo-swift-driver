@@ -71,12 +71,12 @@ public protocol BsonValue {
     func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws
 
     /**
-    * Given a bson_iter_t known to have a next value, returns the next value in the iterator. 
+    * Given a bson_iter_t known to have a next value, returns the next value in the iterator.
     *
-    * - Parameters: 
+    * - Parameters:
     *   - iter: A `bson_iter_t` to read the next value from
-    * 
-    * - Returns: A BsonValue 
+    *
+    * - Returns: A BsonValue
     */
     static func from(iter: inout bson_iter_t) -> BsonValue
 }
@@ -239,7 +239,7 @@ extension Date: BsonValue {
     }
 }
 
-/// An internal struct to represent the deprecated DBPointer type. While DBPointers cannot 
+/// An internal struct to represent the deprecated DBPointer type. While DBPointers cannot
 /// be created, we may need to parse them into `Document`s, and this provides a place for that logic.
 internal struct DBPointer: BsonValue {
 

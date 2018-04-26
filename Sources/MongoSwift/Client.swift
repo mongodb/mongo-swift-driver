@@ -3,11 +3,11 @@ import libmongoc
 
 public struct ClientOptions: BsonEncodable {
     /// Determines whether the client should retry supported write operations
-    let retryWrites: Bool?
+    public let retryWrites: Bool?
 
-    /// Indicates whether this client should be set up to enable monitoring 
+    /// Indicates whether this client should be set up to enable monitoring
     /// command and server discovery and monitoring events.
-    let eventMonitoring: Bool
+    public let eventMonitoring: Bool
 
     /// Convenience initializer allowing retryWrites to be omitted or optional
     public init(retryWrites: Bool? = nil, eventMonitoring: Bool = false) {
@@ -23,13 +23,13 @@ public struct ClientOptions: BsonEncodable {
 
 public struct ListDatabasesOptions: BsonEncodable {
     /// An optional filter for the returned databases
-    let filter: Document?
+    public let filter: Document?
 
     /// Optionally indicate whether only names should be returned
-    let nameOnly: Bool?
+    public let nameOnly: Bool?
 
     /// An optional session to use for this operation
-    let session: ClientSession?
+    public let session: ClientSession?
 
     /// Convenience constructor for basic construction
     public init(filter: Document? = nil, nameOnly: Bool? = nil, session: ClientSession? = nil) {
@@ -46,7 +46,7 @@ public class MongoClient {
     /// If command and/or server monitoring is enabled, stores the NotificationCenter events are posted to.
     internal var notificationCenter: NotificationCenter?
 
-    /// If command and/or server monitoring is enabled, indicates what event types notifications will be posted for. 
+    /// If command and/or server monitoring is enabled, indicates what event types notifications will be posted for.
     internal var monitoringEventTypes: [MongoEventType]?
 
     /**
@@ -67,7 +67,7 @@ public class MongoClient {
             throw MongoError.invalidClient()
         }
 
-        // if the user passed in this option, set up all the monitoring callbacks 
+        // if the user passed in this option, set up all the monitoring callbacks
         if let opts = options, opts.eventMonitoring {
             self.initializeMonitoring()
         }

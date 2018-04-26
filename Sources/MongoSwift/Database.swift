@@ -2,7 +2,7 @@ import libmongoc
 
 public struct RunCommandOptions: BsonEncodable {
     /// A session to associate with this operation
-    let session: ClientSession?
+    public let session: ClientSession?
 
     /// Convenience initializer allowing session to be omitted or optional
     public init(session: ClientSession? = nil) {
@@ -12,13 +12,13 @@ public struct RunCommandOptions: BsonEncodable {
 
 public struct ListCollectionsOptions: BsonEncodable {
     /// A filter to match collections against
-    let filter: Document?
+    public let filter: Document?
 
     /// The batchSize for the returned cursor
-    let batchSize: Int?
+    public let batchSize: Int?
 
     /// A session to associate with this operation
-    let session: ClientSession?
+    public let session: ClientSession?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional
     public init(batchSize: Int? = nil, filter: Document? = nil, session: ClientSession? = nil) {
@@ -30,41 +30,41 @@ public struct ListCollectionsOptions: BsonEncodable {
 
 public struct CreateCollectionOptions: BsonEncodable {
     /// Indicates whether this will be a capped collection
-    let capped: Bool?
+    public let capped: Bool?
 
     /// Whether or not this collection will automatically generate an index on _id
-    let autoIndexId: Bool?
+    public let autoIndexId: Bool?
 
     /// Maximum size, in bytes, of this collection (if capped)
-    let size: Int64?
+    public let size: Int64?
 
     /// Maximum number of documents allowed in the collection (if capped)
-    let max: Int64?
+    public let max: Int64?
 
     /// Determine which storage engine to use
-    let storageEngine: Document?
+    public let storageEngine: Document?
 
     /// What validator should be used for the collection
-    let validator: Document?
+    public let validator: Document?
 
     /// Determines how strictly MongoDB applies the validation rules to existing documents during an update
-    let validationLevel: String?
+    public let validationLevel: String?
 
     /// Determines whether to error on invalid documents or just warn about the violations
     /// but allow invalid documents to be inserted
-    let validationAction: String?
+    public let validationAction: String?
 
     /// Allows users to specify a default configuration for indexes when creating a collection
-    let indexOptionDefaults: Document?
+    public let indexOptionDefaults: Document?
 
     /// The name of the source collection or view from which to create the view
-    let viewOn: String?
+    public let viewOn: String?
 
     /// Specifies the default collation for the collection
-    let collation: Document?
+    public let collation: Document?
 
     /// A session to associate with this operation
-    let session: ClientSession?
+    public let session: ClientSession?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional
     public init(autoIndexId: Bool? = nil, capped: Bool? = nil, collation: Document? = nil,

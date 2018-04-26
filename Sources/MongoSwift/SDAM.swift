@@ -3,10 +3,10 @@ import libmongoc
 
 /// A struct representing a server connection, consisting of a host and port.
 public struct ConnectionId: Equatable {
-    let host: String
-    let port: UInt16
+    public let host: String
+    public let port: UInt16
 
-    /// Initializes a ConnectionId from an UnsafePointer to a mongoc_host_list_t. 
+    /// Initializes a ConnectionId from an UnsafePointer to a mongoc_host_list_t.
     internal init(_ hostList: UnsafePointer<mongoc_host_list_t>) {
         var hostData = hostList.pointee
         self.host = withUnsafeBytes(of: &hostData.host) { (rawPtr) -> String in
@@ -29,7 +29,7 @@ public struct ConnectionId: Equatable {
     }
 }
 
-/// The possible types for a server. The raw values correspond to the values libmongoc uses. 
+/// The possible types for a server. The raw values correspond to the values libmongoc uses.
 /// (We don't use these strings directly because Swift convention is to use lowercase enums.)
 public enum ServerType: String {
     case standalone = "Standalone"
@@ -46,60 +46,60 @@ public enum ServerType: String {
 /// A struct describing a mongod or mongos process.
 public struct ServerDescription {
     /// The hostname or IP and the port number that the client connects to. Note that this is not the
-    /// server's ismaster.me field, in the case that the server reports an address different from the 
+    /// server's ismaster.me field, in the case that the server reports an address different from the
     /// address the client uses.
-    let connectionId: ConnectionId
+    public let connectionId: ConnectionId
 
     /// The last error related to this server.
-    let error: MongoError? = nil // currently we will never set this
+    public let error: MongoError? = nil // currently we will never set this
 
     /// The duration of the server's last ismaster call.
-    var roundTripTime: Int64?
+    public var roundTripTime: Int64?
 
     /// The "lastWriteDate" from the server's most recent ismaster response.
-    var lastWriteDate: Date?
+    public var lastWriteDate: Date?
 
-    /// The last opTime reported by the server. Only mongos and shard servers 
+    /// The last opTime reported by the server. Only mongos and shard servers
     /// record this field when monitoring config servers as replica sets.
-    var opTime: ObjectId?
+    public var opTime: ObjectId?
 
     /// The type of this server.
-    var type: ServerType = .unknown
+    public var type: ServerType = .unknown
 
     /// The wire protocol version range supported by the server.
-    var minWireVersion: Int32 = 0
-    var maxWireVersion: Int32 = 0
+    public var minWireVersion: Int32 = 0
+    public var maxWireVersion: Int32 = 0
 
     /// The hostname or IP and the port number that this server was configured with in the replica set.
-    var me: ConnectionId?
+    public var me: ConnectionId?
 
     /// Hosts, arbiters, passives: sets of addresses. This server's opinion of the replica set's members, if any.
-    var hosts: [ConnectionId] = []
-    var arbiters: [ConnectionId] = []
-    /// "Passives" are priority-zero replica set members that cannot become primary. 
+    public var hosts: [ConnectionId] = []
+    public var arbiters: [ConnectionId] = []
+    /// "Passives" are priority-zero replica set members that cannot become primary.
     /// The client treats them precisely the same as other members.
-    var passives: [ConnectionId] = []
+    public var passives: [ConnectionId] = []
 
     /// Tags for this server.
-    var tags: [String: String] = [:]
+    public var tags: [String: String] = [:]
 
     /// The replica set name.
-    var setName: String?
+    public var setName: String?
 
     /// The replica set version.
-    var setVersion: Int64?
+    public var setVersion: Int64?
 
     /// The election ID where this server was elected, if this is a replica set member that believes it is primary.
-    var electionId: ObjectId?
+    public var electionId: ObjectId?
 
-    /// This server's opinion of who the primary is. 
-    var primary: ConnectionId?
+    /// This server's opinion of who the primary is.
+    public var primary: ConnectionId?
 
     /// When this server was last checked.
-    let lastUpdateTime: Date? = nil // currently, this will never be set
+    public let lastUpdateTime: Date? = nil // currently, this will never be set
 
     /// The logicalSessionTimeoutMinutes value for this server.
-    var logicalSessionTimeoutMinutes: Int64?
+    public var logicalSessionTimeoutMinutes: Int64?
 
     /// An internal initializer to create a `ServerDescription` with just a ConnectionId.
     internal init(connectionId: ConnectionId) {
@@ -152,7 +152,6 @@ public struct ServerDescription {
         }
 
         self.logicalSessionTimeoutMinutes = isMaster["logicalSessionTimeoutMinutes"] as? Int64
-
     }
 
     /// An internal initializer to create a `ServerDescription` from an OpaquePointer to a
@@ -170,7 +169,7 @@ public struct ServerDescription {
     }
 }
 
-/// The possible types for a topology. The raw values correspond to the values libmongoc uses. 
+/// The possible types for a topology. The raw values correspond to the values libmongoc uses.
 /// (We don't use these strings directly because Swift convention is to use lowercase for enums.)
 public enum TopologyType: String {
     case single = "Single"
@@ -180,34 +179,34 @@ public enum TopologyType: String {
     case unknown = "Unknown"
 }
 
-/// A struct describing the state of a MongoDB deployment: its type (standalone, replica set, or sharded), 
+/// A struct describing the state of a MongoDB deployment: its type (standalone, replica set, or sharded),
 /// which servers are up, what type of servers they are, which is primary, and so on.
 public struct TopologyDescription {
-    /// The type of this topology. 
-    let type: TopologyType
+    /// The type of this topology.
+    public let type: TopologyType
 
-    /// The replica set name. 
-    var setName: String? { return self.servers[0].setName }
+    /// The replica set name.
+    public var setName: String? { return self.servers[0].setName }
 
     /// The largest setVersion ever reported by a primary.
-    var maxSetVersion: Int64?
+    public var maxSetVersion: Int64?
 
     /// The largest electionId ever reported by a primary.
-    var maxElectionId: ObjectId?
+    public var maxElectionId: ObjectId?
 
     /// The servers comprising this topology. By default, a single server at localhost:270107.
-    var servers: [ServerDescription] = [ServerDescription(connectionId: ConnectionId())]
+    public var servers: [ServerDescription] = [ServerDescription(connectionId: ConnectionId())]
 
     /// For single-threaded clients, indicates whether the topology must be re-scanned.
-    let stale: Bool = false // currently, this will never be set
+    public let stale: Bool = false // currently, this will never be set
 
     /// Exists if any server's wire protocol version range is incompatible with the client's.
-    let compatibilityError: MongoError? = nil // currently, this will never be set
+    public let compatibilityError: MongoError? = nil // currently, this will never be set
 
     /// The logicalSessionTimeoutMinutes value for this topology. This value is the minimum
-    /// of the logicalSessionTimeoutMinutes values across all the servers in `servers`, 
+    /// of the logicalSessionTimeoutMinutes values across all the servers in `servers`,
     /// or nil if any of them are nil.
-    var logicalSessionTimeoutMinutes: Int64? {
+    public var logicalSessionTimeoutMinutes: Int64? {
         let timeoutValues = self.servers.map { $0.logicalSessionTimeoutMinutes }
         if timeoutValues.contains (where: { $0 == nil }) {
             return nil
@@ -217,13 +216,13 @@ public struct TopologyDescription {
     }
 
     /// Determines if the topology has a readable server available.
-    // (this function should take in an optional ReadPreference, but we have yet to implement that type.) 
-    func hasReadableServer() -> Bool {
+    // (this function should take in an optional ReadPreference, but we have yet to implement that type.)
+    public func hasReadableServer() -> Bool {
         return [.single, .replicaSetWithPrimary, .sharded].contains(self.type)
     }
 
     /// Determines if the topology has a writable server available.
-    func hasWritableServer() -> Bool {
+    public func hasWritableServer() -> Bool {
         return [.single, .replicaSetWithPrimary].contains(self.type)
     }
 
