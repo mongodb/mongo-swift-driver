@@ -25,7 +25,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
 
     internal var data: UnsafeMutablePointer<bson_t>! { return storage.pointer }
 
-    /// Returns a [String] containing the keys in this `Document`. 
+    /// Returns a [String] containing the keys in this `Document`.
     public var keys: [String] {
         var iter: bson_iter_t = bson_iter_t()
         if !bson_iter_init(&iter, data) { return [] }
@@ -36,7 +36,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         return keys
     }
 
-    /// Returns a [BsonValue?] containing the values stored in this `Document`. 
+    /// Returns a [BsonValue?] containing the values stored in this `Document`.
     public var values: [BsonValue?] {
         var iter: bson_iter_t = bson_iter_t()
         if !bson_iter_init(&iter, data) { return [] }
@@ -48,7 +48,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     }
 
     /// Returns the number of (key, value) pairs stored at the top level
-    /// of this document. 
+    /// of this document.
     public var count: Int { return Int(bson_count_keys(self.data)) }
 
     /// Initialize a new, empty document
@@ -59,8 +59,8 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     /**
      * Initializes a `Document` from a pointer to a bson_t. Uses a copy
      * of `bsonData`, so the caller is responsible for freeing the original
-     * memory. 
-     * 
+     * memory.
+     *
      * - Parameters:
      *   - fromPointer: a UnsafeMutablePointer<bson_t>
      *
@@ -71,7 +71,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     }
 
     /**
-     * Initializes a `Document` from a [String: BsonValue?] 
+     * Initializes a `Document` from a [String: BsonValue?]
      *
      * - Parameters:
      *   - doc: a [String: BsonValue?]
@@ -86,7 +86,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     }
 
     /**
-     * Initializes a `Document` using a dictionary literal where the 
+     * Initializes a `Document` using a dictionary literal where the
      * keys are `String`s and the values are `BsonValue?`s. For example:
      * `d: Document = ["a" : 1 ]`
      *
@@ -103,7 +103,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     }
     /**
      * Initializes a `Document` using an array literal where the values
-     * are `BsonValue`s. Values are stored under a string of their 
+     * are `BsonValue`s. Values are stored under a string of their
      * index in the array. For example:
      * `d: Document = ["a", "b"]` will become `["0": "a", "1": "b"]`
      *
@@ -186,13 +186,13 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     /**
      * Allows setting values and retrieving values using subscript syntax.
      * For example:
-     * 
+     *
      *  let d = Document()
      *  d["a"] = 1
      *  print(d["a"]) // prints 1
-     * 
+     *
      */
-    subscript(key: String) -> BsonValue? {
+    public subscript(key: String) -> BsonValue? {
         get {
             var iter: bson_iter_t = bson_iter_t()
             if bson_iter_init_find(&iter, self.data, key.cString(using: .utf8)) {
@@ -203,12 +203,12 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
 
         set(newValue) {
             // this happens if someone has copied the document and modifies it.
-            // for example: 
+            // for example:
             //  let doc1: Document = ["a": 1]
-            //  var doc2 = doc1 
+            //  var doc2 = doc1
             //  doc2["b"] = 2
             // to provide value semantics, i.e. prevent changes to doc2 from
-            // modifying doc1, we make a copy of the bson_t and let the 
+            // modifying doc1, we make a copy of the bson_t and let the
             // copy/copies of the document keep the original
             if !isKnownUniquelyReferenced(&self.storage) {
                 self.storage = DocumentStorage(fromPointer: self.data)
@@ -232,7 +232,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
 
     /**
      * Allows retrieving and strongly typing a value at the same time. This means you can avoid
-     * having to cast and unwrap values from the Document when you know what type they will be. 
+     * having to cast and unwrap values from the Document when you know what type they will be.
      * For example:
      *      let d: Document = ["x": 1]
      *      let x: Int = try d.get("x")
@@ -241,11 +241,11 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      *      - key: The key under which the value you are looking up is stored
      *      - T: Any type conforming to the `BsonValue` protocol
      *  - Returns:
-     *      - The value stored under key, as type T 
+     *      - The value stored under key, as type T
      *  - Throws:
      *      - A MongoError.typeError if the value cannot be cast to type T or is not in the `Document`
      *
-     */ 
+     */
     public func get<T: BsonValue>(_ key: String) throws -> T {
         guard let value = self[key] as? T else {
             throw MongoError.typeError(message: "Could not cast value for key \(key) to type \(T.self)")
@@ -282,7 +282,7 @@ extension Document: BsonValue {
 
 }
 
-/// An extension of `Document` to make it `Equatable`. 
+/// An extension of `Document` to make it `Equatable`.
 extension Document: Equatable {
     public static func == (lhs: Document, rhs: Document) -> Bool {
         return bson_compare(lhs.data, rhs.data) == 0

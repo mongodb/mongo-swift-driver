@@ -131,7 +131,7 @@ private struct CMTest {
     let minServerVersion: String?
     let maxServerVersion: String?
 
-    // Some tests contain cursors/getMores and we need to verify that the 
+    // Some tests contain cursors/getMores and we need to verify that the
     // IDs are consistent across sinlge operations. we store that data in this
     // `context` dictionary so we can access it in future events for the same test
     var context: [String: Any]
@@ -152,7 +152,7 @@ private struct CMTest {
     // Given a collection, perform the operation specified for this test on it.
     // Wrap each operation in do/catch because we expect some of them to fail.
     // If something fails/succeeds incorrectly, we'll know because the generated
-    // events won't match up. 
+    // events won't match up.
     func doOperation(withCollection collection: MongoCollection) throws {
         // TODO SWIFT-31: use readPreferences for commands if provided
         let filter = self.args["filter"] as? Document
@@ -214,14 +214,14 @@ private struct CMTest {
     }
 }
 
-/// A protocol for the different types of expected events to implement 
+/// A protocol for the different types of expected events to implement
 private protocol ExpectationType {
     /// Compare this expectation's data to that in a `Notification`, possibly
     /// using/adding to the provided test context
     func compare(to notification: Notification, testContext: inout [String: Any])
 }
 
-/// Based on the name of the expectation, generate a corresponding 
+/// Based on the name of the expectation, generate a corresponding
 /// `ExpectationType` to be compared to incoming events
 private func makeExpectation(_ document: Document) throws -> ExpectationType {
     if let doc = document["command_started_event"] as? Document {
@@ -234,7 +234,7 @@ private func makeExpectation(_ document: Document) throws -> ExpectationType {
     throw TestError(message: "Unknown expectation type in document \(document)")
 }
 
-/// An expectation for a `CommandStartedEvent` 
+/// An expectation for a `CommandStartedEvent`
 private struct CommandStartedExpectation: ExpectationType {
     let command: Document
     let commandName: String
@@ -251,7 +251,7 @@ private struct CommandStartedExpectation: ExpectationType {
             XCTFail("Notification \(notification) did not contain a CommandStartedEvent")
             return
         }
-        // compare the command and DB names 
+        // compare the command and DB names
         expect(event.commandName).to(equal(self.commandName))
         expect(event.databaseName).to(equal(self.databaseName))
 
@@ -274,28 +274,28 @@ private struct CommandStartedExpectation: ExpectationType {
 private func normalizeCommand(_ input: Document) -> Document {
     var output = Document()
     for (k, v) in input {
-        // We don't currently support these options. Remove them from the commands 
+        // We don't currently support these options. Remove them from the commands
         // we expect to see (they don't affect results otherwise).
-        // TODO SWIFT-63: remove this. 
+        // TODO SWIFT-63: remove this.
         if ["hint", "cursorType"].contains(k) {
             continue
 
         // temporary fix pending resolution of SPEC-1049. removes the field
         // from the expected command unless if it is set to true, because none of the
-        // tests explicitly provide upsert: false or multi: false, yet they 
-        // are in the expected commands anyway. 
+        // tests explicitly provide upsert: false or multi: false, yet they
+        // are in the expected commands anyway.
         } else if ["upsert", "multi"].contains(k), let bV = v as? Bool {
             if bV { output[k] = true } else { continue }
 
         // The tests don't explicitly store maxTimeMS as an Int64, so libmongoc
-        // parses it as an Int32 which we convert to Int. convert to Int64 here because we 
-        /// (as per the crud spec) use an Int64 for maxTimeMS and send that to 
+        // parses it as an Int32 which we convert to Int. convert to Int64 here because we
+        /// (as per the crud spec) use an Int64 for maxTimeMS and send that to
         // the server in our actual commands.
         } else if k == "maxTimeMS", let iV = v as? Int {
             output[k] = Int64(iV)
 
         // The expected batch sizes are always Int64s, however, find command
-        // events actually have Int32 batch sizes... (as the spec says...) 
+        // events actually have Int32 batch sizes... (as the spec says...)
         // but getMores have Int64s. so only convert if it's a find command...
         } else if k == "batchSize", let iV = v as? Int64 {
             if input["find"] != nil { output[k] = Int(iV) } else { output[k] = v }
@@ -402,8 +402,8 @@ private struct CommandSucceededExpectation: ExpectationType {
         }
     }
 
-    /// Compare expected vs actual cursor data, excluding the cursor ID 
-    /// (handled in `compare` because we need the test context). 
+    /// Compare expected vs actual cursor data, excluding the cursor ID
+    /// (handled in `compare` because we need the test context).
     func compareCursors(expected: Document, actual: Document) {
         let ordered = rearrangeDoc(actual, toLookLike: expected)
         expect(ordered["ns"] as? String).to(equal(expected["ns"] as? String))
@@ -421,11 +421,11 @@ private func normalizeExpectedReply(_ input: Document) -> Document {
     for (k, v) in input {
         // These fields both have placeholder values in them,
         // so we can't directly compare. Remove them from the expected
-        // reply so we can == the remaining fields and compare 
+        // reply so we can == the remaining fields and compare
         // writeErrors and cursor separately.
         if ["writeErrors", "cursor"].contains(k) {
             continue
-        // The server sends back doubles, but the JSON test files 
+        // The server sends back doubles, but the JSON test files
         // contain integer statuses (see SPEC-1050.)
         } else if k == "ok", let dV = v as? Int {
             output[k] = Double(dV)
@@ -443,11 +443,11 @@ private func normalizeExpectedReply(_ input: Document) -> Document {
 private func rearrangeDoc(_ input: Document, toLookLike standard: Document) -> Document {
     var output = Document()
     for (k, v) in standard {
-        // if it's a document, recursively rearrange to look like corresponding sub-document 
+        // if it's a document, recursively rearrange to look like corresponding sub-document
         if let sDoc = v as? Document, let iDoc = input[k] as? Document {
             output[k] = rearrangeDoc(iDoc, toLookLike: sDoc)
 
-        // if it's an array, recursively rearrange to look like corresponding sub-array 
+        // if it's an array, recursively rearrange to look like corresponding sub-array
         } else if let sArr = v as? [Document], let iArr = input[k] as? [Document] {
             var newArr = [Document]()
             for (i, el) in iArr.enumerated() {
