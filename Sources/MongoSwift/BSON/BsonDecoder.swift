@@ -1,344 +1,10 @@
 import Foundation
-import libbson
-
-/// Types that conform to the BsonEncodable protocol can be encoded to a BSON document. 
-/// Since a BsonEncodable knows how to encode itself to a document, it can be used in 
-/// place of a BSONValue.
-public protocol BsonEncodable: BsonValue {
-    /**
-    * Encodes this value to a BsonEncoder.
-    *
-    * - Parameters:
-    *   - to: A `BsonEncoder` with which to encode this value
-    */
-    func encode(to encoder: BsonEncoder) throws
-}
-
-/// Extension of BSONEncodable to make it actually implement BsonValue.
-extension BsonEncodable {
-    public var bsonType: BsonType { return .document }
-    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
-        // Use a BsonEncoder to get a Document, and then call Document.bsonAppend. 
-        let encoder = BsonEncoder()
-        if let doc = try encoder.encode(self) {
-            try doc.encode(to: data, forKey: key)
-        }
-    }
-
-    public static func from(iter: inout bson_iter_t) -> BsonValue {
-        // in the future we should use a BsonDecoder here 
-        return Document.from(iter: &iter)
-    }
-}
-
-/// Extracts the underlying value, converting it to a non-optional if it is optional.
-func unwrap(_ any: Any) -> Any {
-    let mirror = Mirror(reflecting: any)
-    if mirror.displayStyle != .optional {
-        return any
-    }
-
-    if mirror.children.count == 0 { return NSNull() }
-    let (_, some) = mirror.children.first!
-    return some
-}
-
-/// Extension of BsonEncodable to provide a default encode(to encoder: BsonEncoder) implementation.
-extension BsonEncodable {
-    public func encode(to encoder: BsonEncoder) throws {
-        let mirror = Mirror(reflecting: self)
-        for (key, value) in mirror.children {
-            guard let key = key else { continue }
-            let v = unwrap(value)
-            try encoder.encode(v as? BsonValue, forKey: key)
-        }
-    }
-}
-
-/// A BsonEncoder for encoding BsonEncodable types to BSON documents. 
-public class BsonEncoder {
-    fileprivate var _encoder = _BsonEncoder()
-
-    public enum NilEncodingStrategy {
-        /// If a provided value is nil, do not encode it.
-        /// If a top-level container is empty, do not encode it.
-        case omit
-
-        /// Encode nil values if they are present. If a top-level
-        /// container is empty, encode an empty document.
-        case include
-    }
-
-    /// The strategy to use for encoding nil values. Defaults to `omit`.
-    open var nilEncodingStrategy: NilEncodingStrategy = .omit
-
-    // Create a new BsonEncoder, optionally passing in a NilEncodingStrategy.
-    public init(nilStrategy: NilEncodingStrategy = .omit) {
-        self.nilEncodingStrategy = nilStrategy
-    }
-
-    /**
-    * Encodes value using this BsonEncoder. 
-    *
-    * - Parameters:
-    *   - value: an object that implements the BsonEncodable protocol
-    * 
-    * - Returns: a `Document` containing the serialized BSON data. 
-    */
-    public func encode(_ value: BsonEncodable?) throws -> Document? {
-        guard let v = value else {
-            return self.nilEncodingStrategy == .include ? Document() : nil
-        }
-
-        try v.encode(to: self)
-        let doc = _encoder.storage.popContainer()
-
-        if self.nilEncodingStrategy == .omit && doc == [:] as Document {
-            return nil
-        }
-
-        return doc
-    }
-
-    /**
-    * Stores a `BsonValue` under the provided key. 
-    *
-    * - Parameters:
-    *   - value: A `BsonValue` (possibly also a `BsonEncodable`) to store under this key
-    *   - key: A `String` to store this value under
-    * 
-    */
-    public func encode(_ value: BsonValue?, forKey key: String) throws {
-        if let v = value {
-            var container = _encoder.container()
-            try container.encode(v, forKey: key)
-        } else if self.nilEncodingStrategy == .include {
-            var container = _encoder.container()
-            container.encodeNil(forKey: key)
-        }
-    }
-
-}
-
-/// A private class for use by BsonEncoder. _BsonEncoder handles storage for the 
-/// encoder and provides encoding containers. 
-private class _BsonEncoder {
-
-    /// The encoder's storage
-    fileprivate var storage: _BsonEncodingStorage
-
-    fileprivate init() {
-        storage = _BsonEncodingStorage()
-    }
-
-    /// Get a top-container into which BSON values can be encoded.
-    fileprivate func container() -> _BsonKeyedEncodingContainer {
-        let topContainer: MutableDictionary = storage.getContainer()
-        return _BsonKeyedEncodingContainer(referencing: self, wrapping: topContainer)
-    }
-}
-
-/// A wrapper around the top-level MutableDictionary, handling its creation and storage. 
-private struct _BsonEncodingStorage {
-
-    /// A top-level container representing a BSON document. 
-    fileprivate var container = MutableDictionary()
-
-    /// Creates a new top-level container and saves it, and returns the container 
-    /// for use by a _BsonEncoder. 
-    fileprivate mutating func getContainer() -> MutableDictionary {
-        return container
-    }
-
-    /// Returns the current container as a Document, and disassociates it from this 
-    // _BsonEncodingStorage. Should only be called when all values have been encoded.
-    fileprivate mutating func popContainer() -> Document {
-        defer {container = MutableDictionary()}
-        return container.asDocument()
-    }
-}
-
-/// A keyed coding container, storing key-value pairs to be serialized into a BSON document. 
-private struct _BsonKeyedEncodingContainer {
-    /// The encoder we're writing to.
-    private let encoder: _BsonEncoder
-
-    /// The container we're writing to.
-    private let container: MutableDictionary
-
-    /// Initializes a new keyed coding container with the provided encoder and container. 
-    fileprivate init(referencing encoder: _BsonEncoder, wrapping container: MutableDictionary) {
-        self.encoder = encoder
-        self.container = container
-    }
-
-    /// Stores nil in this container under the provided key. 
-    mutating func encodeNil(forKey key: String) { container[key] = NSNull() }
-
-    /// Stores value in this container under the provided key. 
-    mutating func encode(_ value: BsonValue, forKey key: String) throws {
-        switch value {
-
-        // If it's an array, create a new nested unkeyed container, stored under the 
-        // provided key, and copy in array values. 
-        case let val as [BsonValue]:
-            var nested = nestedUnkeyedContainer(forKey: key)
-            for e in val { try nested.encode(e) }
-
-        // If it's a map, create a new nested keyed container, stored under the provided key,
-        // and copy in the key-value pairs. 
-        case let val as [String: BsonValue]:
-            var nested = nestedContainer(forKey: key)
-            for (k, v) in val { try nested.encode(v, forKey: k) }
-
-        case let val as BsonEncodable:
-            let encoder = BsonEncoder()
-            try val.encode(to: encoder)
-            container[key] = encoder._encoder.storage.popContainer()
-
-        // Otherwise it must be a single value, so store it under the provided key. 
-        default:
-            container[key] = value
-        }
-    }
-
-    /// Create a new nested container and store it in this container under the provided key. 
-    private mutating func nestedContainer(forKey key: String) -> _BsonKeyedEncodingContainer {
-        let dictionary = MutableDictionary()
-        container[key] = dictionary
-        return _BsonKeyedEncodingContainer(referencing: encoder, wrapping: dictionary)
-    }
-
-    /// Create a new nested unkeyed container and store it in this container under the provided key. 
-    private mutating func nestedUnkeyedContainer(forKey key: String) -> _BsonUnkeyedEncodingContainer {
-        let array = MutableArray()
-        container[key] = array
-        return _BsonUnkeyedEncodingContainer(referencing: encoder, wrapping: array)
-    }
-}
-
-/// An unkeyed coding container, storing an ordered sequence of values to be serialized into a BSON array. 
-private struct _BsonUnkeyedEncodingContainer {
-    /// The encoder we're writing to.
-    private let encoder: _BsonEncoder
-
-    /// The container we're writing to.
-    private let container: MutableArray
-
-    /// Initializes a new unkeyed coding container with the provided encoder and container. 
-    fileprivate init(referencing encoder: _BsonEncoder, wrapping container: MutableArray) {
-        self.encoder = encoder
-        self.container = container
-    }
-
-    /// Adds nil to the end of this container.  
-    mutating func encodeNil() { container.append(NSNull()) }
-
-    /// Adds value to the end of this container.
-    mutating func encode(_ value: BsonValue) throws {
-        switch value {
-
-        // If it's an array, create a new nested unkeyed container, stored at the end of this
-        // container, and copy in array values. 
-        case let val as [BsonValue]:
-            var nested = nestedUnkeyedContainer()
-            for e in val { try nested.encode(e) }
-
-        case let val as BsonEncodable:
-            let encoder = BsonEncoder()
-            try val.encode(to: encoder)
-            container.append(encoder._encoder.storage.popContainer())
-
-        // Otherwise it must be a single value, so just add value to the end of the container. 
-        default:
-            container.append(value)
-        }
-    }
-
-    /// Create a new nested container and store it at the end of this container. 
-    private mutating func nestedContainer() -> _BsonKeyedEncodingContainer {
-        let dictionary = MutableDictionary()
-        container.append(dictionary)
-        return _BsonKeyedEncodingContainer(referencing: encoder, wrapping: dictionary)
-    }
-
-    /// Create a new nested array and store it at the end of this container.
-    private mutating func nestedUnkeyedContainer() -> _BsonUnkeyedEncodingContainer {
-        let array = MutableArray()
-        container.append(array)
-        return _BsonUnkeyedEncodingContainer(referencing: encoder, wrapping: array)
-    }
-}
-
-/// A private class wrapping a Swift array so we can pass it by reference for 
-/// encoder storage purposes. We use this rather than NSMutableArray because
-/// it allows us to preserve Swift type information. 
-private class MutableArray {
-    var array = [Any]()
-    fileprivate func append(_ value: Any) {
-        array.append(value)
-    }
-
-    /// Converts self to a `Document` where keys "0", "1", etc.
-    /// correspond to array indices. 
-    func asDocument() -> Document {
-        var doc = Document()
-        for (i, v) in array.enumerated() {
-            doc[String(i)] = getBsonValue(v)
-        }
-        return doc
-    }
-}
-
-/// A private class wrapping a Swift dictionary so we can pass it by reference
-/// for encoder storage purposes. We use this rather than NSMutableDictionary 
-/// because it allows us to preserve Swift type information.
-private class MutableDictionary {
-    var dictionary = [String: Any]()
-    subscript(key: String) -> Any? {
-        get { return dictionary[key] }
-        set(newValue) { dictionary[key] = newValue }
-    }
-
-    /// Converts self to a `Document` with equivalent key-value pairs.
-    func asDocument() -> Document {
-        var doc = Document()
-        for (k, v) in dictionary {
-            doc[k] = getBsonValue(v)
-        }
-        return doc
-    }
-}
-
-/**
-* Given a value, gets a corresponding BSONValue (which is possibly a standalone value, or could be a nested 
-* array or document.) Should only be used when you're sure the casting will succeed. 
-*
-* - Parameters:
-*   - value: A value that is known to be a `MutableDictionary`, `MutableArray`, or `BsonValue`.
-*
-* - Returns: A `BsonValue` equivalent to value. 
-*/
-private func getBsonValue(_ value: Any) -> BsonValue? {
-    switch value {
-    case let val as MutableDictionary:
-        return val.asDocument()
-    case let val as MutableArray:
-        return val.asDocument()
-    case let val as BsonValue:
-        return val
-    case _ as NSNull:
-        return nil
-    default:
-        preconditionFailure("Value \(value) with type \(type(of: value)) didn't match any expected types")
-    }
-}
 
 /// `BsonDecoder` facilitates the decoding of BSON into semantic `Decodable` types.
 public class BsonDecoder {
 
     /// Contextual user-provided information for use during decoding.
-    open var userInfo: [CodingUserInfoKey: Any] = [:]
+    public var userInfo: [CodingUserInfoKey: Any] = [:]
 
     /// Options set on the top-level decoder to pass down the decoding hierarchy.
     fileprivate struct _Options {
@@ -353,15 +19,25 @@ public class BsonDecoder {
     /// Initializes `self`.
     public init() {}
 
-    /// Decodes a top-level value of the given type from the given BSON representation.
+    /// Decodes a top-level value of the given type from the given BSON document.
     ///
     /// - parameter type: The type of the value to decode.
-    /// - parameter data: The BSON document to decode from.
+    /// - parameter document: The BSON document to decode from.
     /// - returns: A value of the requested type.
     /// - throws: An error if any value throws an error during decoding.
-    public func decode<T: Decodable>(_ type: T.Type, from data: Document) throws -> T {
-        let _decoder = _BsonDecoder(referencing: data, options: self.options)
+    public func decode<T: Decodable>(_ type: T.Type, from document: Document) throws -> T {
+        let _decoder = _BsonDecoder(referencing: document, options: self.options)
         return try type.init(from: _decoder)
+    }
+
+    /// Decodes a top-level value of the given type from the given BSON data.
+    ///
+    /// - parameter type: The type of the value to decode.
+    /// - parameter data: The BSON data to decode from.
+    /// - returns: A value of the requested type.
+    /// - throws: An error if the BSON data is corrupt, or if any value throws an error during decoding.
+    public func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
+        return try self.decode(type, from: Document(fromBSON: data))
     }
 }
 
@@ -467,64 +143,6 @@ private struct _BsonDecodingStorage {
     }
 }
 
-/// Just a temporary error to make code compile until we implement everything.
-struct UnimplementedError: LocalizedError {
-    public var errorDescription: String? { return "Unimplemented" }
-}
-
-/// A protocol for types that are not BSON types but require decoding support. 
-private protocol NonBsonValue {
-    init(from: BsonValue) throws
-}
-
-extension Int8: NonBsonValue {
-    init(from: BsonValue) throws {
-        throw UnimplementedError()
-    }
-}
-
-extension Int16: NonBsonValue {
-    init(from: BsonValue) throws {
-        throw UnimplementedError()
-    }
-}
-
-extension UInt8: NonBsonValue {
-    init(from: BsonValue) throws {
-        throw UnimplementedError()
-    }
-}
-
-extension UInt16: NonBsonValue {
-    init(from: BsonValue) throws {
-        throw UnimplementedError()
-    }
-}
-
-extension UInt32: NonBsonValue {
-    init(from: BsonValue) throws {
-        throw UnimplementedError()
-    }
-}
-
-extension UInt64: NonBsonValue {
-    init(from: BsonValue) throws {
-        throw UnimplementedError()
-    }
-}
-
-extension UInt: NonBsonValue {
-    init(from: BsonValue) throws {
-        throw UnimplementedError()
-    }
-}
-
-extension Float: NonBsonValue {
-    init(from: BsonValue) throws {
-        throw UnimplementedError()
-    }
-}
-
 /// Extend _BsonDecoder to add methods for "unboxing" values as various types.
 extension _BsonDecoder {
 
@@ -535,7 +153,7 @@ extension _BsonDecoder {
         return typed
     }
 
-    fileprivate func unboxNonBsonValue<T: NonBsonValue>(_ value: BsonValue?, as type: T.Type) throws -> T? {
+    fileprivate func unboxPrimitive<T: Primitive>(_ value: BsonValue?, as type: T.Type) throws -> T? {
         guard let unwrapped = value else {
             throw DecodingError._typeMismatch(at: self.codingPath, expectation: type, reality: value)
         }
@@ -604,11 +222,11 @@ private struct _BsonKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
         }
     }
 
-    /// Decodes a NonBsonValue type from this container for the given key.
-    private func decodeNonBsonType<T: NonBsonValue>(_ type: T.Type, forKey key: Key) throws -> T {
+    /// Decodes a Primitive type from this container for the given key.
+    private func decodePrimitive<T: Primitive>(_ type: T.Type, forKey key: Key) throws -> T {
         let entry = try getValue(forKey: key)
         return try self.decoder.with(pushedKey: key) {
-            guard let value = try decoder.unboxNonBsonValue(entry, as: type) else {
+            guard let value = try decoder.unboxPrimitive(entry, as: type) else {
                 throw DecodingError.valueNotFound(type, DecodingError.Context(codingPath: self.decoder.codingPath, debugDescription: "Expected \(type) value but found null instead."))
             }
             return value
@@ -638,16 +256,16 @@ private struct _BsonKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
 
     public func decode(_ type: Bool.Type, forKey key: Key) throws -> Bool { return try decodeBsonType(type, forKey: key) }
     public func decode(_ type: Int.Type, forKey key: Key) throws -> Int { return try decodeBsonType(type, forKey: key) }
-    public func decode(_ type: Int8.Type, forKey key: Key) throws -> Int8 { return try decodeNonBsonType(type, forKey: key) }
-    public func decode(_ type: Int16.Type, forKey key: Key) throws -> Int16 { return try decodeNonBsonType(type, forKey: key) }
+    public func decode(_ type: Int8.Type, forKey key: Key) throws -> Int8 { return try decodePrimitive(type, forKey: key) }
+    public func decode(_ type: Int16.Type, forKey key: Key) throws -> Int16 { return try decodePrimitive(type, forKey: key) }
     public func decode(_ type: Int32.Type, forKey key: Key) throws -> Int32 { return try decodeBsonType(type, forKey: key) }
     public func decode(_ type: Int64.Type, forKey key: Key) throws -> Int64 { return try decodeBsonType(type, forKey: key) }
-    public func decode(_ type: UInt8.Type, forKey key: Key) throws -> UInt8 { return try decodeNonBsonType(type, forKey: key) }
-    public func decode(_ type: UInt16.Type, forKey key: Key) throws -> UInt16 { return try decodeNonBsonType(type, forKey: key) }
-    public func decode(_ type: UInt32.Type, forKey key: Key) throws -> UInt32 { return try decodeNonBsonType(type, forKey: key) }
-    public func decode(_ type: UInt.Type, forKey key: Key) throws -> UInt { return try decodeNonBsonType(type, forKey: key) }
-    public func decode(_ type: UInt64.Type, forKey key: Key) throws -> UInt64 { return try decodeNonBsonType(type, forKey: key) }
-    public func decode(_ type: Float.Type, forKey key: Key) throws -> Float { return try decodeNonBsonType(type, forKey: key) }
+    public func decode(_ type: UInt8.Type, forKey key: Key) throws -> UInt8 { return try decodePrimitive(type, forKey: key) }
+    public func decode(_ type: UInt16.Type, forKey key: Key) throws -> UInt16 { return try decodePrimitive(type, forKey: key) }
+    public func decode(_ type: UInt32.Type, forKey key: Key) throws -> UInt32 { return try decodePrimitive(type, forKey: key) }
+    public func decode(_ type: UInt.Type, forKey key: Key) throws -> UInt { return try decodePrimitive(type, forKey: key) }
+    public func decode(_ type: UInt64.Type, forKey key: Key) throws -> UInt64 { return try decodePrimitive(type, forKey: key) }
+    public func decode(_ type: Float.Type, forKey key: Key) throws -> Float { return try decodePrimitive(type, forKey: key) }
     public func decode(_ type: Double.Type, forKey key: Key) throws -> Double { return try decodeBsonType(type, forKey: key) }
     public func decode(_ type: String.Type, forKey key: Key) throws -> String { return try decodeBsonType(type, forKey: key) }
 
@@ -735,7 +353,6 @@ private struct _BsonUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     /// Decodes a BsonValue type from this container.
     private mutating func decodeBsonValue<T: BsonValue>(_ type: T.Type) throws -> T {
         try self.checkAtEnd()
-
         return try self.decoder.with(pushedKey: _BsonKey(index: self.currentIndex)) {
             guard let typed = try self.decoder.unboxBsonValue(self.container[currentIndex], as: type) else {
                 throw DecodingError._typeMismatch(at: self.codingPath, expectation: type, reality: self.container[self.currentIndex])
@@ -745,12 +362,11 @@ private struct _BsonUnkeyedDecodingContainer: UnkeyedDecodingContainer {
         }
     }
 
-    /// Decodes a NonBsonValue type from this container.
-    private mutating func decodeNonBsonValue<T: NonBsonValue>(_ type: T.Type) throws -> T {
+    /// Decodes a Primitive type from this container.
+    private mutating func decodePrimitive<T: Primitive>(_ type: T.Type) throws -> T {
         try self.checkAtEnd()
-
         return try self.decoder.with(pushedKey: _BsonKey(index: self.currentIndex)) {
-            guard let typed = try self.decoder.unboxNonBsonValue(self.container[currentIndex], as: type) else {
+            guard let typed = try self.decoder.unboxPrimitive(self.container[currentIndex], as: type) else {
                 throw DecodingError._typeMismatch(at: self.codingPath, expectation: type, reality: self.container[self.currentIndex])
             }
             self.currentIndex += 1
@@ -761,7 +377,6 @@ private struct _BsonUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     /// Decodes a Decodable type from this container.
     public mutating func decode<T: Decodable>(_ type: T.Type) throws -> T {
         try self.checkAtEnd()
-
         return try self.decoder.with(pushedKey: _BsonKey(index: self.currentIndex)) {
             guard let decoded = try self.decoder.unbox(self.container[currentIndex], as: T.self) else {
                 throw DecodingError.valueNotFound(type, DecodingError.Context(codingPath: self.decoder.codingPath + [_BsonKey(index: self.currentIndex)], debugDescription: "Expected \(type) but found null instead."))
@@ -785,16 +400,16 @@ private struct _BsonUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     /// Decode all required types from this container using the helpers defined above.
     public mutating func decode(_ type: Bool.Type) throws -> Bool { return try self.decodeBsonValue(type) }
     public mutating func decode(_ type: Int.Type) throws -> Int { return try self.decodeBsonValue(type) }
-    public mutating func decode(_ type: Int8.Type) throws -> Int8 { return try self.decodeNonBsonValue(type) }
-    public mutating func decode(_ type: Int16.Type) throws -> Int16 { return try self.decodeNonBsonValue(type) }
+    public mutating func decode(_ type: Int8.Type) throws -> Int8 { return try self.decodePrimitive(type) }
+    public mutating func decode(_ type: Int16.Type) throws -> Int16 { return try self.decodePrimitive(type) }
     public mutating func decode(_ type: Int32.Type) throws -> Int32 { return try self.decodeBsonValue(type) }
     public mutating func decode(_ type: Int64.Type) throws -> Int64 { return try self.decodeBsonValue(type) }
-    public mutating func decode(_ type: UInt.Type) throws -> UInt { return try self.decodeNonBsonValue(type) }
-    public mutating func decode(_ type: UInt8.Type) throws -> UInt8 { return try self.decodeNonBsonValue(type) }
-    public mutating func decode(_ type: UInt16.Type) throws -> UInt16 { return try self.decodeNonBsonValue(type) }
-    public mutating func decode(_ type: UInt32.Type) throws -> UInt32 { return try self.decodeNonBsonValue(type) }
-    public mutating func decode(_ type: UInt64.Type) throws -> UInt64 { return try self.decodeNonBsonValue(type) }
-    public mutating func decode(_ type: Float.Type) throws -> Float { return try self.decodeNonBsonValue(type) }
+    public mutating func decode(_ type: UInt.Type) throws -> UInt { return try self.decodePrimitive(type) }
+    public mutating func decode(_ type: UInt8.Type) throws -> UInt8 { return try self.decodePrimitive(type) }
+    public mutating func decode(_ type: UInt16.Type) throws -> UInt16 { return try self.decodePrimitive(type) }
+    public mutating func decode(_ type: UInt32.Type) throws -> UInt32 { return try self.decodePrimitive(type) }
+    public mutating func decode(_ type: UInt64.Type) throws -> UInt64 { return try self.decodePrimitive(type) }
+    public mutating func decode(_ type: Float.Type) throws -> Float { return try self.decodePrimitive(type) }
     public mutating func decode(_ type: Double.Type) throws -> Double { return try self.decodeBsonValue(type) }
     public mutating func decode(_ type: String.Type) throws -> String { return try self.decodeBsonValue(type) }
 
@@ -845,10 +460,10 @@ extension _BsonDecoder: SingleValueDecodingContainer {
         return try self.unboxBsonValue(self.storage.topContainer, as: T.self)!
     }
 
-    /// Decode a NonBsonValue type from this container.
-    private func decodeNonBsonValue<T: NonBsonValue>(_ type: T.Type) throws -> T {
+    /// Decode a Primitive type from this container.
+    private func decodePrimitive<T: Primitive>(_ type: T.Type) throws -> T {
         try expectNonNull(T.self)
-        return try self.unboxNonBsonValue(self.storage.topContainer, as: T.self)!
+        return try self.unboxPrimitive(self.storage.topContainer, as: T.self)!
     }
 
     /// Decode a Decodable type from this container.
@@ -863,16 +478,16 @@ extension _BsonDecoder: SingleValueDecodingContainer {
     /// Decode all the required types from this container using the helpers defined above.
     public func decode(_ type: Bool.Type) throws -> Bool { return try decodeBsonValue(type) }
     public func decode(_ type: Int.Type) throws -> Int { return try decodeBsonValue(type) }
-    public func decode(_ type: Int8.Type) throws -> Int8 { return try decodeNonBsonValue(type) }
-    public func decode(_ type: Int16.Type) throws -> Int16 { return try decodeNonBsonValue(type) }
+    public func decode(_ type: Int8.Type) throws -> Int8 { return try decodePrimitive(type) }
+    public func decode(_ type: Int16.Type) throws -> Int16 { return try decodePrimitive(type) }
     public func decode(_ type: Int32.Type) throws -> Int32 { return try decodeBsonValue(type) }
     public func decode(_ type: Int64.Type) throws -> Int64 { return try decodeBsonValue(type) }
-    public func decode(_ type: UInt.Type) throws -> UInt { return try decodeNonBsonValue(type) }
-    public func decode(_ type: UInt8.Type) throws -> UInt8 { return try decodeNonBsonValue(type) }
-    public func decode(_ type: UInt16.Type) throws -> UInt16 { return try decodeNonBsonValue(type) }
-    public func decode(_ type: UInt32.Type) throws -> UInt32 { return try decodeNonBsonValue(type) }
-    public func decode(_ type: UInt64.Type) throws -> UInt64 { return try decodeNonBsonValue(type) }
-    public func decode(_ type: Float.Type) throws -> Float { return try decodeNonBsonValue(type) }
+    public func decode(_ type: UInt.Type) throws -> UInt { return try decodePrimitive(type) }
+    public func decode(_ type: UInt8.Type) throws -> UInt8 { return try decodePrimitive(type) }
+    public func decode(_ type: UInt16.Type) throws -> UInt16 { return try decodePrimitive(type) }
+    public func decode(_ type: UInt32.Type) throws -> UInt32 { return try decodePrimitive(type) }
+    public func decode(_ type: UInt64.Type) throws -> UInt64 { return try decodePrimitive(type) }
+    public func decode(_ type: Float.Type) throws -> Float { return try decodePrimitive(type) }
     public func decode(_ type: Double.Type) throws -> Double { return try decodeBsonValue(type) }
     public func decode(_ type: String.Type) throws -> String { return try decodeBsonValue(type) }
 }
