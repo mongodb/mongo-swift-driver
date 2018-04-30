@@ -67,7 +67,7 @@ public class ReadConcern: Equatable, CustomStringConvertible {
     }
 
     /// Appends this readConcern to a Document.
-    internal func append(to doc: Document) throws {
+    private func append(to doc: Document) throws {
         if !mongoc_read_concern_append(self._readConcern, doc.data) {
             throw MongoError.readConcernError(message: "Error appending readconcern to document \(doc)")
         }
