@@ -10,7 +10,7 @@ public enum ReadConcernLevel: String {
 }
 
 /// A class to represent a MongoDB read concern.
-public class ReadConcern {
+public class ReadConcern: Equatable, CustomStringConvertible {
 
     /// A pointer to a mongoc_read_concern_t
     internal var _readConcern: OpaquePointer?
@@ -21,6 +21,16 @@ public class ReadConcern {
             return nil
         }
         return String(cString: level)
+    }
+
+    private var asDocument: Document {
+        let doc = Document()
+        try? self.append(to: doc)
+        return doc
+    }
+
+    public var description: String {
+        return self.asDocument.description
     }
 
     /// Initialize a new ReadConcern from a ReadConcernLevel.
@@ -75,10 +85,14 @@ public class ReadConcern {
         // the caller is using the server's default RC and we are also using default, don't append anything
         if callerRC.level == nil && rc.level == nil { return opts }
 
-        // otherwise other us or the caller is using a non-default, so we need to append it
+        // otherwise either us or the caller is using a non-default, so we need to append it
         let output = opts ?? Document() // create base opts if they don't exist
         try rc.append(to: output)
         return output
+    }
+
+    public static func == (lhs: ReadConcern, rhs: ReadConcern) -> Bool {
+        return lhs.level == rhs.level
     }
 
     deinit {

@@ -168,13 +168,15 @@ final class ReadWriteConcernTests: XCTestCase {
             let tests: [Document] = try asDocument.get("tests")
             for test in tests {
 	            let description: String = try test.get("description")
-                if description == "wtimeoutMS as an invalid number" { continue }
+                // skipping because C driver does not comply with these; see CDRIVER-2621
+                if description.lowercased().contains("wtimeoutms") { continue }
 	            let uri: String = try test.get("uri")
 	            let valid: Bool = try test.get("valid")
 	            if valid {
                     let client = try MongoClient(connectionString: uri)
-                    if let readConcern = test["readConcern"] as? Document, readConcern != [:] {
-                        expect(readConcern["level"] as? String).to(equal(client.readConcern.level))
+                    if let readConcern = test["readConcern"] as? Document {
+                        let rc = try ReadConcern(readConcern)
+                         expect(client.readConcern).to(equal(rc))
                     } else if let writeConcern = test["writeConcern"] as? Document {
                         // TODO SWIFT-30: verify the writeconcern matches that on the client
                     }
@@ -195,20 +197,13 @@ final class ReadWriteConcernTests: XCTestCase {
             let tests: [Document] = try asDocument.get("tests")
             for test in tests {
                 let description: String = try test.get("description")
-                if description == "WTimeoutMS as an invalid number" { continue }
+                // skipping because C driver does not comply with these; see CDRIVER-2621
+                if ["WTimeoutMS as an invalid number", "W as an invalid number"].contains(description) { continue }
                 let valid: Bool = try test.get("valid")
                 if let rcToUse = test["readConcern"] as? Document {
                     let rc = try ReadConcern(rcToUse)
-                    let opts = try ReadConcern.append(rc, to: Document(), callerRC: ReadConcern())
-                    let rcToSend = test["readConcernDocument"] as? Document
-                    // if expected is empty, make sure actual is
-                    if rcToSend == [:] {
-                        expect(opts).to(equal([:] as Document))
-                    // otherwise check that documents match
-                    } else {
-                        expect(opts).to(equal(["readConcern": rcToSend] as Document))
-                    }
-
+                    let rcToSend = try ReadConcern(test["readConcernDocument"] as! Document)
+                    expect(rcToSend).to(equal(rc))
                 } else if let wcToUse = test["writeConcern"] as? Document {
                     // TODO SWIFT-30: encode the write concern and confirm it matches the expected one
                 }
