@@ -34,16 +34,14 @@ public class ReadConcern: Equatable, CustomStringConvertible {
     }
 
     /// Initialize a new ReadConcern from a ReadConcernLevel.
-    public convenience init(_ level: ReadConcernLevel) throws {
-        try self.init(level.rawValue)
+    public convenience init(_ level: ReadConcernLevel) {
+        self.init(level.rawValue)
     }
 
     /// Initialize a new ReadConcern from a String corresponding to a read concern level.
-    public init(_ level: String) throws {
+    public init(_ level: String) {
         self._readConcern = mongoc_read_concern_new()
-        if !mongoc_read_concern_set_level(self._readConcern, level) {
-            throw MongoError.readConcernError(message: "Failed to set read concern level to '\(level)'")
-        }
+        mongoc_read_concern_set_level(self._readConcern, level)
     }
 
     /// Initialize a new empty ReadConcern.
@@ -52,12 +50,17 @@ public class ReadConcern: Equatable, CustomStringConvertible {
     }
 
     /// Initialize a new ReadConcern from a Document.
-    public convenience init(_ doc: Document) throws {
+    public convenience init(_ doc: Document) {
         if let level = doc["level"] as? String {
-            try self.init(level)
+            self.init(level)
         } else {
             self.init()
         }
+    }
+
+    /// Initializes a new ReadConcern by copying an existing ReadConcern.
+    public init(from: ReadConcern) {
+        self._readConcern = mongoc_read_concern_copy(from._readConcern)
     }
 
     /// Initializes a new ReadConcern by copying a mongoc_read_concern_t.
