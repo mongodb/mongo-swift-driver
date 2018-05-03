@@ -539,7 +539,7 @@ extension _BsonDecoder: SingleValueDecodingContainer {
     public func decode(_ type: String.Type) throws -> String { return try decodeBsonType(type) }
 }
 
-private struct _BsonKey: CodingKey {
+internal struct _BsonKey: CodingKey {
     public var stringValue: String
     public var intValue: Int?
 
@@ -558,12 +558,12 @@ private struct _BsonKey: CodingKey {
         self.intValue = intValue
     }
 
-    fileprivate init(index: Int) {
+    internal init(index: Int) {
         self.stringValue = "Index \(index)"
         self.intValue = index
     }
 
-    fileprivate static let `super` = _BsonKey(stringValue: "super")!
+    internal static let `super` = _BsonKey(stringValue: "super")!
 }
 
 private extension DecodingError {
@@ -576,17 +576,11 @@ private extension DecodingError {
         let description = "Expected to find a value that can be represented as a \(expectation), " +
                          "but found value \(String(describing: reality)) of type \(type(of: reality)) instead."
         return .typeMismatch(expectation, Context(codingPath: path, debugDescription: description))
-
     }
 }
 
 /// This needs to be in this file to access some fileprivate decoder properties
 extension Document: Decodable {
-
-    static let decodeToTypes: [Decodable.Type] = [Double.self, String.self, Binary.self, ObjectId.self,
-                                                    Bool.self, Date.self, RegularExpression.self,
-                                                    CodeWithScope.self, Int.self, Int32.self, Int64.self,
-                                                    Decimal128.self, MinKey.self, MaxKey.self, Document.self]
 
     public init(from decoder: Decoder) throws {
         // if it's a BsonDecoder we should just short-circuit and return the container document
