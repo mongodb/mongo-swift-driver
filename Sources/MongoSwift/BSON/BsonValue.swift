@@ -575,12 +575,12 @@ struct RegularExpression: BsonValue, Equatable {
         guard let pattern = bson_iter_regex(&iter, options) else {
             preconditionFailure("Failed to retrieve regular expression pattern")
         }
-        let patternStr = String(cString: pattern)
+        let patternString = String(cString: pattern)
 
         guard let stringOptions = options.pointee else {
             preconditionFailure("Failed to retrieve regular expression options")
         }
-        let optionsStr = String(cString: stringOptions)
+        let optionsString = String(cString: stringOptions)
 
         return RegularExpression(pattern: patternStr, options: optionsStr)
     }
