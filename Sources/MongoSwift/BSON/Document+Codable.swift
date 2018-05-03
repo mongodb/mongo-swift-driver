@@ -2,7 +2,7 @@ import Foundation
 
 extension Document: Codable {
 	public func encode(to encoder: Encoder) throws {
-		if let bsonEncoder = encoder as? _BSONEncoder {
+		if let bsonEncoder = encoder as? _BsonEncoder {
 			bsonEncoder.storage.containers.append(self)
 			return
 		}
