@@ -90,7 +90,7 @@ public class ReadConcern: Equatable, CustomStringConvertible {
         guard let rc = readConcern else { return opts }
 
         // the caller is using the server's default RC and we are also using default, so don't append anything
-        if (callerRC == nil || callerRC?.level == nil) && rc.level == nil { return opts }
+        if callerRC?.level == nil && rc.level == nil { return opts }
 
         // otherwise either us or the caller is using a non-default, so we need to append it
         let output = opts ?? Document() // create base opts if they don't exist
