@@ -116,11 +116,13 @@ public class MongoDatabase {
         return String(cString: mongoc_database_get_name(self._database))
     }
 
-    /// The readConcern set on this database.
-    public var readConcern: ReadConcern {
+    /// The readConcern set on this database, or nil if one is not set.
+    public var readConcern: ReadConcern? {
         // per libmongoc docs, we don't need to handle freeing this ourselves
         let readConcern = mongoc_database_get_read_concern(self._database)
-        return ReadConcern(readConcern)
+        let rcObj = ReadConcern(readConcern)
+        if rcObj.isDefault { return nil }
+        return rcObj
     }
 
     /**

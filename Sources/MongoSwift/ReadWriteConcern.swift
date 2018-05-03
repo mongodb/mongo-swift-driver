@@ -33,6 +33,10 @@ public class ReadConcern: Equatable, CustomStringConvertible {
         return self.asDocument.description
     }
 
+    public var isDefault: Bool {
+        return mongoc_read_concern_is_default(self._readConcern)
+    }
+
     /// Initialize a new ReadConcern from a ReadConcernLevel.
     public convenience init(_ level: ReadConcernLevel) {
         self.init(level.rawValue)
@@ -80,13 +84,13 @@ public class ReadConcern: Equatable, CustomStringConvertible {
     /// this function handles obeying those, factoring in the ReadConcern, if any, for
     /// whatever object is calling this function. It returns a final options Document for the
     /// calling function to use, or nil if the Document ends up being empty.
-    internal static func append(_ readConcern: ReadConcern?, to opts: Document?, callerRC: ReadConcern) throws -> Document? {
+    internal static func append(_ readConcern: ReadConcern?, to opts: Document?, callerRC: ReadConcern?) throws -> Document? {
         // if the user didn't specify a readConcern, then we just want to use
         // whatever the default is for the caller. 
         guard let rc = readConcern else { return opts }
 
-        // the caller is using the server's default RC and we are also using default, don't append anything
-        if callerRC.level == nil && rc.level == nil { return opts }
+        // the caller is using the server's default RC and we are also using default, so don't append anything
+        if (callerRC == nil || callerRC?.level == nil) && rc.level == nil { return opts }
 
         // otherwise either us or the caller is using a non-default, so we need to append it
         let output = opts ?? Document() // create base opts if they don't exist

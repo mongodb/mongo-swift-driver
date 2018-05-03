@@ -490,11 +490,13 @@ public class MongoCollection {
         return String(cString: mongoc_collection_get_name(self._collection))
     }
 
-    /// The readConcern set on this collection.
-    public var readConcern: ReadConcern {
+    /// The readConcern set on this collection, or nil if one is not set.
+    public var readConcern: ReadConcern? {
         // per libmongoc docs, we don't need to handle freeing this ourselves
         let readConcern = mongoc_collection_get_read_concern(self._collection)
-        return ReadConcern(readConcern)
+        let rcObj = ReadConcern(readConcern)
+        if rcObj.isDefault { return nil }
+        return rcObj
     }
 
     /**

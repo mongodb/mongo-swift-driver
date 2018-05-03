@@ -60,11 +60,13 @@ public class MongoClient {
     /// If command and/or server monitoring is enabled, indicates what event types notifications will be posted for.
     internal var monitoringEventTypes: [MongoEventType]?
 
-    /// The read concern set on this client.
-    public var readConcern: ReadConcern {
+    /// The read concern set on this client, or nil if one is not set.
+    public var readConcern: ReadConcern? {
         // per libmongoc docs, we don't need to handle freeing this ourselves
         let readConcern = mongoc_client_get_read_concern(self._client)
-        return ReadConcern(readConcern)
+        let rcObj = ReadConcern(readConcern)
+        if rcObj.isDefault { return nil }
+        return rcObj
     }
 
     /**
