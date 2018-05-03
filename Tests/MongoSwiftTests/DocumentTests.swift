@@ -137,7 +137,6 @@ final class DocumentTests: XCTestCase {
         expect(doc["oid"] as? ObjectId).to(equal(ObjectId(fromString: "507f1f77bcf86cd799439011")))
 
         let regex = doc["regex"] as? RegularExpression
-
         expect(regex).to(equal(RegularExpression(pattern: "^abc", options: "imx")))
         expect(regex?.nsRegularExpression).to(equal(try NSRegularExpression(pattern: "^abc", options: NSRegularExpression.optionsFromString("imx"))))
 
