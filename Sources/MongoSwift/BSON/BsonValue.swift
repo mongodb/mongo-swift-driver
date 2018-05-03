@@ -549,11 +549,13 @@ struct RegularExpression: BsonValue, Equatable {
     public let pattern: String
     public let options: String
 
+    /// Initializes a new RegularExpression
     public init(pattern: String, options: String) {
         self.pattern = pattern
         self.options = String(options.sorted())
     }
 
+    /// Initializes a new RegularExpression with the pattern and options of the provided NSRegularExpression
     public init(from regex: NSRegularExpression) {
         self.pattern = regex.pattern
         self.options = regex.stringOptions
@@ -582,7 +584,7 @@ struct RegularExpression: BsonValue, Equatable {
         }
         let optionsString = String(cString: stringOptions)
 
-        return RegularExpression(pattern: patternStr, options: optionsStr)
+        return RegularExpression(pattern: patternString, options: optionsString)
     }
 
     // Creates an NSRegularExpression with the specified pattern and options.

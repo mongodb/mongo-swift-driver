@@ -135,7 +135,12 @@ final class DocumentTests: XCTestCase {
         expect(doc["date"] as? Date).to(equal(Date(timeIntervalSince1970: 5000)))
         expect(doc["timestamp"] as? Timestamp).to(equal(Timestamp(timestamp: 5, inc: 10)))
         expect(doc["oid"] as? ObjectId).to(equal(ObjectId(fromString: "507f1f77bcf86cd799439011")))
-        expect(doc["regex"] as? RegularExpression).to(equal(RegularExpression(pattern: "^abc", options: "imx")))
+
+        let regex = doc["regex"] as? RegularExpression
+
+        expect(regex).to(equal(RegularExpression(pattern: "^abc", options: "imx")))
+        expect(regex?.asNSRegularExpression).to(equal(try NSRegularExpression(pattern: "^abc", options: NSRegularExpression.optionsFromString("imx"))))
+
         expect(doc["array1"] as? [Int]).to(equal([1, 2]))
         expect(doc["array2"] as? [String]).to(equal(["string1", "string2"]))
         expect(doc["null"]).to(beNil())
