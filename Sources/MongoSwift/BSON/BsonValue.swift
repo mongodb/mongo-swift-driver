@@ -35,7 +35,7 @@ internal let BsonTypeMap: [UInt32: BsonValue.Type] = [
     0x07: ObjectId.self,
     0x08: Bool.self,
     0x09: Date.self,
-    0x0b: NSRegularExpression.self,
+    0x0b: RegularExpression.self,
     0x0c: DBPointer.self,
     0x0d: CodeWithScope.self,
     0x0e: Symbol.self,
@@ -520,38 +520,8 @@ let regexOptsMap: [Character: NSRegularExpression.Options] = [
     "x": .allowCommentsAndWhitespace
 ]
 
-/// An extension of NSRegularExpression to represent the BSON RegularExpression type
-extension NSRegularExpression: BsonValue {
-    public var bsonType: BsonType { return .regularExpression }
-
-    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
-        if !bson_append_regex(data, key, Int32(key.count), self.pattern, self.stringOptions) {
-            throw bsonEncodeError(value: self, forKey: key)
-        }
-    }
-
-    public static func from(iter: inout bson_iter_t) -> BsonValue {
-        let options = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: 1)
-        defer {
-            options.deinitialize(count: 1)
-            options.deallocate(capacity: 1)
-        }
-        guard let pattern = bson_iter_regex(&iter, options) else {
-            preconditionFailure("Failed to retrieve regular expression pattern")
-        }
-        let patternString = String(cString: pattern)
-        guard let stringOptions = options.pointee else {
-            preconditionFailure("Failed to retrieve regular expression options")
-        }
-        let optionsString = String(cString: stringOptions)
-        let opts = NSRegularExpression.optionsFromString(optionsString)
-        do {
-            return try self.init(pattern: patternString, options: opts)
-        } catch {
-            preconditionFailure("Failed to initialize NSRegularExpression with " +
-                "pattern '\(patternString)'' and options '\(optionsString)'")
-        }
-    }
+/// An extension of NSRegularExpression to support converting options to and from strings
+extension NSRegularExpression {
 
     // Convert a string of options flags into an equivalent NSRegularExpression.Options
     static func optionsFromString(_ stringOptions: String) -> NSRegularExpression.Options {
@@ -569,6 +539,65 @@ extension NSRegularExpression: BsonValue {
         var optsString = ""
         for (char, o) in regexOptsMap { if options.contains(o) { optsString += String(char) } }
         return String(optsString.sorted())
+    }
+}
+
+struct RegularExpression: BsonValue, Equatable {
+
+    public var bsonType: BsonType { return .regularExpression }
+
+    public let pattern: String
+    public let options: String
+
+    public init(pattern: String, options: String) {
+        self.pattern = pattern
+        self.options = String(options.sorted())
+    }
+
+    public init(from regex: NSRegularExpression) {
+        self.pattern = regex.pattern
+        self.options = regex.stringOptions
+    }
+
+    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
+        if !bson_append_regex(data, key, Int32(key.count), self.pattern, self.options) {
+            throw bsonEncodeError(value: self, forKey: key)
+        }
+    }
+
+    public static func from(iter: inout bson_iter_t) -> BsonValue {
+        let options = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: 1)
+        defer {
+            options.deinitialize(count: 1)
+            options.deallocate(capacity: 1)
+        }
+
+        guard let pattern = bson_iter_regex(&iter, options) else {
+            preconditionFailure("Failed to retrieve regular expression pattern")
+        }
+        let patternStr = String(cString: pattern)
+
+        guard let stringOptions = options.pointee else {
+            preconditionFailure("Failed to retrieve regular expression options")
+        }
+        let optionsStr = String(cString: stringOptions)
+
+        return RegularExpression(pattern: patternStr, options: optionsStr)
+    }
+
+    // Creates an NSRegularExpression with the specified pattern and options.
+    public var asNSRegularExpression: NSRegularExpression {
+        let opts = NSRegularExpression.optionsFromString(self.options)
+        do {
+            return try NSRegularExpression(pattern: self.pattern, options: opts)
+        } catch {
+            preconditionFailure("Failed to initialize NSRegularExpression with " +
+                "pattern '\(self.pattern)'' and options '\(self.options)'")
+        }
+    }
+
+    public static func == (lhs: RegularExpression, rhs: RegularExpression) -> Bool {
+        return lhs.pattern == rhs.pattern && lhs.options == rhs.options
     }
 }
 

@@ -84,11 +84,6 @@ final class DocumentTests: XCTestCase {
             return
         }
 
-        // Since the NSRegularExpression constructor can throw, create the
-        // regex separately first
-        let opts = NSRegularExpression.optionsFromString("imx")
-        let regex = try NSRegularExpression(pattern: "^abc", options: opts)
-
         // Set up test document values
         let doc: Document = [
             "string": "test string",
@@ -106,7 +101,7 @@ final class DocumentTests: XCTestCase {
             "nestedarray": [[1, 2], [Int32(3), Int32(4)]] as [[Int32]],
             "nesteddoc": ["a": 1, "b": 2, "c": false, "d": [3, 4]] as Document,
             "oid": ObjectId(fromString: "507f1f77bcf86cd799439011"),
-            "regex": regex,
+            "regex": RegularExpression(pattern: "^abc", options: "imx"),
             "array1": [1, 2],
             "array2": ["string1", "string2"],
             "null": nil,
@@ -140,11 +135,7 @@ final class DocumentTests: XCTestCase {
         expect(doc["date"] as? Date).to(equal(Date(timeIntervalSince1970: 5000)))
         expect(doc["timestamp"] as? Timestamp).to(equal(Timestamp(timestamp: 5, inc: 10)))
         expect(doc["oid"] as? ObjectId).to(equal(ObjectId(fromString: "507f1f77bcf86cd799439011")))
-
-        let regexReturned = doc["regex"] as? NSRegularExpression
-        expect(regexReturned?.pattern).to(equal("^abc"))
-        expect(regexReturned?.stringOptions).to(equal("imx"))
-
+        expect(doc["regex"] as? RegularExpression).to(equal(RegularExpression(pattern: "^abc", options: "imx")))
         expect(doc["array1"] as? [Int]).to(equal([1, 2]))
         expect(doc["array2"] as? [String]).to(equal(["string1", "string2"]))
         expect(doc["null"]).to(beNil())
