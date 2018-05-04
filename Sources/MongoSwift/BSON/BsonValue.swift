@@ -588,7 +588,7 @@ struct RegularExpression: BsonValue, Equatable {
     }
 
     // Creates an NSRegularExpression with the specified pattern and options.
-    public var asNSRegularExpression: NSRegularExpression {
+    public var nsRegularExpression: NSRegularExpression {
         let opts = NSRegularExpression.optionsFromString(self.options)
         do {
             return try NSRegularExpression(pattern: self.pattern, options: opts)

@@ -139,7 +139,7 @@ final class DocumentTests: XCTestCase {
         let regex = doc["regex"] as? RegularExpression
 
         expect(regex).to(equal(RegularExpression(pattern: "^abc", options: "imx")))
-        expect(regex?.asNSRegularExpression).to(equal(try NSRegularExpression(pattern: "^abc", options: NSRegularExpression.optionsFromString("imx"))))
+        expect(regex?.nsRegularExpression).to(equal(try NSRegularExpression(pattern: "^abc", options: NSRegularExpression.optionsFromString("imx"))))
 
         expect(doc["array1"] as? [Int]).to(equal([1, 2]))
         expect(doc["array2"] as? [String]).to(equal(["string1", "string2"]))
