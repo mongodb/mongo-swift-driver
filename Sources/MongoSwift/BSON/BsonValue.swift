@@ -1,29 +1,53 @@
 import Foundation
 import libbson
 
+/// The possible types of BSON values and their corresponding integer values.
 public enum BsonType: Int {
-    case invalid = 0x00,
-    double = 0x01,
-    string = 0x02,
-    document = 0x03,
-    array = 0x04,
-    binary = 0x05,
-    undefined = 0x06,
-    objectId = 0x07,
-    boolean = 0x08,
-    dateTime = 0x09,
-    null = 0x0a,
-    regularExpression = 0x0b,
-    dbPointer = 0x0c,
-    javascript = 0x0d,
-    symbol = 0x0e,
-    javascriptWithScope = 0x0f,
-    int32 = 0x10,
-    timestamp = 0x11,
-    int64 = 0x12,
-    decimal128 = 0x13,
-    minKey = 0xff,
-    maxKey = 0x7f
+    /// An invalid type
+    case invalid = 0,
+    /// 64-bit binary floating point
+    double,
+    /// UTF-8 string
+    string,
+    /// BSON document
+    document,
+    /// Array
+    array,
+    /// Binary data
+    binary,
+    /// Undefined value - deprecated
+    undefined,
+    /// A MongoDB ObjectId. 
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/method/ObjectId/
+    objectId,
+    /// A boolean
+    boolean,
+    /// UTC datetime, stored as UTC milliseconds since the Unix epoch
+    dateTime,
+    /// Null value
+    null,
+    /// A regular expression
+    regularExpression,
+    /// A database pointer - deprecated
+    dbPointer,
+    /// Javascript code
+    javascript,
+    /// A symbol - deprecated
+    symbol,
+    /// JavaScript code w/ scope
+    javascriptWithScope,
+    /// 32-bit integer
+    int32,
+    /// Special internal type used by MongoDB replication and sharding
+    timestamp,
+    /// 64-bit integer
+    int64,
+    /// 128-bit decimal floating point
+    decimal128,
+    /// Special type which compares lower than all other possible BSON element values
+    minKey,
+    /// Special type which compares higher than all other possible BSON element values
+    maxKey
 }
 
 internal let BsonTypeMap: [UInt32: BsonValue.Type] = [
@@ -54,16 +78,16 @@ internal func nextBsonValue(iter: inout bson_iter_t) -> BsonValue? {
     return typeToReturn.from(iter: &iter)
 }
 
-/// A protocol all types representing BsonTypes must implement
+/// A protocol all types representing BsonTypes must implement.
 public protocol BsonValue {
-
+    /// The `BsonType` of this value.
     var bsonType: BsonType { get }
 
     /**
-    * Given the bson_t backing a document, appends this BsonValue to the end.
+    * Given the `bson_t` backing a `Document`, appends this `BsonValue` to the end.
     *
     * - Parameters:
-    *   - to: An `<UnsafeMutablePointer<bson_t>`, indicating the bson_t to append to.
+    *   - to: An `<UnsafeMutablePointer<bson_t>`, indicating the `bson_t` to append to.
     *   - forKey: A `String`, the key with which to store the value.
     *
     * - Returns: A `Bool` indicating whether the value was successfully appended.
@@ -71,17 +95,17 @@ public protocol BsonValue {
     func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws
 
     /**
-    * Given a bson_iter_t known to have a next value, returns the next value in the iterator.
+    * Given a `bson_iter_t` known to have a next value, returns the next value in the iterator.
     *
     * - Parameters:
     *   - iter: A `bson_iter_t` to read the next value from
     *
-    * - Returns: A BsonValue
+    * - Returns: A `BsonValue`
     */
     static func from(iter: inout bson_iter_t) -> BsonValue
 }
 
-/// An extension of Array type to represent the BSON array type
+/// An extension of `Array` to represent the BSON array type.
 extension Array: BsonValue {
     public var bsonType: BsonType { return .array }
 
@@ -134,29 +158,37 @@ extension Array: BsonValue {
     }
 }
 
-/// Subtypes for BSON Binary values
+/// Subtypes for BSON Binary values.
 public enum BsonSubtype: Int {
+    /// Generic binary subtype
     case binary = 0x00,
+    /// A function
     function = 0x01,
+    /// Binary (old)
     binaryDeprecated = 0x02,
+    /// UUID (old)
     uuidDeprecated = 0x03,
+    /// UUID
     uuid = 0x04,
+    /// MD5
     md5 = 0x05,
+    /// User defined
     user = 0x06
 }
 
-/// A struct to represent the BSON Binary type
+/// A struct to represent the BSON Binary type.
 public struct Binary: BsonValue, Equatable {
     public var bsonType: BsonType { return .binary }
     var data: Data
     var subtype: BsonSubtype
 
+    /// Initializes a Binary instance of the specified subtype using provided `Data`.
     public init(data: Data, subtype: BsonSubtype) {
         self.data = data
         self.subtype = subtype
     }
 
-    // Initialize a Binary instance from a base64 string
+    /// Initializes a Binary instance of the specified subtype from a base64 `String`. 
     public init(base64: String, subtype: BsonSubtype) {
         guard let dataObj = Data(base64Encoded: base64) else {
             preconditionFailure("failed to create Data object from base64 string \(base64)")
@@ -165,8 +197,8 @@ public struct Binary: BsonValue, Equatable {
         self.subtype = subtype
     }
 
-    // Initialize a Binary instance from a Data object
-    public init(data: Data, subtype: UInt32) {
+    /// Initializes a `Binary` instance from a `Data` object and a `UInt32` subtype.
+    internal init(data: Data, subtype: UInt32) {
         self.data = data
         self.subtype = BsonSubtype(rawValue: Int(subtype))!
     }
@@ -203,7 +235,7 @@ public struct Binary: BsonValue, Equatable {
     }
 }
 
-/// An extension of Bool to represent the BSON Boolean type
+/// An extension of `Bool` to represent the BSON Boolean type.
 extension Bool: BsonValue {
     public var bsonType: BsonType { return .boolean }
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
@@ -217,14 +249,17 @@ extension Bool: BsonValue {
     }
 }
 
-/// An extension of Date to represent the BSON Datetime type
+/// An extension of `Date` to represent the BSON Datetime type.
 extension Date: BsonValue {
     public var bsonType: BsonType { return .dateTime }
 
+    /// Initializes a new `Date` representing the instance `msSinceEpoch` milliseconds
+    /// since the Unix epoch.
     public init(msSinceEpoch: Int64) {
         self.init(timeIntervalSince1970: Double(msSinceEpoch / 1000))
     }
 
+    /// The number of milliseconds after the Unix epoch that this `Date` occurs.
     public var msSinceEpoch: Int64 { return Int64(self.timeIntervalSince1970 * 1000) }
 
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
@@ -282,10 +317,11 @@ internal struct DBPointer: BsonValue {
     }
 }
 
-/// A struct to represent the BSON Decimal128 type
+/// A struct to represent the BSON Decimal128 type.
 public struct Decimal128: BsonValue, Equatable {
     var data: String
 
+    /// Initializes a `Decimal128` value from the provided `String`.
     public init(_ data: String) {
         self.data = data
     }
@@ -318,7 +354,7 @@ public struct Decimal128: BsonValue, Equatable {
 
 }
 
-/// An extension of Double to represent the BSON Double type
+/// An extension of `Double` to represent the BSON Double type.
 extension Double: BsonValue {
     public var bsonType: BsonType { return .double }
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
@@ -332,9 +368,9 @@ extension Double: BsonValue {
     }
 }
 
-/// An extension of Int to represent the BSON Int32 type.
+/// An extension of `Int` to represent the BSON Int32 type.
 /// While the bitwidth of Int is machine-dependent, we assume for simplicity
-/// that it is always 32 bits. Use Int64 if 64 bits are needed.
+/// that it is always 32 bits. Use `Int64` if 64 bits are needed.
 extension Int: BsonValue {
     public var bsonType: BsonType { return .int32 }
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
@@ -348,7 +384,7 @@ extension Int: BsonValue {
     }
 }
 
-/// An extension of Int32 to represent the BSON Int32 type
+/// An extension of `Int32` to represent the BSON Int32 type.
 extension Int32: BsonValue {
     public var bsonType: BsonType { return .int32 }
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
@@ -362,7 +398,7 @@ extension Int32: BsonValue {
     }
 }
 
-/// An extension of Int64 to represent the BSON Int64 type
+/// An extension of `Int64` to represent the BSON Int64 type.
 extension Int64: BsonValue {
     public var bsonType: BsonType { return .int64 }
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
@@ -376,7 +412,7 @@ extension Int64: BsonValue {
     }
 }
 
-/// A struct to represent the BSON Code and CodeWithScope types
+/// A struct to represent the BSON Code and CodeWithScope types.
 public struct CodeWithScope: BsonValue {
     var code = ""
     var scope: Document?
@@ -386,7 +422,7 @@ public struct CodeWithScope: BsonValue {
         return .javascript
     }
 
-    // Initialize a CodeWithScope with an optional scope value
+    /// Initializes a `CodeWithScope` with an optional scope value.
     public init(code: String, scope: Document? = nil) {
         self.code = code
         self.scope = scope
@@ -426,7 +462,7 @@ public struct CodeWithScope: BsonValue {
     }
 }
 
-/// A struct to represent the BSON MaxKey type
+/// A struct to represent the BSON MaxKey type.
 public struct MaxKey: BsonValue, Equatable {
     public var bsonType: BsonType { return .maxKey }
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
@@ -440,7 +476,7 @@ public struct MaxKey: BsonValue, Equatable {
     public static func == (lhs: MaxKey, rhs: MaxKey) -> Bool { return true }
 }
 
-/// A struct to represent the BSON MinKey type
+/// A struct to represent the BSON MinKey type.
 public struct MinKey: BsonValue, Equatable {
     public var bsonType: BsonType { return .minKey }
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
@@ -454,25 +490,25 @@ public struct MinKey: BsonValue, Equatable {
     public static func == (lhs: MinKey, rhs: MinKey) -> Bool { return true }
 }
 
-/// A struct to represent the BSON ObjectId type
+/// A struct to represent the BSON ObjectId type.
 public struct ObjectId: BsonValue, Equatable, CustomStringConvertible {
     public var bsonType: BsonType { return .objectId }
     var oid: String
 
-    /// Initializes a new ObjectId
+    /// Initializes a new `ObjectId`.
     public init() {
         var oid_t = bson_oid_t()
         bson_oid_init(&oid_t, nil)
         self.init(fromPointer: &oid_t)
     }
 
-    /// Initializes an ObjectId from a string
+    /// Initializes an `ObjectId` from the provided `String`.
     public init(fromString oid: String) {
         self.oid = oid
     }
 
-    /// Initializes an ObjectId from an UnsafePointer<bson_oid_t> by copying the data
-    /// from it to a string
+    /// Initializes an `ObjectId` from an `UnsafePointer<bson_oid_t>` by copying the data
+    /// from it to a `String`
     internal init(fromPointer oid_t: UnsafePointer<bson_oid_t>) {
         var str = Data(count: 25)
         self.oid = str.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<Int8>) in
@@ -508,10 +544,10 @@ public struct ObjectId: BsonValue, Equatable, CustomStringConvertible {
 
 }
 
-// A mapping of regex option characters to their equivalent NSRegularExpression option.
-// note that there is a BSON regexp option 'l' that NSRegularExpression
+// A mapping of regex option characters to their equivalent `NSRegularExpression` option.
+// note that there is a BSON regexp option 'l' that `NSRegularExpression`
 // doesn't support. The flag will be dropped if BSON containing it is parsed,
-// and it will be ignored if passed into optionsFromString.
+// and it will be ignored if passed into `optionsFromString`.
 let regexOptsMap: [Character: NSRegularExpression.Options] = [
     "i": .caseInsensitive,
     "m": .anchorsMatchLines,
@@ -520,10 +556,10 @@ let regexOptsMap: [Character: NSRegularExpression.Options] = [
     "x": .allowCommentsAndWhitespace
 ]
 
-/// An extension of NSRegularExpression to support converting options to and from strings
+/// An extension of `NSRegularExpression` to support converting options to and from strings.
 extension NSRegularExpression {
 
-    // Convert a string of options flags into an equivalent NSRegularExpression.Options
+    /// Convert a string of options flags into an equivalent `NSRegularExpression.Options`
     static func optionsFromString(_ stringOptions: String) -> NSRegularExpression.Options {
         var optsObj: NSRegularExpression.Options = []
         for o in stringOptions {
@@ -534,7 +570,7 @@ extension NSRegularExpression {
         return optsObj
     }
 
-    // Convert this instance's Options object into an alphabetically-sorted string of characters
+    /// Convert this instance's options object into an alphabetically-sorted string of characters
     public var stringOptions: String {
         var optsString = ""
         for (char, o) in regexOptsMap { if options.contains(o) { optsString += String(char) } }
@@ -542,20 +578,24 @@ extension NSRegularExpression {
     }
 }
 
+/// A struct to represent a BSON regular expression.
 struct RegularExpression: BsonValue, Equatable {
 
     public var bsonType: BsonType { return .regularExpression }
 
+    /// The pattern for this regular expression.
     public let pattern: String
+    /// A string containing options for this regular expression. 
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/operator/query/regex/#op
     public let options: String
 
-    /// Initializes a new RegularExpression
+    /// Initializes a new `RegularExpression` with the provided pattern and options.
     public init(pattern: String, options: String) {
         self.pattern = pattern
         self.options = String(options.sorted())
     }
 
-    /// Initializes a new RegularExpression with the pattern and options of the provided NSRegularExpression
+    /// Initializes a new `RegularExpression` with the pattern and options of the provided `NSRegularExpression`.
     public init(from regex: NSRegularExpression) {
         self.pattern = regex.pattern
         self.options = regex.stringOptions
@@ -587,7 +627,9 @@ struct RegularExpression: BsonValue, Equatable {
         return RegularExpression(pattern: patternString, options: optionsString)
     }
 
-    // Creates an NSRegularExpression with the specified pattern and options.
+    /// Creates an `NSRegularExpression` with the pattern and options of this `RegularExpression`.
+    /// Note: `NSRegularExpression` does not support the `l` locale dependence option, so it will
+    // be omitted if set on this `RegularExpression`.
     public var nsRegularExpression: NSRegularExpression {
         let opts = NSRegularExpression.optionsFromString(self.options)
         do {
@@ -598,12 +640,13 @@ struct RegularExpression: BsonValue, Equatable {
         }
     }
 
+    /// Returns `true` if the two `RegularExpression`s have matching patterns and options, and `false` otherwise.
     public static func == (lhs: RegularExpression, rhs: RegularExpression) -> Bool {
         return lhs.pattern == rhs.pattern && lhs.options == rhs.options
     }
 }
 
-/// An extension of String to represent the BSON string type
+/// An extension of String to represent the BSON string type.
 extension String: BsonValue {
     public var bsonType: BsonType { return .string }
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
@@ -648,19 +691,20 @@ internal struct Symbol: BsonValue {
     }
 }
 
-/// A struct to represent the BSON Timestamp type
+/// A struct to represent the BSON Timestamp type.
 public struct Timestamp: BsonValue, Equatable {
     public var bsonType: BsonType { return .timestamp }
     var timestamp: UInt32 = 0
     var increment: UInt32 = 0
 
+    /// Initializes a new  `Timestamp` with the provided `timestamp` and `increment` values.
     public init(timestamp: UInt32, inc: UInt32) {
         self.timestamp = timestamp
         self.increment = inc
     }
 
-    // assumes that values can successfully be converted to UInt32
-    // w/o loss of precision
+    /// Initializes a new  `Timestamp` with the provided `timestamp` and `increment` values. Assumes
+    /// the values can successfully be converted to UInt32s without loss of precision.
     public init(timestamp: Int, inc: Int) {
         self.timestamp = UInt32(timestamp)
         self.increment = UInt32(inc)

@@ -1,28 +1,22 @@
 import libmongoc
 
-// A Cursor
+/// A MongoDB cursor.
 public class MongoCursor: Sequence, IteratorProtocol {
     private var _cursor: OpaquePointer?
     private var _client: MongoClient?
 
-    /**
-     * Initializes a new MongoCursor instance, not meant to be instantiated directly
-     */
+    /// Initializes a new `MongoCursor` instance, not meant to be instantiated directly.
     internal init(fromCursor: OpaquePointer, withClient: MongoClient) {
         self._cursor = fromCursor
         self._client = withClient
     }
 
-    /**
-     * Deinitializes a MongoCursor, cleaning up the internal mongoc_cursor_t
-     */
+    /// Deinitializes a `MongoCursor`, cleaning up the internal `mongoc_cursor_t`.
     deinit {
         close()
     }
 
-    /**
-     * Close the cursor
-     */
+    /// Closes the cursor.
     public func close() {
         self._client = nil
         guard let cursor = self._cursor else {
@@ -32,22 +26,18 @@ public class MongoCursor: Sequence, IteratorProtocol {
         self._cursor = nil
     }
 
-    /**
-     * Returns the next document in this cursor, or nil. Throws an error if one
-     * occurs. (Compared to next(), which returns nil and requires manually checking
-     * for an error afterward.)
-     *
-     */
+    /// Returns the next `Document` in this cursor or `nil`, or throws an error if one occurs -- compared to `next()`, 
+    /// which returns `nil` and requires manually checking for an error afterward.
+    /// - returns: the next `Document` in this cursor, or `nil` if at the end of the cursor
+    /// - throws: an error if one occurs while iterating
     public func nextOrError() throws -> Document? {
         if let next = self.next() { return next }
         if let error = self.error { throw error }
         return nil
     }
 
-    /**
-     *  The error that occurred while iterating this cursor, if one exists.
-     *  This should be used to check for errors after next() returns nil.
-     */
+    /// The error that occurred while iterating this cursor, if one exists. This should be used to check for errors 
+    /// after `next()` returns `nil`.
     public var error: Error? {
         var error = bson_error_t()
         if mongoc_cursor_error(self._cursor, &error) {
@@ -56,10 +46,8 @@ public class MongoCursor: Sequence, IteratorProtocol {
         return nil
     }
 
-    /**
-     * Returns the next document in this cursor, or nil. Once this function
-     * returns nil, the caller should use the .error property to check for errors.
-     */
+    /// Returns the next `Document` in this cursor, or nil. Once this function returns `nil`, the caller should use 
+    /// the `.error` property to check for errors.
     public func next() -> Document? {
         let out = UnsafeMutablePointer<UnsafePointer<bson_t>?>.allocate(capacity: 1)
         defer {

@@ -3,7 +3,9 @@ import libmongoc
 
 /// A struct representing a server connection, consisting of a host and port.
 public struct ConnectionId: Equatable {
+    /// A string representing the host for this connection.
     public let host: String
+    /// The port number for this connection.
     public let port: UInt16
 
     /// Initializes a ConnectionId from an UnsafePointer to a mongoc_host_list_t.
@@ -29,17 +31,25 @@ public struct ConnectionId: Equatable {
     }
 }
 
-/// The possible types for a server. The raw values correspond to the values libmongoc uses.
-/// (We don't use these strings directly because Swift convention is to use lowercase enums.)
+/// The possible types for a server. 
 public enum ServerType: String {
+    /// A standalone mongod server.
     case standalone = "Standalone"
+    /// A router to a sharded cluster, i.e. a mongos server.
     case mongos = "Mongos"
+    /// A replica set member which is not yet checked, but another member thinks it is the primary.
     case possiblePrimary = "PossiblePrimary"
+    /// A replica set primary. 
     case rsPrimary = "RSPrimary"
+    /// A replica set secondary. 
     case rsSecondary = "RSSecondary"
+    /// A replica set arbiter. 
     case rsArbiter = "RSArbiter"
+    /// A replica set member that is none of the other types (a passive, for example).
     case rsOther = "RSOther"
+    /// A replica set member that does not report a set name or a hosts list.
     case rsGhost = "RSGhost"
+    /// A server type that is not yet known. 
     case unknown = "Unknown"
 }
 
@@ -66,15 +76,18 @@ public struct ServerDescription {
     /// The type of this server.
     public var type: ServerType = .unknown
 
-    /// The wire protocol version range supported by the server.
+    /// The minimum wire protocol version supported by the server.
     public var minWireVersion: Int32 = 0
+
+    /// The maximum wire protocol version supported by the server.
     public var maxWireVersion: Int32 = 0
 
     /// The hostname or IP and the port number that this server was configured with in the replica set.
     public var me: ConnectionId?
 
-    /// Hosts, arbiters, passives: sets of addresses. This server's opinion of the replica set's members, if any.
+    /// This server's opinion of the replica set's hosts, if any.
     public var hosts: [ConnectionId] = []
+    /// This server's opinion of the replica set's arbiters, if any.
     public var arbiters: [ConnectionId] = []
     /// "Passives" are priority-zero replica set members that cannot become primary.
     /// The client treats them precisely the same as other members.
@@ -169,13 +182,17 @@ public struct ServerDescription {
     }
 }
 
-/// The possible types for a topology. The raw values correspond to the values libmongoc uses.
-/// (We don't use these strings directly because Swift convention is to use lowercase for enums.)
+/// The possible types for a topology. 
 public enum TopologyType: String {
+    /// A single mongod server.
     case single = "Single"
+    /// A replica set with no primary.
     case replicaSetNoPrimary = "ReplicaSetNoPrimary"
+    /// A replica set with a primary.
     case replicaSetWithPrimary = "ReplicaSetWithPrimary"
+    /// Sharded topology.
     case sharded = "Sharded"
+    /// A topology whose type is not yet known.
     case unknown = "Unknown"
 }
 
@@ -204,8 +221,8 @@ public struct TopologyDescription {
     public let compatibilityError: MongoError? = nil // currently, this will never be set
 
     /// The logicalSessionTimeoutMinutes value for this topology. This value is the minimum
-    /// of the logicalSessionTimeoutMinutes values across all the servers in `servers`,
-    /// or nil if any of them are nil.
+    /// of the `logicalSessionTimeoutMinutes` values across all the servers in `servers`,
+    /// or `nil` if any of them are `nil`.
     public var logicalSessionTimeoutMinutes: Int64? {
         let timeoutValues = self.servers.map { $0.logicalSessionTimeoutMinutes }
         if timeoutValues.contains (where: { $0 == nil }) {
@@ -215,19 +232,19 @@ public struct TopologyDescription {
         }
     }
 
-    /// Determines if the topology has a readable server available.
-    // (this function should take in an optional ReadPreference, but we have yet to implement that type.)
+    /// Returns `true` if the topology has a readable server available, and `false` otherwise.
     public func hasReadableServer() -> Bool {
+        // (this function should take in an optional ReadPreference, but we have yet to implement that type.)
         return [.single, .replicaSetWithPrimary, .sharded].contains(self.type)
     }
 
-    /// Determines if the topology has a writable server available.
+    /// Returns `true` if the topology has a writable server available, and `false` otherwise.
     public func hasWritableServer() -> Bool {
         return [.single, .replicaSetWithPrimary].contains(self.type)
     }
 
     /// An internal initializer to create a `TopologyDescription` from an OpaquePointer
-    /// to a mongoc_server_description_t
+    /// to a `mongoc_server_description_t`
     internal init(_ description: OpaquePointer) {
 
         let topologyType = String(cString: mongoc_topology_description_type(description))

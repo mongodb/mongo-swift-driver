@@ -1,47 +1,35 @@
+/// Options to use when creating a ClientSession.
 public struct SessionOptions {
-    /**
-     * Specify whether read operations should be causally ordered within the session
-     */
+    /// Specifies whether read operations should be causally ordered within the session.
     public let causalConsistency: Bool?
 }
 
+/// A session for ordering sequential operations.
 public class ClientSession: BsonEncodable {
-    /**
-     * A session for ordering sequential operations. This class wraps a mongoc_session_t
-     * type.
-     */
+
+    /// Initializes a new client session.
     public init() {
     }
 
-    /**
-     * Cleans up the internal mongoc_session_t
-     */
+    /// Clean up the internal mongoc_session_t.
     deinit {
     }
 
-    /**
-     * Finish the session
-     */
+    /// Finish the session.
     func endSession() {
     }
 
-    /**
-     * The server session id for this session
-     */
+    /// The server session id for this session.
     var sessionId: Document {
         return Document()
     }
 
-    /**
-     * The cluster time returned by the last operation executed in this session
-     */
+    /// The cluster time returned by the last operation executed in this session.
     var clusterTime: Int64 {
         return Int64()
     }
 
-    /**
-     * The operation time returned by the last operation executed in this session
-     */
+    /// The operation time returned by the last operation executed in this session.
     var operationTime: Int64 {
         return Int64()
     }

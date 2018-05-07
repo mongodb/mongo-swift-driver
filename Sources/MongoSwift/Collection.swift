@@ -1,11 +1,12 @@
 import libmongoc
 
+/// Options to use when executing an `aggregate` command on a `MongoCollection`.
 public struct AggregateOptions: BsonEncodable {
     /// Enables writing to temporary files. When set to true, aggregation stages
-    /// can write data to the _tmp subdirectory in the dbPath directory
+    /// can write data to the _tmp subdirectory in the dbPath directory.
     public let allowDiskUse: Bool?
 
-    /// The number of documents to return per batch.
+    /// The number of `Document`s to return per batch.
     public let batchSize: Int32?
 
     /// If true, allows the write to opt-out of document level validation. This only applies
@@ -25,7 +26,7 @@ public struct AggregateOptions: BsonEncodable {
     /// The index to use for the aggregation. The hint does not apply to $lookup and $graphLookup stages.
     // let hint: Optional<(String | Document)>
 
-    /// A ReadConcern to use for this operation. 
+    /// A `ReadConcern` to use for this operation. 
     let readConcern: ReadConcern?
 
     /// Convenience initializer allowing any/all parameters to be optional
@@ -44,6 +45,7 @@ public struct AggregateOptions: BsonEncodable {
     public var skipFields: [String] { return ["readConcern"] }
 }
 
+/// Options to use when executing a `count` command on a `MongoCollection`.
 public struct CountOptions: BsonEncodable {
     /// Specifies a collation.
     public let collation: Document?
@@ -76,6 +78,7 @@ public struct CountOptions: BsonEncodable {
     public var skipFields: [String] { return ["readConcern"] }
 }
 
+/// Options to use when executing a `distinct` command on a `MongoCollection`.
 public struct DistinctOptions: BsonEncodable {
     /// Specifies a collation.
     public let collation: Document?
@@ -96,6 +99,7 @@ public struct DistinctOptions: BsonEncodable {
     public var skipFields: [String] { return ["readConcern"] }
 }
 
+/// The possible types of `MongoCursor` an operation can return.
 public enum CursorType {
     /**
      * The default value. A vast majority of cursors will be of this type.
@@ -127,6 +131,7 @@ public enum CursorType {
 
 }
 
+/// Options to use when executing a `find` command on a `MongoCollection`.
 public struct FindOptions: BsonEncodable {
     /// Get partial results from a mongos if some shards are down (instead of throwing an error).
     public let allowPartialResults: Bool?
@@ -218,6 +223,7 @@ public struct FindOptions: BsonEncodable {
     public var skipFields: [String] { return ["readConcern"] }
 }
 
+/// Options to use when executing an `insertOne` command on a `MongoCollection`.
 public struct InsertOneOptions: BsonEncodable {
     /// If true, allows the write to opt-out of document level validation.
     public let bypassDocumentValidation: Bool?
@@ -228,6 +234,7 @@ public struct InsertOneOptions: BsonEncodable {
     }
 }
 
+/// Options to use when executing an `insertMany` command on a `MongoCollection`. 
 public struct InsertManyOptions: BsonEncodable {
     /// If true, allows the write to opt-out of document level validation.
     public let bypassDocumentValidation: Bool?
@@ -244,6 +251,7 @@ public struct InsertManyOptions: BsonEncodable {
     }
 }
 
+/// Options to use when executing an `update` command on a `MongoCollection`. 
 public struct UpdateOptions: BsonEncodable {
     /// A set of filters specifying to which array elements an update should apply.
     public let arrayFilters: [Document]?
@@ -267,6 +275,7 @@ public struct UpdateOptions: BsonEncodable {
     }
 }
 
+/// Options to use when executing a `replace` command on a `MongoCollection`. 
 public struct ReplaceOptions: BsonEncodable {
     /// If true, allows the write to opt-out of document level validation.
     public let bypassDocumentValidation: Bool?
@@ -285,6 +294,7 @@ public struct ReplaceOptions: BsonEncodable {
     }
 }
 
+/// Options to use when executing a `delete` command on a `MongoCollection`. 
 public struct DeleteOptions: BsonEncodable {
     /// Specifies a collation.
     public let collation: Document?
@@ -295,12 +305,14 @@ public struct DeleteOptions: BsonEncodable {
     }
 }
 
+/// The result of an `insertOne` command on a `MongoCollection`. 
 public struct InsertOneResult {
     /// The identifier that was inserted. If the document doesn't have an identifier, this value
     /// will be generated and added to the document before insertion.
     public let insertedId: BsonValue
 }
 
+/// The result of an `insertMany` command on a `MongoCollection`. 
 public struct InsertManyResult {
     /// Map of the index of the inserted document to the id of the inserted document.
     public let insertedIds: [Int64: BsonValue]
@@ -316,6 +328,7 @@ public struct InsertManyResult {
     }
 }
 
+/// The result of a `delete` command on a `MongoCollection`. 
 public struct DeleteResult {
     /// The number of documents that were deleted.
     public let deletedCount: Int
@@ -329,6 +342,7 @@ public struct DeleteResult {
     }
 }
 
+/// The result of an `update` operation a `MongoCollection`.
 public struct UpdateResult {
     /// The number of documents that matched the filter.
     public let matchedCount: Int
@@ -353,6 +367,7 @@ public struct UpdateResult {
     }
 }
 
+/// A struct representing an index on a `MongoCollection`.
 public struct IndexModel: BsonEncodable {
     /// Contains the required keys for the index.
     public let keys: Document
@@ -383,6 +398,7 @@ public struct IndexModel: BsonEncodable {
 
 }
 
+/// Options to use when creating an index for a collection.
 public struct IndexOptions: BsonEncodable {
     /// Optionally tells the server to build the index in the background and not block
     /// other tasks.
@@ -453,6 +469,7 @@ public struct IndexOptions: BsonEncodable {
     /// server-side is used.
     public let collation: Document?
 
+    /// Convenience initializer allowing any/all parameters to be omitted.
     public init(background: Bool? = nil, expireAfter: Int32? = nil, name: String? = nil, sparse: Bool? = nil,
                 storageEngine: String? = nil, unique: Bool? = nil, version: Int32? = nil,
                 defaultLanguage: String? = nil, languageOverride: String? = nil, textVersion: Int32? = nil,
@@ -480,7 +497,7 @@ public struct IndexOptions: BsonEncodable {
     }
 }
 
-// A MongoDB Collection
+/// A MongoDB collection.
 public class MongoCollection {
     private var _collection: OpaquePointer?
     private var _client: MongoClient?
@@ -490,7 +507,7 @@ public class MongoCollection {
         return String(cString: mongoc_collection_get_name(self._collection))
     }
 
-    /// The readConcern set on this collection, or nil if one is not set.
+    /// The `ReadConcern` set on this collection, or `nil` if one is not set.
     public var readConcern: ReadConcern? {
         // per libmongoc docs, we don't need to handle freeing this ourselves
         let readConcern = mongoc_collection_get_read_concern(self._collection)
@@ -499,17 +516,13 @@ public class MongoCollection {
         return rcObj
     }
 
-    /**
-        Initializes a new MongoCollection instance, not meant to be instantiated directly
-     */
+    /// Initializes a new `MongoCollection` instance, not meant to be instantiated directly
     internal init(fromCollection: OpaquePointer, withClient: MongoClient) {
         self._collection = fromCollection
         self._client = withClient
     }
 
-    /**
-        Deinitializes a MongoCollection, cleaning up the internal mongoc_collection_t
-     */
+    /// Deinitializes a `MongoCollection`, cleaning up the internal `mongoc_collection_t`
     deinit {
         self._client = nil
         guard let collection = self._collection else {
@@ -519,9 +532,7 @@ public class MongoCollection {
         self._collection = nil
     }
 
-    /**
-     * Drops this collection from its parent database
-     */
+    /// Drops this collection from its parent database.
     public func drop() throws {
         var error = bson_error_t()
         if !mongoc_collection_drop(self._collection, &error) {
@@ -530,13 +541,13 @@ public class MongoCollection {
     }
 
     /**
-     * Finds the documents in this collection which match the provided filter
+     * Finds the documents in this collection which match the provided filter.
      *
      * - Parameters:
      *   - filter: A `Document` that should match the query
-     *   - options: Optional settings
+     *   - options: Optional `FindOptions` to use when executing the command
      *
-     * - Returns: A `MongoCursor` with the results
+     * - Returns: A `MongoCursor` over the resulting `Document`s
      */
     public func find(_ filter: Document = [:], options: FindOptions? = nil) throws -> MongoCursor {
         let encoder = BsonEncoder()
@@ -551,13 +562,13 @@ public class MongoCollection {
     }
 
     /**
-     * Runs an aggregation framework pipeline against this collection
+     * Runs an aggregation framework pipeline against this collection.
      *
      * - Parameters:
-     *   - pipeline: The pipeline of aggregation operations to perform
-     *   - options: Optional settings
+     *   - pipeline: an `[Document]` containing the pipeline of aggregation operations to perform
+     *   - options: Optional `AggregateOptions` to use when executing the command
      *
-     * - Returns: A `MongoCursor` with the results
+     * - Returns: A `MongoCursor` over the resulting `Document`s
      */
     public func aggregate(_ pipeline: [Document], options: AggregateOptions? = nil) throws -> MongoCursor {
         let encoder = BsonEncoder()
@@ -574,11 +585,11 @@ public class MongoCollection {
     }
 
     /**
-     * Counts the number of documents matching the provided filter
+     * Counts the number of documents in this collection matching the provided filter.
      *
      * - Parameters:
-     *   - filter: The filter that documents must match in order to be counted
-     *   - options: Optional settings
+     *   - filter: a `Document`, the filter that documents must match in order to be counted
+     *   - options: Optional `CountOptions` to use when executing the command
      *
      * - Returns: The count of the documents that matched the filter
      */
@@ -597,12 +608,12 @@ public class MongoCollection {
     }
 
     /**
-     * Finds the distinct values for a specified field across the collection
+     * Finds the distinct values for a specified field across the collection.
      *
      * - Parameters:
      *   - fieldName: The field for which the distinct values will be found
-     *   - filter: The filter that documents must match in order to be considered for this operation
-     *   - options: Optional settings
+     *   - filter: a `Document` representing the filter that documents must match in order to be considered for this operation
+     *   - options: Optional `DistinctOptions` to use when executing the command
      *
      * - Returns: A 'MongoCursor' containing the distinct values for the specified criteria
      */
@@ -648,15 +659,15 @@ public class MongoCollection {
     }
 
     /**
-     * Inserts the provided document. If the document is missing an identifier, one will be
-     * generated for it
+     * Inserts the provided `Document`. If the document is missing an identifier, one will be
+     * generated for it.
      *
      * - Parameters:
-     *   - document: The document to insert
-     *   - options: Optional settings
+     *   - document: The `Document` to insert
+     *   - options: Optional `InsertOneOptions` to use when executing the command
      *
-     * - Returns: The optional result of attempting to perform the insert. If the write concern
-     *            is unacknowledged, nil is returned
+     * - Returns: The optional result of attempting to perform the insert. If the `WriteConcern`
+     *            is unacknowledged, `nil` is returned.
      */
     public func insertOne(_ document: Document, options: InsertOneOptions? = nil) throws -> InsertOneResult? {
         let encoder = BsonEncoder()
@@ -672,12 +683,12 @@ public class MongoCollection {
     }
 
     /**
-     * Inserts the provided documents. If any documents are missing an identifier,
-     * the driver will generate them
+     * Inserts the provided `Document`s. If any documents are missing an identifier,
+     * the driver will generate them.
      *
      * - Parameters:
-     *   - documents: The documents to insert
-     *   - options: Optional settings
+     *   - documents: The `Document`s to insert
+     *   - options: Optional `InsertManyOptions` to use when executing the command
      *
      * - Returns: The optional result of attempting to performing the insert. If the write concern
      *            is unacknowledged, nil is returned
@@ -700,15 +711,15 @@ public class MongoCollection {
     }
 
     /**
-     * Replaces a single document matching the provided filter in this collection
+     * Replaces a single document matching the provided filter in this collection.
      *
      * - Parameters:
-     *   - filter: Document representing the match criteria
-     *   - replacement: The replacement document
-     *   - options: Optional settings
+     *   - filter: A `Document` representing the match criteria
+     *   - replacement: The replacement `Document`
+     *   - options: Optional `ReplaceOptions` to use when executing the command
      *
-     * - Returns: The optional result of attempting to replace a document. If the write concern
-     *            is unacknowledged, nil is returned
+     * - Returns: The optional result of attempting to replace a document. If the `WriteConcern`
+     *            is unacknowledged, `nil` is returned.
      */
     public func replaceOne(filter: Document, replacement: Document, options: ReplaceOptions? = nil) throws -> UpdateResult? {
         let encoder = BsonEncoder()
@@ -723,15 +734,15 @@ public class MongoCollection {
     }
 
     /**
-     * Updates a single document matching the provided filter in this collection
+     * Updates a single document matching the provided filter in this collection.
      *
      * - Parameters:
-     *   - filter: Document representing the match criteria
-     *   - update: Document representing the update to be applied to a matching document
-     *   - options: Optional settings
+     *   - filter: A `Document` representing the match criteria
+     *   - update: A `Document` representing the update to be applied to a matching document
+     *   - options: Optional `UpdateOptions` to use when executing the command
      *
-     * - Returns: The optional result of attempting to update a document. If the write concern is
-     *            unacknowledged, nil is returned
+     * - Returns: The optional result of attempting to update a document. If the `WriteConcern` is
+     *            unacknowledged, `nil` is returned.
      */
     public func updateOne(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
         let encoder = BsonEncoder()
@@ -746,12 +757,12 @@ public class MongoCollection {
     }
 
     /**
-     * Updates multiple documents matching the provided filter in this collection
+     * Updates multiple documents matching the provided filter in this collection.
      *
      * - Parameters:
-     *   - filter: Document representing the match criteria
-     *   - update: Document representing the update to be applied to matching documents
-     *   - options: Optional settings
+     *   - filter: A `Document` representing the match criteria
+     *   - update: A `Document` representing the update to be applied to matching documents
+     *   - options: Optional `UpdateOptions` to use when executing the command
      *
      * - Returns: The optional result of attempting to update multiple documents. If the write
      *            concern is unacknowledged, nil is returned
@@ -769,14 +780,14 @@ public class MongoCollection {
     }
 
     /**
-     * Deletes a single matching document from the collection
+     * Deletes a single matching document from the collection.
      *
      * - Parameters:
-     *   - filter: Document representing the match criteria
-     *   - options: Optional settings
+     *   - filter: A `Document` representing the match criteria
+     *   - options: Optional `UpdateOptions` to use when executing the command
      *
-     * - Returns: The optional result of performing the deletion. If the write concern is
-     *            unacknowledged, nil is returned
+     * - Returns: The optional result of performing the deletion. If the `WriteConcern` is
+     *            unacknowledged, `nil` is returned.
      */
     public func deleteOne(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
         let encoder = BsonEncoder()
@@ -795,10 +806,10 @@ public class MongoCollection {
      *
      * - Parameters:
      *   - filter: Document representing the match criteria
-     *   - options: Optional settings
+     *   - options: Optional `UpdateOptions` to use when executing the command
      *
-     * - Returns: The optional result of performing the deletion. If the write concern is
-     *            unacknowledged, nil is returned
+     * - Returns: The optional result of performing the deletion. If the `WriteConcern` is
+     *            unacknowledged, `nil` is returned.
      */
     public func deleteMany(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
         let encoder = BsonEncoder()
@@ -813,23 +824,23 @@ public class MongoCollection {
     }
 
     /**
-     * Creates an index over the collection for the provided keys with the provided options
+     * Creates an index over the collection for the provided keys with the provided options.
      *
      * - Parameters:
      *   - model: An `IndexModel` representing the keys and options for the index
      *
-     * - Returns: The name of the created index
+     * - Returns: The name of the created index.
      */
     public func createIndex(_ forModel: IndexModel) throws -> String {
         return try createIndexes([forModel])[0]
     }
 
     /**
-     * Creates an index over the collection for the provided keys with the provided options
+     * Creates an index over the collection for the provided keys with the provided options.
      *
      * - Parameters:
-     *   - keys: The keys for the index
-     *   - options: Optional settings
+     *   - keys: a `Document` specifing the keys for the index
+     *   - options: Optional `IndexOptions` to use for the index
      *
      * - Returns: The name of the created index
      */
@@ -838,12 +849,12 @@ public class MongoCollection {
     }
 
     /**
-     * Creates multiple indexes in the collection
+     * Creates multiple indexes in the collection.
      *
      * - Parameters:
-     *   - models: An array of `IndexModel` specifying the indexes to create
+     *   - models: An `[IndexModel]` specifying the indexes to create
      *
-     * - Returns: The names of all the indexes that were created
+     * - Returns: An `[String]` containing the names of all the indexes that were created.
      */
     public func createIndexes(_ forModels: [IndexModel]) throws -> [String] {
         let collName = String(cString: mongoc_collection_get_name(self._collection))
@@ -860,7 +871,7 @@ public class MongoCollection {
     }
 
      /**
-     * Drops a single index from the collection by the index name
+     * Drops a single index from the collection by the index name.
      *
      * - Parameters:
      *   - name: The name of the index to drop
@@ -874,34 +885,34 @@ public class MongoCollection {
     }
 
     /**
-     * Attempts to drop a single index from the collection given the keys and options
+     * Attempts to drop a single index from the collection given the keys and options describing it.
      *
      * - Parameters:
-     *   - keys: The keys for the index
-     *   - options: Optional settings
+     *   - keys: a `Document` containing the keys for the index to drop
+     *   - options: Optional `IndexOptions` the dropped index should match
      *
-     * - Returns: The result of the command returned from the server
+     * - Returns: a `Document` containing the server's response to the command.
      */
     public func dropIndex(_ keys: Document, options: IndexOptions? = nil) throws -> Document {
         return try dropIndex(IndexModel(keys: keys, options: options))
     }
 
     /**
-     * Attempts to drop a single index from the collection given an `IndexModel`
+     * Attempts to drop a single index from the collection given an `IndexModel` describing it.
      *
      * - Parameters:
      *   - model: The model describing the index to drop
      *
-     * - Returns: The result of the command returned from the server
+     * - Returns: a `Document` containing the server's response to the command.
      */
     public func dropIndex(_ model: IndexModel) throws -> Document {
         return try _dropIndexes(keys: model.keys)
     }
 
     /**
-     * Drops all indexes in the collection
+     * Drops all indexes in the collection.
      *
-     * - Returns: The result of the command returned from the server
+     * - Returns: a `Document` containing the server's response to the command.
      */
     public func dropIndexes() throws -> Document {
         return try _dropIndexes()
@@ -920,9 +931,9 @@ public class MongoCollection {
     }
 
     /**
-     * Returns a list of the indexes currently on this collection
+     * Retrieves a list of the indexes currently on this collection.
      *
-     * - Returns: A `MongoCursor` over a collection of index names
+     * - Returns: A `MongoCursor` over the index names.
      */
     public func listIndexes() throws -> MongoCursor {
         guard let cursor = mongoc_collection_find_indexes_with_opts(self._collection, nil) else {

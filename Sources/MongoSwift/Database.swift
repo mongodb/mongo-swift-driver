@@ -1,5 +1,6 @@
 import libmongoc
 
+/// Options to use when running a command against a `MongoDatabase`. 
 public struct RunCommandOptions: BsonEncodable {
     /// A session to associate with this operation
     public let session: ClientSession?
@@ -16,6 +17,7 @@ public struct RunCommandOptions: BsonEncodable {
     public var skipFields: [String] { return ["readConcern"] }
 }
 
+/// Options to use when executing a `listCollections` command on a `MongoDatabase`.
 public struct ListCollectionsOptions: BsonEncodable {
     /// A filter to match collections against
     public let filter: Document?
@@ -34,6 +36,7 @@ public struct ListCollectionsOptions: BsonEncodable {
     }
 }
 
+/// Options to use when executing a `createCollection` command on a `MongoDatabase`.
 public struct CreateCollectionOptions: BsonEncodable {
     /// Indicates whether this will be a capped collection
     public let capped: Bool?
@@ -100,13 +103,14 @@ public struct CreateCollectionOptions: BsonEncodable {
     public var skipFields: [String] { return ["readConcern"] }
 }
 
+/// Options to set on a retrieved `MongoCollection`.
 public struct CollectionOptions {
     /// A read concern to set on the returned collection. If one is not specified,
     /// the collection will inherit the database's read concern.
     let readConcern: ReadConcern?
 }
 
-// A MongoDB Database
+/// A MongoDB Database
 public class MongoDatabase {
     private var _database: OpaquePointer?
     private var _client: MongoClient?
@@ -116,7 +120,7 @@ public class MongoDatabase {
         return String(cString: mongoc_database_get_name(self._database))
     }
 
-    /// The readConcern set on this database, or nil if one is not set.
+    /// The `ReadConcern` set on this database, or `nil` if one is not set.
     public var readConcern: ReadConcern? {
         // per libmongoc docs, we don't need to handle freeing this ourselves
         let readConcern = mongoc_database_get_read_concern(self._database)
@@ -125,17 +129,13 @@ public class MongoDatabase {
         return rcObj
     }
 
-    /**
-     * Initializes a new MongoDatabase instance, not meant to be instantiated directly
-     */
+    /// Initializes a new `MongoDatabase` instance, not meant to be instantiated directly.
     internal init(fromDatabase: OpaquePointer, withClient: MongoClient) {
         self._database = fromDatabase
         self._client = withClient
     }
 
-    /**
-     * Deinitializes a MongoDatabase, cleaning up the internal mongoc_database_t
-     */
+    /// Deinitializes a MongoDatabase, cleaning up the internal `mongoc_database_t`.
     deinit {
         self._client = nil
         guard let database = self._database else { return }
@@ -143,9 +143,7 @@ public class MongoDatabase {
         self._database = nil
     }
 
-    /**
-     * Drops this database.
-     */
+    /// Drops this database.
     public func drop() throws {
         var error = bson_error_t()
         if !mongoc_database_drop(self._database, &error) {
@@ -180,8 +178,8 @@ public class MongoDatabase {
      * Creates a collection in this database with the specified options
      *
      * - Parameters:
-     *   - name: the name of the collection
-     *   - options: optional settings
+     *   - name: a `String`, the name of the collection to create
+     *   - options: Optional `CreateCollectionOptions` to use for the collection
      *
      * - Returns: the newly created `MongoCollection`
      */
@@ -205,11 +203,11 @@ public class MongoDatabase {
     }
 
     /**
-     * List all collections in this database
+     * Lists all the collections in this database.
      *
      * - Parameters:
-     *   - filter: Optional criteria to filter results by
-     *   - options: Optional settings
+     *   - filter: a `Document`, optional criteria to filter results by
+     *   - options: Optional `ListCollectionsOptions` to use when executing this command
      *
      * - Returns: a `MongoCursor` over an array of collections
      */
@@ -226,13 +224,13 @@ public class MongoDatabase {
     }
 
     /**
-     * Issue a MongoDB command against this database
+     * Issues a MongoDB command against this database.
      *
      * - Parameters:
-     *   - command: The command to issue against the database
-     *   - options: Optional settings
+     *   - command: a `Document` containing the command to issue against the database
+     *   - options: Optional `RunCommandOptions` to use when executing this command
      *
-     * - Returns: The server response for the command
+     * - Returns: a `Document` containing the server response for the command
      */
     public func runCommand(_ command: Document, options: RunCommandOptions? = nil) throws -> Document {
         let encoder = BsonEncoder()

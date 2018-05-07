@@ -481,13 +481,13 @@ extension Notification.Name {
     static let serverHeartbeatFailed = Notification.Name("serverHeartbeatFailed")
 }
 
-/// The two categories of events. One or both can be enabled for a MongoClient.
+/// The two categories of events that can be monitored. One or both can be enabled for a `MongoClient`.
 public enum MongoEventType {
-    // Encompasses events named .commandStarted, .commandSucceeded, .commandFailed events
+    /// Encompasses events named `.commandStarted`, `.commandSucceeded`, `.commandFailed`
     case commandMonitoring
-    // Encompasses events named .serverChanged, .serverOpening, .serverClosed,
-    // .topologyChangedEvent, .topologyOpening, .topologyClosed,
-    // .serverHeartbeatStarted, .serverHeartbeatClosed, .serverHeartbeatFailed
+    /// Encompasses events named `.serverChanged`, `.serverOpening`, `.serverClosed`,
+    /// `.topologyChangedEvent`, `.topologyOpening`, `.topologyClosed`,
+    /// `.serverHeartbeatStarted`, `.serverHeartbeatClosed`, `.serverHeartbeatFailed`
     case serverMonitoring
 }
 
@@ -515,24 +515,22 @@ extension MongoClient {
         mongoc_apm_callbacks_destroy(callbacks)
     }
 
-    /*
-     *  Disables monitoring for this MongoClient. Notifications can be reenabled using MongoClient.enableMonitoring.
-     */
+    /// Disables monitoring for this `MongoClient`. Notifications can be reenabled using `enableMonitoring`.
     public func disableMonitoring() {
         self.monitoringEventTypes = nil
         self.notificationCenter = nil
     }
 
-    /*
-     *  Enables monitoring for this MongoClient for the event type specified, or both types if neither is specified.
-     *  Sets the destination NotificationCenter to the one provided, or the application's default NotificationCenter
+    /**
+     *  Enables monitoring for this `MongoClient` for the event type specified, or both types if neither is specified.
+     *  Sets the destination `NotificationCenter` to the one provided, or the application's default `NotificationCenter`
      *  if one is not specified.
      *
      *  - Parameters:
-     *      - forEvents:   A MongoEventType? to enable monitoring for, defaulting to nil. If unspecified, monitoring
-     *                     will be enabled for both .commandMonitoring and .serverMonitoring events.
-            - usingCenter: A NotificationCenter that event notifications should be posted to, defaulting to the default
-                           NotificationCenter for the application.
+     *      - forEvents:   A `MongoEventType?` to enable monitoring for, defaulting to nil. If unspecified, monitoring
+     *                     will be enabled for both `.commandMonitoring` and `.serverMonitoring` events.
+     *      - usingCenter: A `NotificationCenter` that event notifications should be posted to, defaulting to the default
+     *                     `NotificationCenter` for the application.
      *
      */
     public func enableMonitoring(forEvents eventType: MongoEventType? = nil,

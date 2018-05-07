@@ -1,6 +1,7 @@
 import Foundation
 import libmongoc
 
+/// Options to use when creating a `MongoClient`.
 public struct ClientOptions: BsonEncodable {
     /// Determines whether the client should retry supported write operations
     public let retryWrites: Bool?
@@ -26,6 +27,7 @@ public struct ClientOptions: BsonEncodable {
     public var skipFields: [String] { return ["eventMonitoring", "readConcern"] }
 }
 
+/// Options to use when listing available databases.
 public struct ListDatabasesOptions: BsonEncodable {
     /// An optional filter for the returned databases
     public let filter: Document?
@@ -44,13 +46,14 @@ public struct ListDatabasesOptions: BsonEncodable {
     }
 }
 
+/// Options to use when retrieving a `MongoDatabase` from a `MongoClient`. 
 public struct DatabaseOptions {
     /// A read concern to set on the retrieved database. If one is not specified,
     /// the database will inherit the client's read concern. 
     let readConcern: ReadConcern?
 }
 
-// A MongoDB Client
+/// A MongoDB Client.
 public class MongoClient {
     internal var _client: OpaquePointer?
 
@@ -70,11 +73,13 @@ public class MongoClient {
     }
 
     /**
-     * Create a new client connection to a MongoDB server
+     * Create a new client connection to a MongoDB server.
      *
      * - Parameters:
-     *   - connectionString: the connection string to connect to
-     *   - options: optional settings
+     *   - connectionString: the connection string to connect to.
+     *   - options: optional `ClientOptions` to use for this client
+     *
+     * - SeeAlso: https://docs.mongodb.com/manual/reference/connection-string/
      */
     public init(connectionString: String = "mongodb://localhost:27017", options: ClientOptions? = nil) throws {
         var error = bson_error_t()
@@ -107,14 +112,14 @@ public class MongoClient {
     }
 
     /**
-     * Cleanup the internal mongoc_client_t
+     * Cleans up the internal `mongoc_client_t`.
      */
     deinit {
         close()
     }
 
     /**
-     * Creates a client session
+     * Creates a client session.
      *
      * - Parameters:
      *   - options: The options to use to create the client session
@@ -126,7 +131,7 @@ public class MongoClient {
     }
 
     /**
-     * Close the client
+     * Closes the client.
      */
     public func close() {
         guard let client = self._client else {
@@ -141,12 +146,12 @@ public class MongoClient {
     }
 
     /**
-     * Get a list of databases
+     * Get a list of databases.
      *
      * - Parameters:
-     *   - options: Optional settings
+     *   - options: Optional `ListDatabasesOptions` to use when executing the command
      *
-     * - Returns: A `MongoCursor` over documents describing the databases matching provided criteria
+     * - Returns: A `MongoCursor` over `Document`s describing the databases matching provided criteria
      */
     public func listDatabases(options: ListDatabasesOptions? = nil) throws -> MongoCursor {
         let encoder = BsonEncoder()
@@ -158,11 +163,11 @@ public class MongoClient {
     }
 
     /**
-     * Gets a MongoDatabase instance for the given database name.
+     * Gets a `MongoDatabase` instance for the given database name.
      *
      * - Parameters:
      *   - name: the name of the database to retrieve
-     *   - options: Optional settings
+     *   - options: Optional `DatabaseOptions` to use for the retrieved database
      *
      * - Returns: a `MongoDatabase` corresponding to the provided database name
      */

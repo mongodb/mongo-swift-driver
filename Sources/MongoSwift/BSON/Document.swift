@@ -19,13 +19,13 @@ internal class DocumentStorage {
     }
 }
 
-/// A class representing the BSON document type
+/// A struct representing the BSON document type.
 public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral {
     internal var storage: DocumentStorage
 
     internal var data: UnsafeMutablePointer<bson_t>! { return storage.pointer }
 
-    /// Returns a [String] containing the keys in this `Document`.
+    /// Returns a `[String]` containing the keys in this `Document`.
     public var keys: [String] {
         var iter: bson_iter_t = bson_iter_t()
         if !bson_iter_init(&iter, data) { return [] }
@@ -36,7 +36,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         return keys
     }
 
-    /// Returns a [BsonValue?] containing the values stored in this `Document`.
+    /// Returns a `[BsonValue?]` containing the values stored in this `Document`.
     public var values: [BsonValue?] {
         var iter: bson_iter_t = bson_iter_t()
         if !bson_iter_init(&iter, data) { return [] }
@@ -48,10 +48,10 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     }
 
     /// Returns the number of (key, value) pairs stored at the top level
-    /// of this document.
+    /// of this `Document`.
     public var count: Int { return Int(bson_count_keys(self.data)) }
 
-    /// Initialize a new, empty document
+    /// Initializes a new, empty `Document`.
     public init() {
         self.storage = DocumentStorage()
     }
@@ -71,7 +71,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     }
 
     /**
-     * Initializes a `Document` from a [String: BsonValue?]
+     * Initializes a `Document` from a `[String: BsonValue?]`
      *
      * - Parameters:
      *   - doc: a [String: BsonValue?]
@@ -108,7 +108,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      * `d: Document = ["a", "b"]` will become `["0": "a", "1": "b"]`
      *
      * - Parameters:
-     *   - arrayLiteral: a [BsonValue?]
+     *   - arrayLiteral: a `[BsonValue?]`
      *
      * - Returns: a new `Document`
      */
@@ -123,7 +123,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      * Constructs a new `Document` from the provided JSON text
      *
      * - Parameters:
-     *   - fromJSON: a JSON document as Data to parse into a `Document`
+     *   - fromJSON: a JSON document as `Data` to parse into a `Document`
      *
      * - Returns: the parsed `Document`
      */
@@ -147,16 +147,14 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         try self.init(fromJSON: json.data(using: .utf8)!)
     }
 
-    /**
-     * Constructs a `Document` from raw BSON data
-     */
+    /// Constructs a `Document` from raw BSON `Data`
     public init(fromBSON: Data) {
         self.storage = DocumentStorage(fromPointer: fromBSON.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) in
             return bson_new_from_data(bytes, fromBSON.count)
         })
     }
 
-    /// Returns a relaxed extended JSON representation of this Document
+    /// Returns a relaxed extended JSON representation of this `Document`
     public var extendedJSON: String {
         let json = bson_as_relaxed_extended_json(self.data, nil)
         guard let jsonData = json else {
@@ -166,7 +164,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         return String(cString: jsonData)
     }
 
-    /// Returns a canonical extended JSON representation of this Document
+    /// Returns a canonical extended JSON representation of this `Document`
     public var canonicalExtendedJSON: String {
         let json = bson_as_canonical_extended_json(self.data, nil)
         guard let jsonData = json else {
@@ -176,7 +174,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         return String(cString: jsonData)
     }
 
-    /// Returns a copy of the raw BSON data represented as Data
+    /// Returns a copy of the raw BSON data for this `Document`, represented as `Data`
     public var rawBSON: Data {
         let data = bson_get_data(self.data)
         let length = self.data.pointee.len
@@ -186,11 +184,11 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     /**
      * Allows setting values and retrieving values using subscript syntax.
      * For example:
-     *
+     *  ```
      *  let d = Document()
      *  d["a"] = 1
      *  print(d["a"]) // prints 1
-     *
+     *  ```
      */
     public subscript(key: String) -> BsonValue? {
         get {
@@ -232,18 +230,20 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
 
     /**
      * Allows retrieving and strongly typing a value at the same time. This means you can avoid
-     * having to cast and unwrap values from the Document when you know what type they will be.
+     * having to cast and unwrap values from the `Document` when you know what type they will be.
      * For example:
-     *      let d: Document = ["x": 1]
-     *      let x: Int = try d.get("x")
+     * ```
+     *  let d: Document = ["x": 1]
+     *  let x: Int = try d.get("x")
+     *  ```
      *
      *  - Params:
      *      - key: The key under which the value you are looking up is stored
-     *      - T: Any type conforming to the `BsonValue` protocol
+     *      - `T`: Any type conforming to the `BsonValue` protocol
      *  - Returns:
-     *      - The value stored under key, as type T
+     *      - The value stored under key, as type `T`
      *  - Throws:
-     *      - A MongoError.typeError if the value cannot be cast to type T or is not in the `Document`
+     *      - A `MongoError.typeError` if the value cannot be cast to type `T` or is not in the `Document`
      *
      */
     public func get<T: BsonValue>(_ key: String) throws -> T {
@@ -254,6 +254,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     }
 }
 
+/// An extension of `Document` to make it a `BsonValue`.
 extension Document: BsonValue {
     public var bsonType: BsonType { return .document }
 
@@ -291,6 +292,7 @@ extension Document: Equatable {
 
 /// An extension of `Document` to make it convertible to a string.
 extension Document: CustomStringConvertible {
+    /// An extended JSON description of this `Document`.
     public var description: String {
         return self.extendedJSON
     }
@@ -298,15 +300,19 @@ extension Document: CustomStringConvertible {
 
 /// An extension of `Document` to make it conform to the `Sequence` protocol.
 /// This allows you to iterate through the (key, value) pairs, for example:
+/// ```
 /// let doc: Document = ["a": 1, "b": 2]
 /// for (key, value) in doc {
 ///     ...
 /// }
+/// ```
 extension Document: Sequence {
+    /// Returns a `DocumentIterator` over the values in this `Document`. 
     public func makeIterator() -> DocumentIterator {
         return DocumentIterator(forDocument: self)
     }
 
+    /// An iterator over the values in a `Document`. 
     public class DocumentIterator: IteratorProtocol {
         internal var iter: bson_iter_t
 
@@ -315,6 +321,7 @@ extension Document: Sequence {
             bson_iter_init(&self.iter, doc.data)
         }
 
+        /// Returns the next value in the sequence, or `nil` if at the end.
         public func next() -> (String, BsonValue?)? {
             if bson_iter_next(&self.iter) {
                 let key = String(cString: bson_iter_key(&self.iter))

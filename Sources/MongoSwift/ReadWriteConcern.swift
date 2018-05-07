@@ -2,10 +2,15 @@ import libmongoc
 
 /// An enumeration of possible ReadConcern levels.
 public enum ReadConcernLevel: String {
+    /// See https://docs.mongodb.com/manual/reference/read-concern-local/
     case local
+    /// See https://docs.mongodb.com/manual/reference/read-concern-available/
     case available
+    /// See https://docs.mongodb.com/manual/reference/read-concern-majority/
     case majority
+    /// See https://docs.mongodb.com/manual/reference/read-concern-linearizable/
     case linearizable
+    /// See https://docs.mongodb.com/master/reference/read-concern-snapshot/
     case snapshot
 }
 
@@ -29,31 +34,33 @@ public class ReadConcern: Equatable, CustomStringConvertible {
         return doc
     }
 
+    /// An extended JSON description of this `ReadConcern`.
     public var description: String {
         return self.asDocument.description
     }
 
+    /// Indicates whether this `ReadConcern` is the server default.
     public var isDefault: Bool {
         return mongoc_read_concern_is_default(self._readConcern)
     }
 
-    /// Initialize a new ReadConcern from a ReadConcernLevel.
+    /// Initialize a new `ReadConcern` from a `ReadConcernLevel`.
     public convenience init(_ level: ReadConcernLevel) {
         self.init(level.rawValue)
     }
 
-    /// Initialize a new ReadConcern from a String corresponding to a read concern level.
+    /// Initialize a new `ReadConcern` from a `String` corresponding to a read concern level.
     public init(_ level: String) {
         self._readConcern = mongoc_read_concern_new()
         mongoc_read_concern_set_level(self._readConcern, level)
     }
 
-    /// Initialize a new empty ReadConcern.
+    /// Initialize a new empty `ReadConcern`.
     public init() {
         self._readConcern = mongoc_read_concern_new()
     }
 
-    /// Initialize a new ReadConcern from a Document.
+    /// Initialize a new `ReadConcern` from a `Document`.
     public convenience init(_ doc: Document) {
         if let level = doc["level"] as? String {
             self.init(level)
@@ -62,18 +69,18 @@ public class ReadConcern: Equatable, CustomStringConvertible {
         }
     }
 
-    /// Initializes a new ReadConcern by copying an existing ReadConcern.
+    /// Initializes a new `ReadConcern` by copying an existing `ReadConcern`.
     public init(from: ReadConcern) {
         self._readConcern = mongoc_read_concern_copy(from._readConcern)
     }
 
-    /// Initializes a new ReadConcern by copying a mongoc_read_concern_t.
-    /// The caller is responsible for freeing the original mongoc_read_concern_t.
+    /// Initializes a new `ReadConcern` by copying a `mongoc_read_concern_t`.
+    /// The caller is responsible for freeing the original `mongoc_read_concern_t`.
     internal init(_ readConcern: OpaquePointer?) {
         self._readConcern = mongoc_read_concern_copy(readConcern)
     }
 
-    /// Appends this readConcern to a Document.
+    /// Appends this `ReadConcern` to a `Document`.
     private func append(to doc: Document) throws {
         if !mongoc_read_concern_append(self._readConcern, doc.data) {
             throw MongoError.readConcernError(message: "Error appending readconcern to document \(doc)")
@@ -102,6 +109,7 @@ public class ReadConcern: Equatable, CustomStringConvertible {
         return lhs.level == rhs.level
     }
 
+    /// Cleans up the internal `mongoc_read_concern_t`.
     deinit {
         guard let readConcern = self._readConcern else { return }
         mongoc_read_concern_destroy(readConcern)

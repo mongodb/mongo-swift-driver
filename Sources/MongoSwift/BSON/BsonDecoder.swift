@@ -41,6 +41,7 @@ public class BsonDecoder {
     }
 }
 
+/// An internal class to actually implement the `Decoder` protocol.
 private class _BsonDecoder: Decoder {
 
     /// The decoder's storage.
