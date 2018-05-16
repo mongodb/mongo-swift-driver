@@ -40,8 +40,8 @@ On a Mac, you can install both components at once using [Homebrew](https://brew.
 
 Or on Linux, use `apt-get` to install each:
 ```
-apt get libbson-dev
-apt get libmongoc-dev
+sudo apt-get install libbson-dev
+sudo apt-get install libmongoc-dev
 ```
 
 Next, see instructions for installation with either Swift Package Manager or CocoaPods in the following sections.
