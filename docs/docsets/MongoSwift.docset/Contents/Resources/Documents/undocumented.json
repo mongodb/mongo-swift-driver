@@ -1,0 +1,19 @@
+{
+  "warnings": [
+    {
+      "file": "/Users/kaitlinmahar/mongo-swift-driver/Sources/MongoSwift/BSON/BsonEncoder.swift",
+      "line": 75,
+      "symbol": "BsonEncoder.NilEncodingStrategy",
+      "symbol_kind": "source.lang.swift.decl.enum",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/kaitlinmahar/mongo-swift-driver/Sources/MongoSwift/BSON/BsonEncoder.swift",
+      "line": 89,
+      "symbol": "BsonEncoder.init(nilStrategy:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    }
+  ],
+  "source_directory": "/Users/kaitlinmahar/mongo-swift-driver"
+}

@@ -18,6 +18,8 @@ The official [MongoDB](https://www.mongodb.com/) driver for Swift.
     - [Find Documents](#find-documents)
     - [Work With and Modify Documents](#work-with-and-modify-documents)
 
+## Documentation
+The latest documentation is available [here](https://mongodb.github.io/mongo-swift-driver/).
 
 ## Bugs / Feature Requests
 

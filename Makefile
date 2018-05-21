@@ -37,3 +37,8 @@ clean:
 	rm -rf .build
 	rm -rf MongoSwift.xcodeproj
 	rm Package.resolved
+
+documentation:
+	make project
+	@gem list jazzy -i > /dev/null || gem install jazzy || { echo "ERROR: Failed to locate or install the ruby gem jazzy; please install yourself with 'gem install jazzy' (you may need to use sudo)"; exit 1; }
+	jazzy
