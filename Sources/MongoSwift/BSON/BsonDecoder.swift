@@ -635,6 +635,10 @@ extension Document: Decodable {
             return value
         } else if let value = try? container.decode(Decimal128.self, forKey: key) {
             return value
+        } else if let value = try? container.decode(MinKey.self, forKey: key) {
+            return value
+        } else if let value = try? container.decode(MaxKey.self, forKey: key) {
+            return value
         } else if var nested = try? container.nestedUnkeyedContainer(forKey: key) {
             var res = [BsonValue]()
             while !nested.isAtEnd {
@@ -643,10 +647,6 @@ extension Document: Decodable {
             return res
         // this will recursively call Document.init(from: decoder Decoder)
         } else if let value = try? container.decode(Document.self, forKey: key) {
-            return value
-        } else if let value = try? container.decode(MinKey.self, forKey: key) {
-            return value
-        } else if let value = try? container.decode(MaxKey.self, forKey: key) {
             return value
         } else {
             throw MongoError.typeError(message: "Encountered a value in an keyed container under key \(key.stringValue) that could not be decoded to any BSON type")
@@ -680,6 +680,10 @@ extension Document: Decodable {
             return value
         } else if let value = try? container.decode(Decimal128.self) {
             return value
+        } else if let value = try? container.decode(MinKey.self) {
+            return value
+        } else if let value = try? container.decode(MaxKey.self) {
+            return value
         } else if var nested = try? container.nestedUnkeyedContainer() {
             var res = [BsonValue]()
             while !nested.isAtEnd {
@@ -688,10 +692,6 @@ extension Document: Decodable {
             return res
         // this will recursively call Document.init(from: decoder Decoder)
         } else if let value = try? container.decode(Document.self) {
-            return value
-        } else if let value = try? container.decode(MinKey.self) {
-            return value
-        } else if let value = try? container.decode(MaxKey.self) {
             return value
         } else {
             throw MongoError.typeError(message: "Encountered a value in an unkeyed container that could not be decoded to any BSON type")

@@ -481,7 +481,7 @@ public struct CodeWithScope: BsonValue, Decodable, Equatable {
 
 /// A struct to represent the BSON MaxKey type.
 public struct MaxKey: BsonValue, Equatable, Decodable {
-    public let maxKey = 1
+    private var maxKey = 1
 
     public var bsonType: BsonType { return .maxKey }
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
@@ -493,15 +493,11 @@ public struct MaxKey: BsonValue, Equatable, Decodable {
     public static func from(iter: inout bson_iter_t) -> BsonValue { return MaxKey() }
 
     public static func == (lhs: MaxKey, rhs: MaxKey) -> Bool { return true }
-
-    private enum CodingKeys: String, CodingKey {
-        case maxKey = "$maxKey"
-    }
 }
 
 /// A struct to represent the BSON MinKey type.
 public struct MinKey: BsonValue, Equatable, Decodable {
-    public let minKey = 1
+    private var minKey = 1
 
     public var bsonType: BsonType { return .minKey }
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
@@ -513,10 +509,6 @@ public struct MinKey: BsonValue, Equatable, Decodable {
     public static func from(iter: inout bson_iter_t) -> BsonValue { return MinKey() }
 
     public static func == (lhs: MinKey, rhs: MinKey) -> Bool { return true }
-
-    private enum CodingKeys: String, CodingKey {
-        case minKey = "$minKey"
-    }
 }
 
 /// A struct to represent the BSON ObjectId type.

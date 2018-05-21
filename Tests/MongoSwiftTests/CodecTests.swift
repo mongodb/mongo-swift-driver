@@ -304,8 +304,8 @@ final class CodecTests: XCTestCase {
             "int32": 5,
             "int64": 6,
             "dec": ["data": "1.2E+10"] as Document,
-            "minkey": [] as Document,
-            "maxkey": [] as Document,
+            "minkey": ["minKey": 1] as Document,
+            "maxkey": ["maxKey": 1] as Document,
             "regex": ["pattern": "^abc", "options": "imx"] as Document
         ]
 
