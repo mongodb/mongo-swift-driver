@@ -208,6 +208,13 @@ final class DocumentTests: XCTestCase {
         XCTAssertNotEqual(doc1, doc2)
     }
 
+    func testInvalidInt() {
+        let doc1 = Document()
+        let v = Int(Int32.max) + 1
+        expect(try v.encode(to: doc1.data, forKey: "x")).to(throwError())
+
+    }
+
     // swiftlint:disable:next cyclomatic_complexity
     func testBSONCorpus() throws {
         let SKIPPED_CORPUS_TESTS = [
