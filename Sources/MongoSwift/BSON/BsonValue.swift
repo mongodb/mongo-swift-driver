@@ -481,6 +481,8 @@ public struct CodeWithScope: BsonValue, Decodable, Equatable {
 
 /// A struct to represent the BSON MaxKey type.
 public struct MaxKey: BsonValue, Equatable, Decodable {
+    public let maxKey = 1
+
     public var bsonType: BsonType { return .maxKey }
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
         if !bson_append_maxkey(data, key, Int32(key.count)) {
@@ -491,10 +493,16 @@ public struct MaxKey: BsonValue, Equatable, Decodable {
     public static func from(iter: inout bson_iter_t) -> BsonValue { return MaxKey() }
 
     public static func == (lhs: MaxKey, rhs: MaxKey) -> Bool { return true }
+
+    private enum CodingKeys: String, CodingKey {
+        case maxKey = "$maxKey"
+    }
 }
 
 /// A struct to represent the BSON MinKey type.
 public struct MinKey: BsonValue, Equatable, Decodable {
+    public let minKey = 1
+
     public var bsonType: BsonType { return .minKey }
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
         if !bson_append_minkey(data, key, Int32(key.count)) {
@@ -505,6 +513,10 @@ public struct MinKey: BsonValue, Equatable, Decodable {
     public static func from(iter: inout bson_iter_t) -> BsonValue { return MinKey() }
 
     public static func == (lhs: MinKey, rhs: MinKey) -> Bool { return true }
+
+    private enum CodingKeys: String, CodingKey {
+        case minKey = "$minKey"
+    }
 }
 
 /// A struct to represent the BSON ObjectId type.
@@ -727,7 +739,7 @@ public struct Timestamp: BsonValue, Equatable, Decodable {
     }
 
     /// Initializes a new  `Timestamp` with the provided `timestamp` and `increment` values. Assumes
-    /// the values can successfully be converted to UInt32s without loss of precision.
+    /// the values can successfully be converted to `UInt32`s without loss of precision.
     public init(timestamp: Int, inc: Int) {
         self.timestamp = UInt32(timestamp)
         self.increment = UInt32(inc)

@@ -47,6 +47,15 @@ public class BsonDecoder {
     /// - returns: A value of the requested type.
     /// - throws: An error if the JSON data is corrupt, or if any value throws an error during decoding.
     public func decode<T: Decodable>(_ type: T.Type, from json: String) throws -> T {
+        // we nest the input JSON in another object, and then decode to a `DecodableWrapper`
+        // wrapping an object of the requested type. since our decoder only supports decoding
+        // objects, this allows us to additionally handle decoding to primitive types like a
+        // `String` or an `Int`.
+        // while this is not needed to decode JSON representing objects, it is difficult to 
+        // determine when JSON represents an object vs. a primitive value -- for example, 
+        // {"$numberInt": "42"} is a JSON object and looks like an object type but is actually 
+        // a primitive type, Int32. so for simplicity, we just always assume wrapping is needed,
+        // and pay a small performance penalty of decoding a few extra bytes.
         let wrapped = "{\"value\": \(json)}"
 
         if let doc = try? Document(fromJSON: wrapped) {
@@ -222,7 +231,12 @@ private struct _BsonKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
 
     /// All the keys the decoder has for this container.
     public var allKeys: [Key] {
+        #if swift(>=4.1)
         return self.container.keys.compactMap { Key(stringValue: $0) }
+        #else
+        return self.container.keys.flatMap { Key(stringValue: $0) }
+        #endif
+
     }
 
     /// Returns a Boolean value indicating whether the decoder contains a value associated with the given key.
@@ -569,6 +583,11 @@ private extension DecodingError {
 /// This needs to be in this file to access some fileprivate decoder properties
 extension Document: Decodable {
 
+    static let decodeToTypes: [Decodable.Type] = [Double.self, String.self, Binary.self, ObjectId.self,
+                                                    Bool.self, Date.self, RegularExpression.self,
+                                                    CodeWithScope.self, Int.self, Int32.self, Int64.self,
+                                                    Decimal128.self, MinKey.self, MaxKey.self, Document.self]
+
     public init(from decoder: Decoder) throws {
         // if it's a BsonDecoder we should just short-circuit and return the container document
         if let bsonDecoder = decoder as? _BsonDecoder {
@@ -592,20 +611,10 @@ extension Document: Decodable {
     /// Switch through all possible BSON types (a document can contain any) and try recursively decoding the value
     /// stored under `key` as that type from the provided keyed container.
     private static func recursivelyDecodeKeyed(key: _BsonKey, container: KeyedDecodingContainer<_BsonKey>) throws -> BsonValue {
-        let k = key.stringValue
         if let value = try? container.decode(Double.self, forKey: key) {
             return value
         } else if let value = try? container.decode(String.self, forKey: key) {
             return value
-        // this will recursively call Document.init(from: decoder Decoder)
-        } else if let value = try? container.decode(Document.self, forKey: key) {
-            return value
-        } else if var nested = try? container.nestedUnkeyedContainer(forKey: key) {
-            var res = [BsonValue]()
-            while !nested.isAtEnd {
-                res.append(try recursivelyDecodeUnkeyed(container: &nested))
-            }
-            return res
         } else if let value = try? container.decode(Binary.self, forKey: key) {
             return value
         } else if let value = try? container.decode(ObjectId.self, forKey: key) {
@@ -626,12 +635,21 @@ extension Document: Decodable {
             return value
         } else if let value = try? container.decode(Decimal128.self, forKey: key) {
             return value
+        } else if var nested = try? container.nestedUnkeyedContainer(forKey: key) {
+            var res = [BsonValue]()
+            while !nested.isAtEnd {
+                res.append(try recursivelyDecodeUnkeyed(container: &nested))
+            }
+            return res
+        // this will recursively call Document.init(from: decoder Decoder)
+        } else if let value = try? container.decode(Document.self, forKey: key) {
+            return value
         } else if let value = try? container.decode(MinKey.self, forKey: key) {
             return value
         } else if let value = try? container.decode(MaxKey.self, forKey: key) {
             return value
         } else {
-            throw MongoError.typeError(message: "Encountered a value in an keyed container under key \(k) that could not be decoded to any BSON type")
+            throw MongoError.typeError(message: "Encountered a value in an keyed container under key \(key.stringValue) that could not be decoded to any BSON type")
         }
     }
 
@@ -642,15 +660,6 @@ extension Document: Decodable {
             return value
         } else if let value = try? container.decode(String.self) {
             return value
-        // this will recursively call Document.init(from: decoder Decoder)
-        } else if let value = try? container.decode(Document.self) {
-            return value
-        } else if var nested = try? container.nestedUnkeyedContainer() {
-            var res = [BsonValue]()
-            while !nested.isAtEnd {
-                res.append(try recursivelyDecodeUnkeyed(container: &nested))
-            }
-            return res
         } else if let value = try? container.decode(Binary.self) {
             return value
         } else if let value = try? container.decode(ObjectId.self) {
@@ -670,6 +679,15 @@ extension Document: Decodable {
         } else if let value = try? container.decode(Int64.self) {
             return value
         } else if let value = try? container.decode(Decimal128.self) {
+            return value
+        } else if var nested = try? container.nestedUnkeyedContainer() {
+            var res = [BsonValue]()
+            while !nested.isAtEnd {
+                res.append(try recursivelyDecodeUnkeyed(container: &nested))
+            }
+            return res
+        // this will recursively call Document.init(from: decoder Decoder)
+        } else if let value = try? container.decode(Document.self) {
             return value
         } else if let value = try? container.decode(MinKey.self) {
             return value
