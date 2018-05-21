@@ -165,6 +165,8 @@ final class CodecTests: XCTestCase {
         let uint: UInt?
         let float: Float?
 
+        static let keys = ["int8", "int16", "uint8", "uint16", "uint32", "uint64", "uint", "float"]
+
         public static func == (lhs: Numbers, rhs: Numbers) -> Bool {
             return lhs.int8 == rhs.int8 && lhs.int16 == rhs.int16 &&
                     lhs.uint8 == rhs.uint8 && lhs.uint16 == rhs.uint16 &&
@@ -194,20 +196,27 @@ final class CodecTests: XCTestCase {
         let s = Numbers(int8: 42, int16: 42, uint8: 42, uint16: 42, uint32: 42, uint64: 42, uint: 42, float: 42)
 
         // store all values as Int32s and decode them to their requested types
-        let doc1: Document = ["int8": 42, "int16": 42, "uint8": 42, "uint16": 42,
-                            "uint32": 42, "uint64": 42, "uint": 42, "float": 42]
+        var doc1 = Document()
+        for k in Numbers.keys {
+            doc1[k] = 42
+        }
         let res1 = try decoder.decode(Numbers.self, from: doc1)
         expect(res1).to(equal(s))
 
-        // store all values as Int64s and decode them to their requested types
-        let doc2: Document = ["int8": Int64(42), "int16": Int64(42), "uint8": Int64(42), "uint16": Int64(42),
-                            "uint32": Int64(42), "uint64": Int64(42), "uint": Int64(42), "float": Int64(42)]
+        // store all values as Int64s and decode them to their requested types.
+        var doc2 = Document()
+        for k in Numbers.keys {
+            doc2[k] = Int64(42)
+        }
+
         let res2 = try decoder.decode(Numbers.self, from: doc2)
         expect(res2).to(equal(s))
 
         // store all values as Doubles and decode them to their requested types
-        let doc3: Document = ["int8": Double(42), "int16": Double(42), "uint8": Double(42), "uint16": Double(42),
-                            "uint32": Double(42), "uint64": Double(42), "uint": Double(42), "float": Double(42)]
+        var doc3 = Document()
+        for k in Numbers.keys {
+            doc3[k] = Double(42)
+        }
         let res3 = try decoder.decode(Numbers.self, from: doc3)
         expect(res3).to(equal(s))
 

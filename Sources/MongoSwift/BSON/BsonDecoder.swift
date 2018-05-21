@@ -51,9 +51,9 @@ public class BsonDecoder {
         // wrapping an object of the requested type. since our decoder only supports decoding
         // objects, this allows us to additionally handle decoding to primitive types like a
         // `String` or an `Int`.
-        // while this is not needed to decode JSON representing objects, it is difficult to 
-        // determine when JSON represents an object vs. a primitive value -- for example, 
-        // {"$numberInt": "42"} is a JSON object and looks like an object type but is actually 
+        // while this is not needed to decode JSON representing objects, it is difficult to
+        // determine when JSON represents an object vs. a primitive value -- for example,
+        // {"$numberInt": "42"} is a JSON object and looks like an object type but is actually
         // a primitive type, Int32. so for simplicity, we just always assume wrapping is needed,
         // and pay a small performance penalty of decoding a few extra bytes.
         let wrapped = "{\"value\": \(json)}"
