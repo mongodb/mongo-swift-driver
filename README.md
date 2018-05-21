@@ -2,6 +2,7 @@
 The official [MongoDB](https://www.mongodb.com/) driver for Swift.
 
 ### Index
+- [Documentation](#documentation)
 - [Bugs/Feature Requests](#bugs--feature-requests)
 - [Installation](#installation)
     - [FIRST: Install the MongoDB C Driver](#first-install-the-mongodb-c-driver)
