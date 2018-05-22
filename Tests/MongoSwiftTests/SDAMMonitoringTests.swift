@@ -4,6 +4,11 @@ import Nimble
 import XCTest
 
 final class SDAMTests: XCTestCase {
+    static var allTests: [(String, (SDAMTests) -> () throws -> Void)] {
+        return [
+            ("testMonitoring", testMonitoring)
+        ]
+    }
 
     override func setUp() {
         self.continueAfterFailure = false
