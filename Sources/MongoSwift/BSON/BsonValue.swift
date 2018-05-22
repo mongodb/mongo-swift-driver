@@ -159,28 +159,33 @@ extension Array: BsonValue {
 }
 
 /// Subtypes for BSON Binary values.
-public enum BsonSubtype: Int {
+public enum BsonSubtype: Int, Decodable {
     /// Generic binary subtype
-    case binary = 0x00,
+    case binary = 0,
     /// A function
-    function = 0x01,
+    function,
     /// Binary (old)
-    binaryDeprecated = 0x02,
+    binaryDeprecated,
     /// UUID (old)
-    uuidDeprecated = 0x03,
+    uuidDeprecated,
     /// UUID
-    uuid = 0x04,
+    uuid,
     /// MD5
-    md5 = 0x05,
+    md5,
     /// User defined
-    user = 0x06
+    user
 }
 
 /// A struct to represent the BSON Binary type.
-public struct Binary: BsonValue, Equatable {
+public struct Binary: BsonValue, Equatable, Decodable {
+
     public var bsonType: BsonType { return .binary }
-    var data: Data
-    var subtype: BsonSubtype
+
+    /// The binary data.
+    public let data: Data
+
+    /// The binary subtype for this data.
+    public let subtype: BsonSubtype
 
     /// Initializes a Binary instance of the specified subtype using provided `Data`.
     public init(data: Data, subtype: BsonSubtype) {
@@ -318,8 +323,9 @@ internal struct DBPointer: BsonValue {
 }
 
 /// A struct to represent the BSON Decimal128 type.
-public struct Decimal128: BsonValue, Equatable {
-    var data: String
+public struct Decimal128: BsonValue, Equatable, Decodable {
+    /// This number, represented as a `String`.
+    public let data: String
 
     /// Initializes a `Decimal128` value from the provided `String`.
     public init(_ data: String) {
@@ -417,9 +423,12 @@ extension Int64: BsonValue {
 }
 
 /// A struct to represent the BSON Code and CodeWithScope types.
-public struct CodeWithScope: BsonValue {
-    var code = ""
-    var scope: Document?
+public struct CodeWithScope: BsonValue, Decodable, Equatable {
+    /// A string containing Javascript code.
+    public let code: String
+    /// An optional scope `Document` containing a mapping of identifiers to values,
+    /// representing the context in which `code` should be evaluated.
+    public let scope: Document?
 
     public var bsonType: BsonType {
         if self.scope != nil { return .javascriptWithScope }
@@ -464,10 +473,16 @@ public struct CodeWithScope: BsonValue {
         let scopeDoc = Document(fromPointer: scopeData)
         return CodeWithScope(code: code, scope: scopeDoc)
     }
+
+    public static func == (lhs: CodeWithScope, rhs: CodeWithScope) -> Bool {
+        return lhs.code == rhs.code && lhs.scope == rhs.scope
+    }
 }
 
 /// A struct to represent the BSON MaxKey type.
-public struct MaxKey: BsonValue, Equatable {
+public struct MaxKey: BsonValue, Equatable, Decodable {
+    private var maxKey = 1
+
     public var bsonType: BsonType { return .maxKey }
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
         if !bson_append_maxkey(data, key, Int32(key.count)) {
@@ -481,7 +496,9 @@ public struct MaxKey: BsonValue, Equatable {
 }
 
 /// A struct to represent the BSON MinKey type.
-public struct MinKey: BsonValue, Equatable {
+public struct MinKey: BsonValue, Equatable, Decodable {
+    private var minKey = 1
+
     public var bsonType: BsonType { return .minKey }
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
         if !bson_append_minkey(data, key, Int32(key.count)) {
@@ -495,9 +512,12 @@ public struct MinKey: BsonValue, Equatable {
 }
 
 /// A struct to represent the BSON ObjectId type.
-public struct ObjectId: BsonValue, Equatable, CustomStringConvertible {
+public struct ObjectId: BsonValue, Equatable, CustomStringConvertible, Decodable {
+
     public var bsonType: BsonType { return .objectId }
-    var oid: String
+
+    /// This `ObjectId`'s data represented as a `String`.
+    public let oid: String
 
     /// Initializes a new `ObjectId`.
     public init() {
@@ -583,7 +603,7 @@ extension NSRegularExpression {
 }
 
 /// A struct to represent a BSON regular expression.
-struct RegularExpression: BsonValue, Equatable {
+struct RegularExpression: BsonValue, Equatable, Decodable {
 
     public var bsonType: BsonType { return .regularExpression }
 
@@ -696,10 +716,13 @@ internal struct Symbol: BsonValue {
 }
 
 /// A struct to represent the BSON Timestamp type.
-public struct Timestamp: BsonValue, Equatable {
+public struct Timestamp: BsonValue, Equatable, Decodable {
     public var bsonType: BsonType { return .timestamp }
-    var timestamp: UInt32 = 0
-    var increment: UInt32 = 0
+
+    /// A timestamp representing seconds since the Unix epoch.
+    public let timestamp: UInt32
+    /// An incrementing ordinal for operations within a given second.
+    public let increment: UInt32
 
     /// Initializes a new  `Timestamp` with the provided `timestamp` and `increment` values.
     public init(timestamp: UInt32, inc: UInt32) {
@@ -708,7 +731,7 @@ public struct Timestamp: BsonValue, Equatable {
     }
 
     /// Initializes a new  `Timestamp` with the provided `timestamp` and `increment` values. Assumes
-    /// the values can successfully be converted to UInt32s without loss of precision.
+    /// the values can successfully be converted to `UInt32`s without loss of precision.
     public init(timestamp: Int, inc: Int) {
         self.timestamp = UInt32(timestamp)
         self.increment = UInt32(inc)
