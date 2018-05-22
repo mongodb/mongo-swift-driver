@@ -61,6 +61,7 @@ public struct DatabaseOptions {
     /// the database will inherit the client's write concern.
     let writeConcern: WriteConcern?
 
+    /// Convenience initializer allowing any/all arguments to be omitted or optional
     public init(readConcern: ReadConcern? = nil, writeConcern: WriteConcern? = nil) {
         self.readConcern = readConcern
         self.writeConcern = writeConcern

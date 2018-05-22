@@ -123,18 +123,18 @@ public class WriteConcern: Equatable, CustomStringConvertible {
     /// A pointer to a mongoc_write_concern_t
     internal var _writeConcern: OpaquePointer?
 
-    // Indicates whether to wait for the write operation to get committed to the journal.
+    /// Indicates whether to wait for the write operation to get committed to the journal.
     public var journal: Bool? {
         return mongoc_write_concern_get_journal(self._writeConcern)
     }
 
-    // Specifies the number of nodes that should acknowledge the write.
-    // MUST be greater than or equal to 0. Only one of this and wTags may be set.
+    /// Specifies the number of nodes that should acknowledge the write.
+    /// MUST be greater than or equal to 0. Only one of this and wTags may be set.
     public var w: Int32? {
         return mongoc_write_concern_get_w(self._writeConcern)
     }
 
-    // Indicates a tag for nodes that should acknowledge the write. Only one of this and w may be set.
+    /// Indicates a tag for nodes that should acknowledge the write. Only one of this and w may be set.
     public var wTag: String? {
         guard let wTag = mongoc_write_concern_get_wtag(self._writeConcern) else { return nil }
         return String(cString: wTag)

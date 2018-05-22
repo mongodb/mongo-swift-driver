@@ -569,13 +569,15 @@ public struct IndexOptions: Encodable {
     }
 }
 
+/// Options to use when creating a new index on a `MongoCollection`.
 public struct CreateIndexOptions {
-    /// An optional WriteConcern to use for the command
+    /// An optional `WriteConcern` to use for the command
     let writeConcern: WriteConcern?
 }
 
+/// Options to use when dropping an index from a `MongoCollection`.
 public struct DropIndexOptions {
-    /// An optional WriteConcern to use for the command
+    /// An optional `WriteConcern` to use for the command
     let writeConcern: WriteConcern?
 }
 

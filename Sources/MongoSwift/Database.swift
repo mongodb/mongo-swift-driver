@@ -130,12 +130,11 @@ public struct CollectionOptions {
     /// the collection will inherit the database's write concern.
     let writeConcern: WriteConcern?
 
+    /// Convenience initializer allowing any/all arguments to be omitted or optional
     public init(readConcern: ReadConcern? = nil, writeConcern: WriteConcern? = nil) {
         self.readConcern = readConcern
         self.writeConcern = writeConcern
     }
-
-    public var skipFields: [String] { return ["readConcern", "writeConcern"] }
 }
 
 /// A MongoDB Database
