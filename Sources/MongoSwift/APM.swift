@@ -467,18 +467,18 @@ private func postNotification<T: MongoEvent>(type: T.Type, _event: OpaquePointer
 /// Extend Notification.Name to have class properties corresponding to each type
 /// of event. This allows creating notifications and observers using these names.
 extension Notification.Name {
-    static let commandStarted = Notification.Name("commandStarted")
-    static let commandSucceeded = Notification.Name("commandSucceeded")
-    static let commandFailed = Notification.Name("commandFailed")
-    static let serverDescriptionChanged = Notification.Name("serverDescriptionChanged")
-    static let serverOpening = Notification.Name("serverOpening")
-    static let serverClosed = Notification.Name("serverClosed")
-    static let topologyDescriptionChanged = Notification.Name("topologyDescriptionChanged")
-    static let topologyOpening = Notification.Name("topologyOpening")
-    static let topologyClosed = Notification.Name("topologyClosed")
-    static let serverHeartbeatStarted = Notification.Name("serverHeartbeatStarted")
-    static let serverHeartbeatSucceeded = Notification.Name("serverHeartbeatSucceeded")
-    static let serverHeartbeatFailed = Notification.Name("serverHeartbeatFailed")
+    static let commandStarted = Notification.Name(rawValue: "commandStarted")
+    static let commandSucceeded = Notification.Name(rawValue: "commandSucceeded")
+    static let commandFailed = Notification.Name(rawValue: "commandFailed")
+    static let serverDescriptionChanged = Notification.Name(rawValue: "serverDescriptionChanged")
+    static let serverOpening = Notification.Name(rawValue: "serverOpening")
+    static let serverClosed = Notification.Name(rawValue: "serverClosed")
+    static let topologyDescriptionChanged = Notification.Name(rawValue: "topologyDescriptionChanged")
+    static let topologyOpening = Notification.Name(rawValue: "topologyOpening")
+    static let topologyClosed = Notification.Name(rawValue: "topologyClosed")
+    static let serverHeartbeatStarted = Notification.Name(rawValue: "serverHeartbeatStarted")
+    static let serverHeartbeatSucceeded = Notification.Name(rawValue: "serverHeartbeatSucceeded")
+    static let serverHeartbeatFailed = Notification.Name(rawValue: "serverHeartbeatFailed")
 }
 
 /// The two categories of events that can be monitored. One or both can be enabled for a `MongoClient`.
