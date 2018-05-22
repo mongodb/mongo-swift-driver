@@ -222,7 +222,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
             do {
                 try value.encode(to: self.data, forKey: key)
             } catch {
-                preconditionFailure("Failed to set the value for key \(key) to \(value)")
+                preconditionFailure("Failed to set the value for key \(key) to \(value): \(error)")
             }
 
         }

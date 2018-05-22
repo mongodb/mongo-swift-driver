@@ -374,7 +374,11 @@ extension Double: BsonValue {
 extension Int: BsonValue {
     public var bsonType: BsonType { return .int32 }
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
-        if !bson_append_int32(data, key, Int32(key.count), Int32(self)) {
+        guard let int32 = Int32(exactly: self) else {
+            throw MongoError.bsonEncodeError(message:
+                "`Int` value \(self) does not fit in an `Int32`. Use an `Int64` instead")
+        }
+        if !bson_append_int32(data, key, Int32(key.count), int32) {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
