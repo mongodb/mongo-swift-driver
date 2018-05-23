@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>CommandSucceededEvent Structure Reference</title>
+    <title>_BsonEncoder Extension Reference</title>
     <link rel="stylesheet" type="text/css" href="../css/jazzy.css" />
     <link rel="stylesheet" type="text/css" href="../css/highlight.css" />
     <meta charset='utf-8'>
@@ -10,8 +10,8 @@
     
   </head>
   <body>
-    <a name="//apple_ref/swift/Struct/CommandSucceededEvent" class="dashAnchor"></a>
-    <a title="CommandSucceededEvent Structure Reference"></a>
+    <a name="//apple_ref/swift/Extension/_BsonEncoder" class="dashAnchor"></a>
+    <a title="_BsonEncoder Extension Reference"></a>
     <header>
       <div class="content-wrapper">
         <p><a href="../index.html">MongoSwift Docs</a> (100% documented)</p>
@@ -21,7 +21,7 @@
       <p id="breadcrumbs">
         <a href="../index.html">MongoSwift Reference</a>
         <img id="carat" src="../img/carat.png" />
-        CommandSucceededEvent Structure Reference
+        _BsonEncoder Extension Reference
       </p>
     </div>
     <div class="content-wrapper">
@@ -293,16 +293,14 @@
       <article class="main-content">
         <section>
           <section class="section">
-            <h1>CommandSucceededEvent</h1>
+            <h1>_BsonEncoder</h1>
               <div class="declaration">
                 <div class="language">
-                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">CommandSucceededEvent</span> <span class="p">:</span> <span class="kt"><a href="../Protocols/MongoEvent.html">MongoEvent</a></span><span class="p">,</span> <span class="kt">InitializableFromOpaquePointer</span></code></pre>
+                  <pre class="highlight swift"><code><span class="kd">internal</span> <span class="kd">class</span> <span class="nv">_BsonEncoder</span> <span class="p">:</span> <span class="kt">Encoder</span></code></pre>
 
                 </div>
               </div>
-            <p>An event published when a command succeeds. The event is stored under the key <code>event</code>
-in the <code>userInfo</code> property of <code>Notification</code>s posted under the name .commandSucceeded.</p>
-
+            
           </section>
           <section class="section task-group-section">
             <div class="task-group">
@@ -310,9 +308,9 @@ in the <code>userInfo</code> property of <code>Notification</code>s posted under
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift21CommandSucceededEventV9eventTypeAA0aeG0OvpZ"></a>
-                    <a name="//apple_ref/swift/Variable/eventType" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift21CommandSucceededEventV9eventTypeAA0aeG0OvpZ">eventType</a>
+                    <a name="/s:s28SingleValueEncodingContainerP9encodeNilyyKF"></a>
+                    <a name="//apple_ref/swift/Method/encodeNil()" class="dashAnchor"></a>
+                    <a class="token" href="#/s:s28SingleValueEncodingContainerP9encodeNilyyKF">encodeNil()</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -320,14 +318,13 @@ in the <code>userInfo</code> property of <code>Notification</code>s posted under
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>The type of this event.</p>
-
+                        
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">var</span> <span class="nv">eventType</span><span class="p">:</span> <span class="kt"><a href="../Enums/MongoEventType.html">MongoEventType</a></span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">encodeNil</span><span class="p">()</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -337,9 +334,9 @@ in the <code>userInfo</code> property of <code>Notification</code>s posted under
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift21CommandSucceededEventV9eventNameSo14NSNotificationC0G0VvpZ"></a>
-                    <a name="//apple_ref/swift/Variable/eventName" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift21CommandSucceededEventV9eventNameSo14NSNotificationC0G0VvpZ">eventName</a>
+                    <a name="/s:s28SingleValueEncodingContainerP6encodeySbKF"></a>
+                    <a name="//apple_ref/swift/Method/encode(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:s28SingleValueEncodingContainerP6encodeySbKF">encode(_:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -347,14 +344,13 @@ in the <code>userInfo</code> property of <code>Notification</code>s posted under
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>The name this event will be posted under.</p>
-
+                        
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">var</span> <span class="nv">eventName</span><span class="p">:</span> <span class="kt">Notification</span><span class="o">.</span><span class="kt">Name</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">encode</span><span class="p">(</span><span class="n">_</span> <span class="nv">value</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">)</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -364,9 +360,9 @@ in the <code>userInfo</code> property of <code>Notification</code>s posted under
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift21CommandSucceededEventV8durations5Int64Vvp"></a>
-                    <a name="//apple_ref/swift/Property/duration" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift21CommandSucceededEventV8durations5Int64Vvp">duration</a>
+                    <a name="/s:s28SingleValueEncodingContainerP6encodeySiKF"></a>
+                    <a name="//apple_ref/swift/Method/encode(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:s28SingleValueEncodingContainerP6encodeySiKF">encode(_:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -374,14 +370,13 @@ in the <code>userInfo</code> property of <code>Notification</code>s posted under
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>The execution time of the event, in microseconds.</p>
-
+                        
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">duration</span><span class="p">:</span> <span class="kt">Int64</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">encode</span><span class="p">(</span><span class="n">_</span> <span class="nv">value</span><span class="p">:</span> <span class="kt">Int</span><span class="p">)</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -391,9 +386,9 @@ in the <code>userInfo</code> property of <code>Notification</code>s posted under
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift21CommandSucceededEventV5replyAA8DocumentVvp"></a>
-                    <a name="//apple_ref/swift/Property/reply" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift21CommandSucceededEventV5replyAA8DocumentVvp">reply</a>
+                    <a name="/s:s28SingleValueEncodingContainerP6encodeys4Int8VKF"></a>
+                    <a name="//apple_ref/swift/Method/encode(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:s28SingleValueEncodingContainerP6encodeys4Int8VKF">encode(_:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -401,14 +396,13 @@ in the <code>userInfo</code> property of <code>Notification</code>s posted under
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>The command reply.</p>
-
+                        
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">reply</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">encode</span><span class="p">(</span><span class="n">_</span> <span class="nv">value</span><span class="p">:</span> <span class="kt">Int8</span><span class="p">)</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -418,9 +412,9 @@ in the <code>userInfo</code> property of <code>Notification</code>s posted under
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift21CommandSucceededEventV11commandNameSSvp"></a>
-                    <a name="//apple_ref/swift/Property/commandName" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift21CommandSucceededEventV11commandNameSSvp">commandName</a>
+                    <a name="/s:s28SingleValueEncodingContainerP6encodeys5Int16VKF"></a>
+                    <a name="//apple_ref/swift/Method/encode(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:s28SingleValueEncodingContainerP6encodeys5Int16VKF">encode(_:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -428,14 +422,13 @@ in the <code>userInfo</code> property of <code>Notification</code>s posted under
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>The command name.</p>
-
+                        
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">commandName</span><span class="p">:</span> <span class="kt">String</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">encode</span><span class="p">(</span><span class="n">_</span> <span class="nv">value</span><span class="p">:</span> <span class="kt">Int16</span><span class="p">)</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -445,9 +438,9 @@ in the <code>userInfo</code> property of <code>Notification</code>s posted under
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift21CommandSucceededEventV9requestIds5Int64Vvp"></a>
-                    <a name="//apple_ref/swift/Property/requestId" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift21CommandSucceededEventV9requestIds5Int64Vvp">requestId</a>
+                    <a name="/s:s28SingleValueEncodingContainerP6encodeys5Int32VKF"></a>
+                    <a name="//apple_ref/swift/Method/encode(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:s28SingleValueEncodingContainerP6encodeys5Int32VKF">encode(_:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -455,14 +448,13 @@ in the <code>userInfo</code> property of <code>Notification</code>s posted under
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>The driver generated request id.</p>
-
+                        
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">requestId</span><span class="p">:</span> <span class="kt">Int64</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">encode</span><span class="p">(</span><span class="n">_</span> <span class="nv">value</span><span class="p">:</span> <span class="kt">Int32</span><span class="p">)</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -472,9 +464,9 @@ in the <code>userInfo</code> property of <code>Notification</code>s posted under
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift21CommandSucceededEventV11operationIds5Int64Vvp"></a>
-                    <a name="//apple_ref/swift/Property/operationId" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift21CommandSucceededEventV11operationIds5Int64Vvp">operationId</a>
+                    <a name="/s:s28SingleValueEncodingContainerP6encodeys5Int64VKF"></a>
+                    <a name="//apple_ref/swift/Method/encode(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:s28SingleValueEncodingContainerP6encodeys5Int64VKF">encode(_:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -482,15 +474,13 @@ in the <code>userInfo</code> property of <code>Notification</code>s posted under
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>The driver generated operation id. This is used to link events together such
-as bulk write operations.</p>
-
+                        
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">operationId</span><span class="p">:</span> <span class="kt">Int64</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">encode</span><span class="p">(</span><span class="n">_</span> <span class="nv">value</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">)</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -500,9 +490,9 @@ as bulk write operations.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift21CommandSucceededEventV12connectionIdAA010ConnectionG0Vvp"></a>
-                    <a name="//apple_ref/swift/Property/connectionId" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift21CommandSucceededEventV12connectionIdAA010ConnectionG0Vvp">connectionId</a>
+                    <a name="/s:s28SingleValueEncodingContainerP6encodeySuKF"></a>
+                    <a name="//apple_ref/swift/Method/encode(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:s28SingleValueEncodingContainerP6encodeySuKF">encode(_:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -510,14 +500,221 @@ as bulk write operations.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>The connection id for the command.</p>
-
+                        
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">connectionId</span><span class="p">:</span> <span class="kt"><a href="../Structs/ConnectionId.html">ConnectionId</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">encode</span><span class="p">(</span><span class="n">_</span> <span class="nv">value</span><span class="p">:</span> <span class="kt">UInt</span><span class="p">)</span> <span class="k">throws</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:s28SingleValueEncodingContainerP6encodeys5UInt8VKF"></a>
+                    <a name="//apple_ref/swift/Method/encode(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:s28SingleValueEncodingContainerP6encodeys5UInt8VKF">encode(_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">encode</span><span class="p">(</span><span class="n">_</span> <span class="nv">value</span><span class="p">:</span> <span class="kt">UInt8</span><span class="p">)</span> <span class="k">throws</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:s28SingleValueEncodingContainerP6encodeys6UInt16VKF"></a>
+                    <a name="//apple_ref/swift/Method/encode(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:s28SingleValueEncodingContainerP6encodeys6UInt16VKF">encode(_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">encode</span><span class="p">(</span><span class="n">_</span> <span class="nv">value</span><span class="p">:</span> <span class="kt">UInt16</span><span class="p">)</span> <span class="k">throws</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:s28SingleValueEncodingContainerP6encodeys6UInt32VKF"></a>
+                    <a name="//apple_ref/swift/Method/encode(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:s28SingleValueEncodingContainerP6encodeys6UInt32VKF">encode(_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">encode</span><span class="p">(</span><span class="n">_</span> <span class="nv">value</span><span class="p">:</span> <span class="kt">UInt32</span><span class="p">)</span> <span class="k">throws</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:s28SingleValueEncodingContainerP6encodeys6UInt64VKF"></a>
+                    <a name="//apple_ref/swift/Method/encode(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:s28SingleValueEncodingContainerP6encodeys6UInt64VKF">encode(_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">encode</span><span class="p">(</span><span class="n">_</span> <span class="nv">value</span><span class="p">:</span> <span class="kt">UInt64</span><span class="p">)</span> <span class="k">throws</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:s28SingleValueEncodingContainerP6encodeySSKF"></a>
+                    <a name="//apple_ref/swift/Method/encode(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:s28SingleValueEncodingContainerP6encodeySSKF">encode(_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">encode</span><span class="p">(</span><span class="n">_</span> <span class="nv">value</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">throws</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:s28SingleValueEncodingContainerP6encodeySfKF"></a>
+                    <a name="//apple_ref/swift/Method/encode(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:s28SingleValueEncodingContainerP6encodeySfKF">encode(_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">encode</span><span class="p">(</span><span class="n">_</span> <span class="nv">value</span><span class="p">:</span> <span class="kt">Float</span><span class="p">)</span> <span class="k">throws</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:s28SingleValueEncodingContainerP6encodeySdKF"></a>
+                    <a name="//apple_ref/swift/Method/encode(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:s28SingleValueEncodingContainerP6encodeySdKF">encode(_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">encode</span><span class="p">(</span><span class="n">_</span> <span class="nv">value</span><span class="p">:</span> <span class="kt">Double</span><span class="p">)</span> <span class="k">throws</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:s28SingleValueEncodingContainerP6encodeyqd__Ks9EncodableRd__lF"></a>
+                    <a name="//apple_ref/swift/Method/encode(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:s28SingleValueEncodingContainerP6encodeyqd__Ks9EncodableRd__lF">encode(_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">encode</span><span class="o">&lt;</span><span class="kt">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">_</span> <span class="nv">value</span><span class="p">:</span> <span class="kt">T</span><span class="p">)</span> <span class="k">throws</span> <span class="k">where</span> <span class="kt">T</span> <span class="p">:</span> <span class="kt">Encodable</span></code></pre>
 
                         </div>
                       </div>
