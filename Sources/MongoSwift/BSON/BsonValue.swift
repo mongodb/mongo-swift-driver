@@ -159,7 +159,7 @@ extension Array: BsonValue {
 }
 
 /// Subtypes for BSON Binary values.
-public enum BsonSubtype: Int, Decodable {
+public enum BsonSubtype: Int, Codable {
     /// Generic binary subtype
     case binary = 0,
     /// A function
@@ -177,7 +177,7 @@ public enum BsonSubtype: Int, Decodable {
 }
 
 /// A struct to represent the BSON Binary type.
-public struct Binary: BsonValue, Equatable, Decodable {
+public struct Binary: BsonValue, Equatable, Codable {
 
     public var bsonType: BsonType { return .binary }
 
@@ -323,7 +323,7 @@ internal struct DBPointer: BsonValue {
 }
 
 /// A struct to represent the BSON Decimal128 type.
-public struct Decimal128: BsonValue, Equatable, Decodable {
+public struct Decimal128: BsonValue, Equatable, Codable {
     /// This number, represented as a `String`.
     public let data: String
 
@@ -423,7 +423,7 @@ extension Int64: BsonValue {
 }
 
 /// A struct to represent the BSON Code and CodeWithScope types.
-public struct CodeWithScope: BsonValue, Decodable, Equatable {
+public struct CodeWithScope: BsonValue, Equatable, Codable {
     /// A string containing Javascript code.
     public let code: String
     /// An optional scope `Document` containing a mapping of identifiers to values,
@@ -480,7 +480,7 @@ public struct CodeWithScope: BsonValue, Decodable, Equatable {
 }
 
 /// A struct to represent the BSON MaxKey type.
-public struct MaxKey: BsonValue, Equatable, Decodable {
+public struct MaxKey: BsonValue, Equatable, Codable {
     private var maxKey = 1
 
     public var bsonType: BsonType { return .maxKey }
@@ -496,7 +496,7 @@ public struct MaxKey: BsonValue, Equatable, Decodable {
 }
 
 /// A struct to represent the BSON MinKey type.
-public struct MinKey: BsonValue, Equatable, Decodable {
+public struct MinKey: BsonValue, Equatable, Codable {
     private var minKey = 1
 
     public var bsonType: BsonType { return .minKey }
@@ -512,7 +512,7 @@ public struct MinKey: BsonValue, Equatable, Decodable {
 }
 
 /// A struct to represent the BSON ObjectId type.
-public struct ObjectId: BsonValue, Equatable, CustomStringConvertible, Decodable {
+public struct ObjectId: BsonValue, Equatable, CustomStringConvertible, Codable {
 
     public var bsonType: BsonType { return .objectId }
 
@@ -603,7 +603,7 @@ extension NSRegularExpression {
 }
 
 /// A struct to represent a BSON regular expression.
-struct RegularExpression: BsonValue, Equatable, Decodable {
+struct RegularExpression: BsonValue, Equatable, Codable {
 
     public var bsonType: BsonType { return .regularExpression }
 
@@ -716,7 +716,7 @@ internal struct Symbol: BsonValue {
 }
 
 /// A struct to represent the BSON Timestamp type.
-public struct Timestamp: BsonValue, Equatable, Decodable {
+public struct Timestamp: BsonValue, Equatable, Codable {
     public var bsonType: BsonType { return .timestamp }
 
     /// A timestamp representing seconds since the Unix epoch.
