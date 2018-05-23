@@ -1,7 +1,7 @@
 import libmongoc
 
 /// Options to use when running a command against a `MongoDatabase`. 
-public struct RunCommandOptions: BsonEncodable {
+public struct RunCommandOptions: Encodable {
     /// A session to associate with this operation
     public let session: ClientSession?
 
@@ -14,11 +14,14 @@ public struct RunCommandOptions: BsonEncodable {
         self.session = session
     }
 
-    public var skipFields: [String] { return ["readConcern"] }
+    // Encode everything except readConcern
+    private enum CodingKeys: String, CodingKey {
+        case session
+    }
 }
 
 /// Options to use when executing a `listCollections` command on a `MongoDatabase`.
-public struct ListCollectionsOptions: BsonEncodable {
+public struct ListCollectionsOptions: Encodable {
     /// A filter to match collections against
     public let filter: Document?
 
@@ -37,7 +40,7 @@ public struct ListCollectionsOptions: BsonEncodable {
 }
 
 /// Options to use when executing a `createCollection` command on a `MongoDatabase`.
-public struct CreateCollectionOptions: BsonEncodable {
+public struct CreateCollectionOptions: Encodable {
     /// Indicates whether this will be a capped collection
     public let capped: Bool?
 
@@ -100,7 +103,11 @@ public struct CreateCollectionOptions: BsonEncodable {
         self.viewOn = viewOn
     }
 
-    public var skipFields: [String] { return ["readConcern"] }
+    // Encode everything except readConcern
+    private enum CodingKeys: String, CodingKey {
+        case autoIndexId, capped, collation, indexOptionDefaults, max, session,
+            size, storageEngine, validationAction, validationLevel, validator, viewOn
+    }
 }
 
 /// Options to set on a retrieved `MongoCollection`.

@@ -1,7 +1,7 @@
 import libmongoc
 
 /// Options to use when executing an `aggregate` command on a `MongoCollection`.
-public struct AggregateOptions: BsonEncodable {
+public struct AggregateOptions: Encodable {
     /// Enables writing to temporary files. When set to true, aggregation stages
     /// can write data to the _tmp subdirectory in the dbPath directory.
     public let allowDiskUse: Bool?
@@ -42,11 +42,15 @@ public struct AggregateOptions: BsonEncodable {
         self.readConcern = readConcern
     }
 
-    public var skipFields: [String] { return ["readConcern"] }
+    // Encode everything except readConcern
+    private enum CodingKeys: String, CodingKey {
+        case allowDiskUse, batchSize, bypassDocumentValidation,
+            collation, maxTimeMS, comment
+    }
 }
 
 /// Options to use when executing a `count` command on a `MongoCollection`.
-public struct CountOptions: BsonEncodable {
+public struct CountOptions: Encodable {
     /// Specifies a collation.
     public let collation: Document?
 
@@ -75,11 +79,14 @@ public struct CountOptions: BsonEncodable {
         self.skip = skip
     }
 
-    public var skipFields: [String] { return ["readConcern"] }
+    // Encode everything except readConcern
+    private enum CodingKeys: String, CodingKey {
+        case collation, limit, maxTimeMS, skip
+    }
 }
 
 /// Options to use when executing a `distinct` command on a `MongoCollection`.
-public struct DistinctOptions: BsonEncodable {
+public struct DistinctOptions: Encodable {
     /// Specifies a collation.
     public let collation: Document?
 
@@ -96,7 +103,10 @@ public struct DistinctOptions: BsonEncodable {
         self.readConcern = readConcern
     }
 
-    public var skipFields: [String] { return ["readConcern"] }
+    // Encode everything except readConcern
+    private enum CodingKeys: String, CodingKey {
+        case collation, maxTimeMS
+    }
 }
 
 /// The possible types of `MongoCursor` an operation can return.
@@ -132,7 +142,7 @@ public enum CursorType {
 }
 
 /// Options to use when executing a `find` command on a `MongoCollection`.
-public struct FindOptions: BsonEncodable {
+public struct FindOptions: Encodable {
     /// Get partial results from a mongos if some shards are down (instead of throwing an error).
     public let allowPartialResults: Bool?
 
@@ -220,11 +230,15 @@ public struct FindOptions: BsonEncodable {
         self.sort = sort
     }
 
-    public var skipFields: [String] { return ["readConcern"] }
+    // Encode everything except readConcern
+    private enum CodingKeys: String, CodingKey {
+        case allowPartialResults, batchSize, collation, comment, limit, max, maxAwaitTimeMS,
+            maxScan, maxTimeMS, min, noCursorTimeout, projection, returnKey, showRecordId, skip, sort
+    }
 }
 
 /// Options to use when executing an `insertOne` command on a `MongoCollection`.
-public struct InsertOneOptions: BsonEncodable {
+public struct InsertOneOptions: Encodable {
     /// If true, allows the write to opt-out of document level validation.
     public let bypassDocumentValidation: Bool?
 
@@ -235,7 +249,7 @@ public struct InsertOneOptions: BsonEncodable {
 }
 
 /// Options to use when executing an `insertMany` command on a `MongoCollection`. 
-public struct InsertManyOptions: BsonEncodable {
+public struct InsertManyOptions: Encodable {
     /// If true, allows the write to opt-out of document level validation.
     public let bypassDocumentValidation: Bool?
 
@@ -252,7 +266,7 @@ public struct InsertManyOptions: BsonEncodable {
 }
 
 /// Options to use when executing an `update` command on a `MongoCollection`. 
-public struct UpdateOptions: BsonEncodable {
+public struct UpdateOptions: Encodable {
     /// A set of filters specifying to which array elements an update should apply.
     public let arrayFilters: [Document]?
 
@@ -276,7 +290,7 @@ public struct UpdateOptions: BsonEncodable {
 }
 
 /// Options to use when executing a `replace` command on a `MongoCollection`. 
-public struct ReplaceOptions: BsonEncodable {
+public struct ReplaceOptions: Encodable {
     /// If true, allows the write to opt-out of document level validation.
     public let bypassDocumentValidation: Bool?
 
@@ -295,7 +309,7 @@ public struct ReplaceOptions: BsonEncodable {
 }
 
 /// Options to use when executing a `delete` command on a `MongoCollection`. 
-public struct DeleteOptions: BsonEncodable {
+public struct DeleteOptions: Encodable {
     /// Specifies a collation.
     public let collation: Document?
 
@@ -368,7 +382,7 @@ public struct UpdateResult {
 }
 
 /// A struct representing an index on a `MongoCollection`.
-public struct IndexModel: BsonEncodable {
+public struct IndexModel: Encodable {
     /// Contains the required keys for the index.
     public let keys: Document
 
@@ -386,20 +400,21 @@ public struct IndexModel: BsonEncodable {
         return String(cString: mongoc_collection_keys_to_index_string(self.keys.data))
     }
 
-    public func encode(to encoder: BsonEncoder) throws {
-        // we need a flat document containing key, name, and options,
-        // so encode the options directly to this encoder first
-        try self.options?.encode(to: encoder)
-        try encoder.encode(keys, forKey: "key")
-        if self.options?.name == nil {
-            try encoder.encode(self.defaultName, forKey: "name")
-        }
+    // Encode own data as well as nested options data
+    private enum CodingKeys: String, CodingKey {
+        case key, name
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(keys, forKey: .key)
+        try container.encode(self.options?.name ?? self.defaultName, forKey: .name)
     }
 
 }
 
 /// Options to use when creating an index for a collection.
-public struct IndexOptions: BsonEncodable {
+public struct IndexOptions: Encodable {
     /// Optionally tells the server to build the index in the background and not block
     /// other tasks.
     public let background: Bool?
@@ -494,6 +509,13 @@ public struct IndexOptions: BsonEncodable {
         self.bucketSize = bucketSize
         self.partialFilterExpression = partialFilterExpression
         self.collation = collation
+    }
+
+    // Encode everything besides the name, as we will handle that when encoding the `IndexModel`
+    private enum CodingKeys: String, CodingKey {
+        case background, expireAfter, sparse, storageEngine, unique, version, defaultLanguage,
+            languageOverride, textVersion, weights, sphereVersion, bits, max, min, bucketSize,
+            partialFilterExpression, collation
     }
 }
 
@@ -858,10 +880,21 @@ public class MongoCollection {
      */
     public func createIndexes(_ forModels: [IndexModel]) throws -> [String] {
         let collName = String(cString: mongoc_collection_get_name(self._collection))
+        let encoder = BsonEncoder()
+        var indexData = [Document]()
+        for index in forModels {
+            var indexDoc = try encoder.encode(index)
+            if let opts = try encoder.encode(index.options) {
+                try indexDoc.merge(opts)
+            }
+            indexData.append(indexDoc)
+        }
+
         let command: Document = [
             "createIndexes": collName,
-            "indexes": try forModels.map { try BsonEncoder().encode($0) }
+            "indexes": indexData
         ]
+
         var error = bson_error_t()
         if !mongoc_collection_write_command_with_opts(self._collection, command.data, nil, nil, &error) {
             throw MongoError.commandError(message: toErrorString(error))

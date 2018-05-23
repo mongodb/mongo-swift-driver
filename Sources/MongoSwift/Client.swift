@@ -2,7 +2,7 @@ import Foundation
 import libmongoc
 
 /// Options to use when creating a `MongoClient`.
-public struct ClientOptions: BsonEncodable {
+public struct ClientOptions: Encodable {
     /// Determines whether the client should retry supported write operations
     public let retryWrites: Bool?
 
@@ -21,14 +21,13 @@ public struct ClientOptions: BsonEncodable {
         self.readConcern = readConcern
     }
 
-    /// `eventMonitoring` is a field that we set on the MongoClient, and `readConcern`
-    /// is used to set a default read concern for the client after it's created, so neither
-    /// of them should be encoded with the client options.
-    public var skipFields: [String] { return ["eventMonitoring", "readConcern"] }
+    private enum CodingKeys: String, CodingKey {
+        case retryWrites
+    }
 }
 
 /// Options to use when listing available databases.
-public struct ListDatabasesOptions: BsonEncodable {
+public struct ListDatabasesOptions: Encodable {
     /// An optional filter for the returned databases
     public let filter: Document?
 

@@ -327,4 +327,10 @@ final class DocumentTests: XCTestCase {
             }
         }
     }
+
+    func testMerge() throws {
+        var doc1: Document = ["a": 1]
+        try doc1.merge(["b": 2])
+        expect(doc1).to(equal(["a": 1, "b": 2]))
+    }
 }
