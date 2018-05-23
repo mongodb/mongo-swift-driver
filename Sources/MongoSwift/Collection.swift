@@ -510,6 +510,13 @@ public struct IndexOptions: Encodable {
         self.partialFilterExpression = partialFilterExpression
         self.collation = collation
     }
+
+    // Encode everything besides the name, as we will handle that when encoding the `IndexModel`
+    private enum CodingKeys: String, CodingKey {
+        case background, expireAfter, sparse, storageEngine, unique, version, defaultLanguage,
+            languageOverride, textVersion, weights, sphereVersion, bits, max, min, bucketSize,
+            partialFilterExpression, collation
+    }
 }
 
 /// A MongoDB collection.
