@@ -252,6 +252,13 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         }
         return value
     }
+
+    /// Appends the key/value pairs from the provided `doc` to this `Document`. 
+    public mutating func merge(_ doc: Document) throws {
+        if !bson_concat(self.data, doc.data) {
+            throw MongoError.bsonEncodeError(message: "Failed to merge \(doc) with \(self)")
+        }
+    }
 }
 
 /// An extension of `Document` to make it a `BsonValue`.

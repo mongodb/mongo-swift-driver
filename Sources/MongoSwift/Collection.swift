@@ -402,41 +402,19 @@ public struct IndexModel: Encodable {
 
     // Encode own data as well as nested options data
     private enum CodingKeys: String, CodingKey {
-        case key, background, expireAfter, name, sparse, storageEngine, unique,
-            version, defaultLanguage, languageOverride, textVersion, weights,
-            sphereVersion, bits, max, min, bucketSize, partialFilterExpression, collation
+        case key, name
     }
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(keys, forKey: .key)
-
-        let name = self.options?.name ?? self.defaultName
-        try container.encode(name, forKey: .name)
-        try container.encodeIfPresent(options?.background, forKey: .background)
-        try container.encodeIfPresent(options?.expireAfter, forKey: .expireAfter)
-        try container.encodeIfPresent(options?.sparse, forKey: .sparse)
-        try container.encodeIfPresent(options?.storageEngine, forKey: .storageEngine)
-        try container.encodeIfPresent(options?.unique, forKey: .unique)
-        try container.encodeIfPresent(options?.version, forKey: .version)
-        try container.encodeIfPresent(options?.defaultLanguage, forKey: .defaultLanguage)
-        try container.encodeIfPresent(options?.languageOverride, forKey: .languageOverride)
-        try container.encodeIfPresent(options?.textVersion, forKey: .textVersion)
-        try container.encodeIfPresent(options?.weights, forKey: .weights)
-        try container.encodeIfPresent(options?.sphereVersion, forKey: .sphereVersion)
-        try container.encodeIfPresent(options?.bits, forKey: .bits)
-        try container.encodeIfPresent(options?.max, forKey: .max)
-        try container.encodeIfPresent(options?.min, forKey: .min)
-        try container.encodeIfPresent(options?.bucketSize, forKey: .bucketSize)
-        try container.encodeIfPresent(options?.partialFilterExpression, forKey: .partialFilterExpression)
-        try container.encodeIfPresent(options?.collation, forKey: .collation)
-
+        try container.encode(self.options?.name ?? self.defaultName, forKey: .name)
     }
 
 }
 
 /// Options to use when creating an index for a collection.
-public struct IndexOptions {
+public struct IndexOptions: Encodable {
     /// Optionally tells the server to build the index in the background and not block
     /// other tasks.
     public let background: Bool?
@@ -895,10 +873,21 @@ public class MongoCollection {
      */
     public func createIndexes(_ forModels: [IndexModel]) throws -> [String] {
         let collName = String(cString: mongoc_collection_get_name(self._collection))
+        let encoder = BsonEncoder()
+        var indexData = [Document]()
+        for index in forModels {
+            var indexDoc = try encoder.encode(index)
+            if let opts = try encoder.encode(index.options) {
+                try indexDoc.merge(opts)
+            }
+            indexData.append(indexDoc)
+        }
+
         let command: Document = [
             "createIndexes": collName,
-            "indexes": try forModels.map { try BsonEncoder().encode($0) }
+            "indexes": indexData
         ]
+
         var error = bson_error_t()
         if !mongoc_collection_write_command_with_opts(self._collection, command.data, nil, nil, &error) {
             throw MongoError.commandError(message: toErrorString(error))
