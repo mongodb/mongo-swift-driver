@@ -470,16 +470,6 @@ private class MutableArray: BsonValue {
 
     var count: Int { return array.count }
 
-    /// Converts self to a `Document` where keys "0", "1", etc.
-    /// correspond to array indices. 
-    func asDocument() -> Document {
-        var doc = Document()
-        for (i, v) in array.enumerated() {
-            doc[String(i)] = v
-        }
-        return doc
-    }
-
     func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
         try self.array.encode(to: data, forKey: key)
     }
