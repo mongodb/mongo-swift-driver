@@ -43,11 +43,11 @@ public class BSONEncoder {
     }
 }
 
-/// A private class to implement the `Encoder` protocol.
-private class _BSONEncoder: Encoder {
+/// An internal class to implement the `Encoder` protocol.
+internal class _BSONEncoder: Encoder {
 
     /// The encoder's storage.
-    fileprivate var storage: _BSONEncodingStorage
+    internal var storage: _BSONEncodingStorage
 
     /// Options set on the top-level encoder.
     fileprivate let options: BSONEncoder._Options
@@ -114,11 +114,11 @@ private class _BSONEncoder: Encoder {
     }
 }
 
-private struct _BSONEncodingStorage {
+internal struct _BSONEncodingStorage {
 
     /// The container stack.
     /// Elements may be any BsonValue type.
-    fileprivate var containers: [BsonValue?] = []
+    internal var containers: [BsonValue?] = []
 
     /// Initializes `self` with no containers.
     fileprivate init() {}
@@ -538,110 +538,5 @@ private extension EncodingError {
         let description = "Value \(String(describing: value)) of type \(type(of: value)) cannot be " +
                             "exactly represented by a BSON number type (Int, Int32, Int64 or Double)."
         return .invalidValue(value, Context(codingPath: path, debugDescription: description))
-    }
-}
-
-extension Document: Encodable {
-    public func encode(to encoder: Encoder) throws {
-        if let bsonEncoder = encoder as? _BSONEncoder {
-            bsonEncoder.storage.containers.append(self)
-            return
-        }
-
-        var container = encoder.container(keyedBy: _BsonKey.self)
-        for (k, v) in self {
-            try Document.recursivelyEncodeKeyed(v, forKey: k, to: &container)
-        }
-    }
-
-    private static func recursivelyEncodeKeyed(_ value: BsonValue?, forKey key: String, to container: inout KeyedEncodingContainer<_BsonKey>) throws {
-        let k = _BsonKey(stringValue: key)!
-        switch value {
-        case let val as [BsonValue?]:
-            var nested = container.nestedUnkeyedContainer(forKey: k)
-            for v in val {
-                try Document.recursivelyEncodeUnkeyed(v, to: &nested)
-            }
-        case let val as Binary:
-            try container.encode(val, forKey: k)
-        case let val as Bool:
-            try container.encode(val, forKey: k)
-        case let val as Date:
-            try container.encode(val, forKey: k)
-        case let val as Decimal128:
-            try container.encode(val, forKey: k)
-        case let val as Document:
-            var nested = container.nestedContainer(keyedBy: _BsonKey.self, forKey: k)
-            for (nestedK, nestedV) in val {
-                try Document.recursivelyEncodeKeyed(nestedV, forKey: nestedK, to: &nested)
-            }
-        case let val as Double:
-            try container.encode(val, forKey: k)
-        case let val as Int:
-            try container.encode(val, forKey: k)
-        case let val as Int32:
-            try container.encode(val, forKey: k)
-        case let val as Int64:
-            try container.encode(val, forKey: k)
-        case let val as CodeWithScope:
-            try container.encode(val, forKey: k)
-        case let val as MaxKey:
-            try container.encode(val, forKey: k)
-        case let val as MinKey:
-            try container.encode(val, forKey: k)
-        case let val as ObjectId:
-            try container.encode(val, forKey: k)
-        case let val as String:
-            try container.encode(val, forKey: k)
-        case nil:
-            try container.encodeNil(forKey: k)
-        default:
-            throw MongoError.typeError(message: "Encountered a non-encodable type in a Document: \(type(of: value))")
-        }
-    }
-
-    private static func recursivelyEncodeUnkeyed(_ value: BsonValue?, to container: inout UnkeyedEncodingContainer) throws {
-        switch value {
-        case let val as [BsonValue]:
-            var nested = container.nestedUnkeyedContainer()
-            for v in val {
-                try Document.recursivelyEncodeUnkeyed(v, to: &nested)
-            }
-        case let val as Binary:
-            try container.encode(val)
-        case let val as Bool:
-            try container.encode(val)
-        case let val as Date:
-            try container.encode(val)
-        case let val as Decimal128:
-            try container.encode(val)
-        case let val as Document:
-            var nested = container.nestedContainer(keyedBy: _BsonKey.self)
-            for (nestedK, nestedV) in val {
-                try Document.recursivelyEncodeKeyed(nestedV, forKey: nestedK, to: &nested)
-            }
-        case let val as Double:
-            try container.encode(val)
-        case let val as Int:
-            try container.encode(val)
-        case let val as Int32:
-            try container.encode(val)
-        case let val as Int64:
-            try container.encode(val)
-        case let val as CodeWithScope:
-            try container.encode(val)
-        case let val as MaxKey:
-            try container.encode(val)
-        case let val as MinKey:
-            try container.encode(val)
-        case let val as ObjectId:
-            try container.encode(val)
-        case let val as String:
-            try container.encode(val)
-        case nil:
-             try container.encodeNil()
-        default:
-            throw MongoError.typeError(message: "Encountered a non-encodable type in a Document: \(type(of: value))")
-        }
     }
 }

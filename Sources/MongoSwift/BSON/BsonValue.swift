@@ -423,7 +423,7 @@ extension Int64: BsonValue {
 }
 
 /// A struct to represent the BSON Code and CodeWithScope types.
-public struct CodeWithScope: BsonValue, Codable, Equatable {
+public struct CodeWithScope: BsonValue, Equatable, Codable {
     /// A string containing Javascript code.
     public let code: String
     /// An optional scope `Document` containing a mapping of identifiers to values,
