@@ -192,7 +192,7 @@ public class MongoDatabase {
      */
     public func createCollection(_ name: String, options: CreateCollectionOptions? = nil) throws -> MongoCollection {
         let encoder = BsonEncoder()
-        let opts = try encoder.encodeIfPresent(options)
+        let opts = try encoder.encode(options)
         var error = bson_error_t()
 
         guard let collection = mongoc_database_create_collection(self._database, name, opts?.data, &error) else {
@@ -220,7 +220,7 @@ public class MongoDatabase {
      */
     public func listCollections(options: ListCollectionsOptions? = nil) throws -> MongoCursor {
         let encoder = BsonEncoder()
-        let opts = try encoder.encodeIfPresent(options)
+        let opts = try encoder.encode(options)
         guard let collections = mongoc_database_find_collections_with_opts(self._database, opts?.data) else {
             throw MongoError.invalidResponse()
         }
@@ -241,7 +241,7 @@ public class MongoDatabase {
      */
     public func runCommand(_ command: Document, options: RunCommandOptions? = nil) throws -> Document {
         let encoder = BsonEncoder()
-        let opts = try ReadConcern.append(options?.readConcern, to: try encoder.encodeIfPresent(options), callerRC: self.readConcern)
+        let opts = try ReadConcern.append(options?.readConcern, to: try encoder.encode(options), callerRC: self.readConcern)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_database_command_with_opts(self._database, command.data, nil, opts?.data, reply.data, &error) {

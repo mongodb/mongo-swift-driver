@@ -150,7 +150,7 @@ public class MongoClient {
      */
     public func listDatabases(options: ListDatabasesOptions? = nil) throws -> MongoCursor {
         let encoder = BsonEncoder()
-        let opts = try encoder.encodeIfPresent(options)
+        let opts = try encoder.encode(options)
         guard let cursor = mongoc_client_find_databases_with_opts(self._client, opts?.data) else {
             throw MongoError.invalidResponse()
         }

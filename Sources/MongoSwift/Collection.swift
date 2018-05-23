@@ -588,7 +588,7 @@ public class MongoCollection {
      */
     public func find(_ filter: Document = [:], options: FindOptions? = nil) throws -> MongoCursor {
         let encoder = BsonEncoder()
-        let opts = try ReadConcern.append(options?.readConcern, to: try encoder.encodeIfPresent(options), callerRC: self.readConcern)
+        let opts = try ReadConcern.append(options?.readConcern, to: try encoder.encode(options), callerRC: self.readConcern)
         guard let cursor = mongoc_collection_find_with_opts(self._collection, filter.data, opts?.data, nil) else {
             throw MongoError.invalidResponse()
         }
@@ -609,7 +609,7 @@ public class MongoCollection {
      */
     public func aggregate(_ pipeline: [Document], options: AggregateOptions? = nil) throws -> MongoCursor {
         let encoder = BsonEncoder()
-        let opts = try ReadConcern.append(options?.readConcern, to: try encoder.encodeIfPresent(options), callerRC: self.readConcern)
+        let opts = try ReadConcern.append(options?.readConcern, to: try encoder.encode(options), callerRC: self.readConcern)
         let pipeline: Document = ["pipeline": pipeline]
         guard let cursor = mongoc_collection_aggregate(
             self._collection, MONGOC_QUERY_NONE, pipeline.data, opts?.data, nil) else {
@@ -632,7 +632,7 @@ public class MongoCollection {
      */
     public func count(_ filter: Document = [:], options: CountOptions? = nil) throws -> Int {
         let encoder = BsonEncoder()
-        let opts = try ReadConcern.append(options?.readConcern, to: try encoder.encodeIfPresent(options), callerRC: self.readConcern)
+        let opts = try ReadConcern.append(options?.readConcern, to: try encoder.encode(options), callerRC: self.readConcern)
         var error = bson_error_t()
         // because we already encode skip and limit in the options,
         // pass in 0s so we don't get duplicate parameter errors.
@@ -667,7 +667,7 @@ public class MongoCollection {
             "query": filter
         ]
         let encoder = BsonEncoder()
-        let opts = try ReadConcern.append(options?.readConcern, to: try encoder.encodeIfPresent(options), callerRC: self.readConcern)
+        let opts = try ReadConcern.append(options?.readConcern, to: try encoder.encode(options), callerRC: self.readConcern)
 
         let reply = Document()
         var error = bson_error_t()
@@ -708,7 +708,7 @@ public class MongoCollection {
      */
     public func insertOne(_ document: Document, options: InsertOneOptions? = nil) throws -> InsertOneResult? {
         let encoder = BsonEncoder()
-        let opts = try encoder.encodeIfPresent(options)
+        let opts = try encoder.encode(options)
         var error = bson_error_t()
         if document["_id"] == nil {
             try ObjectId().encode(to: document.data, forKey: "_id")
@@ -732,7 +732,7 @@ public class MongoCollection {
      */
     public func insertMany(_ documents: [Document], options: InsertManyOptions? = nil) throws -> InsertManyResult? {
         let encoder = BsonEncoder()
-        let opts = try encoder.encodeIfPresent(options)
+        let opts = try encoder.encode(options)
 
         for doc in documents where doc["_id"] == nil {
             try ObjectId().encode(to: doc.data, forKey: "_id")
@@ -760,7 +760,7 @@ public class MongoCollection {
      */
     public func replaceOne(filter: Document, replacement: Document, options: ReplaceOptions? = nil) throws -> UpdateResult? {
         let encoder = BsonEncoder()
-        let opts = try encoder.encodeIfPresent(options)
+        let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_replace_one(
@@ -783,7 +783,7 @@ public class MongoCollection {
      */
     public func updateOne(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
         let encoder = BsonEncoder()
-        let opts = try encoder.encodeIfPresent(options)
+        let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_update_one(
@@ -806,7 +806,7 @@ public class MongoCollection {
      */
     public func updateMany(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
         let encoder = BsonEncoder()
-        let opts = try encoder.encodeIfPresent(options)
+        let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_update_many(
@@ -828,7 +828,7 @@ public class MongoCollection {
      */
     public func deleteOne(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
         let encoder = BsonEncoder()
-        let opts = try encoder.encodeIfPresent(options)
+        let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_delete_one(
@@ -850,7 +850,7 @@ public class MongoCollection {
      */
     public func deleteMany(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
         let encoder = BsonEncoder()
-        let opts = try encoder.encodeIfPresent(options)
+        let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_delete_many(

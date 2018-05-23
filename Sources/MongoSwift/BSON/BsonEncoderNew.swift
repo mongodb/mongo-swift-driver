@@ -48,23 +48,11 @@ public class BsonEncoder {
     /// - parameter value: The value to encode.
     /// - returns: A new `Document` containing the encoded BSON data, or nil if there is no data to encode.
     /// - throws: An error if any value throws an error during encoding.
-    public func encodeIfPresent<T: Encodable>(_ value: T?) throws -> Document? {
+    public func encode<T: Encodable>(_ value: T?) throws -> Document? {
         guard let value = value else { return nil }
-
-        let encoder = _BsonEncoder(options: self.options)
-        guard let topLevel = try encoder.box(value) else {
-            return nil
-        }
-
-        guard let dict = topLevel as? MutableDictionary else {
-            throw EncodingError.invalidValue(value,
-                EncodingError.Context(codingPath: [],
-                    debugDescription: "Top-level \(T.self) was not encoded as a complete document."))
-        }
-
-        let asDocument = dict.asDocument()
-        if asDocument == [:] { return nil }
-        return asDocument
+        let encoded = try self.encode(value)
+        if encoded == [:] { return nil }
+        return encoded
     }
 }
 
