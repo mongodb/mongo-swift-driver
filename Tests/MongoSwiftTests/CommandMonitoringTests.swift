@@ -436,28 +436,3 @@ private func normalizeExpectedReply(_ input: Document) -> Document {
     }
     return output
 }
-
-/// Given two documents, returns a copy of the input document with all keys that *don't*
-/// exist in `standard` removed, and with all matching keys put in the same order they
-/// appear in `standard`.
-private func rearrangeDoc(_ input: Document, toLookLike standard: Document) -> Document {
-    var output = Document()
-    for (k, v) in standard {
-        // if it's a document, recursively rearrange to look like corresponding sub-document
-        if let sDoc = v as? Document, let iDoc = input[k] as? Document {
-            output[k] = rearrangeDoc(iDoc, toLookLike: sDoc)
-
-        // if it's an array, recursively rearrange to look like corresponding sub-array
-        } else if let sArr = v as? [Document], let iArr = input[k] as? [Document] {
-            var newArr = [Document]()
-            for (i, el) in iArr.enumerated() {
-                newArr.append(rearrangeDoc(el, toLookLike: sArr[i]))
-            }
-            output[k] = newArr
-        // just copy the value over as is
-        } else {
-            output[k] = input[k]
-        }
-    }
-    return output
-}

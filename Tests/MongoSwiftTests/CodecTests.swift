@@ -484,17 +484,20 @@ final class CodecTests: XCTestCase {
         """.data(using: .utf8)!
 
         let expected: Document = [
-            "description": "A fruit with a distinctive scent.",
-            "doc": ["x": 2.0] as Document,
             "name": "Durian",
+            "points": 600.0,
+            "description": "A fruit with a distinctive scent.",
             "array": ["a", "b", "c"],
-            "points": 600.0
+            "doc": ["x": 2.0] as Document
         ]
 
-        expect(try decoder.decode(Document.self, from: json)).to(equal(expected))
+        let decoded = try decoder.decode(Document.self, from: json)
+
+        expect(decoded).to(sortedEqual(expected))
 
         // again, order gets messed up, so just hard code in the key ordering we get
         let encoded = try String(data: encoder.encode(expected), encoding: .utf8)
-        expect(encoded).to(equal("{\"array\":[\"a\",\"b\",\"c\"],\"points\":600,\"doc\":{\"x\":2},\"name\":\"Durian\",\"description\":\"A fruit with a distinctive scent.\"}"))
+        let expectedJSON = "{\"array\":[\"a\",\"b\",\"c\"],\"points\":600,\"doc\":{\"x\":2},\"name\":\"Durian\",\"description\":\"A fruit with a distinctive scent.\"}"
+        expect(encoded).to(cleanEqual(expectedJSON))
     }
 }
