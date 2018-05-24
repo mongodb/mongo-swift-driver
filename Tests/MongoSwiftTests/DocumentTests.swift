@@ -27,45 +27,6 @@ extension Data {
     }
 }
 
-/// Cleans and normalizes a given JSON string for comparison purposes
-func clean(json: String?) -> String {
-
-    guard let str = json else { return "" }
-    do {
-        let object = try JSONSerialization.jsonObject(with: str.data(using: .utf8)!, options: [])
-        let data = try JSONSerialization.data(withJSONObject: object, options: [])
-
-        guard let string = String(data: data, encoding: .utf8) else {
-            print("Unable to convert JSON data to Data: \(str)")
-            return String()
-        }
-
-        return string
-    } catch {
-        print("Failed to clean string: \(str)")
-        return String()
-    }
-}
-
-// Adds a custom "cleanEqual" predicate that compares two JSON strings for equality after normalizing
-// them with the "clean" function
-public func cleanEqual(_ expectedValue: String?) -> Predicate<String> {
-    return Predicate.define("cleanEqual <\(stringify(expectedValue))>") { actualExpression, msg in
-        let actualValue = try actualExpression.evaluate()
-        let matches = clean(json: actualValue) == clean(json: expectedValue) && expectedValue != nil
-        if expectedValue == nil || actualValue == nil {
-            if expectedValue == nil && actualValue != nil {
-                return PredicateResult(
-                    status: .fail,
-                    message: msg.appendedBeNilHint()
-                )
-            }
-            return PredicateResult(status: .fail, message: msg)
-        }
-        return PredicateResult(status: PredicateStatus(bool: matches), message: msg)
-    }
-}
-
 final class DocumentTests: XCTestCase {
     static var allTests: [(String, (DocumentTests) -> () throws -> Void)] {
         return [
