@@ -163,10 +163,27 @@ public class MongoDatabase {
      *
      * - Parameters:
      *   - name: the name of the collection to get
+     *   - options: options to set on the returned collection
      *
-     * - Returns: the requested `MongoCollection`
+     * - Returns: the requested `MongoCollection<Document>`
      */
-    public func collection(_ name: String, options: CollectionOptions? = nil) throws -> MongoCollection {
+    public func collection(_ name: String, options: CollectionOptions? = nil) throws -> MongoCollection<Document> {
+        return try self.collection(name, withType: Document.self, options: options)
+    }
+
+    /**
+     * Access a collection within this database, and associates the specified `Codable` type `T` with the 
+     * returned `MongoCollection`. This association only exists in the context of this particular 
+     * `MongoCollection` instance.
+     *
+     * - Parameters:
+     *   - name: the name of the collection to get
+     *   - options: options to set on the returned collection
+     *
+     * - Returns: the requested `MongoCollection<T>`
+     */
+    public func collection<T: Codable>(_ name: String, withType: T.Type,
+                                              options: CollectionOptions? = nil) throws -> MongoCollection<T> {
         guard let collection = mongoc_database_get_collection(self._database, name) else {
             throw MongoError.invalidCollection(message: "Could not get collection '\(name)'")
         }
@@ -188,9 +205,27 @@ public class MongoDatabase {
      *   - name: a `String`, the name of the collection to create
      *   - options: Optional `CreateCollectionOptions` to use for the collection
      *
-     * - Returns: the newly created `MongoCollection`
+     * - Returns: the newly created `MongoCollection<Document>`
      */
-    public func createCollection(_ name: String, options: CreateCollectionOptions? = nil) throws -> MongoCollection {
+    public func createCollection(_ name: String,
+                                 options: CreateCollectionOptions? = nil) throws -> MongoCollection<Document> {
+        return try self.createCollection(name, withType: Document.self, options: options)
+    }
+
+    /**
+     * Creates a collection in this database with the specified options, and associates the 
+     * specified `Codable` type `T` with the returned `MongoCollection`. This association only
+     * exists in the context of this particular `MongoCollection` instance.
+     * 
+     *
+     * - Parameters:
+     *   - name: a `String`, the name of the collection to create
+     *   - options: Optional `CreateCollectionOptions` to use for the collection
+     *
+     * - Returns: the newly created `MongoCollection<T>`
+     */
+    public func createCollection<T: Codable>(_ name: String, withType: T.Type,
+                                             options: CreateCollectionOptions? = nil) throws -> MongoCollection<T> {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
         var error = bson_error_t()
@@ -218,7 +253,7 @@ public class MongoDatabase {
      *
      * - Returns: a `MongoCursor` over an array of collections
      */
-    public func listCollections(options: ListCollectionsOptions? = nil) throws -> MongoCursor {
+    public func listCollections(options: ListCollectionsOptions? = nil) throws -> MongoCursor<Document> {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
         guard let collections = mongoc_database_find_collections_with_opts(self._database, opts?.data) else {

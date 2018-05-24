@@ -12,7 +12,7 @@ let largeSize = 27.31
 
 let commandSize = 0.16
 
-func setup() throws -> (MongoDatabase, MongoCollection) {
+func setup() throws -> (MongoDatabase, MongoCollection<Document>) {
     let db = try MongoClient().db("perftest")
     try db.drop()
     return (db, try db.createCollection("corpus"))

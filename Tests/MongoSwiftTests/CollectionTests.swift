@@ -31,7 +31,7 @@ final class CollectionTests: XCTestCase {
         ]
     }
 
-    var coll: MongoCollection!
+    var coll: MongoCollection<Document>!
     let doc1: Document = ["_id": 1, "cat": "dog"]
     let doc2: Document = ["_id": 2, "cat": "cat"]
 
@@ -277,4 +277,25 @@ final class CollectionTests: XCTestCase {
         for _ in findResult2 { }
         expect(findResult2.error).to(beNil())
     }
+
+    struct Basic: Codable {
+        let x: Int
+        let y: String
+    }
+
+    func testCodableCollection() throws {
+        let client = try MongoClient()
+        let db = try client.db("codable")
+        defer { try? db.drop() }
+        let coll1 = try db.createCollection("coll1", withType: Basic.self)
+        _ = try coll1.insertOne(Basic(x: 1, y: "hi"))
+        _ = try coll1.insertMany([Basic(x: 2, y: "hello"), Basic(x: 3, y: "blah")])
+        _ = try coll1.replaceOne(filter: ["x": 2], replacement: Basic(x: 4, y: "hi"))
+        expect(try coll1.count()).to(equal(3))
+
+        for doc in try coll1.find() {
+            expect(doc).to(beAnInstanceOf(Basic.self))
+        }
+    }
+
 }

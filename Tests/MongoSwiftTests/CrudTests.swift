@@ -174,11 +174,11 @@ private class CrudTest {
     }
 
     // Subclasses should implement `execute` according to the particular operation(s) they are for. 
-    func execute(usingCollection coll: MongoCollection) throws { XCTFail("Unimplemented") }
+    func execute(usingCollection coll: MongoCollection<Document>) throws { XCTFail("Unimplemented") }
 
     // If the test has a `collection` field in its `outcome`, verify that the expected
     // data is present. If there is no `collection` field, do nothing. 
-    func verifyData(testCollection coll: MongoCollection, db: MongoDatabase) throws {
+    func verifyData(testCollection coll: MongoCollection<Document>, db: MongoDatabase) throws {
         guard let collection = self.collection else { return } // only  some tests have data to verify
         // if a name is not specified, check the current collection
         var collToCheck = coll
@@ -206,7 +206,7 @@ private class CrudTest {
 
 /// A class for executing `aggregate` tests
 private class AggregateTest: CrudTest {
-    override func execute(usingCollection coll: MongoCollection) throws {
+    override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let pipeline: [Document] = try self.args.get("pipeline")
         let options = AggregateOptions(batchSize: self.batchSize, collation: self.collation)
         let cursor = try coll.aggregate(pipeline, options: options)
@@ -225,7 +225,7 @@ private class AggregateTest: CrudTest {
 
 /// A class for executing `count` tests
 private class CountTest: CrudTest {
-    override func execute(usingCollection coll: MongoCollection) throws {
+    override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let filter: Document = try self.args.get("filter")
         let options = CountOptions(collation: self.collation, limit: self.limit, skip: self.skip)
         let result = try coll.count(filter, options: options)
@@ -235,7 +235,7 @@ private class CountTest: CrudTest {
 
 /// A class for executing `deleteOne` and `deleteMany` tests
 private class DeleteTest: CrudTest {
-    override func execute(usingCollection coll: MongoCollection) throws {
+    override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let filter: Document = try self.args.get("filter")
         let options = DeleteOptions(collation: self.collation)
         let result: DeleteResult?
@@ -252,7 +252,7 @@ private class DeleteTest: CrudTest {
 
 /// A class for executing `distinct` tests
 private class DistinctTest: CrudTest {
-    override func execute(usingCollection coll: MongoCollection) throws {
+    override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let filter = self.args["filter"] as? Document
         let fieldName: String = try self.args.get("fieldName")
         let options = DistinctOptions(collation: self.collation)
@@ -265,7 +265,7 @@ private class DistinctTest: CrudTest {
 
 /// A class for executing `find` tests
 private class FindTest: CrudTest {
-    override func execute(usingCollection coll: MongoCollection) throws {
+    override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let filter: Document = try self.args.get("filter")
         let options = FindOptions(batchSize: batchSize, collation: collation, limit: self.limit,
                                     skip: self.skip, sort: self.sort)
@@ -276,7 +276,7 @@ private class FindTest: CrudTest {
 
 /// A class for executing `insertMany` tests
 private class InsertManyTest: CrudTest {
-    override func execute(usingCollection coll: MongoCollection) throws {
+    override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let docs: [Document] = try self.args.get("documents")
         let result = try coll.insertMany(docs)
 
@@ -296,7 +296,7 @@ private class InsertManyTest: CrudTest {
 
 /// A Class for executing `insertOne` tests
 private class InsertOneTest: CrudTest {
-    override func execute(usingCollection coll: MongoCollection) throws {
+    override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let doc: Document = try self.args.get("document")
         let result = try coll.insertOne(doc)
         expect(doc["_id"] as? Int).to(equal(result?.insertedId as? Int))
@@ -305,7 +305,7 @@ private class InsertOneTest: CrudTest {
 
 /// A class for executing `replaceOne` tests
 private class ReplaceOneTest: CrudTest {
-    override func execute(usingCollection coll: MongoCollection) throws {
+    override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let filter: Document = try self.args.get("filter")
         let replacement: Document = try self.args.get("replacement")
         let options = ReplaceOptions(collation: self.collation, upsert: self.upsert)
@@ -316,7 +316,7 @@ private class ReplaceOneTest: CrudTest {
 
 /// A class for executing `updateOne` and `updateMany` tests
 private class UpdateTest: CrudTest {
-    override func execute(usingCollection coll: MongoCollection) throws {
+    override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let filter: Document = try self.args.get("filter")
         let update: Document = try self.args.get("update")
         let arrayFilters = self.args["arrayFilters"] as? [Document]

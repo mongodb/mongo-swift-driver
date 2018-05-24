@@ -26,6 +26,7 @@ public class BsonDecoder {
     /// - returns: A value of the requested type.
     /// - throws: An error if any value throws an error during decoding.
     public func decode<T: Decodable>(_ type: T.Type, from document: Document) throws -> T {
+        if let doc = document as? T { return doc }
         let _decoder = _BsonDecoder(referencing: document, options: self.options)
         return try type.init(from: _decoder)
     }
