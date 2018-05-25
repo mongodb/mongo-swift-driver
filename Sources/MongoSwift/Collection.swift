@@ -602,7 +602,7 @@ public class MongoCollection<T: Codable> {
      *
      * - Returns: A `MongoCursor` over the resulting `Document`s
      */
-    public func aggregate(_ pipeline: [Document], options: AggregateOptions? = nil) throws -> MongoCursor<CollectionType> {
+    public func aggregate(_ pipeline: [Document], options: AggregateOptions? = nil) throws -> MongoCursor<Document> {
         let encoder = BsonEncoder()
         let opts = try ReadConcern.append(options?.readConcern, to: try encoder.encode(options), callerRC: self.readConcern)
         let pipeline: Document = ["pipeline": pipeline]
