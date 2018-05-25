@@ -26,6 +26,7 @@ public class BsonEncoder {
     /// - returns: A new `Document` containing the encoded BSON data.
     /// - throws: An error if any value throws an error during encoding.
     public func encode<T: Encodable>(_ value: T) throws -> Document {
+        // if the value being encoded is already a `Document` we're done
         if let doc = value as? Document { return doc }
 
         let encoder = _BsonEncoder(options: self.options)
