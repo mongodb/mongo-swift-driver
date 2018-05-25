@@ -1,0 +1,42 @@
+os:
+  - linux
+  - osx
+language: generic
+sudo: required
+dist: trusty
+osx_image: xcode9.2
+
+env:
+  matrix:
+    - MONGODB_VERSION=3.6.5
+
+install:
+  - MONGODB_BASE="mongodb-linux-x86_64"
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then MONGODB_BASE="mongodb-osx-ssl-x86_64"; fi
+
+  # install mongodb
+  - wget http://fastdl.mongodb.org/${TRAVIS_OS_NAME}/${MONGODB_BASE}-${MONGODB_VERSION}.tgz
+  - mkdir mongodb-${MONGODB_VERSION}
+  - tar xzvf ${MONGODB_BASE}-${MONGODB_VERSION}.tgz -C mongodb-${MONGODB_VERSION} --strip-components 1
+  - ${PWD}/mongodb-${MONGODB_VERSION}/bin/mongod --version
+
+  # install swiftenv
+  - eval "$(curl -sL https://swiftenv.fuller.li/install.sh)"
+  
+  # clone and build libmongoc
+  - git clone https://github.com/mongodb/mongo-c-driver /tmp/libmongoc
+  - pushd /tmp/libmongoc
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr/local; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr; fi
+  - sudo make -j8 install
+  - popd
+
+before_script:
+  - mkdir ${PWD}/mongodb-${MONGODB_VERSION}/data
+  - ${PWD}/mongodb-${MONGODB_VERSION}/bin/mongod --dbpath ${PWD}/mongodb-${MONGODB_VERSION}/data --logpath ${PWD}/mongodb-${MONGODB_VERSION}/mongodb.log --enableMajorityReadConcern --fork
+
+script:
+  # - make
+  # - make test
+  - swift build -v
+  - swift test -v --filter MongoSwiftTests
