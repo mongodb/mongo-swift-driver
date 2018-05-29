@@ -76,7 +76,7 @@ public class BsonDecoder {
     }
 }
 
-/// An internal class to actually implement the `Decoder` protocol.
+/// :nodoc: An internal class to actually implement the `Decoder` protocol.
 internal class _BsonDecoder: Decoder {
 
     /// The decoder's storage.
@@ -494,6 +494,7 @@ private struct _BsonUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     }
 }
 
+/// :nodoc:
 extension _BsonDecoder: SingleValueDecodingContainer {
 
     /// Assert that the top container for this decoder is non-null.

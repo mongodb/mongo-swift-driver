@@ -59,7 +59,7 @@ public class BsonEncoder {
     }
 }
 
-/// An internal class to implement the `Encoder` protocol.
+/// :nodoc: An internal class to implement the `Encoder` protocol.
 internal class _BsonEncoder: Encoder {
 
     /// The encoder's storage.
@@ -428,6 +428,7 @@ private struct _BsonUnkeyedEncodingContainer: UnkeyedEncodingContainer {
     }
 }
 
+/// :nodoc:
 extension _BsonEncoder: SingleValueEncodingContainer {
 
     private func assertCanEncodeNewValue() {
