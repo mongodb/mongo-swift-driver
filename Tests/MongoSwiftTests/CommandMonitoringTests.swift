@@ -153,7 +153,7 @@ private struct CMTest {
     // Wrap each operation in do/catch because we expect some of them to fail.
     // If something fails/succeeds incorrectly, we'll know because the generated
     // events won't match up.
-    func doOperation(withCollection collection: MongoCollection) throws {
+    func doOperation(withCollection collection: MongoCollection<Document>) throws {
         // TODO SWIFT-31: use readPreferences for commands if provided
         let filter = self.args["filter"] as? Document
         switch self.operationName {

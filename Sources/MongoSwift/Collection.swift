@@ -520,9 +520,19 @@ public struct IndexOptions: Encodable {
 }
 
 /// A MongoDB collection.
-public class MongoCollection {
+public class MongoCollection<T: Codable> {
     private var _collection: OpaquePointer?
     private var _client: MongoClient?
+
+    /// A `Codable` type associated with this `MongoCollection` instance. 
+    /// This allows `CollectionType` values to be directly inserted into and 
+    /// retrieved from the collection, by encoding/decoding them using the 
+    /// `BsonEncoder` and `BsonDecoder`. 
+    /// This type association only exists in the context of this particular 
+    /// `MongoCollection` instance. It is the responsibility of the user to 
+    /// ensure that any data already stored in the collection was encoded 
+    /// from this same type.
+    public typealias CollectionType = T
 
     /// The name of this collection.
     public var name: String {
@@ -571,7 +581,7 @@ public class MongoCollection {
      *
      * - Returns: A `MongoCursor` over the resulting `Document`s
      */
-    public func find(_ filter: Document = [:], options: FindOptions? = nil) throws -> MongoCursor {
+    public func find(_ filter: Document = [:], options: FindOptions? = nil) throws -> MongoCursor<CollectionType> {
         let encoder = BsonEncoder()
         let opts = try ReadConcern.append(options?.readConcern, to: try encoder.encode(options), callerRC: self.readConcern)
         guard let cursor = mongoc_collection_find_with_opts(self._collection, filter.data, opts?.data, nil) else {
@@ -592,7 +602,7 @@ public class MongoCollection {
      *
      * - Returns: A `MongoCursor` over the resulting `Document`s
      */
-    public func aggregate(_ pipeline: [Document], options: AggregateOptions? = nil) throws -> MongoCursor {
+    public func aggregate(_ pipeline: [Document], options: AggregateOptions? = nil) throws -> MongoCursor<Document> {
         let encoder = BsonEncoder()
         let opts = try ReadConcern.append(options?.readConcern, to: try encoder.encode(options), callerRC: self.readConcern)
         let pipeline: Document = ["pipeline": pipeline]
@@ -640,7 +650,7 @@ public class MongoCollection {
      * - Returns: A 'MongoCursor' containing the distinct values for the specified criteria
      */
     public func distinct(fieldName: String, filter: Document = [:],
-                         options: DistinctOptions? = nil) throws -> MongoCursor {
+                         options: DistinctOptions? = nil) throws -> MongoCursor<Document> {
         guard let client = self._client else {
             throw MongoError.invalidClient()
         }
@@ -681,23 +691,24 @@ public class MongoCollection {
     }
 
     /**
-     * Inserts the provided `Document`. If the document is missing an identifier, one will be
+     * Encodes the provided value to BSON and inserts it. If the value is missing an identifier, one will be
      * generated for it.
      *
      * - Parameters:
-     *   - document: The `Document` to insert
+     *   - value: A `CollectionType` value to encode and insert
      *   - options: Optional `InsertOneOptions` to use when executing the command
      *
      * - Returns: The optional result of attempting to perform the insert. If the `WriteConcern`
      *            is unacknowledged, `nil` is returned.
      */
-    public func insertOne(_ document: Document, options: InsertOneOptions? = nil) throws -> InsertOneResult? {
+    public func insertOne(_ value: CollectionType, options: InsertOneOptions? = nil) throws -> InsertOneResult? {
         let encoder = BsonEncoder()
-        let opts = try encoder.encode(options)
-        var error = bson_error_t()
+        let document = try encoder.encode(value)
         if document["_id"] == nil {
             try ObjectId().encode(to: document.data, forKey: "_id")
         }
+        let opts = try encoder.encode(options)
+        var error = bson_error_t()
         if !mongoc_collection_insert_one(self._collection, document.data, opts?.data, nil, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
@@ -705,24 +716,24 @@ public class MongoCollection {
     }
 
     /**
-     * Inserts the provided `Document`s. If any documents are missing an identifier,
+     * Encodes the provided values to BSON and inserts them. If any values are missing identifiers,
      * the driver will generate them.
      *
      * - Parameters:
-     *   - documents: The `Document`s to insert
+     *   - documents: The `CollectionType` values to insert
      *   - options: Optional `InsertManyOptions` to use when executing the command
      *
      * - Returns: The optional result of attempting to performing the insert. If the write concern
      *            is unacknowledged, nil is returned
      */
-    public func insertMany(_ documents: [Document], options: InsertManyOptions? = nil) throws -> InsertManyResult? {
+    public func insertMany(_ values: [CollectionType], options: InsertManyOptions? = nil) throws -> InsertManyResult? {
         let encoder = BsonEncoder()
-        let opts = try encoder.encode(options)
-
+        let documents = try values.map { try encoder.encode($0) }
         for doc in documents where doc["_id"] == nil {
             try ObjectId().encode(to: doc.data, forKey: "_id")
         }
         var docPointers = documents.map { UnsafePointer($0.data) }
+        let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_insert_many(
@@ -737,19 +748,20 @@ public class MongoCollection {
      *
      * - Parameters:
      *   - filter: A `Document` representing the match criteria
-     *   - replacement: The replacement `Document`
+     *   - replacement: The replacement value, a `CollectionType` value to be encoded and inserted
      *   - options: Optional `ReplaceOptions` to use when executing the command
      *
      * - Returns: The optional result of attempting to replace a document. If the `WriteConcern`
      *            is unacknowledged, `nil` is returned.
      */
-    public func replaceOne(filter: Document, replacement: Document, options: ReplaceOptions? = nil) throws -> UpdateResult? {
+    public func replaceOne(filter: Document, replacement: CollectionType, options: ReplaceOptions? = nil) throws -> UpdateResult? {
         let encoder = BsonEncoder()
+        let replacementDoc = try encoder.encode(replacement)
         let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_replace_one(
-            self._collection, filter.data, replacement.data, opts?.data, reply.data, &error) {
+            self._collection, filter.data, replacementDoc.data, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
         return UpdateResult(from: reply)
@@ -968,7 +980,7 @@ public class MongoCollection {
      *
      * - Returns: A `MongoCursor` over the index names.
      */
-    public func listIndexes() throws -> MongoCursor {
+    public func listIndexes() throws -> MongoCursor<Document> {
         guard let cursor = mongoc_collection_find_indexes_with_opts(self._collection, nil) else {
             throw MongoError.invalidResponse()
         }
