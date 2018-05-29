@@ -581,7 +581,7 @@ public struct DropIndexOptions {
     let writeConcern: WriteConcern?
 }
 
-/// A MongoDB Collection
+/// A MongoDB collection.
 public class MongoCollection<T: Codable> {
     private var _collection: OpaquePointer?
     private var _client: MongoClient?
