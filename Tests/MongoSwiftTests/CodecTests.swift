@@ -497,4 +497,14 @@ final class CodecTests: XCTestCase {
         let encoded = try String(data: encoder.encode(expected), encoding: .utf8)
         expect(encoded).to(cleanEqual(json))
     }
+
+    func testEncodeArray() throws {
+        let encoder = BsonEncoder()
+
+        let values1 = [BasicStruct(int: 1, string: "hello"), BasicStruct(int: 2, string: "hi")]
+        expect(try encoder.encode(values1)).to(equal([["int": 1, "string": "hello"], ["int": 2, "string": "hi"]]))
+
+        let values2 = [BasicStruct(int: 1, string: "hello"), nil]
+        expect(try encoder.encode(values2)).to(equal([["int": 1, "string": "hello"], nil]))
+    }
 }
