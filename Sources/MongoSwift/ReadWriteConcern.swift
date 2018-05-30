@@ -176,39 +176,20 @@ public class WriteConcern: Equatable, CustomStringConvertible {
         self._writeConcern = mongoc_write_concern_new()
     }
 
-    /// Initializes a WriteConcern. Only one of w and wTag should be provided.
+    /// Initializes a WriteConcern. Only one of `w` and `wTag` should be provided. If both are supplied,
+    /// `wTag` will be used.
     public init(journal: Bool? = nil, w: Int32? = nil, wTag: String? = nil, wtimeoutMS: Int32? = nil) {
         self._writeConcern = mongoc_write_concern_new()
-        self.setJournal(journal)
-        self.setW(w)
-        self.setWTag(wTag)
-        self.setWTimeoutMS(wtimeoutMS)
+        if let journal = journal { mongoc_write_concern_set_journal(self._writeConcern, journal) }
+        if let w = w { mongoc_write_concern_set_w(self._writeConcern, w) }
+        if let wTag = wTag { mongoc_write_concern_set_wtag(self._writeConcern, wTag) }
+        if let wtimeoutMS = wtimeoutMS { mongoc_write_concern_set_wtimeout(self._writeConcern, wtimeoutMS) }
     }
 
     /// Initializes a new WriteConcern by copying a mongoc_write_concern_t.
     /// The caller is responsible for freeing the original mongoc_write_concern_t.
     internal init(_ writeConcern: OpaquePointer?) {
         self._writeConcern = mongoc_write_concern_copy(writeConcern)
-    }
-
-    /// Sets the journal value on this writeConcern
-    private func setJournal(_ journal: Bool?) {
-        if let journal = journal { mongoc_write_concern_set_journal(self._writeConcern, journal) }
-    }
-
-    /// Sets the wTag value on this writeConcern
-    private func setWTag(_ wTag: String?) {
-        if let wTag = wTag { mongoc_write_concern_set_wtag(self._writeConcern, wTag) }
-    }
-
-    /// Sets the wtimeoutMS value on this writeConcern
-    private func setWTimeoutMS(_ wtimeoutMS: Int32?) {
-        if let wtimeoutMS = wtimeoutMS { mongoc_write_concern_set_wtimeout(self._writeConcern, wtimeoutMS) }
-    }
-
-    /// Sets the w value on this writeConcern
-    private func setW(_ w: Int32?) {
-        if let w = w { mongoc_write_concern_set_w(self._writeConcern, w) }
     }
 
     /// Appends this writeConcern to a Document.

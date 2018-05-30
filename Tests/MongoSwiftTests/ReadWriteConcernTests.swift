@@ -84,87 +84,92 @@ final class ReadWriteConcernTests: XCTestCase {
     }
 
     func testClientReadConcern() throws {
-        // create a client with no options and check its RC
-        let client1 = try MongoClient()
-        // expect the readConcern property to exist with a nil level
-        expect(client1.readConcern).to(beNil())
 
-        // expect that a DB created from this client inherits its unset RC 
-        let db1 = try client1.db("test")
-        expect(db1.readConcern).to(beNil())
+        let majority = ReadConcern(.majority)
 
-        // expect that a DB created from this client can override the client's unset RC
-        let db2 = try client1.db("test", options: DatabaseOptions(readConcern: ReadConcern(.majority)))
-        expect(db2.readConcern?.level).to(equal("majority"))
+        // test behavior of a client with initialized with no RC
+        do {
+            let client = try MongoClient()
+            // expect the readConcern property to exist with a nil level
+            expect(client.readConcern).to(beNil())
 
-        client1.close()
+            // expect that a DB created from this client inherits its unset RC 
+            let db1 = try client.db("test")
+            expect(db1.readConcern).to(beNil())
 
-        // create a client with local read concern and check its RC
-        let client2 = try MongoClient(options: ClientOptions(readConcern: ReadConcern(.local)))
-        // although local is default, if it is explicitly provided it should be set
-        expect(client2.readConcern?.level).to(equal("local"))
+            // expect that a DB created from this client can override the client's unset RC
+            let db2 = try client.db("test", options: DatabaseOptions(readConcern: majority))
+            expect(db2.readConcern?.level).to(equal("majority"))
+        }
 
-        // expect that a DB created from this client inherits its local RC 
-        let db3 = try client2.db("test")
-        expect(db3.readConcern?.level).to(equal("local"))
+        // test behavior of a client initialized with local RC
+        do {
+            let client = try MongoClient(options: ClientOptions(readConcern: ReadConcern(.local)))
+            // although local is default, if it is explicitly provided it should be set
+            expect(client.readConcern?.level).to(equal("local"))
 
-        // expect that a DB created from this client can override the client's local RC
-        let db4 = try client2.db("test", options: DatabaseOptions(readConcern: ReadConcern(.majority)))
-        expect(db4.readConcern?.level).to(equal("majority"))
+            // expect that a DB created from this client inherits its local RC 
+            let db1 = try client.db("test")
+            expect(db1.readConcern?.level).to(equal("local"))
 
-        client2.close()
+            // expect that a DB created from this client can override the client's local RC
+            let db2 = try client.db("test", options: DatabaseOptions(readConcern: majority))
+            expect(db2.readConcern?.level).to(equal("majority"))
+        }
 
-        // create a client with majority read concern and check its RC
-        let client3 = try MongoClient(options: ClientOptions(readConcern: ReadConcern(.majority)))
-        expect(client3.readConcern?.level).to(equal("majority"))
+        // test behavior of a client initialized with majority RC
+        do {
+            let client = try MongoClient(options: ClientOptions(readConcern: majority))
+            expect(client.readConcern?.level).to(equal("majority"))
 
-        // expect that a DB created from this client can override the client's majority RC with an unset one
-        let db5 = try client3.db("test", options: DatabaseOptions(readConcern: ReadConcern()))
-        expect(db5.readConcern).to(beNil())
-
-        client3.close()
+            // expect that a DB created from this client can override the client's majority RC with an unset one
+            let db = try client.db("test", options: DatabaseOptions(readConcern: ReadConcern()))
+            expect(db.readConcern).to(beNil())
+        }
     }
 
     func testClientWriteConcern() throws {
-        // create a client with no options and check its RC
-        let client1 = try MongoClient()
-        // expect the readConcern property to exist and be default
-        expect(client1.writeConcern).to(beNil())
+        let w2 = WriteConcern(w: 2)
 
-        // expect that a DB created from this client inherits its default WC
-        let db1 = try client1.db("test")
-        expect(db1.writeConcern).to(beNil())
+        // test behavior of a client with initialized with no WC
+        do {
+            let client1 = try MongoClient()
+            // expect the readConcern property to exist and be default
+            expect(client1.writeConcern).to(beNil())
 
-        // expect that a DB created from this client can override the client's default WC
-        let db2 = try client1.db("test", options: DatabaseOptions(writeConcern: WriteConcern(w: 2)))
-        expect(db2.writeConcern?.w).to(equal(2))
+            // expect that a DB created from this client inherits its default WC
+            let db1 = try client1.db("test")
+            expect(db1.writeConcern).to(beNil())
 
-        client1.close()
+            // expect that a DB created from this client can override the client's default WC
+            let db2 = try client1.db("test", options: DatabaseOptions(writeConcern: w2))
+            expect(db2.writeConcern?.w).to(equal(2))
+        }
 
-        // create a client with w: 1 and check its WC
-        let client2 = try MongoClient(options: ClientOptions(writeConcern: WriteConcern(w: 1)))
-        // although w:1 is default, if it is explicitly provided it should be set
-        expect(client2.writeConcern?.w).to(equal(1))
+        // test behavior of a client with w: 1
+        do {
+            let client2 = try MongoClient(options: ClientOptions(writeConcern: WriteConcern(w: 1)))
+            // although w:1 is default, if it is explicitly provided it should be set
+            expect(client2.writeConcern?.w).to(equal(1))
 
-        // expect that a DB created from this client inherits its WC
-        let db3 = try client2.db("test")
-        expect(db3.writeConcern?.w).to(equal(1))
+            // expect that a DB created from this client inherits its WC
+            let db3 = try client2.db("test")
+            expect(db3.writeConcern?.w).to(equal(1))
 
-        // expect that a DB created from this client can override the client's WC
-        let db4 = try client2.db("test", options: DatabaseOptions(writeConcern: WriteConcern(w: 2)))
-        expect(db4.writeConcern?.w).to(equal(2))
+            // expect that a DB created from this client can override the client's WC
+            let db4 = try client2.db("test", options: DatabaseOptions(writeConcern: w2))
+            expect(db4.writeConcern?.w).to(equal(2))
+        }
 
-        client2.close()
+        // test behavior of a client with w: 2
+        do {
+            let client3 = try MongoClient(options: ClientOptions(writeConcern: w2))
+            expect(client3.writeConcern?.w).to(equal(2))
 
-        // create a client with w:2 and check its WC
-        let client3 = try MongoClient(options: ClientOptions(writeConcern: WriteConcern(w: 2)))
-        expect(client3.writeConcern?.w).to(equal(2))
-
-        // expect that a DB created from this client can override the client's WC with an unset one
-        let db5 = try client3.db("test", options: DatabaseOptions(writeConcern: WriteConcern()))
-        expect(db5.writeConcern).to(beNil())
-
-        client3.close()
+            // expect that a DB created from this client can override the client's WC with an unset one
+            let db5 = try client3.db("test", options: DatabaseOptions(writeConcern: WriteConcern()))
+            expect(db5.writeConcern).to(beNil())
+        }
     }
 
     func testDatabaseReadConcern() throws {
