@@ -1,22 +1,17 @@
 import libmongoc
 
-/// Options to use when running a command against a `MongoDatabase`. 
-public struct RunCommandOptions: Encodable {
+/// Options to use when running a command against a `MongoDatabase`.
+public struct RunCommandOptions: ReadConcernable {
     /// A session to associate with this operation
     public let session: ClientSession?
 
-    /// An optional ReadConcern to use for this operation
-    let readConcern: ReadConcern?
+    /// An optional ReadConcern to use for this operation.
+    public internal(set) var readConcern: ReadConcern?
 
     /// Convenience initializer allowing session to be omitted or optional
     public init(readConcern: ReadConcern? = nil, session: ClientSession? = nil) {
         self.readConcern = readConcern
         self.session = session
-    }
-
-    // Encode everything except readConcern
-    private enum CodingKeys: String, CodingKey {
-        case session
     }
 }
 
@@ -103,7 +98,8 @@ public struct CreateCollectionOptions: Encodable {
         self.viewOn = viewOn
     }
 
-    // Encode everything except readConcern
+    // Encode everything except `readConcern`, as it is used to set a read concern on the
+    // collection after its creation and not sent with the initialization options.
     private enum CodingKeys: String, CodingKey {
         case autoIndexId, capped, collation, indexOptionDefaults, max, session,
             size, storageEngine, validationAction, validationLevel, validator, viewOn
@@ -226,10 +222,9 @@ public class MongoDatabase {
      */
     public func createCollection<T: Codable>(_ name: String, withType: T.Type,
                                              options: CreateCollectionOptions? = nil) throws -> MongoCollection<T> {
-        let encoder = BsonEncoder()
-        let opts = try encoder.encode(options)
-        var error = bson_error_t()
 
+        let opts = try self.encodeOptions(options)
+        var error = bson_error_t()
         guard let collection = mongoc_database_create_collection(self._database, name, opts?.data, &error) else {
             throw MongoError.commandError(message: toErrorString(error))
         }
@@ -254,8 +249,7 @@ public class MongoDatabase {
      * - Returns: a `MongoCursor` over an array of collections
      */
     public func listCollections(options: ListCollectionsOptions? = nil) throws -> MongoCursor<Document> {
-        let encoder = BsonEncoder()
-        let opts = try encoder.encode(options)
+        let opts = try self.encodeOptions(options)
         guard let collections = mongoc_database_find_collections_with_opts(self._database, opts?.data) else {
             throw MongoError.invalidResponse()
         }
@@ -275,8 +269,7 @@ public class MongoDatabase {
      * - Returns: a `Document` containing the server response for the command
      */
     public func runCommand(_ command: Document, options: RunCommandOptions? = nil) throws -> Document {
-        let encoder = BsonEncoder()
-        let opts = try ReadConcern.append(options?.readConcern, to: try encoder.encode(options), callerRC: self.readConcern)
+        let opts = try self.encodeOptions(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_database_command_with_opts(self._database, command.data, nil, opts?.data, reply.data, &error) {

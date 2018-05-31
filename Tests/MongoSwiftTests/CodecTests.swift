@@ -411,8 +411,9 @@ final class CodecTests: XCTestCase {
             "regex" : { "$regularExpression" : { "pattern" : "^abc", "options" : "imx" } }
         }
         """
-
+        print("hi8")
         let res3 = try decoder.decode(AllBsonTypes.self, from: extjson)
+        print("hi9")
         expect(res3).to(equal(expected))
     }
 
