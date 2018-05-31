@@ -30,7 +30,7 @@ public class ReadConcern {
     }
 
     private var asDocument: Document {
-        if let level = self.level { return ["level": level] }
+        if let level = self.level { return ["readConcern": ["level": level] as Document] }
         return [:]
     }
 
