@@ -158,6 +158,36 @@ final class ReadWriteConcernTests: XCTestCase {
             options: DistinctOptions(readConcern: ReadConcern(.local)))).toNot(throwError())
     }
 
+    // test that options types with `ReadConcern`s are encoded according to the spec
+    func testReadConcernable() throws {
+        let client = try MongoClient()
+
+        let empty = ReadConcern()
+        let majority = ReadConcern(.majority)
+
+        let db1 = try client.db("test")
+        let db2 = try client.db("test", options: DatabaseOptions(readConcern: empty))
+        let db3 = try client.db("test", options: DatabaseOptions(readConcern: majority))
+
+        // for DBs with no RC or empty RC, an empty RC in options should be omitted
+        let emptyOpts = RunCommandOptions(readConcern: empty)
+        for db in [db1, db2] {
+            // if specified RC is server default, should be omitted
+            expect(try db.encodeOptions(emptyOpts)).to(beNil())
+        }
+
+        // for DB with a non-default RC, an empty RC should be sent
+        let emptyDoc: Document = ["readConcern": [:] as Document]
+        expect(try db3.encodeOptions(emptyOpts)).to(equal(emptyDoc))
+
+        // in all cases, a non default RC should be sent
+        let majorityOpts = RunCommandOptions(readConcern: majority)
+        let majorityDoc: Document = ["readConcern": ["level": "majority"] as Document]
+        for db in [db1, db2, db3] {
+            expect(try db.encodeOptions(majorityOpts)).to(equal(majorityDoc))
+        }
+    }
+
     func testConnectionStrings() throws {
         let csPath = "\(self.getSpecsPath())/read-write-concern/tests/connection-string"
         let testFiles = try FileManager.default.contentsOfDirectory(atPath: csPath).filter { $0.hasSuffix(".json") }

@@ -1,7 +1,7 @@
 import libmongoc
 
 /// Options to use when executing an `aggregate` command on a `MongoCollection`.
-public struct AggregateOptions: Encodable {
+public struct AggregateOptions: ReadConcernable {
     /// Enables writing to temporary files. When set to true, aggregation stages
     /// can write data to the _tmp subdirectory in the dbPath directory.
     public let allowDiskUse: Bool?
@@ -27,7 +27,7 @@ public struct AggregateOptions: Encodable {
     // let hint: Optional<(String | Document)>
 
     /// A `ReadConcern` to use for this operation. 
-    let readConcern: ReadConcern?
+    public internal(set) var readConcern: ReadConcern?
 
     /// Convenience initializer allowing any/all parameters to be optional
     public init(allowDiskUse: Bool? = nil, batchSize: Int32? = nil, bypassDocumentValidation: Bool? = nil,
@@ -41,16 +41,10 @@ public struct AggregateOptions: Encodable {
         self.maxTimeMS = maxTimeMS
         self.readConcern = readConcern
     }
-
-    // Encode everything except readConcern
-    private enum CodingKeys: String, CodingKey {
-        case allowDiskUse, batchSize, bypassDocumentValidation,
-            collation, maxTimeMS, comment
-    }
 }
 
 /// Options to use when executing a `count` command on a `MongoCollection`.
-public struct CountOptions: Encodable {
+public struct CountOptions: ReadConcernable {
     /// Specifies a collation.
     public let collation: Document?
 
@@ -67,7 +61,7 @@ public struct CountOptions: Encodable {
     public let skip: Int64?
 
     /// A ReadConcern to use for this operation. 
-    let readConcern: ReadConcern?
+    public internal(set) var readConcern: ReadConcern?
 
     /// Convenience initializer allowing any/all parameters to be optional
     public init(collation: Document? = nil, limit: Int64? = nil, maxTimeMS: Int64? = nil,
@@ -78,15 +72,10 @@ public struct CountOptions: Encodable {
         self.readConcern = readConcern
         self.skip = skip
     }
-
-    // Encode everything except readConcern
-    private enum CodingKeys: String, CodingKey {
-        case collation, limit, maxTimeMS, skip
-    }
 }
 
 /// Options to use when executing a `distinct` command on a `MongoCollection`.
-public struct DistinctOptions: Encodable {
+public struct DistinctOptions: ReadConcernable {
     /// Specifies a collation.
     public let collation: Document?
 
@@ -94,18 +83,13 @@ public struct DistinctOptions: Encodable {
     public let maxTimeMS: Int64?
 
     /// A ReadConcern to use for this operation. 
-    let readConcern: ReadConcern?
+    public internal(set) var readConcern: ReadConcern?
 
     /// Convenience initializer allowing any/all parameters to be optional
     public init(collation: Document? = nil, maxTimeMS: Int64? = nil, readConcern: ReadConcern? = nil) {
         self.collation = collation
         self.maxTimeMS = maxTimeMS
         self.readConcern = readConcern
-    }
-
-    // Encode everything except readConcern
-    private enum CodingKeys: String, CodingKey {
-        case collation, maxTimeMS
     }
 }
 
@@ -142,7 +126,7 @@ public enum CursorType {
 }
 
 /// Options to use when executing a `find` command on a `MongoCollection`.
-public struct FindOptions: Encodable {
+public struct FindOptions: ReadConcernable {
     /// Get partial results from a mongos if some shards are down (instead of throwing an error).
     public let allowPartialResults: Bool?
 
@@ -203,7 +187,7 @@ public struct FindOptions: Encodable {
     public let sort: Document?
 
     /// A ReadConcern to use for this operation. 
-    let readConcern: ReadConcern?
+    public internal(set) var readConcern: ReadConcern?
 
     /// Convenience initializer allowing any/all parameters to be optional
     public init(allowPartialResults: Bool? = nil, batchSize: Int32? = nil, collation: Document? = nil,
@@ -228,12 +212,6 @@ public struct FindOptions: Encodable {
         self.showRecordId = showRecordId
         self.skip = skip
         self.sort = sort
-    }
-
-    // Encode everything except readConcern
-    private enum CodingKeys: String, CodingKey {
-        case allowPartialResults, batchSize, collation, comment, limit, max, maxAwaitTimeMS,
-            maxScan, maxTimeMS, min, noCursorTimeout, projection, returnKey, showRecordId, skip, sort
     }
 }
 
@@ -582,8 +560,7 @@ public class MongoCollection<T: Codable> {
      * - Returns: A `MongoCursor` over the resulting `Document`s
      */
     public func find(_ filter: Document = [:], options: FindOptions? = nil) throws -> MongoCursor<CollectionType> {
-        let encoder = BsonEncoder()
-        let opts = try ReadConcern.append(options?.readConcern, to: try encoder.encode(options), callerRC: self.readConcern)
+        let opts = try self.encodeOptions(options)
         guard let cursor = mongoc_collection_find_with_opts(self._collection, filter.data, opts?.data, nil) else {
             throw MongoError.invalidResponse()
         }
@@ -603,8 +580,7 @@ public class MongoCollection<T: Codable> {
      * - Returns: A `MongoCursor` over the resulting `Document`s
      */
     public func aggregate(_ pipeline: [Document], options: AggregateOptions? = nil) throws -> MongoCursor<Document> {
-        let encoder = BsonEncoder()
-        let opts = try ReadConcern.append(options?.readConcern, to: try encoder.encode(options), callerRC: self.readConcern)
+        let opts = try self.encodeOptions(options)
         let pipeline: Document = ["pipeline": pipeline]
         guard let cursor = mongoc_collection_aggregate(
             self._collection, MONGOC_QUERY_NONE, pipeline.data, opts?.data, nil) else {
@@ -626,8 +602,7 @@ public class MongoCollection<T: Codable> {
      * - Returns: The count of the documents that matched the filter
      */
     public func count(_ filter: Document = [:], options: CountOptions? = nil) throws -> Int {
-        let encoder = BsonEncoder()
-        let opts = try ReadConcern.append(options?.readConcern, to: try encoder.encode(options), callerRC: self.readConcern)
+        let opts = try self.encodeOptions(options)
         var error = bson_error_t()
         // because we already encode skip and limit in the options,
         // pass in 0s so we don't get duplicate parameter errors.
@@ -661,9 +636,8 @@ public class MongoCollection<T: Codable> {
             "key": fieldName,
             "query": filter
         ]
-        let encoder = BsonEncoder()
-        let opts = try ReadConcern.append(options?.readConcern, to: try encoder.encode(options), callerRC: self.readConcern)
 
+        let opts = try self.encodeOptions(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_read_command_with_opts(
@@ -702,12 +676,11 @@ public class MongoCollection<T: Codable> {
      *            is unacknowledged, `nil` is returned.
      */
     public func insertOne(_ value: CollectionType, options: InsertOneOptions? = nil) throws -> InsertOneResult? {
-        let encoder = BsonEncoder()
-        let document = try encoder.encode(value)
+        let document = try BsonEncoder().encode(value)
         if document["_id"] == nil {
             try ObjectId().encode(to: document.data, forKey: "_id")
         }
-        let opts = try encoder.encode(options)
+        let opts = try self.encodeOptions(options)
         var error = bson_error_t()
         if !mongoc_collection_insert_one(self._collection, document.data, opts?.data, nil, &error) {
             throw MongoError.commandError(message: toErrorString(error))
@@ -733,7 +706,7 @@ public class MongoCollection<T: Codable> {
             try ObjectId().encode(to: doc.data, forKey: "_id")
         }
         var docPointers = documents.map { UnsafePointer($0.data) }
-        let opts = try encoder.encode(options)
+        let opts = try self.encodeOptions(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_insert_many(
@@ -755,9 +728,8 @@ public class MongoCollection<T: Codable> {
      *            is unacknowledged, `nil` is returned.
      */
     public func replaceOne(filter: Document, replacement: CollectionType, options: ReplaceOptions? = nil) throws -> UpdateResult? {
-        let encoder = BsonEncoder()
-        let replacementDoc = try encoder.encode(replacement)
-        let opts = try encoder.encode(options)
+        let replacementDoc = try BsonEncoder().encode(replacement)
+        let opts = try self.encodeOptions(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_replace_one(
@@ -779,8 +751,7 @@ public class MongoCollection<T: Codable> {
      *            unacknowledged, `nil` is returned.
      */
     public func updateOne(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
-        let encoder = BsonEncoder()
-        let opts = try encoder.encode(options)
+        let opts = try self.encodeOptions(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_update_one(
@@ -802,8 +773,7 @@ public class MongoCollection<T: Codable> {
      *            concern is unacknowledged, nil is returned
      */
     public func updateMany(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
-        let encoder = BsonEncoder()
-        let opts = try encoder.encode(options)
+        let opts = try self.encodeOptions(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_update_many(
@@ -824,8 +794,7 @@ public class MongoCollection<T: Codable> {
      *            unacknowledged, `nil` is returned.
      */
     public func deleteOne(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
-        let encoder = BsonEncoder()
-        let opts = try encoder.encode(options)
+        let opts = try self.encodeOptions(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_delete_one(
@@ -846,8 +815,7 @@ public class MongoCollection<T: Codable> {
      *            unacknowledged, `nil` is returned.
      */
     public func deleteMany(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
-        let encoder = BsonEncoder()
-        let opts = try encoder.encode(options)
+        let opts = try self.encodeOptions(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_delete_many(
@@ -896,7 +864,7 @@ public class MongoCollection<T: Codable> {
         var indexData = [Document]()
         for index in forModels {
             var indexDoc = try encoder.encode(index)
-            if let opts = try encoder.encode(index.options) {
+            if let opts = try self.encodeOptions(index.options) {
                 try indexDoc.merge(opts)
             }
             indexData.append(indexDoc)
