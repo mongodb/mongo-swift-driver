@@ -55,7 +55,7 @@ final class CommandMonitoringTests: XCTestCase {
                 let db = try client.db(testFile.databaseName)
                 try db.drop() // In case last test run failed, drop to clear out DB
                 let collection = try db.createCollection(testFile.collectionName)
-                _ = try collection.insertMany(testFile.data)
+                try collection.insertMany(testFile.data)
 
                 // 2. Add an observer that looks for all events
                 var expectedEvents = test.expectations
@@ -95,7 +95,7 @@ final class CommandMonitoringTests: XCTestCase {
             eventCount += 1
         }
 
-        _ = try collection.insertOne(["x": 1])
+        try collection.insertOne(["x": 1])
         expect(eventCount).to(beGreaterThan(0))
         customCenter.removeObserver(observer)
 
@@ -161,9 +161,9 @@ private struct CMTest {
         case "count":
             do { _ = try collection.count(filter ?? [:]) } catch { }
         case "deleteMany":
-            do { _ = try collection.deleteMany(filter ?? [:]) } catch { }
+            do { try collection.deleteMany(filter ?? [:]) } catch { }
         case "deleteOne":
-            do { _ = try collection.deleteOne(filter ?? [:]) } catch { }
+            do { try collection.deleteOne(filter ?? [:]) } catch { }
 
         case "find":
             // TODO SWIFT-63: use "hint" if provided
@@ -193,20 +193,20 @@ private struct CMTest {
         case "insertMany":
             let documents: [Document] = try self.args.get("documents")
             let options = InsertManyOptions(ordered: self.args["ordered"] as? Bool)
-            do { _ = try collection.insertMany(documents, options: options) } catch { }
+            do { try collection.insertMany(documents, options: options) } catch { }
 
         case "insertOne":
             let document: Document = try self.args.get("document")
-            do { _ = try collection.insertOne(document) } catch { }
+            do { try collection.insertOne(document) } catch { }
 
         case "updateMany":
             let update: Document = try self.args.get("update")
-            do { _ = try collection.updateMany(filter: filter ?? [:], update: update) } catch { }
+            do { try collection.updateMany(filter: filter ?? [:], update: update) } catch { }
 
         case "updateOne":
             let update: Document = try self.args.get("update")
             let options = UpdateOptions(upsert: self.args["upsert"] as? Bool)
-            do { _ = try collection.updateOne(filter: filter ?? [:], update: update, options: options) } catch { }
+            do { try collection.updateOne(filter: filter ?? [:], update: update, options: options) } catch { }
 
         default:
             XCTFail("Unrecognized operation name \(self.operationName)")
