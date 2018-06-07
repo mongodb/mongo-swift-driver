@@ -200,7 +200,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         }
 
         set(newValue) {
-            self.checkIsUniquelyReferenced()
+            self.copyStorageIfRequired()
 
             guard let value = newValue else {
                 if !bson_append_null(self.data, key, Int32(key.count)) {
@@ -245,7 +245,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
 
     /// Appends the key/value pairs from the provided `doc` to this `Document`. 
     public mutating func merge(_ doc: Document) throws {
-        self.checkIsUniquelyReferenced()
+        self.copyStorageIfRequired()
         if !bson_concat(self.data, doc.data) {
             throw MongoError.bsonEncodeError(message: "Failed to merge \(doc) with \(self)")
         }
@@ -261,7 +261,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     ///  doc2["b"] = 2
     /// Therefore, this function should be called just before we are about to
     /// modify a document - either by setting a value or merging in another doc.
-    private mutating func checkIsUniquelyReferenced() {
+    private mutating func copyStorageIfRequired() {
         if !isKnownUniquelyReferenced(&self.storage) {
             self.storage = DocumentStorage(fromPointer: self.data)
         }
