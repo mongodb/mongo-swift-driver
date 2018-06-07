@@ -5,18 +5,13 @@ public struct RunCommandOptions: Encodable {
     /// A session to associate with this operation
     public let session: ClientSession?
 
-    /// An optional ReadConcern to use for this operation
-    let readConcern: ReadConcern?
+    /// An optional `ReadConcern` to use for this operation
+    public let readConcern: ReadConcern?
 
     /// Convenience initializer allowing session to be omitted or optional
     public init(readConcern: ReadConcern? = nil, session: ClientSession? = nil) {
         self.readConcern = readConcern
         self.session = session
-    }
-
-    // Encode everything except readConcern
-    private enum CodingKeys: String, CodingKey {
-        case session
     }
 }
 
@@ -80,7 +75,7 @@ public struct CreateCollectionOptions: Encodable {
 
     /// A read concern to set on the returned collection. If one is not specified, it will inherit
     /// the database's read concern.
-    let readConcern: ReadConcern?
+    public let readConcern: ReadConcern?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional
     public init(autoIndexId: Bool? = nil, capped: Bool? = nil, collation: Document? = nil,
@@ -103,7 +98,8 @@ public struct CreateCollectionOptions: Encodable {
         self.viewOn = viewOn
     }
 
-    // Encode everything except readConcern
+    // Encode everything except `readConcern`. We skip it because we don't actually
+    // send it with the initial command, we just set it on the collection after its creation.
     private enum CodingKeys: String, CodingKey {
         case autoIndexId, capped, collation, indexOptionDefaults, max, session,
             size, storageEngine, validationAction, validationLevel, validator, viewOn
@@ -114,7 +110,7 @@ public struct CreateCollectionOptions: Encodable {
 public struct CollectionOptions {
     /// A read concern to set on the returned collection. If one is not specified,
     /// the collection will inherit the database's read concern.
-    let readConcern: ReadConcern?
+    public let readConcern: ReadConcern?
 }
 
 /// A MongoDB Database
@@ -131,7 +127,7 @@ public class MongoDatabase {
     public var readConcern: ReadConcern? {
         // per libmongoc docs, we don't need to handle freeing this ourselves
         let readConcern = mongoc_database_get_read_concern(self._database)
-        let rcObj = ReadConcern(readConcern)
+        let rcObj = ReadConcern(from: readConcern)
         if rcObj.isDefault { return nil }
         return rcObj
     }
@@ -276,8 +272,7 @@ public class MongoDatabase {
      */
     @discardableResult
     public func runCommand(_ command: Document, options: RunCommandOptions? = nil) throws -> Document {
-        let encoder = BsonEncoder()
-        let opts = try ReadConcern.append(options?.readConcern, to: try encoder.encode(options), callerRC: self.readConcern)
+        let opts = try BsonEncoder().encode(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_database_command_with_opts(self._database, command.data, nil, opts?.data, reply.data, &error) {

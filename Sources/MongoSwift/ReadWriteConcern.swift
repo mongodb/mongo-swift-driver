@@ -15,28 +15,17 @@ public enum ReadConcernLevel: String {
 }
 
 /// A class to represent a MongoDB read concern.
-public class ReadConcern: Equatable, CustomStringConvertible {
+public class ReadConcern: Codable {
 
-    /// A pointer to a mongoc_read_concern_t
+    /// A pointer to a `mongoc_read_concern_t`.
     internal var _readConcern: OpaquePointer?
 
-    /// The level of this readConcern, or nil if the level is not set.
+    /// The level of this `ReadConcern`, or `nil` if the level is not set.
     public var level: String? {
         guard let level = mongoc_read_concern_get_level(self._readConcern) else {
             return nil
         }
         return String(cString: level)
-    }
-
-    private var asDocument: Document {
-        let doc = Document()
-        try? self.append(to: doc)
-        return doc
-    }
-
-    /// An extended JSON description of this `ReadConcern`.
-    public var description: String {
-        return self.asDocument.description
     }
 
     /// Indicates whether this `ReadConcern` is the server default.
@@ -60,7 +49,7 @@ public class ReadConcern: Equatable, CustomStringConvertible {
         self._readConcern = mongoc_read_concern_new()
     }
 
-    /// Initialize a new `ReadConcern` from a `Document`.
+    /// Initializes a new `ReadConcern` from a `Document`.
     public convenience init(_ doc: Document) {
         if let level = doc["level"] as? String {
             self.init(level)
@@ -70,43 +59,32 @@ public class ReadConcern: Equatable, CustomStringConvertible {
     }
 
     /// Initializes a new `ReadConcern` by copying an existing `ReadConcern`.
-    public init(from: ReadConcern) {
-        self._readConcern = mongoc_read_concern_copy(from._readConcern)
+    public init(from readConcern: ReadConcern) {
+        self._readConcern = mongoc_read_concern_copy(readConcern._readConcern)
     }
 
     /// Initializes a new `ReadConcern` by copying a `mongoc_read_concern_t`.
     /// The caller is responsible for freeing the original `mongoc_read_concern_t`.
-    internal init(_ readConcern: OpaquePointer?) {
+    internal init(from readConcern: OpaquePointer?) {
         self._readConcern = mongoc_read_concern_copy(readConcern)
     }
 
-    /// Appends this `ReadConcern` to a `Document`.
-    private func append(to doc: Document) throws {
-        if !mongoc_read_concern_append(self._readConcern, doc.data) {
-            throw MongoError.readConcernError(message: "Error appending readconcern to document \(doc)")
+    private enum CodingKeys: String, CodingKey {
+        case level
+    }
+
+    public required convenience init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        if let level = try container.decodeIfPresent(String.self, forKey: .level) {
+            self.init(level)
+        } else {
+            self.init()
         }
     }
 
-    /// Since we have to follow certain rules about whether to include or omit a ReadConcern,
-    /// this function handles obeying those, factoring in the ReadConcern, if any, for
-    /// whatever object is calling this function. It returns a final options Document for the
-    /// calling function to use, or nil if the Document ends up being empty.
-    internal static func append(_ readConcern: ReadConcern?, to opts: Document?, callerRC: ReadConcern?) throws -> Document? {
-        // if the user didn't specify a readConcern, then we just want to use
-        // whatever the default is for the caller. 
-        guard let rc = readConcern else { return opts }
-
-        // the caller is using the server's default RC and we are also using default, so don't append anything
-        if callerRC?.level == nil && rc.level == nil { return opts }
-
-        // otherwise either us or the caller is using a non-default, so we need to append it
-        let output = opts ?? Document() // create base opts if they don't exist
-        try rc.append(to: output)
-        return output
-    }
-
-    public static func == (lhs: ReadConcern, rhs: ReadConcern) -> Bool {
-        return lhs.level == rhs.level
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encodeIfPresent(self.level, forKey: .level)
     }
 
     /// Cleans up the internal `mongoc_read_concern_t`.
@@ -116,4 +94,23 @@ public class ReadConcern: Equatable, CustomStringConvertible {
         self._readConcern = nil
     }
 
+}
+
+/// An extension of `ReadConcern` to make it `CustomStringConvertible`.
+extension ReadConcern: CustomStringConvertible {
+    /// An extended JSON description of this `ReadConcern`, or the
+    /// empty string if encoding fails.
+    public var description: String {
+        if let encoded = try? BsonEncoder().encode(self).description {
+            return encoded
+        }
+        return ""
+    }
+}
+
+/// An extension of `ReadConcern` to make it `Equatable`.
+extension ReadConcern: Equatable {
+    public static func == (lhs: ReadConcern, rhs: ReadConcern) -> Bool {
+        return lhs.level == rhs.level
+    }
 }

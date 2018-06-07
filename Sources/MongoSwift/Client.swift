@@ -12,7 +12,7 @@ public struct ClientOptions: Encodable {
 
     /// Specifies a ReadConcern to use for the client. If one is not specified,
     /// the server's default read concern will be used.
-    let readConcern: ReadConcern?
+    public let readConcern: ReadConcern?
 
     /// Convenience initializer allowing any/all to be omitted or optional
     public init(eventMonitoring: Bool = false, readConcern: ReadConcern? = nil, retryWrites: Bool? = nil) {
@@ -49,7 +49,7 @@ public struct ListDatabasesOptions: Encodable {
 public struct DatabaseOptions {
     /// A read concern to set on the retrieved database. If one is not specified,
     /// the database will inherit the client's read concern. 
-    let readConcern: ReadConcern?
+    public let readConcern: ReadConcern?
 }
 
 /// A MongoDB Client.
@@ -66,7 +66,7 @@ public class MongoClient {
     public var readConcern: ReadConcern? {
         // per libmongoc docs, we don't need to handle freeing this ourselves
         let readConcern = mongoc_client_get_read_concern(self._client)
-        let rcObj = ReadConcern(readConcern)
+        let rcObj = ReadConcern(from: readConcern)
         if rcObj.isDefault { return nil }
         return rcObj
     }
