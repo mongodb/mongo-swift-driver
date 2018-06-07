@@ -274,6 +274,7 @@ public class MongoDatabase {
      *
      * - Returns: a `Document` containing the server response for the command
      */
+    @discardableResult
     public func runCommand(_ command: Document, options: RunCommandOptions? = nil) throws -> Document {
         let encoder = BsonEncoder()
         let opts = try ReadConcern.append(options?.readConcern, to: try encoder.encode(options), callerRC: self.readConcern)

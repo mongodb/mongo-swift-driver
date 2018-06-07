@@ -29,7 +29,7 @@ final class SingleDocumentBenchmarks: XCTestCase {
         // reading (and discarding) the result each time.
         let result = try measureOp({
             for _ in 1...10000 {
-                _ = try db.runCommand(command)
+                try db.runCommand(command)
             }
         })
 
@@ -50,7 +50,7 @@ final class SingleDocumentBenchmarks: XCTestCase {
             toInsert.append(document)
         }
 
-        _ = try collection.insertMany(toInsert)
+        try collection.insertMany(toInsert)
 
         // make sure the documents were actually inserted
         expect(try collection.count([:])).to(equal(10000))
@@ -89,7 +89,7 @@ final class SingleDocumentBenchmarks: XCTestCase {
             // leave it to the driver or database. Repeat this `numDocs` times.
             results.append(try measureTime({
                 for doc in documents {
-                    _ = try collection.insertOne(doc)
+                    try collection.insertOne(doc)
                 }
             }))
 
@@ -121,7 +121,7 @@ public class MultiDocumentBenchmarks: XCTestCase {
         let (db, collection) = try setup()
         let jsonString = try String(contentsOf: tweetFile, encoding: .utf8)
         for _ in 1...10000 {
-            _ = try collection.insertOne(try Document(fromJSON: jsonString))
+            try collection.insertOne(try Document(fromJSON: jsonString))
         }
 
         // make sure the documents were actually inserted
@@ -155,7 +155,7 @@ public class MultiDocumentBenchmarks: XCTestCase {
             // Do an ordered 'insert_many' with `numDocs` copies of the document.
             // DO NOT manually add an _id field; leave it to the driver or database.
             results.append(try measureTime({
-                _ = try collection.insertMany(documents)
+                try collection.insertMany(documents)
             }))
 
             // make sure the documents were actually inserted
