@@ -290,8 +290,15 @@ final class DocumentTests: XCTestCase {
     }
 
     func testMerge() throws {
+        // test documents are merged correctly
         var doc1: Document = ["a": 1]
         try doc1.merge(["b": 2])
         expect(doc1).to(equal(["a": 1, "b": 2]))
+
+        // ensure merging into a copy doesn't modify original
+        var doc2 = doc1
+        try doc2.merge(["c": 3])
+        expect(doc1).to(equal(["a": 1, "b": 2]))
+        expect(doc2).to(equal(["a": 1, "b": 2, "c": 3]))
     }
 }
