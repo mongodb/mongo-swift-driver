@@ -121,7 +121,7 @@ public class WriteConcern: Codable {
     internal var _writeConcern: OpaquePointer?
 
     /// An option to request acknowledgement that the write operation has propagated to specified mongod instances.
-    public enum W: Codable , Equatable {
+    public enum W: Codable, Equatable {
         /// Specifies the number of nodes that should acknowledge the write. MUST be greater than or equal to 0.
         case number(Int32)
         /// Indicates a tag for nodes that should acknowledge the write. 
