@@ -200,17 +200,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         }
 
         set(newValue) {
-            // this happens if someone has copied the document and modifies it.
-            // for example:
-            //  let doc1: Document = ["a": 1]
-            //  var doc2 = doc1
-            //  doc2["b"] = 2
-            // to provide value semantics, i.e. prevent changes to doc2 from
-            // modifying doc1, we make a copy of the bson_t and let the
-            // copy/copies of the document keep the original
-            if !isKnownUniquelyReferenced(&self.storage) {
-                self.storage = DocumentStorage(fromPointer: self.data)
-            }
+            self.copyStorageIfRequired()
 
             guard let value = newValue else {
                 if !bson_append_null(self.data, key, Int32(key.count)) {
@@ -255,8 +245,25 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
 
     /// Appends the key/value pairs from the provided `doc` to this `Document`. 
     public mutating func merge(_ doc: Document) throws {
+        self.copyStorageIfRequired()
         if !bson_concat(self.data, doc.data) {
             throw MongoError.bsonEncodeError(message: "Failed to merge \(doc) with \(self)")
+        }
+    }
+
+    /// Checks if the document is uniquely referenced. If not, makes a copy
+    /// of the underlying `bson_t` and lets the copy/copies keep the original.
+    /// This allows us to provide value semantics for `Document`s. 
+    /// This happens if someone copies a document and modifies it.
+    /// For example: 
+    ///  let doc1: Document = ["a": 1]
+    ///  var doc2 = doc1
+    ///  doc2["b"] = 2
+    /// Therefore, this function should be called just before we are about to
+    /// modify a document - either by setting a value or merging in another doc.
+    private mutating func copyStorageIfRequired() {
+        if !isKnownUniquelyReferenced(&self.storage) {
+            self.storage = DocumentStorage(fromPointer: self.data)
         }
     }
 }
