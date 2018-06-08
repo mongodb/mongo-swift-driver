@@ -1,19 +1,24 @@
 @testable import MongoSwift
 import Nimble
 import XCTest
+import libmongoc
 
 extension WriteConcern {
     /// Initialize a new ReadConcern from a Document.
     fileprivate convenience init(_ doc: Document) {
-        let wtag = doc["w"] as? String
-        let w = doc["w"] as? Int
-
         // can be stored under either "j" or "journal"
         var jToUse: Bool? = nil
         if let j = doc["journal"] as? Bool {
             jToUse = j
         } else if let j = doc["j"] as? Bool {
             jToUse = j
+        }
+
+        var wToUse: W? = nil
+        if let wtag = doc["w"] as? String {
+            wToUse = wtag == "majority" ? .majority : .tag(wtag)
+        } else if let w = doc["w"] as? Int {
+            wToUse = .number(Int32(w))
         }
 
         // can be stored under either "wtimeout" or "wtimeoutMS"
@@ -24,11 +29,7 @@ extension WriteConcern {
             wtToUse = Int32(wt)
         }
 
-        if wtag != nil {
-            self.init(journal: jToUse, wTag: wtag, wtimeoutMS: wtToUse)
-        } else {
-            self.init(journal: jToUse, w: w != nil ? Int32(w!) : nil, wtimeoutMS: wtToUse)
-        }
+        self.init(journal: jToUse, w: wToUse, wtimeoutMS: wtToUse)
     }
 }
 
@@ -73,14 +74,14 @@ final class ReadWriteConcernTests: XCTestCase {
 
     func testWriteConcernType() throws {
         // try creating write concerns with various valid options
-        expect(WriteConcern(w: 0).isValid).to(beTrue())
-        expect(WriteConcern(w: 3).isValid).to(beTrue())
-        expect(WriteConcern(journal: true, w: 1).isValid).to(beTrue())
-        expect(WriteConcern(w: 0, wtimeoutMS: 1000).isValid).to(beTrue())
-        expect(WriteConcern(wTag: "hi").isValid).to(beTrue())
+        expect(WriteConcern(w: .number(0)).isValid).to(beTrue())
+        expect(WriteConcern(w: .number(3)).isValid).to(beTrue())
+        expect(WriteConcern(journal: true, w: .number(1)).isValid).to(beTrue())
+        expect(WriteConcern(w: .number(0), wtimeoutMS: 1000).isValid).to(beTrue())
+        expect(WriteConcern(w: .tag("hi")).isValid).to(beTrue())
 
         // verify that this combination is considered invalid
-        expect(WriteConcern(journal: true, w: 0).isValid).to(beFalse())
+        expect(WriteConcern(journal: true, w: .number(0)).isValid).to(beFalse())
     }
 
     func testClientReadConcern() throws {
@@ -129,7 +130,9 @@ final class ReadWriteConcernTests: XCTestCase {
     }
 
     func testClientWriteConcern() throws {
-        let w2 = WriteConcern(w: 2)
+        let w1 = WriteConcern.W.number(1)
+        let w2 = WriteConcern.W.number(2)
+        let wc2 = WriteConcern(w: w2)
 
         // test behavior of a client with initialized with no WC
         do {
@@ -142,29 +145,29 @@ final class ReadWriteConcernTests: XCTestCase {
             expect(db1.writeConcern).to(beNil())
 
             // expect that a DB created from this client can override the client's default WC
-            let db2 = try client1.db("test", options: DatabaseOptions(writeConcern: w2))
-            expect(db2.writeConcern?.w).to(equal(2))
+            let db2 = try client1.db("test", options: DatabaseOptions(writeConcern: wc2))
+            expect(db2.writeConcern?.w).to(equal(w2))
         }
 
         // test behavior of a client with w: 1
         do {
-            let client2 = try MongoClient(options: ClientOptions(writeConcern: WriteConcern(w: 1)))
+            let client2 = try MongoClient(options: ClientOptions(writeConcern: WriteConcern(w: .number(1))))
             // although w:1 is default, if it is explicitly provided it should be set
-            expect(client2.writeConcern?.w).to(equal(1))
+            expect(client2.writeConcern?.w).to(equal(w1))
 
             // expect that a DB created from this client inherits its WC
             let db3 = try client2.db("test")
-            expect(db3.writeConcern?.w).to(equal(1))
+            expect(db3.writeConcern?.w).to(equal(w1))
 
             // expect that a DB created from this client can override the client's WC
-            let db4 = try client2.db("test", options: DatabaseOptions(writeConcern: w2))
-            expect(db4.writeConcern?.w).to(equal(2))
+            let db4 = try client2.db("test", options: DatabaseOptions(writeConcern: wc2))
+            expect(db4.writeConcern?.w).to(equal(w2))
         }
 
         // test behavior of a client with w: 2
         do {
-            let client3 = try MongoClient(options: ClientOptions(writeConcern: w2))
-            expect(client3.writeConcern?.w).to(equal(2))
+            let client3 = try MongoClient(options: ClientOptions(writeConcern: wc2))
+            expect(client3.writeConcern?.w).to(equal(w2))
 
             // expect that a DB created from this client can override the client's WC with an unset one
             let db5 = try client3.db("test", options: DatabaseOptions(writeConcern: WriteConcern()))
@@ -230,34 +233,37 @@ final class ReadWriteConcernTests: XCTestCase {
         coll1 = try db1.collection("coll1")
         expect(coll1.writeConcern).to(beNil())
 
+        let wc1 = WriteConcern(w: .number(1))
+        let wc2 = WriteConcern(w: .number(2))
+
         // expect that a collection created from a DB with default WC can override the DB's WC
-        var coll2 = try db1.createCollection("coll2", options: CreateCollectionOptions(writeConcern: WriteConcern(w: 1)))
-        expect(coll2.writeConcern?.w).to(equal(1))
+        var coll2 = try db1.createCollection("coll2", options: CreateCollectionOptions(writeConcern: wc1))
+        expect(coll2.writeConcern?.w).to(equal(wc1.w))
 
         // expect that a collection retrieved from a DB with default WC can override the DB's WC
-        coll2 = try db1.collection("coll2", options: CollectionOptions(writeConcern: WriteConcern(w: 1)))
-        expect(coll2.writeConcern?.w).to(equal(1))
+        coll2 = try db1.collection("coll2", options: CollectionOptions(writeConcern: wc1))
+        expect(coll2.writeConcern?.w).to(equal(wc1.w))
 
         try db1.drop()
 
-        let db2 = try client.db("test", options: DatabaseOptions(writeConcern: WriteConcern(w: 1)))
+        let db2 = try client.db("test", options: DatabaseOptions(writeConcern: wc1))
         defer { try? db2.drop() }
 
         // expect that a collection created from a DB with w:1 also has w:1
         var coll3 = try db2.createCollection("coll3")
-        expect(coll3.writeConcern?.w).to(equal(1))
+        expect(coll3.writeConcern?.w).to(equal(wc1.w))
 
         // expect that a collection retrieved from a DB with w:1 also has w:1
         coll3 = try db2.collection("coll3")
-        expect(coll3.writeConcern?.w).to(equal(1))
+        expect(coll3.writeConcern?.w).to(equal(wc1.w))
 
         // expect that a collection created from a DB with w:1 can override the DB's WC
-        var coll4 = try db2.createCollection("coll4", options: CreateCollectionOptions(writeConcern: WriteConcern(w: 2)))
-        expect(coll4.writeConcern?.w).to(equal(2))
+        var coll4 = try db2.createCollection("coll4", options: CreateCollectionOptions(writeConcern: wc2))
+        expect(coll4.writeConcern?.w).to(equal(wc2.w))
 
         // expect that a collection retrieved from a DB with w:1 can override the DB's WC
-        coll4 = try db2.collection("coll4", options: CollectionOptions(writeConcern: WriteConcern(w: 2)))
-        expect(coll4.writeConcern?.w).to(equal(2))
+        coll4 = try db2.collection("coll4", options: CollectionOptions(writeConcern: wc2))
+        expect(coll4.writeConcern?.w).to(equal(wc2.w))
     }
 
     func testOperationReadConcerns() throws {
@@ -307,7 +313,7 @@ final class ReadWriteConcernTests: XCTestCase {
         }
 
         let coll = try db.createCollection("coll1")
-        let wc1 = WriteConcern(w: 1)
+        let wc1 = WriteConcern(w: .number(1))
         let wc2 =  WriteConcern()
         let wc3 = WriteConcern(journal: true)
 

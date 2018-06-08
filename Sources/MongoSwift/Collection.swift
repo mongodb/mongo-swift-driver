@@ -30,7 +30,7 @@ public struct AggregateOptions: Encodable {
     public let readConcern: ReadConcern?
 
     /// A `WriteConcern` to use in `$out` stages of this operation.
-    let writeConcern: WriteConcern?
+    public let writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all parameters to be optional
     public init(allowDiskUse: Bool? = nil, batchSize: Int32? = nil, bypassDocumentValidation: Bool? = nil,
@@ -225,17 +225,12 @@ public struct InsertOneOptions: Encodable {
     public let bypassDocumentValidation: Bool?
 
     /// An optional WriteConcern to use for the command.
-    let writeConcern: WriteConcern?
+    public let writeConcern: WriteConcern?
 
     /// Convenience initializer allowing bypassDocumentValidation to be omitted or optional
     public init(bypassDocumentValidation: Bool? = nil, writeConcern: WriteConcern? = nil) {
         self.bypassDocumentValidation = bypassDocumentValidation
         self.writeConcern = writeConcern
-    }
-
-    // Encode everything except writeConcern
-    private enum CodingKeys: String, CodingKey {
-        case bypassDocumentValidation
     }
 }
 
@@ -250,18 +245,13 @@ public struct InsertManyOptions: Encodable {
     public var ordered: Bool = true
 
     /// An optional WriteConcern to use for the command.
-    let writeConcern: WriteConcern?
+    public let writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional
     public init(bypassDocumentValidation: Bool? = nil, ordered: Bool? = true, writeConcern: WriteConcern? = nil) {
         self.bypassDocumentValidation = bypassDocumentValidation
         if let o = ordered { self.ordered = o }
         self.writeConcern = writeConcern
-    }
-
-    // Encode everything except writeConcern
-    private enum CodingKeys: String, CodingKey {
-        case bypassDocumentValidation, ordered
     }
 }
 
@@ -280,7 +270,7 @@ public struct UpdateOptions: Encodable {
     public let upsert: Bool?
 
     /// An optional WriteConcern to use for the command.
-    let writeConcern: WriteConcern?
+    public let writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all parameters to be optional
     public init(arrayFilters: [Document]? = nil, bypassDocumentValidation: Bool? = nil, collation: Document? = nil,
@@ -290,11 +280,6 @@ public struct UpdateOptions: Encodable {
         self.collation = collation
         self.upsert = upsert
         self.writeConcern = writeConcern
-    }
-
-    // Encode everything except writeConcern
-    private enum CodingKeys: String, CodingKey {
-        case arrayFilters, bypassDocumentValidation, collation, upsert
     }
 }
 
@@ -310,7 +295,7 @@ public struct ReplaceOptions: Encodable {
     public let upsert: Bool?
 
     /// An optional WriteConcern to use for the command.
-    let writeConcern: WriteConcern?
+    public let writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all parameters to be optional
     public init(bypassDocumentValidation: Bool? = nil, collation: Document? = nil, upsert: Bool? = nil,
@@ -320,11 +305,6 @@ public struct ReplaceOptions: Encodable {
         self.upsert = upsert
         self.writeConcern = writeConcern
     }
-
-    // Encode everything except writeConcern
-    private enum CodingKeys: String, CodingKey {
-        case bypassDocumentValidation, collation, upsert
-    }
 }
 
 /// Options to use when executing a `delete` command on a `MongoCollection`. 
@@ -333,17 +313,12 @@ public struct DeleteOptions: Encodable {
     public let collation: Document?
 
     /// An optional WriteConcern to use for the command.
-    let writeConcern: WriteConcern?
+    public let writeConcern: WriteConcern?
 
      /// Convenience initializer allowing collation to be omitted or optional
     public init(collation: Document? = nil, writeConcern: WriteConcern? = nil) {
         self.collation = collation
         self.writeConcern = writeConcern
-    }
-
-    // Encode everything except writeConcern
-    private enum CodingKeys: String, CodingKey {
-        case collation
     }
 }
 
@@ -548,15 +523,15 @@ public struct IndexOptions: Encodable {
 }
 
 /// Options to use when creating a new index on a `MongoCollection`.
-public struct CreateIndexOptions {
+public struct CreateIndexOptions: Encodable {
     /// An optional `WriteConcern` to use for the command
-    let writeConcern: WriteConcern?
+    public let writeConcern: WriteConcern?
 }
 
 /// Options to use when dropping an index from a `MongoCollection`.
-public struct DropIndexOptions {
+public struct DropIndexOptions: Encodable {
     /// An optional `WriteConcern` to use for the command
-    let writeConcern: WriteConcern?
+    public let writeConcern: WriteConcern?
 }
 
 /// A MongoDB collection.
@@ -654,7 +629,7 @@ public class MongoCollection<T: Codable> {
         let opts = try BsonEncoder().encode(options)
         let pipeline: Document = ["pipeline": pipeline]
         guard let cursor = mongoc_collection_aggregate(
-            self._collection, MONGOC_QUERY_NONE, pipeline.data, withWC?.data, nil) else {
+            self._collection, MONGOC_QUERY_NONE, pipeline.data, opts?.data, nil) else {
             throw MongoError.invalidResponse()
         }
         guard let client = self._client else {
@@ -753,7 +728,7 @@ public class MongoCollection<T: Codable> {
         if document["_id"] == nil {
             try ObjectId().encode(to: document.data, forKey: "_id")
         }
-        let opts = try WriteConcern.append(options?.writeConcern, to: try encoder.encode(options), callerWC: self.writeConcern)
+        let opts = try encoder.encode(options)
         var error = bson_error_t()
         if !mongoc_collection_insert_one(self._collection, document.data, opts?.data, nil, &error) {
             throw MongoError.commandError(message: toErrorString(error))
@@ -782,7 +757,7 @@ public class MongoCollection<T: Codable> {
         }
         var docPointers = documents.map { UnsafePointer($0.data) }
 
-        let opts = try WriteConcern.append(options?.writeConcern, to: try encoder.encode(options), callerWC: self.writeConcern)
+        let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_insert_many(
@@ -807,7 +782,7 @@ public class MongoCollection<T: Codable> {
     public func replaceOne(filter: Document, replacement: CollectionType, options: ReplaceOptions? = nil) throws -> UpdateResult? {
         let encoder = BsonEncoder()
         let replacementDoc = try encoder.encode(replacement)
-        let opts = try WriteConcern.append(options?.writeConcern, to: try encoder.encode(options), callerWC: self.writeConcern)
+        let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_replace_one(
@@ -830,8 +805,7 @@ public class MongoCollection<T: Codable> {
      */
     @discardableResult
     public func updateOne(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
-        let encoder = BsonEncoder()
-        let opts = try WriteConcern.append(options?.writeConcern, to: try encoder.encode(options), callerWC: self.writeConcern)
+        let opts = try BsonEncoder().encode(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_update_one(
@@ -854,8 +828,7 @@ public class MongoCollection<T: Codable> {
      */
     @discardableResult
     public func updateMany(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
-        let encoder = BsonEncoder()
-        let opts = try WriteConcern.append(options?.writeConcern, to: try encoder.encode(options), callerWC: self.writeConcern)
+        let opts = try BsonEncoder().encode(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_update_many(
@@ -877,8 +850,7 @@ public class MongoCollection<T: Codable> {
      */
     @discardableResult
     public func deleteOne(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
-        let encoder = BsonEncoder()
-        let opts = try WriteConcern.append(options?.writeConcern, to: try encoder.encode(options), callerWC: self.writeConcern)
+        let opts = try BsonEncoder().encode(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_delete_one(
@@ -900,8 +872,7 @@ public class MongoCollection<T: Codable> {
      */
     @discardableResult
     public func deleteMany(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
-        let encoder = BsonEncoder()
-        let opts = try WriteConcern.append(options?.writeConcern, to: try encoder.encode(options), callerWC: self.writeConcern)
+        let opts = try BsonEncoder().encode(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_delete_many(
@@ -968,8 +939,9 @@ public class MongoCollection<T: Codable> {
             "indexes": indexData
         ]
 
+        let opts = try encoder.encode(options)
         var error = bson_error_t()
-        let opts = try WriteConcern.append(options?.writeConcern, to: nil, callerWC: self.writeConcern)
+
         if !mongoc_collection_write_command_with_opts(self._collection, command.data, opts?.data, nil, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
@@ -986,8 +958,8 @@ public class MongoCollection<T: Codable> {
      *
      */
     public func dropIndex(_ name: String, options: DropIndexOptions? = nil) throws {
+        let opts = try BsonEncoder().encode(options)
         var error = bson_error_t()
-        let opts = try WriteConcern.append(options?.writeConcern, to: nil, callerWC: self.writeConcern)
         if !mongoc_collection_drop_index_with_opts(self._collection, name, opts?.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
@@ -1039,9 +1011,9 @@ public class MongoCollection<T: Codable> {
     private func _dropIndexes(keys: Document? = nil, options: DropIndexOptions? = nil) throws -> Document {
         let collName = String(cString: mongoc_collection_get_name(self._collection))
         let command: Document = ["dropIndexes": collName, "index": keys ?? "*"]
+        let opts = try BsonEncoder().encode(options)
         let reply = Document()
         var error = bson_error_t()
-        let opts = try WriteConcern.append(options?.writeConcern, to: nil, callerWC: self.writeConcern)
         if !mongoc_collection_write_command_with_opts(self._collection, command.data, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
