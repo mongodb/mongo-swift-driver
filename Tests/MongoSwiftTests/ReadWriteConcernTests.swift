@@ -1,7 +1,6 @@
 @testable import MongoSwift
 import Nimble
 import XCTest
-import libmongoc
 
 extension WriteConcern {
     /// Initialize a new ReadConcern from a Document.

@@ -805,7 +805,8 @@ public class MongoCollection<T: Codable> {
      */
     @discardableResult
     public func updateOne(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
-        let opts = try BsonEncoder().encode(options)
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_update_one(
@@ -828,7 +829,8 @@ public class MongoCollection<T: Codable> {
      */
     @discardableResult
     public func updateMany(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
-        let opts = try BsonEncoder().encode(options)
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_update_many(
@@ -850,7 +852,8 @@ public class MongoCollection<T: Codable> {
      */
     @discardableResult
     public func deleteOne(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
-        let opts = try BsonEncoder().encode(options)
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_delete_one(
@@ -872,7 +875,8 @@ public class MongoCollection<T: Codable> {
      */
     @discardableResult
     public func deleteMany(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
-        let opts = try BsonEncoder().encode(options)
+        let encoder = BsonEncoder()
+        let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_delete_many(
