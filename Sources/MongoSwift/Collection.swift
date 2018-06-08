@@ -27,7 +27,7 @@ public struct AggregateOptions: Encodable {
     // let hint: Optional<(String | Document)>
 
     /// A `ReadConcern` to use for this operation. 
-    let readConcern: ReadConcern?
+    public let readConcern: ReadConcern?
 
     /// Convenience initializer allowing any/all parameters to be optional
     public init(allowDiskUse: Bool? = nil, batchSize: Int32? = nil, bypassDocumentValidation: Bool? = nil,
@@ -40,12 +40,6 @@ public struct AggregateOptions: Encodable {
         self.comment = comment
         self.maxTimeMS = maxTimeMS
         self.readConcern = readConcern
-    }
-
-    // Encode everything except readConcern
-    private enum CodingKeys: String, CodingKey {
-        case allowDiskUse, batchSize, bypassDocumentValidation,
-            collation, maxTimeMS, comment
     }
 }
 
@@ -67,7 +61,7 @@ public struct CountOptions: Encodable {
     public let skip: Int64?
 
     /// A ReadConcern to use for this operation. 
-    let readConcern: ReadConcern?
+    public let readConcern: ReadConcern?
 
     /// Convenience initializer allowing any/all parameters to be optional
     public init(collation: Document? = nil, limit: Int64? = nil, maxTimeMS: Int64? = nil,
@@ -77,11 +71,6 @@ public struct CountOptions: Encodable {
         self.maxTimeMS = maxTimeMS
         self.readConcern = readConcern
         self.skip = skip
-    }
-
-    // Encode everything except readConcern
-    private enum CodingKeys: String, CodingKey {
-        case collation, limit, maxTimeMS, skip
     }
 }
 
@@ -94,18 +83,13 @@ public struct DistinctOptions: Encodable {
     public let maxTimeMS: Int64?
 
     /// A ReadConcern to use for this operation. 
-    let readConcern: ReadConcern?
+    public let readConcern: ReadConcern?
 
     /// Convenience initializer allowing any/all parameters to be optional
     public init(collation: Document? = nil, maxTimeMS: Int64? = nil, readConcern: ReadConcern? = nil) {
         self.collation = collation
         self.maxTimeMS = maxTimeMS
         self.readConcern = readConcern
-    }
-
-    // Encode everything except readConcern
-    private enum CodingKeys: String, CodingKey {
-        case collation, maxTimeMS
     }
 }
 
@@ -203,7 +187,7 @@ public struct FindOptions: Encodable {
     public let sort: Document?
 
     /// A ReadConcern to use for this operation. 
-    let readConcern: ReadConcern?
+    public let readConcern: ReadConcern?
 
     /// Convenience initializer allowing any/all parameters to be optional
     public init(allowPartialResults: Bool? = nil, batchSize: Int32? = nil, collation: Document? = nil,
@@ -228,12 +212,6 @@ public struct FindOptions: Encodable {
         self.showRecordId = showRecordId
         self.skip = skip
         self.sort = sort
-    }
-
-    // Encode everything except readConcern
-    private enum CodingKeys: String, CodingKey {
-        case allowPartialResults, batchSize, collation, comment, limit, max, maxAwaitTimeMS,
-            maxScan, maxTimeMS, min, noCursorTimeout, projection, returnKey, showRecordId, skip, sort
     }
 }
 
@@ -543,7 +521,7 @@ public class MongoCollection<T: Codable> {
     public var readConcern: ReadConcern? {
         // per libmongoc docs, we don't need to handle freeing this ourselves
         let readConcern = mongoc_collection_get_read_concern(self._collection)
-        let rcObj = ReadConcern(readConcern)
+        let rcObj = ReadConcern(from: readConcern)
         if rcObj.isDefault { return nil }
         return rcObj
     }
@@ -582,8 +560,7 @@ public class MongoCollection<T: Codable> {
      * - Returns: A `MongoCursor` over the resulting `Document`s
      */
     public func find(_ filter: Document = [:], options: FindOptions? = nil) throws -> MongoCursor<CollectionType> {
-        let encoder = BsonEncoder()
-        let opts = try ReadConcern.append(options?.readConcern, to: try encoder.encode(options), callerRC: self.readConcern)
+        let opts = try BsonEncoder().encode(options)
         guard let cursor = mongoc_collection_find_with_opts(self._collection, filter.data, opts?.data, nil) else {
             throw MongoError.invalidResponse()
         }
@@ -603,8 +580,7 @@ public class MongoCollection<T: Codable> {
      * - Returns: A `MongoCursor` over the resulting `Document`s
      */
     public func aggregate(_ pipeline: [Document], options: AggregateOptions? = nil) throws -> MongoCursor<Document> {
-        let encoder = BsonEncoder()
-        let opts = try ReadConcern.append(options?.readConcern, to: try encoder.encode(options), callerRC: self.readConcern)
+        let opts = try BsonEncoder().encode(options)
         let pipeline: Document = ["pipeline": pipeline]
         guard let cursor = mongoc_collection_aggregate(
             self._collection, MONGOC_QUERY_NONE, pipeline.data, opts?.data, nil) else {
@@ -626,8 +602,7 @@ public class MongoCollection<T: Codable> {
      * - Returns: The count of the documents that matched the filter
      */
     public func count(_ filter: Document = [:], options: CountOptions? = nil) throws -> Int {
-        let encoder = BsonEncoder()
-        let opts = try ReadConcern.append(options?.readConcern, to: try encoder.encode(options), callerRC: self.readConcern)
+        let opts = try BsonEncoder().encode(options)
         var error = bson_error_t()
         // because we already encode skip and limit in the options,
         // pass in 0s so we don't get duplicate parameter errors.
@@ -661,9 +636,8 @@ public class MongoCollection<T: Codable> {
             "key": fieldName,
             "query": filter
         ]
-        let encoder = BsonEncoder()
-        let opts = try ReadConcern.append(options?.readConcern, to: try encoder.encode(options), callerRC: self.readConcern)
 
+        let opts = try BsonEncoder().encode(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_read_command_with_opts(
