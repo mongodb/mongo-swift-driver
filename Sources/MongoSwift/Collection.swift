@@ -701,6 +701,7 @@ public class MongoCollection<T: Codable> {
      * - Returns: The optional result of attempting to perform the insert. If the `WriteConcern`
      *            is unacknowledged, `nil` is returned.
      */
+    @discardableResult
     public func insertOne(_ value: CollectionType, options: InsertOneOptions? = nil) throws -> InsertOneResult? {
         let encoder = BsonEncoder()
         let document = try encoder.encode(value)
@@ -726,6 +727,7 @@ public class MongoCollection<T: Codable> {
      * - Returns: The optional result of attempting to performing the insert. If the write concern
      *            is unacknowledged, nil is returned
      */
+    @discardableResult
     public func insertMany(_ values: [CollectionType], options: InsertManyOptions? = nil) throws -> InsertManyResult? {
         let encoder = BsonEncoder()
         let documents = try values.map { try encoder.encode($0) }
@@ -754,6 +756,7 @@ public class MongoCollection<T: Codable> {
      * - Returns: The optional result of attempting to replace a document. If the `WriteConcern`
      *            is unacknowledged, `nil` is returned.
      */
+    @discardableResult
     public func replaceOne(filter: Document, replacement: CollectionType, options: ReplaceOptions? = nil) throws -> UpdateResult? {
         let encoder = BsonEncoder()
         let replacementDoc = try encoder.encode(replacement)
@@ -778,6 +781,7 @@ public class MongoCollection<T: Codable> {
      * - Returns: The optional result of attempting to update a document. If the `WriteConcern` is
      *            unacknowledged, `nil` is returned.
      */
+    @discardableResult
     public func updateOne(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
@@ -801,6 +805,7 @@ public class MongoCollection<T: Codable> {
      * - Returns: The optional result of attempting to update multiple documents. If the write
      *            concern is unacknowledged, nil is returned
      */
+    @discardableResult
     public func updateMany(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
@@ -823,6 +828,7 @@ public class MongoCollection<T: Codable> {
      * - Returns: The optional result of performing the deletion. If the `WriteConcern` is
      *            unacknowledged, `nil` is returned.
      */
+    @discardableResult
     public func deleteOne(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
@@ -845,6 +851,7 @@ public class MongoCollection<T: Codable> {
      * - Returns: The optional result of performing the deletion. If the `WriteConcern` is
      *            unacknowledged, `nil` is returned.
      */
+    @discardableResult
     public func deleteMany(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
         let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
@@ -865,6 +872,7 @@ public class MongoCollection<T: Codable> {
      *
      * - Returns: The name of the created index.
      */
+    @discardableResult
     public func createIndex(_ forModel: IndexModel) throws -> String {
         return try createIndexes([forModel])[0]
     }
@@ -878,6 +886,7 @@ public class MongoCollection<T: Codable> {
      *
      * - Returns: The name of the created index
      */
+    @discardableResult
     public func createIndex(_ keys: Document, options: IndexOptions? = nil) throws -> String {
         return try createIndex(IndexModel(keys: keys, options: options))
     }
@@ -890,6 +899,7 @@ public class MongoCollection<T: Codable> {
      *
      * - Returns: An `[String]` containing the names of all the indexes that were created.
      */
+    @discardableResult
     public func createIndexes(_ forModels: [IndexModel]) throws -> [String] {
         let collName = String(cString: mongoc_collection_get_name(self._collection))
         let encoder = BsonEncoder()
@@ -938,6 +948,7 @@ public class MongoCollection<T: Codable> {
      *
      * - Returns: a `Document` containing the server's response to the command.
      */
+    @discardableResult
     public func dropIndex(_ keys: Document, options: IndexOptions? = nil) throws -> Document {
         return try dropIndex(IndexModel(keys: keys, options: options))
     }
@@ -950,6 +961,7 @@ public class MongoCollection<T: Codable> {
      *
      * - Returns: a `Document` containing the server's response to the command.
      */
+    @discardableResult
     public func dropIndex(_ model: IndexModel) throws -> Document {
         return try _dropIndexes(keys: model.keys)
     }
@@ -959,6 +971,7 @@ public class MongoCollection<T: Codable> {
      *
      * - Returns: a `Document` containing the server's response to the command.
      */
+    @discardableResult
     public func dropIndexes() throws -> Document {
         return try _dropIndexes()
     }

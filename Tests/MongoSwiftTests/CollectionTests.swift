@@ -55,7 +55,7 @@ final class CollectionTests: XCTestCase {
                 return
             }
             coll = try client.db("collectionTest").createCollection("coll1")
-            _ = try coll.insertMany([doc1, doc2])
+            try coll.insertMany([doc1, doc2])
         } catch {
             XCTFail("Setup failed: \(error)")
         }
@@ -288,9 +288,9 @@ final class CollectionTests: XCTestCase {
         let db = try client.db("codable")
         defer { try? db.drop() }
         let coll1 = try db.createCollection("coll1", withType: Basic.self)
-        _ = try coll1.insertOne(Basic(x: 1, y: "hi"))
-        _ = try coll1.insertMany([Basic(x: 2, y: "hello"), Basic(x: 3, y: "blah")])
-        _ = try coll1.replaceOne(filter: ["x": 2], replacement: Basic(x: 4, y: "hi"))
+        try coll1.insertOne(Basic(x: 1, y: "hi"))
+        try coll1.insertMany([Basic(x: 2, y: "hello"), Basic(x: 3, y: "blah")])
+        try coll1.replaceOne(filter: ["x": 2], replacement: Basic(x: 4, y: "hi"))
         expect(try coll1.count()).to(equal(3))
 
         for doc in try coll1.find() {
