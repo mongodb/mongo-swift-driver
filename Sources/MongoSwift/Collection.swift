@@ -1,6 +1,6 @@
 import libmongoc
 
-/// An index to “hint” or force MongoDB to use when performing a query.
+/// An index to "hint" or force MongoDB to use when performing a query.
 public enum Hint: Encodable {
     /// Specifies an index to use by its name.
     case indexName(String)
@@ -246,7 +246,7 @@ public struct FindOptions: Encodable {
         self.sort = sort
     }
 
-    // Encode everything except `sself.cursorType`, as we only store it for debugging purposes 
+    // Encode everything except `self.cursorType`, as we only store it for debugging purposes 
     private enum CodingKeys: String, CodingKey {
         case allowPartialResults, awaitData, batchSize, collation, comment, hint, limit, max, maxAwaitTimeMS,
             maxScan, maxTimeMS, min, noCursorTimeout, projection, returnKey, showRecordId, tailable, skip, sort
