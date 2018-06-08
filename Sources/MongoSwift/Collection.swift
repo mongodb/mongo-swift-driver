@@ -365,7 +365,7 @@ public struct UpdateResult {
     public let modifiedCount: Int
 
     /// The identifier of the inserted document if an upsert took place.
-    public let upsertedId: Any
+    public let upsertedId: BsonValue?
 
     /// Given a server response to an update command, creates a corresponding
     /// `UpdateResult`. If the `from` Document does not have `matchedCount` and
@@ -377,7 +377,7 @@ public struct UpdateResult {
          }
          self.matchedCount = matched
          self.modifiedCount = modified
-         self.upsertedId = from["upsertedId"] as Any
+         self.upsertedId = from["upsertedId"]
     }
 }
 
