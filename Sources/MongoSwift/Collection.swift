@@ -227,6 +227,7 @@ public struct FindOptions: Encodable {
         self.batchSize = batchSize
         self.collation = collation
         self.comment = comment
+        // although this does not get encoded, we store it for debugging purposes
         self.cursorType = cursorType
         self.tailable = cursorType == .tailable || cursorType == .tailableAwait
         self.awaitData = cursorType == .tailableAwait
