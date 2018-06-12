@@ -17,7 +17,6 @@ Pod::Spec.new do |spec|
   spec.tvos.deployment_target = "9.1"
   spec.osx.deployment_target = "10.10"
 
-  spec.swift_version = "4"
   spec.requires_arc = true
   spec.source_files = "Sources/MongoSwift/**/*.swift"
   spec.preserve_paths = [
