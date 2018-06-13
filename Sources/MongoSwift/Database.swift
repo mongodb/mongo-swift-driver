@@ -9,7 +9,7 @@ public struct RunCommandOptions: Encodable {
     public let readConcern: ReadConcern?
 
     /// An optional WriteConcern to use for this operation
-    let writeConcern: WriteConcern?
+    public let writeConcern: WriteConcern?
 
     /// Convenience initializer allowing session to be omitted or optional
     public init(readConcern: ReadConcern? = nil, session: ClientSession? = nil,
@@ -84,7 +84,7 @@ public struct CreateCollectionOptions: Encodable {
 
     /// A write concern to set on the returned collection. If one is not specified, it will inherit
     /// the database's write concern.
-    let writeConcern: WriteConcern?
+    public let writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional
     public init(autoIndexId: Bool? = nil, capped: Bool? = nil, collation: Document? = nil,

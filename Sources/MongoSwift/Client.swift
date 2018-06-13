@@ -16,7 +16,7 @@ public struct ClientOptions: Encodable {
 
     /// Specifies a WriteConcern to use for the client. If one is not specified,
     /// the server's default write concern will be used.
-    let writeConcern: WriteConcern?
+    public let writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all to be omitted or optional
     public init(eventMonitoring: Bool = false, readConcern: ReadConcern? = nil, retryWrites: Bool? = nil,

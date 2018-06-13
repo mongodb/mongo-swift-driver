@@ -3,32 +3,25 @@ import Nimble
 import XCTest
 
 extension WriteConcern {
-    /// Initialize a new ReadConcern from a Document.
+    /// Initialize a new `WriteConcern` from a `Document`. We can't
+    /// use `decode` because the format is different in spec tests
+    /// ("journal" instead of "j", etc.)
     fileprivate convenience init(_ doc: Document) {
-        // can be stored under either "j" or "journal"
-        var jToUse: Bool? = nil
-        if let j = doc["journal"] as? Bool {
-            jToUse = j
-        } else if let j = doc["j"] as? Bool {
-            jToUse = j
-        }
+        let j = doc["journal"] as? Bool 
 
-        var wToUse: W? = nil
+        var w: W? = nil
         if let wtag = doc["w"] as? String {
-            wToUse = wtag == "majority" ? .majority : .tag(wtag)
-        } else if let w = doc["w"] as? Int {
-            wToUse = .number(Int32(w))
+            w = wtag == "majority" ? .majority : .tag(wtag)
+        } else if let wInt = doc["w"] as? Int {
+            w = .number(Int32(wInt))
         }
 
-        // can be stored under either "wtimeout" or "wtimeoutMS"
-        var wtToUse: Int32? = nil
-        if let wt = doc["wtimeoutMS"] as? Int {
-            wtToUse = Int32(wt)
-        } else if let wt = doc["wtimeout"] as? Int {
-            wtToUse = Int32(wt)
+        var wt: Int32? = nil
+        if let wtInt = doc["wtimeoutMS"] as? Int {
+            wt = Int32(wtInt)
         }
 
-        self.init(journal: jToUse, w: wToUse, wtimeoutMS: wtToUse)
+        self.init(journal: j, w: w, wtimeoutMS: wt)
     }
 }
 
@@ -399,6 +392,7 @@ final class ReadWriteConcernTests: XCTestCase {
     }
 
     func testDocuments() throws {
+        let encoder = BsonEncoder()
         let docsPath = "\(self.getSpecsPath())/read-write-concern/tests/document"
         let testFiles = try FileManager.default.contentsOfDirectory(atPath: docsPath).filter { $0.hasSuffix(".json") }
         for filename in testFiles {
@@ -412,15 +406,33 @@ final class ReadWriteConcernTests: XCTestCase {
                 let valid: Bool = try test.get("valid")
                 if let rcToUse = test["readConcern"] as? Document {
                     let rc = ReadConcern(rcToUse)
-                    let rcToSend = ReadConcern(test["readConcernDocument"] as! Document)
-                    expect(rcToSend).to(equal(rc))
-                } else if let wcToUse = test["writeConcern"] as? Document {
-                    if valid {
-                        let wc = WriteConcern(wcToUse)
-                        let wcToSend = WriteConcern(test["writeConcernDocument"] as! Document)
-                        expect(wcToSend).to(equal(wc))
+
+                    let isDefault: Bool = try test.get("isServerDefault")
+                    expect(rc.isDefault).to(equal(isDefault))
+
+                    let expected: Document = try test.get("readConcernDocument")
+                    if expected == [:] {
+                        expect(try encoder.encode(rc)).to(beNil())
                     } else {
-                        expect(WriteConcern(wcToUse).isValid).to(beFalse())
+                        expect(try encoder.encode(rc)).to(equal(expected))
+                    }
+                } else if let wcToUse = test["writeConcern"] as? Document {
+                    let wc = WriteConcern(wcToUse)
+                    if valid {   
+                        let isAcknowledged: Bool = try test.get("isAcknowledged")
+                        expect(wc.isAcknowledged).to(equal(isAcknowledged))
+
+                        let isDefault: Bool = try test.get("isServerDefault")
+                        expect(wc.isDefault).to(equal(isDefault))
+
+                        let expected: Document = try test.get("writeConcernDocument")
+                        if expected == [:] {
+                            expect(try encoder.encode(wc)).to(beNil())
+                        } else {
+                            expect(try encoder.encode(wc)).to(equal(expected))
+                        }
+                    } else {
+                        expect(wc.isValid).to(beFalse())
                     }
                 }
             }

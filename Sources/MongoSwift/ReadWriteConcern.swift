@@ -126,20 +126,16 @@ public class WriteConcern: Codable {
         case number(Int32)
         /// Indicates a tag for nodes that should acknowledge the write. 
         case tag(String)
-        /// Specifies that a majoirty of nodes should acknowledge the write.
+        /// Specifies that a majority of nodes should acknowledge the write.
         case majority
 
         public init(from decoder: Decoder) throws {
             let container = try decoder.singleValueContainer()
-            if let wTag = try? container.decode(String.self) {
-                self = .tag(wTag)
+            if let string = try? container.decode(String.self) {
+                self = string == "majority" ? .majority : .tag(string)
             } else {
                 let wNumber = try container.decode(Int32.self)
-                if wNumber == MONGOC_WRITE_CONCERN_W_MAJORITY {
-                    self = .majority
-                } else {
-                    self = .number(wNumber)
-                }
+                self = .number(wNumber)
             }
         }
 
@@ -170,27 +166,40 @@ public class WriteConcern: Codable {
     }
 
     /// Indicates the `W` value for this `WriteConcern`.
-    public var w: W {
-        if let wTag = mongoc_write_concern_get_wtag(self._writeConcern) {
-            return .tag(String(cString: wTag))
-        }
+    public var w: W? {
         let number = mongoc_write_concern_get_w(self._writeConcern)
-        if number == MONGOC_WRITE_CONCERN_W_MAJORITY { return .majority }
-        return .number(number)
+        switch number {
+        case MONGOC_WRITE_CONCERN_W_DEFAULT:
+            return nil
+        case MONGOC_WRITE_CONCERN_W_MAJORITY:
+            return .majority
+        case MONGOC_WRITE_CONCERN_W_TAG:
+            if let wTag = mongoc_write_concern_get_wtag(self._writeConcern) {
+                return .tag(String(cString: wTag))
+            }
+            fallthrough
+        default:
+            return .number(number)
+        }
     }
 
     /// Indicates whether to wait for the write operation to get committed to the journal.
     public var journal: Bool? {
-        return mongoc_write_concern_get_journal(self._writeConcern)
+        if mongoc_write_concern_journal_is_set(self._writeConcern) {
+            return mongoc_write_concern_get_journal(self._writeConcern)
+        }
+        return nil
     }
 
     /// If the write concern is not satisfied within this timeout (in milliseconds),
     /// the operation will return an error. The value MUST be greater than or equal to 0.
     public var wtimeoutMS: Int32? {
-        return mongoc_write_concern_get_wtimeout(self._writeConcern)
+        let timeout = mongoc_write_concern_get_wtimeout(self._writeConcern)
+        if timeout == 0 { return nil }
+        return timeout
     }
 
-    /// Indicates whether vbnm this is an acknowledged write concern.
+    /// Indicates whether this is an acknowledged write concern.
     public var isAcknowledged: Bool {
         return mongoc_write_concern_is_acknowledged(self._writeConcern)
     }
@@ -249,8 +258,8 @@ public class WriteConcern: Codable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encodeIfPresent(self.w, forKey: .w)
-        try container.encodeIfPresent(self.journal, forKey: .j)
         try container.encodeIfPresent(self.wtimeoutMS, forKey: .wtimeout)
+        try container.encodeIfPresent(self.journal, forKey: .j)
     }
 
     deinit {
