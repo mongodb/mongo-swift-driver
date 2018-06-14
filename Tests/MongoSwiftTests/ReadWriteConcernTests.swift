@@ -6,7 +6,7 @@ extension WriteConcern {
     /// Initialize a new `WriteConcern` from a `Document`. We can't
     /// use `decode` because the format is different in spec tests
     /// ("journal" instead of "j", etc.)
-    fileprivate convenience init(_ doc: Document) {
+    fileprivate convenience init(_ doc: Document) throws {
         let j = doc["journal"] as? Bool 
 
         var w: W? = nil
@@ -21,7 +21,7 @@ extension WriteConcern {
             wt = Int32(wtInt)
         }
 
-        self.init(journal: j, w: w, wtimeoutMS: wt)
+        try self.init(journal: j, w: w, wtimeoutMS: wt)
     }
 }
 
@@ -66,14 +66,16 @@ final class ReadWriteConcernTests: XCTestCase {
 
     func testWriteConcernType() throws {
         // try creating write concerns with various valid options
-        expect(WriteConcern(w: .number(0)).isValid).to(beTrue())
-        expect(WriteConcern(w: .number(3)).isValid).to(beTrue())
-        expect(WriteConcern(journal: true, w: .number(1)).isValid).to(beTrue())
-        expect(WriteConcern(w: .number(0), wtimeoutMS: 1000).isValid).to(beTrue())
-        expect(WriteConcern(w: .tag("hi")).isValid).to(beTrue())
+        expect(try WriteConcern(w: .number(0))).toNot(throwError())
+        expect(try WriteConcern(w: .number(3))).toNot(throwError())
+        expect(try WriteConcern(journal: true, w: .number(1))).toNot(throwError())
+        expect(try WriteConcern(w: .number(0), wtimeoutMS: 1000)).toNot(throwError())
+        expect(try WriteConcern(w: .tag("hi"))).toNot(throwError())
+        expect(try WriteConcern(w: .majority)).toNot(throwError())
+
 
         // verify that this combination is considered invalid
-        expect(WriteConcern(journal: true, w: .number(0)).isValid).to(beFalse())
+        expect(try WriteConcern(journal: true, w: .number(0))).to(throwError())
     }
 
     func testClientReadConcern() throws {
@@ -124,7 +126,7 @@ final class ReadWriteConcernTests: XCTestCase {
     func testClientWriteConcern() throws {
         let w1 = WriteConcern.W.number(1)
         let w2 = WriteConcern.W.number(2)
-        let wc2 = WriteConcern(w: w2)
+        let wc2 = try WriteConcern(w: w2)
 
         // test behavior of a client with initialized with no WC
         do {
@@ -199,7 +201,7 @@ final class ReadWriteConcernTests: XCTestCase {
         expect(coll3.readConcern?.level).to(equal("local"))
 
         // expect that a collection retrieved from a DB with local RC can override the DB's RC
-        var coll4 = try db2.collection("coll4", options: CollectionOptions(readConcern: ReadConcern(.majority)))
+        let coll4 = try db2.collection("coll4", options: CollectionOptions(readConcern: ReadConcern(.majority)))
         expect(coll4.readConcern?.level).to(equal("majority"))
     }
 
@@ -217,8 +219,8 @@ final class ReadWriteConcernTests: XCTestCase {
         coll1 = try db1.collection("coll1")
         expect(coll1.writeConcern).to(beNil())
 
-        let wc1 = WriteConcern(w: .number(1))
-        let wc2 = WriteConcern(w: .number(2))
+        let wc1 = try WriteConcern(w: .number(1))
+        let wc2 = try WriteConcern(w: .number(2))
 
         // expect that a collection retrieved from a DB with default WC can override the DB's WC
         var coll2 = try db1.collection("coll2", options: CollectionOptions(writeConcern: wc1))
@@ -238,7 +240,7 @@ final class ReadWriteConcernTests: XCTestCase {
         expect(coll3.writeConcern?.w).to(equal(wc1.w))
 
         // expect that a collection retrieved from a DB with w:1 can override the DB's WC
-        var coll4 = try db2.collection("coll4", options: CollectionOptions(writeConcern: wc2))
+        let coll4 = try db2.collection("coll4", options: CollectionOptions(writeConcern: wc2))
         expect(coll4.writeConcern?.w).to(equal(wc2.w))
     }
 
@@ -289,9 +291,9 @@ final class ReadWriteConcernTests: XCTestCase {
         }
 
         let coll = try db.createCollection("coll1")
-        let wc1 = WriteConcern(w: .number(1))
+        let wc1 = try WriteConcern(w: .number(1))
         let wc2 =  WriteConcern()
-        let wc3 = WriteConcern(journal: true)
+        let wc3 = try WriteConcern(journal: true)
 
         let command: Document = ["insert": "coll1", "documents": [nextDoc()] as [Document]]
 
@@ -361,7 +363,7 @@ final class ReadWriteConcernTests: XCTestCase {
                             expect(client.readConcern).to(equal(rc))
                         }
                     } else if let writeConcern = test["writeConcern"] as? Document {
-                        let wc = WriteConcern(writeConcern)
+                        let wc = try WriteConcern(writeConcern)
                         if wc.isDefault {
                             expect(client.writeConcern).to(beNil())
                         } else {
@@ -401,8 +403,10 @@ final class ReadWriteConcernTests: XCTestCase {
                         expect(try encoder.encode(rc)).to(equal(expected))
                     }
                 } else if let wcToUse = test["writeConcern"] as? Document {
-                    let wc = WriteConcern(wcToUse)
-                    if valid {   
+                    
+                    if valid {
+                        let wc = try WriteConcern(wcToUse)
+
                         let isAcknowledged: Bool = try test.get("isAcknowledged")
                         expect(wc.isAcknowledged).to(equal(isAcknowledged))
 
@@ -416,7 +420,7 @@ final class ReadWriteConcernTests: XCTestCase {
                             expect(try encoder.encode(wc)).to(equal(expected))
                         }
                     } else {
-                        expect(wc.isValid).to(beFalse())
+                        expect(try WriteConcern(wcToUse)).to(throwError())
                     }
                 }
             }

@@ -210,7 +210,7 @@ public class WriteConcern: Codable {
     }
 
     /// Indicates whether the combination of values set on this `WriteConcern` is valid.
-    public var isValid: Bool {
+    private var isValid: Bool {
         return mongoc_write_concern_is_valid(self._writeConcern)
     }
 
@@ -220,7 +220,7 @@ public class WriteConcern: Codable {
     }
 
     /// Initializes a new `WriteConcern`.
-    public init(journal: Bool? = nil, w: W? = nil, wtimeoutMS: Int32? = nil) {
+    public init(journal: Bool? = nil, w: W? = nil, wtimeoutMS: Int32? = nil) throws {
         self._writeConcern = mongoc_write_concern_new()
         if let journal = journal { mongoc_write_concern_set_journal(self._writeConcern, journal) }
         if let wtimeoutMS = wtimeoutMS { mongoc_write_concern_set_wtimeout(self._writeConcern, wtimeoutMS) }
@@ -234,6 +234,15 @@ public class WriteConcern: Codable {
             case .majority:
                 mongoc_write_concern_set_w(self._writeConcern, MONGOC_WRITE_CONCERN_W_MAJORITY)
             }
+        }
+
+        // we don't need to destroy the `mongoc_write_concern_t` here - `deinit` will be called anyway
+        if !self.isValid {
+            let journalStr = String(describing: journal)
+            let wStr = String(describing: w)
+            let timeoutStr = String(describing: wtimeoutMS)
+            throw MongoError.writeConcernError(message:
+                "Invalid combination of WriteConcern options: journal=\(journalStr), w=\(wStr), wtimeoutMS=\(timeoutStr)")
         }
     }
 
@@ -252,7 +261,7 @@ public class WriteConcern: Codable {
         let w = try container.decodeIfPresent(W.self, forKey: .w)
         let journal = try container.decodeIfPresent(Bool.self, forKey: .j)
         let wtimeoutMS = try container.decodeIfPresent(Int32.self, forKey: .wtimeout)
-        self.init(journal: journal, w: w, wtimeoutMS: wtimeoutMS)
+        try self.init(journal: journal, w: w, wtimeoutMS: wtimeoutMS)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -272,10 +281,11 @@ public class WriteConcern: Codable {
 /// An extension of `WriteConcern` to make it `CustomStringConvertible`.
 extension WriteConcern: CustomStringConvertible {
     public var description: String {
-        if let encoded = try? BsonEncoder().encode(self).description {
-            return encoded
+        do {
+            return try BsonEncoder().encode(self).description
+        } catch {
+            preconditionFailure("Error encoding WriteConcern to BSON: \(error)")
         }
-        return ""
     }
 }
 
