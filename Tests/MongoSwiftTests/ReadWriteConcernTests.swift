@@ -181,12 +181,8 @@ final class ReadWriteConcernTests: XCTestCase {
         coll1 = try db1.collection("coll1")
         expect(coll1.readConcern).to(beNil())
 
-        // expect that a collection created from a DB with unset RC can override the DB's RC
-        var coll2 = try db1.createCollection("coll2", options: CreateCollectionOptions(readConcern: ReadConcern(.local)))
-        expect(coll2.readConcern?.level).to(equal("local"))
-
         // expect that a collection retrieved from a DB with unset RC can override the DB's RC
-        coll2 = try db1.collection("coll2", options: CollectionOptions(readConcern: ReadConcern(.local)))
+        var coll2 = try db1.collection("coll2", options: CollectionOptions(readConcern: ReadConcern(.local)))
         expect(coll2.readConcern?.level).to(equal("local"))
 
         try db1.drop()
@@ -202,12 +198,8 @@ final class ReadWriteConcernTests: XCTestCase {
         coll3 = try db2.collection("coll3")
         expect(coll3.readConcern?.level).to(equal("local"))
 
-        // expect that a collection created from a DB with local RC can override the DB's RC
-        var coll4 = try db2.createCollection("coll4", options: CreateCollectionOptions(readConcern: ReadConcern(.majority)))
-        expect(coll4.readConcern?.level).to(equal("majority"))
-
         // expect that a collection retrieved from a DB with local RC can override the DB's RC
-        coll4 = try db2.collection("coll4", options: CollectionOptions(readConcern: ReadConcern(.majority)))
+        var coll4 = try db2.collection("coll4", options: CollectionOptions(readConcern: ReadConcern(.majority)))
         expect(coll4.readConcern?.level).to(equal("majority"))
     }
 
@@ -228,12 +220,8 @@ final class ReadWriteConcernTests: XCTestCase {
         let wc1 = WriteConcern(w: .number(1))
         let wc2 = WriteConcern(w: .number(2))
 
-        // expect that a collection created from a DB with default WC can override the DB's WC
-        var coll2 = try db1.createCollection("coll2", options: CreateCollectionOptions(writeConcern: wc1))
-        expect(coll2.writeConcern?.w).to(equal(wc1.w))
-
         // expect that a collection retrieved from a DB with default WC can override the DB's WC
-        coll2 = try db1.collection("coll2", options: CollectionOptions(writeConcern: wc1))
+        var coll2 = try db1.collection("coll2", options: CollectionOptions(writeConcern: wc1))
         expect(coll2.writeConcern?.w).to(equal(wc1.w))
 
         try db1.drop()
@@ -249,12 +237,8 @@ final class ReadWriteConcernTests: XCTestCase {
         coll3 = try db2.collection("coll3")
         expect(coll3.writeConcern?.w).to(equal(wc1.w))
 
-        // expect that a collection created from a DB with w:1 can override the DB's WC
-        var coll4 = try db2.createCollection("coll4", options: CreateCollectionOptions(writeConcern: wc2))
-        expect(coll4.writeConcern?.w).to(equal(wc2.w))
-
         // expect that a collection retrieved from a DB with w:1 can override the DB's WC
-        coll4 = try db2.collection("coll4", options: CollectionOptions(writeConcern: wc2))
+        var coll4 = try db2.collection("coll4", options: CollectionOptions(writeConcern: wc2))
         expect(coll4.writeConcern?.w).to(equal(wc2.w))
     }
 

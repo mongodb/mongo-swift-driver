@@ -78,26 +78,21 @@ public struct CreateCollectionOptions: Encodable {
     /// A session to associate with this operation
     public let session: ClientSession?
 
-    /// A read concern to set on the returned collection. If one is not specified, it will inherit
-    /// the database's read concern.
-    public let readConcern: ReadConcern?
-
-    /// A write concern to set on the returned collection. If one is not specified, it will inherit
-    /// the database's write concern.
+    /// A write concern to use when executing this command. To set a read or write concern
+    /// for the collection itself, retrieve the collection using `MongoDatabase.collection`.
     public let writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional
     public init(autoIndexId: Bool? = nil, capped: Bool? = nil, collation: Document? = nil,
-                indexOptionDefaults: Document? = nil, max: Int64? = nil, readConcern: ReadConcern? = nil,
-                session: ClientSession? = nil, size: Int64? = nil, storageEngine: Document? = nil,
-                validationAction: String? = nil, validationLevel: String? = nil, validator: Document? = nil,
-                viewOn: String? = nil, writeConcern: WriteConcern? = nil) {
+                indexOptionDefaults: Document? = nil, max: Int64? = nil, session: ClientSession? = nil,
+                size: Int64? = nil, storageEngine: Document? = nil, validationAction: String? = nil,
+                validationLevel: String? = nil, validator: Document? = nil, viewOn: String? = nil,
+                writeConcern: WriteConcern? = nil) {
         self.autoIndexId = autoIndexId
         self.capped = capped
         self.collation = collation
         self.indexOptionDefaults = indexOptionDefaults
         self.max = max
-        self.readConcern = readConcern
         self.session = session
         self.size = size
         self.storageEngine = storageEngine
@@ -106,13 +101,6 @@ public struct CreateCollectionOptions: Encodable {
         self.validator = validator
         self.viewOn = viewOn
         self.writeConcern = writeConcern
-    }
-
-    // Encode everything except `readConcern` and 'writeConcern`. We skip them because we don't actually
-    // send them with the initial command, we just set them on the collection after its creation.
-    private enum CodingKeys: String, CodingKey {
-        case autoIndexId, capped, collation, indexOptionDefaults, max, session,
-            size, storageEngine, validationAction, validationLevel, validator, viewOn
     }
 }
 
@@ -228,7 +216,7 @@ public class MongoDatabase {
     }
 
     /**
-     * Creates a collection in this database with the specified options
+     * Creates a collection in this database with the specified options.
      *
      * - Parameters:
      *   - name: a `String`, the name of the collection to create
@@ -261,14 +249,6 @@ public class MongoDatabase {
 
         guard let collection = mongoc_database_create_collection(self._database, name, opts?.data, &error) else {
             throw MongoError.commandError(message: toErrorString(error))
-        }
-
-        if let rc = options?.readConcern {
-            mongoc_collection_set_read_concern(collection, rc._readConcern)
-        }
-
-        if let wc = options?.writeConcern {
-            mongoc_collection_set_write_concern(collection, wc._writeConcern)
         }
 
         guard let client = self._client else {
