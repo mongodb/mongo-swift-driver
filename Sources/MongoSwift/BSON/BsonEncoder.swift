@@ -36,13 +36,16 @@ public class BsonEncoder {
                     debugDescription: "Top-level \(T.self) did not encode any values."))
         }
 
-        guard let dict = topLevel as? MutableDictionary else {
+        switch topLevel {
+        case let dict as MutableDictionary:
+            return dict.asDocument()
+        case let doc as Document:
+            return doc
+        default:
             throw EncodingError.invalidValue(value,
                 EncodingError.Context(codingPath: [],
                     debugDescription: "Top-level \(T.self) was not encoded as a complete document."))
         }
-
-        return dict.asDocument()
     }
 
     /// Encodes the given top-level optional value and returns its BSON representation. Returns nil if the
@@ -263,7 +266,6 @@ extension _BsonEncoder {
     }
 
     fileprivate func box<T: Encodable>(_ value: T) throws -> BsonValue? {
-
         // if it's already a BsonValue, just return it, unless if it is an 
         // array. technically [Any] is a BsonValue, but we can only use this
         // short-circuiting if all the elements are actually BsonValues.
@@ -518,6 +520,12 @@ private class MutableArray: BsonValue {
     func insert(_ value: BsonValue?, at index: Int) {
         self.array.insert(value, at: index)
     }
+
+    func encode(to encoder: Encoder) throws {}
+
+    required convenience init(from decoder: Decoder) throws {
+        self.init()
+    }
 }
 
 /// A private class wrapping a Swift dictionary so we can pass it by reference
@@ -557,6 +565,12 @@ private class MutableDictionary: BsonValue {
 
     static func from(iter: inout bson_iter_t) -> BsonValue {
         return Document.from(iter: &iter)
+    }
+
+    func encode(to encoder: Encoder) throws {}
+
+    required convenience init(from decoder: Decoder) throws {
+        self.init()
     }
 }
 
