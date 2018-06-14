@@ -1,21 +1,21 @@
 import libmongoc
 
-/// An enumeration of possible ReadConcern levels.
-public enum ReadConcernLevel: String {
-    /// See https://docs.mongodb.com/manual/reference/read-concern-local/
-    case local
-    /// See https://docs.mongodb.com/manual/reference/read-concern-available/
-    case available
-    /// See https://docs.mongodb.com/manual/reference/read-concern-majority/
-    case majority
-    /// See https://docs.mongodb.com/manual/reference/read-concern-linearizable/
-    case linearizable
-    /// See https://docs.mongodb.com/master/reference/read-concern-snapshot/
-    case snapshot
-}
-
 /// A class to represent a MongoDB read concern.
 public class ReadConcern: Codable {
+
+    /// An enumeration of possible ReadConcern levels.
+    public enum Level: String {
+        /// See https://docs.mongodb.com/manual/reference/read-concern-local/
+        case local
+        /// See https://docs.mongodb.com/manual/reference/read-concern-available/
+        case available
+        /// See https://docs.mongodb.com/manual/reference/read-concern-majority/
+        case majority
+        /// See https://docs.mongodb.com/manual/reference/read-concern-linearizable/
+        case linearizable
+        /// See https://docs.mongodb.com/master/reference/read-concern-snapshot/
+        case snapshot
+    }
 
     /// A pointer to a `mongoc_read_concern_t`.
     internal var _readConcern: OpaquePointer?
@@ -33,8 +33,8 @@ public class ReadConcern: Codable {
         return mongoc_read_concern_is_default(self._readConcern)
     }
 
-    /// Initialize a new `ReadConcern` from a `ReadConcernLevel`.
-    public convenience init(_ level: ReadConcernLevel) {
+    /// Initialize a new `ReadConcern` from a `ReadConcern.Level`.
+    public convenience init(_ level: Level) {
         self.init(level.rawValue)
     }
 
