@@ -8,7 +8,7 @@ internal class DocumentStorage {
         self.pointer = bson_new()
     }
 
-    init(fromPointer pointer: UnsafeMutablePointer<bson_t>) {
+    init(fromPointer pointer: UnsafePointer<bson_t>) {
         self.pointer = bson_copy(pointer)
     }
 
@@ -62,11 +62,11 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      * memory.
      *
      * - Parameters:
-     *   - fromPointer: a UnsafeMutablePointer<bson_t>
+     *   - fromPointer: a UnsafePointer<bson_t>
      *
      * - Returns: a new `Document`
      */
-    internal init(fromPointer pointer: UnsafeMutablePointer<bson_t>) {
+    internal init(fromPointer pointer: UnsafePointer<bson_t>) {
         self.storage = DocumentStorage(fromPointer: pointer)
     }
 
@@ -138,7 +138,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
                 )
             }
 
-            return bson
+            return UnsafePointer(bson)
         })
     }
 
