@@ -57,7 +57,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
             out.deallocate(capacity: 1)
         }
         if !mongoc_cursor_next(self._cursor, out) { return nil }
-        let doc = Document(fromPointer: UnsafeMutablePointer(mutating: out.pointee!))
+        let doc = Document(fromPointer: out.pointee!)
 
         do {
             return try BsonDecoder().decode(T.self, from: doc)

@@ -173,8 +173,7 @@ public struct ServerDescription {
         self.connectionId = ConnectionId(mongoc_server_description_host(description))
         self.roundTripTime = mongoc_server_description_round_trip_time(description)
 
-        let isMasterData =  UnsafeMutablePointer(mutating: mongoc_server_description_ismaster(description)!)
-        let isMaster = Document(fromPointer: isMasterData)
+        let isMaster = Document(fromPointer: mongoc_server_description_ismaster(description)!)
         self.parseIsMaster(isMaster)
 
         let serverType = String(cString: mongoc_server_description_type(description))
