@@ -80,8 +80,6 @@ public struct AnyBsonValue: Codable {
             self.value = value
         } else if let value = try? container.decode(Double.self) {
             self.value = value
-        } else if let value = try? container.decode(Date.self) {
-            self.value = value
         } else if let value = try? container.decode(Decimal128.self) {
             self.value = value
         } else if let value = try? container.decode(MinKey.self) {

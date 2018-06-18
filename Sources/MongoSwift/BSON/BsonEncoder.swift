@@ -509,22 +509,24 @@ private class MutableArray: BsonValue {
 
     var count: Int { return array.count }
 
-    func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
-        try self.array.encode(to: data, forKey: key)
-    }
-
-    static func from(iter: inout bson_iter_t) -> BsonValue {
-        return [BsonValue].from(iter: &iter)
-    }
-
     func insert(_ value: BsonValue?, at index: Int) {
         self.array.insert(value, at: index)
     }
 
-    func encode(to encoder: Encoder) throws {}
+    func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
+        try self.array.encode(to: data, forKey: key)
+    }
 
+    /// methods required by the BsonValue protocol that we don't actually need/use. MutableArray
+    /// is just a BsonValue to simplify usage alongside true BsonValues within the encoder.
+    static func from(iter: inout bson_iter_t) -> BsonValue {
+        fatalError("MutableArray is not meant to be initialized from a bson_iter_t")
+    }
+    func encode(to encoder: Encoder) throws {
+        fatalError("`MutableArray` is not meant to be encoded with an `Encoder`")
+    }
     required convenience init(from decoder: Decoder) throws {
-        self.init()
+        fatalError("`MutableArray` is not meant to be initialized from a `Decoder`")
     }
 }
 
@@ -563,14 +565,16 @@ private class MutableDictionary: BsonValue {
         try self.asDocument().encode(to: data, forKey: key)
     }
 
+    /// methods required by the BsonValue protocol that we don't actually need/use. MutableDictionary
+    /// is just a BsonValue to simplify usage alongside true BsonValues within the encoder.
     static func from(iter: inout bson_iter_t) -> BsonValue {
-        return Document.from(iter: &iter)
+        fatalError("`MutableDictionary` is not meant to be initialized from a `bson_iter_t`")
     }
-
-    func encode(to encoder: Encoder) throws {}
-
+    func encode(to encoder: Encoder) throws {
+        fatalError("`MutableDictionary` is not meant to be encoded with an `Encoder`")
+    }
     required convenience init(from decoder: Decoder) throws {
-        self.init()
+        fatalError("`MutableDictionary` is not meant to be initialized from a `Decoder`")
     }
 }
 
