@@ -690,4 +690,31 @@ final class CodecTests: XCTestCase {
         expect(try decoder.decode(AnyBsonStruct.self,
             from: wrappedMinKey.canonicalExtendedJSON).x.value as? MinKey).to(equal(minKey))
     }
+
+    struct OptionalAnyBson: Codable {
+        let val: AnyBsonValue?
+
+        init(_ value: BsonValue?) {
+            if let v = value {
+                self.val = AnyBsonValue(v)
+            } else {
+                self.val = nil
+            }
+        }
+    }
+
+    struct OptionalAnyBsonArr {
+        let values: [AnyBsonValue?]
+    }
+
+    func testOptionalAnyBsonValue() throws {
+        let encoder = BsonEncoder()
+
+        let doc: Document = ["y": 1]
+        expect(try encoder.encode(OptionalAnyBson(doc))).to(equal(["val": doc]))
+        expect(try encoder.encode(OptionalAnyBson(nil))).to(beNil())
+
+        let data = try JSONEncoder().encode(OptionalAnyBson(nil))
+        print(String(data: data, encoding: .utf8))
+    }
 }

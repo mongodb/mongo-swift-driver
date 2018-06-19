@@ -27,7 +27,7 @@ public class BsonEncoder {
     /// - throws: An error if any value throws an error during encoding.
     public func encode<T: Encodable>(_ value: T) throws -> Document {
         // if the value being encoded is already a `Document` we're done
-        if let doc = value as? Document { return doc }
+        //if let doc = value as? Document { return doc }
 
         let encoder = _BsonEncoder(options: self.options)
         guard let topLevel = try encoder.box(value) else {
