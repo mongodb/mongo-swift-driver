@@ -1003,7 +1003,7 @@ public class MongoCollection<T: Codable> {
      * Drops all indexes in the collection.
      * 
      * - Parameters:
-    *   - writeConcern: An optional `WriteConcern` to use for the command
+    *    - writeConcern: An optional `WriteConcern` to use for the command
      *
      * - Returns: a `Document` containing the server's response to the command.
      */
