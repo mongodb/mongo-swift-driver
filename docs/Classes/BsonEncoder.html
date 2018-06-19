@@ -52,7 +52,19 @@
                 <a href="../Classes/MongoDatabase.html">MongoDatabase</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Classes/MongoSwift.html">MongoSwift</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Classes/ReadConcern.html">ReadConcern</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/ReadConcern/Level.html">– Level</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/WriteConcern.html">WriteConcern</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/WriteConcern/W.html">– W</a>
               </li>
             </ul>
           </li>
@@ -73,9 +85,6 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Enums/MongoEventType.html">MongoEventType</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Enums/ReadConcernLevel.html">ReadConcernLevel</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Enums/ServerType.html">ServerType</a>
@@ -152,7 +161,7 @@
                 <a href="../Structs/CodeWithScope.html">CodeWithScope</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs.html#/s:10MongoSwift17CollectionOptionsV">CollectionOptions</a>
+                <a href="../Structs/CollectionOptions.html">CollectionOptions</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/CommandFailedEvent.html">CommandFailedEvent</a>
@@ -173,7 +182,10 @@
                 <a href="../Structs/CreateCollectionOptions.html">CreateCollectionOptions</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs.html#/s:10MongoSwift15DatabaseOptionsV">DatabaseOptions</a>
+                <a href="../Structs/CreateIndexOptions.html">CreateIndexOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/DatabaseOptions.html">DatabaseOptions</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/Decimal128.html">Decimal128</a>
@@ -192,6 +204,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/Document/DocumentIterator.html">– DocumentIterator</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/DropIndexOptions.html">DropIndexOptions</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/FindOptions.html">FindOptions</a>
@@ -465,12 +480,124 @@ value is nil or if it contains no data.</p>
                     </section>
                   </div>
                 </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift11BsonEncoderC6encodeSayAA8DocumentVGSayxGKs9EncodableRzlF"></a>
+                    <a name="//apple_ref/swift/Method/encode(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift11BsonEncoderC6encodeSayAA8DocumentVGSayxGKs9EncodableRzlF">encode(_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Encodes the given array of top-level values and returns an array of their BSON representations.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    An error if any value throws an error during encoding.
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">encode</span><span class="o">&lt;</span><span class="kt">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">_</span> <span class="nv">values</span><span class="p">:</span> <span class="p">[</span><span class="kt">T</span><span class="p">])</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">]</span> <span class="k">where</span> <span class="kt">T</span> <span class="p">:</span> <span class="kt">Encodable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>values</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The values to encode.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A new <code>[Document]</code> containing the encoded BSON data.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift11BsonEncoderC6encodeSayAA8DocumentVSgGSayxSgGKs9EncodableRzlF"></a>
+                    <a name="//apple_ref/swift/Method/encode(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift11BsonEncoderC6encodeSayAA8DocumentVSgGSayxSgGKs9EncodableRzlF">encode(_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Encodes the given array of top-level optional values and returns an array of their BSON representations. 
+Any value that is nil or contains no data will be mapped to nil.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    An error if any value throws an error during encoding.
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">encode</span><span class="o">&lt;</span><span class="kt">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">_</span> <span class="nv">values</span><span class="p">:</span> <span class="p">[</span><span class="kt">T</span><span class="p">?])</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?]</span> <span class="k">where</span> <span class="kt">T</span> <span class="p">:</span> <span class="kt">Encodable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>values</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The values to encode.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A new <code>[Document?]</code> containing the encoded BSON data. Any value that is nil or 
+       contains no data will be mapped to nil.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
               </ul>
             </div>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone and Kaitlin Mahar</a>. All rights reserved. (Last updated: 2018-05-29)</p>
+          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone and Kaitlin Mahar</a>. All rights reserved. (Last updated: 2018-06-19)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>

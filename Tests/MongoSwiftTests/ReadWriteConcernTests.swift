@@ -2,15 +2,42 @@
 import Nimble
 import XCTest
 
-import libmongoc
+extension WriteConcern {
+    /// Initialize a new `WriteConcern` from a `Document`. We can't
+    /// use `decode` because the format is different in spec tests
+    /// ("journal" instead of "j", etc.)
+    fileprivate convenience init(_ doc: Document) throws {
+        let j = doc["journal"] as? Bool 
+
+        var w: W? = nil
+        if let wtag = doc["w"] as? String {
+            w = wtag == "majority" ? .majority : .tag(wtag)
+        } else if let wInt = doc["w"] as? Int {
+            w = .number(Int32(wInt))
+        }
+
+        var wt: Int32? = nil
+        if let wtInt = doc["wtimeoutMS"] as? Int {
+            wt = Int32(wtInt)
+        }
+
+        try self.init(journal: j, w: w, wtimeoutMS: wt)
+    }
+}
 
 final class ReadWriteConcernTests: XCTestCase {
     static var allTests: [(String, (ReadWriteConcernTests) -> () throws -> Void)] {
         return [
             ("testReadConcernType", testReadConcernType),
+            ("testWriteConcernType", testWriteConcernType),
             ("testClientReadConcern", testClientReadConcern),
+            ("testClientWriteConcern", testClientWriteConcern),
             ("testDatabaseReadConcern", testDatabaseReadConcern),
-            ("testOperationReadConcerns", testOperationReadConcerns)
+            ("testDatabaseWriteConcern", testDatabaseWriteConcern),
+            ("testOperationReadConcerns", testOperationReadConcerns),
+            ("testOperationWriteConcerns", testOperationReadConcerns),
+            ("testConnectionStrings", testConnectionStrings),
+            ("testDocuments", testDocuments)
         ]
     }
 
@@ -37,53 +64,116 @@ final class ReadWriteConcernTests: XCTestCase {
 
     }
 
+    func testWriteConcernType() throws {
+        // try creating write concerns with various valid options
+        expect(try WriteConcern(w: .number(0))).toNot(throwError())
+        expect(try WriteConcern(w: .number(3))).toNot(throwError())
+        expect(try WriteConcern(journal: true, w: .number(1))).toNot(throwError())
+        expect(try WriteConcern(w: .number(0), wtimeoutMS: 1000)).toNot(throwError())
+        expect(try WriteConcern(w: .tag("hi"))).toNot(throwError())
+        expect(try WriteConcern(w: .majority)).toNot(throwError())
+
+
+        // verify that this combination is considered invalid
+        expect(try WriteConcern(journal: true, w: .number(0))).to(throwError())
+    }
+
     func testClientReadConcern() throws {
-        // create a client with no options and check its RC
-        let client1 = try MongoClient()
-        // expect the readConcern property to exist with a nil level
-        expect(client1.readConcern).to(beNil())
 
-        // expect that a DB created from this client inherits its unset RC 
-        let db1 = try client1.db("test")
-        expect(db1.readConcern).to(beNil())
+        let majority = ReadConcern(.majority)
 
-        // expect that a DB created from this client can override the client's unset RC
-        let db2 = try client1.db("test", options: DatabaseOptions(readConcern: ReadConcern(.majority)))
-        expect(db2.readConcern?.level).to(equal("majority"))
+        // test behavior of a client with initialized with no RC
+        do {
+            let client = try MongoClient()
+            // expect the readConcern property to exist with a nil level
+            expect(client.readConcern).to(beNil())
 
-        client1.close()
+            // expect that a DB created from this client inherits its unset RC 
+            let db1 = try client.db("test")
+            expect(db1.readConcern).to(beNil())
 
-        // create a client with local read concern and check its RC
-        let client2 = try MongoClient(options: ClientOptions(readConcern: ReadConcern(.local)))
-        // although local is default, if it is explicitly provided it should be set
-        expect(client2.readConcern?.level).to(equal("local"))
+            // expect that a DB created from this client can override the client's unset RC
+            let db2 = try client.db("test", options: DatabaseOptions(readConcern: majority))
+            expect(db2.readConcern?.level).to(equal("majority"))
+        }
 
-        // expect that a DB created from this client inherits its local RC 
-        let db3 = try client2.db("test")
-        expect(db3.readConcern?.level).to(equal("local"))
+        // test behavior of a client initialized with local RC
+        do {
+            let client = try MongoClient(options: ClientOptions(readConcern: ReadConcern(.local)))
+            // although local is default, if it is explicitly provided it should be set
+            expect(client.readConcern?.level).to(equal("local"))
 
-        // expect that a DB created from this client can override the client's local RC
-        let db4 = try client2.db("test", options: DatabaseOptions(readConcern: ReadConcern(.majority)))
-        expect(db4.readConcern?.level).to(equal("majority"))
+            // expect that a DB created from this client inherits its local RC 
+            let db1 = try client.db("test")
+            expect(db1.readConcern?.level).to(equal("local"))
 
-        client2.close()
+            // expect that a DB created from this client can override the client's local RC
+            let db2 = try client.db("test", options: DatabaseOptions(readConcern: majority))
+            expect(db2.readConcern?.level).to(equal("majority"))
+        }
 
-        // create a client with majority read concern and check its RC
-        let client3 = try MongoClient(options: ClientOptions(readConcern: ReadConcern(.majority)))
-        expect(client3.readConcern?.level).to(equal("majority"))
+        // test behavior of a client initialized with majority RC
+        do {
+            let client = try MongoClient(options: ClientOptions(readConcern: majority))
+            expect(client.readConcern?.level).to(equal("majority"))
 
-        // expect that a DB created from this client can override the client's majority RC with an unset one
-        let db5 = try client3.db("test", options: DatabaseOptions(readConcern: ReadConcern()))
-        expect(db5.readConcern).to(beNil())
+            // expect that a DB created from this client can override the client's majority RC with an unset one
+            let db = try client.db("test", options: DatabaseOptions(readConcern: ReadConcern()))
+            expect(db.readConcern).to(beNil())
+        }
+    }
 
-        client3.close()
+    func testClientWriteConcern() throws {
+        let w1 = WriteConcern.W.number(1)
+        let w2 = WriteConcern.W.number(2)
+        let wc2 = try WriteConcern(w: w2)
+
+        // test behavior of a client with initialized with no WC
+        do {
+            let client1 = try MongoClient()
+            // expect the readConcern property to exist and be default
+            expect(client1.writeConcern).to(beNil())
+
+            // expect that a DB created from this client inherits its default WC
+            let db1 = try client1.db("test")
+            expect(db1.writeConcern).to(beNil())
+
+            // expect that a DB created from this client can override the client's default WC
+            let db2 = try client1.db("test", options: DatabaseOptions(writeConcern: wc2))
+            expect(db2.writeConcern?.w).to(equal(w2))
+        }
+
+        // test behavior of a client with w: 1
+        do {
+            let client2 = try MongoClient(options: ClientOptions(writeConcern: WriteConcern(w: .number(1))))
+            // although w:1 is default, if it is explicitly provided it should be set
+            expect(client2.writeConcern?.w).to(equal(w1))
+
+            // expect that a DB created from this client inherits its WC
+            let db3 = try client2.db("test")
+            expect(db3.writeConcern?.w).to(equal(w1))
+
+            // expect that a DB created from this client can override the client's WC
+            let db4 = try client2.db("test", options: DatabaseOptions(writeConcern: wc2))
+            expect(db4.writeConcern?.w).to(equal(w2))
+        }
+
+        // test behavior of a client with w: 2
+        do {
+            let client3 = try MongoClient(options: ClientOptions(writeConcern: wc2))
+            expect(client3.writeConcern?.w).to(equal(w2))
+
+            // expect that a DB created from this client can override the client's WC with an unset one
+            let db5 = try client3.db("test", options: DatabaseOptions(writeConcern: WriteConcern()))
+            expect(db5.writeConcern).to(beNil())
+        }
     }
 
     func testDatabaseReadConcern() throws {
         let client = try MongoClient()
 
         let db1 = try client.db("test")
-        defer {try? db1.drop() }
+        defer { try? db1.drop() }
 
         // expect that a collection created from a DB with unset RC also has unset RC
         var coll1 = try db1.createCollection("coll1")
@@ -93,12 +183,8 @@ final class ReadWriteConcernTests: XCTestCase {
         coll1 = try db1.collection("coll1")
         expect(coll1.readConcern).to(beNil())
 
-        // expect that a collection created from a DB with unset RC can override the DB's RC
-        var coll2 = try db1.createCollection("coll2", options: CreateCollectionOptions(readConcern: ReadConcern(.local)))
-        expect(coll2.readConcern?.level).to(equal("local"))
-
         // expect that a collection retrieved from a DB with unset RC can override the DB's RC
-        coll2 = try db1.collection("coll2", options: CollectionOptions(readConcern: ReadConcern(.local)))
+        var coll2 = try db1.collection("coll2", options: CollectionOptions(readConcern: ReadConcern(.local)))
         expect(coll2.readConcern?.level).to(equal("local"))
 
         try db1.drop()
@@ -114,13 +200,48 @@ final class ReadWriteConcernTests: XCTestCase {
         coll3 = try db2.collection("coll3")
         expect(coll3.readConcern?.level).to(equal("local"))
 
-        // expect that a collection created from a DB with local RC can override the DB's RC
-        var coll4 = try db2.createCollection("coll4", options: CreateCollectionOptions(readConcern: ReadConcern(.majority)))
-        expect(coll4.readConcern?.level).to(equal("majority"))
-
         // expect that a collection retrieved from a DB with local RC can override the DB's RC
-        coll4 = try db2.collection("coll4", options: CollectionOptions(readConcern: ReadConcern(.majority)))
+        let coll4 = try db2.collection("coll4", options: CollectionOptions(readConcern: ReadConcern(.majority)))
         expect(coll4.readConcern?.level).to(equal("majority"))
+    }
+
+    func testDatabaseWriteConcern() throws {
+        let client = try MongoClient()
+
+        let db1 = try client.db("test")
+        defer { try? db1.drop() }
+
+        // expect that a collection created from a DB with default WC also has default WC
+        var coll1 = try db1.createCollection("coll1")
+        expect(coll1.writeConcern).to(beNil())
+
+        // expect that a collection retrieved from a DB with default WC also has default WC
+        coll1 = try db1.collection("coll1")
+        expect(coll1.writeConcern).to(beNil())
+
+        let wc1 = try WriteConcern(w: .number(1))
+        let wc2 = try WriteConcern(w: .number(2))
+
+        // expect that a collection retrieved from a DB with default WC can override the DB's WC
+        var coll2 = try db1.collection("coll2", options: CollectionOptions(writeConcern: wc1))
+        expect(coll2.writeConcern?.w).to(equal(wc1.w))
+
+        try db1.drop()
+
+        let db2 = try client.db("test", options: DatabaseOptions(writeConcern: wc1))
+        defer { try? db2.drop() }
+
+        // expect that a collection created from a DB with w:1 also has w:1
+        var coll3 = try db2.createCollection("coll3")
+        expect(coll3.writeConcern?.w).to(equal(wc1.w))
+
+        // expect that a collection retrieved from a DB with w:1 also has w:1
+        coll3 = try db2.collection("coll3")
+        expect(coll3.writeConcern?.w).to(equal(wc1.w))
+
+        // expect that a collection retrieved from a DB with w:1 can override the DB's WC
+        let coll4 = try db2.collection("coll4", options: CollectionOptions(writeConcern: wc2))
+        expect(coll4.writeConcern?.w).to(equal(wc2.w))
     }
 
     func testOperationReadConcerns() throws {
@@ -158,6 +279,67 @@ final class ReadWriteConcernTests: XCTestCase {
             options: DistinctOptions(readConcern: ReadConcern(.local)))).toNot(throwError())
     }
 
+    func testOperationWriteConcerns() throws {
+        let client = try MongoClient()
+        let db = try client.db("test")
+        defer { try? db.drop() }
+
+        var counter = 0
+        func nextDoc() -> Document {
+            defer { counter += 1 }
+            return ["x": counter]
+        }
+
+        let coll = try db.createCollection("coll1")
+        let wc1 = try WriteConcern(w: .number(1))
+        let wc2 =  WriteConcern()
+        let wc3 = try WriteConcern(journal: true)
+
+        let command: Document = ["insert": "coll1", "documents": [nextDoc()] as [Document]]
+
+        // run command with a valid writeConcern
+        let options1 = RunCommandOptions(writeConcern: wc1)
+        let res1 = try db.runCommand(command, options: options1)
+        expect(res1["ok"] as? Double).to(equal(1.0))
+
+        // run command with an empty writeConcern
+        let options2 = RunCommandOptions(writeConcern: wc2)
+        let res2 = try db.runCommand(command, options: options2)
+        expect(res2["ok"] as? Double).to(equal(1.0))
+
+        expect(try coll.insertOne(nextDoc(), options: InsertOneOptions(writeConcern: wc1))).toNot(throwError())
+        expect(try coll.insertOne(nextDoc(), options: InsertOneOptions(writeConcern: wc3))).toNot(throwError())
+
+        expect(try coll.insertMany([nextDoc(), nextDoc()], options: InsertManyOptions(writeConcern: wc1))).toNot(throwError())
+        expect(try coll.insertMany([nextDoc(), nextDoc()], options: InsertManyOptions(writeConcern: wc3))).toNot(throwError())
+
+        expect(try coll.updateOne(filter: ["x": 1], update: ["$set": nextDoc()], options: UpdateOptions(writeConcern: wc2))).toNot(throwError())
+        expect(try coll.updateOne(filter: ["x": 2], update: ["$set": nextDoc()], options: UpdateOptions(writeConcern: wc3))).toNot(throwError())
+
+        expect(try coll.updateMany(filter: ["x": 3], update: ["$set": nextDoc()], options: UpdateOptions(writeConcern: wc2))).toNot(throwError())
+        expect(try coll.updateMany(filter: ["x": 4], update: ["$set": nextDoc()], options: UpdateOptions(writeConcern: wc3))).toNot(throwError())
+
+        let coll2 = try db.createCollection("coll2")
+        defer { try? coll2.drop() }
+        let pipeline: [Document] = [["$out": "test.coll2"]]
+        expect(try coll.aggregate(pipeline, options: AggregateOptions(writeConcern: wc1))).toNot(throwError())
+
+        expect(try coll.replaceOne(filter: ["x": 5], replacement: nextDoc(), options: ReplaceOptions(writeConcern: wc1))).toNot(throwError())
+        expect(try coll.replaceOne(filter: ["x": 6], replacement: nextDoc(), options: ReplaceOptions(writeConcern: wc3))).toNot(throwError())
+
+        expect(try coll.deleteOne(["x": 7], options: DeleteOptions(writeConcern: wc1))).toNot(throwError())
+        expect(try coll.deleteOne(["x": 8], options: DeleteOptions(writeConcern: wc3))).toNot(throwError())
+
+        expect(try coll.deleteMany(["x": 9], options: DeleteOptions(writeConcern: wc1))).toNot(throwError())
+        expect(try coll.deleteMany(["x": 10], options: DeleteOptions(writeConcern: wc3))).toNot(throwError())
+
+        expect(try coll.createIndex(["x": 1], commandOptions: CreateIndexOptions(writeConcern: wc1))).toNot(throwError())
+        expect(try coll.createIndexes([IndexModel(keys: ["x": -1])], options: CreateIndexOptions(writeConcern: wc3))).toNot(throwError())
+
+        expect(try coll.dropIndex(["x": 1], commandOptions: DropIndexOptions(writeConcern: wc1))).toNot(throwError())
+        expect(try coll.dropIndexes(options: DropIndexOptions(writeConcern: wc3))).toNot(throwError())
+    }
+
     func testConnectionStrings() throws {
         let csPath = "\(self.getSpecsPath())/read-write-concern/tests/connection-string"
         let testFiles = try FileManager.default.contentsOfDirectory(atPath: csPath).filter { $0.hasSuffix(".json") }
@@ -181,7 +363,12 @@ final class ReadWriteConcernTests: XCTestCase {
                             expect(client.readConcern).to(equal(rc))
                         }
                     } else if let writeConcern = test["writeConcern"] as? Document {
-                        // TODO SWIFT-30: verify the writeconcern matches that on the client
+                        let wc = try WriteConcern(writeConcern)
+                        if wc.isDefault {
+                            expect(client.writeConcern).to(beNil())
+                        } else {
+                            expect(client.writeConcern).to(equal(wc))
+                        }
                     }
                 } else {
                     expect(try MongoClient(connectionString: uri)).to(throwError())
@@ -191,6 +378,7 @@ final class ReadWriteConcernTests: XCTestCase {
     }
 
     func testDocuments() throws {
+        let encoder = BsonEncoder()
         let docsPath = "\(self.getSpecsPath())/read-write-concern/tests/document"
         let testFiles = try FileManager.default.contentsOfDirectory(atPath: docsPath).filter { $0.hasSuffix(".json") }
         for filename in testFiles {
@@ -204,10 +392,36 @@ final class ReadWriteConcernTests: XCTestCase {
                 let valid: Bool = try test.get("valid")
                 if let rcToUse = test["readConcern"] as? Document {
                     let rc = ReadConcern(rcToUse)
-                    let rcToSend = ReadConcern(test["readConcernDocument"] as! Document)
-                    expect(rcToSend).to(equal(rc))
+
+                    let isDefault: Bool = try test.get("isServerDefault")
+                    expect(rc.isDefault).to(equal(isDefault))
+
+                    let expected: Document = try test.get("readConcernDocument")
+                    if expected == [:] {
+                        expect(try encoder.encode(rc)).to(beNil())
+                    } else {
+                        expect(try encoder.encode(rc)).to(equal(expected))
+                    }
                 } else if let wcToUse = test["writeConcern"] as? Document {
-                    // TODO SWIFT-30: encode the write concern and confirm it matches the expected one
+                    
+                    if valid {
+                        let wc = try WriteConcern(wcToUse)
+
+                        let isAcknowledged: Bool = try test.get("isAcknowledged")
+                        expect(wc.isAcknowledged).to(equal(isAcknowledged))
+
+                        let isDefault: Bool = try test.get("isServerDefault")
+                        expect(wc.isDefault).to(equal(isDefault))
+
+                        let expected: Document = try test.get("writeConcernDocument")
+                        if expected == [:] {
+                            expect(try encoder.encode(wc)).to(beNil())
+                        } else {
+                            expect(try encoder.encode(wc)).to(equal(expected))
+                        }
+                    } else {
+                        expect(try WriteConcern(wcToUse)).to(throwError())
+                    }
                 }
             }
         }

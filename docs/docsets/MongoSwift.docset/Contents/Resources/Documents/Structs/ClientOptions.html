@@ -52,7 +52,19 @@
                 <a href="../Classes/MongoDatabase.html">MongoDatabase</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Classes/MongoSwift.html">MongoSwift</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Classes/ReadConcern.html">ReadConcern</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/ReadConcern/Level.html">– Level</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/WriteConcern.html">WriteConcern</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/WriteConcern/W.html">– W</a>
               </li>
             </ul>
           </li>
@@ -73,9 +85,6 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Enums/MongoEventType.html">MongoEventType</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Enums/ReadConcernLevel.html">ReadConcernLevel</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Enums/ServerType.html">ServerType</a>
@@ -152,7 +161,7 @@
                 <a href="../Structs/CodeWithScope.html">CodeWithScope</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs.html#/s:10MongoSwift17CollectionOptionsV">CollectionOptions</a>
+                <a href="../Structs/CollectionOptions.html">CollectionOptions</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/CommandFailedEvent.html">CommandFailedEvent</a>
@@ -173,7 +182,10 @@
                 <a href="../Structs/CreateCollectionOptions.html">CreateCollectionOptions</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs.html#/s:10MongoSwift15DatabaseOptionsV">DatabaseOptions</a>
+                <a href="../Structs/CreateIndexOptions.html">CreateIndexOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/DatabaseOptions.html">DatabaseOptions</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/Decimal128.html">Decimal128</a>
@@ -192,6 +204,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/Document/DocumentIterator.html">– DocumentIterator</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/DropIndexOptions.html">DropIndexOptions</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/FindOptions.html">FindOptions</a>
@@ -358,9 +373,65 @@ command and server discovery and monitoring events.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift13ClientOptionsVACSb15eventMonitoring_AA11ReadConcernCSg04readH0SbSg11retryWritestcfc"></a>
-                    <a name="//apple_ref/swift/Method/init(eventMonitoring:readConcern:retryWrites:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift13ClientOptionsVACSb15eventMonitoring_AA11ReadConcernCSg04readH0SbSg11retryWritestcfc">init(eventMonitoring:readConcern:retryWrites:)</a>
+                    <a name="/s:10MongoSwift13ClientOptionsV11readConcernAA04ReadF0CSgvp"></a>
+                    <a name="//apple_ref/swift/Property/readConcern" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift13ClientOptionsV11readConcernAA04ReadF0CSgvp">readConcern</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies a ReadConcern to use for the client. If one is not specified,
+the server&rsquo;s default read concern will be used.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">readConcern</span><span class="p">:</span> <span class="kt"><a href="../Classes/ReadConcern.html">ReadConcern</a></span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift13ClientOptionsV12writeConcernAA05WriteF0CSgvp"></a>
+                    <a name="//apple_ref/swift/Property/writeConcern" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift13ClientOptionsV12writeConcernAA05WriteF0CSgvp">writeConcern</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies a WriteConcern to use for the client. If one is not specified,
+the server&rsquo;s default write concern will be used.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">writeConcern</span><span class="p">:</span> <span class="kt"><a href="../Classes/WriteConcern.html">WriteConcern</a></span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift13ClientOptionsVACSb15eventMonitoring_AA11ReadConcernCSg04readH0SbSg11retryWritesAA05WriteH0CSg05writeH0tcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(eventMonitoring:readConcern:retryWrites:writeConcern:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift13ClientOptionsVACSb15eventMonitoring_AA11ReadConcernCSg04readH0SbSg11retryWritesAA05WriteH0CSg05writeH0tcfc">init(eventMonitoring:readConcern:retryWrites:writeConcern:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -375,7 +446,8 @@ command and server discovery and monitoring events.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">eventMonitoring</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">,</span> <span class="nv">readConcern</span><span class="p">:</span> <span class="kt"><a href="../Classes/ReadConcern.html">ReadConcern</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">retryWrites</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">eventMonitoring</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">,</span> <span class="nv">readConcern</span><span class="p">:</span> <span class="kt"><a href="../Classes/ReadConcern.html">ReadConcern</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">retryWrites</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+            <span class="nv">writeConcern</span><span class="p">:</span> <span class="kt"><a href="../Classes/WriteConcern.html">WriteConcern</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
@@ -387,7 +459,7 @@ command and server discovery and monitoring events.</p>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone and Kaitlin Mahar</a>. All rights reserved. (Last updated: 2018-05-29)</p>
+          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone and Kaitlin Mahar</a>. All rights reserved. (Last updated: 2018-06-19)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>

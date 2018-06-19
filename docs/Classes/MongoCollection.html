@@ -52,7 +52,19 @@
                 <a href="../Classes/MongoDatabase.html">MongoDatabase</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Classes/MongoSwift.html">MongoSwift</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Classes/ReadConcern.html">ReadConcern</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/ReadConcern/Level.html">– Level</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/WriteConcern.html">WriteConcern</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/WriteConcern/W.html">– W</a>
               </li>
             </ul>
           </li>
@@ -73,9 +85,6 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Enums/MongoEventType.html">MongoEventType</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Enums/ReadConcernLevel.html">ReadConcernLevel</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Enums/ServerType.html">ServerType</a>
@@ -152,7 +161,7 @@
                 <a href="../Structs/CodeWithScope.html">CodeWithScope</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs.html#/s:10MongoSwift17CollectionOptionsV">CollectionOptions</a>
+                <a href="../Structs/CollectionOptions.html">CollectionOptions</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/CommandFailedEvent.html">CommandFailedEvent</a>
@@ -173,7 +182,10 @@
                 <a href="../Structs/CreateCollectionOptions.html">CreateCollectionOptions</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs.html#/s:10MongoSwift15DatabaseOptionsV">DatabaseOptions</a>
+                <a href="../Structs/CreateIndexOptions.html">CreateIndexOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/DatabaseOptions.html">DatabaseOptions</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/Decimal128.html">Decimal128</a>
@@ -192,6 +204,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/Document/DocumentIterator.html">– DocumentIterator</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/DropIndexOptions.html">DropIndexOptions</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/FindOptions.html">FindOptions</a>
@@ -382,6 +397,33 @@ from this same type.</p>
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">readConcern</span><span class="p">:</span> <span class="kt"><a href="../Classes/ReadConcern.html">ReadConcern</a></span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A10CollectionC12writeConcernAA05WriteE0CSgvp"></a>
+                    <a name="//apple_ref/swift/Property/writeConcern" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC12writeConcernAA05WriteE0CSgvp">writeConcern</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The <code><a href="../Classes/WriteConcern.html">WriteConcern</a></code> set on this collection, or nil if one is not set.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">writeConcern</span><span class="p">:</span> <span class="kt"><a href="../Classes/WriteConcern.html">WriteConcern</a></span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
 
                         </div>
                       </div>
@@ -697,7 +739,8 @@ from this same type.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">insertOne</span><span class="p">(</span><span class="n">_</span> <span class="nv">value</span><span class="p">:</span> <span class="kt"><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/InsertOneOptions.html">InsertOneOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/InsertOneResult.html">InsertOneResult</a></span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">insertOne</span><span class="p">(</span><span class="n">_</span> <span class="nv">value</span><span class="p">:</span> <span class="kt"><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/InsertOneOptions.html">InsertOneOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/InsertOneResult.html">InsertOneResult</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
@@ -734,7 +777,7 @@ from this same type.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>The optional result of attempting to perform the insert. If the <code>WriteConcern</code>
+                        <p>The optional result of attempting to perform the insert. If the <code><a href="../Classes/WriteConcern.html">WriteConcern</a></code>
         is unacknowledged, <code>nil</code> is returned.</p>
                       </div>
                     </section>
@@ -761,7 +804,8 @@ from this same type.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">insertMany</span><span class="p">(</span><span class="n">_</span> <span class="nv">values</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></span><span class="p">],</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/InsertManyOptions.html">InsertManyOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/InsertManyResult.html">InsertManyResult</a></span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">insertMany</span><span class="p">(</span><span class="n">_</span> <span class="nv">values</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></span><span class="p">],</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/InsertManyOptions.html">InsertManyOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/InsertManyResult.html">InsertManyResult</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
@@ -824,7 +868,8 @@ from this same type.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">replaceOne</span><span class="p">(</span><span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span> <span class="nv">replacement</span><span class="p">:</span> <span class="kt"><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/ReplaceOptions.html">ReplaceOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/UpdateResult.html">UpdateResult</a></span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">replaceOne</span><span class="p">(</span><span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span> <span class="nv">replacement</span><span class="p">:</span> <span class="kt"><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/ReplaceOptions.html">ReplaceOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/UpdateResult.html">UpdateResult</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
@@ -873,7 +918,7 @@ from this same type.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>The optional result of attempting to replace a document. If the <code>WriteConcern</code>
+                        <p>The optional result of attempting to replace a document. If the <code><a href="../Classes/WriteConcern.html">WriteConcern</a></code>
         is unacknowledged, <code>nil</code> is returned.</p>
                       </div>
                     </section>
@@ -899,7 +944,8 @@ from this same type.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">updateOne</span><span class="p">(</span><span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span> <span class="nv">update</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/UpdateOptions.html">UpdateOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/UpdateResult.html">UpdateResult</a></span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">updateOne</span><span class="p">(</span><span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span> <span class="nv">update</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/UpdateOptions.html">UpdateOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/UpdateResult.html">UpdateResult</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
@@ -948,7 +994,7 @@ from this same type.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>The optional result of attempting to update a document. If the <code>WriteConcern</code> is
+                        <p>The optional result of attempting to update a document. If the <code><a href="../Classes/WriteConcern.html">WriteConcern</a></code> is
         unacknowledged, <code>nil</code> is returned.</p>
                       </div>
                     </section>
@@ -974,7 +1020,8 @@ from this same type.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">updateMany</span><span class="p">(</span><span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span> <span class="nv">update</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/UpdateOptions.html">UpdateOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/UpdateResult.html">UpdateResult</a></span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">updateMany</span><span class="p">(</span><span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span> <span class="nv">update</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/UpdateOptions.html">UpdateOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/UpdateResult.html">UpdateResult</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
@@ -1049,7 +1096,8 @@ from this same type.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">deleteOne</span><span class="p">(</span><span class="n">_</span> <span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/DeleteOptions.html">DeleteOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/DeleteResult.html">DeleteResult</a></span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">deleteOne</span><span class="p">(</span><span class="n">_</span> <span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/DeleteOptions.html">DeleteOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/DeleteResult.html">DeleteResult</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
@@ -1086,7 +1134,7 @@ from this same type.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>The optional result of performing the deletion. If the <code>WriteConcern</code> is
+                        <p>The optional result of performing the deletion. If the <code><a href="../Classes/WriteConcern.html">WriteConcern</a></code> is
         unacknowledged, <code>nil</code> is returned.</p>
                       </div>
                     </section>
@@ -1112,7 +1160,8 @@ from this same type.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">deleteMany</span><span class="p">(</span><span class="n">_</span> <span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/DeleteOptions.html">DeleteOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/DeleteResult.html">DeleteResult</a></span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">deleteMany</span><span class="p">(</span><span class="n">_</span> <span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/DeleteOptions.html">DeleteOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/DeleteResult.html">DeleteResult</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
@@ -1149,7 +1198,7 @@ from this same type.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>The optional result of performing the deletion. If the <code>WriteConcern</code> is
+                        <p>The optional result of performing the deletion. If the <code><a href="../Classes/WriteConcern.html">WriteConcern</a></code> is
         unacknowledged, <code>nil</code> is returned.</p>
                       </div>
                     </section>
@@ -1158,9 +1207,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC11createIndexSSAA0E5ModelVKF"></a>
-                    <a name="//apple_ref/swift/Method/createIndex(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC11createIndexSSAA0E5ModelVKF">createIndex(_:)</a>
+                    <a name="/s:10MongoSwift0A10CollectionC11createIndexSSAA0E5ModelV_AA06CreateE7OptionsVSg7optionstKF"></a>
+                    <a name="//apple_ref/swift/Method/createIndex(_:options:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC11createIndexSSAA0E5ModelV_AA06CreateE7OptionsVSg7optionstKF">createIndex(_:options:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1175,7 +1224,8 @@ from this same type.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">createIndex</span><span class="p">(</span><span class="n">_</span> <span class="nv">forModel</span><span class="p">:</span> <span class="kt"><a href="../Structs/IndexModel.html">IndexModel</a></span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">String</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">createIndex</span><span class="p">(</span><span class="n">_</span> <span class="nv">forModel</span><span class="p">:</span> <span class="kt"><a href="../Structs/IndexModel.html">IndexModel</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/CreateIndexOptions.html">CreateIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">String</span></code></pre>
 
                         </div>
                       </div>
@@ -1195,6 +1245,18 @@ from this same type.</p>
                                 </div>
                               </td>
                             </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>writeConcern</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional WriteConcern to use for the command</p>
+                                </div>
+                              </td>
+                            </tr>
                           </tbody>
                         </table>
                       </div>
@@ -1208,9 +1270,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC11createIndexSSAA8DocumentV_AA0E7OptionsVSg7optionstKF"></a>
-                    <a name="//apple_ref/swift/Method/createIndex(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC11createIndexSSAA8DocumentV_AA0E7OptionsVSg7optionstKF">createIndex(_:options:)</a>
+                    <a name="/s:10MongoSwift0A10CollectionC11createIndexSSAA8DocumentV_AA0E7OptionsVSg7optionsAA06CreateeG0VSg07commandG0tKF"></a>
+                    <a name="//apple_ref/swift/Method/createIndex(_:options:commandOptions:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC11createIndexSSAA8DocumentV_AA0E7OptionsVSg7optionsAA06CreateeG0VSg07commandG0tKF">createIndex(_:options:commandOptions:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1225,7 +1287,9 @@ from this same type.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">createIndex</span><span class="p">(</span><span class="n">_</span> <span class="nv">keys</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/IndexOptions.html">IndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">String</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">createIndex</span><span class="p">(</span><span class="n">_</span> <span class="nv">keys</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/IndexOptions.html">IndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+                        <span class="nv">commandOptions</span><span class="p">:</span> <span class="kt"><a href="../Structs/CreateIndexOptions.html">CreateIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">String</span></code></pre>
 
                         </div>
                       </div>
@@ -1257,6 +1321,18 @@ from this same type.</p>
                                 </div>
                               </td>
                             </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>writeConcern</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional <code><a href="../Classes/WriteConcern.html">WriteConcern</a></code> to use for the command</p>
+                                </div>
+                              </td>
+                            </tr>
                           </tbody>
                         </table>
                       </div>
@@ -1270,9 +1346,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC13createIndexesSaySSGSayAA10IndexModelVGKF"></a>
-                    <a name="//apple_ref/swift/Method/createIndexes(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC13createIndexesSaySSGSayAA10IndexModelVGKF">createIndexes(_:)</a>
+                    <a name="/s:10MongoSwift0A10CollectionC13createIndexesSaySSGSayAA10IndexModelVG_AA06CreateF7OptionsVSg7optionstKF"></a>
+                    <a name="//apple_ref/swift/Method/createIndexes(_:options:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC13createIndexesSaySSGSayAA10IndexModelVG_AA06CreateF7OptionsVSg7optionstKF">createIndexes(_:options:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1287,7 +1363,8 @@ from this same type.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">createIndexes</span><span class="p">(</span><span class="n">_</span> <span class="nv">forModels</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/IndexModel.html">IndexModel</a></span><span class="p">])</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="kt">String</span><span class="p">]</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">createIndexes</span><span class="p">(</span><span class="n">_</span> <span class="nv">forModels</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/IndexModel.html">IndexModel</a></span><span class="p">],</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/CreateIndexOptions.html">CreateIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="kt">String</span><span class="p">]</span></code></pre>
 
                         </div>
                       </div>
@@ -1307,6 +1384,18 @@ from this same type.</p>
                                 </div>
                               </td>
                             </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>writeConcern</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional <code><a href="../Classes/WriteConcern.html">WriteConcern</a></code> to use for the command</p>
+                                </div>
+                              </td>
+                            </tr>
                           </tbody>
                         </table>
                       </div>
@@ -1320,9 +1409,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC9dropIndexySSKF"></a>
-                    <a name="//apple_ref/swift/Method/dropIndex(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9dropIndexySSKF">dropIndex(_:)</a>
+                    <a name="/s:10MongoSwift0A10CollectionC9dropIndexySS_AA04DropE7OptionsVSg7optionstKF"></a>
+                    <a name="//apple_ref/swift/Method/dropIndex(_:options:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9dropIndexySS_AA04DropE7OptionsVSg7optionstKF">dropIndex(_:options:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1337,7 +1426,7 @@ from this same type.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">dropIndex</span><span class="p">(</span><span class="n">_</span> <span class="nv">name</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">throws</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">dropIndex</span><span class="p">(</span><span class="n">_</span> <span class="nv">name</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/DropIndexOptions.html">DropIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -1347,9 +1436,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC9dropIndexAA8DocumentVAF_AA0E7OptionsVSg7optionstKF"></a>
-                    <a name="//apple_ref/swift/Method/dropIndex(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9dropIndexAA8DocumentVAF_AA0E7OptionsVSg7optionstKF">dropIndex(_:options:)</a>
+                    <a name="/s:10MongoSwift0A10CollectionC9dropIndexAA8DocumentVAF_AA0E7OptionsVSg7optionsAA04DropeG0VSg07commandG0tKF"></a>
+                    <a name="//apple_ref/swift/Method/dropIndex(_:options:commandOptions:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9dropIndexAA8DocumentVAF_AA0E7OptionsVSg7optionsAA04DropeG0VSg07commandG0tKF">dropIndex(_:options:commandOptions:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1364,7 +1453,9 @@ from this same type.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">dropIndex</span><span class="p">(</span><span class="n">_</span> <span class="nv">keys</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/IndexOptions.html">IndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">dropIndex</span><span class="p">(</span><span class="n">_</span> <span class="nv">keys</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/IndexOptions.html">IndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+                        <span class="nv">commandOptions</span><span class="p">:</span> <span class="kt"><a href="../Structs/DropIndexOptions.html">DropIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span></code></pre>
 
                         </div>
                       </div>
@@ -1396,53 +1487,15 @@ from this same type.</p>
                                 </div>
                               </td>
                             </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>a <code><a href="../Structs/Document.html">Document</a></code> containing the server&rsquo;s response to the command.</p>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift0A10CollectionC9dropIndexAA8DocumentVAA0E5ModelVKF"></a>
-                    <a name="//apple_ref/swift/Method/dropIndex(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9dropIndexAA8DocumentVAA0E5ModelVKF">dropIndex(_:)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Attempts to drop a single index from the collection given an <code><a href="../Structs/IndexModel.html">IndexModel</a></code> describing it.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">dropIndex</span><span class="p">(</span><span class="n">_</span> <span class="nv">model</span><span class="p">:</span> <span class="kt"><a href="../Structs/IndexModel.html">IndexModel</a></span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span></code></pre>
-
-                        </div>
-                      </div>
-                      <div>
-                        <h4>Parameters</h4>
-                        <table class="graybox">
-                          <tbody>
                             <tr>
                               <td>
                                 <code>
-                                <em>model</em>
+                                <em>writeConcern</em>
                                 </code>
                               </td>
                               <td>
                                 <div>
-                                  <p>The model describing the index to drop</p>
+                                  <p>An optional <code><a href="../Classes/WriteConcern.html">WriteConcern</a></code> to use for the command</p>
                                 </div>
                               </td>
                             </tr>
@@ -1459,9 +1512,72 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC11dropIndexesAA8DocumentVyKF"></a>
-                    <a name="//apple_ref/swift/Method/dropIndexes()" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC11dropIndexesAA8DocumentVyKF">dropIndexes()</a>
+                    <a name="/s:10MongoSwift0A10CollectionC9dropIndexAA8DocumentVAA0E5ModelV_AA04DropE7OptionsVSg7optionstKF"></a>
+                    <a name="//apple_ref/swift/Method/dropIndex(_:options:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9dropIndexAA8DocumentVAA0E5ModelV_AA04DropE7OptionsVSg7optionstKF">dropIndex(_:options:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Attempts to drop a single index from the collection given an <code><a href="../Structs/IndexModel.html">IndexModel</a></code> describing it.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">dropIndex</span><span class="p">(</span><span class="n">_</span> <span class="nv">model</span><span class="p">:</span> <span class="kt"><a href="../Structs/IndexModel.html">IndexModel</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/DropIndexOptions.html">DropIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>model</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An <code><a href="../Structs/IndexModel.html">IndexModel</a></code> describing the index to drop</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>writeConcern</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An optional <code><a href="../Classes/WriteConcern.html">WriteConcern</a></code> to use for the command</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>a <code><a href="../Structs/Document.html">Document</a></code> containing the server&rsquo;s response to the command.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A10CollectionC11dropIndexesAA8DocumentVAA16DropIndexOptionsVSg7options_tKF"></a>
+                    <a name="//apple_ref/swift/Method/dropIndexes(options:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC11dropIndexesAA8DocumentVAA16DropIndexOptionsVSg7options_tKF">dropIndexes(options:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1476,7 +1592,8 @@ from this same type.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">dropIndexes</span><span class="p">()</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">dropIndexes</span><span class="p">(</span><span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/DropIndexOptions.html">DropIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span></code></pre>
 
                         </div>
                       </div>
@@ -1523,7 +1640,7 @@ from this same type.</p>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone and Kaitlin Mahar</a>. All rights reserved. (Last updated: 2018-05-29)</p>
+          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone and Kaitlin Mahar</a>. All rights reserved. (Last updated: 2018-06-19)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>
