@@ -4,8 +4,8 @@ import Nimble
 
 var _client: MongoClient?
 
-final class CollectionTests: XCTestCase {
-    static var allTests: [(String, (CollectionTests) -> () throws -> Void)] {
+final class MongoCollectionTests: XCTestCase {
+    static var allTests: [(String, (MongoCollectionTests) -> () throws -> Void)] {
         return [
             ("testCount", testCount),
             ("testInsertOne", testInsertOne),

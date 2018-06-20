@@ -7,7 +7,7 @@ extension WriteConcern {
     /// use `decode` because the format is different in spec tests
     /// ("journal" instead of "j", etc.)
     fileprivate convenience init(_ doc: Document) throws {
-        let j = doc["journal"] as? Bool 
+        let j = doc["journal"] as? Bool
 
         var w: W? = nil
         if let wtag = doc["w"] as? String {
@@ -72,7 +72,6 @@ final class ReadWriteConcernTests: XCTestCase {
         expect(try WriteConcern(w: .number(0), wtimeoutMS: 1000)).toNot(throwError())
         expect(try WriteConcern(w: .tag("hi"))).toNot(throwError())
         expect(try WriteConcern(w: .majority)).toNot(throwError())
-
 
         // verify that this combination is considered invalid
         expect(try WriteConcern(journal: true, w: .number(0))).to(throwError())
@@ -403,7 +402,6 @@ final class ReadWriteConcernTests: XCTestCase {
                         expect(try encoder.encode(rc)).to(equal(expected))
                     }
                 } else if let wcToUse = test["writeConcern"] as? Document {
-                    
                     if valid {
                         let wc = try WriteConcern(wcToUse)
 

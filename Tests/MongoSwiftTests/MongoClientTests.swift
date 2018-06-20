@@ -3,8 +3,8 @@ import Nimble
 import XCTest
 import libmongoc
 
-final class ClientTests: XCTestCase {
-    static var allTests: [(String, (ClientTests) -> () throws -> Void)] {
+final class MongoClientTests: XCTestCase {
+    static var allTests: [(String, (MongoClientTests) -> () throws -> Void)] {
         return [
             ("testListDatabases", testListDatabases),
             ("testOpaqueInitialization", testOpaqueInitialization),
