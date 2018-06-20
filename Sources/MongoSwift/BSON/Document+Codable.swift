@@ -15,8 +15,8 @@ extension Document: Codable {
         var container = encoder.container(keyedBy: _BsonKey.self)
         for (k, v) in self {
             let key = _BsonKey(stringValue: k)!
-            if let val = v {
-                try container.encode(AnyBsonValue(val), forKey: key)
+            if let val = AnyBsonValue(ifPresent: v) {
+                try container.encode(val, forKey: key)
             } else {
                 try container.encodeNil(forKey: key)
             }

@@ -11,6 +11,13 @@ public struct AnyBsonValue: Codable {
         self.value = value
     }
 
+    /// If the provided `BsonValue` is not `nil`, initializes a new `AnyBsonValue` 
+    /// wrapping that value. Otherwise, returns `nil`. 
+    public init?(ifPresent value: BsonValue?) {
+        guard let v = value else { return nil }
+        self.value = v
+    }
+
     public func encode(to encoder: Encoder) throws {
         // short-circuit in the `BsonEncoder` case
         if let bsonEncoder = encoder as? _BsonEncoder {
@@ -22,9 +29,7 @@ public struct AnyBsonValue: Codable {
         // `AnyBsonValue`, before we encode, because `[BsonValue]` 
         // is not considered `Encodable`
         if let arr = self.value as? [BsonValue?] {
-            let mapped = arr.map { elt in
-                return elt == nil ? nil : AnyBsonValue(elt!)
-            }
+            let mapped = arr.map { AnyBsonValue(ifPresent: $0) }
             try mapped.encode(to: encoder)
         } else {
             try self.value.encode(to: encoder)
@@ -87,9 +92,7 @@ public struct AnyBsonValue: Codable {
         } else if let value = try? container.decode(MaxKey.self) {
             self.value = value
         } else if let value = try? container.decode([AnyBsonValue?].self) {
-            self.value = value.map { elt in
-                return elt == nil ? nil : elt!.value
-            }
+            self.value = value.map { $0?.value }
         } else if let value = try? container.decode(Document.self) {
             self.value = value
         } else {

@@ -15,7 +15,8 @@ final class CodecTests: XCTestCase {
             ("testDecodeScalars", testDecodeScalars),
             ("testDocumentIsCodable", testDocumentIsCodable),
             ("testEncodeArray", testEncodeArray),
-            ("testAnyBsonValueIsBsonCodable", testAnyBsonValueIsBsonCodable)
+            ("testAnyBsonValueIsBsonCodable", testAnyBsonValueIsBsonCodable),
+            ("testOptionalAnyBsonValue", testOptionalAnyBsonValue)
         ]
     }
 
@@ -691,30 +692,35 @@ final class CodecTests: XCTestCase {
             from: wrappedMinKey.canonicalExtendedJSON).x.value as? MinKey).to(equal(minKey))
     }
 
-    struct OptionalAnyBson: Codable {
+    struct OptionalAnyBsonWrapper: Codable {
         let val: AnyBsonValue?
 
         init(_ value: BsonValue?) {
-            if let v = value {
-                self.val = AnyBsonValue(v)
-            } else {
-                self.val = nil
-            }
+            self.val = AnyBsonValue(ifPresent: value)
         }
-    }
-
-    struct OptionalAnyBsonArr {
-        let values: [AnyBsonValue?]
     }
 
     func testOptionalAnyBsonValue() throws {
         let encoder = BsonEncoder()
+        let decoder = BsonDecoder()
 
-        let doc: Document = ["y": 1]
-        expect(try encoder.encode(OptionalAnyBson(doc))).to(equal(["val": doc]))
-        expect(try encoder.encode(OptionalAnyBson(nil))).to(beNil())
+        // non-nil values
+        expect(try encoder.encode(OptionalAnyBsonWrapper(5))).to(equal(["val": 5]))
 
-        let data = try JSONEncoder().encode(OptionalAnyBson(nil))
-        print(String(data: data, encoding: .utf8))
+        let doc1: Document = ["y": 1]
+        expect(try encoder.encode(OptionalAnyBsonWrapper(doc1))).to(equal(["val": doc1]))
+        let doc2: Document = ["x": 1, "y": nil]
+        expect(try encoder.encode(OptionalAnyBsonWrapper(doc2))).to(equal(["val": doc2]))
+        let arr1: [BsonValue] = [1, 2 ,"hi"]
+        expect(try encoder.encode(OptionalAnyBsonWrapper(arr1))).to(equal(["val": arr1]))
+
+        // an array with a nil
+        let arr2: [BsonValue?] = [1, "hi", nil]
+        expect(try encoder.encode(OptionalAnyBsonWrapper(arr2))).to(equal(["val": arr2]))
+
+        // nil value
+        expect(try encoder.encode(OptionalAnyBsonWrapper(nil))).to(beNil())
+
+        expect(try decoder.decode(OptionalAnyBsonWrapper.self, from: ["val": nil]).val).to(beNil())
     }
 }
