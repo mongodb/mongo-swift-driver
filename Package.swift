@@ -11,7 +11,7 @@ let package = Package(
         .package(url: "https://github.com/Quick/Nimble.git", from: "7.0.3")
     ],
     targets: [
-        .target(name: "MongoSwift", dependencies: ["libmongoc"]),
+        .target(name: "MongoSwift", dependencies: ["libmongoc", "libbson"]),
         .testTarget(name: "MongoSwiftTests", dependencies: ["MongoSwift", "Nimble"]),
         .testTarget(name: "MongoSwiftBenchmarks", dependencies: ["MongoSwift"])
     ]

@@ -8,16 +8,16 @@ The official [MongoDB](https://www.mongodb.com/) driver for Swift.
     - [FIRST: Install the MongoDB C Driver](#first-install-the-mongodb-c-driver)
     -  [NEXT: Install the Driver Using Swift Package Manager](#next-install-the-driver-using-swift-package-manager)
     - [OR: Install the Driver Using CocoaPods](#or-install-the-driver-using-cocoapods)
-- [Building](#building)
-    - [From the command line](#from-the-command-line)
-    - [In Xcode](#in-xcode)
-- [Testing](#testing)
-    - [From the command line](#from-the-command-line-1)
 - [Example Usage](#example-usage)
     - [Connect to MongoDB and Create a Collection](#connect-to-mongodb-and-create-a-collection)
     - [Create and Insert a Document](#create-and-insert-a-document)
     - [Find Documents](#find-documents)
     - [Work With and Modify Documents](#work-with-and-modify-documents)
+- [Building](#building)
+    - [From the command line](#from-the-command-line)
+    - [In Xcode](#in-xcode)
+- [Testing](#testing)
+    - [From the command line](#from-the-command-line-1)
 
 ## Documentation
 The latest documentation is available [here](https://mongodb.github.io/mongo-swift-driver/).
@@ -34,19 +34,21 @@ Bug reports in JIRA for all driver projects (i.e. NODE, PYTHON, CSHARP, JAVA) an
 Core Server (i.e. SERVER) project are **public**.
 
 ## Installation
+`MongoSwift` works with Swift 4.0+.
 
 ### FIRST: Install the MongoDB C Driver
-Because the driver wraps the MongoDB C driver, using it requires having the C driver's two components, `libbson` and `libmongoc`, installed on your system. 
+Because the driver wraps the MongoDB C driver, using it requires having the C driver's two components, `libbson` and `libmongoc`, installed on your system. The minimum required version of the C Driver is **1.9.0**.
 
 On a Mac, you can install both components at once using [Homebrew](https://brew.sh/): 
-`brew install mongo-c-driver`
+`brew install mongo-c-driver`.
 
-Or on Linux, use `apt-get` to install each component and pkg-config (enables SPM to find the components):
+Or on Linux, use `apt-get` to install `libmongoc` (which includes `libbson` as a dependency) and pkg-config (which enables Swift Package Manager to find the components):
 ```
 sudo apt-get install pkg-config
-sudo apt-get install libbson-dev
-sudo apt-get install libmongoc-dev
+sudo apt-get install libmongoc-1.0.0
 ```
+
+Alternatively, see the [installation guide](http://mongoc.org/libmongoc/current/installing.html) from libmongoc's documentation.
 
 Next, see instructions for installation with either Swift Package Manager or CocoaPods in the following sections.
 
@@ -64,7 +66,7 @@ import PackageDescription
 let package = Package(
     name: "MyPackage",
     dependencies: [
-        .package(url: "https://github.com/mongodb/mongo-swift-driver.git", .branch("master")),
+        .package(url: "https://github.com/mongodb/mongo-swift-driver.git", from: "0.0.2"),
     ],
     targets: [
         Target(
@@ -88,7 +90,7 @@ platform :ios, '11.0'
 use_frameworks!
 
 target 'MyApp' do
-    pod 'MongoSwift', '~> 0'
+    pod 'MongoSwift', '~> 0.0.2'
 end
 ```
 
@@ -96,13 +98,26 @@ Finally, run `pod install` to install your project's dependencies.
 
 ## Example Usage
 
+### Initialization
+You *must* call `MongoSwift.initialize()` once at the start of your application to
+initialize `libmongoc`. This initializes global state, such as process counters. Subsequent calls will have no effect.
+
+You should call `MongoSwift.cleanup()` exactly once at the end of your application to release all memory and other resources allocated by `libmongoc`. `MongoSwift.initialize()`
+will *not* reinitialize the driver after `MongoSwift.cleanup()`.
+
 ### Connect to MongoDB and Create a Collection
 ```swift
 import MongoSwift
 
+// initialize global state
+MongoSwift.initialize()
+
 let client = try MongoClient(connectionString: "mongodb://localhost:27017")
 let db = try client.db("myDB")
 let collection = try db.createCollection("myCollection")
+
+// free all resources
+MongoSwift.cleanup()
 ```
 
 Note: we have included the client `connectionString` for clarity, but if connecting to the default `"mongodb://localhost:27017"`it may be omitted: `let client = try MongoClient()`.
