@@ -41,8 +41,9 @@ Because the driver wraps the MongoDB C driver, using it requires having the C dr
 On a Mac, you can install both components at once using [Homebrew](https://brew.sh/): 
 `brew install mongo-c-driver`
 
-Or on Linux, use `apt-get` to install each:
+Or on Linux, use `apt-get` to install each component and pkg-config (enables SPM to find the components):
 ```
+sudo apt-get install pkg-config
 sudo apt-get install libbson-dev
 sudo apt-get install libmongoc-dev
 ```
@@ -93,38 +94,6 @@ end
 
 Finally, run `pod install` to install your project's dependencies. 
 
-## Building
-
-### From the command line
-Simply run `make`. 
-
-### In Xcode
-
-We do not provide or maintain an already-generated `.xcodeproj` in our repository. Instead, you must generate it locally.
-
-**To generate the `.xcodeproj` file**:
-1. Install the Ruby gem `xcodeproj` with `gem install xcodeproj` (you may need to `sudo`)
-2. Run `make project`
-3. You're ready to go! Open `MongoSwift.xcodeproj` and build and test as normal.
-
-Why is this necessary? The project requires a customized "copy resources" build phase to include various test `.json` files. By default, this phase is not included when you run `swift package generate-xcodeproj`. So `make project` first generates the project, and then uses `xcodeproj` to manually add the files to the appropriate targets (see `add_json_files.rb`). 
-
-## Running Tests
-**NOTE**: `ClientTests`, `CollectionTests`, `CommandMonitoringTests`, `CrudTests`, and `DatabaseTests` all require a mongod instance to be running on the default host/port, `localhost:27017`. The remainder of the tests are for the BSON library, and should succeed regardless of whether a mongod is running.
-
-Additionally, please note that each benchmark test runs for a minimum of 1 minute and therefore **the entire benchmark suite will take around 20-30 minutes to complete**.
-
-You can run tests from Xcode as usual. If you prefer to test from the command line, keep reading.
-
-### From the command line 
-Tests can be run from the command line with `make test`. By default, this will run all the tests excluding the benchmarks.
-
-To only run particular tests, use the `FILTER` argument, which is passed as the `filter` argument to `swift test`. This will run test cases with names matching a regular expression, formatted as follows: `<test-target>.<test-case>` or `<test-target>.<test-case>/<test>`.
-
-For example, `make test FILTER=ClientTests` will run `MongoSwiftTests.ClientTests/*`. Or, `make test FILTER=testInsertOne` will only run `MongoSwiftTests.CollectionTests/testInsertOne`. 
-
-To run all of the benchmarks, use `make benchmark` (equivalent to `FILTER=MongoSwiftBenchmarks`). To run a particular benchmark, use the `FILTER` argument to specify the name. To have the benchmark results all printed out at the end, run with `make benchmark | python Tests/MongoSwiftBenchmarks/benchmark.py`.
-
 ## Example Usage
 
 ### Connect to MongoDB and Create a Collection
@@ -165,3 +134,35 @@ print(doc["a"] ?? "") // prints `1`
 doc["d"] = 4
 print(doc) // prints `{"a" : 1, "b" : 2, "c" : 3, "d" : 4}`
 ```
+## Building the Library
+
+### From the command line
+Simply run `make`. 
+
+### In Xcode
+
+We do not provide or maintain an already-generated `.xcodeproj` in our repository. Instead, you must generate it locally.
+
+**To generate the `.xcodeproj` file**:
+1. Install the Ruby gem `xcodeproj` with `gem install xcodeproj` (you may need to `sudo`)
+2. Run `make project`
+3. You're ready to go! Open `MongoSwift.xcodeproj` and build and test as normal.
+
+Why is this necessary? The project requires a customized "copy resources" build phase to include various test `.json` files. By default, this phase is not included when you run `swift package generate-xcodeproj`. So `make project` first generates the project, and then uses `xcodeproj` to manually add the files to the appropriate targets (see `add_json_files.rb`). 
+
+## Running Tests
+**NOTE**: `ClientTests`, `CollectionTests`, `CommandMonitoringTests`, `CrudTests`, and `DatabaseTests` all require a mongod instance to be running on the default host/port, `localhost:27017`. The remainder of the tests are for the BSON library, and should succeed regardless of whether a mongod is running.
+
+Additionally, please note that each benchmark test runs for a minimum of 1 minute and therefore **the entire benchmark suite will take around 20-30 minutes to complete**.
+
+You can run tests from Xcode as usual. If you prefer to test from the command line, keep reading.
+
+### From the command line 
+Tests can be run from the command line with `make test`. By default, this will run all the tests excluding the benchmarks.
+
+To only run particular tests, use the `FILTER` argument, which is passed as the `filter` argument to `swift test`. This will run test cases with names matching a regular expression, formatted as follows: `<test-target>.<test-case>` or `<test-target>.<test-case>/<test>`.
+
+For example, `make test FILTER=ClientTests` will run `MongoSwiftTests.ClientTests/*`. Or, `make test FILTER=testInsertOne` will only run `MongoSwiftTests.CollectionTests/testInsertOne`. 
+
+To run all of the benchmarks, use `make benchmark` (equivalent to `FILTER=MongoSwiftBenchmarks`). To run a particular benchmark, use the `FILTER` argument to specify the name. To have the benchmark results all printed out at the end, run with `make benchmark | python Tests/MongoSwiftBenchmarks/benchmark.py`.
+
