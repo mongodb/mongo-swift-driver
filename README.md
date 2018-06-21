@@ -42,7 +42,7 @@ Because the driver wraps the MongoDB C driver, using it requires having the C dr
 On a Mac, you can install both components at once using [Homebrew](https://brew.sh/): 
 `brew install mongo-c-driver`.
 
-Or on Linux, use `apt-get` to install `libmongoc` (which includes `libbson` as a dependency) and pkg-config (which enables Swift Package Manager to find the components):
+Or on Linux, use `apt-get` to install `libmongoc` (which includes `libbson` as a dependency) and `pkg-config` (which enables Swift Package Manager to find the components):
 ```
 sudo apt-get install pkg-config
 sudo apt-get install libmongoc-1.0.0
