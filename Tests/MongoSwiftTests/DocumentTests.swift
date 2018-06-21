@@ -47,7 +47,7 @@ final class DocumentTests: XCTestCase {
         }
 
         // Set up test document values
-        let doc: Document = [
+        var doc: Document = [
             "string": "test string",
             "true": true,
             "false": false,
@@ -68,15 +68,21 @@ final class DocumentTests: XCTestCase {
             "array2": ["string1", "string2"],
             "null": nil,
             "code": CodeWithScope(code: "console.log('hi');"),
-            "codewscope": CodeWithScope(code: "console.log(x);", scope: ["x": 2]),
-            "binary0": Binary(data: testData, subtype: BsonSubtype.binary),
-            "binary1": Binary(data: testData, subtype: BsonSubtype.function),
-            "binary2": Binary(data: testData, subtype: BsonSubtype.binaryDeprecated),
-            "binary3": Binary(data: testData, subtype: BsonSubtype.uuidDeprecated),
-            "binary4": Binary(data: testData, subtype: BsonSubtype.uuid),
-            "binary5": Binary(data: testData, subtype: BsonSubtype.md5),
-            "binary6": Binary(data: testData, subtype: BsonSubtype.user)
+            "codewscope": CodeWithScope(code: "console.log(x);", scope: ["x": 2])
         ]
+
+        // splitting this out is necessary because the swift 4.0 compiler 
+        // can't handle all the keys being declared together
+        let binaryData: Document = [
+            "binary0": Binary(data: testData, subtype: .binary),
+            "binary1": Binary(data: testData, subtype: .function),
+            "binary2": Binary(data: testData, subtype: .binaryDeprecated),
+            "binary3": Binary(data: testData, subtype: .uuidDeprecated),
+            "binary4": Binary(data: testData, subtype: .uuid),
+            "binary5": Binary(data: testData, subtype: .md5),
+            "binary6": Binary(data: testData, subtype: .user)
+        ]
+        try doc.merge(binaryData)
 
         expect(doc.count).to(equal(28))
         expect(doc.keys).to(equal(["string", "true", "false", "int", "int32", "int64", "double", "decimal128",
@@ -114,13 +120,13 @@ final class DocumentTests: XCTestCase {
         expect(codewscope?.code).to(equal("console.log(x);"))
         expect(codewscope?.scope).to(equal(["x": 2]))
 
-        expect(doc["binary0"] as? Binary).to(equal(Binary(data: testData, subtype: BsonSubtype.binary)))
-        expect(doc["binary1"] as? Binary).to(equal(Binary(data: testData, subtype: BsonSubtype.function)))
-        expect(doc["binary2"] as? Binary).to(equal(Binary(data: testData, subtype: BsonSubtype.binaryDeprecated)))
-        expect(doc["binary3"] as? Binary).to(equal(Binary(data: testData, subtype: BsonSubtype.uuidDeprecated)))
-        expect(doc["binary4"] as? Binary).to(equal(Binary(data: testData, subtype: BsonSubtype.uuid)))
-        expect(doc["binary5"] as? Binary).to(equal(Binary(data: testData, subtype: BsonSubtype.md5)))
-        expect(doc["binary6"] as? Binary).to(equal(Binary(data: testData, subtype: BsonSubtype.user)))
+        expect(doc["binary0"] as? Binary).to(equal(Binary(data: testData, subtype: .binary)))
+        expect(doc["binary1"] as? Binary).to(equal(Binary(data: testData, subtype: .function)))
+        expect(doc["binary2"] as? Binary).to(equal(Binary(data: testData, subtype: .binaryDeprecated)))
+        expect(doc["binary3"] as? Binary).to(equal(Binary(data: testData, subtype: .uuidDeprecated)))
+        expect(doc["binary4"] as? Binary).to(equal(Binary(data: testData, subtype: .uuid)))
+        expect(doc["binary5"] as? Binary).to(equal(Binary(data: testData, subtype: .md5)))
+        expect(doc["binary6"] as? Binary).to(equal(Binary(data: testData, subtype: .user)))
 
         let nestedArray = doc["nestedarray"] as? [[Int]]
         expect(nestedArray?[0]).to(equal([1, 2]))

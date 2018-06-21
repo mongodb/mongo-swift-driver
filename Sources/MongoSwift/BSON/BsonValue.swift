@@ -158,24 +158,6 @@ extension Array: BsonValue {
     }
 }
 
-/// Subtypes for BSON Binary values.
-public enum BsonSubtype: Int, Codable {
-    /// Generic binary subtype
-    case binary = 0,
-    /// A function
-    function,
-    /// Binary (old)
-    binaryDeprecated,
-    /// UUID (old)
-    uuidDeprecated,
-    /// UUID
-    uuid,
-    /// MD5
-    md5,
-    /// User defined
-    user
-}
-
 /// A struct to represent the BSON Binary type.
 public struct Binary: BsonValue, Equatable, Codable {
 
@@ -186,6 +168,24 @@ public struct Binary: BsonValue, Equatable, Codable {
 
     /// The binary subtype for this data.
     public let subtype: BsonSubtype
+
+    /// Subtypes for BSON Binary values.
+    public enum BsonSubtype: Int, Codable {
+        /// Generic binary subtype
+        case binary = 0,
+        /// A function
+        function,
+        /// Binary (old)
+        binaryDeprecated,
+        /// UUID (old)
+        uuidDeprecated,
+        /// UUID
+        uuid,
+        /// MD5
+        md5,
+        /// User defined
+        user
+    }
 
     /// Initializes a Binary instance of the specified subtype using provided `Data`.
     public init(data: Data, subtype: BsonSubtype) {
