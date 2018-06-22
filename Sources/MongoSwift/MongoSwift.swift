@@ -2,17 +2,15 @@ import libmongoc
 
 /// A utility class for libmongoc initialization and cleanup.
 final public class MongoSwift {
-    /// Returns a `String` indicating the version of the driver.
-    public static func version() -> String {
-        return "0.0.2"
-    }
+    /// The version of `MongoSwift`. 
+    public static let versionString = "0.0.2"
 
     final class MongocInitializer {
         static let shared = MongocInitializer()
 
         private init() {
             mongoc_init()
-            mongoc_handshake_data_append("MongoSwift", MongoSwift.version(), nil)
+            mongoc_handshake_data_append("MongoSwift", versionString, nil)
         }
     }
 
