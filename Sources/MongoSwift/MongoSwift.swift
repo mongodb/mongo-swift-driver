@@ -1,17 +1,16 @@
 import libmongoc
 
-/// Returns a `String` indicating the version of the driver.
-public func version() -> String {
-    return "testing"
-}
-
 /// A utility class for libmongoc initialization and cleanup.
 final public class MongoSwift {
+    /// The version of `MongoSwift`. 
+    public static let versionString = "0.0.2"
+
     final class MongocInitializer {
         static let shared = MongocInitializer()
 
         private init() {
             mongoc_init()
+            mongoc_handshake_data_append("MongoSwift", versionString, nil)
         }
     }
 
