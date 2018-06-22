@@ -317,6 +317,14 @@
 <li><a href="#next-install-the-driver-using-swift-package-manager">NEXT: Install the Driver Using Swift Package Manager</a></li>
 <li><a href="#or-install-the-driver-using-cocoapods">OR: Install the Driver Using CocoaPods</a></li>
 </ul></li>
+<li><a href="#example-usage">Example Usage</a>
+
+<ul>
+<li><a href="#connect-to-mongodb-and-create-a-collection">Connect to MongoDB and Create a Collection</a></li>
+<li><a href="#create-and-insert-a-document">Create and Insert a Document</a></li>
+<li><a href="#find-documents">Find Documents</a></li>
+<li><a href="#work-with-and-modify-documents">Work With and Modify Documents</a></li>
+</ul></li>
 <li><a href="#building">Building</a>
 
 <ul>
@@ -327,14 +335,6 @@
 
 <ul>
 <li><a href="#from-the-command-line-1">From the command line</a></li>
-</ul></li>
-<li><a href="#example-usage">Example Usage</a>
-
-<ul>
-<li><a href="#connect-to-mongodb-and-create-a-collection">Connect to MongoDB and Create a Collection</a></li>
-<li><a href="#create-and-insert-a-document">Create and Insert a Document</a></li>
-<li><a href="#find-documents">Find Documents</a></li>
-<li><a href="#work-with-and-modify-documents">Work With and Modify Documents</a></li>
 </ul></li>
 </ul>
 <h2 id='documentation' class='heading'>Documentation</h2>
@@ -353,17 +353,21 @@
 <p>Bug reports in JIRA for all driver projects (i.e. NODE, PYTHON, CSHARP, JAVA) and the
 Core Server (i.e. SERVER) project are <strong>public</strong>.</p>
 <h2 id='installation' class='heading'>Installation</h2>
+
+<p><code><a href="Classes/MongoSwift.html">MongoSwift</a></code> works with Swift 4.0+.</p>
 <h3 id='first-install-the-mongodb-c-driver' class='heading'>FIRST: Install the MongoDB C Driver</h3>
 
-<p>Because the driver wraps the MongoDB C driver, using it requires having the C driver&rsquo;s two components, <code>libbson</code> and <code>libmongoc</code>, installed on your system. </p>
+<p>Because the driver wraps the MongoDB C driver, using it requires having the C driver&rsquo;s two components, <code>libbson</code> and <code>libmongoc</code>, installed on your system. The minimum required version of the C Driver is <strong>1.9.0</strong>.</p>
 
 <p>On a Mac, you can install both components at once using <a href="https://brew.sh/">Homebrew</a>: 
-<code>brew install mongo-c-driver</code></p>
+<code>brew install mongo-c-driver</code>.</p>
 
-<p>Or on Linux, use <code>apt-get</code> to install each:</p>
-<pre class="highlight plaintext"><code>sudo apt-get install libbson-dev
-sudo apt-get install libmongoc-dev
+<p>Or on Linux, use <code>apt-get</code> to install <code>libmongoc</code> (which includes <code>libbson</code> as a dependency) and <code>pkg-config</code> (which enables Swift Package Manager to find the components):</p>
+<pre class="highlight plaintext"><code>sudo apt-get install pkg-config
+sudo apt-get install libmongoc-1.0.0
 </code></pre>
+
+<p>Alternatively, see the <a href="http://mongoc.org/libmongoc/current/installing.html">installation guide</a> from libmongoc&rsquo;s documentation.</p>
 
 <p>Next, see instructions for installation with either Swift Package Manager or CocoaPods in the following sections.</p>
 <h3 id='next-install-the-driver-using-swift-package-manager' class='heading'>NEXT: Install the Driver Using Swift Package Manager</h3>
@@ -379,7 +383,7 @@ sudo apt-get install libmongoc-dev
 <span class="k">let</span> <span class="nv">package</span> <span class="o">=</span> <span class="kt">Package</span><span class="p">(</span>
     <span class="nv">name</span><span class="p">:</span> <span class="s">"MyPackage"</span><span class="p">,</span>
     <span class="nv">dependencies</span><span class="p">:</span> <span class="p">[</span>
-        <span class="o">.</span><span class="nf">package</span><span class="p">(</span><span class="nv">url</span><span class="p">:</span> <span class="s">"https://github.com/mongodb/mongo-swift-driver.git"</span><span class="p">,</span> <span class="o">.</span><span class="nf">branch</span><span class="p">(</span><span class="s">"master"</span><span class="p">)),</span>
+        <span class="o">.</span><span class="nf">package</span><span class="p">(</span><span class="nv">url</span><span class="p">:</span> <span class="s">"https://github.com/mongodb/mongo-swift-driver.git"</span><span class="p">,</span> <span class="nv">from</span><span class="p">:</span> <span class="s">"0.0.2"</span><span class="p">),</span>
     <span class="p">],</span>
     <span class="nv">targets</span><span class="p">:</span> <span class="p">[</span>
         <span class="kt">Target</span><span class="p">(</span>
@@ -401,12 +405,57 @@ sudo apt-get install libmongoc-dev
 <span class="n">use_frameworks!</span>
 
 <span class="n">target</span> <span class="s1">'MyApp'</span> <span class="k">do</span>
-    <span class="n">pod</span> <span class="s1">'MongoSwift'</span><span class="p">,</span> <span class="s1">'~&gt; 0'</span>
+    <span class="n">pod</span> <span class="s1">'MongoSwift'</span><span class="p">,</span> <span class="s1">'~&gt; 0.0.2'</span>
 <span class="k">end</span>
 </code></pre>
 
 <p>Finally, run <code>pod install</code> to install your project&rsquo;s dependencies. </p>
-<h2 id='building' class='heading'>Building</h2>
+<h2 id='example-usage' class='heading'>Example Usage</h2>
+<h3 id='initialization' class='heading'>Initialization</h3>
+
+<p>You <em>must</em> call <code><a href="Classes/MongoSwift.html#/s:10MongoSwiftAAC10initializeyyFZ">MongoSwift.initialize()</a></code> once at the start of your application to
+initialize <code>libmongoc</code>. This initializes global state, such as process counters. Subsequent calls will have no effect.</p>
+
+<p>You should call <code><a href="Classes/MongoSwift.html#/s:10MongoSwiftAAC7cleanupyyFZ">MongoSwift.cleanup()</a></code> exactly once at the end of your application to release all memory and other resources allocated by <code>libmongoc</code>. <code><a href="Classes/MongoSwift.html#/s:10MongoSwiftAAC10initializeyyFZ">MongoSwift.initialize()</a></code>
+will <em>not</em> reinitialize the driver after <code><a href="Classes/MongoSwift.html#/s:10MongoSwiftAAC7cleanupyyFZ">MongoSwift.cleanup()</a></code>.</p>
+<h3 id='connect-to-mongodb-and-create-a-collection' class='heading'>Connect to MongoDB and Create a Collection</h3>
+<pre class="highlight swift"><code><span class="kd">import</span> <span class="kt">MongoSwift</span>
+
+<span class="c1">// initialize global state</span>
+<span class="kt">MongoSwift</span><span class="o">.</span><span class="nf">initialize</span><span class="p">()</span>
+
+<span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="nv">connectionString</span><span class="p">:</span> <span class="s">"mongodb://localhost:27017"</span><span class="p">)</span>
+<span class="k">let</span> <span class="nv">db</span> <span class="o">=</span> <span class="k">try</span> <span class="n">client</span><span class="o">.</span><span class="nf">db</span><span class="p">(</span><span class="s">"myDB"</span><span class="p">)</span>
+<span class="k">let</span> <span class="nv">collection</span> <span class="o">=</span> <span class="k">try</span> <span class="n">db</span><span class="o">.</span><span class="nf">createCollection</span><span class="p">(</span><span class="s">"myCollection"</span><span class="p">)</span>
+
+<span class="c1">// free all resources</span>
+<span class="kt">MongoSwift</span><span class="o">.</span><span class="nf">cleanup</span><span class="p">()</span>
+</code></pre>
+
+<p>Note: we have included the client <code>connectionString</code> for clarity, but if connecting to the default <code>&quot;mongodb://localhost:27017&quot;</code>it may be omitted: <code>let client = try MongoClient()</code>.</p>
+<h3 id='create-and-insert-a-document' class='heading'>Create and Insert a Document</h3>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">doc</span><span class="p">:</span> <span class="kt">Document</span> <span class="o">=</span> <span class="p">[</span><span class="s">"_id"</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s">"a"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">"b"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">"c"</span><span class="p">:</span> <span class="mi">3</span><span class="p">]</span>
+<span class="k">let</span> <span class="nv">result</span> <span class="o">=</span> <span class="k">try</span> <span class="n">collection</span><span class="o">.</span><span class="nf">insertOne</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span>
+<span class="nf">print</span><span class="p">(</span><span class="n">result</span><span class="p">?</span><span class="o">.</span><span class="n">insertedId</span> <span class="p">??</span> <span class="s">""</span><span class="p">)</span> <span class="c1">// prints `100`</span>
+</code></pre>
+<h3 id='find-documents' class='heading'>Find Documents</h3>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">query</span><span class="p">:</span> <span class="kt">Document</span> <span class="o">=</span> <span class="p">[</span><span class="s">"a"</span><span class="p">:</span> <span class="mi">1</span><span class="p">]</span>
+<span class="k">let</span> <span class="nv">documents</span> <span class="o">=</span> <span class="k">try</span> <span class="n">collection</span><span class="o">.</span><span class="nf">find</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">d</span> <span class="k">in</span> <span class="n">documents</span> <span class="p">{</span>
+    <span class="nf">print</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre>
+<h3 id='work-with-and-modify-documents' class='heading'>Work With and Modify Documents</h3>
+<pre class="highlight swift"><code><span class="k">var</span> <span class="nv">doc</span><span class="p">:</span> <span class="kt">Document</span> <span class="o">=</span> <span class="p">[</span><span class="s">"a"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">"b"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">"c"</span><span class="p">:</span> <span class="mi">3</span><span class="p">]</span>
+
+<span class="nf">print</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span> <span class="c1">// prints `{"a" : 1, "b" : 2, "c" : 3}`</span>
+<span class="nf">print</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="s">"a"</span><span class="p">]</span> <span class="p">??</span> <span class="s">""</span><span class="p">)</span> <span class="c1">// prints `1`</span>
+
+<span class="c1">// Set a new value</span>
+<span class="n">doc</span><span class="p">[</span><span class="s">"d"</span><span class="p">]</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="nf">print</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span> <span class="c1">// prints `{"a" : 1, "b" : 2, "c" : 3, "d" : 4}`</span>
+</code></pre>
+<h2 id='building-the-library' class='heading'>Building the Library</h2>
 <h3 id='from-the-command-line' class='heading'>From the command line</h3>
 
 <p>Simply run <code>make</code>. </p>
@@ -439,43 +488,11 @@ sudo apt-get install libmongoc-dev
 <p>For example, <code>make test FILTER=ClientTests</code> will run <code>MongoSwiftTests.ClientTests/*</code>. Or, <code>make test FILTER=testInsertOne</code> will only run <code>MongoSwiftTests.CollectionTests/testInsertOne</code>. </p>
 
 <p>To run all of the benchmarks, use <code>make benchmark</code> (equivalent to <code>FILTER=MongoSwiftBenchmarks</code>). To run a particular benchmark, use the <code>FILTER</code> argument to specify the name. To have the benchmark results all printed out at the end, run with <code>make benchmark | python Tests/MongoSwiftBenchmarks/benchmark.py</code>.</p>
-<h2 id='example-usage' class='heading'>Example Usage</h2>
-<h3 id='connect-to-mongodb-and-create-a-collection' class='heading'>Connect to MongoDB and Create a Collection</h3>
-<pre class="highlight swift"><code><span class="kd">import</span> <span class="kt">MongoSwift</span>
-
-<span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="nv">connectionString</span><span class="p">:</span> <span class="s">"mongodb://localhost:27017"</span><span class="p">)</span>
-<span class="k">let</span> <span class="nv">db</span> <span class="o">=</span> <span class="k">try</span> <span class="n">client</span><span class="o">.</span><span class="nf">db</span><span class="p">(</span><span class="s">"myDB"</span><span class="p">)</span>
-<span class="k">let</span> <span class="nv">collection</span> <span class="o">=</span> <span class="k">try</span> <span class="n">db</span><span class="o">.</span><span class="nf">createCollection</span><span class="p">(</span><span class="s">"myCollection"</span><span class="p">)</span>
-</code></pre>
-
-<p>Note: we have included the client <code>connectionString</code> for clarity, but if connecting to the default <code>&quot;mongodb://localhost:27017&quot;</code>it may be omitted: <code>let client = try MongoClient()</code>.</p>
-<h3 id='create-and-insert-a-document' class='heading'>Create and Insert a Document</h3>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">doc</span><span class="p">:</span> <span class="kt">Document</span> <span class="o">=</span> <span class="p">[</span><span class="s">"_id"</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s">"a"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">"b"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">"c"</span><span class="p">:</span> <span class="mi">3</span><span class="p">]</span>
-<span class="k">let</span> <span class="nv">result</span> <span class="o">=</span> <span class="k">try</span> <span class="n">collection</span><span class="o">.</span><span class="nf">insertOne</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span>
-<span class="nf">print</span><span class="p">(</span><span class="n">result</span><span class="p">?</span><span class="o">.</span><span class="n">insertedId</span> <span class="p">??</span> <span class="s">""</span><span class="p">)</span> <span class="c1">// prints `100`</span>
-</code></pre>
-<h3 id='find-documents' class='heading'>Find Documents</h3>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">query</span><span class="p">:</span> <span class="kt">Document</span> <span class="o">=</span> <span class="p">[</span><span class="s">"a"</span><span class="p">:</span> <span class="mi">1</span><span class="p">]</span>
-<span class="k">let</span> <span class="nv">documents</span> <span class="o">=</span> <span class="k">try</span> <span class="n">collection</span><span class="o">.</span><span class="nf">find</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">d</span> <span class="k">in</span> <span class="n">documents</span> <span class="p">{</span>
-    <span class="nf">print</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-<span class="p">}</span>
-</code></pre>
-<h3 id='work-with-and-modify-documents' class='heading'>Work With and Modify Documents</h3>
-<pre class="highlight swift"><code><span class="k">var</span> <span class="nv">doc</span><span class="p">:</span> <span class="kt">Document</span> <span class="o">=</span> <span class="p">[</span><span class="s">"a"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">"b"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">"c"</span><span class="p">:</span> <span class="mi">3</span><span class="p">]</span>
-
-<span class="nf">print</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span> <span class="c1">// prints `{"a" : 1, "b" : 2, "c" : 3}`</span>
-<span class="nf">print</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="s">"a"</span><span class="p">]</span> <span class="p">??</span> <span class="s">""</span><span class="p">)</span> <span class="c1">// prints `1`</span>
-
-<span class="c1">// Set a new value</span>
-<span class="n">doc</span><span class="p">[</span><span class="s">"d"</span><span class="p">]</span> <span class="o">=</span> <span class="mi">4</span>
-<span class="nf">print</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span> <span class="c1">// prints `{"a" : 1, "b" : 2, "c" : 3, "d" : 4}`</span>
-</code></pre>
 
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone and Kaitlin Mahar</a>. All rights reserved. (Last updated: 2018-06-19)</p>
+          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone and Kaitlin Mahar</a>. All rights reserved. (Last updated: 2018-06-22)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>
