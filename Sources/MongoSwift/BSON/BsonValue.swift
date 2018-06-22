@@ -167,10 +167,10 @@ public struct Binary: BsonValue, Equatable, Codable {
     public let data: Data
 
     /// The binary subtype for this data.
-    public let subtype: BsonSubtype
+    public let subtype: Subtype
 
     /// Subtypes for BSON Binary values.
-    public enum BsonSubtype: Int, Codable {
+    public enum Subtype: Int, Codable {
         /// Generic binary subtype
         case binary = 0,
         /// A function
@@ -188,13 +188,13 @@ public struct Binary: BsonValue, Equatable, Codable {
     }
 
     /// Initializes a Binary instance of the specified subtype using provided `Data`.
-    public init(data: Data, subtype: BsonSubtype) {
+    public init(data: Data, subtype: Subtype) {
         self.data = data
         self.subtype = subtype
     }
 
     /// Initializes a Binary instance of the specified subtype from a base64 `String`. 
-    public init(base64: String, subtype: BsonSubtype) {
+    public init(base64: String, subtype: Subtype) {
         guard let dataObj = Data(base64Encoded: base64) else {
             preconditionFailure("failed to create Data object from base64 string \(base64)")
         }
@@ -205,7 +205,7 @@ public struct Binary: BsonValue, Equatable, Codable {
     /// Initializes a `Binary` instance from a `Data` object and a `UInt32` subtype.
     internal init(data: Data, subtype: UInt32) {
         self.data = data
-        self.subtype = BsonSubtype(rawValue: Int(subtype))!
+        self.subtype = Subtype(rawValue: Int(subtype))!
     }
 
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
