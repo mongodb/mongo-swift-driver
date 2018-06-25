@@ -711,7 +711,7 @@ final class CodecTests: XCTestCase {
         expect(try encoder.encode(OptionalAnyBsonWrapper(doc1))).to(equal(["val": doc1]))
         let doc2: Document = ["x": 1, "y": nil]
         expect(try encoder.encode(OptionalAnyBsonWrapper(doc2))).to(equal(["val": doc2]))
-        let arr1: [BsonValue] = [1, 2 ,"hi"]
+        let arr1: [BsonValue] = [1, 2, "hi"]
         expect(try encoder.encode(OptionalAnyBsonWrapper(arr1))).to(equal(["val": arr1]))
 
         // an array with a nil

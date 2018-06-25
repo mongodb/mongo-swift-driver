@@ -27,25 +27,31 @@ public class BsonEncoder {
     /// - throws: An error if any value throws an error during encoding.
     public func encode<T: Encodable>(_ value: T) throws -> Document {
         // if the value being encoded is already a `Document` we're done
-        //if let doc = value as? Document { return doc }
+        switch value {
+        case let doc as Document:
+            return doc
+        case let abv as AnyBsonValue:
+            if let doc = abv.value as? Document { return doc }
+        default:
+            break
+        }
 
         let encoder = _BsonEncoder(options: self.options)
+
         guard let topLevel = try encoder.box(value) else {
             throw EncodingError.invalidValue(value,
                 EncodingError.Context(codingPath: [],
                     debugDescription: "Top-level \(T.self) did not encode any values."))
         }
 
-        switch topLevel {
-        case let dict as MutableDictionary:
-            return dict.asDocument()
-        case let doc as Document:
-            return doc
-        default:
+        guard let dict = topLevel as? MutableDictionary else {
             throw EncodingError.invalidValue(value,
                 EncodingError.Context(codingPath: [],
                     debugDescription: "Top-level \(T.self) was not encoded as a complete document."))
+
         }
+
+        return dict.asDocument()
     }
 
     /// Encodes the given top-level optional value and returns its BSON representation. Returns nil if the
