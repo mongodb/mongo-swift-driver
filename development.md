@@ -1,14 +1,14 @@
 # Swift Driver Development Guide
 
 ## Index
-* [Things to install]( ) 
-* [The code]( )
-* [Building]( )
-* [Running tests]( )
-* [Writing and Generating Documentation]( )
-* [Linting]( )
-* [Workflow]( )
-* [Resources]( )
+* [Things to install](#things-to-install) 
+* [The code](#the-code)
+* [Building](#building)
+* [Running tests](#running-tests)
+* [Writing and Generating Documentation](#writing-and-generating-documentation)
+* [Linting](#linting)
+* [Workflow](#workflow)
+* [Resources](#resources)
 
 ## Things to install
 * [swiftenv](https://swiftenv.fuller.li/en/latest/installation.html): a command-line tool that allows easy installation of and switching between versions of Swift.
