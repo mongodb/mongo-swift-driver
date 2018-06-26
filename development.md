@@ -5,7 +5,7 @@
 * [The code]( )
 * [Building]( )
 * [Running tests]( )
-* [Regenerating documentation]( )
+* [Writing and Generating Documentation]( )
 * [Linting]( )
 * [Workflow]( )
 * [Resources]( )
@@ -15,7 +15,7 @@
 	* Use this to install Swift 4.0 if you don’t have it already.
 * [jazzy](https://github.com/realm/jazzy#installation): the tool we use to generate documentation.
 * [swiftlint](https://github.com/realm/SwiftLint#using-homebrew): the Swift linter we use. 
-* [libmongoc](http://mongoc.org/libmongoc/current/api.html): the MongoDB C driver, which this library wraps. 
+* [libmongoc](http://mongoc.org/libmongoc/current/api.html): the MongoDB C driver, which this library wraps. See the installation instructions provided in our [README](README.md#first-install-the-mongodb-c-driver) or on the [libmongoc docs](http://mongoc.org/libmongoc/current/installing.html). 
 
 ## The code
 You should clone this repository, as well as the [MongoDB Driver specifications](https://github.com/mongodb/specifications). 
@@ -36,7 +36,7 @@ We do not provide or maintain an already-generated `.xcodeproj` in our repositor
 Why is this necessary? The project requires a customized "copy resources" build phase to include various test `.json` files. By default, this phase is not included when you run `swift package generate-xcodeproj`. So `make project` first generates the project, and then uses `xcodeproj` to manually add the files to the appropriate targets (see `add_json_files.rb`). 
 
 ## Running Tests
-**NOTE**: `ClientTests`, `CollectionTests`, `CommandMonitoringTests`, `CrudTests`, and `DatabaseTests` all require a mongod instance to be running on the default host/port, `localhost:27017`. The remainder of the tests are for the BSON library, and should succeed regardless of whether a mongod is running.
+**NOTE**: Several of the tests require a mongod instance to be running on the default host/port, `localhost:27017`.
 
 Additionally, please note that each benchmark test runs for a minimum of 1 minute and therefore **the entire benchmark suite will take around 20-30 minutes to complete**.
 
@@ -51,12 +51,15 @@ For example, `make test FILTER=ClientTests` will run `MongoSwiftTests.ClientTest
 
 To run all of the benchmarks, use `make benchmark` (equivalent to `FILTER=MongoSwiftBenchmarks`). To run a particular benchmark, use the `FILTER` argument to specify the name. To have the benchmark results all printed out at the end, run with `make benchmark | python Tests/MongoSwiftBenchmarks/benchmark.py`.
 
-## Regenerating Documentation
-Our documentation is automatically generated from the source code using   [jazzy](https://github.com/realm/jazzy#installation). 
-To regenerate the files, run `make documentation` from the project's root directory. You can then inspect the changes to the site by opening the files in `/docs` in your web browser. 
+## Writing and Generating Documentation
+We document new code as we write it. We use C-style comments for documentation longer than 3 lines, and triple-slash (`///`) for shorter documentation. 
+Comments that are _not_ documentation should use two slashes (`//`).
+
+Our documentation site is automatically generated from the source code using [jazzy](https://github.com/realm/jazzy#installation). 
+To regenerate the files after making changes, run `make documentation` from the project's root directory. You can then inspect the changes to the site by opening the files in `/docs` in your web browser.
 
 ## Linting
-We use  [swiftlint](https://github.com/realm/SwiftLint#using-homebrew) for linting. You can see our configuration in the `.swiftlint.yml` file in the project’s root directory.  Run `swiftlint` in the `/Sources` directory to lint all of our files. Running `swiftlint autocorrect` will correct some types of violations.
+We use [swiftlint](https://github.com/realm/SwiftLint#using-homebrew) for linting. You can see our configuration in the `.swiftlint.yml` file in the project’s root directory.  Run `swiftlint` in the `/Sources` directory to lint all of our files. Running `swiftlint autocorrect` will correct some types of violations.
 
 ### Sublime Text setup
 If you use Sublime Text, you can get linting violations shown in the editor by installing the packages [SublimeLinter](https://packagecontrol.io/packages/SublimeLinter) and [SublimeLinter-contrib-swiftlint](https://packagecontrol.io/packages/SublimeLinter-contrib-swiftlint). 
@@ -75,8 +78,14 @@ Once you get the required approvals and your code passes all tests….
 8. Merge it, or if you don’t have permissions, ask someone to merge it for you.
 
 ## Resources
-* [Swift Language Guide](https://docs.swift.org/swift-book/LanguageGuide/TheBasics.html) (Apple)
-* [Swift Standard Library docs](https://developer.apple.com/documentation/swift) 
+
+### Swift
+* [Swift Language Guide](https://docs.swift.org/swift-book/LanguageGuide/TheBasics.html)
+* [Swift Standard Library docs](https://developer.apple.com/documentation/swift)
+
+### MongoDB and drivers
 * [MongoSwift docs](https://mongodb.github.io/mongo-swift-driver/)
 * [libmongoc docs](http://mongoc.org/libmongoc/current/index.html)
 * [libbson docs](http://mongoc.org/libbson/current/index.html)
+* [MongoDB docs](https://docs.mongodb.com/)
+* [Driver specifications](https://github.com/mongodb/specifications)
