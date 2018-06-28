@@ -456,6 +456,7 @@ final class CodecTests: XCTestCase {
         {
             "name": "Durian",
             "points": 600,
+            "pointsDouble": 600.5,
             "description": "A fruit with a distinctive scent.",
             "array": ["a", "b", "c"],
             "doc": { "x" : 2.0 }
@@ -465,6 +466,7 @@ final class CodecTests: XCTestCase {
         let expected: Document = [
             "name": "Durian",
             "points": 600,
+            "pointsDouble": 600.5,
             "description": "A fruit with a distinctive scent.",
             "array": ["a", "b", "c"],
             "doc": ["x": 2] as Document
