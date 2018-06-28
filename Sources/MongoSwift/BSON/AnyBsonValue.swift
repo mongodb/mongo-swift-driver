@@ -32,7 +32,14 @@ public struct AnyBsonValue: Codable {
             let mapped = arr.map { AnyBsonValue(ifPresent: $0) }
             try mapped.encode(to: encoder)
         } else {
-            try self.value.encode(to: encoder)
+            if let c = self.value as? Codable {
+                try c.encode(to: encoder)
+            } else {
+                throw EncodingError.invalidValue(self.value,
+                EncodingError.Context(codingPath: [],
+                    debugDescription: "Encountered a non-Codable value while encoding \(self)"))
+
+            }
         }
     }
 

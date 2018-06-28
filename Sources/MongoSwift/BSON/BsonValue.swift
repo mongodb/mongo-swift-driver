@@ -79,7 +79,7 @@ internal func nextBsonValue(iter: inout bson_iter_t) -> BsonValue? {
 }
 
 /// A protocol all types representing BsonTypes must implement.
-public protocol BsonValue: Codable {
+public protocol BsonValue {
     /// The `BsonType` of this value.
     var bsonType: BsonType { get }
 
