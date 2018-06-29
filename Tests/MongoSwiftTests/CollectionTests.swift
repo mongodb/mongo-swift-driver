@@ -298,4 +298,26 @@ final class CollectionTests: XCTestCase {
         }
     }
 
+    func testEncodeCursorType() throws {
+        let encoder = BsonEncoder()
+
+        let nonTailable = FindOptions(cursorType: .nonTailable)
+        expect(try encoder.encode(nonTailable)).to(equal(["awaitData": false, "tailable": false]))
+
+        let tailable = FindOptions(cursorType: .tailable)
+        expect(try encoder.encode(tailable)).to(equal(["awaitData": false, "tailable": true ]))
+
+        let tailableAwait = FindOptions(cursorType: .tailableAwait)
+        expect(try encoder.encode(tailableAwait)).to(equal(["awaitData": true, "tailable": true ]))
+    }
+
+    func testEncodeHint() throws {
+        let encoder = BsonEncoder()
+
+        let stringHint = AggregateOptions(hint: .indexName("hi"))
+        expect(try encoder.encode(stringHint)).to(equal(["hint": "hi"]))
+
+        let docHint = AggregateOptions(hint: .indexSpec(["hi": 1]))
+        expect(try encoder.encode(docHint)).to(equal(["hint": ["hi": 1] as Document]))
+    }
 }

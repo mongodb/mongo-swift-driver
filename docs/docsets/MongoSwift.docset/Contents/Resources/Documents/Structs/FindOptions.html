@@ -82,6 +82,9 @@
                 <a href="../Enums/CursorType.html">CursorType</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Enums/Hint.html">Hint</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Enums/MongoError.html">MongoError</a>
               </li>
               <li class="nav-group-task">
@@ -419,6 +422,60 @@
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:10MongoSwift11FindOptionsV10cursorTypeAA06CursorF0OSgvp"></a>
+                    <a name="//apple_ref/swift/Property/cursorType" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift11FindOptionsV10cursorTypeAA06CursorF0OSgvp">cursorType</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Indicates the type of cursor to use. This value includes both the tailable and awaitData options.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">cursorType</span><span class="p">:</span> <span class="kt"><a href="../Enums/CursorType.html">CursorType</a></span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift11FindOptionsV4hintAA4HintOSgvp"></a>
+                    <a name="//apple_ref/swift/Property/hint" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift11FindOptionsV4hintAA4HintOSgvp">hint</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A hint for the index to use.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">hint</span><span class="p">:</span> <span class="kt"><a href="../Enums/Hint.html">Hint</a></span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:10MongoSwift11FindOptionsV5limits5Int64VSgvp"></a>
                     <a name="//apple_ref/swift/Property/limit" class="dashAnchor"></a>
                     <a class="token" href="#/s:10MongoSwift11FindOptionsV5limits5Int64VSgvp">limit</a>
@@ -484,8 +541,7 @@
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>The maximum amount of time for the server to wait on new documents to satisfy a tailable cursor
-query. This only applies to a TAILABLE_AWAIT cursor. When the cursor is not a TAILABLE_AWAIT cursor,
-this option is ignored.</p>
+query. This only applies when used with <code><a href="../Enums/CursorType.html#/s:10MongoSwift10CursorTypeO13tailableAwaitA2CmF">CursorType.tailableAwait</a></code>. Otherwise, this option is ignored.</p>
 
                       </div>
                       <div class="declaration">
@@ -774,9 +830,9 @@ to the returned documents.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift11FindOptionsVACSbSg19allowPartialResults_s5Int32VSg9batchSizeAA8DocumentVSg9collationSSSg7comments5Int64VSg5limitAL3maxAR0P11AwaitTimeMSAR0P4ScanAR0prS0AL3minAD15noCursorTimeoutAL10projectionAA11ReadConcernCSg11readConcernAD9returnKeyAD12showRecordIdAR4skipAL4sorttcfc"></a>
-                    <a name="//apple_ref/swift/Method/init(allowPartialResults:batchSize:collation:comment:limit:max:maxAwaitTimeMS:maxScan:maxTimeMS:min:noCursorTimeout:projection:readConcern:returnKey:showRecordId:skip:sort:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift11FindOptionsVACSbSg19allowPartialResults_s5Int32VSg9batchSizeAA8DocumentVSg9collationSSSg7comments5Int64VSg5limitAL3maxAR0P11AwaitTimeMSAR0P4ScanAR0prS0AL3minAD15noCursorTimeoutAL10projectionAA11ReadConcernCSg11readConcernAD9returnKeyAD12showRecordIdAR4skipAL4sorttcfc">init(allowPartialResults:batchSize:collation:comment:limit:max:maxAwaitTimeMS:maxScan:maxTimeMS:min:noCursorTimeout:projection:readConcern:returnKey:showRecordId:skip:sort:)</a>
+                    <a name="/s:10MongoSwift11FindOptionsVACSbSg19allowPartialResults_s5Int32VSg9batchSizeAA8DocumentVSg9collationSSSg7commentAA10CursorTypeOSg06cursorO0AA4HintOSg4hints5Int64VSg5limitAL3maxAZ0U11AwaitTimeMSAZ0U4ScanAZ0uwX0AL3minAD02noN7TimeoutAL10projectionAA11ReadConcernCSg11readConcernAD9returnKeyAD12showRecordIdAZ4skipAL4sorttcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(allowPartialResults:batchSize:collation:comment:cursorType:hint:limit:max:maxAwaitTimeMS:maxScan:maxTimeMS:min:noCursorTimeout:projection:readConcern:returnKey:showRecordId:skip:sort:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift11FindOptionsVACSbSg19allowPartialResults_s5Int32VSg9batchSizeAA8DocumentVSg9collationSSSg7commentAA10CursorTypeOSg06cursorO0AA4HintOSg4hints5Int64VSg5limitAL3maxAZ0U11AwaitTimeMSAZ0U4ScanAZ0uwX0AL3minAD02noN7TimeoutAL10projectionAA11ReadConcernCSg11readConcernAD9returnKeyAD12showRecordIdAZ4skipAL4sorttcfc">init(allowPartialResults:batchSize:collation:comment:cursorType:hint:limit:max:maxAwaitTimeMS:maxScan:maxTimeMS:min:noCursorTimeout:projection:readConcern:returnKey:showRecordId:skip:sort:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -792,10 +848,11 @@ to the returned documents.</p>
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">allowPartialResults</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">batchSize</span><span class="p">:</span> <span class="kt">Int32</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">collation</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-            <span class="nv">comment</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">max</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">maxAwaitTimeMS</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-            <span class="nv">maxScan</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">maxTimeMS</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">min</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">noCursorTimeout</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-            <span class="nv">projection</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">readConcern</span><span class="p">:</span> <span class="kt"><a href="../Classes/ReadConcern.html">ReadConcern</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">returnKey</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-            <span class="nv">showRecordId</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">skip</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">sort</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span></code></pre>
+            <span class="nv">comment</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">cursorType</span><span class="p">:</span> <span class="kt"><a href="../Enums/CursorType.html">CursorType</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">hint</span><span class="p">:</span> <span class="kt"><a href="../Enums/Hint.html">Hint</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+            <span class="nv">max</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">maxAwaitTimeMS</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">maxScan</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">maxTimeMS</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+            <span class="nv">min</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">noCursorTimeout</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">projection</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+            <span class="nv">readConcern</span><span class="p">:</span> <span class="kt"><a href="../Classes/ReadConcern.html">ReadConcern</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">returnKey</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">showRecordId</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">skip</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+            <span class="nv">sort</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
@@ -807,7 +864,7 @@ to the returned documents.</p>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone and Kaitlin Mahar</a>. All rights reserved. (Last updated: 2018-06-22)</p>
+          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone and Kaitlin Mahar</a>. All rights reserved. (Last updated: 2018-06-29)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>

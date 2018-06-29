@@ -166,7 +166,6 @@ private struct CMTest {
             do { try collection.deleteOne(filter ?? [:]) } catch { }
 
         case "find":
-            // TODO SWIFT-63: use "hint" if provided
             let modifiers = self.args["modifiers"] as? Document
             var batchSize: Int32?
             if let size = self.args["batchSize"] as? Int64 {
@@ -176,8 +175,13 @@ private struct CMTest {
             if let max = modifiers?["$maxTimeMS"] as? Int {
                 maxTime = Int64(max)
             }
+            var hint: Hint?
+            if let hintDoc = modifiers?["$hint"] as? Document {
+                hint = .indexSpec(hintDoc)
+            }
             let options = FindOptions(batchSize: batchSize,
                                         comment: modifiers?["$comment"] as? String,
+                                        hint: hint,
                                         limit: self.args["limit"] as? Int64,
                                         max: modifiers?["$max"] as? Document,
                                         maxTimeMS: maxTime,
@@ -274,17 +278,11 @@ private struct CommandStartedExpectation: ExpectationType {
 private func normalizeCommand(_ input: Document) -> Document {
     var output = Document()
     for (k, v) in input {
-        // We don't currently support these options. Remove them from the commands
-        // we expect to see (they don't affect results otherwise).
-        // TODO SWIFT-63: remove this.
-        if ["hint", "cursorType"].contains(k) {
-            continue
-
         // temporary fix pending resolution of SPEC-1049. removes the field
         // from the expected command unless if it is set to true, because none of the
         // tests explicitly provide upsert: false or multi: false, yet they
         // are in the expected commands anyway.
-        } else if ["upsert", "multi"].contains(k), let bV = v as? Bool {
+        if ["upsert", "multi"].contains(k), let bV = v as? Bool {
             if bV { output[k] = true } else { continue }
 
         // The tests don't explicitly store maxTimeMS as an Int64, so libmongoc
