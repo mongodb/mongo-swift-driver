@@ -89,8 +89,6 @@ public protocol BsonValue {
     * - Parameters:
     *   - to: An `<UnsafeMutablePointer<bson_t>`, indicating the `bson_t` to append to.
     *   - forKey: A `String`, the key with which to store the value.
-    *
-    * - Returns: A `Bool` indicating whether the value was successfully appended.
     */
     func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws
 
@@ -229,13 +227,13 @@ public struct Binary: BsonValue, Equatable, Codable {
         self.subtype = subtype
     }
 
-    /// Initializes a `Binary` instance from a `Data` object and a `UInt32` subtype.
+    /// Initializes a `Binary` instance from a `Data` object and a `UInt8` subtype.
     internal init(data: Data, subtype: UInt8) throws {
         guard let type = Subtype(rawValue: subtype) else {
-
+            throw MongoError.invalidValue(message: "Invalid binary subtype value \(subtype)")
         }
+        self.subtype = type
         self.data = data
-        self.subtype = Subtype(rawValue: subtype)!
     }
 
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
@@ -260,9 +258,13 @@ public struct Binary: BsonValue, Equatable, Codable {
         guard let data = dataPointer.pointee else {
             preconditionFailure("failed to retrieve data stored for binary BSON value")
         }
-
         let dataObj = Data(bytes: data, count: Int(length))
-        return Binary(data: dataObj, subtype: UInt8(subtype.rawValue))
+
+        do {
+            return try Binary(data: dataObj, subtype: UInt8(subtype.rawValue))
+        } catch {
+            preconditionFailure("failed to initialize a Binary value from BSON iterator: \(error)")
+        }
     }
 
     public static func == (lhs: Binary, rhs: Binary) -> Bool {

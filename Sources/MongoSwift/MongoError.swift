@@ -5,6 +5,8 @@ import libmongoc
 public enum MongoError {
     /// Thrown when an invalid connection string is provided when initializing a `MongoClient`.
     case invalidUri(message: String)
+    /// Thrown when a user-provided value is invalid.
+    case invalidValue(message: String)
     /// Thrown when a `MongoClient` is invalid.
     case invalidClient()
     /// Thrown when the server sends an invalid response.
