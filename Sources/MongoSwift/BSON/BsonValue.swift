@@ -170,21 +170,48 @@ public struct Binary: BsonValue, Equatable, Codable {
     public let subtype: Subtype
 
     /// Subtypes for BSON Binary values.
-    public enum Subtype: Int, Codable {
+    public enum Subtype: RawRepresentable, Codable {
         /// Generic binary subtype
-        case binary = 0,
+        case generic,
         /// A function
         function,
         /// Binary (old)
         binaryDeprecated,
         /// UUID (old)
         uuidDeprecated,
-        /// UUID
+        /// UUID (RFC 4122)
         uuid,
         /// MD5
         md5,
         /// User defined
-        user
+        userDefined(UInt8)
+
+        public init?(rawValue: UInt8) {
+            switch rawValue {
+            case 0: self = .generic
+            case 1: self = .function
+            case 2: self = .binaryDeprecated
+            case 3: self = .uuidDeprecated
+            case 4: self = .uuid
+            case 5: self = .md5
+            case 0x80...0xFF:
+                self = .userDefined(rawValue)
+            default:
+                return nil
+            }
+        }
+
+        public var rawValue: UInt8 {
+            switch self {
+            case .generic: return 0
+            case .function: return 1
+            case .binaryDeprecated: return 2
+            case .uuidDeprecated: return 3
+            case .uuid: return 4
+            case .md5: return 5
+            case .userDefined(let val): return val 
+            }
+        }
     }
 
     /// Initializes a Binary instance of the specified subtype using provided `Data`.
@@ -203,9 +230,12 @@ public struct Binary: BsonValue, Equatable, Codable {
     }
 
     /// Initializes a `Binary` instance from a `Data` object and a `UInt32` subtype.
-    internal init(data: Data, subtype: UInt32) {
+    internal init(data: Data, subtype: UInt8) throws {
+        guard let type = Subtype(rawValue: subtype) else {
+
+        }
         self.data = data
-        self.subtype = Subtype(rawValue: Int(subtype))!
+        self.subtype = Subtype(rawValue: subtype)!
     }
 
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
@@ -232,7 +262,7 @@ public struct Binary: BsonValue, Equatable, Codable {
         }
 
         let dataObj = Data(bytes: data, count: Int(length))
-        return Binary(data: dataObj, subtype: subtype.rawValue)
+        return Binary(data: dataObj, subtype: UInt8(subtype.rawValue))
     }
 
     public static func == (lhs: Binary, rhs: Binary) -> Bool {
