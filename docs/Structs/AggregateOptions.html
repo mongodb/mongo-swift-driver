@@ -82,6 +82,9 @@
                 <a href="../Enums/CursorType.html">CursorType</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Enums/Hint.html">Hint</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Enums/MongoError.html">MongoError</a>
               </li>
               <li class="nav-group-task">
@@ -476,6 +479,33 @@ the database profiler, currentOp and logs. The default is to not send a value.</
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:10MongoSwift16AggregateOptionsV4hintAA4HintOSgvp"></a>
+                    <a name="//apple_ref/swift/Property/hint" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift16AggregateOptionsV4hintAA4HintOSgvp">hint</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The index hint to use for the aggregation. The hint does not apply to $lookup and $graphLookup stages.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">hint</span><span class="p">:</span> <span class="kt"><a href="../Enums/Hint.html">Hint</a></span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:10MongoSwift16AggregateOptionsV11readConcernAA04ReadF0CSgvp"></a>
                     <a name="//apple_ref/swift/Property/readConcern" class="dashAnchor"></a>
                     <a class="token" href="#/s:10MongoSwift16AggregateOptionsV11readConcernAA04ReadF0CSgvp">readConcern</a>
@@ -530,9 +560,9 @@ the database profiler, currentOp and logs. The default is to not send a value.</
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift16AggregateOptionsVACSbSg12allowDiskUse_s5Int32VSg9batchSizeAD24bypassDocumentValidationAA0L0VSg9collationSSSg7comments5Int64VSg9maxTimeMSAA11ReadConcernCSg04readU0AA05WriteU0CSg05writeU0tcfc"></a>
-                    <a name="//apple_ref/swift/Method/init(allowDiskUse:batchSize:bypassDocumentValidation:collation:comment:maxTimeMS:readConcern:writeConcern:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift16AggregateOptionsVACSbSg12allowDiskUse_s5Int32VSg9batchSizeAD24bypassDocumentValidationAA0L0VSg9collationSSSg7comments5Int64VSg9maxTimeMSAA11ReadConcernCSg04readU0AA05WriteU0CSg05writeU0tcfc">init(allowDiskUse:batchSize:bypassDocumentValidation:collation:comment:maxTimeMS:readConcern:writeConcern:)</a>
+                    <a name="/s:10MongoSwift16AggregateOptionsVACSbSg12allowDiskUse_s5Int32VSg9batchSizeAD24bypassDocumentValidationAA0L0VSg9collationSSSg7commentAA4HintOSg4hints5Int64VSg9maxTimeMSAA11ReadConcernCSg04readW0AA05WriteW0CSg05writeW0tcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(allowDiskUse:batchSize:bypassDocumentValidation:collation:comment:hint:maxTimeMS:readConcern:writeConcern:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift16AggregateOptionsVACSbSg12allowDiskUse_s5Int32VSg9batchSizeAD24bypassDocumentValidationAA0L0VSg9collationSSSg7commentAA4HintOSg4hints5Int64VSg9maxTimeMSAA11ReadConcernCSg04readW0AA05WriteW0CSg05writeW0tcfc">init(allowDiskUse:batchSize:bypassDocumentValidation:collation:comment:hint:maxTimeMS:readConcern:writeConcern:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -548,7 +578,7 @@ the database profiler, currentOp and logs. The default is to not send a value.</
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">allowDiskUse</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">batchSize</span><span class="p">:</span> <span class="kt">Int32</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">bypassDocumentValidation</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-            <span class="nv">collation</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">comment</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">maxTimeMS</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+            <span class="nv">collation</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">comment</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">hint</span><span class="p">:</span> <span class="kt"><a href="../Enums/Hint.html">Hint</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">maxTimeMS</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
             <span class="nv">readConcern</span><span class="p">:</span> <span class="kt"><a href="../Classes/ReadConcern.html">ReadConcern</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">writeConcern</span><span class="p">:</span> <span class="kt"><a href="../Classes/WriteConcern.html">WriteConcern</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span></code></pre>
 
                         </div>
@@ -561,7 +591,7 @@ the database profiler, currentOp and logs. The default is to not send a value.</
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone and Kaitlin Mahar</a>. All rights reserved. (Last updated: 2018-06-22)</p>
+          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone and Kaitlin Mahar</a>. All rights reserved. (Last updated: 2018-06-29)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>
