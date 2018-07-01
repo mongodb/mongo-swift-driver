@@ -48,7 +48,6 @@ public class BsonEncoder {
             throw EncodingError.invalidValue(value,
                 EncodingError.Context(codingPath: [],
                     debugDescription: "Top-level \(T.self) was not encoded as a complete document."))
-
         }
 
         return dict.asDocument()
