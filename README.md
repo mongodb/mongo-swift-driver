@@ -20,7 +20,7 @@ The latest documentation is available [here](https://mongodb.github.io/mongo-swi
 
 ## Bugs / Feature Requests
 
-Think you’ve found a bug? Want to see a new feature in `mongo-swift-driver`? Please open a case in our issue management tool, JIRA:
+Think you've found a bug? Want to see a new feature in `mongo-swift-driver`? Please open a case in our issue management tool, JIRA:
 
 1. Create an account and login: [jira.mongodb.org](https://jira.mongodb.org)
 2. Navigate to the SWIFT project: [jira.mongodb.org/browse/SWIFT](https://jira.mongodb.org/browse/SWIFT)
@@ -140,7 +140,6 @@ var doc: Document = ["a": 1, "b": 2, "c": 3]
 
 print(doc) // prints `{"a" : 1, "b" : 2, "c" : 3}`
 print(doc["a"] ?? "") // prints `1`
-
 
 // Set a new value
 doc["d"] = 4
