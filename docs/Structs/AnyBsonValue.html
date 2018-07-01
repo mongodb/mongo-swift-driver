@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>ServerDescriptionChangedEvent Structure Reference</title>
+    <title>AnyBsonValue Structure Reference</title>
     <link rel="stylesheet" type="text/css" href="../css/jazzy.css" />
     <link rel="stylesheet" type="text/css" href="../css/highlight.css" />
     <meta charset='utf-8'>
@@ -10,8 +10,8 @@
     
   </head>
   <body>
-    <a name="//apple_ref/swift/Struct/ServerDescriptionChangedEvent" class="dashAnchor"></a>
-    <a title="ServerDescriptionChangedEvent Structure Reference"></a>
+    <a name="//apple_ref/swift/Struct/AnyBsonValue" class="dashAnchor"></a>
+    <a title="AnyBsonValue Structure Reference"></a>
     <header>
       <div class="content-wrapper">
         <p><a href="../index.html">MongoSwift Docs</a> (100% documented)</p>
@@ -22,7 +22,7 @@
       <p id="breadcrumbs">
         <a href="../index.html">MongoSwift Reference</a>
         <img id="carat" src="../img/carat.png" />
-        ServerDescriptionChangedEvent Structure Reference
+        AnyBsonValue Structure Reference
       </p>
     </div>
     <div class="content-wrapper">
@@ -301,14 +301,15 @@
       <article class="main-content">
         <section>
           <section class="section">
-            <h1>ServerDescriptionChangedEvent</h1>
+            <h1>AnyBsonValue</h1>
               <div class="declaration">
                 <div class="language">
-                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">ServerDescriptionChangedEvent</span> <span class="p">:</span> <span class="kt"><a href="../Protocols/MongoEvent.html">MongoEvent</a></span><span class="p">,</span> <span class="kt">InitializableFromOpaquePointer</span></code></pre>
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">AnyBsonValue</span> <span class="p">:</span> <span class="kt">Codable</span></code></pre>
 
                 </div>
               </div>
-            <p>Published when a server description changes. This does NOT include changes to the server&rsquo;s roundTripTime property.</p>
+            <p>A struct wrapping a <code><a href="../Protocols/BsonValue.html">BsonValue</a></code> type that allows for encoding/
+decoding <code><a href="../Protocols/BsonValue.html">BsonValue</a></code>s of unknown type.</p>
 
           </section>
           <section class="section task-group-section">
@@ -317,9 +318,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift29ServerDescriptionChangedEventV9eventTypeAA0afH0OvpZ"></a>
-                    <a name="//apple_ref/swift/Variable/eventType" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift29ServerDescriptionChangedEventV9eventTypeAA0afH0OvpZ">eventType</a>
+                    <a name="/s:10MongoSwift12AnyBsonValueV5valueAA0dE0_pvp"></a>
+                    <a name="//apple_ref/swift/Property/value" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift12AnyBsonValueV5valueAA0dE0_pvp">value</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -327,14 +328,14 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>The type of this event.</p>
+                        <p>The <code><a href="../Protocols/BsonValue.html">BsonValue</a></code> wrapped by this struct.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">var</span> <span class="nv">eventType</span><span class="p">:</span> <span class="kt"><a href="../Enums/MongoEventType.html">MongoEventType</a></span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">value</span><span class="p">:</span> <span class="kt"><a href="../Protocols/BsonValue.html">BsonValue</a></span></code></pre>
 
                         </div>
                       </div>
@@ -344,9 +345,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift29ServerDescriptionChangedEventV9eventNameSo14NSNotificationC0H0VvpZ"></a>
-                    <a name="//apple_ref/swift/Variable/eventName" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift29ServerDescriptionChangedEventV9eventNameSo14NSNotificationC0H0VvpZ">eventName</a>
+                    <a name="/s:10MongoSwift12AnyBsonValueVAcA0dE0_pcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift12AnyBsonValueVAcA0dE0_pcfc">init(_:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -354,14 +355,14 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>The name this event will be posted under.</p>
+                        <p>Initializes a new <code>AnyBsonValue</code> wrapping the provided <code><a href="../Protocols/BsonValue.html">BsonValue</a></code>.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">var</span> <span class="nv">eventName</span><span class="p">:</span> <span class="kt">Notification</span><span class="o">.</span><span class="kt">Name</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="n">_</span> <span class="nv">value</span><span class="p">:</span> <span class="kt"><a href="../Protocols/BsonValue.html">BsonValue</a></span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
@@ -371,9 +372,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift29ServerDescriptionChangedEventV12connectionIdAA010ConnectionH0Vvp"></a>
-                    <a name="//apple_ref/swift/Property/connectionId" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift29ServerDescriptionChangedEventV12connectionIdAA010ConnectionH0Vvp">connectionId</a>
+                    <a name="/s:10MongoSwift12AnyBsonValueVACSgAA0dE0_pSg9ifPresent_tcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(ifPresent:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift12AnyBsonValueVACSgAA0dE0_pSg9ifPresent_tcfc">init(ifPresent:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -381,14 +382,15 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>The connection ID (host/port pair) of the server.</p>
+                        <p>If the provided <code><a href="../Protocols/BsonValue.html">BsonValue</a></code> is not <code>nil</code>, initializes a new <code>AnyBsonValue</code> 
+wrapping that value. Otherwise, returns <code>nil</code>.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">connectionId</span><span class="p">:</span> <span class="kt"><a href="../Structs/ConnectionId.html">ConnectionId</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">?(</span><span class="n">ifPresent</span> <span class="nv">value</span><span class="p">:</span> <span class="kt"><a href="../Protocols/BsonValue.html">BsonValue</a></span><span class="p">?)</span></code></pre>
 
                         </div>
                       </div>
@@ -398,9 +400,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift29ServerDescriptionChangedEventV10topologyIdAA06ObjectH0Vvp"></a>
-                    <a name="//apple_ref/swift/Property/topologyId" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift29ServerDescriptionChangedEventV10topologyIdAA06ObjectH0Vvp">topologyId</a>
+                    <a name="/s:s9EncodableP6encodeys7Encoder_p2to_tKF"></a>
+                    <a name="//apple_ref/swift/Method/encode(to:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:s9EncodableP6encodeys7Encoder_p2to_tKF">encode(to:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -408,14 +410,13 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>A unique identifier for the topology.</p>
-
+                        
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">topologyId</span><span class="p">:</span> <span class="kt"><a href="../Structs/ObjectId.html">ObjectId</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">encode</span><span class="p">(</span><span class="n">to</span> <span class="nv">encoder</span><span class="p">:</span> <span class="kt">Encoder</span><span class="p">)</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -425,9 +426,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift29ServerDescriptionChangedEventV08previousD0AA0cD0Vvp"></a>
-                    <a name="//apple_ref/swift/Property/previousDescription" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift29ServerDescriptionChangedEventV08previousD0AA0cD0Vvp">previousDescription</a>
+                    <a name="/s:s9DecodablePxs7Decoder_p4from_tKcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(from:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:s9DecodablePxs7Decoder_p4from_tKcfc">init(from:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -435,41 +436,26 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>The previous server description.</p>
+                        <p>Initializes a new <code>AnyBsonValue</code> from a <code>Decoder</code>. </p>
+
+<p>Caveats for usage with <code>Decoder</code>s other than MongoSwift&rsquo;s <code><a href="../Classes/BsonDecoder.html">BsonDecoder</a></code> -
+1) This method does <em>not</em> support initializing an <code>AnyBsonValue</code> wrapping
+a <code>Date</code>. This is because, in non-BSON formats, <code>Date</code>s are encoded
+as other types such as <code>Double</code> or <code>String</code>. We have no way of knowing 
+which type is the intended one when decoding to a <code><a href="../Structs/Document.html">Document</a></code>, as <code><a href="../Structs/Document.html">Document</a></code>s 
+can contain any <code><a href="../Protocols/BsonValue.html">BsonValue</a></code> type, so for simplicity we always go with a 
+<code>Double</code> or a <code>String</code> over a <code>Date</code>.
+2) Numeric values will be attempted to be decoded in the following
+order of types: <code>Int</code>, <code>Int32</code>, <code>Int64</code>, <code>Double</code>. The first one
+that can successfully represent the value with no loss of precision will 
+be used.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">previousDescription</span><span class="p">:</span> <span class="kt"><a href="../Structs/ServerDescription.html">ServerDescription</a></span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift29ServerDescriptionChangedEventV03newD0AA0cD0Vvp"></a>
-                    <a name="//apple_ref/swift/Property/newDescription" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift29ServerDescriptionChangedEventV03newD0AA0cD0Vvp">newDescription</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>The new server description.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">newDescription</span><span class="p">:</span> <span class="kt"><a href="../Structs/ServerDescription.html">ServerDescription</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="n">from</span> <span class="nv">decoder</span><span class="p">:</span> <span class="kt">Decoder</span><span class="p">)</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
