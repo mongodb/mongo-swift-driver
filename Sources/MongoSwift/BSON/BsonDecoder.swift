@@ -205,6 +205,14 @@ extension _BsonDecoder {
         // and just return the typed value here
         if let val = value as? T { return val }
 
+        // `Date`'s decode method looks for a `Double`. however, this is not how *we* want to look for it
+        // given that its encoded as an Int64 in BSON. therefore, if the value wasn't extracted from 
+        // the `Document` as type `Date` but we're trying to decode as a `Date`, we should throw an error
+        // rather than calling `Date.init(from decoder: Decoder)`. 
+        if type == Date.self {
+            throw DecodingError._typeMismatch(at: self.codingPath, expectation: type, reality: value)
+        }
+
         self.storage.push(container: value)
         defer { self.storage.popContainer() }
         return try T(from: self)

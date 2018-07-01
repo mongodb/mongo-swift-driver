@@ -27,9 +27,17 @@ public class BsonEncoder {
     /// - throws: An error if any value throws an error during encoding.
     public func encode<T: Encodable>(_ value: T) throws -> Document {
         // if the value being encoded is already a `Document` we're done
-        if let doc = value as? Document { return doc }
+        switch value {
+        case let doc as Document:
+            return doc
+        case let abv as AnyBsonValue:
+            if let doc = abv.value as? Document { return doc }
+        default:
+            break
+        }
 
         let encoder = _BsonEncoder(options: self.options)
+
         guard let topLevel = try encoder.box(value) else {
             throw EncodingError.invalidValue(value,
                 EncodingError.Context(codingPath: [],
@@ -263,7 +271,6 @@ extension _BsonEncoder {
     }
 
     fileprivate func box<T: Encodable>(_ value: T) throws -> BsonValue? {
-
         // if it's already a BsonValue, just return it, unless if it is an 
         // array. technically [Any] is a BsonValue, but we can only use this
         // short-circuiting if all the elements are actually BsonValues.
@@ -507,16 +514,24 @@ private class MutableArray: BsonValue {
 
     var count: Int { return array.count }
 
+    func insert(_ value: BsonValue?, at index: Int) {
+        self.array.insert(value, at: index)
+    }
+
     func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
         try self.array.encode(to: data, forKey: key)
     }
 
+    /// methods required by the BsonValue protocol that we don't actually need/use. MutableArray
+    /// is just a BsonValue to simplify usage alongside true BsonValues within the encoder.
     static func from(iter: inout bson_iter_t) -> BsonValue {
-        return [BsonValue].from(iter: &iter)
+        fatalError("MutableArray is not meant to be initialized from a bson_iter_t")
     }
-
-    func insert(_ value: BsonValue?, at index: Int) {
-        self.array.insert(value, at: index)
+    func encode(to encoder: Encoder) throws {
+        fatalError("`MutableArray` is not meant to be encoded with an `Encoder`")
+    }
+    required convenience init(from decoder: Decoder) throws {
+        fatalError("`MutableArray` is not meant to be initialized from a `Decoder`")
     }
 }
 
@@ -555,8 +570,16 @@ private class MutableDictionary: BsonValue {
         try self.asDocument().encode(to: data, forKey: key)
     }
 
+    /// methods required by the BsonValue protocol that we don't actually need/use. MutableDictionary
+    /// is just a BsonValue to simplify usage alongside true BsonValues within the encoder.
     static func from(iter: inout bson_iter_t) -> BsonValue {
-        return Document.from(iter: &iter)
+        fatalError("`MutableDictionary` is not meant to be initialized from a `bson_iter_t`")
+    }
+    func encode(to encoder: Encoder) throws {
+        fatalError("`MutableDictionary` is not meant to be encoded with an `Encoder`")
+    }
+    required convenience init(from decoder: Decoder) throws {
+        fatalError("`MutableDictionary` is not meant to be initialized from a `Decoder`")
     }
 }
 
