@@ -8,6 +8,7 @@ final class ReadPreferenceTests: XCTestCase {
             ("testMode", testMode),
             ("testTagSets", testTagSets),
             ("testMaxStalenessSeconds", testMaxStalenessSeconds),
+            ("testInitFromPointer", testInitFromPointer),
             ("testEquatable", testEquatable)
         ]
     }
@@ -62,6 +63,13 @@ final class ReadPreferenceTests: XCTestCase {
         expect(try ReadPreference(.nearest, maxStalenessSeconds: -1)).to(throwError())
         expect(try ReadPreference(.nearest, maxStalenessSeconds: 0)).to(throwError())
         expect(try ReadPreference(.nearest, maxStalenessSeconds: 89)).to(throwError())
+    }
+
+    func testInitFromPointer() {
+        let rpOrig = ReadPreference(.primaryPreferred)
+        let rpCopy = ReadPreference(from: rpOrig._readPreference)
+
+        expect(rpCopy).to(equal(rpOrig))
     }
 
     func testEquatable() {
