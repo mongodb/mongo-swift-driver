@@ -94,13 +94,13 @@ final public class ReadPreference {
      * - Parameters:
      *   - mode: a `Mode`
      *   - tagSets: an optional `[Document]`
-     *   - maxStalenessSeconds: an optional Int64
+     *   - maxStalenessSeconds: an optional `Int64`
      *
      * - Returns: a new `ReadPreference`
      *
      * - Throws:
-     *   - A `MongoError.readPreferenceError` if mode is primary and tagSets is non-empty
-     *   - A `MongoError.readPreferenceError` if maxStalenessSeconds non-nil and < 90
+     *   - A `MongoError.readPreferenceError` if `mode` is `.primary` and `tagSets` is non-empty
+     *   - A `MongoError.readPreferenceError` if `maxStalenessSeconds` non-nil and < 90
      */
     public init(_ mode: Mode, tagSets: [Document]? = nil, maxStalenessSeconds: Int64? = nil) throws {
         self._readPreference = mongoc_read_prefs_new(mode.readMode)
