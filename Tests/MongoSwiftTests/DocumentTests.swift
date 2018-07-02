@@ -80,15 +80,17 @@ final class DocumentTests: XCTestCase {
             "binary3": Binary(data: testData, subtype: .uuidDeprecated),
             "binary4": Binary(data: testData, subtype: .uuid),
             "binary5": Binary(data: testData, subtype: .md5),
-            "binary6": Binary(data: testData, subtype: .userDefined(200))
+            "binary6": Binary(data: testData, subtype: .userDefined),
+            "binary7": Binary(data: testData, subtype: 200)
         ]
         try doc.merge(binaryData)
 
-        expect(doc.count).to(equal(28))
-        expect(doc.keys).to(equal(["string", "true", "false", "int", "int32", "int64", "double", "decimal128",
+        let expectedKeys = ["string", "true", "false", "int", "int32", "int64", "double", "decimal128",
                                 "minkey", "maxkey", "date", "timestamp", "nestedarray", "nesteddoc", "oid",
                                 "regex", "array1", "array2", "null", "code", "codewscope", "binary0", "binary1",
-                                "binary2", "binary3", "binary4", "binary5", "binary6"]))
+                                "binary2", "binary3", "binary4", "binary5", "binary6", "binary7"]
+        expect(doc.count).to(equal(expectedKeys.count))
+        expect(doc.keys).to(equal(expectedKeys))
 
         expect(doc["string"] as? String).to(equal("test string"))
         expect(doc["true"] as? Bool).to(beTrue())
@@ -126,7 +128,8 @@ final class DocumentTests: XCTestCase {
         expect(doc["binary3"] as? Binary).to(equal(Binary(data: testData, subtype: .uuidDeprecated)))
         expect(doc["binary4"] as? Binary).to(equal(Binary(data: testData, subtype: .uuid)))
         expect(doc["binary5"] as? Binary).to(equal(Binary(data: testData, subtype: .md5)))
-        expect(doc["binary6"] as? Binary).to(equal(Binary(data: testData, subtype: .userDefined(200))))
+        expect(doc["binary6"] as? Binary).to(equal(Binary(data: testData, subtype: .userDefined)))
+        expect(doc["binary7"] as? Binary).to(equal(Binary(data: testData, subtype: 200)))
 
         let nestedArray = doc["nestedarray"] as? [[Int]]
         expect(nestedArray?[0]).to(equal([1, 2]))

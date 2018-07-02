@@ -165,10 +165,10 @@ public struct Binary: BsonValue, Equatable, Codable {
     public let data: Data
 
     /// The binary subtype for this data.
-    public let subtype: Subtype
+    public let subtype: UInt8
 
     /// Subtypes for BSON Binary values.
-    public enum Subtype: RawRepresentable, Codable {
+    public enum Subtype: UInt8 {
         /// Generic binary subtype
         case generic,
         /// A function
@@ -182,62 +182,34 @@ public struct Binary: BsonValue, Equatable, Codable {
         /// MD5
         md5,
         /// User defined
-        userDefined(UInt8)
+        userDefined = 0x80
+    }
 
-        public init?(rawValue: UInt8) {
-            switch rawValue {
-            case 0: self = .generic
-            case 1: self = .function
-            case 2: self = .binaryDeprecated
-            case 3: self = .uuidDeprecated
-            case 4: self = .uuid
-            case 5: self = .md5
-            case 0x80...0xFF:
-                self = .userDefined(rawValue)
-            default:
-                return nil
-            }
-        }
-
-        public var rawValue: UInt8 {
-            switch self {
-            case .generic: return 0
-            case .function: return 1
-            case .binaryDeprecated: return 2
-            case .uuidDeprecated: return 3
-            case .uuid: return 4
-            case .md5: return 5
-            case .userDefined(let val): return val 
-            }
-        }
+    /// Initializes a `Binary` instance from a `Data` object and a `UInt8` subtype.
+    public init(data: Data, subtype: UInt8) {
+        self.subtype = subtype
+        self.data = data
     }
 
     /// Initializes a Binary instance of the specified subtype using provided `Data`.
     public init(data: Data, subtype: Subtype) {
-        self.data = data
-        self.subtype = subtype
+        self.init(data: data, subtype: subtype.rawValue)
+    }
+
+    public init(base64: String, subtype: UInt8) throws {
+        guard let dataObj = Data(base64Encoded: base64) else {
+            throw MongoError.invalidValue(message: "failed to create Data object from invalid base64 string \(base64)")
+        }
+        self.init(data: dataObj, subtype: subtype)
     }
 
     /// Initializes a Binary instance of the specified subtype from a base64 `String`. 
-    public init(base64: String, subtype: Subtype) {
-        guard let dataObj = Data(base64Encoded: base64) else {
-            preconditionFailure("failed to create Data object from base64 string \(base64)")
-        }
-        self.data = dataObj
-        self.subtype = subtype
-    }
-
-    /// Initializes a `Binary` instance from a `Data` object and a `UInt8` subtype.
-    internal init(data: Data, subtype: UInt8) throws {
-        guard let type = Subtype(rawValue: subtype) else {
-            throw MongoError.invalidValue(message: "Invalid binary subtype value \(subtype)")
-        }
-        self.subtype = type
-        self.data = data
+    public init(base64: String, subtype: Subtype) throws {
+        try self.init(base64: base64, subtype: subtype.rawValue)
     }
 
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
-        let subtype = bson_subtype_t(UInt32(self.subtype.rawValue))
+        let subtype = bson_subtype_t(UInt32(self.subtype))
         let length = self.data.count
         let byteArray = [UInt8](self.data)
         if !bson_append_binary(data, key, Int32(key.count), subtype, byteArray, UInt32(length)) {
@@ -258,13 +230,9 @@ public struct Binary: BsonValue, Equatable, Codable {
         guard let data = dataPointer.pointee else {
             preconditionFailure("failed to retrieve data stored for binary BSON value")
         }
-        let dataObj = Data(bytes: data, count: Int(length))
 
-        do {
-            return try Binary(data: dataObj, subtype: UInt8(subtype.rawValue))
-        } catch {
-            preconditionFailure("failed to initialize a Binary value from BSON iterator: \(error)")
-        }
+        let dataObj = Data(bytes: data, count: Int(length))
+        return Binary(data: dataObj, subtype: UInt8(subtype.rawValue))
     }
 
     public static func == (lhs: Binary, rhs: Binary) -> Bool {

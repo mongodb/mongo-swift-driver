@@ -327,7 +327,7 @@ final class CodecTests: XCTestCase {
                             string: "hi",
                             doc: ["x": 1],
                             arr: [1, 2],
-                            binary: Binary(base64: "//8=", subtype: .generic),
+                            binary: try Binary(base64: "//8=", subtype: .generic),
                             oid: ObjectId(fromString: "507f1f77bcf86cd799439011"),
                             bool: true,
                             date: Date(timeIntervalSinceReferenceDate: 5000),
@@ -349,7 +349,7 @@ final class CodecTests: XCTestCase {
             "string": "hi",
             "doc": ["x": 1] as Document,
             "arr": [1, 2],
-            "binary": Binary(base64: "//8=", subtype: .generic),
+            "binary": try Binary(base64: "//8=", subtype: .generic),
             "oid": ObjectId(fromString: "507f1f77bcf86cd799439011"),
             "bool": true,
             "date": Date(timeIntervalSinceReferenceDate: 5000),
@@ -416,7 +416,7 @@ final class CodecTests: XCTestCase {
         expect(try decoder.decode(Decimal128.self,
             from: "{\"$numberDecimal\": \"1.2E+10\"}")).to(equal(Decimal128("1.2E+10")))
 
-        let binary = Binary(base64: "//8=", subtype: .generic)
+        let binary = try Binary(base64: "//8=", subtype: .generic)
         expect(try decoder.decode(Binary.self,
             from: "{\"$binary\" : {\"base64\": \"//8=\", \"subType\" : \"00\"}}")).to(equal(binary))
 
@@ -553,7 +553,7 @@ final class CodecTests: XCTestCase {
         expect(decodedWrapped?[2] as? String).to(equal("hello"))
 
         // binary
-        let binary = Binary(base64: "//8=", subtype: .binary)
+        let binary = try Binary(base64: "//8=", subtype: .generic)
 
         expect(try decoder.decode(AnyBsonValue.self,
             from: "{\"$binary\" : {\"base64\": \"//8=\", \"subType\" : \"00\"}}").value as? Binary).to(equal(binary))
