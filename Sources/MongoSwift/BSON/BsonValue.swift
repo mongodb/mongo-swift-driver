@@ -200,7 +200,7 @@ public struct Binary: BsonValue, Equatable, Codable {
     /// Throws an error if the base64 `String` is invalid.
     public init(base64: String, subtype: UInt8) throws {
         guard let dataObj = Data(base64Encoded: base64) else {
-            throw MongoError.invalidValue(message: "failed to create Data object from invalid base64 string \(base64)")
+            throw MongoError.invalidArgument(message: "failed to create Data object from invalid base64 string \(base64)")
         }
         self.init(data: dataObj, subtype: subtype)
     }
