@@ -30,7 +30,7 @@ final public class ReadPreference {
             }
         }
 
-        internal init? (readMode: mongoc_read_mode_t) {
+        internal init (readMode: mongoc_read_mode_t) {
             switch readMode {
             case MONGOC_READ_PRIMARY:
                 self = .primary
@@ -43,7 +43,7 @@ final public class ReadPreference {
             case MONGOC_READ_NEAREST:
                 self = .nearest
             default:
-                return nil
+                preconditionFailure("Unexpected read preference mode: \(readMode)")
             }
         }
     }
@@ -55,11 +55,7 @@ final public class ReadPreference {
     public var mode: Mode {
         let readMode = mongoc_read_prefs_get_mode(self._readPreference)
 
-        guard let mode = Mode(readMode: readMode) else {
-            preconditionFailure("Unexpected read preference mode: \(readMode)")
-        }
-
-        return mode
+        return Mode(readMode: readMode)
     }
 
     /// The tags of this `ReadPreference`
