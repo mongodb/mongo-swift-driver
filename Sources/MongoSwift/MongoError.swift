@@ -23,6 +23,8 @@ public enum MongoError {
     case typeError(message: String)
     /// Thrown when there is an error involving a `ReadConcern`. 
     case readConcernError(message: String)
+    /// Thrown when there is an error involving a `ReadPreference`.
+    case readPreferenceError(message: String)
     /// Thrown when there is an error involving a `WriteConcern`. 
     case writeConcernError(message: String)
 }
