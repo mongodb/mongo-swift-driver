@@ -3,12 +3,12 @@ import XCTest
 #if !os(macOS)
 public func allTests() -> [XCTestCaseEntry] {
     return [
-        testCase(ClientTests.allTests),
+        testCase(MongoClientTests.allTests),
         testCase(CodecTests.allTests),
-        testCase(CollectionTests.allTests),
+        testCase(MongoCollectionTests.allTests),
         testCase(CommandMonitoringTests.allTests),
         testCase(CrudTests.allTests),
-        testCase(DatabaseTests.allTests),
+        testCase(MongoDatabaseTests.allTests),
         testCase(DocumentTests.allTests),
         testCase(ReadWriteConcernTests.allTests),
         testCase(SDAMTests.allTests)

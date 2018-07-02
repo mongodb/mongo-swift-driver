@@ -2,8 +2,8 @@
 import Nimble
 import XCTest
 
-final class DatabaseTests: XCTestCase {
-    static var allTests: [(String, (DatabaseTests) -> () throws -> Void)] {
+final class MongoDatabaseTests: XCTestCase {
+    static var allTests: [(String, (MongoDatabaseTests) -> () throws -> Void)] {
         return [
             ("testDatabase", testDatabase)
         ]

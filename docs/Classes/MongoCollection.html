@@ -464,6 +464,495 @@ from this same type.</p>
                     </section>
                   </div>
                 </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A10CollectionC11createIndexSSAA0E5ModelV_AA06CreateE7OptionsVSg7optionstKF"></a>
+                    <a name="//apple_ref/swift/Method/createIndex(_:options:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC11createIndexSSAA0E5ModelV_AA06CreateE7OptionsVSg7optionstKF">createIndex(_:options:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Creates an index over the collection for the provided keys with the provided options.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">createIndex</span><span class="p">(</span><span class="n">_</span> <span class="nv">forModel</span><span class="p">:</span> <span class="kt"><a href="../Structs/IndexModel.html">IndexModel</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/CreateIndexOptions.html">CreateIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">String</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>model</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An <code><a href="../Structs/IndexModel.html">IndexModel</a></code> representing the keys and options for the index</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>writeConcern</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional WriteConcern to use for the command</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The name of the created index.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A10CollectionC11createIndexSSAA8DocumentV_AA0E7OptionsVSg7optionsAA06CreateeG0VSg07commandG0tKF"></a>
+                    <a name="//apple_ref/swift/Method/createIndex(_:options:commandOptions:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC11createIndexSSAA8DocumentV_AA0E7OptionsVSg7optionsAA06CreateeG0VSg07commandG0tKF">createIndex(_:options:commandOptions:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Creates an index over the collection for the provided keys with the provided options.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">createIndex</span><span class="p">(</span><span class="n">_</span> <span class="nv">keys</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/IndexOptions.html">IndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+                        <span class="nv">commandOptions</span><span class="p">:</span> <span class="kt"><a href="../Structs/CreateIndexOptions.html">CreateIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">String</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>keys</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>a <code><a href="../Structs/Document.html">Document</a></code> specifing the keys for the index</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>options</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional <code><a href="../Structs/IndexOptions.html">IndexOptions</a></code> to use for the index</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>writeConcern</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional <code><a href="../Classes/WriteConcern.html">WriteConcern</a></code> to use for the command</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The name of the created index</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A10CollectionC13createIndexesSaySSGSayAA10IndexModelVG_AA06CreateF7OptionsVSg7optionstKF"></a>
+                    <a name="//apple_ref/swift/Method/createIndexes(_:options:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC13createIndexesSaySSGSayAA10IndexModelVG_AA06CreateF7OptionsVSg7optionstKF">createIndexes(_:options:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Creates multiple indexes in the collection.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">createIndexes</span><span class="p">(</span><span class="n">_</span> <span class="nv">forModels</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/IndexModel.html">IndexModel</a></span><span class="p">],</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/CreateIndexOptions.html">CreateIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="kt">String</span><span class="p">]</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>models</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An <code>[IndexModel]</code> specifying the indexes to create</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>writeConcern</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional <code><a href="../Classes/WriteConcern.html">WriteConcern</a></code> to use for the command</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>An <code>[String]</code> containing the names of all the indexes that were created.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A10CollectionC9dropIndexySS_AA04DropE7OptionsVSg7optionstKF"></a>
+                    <a name="//apple_ref/swift/Method/dropIndex(_:options:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9dropIndexySS_AA04DropE7OptionsVSg7optionstKF">dropIndex(_:options:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Drops a single index from the collection by the index name.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">dropIndex</span><span class="p">(</span><span class="n">_</span> <span class="nv">name</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/DropIndexOptions.html">DropIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>name</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The name of the index to drop</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>writeConcern</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An optional WriteConcern to use for the command</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A10CollectionC9dropIndexAA8DocumentVAF_AA0E7OptionsVSg7optionsAA04DropeG0VSg07commandG0tKF"></a>
+                    <a name="//apple_ref/swift/Method/dropIndex(_:options:commandOptions:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9dropIndexAA8DocumentVAF_AA0E7OptionsVSg7optionsAA04DropeG0VSg07commandG0tKF">dropIndex(_:options:commandOptions:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Attempts to drop a single index from the collection given the keys and options describing it.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">dropIndex</span><span class="p">(</span><span class="n">_</span> <span class="nv">keys</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/IndexOptions.html">IndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+                        <span class="nv">commandOptions</span><span class="p">:</span> <span class="kt"><a href="../Structs/DropIndexOptions.html">DropIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>keys</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>a <code><a href="../Structs/Document.html">Document</a></code> containing the keys for the index to drop</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>options</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional <code><a href="../Structs/IndexOptions.html">IndexOptions</a></code> the dropped index should match</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>writeConcern</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An optional <code><a href="../Classes/WriteConcern.html">WriteConcern</a></code> to use for the command</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>a <code><a href="../Structs/Document.html">Document</a></code> containing the server&rsquo;s response to the command.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A10CollectionC9dropIndexAA8DocumentVAA0E5ModelV_AA04DropE7OptionsVSg7optionstKF"></a>
+                    <a name="//apple_ref/swift/Method/dropIndex(_:options:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9dropIndexAA8DocumentVAA0E5ModelV_AA04DropE7OptionsVSg7optionstKF">dropIndex(_:options:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Attempts to drop a single index from the collection given an <code><a href="../Structs/IndexModel.html">IndexModel</a></code> describing it.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">dropIndex</span><span class="p">(</span><span class="n">_</span> <span class="nv">model</span><span class="p">:</span> <span class="kt"><a href="../Structs/IndexModel.html">IndexModel</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/DropIndexOptions.html">DropIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>model</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An <code><a href="../Structs/IndexModel.html">IndexModel</a></code> describing the index to drop</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>writeConcern</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An optional <code><a href="../Classes/WriteConcern.html">WriteConcern</a></code> to use for the command</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>a <code><a href="../Structs/Document.html">Document</a></code> containing the server&rsquo;s response to the command.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A10CollectionC11dropIndexesAA8DocumentVAA16DropIndexOptionsVSg7options_tKF"></a>
+                    <a name="//apple_ref/swift/Method/dropIndexes(options:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC11dropIndexesAA8DocumentVAA16DropIndexOptionsVSg7options_tKF">dropIndexes(options:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Drops all indexes in the collection.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">dropIndexes</span><span class="p">(</span><span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/DropIndexOptions.html">DropIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>writeConcern</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An optional <code><a href="../Classes/WriteConcern.html">WriteConcern</a></code> to use for the command</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>a <code><a href="../Structs/Document.html">Document</a></code> containing the server&rsquo;s response to the command.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A10CollectionC11listIndexesAA0A6CursorCyAA8DocumentVGyKF"></a>
+                    <a name="//apple_ref/swift/Method/listIndexes()" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC11listIndexesAA0A6CursorCyAA8DocumentVGyKF">listIndexes()</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Retrieves a list of the indexes currently on this collection.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">listIndexes</span><span class="p">()</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Classes/MongoCursor.html">MongoCursor</a></span><span class="o">&lt;</span><span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A <code><a href="../Classes/MongoCursor.html">MongoCursor</a></code> over the index names.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul>
                 <li class="item">
                   <div>
                     <code>
@@ -725,6 +1214,10 @@ from this same type.</p>
                     </section>
                   </div>
                 </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul>
                 <li class="item">
                   <div>
                     <code>
@@ -1132,7 +1625,7 @@ from this same type.</p>
                               </td>
                               <td>
                                 <div>
-                                  <p>Optional <code><a href="../Structs/UpdateOptions.html">UpdateOptions</a></code> to use when executing the command</p>
+                                  <p>Optional <code><a href="../Structs/DeleteOptions.html">DeleteOptions</a></code> to use when executing the command</p>
                                 </div>
                               </td>
                             </tr>
@@ -1196,7 +1689,7 @@ from this same type.</p>
                               </td>
                               <td>
                                 <div>
-                                  <p>Optional <code><a href="../Structs/UpdateOptions.html">UpdateOptions</a></code> to use when executing the command</p>
+                                  <p>Optional <code><a href="../Structs/DeleteOptions.html">DeleteOptions</a></code> to use when executing the command</p>
                                 </div>
                               </td>
                             </tr>
@@ -1207,437 +1700,6 @@ from this same type.</p>
                         <h4>Return Value</h4>
                         <p>The optional result of performing the deletion. If the <code><a href="../Classes/WriteConcern.html">WriteConcern</a></code> is
         unacknowledged, <code>nil</code> is returned.</p>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift0A10CollectionC11createIndexSSAA0E5ModelV_AA06CreateE7OptionsVSg7optionstKF"></a>
-                    <a name="//apple_ref/swift/Method/createIndex(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC11createIndexSSAA0E5ModelV_AA06CreateE7OptionsVSg7optionstKF">createIndex(_:options:)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Creates an index over the collection for the provided keys with the provided options.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
-<span class="kd">public</span> <span class="kd">func</span> <span class="nf">createIndex</span><span class="p">(</span><span class="n">_</span> <span class="nv">forModel</span><span class="p">:</span> <span class="kt"><a href="../Structs/IndexModel.html">IndexModel</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/CreateIndexOptions.html">CreateIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">String</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div>
-                        <h4>Parameters</h4>
-                        <table class="graybox">
-                          <tbody>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>model</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>An <code><a href="../Structs/IndexModel.html">IndexModel</a></code> representing the keys and options for the index</p>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>writeConcern</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>Optional WriteConcern to use for the command</p>
-                                </div>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>The name of the created index.</p>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift0A10CollectionC11createIndexSSAA8DocumentV_AA0E7OptionsVSg7optionsAA06CreateeG0VSg07commandG0tKF"></a>
-                    <a name="//apple_ref/swift/Method/createIndex(_:options:commandOptions:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC11createIndexSSAA8DocumentV_AA0E7OptionsVSg7optionsAA06CreateeG0VSg07commandG0tKF">createIndex(_:options:commandOptions:)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Creates an index over the collection for the provided keys with the provided options.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
-<span class="kd">public</span> <span class="kd">func</span> <span class="nf">createIndex</span><span class="p">(</span><span class="n">_</span> <span class="nv">keys</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/IndexOptions.html">IndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-                        <span class="nv">commandOptions</span><span class="p">:</span> <span class="kt"><a href="../Structs/CreateIndexOptions.html">CreateIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">String</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div>
-                        <h4>Parameters</h4>
-                        <table class="graybox">
-                          <tbody>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>keys</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>a <code><a href="../Structs/Document.html">Document</a></code> specifing the keys for the index</p>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>options</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>Optional <code><a href="../Structs/IndexOptions.html">IndexOptions</a></code> to use for the index</p>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>writeConcern</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>Optional <code><a href="../Classes/WriteConcern.html">WriteConcern</a></code> to use for the command</p>
-                                </div>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>The name of the created index</p>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift0A10CollectionC13createIndexesSaySSGSayAA10IndexModelVG_AA06CreateF7OptionsVSg7optionstKF"></a>
-                    <a name="//apple_ref/swift/Method/createIndexes(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC13createIndexesSaySSGSayAA10IndexModelVG_AA06CreateF7OptionsVSg7optionstKF">createIndexes(_:options:)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Creates multiple indexes in the collection.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
-<span class="kd">public</span> <span class="kd">func</span> <span class="nf">createIndexes</span><span class="p">(</span><span class="n">_</span> <span class="nv">forModels</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/IndexModel.html">IndexModel</a></span><span class="p">],</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/CreateIndexOptions.html">CreateIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="kt">String</span><span class="p">]</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div>
-                        <h4>Parameters</h4>
-                        <table class="graybox">
-                          <tbody>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>models</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>An <code>[IndexModel]</code> specifying the indexes to create</p>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>writeConcern</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>Optional <code><a href="../Classes/WriteConcern.html">WriteConcern</a></code> to use for the command</p>
-                                </div>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>An <code>[String]</code> containing the names of all the indexes that were created.</p>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift0A10CollectionC9dropIndexySS_AA04DropE7OptionsVSg7optionstKF"></a>
-                    <a name="//apple_ref/swift/Method/dropIndex(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9dropIndexySS_AA04DropE7OptionsVSg7optionstKF">dropIndex(_:options:)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Drops a single index from the collection by the index name.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">dropIndex</span><span class="p">(</span><span class="n">_</span> <span class="nv">name</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/DropIndexOptions.html">DropIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift0A10CollectionC9dropIndexAA8DocumentVAF_AA0E7OptionsVSg7optionsAA04DropeG0VSg07commandG0tKF"></a>
-                    <a name="//apple_ref/swift/Method/dropIndex(_:options:commandOptions:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9dropIndexAA8DocumentVAF_AA0E7OptionsVSg7optionsAA04DropeG0VSg07commandG0tKF">dropIndex(_:options:commandOptions:)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Attempts to drop a single index from the collection given the keys and options describing it.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
-<span class="kd">public</span> <span class="kd">func</span> <span class="nf">dropIndex</span><span class="p">(</span><span class="n">_</span> <span class="nv">keys</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/IndexOptions.html">IndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-                        <span class="nv">commandOptions</span><span class="p">:</span> <span class="kt"><a href="../Structs/DropIndexOptions.html">DropIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span></code></pre>
-
-                        </div>
-                      </div>
-                      <div>
-                        <h4>Parameters</h4>
-                        <table class="graybox">
-                          <tbody>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>keys</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>a <code><a href="../Structs/Document.html">Document</a></code> containing the keys for the index to drop</p>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>options</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>Optional <code><a href="../Structs/IndexOptions.html">IndexOptions</a></code> the dropped index should match</p>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>writeConcern</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>An optional <code><a href="../Classes/WriteConcern.html">WriteConcern</a></code> to use for the command</p>
-                                </div>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>a <code><a href="../Structs/Document.html">Document</a></code> containing the server&rsquo;s response to the command.</p>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift0A10CollectionC9dropIndexAA8DocumentVAA0E5ModelV_AA04DropE7OptionsVSg7optionstKF"></a>
-                    <a name="//apple_ref/swift/Method/dropIndex(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9dropIndexAA8DocumentVAA0E5ModelV_AA04DropE7OptionsVSg7optionstKF">dropIndex(_:options:)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Attempts to drop a single index from the collection given an <code><a href="../Structs/IndexModel.html">IndexModel</a></code> describing it.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
-<span class="kd">public</span> <span class="kd">func</span> <span class="nf">dropIndex</span><span class="p">(</span><span class="n">_</span> <span class="nv">model</span><span class="p">:</span> <span class="kt"><a href="../Structs/IndexModel.html">IndexModel</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/DropIndexOptions.html">DropIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span></code></pre>
-
-                        </div>
-                      </div>
-                      <div>
-                        <h4>Parameters</h4>
-                        <table class="graybox">
-                          <tbody>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>model</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>An <code><a href="../Structs/IndexModel.html">IndexModel</a></code> describing the index to drop</p>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>writeConcern</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>An optional <code><a href="../Classes/WriteConcern.html">WriteConcern</a></code> to use for the command</p>
-                                </div>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>a <code><a href="../Structs/Document.html">Document</a></code> containing the server&rsquo;s response to the command.</p>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift0A10CollectionC11dropIndexesAA8DocumentVAA16DropIndexOptionsVSg7options_tKF"></a>
-                    <a name="//apple_ref/swift/Method/dropIndexes(options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC11dropIndexesAA8DocumentVAA16DropIndexOptionsVSg7options_tKF">dropIndexes(options:)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Drops all indexes in the collection.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
-<span class="kd">public</span> <span class="kd">func</span> <span class="nf">dropIndexes</span><span class="p">(</span><span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/DropIndexOptions.html">DropIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span></code></pre>
-
-                        </div>
-                      </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>a <code><a href="../Structs/Document.html">Document</a></code> containing the server&rsquo;s response to the command.</p>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift0A10CollectionC11listIndexesAA0A6CursorCyAA8DocumentVGyKF"></a>
-                    <a name="//apple_ref/swift/Method/listIndexes()" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC11listIndexesAA0A6CursorCyAA8DocumentVGyKF">listIndexes()</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Retrieves a list of the indexes currently on this collection.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">listIndexes</span><span class="p">()</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Classes/MongoCursor.html">MongoCursor</a></span><span class="o">&lt;</span><span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="o">&gt;</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>A <code><a href="../Classes/MongoCursor.html">MongoCursor</a></code> over the index names.</p>
                       </div>
                     </section>
                   </div>
