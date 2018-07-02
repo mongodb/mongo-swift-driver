@@ -147,5 +147,5 @@ print(doc) // prints `{"a" : 1, "b" : 2, "c" : 3, "d" : 4}`
 ```
 ## Development Instructions
 
-See our [development guide](Development.md) for instructions for building and testing the driver.
+See our [development guide](https://mongodb.github.io/mongo-swift-driver/development.html) for instructions for building and testing the driver.
 

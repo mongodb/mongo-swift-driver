@@ -28,6 +28,14 @@
       <nav class="sidebar">
         <ul class="nav-groups">
           <li class="nav-group-name">
+            <a href="Guides.html">Guides</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="development.html">Development</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
             <a href="Classes.html">Classes</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
@@ -324,24 +332,14 @@
 <li><a href="#find-documents">Find Documents</a></li>
 <li><a href="#work-with-and-modify-documents">Work With and Modify Documents</a></li>
 </ul></li>
-<li><a href="#building">Building</a>
-
-<ul>
-<li><a href="#from-the-command-line">From the command line</a></li>
-<li><a href="#in-xcode">In Xcode</a></li>
-</ul></li>
-<li><a href="#testing">Testing</a>
-
-<ul>
-<li><a href="#from-the-command-line-1">From the command line</a></li>
-</ul></li>
+<li><a href="#development-instructions">Development Instructions</a></li>
 </ul>
 <h2 id='documentation' class='heading'>Documentation</h2>
 
 <p>The latest documentation is available <a href="https://mongodb.github.io/mongo-swift-driver/">here</a>.</p>
 <h2 id='bugs-feature-requests' class='heading'>Bugs / Feature Requests</h2>
 
-<p>Think you’ve found a bug? Want to see a new feature in <code>mongo-swift-driver</code>? Please open a case in our issue management tool, JIRA:</p>
+<p>Think you&rsquo;ve found a bug? Want to see a new feature in <code>mongo-swift-driver</code>? Please open a case in our issue management tool, JIRA:</p>
 
 <ol>
 <li>Create an account and login: <a href="https://jira.mongodb.org">jira.mongodb.org</a></li>
@@ -454,44 +452,14 @@ will <em>not</em> reinitialize the driver after <code><a href="Classes/MongoSwif
 <span class="n">doc</span><span class="p">[</span><span class="s">"d"</span><span class="p">]</span> <span class="o">=</span> <span class="mi">4</span>
 <span class="nf">print</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span> <span class="c1">// prints `{"a" : 1, "b" : 2, "c" : 3, "d" : 4}`</span>
 </code></pre>
-<h2 id='building-the-library' class='heading'>Building the Library</h2>
-<h3 id='from-the-command-line' class='heading'>From the command line</h3>
+<h2 id='development-instructions' class='heading'>Development Instructions</h2>
 
-<p>Simply run <code>make</code>. </p>
-<h3 id='in-xcode' class='heading'>In Xcode</h3>
-
-<p>We do not provide or maintain an already-generated <code>.xcodeproj</code> in our repository. Instead, you must generate it locally.</p>
-
-<p><strong>To generate the <code>.xcodeproj</code> file</strong>:</p>
-
-<ol>
-<li>Install the Ruby gem <code>xcodeproj</code> with <code>gem install xcodeproj</code> (you may need to <code>sudo</code>)</li>
-<li>Run <code>make project</code></li>
-<li>You&rsquo;re ready to go! Open <code>MongoSwift.xcodeproj</code> and build and test as normal.</li>
-</ol>
-
-<p>Why is this necessary? The project requires a customized <q>copy resources</q> build phase to include various test <code>.json</code> files. By default, this phase is not included when you run <code>swift package generate-xcodeproj</code>. So <code>make project</code> first generates the project, and then uses <code>xcodeproj</code> to manually add the files to the appropriate targets (see <code>add_json_files.rb</code>). </p>
-<h2 id='running-tests' class='heading'>Running Tests</h2>
-
-<p><strong>NOTE</strong>: <code>ClientTests</code>, <code>CollectionTests</code>, <code>CommandMonitoringTests</code>, <code>CrudTests</code>, and <code>DatabaseTests</code> all require a mongod instance to be running on the default host/port, <code>localhost:27017</code>. The remainder of the tests are for the BSON library, and should succeed regardless of whether a mongod is running.</p>
-
-<p>Additionally, please note that each benchmark test runs for a minimum of 1 minute and therefore <strong>the entire benchmark suite will take around 20-30 minutes to complete</strong>.</p>
-
-<p>You can run tests from Xcode as usual. If you prefer to test from the command line, keep reading.</p>
-<h3 id='from-the-command-line' class='heading'>From the command line</h3>
-
-<p>Tests can be run from the command line with <code>make test</code>. By default, this will run all the tests excluding the benchmarks.</p>
-
-<p>To only run particular tests, use the <code>FILTER</code> argument, which is passed as the <code>filter</code> argument to <code>swift test</code>. This will run test cases with names matching a regular expression, formatted as follows: <code>&lt;test-target&gt;.&lt;test-case&gt;</code> or <code>&lt;test-target&gt;.&lt;test-case&gt;/&lt;test&gt;</code>.</p>
-
-<p>For example, <code>make test FILTER=ClientTests</code> will run <code>MongoSwiftTests.ClientTests/*</code>. Or, <code>make test FILTER=testInsertOne</code> will only run <code>MongoSwiftTests.CollectionTests/testInsertOne</code>. </p>
-
-<p>To run all of the benchmarks, use <code>make benchmark</code> (equivalent to <code>FILTER=MongoSwiftBenchmarks</code>). To run a particular benchmark, use the <code>FILTER</code> argument to specify the name. To have the benchmark results all printed out at the end, run with <code>make benchmark | python Tests/MongoSwiftBenchmarks/benchmark.py</code>.</p>
+<p>See our <a href="https://mongodb.github.io/mongo-swift-driver/development.html">development guide</a> for instructions for building and testing the driver.</p>
 
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone and Kaitlin Mahar</a>. All rights reserved. (Last updated: 2018-07-01)</p>
+          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone and Kaitlin Mahar</a>. All rights reserved. (Last updated: 2018-07-02)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>
