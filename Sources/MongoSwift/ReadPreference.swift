@@ -1,11 +1,14 @@
 import libmongoc
 
-/// A class to represent a MongoDB read preference.
+/**
+ * A class to represent a MongoDB read preference.
+ *
+ * - SeeAlso: https://docs.mongodb.com/manual/reference/read-preference/
+ */
 final public class ReadPreference {
 
     /// An enumeration of possible ReadPreference modes.
     public enum Mode: String {
-        /// See https://docs.mongodb.com/manual/reference/read-preference/
         case primary
         case primaryPreferred
         case secondary
