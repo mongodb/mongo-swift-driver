@@ -191,11 +191,13 @@ public struct Binary: BsonValue, Equatable, Codable {
         self.data = data
     }
 
-    /// Initializes a Binary instance of the specified subtype using provided `Data`.
+    /// Initializes a `Binary` instance from a `Data` object and a `Subtype`. 
     public init(data: Data, subtype: Subtype) {
         self.init(data: data, subtype: subtype.rawValue)
     }
 
+    /// Initializes a `Binary` instance from a base64 `String` and a `UInt8` subtype.
+    /// Throws an error if the base64 `String` is invalid.
     public init(base64: String, subtype: UInt8) throws {
         guard let dataObj = Data(base64Encoded: base64) else {
             throw MongoError.invalidValue(message: "failed to create Data object from invalid base64 string \(base64)")
@@ -203,7 +205,8 @@ public struct Binary: BsonValue, Equatable, Codable {
         self.init(data: dataObj, subtype: subtype)
     }
 
-    /// Initializes a Binary instance of the specified subtype from a base64 `String`. 
+    /// Initializes a `Binary` instance from a base64 `String` and a `Subtype`.
+    /// Throws an error if the base64 `String` is invalid. 
     public init(base64: String, subtype: Subtype) throws {
         try self.init(base64: base64, subtype: subtype.rawValue)
     }
