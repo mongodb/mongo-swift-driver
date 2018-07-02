@@ -21,7 +21,7 @@ final class CodecTests: XCTestCase {
     }
 
     func testEncodeListDatabasesOptions() throws {
-        let options = ListDatabasesOptions(filter: Document(["a": 10]), nameOnly: true, session: ClientSession())
+        let options = ListDatabasesOptions(filter: ["a": 10], nameOnly: true, session: ClientSession())
         let expected: Document = ["filter": ["a": 10] as Document, "nameOnly": true, "session": Document()]
         expect(try BsonEncoder().encode(options)).to(equal(expected))
     }
