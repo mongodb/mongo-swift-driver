@@ -37,7 +37,7 @@ extension MongoError: LocalizedError {
             let .invalidCollection(message), let .commandError(message),
             let .bsonParseError(_, _, message), let .bsonEncodeError(message),
             let .typeError(message), let .readConcernError(message),
-            let .writeConcernError(message):
+            let .readPreferenceError(message), let .writeConcernError(message):
             return message
         default:
             return nil
