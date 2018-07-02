@@ -146,18 +146,7 @@ final public class ReadPreference {
 /// An extension of `ReadPreference` to make it `Equatable`.
 extension ReadPreference: Equatable {
     public static func == (lhs: ReadPreference, rhs: ReadPreference) -> Bool {
-        if lhs.mode != rhs.mode {
-            return false
-        }
-
-        if lhs.tagSets != rhs.tagSets {
-            return false
-        }
-
-        if lhs.maxStalenessSeconds != rhs.maxStalenessSeconds {
-            return false
-        }
-
-        return true
+        return lhs.mode == rhs.mode && lhs.tagSets == rhs.tagSets &&
+            lhs.maxStalenessSeconds == rhs.maxStalenessSeconds
     }
 }
