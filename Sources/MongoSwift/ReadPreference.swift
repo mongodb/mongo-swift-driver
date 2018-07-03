@@ -30,7 +30,7 @@ final public class ReadPreference {
             }
         }
 
-        internal init (readMode: mongoc_read_mode_t) {
+        internal init(readMode: mongoc_read_mode_t) {
             switch readMode {
             case MONGOC_READ_PRIMARY:
                 self = .primary
