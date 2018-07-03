@@ -23,6 +23,8 @@ public enum MongoError {
     case typeError(message: String)
     /// Thrown when there is an error involving a `ReadConcern`. 
     case readConcernError(message: String)
+    /// Thrown when there is an error involving a `ReadPreference`.
+    case readPreferenceError(message: String)
     /// Thrown when there is an error involving a `WriteConcern`. 
     case writeConcernError(message: String)
 }
@@ -35,7 +37,7 @@ extension MongoError: LocalizedError {
             let .invalidCollection(message), let .commandError(message),
             let .bsonParseError(_, _, message), let .bsonEncodeError(message),
             let .typeError(message), let .readConcernError(message),
-            let .writeConcernError(message):
+            let .readPreferenceError(message), let .writeConcernError(message):
             return message
         default:
             return nil

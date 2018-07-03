@@ -113,6 +113,20 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      * - Returns: a new `Document`
      */
     public init(arrayLiteral elements: BsonValue?...) {
+        self.init(elements)
+    }
+
+    /**
+     * Initializes a `Document` using an array where the values are optional
+     * `BsonValue`s. Values are stored under a string of their index in the
+     * array.
+     *
+     * - Parameters:
+     *   - elements: a `[BsonValue?]`
+     *
+     * - Returns: a new `Document`
+     */
+    internal init(_ elements: [BsonValue?]) {
         self.storage = DocumentStorage()
         for (i, elt) in elements.enumerated() {
             self[String(i)] = elt

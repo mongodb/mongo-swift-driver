@@ -31,6 +31,7 @@ final class DocumentTests: XCTestCase {
     static var allTests: [(String, (DocumentTests) -> () throws -> Void)] {
         return [
             ("testDocument", testDocument),
+            ("testDocumentFromArray", testDocumentFromArray),
             ("testEquatable", testEquatable),
             ("testIterator", testIterator),
             ("testRawBSON", testRawBSON),
@@ -126,6 +127,23 @@ final class DocumentTests: XCTestCase {
         expect(nestedArray?[1]).to(equal([3, 4]))
 
         expect(doc["nesteddoc"] as? Document).to(equal(["a": 1, "b": 2, "c": false, "d": [3, 4]]))
+    }
+
+    func testDocumentFromArray() {
+       let doc1: Document = ["foo", MinKey(), nil]
+
+       expect(doc1.keys).to(equal(["0", "1", "2"]))
+       expect(doc1["0"] as? String).to(equal("foo"))
+       expect(doc1["1"] as? MinKey).to(beAnInstanceOf(MinKey.self))
+       expect(doc1["2"]).to(beNil())
+
+       let elements: [BsonValue?] = ["foo", MinKey(), nil]
+       let doc2 = Document(elements)
+
+       expect(doc2.keys).to(equal(["0", "1", "2"]))
+       expect(doc2["0"] as? String).to(equal("foo"))
+       expect(doc2["1"] as? MinKey).to(beAnInstanceOf(MinKey.self))
+       expect(doc2["2"]).to(beNil())
     }
 
     func testIterator() {
