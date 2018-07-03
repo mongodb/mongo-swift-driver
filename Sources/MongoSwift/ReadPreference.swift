@@ -61,7 +61,7 @@ final public class ReadPreference {
     /// The tags of this `ReadPreference`
     public var tagSets: [Document] {
         guard let bson = mongoc_read_prefs_get_tags(self._readPreference) else {
-            return []
+            preconditionFailure("Failed to retrieve read preference tags")
         }
 
         let wrapped = Document(fromPointer: bson)
