@@ -72,7 +72,7 @@ final class ReadPreferenceTests: XCTestCase {
         expect(rpCopy).to(equal(rpOrig))
     }
 
-    func testEquatable() {
+    func testEquatable() throws {
         expect(ReadPreference(.primary)).to(equal(ReadPreference(.primary)))
         expect(ReadPreference(.primary)).toNot(equal(ReadPreference(.primaryPreferred)))
         expect(ReadPreference(.primary)).toNot(equal(ReadPreference(.secondary)))
@@ -82,17 +82,17 @@ final class ReadPreferenceTests: XCTestCase {
         expect(try ReadPreference(.secondary, tagSets: nil))
             .to(equal(ReadPreference(.secondary)))
         expect(try ReadPreference(.secondary, tagSets: []))
-            .to(equal(try! ReadPreference(.secondary, tagSets: [])))
+            .to(equal(try ReadPreference(.secondary, tagSets: [])))
         expect(try ReadPreference(.secondary, tagSets: [["dc": "east"], []]))
-            .to(equal(try! ReadPreference(.secondary, tagSets: [["dc": "east"], []])))
+            .to(equal(try ReadPreference(.secondary, tagSets: [["dc": "east"], []])))
         expect(try ReadPreference(.secondary, tagSets: [["dc": "east"], []]))
-            .toNot(equal(try! ReadPreference(.nearest, tagSets: [["dc": "east"], []])))
+            .toNot(equal(try ReadPreference(.nearest, tagSets: [["dc": "east"], []])))
         expect(try ReadPreference(.secondary, tagSets: [["dc": "east"], []]))
-            .toNot(equal(try! ReadPreference(.secondary, maxStalenessSeconds: 90)))
+            .toNot(equal(try ReadPreference(.secondary, maxStalenessSeconds: 90)))
 
         expect(try ReadPreference(.secondaryPreferred, maxStalenessSeconds: nil))
             .to(equal(ReadPreference(.secondaryPreferred)))
         expect(try ReadPreference(.secondaryPreferred, maxStalenessSeconds: 90))
-            .to(equal(try! ReadPreference(.secondaryPreferred, maxStalenessSeconds: 90)))
+            .to(equal(try ReadPreference(.secondaryPreferred, maxStalenessSeconds: 90)))
     }
 }
