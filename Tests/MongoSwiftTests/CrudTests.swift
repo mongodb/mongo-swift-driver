@@ -13,10 +13,7 @@ private var skippedFiles = [
     "findOneAndReplace",
     "findOneAndUpdate-arrayFilters",
     "findOneAndUpdate-collation",
-    "findOneAndUpdate",
-    // TODO: once CDRIVER-2527 changes available, stop skipping these 
-    "deleteMany-collation",
-    "deleteOne-collation"
+    "findOneAndUpdate"
 ]
 
 internal extension Document {
