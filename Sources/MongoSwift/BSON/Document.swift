@@ -168,24 +168,24 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         })
     }
 
-    /// Returns a relaxed extended JSON representation of this `Document`
+    /// Returns the relaxed extended JSON representation of this `Document`.
+    /// On error, an empty string will be returned.
     public var extendedJSON: String {
-        let json = bson_as_relaxed_extended_json(self.data, nil)
-        guard let jsonData = json else {
-            return String()
+        guard let json = bson_as_relaxed_extended_json(self.data, nil) else {
+            return ""
         }
 
-        return String(cString: jsonData)
+        return String(cString: json)
     }
 
-    /// Returns a canonical extended JSON representation of this `Document`
+    /// Returns the canonical extended JSON representation of this `Document`.
+    /// On error, an empty string will be returned.
     public var canonicalExtendedJSON: String {
-        let json = bson_as_canonical_extended_json(self.data, nil)
-        guard let jsonData = json else {
-            return String()
+        guard let json = bson_as_canonical_extended_json(self.data, nil) else {
+            return ""
         }
 
-        return String(cString: jsonData)
+        return String(cString: json)
     }
 
     /// Returns a copy of the raw BSON data for this `Document`, represented as `Data`
@@ -320,7 +320,8 @@ extension Document: Equatable {
 
 /// An extension of `Document` to make it convertible to a string.
 extension Document: CustomStringConvertible {
-    /// An extended JSON description of this `Document`.
+    /// Returns the relaxed extended JSON representation of this `Document`.
+    /// On error, an empty string will be returned.
     public var description: String {
         return self.extendedJSON
     }
