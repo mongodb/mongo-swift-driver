@@ -367,6 +367,7 @@ public struct FindOptions: Encodable {
     // Encode everything except `self.cursorType`, as we only store it for debugging purposes 
     private enum CodingKeys: String, CodingKey {
         case allowPartialResults, awaitData, batchSize, collation, comment, hint, limit, max, maxAwaitTimeMS,
-            maxScan, maxTimeMS, min, noCursorTimeout, projection, returnKey, showRecordId, tailable, skip, sort
+            maxScan, maxTimeMS, min, noCursorTimeout, projection, readConcern, returnKey, showRecordId, tailable, skip,
+            sort
     }
 }
