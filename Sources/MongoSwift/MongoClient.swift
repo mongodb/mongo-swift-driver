@@ -14,16 +14,21 @@ public struct ClientOptions: Encodable {
     /// the server's default read concern will be used.
     public let readConcern: ReadConcern?
 
+    /// Specifies a ReadPreference to use for the client.
+    public let readPreference: ReadPreference?
+
     /// Specifies a WriteConcern to use for the client. If one is not specified,
     /// the server's default write concern will be used.
     public let writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all to be omitted or optional
-    public init(eventMonitoring: Bool = false, readConcern: ReadConcern? = nil, retryWrites: Bool? = nil,
+    public init(eventMonitoring: Bool = false, readConcern: ReadConcern? = nil,
+                readPreference: ReadPreference? = nil, retryWrites: Bool? = nil,
                 writeConcern: WriteConcern? = nil) {
         self.retryWrites = retryWrites
         self.eventMonitoring = eventMonitoring
         self.readConcern = readConcern
+        self.readPreference = readPreference
         self.writeConcern = writeConcern
     }
 
@@ -57,13 +62,19 @@ public struct DatabaseOptions {
     /// the database will inherit the client's read concern. 
     public let readConcern: ReadConcern?
 
+    /// A read preference to set on the retrieved database. If one is not
+    /// specified, the database will inherit the client's read preference.
+    public let readPreference: ReadPreference?
+
     /// A write concern to set on the retrieved database. If one is not specified,
     /// the database will inherit the client's write concern.
     public let writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all arguments to be omitted or optional
-    public init(readConcern: ReadConcern? = nil, writeConcern: WriteConcern? = nil) {
+    public init(readConcern: ReadConcern? = nil, readPreference: ReadPreference? = nil,
+                writeConcern: WriteConcern? = nil) {
         self.readConcern = readConcern
+        self.readPreference = readPreference
         self.writeConcern = writeConcern
     }
 }
@@ -85,6 +96,11 @@ public class MongoClient {
         let rcObj = ReadConcern(from: readConcern)
         if rcObj.isDefault { return nil }
         return rcObj
+    }
+
+    /// The `ReadPreference` set on this client
+    public var readPreference: ReadPreference? {
+        return ReadPreference(from: mongoc_client_get_read_prefs(self._client))
     }
 
     /// The write concern set on this client, or nil if one is not set.
@@ -119,6 +135,11 @@ public class MongoClient {
         // if a readConcern is provided, set it on the client
         if let rc = options?.readConcern {
             mongoc_client_set_read_concern(self._client, rc._readConcern)
+        }
+
+        // if a readPreference is provided, set it on the client
+        if let rp = options?.readPreference {
+            mongoc_client_set_read_prefs(self._client, rp._readPreference)
         }
 
         // if a writeConcern is provided, set it on the client
@@ -207,6 +228,10 @@ public class MongoClient {
 
         if let rc = options?.readConcern {
             mongoc_database_set_read_concern(db, rc._readConcern)
+        }
+
+        if let rp = options?.readPreference {
+            mongoc_database_set_read_prefs(db, rp._readPreference)
         }
 
         if let wc = options?.writeConcern {

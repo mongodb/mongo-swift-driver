@@ -29,6 +29,11 @@ public class MongoCollection<T: Codable> {
         return rcObj
     }
 
+    /// The `ReadPreference` set on this collection
+    public var readPreference: ReadPreference? {
+        return ReadPreference(from: mongoc_collection_get_read_prefs(self._collection))
+    }
+
     /// The `WriteConcern` set on this collection, or nil if one is not set.
     public var writeConcern: WriteConcern? {
         // per libmongoc docs, we don't need to handle freeing this ourselves

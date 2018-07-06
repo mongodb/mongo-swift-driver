@@ -110,13 +110,19 @@ public struct CollectionOptions {
     /// the collection will inherit the database's read concern.
     public let readConcern: ReadConcern?
 
+    /// A read preference to set on the returned collection. If one is not
+    /// specified, the collection will inherit the database's read preference.
+    public let readPreference: ReadPreference?
+
     /// A write concern to set on the returned collection. If one is not specified,
     /// the collection will inherit the database's write concern.
     public let writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all arguments to be omitted or optional
-    public init(readConcern: ReadConcern? = nil, writeConcern: WriteConcern? = nil) {
+    public init(readConcern: ReadConcern? = nil, readPreference: ReadPreference? = nil,
+                writeConcern: WriteConcern? = nil) {
         self.readConcern = readConcern
+        self.readPreference = readPreference
         self.writeConcern = writeConcern
     }
 }
@@ -138,6 +144,11 @@ public class MongoDatabase {
         let rcObj = ReadConcern(from: readConcern)
         if rcObj.isDefault { return nil }
         return rcObj
+    }
+
+    /// The `ReadPreference` set on this database
+    public var readPreference: ReadPreference? {
+        return ReadPreference(from: mongoc_collection_get_read_prefs(self._database))
     }
 
     /// The `WriteConcern` set on this database, or `nil` if one is not set.
@@ -203,6 +214,10 @@ public class MongoDatabase {
 
         if let rc = options?.readConcern {
             mongoc_collection_set_read_concern(collection, rc._readConcern)
+        }
+
+        if let rp = options?.readPreference {
+            mongoc_collection_set_read_prefs(collection, rp._readPreference)
         }
 
         if let wc = options?.writeConcern {
