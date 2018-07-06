@@ -8,15 +8,24 @@ public struct RunCommandOptions: Encodable {
     /// An optional `ReadConcern` to use for this operation
     public let readConcern: ReadConcern?
 
+    /// An optional `ReadPreference` to use for this operation
+    public let readPreference: ReadPreference?
+
     /// An optional WriteConcern to use for this operation
     public let writeConcern: WriteConcern?
 
     /// Convenience initializer allowing session to be omitted or optional
-    public init(readConcern: ReadConcern? = nil, session: ClientSession? = nil,
-                writeConcern: WriteConcern? = nil) {
+    public init(readConcern: ReadConcern? = nil, readPreference: ReadPreference? = nil,
+                session: ClientSession? = nil, writeConcern: WriteConcern? = nil) {
         self.readConcern = readConcern
+        self.readPreference = readPreference
         self.session = session
         self.writeConcern = writeConcern
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        // TODO: Encode ClientSession as "sessionId" (see: SWIFT-28)
+        case readConcern, writeConcern
     }
 }
 
@@ -304,10 +313,11 @@ public class MongoDatabase {
      */
     @discardableResult
     public func runCommand(_ command: Document, options: RunCommandOptions? = nil) throws -> Document {
+        let rp = options?.readPreference?._readPreference
         let opts = try BsonEncoder().encode(options)
         let reply = Document()
         var error = bson_error_t()
-        if !mongoc_database_command_with_opts(self._database, command.data, nil, opts?.data, reply.data, &error) {
+        if !mongoc_database_command_with_opts(self._database, command.data, rp, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
         return reply
