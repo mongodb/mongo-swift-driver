@@ -5,6 +5,8 @@ import libmongoc
 public enum MongoError {
     /// Thrown when an invalid connection string is provided when initializing a `MongoClient`.
     case invalidUri(message: String)
+    /// Thrown when a user-provided value is invalid.
+    case invalidValue(message: String)
     /// Thrown when a `MongoClient` is invalid.
     case invalidClient()
     /// Thrown when the server sends an invalid response.
@@ -37,7 +39,8 @@ extension MongoError: LocalizedError {
             let .invalidCollection(message), let .commandError(message),
             let .bsonParseError(_, _, message), let .bsonEncodeError(message),
             let .typeError(message), let .readConcernError(message),
-            let .readPreferenceError(message), let .writeConcernError(message):
+            let .readPreferenceError(message), let .writeConcernError(message),
+            let .invalidValue(message):
             return message
         default:
             return nil

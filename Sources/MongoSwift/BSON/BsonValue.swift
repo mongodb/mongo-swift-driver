@@ -89,8 +89,6 @@ public protocol BsonValue {
     * - Parameters:
     *   - to: An `<UnsafeMutablePointer<bson_t>`, indicating the `bson_t` to append to.
     *   - forKey: A `String`, the key with which to store the value.
-    *
-    * - Returns: A `Bool` indicating whether the value was successfully appended.
     */
     func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws
 
@@ -158,24 +156,6 @@ extension Array: BsonValue {
     }
 }
 
-/// Subtypes for BSON Binary values.
-public enum BsonSubtype: Int, Codable {
-    /// Generic binary subtype
-    case binary = 0,
-    /// A function
-    function,
-    /// Binary (old)
-    binaryDeprecated,
-    /// UUID (old)
-    uuidDeprecated,
-    /// UUID
-    uuid,
-    /// MD5
-    md5,
-    /// User defined
-    user
-}
-
 /// A struct to represent the BSON Binary type.
 public struct Binary: BsonValue, Equatable, Codable {
 
@@ -185,31 +165,54 @@ public struct Binary: BsonValue, Equatable, Codable {
     public let data: Data
 
     /// The binary subtype for this data.
-    public let subtype: BsonSubtype
+    public let subtype: UInt8
 
-    /// Initializes a Binary instance of the specified subtype using provided `Data`.
-    public init(data: Data, subtype: BsonSubtype) {
-        self.data = data
-        self.subtype = subtype
+    /// Subtypes for BSON Binary values.
+    public enum Subtype: UInt8 {
+        /// Generic binary subtype
+        case generic,
+        /// A function
+        function,
+        /// Binary (old)
+        binaryDeprecated,
+        /// UUID (old)
+        uuidDeprecated,
+        /// UUID (RFC 4122)
+        uuid,
+        /// MD5
+        md5,
+        /// User defined
+        userDefined = 0x80
     }
 
-    /// Initializes a Binary instance of the specified subtype from a base64 `String`. 
-    public init(base64: String, subtype: BsonSubtype) {
+    /// Initializes a `Binary` instance from a `Data` object and a `UInt8` subtype.
+    public init(data: Data, subtype: UInt8) {
+        self.subtype = subtype
+        self.data = data
+    }
+
+    /// Initializes a `Binary` instance from a `Data` object and a `Subtype`. 
+    public init(data: Data, subtype: Subtype) {
+        self.init(data: data, subtype: subtype.rawValue)
+    }
+
+    /// Initializes a `Binary` instance from a base64 `String` and a `UInt8` subtype.
+    /// Throws an error if the base64 `String` is invalid.
+    public init(base64: String, subtype: UInt8) throws {
         guard let dataObj = Data(base64Encoded: base64) else {
-            preconditionFailure("failed to create Data object from base64 string \(base64)")
+            throw MongoError.invalidValue(message: "failed to create Data object from invalid base64 string \(base64)")
         }
-        self.data = dataObj
-        self.subtype = subtype
+        self.init(data: dataObj, subtype: subtype)
     }
 
-    /// Initializes a `Binary` instance from a `Data` object and a `UInt32` subtype.
-    internal init(data: Data, subtype: UInt32) {
-        self.data = data
-        self.subtype = BsonSubtype(rawValue: Int(subtype))!
+    /// Initializes a `Binary` instance from a base64 `String` and a `Subtype`.
+    /// Throws an error if the base64 `String` is invalid. 
+    public init(base64: String, subtype: Subtype) throws {
+        try self.init(base64: base64, subtype: subtype.rawValue)
     }
 
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
-        let subtype = bson_subtype_t(UInt32(self.subtype.rawValue))
+        let subtype = bson_subtype_t(UInt32(self.subtype))
         let length = self.data.count
         let byteArray = [UInt8](self.data)
         if !bson_append_binary(data, key, Int32(key.count), subtype, byteArray, UInt32(length)) {
@@ -232,7 +235,7 @@ public struct Binary: BsonValue, Equatable, Codable {
         }
 
         let dataObj = Data(bytes: data, count: Int(length))
-        return Binary(data: dataObj, subtype: subtype.rawValue)
+        return Binary(data: dataObj, subtype: UInt8(subtype.rawValue))
     }
 
     public static func == (lhs: Binary, rhs: Binary) -> Bool {

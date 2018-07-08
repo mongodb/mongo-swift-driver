@@ -14,7 +14,7 @@
     <a title="Binary Structure Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="../index.html">MongoSwift Docs</a> (100% documented)</p>
+        <p><a href="../index.html">MongoSwift Docs</a> (99% documented)</p>
         <p class="header-right"><a href="dash-feed://https%3A%2F%2Fmongodb%2Egithub%2Eio%2Fmongo%2Dswift%2Ddriver%2Fdocsets%2FMongoSwift%2Exml"><img src="../img/dash.png"/>Install in Dash</a></p>
       </div>
     </header>
@@ -70,6 +70,12 @@
                 <a href="../Classes/ReadConcern/Level.html">– Level</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Classes/ReadPreference.html">ReadPreference</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/ReadPreference/Mode.html">– Mode</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Classes/WriteConcern.html">WriteConcern</a>
               </li>
               <li class="nav-group-task">
@@ -80,9 +86,6 @@
           <li class="nav-group-name">
             <a href="../Enums.html">Enumerations</a>
             <ul class="nav-group-tasks">
-              <li class="nav-group-task">
-                <a href="../Enums/BsonSubtype.html">BsonSubtype</a>
-              </li>
               <li class="nav-group-task">
                 <a href="../Enums/BsonType.html">BsonType</a>
               </li>
@@ -160,6 +163,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/Binary.html">Binary</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/Binary/Subtype.html">– Subtype</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/ClientOptions.html">ClientOptions</a>
@@ -378,9 +384,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift6BinaryV7subtypeAA11BsonSubtypeOvp"></a>
+                    <a name="/s:10MongoSwift6BinaryV7subtypes5UInt8Vvp"></a>
                     <a name="//apple_ref/swift/Property/subtype" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift6BinaryV7subtypeAA11BsonSubtypeOvp">subtype</a>
+                    <a class="token" href="#/s:10MongoSwift6BinaryV7subtypes5UInt8Vvp">subtype</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -395,7 +401,7 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">subtype</span><span class="p">:</span> <span class="kt"><a href="../Enums/BsonSubtype.html">BsonSubtype</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">subtype</span><span class="p">:</span> <span class="kt">UInt8</span></code></pre>
 
                         </div>
                       </div>
@@ -405,9 +411,37 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift6BinaryVAC10Foundation4DataV4data_AA11BsonSubtypeO7subtypetcfc"></a>
+                    <a name="/s:10MongoSwift6BinaryV7SubtypeO"></a>
+                    <a name="//apple_ref/swift/Enum/Subtype" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift6BinaryV7SubtypeO">Subtype</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Subtypes for BSON Binary values.</p>
+
+                        <a href="../Structs/Binary/Subtype.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Subtype</span> <span class="p">:</span> <span class="kt">UInt8</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift6BinaryVAC10Foundation4DataV4data_s5UInt8V7subtypetcfc"></a>
                     <a name="//apple_ref/swift/Method/init(data:subtype:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift6BinaryVAC10Foundation4DataV4data_AA11BsonSubtypeO7subtypetcfc">init(data:subtype:)</a>
+                    <a class="token" href="#/s:10MongoSwift6BinaryVAC10Foundation4DataV4data_s5UInt8V7subtypetcfc">init(data:subtype:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -415,14 +449,14 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Initializes a Binary instance of the specified subtype using provided <code>Data</code>.</p>
+                        <p>Initializes a <code>Binary</code> instance from a <code>Data</code> object and a <code>UInt8</code> subtype.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">data</span><span class="p">:</span> <span class="kt">Data</span><span class="p">,</span> <span class="nv">subtype</span><span class="p">:</span> <span class="kt"><a href="../Enums/BsonSubtype.html">BsonSubtype</a></span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">data</span><span class="p">:</span> <span class="kt">Data</span><span class="p">,</span> <span class="nv">subtype</span><span class="p">:</span> <span class="kt">UInt8</span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
@@ -432,9 +466,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift6BinaryVACSS6base64_AA11BsonSubtypeO7subtypetcfc"></a>
-                    <a name="//apple_ref/swift/Method/init(base64:subtype:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift6BinaryVACSS6base64_AA11BsonSubtypeO7subtypetcfc">init(base64:subtype:)</a>
+                    <a name="/s:10MongoSwift6BinaryVAC10Foundation4DataV4data_AC7SubtypeO7subtypetcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(data:subtype:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift6BinaryVAC10Foundation4DataV4data_AC7SubtypeO7subtypetcfc">init(data:subtype:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -442,14 +476,70 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Initializes a Binary instance of the specified subtype from a base64 <code>String</code>.</p>
+                        <p>Initializes a <code>Binary</code> instance from a <code>Data</code> object and a <code><a href="../Structs/Binary/Subtype.html">Subtype</a></code>.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">base64</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">subtype</span><span class="p">:</span> <span class="kt"><a href="../Enums/BsonSubtype.html">BsonSubtype</a></span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">data</span><span class="p">:</span> <span class="kt">Data</span><span class="p">,</span> <span class="nv">subtype</span><span class="p">:</span> <span class="kt"><a href="../Structs/Binary/Subtype.html">Subtype</a></span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift6BinaryVACSS6base64_s5UInt8V7subtypetKcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(base64:subtype:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift6BinaryVACSS6base64_s5UInt8V7subtypetKcfc">init(base64:subtype:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Initializes a <code>Binary</code> instance from a base64 <code>String</code> and a <code>UInt8</code> subtype.
+Throws an error if the base64 <code>String</code> is invalid.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">base64</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">subtype</span><span class="p">:</span> <span class="kt">UInt8</span><span class="p">)</span> <span class="k">throws</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift6BinaryVACSS6base64_AC7SubtypeO7subtypetKcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(base64:subtype:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift6BinaryVACSS6base64_AC7SubtypeO7subtypetKcfc">init(base64:subtype:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Initializes a <code>Binary</code> instance from a base64 <code>String</code> and a <code><a href="../Structs/Binary/Subtype.html">Subtype</a></code>.
+Throws an error if the base64 <code>String</code> is invalid.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">base64</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">subtype</span><span class="p">:</span> <span class="kt"><a href="../Structs/Binary/Subtype.html">Subtype</a></span><span class="p">)</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -539,7 +629,7 @@
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone and Kaitlin Mahar</a>. All rights reserved. (Last updated: 2018-07-02)</p>
+          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone and Kaitlin Mahar</a>. All rights reserved. (Last updated: 2018-07-08)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>

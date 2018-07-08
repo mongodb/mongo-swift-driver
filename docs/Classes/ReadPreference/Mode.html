@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Mode Enumeration Reference</title>
+    <link rel="stylesheet" type="text/css" href="../../css/jazzy.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/highlight.css" />
+    <meta charset='utf-8'>
+    <script src="../../js/jquery.min.js" defer></script>
+    <script src="../../js/jazzy.js" defer></script>
+    
+  </head>
+  <body>
+    <a name="//apple_ref/swift/Enum/Mode" class="dashAnchor"></a>
+    <a title="Mode Enumeration Reference"></a>
+    <header>
+      <div class="content-wrapper">
+        <p><a href="../../index.html">MongoSwift Docs</a> (99% documented)</p>
+        <p class="header-right"><a href="dash-feed://https%3A%2F%2Fmongodb%2Egithub%2Eio%2Fmongo%2Dswift%2Ddriver%2Fdocsets%2FMongoSwift%2Exml"><img src="../../img/dash.png"/>Install in Dash</a></p>
+      </div>
+    </header>
+    <div class="content-wrapper">
+      <p id="breadcrumbs">
+        <a href="../../index.html">MongoSwift Reference</a>
+        <img id="carat" src="../../img/carat.png" />
+        Mode Enumeration Reference
+      </p>
+    </div>
+    <div class="content-wrapper">
+      <nav class="sidebar">
+        <ul class="nav-groups">
+          <li class="nav-group-name">
+            <a href="../../Guides.html">Guides</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../../development.html">Development</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../../Classes.html">Classes</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../../Classes/BsonDecoder.html">BsonDecoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Classes/BsonEncoder.html">BsonEncoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Classes/ClientSession.html">ClientSession</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Classes/MongoClient.html">MongoClient</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Classes/MongoCollection.html">MongoCollection</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Classes/MongoCursor.html">MongoCursor</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Classes/MongoDatabase.html">MongoDatabase</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Classes/MongoSwift.html">MongoSwift</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Classes/ReadConcern.html">ReadConcern</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Classes/ReadConcern/Level.html">– Level</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Classes/ReadPreference.html">ReadPreference</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Classes/ReadPreference/Mode.html">– Mode</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Classes/WriteConcern.html">WriteConcern</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Classes/WriteConcern/W.html">– W</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../../Enums.html">Enumerations</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../../Enums/BsonType.html">BsonType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Enums/CursorType.html">CursorType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Enums/Hint.html">Hint</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Enums/MongoError.html">MongoError</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Enums/MongoEventType.html">MongoEventType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Enums/ServerType.html">ServerType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Enums/TopologyType.html">TopologyType</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../../Extensions.html">Extensions</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../../Extensions/Array.html">Array</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Extensions/Bool.html">Bool</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Extensions/Date.html">Date</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Extensions/Double.html">Double</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Extensions/Int.html">Int</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Extensions/Int32.html">Int32</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Extensions/Int64.html">Int64</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Extensions/NSRegularExpression.html">NSRegularExpression</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Extensions/String.html">String</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../../Protocols.html">Protocols</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../../Protocols/BsonValue.html">BsonValue</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Protocols/MongoEvent.html">MongoEvent</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../../Structs.html">Structures</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../../Structs/AggregateOptions.html">AggregateOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/AnyBsonValue.html">AnyBsonValue</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/Binary.html">Binary</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/Binary/Subtype.html">– Subtype</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/ClientOptions.html">ClientOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/CodeWithScope.html">CodeWithScope</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/CollectionOptions.html">CollectionOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/CommandFailedEvent.html">CommandFailedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/CommandStartedEvent.html">CommandStartedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/CommandSucceededEvent.html">CommandSucceededEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/ConnectionId.html">ConnectionId</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/CountOptions.html">CountOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/CreateCollectionOptions.html">CreateCollectionOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/CreateIndexOptions.html">CreateIndexOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/DatabaseOptions.html">DatabaseOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/Decimal128.html">Decimal128</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/DeleteOptions.html">DeleteOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/DeleteResult.html">DeleteResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/DistinctOptions.html">DistinctOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/Document.html">Document</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/Document/DocumentIterator.html">– DocumentIterator</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/DropIndexOptions.html">DropIndexOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/FindOptions.html">FindOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/IndexModel.html">IndexModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/IndexOptions.html">IndexOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/InsertManyOptions.html">InsertManyOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/InsertManyResult.html">InsertManyResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/InsertOneOptions.html">InsertOneOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/InsertOneResult.html">InsertOneResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/ListCollectionsOptions.html">ListCollectionsOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/ListDatabasesOptions.html">ListDatabasesOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/MaxKey.html">MaxKey</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/MinKey.html">MinKey</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/ObjectId.html">ObjectId</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/ReplaceOptions.html">ReplaceOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/RunCommandOptions.html">RunCommandOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/ServerClosedEvent.html">ServerClosedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/ServerDescription.html">ServerDescription</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/ServerDescriptionChangedEvent.html">ServerDescriptionChangedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/ServerHeartbeatFailedEvent.html">ServerHeartbeatFailedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/ServerHeartbeatStartedEvent.html">ServerHeartbeatStartedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/ServerHeartbeatSucceededEvent.html">ServerHeartbeatSucceededEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/ServerOpeningEvent.html">ServerOpeningEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/SessionOptions.html">SessionOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/Timestamp.html">Timestamp</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/TopologyClosedEvent.html">TopologyClosedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/TopologyDescription.html">TopologyDescription</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/TopologyDescriptionChangedEvent.html">TopologyDescriptionChangedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/TopologyOpeningEvent.html">TopologyOpeningEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/UpdateOptions.html">UpdateOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/UpdateResult.html">UpdateResult</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <article class="main-content">
+        <section>
+          <section class="section">
+            <h1>Mode</h1>
+              <div class="declaration">
+                <div class="language">
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Mode</span> <span class="p">:</span> <span class="kt">String</span></code></pre>
+
+                </div>
+              </div>
+            <p>An enumeration of possible ReadPreference modes.</p>
+
+          </section>
+          <section class="section task-group-section">
+            <div class="task-group">
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift14ReadPreferenceC4ModeO7primaryA2EmF"></a>
+                    <a name="//apple_ref/swift/Element/primary" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift14ReadPreferenceC4ModeO7primaryA2EmF">primary</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">primary</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift14ReadPreferenceC4ModeO16primaryPreferredA2EmF"></a>
+                    <a name="//apple_ref/swift/Element/primaryPreferred" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift14ReadPreferenceC4ModeO16primaryPreferredA2EmF">primaryPreferred</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">primaryPreferred</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift14ReadPreferenceC4ModeO9secondaryA2EmF"></a>
+                    <a name="//apple_ref/swift/Element/secondary" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift14ReadPreferenceC4ModeO9secondaryA2EmF">secondary</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">secondary</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift14ReadPreferenceC4ModeO18secondaryPreferredA2EmF"></a>
+                    <a name="//apple_ref/swift/Element/secondaryPreferred" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift14ReadPreferenceC4ModeO18secondaryPreferredA2EmF">secondaryPreferred</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">secondaryPreferred</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift14ReadPreferenceC4ModeO7nearestA2EmF"></a>
+                    <a name="//apple_ref/swift/Element/nearest" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift14ReadPreferenceC4ModeO7nearestA2EmF">nearest</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">nearest</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </section>
+        </section>
+        <section id="footer">
+          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone and Kaitlin Mahar</a>. All rights reserved. (Last updated: 2018-07-08)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+        </section>
+      </article>
+    </div>
+  </body>
+</div>
+</html>
