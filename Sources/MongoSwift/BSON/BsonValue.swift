@@ -377,19 +377,18 @@ extension Double: BsonValue {
     }
 }
 
-/// An extension of `Int` to represent the BSON Int32 type.
-/// While the bitwidth of Int is machine-dependent, we assume for simplicity
-/// that it is always 32 bits. Use `Int64` if 64 bits are needed.
+/// An extension of `Int` to represent the BSON Int32 or Int64 type.
+/// The `Int` will be encoded as an Int32 if possible, or an Int64 if necessary.
 extension Int: BsonValue {
     public var bsonType: BsonType { return .int32 }
     public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
-        guard let int32 = Int32(exactly: self) else {
-            throw MongoError.bsonEncodeError(message:
-                "`Int` value \(self) does not fit in an `Int32`. Use an `Int64` instead")
+        if let int32 = Int32(exactly: self) {
+            return try int32.encode(to: data, forKey: key)
         }
-        if !bson_append_int32(data, key, Int32(key.count), int32) {
-            throw bsonEncodeError(value: self, forKey: key)
+        if let int64 = Int64(exactly: self) {
+            return try int64.encode(to: data, forKey: key)
         }
+        throw MongoError.bsonEncodeError(message: "`Int` value \(self) could not be encoded as `Int32` or `Int64`")
     }
 
     public static func from(iter: inout bson_iter_t) -> BsonValue {
