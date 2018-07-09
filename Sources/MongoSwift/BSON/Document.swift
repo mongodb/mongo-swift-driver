@@ -71,21 +71,6 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     }
 
     /**
-     * Initializes a `Document` from a `[String: BsonValue?]`
-     *
-     * - Parameters:
-     *   - doc: a [String: BsonValue?]
-     *
-     * - Returns: a new `Document`
-     */
-    public init(_ doc: [String: BsonValue?]) {
-        self.storage = DocumentStorage()
-        for (k, v) in doc {
-            self[k] = v
-        }
-    }
-
-    /**
      * Initializes a `Document` using a dictionary literal where the
      * keys are `String`s and the values are `BsonValue?`s. For example:
      * `d: Document = ["a" : 1 ]`

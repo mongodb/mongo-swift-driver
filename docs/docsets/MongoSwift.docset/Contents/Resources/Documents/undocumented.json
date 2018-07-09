@@ -1,6 +1,40 @@
 {
   "warnings": [
-
+    {
+      "file": "/Users/kaitlinmahar/mongo-swift-driver/Sources/MongoSwift/ReadPreference.swift",
+      "line": 12,
+      "symbol": "ReadPreference.Mode.primary",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/kaitlinmahar/mongo-swift-driver/Sources/MongoSwift/ReadPreference.swift",
+      "line": 13,
+      "symbol": "ReadPreference.Mode.primaryPreferred",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/kaitlinmahar/mongo-swift-driver/Sources/MongoSwift/ReadPreference.swift",
+      "line": 14,
+      "symbol": "ReadPreference.Mode.secondary",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/kaitlinmahar/mongo-swift-driver/Sources/MongoSwift/ReadPreference.swift",
+      "line": 15,
+      "symbol": "ReadPreference.Mode.secondaryPreferred",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/kaitlinmahar/mongo-swift-driver/Sources/MongoSwift/ReadPreference.swift",
+      "line": 16,
+      "symbol": "ReadPreference.Mode.nearest",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    }
   ],
   "source_directory": "/Users/kaitlinmahar/mongo-swift-driver"
 }
