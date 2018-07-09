@@ -32,10 +32,13 @@ final class DocumentTests: XCTestCase {
         return [
             ("testDocument", testDocument),
             ("testDocumentFromArray", testDocumentFromArray),
-            ("testEquatable", testEquatable),
             ("testIterator", testIterator),
+            ("testEquatable", testEquatable),
             ("testRawBSON", testRawBSON),
-            ("testBSONCorpus", testBSONCorpus)
+            ("testValueBehavior", testValueBehavior),
+            ("testInvalidInt", testInvalidInt),
+            ("testBSONCorpus", testBSONCorpus),
+            ("testMerge", testMerge)
         ]
     }
 
