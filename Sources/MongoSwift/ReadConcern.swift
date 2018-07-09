@@ -97,13 +97,13 @@ public class ReadConcern: Codable {
 
 /// An extension of `ReadConcern` to make it `CustomStringConvertible`.
 extension ReadConcern: CustomStringConvertible {
-    /// An extended JSON description of this `ReadConcern`, or the
-    /// empty string if encoding fails.
+    /// Returns the relaxed extended JSON representation of this `ReadConcern`.
+    /// On error, an empty string will be returned.
     public var description: String {
-        if let encoded = try? BsonEncoder().encode(self).description {
-            return encoded
+        guard let description = try? BsonEncoder().encode(self).description else {
+            return ""
         }
-        return ""
+        return description
     }
 }
 

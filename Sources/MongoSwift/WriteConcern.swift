@@ -167,12 +167,13 @@ public class WriteConcern: Codable {
 
 /// An extension of `WriteConcern` to make it `CustomStringConvertible`.
 extension WriteConcern: CustomStringConvertible {
+    /// Returns the relaxed extended JSON representation of this `WriteConcern`.
+    /// On error, an empty string will be returned.
     public var description: String {
-        do {
-            return try BsonEncoder().encode(self).description
-        } catch {
-            preconditionFailure("Error encoding WriteConcern to BSON: \(error)")
+        guard let description = try? BsonEncoder().encode(self).description else {
+            return ""
         }
+        return description
     }
 }
 
