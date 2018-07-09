@@ -50,15 +50,17 @@ public enum BsonType: Int {
     maxKey
 }
 
-internal let BsonTypeMap: [UInt32: BsonValue.Type] = [
+internal let BsonTypeMap: [UInt32: BsonValue.Type?] = [
     0x01: Double.self,
     0x02: String.self,
     0x03: Document.self,
     0x04: [BsonValue].self,
     0x05: Binary.self,
+    0x06: nil,
     0x07: ObjectId.self,
     0x08: Bool.self,
     0x09: Date.self,
+    0x0a: nil,
     0x0b: RegularExpression.self,
     0x0c: DBPointer.self,
     0x0d: CodeWithScope.self,
@@ -73,8 +75,15 @@ internal let BsonTypeMap: [UInt32: BsonValue.Type] = [
 ]
 
 internal func nextBsonValue(iter: inout bson_iter_t) -> BsonValue? {
-    let type = bson_iter_type(&iter)
-    guard let typeToReturn = BsonTypeMap[type.rawValue] else { return nil }
+    let type = bson_iter_type(&iter).rawValue
+    guard let index = BsonTypeMap.index(forKey: type) else {
+        let hex = String(type, radix: 16)
+        let key = String(cString: bson_iter_key(&iter))
+        preconditionFailure("Detected unknown BSON type \"\(hex)\" for fieldname \"\(key)\". Are you using the latest driver version?")
+    }
+    guard let typeToReturn = BsonTypeMap[index].value else {
+        return nil
+    }
     return typeToReturn.from(iter: &iter)
 }
 
