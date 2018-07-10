@@ -36,7 +36,7 @@ final class DocumentTests: XCTestCase {
             ("testEquatable", testEquatable),
             ("testRawBSON", testRawBSON),
             ("testValueBehavior", testValueBehavior),
-            ("testInvalidInt", testInvalidInt),
+            ("testIntEncodesAsInt32OrInt64", testIntEncodesAsInt32OrInt64),
             ("testBSONCorpus", testBSONCorpus),
             ("testMerge", testMerge)
         ]
@@ -198,11 +198,32 @@ final class DocumentTests: XCTestCase {
         XCTAssertNotEqual(doc1, doc2)
     }
 
-    func testInvalidInt() {
-        let doc1 = Document()
-        let v = Int(Int32.max) + 1
-        expect(try v.encode(to: doc1.data, forKey: "x")).to(throwError())
+    func testIntEncodesAsInt32OrInt64() {
+        /* Skip this test on 32-bit platforms. Use MemoryLayout instead of
+         * Int.bitWidth to avoid a compiler warning.
+         * See: https://forums.swift.org/t/how-can-i-condition-on-the-size-of-int/9080/4 */
+        if MemoryLayout<Int>.size == 4 {
+            return
+        }
 
+        let int32min_sub1 = Int64(Int32.min) - Int64(1)
+        let int32max_add1 = Int64(Int32.max) + Int64(1)
+
+        var doc: Document = [
+            "int32min": Int(Int32.min),
+            "int32max": Int(Int32.max),
+            "int32min-1": Int(int32min_sub1),
+            "int32max+1": Int(int32max_add1),
+            "int64min": Int(Int64.min),
+            "int64max": Int(Int64.max)
+        ]
+
+        expect(doc["int32min"] as? Int).to(equal(Int(Int32.min)))
+        expect(doc["int32max"] as? Int).to(equal(Int(Int32.max)))
+        expect(doc["int32min-1"] as? Int64).to(equal(int32min_sub1))
+        expect(doc["int32max+1"] as? Int64).to(equal(int32max_add1))
+        expect(doc["int64min"] as? Int64).to(equal(Int64.min))
+        expect(doc["int64max"] as? Int64).to(equal(Int64.max))
     }
 
     // swiftlint:disable:next cyclomatic_complexity
