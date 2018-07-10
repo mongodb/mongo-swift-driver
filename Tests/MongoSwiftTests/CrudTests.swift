@@ -5,7 +5,9 @@ import XCTest
 
 // Files to skip because we don't currently support the operations they test.
 private var skippedFiles = [
+    // TODO SWIFT-147: enable this
     "bulkWrite-arrayFilters",
+    // TODO SWIFT-156: enable these
     "findOneAndDelete-collation",
     "findOneAndDelete",
     "findOneAndReplace-collation",
@@ -132,11 +134,15 @@ private func makeCrudTest(_ doc: Document) throws -> CrudTest {
 // Maps operation names to the appropriate test class to use for them. 
 private var testTypeMap: [String: CrudTest.Type] = [
     "aggregate": AggregateTest.self,
+    "bulkWrite": BulkWriteTest.self,
     "count": CountTest.self,
     "deleteMany": DeleteTest.self,
     "deleteOne": DeleteTest.self,
     "distinct": DistinctTest.self,
     "find": FindTest.self,
+    "findOneAndDelete": FindOneAndDeleteTest.self,
+    "findOneAndUpdate": FindOneAndUpdateTest.self,
+    "findOneAndReplace": FindOneAndReplaceTest.self,
     "insertMany": InsertManyTest.self,
     "insertOne": InsertOneTest.self,
     "replaceOne": ReplaceOneTest.self,
@@ -220,6 +226,12 @@ private class AggregateTest: CrudTest {
     }
 }
 
+private class BulkWriteTest: CrudTest {
+    override func execute(usingCollection coll: MongoCollection<Document>) throws {
+        XCTFail("Unimplemented")
+    }
+}
+
 /// A class for executing `count` tests
 private class CountTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<Document>) throws {
@@ -268,6 +280,27 @@ private class FindTest: CrudTest {
                                     skip: self.skip, sort: self.sort)
         let result = try Array(coll.find(filter, options: options))
         expect(result).to(equal(self.result as? [Document]))
+    }
+}
+
+/// A class for executing `findOneAndDelete` tests
+private class FindOneAndDeleteTest: CrudTest {
+    override func execute(usingCollection coll: MongoCollection<Document>) throws {
+        XCTFail("Unimplemented")
+    }
+}
+
+/// A class for executing `findOneAndUpdate` tests
+private class FindOneAndReplaceTest: CrudTest {
+    override func execute(usingCollection coll: MongoCollection<Document>) throws {
+        XCTFail("Unimplemented")
+    }
+}
+
+/// A class for executing `findOneAndReplace` tests
+private class FindOneAndUpdateTest: CrudTest {
+    override func execute(usingCollection coll: MongoCollection<Document>) throws {
+        XCTFail("Unimplemented")
     }
 }
 

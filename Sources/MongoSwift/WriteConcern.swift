@@ -128,7 +128,7 @@ public class WriteConcern: Codable {
             let journalStr = String(describing: journal)
             let wStr = String(describing: w)
             let timeoutStr = String(describing: wtimeoutMS)
-            throw MongoError.writeConcernError(message:
+            throw MongoError.invalidArgument(message:
                 "Invalid combination of WriteConcern options: journal=\(journalStr), w=\(wStr), wtimeoutMS=\(timeoutStr)")
         }
     }

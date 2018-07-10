@@ -46,6 +46,7 @@ extension MongoCollection {
         return MongoCursor(fromCursor: cursor, withClient: client)
     }
 
+    // TODO SWIFT-133: mark this method deprecated https://jira.mongodb.org/browse/SWIFT-133
     /**
      * Counts the number of documents in this collection matching the provided filter.
      *
@@ -67,6 +68,33 @@ extension MongoCollection {
         if count == -1 { throw MongoError.commandError(message: toErrorString(error)) }
 
         return Int(count)
+    }
+
+    /**
+     * Counts the number of documents in this collection matching the provided filter.
+     *
+     * - Parameters:
+     *   - filter: a `Document`, the filter that documents must match in order to be counted
+     *   - options: Optional `CountDocumentsOptions` to use when executing the command
+     *
+     * - Returns: The count of the documents that matched the filter
+     */
+    public func countDocuments(_ filter: Document = [:], options: CountDocumentsOptions? = nil) throws -> Int {
+        // TODO SWIFT-133: implement this https://jira.mongodb.org/browse/SWIFT-133
+        throw MongoError.commandError(message: "Unimplemented command")
+    }
+
+    /**
+     * Gets an estimate of the count of documents in this collection using collection metadata.
+     *
+     * - Parameters:
+     *   - options: Optional `EstimatedDocumentCountOptions` to use when executing the command
+     *
+     * - Returns: an estimate of the count of documents in this collection
+     */
+    public func estimatedDocumentCount(options: EstimatedDocumentCountOptions? = nil) throws -> Int {
+        // TODO SWIFT-133: implement this https://jira.mongodb.org/browse/SWIFT-133
+        throw MongoError.commandError(message: "Unimplemented command")
     }
 
     /**
@@ -235,6 +263,15 @@ public struct CountOptions: Encodable {
     private enum CodingKeys: String, CodingKey {
         case collation, hint, limit, maxTimeMS, readConcern, skip
     }
+}
+
+/// The `countDocuments` command takes the same options as the deprecated `count`. 
+public typealias CountDocumentsOptions = CountOptions
+
+/// Options to use when executing an `estimatedDocumentCount` command on a `MongoCollection`.
+public struct EstimatedDocumentCountOptions {
+    /// The maximum amount of time to allow the query to run.
+    public let maxTimeMS: Int64?
 }
 
 /// Options to use when executing a `distinct` command on a `MongoCollection`.

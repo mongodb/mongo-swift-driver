@@ -5,8 +5,6 @@ import libmongoc
 public enum MongoError {
     /// Thrown when an invalid connection string is provided when initializing a `MongoClient`.
     case invalidUri(message: String)
-    /// Thrown when a user-provided value is invalid.
-    case invalidValue(message: String)
     /// Thrown when a `MongoClient` is invalid.
     case invalidClient()
     /// Thrown when the server sends an invalid response.
@@ -28,7 +26,13 @@ public enum MongoError {
     /// Thrown when there is an error involving a `ReadPreference`.
     case readPreferenceError(message: String)
     /// Thrown when there is an error involving a `WriteConcern`. 
-    case writeConcernError(message: String)
+    case writeConcernError(code: Int32, message: String)
+    /// Thrown when a user-provided argument is invalid.
+    case invalidArgument(message: String)
+    /// Thrown when there is an error executing a write command.
+    case writeError(code: Int32, message: String)
+    /// Thrown when there is an error executing a bulk write command. 
+    indirect case bulkWriteError(code: Int32, message: String, result: BulkWriteResult?, writeErrors: [MongoError]?, writeConcernError: MongoError?)
 }
 
 /// An extension of `MongoError` to support printing out descriptive error messages.
@@ -39,9 +43,11 @@ extension MongoError: LocalizedError {
             let .invalidCollection(message), let .commandError(message),
             let .bsonParseError(_, _, message), let .bsonEncodeError(message),
             let .typeError(message), let .readConcernError(message),
-            let .readPreferenceError(message), let .writeConcernError(message),
-            let .invalidValue(message):
+            let .readPreferenceError(message), let .invalidArgument(message):
             return message
+        case let .writeConcernError(code, message), let .writeError(code, message),
+            let .bulkWriteError(code, message, _, _, _):
+            return "\(message) (error code \(code))"
         default:
             return nil
         }
