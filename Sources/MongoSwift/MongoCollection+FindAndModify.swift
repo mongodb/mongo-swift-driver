@@ -10,7 +10,9 @@ extension MongoCollection {
      *   - options: Optional `FindOneAndDeleteOptions` to use when executing the command
      *
      * - Returns: The deleted document, represented as a `CollectionType`, or `nil` if no document was deleted.
+     *
      * - Throws: 
+     *   - `MongoError.invalidArgument` if any of the provided options are invalid
      *   - `MongoError.commandError` if there are any errors executing the command.
      *   - A `DecodingError` if the deleted document cannot be decoded to a `CollectionType` value
      */
@@ -30,7 +32,9 @@ extension MongoCollection {
      *
      * - Returns: A `CollectionType`, representing either the original document or its replacement,
      *      depending on selected options, or `nil` if there was no match.
+     *
      * - Throws: 
+     *   - `MongoError.invalidArgument` if any of the provided options are invalid
      *   - `MongoError.commandError` if there are any errors executing the command.
      *   - An `EncodingError` if `replacement` cannot be encoded to a `Document`
      *   - A `DecodingError` if the replaced document cannot be decoded to a `CollectionType` value
@@ -52,7 +56,9 @@ extension MongoCollection {
      *
      * - Returns: A `CollectionType` representing either the original or updated document,
      *      depending on selected options, or `nil` if there was no match.
-     * - Throws: 
+     *
+     * - Throws:
+     *   - `MongoError.invalidArgument` if any of the provided options are invalid
      *   - `MongoError.commandError` if there are any errors executing the command.
      *   - A `DecodingError` if the updated document cannot be decoded to a `CollectionType` value
      */
@@ -93,12 +99,11 @@ extension MongoCollection {
 public enum ReturnDocument {
     /// Indicates to return the document before the update, replacement, or insert occured.
     case before
-
     ///  Indicates to return the document after the update, replacement, or insert occured.
     case after
 }
 
-/// Indicates that an option type can be represented as a `FindAndModifyOptions`
+/// Indicates that an options type can be represented as a `FindAndModifyOptions`
 private protocol FindAndModifyOptionsConvertible {
     /// Converts `self` to a `FindAndModifyOptions`
     func asOpts() throws -> FindAndModifyOptions
@@ -284,13 +289,26 @@ private class FindAndModifyOptions {
         var extra = Document()
         if let filters = arrayFilters { extra["arrayFilters"] = filters }
         if let coll = collation { extra["collation"] = coll }
+
         // note: mongoc_find_and_modify_opts_set_max_time_ms() takes in a 
         // uint32_t, but it should be a positive 64-bit integer. thus, we
         // set maxTimeMS by directly appending it instead. see CDRIVER-1329
-        if let maxTime = maxTimeMS { extra["maxTimeMS"] = maxTime }
-        if let wc = writeConcern { extra["writeConcern"] = try BsonEncoder().encode(wc) }
+        if let maxTime = maxTimeMS {
+            guard maxTime > 0 else {
+                throw MongoError.invalidArgument(message: "maxTimeMS must be positive, but got value \(maxTime)")
+            }
+            extra["maxTimeMS"] = maxTime 
+        }
 
-        if extra != [:], !mongoc_find_and_modify_opts_append(self._options, extra.data) {
+        if let wc = writeConcern {
+            do {
+                extra["writeConcern"] = try BsonEncoder().encode(wc) 
+            } catch {
+                throw MongoError.invalidArgument(message: "Error encoding WriteConcern \(wc): \(error)")
+            }
+        }
+
+        if extra.keys.count > 0, !mongoc_find_and_modify_opts_append(self._options, extra.data) {
             throw MongoError.invalidArgument(message: "Error appending extra fields \(extra)")
         }
     }
