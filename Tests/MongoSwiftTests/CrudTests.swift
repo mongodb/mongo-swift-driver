@@ -210,9 +210,9 @@ private class CrudTest {
     /// results for this `CrudTest`. Meant for use by findAndModify subclasses, i.e. findOneAndX. 
     func verifyFindAndModifyResult(_ result: Document?) {
         if self.result == nil {
-            expect(result?["value"]).to(beNil())
+            expect(result).to(beNil())
         } else {
-            expect(result?["value"] as? Document).to(equal(self.result as? Document))
+            expect(result).to(equal(self.result as? Document))
         }
     }
 }
