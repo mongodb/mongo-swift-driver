@@ -105,7 +105,7 @@ extension MongoCollection {
      *   - filter: a `Document` representing the filter that documents must match in order to be considered for this operation
      *   - options: Optional `DistinctOptions` to use when executing the command
      *
-     * - Returns: An `[BsonValue?]` containing the distinct values for the specified criteria
+     * - Returns: A `[BsonValue?]` containing the distinct values for the specified criteria
      */
     public func distinct(fieldName: String, filter: Document = [:],
                          options: DistinctOptions? = nil) throws -> [BsonValue?] {
