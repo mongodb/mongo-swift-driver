@@ -19,6 +19,7 @@ extension MongoCollection {
     @discardableResult
     public func findOneAndDelete(_ filter: Document,
                                  options: FindOneAndDeleteOptions? = nil) throws -> CollectionType? {
+        // we need to always send options here in order to ensure the `remove` flag is set
         let opts = options ?? FindOneAndDeleteOptions()
         return try self.findAndModify(filter: filter, options: opts)
     }
@@ -73,18 +74,18 @@ extension MongoCollection {
     private func findAndModify(filter: Document, update: Document? = nil,
                                options: FindAndModifyOptionsConvertible? = nil) throws -> CollectionType? {
 
-        var opts = try options?.asOpts()
-        if let update = update {
-            // if no options were provided but we need to set update, create them
-            opts = opts ?? FindAndModifyOptions()
-            try opts!.setUpdate(update)
-        }
+        // encode provided options, or create empty ones. we always need
+        // to send *something*, as findAndModify requires one of "remove"
+        // or "update" to be set. 
+        var opts = try options?.asOpts() ?? FindAndModifyOptions()
+
+        if let update = update { try opts.setUpdate(update) }
 
         let reply = Document()
         var error = bson_error_t()
 
         if !mongoc_collection_find_and_modify_with_opts(self._collection,
-        filter.data, opts?._options, reply.data, &error) {
+        filter.data, opts._options, reply.data, &error) {
             // TODO SWIFT-144: replace with more descriptive error type(s)
             throw MongoError.commandError(message: toErrorString(error))
         }
