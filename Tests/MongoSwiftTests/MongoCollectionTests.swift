@@ -281,9 +281,13 @@ final class MongoCollectionTests: XCTestCase {
         expect(findResult2.error).to(beNil())
     }
 
-    struct Basic: Codable {
+    struct Basic: Codable, Equatable {
         let x: Int
         let y: String
+
+        static func == (lhs: Basic, rhs: Basic) -> Bool {
+            return lhs.x == rhs.x && lhs.y == rhs.y
+        }
     }
 
     func testCodableCollection() throws {
@@ -291,16 +295,28 @@ final class MongoCollectionTests: XCTestCase {
         let db = try client.db("codable")
         defer { try? db.drop() }
         let coll1 = try db.createCollection("coll1", withType: Basic.self)
-        try coll1.insertOne(Basic(x: 1, y: "hi"))
-        try coll1.insertMany([Basic(x: 2, y: "hello"), Basic(x: 3, y: "blah")])
-        try coll1.replaceOne(filter: ["x": 2], replacement: Basic(x: 4, y: "hi"))
+
+        let b1 = Basic(x: 1, y: "hi")
+        let b2 = Basic(x: 2, y: "hello")
+        let b3 = Basic(x: 3, y: "blah")
+        let b4 = Basic(x: 4, y: "hi")
+        let b5 = Basic(x: 5, y: "abc")
+
+        try coll1.insertOne(b1)
+        try coll1.insertMany([b2, b3])
+        try coll1.replaceOne(filter: ["x": 2], replacement: b4)
         expect(try coll1.count()).to(equal(3))
 
         for doc in try coll1.find() {
             expect(doc).to(beAnInstanceOf(Basic.self))
         }
 
-        // add tests here using findAndModify commands
+        // find one and replace w/ collection type replacement
+        expect(try coll1.findOneAndReplace(filter: ["x": 1], replacement: b5)).to(equal(b1))
+
+        // test successfully decode to collection type
+        expect(try coll1.findOneAndUpdate(filter: ["x": 3], update: ["$set": ["x": 6] as Document])).to(equal(b3))
+        expect(try coll1.findOneAndDelete(["x": 4])).to(equal(b4))
     }
 
     func testEncodeCursorType() throws {

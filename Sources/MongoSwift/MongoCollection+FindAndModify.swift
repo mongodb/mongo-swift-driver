@@ -19,7 +19,8 @@ extension MongoCollection {
     @discardableResult
     public func findOneAndDelete(_ filter: Document,
                                  options: FindOneAndDeleteOptions? = nil) throws -> CollectionType? {
-        return try self.findAndModify(filter: filter, options: options)
+        let opts = options ?? FindOneAndDeleteOptions()
+        return try self.findAndModify(filter: filter, options: opts)
     }
 
     /**
@@ -73,7 +74,6 @@ extension MongoCollection {
                                options: FindAndModifyOptionsConvertible? = nil) throws -> CollectionType? {
 
         var opts = try options?.asOpts()
-
         if let update = update {
             // if no options were provided but we need to set update, create them
             opts = opts ?? FindAndModifyOptions()
@@ -291,7 +291,7 @@ private class FindAndModifyOptions {
         if let coll = collation { extra["collation"] = coll }
 
         // note: mongoc_find_and_modify_opts_set_max_time_ms() takes in a 
-        // uint32_t, but it should be a positive 64-bit integer. thus, we
+        // uint32_t, but it should be a positive 64-bit integer, so we
         // set maxTimeMS by directly appending it instead. see CDRIVER-1329
         if let maxTime = maxTimeMS {
             guard maxTime > 0 else {
