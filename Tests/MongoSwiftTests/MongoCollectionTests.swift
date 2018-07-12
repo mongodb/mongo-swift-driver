@@ -173,8 +173,9 @@ final class MongoCollectionTests: XCTestCase {
 
     func testDistinct() throws {
         let distinct = try coll.distinct(fieldName: "cat", filter: [:])
-        expect((distinct.next()?["values"] as? [String])!.sorted()).to(equal(["cat", "dog"]))
-        expect(distinct.next()).to(beNil())
+        expect((distinct as? [String])?.sorted()).to(equal(["cat", "dog"]))
+        // nonexistent field
+        expect(try self.coll.distinct(fieldName: "abc", filter: [:])).to(beEmpty())
     }
 
     func testCreateIndexFromModel() throws {
