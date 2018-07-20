@@ -10,6 +10,7 @@ final class MongoCollectionTests: XCTestCase {
             ("testCount", testCount),
             ("testInsertOne", testInsertOne),
             ("testAggregate", testAggregate),
+            ("testBulkWrite", testBulkWrite),
             ("testDrop", testDrop),
             ("testInsertMany", testInsertMany),
             ("testFind", testFind),
@@ -108,6 +109,11 @@ final class MongoCollectionTests: XCTestCase {
         expect(
             Array(try self.coll.aggregate([["$project": ["_id": 0, "cat": 1] as Document]])))
             .to(equal([["cat": "dog"], ["cat": "cat"]] as [Document]))
+    }
+
+    func testBulkWrite() throws {
+        // TODO: check for MongoError.invalidArgument
+        expect(try self.coll.bulkWrite([])).to(throwError())
     }
 
     func testDrop() throws {
