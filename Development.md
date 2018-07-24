@@ -51,6 +51,17 @@ For example, `make test FILTER=ClientTests` will run `MongoSwiftTests.ClientTest
 
 To run all of the benchmarks, use `make benchmark` (equivalent to `FILTER=MongoSwiftBenchmarks`). To run a particular benchmark, use the `FILTER` environment variable to specify the name. To have the benchmark results all printed out at the end, run with `make benchmark | python Tests/MongoSwiftBenchmarks/benchmark.py`.
 
+### Diagnosing Backtraces on Linux
+
+[SWIFT-755](https://bugs.swift.org/browse/SR-755) documents an outstanding problem on Linux where backtraces do not contain debug symbols. As discussed in [this Stack Overflow thread](https://stackoverflow.com/a/44956167/162228), a [`symbolicate-linux-fatal`](https://github.com/apple/swift/blob/master/utils/symbolicate-linux-fatal) script may be used to add symbols to an existing backtrace. Consider the following:
+
+```
+$ swift test --filter CrashingTest &> crash.log
+$ symbolicate-linux-fatal /path/to/MongoSwiftPackageTests.xctest crash.log
+```
+
+This will require you to manually provide the path to the compiled test binary (e.g. `.build/x86_64-unknown-linux/debug/MongoSwiftPackageTests.xctest`).
+
 ## Writing and Generating Documentation
 We document new code as we write it. We use C-style documentation blocks (`/** ... */`) for documentation longer than 3 lines, and triple-slash (`///`) for shorter documentation. 
 Comments that are _not_ documentation should use two slashes (`//`).
