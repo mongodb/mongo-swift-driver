@@ -126,8 +126,11 @@ extension MongoCollection {
             throw MongoError.commandError(message: toErrorString(error))
         }
 
-        // if no error, reply will always have a values array
-        return reply["values"] as! [BsonValue?]
+        guard let values = reply["values"] as? [BsonValue?] else {
+            throw MongoError.commandError(message: "expected server reply \(reply) to contain an array of distinct values")
+        }
+
+        return values
     }
 }
 
