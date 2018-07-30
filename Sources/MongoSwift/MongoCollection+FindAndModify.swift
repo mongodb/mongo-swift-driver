@@ -77,7 +77,7 @@ extension MongoCollection {
         // encode provided options, or create empty ones. we always need
         // to send *something*, as findAndModify requires one of "remove"
         // or "update" to be set. 
-        var opts = try options?.asOpts() ?? FindAndModifyOptions()
+        let opts = try options?.asOpts() ?? FindAndModifyOptions()
 
         if let update = update { try opts.setUpdate(update) }
 
@@ -273,8 +273,8 @@ private class FindAndModifyOptions {
         if returnDocument == .after { flags |= MONGOC_FIND_AND_MODIFY_RETURN_NEW.rawValue }
         let mongocFlags = mongoc_find_and_modify_flags_t(rawValue: flags)
 
-        if mongocFlags != MONGOC_FIND_AND_MODIFY_NONE,
-        !mongoc_find_and_modify_opts_set_flags(self._options, mongocFlags) {
+        if mongocFlags != MONGOC_FIND_AND_MODIFY_NONE
+        && !mongoc_find_and_modify_opts_set_flags(self._options, mongocFlags) {
             let remStr = String(describing: remove)
             let upsStr = String(describing: upsert)
             let retStr = String(describing: returnDocument)
@@ -309,7 +309,7 @@ private class FindAndModifyOptions {
             }
         }
 
-        if extra.keys.count > 0, !mongoc_find_and_modify_opts_append(self._options, extra.data) {
+        if extra.keys.count > 0 && !mongoc_find_and_modify_opts_append(self._options, extra.data) {
             throw MongoError.invalidArgument(message: "Error appending extra fields \(extra)")
         }
     }
