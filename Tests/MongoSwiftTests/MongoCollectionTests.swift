@@ -27,7 +27,10 @@ final class MongoCollectionTests: XCTestCase {
             ("testDropIndexByKeys", testDropIndexByKeys),
             ("testDropAllIndexes", testDropAllIndexes),
             ("testListIndexes", testListIndexes),
-            ("testGetName", testGetName)
+            ("testGetName", testGetName),
+            ("testFindOneAndDelete", testFindOneAndDelete),
+            ("testFindOneAndReplace", testFindOneAndReplace),
+            ("testFindOneAndUpdate", testFindOneAndUpdate)
         ]
     }
 
@@ -278,9 +281,13 @@ final class MongoCollectionTests: XCTestCase {
         expect(findResult2.error).to(beNil())
     }
 
-    struct Basic: Codable {
+    struct Basic: Codable, Equatable {
         let x: Int
         let y: String
+
+        static func == (lhs: Basic, rhs: Basic) -> Bool {
+            return lhs.x == rhs.x && lhs.y == rhs.y
+        }
     }
 
     func testCodableCollection() throws {
@@ -288,14 +295,28 @@ final class MongoCollectionTests: XCTestCase {
         let db = try client.db("codable")
         defer { try? db.drop() }
         let coll1 = try db.createCollection("coll1", withType: Basic.self)
-        try coll1.insertOne(Basic(x: 1, y: "hi"))
-        try coll1.insertMany([Basic(x: 2, y: "hello"), Basic(x: 3, y: "blah")])
-        try coll1.replaceOne(filter: ["x": 2], replacement: Basic(x: 4, y: "hi"))
+
+        let b1 = Basic(x: 1, y: "hi")
+        let b2 = Basic(x: 2, y: "hello")
+        let b3 = Basic(x: 3, y: "blah")
+        let b4 = Basic(x: 4, y: "hi")
+        let b5 = Basic(x: 5, y: "abc")
+
+        try coll1.insertOne(b1)
+        try coll1.insertMany([b2, b3])
+        try coll1.replaceOne(filter: ["x": 2], replacement: b4)
         expect(try coll1.count()).to(equal(3))
 
         for doc in try coll1.find() {
             expect(doc).to(beAnInstanceOf(Basic.self))
         }
+
+        // find one and replace w/ collection type replacement
+        expect(try coll1.findOneAndReplace(filter: ["x": 1], replacement: b5)).to(equal(b1))
+
+        // test successfully decode to collection type
+        expect(try coll1.findOneAndUpdate(filter: ["x": 3], update: ["$set": ["x": 6] as Document])).to(equal(b3))
+        expect(try coll1.findOneAndDelete(["x": 4])).to(equal(b4))
     }
 
     func testEncodeCursorType() throws {
@@ -319,5 +340,77 @@ final class MongoCollectionTests: XCTestCase {
 
         let docHint = AggregateOptions(hint: .indexSpec(["hi": 1]))
         expect(try encoder.encode(docHint)).to(equal(["hint": ["hi": 1] as Document]))
+    }
+
+    func testFindOneAndDelete() throws {
+        // test using maxTimeMS
+        let opts1 = FindOneAndDeleteOptions(maxTimeMS: 100)
+        let result1 = try self.coll.findOneAndDelete(["cat": "cat"], options: opts1)
+        expect(result1).to(equal(self.doc2))
+        expect(try self.coll.count()).to(equal(1))
+
+        // test using a write concern
+        let opts2 = FindOneAndDeleteOptions(writeConcern: try WriteConcern(w: .majority))
+        let result2 = try self.coll.findOneAndDelete([:], options: opts2)
+        expect(result2).to(equal(self.doc1))
+        expect(try self.coll.count()).to(equal(0))
+
+        // test invalid maxTimeMS throws error
+        let invalidOpts1 = FindOneAndDeleteOptions(maxTimeMS: 0)
+        let invalidOpts2 = FindOneAndDeleteOptions(maxTimeMS: -1)
+        expect(try self.coll.findOneAndDelete([:], options: invalidOpts1)).to(throwError())
+        expect(try self.coll.findOneAndDelete([:], options: invalidOpts2)).to(throwError())
+    }
+
+    func testFindOneAndReplace() throws {
+        // test using maxTimeMS
+        let opts1 = FindOneAndReplaceOptions(maxTimeMS: 100)
+        let result1 = try self.coll.findOneAndReplace(filter: ["cat": "cat"], replacement: ["cat": "blah"], options: opts1)
+        expect(result1).to(equal(self.doc2))
+        expect(try self.coll.count()).to(equal(2))
+
+        // test using bypassDocumentValidation
+        let opts2 = FindOneAndReplaceOptions(bypassDocumentValidation: true)
+        let result2 = try self.coll.findOneAndReplace(filter: ["cat": "dog"], replacement: ["cat": "hi"], options: opts2)
+        expect(result2).to(equal(self.doc1))
+        expect(try self.coll.count()).to(equal(2))
+
+        // test using a write concern
+        let opts3 = FindOneAndReplaceOptions(writeConcern: try WriteConcern(w: .majority))
+        let result3 = try self.coll.findOneAndReplace(filter: ["cat": "blah"], replacement: ["cat": "cat"], options: opts3)
+        expect(result3).to(equal(["_id": 2, "cat": "blah"]))
+        expect(try self.coll.count()).to(equal(2))
+
+        // test invalid maxTimeMS throws error
+        let invalidOpts1 = FindOneAndReplaceOptions(maxTimeMS: 0)
+        let invalidOpts2 = FindOneAndReplaceOptions(maxTimeMS: -1)
+        expect(try self.coll.findOneAndReplace(filter: [:], replacement: [:], options: invalidOpts1)).to(throwError())
+        expect(try self.coll.findOneAndReplace(filter: [:], replacement: [:], options: invalidOpts2)).to(throwError())
+    }
+
+    func testFindOneAndUpdate() throws {
+        // test using maxTimeMS
+        let opts1 = FindOneAndUpdateOptions(maxTimeMS: 100)
+        let result1 = try self.coll.findOneAndUpdate(filter: ["cat": "cat"], update: ["$set": ["cat": "blah"] as Document], options: opts1)
+        expect(result1).to(equal(self.doc2))
+        expect(try self.coll.count()).to(equal(2))
+
+        // test using bypassDocumentValidation
+        let opts2 = FindOneAndUpdateOptions(bypassDocumentValidation: true)
+        let result2 = try self.coll.findOneAndUpdate(filter: ["cat": "dog"], update: ["$set": ["cat": "hi"] as Document], options: opts2)
+        expect(result2).to(equal(self.doc1))
+        expect(try self.coll.count()).to(equal(2))
+
+        // test using a write concern
+        let opts3 = FindOneAndUpdateOptions(writeConcern: try WriteConcern(w: .majority))
+        let result3 = try self.coll.findOneAndUpdate(filter: ["cat": "blah"], update: ["$set": ["cat": "cat"] as Document], options: opts3)
+        expect(result3).to(equal(["_id": 2, "cat": "blah"]))
+        expect(try self.coll.count()).to(equal(2))
+
+        // test invalid maxTimeMS throws error
+        let invalidOpts1 = FindOneAndUpdateOptions(maxTimeMS: 0)
+        let invalidOpts2 = FindOneAndUpdateOptions(maxTimeMS: -1)
+        expect(try self.coll.findOneAndUpdate(filter: [:], update: [:], options: invalidOpts1)).to(throwError())
+        expect(try self.coll.findOneAndUpdate(filter: [:], update: [:], options: invalidOpts2)).to(throwError())
     }
 }

@@ -6,16 +6,7 @@ import XCTest
 // Files to skip because we don't currently support the operations they test.
 private var skippedFiles = [
     // TODO SWIFT-147: enable this
-    "bulkWrite-arrayFilters",
-    // TODO SWIFT-156: enable these
-    "findOneAndDelete-collation",
-    "findOneAndDelete",
-    "findOneAndReplace-collation",
-    "findOneAndReplace-upsert",
-    "findOneAndReplace",
-    "findOneAndUpdate-arrayFilters",
-    "findOneAndUpdate-collation",
-    "findOneAndUpdate"
+    "bulkWrite-arrayFilters"
 ]
 
 internal extension Document {
@@ -158,11 +149,20 @@ private class CrudTest {
     let args: Document
     let result: BsonValue?
     let collection: Document?
+
+    var arrayFilters: [Document]? { return self.args["arrayFilters"] as? [Document] }
+    var batchSize: Int32? { if let b = self.args["batchSize"] as? Int { return Int32(b) } else { return nil } }
     var collation: Document? { return self.args["collation"] as? Document }
     var sort: Document? { return self.args["sort"] as? Document }
     var skip: Int64? { if let s = self.args["skip"] as? Int { return Int64(s) } else { return nil } }
     var limit: Int64? { if let l = self.args["limit"] as? Int { return Int64(l) } else { return nil } }
-    var batchSize: Int32? { if let b = self.args["batchSize"] as? Int { return Int32(b) } else { return nil } }
+    var projection: Document? { return self.args["projection"] as? Document }
+    var returnDoc: ReturnDocument? {
+        if let ret = self.args["returnDocument"] as? String {
+            return ret == "After" ? .after : .before
+        }
+        return nil
+    }
     var upsert: Bool? { return self.args["upsert"] as? Bool }
 
     /// Initializes a new `CrudTest` from a `Document`. 
@@ -203,6 +203,16 @@ private class CrudTest {
             expect(upsertedId).to(equal(expected?["upsertedId"] as? Int))
         } else {
             expect(expected?["upsertedId"] as? Int).to(beNil())
+        }
+    }
+
+    /// Given the response to a findAndModify command, verify that it matches the expected
+    /// results for this `CrudTest`. Meant for use by findAndModify subclasses, i.e. findOneAndX. 
+    func verifyFindAndModifyResult(_ result: Document?) {
+        if self.result == nil {
+            expect(result).to(beNil())
+        } else {
+            expect(result).to(equal(self.result as? Document))
         }
     }
 }
@@ -276,7 +286,7 @@ private class DistinctTest: CrudTest {
 private class FindTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let filter: Document = try self.args.get("filter")
-        let options = FindOptions(batchSize: batchSize, collation: collation, limit: self.limit,
+        let options = FindOptions(batchSize: self.batchSize, collation: self.collation, limit: self.limit,
                                     skip: self.skip, sort: self.sort)
         let result = try Array(coll.find(filter, options: options))
         expect(result).to(equal(self.result as? [Document]))
@@ -286,21 +296,39 @@ private class FindTest: CrudTest {
 /// A class for executing `findOneAndDelete` tests
 private class FindOneAndDeleteTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<Document>) throws {
-        XCTFail("Unimplemented")
+        let filter: Document = try self.args.get("filter")
+        let opts = FindOneAndDeleteOptions(collation: self.collation, projection: self.projection, sort: self.sort)
+        
+        let result = try coll.findOneAndDelete(filter, options: opts)
+        self.verifyFindAndModifyResult(result)
     }
 }
 
 /// A class for executing `findOneAndUpdate` tests
 private class FindOneAndReplaceTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<Document>) throws {
-        XCTFail("Unimplemented")
+        let filter: Document = try self.args.get("filter")
+        let replacement: Document = try self.args.get("replacement")
+
+        let opts = FindOneAndReplaceOptions(collation: self.collation, projection: self.projection,
+                                            returnDocument: self.returnDoc, sort: self.sort, upsert: self.upsert)
+
+        let result = try coll.findOneAndReplace(filter: filter, replacement: replacement, options: opts)
+        self.verifyFindAndModifyResult(result)
     }
 }
 
 /// A class for executing `findOneAndReplace` tests
 private class FindOneAndUpdateTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<Document>) throws {
-        XCTFail("Unimplemented")
+        let filter: Document = try self.args.get("filter")
+        let update: Document = try self.args.get("update")
+
+        let opts = FindOneAndUpdateOptions(arrayFilters: self.arrayFilters, collation: self.collation,
+            projection: self.projection, returnDocument: self.returnDoc, sort: self.sort, upsert: self.upsert)
+
+        let result = try coll.findOneAndUpdate(filter: filter, update: update, options: opts)
+        self.verifyFindAndModifyResult(result)
     }
 }
 
@@ -349,8 +377,7 @@ private class UpdateTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let filter: Document = try self.args.get("filter")
         let update: Document = try self.args.get("update")
-        let arrayFilters = self.args["arrayFilters"] as? [Document]
-        let options = UpdateOptions(arrayFilters: arrayFilters, collation: self.collation, upsert: self.upsert)
+        let options = UpdateOptions(arrayFilters: self.arrayFilters, collation: self.collation, upsert: self.upsert)
         let result: UpdateResult?
         if self.operationName == "updateOne" {
             result = try coll.updateOne(filter: filter, update: update, options: options)
