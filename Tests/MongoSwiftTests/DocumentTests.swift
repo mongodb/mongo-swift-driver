@@ -352,4 +352,14 @@ final class DocumentTests: XCTestCase {
         expect(doc1).to(equal(["a": 1, "b": 2]))
         expect(doc2).to(equal(["a": 1, "b": 2, "c": 3]))
     }
+
+    func testNilInNestedArray() throws {
+        let arr1 = ["a", "b", "c", nil]
+        let arr2 = ["d", "e", nil, "f"]
+
+        let doc = ["a1": arr1, "a2": arr2]
+
+        expect(doc["a1"]).to(equal(arr1))
+        expect(doc["a2"]).to(equal(arr2))
+    }
 }

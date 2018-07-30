@@ -172,10 +172,16 @@ final class MongoCollectionTests: XCTestCase {
     }
 
     func testDistinct() throws {
-        let distinct = try coll.distinct(fieldName: "cat", filter: [:])
-        expect((distinct as? [String])?.sorted()).to(equal(["cat", "dog"]))
+        let distinct1 = try coll.distinct(fieldName: "cat", filter: [:])
+        expect((distinct1 as? [String])?.sorted()).to(equal(["cat", "dog"]))
         // nonexistent field
         expect(try self.coll.distinct(fieldName: "abc", filter: [:])).to(beEmpty())
+
+        // test a null distinct value
+        try coll.insertOne(["cat": nil])
+        let distinct2 = try coll.distinct(fieldName: "cat", filter: [:])
+        expect(distinct2).to(haveCount(3))
+        expect(distinct2).to(containElementSatisfying({ $0 == nil }))
     }
 
     func testCreateIndexFromModel() throws {

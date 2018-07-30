@@ -127,7 +127,8 @@ extension MongoCollection {
         }
 
         guard let values = reply["values"] as? [BsonValue?] else {
-            throw MongoError.commandError(message: "expected server reply \(reply) to contain an array of distinct values")
+            throw MongoError.commandError(message:
+                "expected server reply \(reply) to contain an array of distinct values")
         }
 
         return values
