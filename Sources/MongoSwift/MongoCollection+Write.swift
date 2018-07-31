@@ -18,7 +18,7 @@ extension MongoCollection {
         let encoder = BsonEncoder()
         let document = try encoder.encode(value)
         if document["_id"] == nil {
-            try ObjectId().encode(to: document.data, forKey: "_id")
+            try ObjectId().encode(to: document.storage, forKey: "_id")
         }
         let opts = try encoder.encode(options)
         var error = bson_error_t()
@@ -45,7 +45,7 @@ extension MongoCollection {
 
         let documents = try values.map { try encoder.encode($0) }
         for doc in documents where doc["_id"] == nil {
-            try ObjectId().encode(to: doc.data, forKey: "_id")
+            try ObjectId().encode(to: doc.storage, forKey: "_id")
         }
         var docPointers = documents.map { UnsafePointer($0.data) }
 

@@ -518,8 +518,8 @@ private class MutableArray: BsonValue {
         self.array.insert(value, at: index)
     }
 
-    func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
-        try self.array.encode(to: data, forKey: key)
+    func encode(to storage: DocumentStorage, forKey key: String) throws {
+        try self.array.encode(to: storage, forKey: key)
     }
 
     /// methods required by the BsonValue protocol that we don't actually need/use. MutableArray
@@ -566,8 +566,8 @@ private class MutableDictionary: BsonValue {
         return doc
     }
 
-    func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
-        try self.asDocument().encode(to: data, forKey: key)
+    func encode(to storage: DocumentStorage, forKey key: String) throws {
+        try self.asDocument().encode(to: storage, forKey: key)
     }
 
     /// methods required by the BsonValue protocol that we don't actually need/use. MutableDictionary

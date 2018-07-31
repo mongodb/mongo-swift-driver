@@ -1,7 +1,8 @@
 import Foundation
 import libbson
 
-internal class DocumentStorage {
+/// The storage backing a MongoSwift `Document`.
+public class DocumentStorage {
     internal var pointer: UnsafeMutablePointer<bson_t>!
 
     init() {
@@ -21,8 +22,10 @@ internal class DocumentStorage {
 
 /// A struct representing the BSON document type.
 public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral {
+    /// the storage backing this document 
     internal var storage: DocumentStorage
 
+    /// direct access to the storage's pointer to a bson_t
     internal var data: UnsafeMutablePointer<bson_t>! { return storage.pointer }
 
     /// Returns a `[String]` containing the keys in this `Document`.
@@ -209,7 +212,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
             }
 
             do {
-                try value.encode(to: self.data, forKey: key)
+                try value.encode(to: self.storage, forKey: key)
             } catch {
                 preconditionFailure("Failed to set the value for key \(key) to \(value): \(error)")
             }
@@ -271,8 +274,8 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
 extension Document: BsonValue {
     public var bsonType: BsonType { return .document }
 
-    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
-        if !bson_append_document(data, key, Int32(key.count), self.data) {
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
+        if !bson_append_document(storage.pointer, key, Int32(key.count), self.data) {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
