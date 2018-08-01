@@ -84,13 +84,13 @@ public protocol BsonValue {
     var bsonType: BsonType { get }
 
     /**
-    * Given the `bson_t` backing a `Document`, appends this `BsonValue` to the end.
+    * Given the `DocumentStorage` backing a `Document`, appends this `BsonValue` to the end.
     *
     * - Parameters:
-    *   - to: An `<UnsafeMutablePointer<bson_t>`, indicating the `bson_t` to append to.
-    *   - forKey: A `String`, the key with which to store the value.
+    *   - storage: A `DocumentStorage` to write to.
+    *   - key: A `String`, the key under which to store the value.
     */
-    func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws
+    func encode(to storage: DocumentStorage, forKey key: String) throws
 
     /**
     * Given a `bson_iter_t` known to have a next value, returns the next value in the iterator.
@@ -146,11 +146,11 @@ extension Array: BsonValue {
         return result
     }
 
-    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
         // An array is just a document with keys '0', '1', etc. corresponding to indexes
         var arr = Document()
         for (i, v) in self.enumerated() { arr[String(i)] = v as? BsonValue }
-        if !bson_append_array(data, key, Int32(key.count), arr.data) {
+        if !bson_append_array(storage.pointer, key, Int32(key.count), arr.data) {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
@@ -211,11 +211,11 @@ public struct Binary: BsonValue, Equatable, Codable {
         try self.init(base64: base64, subtype: subtype.rawValue)
     }
 
-    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
         let subtype = bson_subtype_t(UInt32(self.subtype))
         let length = self.data.count
         let byteArray = [UInt8](self.data)
-        if !bson_append_binary(data, key, Int32(key.count), subtype, byteArray, UInt32(length)) {
+        if !bson_append_binary(storage.pointer, key, Int32(key.count), subtype, byteArray, UInt32(length)) {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
@@ -246,8 +246,8 @@ public struct Binary: BsonValue, Equatable, Codable {
 /// An extension of `Bool` to represent the BSON Boolean type.
 extension Bool: BsonValue {
     public var bsonType: BsonType { return .boolean }
-    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
-        if !bson_append_bool(data, key, Int32(key.count), self) {
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
+        if !bson_append_bool(storage.pointer, key, Int32(key.count), self) {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
@@ -270,9 +270,9 @@ extension Date: BsonValue {
     /// The number of milliseconds after the Unix epoch that this `Date` occurs.
     public var msSinceEpoch: Int64 { return Int64(self.timeIntervalSince1970 * 1000) }
 
-    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
         let seconds = self.timeIntervalSince1970 * 1000
-        if !bson_append_date_time(data, key, Int32(key.count), Int64(seconds)) {
+        if !bson_append_date_time(storage.pointer, key, Int32(key.count), Int64(seconds)) {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
@@ -288,7 +288,7 @@ internal struct DBPointer: BsonValue {
 
     public var bsonType: BsonType { return .dbPointer }
 
-    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
         throw MongoError.bsonEncodeError(message: "DBPointers are deprecated; use a DBRef instead")
     }
 
@@ -341,11 +341,11 @@ public struct Decimal128: BsonValue, Equatable, Codable {
         return lhs.data == rhs.data
     }
 
-    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
         var value: bson_decimal128_t = bson_decimal128_t()
         precondition(bson_decimal128_from_string(self.data, &value),
             "Failed to parse Decimal128 string \(self.data)")
-        if !bson_append_decimal128(data, key, Int32(key.count), &value) {
+        if !bson_append_decimal128(storage.pointer, key, Int32(key.count), &value) {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
@@ -366,8 +366,8 @@ public struct Decimal128: BsonValue, Equatable, Codable {
 /// An extension of `Double` to represent the BSON Double type.
 extension Double: BsonValue {
     public var bsonType: BsonType { return .double }
-    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
-        if !bson_append_double(data, key, Int32(key.count), self) {
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
+        if !bson_append_double(storage.pointer, key, Int32(key.count), self) {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
@@ -381,12 +381,12 @@ extension Double: BsonValue {
 /// The `Int` will be encoded as an Int32 if possible, or an Int64 if necessary.
 extension Int: BsonValue {
     public var bsonType: BsonType { return .int32 }
-    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
         if let int32 = Int32(exactly: self) {
-            return try int32.encode(to: data, forKey: key)
+            return try int32.encode(to: storage, forKey: key)
         }
         if let int64 = Int64(exactly: self) {
-            return try int64.encode(to: data, forKey: key)
+            return try int64.encode(to: storage, forKey: key)
         }
         throw MongoError.bsonEncodeError(message: "`Int` value \(self) could not be encoded as `Int32` or `Int64`")
     }
@@ -399,8 +399,8 @@ extension Int: BsonValue {
 /// An extension of `Int32` to represent the BSON Int32 type.
 extension Int32: BsonValue {
     public var bsonType: BsonType { return .int32 }
-    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
-        if !bson_append_int32(data, key, Int32(key.count), self) {
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
+        if !bson_append_int32(storage.pointer, key, Int32(key.count), self) {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
@@ -413,8 +413,8 @@ extension Int32: BsonValue {
 /// An extension of `Int64` to represent the BSON Int64 type.
 extension Int64: BsonValue {
     public var bsonType: BsonType { return .int64 }
-    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
-        if !bson_append_int64(data, key, Int32(key.count), self) {
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
+        if !bson_append_int64(storage.pointer, key, Int32(key.count), self) {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
@@ -443,12 +443,12 @@ public struct CodeWithScope: BsonValue, Equatable, Codable {
         self.scope = scope
     }
 
-    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
         if let s = self.scope {
-            if !bson_append_code_with_scope(data, key, Int32(key.count), self.code, s.data) {
+            if !bson_append_code_with_scope(storage.pointer, key, Int32(key.count), self.code, s.data) {
                 throw bsonEncodeError(value: self, forKey: key)
             }
-        } else if !bson_append_code(data, key, Int32(key.count), self.code) {
+        } else if !bson_append_code(storage.pointer, key, Int32(key.count), self.code) {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
@@ -486,8 +486,8 @@ public struct MaxKey: BsonValue, Equatable, Codable {
     private var maxKey = 1
 
     public var bsonType: BsonType { return .maxKey }
-    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
-        if !bson_append_maxkey(data, key, Int32(key.count)) {
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
+        if !bson_append_maxkey(storage.pointer, key, Int32(key.count)) {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
@@ -502,8 +502,8 @@ public struct MinKey: BsonValue, Equatable, Codable {
     private var minKey = 1
 
     public var bsonType: BsonType { return .minKey }
-    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
-        if !bson_append_minkey(data, key, Int32(key.count)) {
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
+        if !bson_append_minkey(storage.pointer, key, Int32(key.count)) {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
@@ -543,12 +543,12 @@ public struct ObjectId: BsonValue, Equatable, CustomStringConvertible, Codable {
         }
     }
 
-    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
         // create a new bson_oid_t with self.oid
         var oid = bson_oid_t()
         bson_oid_init_from_string(&oid, self.oid)
         // encode the bson_oid_t to the bson_t
-        if !bson_append_oid(data, key, Int32(key.count), &oid) {
+        if !bson_append_oid(storage.pointer, key, Int32(key.count), &oid) {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
@@ -627,8 +627,8 @@ struct RegularExpression: BsonValue, Equatable, Codable {
         self.options = regex.stringOptions
     }
 
-    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
-        if !bson_append_regex(data, key, Int32(key.count), self.pattern, self.options) {
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
+        if !bson_append_regex(storage.pointer, key, Int32(key.count), self.pattern, self.options) {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
@@ -675,8 +675,8 @@ struct RegularExpression: BsonValue, Equatable, Codable {
 /// An extension of String to represent the BSON string type.
 extension String: BsonValue {
     public var bsonType: BsonType { return .string }
-    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
-        if !bson_append_utf8(data, key, Int32(key.count), self, Int32(self.count)) {
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
+        if !bson_append_utf8(storage.pointer, key, Int32(key.count), self, Int32(self.count)) {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
@@ -699,7 +699,7 @@ extension String: BsonValue {
 /// created, we may need to parse them into `String`s, and this provides a place for that logic.
 internal struct Symbol: BsonValue {
     public var bsonType: BsonType { return .symbol }
-    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
         throw MongoError.bsonEncodeError(message: "Symbols are deprecated; use a string instead")
     }
 
@@ -739,8 +739,8 @@ public struct Timestamp: BsonValue, Equatable, Codable {
         self.increment = UInt32(inc)
     }
 
-    public func encode(to data: UnsafeMutablePointer<bson_t>, forKey key: String) throws {
-        if !bson_append_timestamp(data, key, Int32(key.count), self.timestamp, self.increment) {
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
+        if !bson_append_timestamp(storage.pointer, key, Int32(key.count), self.timestamp, self.increment) {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
