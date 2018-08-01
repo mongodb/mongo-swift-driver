@@ -19,6 +19,8 @@ public enum MongoError {
     case bsonParseError(domain: UInt32, code: UInt32, message: String)
     /// Thrown when there is an error encoding a `BsonValue` to a `Document`.
     case bsonEncodeError(message: String)
+    /// Thrown when there is an error decoding a `BsonValue` from a `Document`.
+    case bsonDecodeError(message: String)
     /// Thrown when the value stored under a key in a `Document` does not match the expected type.
     case typeError(message: String)
     /// Thrown when there is an error involving a `ReadConcern`. 
