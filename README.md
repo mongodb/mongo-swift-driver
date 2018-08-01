@@ -80,7 +80,7 @@ CocoaPods is a dependency manager for Swift and Objective-C. You can install it 
 If you don't already have a `Podfile` for your project, run `pod init` in the main directory to automatically create one with smart defaults. Add `MongoSwift` as follows:
 
 ```ruby
-platform :ios, '11.0'
+platform :osx, '10.10'
 use_frameworks!
 
 target 'MyApp' do
