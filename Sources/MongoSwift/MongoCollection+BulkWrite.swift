@@ -44,12 +44,16 @@ extension MongoCollection {
         let reply = Document()
         var error = bson_error_t()
 
-        if mongoc_bulk_operation_execute(bulk, reply.data, &error) == 0 {
-            // TODO: Throw MongoError.bulkWriteError with unpacked errors and attached BulkWriteResult
-            throw MongoError.commandError(message: toErrorString(error))
+        let serverId = mongoc_bulk_operation_execute(bulk, reply.data, &error)
+        let result = try BulkWriteResult(reply: reply, insertedIds: insertedIds)
+
+        guard serverId != 0 else {
+            throw MongoError.bulkWriteError(code: error.code, message: toErrorString(error), result: result,
+                                            writeErrors: result.writeErrors,
+                                            writeConcernError: result.writeConcernError)
         }
 
-        return BulkWriteResult(reply: reply, insertedIds: insertedIds)
+        return result
     }
 
     private struct DeleteModelOptions: Encodable {
@@ -314,23 +318,29 @@ public struct BulkWriteResult {
     /// Map of the index of the operation to the id of the upserted document.
     public let upsertedIds: [Int: BsonValue?]
 
+    fileprivate var writeErrors: [WriteError] = []
+    fileprivate var writeConcernError: WriteConcernError?
+
     /**
      * Create a BulkWriteResult operation from a reply and map of inserted IDs.
      *
      * Note: we forgo using a Decodable initializer because we still need to
-     * build a map for `upsertedIds` and explicitly add `insertedIds`.
+     * build a map for `upsertedIds` and explicitly add `insertedIds`. While
+     * `mongoc_bulk_operation_execute()` guarantees that `reply` will be
+     * initialized, it doesn't guarantee that all fields will be set. On error,
+     * we should expect fields to be missing and handle that gracefully.
      *
      * - Parameters:
      *   - reply: A `Document` result from `mongoc_bulk_operation_execute()`
      *   - insertedIds: Map of inserted IDs
      */
-    fileprivate init(reply: Document, insertedIds: [Int: BsonValue?]) {
-        self.deletedCount = reply["nRemoved"] as! Int
-        self.insertedCount = reply["nInserted"] as! Int
+    fileprivate init(reply: Document, insertedIds: [Int: BsonValue?]) throws {
+        self.deletedCount = reply["nRemoved"] as? Int ?? 0
+        self.insertedCount = reply["nInserted"] as? Int ?? 0
         self.insertedIds = insertedIds
-        self.matchedCount = reply["nMatched"] as! Int
-        self.modifiedCount = reply["nModified"] as! Int
-        self.upsertedCount = reply["nUpserted"] as! Int
+        self.matchedCount = reply["nMatched"] as? Int ?? 0
+        self.modifiedCount = reply["nModified"] as? Int ?? 0
+        self.upsertedCount = reply["nUpserted"] as? Int ?? 0
 
         var upsertedIds = [Int: BsonValue?]()
 
@@ -344,5 +354,49 @@ public struct BulkWriteResult {
         }
 
         self.upsertedIds = upsertedIds
+
+        if let writeErrors = reply["writeErrors"] as? [Document] {
+            self.writeErrors = try writeErrors.map { try BsonDecoder().decode(WriteError.self, from: $0) }
+        }
+
+        if let writeConcernErrors = reply["writeConcernErrors"] as? [Document], writeConcernErrors.indices.contains(0) {
+            self.writeConcernError = try BsonDecoder().decode(WriteConcernError.self, from: writeConcernErrors[0])
+        }
+    }
+}
+
+/// A struct to represent a write error resulting from an executed bulk write.
+public struct WriteError: Codable {
+    /// The index of the request that errored.
+    public let index: Int
+
+    /// An integer value identifying the error.
+    public let code: Int
+
+    /// A description of the error.
+    public let message: String
+
+    private enum CodingKeys: String, CodingKey {
+        case index
+        case code
+        case message = "errmsg"
+    }
+}
+
+/// A struct to represent a write concern error resulting from an executed bulk write.
+public struct WriteConcernError: Codable {
+    /// An integer value identifying the write concern error.
+    public let code: Int
+
+    /// A document identifying the write concern setting related to the error.
+    public let info: Document
+
+    ///  A description of the error.
+    public let message: String
+
+    private enum CodingKeys: String, CodingKey {
+        case code
+        case info = "errInfo"
+        case message = "errmsg"
     }
 }
