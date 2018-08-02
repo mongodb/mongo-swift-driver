@@ -83,9 +83,8 @@ extension MongoCollection {
             self._collection, filter.data, replacementDoc.data, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
-        let res = try BsonDecoder().decode(UpdateResult.self, from: reply)
-        return res
-        //return try BsonDecoder().decode(UpdateResult.self, from: reply)
+
+        return try BsonDecoder().decode(UpdateResult.self, from: reply)
     }
 
     /**
@@ -109,9 +108,8 @@ extension MongoCollection {
             self._collection, filter.data, update.data, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
-        //return try BsonDecoder().decode(UpdateResult.self, from: reply)
-        let res = try BsonDecoder().decode(UpdateResult.self, from: reply)
-        return res
+
+        return try BsonDecoder().decode(UpdateResult.self, from: reply)
     }
 
     /**
@@ -135,9 +133,8 @@ extension MongoCollection {
             self._collection, filter.data, update.data, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
-        //return try BsonDecoder().decode(UpdateResult.self, from: reply)
-        let res = try BsonDecoder().decode(UpdateResult.self, from: reply)
-        return res
+
+        return try BsonDecoder().decode(UpdateResult.self, from: reply)
     }
 
     /**
@@ -160,7 +157,7 @@ extension MongoCollection {
             self._collection, filter.data, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
-        return DeleteResult(from: reply)
+        return try BsonDecoder().decode(DeleteResult.self, from: reply)
     }
 
     /**
@@ -183,7 +180,7 @@ extension MongoCollection {
             self._collection, filter.data, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
-        return DeleteResult(from: reply)
+        return try BsonDecoder().decode(DeleteResult.self, from: reply)
     }
 }
 
@@ -308,17 +305,9 @@ public struct InsertManyResult {
 }
 
 /// The result of a `delete` command on a `MongoCollection`. 
-public struct DeleteResult {
+public struct DeleteResult: Decodable {
     /// The number of documents that were deleted.
     public let deletedCount: Int
-
-    /// Given a server response to a delete command, creates a corresponding
-    /// `DeleteResult`. If the `from` Document does not have a `deletedCount`
-    /// field, the initialization will fail.
-    internal init?(from: Document) {
-        guard let deletedCount = from["deletedCount"] as? Int else { return nil }
-        self.deletedCount = deletedCount
-    }
 }
 
 /// The result of an `update` operation a `MongoCollection`.
