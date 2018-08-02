@@ -37,12 +37,16 @@ final class CrudTests: XCTestCase {
 
     // Run tests for .json files at the provided path
     func doTests(forPath: String) throws {
-        let db = try MongoClient().db("crudTests")
-        for file in try parseFiles(atPath: forPath) {
-            // later on when running with different server versions, this would
-            // be the place to check file.minServerVersion/maxServerVersion
+        let client = try MongoClient()
+        let db = try client.db("crudTests")
+        for (filename, file) in try parseFiles(atPath: forPath) {
 
-            print("\n------------\nExecuting tests from file \(forPath)/\(file.name).json...\n")
+            if try !client.serverVersionIsInRange(file.minServerVersion, file.maxServerVersion) {
+                print("Skipping tests from file \(filename).json for server version \(try client.serverVersion())")
+                continue
+            }
+
+            print("\n------------\nExecuting tests from file \(forPath)/\(filename).json...\n")
 
             // For each file, execute the test cases contained in it
             for (i, test) in file.tests.enumerated() {
@@ -55,7 +59,7 @@ final class CrudTests: XCTestCase {
                 // 3) execute the test according to the type's execute method
                 // 4) verify that expected data is present
                 // 5) drop the collection to clean up
-                let collection = try db.collection("\(file.name)+\(i)")
+                let collection = try db.collection("\(filename)+\(i)")
                 try collection.insertMany(file.data)
                 try test.execute(usingCollection: collection)
                 try test.verifyData(testCollection: collection, db: db)
@@ -67,15 +71,18 @@ final class CrudTests: XCTestCase {
 
     // Go through each .json file at the given path and parse the information in it
     // into a corresponding CrudTestFile with a [CrudTest]
-    private func parseFiles(atPath path: String) throws -> [CrudTestFile] {
-        var tests = [CrudTestFile]()
+    private func parseFiles(atPath path: String) throws -> [(String, CrudTestFile)] {
+        let decoder = BsonDecoder()
+        var tests = [(String, CrudTestFile)]()
+
         let testFiles = try FileManager.default.contentsOfDirectory(atPath: path).filter { $0.hasSuffix(".json") }
-        for fileName in testFiles {
-            let name = fileName.components(separatedBy: ".")[0]
-            if skippedFiles.contains(name) { continue }
-            let testFilePath = URL(fileURLWithPath: "\(path)/\(fileName)")
+        let names = testFiles.map { $0.components(separatedBy: ".")[0] }.filter { !skippedFiles.contains($0) }
+
+        for fileName in names {
+            let testFilePath = URL(fileURLWithPath: "\(path)/\(fileName).json")
             let asDocument = try Document(fromJSONFile: testFilePath)
-            tests.append(try CrudTestFile(fromDocument: asDocument, name: fileName))
+            let test = try decoder.decode(CrudTestFile.self, from: asDocument)
+            tests.append((fileName, test))
         }
         return tests
     }
@@ -94,21 +101,15 @@ final class CrudTests: XCTestCase {
 }
 
 /// A container for the data from a single .json file. 
-private struct CrudTestFile {
+private struct CrudTestFile: Decodable {
     let data: [Document]
-    let tests: [CrudTest]
+    let testDocs: [Document]
+    var tests: [CrudTest] { return try! testDocs.map { try makeCrudTest($0) } }
     let minServerVersion: String?
     let maxServerVersion: String?
-    let name: String
 
-    /// Initializes a new `CrudTestFile` from a `Document`. 
-    init(fromDocument document: Document, name: String) throws {
-        self.data = try document.get("data")
-        let tests: [Document] = try document.get("tests")
-        self.tests = try tests.map { try makeCrudTest($0) }
-        self.minServerVersion = document["minServerVersion"] as? String
-        self.maxServerVersion = document["maxServerVersion"] as? String
-        self.name = name.components(separatedBy: ".")[0]
+    enum CodingKeys: String, CodingKey {
+        case data, testDocs = "tests", minServerVersion, maxServerVersion
     }
 }
 

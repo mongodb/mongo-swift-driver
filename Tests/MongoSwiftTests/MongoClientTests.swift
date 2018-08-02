@@ -44,4 +44,8 @@ final class MongoClientTests: XCTestCase {
         // check that we fail gracefully with an error if passing in an invalid URI
         expect(try MongoClient(connectionString: "abcd")).to(throwError())
     }
+
+    func testGetServerVersion() throws {
+        expect(try MongoClient().serverVersion()).toNot(throwError())
+    }
 }
