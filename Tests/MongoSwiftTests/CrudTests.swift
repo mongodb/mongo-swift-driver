@@ -198,6 +198,7 @@ private class CrudTest {
         let expected = try BsonDecoder().decode(UpdateResult.self, from: self.result as! Document)
         expect(result?.matchedCount).to(equal(expected.matchedCount))
         expect(result?.modifiedCount).to(equal(expected.modifiedCount))
+        expect(result?.upsertedCount).to(equal(expected.upsertedCount))
         
         if let upsertedId = result?.upsertedId?.value as? Int {
             expect(upsertedId).to(equal(expected.upsertedId?.value as? Int))
