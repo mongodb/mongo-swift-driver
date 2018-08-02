@@ -56,7 +56,6 @@ extension MongoCollection {
             self._collection, &docPointers, documents.count, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
-
         return InsertManyResult(insertedIds: documents.map { $0["_id"] })
     }
 
@@ -83,7 +82,6 @@ extension MongoCollection {
             self._collection, filter.data, replacementDoc.data, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
-
         return try BsonDecoder().decode(UpdateResult.self, from: reply)
     }
 
@@ -108,7 +106,6 @@ extension MongoCollection {
             self._collection, filter.data, update.data, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
-
         return try BsonDecoder().decode(UpdateResult.self, from: reply)
     }
 
@@ -133,7 +130,6 @@ extension MongoCollection {
             self._collection, filter.data, update.data, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
-
         return try BsonDecoder().decode(UpdateResult.self, from: reply)
     }
 
