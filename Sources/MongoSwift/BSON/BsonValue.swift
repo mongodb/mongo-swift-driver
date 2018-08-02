@@ -4,46 +4,46 @@ import libbson
 /// The possible types of BSON values and their corresponding integer values.
 public enum BsonType: UInt32 {
     /// An invalid type
-    case invalid = 0,
+    case invalid = 0x00,
     /// 64-bit binary floating point
-    double,
+    double = 0x01,
     /// UTF-8 string
-    string,
+    string = 0x02,
     /// BSON document
-    document,
+    document = 0x03,
     /// Array
-    array,
+    array = 0x04,
     /// Binary data
-    binary,
+    binary = 0x05,
     /// Undefined value - deprecated
-    undefined,
+    undefined = 0x06,
     /// A MongoDB ObjectId. 
     /// - SeeAlso: https://docs.mongodb.com/manual/reference/method/ObjectId/
-    objectId,
+    objectId = 0x07,
     /// A boolean
-    boolean,
+    boolean = 0x08,
     /// UTC datetime, stored as UTC milliseconds since the Unix epoch
-    dateTime,
+    dateTime = 0x09,
     /// Null value
-    null,
+    null = 0x0a,
     /// A regular expression
-    regularExpression,
+    regularExpression = 0x0b,
     /// A database pointer - deprecated
-    dbPointer,
+    dbPointer = 0x0c,
     /// Javascript code
-    javascript,
+    javascript = 0x0d,
     /// A symbol - deprecated
-    symbol,
+    symbol = 0x0e,
     /// JavaScript code w/ scope
-    javascriptWithScope,
+    javascriptWithScope = 0x0f,
     /// 32-bit integer
-    int32,
+    int32 = 0x10,
     /// Special internal type used by MongoDB replication and sharding
-    timestamp,
+    timestamp = 0x11,
     /// 64-bit integer
-    int64,
+    int64 = 0x12,
     /// 128-bit decimal floating point
-    decimal128,
+    decimal128 = 0x13,
     /// Special type which compares lower than all other possible BSON element values
     minKey = 0xff,
     /// Special type which compares higher than all other possible BSON element values
@@ -91,10 +91,7 @@ extension Array: BsonValue {
             throw MongoError.bsonDecodeError(message: "Failed to create a bson_t from array data")
         }
 
-        let arrayDoc = Document(fromPointer: arrayData)
-
-        let arr: [BsonValue?] = (0..<arrayDoc.count).map { arrayDoc[String($0)] }
-        self = arr as! Array
+       self = Document(fromPointer: arrayData).values as! Array
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
@@ -207,7 +204,7 @@ extension Bool: BsonValue {
     }
 
     public init(from iter: DocumentIterator) throws {
-        self = bson_iter_bool(&iter.iter)
+        self.init(bson_iter_bool(&iter.iter))
     }
 }
 
@@ -338,7 +335,7 @@ extension Double: BsonValue {
     }
 
     public init(from iter: DocumentIterator) throws {
-        self = bson_iter_double(&iter.iter)
+        self.init(bson_iter_double(&iter.iter))
     }
 }
 
@@ -359,7 +356,7 @@ extension Int: BsonValue {
     }
 
     public init(from iter: DocumentIterator) throws {
-        self = Int(bson_iter_int32(&iter.iter))
+        self.init(Int(bson_iter_int32(&iter.iter)))
     }
 }
 
@@ -375,7 +372,7 @@ extension Int32: BsonValue {
     }
 
     public init(from iter: DocumentIterator) throws {
-        self = bson_iter_int32(&iter.iter)
+        self.init(bson_iter_int32(&iter.iter))
     }
 }
 
@@ -391,7 +388,7 @@ extension Int64: BsonValue {
     }
 
     public init(from iter: DocumentIterator) throws {
-        self = bson_iter_int64(&iter.iter)
+        self.init(bson_iter_int64(&iter.iter))
     }
 }
 
@@ -445,7 +442,7 @@ public struct CodeWithScope: BsonValue, Equatable, Codable {
             throw MongoError.bsonDecodeError(message: "Failed to create a bson_t from scope data")
         }
         let scopeDoc = Document(fromPointer: scopeData)
-        
+
         self.init(code: code, scope: scopeDoc)
     }
 
@@ -469,7 +466,7 @@ public struct MaxKey: BsonValue, Equatable, Codable {
 
     public init() {}
 
-    public init(from iter: DocumentIterator) throws { self.init() }
+    public init(from iter: DocumentIterator) { self.init() }
 
     public static func == (lhs: MaxKey, rhs: MaxKey) -> Bool { return true }
 }
@@ -489,7 +486,7 @@ public struct MinKey: BsonValue, Equatable, Codable {
 
     public init() {}
 
-    public init(from iter: DocumentIterator) throws { self.init() }
+    public init(from iter: DocumentIterator) { self.init() }
 
     public static func == (lhs: MinKey, rhs: MinKey) -> Bool { return true }
 }
@@ -534,7 +531,7 @@ public struct ObjectId: BsonValue, Equatable, CustomStringConvertible, Codable {
         }
     }
 
-     public init(from iter: DocumentIterator) throws {
+    public init(from iter: DocumentIterator) throws {
         guard let oid = bson_iter_oid(&iter.iter) else {
             throw MongoError.bsonDecodeError(message: "Failed to retrieve ObjectID value")
         }
@@ -702,6 +699,7 @@ internal struct Symbol: BsonValue {
 public struct Timestamp: BsonValue, Equatable, Codable {
 
     public var bsonType: BsonType { return .timestamp }
+
     /// A timestamp representing seconds since the Unix epoch.
     public let timestamp: UInt32
     /// An incrementing ordinal for operations within a given second.

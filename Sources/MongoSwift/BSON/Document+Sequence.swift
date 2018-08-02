@@ -24,20 +24,22 @@ public class DocumentIterator: IteratorProtocol {
     /// the libbson iterator. it must be a `var` because we use it as
     /// an inout argument
     internal var iter: bson_iter_t
+    /// a reference to the storage for the document we're iterating
+    internal let storage: DocumentStorage
 
-    /// Initializes a new iterator over the contents of `doc`. `doc` must remain alive for 
-    /// the lifetime of the iterator. Returns `nil` if the key is not found, or if an iterator 
-    /// cannot be created over `doc` due to an error from e.g. corrupt data.
+    /// Initializes a new iterator over the contents of `doc`. Returns `nil` if the key is not 
+    /// found, or if an iterator cannot be created over `doc` due to an error from e.g. corrupt data.
     internal init?(forDocument doc: Document) {
         self.iter = bson_iter_t()
+        self.storage = doc.storage
         if !bson_iter_init(&self.iter, doc.data) { return nil }
     }
 
-    /// Initializes a new iterator over the contents of `doc`. `doc` must remain alive for the
-    /// lifetime of the iterator. Returns `nil` if an iterator cannot be created over `doc` due
-    /// to an error from e.g. corrupt data, or if the key is not found.
+    /// Initializes a new iterator over the contents of `doc`. Returns `nil` if an iterator cannot
+    /// be created over `doc` due to an error from e.g. corrupt data, or if the key is not found.
     internal init?(forDocument doc: Document, advancedTo key: String) {
         self.iter = bson_iter_t()
+        self.storage = doc.storage
         if !bson_iter_init_find(&iter, doc.data, key.cString(using: .utf8)) {
             return nil
         }
@@ -75,21 +77,23 @@ public class DocumentIterator: IteratorProtocol {
         return BsonType(rawValue: bson_iter_type(&iter).rawValue) ?? .invalid
     }
 
-    /// Returns the keys from the iterator's current position to the end.
+    /// Returns the keys from the iterator's current position to the end. The iterator
+    /// will be exhausted after this property is accessed.
     internal var keys: [String] {
         var keys = [String]()
         while self.advance() { keys.append(self.currentKey) }
         return keys
     }
 
-    /// Returns the values from the iterator's current position to the end.
+    /// Returns the values from the iterator's current position to the end. The iterator
+    /// will be exhausted after this property is accessed.
     internal var values: [BsonValue?] {
         var values = [BsonValue?]()
         while self.advance() { values.append(self.currentValue) }
         return values
     }
 
-    /// Returns the next value in the sequence, or `nil` if at the end.
+    /// Returns the next value in the sequence, or `nil` if the iterator is exhausted.
     public func next() -> (key: String, value: BsonValue?)? {
         if self.advance() {
             return (self.currentKey, self.currentValue)
