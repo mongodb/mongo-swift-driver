@@ -128,7 +128,7 @@ final class MongoCollectionTests: XCTestCase {
 
         // the inserted IDs should either be the ones we set,
         // or newly created ObjectIds
-        for (_, v) in res!.insertedIds {
+        for v in res!.insertedIds {
             if let val = v as? Int {
                 expect([10, 11]).to(contain(val))
             } else {

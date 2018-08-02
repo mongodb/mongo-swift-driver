@@ -17,7 +17,7 @@ extension MongoCollection {
     public func insertOne(_ value: CollectionType, options: InsertOneOptions? = nil) throws -> InsertOneResult? {
         let encoder = BsonEncoder()
         let document = try encoder.encode(value)
-        if document["_id"] == nil {
+        if !document.keys.contains("_id") {
             try ObjectId().encode(to: document.storage, forKey: "_id")
         }
         let opts = try encoder.encode(options)
@@ -25,7 +25,7 @@ extension MongoCollection {
         if !mongoc_collection_insert_one(self._collection, document.data, opts?.data, nil, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
-        return InsertOneResult(insertedId: document["_id"]!)
+        return InsertOneResult(insertedId: document["_id"])
     }
 
     /**
@@ -44,7 +44,7 @@ extension MongoCollection {
         let encoder = BsonEncoder()
 
         let documents = try values.map { try encoder.encode($0) }
-        for doc in documents where doc["_id"] == nil {
+        for doc in documents where !doc.keys.contains("_id") {
             try ObjectId().encode(to: doc.storage, forKey: "_id")
         }
         var docPointers = documents.map { UnsafePointer($0.data) }
@@ -56,7 +56,8 @@ extension MongoCollection {
             self._collection, &docPointers, documents.count, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
-        return InsertManyResult(fromArray: documents.map { $0["_id"]! })
+
+        return InsertManyResult(insertedIds: documents.map { $0["_id"] })
     }
 
     /**
@@ -82,7 +83,9 @@ extension MongoCollection {
             self._collection, filter.data, replacementDoc.data, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
-        return UpdateResult(from: reply)
+        let res = try BsonDecoder().decode(UpdateResult.self, from: reply)
+        return res
+        //return try BsonDecoder().decode(UpdateResult.self, from: reply)
     }
 
     /**
@@ -106,7 +109,9 @@ extension MongoCollection {
             self._collection, filter.data, update.data, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
-        return UpdateResult(from: reply)
+        //return try BsonDecoder().decode(UpdateResult.self, from: reply)
+        let res = try BsonDecoder().decode(UpdateResult.self, from: reply)
+        return res
     }
 
     /**
@@ -130,7 +135,9 @@ extension MongoCollection {
             self._collection, filter.data, update.data, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
-        return UpdateResult(from: reply)
+        //return try BsonDecoder().decode(UpdateResult.self, from: reply)
+        let res = try BsonDecoder().decode(UpdateResult.self, from: reply)
+        return res
     }
 
     /**
@@ -291,23 +298,13 @@ public struct DeleteOptions: Encodable {
 public struct InsertOneResult {
     /// The identifier that was inserted. If the document doesn't have an identifier, this value
     /// will be generated and added to the document before insertion.
-    public let insertedId: BsonValue
+    public let insertedId: BsonValue?
 }
 
 /// The result of an `insertMany` command on a `MongoCollection`. 
 public struct InsertManyResult {
     /// Map of the index of the inserted document to the id of the inserted document.
-    public let insertedIds: [Int64: BsonValue]
-
-    /// Given an ordered array of insertedIds, creates a corresponding InsertManyResult.
-    internal init(fromArray arr: [BsonValue]) {
-        var inserted = [Int64: BsonValue]()
-        for (i, id) in arr.enumerated() {
-            let index = Int64(i)
-            inserted[index] = id
-        }
-        self.insertedIds = inserted
-    }
+    public let insertedIds: [BsonValue?]
 }
 
 /// The result of a `delete` command on a `MongoCollection`. 
@@ -325,7 +322,7 @@ public struct DeleteResult {
 }
 
 /// The result of an `update` operation a `MongoCollection`.
-public struct UpdateResult {
+public struct UpdateResult: Decodable {
     /// The number of documents that matched the filter.
     public let matchedCount: Int
 
@@ -333,18 +330,8 @@ public struct UpdateResult {
     public let modifiedCount: Int
 
     /// The identifier of the inserted document if an upsert took place.
-    public let upsertedId: BsonValue?
+    public let upsertedId: AnyBsonValue?
 
-    /// Given a server response to an update command, creates a corresponding
-    /// `UpdateResult`. If the `from` Document does not have `matchedCount` and
-    /// `modifiedCount` fields, the initialization will fail. The document may
-    /// optionally have an `upsertedId` field.
-    internal init?(from: Document) {
-         guard let matched = from["matchedCount"] as? Int, let modified = from["modifiedCount"] as? Int else {
-            return nil
-         }
-         self.matchedCount = matched
-         self.modifiedCount = modified
-         self.upsertedId = from["upsertedId"]
-    }
+    /// The number of documents that were upserted.
+    public let upsertedCount: Int
 }
