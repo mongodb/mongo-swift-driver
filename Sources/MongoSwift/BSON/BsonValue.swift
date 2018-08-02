@@ -137,13 +137,7 @@ extension Array: BsonValue {
 
         let arrayDoc = Document(fromPointer: arrayData)
 
-        var i = 0
-        var result = [BsonValue]()
-        while let v = arrayDoc[String(i)] {
-            result.append(v)
-            i += 1
-        }
-        return result
+        return (0..<arrayDoc.count).map { arrayDoc[String($0)] }
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {

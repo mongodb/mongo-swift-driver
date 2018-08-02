@@ -105,13 +105,10 @@ extension MongoCollection {
      *   - filter: a `Document` representing the filter that documents must match in order to be considered for this operation
      *   - options: Optional `DistinctOptions` to use when executing the command
      *
-     * - Returns: A 'MongoCursor' containing the distinct values for the specified criteria
+     * - Returns: A `[BsonValue?]` containing the distinct values for the specified criteria
      */
     public func distinct(fieldName: String, filter: Document = [:],
-                         options: DistinctOptions? = nil) throws -> MongoCursor<Document> {
-        guard let client = self._client else {
-            throw MongoError.invalidClient()
-        }
+                         options: DistinctOptions? = nil) throws -> [BsonValue?] {
 
         let collName = String(cString: mongoc_collection_get_name(self._collection))
         let command: Document = [
@@ -129,23 +126,12 @@ extension MongoCollection {
             throw MongoError.commandError(message: toErrorString(error))
         }
 
-        let fakeReply: Document = [
-            "ok": 1,
-            "cursor": [
-                "id": 0,
-                "ns": "",
-                "firstBatch": [reply]
-            ] as Document
-        ]
-
-        // mongoc_cursor_new_from_command_reply will bson_destroy the data we pass in,
-        // so copy it to avoid destroying twice (already done in Document deinit)
-        let fakeData = bson_copy(fakeReply.data)
-        guard let newCursor = mongoc_cursor_new_from_command_reply(client._client, fakeData, 0) else {
-            throw MongoError.invalidResponse()
+        guard let values = reply["values"] as? [BsonValue?] else {
+            throw MongoError.commandError(message:
+                "expected server reply \(reply) to contain an array of distinct values")
         }
 
-        return MongoCursor(fromCursor: newCursor, withClient: client)
+        return values
     }
 }
 
