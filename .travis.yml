@@ -1,6 +1,6 @@
 os:
   - linux
-#  - osx
+  - osx
 language: generic
 sudo: required
 dist: trusty
@@ -8,7 +8,8 @@ osx_image: xcode9.2
 
 env:
   matrix:
-    - MONGODB_VERSION=3.6.5
+    - MONGODB_VERSION=3.6.5 SWIFT_VERSION=4.0
+    - MONGODB_VERSION=3.6.5 SWIFT_VERSION=4.1
 
 install:
   - MONGODB_BASE="mongodb-linux-x86_64"
@@ -36,7 +37,5 @@ before_script:
   - ${PWD}/mongodb-${MONGODB_VERSION}/bin/mongod --dbpath ${PWD}/mongodb-${MONGODB_VERSION}/data --logpath ${PWD}/mongodb-${MONGODB_VERSION}/mongodb.log --enableMajorityReadConcern --fork
 
 script:
-  # - make
-  # - make test
   - swift build -v
   - swift test -v --filter MongoSwiftTests
