@@ -32,7 +32,8 @@ public enum MongoError {
     /// Thrown when there is an error executing a write command.
     case writeError(code: Int32, message: String)
     /// Thrown when there is an error executing a bulk write command. 
-    indirect case bulkWriteError(code: Int32, message: String, result: BulkWriteResult?, writeErrors: [MongoError]?, writeConcernError: MongoError?)
+    indirect case bulkWriteError(code: Int32, message: String, result: BulkWriteResult?,
+                                writeErrors: [MongoError]?, writeConcernError: MongoError?)
 }
 
 /// An extension of `MongoError` to support printing out descriptive error messages.

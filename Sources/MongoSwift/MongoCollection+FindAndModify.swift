@@ -84,8 +84,8 @@ extension MongoCollection {
         let reply = Document()
         var error = bson_error_t()
 
-        if !mongoc_collection_find_and_modify_with_opts(self._collection,
-        filter.data, opts._options, reply.data, &error) {
+        if !mongoc_collection_find_and_modify_with_opts(self._collection, filter.data,
+                                                        opts._options, reply.data, &error) {
             // TODO SWIFT-144: replace with more descriptive error type(s)
             throw MongoError.commandError(message: toErrorString(error))
         }
@@ -298,12 +298,12 @@ private class FindAndModifyOptions {
             guard maxTime > 0 else {
                 throw MongoError.invalidArgument(message: "maxTimeMS must be positive, but got value \(maxTime)")
             }
-            extra["maxTimeMS"] = maxTime 
+            extra["maxTimeMS"] = maxTime
         }
 
         if let wc = writeConcern {
             do {
-                extra["writeConcern"] = try BsonEncoder().encode(wc) 
+                extra["writeConcern"] = try BsonEncoder().encode(wc)
             } catch {
                 throw MongoError.invalidArgument(message: "Error encoding WriteConcern \(wc): \(error)")
             }

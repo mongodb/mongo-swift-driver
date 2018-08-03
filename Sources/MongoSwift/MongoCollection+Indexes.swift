@@ -247,7 +247,7 @@ extension MongoCollection {
      */
     @discardableResult
     public func dropIndex(_ keys: Document, options: IndexOptions? = nil,
-                            commandOptions: DropIndexOptions? = nil) throws -> Document {
+                          commandOptions: DropIndexOptions? = nil) throws -> Document {
         return try dropIndex(IndexModel(keys: keys, options: options), options: commandOptions)
     }
 

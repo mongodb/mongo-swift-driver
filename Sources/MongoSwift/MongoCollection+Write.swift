@@ -71,7 +71,8 @@ extension MongoCollection {
      *            is unacknowledged, `nil` is returned.
      */
     @discardableResult
-    public func replaceOne(filter: Document, replacement: CollectionType, options: ReplaceOptions? = nil) throws -> UpdateResult? {
+    public func replaceOne(filter: Document, replacement: CollectionType,
+                           options: ReplaceOptions? = nil) throws -> UpdateResult? {
         let encoder = BsonEncoder()
         let replacementDoc = try encoder.encode(replacement)
         let opts = try encoder.encode(options)

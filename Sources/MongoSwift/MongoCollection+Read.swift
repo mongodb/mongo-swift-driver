@@ -102,7 +102,7 @@ extension MongoCollection {
      *
      * - Parameters:
      *   - fieldName: The field for which the distinct values will be found
-     *   - filter: a `Document` representing the filter that documents must match in order to be considered for this operation
+     *   - filter: a `Document` representing the filter documents must match in order to be considered for the operation
      *   - options: Optional `DistinctOptions` to use when executing the command
      *
      * - Returns: A `[BsonValue?]` containing the distinct values for the specified criteria

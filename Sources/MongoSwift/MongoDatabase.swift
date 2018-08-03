@@ -216,7 +216,7 @@ public class MongoDatabase {
      * - Returns: the requested `MongoCollection<T>`
      */
     public func collection<T: Codable>(_ name: String, withType: T.Type,
-                                              options: CollectionOptions? = nil) throws -> MongoCollection<T> {
+                                       options: CollectionOptions? = nil) throws -> MongoCollection<T> {
         guard let collection = mongoc_database_get_collection(self._database, name) else {
             throw MongoError.invalidCollection(message: "Could not get collection '\(name)'")
         }

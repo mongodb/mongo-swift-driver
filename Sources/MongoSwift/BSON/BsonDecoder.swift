@@ -65,8 +65,9 @@ public class BsonDecoder {
             return s.value
         }
 
-        throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: [],
-                                            debugDescription: "Unable to parse JSON string \(json)"))
+        throw DecodingError.dataCorrupted(
+            DecodingError.Context(codingPath: [],
+                                  debugDescription: "Unable to parse JSON string \(json)"))
     }
 
     /// A struct to wrap a `Decodable` type, allowing us to support decoding to types that
@@ -105,7 +106,8 @@ internal class _BsonDecoder: Decoder {
     }
 
     /// Initializes `self` with the given top-level container and options.
-    fileprivate init(referencing container: BsonValue?, at codingPath: [CodingKey] = [], options: BsonDecoder._Options) {
+    fileprivate init(referencing container: BsonValue?, at codingPath: [CodingKey] = [],
+                     options: BsonDecoder._Options) {
         self.storage = _BsonDecodingStorage()
         self.storage.push(container: container)
         self.codingPath = codingPath
@@ -115,34 +117,42 @@ internal class _BsonDecoder: Decoder {
     // Returns the data stored in this decoder as represented in a container keyed by the given key type.
     public func container<Key>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> {
         guard self.storage.topContainer != nil  else {
-            throw DecodingError.valueNotFound(KeyedDecodingContainer<Key>.self,
-                                  DecodingError.Context(codingPath: self.codingPath,
-                                                        debugDescription: "Cannot get keyed decoding container -- found null value instead."))
+            throw DecodingError.valueNotFound(
+                KeyedDecodingContainer<Key>.self,
+                DecodingError.Context(codingPath: self.codingPath,
+                                      debugDescription:
+                                      "Cannot get keyed decoding container -- found null value instead."))
         }
 
         guard let topContainer = self.storage.topContainer as? Document else {
-            throw DecodingError._typeMismatch(at: self.codingPath, expectation: Document.self, reality: self.storage.topContainer)
+            throw DecodingError._typeMismatch(at: self.codingPath,
+                                              expectation: Document.self,
+                                              reality: self.storage.topContainer)
         }
 
         let container = _BsonKeyedDecodingContainer<Key>(referencing: self, wrapping: topContainer)
         return KeyedDecodingContainer(container)
     }
 
-    // Returns the data stored in this decoder as represented in a container appropriate for holding a single primitive value.
+    // Returns the data stored in this decoder in a container appropriate for holding a single primitive value.
     public func singleValueContainer() throws -> SingleValueDecodingContainer {
         return self
     }
 
-    // Returns the data stored in this decoder as represented in a container appropriate for holding values with no keys.
+    // Returns the data stored in this decoder in a container appropriate for holding values with no keys.
     public func unkeyedContainer() throws -> UnkeyedDecodingContainer {
         guard self.storage.topContainer != nil else {
-            throw DecodingError.valueNotFound(UnkeyedDecodingContainer.self,
-                                  DecodingError.Context(codingPath: self.codingPath,
-                                                        debugDescription: "Cannot get unkeyed decoding container -- found null value instead."))
+            throw DecodingError.valueNotFound(
+                UnkeyedDecodingContainer.self,
+                DecodingError.Context(codingPath: self.codingPath,
+                                      debugDescription:
+                                      "Cannot get unkeyed decoding container -- found null value instead."))
         }
 
         guard let arr = self.storage.topContainer as? [BsonValue?] else {
-            throw DecodingError._typeMismatch(at: self.codingPath, expectation: [BsonValue?].self, reality: self.storage.topContainer)
+            throw DecodingError._typeMismatch(at: self.codingPath,
+                                              expectation: [BsonValue?].self,
+                                              reality: self.storage.topContainer)
         }
 
         return _BsonUnkeyedDecodingContainer(referencing: self, wrapping: arr)
@@ -263,7 +273,10 @@ private struct _BsonKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
     /// under `key`, or throws an error if the value is not found.
     private func getValue(forKey key: Key) throws -> BsonValue {
         guard let entry = self.container[key.stringValue] else {
-            throw DecodingError.keyNotFound(key, DecodingError.Context(codingPath: self.decoder.codingPath, debugDescription: "No value associated with key \(_errorDescription(of: key))."))
+            throw DecodingError.keyNotFound(
+                key,
+                DecodingError.Context(codingPath: self.decoder.codingPath,
+                                      debugDescription: "No value associated with key \(_errorDescription(of: key))."))
         }
         return entry
     }
@@ -273,7 +286,10 @@ private struct _BsonKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
         let entry = try getValue(forKey: key)
         return try self.decoder.with(pushedKey: key) {
             guard let value = try decoder.unboxBsonValue(entry, as: type) else {
-                throw DecodingError.valueNotFound(type, DecodingError.Context(codingPath: self.decoder.codingPath, debugDescription: "Expected \(type) value but found null instead."))
+                throw DecodingError.valueNotFound(
+                    type,
+                    DecodingError.Context(codingPath: self.decoder.codingPath,
+                                          debugDescription: "Expected \(type) value but found null instead."))
             }
             return value
         }
@@ -284,7 +300,10 @@ private struct _BsonKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
         let entry = try getValue(forKey: key)
         return try self.decoder.with(pushedKey: key) {
             guard let value = try decoder.unboxNumber(entry, as: type) else {
-                throw DecodingError.valueNotFound(type, DecodingError.Context(codingPath: self.decoder.codingPath, debugDescription: "Expected \(type) value but found null instead."))
+                throw DecodingError.valueNotFound(
+                    type,
+                    DecodingError.Context(codingPath: self.decoder.codingPath,
+                                          debugDescription: "Expected \(type) value but found null instead."))
             }
             return value
         }
@@ -295,7 +314,10 @@ private struct _BsonKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
         let entry = try getValue(forKey: key)
         return try self.decoder.with(pushedKey: key) {
             guard let value = try decoder.unbox(entry, as: type) else {
-                throw DecodingError.valueNotFound(type, DecodingError.Context(codingPath: self.decoder.codingPath, debugDescription: "Expected \(type) value but found null instead."))
+                throw DecodingError.valueNotFound(
+                    type,
+                    DecodingError.Context(codingPath: self.decoder.codingPath,
+                                          debugDescription: "Expected \(type) value but found null instead."))
             }
             return value
         }
@@ -306,11 +328,15 @@ private struct _BsonKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
         // check if the key exists in the document, so we can differentiate between
         // the key being set to nil and the key not existing at all.
         if !self.contains(key) {
-            throw DecodingError.keyNotFound(key, DecodingError.Context(codingPath: self.decoder.codingPath, debugDescription: "Key \(_errorDescription(of: key)) not found."))
+            throw DecodingError.keyNotFound(
+                key,
+                DecodingError.Context(codingPath: self.decoder.codingPath,
+                                      debugDescription: "Key \(_errorDescription(of: key)) not found."))
         }
         return self.container[key.stringValue] == nil
     }
 
+    // swiftlint:disable line_length
     public func decode(_ type: Bool.Type, forKey key: Key) throws -> Bool { return try decodeBsonType(type, forKey: key) }
     public func decode(_ type: Int.Type, forKey key: Key) throws -> Int { return try decodeNumber(type, forKey: key) }
     public func decode(_ type: Int8.Type, forKey key: Key) throws -> Int8 { return try decodeNumber(type, forKey: key) }
@@ -325,9 +351,11 @@ private struct _BsonKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
     public func decode(_ type: Float.Type, forKey key: Key) throws -> Float { return try decodeNumber(type, forKey: key) }
     public func decode(_ type: Double.Type, forKey key: Key) throws -> Double { return try decodeNumber(type, forKey: key) }
     public func decode(_ type: String.Type, forKey key: Key) throws -> String { return try decodeBsonType(type, forKey: key) }
+    // swiftlint:enable line_length
 
     /// Returns the data stored for the given key as represented in a container keyed by the given key type.
-    public func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type, forKey key: Key) throws -> KeyedDecodingContainer<NestedKey> {
+    public func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type,
+                                           forKey key: Key) throws -> KeyedDecodingContainer<NestedKey> {
         return try self.decoder.with(pushedKey: key) {
             let value = try getValue(forKey: key)
 
@@ -403,7 +431,10 @@ private struct _BsonUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     /// A private helper function to check if we're at the end of the container, and if so throw an error. 
     private func checkAtEnd() throws {
         guard !self.isAtEnd else {
-            throw DecodingError.valueNotFound(BsonValue?.self, DecodingError.Context(codingPath: self.decoder.codingPath + [_BsonKey(index: self.currentIndex)], debugDescription: "Unkeyed container is at end."))
+            throw DecodingError.valueNotFound(
+                BsonValue?.self,
+                DecodingError.Context(codingPath: self.decoder.codingPath + [_BsonKey(index: self.currentIndex)],
+                                      debugDescription: "Unkeyed container is at end."))
         }
     }
 
@@ -412,7 +443,9 @@ private struct _BsonUnkeyedDecodingContainer: UnkeyedDecodingContainer {
         try self.checkAtEnd()
         return try self.decoder.with(pushedKey: _BsonKey(index: self.currentIndex)) {
             guard let typed = try self.decoder.unboxBsonValue(self.container[currentIndex], as: type) else {
-                throw DecodingError._typeMismatch(at: self.codingPath, expectation: type, reality: self.container[self.currentIndex])
+                throw DecodingError._typeMismatch(at: self.codingPath,
+                                                  expectation: type,
+                                                  reality: self.container[self.currentIndex])
             }
             self.currentIndex += 1
             return typed
@@ -424,7 +457,9 @@ private struct _BsonUnkeyedDecodingContainer: UnkeyedDecodingContainer {
         try self.checkAtEnd()
         return try self.decoder.with(pushedKey: _BsonKey(index: self.currentIndex)) {
             guard let typed = try self.decoder.unboxNumber(self.container[currentIndex], as: type) else {
-                throw DecodingError._typeMismatch(at: self.codingPath, expectation: type, reality: self.container[self.currentIndex])
+                throw DecodingError._typeMismatch(at: self.codingPath,
+                                                  expectation: type,
+                                                  reality: self.container[self.currentIndex])
             }
             self.currentIndex += 1
             return typed
@@ -436,7 +471,11 @@ private struct _BsonUnkeyedDecodingContainer: UnkeyedDecodingContainer {
         try self.checkAtEnd()
         return try self.decoder.with(pushedKey: _BsonKey(index: self.currentIndex)) {
             guard let decoded = try self.decoder.unbox(self.container[currentIndex], as: T.self) else {
-                throw DecodingError.valueNotFound(type, DecodingError.Context(codingPath: self.decoder.codingPath + [_BsonKey(index: self.currentIndex)], debugDescription: "Expected \(type) but found null instead."))
+                throw DecodingError.valueNotFound(
+                    type,
+                    DecodingError.Context(
+                        codingPath: self.decoder.codingPath + [_BsonKey(index: self.currentIndex)],
+                        debugDescription: "Expected \(type) but found null instead."))
             }
             self.currentIndex += 1
             return decoded
@@ -471,7 +510,8 @@ private struct _BsonUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     public mutating func decode(_ type: String.Type) throws -> String { return try self.decodeBsonType(type) }
 
     /// Decodes a nested container keyed by the given type.
-    public mutating func nestedContainer<NestedKey: CodingKey>(keyedBy type: NestedKey.Type) throws -> KeyedDecodingContainer<NestedKey> {
+    public mutating func nestedContainer<NestedKey: CodingKey>(keyedBy type: NestedKey.Type)
+        throws -> KeyedDecodingContainer<NestedKey> {
         return try self.decoder.with(pushedKey: _BsonKey(index: self.currentIndex)) {
             try self.checkAtEnd()
             let doc = try self.decodeBsonType(Document.self)
@@ -508,7 +548,10 @@ extension _BsonDecoder: SingleValueDecodingContainer {
     /// Assert that the top container for this decoder is non-null.
     private func expectNonNull<T>(_ type: T.Type) throws {
         guard !self.decodeNil() else {
-            throw DecodingError.valueNotFound(type, DecodingError.Context(codingPath: self.codingPath, debugDescription: "Expected \(type) but found null value instead."))
+            throw DecodingError.valueNotFound(
+                type,
+                DecodingError.Context(codingPath: self.codingPath,
+                                      debugDescription: "Expected \(type) but found null value instead."))
         }
     }
 

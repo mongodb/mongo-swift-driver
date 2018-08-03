@@ -526,8 +526,8 @@ extension MongoClient {
      *  - Parameters:
      *      - forEvents:   A `MongoEventType?` to enable monitoring for, defaulting to nil. If unspecified, monitoring
      *                     will be enabled for both `.commandMonitoring` and `.serverMonitoring` events.
-     *      - usingCenter: A `NotificationCenter` that event notifications should be posted to, defaulting to the default
-     *                     `NotificationCenter` for the application.
+     *      - usingCenter: A `NotificationCenter` that event notifications should be posted to, defaulting to the
+     *                     default `NotificationCenter` for the application.
      *
      */
     public func enableMonitoring(forEvents eventType: MongoEventType? = nil,

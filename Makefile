@@ -27,10 +27,8 @@ benchmark:
 	swift test -v $(CFLAGS) $(LDFLAGS) --filter MongoSwiftBenchmarks
 
 lint:
+	swiftlint autocorrect
 	swiftlint
-
-format:
-	swiftformat --disable trailingCommas  --indent 2 .
 
 clean:
 	rm -rf Packages

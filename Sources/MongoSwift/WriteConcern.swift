@@ -1,5 +1,5 @@
-import libmongoc
 import Foundation
+import libmongoc
 
 /// A class to represent a MongoDB write concern.
 public class WriteConcern: Codable {
@@ -64,10 +64,11 @@ public class WriteConcern: Codable {
             if let wTag = mongoc_write_concern_get_wtag(self._writeConcern) {
                 return .tag(String(cString: wTag))
             }
-            fallthrough
         default:
-            return .number(number)
+            break
         }
+
+        return .number(number)
     }
 
     /// Indicates whether to wait for the write operation to get committed to the journal.
@@ -129,7 +130,7 @@ public class WriteConcern: Codable {
             let wStr = String(describing: w)
             let timeoutStr = String(describing: wtimeoutMS)
             throw MongoError.invalidArgument(message:
-                "Invalid combination of WriteConcern options: journal=\(journalStr), w=\(wStr), wtimeoutMS=\(timeoutStr)")
+                "Invalid combination of options: journal=\(journalStr), w=\(wStr), wtimeoutMS=\(timeoutStr)")
         }
     }
 

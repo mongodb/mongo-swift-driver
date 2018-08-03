@@ -35,9 +35,10 @@ public struct AnyBsonValue: Codable {
             if let c = self.value as? Codable {
                 try c.encode(to: encoder)
             } else {
-                throw EncodingError.invalidValue(self.value,
-                EncodingError.Context(codingPath: [],
-                    debugDescription: "Encountered a non-Codable value while encoding \(self)"))
+                throw EncodingError.invalidValue(
+                    self.value,
+                    EncodingError.Context(codingPath: [],
+                                          debugDescription: "Encountered a non-Codable value while encoding \(self)"))
 
             }
         }
@@ -61,9 +62,10 @@ public struct AnyBsonValue: Codable {
         // short-circuit in the `BsonDecoder` case
         if let bsonDecoder = decoder as? _BsonDecoder {
             guard let value = bsonDecoder.storage.topContainer else {
-                throw DecodingError.valueNotFound(BsonValue.self,
+                throw DecodingError.valueNotFound(
+                    BsonValue.self,
                     DecodingError.Context(codingPath: bsonDecoder.codingPath,
-                        debugDescription: "Expected BsonValue but found null instead."))
+                                          debugDescription: "Expected BsonValue but found null instead."))
             }
             self.value = value
             return
