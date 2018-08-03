@@ -1,5 +1,5 @@
 os:
-#  - linux
+  - linux
   - osx
 language: generic
 sudo: required
@@ -34,7 +34,7 @@ install:
 before_script:
   - mkdir ${PWD}/mongodb-${MONGODB_VERSION}/data
   - ${PWD}/mongodb-${MONGODB_VERSION}/bin/mongod --dbpath ${PWD}/mongodb-${MONGODB_VERSION}/data --logpath ${PWD}/mongodb-${MONGODB_VERSION}/mongodb.log --enableMajorityReadConcern --fork
-  - swiftlint
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then swiftlint; fi
 
 script:
   # - make
