@@ -1,6 +1,6 @@
 @testable import MongoSwift
-import XCTest
 import Nimble
+import XCTest
 
 var _client: MongoClient?
 
@@ -281,7 +281,7 @@ final class MongoCollectionTests: XCTestCase {
 
     func testCursorIteration() throws {
         let findResult1 = try coll.find(["cat": "cat"])
-        while let _  = try findResult1.nextOrError() { }
+        while let _ = try findResult1.nextOrError() { }
 
         let findResult2 = try coll.find(["cat": "cat"])
         for _ in findResult2 { }

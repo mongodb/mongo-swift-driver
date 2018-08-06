@@ -291,7 +291,7 @@ final class ReadWriteConcernTests: XCTestCase {
 
         let coll = try db.createCollection("coll1")
         let wc1 = try WriteConcern(w: .number(1))
-        let wc2 =  WriteConcern()
+        let wc2 = WriteConcern()
         let wc3 = try WriteConcern(journal: true)
 
         let command: Document = ["insert": "coll1", "documents": [nextDoc()] as [Document]]

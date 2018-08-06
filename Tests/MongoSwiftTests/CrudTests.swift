@@ -1,5 +1,5 @@
-@testable import MongoSwift
 import Foundation
+@testable import MongoSwift
 import Nimble
 import XCTest
 
@@ -298,7 +298,7 @@ private class FindOneAndDeleteTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let filter: Document = try self.args.get("filter")
         let opts = FindOneAndDeleteOptions(collation: self.collation, projection: self.projection, sort: self.sort)
-        
+
         let result = try coll.findOneAndDelete(filter, options: opts)
         self.verifyFindAndModifyResult(result)
     }

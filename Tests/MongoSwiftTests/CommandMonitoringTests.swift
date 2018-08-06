@@ -2,7 +2,7 @@
 import Nimble
 import XCTest
 
-let center =  NotificationCenter.default
+let center = NotificationCenter.default
 
 // TODO: don't hardcode this
 let VERSION = "3.6"

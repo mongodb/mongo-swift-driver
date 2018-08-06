@@ -1,7 +1,7 @@
+import libmongoc
 @testable import MongoSwift
 import Nimble
 import XCTest
-import libmongoc
 
 final class MongoClientTests: XCTestCase {
     static var allTests: [(String, (MongoClientTests) -> () throws -> Void)] {

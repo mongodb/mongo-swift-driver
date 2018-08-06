@@ -194,7 +194,8 @@ public struct Binary: BsonValue, Equatable, Codable {
     /// Throws an error if the base64 `String` is invalid.
     public init(base64: String, subtype: UInt8) throws {
         guard let dataObj = Data(base64Encoded: base64) else {
-            throw MongoError.invalidArgument(message: "failed to create Data object from invalid base64 string \(base64)")
+            throw MongoError.invalidArgument(message:
+                "failed to create Data object from invalid base64 string \(base64)")
         }
         self.init(data: dataObj, subtype: subtype)
     }
@@ -239,7 +240,9 @@ public struct Binary: BsonValue, Equatable, Codable {
 
 /// An extension of `Bool` to represent the BSON Boolean type.
 extension Bool: BsonValue {
+
     public var bsonType: BsonType { return .boolean }
+
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         if !bson_append_bool(storage.pointer, key, Int32(key.count), self) {
             throw bsonEncodeError(value: self, forKey: key)
@@ -253,6 +256,7 @@ extension Bool: BsonValue {
 
 /// An extension of `Date` to represent the BSON Datetime type.
 extension Date: BsonValue {
+
     public var bsonType: BsonType { return .dateTime }
 
     /// Initializes a new `Date` representing the instance `msSinceEpoch` milliseconds
@@ -280,13 +284,13 @@ extension Date: BsonValue {
 /// be created, we may need to parse them into `Document`s, and this provides a place for that logic.
 internal struct DBPointer: BsonValue {
 
-    public var bsonType: BsonType { return .dbPointer }
+    var bsonType: BsonType { return .dbPointer }
 
-    public func encode(to storage: DocumentStorage, forKey key: String) throws {
+    func encode(to storage: DocumentStorage, forKey key: String) throws {
         throw MongoError.bsonEncodeError(message: "DBPointers are deprecated; use a DBRef instead")
     }
 
-    public static func from(iter: inout bson_iter_t) -> BsonValue {
+    static func from(iter: inout bson_iter_t) -> BsonValue {
         var length: UInt32 = 0
         let collectionPP = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: 1)
         defer {
@@ -338,7 +342,7 @@ public struct Decimal128: BsonValue, Equatable, Codable {
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         var value: bson_decimal128_t = bson_decimal128_t()
         precondition(bson_decimal128_from_string(self.data, &value),
-            "Failed to parse Decimal128 string \(self.data)")
+                     "Failed to parse Decimal128 string \(self.data)")
         if !bson_append_decimal128(storage.pointer, key, Int32(key.count), &value) {
             throw bsonEncodeError(value: self, forKey: key)
         }
@@ -359,7 +363,9 @@ public struct Decimal128: BsonValue, Equatable, Codable {
 
 /// An extension of `Double` to represent the BSON Double type.
 extension Double: BsonValue {
+
     public var bsonType: BsonType { return .double }
+
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         if !bson_append_double(storage.pointer, key, Int32(key.count), self) {
             throw bsonEncodeError(value: self, forKey: key)
@@ -374,7 +380,9 @@ extension Double: BsonValue {
 /// An extension of `Int` to represent the BSON Int32 or Int64 type.
 /// The `Int` will be encoded as an Int32 if possible, or an Int64 if necessary.
 extension Int: BsonValue {
+
     public var bsonType: BsonType { return .int32 }
+
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         if let int32 = Int32(exactly: self) {
             return try int32.encode(to: storage, forKey: key)
@@ -392,7 +400,9 @@ extension Int: BsonValue {
 
 /// An extension of `Int32` to represent the BSON Int32 type.
 extension Int32: BsonValue {
+
     public var bsonType: BsonType { return .int32 }
+
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         if !bson_append_int32(storage.pointer, key, Int32(key.count), self) {
             throw bsonEncodeError(value: self, forKey: key)
@@ -406,7 +416,9 @@ extension Int32: BsonValue {
 
 /// An extension of `Int64` to represent the BSON Int64 type.
 extension Int64: BsonValue {
+
     public var bsonType: BsonType { return .int64 }
+
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         if !bson_append_int64(storage.pointer, key, Int32(key.count), self) {
             throw bsonEncodeError(value: self, forKey: key)
@@ -599,7 +611,7 @@ extension NSRegularExpression {
 }
 
 /// A struct to represent a BSON regular expression.
-struct RegularExpression: BsonValue, Equatable, Codable {
+public struct RegularExpression: BsonValue, Equatable, Codable {
 
     public var bsonType: BsonType { return .regularExpression }
 
@@ -668,7 +680,9 @@ struct RegularExpression: BsonValue, Equatable, Codable {
 
 /// An extension of String to represent the BSON string type.
 extension String: BsonValue {
+
     public var bsonType: BsonType { return .string }
+
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         if !bson_append_utf8(storage.pointer, key, Int32(key.count), self, Int32(self.count)) {
             throw bsonEncodeError(value: self, forKey: key)
@@ -692,12 +706,14 @@ extension String: BsonValue {
 /// An internal struct to represent the deprecated Symbol type. While Symbols cannot be
 /// created, we may need to parse them into `String`s, and this provides a place for that logic.
 internal struct Symbol: BsonValue {
-    public var bsonType: BsonType { return .symbol }
-    public func encode(to storage: DocumentStorage, forKey key: String) throws {
+
+    var bsonType: BsonType { return .symbol }
+
+    func encode(to storage: DocumentStorage, forKey key: String) throws {
         throw MongoError.bsonEncodeError(message: "Symbols are deprecated; use a string instead")
     }
 
-    public static func from(iter: inout bson_iter_t) -> BsonValue {
+    static func from(iter: inout bson_iter_t) -> BsonValue {
         var length: UInt32 = 0
         let value = bson_iter_symbol(&iter, &length)
         guard let strValue = value else {
@@ -713,6 +729,7 @@ internal struct Symbol: BsonValue {
 
 /// A struct to represent the BSON Timestamp type.
 public struct Timestamp: BsonValue, Equatable, Codable {
+
     public var bsonType: BsonType { return .timestamp }
 
     /// A timestamp representing seconds since the Unix epoch.

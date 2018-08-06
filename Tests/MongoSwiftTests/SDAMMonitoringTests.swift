@@ -1,5 +1,5 @@
-@testable import MongoSwift
 import Foundation
+@testable import MongoSwift
 import Nimble
 import XCTest
 

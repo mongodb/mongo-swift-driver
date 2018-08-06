@@ -1,7 +1,7 @@
 import Foundation
 @testable import MongoSwift
-import XCTest
 import Nimble
+import XCTest
 
 let tweetFile = URL(fileURLWithPath: basePath + "/tweet.json")
 let tweetSize = 16.22

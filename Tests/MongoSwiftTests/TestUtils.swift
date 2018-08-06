@@ -1,7 +1,7 @@
 import Foundation
-import XCTest
 import MongoSwift
 import Nimble
+import XCTest
 
 extension XCTestCase {
     /// Gets the path of the directory containing spec files, depending on whether

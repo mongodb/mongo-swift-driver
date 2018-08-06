@@ -39,15 +39,17 @@ public class BsonEncoder {
         let encoder = _BsonEncoder(options: self.options)
 
         guard let topLevel = try encoder.box(value) else {
-            throw EncodingError.invalidValue(value,
+            throw EncodingError.invalidValue(
+                value,
                 EncodingError.Context(codingPath: [],
-                    debugDescription: "Top-level \(T.self) did not encode any values."))
+                                      debugDescription: "Top-level \(T.self) did not encode any values."))
         }
 
         guard let dict = topLevel as? MutableDictionary else {
-            throw EncodingError.invalidValue(value,
+            throw EncodingError.invalidValue(
+                value,
                 EncodingError.Context(codingPath: [],
-                    debugDescription: "Top-level \(T.self) was not encoded as a complete document."))
+                                      debugDescription: "Top-level \(T.self) was not encoded as a complete document."))
         }
 
         return dict.asDocument()
@@ -309,7 +311,8 @@ private struct _BsonKeyedEncodingContainer<K: CodingKey> : KeyedEncodingContaine
     private(set) public var codingPath: [CodingKey]
 
     /// Initializes `self` with the given references.
-    fileprivate init(referencing encoder: _BsonEncoder, codingPath: [CodingKey], wrapping container: MutableDictionary) {
+    fileprivate init(referencing encoder: _BsonEncoder, codingPath: [CodingKey],
+                     wrapping container: MutableDictionary) {
         self.encoder = encoder
         self.codingPath = codingPath
         self.container = container
@@ -344,7 +347,8 @@ private struct _BsonKeyedEncodingContainer<K: CodingKey> : KeyedEncodingContaine
         self.container[key.stringValue] = try encoder.box(value)
     }
 
-    public mutating func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> {
+    public mutating func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type,
+                                                    forKey key: Key) -> KeyedEncodingContainer<NestedKey> {
         let dictionary = MutableDictionary()
         self.container[key.stringValue] = dictionary
 
@@ -429,7 +433,8 @@ private struct _BsonUnkeyedEncodingContainer: UnkeyedEncodingContainer {
         self.container.add(try encoder.box(value))
     }
 
-    public mutating func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type) -> KeyedEncodingContainer<NestedKey> {
+    public mutating func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type)
+        -> KeyedEncodingContainer<NestedKey> {
         self.codingPath.append(_BsonKey(index: self.count))
         defer { self.codingPath.removeLast() }
 
@@ -460,7 +465,7 @@ extension _BsonEncoder: SingleValueEncodingContainer {
 
     private func assertCanEncodeNewValue() {
         precondition(self.canEncodeNewValue,
-            "Attempt to encode value through single value container when previously value already encoded.")
+                     "Attempt to encode value through single value container when previously value already encoded.")
     }
 
     public func encodeNil() throws {

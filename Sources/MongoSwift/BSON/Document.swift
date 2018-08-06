@@ -152,7 +152,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     /// Constructs a `Document` from raw BSON `Data`
     public init(fromBSON: Data) {
         self.storage = DocumentStorage(fromPointer: fromBSON.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) in
-            return bson_new_from_data(bytes, fromBSON.count)
+            bson_new_from_data(bytes, fromBSON.count)
         })
     }
 
