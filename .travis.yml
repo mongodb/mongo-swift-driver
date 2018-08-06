@@ -8,7 +8,8 @@ osx_image: xcode9.2
 
 env:
   matrix:
-    - MONGODB_VERSION=3.6.5
+    - MONGODB_VERSION=3.6.5 SWIFT_VERSION=4.0
+    - MONGODB_VERSION=3.6.5 SWIFT_VERSION=4.1
 
 install:
   - MONGODB_BASE="mongodb-linux-x86_64"
@@ -37,7 +38,5 @@ before_script:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then swiftlint; fi
 
 script:
-  # - make
-  # - make test
   - swift build -v
   - swift test -v --filter MongoSwiftTests
