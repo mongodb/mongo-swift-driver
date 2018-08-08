@@ -18,6 +18,16 @@ extension XCTestCase {
     }
 }
 
+extension MongoClient {
+    internal func getServerVersion() throws -> String {
+        let buildInfo = try self.db("admin").runCommand(["buildInfo": 1])
+        guard let versionString = buildInfo["version"] as? String else {
+            throw TestError(message: "buildInfo reply missing version string: \(buildInfo)")
+        }
+        return versionString
+    }
+}
+
 /// Cleans and normalizes a given JSON string for comparison purposes
 func clean(json: String?) -> String {
     guard let str = json else { return "" }
