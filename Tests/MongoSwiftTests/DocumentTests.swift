@@ -94,6 +94,7 @@ final class DocumentTests: XCTestCase {
         ]
         try doc.merge(binaryData)
 
+        // UUIDs must have 16 bytes
         expect(try Binary(data: testData, subtype: .uuidDeprecated)).to(throwError())
         expect(try Binary(data: testData, subtype: .uuid)).to(throwError())
 
