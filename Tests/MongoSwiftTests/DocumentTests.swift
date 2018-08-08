@@ -49,6 +49,11 @@ final class DocumentTests: XCTestCase {
             return
         }
 
+        guard let uuidData = Data(base64Encoded: "c//SZESzTGmQ6OfR38A11A==") else {
+            XCTFail("Failed to create test UUID data")
+            return
+        }
+
         // Set up test document values
         var doc: Document = [
             "string": "test string",
@@ -76,17 +81,21 @@ final class DocumentTests: XCTestCase {
 
         // splitting this out is necessary because the swift 4.0 compiler 
         // can't handle all the keys being declared together
+
         let binaryData: Document = [
-            "binary0": Binary(data: testData, subtype: .generic),
-            "binary1": Binary(data: testData, subtype: .function),
-            "binary2": Binary(data: testData, subtype: .binaryDeprecated),
-            "binary3": Binary(data: testData, subtype: .uuidDeprecated),
-            "binary4": Binary(data: testData, subtype: .uuid),
-            "binary5": Binary(data: testData, subtype: .md5),
-            "binary6": Binary(data: testData, subtype: .userDefined),
-            "binary7": Binary(data: testData, subtype: 200)
+            "binary0": try Binary(data: testData, subtype: .generic),
+            "binary1": try Binary(data: testData, subtype: .function),
+            "binary2": try Binary(data: testData, subtype: .binaryDeprecated),
+            "binary3": try Binary(data: uuidData, subtype: .uuidDeprecated),
+            "binary4": try Binary(data: uuidData, subtype: .uuid),
+            "binary5": try Binary(data: testData, subtype: .md5),
+            "binary6": try Binary(data: testData, subtype: .userDefined),
+            "binary7": try Binary(data: testData, subtype: 200)
         ]
         try doc.merge(binaryData)
+
+        expect(try Binary(data: testData, subtype: .uuidDeprecated)).to(throwError())
+        expect(try Binary(data: testData, subtype: .uuid)).to(throwError())
 
         let expectedKeys = ["string", "true", "false", "int", "int32", "int64", "double", "decimal128",
                                 "minkey", "maxkey", "date", "timestamp", "nestedarray", "nesteddoc", "oid",
@@ -125,14 +134,14 @@ final class DocumentTests: XCTestCase {
         expect(codewscope?.code).to(equal("console.log(x);"))
         expect(codewscope?.scope).to(equal(["x": 2]))
 
-        expect(doc["binary0"] as? Binary).to(equal(Binary(data: testData, subtype: .generic)))
-        expect(doc["binary1"] as? Binary).to(equal(Binary(data: testData, subtype: .function)))
-        expect(doc["binary2"] as? Binary).to(equal(Binary(data: testData, subtype: .binaryDeprecated)))
-        expect(doc["binary3"] as? Binary).to(equal(Binary(data: testData, subtype: .uuidDeprecated)))
-        expect(doc["binary4"] as? Binary).to(equal(Binary(data: testData, subtype: .uuid)))
-        expect(doc["binary5"] as? Binary).to(equal(Binary(data: testData, subtype: .md5)))
-        expect(doc["binary6"] as? Binary).to(equal(Binary(data: testData, subtype: .userDefined)))
-        expect(doc["binary7"] as? Binary).to(equal(Binary(data: testData, subtype: 200)))
+        expect(doc["binary0"] as? Binary).to(equal(try Binary(data: testData, subtype: .generic)))
+        expect(doc["binary1"] as? Binary).to(equal(try Binary(data: testData, subtype: .function)))
+        expect(doc["binary2"] as? Binary).to(equal(try Binary(data: testData, subtype: .binaryDeprecated)))
+        expect(doc["binary3"] as? Binary).to(equal(try Binary(data: uuidData, subtype: .uuidDeprecated)))
+        expect(doc["binary4"] as? Binary).to(equal(try Binary(data: uuidData, subtype: .uuid)))
+        expect(doc["binary5"] as? Binary).to(equal(try Binary(data: testData, subtype: .md5)))
+        expect(doc["binary6"] as? Binary).to(equal(try Binary(data: testData, subtype: .userDefined)))
+        expect(doc["binary7"] as? Binary).to(equal(try Binary(data: testData, subtype: 200)))
 
         let nestedArray = doc["nestedarray"] as? [[Int]]
         expect(nestedArray?[0]).to(equal([1, 2]))
