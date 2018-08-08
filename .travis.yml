@@ -25,7 +25,7 @@ install:
   - eval "$(curl -sL https://swiftenv.fuller.li/install.sh)"
   
   # clone and build libmongoc
-  - git clone -b r1.10 https://github.com/mongodb/mongo-c-driver /tmp/libmongoc
+  - git clone -b r1.12 https://github.com/mongodb/mongo-c-driver /tmp/libmongoc
   - pushd /tmp/libmongoc
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr/local; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr; fi
