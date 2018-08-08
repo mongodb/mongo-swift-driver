@@ -20,8 +20,15 @@ public class DocumentStorage {
     }
 }
 
-/// A struct representing the BSON document type.
+/// A struct representing the BSON document type. `Document`s are append-only and do not support
+/// overwriting or removing keys in-place, or provide safeguards against duplicate keys. 
+/// To transform documents, use `Sequence` protocol methods along with `filter` and `mapValues`.
+/// To check for existing keys, use the `.keys` property.
 public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral {
+
+    /// The element type of a document: a tuple containing an individual key-value pair.
+    public typealias Element = (key: String, value: BsonValue?)
+
     /// the storage backing this document 
     internal var storage: DocumentStorage
 
@@ -38,9 +45,11 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         return self.makeIterator().values
     }
 
-    /// Returns the number of (key, value) pairs stored at the top level
-    /// of this `Document`.
+    /// Returns the number of (key, value) pairs stored at the top level of this `Document`.
     public var count: Int { return Int(bson_count_keys(self.data)) }
+
+    /// Returns a `Bool` indicating whether the document is empty.
+    public var isEmpty: Bool { return self.count == 0 }
 
     /// Initializes a new, empty `Document`.
     public init() {
@@ -213,13 +222,11 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      *  let x: Int = try d.get("x")
      *  ```
      *
-     *  - Params:
+     *  - Parameters:
      *      - key: The key under which the value you are looking up is stored
      *      - `T`: Any type conforming to the `BsonValue` protocol
-     *  - Returns:
-     *      - The value stored under key, as type `T`
-     *  - Throws:
-     *      - A `MongoError.typeError` if the value cannot be cast to type `T` or is not in the `Document`
+     *  - Returns: The value stored under key, as type `T`
+     *  - Throws: A `MongoError.typeError` if the value cannot be cast to type `T` or is not in the `Document`
      *
      */
     public func get<T: BsonValue>(_ key: String) throws -> T {
@@ -237,20 +244,59 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         }
     }
 
-    /// Checks if the document is uniquely referenced. If not, makes a copy
-    /// of the underlying `bson_t` and lets the copy/copies keep the original.
-    /// This allows us to provide value semantics for `Document`s. 
-    /// This happens if someone copies a document and modifies it.
-    /// For example: 
-    ///  let doc1: Document = ["a": 1]
-    ///  var doc2 = doc1
-    ///  doc2["b"] = 2
-    /// Therefore, this function should be called just before we are about to
-    /// modify a document - either by setting a value or merging in another doc.
+    /**
+     * Checks if the document is uniquely referenced. If not, makes a copy of the underlying `bson_t`
+     * and lets the copy/copies keep the original. This allows us to provide value semantics for `Document`s.
+     * This happens if someone copies a document and modifies it.
+     * 
+     * For example:
+     *      let doc1: Document = ["a": 1]
+     *      var doc2 = doc1
+     *      doc2["b"] = 2
+     *
+     * Therefore, this function should be called just before we are about to modify a document - either by
+     * setting a value or merging in another doc.
+     */
     private mutating func copyStorageIfRequired() {
         if !isKnownUniquelyReferenced(&self.storage) {
             self.storage = DocumentStorage(fromPointer: self.data)
         }
+    }
+
+    /**
+     * Returns a new document containing the keys of this document with the values transformed by
+     * the given closure.
+     *
+     * - Parameters:
+     *   - transform: A closure that transforms a `BsonValue?`. `transform` accepts each value of the
+     *                document as its parameter and returns a transformed `BsonValue?` of the same or 
+     *                of a different type.
+     * - Returns: A document containing the keys and transformed values of this document.
+     * - Throws: An error if `transform` throws an error.
+     */
+    public func mapValues(_ transform: (BsonValue?) throws -> BsonValue?) rethrows -> Document {
+        var output = Document()
+        for (k, v) in self {
+            output[k] = try transform(v)
+        }
+        return output
+    }
+
+    /**
+     * Returns a new document containing the key-value pairs of the dictionary that satisfy the given predicate.
+     * 
+     * - Parameters:
+     *   - isIncluded: A closure that takes a key-value pair as its argument and returns a `Bool` indicating whether 
+     *                 the pair should be included in the returned document.
+     * - Returns: A document of the key-value pairs that `isIncluded` allows.
+     * - Throws: An error if `isIncluded` throws an error.
+     */
+    public func filter(_ isIncluded: (Element) throws -> Bool) rethrows -> Document {
+        var output = Document()
+        for elt in self where try isIncluded(elt) {
+            output[elt.key] = elt.value
+        }
+        return output
     }
 }
 

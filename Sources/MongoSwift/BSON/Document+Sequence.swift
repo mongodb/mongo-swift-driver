@@ -94,7 +94,7 @@ public class DocumentIterator: IteratorProtocol {
     }
 
     /// Returns the next value in the sequence, or `nil` if the iterator is exhausted.
-    public func next() -> (key: String, value: BsonValue?)? {
+    public func next() -> Document.Element? {
         if self.advance() {
             return (self.currentKey, self.currentValue)
         }

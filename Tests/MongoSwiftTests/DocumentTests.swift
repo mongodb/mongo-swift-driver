@@ -372,4 +372,32 @@ final class DocumentTests: XCTestCase {
         expect(doc["a1"]).to(equal(arr1))
         expect(doc["a2"]).to(equal(arr2))
     }
+
+    func testMapFilter() throws {
+        let doc1: Document = ["a": 1, "b": nil, "c": 3, "d": 4, "e": nil]
+        expect(doc1.mapValues { $0 ?? 1 }).to(equal(["a": 1, "b": 1, "c": 3, "d": 4, "e": 1]))
+        let output1 = doc1.mapValues { val in
+            if let int = val as? Int { return int + 1 }
+            return val
+        }
+        expect(output1).to(equal(["a": 2, "b": nil, "c": 4, "d": 5, "e": nil]))
+        expect(doc1.filter { $0.value != nil }).to(equal(["a": 1, "c": 3, "d": 4]))
+
+        let doc2: Document = ["a": 1, "b": "hello", "c": [1, 2] as [Int]]
+        expect(doc2.filter { $0.value is String }).to(equal(["b": "hello"]))
+        let output2 = doc2.mapValues { val in
+            switch val {
+            case let val as Int:
+                return val + 1
+            case let val as String:
+                return val + " there"
+            case let val as [Int]:
+                return val.reduce(0, +)
+            default:
+                return val
+            }
+        }
+        expect(output2).to(equal(["a": 2, "b": "hello there", "c": 3]))
+    }
+
 }
