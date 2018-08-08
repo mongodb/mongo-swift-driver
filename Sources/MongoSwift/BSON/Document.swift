@@ -30,24 +30,12 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
 
     /// Returns a `[String]` containing the keys in this `Document`.
     public var keys: [String] {
-        var iter: bson_iter_t = bson_iter_t()
-        if !bson_iter_init(&iter, data) { return [] }
-        var keys = [String]()
-        while bson_iter_next(&iter) {
-            keys.append(String(cString: bson_iter_key(&iter)))
-        }
-        return keys
+        return self.makeIterator().keys
     }
 
     /// Returns a `[BsonValue?]` containing the values stored in this `Document`.
     public var values: [BsonValue?] {
-        var iter: bson_iter_t = bson_iter_t()
-        if !bson_iter_init(&iter, data) { return [] }
-        var values = [BsonValue?]()
-        while bson_iter_next(&iter) {
-            values.append(nextBsonValue(iter: &iter))
-        }
-        return values
+        return self.makeIterator().values
     }
 
     /// Returns the number of (key, value) pairs stored at the top level
@@ -194,11 +182,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      */
     public subscript(key: String) -> BsonValue? {
         get {
-            var iter: bson_iter_t = bson_iter_t()
-            if bson_iter_init_find(&iter, self.data, key.cString(using: .utf8)) {
-                return nextBsonValue(iter: &iter)
-            }
-            return nil
+            return DocumentIterator(forDocument: self, advancedTo: key)?.currentValue
         }
 
         set(newValue) {
@@ -280,7 +264,7 @@ extension Document: BsonValue {
         }
     }
 
-    public static func from(iter: inout bson_iter_t) -> BsonValue {
+    public init(from iter: DocumentIterator) throws {
         var length: UInt32 = 0
         let document = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
         defer {
@@ -288,13 +272,13 @@ extension Document: BsonValue {
             document.deallocate(capacity: 1)
         }
 
-        bson_iter_document(&iter, &length, document)
+        bson_iter_document(&iter.iter, &length, document)
 
         guard let docData = bson_new_from_data(document.pointee, Int(length)) else {
-            preconditionFailure("Failed to create a bson_t from document data")
+            throw MongoError.bsonDecodeError(message: "Failed to create a bson_t from document data")
         }
 
-        return Document(fromPointer: docData)
+        self.init(fromPointer: docData)
     }
 
 }
@@ -312,39 +296,5 @@ extension Document: CustomStringConvertible {
     /// On error, an empty string will be returned.
     public var description: String {
         return self.extendedJSON
-    }
-}
-
-/// An extension of `Document` to make it conform to the `Sequence` protocol.
-/// This allows you to iterate through the (key, value) pairs, for example:
-/// ```
-/// let doc: Document = ["a": 1, "b": 2]
-/// for (key, value) in doc {
-///     ...
-/// }
-/// ```
-extension Document: Sequence {
-    /// Returns a `DocumentIterator` over the values in this `Document`. 
-    public func makeIterator() -> DocumentIterator {
-        return DocumentIterator(forDocument: self)
-    }
-
-    /// An iterator over the values in a `Document`. 
-    public class DocumentIterator: IteratorProtocol {
-        internal var iter: bson_iter_t
-
-        internal init(forDocument doc: Document) {
-            self.iter = bson_iter_t()
-            bson_iter_init(&self.iter, doc.data)
-        }
-
-        /// Returns the next value in the sequence, or `nil` if at the end.
-        public func next() -> (String, BsonValue?)? {
-            if bson_iter_next(&self.iter) {
-                let key = String(cString: bson_iter_key(&self.iter))
-                return (key, nextBsonValue(iter: &self.iter))
-            }
-            return nil
-        }
     }
 }
