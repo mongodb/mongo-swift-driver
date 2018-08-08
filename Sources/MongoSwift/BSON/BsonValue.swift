@@ -91,7 +91,13 @@ extension Array: BsonValue {
             throw MongoError.bsonDecodeError(message: "Failed to create a bson_t from array data")
         }
 
-       self = Document(fromPointer: arrayData).values as! Array
+        let arrDoc = Document(fromPointer: arrayData)
+
+        guard let arr = arrDoc.values as? Array else {
+            preconditionFailure("Failed to cast values for document \(arrDoc) to array")
+        }
+
+       self = arr
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
