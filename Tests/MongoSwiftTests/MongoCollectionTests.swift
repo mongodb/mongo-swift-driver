@@ -128,7 +128,7 @@ final class MongoCollectionTests: XCTestCase {
 
         // the inserted IDs should either be the ones we set,
         // or newly created ObjectIds
-        for v in res!.insertedIds {
+        for (_, v) in res!.insertedIds {
             if let val = v as? Int {
                 expect([10, 11]).to(contain(val))
             } else {
@@ -430,7 +430,7 @@ final class MongoCollectionTests: XCTestCase {
 
         let result2 = try self.coll.insertMany([["_id": nil], ["_id": 20]])
         expect(result2).toNot(beNil())
-        expect(result2?.insertedIds[0]).to(beNil())
+        expect(result2?.insertedIds[0]!).to(beNil())
         expect(result2?.insertedIds[1] as? Int).to(equal(20))
     }
 }

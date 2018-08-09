@@ -23,6 +23,7 @@ extension MongoCollection {
         let opts = try encoder.encode(options)
         var error = bson_error_t()
         if !mongoc_collection_insert_one(self._collection, document.data, opts?.data, nil, &error) {
+            // TODO SWIFT-139: include writeErrors and writeConcernErrors from reply in the error
             throw MongoError.commandError(message: toErrorString(error))
         }
         return InsertOneResult(insertedId: document["_id"])
@@ -53,10 +54,18 @@ extension MongoCollection {
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_insert_many(
+             // TODO SWIFT-139: include writeErrors and writeConcernErrors from reply in the error
             self._collection, &docPointers, documents.count, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
-        return InsertManyResult(insertedIds: documents.map { $0["_id"] })
+
+        // if we succeeded, then we should store + return every `_id`
+        var insertedIds = [Int: BsonValue?]()
+        for (index, doc) in documents.enumerated() {
+            insertedIds[index] = doc["_id"]
+        }
+
+        return InsertManyResult(insertedIds: insertedIds)
     }
 
     /**
@@ -80,8 +89,10 @@ extension MongoCollection {
         var error = bson_error_t()
         if !mongoc_collection_replace_one(
             self._collection, filter.data, replacementDoc.data, opts?.data, reply.data, &error) {
+            // TODO SWIFT-139: include writeErrors and writeConcernError from reply in the error
             throw MongoError.commandError(message: toErrorString(error))
         }
+
         return try BsonDecoder().decode(UpdateResult.self, from: reply)
     }
 
@@ -103,6 +114,7 @@ extension MongoCollection {
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_update_one(
+            // TODO SWIFT-139: include writeErrors and writeConcernError from reply in the error
             self._collection, filter.data, update.data, opts?.data, reply.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
         }
@@ -128,6 +140,7 @@ extension MongoCollection {
         var error = bson_error_t()
         if !mongoc_collection_update_many(
             self._collection, filter.data, update.data, opts?.data, reply.data, &error) {
+            // TODO SWIFT-139: include writeErrors and writeConcernErrors from reply in the error
             throw MongoError.commandError(message: toErrorString(error))
         }
         return try BsonDecoder().decode(UpdateResult.self, from: reply)
@@ -151,6 +164,7 @@ extension MongoCollection {
         var error = bson_error_t()
         if !mongoc_collection_delete_one(
             self._collection, filter.data, opts?.data, reply.data, &error) {
+             // TODO SWIFT-139: include writeErrors and writeConcernErrors from reply in the error
             throw MongoError.commandError(message: toErrorString(error))
         }
         return try BsonDecoder().decode(DeleteResult.self, from: reply)
@@ -174,6 +188,7 @@ extension MongoCollection {
         var error = bson_error_t()
         if !mongoc_collection_delete_many(
             self._collection, filter.data, opts?.data, reply.data, &error) {
+            // TODO SWIFT-139: include writeErrors and writeConcernErrors from reply in the error
             throw MongoError.commandError(message: toErrorString(error))
         }
         return try BsonDecoder().decode(DeleteResult.self, from: reply)
@@ -297,7 +312,7 @@ public struct InsertOneResult {
 /// The result of an `insertMany` command on a `MongoCollection`. 
 public struct InsertManyResult {
     /// Map of the index of the inserted document to the id of the inserted document.
-    public let insertedIds: [BsonValue?]
+    public let insertedIds: [Int: BsonValue?]
 }
 
 /// The result of a `delete` command on a `MongoCollection`. 
