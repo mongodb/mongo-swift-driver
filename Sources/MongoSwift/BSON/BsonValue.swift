@@ -140,28 +140,36 @@ public struct Binary: BsonValue, Equatable, Codable {
     }
 
     /// Initializes a `Binary` instance from a `Data` object and a `UInt8` subtype.
-    public init(data: Data, subtype: UInt8) {
+    /// Throws an error if the provided data is incompatible with the specified subtype.
+    public init(data: Data, subtype: UInt8) throws {
+        if [Subtype.uuid.rawValue, Subtype.uuidDeprecated.rawValue].contains(subtype) && data.count != 16 {
+            throw MongoError.invalidArgument(message:
+                "Binary data with UUID subtype must be 16 bytes, but data has \(data.count) bytes")
+        }
         self.subtype = subtype
         self.data = data
     }
 
-    /// Initializes a `Binary` instance from a `Data` object and a `Subtype`. 
-    public init(data: Data, subtype: Subtype) {
-        self.init(data: data, subtype: subtype.rawValue)
+    /// Initializes a `Binary` instance from a `Data` object and a `Subtype`.
+    /// Throws an error if the provided data is incompatible with the specified subtype.
+    public init(data: Data, subtype: Subtype) throws {
+        try self.init(data: data, subtype: subtype.rawValue)
     }
 
     /// Initializes a `Binary` instance from a base64 `String` and a `UInt8` subtype.
-    /// Throws an error if the base64 `String` is invalid.
+    /// Throws an error if the base64 `String` is invalid or if the provided data is
+    /// incompatible with the specified subtype.
     public init(base64: String, subtype: UInt8) throws {
         guard let dataObj = Data(base64Encoded: base64) else {
             throw MongoError.invalidArgument(message:
                 "failed to create Data object from invalid base64 string \(base64)")
         }
-        self.init(data: dataObj, subtype: subtype)
+        try self.init(data: dataObj, subtype: subtype)
     }
 
     /// Initializes a `Binary` instance from a base64 `String` and a `Subtype`.
-    /// Throws an error if the base64 `String` is invalid. 
+    /// Throws an error if the base64 `String` is invalid or if the provided data is
+    /// incompatible with the specified subtype.
     public init(base64: String, subtype: Subtype) throws {
         try self.init(base64: base64, subtype: subtype.rawValue)
     }
@@ -190,7 +198,7 @@ public struct Binary: BsonValue, Equatable, Codable {
         }
 
         let dataObj = Data(bytes: data, count: Int(length))
-        self.init(data: dataObj, subtype: UInt8(subtype.rawValue))
+        try self.init(data: dataObj, subtype: UInt8(subtype.rawValue))
     }
 
     public static func == (lhs: Binary, rhs: Binary) -> Bool {
