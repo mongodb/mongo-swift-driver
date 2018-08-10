@@ -54,8 +54,8 @@ extension MongoCollection {
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_insert_many(
-             // TODO SWIFT-139: include writeErrors and writeConcernErrors from reply in the error
             self._collection, &docPointers, documents.count, opts?.data, reply.data, &error) {
+            // TODO SWIFT-139: include writeErrors and writeConcernErrors from reply in the error
             throw MongoError.commandError(message: toErrorString(error))
         }
 
@@ -114,8 +114,8 @@ extension MongoCollection {
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_update_one(
-            // TODO SWIFT-139: include writeErrors and writeConcernError from reply in the error
             self._collection, filter.data, update.data, opts?.data, reply.data, &error) {
+            // TODO SWIFT-139: include writeErrors and writeConcernError from reply in the error
             throw MongoError.commandError(message: toErrorString(error))
         }
         return try BsonDecoder().decode(UpdateResult.self, from: reply)
