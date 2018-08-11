@@ -194,15 +194,16 @@ private class CrudTest {
     // Given an `UpdateResult`, verify that it matches the expected results in this `CrudTest`. 
     // Meant for use by subclasses whose operations return `UpdateResult`s, such as `UpdateTest` 
     // and `ReplaceOneTest`. 
-    func verifyUpdateResult(_ result: UpdateResult?) {
-        let expected = self.result as? Document
-        expect(result?.matchedCount).to(equal(expected?["matchedCount"] as? Int))
-        expect(result?.modifiedCount).to(equal(expected?["modifiedCount"] as? Int))
-        let upsertedId = result?.upsertedId as? Int
-        if upsertedId != nil {
-            expect(upsertedId).to(equal(expected?["upsertedId"] as? Int))
+    func verifyUpdateResult(_ result: UpdateResult?) throws {
+        let expected = try BsonDecoder().decode(UpdateResult.self, from: self.result as! Document)
+        expect(result?.matchedCount).to(equal(expected.matchedCount))
+        expect(result?.modifiedCount).to(equal(expected.modifiedCount))
+        expect(result?.upsertedCount).to(equal(expected.upsertedCount))
+        
+        if let upsertedId = result?.upsertedId?.value as? Int {
+            expect(upsertedId).to(equal(expected.upsertedId?.value as? Int))
         } else {
-            expect(expected?["upsertedId"] as? Int).to(beNil())
+            expect(expected.upsertedId).to(beNil())
         }
     }
 
@@ -368,7 +369,7 @@ private class ReplaceOneTest: CrudTest {
         let replacement: Document = try self.args.get("replacement")
         let options = ReplaceOptions(collation: self.collation, upsert: self.upsert)
         let result = try coll.replaceOne(filter: filter, replacement: replacement, options: options)
-        self.verifyUpdateResult(result)
+        try self.verifyUpdateResult(result)
     }
 }
 
@@ -384,7 +385,7 @@ private class UpdateTest: CrudTest {
         } else {
             result = try coll.updateMany(filter: filter, update: update, options: options)
         }
-        self.verifyUpdateResult(result)
+        try self.verifyUpdateResult(result)
     }
 }
 
