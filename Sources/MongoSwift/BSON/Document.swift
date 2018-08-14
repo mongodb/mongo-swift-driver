@@ -13,10 +13,6 @@ public class DocumentStorage {
         self.pointer = bson_copy(pointer)
     }
 
-    init(withoutCopying pointer: UnsafeMutablePointer<bson_t>) {
-        self.pointer = pointer
-    }
-
     deinit {
         guard let pointer = self.pointer else { return }
         bson_destroy(pointer)
