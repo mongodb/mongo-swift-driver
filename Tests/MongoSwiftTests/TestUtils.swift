@@ -16,6 +16,11 @@ extension XCTestCase {
         }
         return path
     }
+
+    // indicates whether we are running on a 32-bit platform
+    // Use MemoryLayout instead of Int.bitWidth to avoid a compiler warning.
+    // See: https://forums.swift.org/t/how-can-i-condition-on-the-size-of-int/9080/4 */
+    static let is32Bit = MemoryLayout<Int>.size == 4
 }
 
 extension MongoClient {

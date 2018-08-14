@@ -37,7 +37,13 @@ final class DocumentTests: XCTestCase {
             ("testValueBehavior", testValueBehavior),
             ("testIntEncodesAsInt32OrInt64", testIntEncodesAsInt32OrInt64),
             ("testBSONCorpus", testBSONCorpus),
-            ("testMerge", testMerge)
+            ("testMerge", testMerge),
+            ("testNilInNestedArray", testNilInNestedArray),
+            ("testOverwritable", testOverwritable),
+            ("testNonOverwritable", testNonOverwritable),
+            ("testReplaceValueWithNewType", testReplaceValueWithNewType),
+            ("testReplaceValueWithNil", testReplaceValueWithNil),
+            ("testReplaceValueNoop", testReplaceValueNoop)
         ]
     }
 
@@ -188,12 +194,7 @@ final class DocumentTests: XCTestCase {
     }
 
     func testIntEncodesAsInt32OrInt64() {
-        /* Skip this test on 32-bit platforms. Use MemoryLayout instead of
-         * Int.bitWidth to avoid a compiler warning.
-         * See: https://forums.swift.org/t/how-can-i-condition-on-the-size-of-int/9080/4 */
-        if MemoryLayout<Int>.size == 4 {
-            return
-        }
+        if XCTestCase.is32Bit { return }
 
         let int32min_sub1 = Int64(Int32.min) - Int64(1)
         let int32max_add1 = Int64(Int32.max) + Int64(1)
@@ -350,5 +351,132 @@ final class DocumentTests: XCTestCase {
 
         expect(doc["a1"]).to(equal(arr1))
         expect(doc["a2"]).to(equal(arr2))
+    }
+
+    // exclude Int64 value on 32-bit platforms
+    static let overwritables: Document = XCTestCase.is32Bit ?
+                                        ["double": 2.5, "int32": Int32(32), "bool": false, "decimal": Decimal128("1.2E+10")] :
+                                        ["double": 2.5, "int32": Int32(32), "int64": Int64(64), "bool": false, "decimal": Decimal128("1.2E+10")]
+
+    static let nonOverwritables: Document = ["string": "hello", "nil": nil, "doc": ["x": 1] as Document, "arr": [1, 2] as [Int], "oid": ObjectId()]
+
+    // test replacing `Overwritable` types with values of their own type
+    func testOverwritable() throws {
+        var doc = DocumentTests.overwritables
+
+        // overwrite int32 with int32
+        doc["int32"] = Int32(15)
+        expect(doc["int32"] as? Int).to(equal(15))
+
+        // overwrite int32 with int
+        doc["int32"] = 20
+        expect(doc["int32"] as? Int).to(equal(20))
+
+        doc["bool"] = true
+        doc["double"] = 3.0
+        doc["decimal"] = Decimal128("100")
+
+        if XCTestCase.is32Bit {
+            expect(doc).to(equal(["double": 3.0, "int32": 20, "bool": true, "decimal": Decimal128("100")]))
+            return
+        }
+
+        // overwrite int64 with int64
+        let bigInt64 = Int64(Int32.max) + 1
+        doc["int64"] = bigInt64
+
+        let bigInt = Int(bigInt64) + 1
+        doc["int64"] = bigInt
+
+        // final values
+        expect(doc).to(equal(["double": 3.0, "int32": 20, "int64": bigInt, "bool": true, "decimal": Decimal128("100")]))
+    }
+
+    // test replacing some of the non-Overwritable types with values of their own types
+    func testNonOverwritable() throws {
+        var doc = DocumentTests.nonOverwritables
+
+        doc["string"] = "hi"
+        doc["nil"] = nil
+        let newDoc: Document = ["y": 1]
+        doc["doc"] = newDoc
+        doc["arr"] = [3, 4]
+        let oid = ObjectId()
+        doc["oid"] = oid
+
+        expect(doc).to(equal(["string": "hi", "nil": nil, "doc": newDoc, "arr": [3, 4] as [Int], "oid": oid]))
+    }
+
+    // test replacing both overwritable and nonoverwritable values with values of different types
+    func testReplaceValueWithNewType() throws {
+
+        var doc1 = DocumentTests.overwritables
+
+        doc1["double"] = Int(10)
+        doc1["int32"] = "hi"
+        doc1["bool"] = [1, 2, 3] as [Int]
+        doc1["decimal"] = 100
+
+        if XCTestCase.is32Bit {
+            expect(doc1).to(equal(["double": 10, "int32": "hi", "bool": [1, 2, 3] as [Int], "decimal": 100]))
+        } else {
+            doc1["int64"] = Decimal128("1.0")
+            expect(doc1).to(equal(["double": 10, "int32": "hi", "int64": Decimal128("1.0"), "bool": [1, 2, 3] as [Int], "decimal": 100]))
+        }
+
+        var doc2 = DocumentTests.nonOverwritables
+
+        doc2["string"] = 1
+        doc2["nil"] = "hello"
+        doc2["doc"] = "hi"
+        doc2["arr"] = 5
+        doc2["oid"] = 25.5
+
+        expect(doc2).to(equal(["string": 1, "nil": "hello", "doc": "hi", "arr": 5, "oid": 25.5]))
+    }
+
+    // test setting both overwritable and nonoverwritable values to nil
+    func testReplaceValueWithNil() throws {
+        var doc1 = DocumentTests.overwritables
+
+        doc1["double"] = nil
+        doc1["int32"] = nil
+        doc1["bool"] = nil
+        doc1["decimal"] = nil
+
+        if XCTestCase.is32Bit {
+            expect(doc1).to(equal(["double": nil, "int32": nil, "bool": nil, "decimal": nil]))
+        } else {
+            doc1["int64"] = nil
+            expect(doc1).to(equal(["double": nil, "int32": nil, "int64": nil, "bool": nil, "decimal": nil]))
+        }
+
+        var doc2 = DocumentTests.nonOverwritables
+
+        doc2["string"] = nil
+        doc2["nil"] = nil
+        doc2["doc"] = nil
+        doc2["arr"] = nil
+        doc2["oid"] = nil
+
+        expect(doc2).to(equal(["string": nil, "nil": nil, "doc": nil, "arr": nil, "oid": nil]))
+    }
+
+    // Test types where replacing them with an instance of their own type is a no-op
+    func testReplaceValueNoop() throws {
+        var noops: Document = ["null": nil, "maxkey": MaxKey(), "minkey": MinKey()]
+
+        // replace with own types
+        noops["null"] = nil
+        noops["maxkey"] = MaxKey()
+        noops["minkey"] = MinKey()
+
+        expect(noops).to(equal(["null": nil, "maxkey": MaxKey(), "minkey": MinKey()]))
+
+        noops["null"] = 5
+        noops["maxkey"] = "hi"
+        noops["minkey"] = false
+
+        expect(noops).to(equal(["null": 5, "maxkey": "hi", "minkey": false]))
     }
 }

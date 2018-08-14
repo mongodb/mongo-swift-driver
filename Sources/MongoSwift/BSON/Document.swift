@@ -33,6 +33,11 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         return self.makeIterator().keys
     }
 
+    /// Returns a `Boolean` indicating whether this `Document` contains the provided key.
+    public func hasKey(_ key: String) -> Bool {
+        return bson_has_field(self.data, key)
+    }
+
     /// Returns a `[BsonValue?]` containing the values stored in this `Document`.
     public var values: [BsonValue?] {
         return self.makeIterator().values
@@ -177,26 +182,57 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      *  ```
      */
     public subscript(key: String) -> BsonValue? {
-        get {
-            return DocumentIterator(forDocument: self, advancedTo: key)?.currentValue
-        }
-
+        get { return DocumentIterator(forDocument: self, advancedTo: key)?.currentValue }
         set(newValue) {
+            do {
+                try self.setValue(forKey: key, to: newValue)
+            } catch {
+                preconditionFailure("Failed to set the value for key \(key) to \(newValue ?? "nil"): \(error)")
+            }
+        }
+    }
+
+    private mutating func setValue(forKey key: String, to newValue: BsonValue?) throws {
+        // if the key already exists in the `Document`, we need to replace it
+        if let existingType = DocumentIterator(forDocument: self, advancedTo: key)?.currentType {
+
+            let newBsonType = newValue?.bsonType ?? .null
+            let sameTypes = newBsonType == existingType
+
+            // if the new type is the same and it's a type with no custom data, no-op
+            if sameTypes && [.null, .undefined, .minKey, .maxKey].contains(newBsonType) { return }
+
+            // if the new type is the same and it's a fixed length type, we can overwrite
+            if let ov = newValue as? Overwritable, ov.bsonType == existingType {
+                self.copyStorageIfRequired()
+                // make a new iterator referencing our new storage. we already know the key is present
+                /// so initialization will succeed and ! is safe.
+                try DocumentIterator(forDocument: self, advancedTo: key)!.overwriteCurrentValue(with: ov)
+
+            // otherwise, we just create a new document and replace this key
+            } else {
+                var newSelf = Document()
+                var seen = false
+                self.forEach { pair in
+                    if !seen && pair.key == key {
+                        seen = true
+                        newSelf[pair.key] = newValue
+                    } else {
+                        newSelf[pair.key] = pair.value
+                    }
+                }
+                self = newSelf
+            }
+
+        // otherwise, it's a new key
+        } else {
             self.copyStorageIfRequired()
 
-            guard let value = newValue else {
-                if !bson_append_null(self.data, key, Int32(key.count)) {
-                    preconditionFailure("Failed to set the value for key \(key) to null")
-                }
-                return
-            }
-
-            do {
+            if let value = newValue {
                 try value.encode(to: self.storage, forKey: key)
-            } catch {
-                preconditionFailure("Failed to set the value for key \(key) to \(value): \(error)")
+            } else if !bson_append_null(self.data, key, Int32(key.count)) {
+                throw MongoError.bsonEncodeError(message: "Failed to set the value for key \(key) to null")
             }
-
         }
     }
 
@@ -277,7 +313,6 @@ extension Document: BsonValue {
 
         self.init(fromPointer: docData)
     }
-
 }
 
 /// An extension of `Document` to make it `Equatable`.
