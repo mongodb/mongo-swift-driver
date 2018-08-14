@@ -372,4 +372,40 @@ final class DocumentTests: XCTestCase {
         expect(doc["a1"]).to(equal(arr1))
         expect(doc["a2"]).to(equal(arr2))
     }
+
+    func testOverwriteKey() throws {
+        // test with overwritable types
+        var doc1: Document = ["double": 2.5, "int32": Int32(32), "int64": Int64(64), "bool": false]
+        let originalStorage = doc1.storage                    
+
+        doc1["double"] = 3.0
+        expect(doc1["double"] as? Double).to(equal(3.0))
+        expect(doc1.count).to(equal(4))
+
+        // overwrite int32 with int32
+        doc1["int32"] = Int32(15)
+        expect(doc1["int32"] as? Int).to(equal(15))
+        expect(doc1.count).to(equal(4))
+
+        // overwrite int32 with int
+        doc1["int32"] = 20
+        expect(doc1["int32"] as? Int).to(equal(20))
+        expect(doc1.count).to(equal(4))
+
+        // overwrite int64 with int64
+        let bigInt64 = Int64(Int32.max) + 1
+        doc1["int64"] = bigInt64
+        expect(doc1["int64"] as? Int64).to(equal(bigInt64))
+        expect(doc1.count).to(equal(4))   
+
+        // overwrite int64 with int
+        // one off, so we can tell it's set
+        let bigInt = Int(bigInt64) + 1
+        doc1["int64"] = bigInt
+        expect(doc1["int64"] as? Int64).to(equal(bigInt64 + 1))
+        expect(doc1.count).to(equal(4))
+
+        // ideally, after all this, storage should be the same!
+        // expect(doc1.storage).to(equal(originalStorage))   
+    }
 }

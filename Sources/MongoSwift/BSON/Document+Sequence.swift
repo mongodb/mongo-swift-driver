@@ -74,7 +74,7 @@ public class DocumentIterator: IteratorProtocol {
 
     /// Returns the current value's type. Assumes the iterator is in a valid position.
     internal var currentType: BsonType {
-        return BsonType(rawValue: bson_iter_type(&iter).rawValue) ?? .invalid
+        return BsonType(rawValue: bson_iter_type(&self.iter).rawValue) ?? .invalid
     }
 
     /// Returns the keys from the iterator's current position to the end. The iterator
@@ -101,6 +101,12 @@ public class DocumentIterator: IteratorProtocol {
         return nil
     }
 
+    internal func overwriteCurrentValue(with newValue: Overwritable) {
+        precondition(newValue.bsonType == self.currentType,
+                     "Expected \(newValue) to have BSON type \(self.currentType), but has type \(newValue.bsonType)")
+        newValue.writeAtCurrentPosition(of: self)
+    }
+
     private static let BsonTypeMap: [BsonType: BsonValue.Type] = [
         .double: Double.self,
         .string: String.self,
@@ -122,4 +128,36 @@ public class DocumentIterator: IteratorProtocol {
         .minKey: MinKey.self,
         .maxKey: MaxKey.self
     ]
+}
+
+internal protocol Overwritable: BsonValue {
+    func writeAtCurrentPosition(of iter: DocumentIterator)
+}
+
+extension Bool: Overwritable {
+    func writeAtCurrentPosition(of iter: DocumentIterator) { bson_iter_overwrite_bool(&iter.iter, self) }
+}
+
+extension Int: Overwritable {
+    func writeAtCurrentPosition(of iter: DocumentIterator) {
+        if let int32 = self.int32Value {
+            return int32.writeAtCurrentPosition(of: iter)
+        } else if let int64 = self.int64Value {
+            return int64.writeAtCurrentPosition(of: iter)
+        }
+
+        preconditionFailure("`Int` value \(self) could not be encoded as `Int32` or `Int64`")
+    }
+}
+
+extension Int32: Overwritable {
+    func writeAtCurrentPosition(of iter: DocumentIterator) { bson_iter_overwrite_int32(&iter.iter, self) }
+}
+
+extension Int64: Overwritable {
+    func writeAtCurrentPosition(of iter: DocumentIterator) { bson_iter_overwrite_int64(&iter.iter, self) }
+}
+
+extension Double: Overwritable {
+    func writeAtCurrentPosition(of iter: DocumentIterator) { bson_iter_overwrite_double(&iter.iter, self) }
 }
