@@ -314,14 +314,22 @@ public struct Decimal128: BsonValue, Equatable, Codable {
     /// Decimal128 string. Note that this initializer is less performant than the non-failable initializer `init(_:)`.
     /// - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/bson-decimal128/decimal128.rst
     public init?(ifValid data: String) {
-        guard Decimal128.encode(data) != nil else { return nil }
-        self.init(data)
+        do {
+            _ = try Decimal128.encode(data)
+            self.init(data)
+        } catch {
+            return nil
+        }
     }
 
-    /// Returns this value as a `bson_decimal128_t`, or `nil` if initialization fails due an invalid string.
-    private static func encode(_ str: String) -> bson_decimal128_t? {
+    /// Returns the provided string as a `bson_decimal128_t`, or throws an error if initialization fails due an
+    /// invalid string.
+    internal static func encode(_ str: String) throws -> bson_decimal128_t {
         var value: bson_decimal128_t = bson_decimal128_t()
-        return bson_decimal128_from_string(str, &value) ? value : nil
+        guard bson_decimal128_from_string(str, &value) else {
+            throw MongoError.bsonEncodeError(message: "Invalid Decimal128 string \(str)")
+        }
+        return value
     }
 
     public static func == (lhs: Decimal128, rhs: Decimal128) -> Bool {
@@ -329,9 +337,7 @@ public struct Decimal128: BsonValue, Equatable, Codable {
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        guard var value = Decimal128.encode(self.data) else {
-            throw MongoError.bsonEncodeError(message: "Invalid Decimal128 string \(self.data)")
-        }
+       var value = try Decimal128.encode(self.data)
         if !bson_append_decimal128(storage.pointer, key, Int32(key.count), &value) {
             throw bsonEncodeError(value: self, forKey: key)
         }
