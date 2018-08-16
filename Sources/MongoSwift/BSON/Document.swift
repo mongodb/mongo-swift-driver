@@ -25,10 +25,6 @@ public class DocumentStorage {
 /// To transform documents, use `Sequence` protocol methods along with `filter` and `mapValues`.
 /// To check for existing keys, use the `.keys` property.
 public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral {
-
-    /// The element type of a document: a tuple containing an individual key-value pair.
-    public typealias Element = (key: String, value: BsonValue?)
-
     /// the storage backing this document 
     internal var storage: DocumentStorage
 
@@ -261,42 +257,6 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         if !isKnownUniquelyReferenced(&self.storage) {
             self.storage = DocumentStorage(fromPointer: self.data)
         }
-    }
-
-    /**
-     * Returns a new document containing the keys of this document with the values transformed by
-     * the given closure.
-     *
-     * - Parameters:
-     *   - transform: A closure that transforms a `BsonValue?`. `transform` accepts each value of the
-     *                document as its parameter and returns a transformed `BsonValue?` of the same or 
-     *                of a different type.
-     * - Returns: A document containing the keys and transformed values of this document.
-     * - Throws: An error if `transform` throws an error.
-     */
-    public func mapValues(_ transform: (BsonValue?) throws -> BsonValue?) rethrows -> Document {
-        var output = Document()
-        for (k, v) in self {
-            output[k] = try transform(v)
-        }
-        return output
-    }
-
-    /**
-     * Returns a new document containing the key-value pairs of the dictionary that satisfy the given predicate.
-     * 
-     * - Parameters:
-     *   - isIncluded: A closure that takes a key-value pair as its argument and returns a `Bool` indicating whether 
-     *                 the pair should be included in the returned document.
-     * - Returns: A document of the key-value pairs that `isIncluded` allows.
-     * - Throws: An error if `isIncluded` throws an error.
-     */
-    public func filter(_ isIncluded: (Element) throws -> Bool) rethrows -> Document {
-        var output = Document()
-        for elt in self where try isIncluded(elt) {
-            output[elt.key] = elt.value
-        }
-        return output
     }
 }
 
