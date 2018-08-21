@@ -478,6 +478,7 @@ public struct MaxKey: BsonValue, Equatable, Codable {
         }
     }
 
+    /// Initializes a new `MaxKey` instance.
     public init() {}
 
     public init(from iter: DocumentIterator) { self.init() }
@@ -498,6 +499,7 @@ public struct MinKey: BsonValue, Equatable, Codable {
         }
     }
 
+    /// Initializes a new `MinKey` instance.
     public init() {}
 
     public init(from iter: DocumentIterator) { self.init() }
@@ -647,7 +649,7 @@ public struct RegularExpression: BsonValue, Equatable, Codable {
 
     /// Creates an `NSRegularExpression` with the pattern and options of this `RegularExpression`.
     /// Note: `NSRegularExpression` does not support the `l` locale dependence option, so it will
-    // be omitted if set on this `RegularExpression`.
+    /// be omitted if set on this `RegularExpression`.
     public var nsRegularExpression: NSRegularExpression {
         let opts = NSRegularExpression.optionsFromString(self.options)
         do {

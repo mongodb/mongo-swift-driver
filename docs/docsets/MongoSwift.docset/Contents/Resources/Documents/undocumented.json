@@ -1,6 +1,27 @@
 {
   "warnings": [
     {
+      "file": "/Users/kaitlinmahar/mongo-swift-driver/Sources/MongoSwift/BSON/BsonValue.swift",
+      "line": 481,
+      "symbol": "MaxKey.init()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/kaitlinmahar/mongo-swift-driver/Sources/MongoSwift/BSON/BsonValue.swift",
+      "line": 501,
+      "symbol": "MinKey.init()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/kaitlinmahar/mongo-swift-driver/Sources/MongoSwift/BSON/BsonValue.swift",
+      "line": 651,
+      "symbol": "RegularExpression.nsRegularExpression",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
       "file": "/Users/kaitlinmahar/mongo-swift-driver/Sources/MongoSwift/ReadPreference.swift",
       "line": 12,
       "symbol": "ReadPreference.Mode.primary",

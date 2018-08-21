@@ -48,6 +48,12 @@
                 <a href="Classes/ClientSession.html">ClientSession</a>
               </li>
               <li class="nav-group-task">
+                <a href="Classes/DocumentIterator.html">DocumentIterator</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes.html#/s:10MongoSwift15DocumentStorageC">DocumentStorage</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="Classes/MongoClient.html">MongoClient</a>
               </li>
               <li class="nav-group-task">
@@ -101,6 +107,9 @@
                 <a href="Enums/MongoEventType.html">MongoEventType</a>
               </li>
               <li class="nav-group-task">
+                <a href="Enums/ReturnDocument.html">ReturnDocument</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="Enums/ServerType.html">ServerType</a>
               </li>
               <li class="nav-group-task">
@@ -149,6 +158,9 @@
               <li class="nav-group-task">
                 <a href="Protocols/MongoEvent.html">MongoEvent</a>
               </li>
+              <li class="nav-group-task">
+                <a href="Protocols.html#/s:10MongoSwift10WriteModelP">WriteModel</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -165,6 +177,12 @@
               </li>
               <li class="nav-group-task">
                 <a href="Structs/Binary/Subtype.html">– Subtype</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/BulkWriteOptions.html">BulkWriteOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/BulkWriteResult.html">BulkWriteResult</a>
               </li>
               <li class="nav-group-task">
                 <a href="Structs/ClientOptions.html">ClientOptions</a>
@@ -203,6 +221,12 @@
                 <a href="Structs/Decimal128.html">Decimal128</a>
               </li>
               <li class="nav-group-task">
+                <a href="Structs/DeleteManyModel.html">DeleteManyModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/DeleteOneModel.html">DeleteOneModel</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="Structs/DeleteOptions.html">DeleteOptions</a>
               </li>
               <li class="nav-group-task">
@@ -215,10 +239,19 @@
                 <a href="Structs/Document.html">Document</a>
               </li>
               <li class="nav-group-task">
-                <a href="Structs/Document/DocumentIterator.html">– DocumentIterator</a>
+                <a href="Structs/DropIndexOptions.html">DropIndexOptions</a>
               </li>
               <li class="nav-group-task">
-                <a href="Structs/DropIndexOptions.html">DropIndexOptions</a>
+                <a href="Structs/EstimatedDocumentCountOptions.html">EstimatedDocumentCountOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/FindOneAndDeleteOptions.html">FindOneAndDeleteOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/FindOneAndReplaceOptions.html">FindOneAndReplaceOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/FindOneAndUpdateOptions.html">FindOneAndUpdateOptions</a>
               </li>
               <li class="nav-group-task">
                 <a href="Structs/FindOptions.html">FindOptions</a>
@@ -234,6 +267,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="Structs/InsertManyResult.html">InsertManyResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/InsertOneModel.html">InsertOneModel</a>
               </li>
               <li class="nav-group-task">
                 <a href="Structs/InsertOneOptions.html">InsertOneOptions</a>
@@ -255,6 +291,12 @@
               </li>
               <li class="nav-group-task">
                 <a href="Structs/ObjectId.html">ObjectId</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/RegularExpression.html">RegularExpression</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/ReplaceOneModel.html">ReplaceOneModel</a>
               </li>
               <li class="nav-group-task">
                 <a href="Structs/ReplaceOptions.html">ReplaceOptions</a>
@@ -302,10 +344,24 @@
                 <a href="Structs/TopologyOpeningEvent.html">TopologyOpeningEvent</a>
               </li>
               <li class="nav-group-task">
+                <a href="Structs/UpdateManyModel.html">UpdateManyModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/UpdateOneModel.html">UpdateOneModel</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="Structs/UpdateOptions.html">UpdateOptions</a>
               </li>
               <li class="nav-group-task">
                 <a href="Structs/UpdateResult.html">UpdateResult</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="Typealiases.html">Type Aliases</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="Typealiases.html#/s:10MongoSwift21CountDocumentsOptionsa">CountDocumentsOptions</a>
               </li>
             </ul>
           </li>
@@ -377,6 +433,14 @@ Since this library wraps the MongoDB C Driver, we also recommend cloning <a href
 <p>For example, <code>make test FILTER=ClientTests</code> will run <code>MongoSwiftTests.ClientTests/*</code>. Or, <code>make test FILTER=testInsertOne</code> will only run <code>MongoSwiftTests.CollectionTests/testInsertOne</code>. </p>
 
 <p>To run all of the benchmarks, use <code>make benchmark</code> (equivalent to <code>FILTER=MongoSwiftBenchmarks</code>). To run a particular benchmark, use the <code>FILTER</code> environment variable to specify the name. To have the benchmark results all printed out at the end, run with <code>make benchmark | python Tests/MongoSwiftBenchmarks/benchmark.py</code>.</p>
+<h3 id='diagnosing-backtraces-on-linux' class='heading'>Diagnosing Backtraces on Linux</h3>
+
+<p><a href="https://bugs.swift.org/browse/SR-755">SWIFT-755</a> documents an outstanding problem on Linux where backtraces do not contain debug symbols. As discussed in <a href="https://stackoverflow.com/a/44956167/162228">this Stack Overflow thread</a>, a <a href="https://github.com/apple/swift/blob/master/utils/symbolicate-linux-fatal"><code>symbolicate-linux-fatal</code></a> script may be used to add symbols to an existing backtrace. Consider the following:</p>
+<pre class="highlight plaintext"><code>$ swift test --filter CrashingTest &amp;&gt; crash.log
+$ symbolicate-linux-fatal /path/to/MongoSwiftPackageTests.xctest crash.log
+</code></pre>
+
+<p>This will require you to manually provide the path to the compiled test binary (e.g. <code>.build/x86_64-unknown-linux/debug/MongoSwiftPackageTests.xctest</code>).</p>
 <h2 id='writing-and-generating-documentation' class='heading'>Writing and Generating Documentation</h2>
 
 <p>We document new code as we write it. We use C-style documentation blocks (<code>/** ... */</code>) for documentation longer than 3 lines, and triple-slash (<code>///</code>) for shorter documentation. 
@@ -427,7 +491,7 @@ To regenerate the files after making changes, run <code>make documentation</code
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone and Kaitlin Mahar</a>. All rights reserved. (Last updated: 2018-07-09)</p>
+          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone and Kaitlin Mahar</a>. All rights reserved. (Last updated: 2018-08-21)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>
