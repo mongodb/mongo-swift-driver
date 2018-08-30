@@ -80,7 +80,11 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
 
         self.storage = DocumentStorage()
         for (key, value) in keyValuePairs {
-            self[key] = value
+            do {
+                try self.setValue(forKey: key, to: value, checkForKey: false)
+            } catch {
+                preconditionFailure("Error setting key \(key) to value \(String(describing: value)): \(error)")
+            }
         }
     }
     /**
@@ -111,7 +115,11 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     internal init(_ elements: [BsonValue?]) {
         self.storage = DocumentStorage()
         for (i, elt) in elements.enumerated() {
-            self[String(i)] = elt
+            do {
+                try self.setValue(forKey: String(i), to: elt, checkForKey: false)
+            } catch {
+                preconditionFailure("Failed to set the value for index \(i) to \(String(describing: elt)): \(error)")
+            }
         }
     }
 
@@ -197,9 +205,10 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         }
     }
 
-    private mutating func setValue(forKey key: String, to newValue: BsonValue?) throws {
+    /// Sets key to newValue. if checkForKey=false, the key/value pair will be appended without checking for the key's presence first.
+    private mutating func setValue(forKey key: String, to newValue: BsonValue?, checkForKey: Bool = true) throws {
         // if the key already exists in the `Document`, we need to replace it
-        if let existingType = DocumentIterator(forDocument: self, advancedTo: key)?.currentType {
+        if checkForKey, let existingType = DocumentIterator(forDocument: self, advancedTo: key)?.currentType {
 
             let newBsonType = newValue?.bsonType ?? .null
             let sameTypes = newBsonType == existingType
