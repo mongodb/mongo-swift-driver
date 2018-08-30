@@ -20,10 +20,7 @@ public class DocumentStorage {
     }
 }
 
-/// A struct representing the BSON document type. `Document`s are append-only and do not support
-/// overwriting or removing keys in-place, or provide safeguards against duplicate keys. 
-/// To transform documents, use `Sequence` protocol methods along with `filter` and `mapValues`.
-/// To check for existing keys, use the `.keys` property.
+/// A struct representing the BSON document type.
 public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral {
     /// the storage backing this document 
     internal var storage: DocumentStorage
