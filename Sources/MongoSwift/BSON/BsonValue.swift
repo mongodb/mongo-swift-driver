@@ -184,7 +184,7 @@ public struct Binary: BsonValue, Equatable, Codable {
     }
 
     public init(from iter: DocumentIterator) throws {
-        var subtype: bson_subtype_t = bson_subtype_t(rawValue: 0)
+        var subtype = bson_subtype_t(rawValue: 0)
         var length: UInt32 = 0
         let dataPointer = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
         defer {
@@ -313,7 +313,7 @@ public struct Decimal128: BsonValue, Equatable, Codable {
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        var value: bson_decimal128_t = bson_decimal128_t()
+        var value = bson_decimal128_t()
         if !bson_decimal128_from_string(self.data, &value) {
             throw MongoError.bsonEncodeError(message: "Failed to parse Decimal128 string \(self.data)")
         }
@@ -323,7 +323,7 @@ public struct Decimal128: BsonValue, Equatable, Codable {
     }
 
     public init(from iter: DocumentIterator) throws {
-        var value: bson_decimal128_t = bson_decimal128_t()
+        var value = bson_decimal128_t()
         if !bson_iter_decimal128(&iter.iter, &value) {
             throw MongoError.bsonDecodeError(message: "Failed to retrieve Decimal128 value from iterator")
         }
