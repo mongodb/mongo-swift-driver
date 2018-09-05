@@ -1,7 +1,7 @@
 import libmongoc
 
 /// A utility class for libmongoc initialization and cleanup.
-final public class MongoSwift {
+public final class MongoSwift {
     /// The version of `MongoSwift`. 
     public static let versionString = "0.0.2"
 

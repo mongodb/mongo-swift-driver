@@ -15,7 +15,6 @@ enabled_rules:
   - modifier_order
   - missing_docs
   - implicit_return
-  - function_default_parameter_at_end
   - fatal_error_message
 
 excluded:

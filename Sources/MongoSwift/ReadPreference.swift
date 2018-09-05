@@ -5,7 +5,7 @@ import libmongoc
  *
  * - SeeAlso: https://docs.mongodb.com/manual/reference/read-preference/
  */
-final public class ReadPreference {
+public final class ReadPreference {
 
     /// An enumeration of possible ReadPreference modes.
     public enum Mode: String {
