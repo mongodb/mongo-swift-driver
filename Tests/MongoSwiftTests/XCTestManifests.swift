@@ -9,6 +9,7 @@ public func allTests() -> [XCTestCaseEntry] {
         testCase(CrudTests.allTests),
         testCase(MongoClientTests.allTests),
         testCase(MongoCollectionTests.allTests),
+        testCase(MongoCollection_BulkWriteTests.allTests),
         testCase(MongoDatabaseTests.allTests),
         testCase(DocumentTests.allTests),
         testCase(ReadPreferenceTests.allTests),
