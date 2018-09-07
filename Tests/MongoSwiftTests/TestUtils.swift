@@ -19,18 +19,92 @@ extension XCTestCase {
 }
 
 extension MongoClient {
-    internal func serverVersion() throws -> String {
-        let buildInfo = try self.db("admin").runCommand(["buildInfo": 1])
+    internal func serverVersion() throws -> ServerVersion {
+        let buildInfo = try self.db("admin").runCommand(["buildInfo": 1], options: RunCommandOptions(readPreference: ReadPreference(.primary)))
         guard let versionString = buildInfo["version"] as? String else {
             throw TestError(message: "buildInfo reply missing version string: \(buildInfo)")
         }
-        return versionString
+        return try ServerVersion(versionString)
+    }
+
+    internal struct ServerVersion: Equatable {
+        let major: Int
+        let minor: Int
+        let patch: Int
+
+        init(_ str: String) throws {
+            let versionComponents = str.split(separator: ".").prefix(3)
+            if versionComponents.count < 2 {
+                throw TestError(message: "Expected version string \(str) to have at least a major and a minor version")
+            }
+
+            guard let major = Int(versionComponents[0]) else {
+                throw TestError(message: "Error parsing major version from \(str)")
+            }
+            guard let minor = Int(versionComponents[1]) else {
+                throw TestError(message: "Error parsing minor version from \(str)")
+            }
+
+            var patch = 0
+            if versionComponents.count == 3 {
+                guard let patchValue = Int(versionComponents[2]) else {
+                    throw TestError(message: "Error parsing patch version from \(str)")
+                }
+                patch = patchValue
+            }
+
+            self.init(major: major, minor: minor, patch: patch)
+        }
+
+        init(major: Int, minor: Int, patch: Int? = nil) {
+            self.major = major
+            self.minor = minor
+            self.patch = patch ?? 0
+        }
+
+        static func == (lhs: ServerVersion, rhs: ServerVersion) -> Bool {
+            return lhs.major == rhs.major &&
+                    lhs.minor == rhs.minor &&
+                    lhs.patch == rhs.patch
+        }
+
+        func isLessThan(_ version: ServerVersion) -> Bool {
+            switch self.major {
+
+            case 0..<version.major: return true
+
+            case version.major:
+                switch self.minor {
+                case 0..<version.minor: return true
+                case version.minor: return self.patch < version.patch
+                default: return false
+                }
+
+            default: return false
+            }
+        }
+
+        func isGreaterThan(_ version: ServerVersion) -> Bool {
+            return !self.isLessThan(version) && !(self == version)
+        }
+
+        func isGreaterThanOrEqualTo(_ version: ServerVersion) -> Bool {
+            return !self.isLessThan(version)
+        }
+
+        func isLessThanOrEqualTo(_ version: ServerVersion) -> Bool {
+            return self == version || self.isLessThan(version)
+        }
+
+
     }
 
     internal func serverVersionIsInRange(_ min: String?, _ max: String?) throws -> Bool {
         let version = try self.serverVersion()
-        if let min = min, min > version { return false }
-        if let max = max, max < version { return false }
+
+        if let min = min, version.isLessThanOrEqualTo(try ServerVersion(min)) { return false }
+        if let max = max, version.isGreaterThanOrEqualTo(try ServerVersion(max)) { return false }
+
         return true
     }
 }
