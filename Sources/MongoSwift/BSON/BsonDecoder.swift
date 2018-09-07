@@ -87,7 +87,7 @@ internal class _BsonDecoder: Decoder {
     fileprivate let options: BsonDecoder._Options
 
     /// The path to the current point in decoding.
-    fileprivate(set) public var codingPath: [CodingKey]
+    public fileprivate(set) var codingPath: [CodingKey]
 
     /// Contextual user-provided information for use during decoding.
     public var userInfo: [CodingUserInfoKey: Any] {
@@ -163,7 +163,7 @@ internal class _BsonDecoder: Decoder {
 internal struct _BsonDecodingStorage {
 
     /// The container stack, consisting of `BsonValue?`s. 
-    private(set) fileprivate var containers: [BsonValue?] = []
+    fileprivate private(set) var containers: [BsonValue?] = []
 
     /// Initializes `self` with no containers.
     fileprivate init() {}
@@ -240,7 +240,7 @@ private struct _BsonKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
     fileprivate let container: Document
 
     /// The path of coding keys taken to get to this point in decoding.
-    private(set) public var codingPath: [CodingKey]
+    public private(set) var codingPath: [CodingKey]
 
     /// Initializes `self`, referencing the given decoder and container.
     fileprivate init(referencing decoder: _BsonDecoder, wrapping container: Document) {
@@ -409,10 +409,10 @@ private struct _BsonUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     private let container: [BsonValue?]
 
     /// The path of coding keys taken to get to this point in decoding.
-    private(set) public var codingPath: [CodingKey]
+    public private(set) var codingPath: [CodingKey]
 
     /// The index of the element we're about to decode.
-    private(set) public var currentIndex: Int
+    public private(set) var currentIndex: Int
 
     /// Initializes `self` by referencing the given decoder and container.
     fileprivate init(referencing decoder: _BsonDecoder, wrapping container: [BsonValue?]) {

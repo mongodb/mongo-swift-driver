@@ -233,7 +233,7 @@ private class _BsonReferencingEncoder: _BsonEncoder {
         self.codingPath.append(key)
     }
 
-    fileprivate override var canEncodeNewValue: Bool {
+    override fileprivate var canEncodeNewValue: Bool {
         // With a regular encoder, the storage and coding path grow together.
         // A referencing encoder, however, inherits its parents coding path, as well as the key it was created for.
         // We have to take this into account.
@@ -308,7 +308,7 @@ private struct _BsonKeyedEncodingContainer<K: CodingKey> : KeyedEncodingContaine
     private let container: MutableDictionary
 
     /// The path of coding keys taken to get to this point in encoding.
-    private(set) public var codingPath: [CodingKey]
+    public private(set) var codingPath: [CodingKey]
 
     /// Initializes `self` with the given references.
     fileprivate init(referencing encoder: _BsonEncoder, codingPath: [CodingKey],
@@ -389,7 +389,7 @@ private struct _BsonUnkeyedEncodingContainer: UnkeyedEncodingContainer {
     private let container: MutableArray
 
     /// The path of coding keys taken to get to this point in encoding.
-    private(set) public var codingPath: [CodingKey]
+    public private(set) var codingPath: [CodingKey]
 
     /// The number of elements encoded into the container.
     public var count: Int {
