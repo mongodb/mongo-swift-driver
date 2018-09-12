@@ -62,7 +62,7 @@ import PackageDescription
 let package = Package(
     name: "MyPackage",
     dependencies: [
-        .package(url: "https://github.com/mongodb/mongo-swift-driver.git", from: "0.0.2"),
+        .package(url: "https://github.com/mongodb/mongo-swift-driver.git", from: "0.0.3"),
     ],
     targets: [
         .target(name: "MyPackage", dependencies: ["MongoSwift"])
