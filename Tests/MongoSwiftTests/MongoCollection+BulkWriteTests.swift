@@ -6,7 +6,6 @@ final class MongoCollection_BulkWriteTests: XCTestCase {
     static var allTests: [(String, (MongoCollection_BulkWriteTests) -> () throws -> Void)] {
         return [
             ("testEmptyRequests", testEmptyRequests),
-            ("testUnsupportedWriteModel", testUnsupportedWriteModel),
             ("testInserts", testInserts),
             ("testUpdates", testUpdates),
             ("testDeletes", testDeletes),
@@ -67,14 +66,6 @@ final class MongoCollection_BulkWriteTests: XCTestCase {
 
     func testEmptyRequests() {
         expect(try self.coll.bulkWrite([])).to(throwError(MongoError.invalidArgument(message: "")))
-    }
-
-    private struct UnsupportedWriteModel: WriteModel {}
-
-    func testUnsupportedWriteModel() {
-        let requests: [WriteModel] = [ UnsupportedWriteModel() ]
-
-        expect(try self.coll.bulkWrite(requests)).to(throwError(MongoError.invalidArgument(message: "")))
     }
 
     private typealias DeleteOneModel = MongoCollection<Document>.DeleteOneModel
