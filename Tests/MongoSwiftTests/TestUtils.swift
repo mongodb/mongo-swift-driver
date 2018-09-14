@@ -75,32 +75,31 @@ extension MongoClient {
         }
 
         func isLessThan(_ version: ServerVersion) -> Bool {
-            switch self.major {
-
-            case 0..<version.major: return true
-
-            case version.major:
-                switch self.minor {
-                case 0..<version.minor: return true
-                case version.minor: return self.patch < version.patch
-                default: return false
+            if self.major == version.major {
+                if self.minor == version.minor {
+                    // if major & minor equal, just compare patches
+                    return self.patch < version.patch
                 }
-
-            default: return false
+                // major equal but minor isn't, so compare minor
+                return self.minor < version.minor 
             }
+            // just compare major versions
+            return self.major < version.major
+        }
+
+        func isLessThanOrEqualTo(_ version: ServerVersion) -> Bool {
+            return self == version || self.isLessThan(version)
         }
 
         func isGreaterThan(_ version: ServerVersion) -> Bool {
-            return !self.isLessThan(version) && !(self == version)
+            return !self.isLessThanOrEqualTo(version)
         }
 
         func isGreaterThanOrEqualTo(_ version: ServerVersion) -> Bool {
             return !self.isLessThan(version)
         }
 
-        func isLessThanOrEqualTo(_ version: ServerVersion) -> Bool {
-            return self == version || self.isLessThan(version)
-        }
+
     }
 
     internal func serverVersionIsInRange(_ min: String?, _ max: String?) throws -> Bool {
