@@ -57,6 +57,7 @@ final class MongoClientTests: XCTestCase {
         // test equality 
         expect(try Version("3.6")).to(equal(three6))
         expect(try Version("3.6.0")).to(equal(three6))
+        expect(try Version("3.6.0-rc1")).to(equal(three6))
 
         expect(try Version("3.6.1")).to(equal(three61))
         expect(try Version("3.6.1.1")).to(equal(three61))

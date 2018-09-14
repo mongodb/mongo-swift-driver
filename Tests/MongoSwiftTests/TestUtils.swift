@@ -27,15 +27,17 @@ extension MongoClient {
         return try ServerVersion(versionString)
     }
 
+    /// A struct representing a server version. 
     internal struct ServerVersion: Equatable {
         let major: Int
         let minor: Int
         let patch: Int
 
+        /// initialize a server version from a string
         init(_ str: String) throws {
             let versionComponents = str.split(separator: ".").prefix(3)
             if versionComponents.count < 2 {
-                throw TestError(message: "Expected version string \(str) to have at least a major and a minor version")
+                throw TestError(message: "Expected version string \(str) to have at least two .-separated components")
             }
 
             guard let major = Int(versionComponents[0]) else {
@@ -47,7 +49,10 @@ extension MongoClient {
 
             var patch = 0
             if versionComponents.count == 3 {
-                guard let patchValue = Int(versionComponents[2]) else {
+                // in case there is text at the end, for ex "3.6.0-rc1", stop first time 
+                /// we encounter a non-numeric character. 
+                let numbersOnly = versionComponents[2].prefix { "0123456789".contains($0) }
+                guard let patchValue = Int(numbersOnly) else {
                     throw TestError(message: "Error parsing patch version from \(str)")
                 }
                 patch = patchValue
@@ -56,6 +61,7 @@ extension MongoClient {
             self.init(major: major, minor: minor, patch: patch)
         }
 
+        // initialize given major, minor, and optional patch
         init(major: Int, minor: Int, patch: Int? = nil) {
             self.major = major
             self.minor = minor
@@ -95,8 +101,6 @@ extension MongoClient {
         func isLessThanOrEqualTo(_ version: ServerVersion) -> Bool {
             return self == version || self.isLessThan(version)
         }
-
-
     }
 
     internal func serverVersionIsInRange(_ min: String?, _ max: String?) throws -> Bool {
