@@ -4,9 +4,6 @@ import XCTest
 
 let center = NotificationCenter.default
 
-// TODO: don't hardcode this
-let VERSION = "3.6"
-
 final class CommandMonitoringTests: XCTestCase {
     static var allTests: [(String, (CommandMonitoringTests) -> () throws -> Void)] {
         return [
@@ -20,6 +17,7 @@ final class CommandMonitoringTests: XCTestCase {
     }
 
     func testCommandMonitoring() throws {
+        let decoder = BsonDecoder()
         let client = try MongoClient(options: ClientOptions(eventMonitoring: true))
         client.enableMonitoring(forEvents: .commandMonitoring)
 
@@ -34,7 +32,7 @@ final class CommandMonitoringTests: XCTestCase {
 
             let testFilePath = URL(fileURLWithPath: "\(cmPath)/\(filename)")
             let asDocument = try Document(fromJSONFile: testFilePath)
-            let testFile = try CMTestFile(fromDocument: asDocument)
+            let testFile = try decoder.decode(CMTestFile.self, from: asDocument)
 
             print("-----------------------")
             print("Executing tests for file \(name)...\n")
@@ -42,10 +40,8 @@ final class CommandMonitoringTests: XCTestCase {
             // execute the tests for this file
             for var test in testFile.tests {
 
-                // Check that the current version we're testing is within bounds for this cases
-                if let maxVersion = test.maxServerVersion, maxVersion < VERSION {
-                    continue
-                } else if let minVersion = test.minServerVersion, VERSION < minVersion {
+                if try !client.serverVersionIsInRange(test.minServerVersion, test.maxServerVersion) {
+                    print("Skipping test case \(test.description) for server version \(try client.serverVersion())")
                     continue
                 }
 
@@ -104,71 +100,72 @@ final class CommandMonitoringTests: XCTestCase {
 }
 
 /// A struct to hold the data for a single file, containing one or more tests.
-private struct CMTestFile {
+private struct CMTestFile: Decodable {
     let data: [Document]
     let collectionName: String
     let databaseName: String
     let tests: [CMTest]
     let namespace: String?
 
-    init(fromDocument document: Document) throws {
-        self.data = try document.get("data")
-        self.collectionName = try document.get("collection_name")
-        self.databaseName = try document.get("database_name")
-        let tests: [Document] = try document.get("tests")
-        self.tests = try tests.map { try CMTest(fromDocument: $0) }
-        self.namespace = document["namespace"] as? String
+    enum CodingKeys: String, CodingKey {
+        case data, collectionName = "collection_name", 
+        databaseName = "database_name", tests, namespace
     }
 }
 
 /// A struct to hold the data for a single test from a CMTestFile.
-private struct CMTest {
+private struct CMTest: Decodable {
+
+    struct Operation: Decodable {
+        let name: String
+        let args: Document
+        let readPreference: Document?
+
+        enum CodingKeys: String, CodingKey {
+            case name, args = "arguments", readPreference
+        }
+    }
+
+    let op: Operation
     let description: String
-    let operationName: String
-    let args: Document
-    let readPreference: Document?
-    let expectations: [ExpectationType]
+    let expectationDocs: [Document]
     let minServerVersion: String?
     let maxServerVersion: String?
 
     // Some tests contain cursors/getMores and we need to verify that the
     // IDs are consistent across sinlge operations. we store that data in this
     // `context` dictionary so we can access it in future events for the same test
-    var context: [String: Any]
+    var context = [String: Any]()
 
-    init(fromDocument document: Document) throws {
-        self.description = try document.get("description")
-        let operation: Document = try document.get("operation")
-        self.operationName = try operation.get("name")
-        self.args = try operation.get("arguments")
-        self.readPreference = operation["readPreference"] as? Document
-        let expectationDocs: [Document] = try document.get("expectations")
-        self.expectations = try expectationDocs.map { try makeExpectation($0) }
-        self.minServerVersion = document["ignore_if_server_version_less_than"] as? String
-        self.maxServerVersion = document["ignore_if_server_version_greater_than"] as? String
-        self.context = [String: Any]()
+    var expectations: [ExpectationType] { return try! expectationDocs.map { try makeExpectation($0) } }
+
+    enum CodingKeys: String, CodingKey {
+        case description, op = "operation", expectationDocs = "expectations",
+        minServerVersion = "ignore_if_server_version_less_than",
+        maxServerVersion = "ignore_if_server_version_greater_than"
     }
 
     // Given a collection, perform the operation specified for this test on it.
-    // Wrap each operation in do/catch because we expect some of them to fail.
+    // try? each operation because we expect some of them to fail.
     // If something fails/succeeds incorrectly, we'll know because the generated
     // events won't match up.
     func doOperation(withCollection collection: MongoCollection<Document>) throws {
         // TODO SWIFT-31: use readPreferences for commands if provided
-        let filter = self.args["filter"] as? Document
-        switch self.operationName {
+        let filter: Document = self.op.args["filter"] as? Document ?? [:]
+
+        switch self.op.name {
 
         case "count":
-            do { _ = try collection.count(filter ?? [:]) } catch { }
+            _ = try? collection.count(filter)
         case "deleteMany":
-            do { try collection.deleteMany(filter ?? [:]) } catch { }
+            _ = try? collection.deleteMany(filter)
         case "deleteOne":
-            do { try collection.deleteOne(filter ?? [:]) } catch { }
+            _ = try? collection.deleteOne(filter)
 
         case "find":
-            let modifiers = self.args["modifiers"] as? Document
+            let modifiers = self.op.args["modifiers"] as? Document
             var batchSize: Int32?
-            if let size = self.args["batchSize"] as? Int64 {
+            if let size = self.op.args["batchSize"] as? Int64 {
                 batchSize = Int32(size)
             }
             var maxTime: Int64?
@@ -182,38 +179,38 @@ private struct CMTest {
             let options = FindOptions(batchSize: batchSize,
                                         comment: modifiers?["$comment"] as? String,
                                         hint: hint,
-                                        limit: self.args["limit"] as? Int64,
+                                        limit: self.op.args["limit"] as? Int64,
                                         max: modifiers?["$max"] as? Document,
                                         maxTimeMS: maxTime,
                                         min: modifiers?["$min"] as? Document,
                                         returnKey: modifiers?["$returnKey"] as? Bool,
                                         showRecordId: modifiers?["$showDiskLoc"] as? Bool,
-                                        skip: self.args["skip"] as? Int64,
-                                        sort: self.args["sort"] as? Document)
+                                        skip: self.op.args["skip"] as? Int64,
+                                        sort: self.op.args["sort"] as? Document)
 
             // we have to iterate the cursor to make the command execute
-            do { for _ in try collection.find(filter ?? [:], options: options) {} } catch { }
+            for _ in try! collection.find(filter, options: options) {}
 
         case "insertMany":
-            let documents: [Document] = try self.args.get("documents")
-            let options = InsertManyOptions(ordered: self.args["ordered"] as? Bool)
-            do { try collection.insertMany(documents, options: options) } catch { }
+            let documents: [Document] = try self.op.args.get("documents")
+            let options = InsertManyOptions(ordered: self.op.args["ordered"] as? Bool)
+            _ = try? collection.insertMany(documents, options: options)
 
         case "insertOne":
-            let document: Document = try self.args.get("document")
-            do { try collection.insertOne(document) } catch { }
+            let document: Document = try self.op.args.get("document")
+            _ = try? collection.insertOne(document)
 
         case "updateMany":
-            let update: Document = try self.args.get("update")
-            do { try collection.updateMany(filter: filter ?? [:], update: update) } catch { }
+            let update: Document = try self.op.args.get("update")
+            _ = try? collection.updateMany(filter: filter, update: update)
 
         case "updateOne":
-            let update: Document = try self.args.get("update")
-            let options = UpdateOptions(upsert: self.args["upsert"] as? Bool)
-            do { try collection.updateOne(filter: filter ?? [:], update: update, options: options) } catch { }
+            let update: Document = try self.op.args.get("update")
+            let options = UpdateOptions(upsert: self.op.args["upsert"] as? Bool)
+            _ = try? collection.updateOne(filter: filter, update: update, options: options)
 
         default:
-            XCTFail("Unrecognized operation name \(self.operationName)")
+            XCTFail("Unrecognized operation name \(self.op.name)")
         }
     }
 }
@@ -228,26 +225,33 @@ private protocol ExpectationType {
 /// Based on the name of the expectation, generate a corresponding
 /// `ExpectationType` to be compared to incoming events
 private func makeExpectation(_ document: Document) throws -> ExpectationType {
+    let decoder = BsonDecoder()
+
     if let doc = document["command_started_event"] as? Document {
-        return try CommandStartedExpectation(fromDocument: doc)
-    } else if let doc = document["command_succeeded_event"] as? Document {
-        return try CommandSucceededExpectation(fromDocument: doc)
-    } else if let doc = document["command_failed_event"] as? Document {
-        return try CommandFailedExpectation(fromDocument: doc)
+        return try decoder.decode(CommandStartedExpectation.self, from: doc)
     }
+
+    if let doc = document["command_succeeded_event"] as? Document {
+        return try decoder.decode(CommandSucceededExpectation.self, from: doc)
+    }
+
+    if let doc = document["command_failed_event"] as? Document {
+        return try decoder.decode(CommandFailedExpectation.self, from: doc)
+    }
+
     throw TestError(message: "Unknown expectation type in document \(document)")
 }
 
 /// An expectation for a `CommandStartedEvent`
-private struct CommandStartedExpectation: ExpectationType {
-    let command: Document
+private struct CommandStartedExpectation: ExpectationType, Decodable {
+    var command: Document
     let commandName: String
     let databaseName: String
 
-    init(fromDocument document: Document) throws {
-        self.command = normalizeCommand(try document.get("command"))
-        self.commandName = try document.get("command_name")
-        self.databaseName = try document.get("database_name")
+    enum CodingKeys: String, CodingKey {
+        case command,
+        commandName = "command_name",
+        databaseName = "database_name"
     }
 
     func compare(to notification: Notification, testContext: inout [String: Any]) {
@@ -269,8 +273,9 @@ private struct CommandStartedExpectation: ExpectationType {
         } else {
             // remove fields from the command we received that are not in the expected
             // command, and reorder them, so we can do a direct comparison of the documents
-            let receivedCommand = rearrangeDoc(event.command, toLookLike: self.command)
-            expect(receivedCommand).to(equal(self.command))
+            let normalizedSelf = normalizeCommand(self.command)
+            let receivedCommand = rearrangeDoc(event.command, toLookLike: normalizedSelf)
+            expect(receivedCommand).to(equal(normalizedSelf))
         }
     }
 }
@@ -314,11 +319,11 @@ private func normalizeCommand(_ input: Document) -> Document {
     return output
 }
 
-private struct CommandFailedExpectation: ExpectationType {
+private struct CommandFailedExpectation: ExpectationType, Decodable {
     let commandName: String
 
-    init(fromDocument document: Document) throws {
-        self.commandName = try document.get("command_name")
+    enum CodingKeys: String, CodingKey {
+        case commandName = "command_name"
     }
 
     func compare(to notification: Notification, testContext: inout [String: Any]) {
@@ -331,18 +336,16 @@ private struct CommandFailedExpectation: ExpectationType {
     }
 }
 
-private struct CommandSucceededExpectation: ExpectationType {
-    let reply: Document
-    let writeErrors: [Document]?
-    let cursor: Document?
+private struct CommandSucceededExpectation: ExpectationType, Decodable {
+    let originalReply: Document
     let commandName: String
 
-    init(fromDocument document: Document) throws {
-        let originalReply: Document = try document.get("reply")
-        self.reply = normalizeExpectedReply(originalReply)
-        self.writeErrors = originalReply["writeErrors"] as? [Document] ?? nil
-        self.cursor = originalReply["cursor"] as? Document ?? nil
-        self.commandName = try document.get("command_name")
+    var reply: Document { return normalizeExpectedReply(originalReply) }
+    var writeErrors: [Document]? { return originalReply["writeErrors"] as? [Document] }
+    var cursor: Document? { return originalReply["cursor"] as? Document }
+
+    enum CodingKeys: String, CodingKey {
+        case commandName = "command_name", originalReply = "reply"
     }
 
     func compare(to notification: Notification, testContext: inout [String: Any]) {
