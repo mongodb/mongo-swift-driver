@@ -98,15 +98,13 @@ extension MongoClient {
         func isGreaterThanOrEqualTo(_ version: ServerVersion) -> Bool {
             return !self.isLessThan(version)
         }
-
-
     }
 
     internal func serverVersionIsInRange(_ min: String?, _ max: String?) throws -> Bool {
         let version = try self.serverVersion()
 
-        if let min = min, version.isLessThanOrEqualTo(try ServerVersion(min)) { return false }
-        if let max = max, version.isGreaterThanOrEqualTo(try ServerVersion(max)) { return false }
+        if let min = min, version.isLessThan(try ServerVersion(min)) { return false }
+        if let max = max, version.isGreaterThan(try ServerVersion(max)) { return false }
 
         return true
     }
