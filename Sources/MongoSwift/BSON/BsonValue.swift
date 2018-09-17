@@ -301,22 +301,43 @@ public struct Decimal128: BsonValue, Equatable, Codable {
     /// This number, represented as a `String`.
     public let data: String
 
-    /// Initializes a `Decimal128` value from the provided `String`.
+    public var bsonType: BsonType { return .decimal128 }
+
+    /// Initializes a `Decimal128` value from the provided `String`. Assumes that the input string is correctly
+    /// formatted.
+    /// - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/bson-decimal128/decimal128.rst
     public init(_ data: String) {
         self.data = data
     }
 
-    public var bsonType: BsonType { return .decimal128 }
+    /// Initializes a `Decimal128` value from the provided `String`. Returns `nil` if the input is not a valid
+    /// Decimal128 string. Note that this initializer is less performant than the non-failable initializer `init(_:)`.
+    /// - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/bson-decimal128/decimal128.rst
+    public init?(ifValid data: String) {
+        do {
+            _ = try Decimal128.encode(data)
+            self.init(data)
+        } catch {
+            return nil
+        }
+    }
+
+    /// Returns the provided string as a `bson_decimal128_t`, or throws an error if initialization fails due an
+    /// invalid string.
+    internal static func encode(_ str: String) throws -> bson_decimal128_t {
+        var value: bson_decimal128_t = bson_decimal128_t()
+        guard bson_decimal128_from_string(str, &value) else {
+            throw MongoError.bsonEncodeError(message: "Invalid Decimal128 string \(str)")
+        }
+        return value
+    }
 
     public static func == (lhs: Decimal128, rhs: Decimal128) -> Bool {
         return lhs.data == rhs.data
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        var value = bson_decimal128_t()
-        if !bson_decimal128_from_string(self.data, &value) {
-            throw MongoError.bsonEncodeError(message: "Failed to parse Decimal128 string \(self.data)")
-        }
+       var value = try Decimal128.encode(self.data)
         if !bson_append_decimal128(storage.pointer, key, Int32(key.count), &value) {
             throw bsonEncodeError(value: self, forKey: key)
         }
