@@ -87,7 +87,7 @@ final class MongoCollection_BulkWriteTests: XCTestCase {
         expect(result.insertedIds[0]! as? Int).to(equal(1))
         expect(result.insertedIds[1]!!).to(beAnInstanceOf(ObjectId.self))
 
-        let cursor = try coll.find([])
+        let cursor = try coll.find()
         expect(cursor.next()).to(equal(["_id": 1, "x": 11]))
         expect(cursor.next()).to(equal(["_id": result.insertedIds[1]!!, "x": 22]))
         expect(cursor.next()).to(beNil())
@@ -112,7 +112,7 @@ final class MongoCollection_BulkWriteTests: XCTestCase {
         expect(result.upsertedIds[2]! as? Int).to(equal(5))
         expect(result.upsertedIds[3]!!).to(beAnInstanceOf(ObjectId.self))
 
-        let cursor = try coll.find([])
+        let cursor = try coll.find()
         expect(cursor.next()).to(equal(["_id": 1, "x": 11]))
         expect(cursor.next()).to(equal(["_id": 2, "x": 23]))
         expect(cursor.next()).to(equal(["_id": 3, "x": 32]))
@@ -134,7 +134,7 @@ final class MongoCollection_BulkWriteTests: XCTestCase {
 
         expect(result.deletedCount).to(equal(3))
 
-        let cursor = try coll.find([])
+        let cursor = try coll.find()
         expect(cursor.next()).to(equal(["_id": 2, "x": 22]))
         expect(cursor.next()).to(beNil())
     }
@@ -160,7 +160,7 @@ final class MongoCollection_BulkWriteTests: XCTestCase {
         expect(result.upsertedIds[4]! as? Int).to(equal(4))
         expect(result.deletedCount).to(equal(2))
 
-        let cursor = try coll.find([])
+        let cursor = try coll.find()
         expect(cursor.next()).to(equal(["_id": 2, "x": 24]))
         expect(cursor.next()).to(equal(["_id": 3, "x": 34]))
         expect(cursor.next()).to(equal(["_id": 4, "x": 44]))
