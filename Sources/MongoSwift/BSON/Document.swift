@@ -38,9 +38,11 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         return self.makeIterator().values
     }
 
-    /// Returns the number of (key, value) pairs stored at the top level
-    /// of this `Document`.
+    /// Returns the number of (key, value) pairs stored at the top level of this `Document`.
     public var count: Int { return Int(bson_count_keys(self.data)) }
+
+    /// Returns a `Bool` indicating whether the document is empty.
+    public var isEmpty: Bool { return self.count == 0 }
 
     /// Initializes a new, empty `Document`.
     public init() {
@@ -213,13 +215,11 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      *  let x: Int = try d.get("x")
      *  ```
      *
-     *  - Params:
+     *  - Parameters:
      *      - key: The key under which the value you are looking up is stored
      *      - `T`: Any type conforming to the `BsonValue` protocol
-     *  - Returns:
-     *      - The value stored under key, as type `T`
-     *  - Throws:
-     *      - A `MongoError.typeError` if the value cannot be cast to type `T` or is not in the `Document`
+     *  - Returns: The value stored under key, as type `T`
+     *  - Throws: A `MongoError.typeError` if the value cannot be cast to type `T` or is not in the `Document`
      *
      */
     public func get<T: BsonValue>(_ key: String) throws -> T {
@@ -237,16 +237,19 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         }
     }
 
-    /// Checks if the document is uniquely referenced. If not, makes a copy
-    /// of the underlying `bson_t` and lets the copy/copies keep the original.
-    /// This allows us to provide value semantics for `Document`s. 
-    /// This happens if someone copies a document and modifies it.
-    /// For example: 
-    ///  let doc1: Document = ["a": 1]
-    ///  var doc2 = doc1
-    ///  doc2["b"] = 2
-    /// Therefore, this function should be called just before we are about to
-    /// modify a document - either by setting a value or merging in another doc.
+    /**
+     * Checks if the document is uniquely referenced. If not, makes a copy of the underlying `bson_t`
+     * and lets the copy/copies keep the original. This allows us to provide value semantics for `Document`s.
+     * This happens if someone copies a document and modifies it.
+     * 
+     * For example:
+     *      let doc1: Document = ["a": 1]
+     *      var doc2 = doc1
+     *      doc2["b"] = 2
+     *
+     * Therefore, this function should be called just before we are about to modify a document - either by
+     * setting a value or merging in another doc.
+     */
     private mutating func copyStorageIfRequired() {
         if !isKnownUniquelyReferenced(&self.storage) {
             self.storage = DocumentStorage(fromPointer: self.data)

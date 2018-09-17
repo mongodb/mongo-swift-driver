@@ -10,12 +10,52 @@ import libmongoc
 /// }
 /// ```
 extension Document: Sequence {
+    /// The element type of a document: a tuple containing an individual key-value pair.
+    public typealias KeyValuePair = (key: String, value: BsonValue?)
+
     /// Returns a `DocumentIterator` over the values in this `Document`. 
     public func makeIterator() -> DocumentIterator {
         guard let iter = DocumentIterator(forDocument: self) else {
             preconditionFailure("Failed to initialize an iterator over document \(self)")
         }
         return iter
+    }
+
+    // this overrides the Sequence protocol's default implementation for `filter`. 
+    /**
+     * Returns a new document containing the key-value pairs of the dictionary that satisfy the given predicate.
+     * 
+     * - Parameters:
+     *   - isIncluded: A closure that takes a key-value pair as its argument and returns a `Bool` indicating whether 
+     *                 the pair should be included in the returned document.
+     * - Returns: A document of the key-value pairs that `isIncluded` allows.
+     * - Throws: An error if `isIncluded` throws an error.
+     */
+    public func filter(_ isIncluded: (KeyValuePair) throws -> Bool) rethrows -> Document {
+        var output = Document()
+        for elt in self where try isIncluded(elt) {
+            output[elt.key] = elt.value
+        }
+        return output
+    }
+
+    /**
+     * Returns a new document containing the keys of this document with the values transformed by
+     * the given closure.
+     *
+     * - Parameters:
+     *   - transform: A closure that transforms a `BsonValue?`. `transform` accepts each value of the
+     *                document as its parameter and returns a transformed `BsonValue?` of the same or 
+     *                of a different type.
+     * - Returns: A document containing the keys and transformed values of this document.
+     * - Throws: An error if `transform` throws an error.
+     */
+    public func mapValues(_ transform: (BsonValue?) throws -> BsonValue?) rethrows -> Document {
+        var output = Document()
+        for (k, v) in self {
+            output[k] = try transform(v)
+        }
+        return output
     }
 }
 
@@ -94,7 +134,7 @@ public class DocumentIterator: IteratorProtocol {
     }
 
     /// Returns the next value in the sequence, or `nil` if the iterator is exhausted.
-    public func next() -> (key: String, value: BsonValue?)? {
+    public func next() -> Document.KeyValuePair? {
         if self.advance() {
             return (self.currentKey, self.currentValue)
         }
