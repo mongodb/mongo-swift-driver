@@ -9,15 +9,22 @@ final class MongoCollectionTests: XCTestCase {
         return [
             ("testCount", testCount),
             ("testInsertOne", testInsertOne),
+            ("testInsertOneWithUnacknowledgedWriteConcern", testInsertOneWithUnacknowledgedWriteConcern),
             ("testAggregate", testAggregate),
             ("testDrop", testDrop),
             ("testInsertMany", testInsertMany),
+            ("testInsertManyWithUnacknowledgedWriteConcern", testInsertManyWithUnacknowledgedWriteConcern),
             ("testFind", testFind),
             ("testDeleteOne", testDeleteOne),
+            ("testDeleteOneWithUnacknowledgedWriteConcern", testDeleteOneWithUnacknowledgedWriteConcern),
             ("testDeleteMany", testDeleteMany),
+            ("testDeleteManyWithUnacknowledgedWriteConcern", testDeleteManyWithUnacknowledgedWriteConcern),
             ("testReplaceOne", testReplaceOne),
+            ("testReplaceOneWithUnacknowledgedWriteConcern", testReplaceOneWithUnacknowledgedWriteConcern),
             ("testUpdateOne", testUpdateOne),
+            ("testUpdateOneWithUnacknowledgedWriteConcern", testUpdateOneWithUnacknowledgedWriteConcern),
             ("testUpdateMany", testUpdateMany),
+            ("testUpdateManyWithUnacknowledgedWriteConcern", testUpdateManyWithUnacknowledgedWriteConcern),
             ("testDistinct", testDistinct),
             ("testCreateIndexFromModel", testCreateIndexFromModel),
             ("testCreateIndexesFromModels", testCreateIndexesFromModels),
@@ -104,6 +111,12 @@ final class MongoCollectionTests: XCTestCase {
         expect(try self.coll.insertOne(["x": 1])?.insertedId).toNot(beNil())
     }
 
+    func testInsertOneWithUnacknowledgedWriteConcern() throws {
+        let options = InsertOneOptions(writeConcern: try WriteConcern(w: .number(0)))
+        let insertOneResult = try self.coll.insertOne(["x": 1], options: options)
+        expect(insertOneResult).to(beNil())
+    }
+
     func testAggregate() throws {
         expect(
             Array(try self.coll.aggregate([["$project": ["_id": 0, "cat": 1] as Document]])))
@@ -137,6 +150,12 @@ final class MongoCollectionTests: XCTestCase {
         }
     }
 
+    func testInsertManyWithUnacknowledgedWriteConcern() throws {
+        let options = InsertManyOptions(writeConcern: try WriteConcern(w: .number(0)))
+        let insertManyResult = try self.coll.insertMany([["x": 1], ["x": 2]], options: options)
+        expect(insertManyResult).to(beNil())
+    }
+
     func testFind() throws {
         let findResult = try coll.find(["cat": "cat"])
         expect(findResult.next()).to(equal(["_id": 2, "cat": "cat"]))
@@ -147,14 +166,33 @@ final class MongoCollectionTests: XCTestCase {
         expect(try self.coll.deleteOne(["cat": "cat"])?.deletedCount).to(equal(1))
     }
 
+    func testDeleteOneWithUnacknowledgedWriteConcern() throws {
+        let options = DeleteOptions(writeConcern: try WriteConcern(w: .number(0)))
+        let deleteOneResult = try self.coll.deleteOne(["cat": "cat"], options: options)
+        expect(deleteOneResult).to(beNil())
+    }
+
     func testDeleteMany() throws {
         expect(try self.coll.deleteMany([:])?.deletedCount).to(equal(2))
+    }
+
+    func testDeleteManyWithUnacknowledgedWriteConcern() throws {
+        let options = DeleteOptions(writeConcern: try WriteConcern(w: .number(0)))
+        let deleteManyResult = try self.coll.deleteMany([:], options: options)
+        expect(deleteManyResult).to(beNil())
     }
 
     func testReplaceOne() throws {
         let replaceOneResult = try coll.replaceOne(filter: ["_id": 1], replacement: ["apple": "banana"])
         expect(replaceOneResult?.matchedCount).to(equal(1))
         expect(replaceOneResult?.modifiedCount).to(equal(1))
+    }
+
+    func testReplaceOneWithUnacknowledgedWriteConcern() throws {
+        let options = ReplaceOptions(writeConcern: try WriteConcern(w: .number(0)))
+        let replaceOneResult = try coll.replaceOne(
+            filter: ["_id": 1], replacement: ["apple": "banana"], options: options)
+        expect(replaceOneResult).to(beNil())
     }
 
     func testUpdateOne() throws {
@@ -164,11 +202,25 @@ final class MongoCollectionTests: XCTestCase {
         expect(updateOneResult?.modifiedCount).to(equal(1))
     }
 
+    func testUpdateOneWithUnacknowledgedWriteConcern() throws {
+        let options = UpdateOptions(writeConcern: try WriteConcern(w: .number(0)))
+        let updateOneResult = try coll.updateOne(
+            filter: ["_id": 2], update: ["$set": ["apple": "banana"] as Document], options: options)
+        expect(updateOneResult).to(beNil())
+    }
+
     func testUpdateMany() throws {
         let updateManyResult = try coll.updateMany(
             filter: [:], update: ["$set": ["apple": "pear"] as Document])
         expect(updateManyResult?.matchedCount).to(equal(2))
         expect(updateManyResult?.modifiedCount).to(equal(2))
+    }
+
+    func testUpdateManyWithUnacknowledgedWriteConcern() throws {
+        let options = UpdateOptions(writeConcern: try WriteConcern(w: .number(0)))
+        let updateManyResult = try coll.updateMany(
+            filter: [:], update: ["$set": ["apple": "pear"] as Document], options: options)
+        expect(updateManyResult).to(beNil())
     }
 
     func testDistinct() throws {
