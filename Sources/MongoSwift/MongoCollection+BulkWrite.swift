@@ -240,6 +240,17 @@ extension MongoCollection {
 
 /// A protocol indicating write operations that can be batched together using `MongoCollection.bulkWrite`.
 public protocol WriteModel {
+    /**
+     * Adds the operation to a bulk write.
+     *
+     * The `index` argument denotes the operation's order within the bulk write
+     * and should match its index within the `requests` array parameter for
+     * `MongoCollection.bulkWrite`.
+     *
+     * - Parameters:
+     *   - bulk: A `BulkWriteOperation`
+     *   - index: Index of the operation within the `MongoCollection.bulkWrite` `requests` array
+     */
     func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws
 }
 
