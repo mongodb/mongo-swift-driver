@@ -325,7 +325,7 @@ public struct Decimal128: BsonValue, Equatable, Codable {
     /// Returns the provided string as a `bson_decimal128_t`, or throws an error if initialization fails due an
     /// invalid string.
     internal static func encode(_ str: String) throws -> bson_decimal128_t {
-        var value: bson_decimal128_t = bson_decimal128_t()
+        var value = bson_decimal128_t()
         guard bson_decimal128_from_string(str, &value) else {
             throw MongoError.bsonEncodeError(message: "Invalid Decimal128 string \(str)")
         }
