@@ -322,10 +322,6 @@ public struct Decimal128: BsonValue, Equatable, Codable {
         }
     }
 
-    public static func == (lhs: Decimal128, rhs: Decimal128) -> Bool {
-        return lhs.data == rhs.data
-    }
-
     /// Returns the provided string as a `bson_decimal128_t`, or throws an error if initialization fails due an
     /// invalid string.
     internal static func encode(_ str: String) throws -> bson_decimal128_t {
@@ -334,6 +330,10 @@ public struct Decimal128: BsonValue, Equatable, Codable {
             throw MongoError.bsonEncodeError(message: "Invalid Decimal128 string \(str)")
         }
         return value
+    }
+
+    public static func == (lhs: Decimal128, rhs: Decimal128) -> Bool {
+        return lhs.data == rhs.data
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
