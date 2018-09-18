@@ -27,15 +27,11 @@ public enum MongoError {
     case readConcernError(message: String)
     /// Thrown when there is an error involving a `ReadPreference`.
     case readPreferenceError(message: String)
-    /// Thrown when there is an error involving a `WriteConcern`. 
-    case writeConcernError(code: Int32, message: String)
     /// Thrown when a user-provided argument is invalid.
     case invalidArgument(message: String)
-    /// Thrown when there is an error executing a write command.
-    case writeError(code: Int32, message: String)
-    /// Thrown when there is an error executing a bulk write command. 
-    indirect case bulkWriteError(code: Int32, message: String, result: BulkWriteResult?,
-                                writeErrors: [MongoError]?, writeConcernError: MongoError?)
+    /// Thrown when there is an error executing a bulk write command.
+    case bulkWriteError(code: UInt32, message: String, result: BulkWriteResult?, writeErrors: [WriteError],
+        writeConcernError: WriteConcernError?)
 }
 
 /// An extension of `MongoError` to support printing out descriptive error messages.
@@ -48,8 +44,7 @@ extension MongoError: LocalizedError {
             let .typeError(message), let .readConcernError(message),
             let .readPreferenceError(message), let .invalidArgument(message):
             return message
-        case let .writeConcernError(code, message), let .writeError(code, message),
-            let .bulkWriteError(code, message, _, _, _):
+        case let .bulkWriteError(code, message, _, _, _):
             return "\(message) (error code \(code))"
         default:
             return nil

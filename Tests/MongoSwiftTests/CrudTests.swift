@@ -3,12 +3,6 @@ import Foundation
 import Nimble
 import XCTest
 
-// Files to skip because we don't currently support the operations they test.
-private var skippedFiles = [
-    // TODO SWIFT-147: enable this
-    "bulkWrite-arrayFilters"
-]
-
 internal extension Document {
     init(fromJSONFile file: URL) throws {
         let jsonString = try String(contentsOf: file, encoding: .utf8)
@@ -76,10 +70,8 @@ final class CrudTests: XCTestCase {
         var tests = [(String, CrudTestFile)]()
 
         let testFiles = try FileManager.default.contentsOfDirectory(atPath: path).filter { $0.hasSuffix(".json") }
-        let names = testFiles.map { $0.components(separatedBy: ".")[0] }.filter { !skippedFiles.contains($0) }
-
-        for fileName in names {
-            let testFilePath = URL(fileURLWithPath: "\(path)/\(fileName).json")
+        for fileName in testFiles {
+            let testFilePath = URL(fileURLWithPath: "\(path)/\(fileName)")
             let asDocument = try Document(fromJSONFile: testFilePath)
             let test = try decoder.decode(CrudTestFile.self, from: asDocument)
             tests.append((fileName, test))
@@ -200,7 +192,7 @@ private class CrudTest {
         expect(result?.matchedCount).to(equal(expected.matchedCount))
         expect(result?.modifiedCount).to(equal(expected.modifiedCount))
         expect(result?.upsertedCount).to(equal(expected.upsertedCount))
-        
+
         if let upsertedId = result?.upsertedId?.value as? Int {
             expect(upsertedId).to(equal(expected.upsertedId?.value as? Int))
         } else {
@@ -240,7 +232,115 @@ private class AggregateTest: CrudTest {
 
 private class BulkWriteTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<Document>) throws {
-        XCTFail("Unimplemented")
+        let requestDocuments: [Document] = try self.args.get("requests")
+        let requests = try requestDocuments.map { try BulkWriteTest.parseWriteModel($0) }
+        let options = BulkWriteTest.parseBulkWriteOptions(self.args["options"] as? Document)
+
+        if let result = try coll.bulkWrite(requests, options: options) {
+            verifyBulkWriteResult(result)
+        }
+    }
+
+    private static func parseBulkWriteOptions(_ options: Document?) -> BulkWriteOptions? {
+        guard let options = options else {
+            return nil
+        }
+
+        let ordered = options["ordered"] as? Bool ?? true
+
+        return BulkWriteOptions(ordered: ordered)
+    }
+
+    private typealias DeleteOneModel = MongoCollection<Document>.DeleteOneModel
+    private typealias DeleteManyModel = MongoCollection<Document>.DeleteManyModel
+    private typealias InsertOneModel = MongoCollection<Document>.InsertOneModel
+    private typealias ReplaceOneModel = MongoCollection<Document>.ReplaceOneModel
+    private typealias UpdateOneModel = MongoCollection<Document>.UpdateOneModel
+    private typealias UpdateManyModel = MongoCollection<Document>.UpdateManyModel
+
+    private static func parseWriteModel(_ request: Document) throws -> WriteModel {
+        let name: String = try request.get("name")
+        let args: Document = try request.get("arguments")
+
+        switch name {
+        case "deleteOne":
+            let filter: Document = try args.get("filter")
+            let collation = args["collation"] as? Document
+            return DeleteOneModel(filter, collation: collation)
+
+        case "deleteMany":
+            let filter: Document = try args.get("filter")
+            let collation = args["collation"] as? Document
+            return DeleteManyModel(filter, collation: collation)
+
+        case "insertOne":
+            let document: Document = try args.get("document")
+            return InsertOneModel(document)
+
+        case "replaceOne":
+            let filter: Document = try args.get("filter")
+            let replacement: Document = try args.get("replacement")
+            let collation = args["collation"] as? Document
+            let upsert = args["upsert"] as? Bool
+            return ReplaceOneModel(filter: filter, replacement: replacement, collation: collation, upsert: upsert)
+
+        case "updateOne":
+            let filter: Document = try args.get("filter")
+            let update: Document = try args.get("update")
+            let arrayFilters = args["arrayFilters"] as? [Document]
+            let collation = args["collation"] as? Document
+            let upsert = args["upsert"] as? Bool
+            return UpdateOneModel(filter: filter, update: update, arrayFilters: arrayFilters, collation: collation, upsert: upsert)
+
+        case "updateMany":
+            let filter: Document = try args.get("filter")
+            let update: Document = try args.get("update")
+            let arrayFilters = args["arrayFilters"] as? [Document]
+            let collation = args["collation"] as? Document
+            let upsert = args["upsert"] as? Bool
+            return UpdateManyModel(filter: filter, update: update, arrayFilters: arrayFilters, collation: collation, upsert: upsert)
+
+        default:
+            throw TestError(message: "Unknown bulkWrite request name: \(name)")
+        }
+    }
+
+    private static func prepareIds(_ ids: [Int: BsonValue?]) -> Document {
+        var document = Document()
+
+        for (index, id) in ids {
+            document[String(index)] = id
+        }
+
+        return document
+    }
+
+    private func verifyBulkWriteResult(_ result: BulkWriteResult) {
+        guard let expected = self.result as? Document else {
+            return
+        }
+
+        if let expectedDeletedCount = expected["deletedCount"] as? Int {
+            expect(result.deletedCount).to(equal(expectedDeletedCount))
+        }
+        if let expectedInsertedCount = expected["insertedCount"] as? Int {
+            expect(result.insertedCount).to(equal(expectedInsertedCount))
+        }
+        if let expectedInsertedIds = expected["insertedIds"] as? Document {
+            expect(BulkWriteTest.prepareIds(result.insertedIds)).to(equal(expectedInsertedIds))
+        }
+        if let expectedMatchedCount = expected["matchedCount"] as? Int {
+            expect(result.matchedCount).to(equal(expectedMatchedCount))
+        }
+        if let expectedModifiedCount = expected["modifiedCount"] as? Int {
+            expect(result.modifiedCount).to(equal(expectedModifiedCount))
+        }
+        if let expectedUpsertedCount = expected["upsertedCount"] as? Int {
+            expect(result.upsertedCount).to(equal(expectedUpsertedCount))
+        }
+        if let expectedUpsertedIds = expected["upsertedIds"] as? Document {
+            expect(BulkWriteTest.prepareIds(result.upsertedIds)).to(equal(expectedUpsertedIds))
+        }
     }
 }
 
