@@ -54,10 +54,10 @@ extension MongoCollection {
 
         /// Adds the `deleteOne` operation to a bulk write
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
-            let opts = try BsonEncoder().encode(options)
+            let opts = try BsonEncoder().encode(self.options)
             var error = bson_error_t()
 
-            guard mongoc_bulk_operation_remove_one_with_opts(bulk._bulk, filter.data, opts.data, &error) else {
+            guard mongoc_bulk_operation_remove_one_with_opts(bulk.bulk, self.filter.data, opts.data, &error) else {
                 throw MongoError.invalidArgument(message: toErrorString(error))
             }
         }
@@ -82,10 +82,10 @@ extension MongoCollection {
 
         /// Adds the `deleteMany` operation to a bulk write
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
-            let opts = try BsonEncoder().encode(self.options)
+            let opts = try BsonEncoder().encode(options)
             var error = bson_error_t()
 
-            guard mongoc_bulk_operation_remove_many_with_opts(bulk._bulk, filter.data, opts.data, &error) else {
+            guard mongoc_bulk_operation_remove_many_with_opts(bulk.bulk, self.filter.data, opts.data, &error) else {
                 throw MongoError.invalidArgument(message: toErrorString(error))
             }
         }
@@ -107,16 +107,14 @@ extension MongoCollection {
 
         /// Adds the `insertOne` operation to a bulk write
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
-            let encoder = BsonEncoder()
-
-            let document = try encoder.encode(self.document)
+            let document = try BsonEncoder().encode(self.document)
             if !document.keys.contains("_id") {
                 try ObjectId().encode(to: document.storage, forKey: "_id")
             }
 
             var error = bson_error_t()
 
-            guard mongoc_bulk_operation_insert_with_opts(bulk._bulk, document.data, nil, &error) else {
+            guard mongoc_bulk_operation_insert_with_opts(bulk.bulk, document.data, nil, &error) else {
                 throw MongoError.invalidArgument(message: toErrorString(error))
             }
 
@@ -157,7 +155,7 @@ extension MongoCollection {
             let opts = try encoder.encode(self.options)
             var error = bson_error_t()
 
-            guard mongoc_bulk_operation_replace_one_with_opts(bulk._bulk, filter.data, replacement.data, opts.data, &error) else {
+            guard mongoc_bulk_operation_replace_one_with_opts(bulk.bulk, self.filter.data, replacement.data, opts.data, &error) else {
                 throw MongoError.invalidArgument(message: toErrorString(error))
             }
         }
@@ -197,7 +195,7 @@ extension MongoCollection {
             let opts = try BsonEncoder().encode(self.options)
             var error = bson_error_t()
 
-            guard mongoc_bulk_operation_update_one_with_opts(bulk._bulk, filter.data, update.data, opts.data, &error) else {
+            guard mongoc_bulk_operation_update_one_with_opts(bulk.bulk, self.filter.data, self.update.data, opts.data, &error) else {
                 throw MongoError.invalidArgument(message: toErrorString(error))
             }
         }
@@ -231,7 +229,7 @@ extension MongoCollection {
             let opts = try BsonEncoder().encode(self.options)
             var error = bson_error_t()
 
-            guard mongoc_bulk_operation_update_many_with_opts(bulk._bulk, filter.data, update.data, opts.data, &error) else {
+            guard mongoc_bulk_operation_update_many_with_opts(bulk.bulk, self.filter.data, self.update.data, opts.data, &error) else {
                 throw MongoError.invalidArgument(message: toErrorString(error))
             }
         }
@@ -256,18 +254,18 @@ public protocol WriteModel {
 
 /// A class encapsulating a `mongoc_bulk_operation_t`.
 public class BulkWriteOperation {
-    fileprivate var _bulk: OpaquePointer?
+    fileprivate var bulk: OpaquePointer?
     fileprivate var insertedIds: [Int: BsonValue?] = [:]
 
     /// Indicates whether this bulk operation used an acknowledged write concern.
     private var isAcknowledged: Bool {
-        let wc = WriteConcern(mongoc_bulk_operation_get_write_concern(self._bulk))
+        let wc = WriteConcern(mongoc_bulk_operation_get_write_concern(self.bulk))
         return wc.isAcknowledged
     }
 
     /// Initializes the object from a `mongoc_collection_t` and `bson_t`.
     fileprivate init(collection: OpaquePointer?, opts: UnsafePointer<bson_t>?) {
-        self._bulk = mongoc_collection_create_bulk_operation_with_opts(collection, opts)!
+        self.bulk = mongoc_collection_create_bulk_operation_with_opts(collection, opts)!
     }
 
     /// Executes the bulk write operation and returns a `BulkWriteResult` or
@@ -276,7 +274,7 @@ public class BulkWriteOperation {
         let reply = Document()
         var error = bson_error_t()
 
-        let serverId = mongoc_bulk_operation_execute(self._bulk, reply.data, &error)
+        let serverId = mongoc_bulk_operation_execute(self.bulk, reply.data, &error)
         let result = try BulkWriteResult(reply: reply, insertedIds: self.insertedIds)
 
         guard serverId != 0 else {
@@ -290,11 +288,11 @@ public class BulkWriteOperation {
     }
 
     deinit {
-        guard let bulk = self._bulk else {
+        guard let bulk = self.bulk else {
             return
         }
         mongoc_bulk_operation_destroy(bulk)
-        self._bulk = nil
+        self.bulk = nil
     }
 }
 
