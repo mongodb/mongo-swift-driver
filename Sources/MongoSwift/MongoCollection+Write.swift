@@ -26,6 +26,11 @@ extension MongoCollection {
             // TODO SWIFT-139: include writeErrors and writeConcernErrors from reply in the error
             throw MongoError.commandError(message: toErrorString(error))
         }
+
+        guard isAcknowledged(options?.writeConcern) else {
+            return nil
+        }
+
         return InsertOneResult(insertedId: document["_id"])
     }
 
@@ -57,6 +62,10 @@ extension MongoCollection {
             self._collection, &docPointers, documents.count, opts?.data, reply.data, &error) {
             // TODO SWIFT-139: include writeErrors and writeConcernErrors from reply in the error
             throw MongoError.commandError(message: toErrorString(error))
+        }
+
+        guard isAcknowledged(options?.writeConcern) else {
+            return nil
         }
 
         // if we succeeded, then we should store + return every `_id`
@@ -93,6 +102,10 @@ extension MongoCollection {
             throw MongoError.commandError(message: toErrorString(error))
         }
 
+        guard isAcknowledged(options?.writeConcern) else {
+            return nil
+        }
+
         return try BsonDecoder().decode(UpdateResult.self, from: reply)
     }
 
@@ -118,6 +131,11 @@ extension MongoCollection {
             // TODO SWIFT-139: include writeErrors and writeConcernError from reply in the error
             throw MongoError.commandError(message: toErrorString(error))
         }
+
+        guard isAcknowledged(options?.writeConcern) else {
+            return nil
+        }
+
         return try BsonDecoder().decode(UpdateResult.self, from: reply)
     }
 
@@ -143,6 +161,11 @@ extension MongoCollection {
             // TODO SWIFT-139: include writeErrors and writeConcernErrors from reply in the error
             throw MongoError.commandError(message: toErrorString(error))
         }
+
+        guard isAcknowledged(options?.writeConcern) else {
+            return nil
+        }
+
         return try BsonDecoder().decode(UpdateResult.self, from: reply)
     }
 
@@ -167,6 +190,11 @@ extension MongoCollection {
              // TODO SWIFT-139: include writeErrors and writeConcernErrors from reply in the error
             throw MongoError.commandError(message: toErrorString(error))
         }
+
+        guard isAcknowledged(options?.writeConcern) else {
+            return nil
+        }
+
         return try BsonDecoder().decode(DeleteResult.self, from: reply)
     }
 
@@ -191,7 +219,32 @@ extension MongoCollection {
             // TODO SWIFT-139: include writeErrors and writeConcernErrors from reply in the error
             throw MongoError.commandError(message: toErrorString(error))
         }
+
+        guard isAcknowledged(options?.writeConcern) else {
+            return nil
+        }
+
         return try BsonDecoder().decode(DeleteResult.self, from: reply)
+    }
+
+    /**
+     * Returns whether the operation's write concern is acknowledged. If `nil`,
+     * the collection's write concern will be considered.
+     *
+     * - Parameters:
+     *   - writeConcern: `WriteConcern` from the operation's options struct
+     *
+     * - Returns: Whether the operation will use an acknowledged write concern
+     */
+    fileprivate func isAcknowledged(_ writeConcern: WriteConcern?) -> Bool {
+        /* If the collection's write concern is also `nil` it is the default. We
+         * can safely assume it is acknowledged, since the server requires that
+         * getLastErrorDefaults is acknowledged by at least one member. */
+        guard let wc = writeConcern ?? self.writeConcern else {
+            return true
+        }
+
+        return wc.isAcknowledged
     }
 }
 
