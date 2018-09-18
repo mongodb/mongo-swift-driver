@@ -38,12 +38,6 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         return self.makeIterator().values
     }
 
-    /// Returns the number of (key, value) pairs stored at the top level of this `Document`.
-    public var count: Int { return Int(bson_count_keys(self.data)) }
-
-    /// Returns a `Bool` indicating whether the document is empty.
-    public var isEmpty: Bool { return self.count == 0 }
-
     /// Initializes a new, empty `Document`.
     public init() {
         self.storage = DocumentStorage()
