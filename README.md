@@ -33,7 +33,7 @@ Core Server (i.e. SERVER) project are **public**.
 `MongoSwift` works with Swift 4.0+.
 
 ### FIRST: Install the MongoDB C Driver
-Because the driver wraps the MongoDB C driver, using it requires having the C driver's two components, `libbson` and `libmongoc`, installed on your system. The minimum required version of the C Driver is **1.11.0**.
+Because the driver wraps the MongoDB C driver, using it requires having the C driver's two components, `libbson` and `libmongoc`, installed on your system. The minimum required version of the C Driver is **1.13.0**.
 
 On a Mac, you can install both components at once using [Homebrew](https://brew.sh/): 
 `brew install mongo-c-driver`.
