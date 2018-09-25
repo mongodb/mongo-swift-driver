@@ -225,6 +225,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
 
             // otherwise, we just create a new document and replace this key
             } else {
+                // TODO SWIFT-224: use va_list variant of bson_copy_to_excluding to improve performance
                 var newSelf = Document()
                 var seen = false
                 try self.forEach { pair in
