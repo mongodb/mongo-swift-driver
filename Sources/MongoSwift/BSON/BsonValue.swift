@@ -337,7 +337,7 @@ public struct Decimal128: BsonValue, Equatable, Codable {
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-       var value = try Decimal128.encode(self.data)
+        var value = try Decimal128.encode(self.data)
         if !bson_append_decimal128(storage.pointer, key, Int32(key.count), &value) {
             throw bsonEncodeError(value: self, forKey: key)
         }
@@ -378,15 +378,19 @@ extension Double: BsonValue {
 /// The `Int` will be encoded as an Int32 if possible, or an Int64 if necessary.
 extension Int: BsonValue {
 
-    public var bsonType: BsonType { return .int32 }
+    public var bsonType: BsonType { return self.int32Value != nil ? .int32 : .int64 }
+
+    internal var int32Value: Int32? { return Int32(exactly: self) }
+    internal var int64Value: Int64? { return Int64(exactly: self) }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        if let int32 = Int32(exactly: self) {
+        if let int32 = self.int32Value {
             return try int32.encode(to: storage, forKey: key)
         }
-        if let int64 = Int64(exactly: self) {
+        if let int64 = self.int64Value {
             return try int64.encode(to: storage, forKey: key)
         }
+
         throw MongoError.bsonEncodeError(message: "`Int` value \(self) could not be encoded as `Int32` or `Int64`")
     }
 

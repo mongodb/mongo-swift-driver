@@ -223,7 +223,7 @@ public class DocumentIterator: IteratorProtocol {
 
     /// Returns the current value's type. Assumes the iterator is in a valid position.
     internal var currentType: BsonType {
-        return BsonType(rawValue: bson_iter_type(&iter).rawValue) ?? .invalid
+        return BsonType(rawValue: bson_iter_type(&self.iter).rawValue) ?? .invalid
     }
 
     /// Returns the keys from the iterator's current position to the end. The iterator
@@ -256,6 +256,7 @@ public class DocumentIterator: IteratorProtocol {
 
         var output = Document()
 
+        // TODO SWIFT-224: use va_list variant of bson_copy_to_excluding to improve performance
         for _ in startIndex..<endIndex {
             if let next = iter.next() {
                 output[next.key] = next.value
@@ -271,6 +272,12 @@ public class DocumentIterator: IteratorProtocol {
     /// Returns the next value in the sequence, or `nil` if the iterator is exhausted.
     public func next() -> Document.KeyValuePair? {
         return self.advance() ? (self.currentKey, self.currentValue) : nil
+    }
+
+    internal func overwriteCurrentValue(with newValue: Overwritable) throws {
+        precondition(newValue.bsonType == self.currentType,
+                     "Expected \(newValue) to have BSON type \(self.currentType), but has type \(newValue.bsonType)")
+        try newValue.writeToCurrentPosition(of: self)
     }
 
     private static let BsonTypeMap: [BsonType: BsonValue.Type] = [

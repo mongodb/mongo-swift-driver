@@ -37,7 +37,13 @@ final class DocumentTests: XCTestCase {
             ("testValueBehavior", testValueBehavior),
             ("testIntEncodesAsInt32OrInt64", testIntEncodesAsInt32OrInt64),
             ("testBSONCorpus", testBSONCorpus),
-            ("testMerge", testMerge)
+            ("testMerge", testMerge),
+            ("testNilInNestedArray", testNilInNestedArray),
+            ("testOverwritable", testOverwritable),
+            ("testNonOverwritable", testNonOverwritable),
+            ("testReplaceValueWithNewType", testReplaceValueWithNewType),
+            ("testReplaceValueWithNil", testReplaceValueWithNil),
+            ("testReplaceValueNoop", testReplaceValueNoop)
         ]
     }
 
@@ -188,12 +194,7 @@ final class DocumentTests: XCTestCase {
     }
 
     func testIntEncodesAsInt32OrInt64() {
-        /* Skip this test on 32-bit platforms. Use MemoryLayout instead of
-         * Int.bitWidth to avoid a compiler warning.
-         * See: https://forums.swift.org/t/how-can-i-condition-on-the-size-of-int/9080/4 */
-        if MemoryLayout<Int>.size == 4 {
-            return
-        }
+        if XCTestCase.is32Bit { return }
 
         let int32min_sub1 = Int64(Int32.min) - Int64(1)
         let int32max_add1 = Int64(Int32.max) + Int64(1)
@@ -350,5 +351,169 @@ final class DocumentTests: XCTestCase {
 
         expect(doc["a1"]).to(equal(arr1))
         expect(doc["a2"]).to(equal(arr2))
+    }
+
+    // exclude Int64 value on 32-bit platforms
+    static let overwritables: Document = ["double": 2.5, "int32": Int32(32), "int64": Int64.max, "bool": false, "decimal": Decimal128("1.2E+10")]
+
+    static let nonOverwritables: Document = ["string": "hello", "nil": nil, "doc": ["x": 1] as Document, "arr": [1, 2] as [Int], "oid": ObjectId()]
+
+    // test replacing `Overwritable` types with values of their own type
+    func testOverwritable() throws {
+        // make a deep copy so we start off with uniquely referenced storage
+        var doc = Document(fromPointer: DocumentTests.overwritables.data)
+
+        // save a reference to original bson_t so we can verify it doesn't change
+        let pointer = doc.data
+
+        // overwrite int32 with int32
+        doc["int32"] = Int32(15)
+        expect(doc["int32"] as? Int).to(equal(15))
+        expect(doc.data).to(equal(pointer))
+
+        // overwrite int32 with an int that fits into int32s
+        doc["int32"] = 20
+        expect(doc["int32"] as? Int).to(equal(20))
+        expect(doc.data).to(equal(pointer))
+
+        doc["bool"] = true
+        expect(doc.data).to(equal(pointer))
+
+        doc["double"] = 3.0
+        expect(doc.data).to(equal(pointer))
+
+        doc["decimal"] = Decimal128("100")
+        expect(doc.data).to(equal(pointer))
+
+        // overwrite int64 with int64
+        doc["int64"] = Int64.min
+        expect(doc.data).to(equal(pointer))
+
+        // return early as we will to use an Int requiring > 32 bits after this 
+        if XCTestCase.is32Bit {
+            expect(doc).to(equal(["double": 3.0, "int32": 20, "int64": Int64.min, "bool": true, "decimal": Decimal128("100")]))
+        }
+
+        let bigInt = Int(Int32.max) + 1
+        doc["int64"] = bigInt
+        expect(doc.data).to(equal(pointer))
+
+        // final values
+        expect(doc).to(equal(["double": 3.0, "int32": 20, "int64": bigInt, "bool": true, "decimal": Decimal128("100")]))
+    }
+
+    // test replacing some of the non-Overwritable types with values of their own types
+    func testNonOverwritable() throws {
+        // make a deep copy so we start off with uniquely referenced storage
+        var doc = Document(fromPointer: DocumentTests.nonOverwritables.data)
+
+        // save a reference to original bson_t so we can verify it changes
+        var pointer = doc.data
+
+        // save these to compare to at the end
+        let newDoc: Document = ["y": 1]
+        let oid = ObjectId()
+
+        let newPairs: [(String, BsonValue?)] = [("string", "hi"), ("doc", newDoc), ("arr", [3, 4]), ("oid", oid)]
+
+        newPairs.forEach { (k, v) in
+            doc[k] = v
+            // the storage should change every time
+            expect(doc.data).toNot(equal(pointer))
+            pointer = doc.data
+        }
+
+        expect(doc).to(equal(["string": "hi", "nil": nil, "doc": newDoc, "arr": [3, 4] as [Int], "oid": oid]))
+    }
+
+    // test replacing both overwritable and nonoverwritable values with values of different types
+    func testReplaceValueWithNewType() throws {
+        // make a deep copy so we start off with uniquely referenced storage
+        var doc1 = Document(fromPointer: DocumentTests.overwritables.data)
+
+        // save a reference to original bson_t so we can verify it changes
+        var pointer1 = doc1.data
+
+        let newPairs1: [(String, BsonValue?)] = [("double", Int(10)), ("int32", "hi"), ("int64", Decimal128("1.0")), ("bool", [1, 2, 3]), ("decimal", 100)]
+
+        newPairs1.forEach { (k, v) in
+            doc1[k] = v
+            expect(doc1.data).toNot(equal(pointer1))
+            pointer1 = doc1.data
+        }
+
+        expect(doc1).to(equal(["double": 10, "int32": "hi", "int64": Decimal128("1.0"), "bool": [1, 2, 3] as [Int], "decimal": 100]))
+
+        // make a deep copy so we start off with uniquely referenced storage
+        var doc2 = Document(fromPointer: DocumentTests.nonOverwritables.data)
+
+        // save a reference to original bson_t so we can verify it changes
+        var pointer2 = doc2.data
+
+        let newPairs2: [(String, BsonValue?)] = [("string", 1), ("nil", "hello"), ("doc", "hi"), ("arr", 5), ("oid", 25.5)]
+
+        newPairs2.forEach { (k, v) in
+            doc2[k] = v
+            expect(doc2.data).toNot(equal(pointer2))
+            pointer2 = doc2.data
+        }
+
+        expect(doc2).to(equal(["string": 1, "nil": "hello", "doc": "hi", "arr": 5, "oid": 25.5]))
+    }
+
+    // test setting both overwritable and nonoverwritable values to nil
+    func testReplaceValueWithNil() throws {
+        var doc1 = Document(fromPointer: DocumentTests.overwritables.data)
+        var pointer1 = doc1.data
+
+        ["double", "int32", "int64", "bool", "decimal"].forEach {
+            doc1[$0] = nil
+            // the storage should change every time 
+            expect(doc1.data).toNot(equal(pointer1))
+            pointer1 = doc1.data
+        }
+
+        var doc2 = Document(fromPointer: DocumentTests.nonOverwritables.data)
+        var pointer2 = doc2.data
+
+        ["string", "doc", "arr", "oid"].forEach {
+            doc2[$0] = nil
+            // the storage should change every time 
+            expect(doc2.data).toNot(equal(pointer2))
+            pointer2 = doc2.data
+        }
+
+        expect(doc2).to(equal(["string": nil, "nil": nil, "doc": nil, "arr": nil, "oid": nil]))
+    }
+
+    // Test types where replacing them with an instance of their own type is a no-op
+    func testReplaceValueNoop() throws {
+        var noops: Document = ["null": nil, "maxkey": MaxKey(), "minkey": MinKey()]
+
+        var pointer = noops.data
+
+        // replace values with own types. these should all be no-ops
+        let newPairs1: [(String, BsonValue?)] = [("null", nil), ("maxkey", MaxKey()), ("minkey", MinKey())]
+
+        newPairs1.forEach { (k, v) in
+            noops[k] = v
+            // the storage should never change
+            expect(noops.data).to(equal(pointer))
+        }
+
+        // we should still have exactly the same document we started with
+        expect(noops).to(equal(["null": nil, "maxkey": MaxKey(), "minkey": MinKey()]))
+
+        // now try replacing them with values of different types that do require replacing storage
+        let newPairs2: [(String, BsonValue?)] = [("null", 5), ("maxkey", "hi"), ("minkey", false)]
+
+        newPairs2.forEach { (k, v) in
+            noops[k] = v
+            // the storage should change every time
+            expect(noops.data).toNot(equal(pointer))
+            pointer = noops.data
+        }
+
+        expect(noops).to(equal(["null": 5, "maxkey": "hi", "minkey": false]))
     }
 }
