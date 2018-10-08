@@ -348,7 +348,7 @@ public struct BulkWriteResult {
     fileprivate var writeConcernError: WriteConcernError?
 
     /**
-     * Create a BulkWriteResult operation from a reply and map of inserted IDs.
+     * Create a `BulkWriteResult` from a reply and map of inserted IDs.
      *
      * Note: we forgo using a Decodable initializer because we still need to
      * build a map for `upsertedIds` and explicitly add `insertedIds`. While
