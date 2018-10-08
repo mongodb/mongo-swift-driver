@@ -13,6 +13,7 @@ final class MongoCollectionTests: XCTestCase {
             ("testAggregate", testAggregate),
             ("testDrop", testDrop),
             ("testInsertMany", testInsertMany),
+            ("testInsertManyWithEmptyValues", testInsertManyWithEmptyValues),
             ("testInsertManyWithUnacknowledgedWriteConcern", testInsertManyWithUnacknowledgedWriteConcern),
             ("testFind", testFind),
             ("testDeleteOne", testDeleteOne),
@@ -148,6 +149,10 @@ final class MongoCollectionTests: XCTestCase {
                 expect(v).to(beAnInstanceOf(ObjectId.self))
             }
         }
+    }
+
+    func testInsertManyWithEmptyValues() {
+        expect(try self.coll.insertMany([])).to(throwError(MongoError.invalidArgument(message: "")))
     }
 
     func testInsertManyWithUnacknowledgedWriteConcern() throws {

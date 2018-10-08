@@ -29,7 +29,10 @@ public enum MongoError {
     case readPreferenceError(message: String)
     /// Thrown when a user-provided argument is invalid.
     case invalidArgument(message: String)
-    /// Thrown when there is an error executing a bulk write command.
+    /// Thrown when there is an error executing a multi-document insert operation.
+    case insertManyError(code: UInt32, message: String, result: InsertManyResult?, writeErrors: [WriteError],
+        writeConcernError: WriteConcernError?)
+    /// Thrown when there is an error executing a bulk write operation.
     case bulkWriteError(code: UInt32, message: String, result: BulkWriteResult?, writeErrors: [WriteError],
         writeConcernError: WriteConcernError?)
 }

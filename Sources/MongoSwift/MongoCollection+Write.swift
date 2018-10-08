@@ -35,46 +35,53 @@ extension MongoCollection {
     }
 
     /**
-     * Encodes the provided values to BSON and inserts them. If any values are missing identifiers,
-     * the driver will generate them.
+     * Encodes the provided values to BSON and inserts them. If any values are
+     * missing identifiers, the driver will generate them.
      *
      * - Parameters:
-     *   - documents: The `CollectionType` values to insert
-     *   - options: Optional `InsertManyOptions` to use when executing the command
+     *   - values: The `CollectionType` values to insert
+     *   - options: optional `InsertManyOptions` to use while executing the operation
      *
-     * - Returns: The optional result of attempting to performing the insert. If the write concern
-     *            is unacknowledged, nil is returned
+     * - Returns: an `InsertManyResult`, or `nil` if the write concern is unacknowledged.
+     *
+     * - Throws:
+     *   - `MongoError.invalidArgument` if `values` is empty
+     *   - `MongoError.insertManyError` if any error occurs while performing the writes
      */
     @discardableResult
     public func insertMany(_ values: [CollectionType], options: InsertManyOptions? = nil) throws -> InsertManyResult? {
-        let encoder = BsonEncoder()
-
-        let documents = try values.map { try encoder.encode($0) }
-        for doc in documents where !doc.keys.contains("_id") {
-            try ObjectId().encode(to: doc.storage, forKey: "_id")
+        if values.isEmpty {
+            throw MongoError.invalidArgument(message: "values cannot be empty")
         }
-        var docPointers = documents.map { UnsafePointer($0.data) }
 
+        let encoder = BsonEncoder()
         let opts = try encoder.encode(options)
+        let documents = try values.map { try encoder.encode($0) }
+        var insertedIds: [Int: BsonValue?] = [:]
+
+        try documents.enumerated().forEach { (index, document) in
+            if !document.keys.contains("_id") {
+                try ObjectId().encode(to: document.storage, forKey: "_id")
+            }
+            insertedIds[index] = document["_id"]
+        }
+
+        var docPointers = documents.map { UnsafePointer($0.data) }
         let reply = Document()
         var error = bson_error_t()
-        if !mongoc_collection_insert_many(
-            self._collection, &docPointers, documents.count, opts?.data, reply.data, &error) {
-            // TODO SWIFT-139: include writeErrors and writeConcernErrors from reply in the error
-            throw MongoError.commandError(message: toErrorString(error))
+
+        let success = mongoc_collection_insert_many(self._collection, &docPointers, values.count, opts?.data, reply.data, &error)
+        let result = try InsertManyResult(reply: reply, insertedIds: insertedIds)
+        let isAcknowledged = self.isAcknowledged(options?.writeConcern)
+
+        guard success else {
+            throw MongoError.insertManyError(code: error.code, message: toErrorString(error),
+                                            result: (isAcknowledged ? result : nil),
+                                            writeErrors: result.writeErrors,
+                                            writeConcernError: result.writeConcernError)
         }
 
-        guard isAcknowledged(options?.writeConcern) else {
-            return nil
-        }
-
-        // if we succeeded, then we should store + return every `_id`
-        var insertedIds = [Int: BsonValue?]()
-        for (index, doc) in documents.enumerated() {
-            insertedIds[index] = doc["_id"]
-        }
-
-        return InsertManyResult(insertedIds: insertedIds)
+        return isAcknowledged ? result : nil
     }
 
     /**
@@ -265,23 +272,25 @@ public struct InsertOneOptions: Encodable {
     }
 }
 
-/// Options to use when executing an `insertMany` command on a `MongoCollection`. 
+/// Options to use when executing a multi-document insert operation on a `MongoCollection`.
 public struct InsertManyOptions: Encodable {
     /// If true, allows the write to opt-out of document level validation.
     public let bypassDocumentValidation: Bool?
 
-    /// If true, when an insert fails, return without performing the remaining
-    /// writes. If false, when a write fails, continue with the remaining writes, if any.
-    /// Defaults to true.
-    public var ordered: Bool = true
+    /**
+     * If true, when an insert fails, return without performing the remaining
+     * writes. If false, when a write fails, continue with the remaining writes,
+     * if any. Defaults to true.
+     */
+    public let ordered: Bool
 
     /// An optional WriteConcern to use for the command.
     public let writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional
-    public init(bypassDocumentValidation: Bool? = nil, ordered: Bool? = true, writeConcern: WriteConcern? = nil) {
+    public init(bypassDocumentValidation: Bool? = nil, ordered: Bool? = nil, writeConcern: WriteConcern? = nil) {
         self.bypassDocumentValidation = bypassDocumentValidation
-        if let o = ordered { self.ordered = o }
+        self.ordered = ordered ?? true
         self.writeConcern = writeConcern
     }
 }
@@ -362,10 +371,39 @@ public struct InsertOneResult {
     public let insertedId: BsonValue?
 }
 
-/// The result of an `insertMany` command on a `MongoCollection`. 
+/// The result of a multi-document insert operation on a `MongoCollection`.
 public struct InsertManyResult {
-    /// Map of the index of the inserted document to the id of the inserted document.
+    /// Number of documents inserted.
+    public let insertedCount: Int
+
+    /// Map of the index of the document in `values` to the value of its ID
     public let insertedIds: [Int: BsonValue?]
+
+    fileprivate var writeErrors: [WriteError] = []
+    fileprivate var writeConcernError: WriteConcernError?
+
+    /**
+     * Create an `InsertManyResult` from a reply and map of inserted IDs.
+     *
+     * Note: we forgo using a Decodable initializer because we still need to
+     * explicitly add `insertedIds`.
+     *
+     * - Parameters:
+     *   - reply: A `Document` result from `mongoc_collection_insert_many()`
+     *   - insertedIds: Map of inserted IDs
+     */
+    fileprivate init(reply: Document, insertedIds: [Int: BsonValue?]) throws {
+        self.insertedCount = reply["insertedCount"] as? Int ?? 0
+        self.insertedIds = insertedIds
+
+        if let writeErrors = reply["writeErrors"] as? [Document] {
+            self.writeErrors = try writeErrors.map { try BsonDecoder().decode(WriteError.self, from: $0) }
+        }
+
+        if let writeConcernErrors = reply["writeConcernErrors"] as? [Document], writeConcernErrors.indices.contains(0) {
+            self.writeConcernError = try BsonDecoder().decode(WriteConcernError.self, from: writeConcernErrors[0])
+        }
+    }
 }
 
 /// The result of a `delete` command on a `MongoCollection`. 
