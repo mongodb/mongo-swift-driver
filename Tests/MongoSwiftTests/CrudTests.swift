@@ -36,11 +36,11 @@ final class CrudTests: XCTestCase {
         for (filename, file) in try parseFiles(atPath: forPath) {
 
             if try !client.serverVersionIsInRange(file.minServerVersion, file.maxServerVersion) {
-                print("Skipping tests from file \(filename).json for server version \(try client.serverVersion())")
+                print("Skipping tests from file \(filename) for server version \(try client.serverVersion())")
                 continue
             }
 
-            print("\n------------\nExecuting tests from file \(forPath)/\(filename).json...\n")
+            print("\n------------\nExecuting tests from file \(forPath)/\(filename)...\n")
 
             // For each file, execute the test cases contained in it
             for (i, test) in file.tests.enumerated() {
