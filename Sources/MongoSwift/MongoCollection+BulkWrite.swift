@@ -108,7 +108,7 @@ extension MongoCollection {
         /// Adds the `insertOne` operation to a bulk write
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
             let document = try BsonEncoder().encode(self.document)
-            if !document.keys.contains("_id") {
+            if !document.hasKey("_id") {
                 try ObjectId().encode(to: document.storage, forKey: "_id")
             }
 

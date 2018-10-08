@@ -17,7 +17,7 @@ extension MongoCollection {
     public func insertOne(_ value: CollectionType, options: InsertOneOptions? = nil) throws -> InsertOneResult? {
         let encoder = BsonEncoder()
         let document = try encoder.encode(value)
-        if !document.keys.contains("_id") {
+        if !document.hasKey("_id") {
             try ObjectId().encode(to: document.storage, forKey: "_id")
         }
         let opts = try encoder.encode(options)
