@@ -308,7 +308,8 @@ private class BulkWriteTest: CrudTest {
     private static func prepareIds(_ ids: [Int: BsonValue?]) -> Document {
         var document = Document()
 
-        for (index, id) in ids {
+        // Dictionaries are unsorted. Sort before comparing with expected map
+        for (index, id) in ids.sorted(by: { $0.key < $1.key }) {
             document[String(index)] = id
         }
 
