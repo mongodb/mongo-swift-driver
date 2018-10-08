@@ -246,7 +246,7 @@ private class BulkWriteTest: CrudTest {
             return nil
         }
 
-        let ordered = options["ordered"] as? Bool ?? true
+        let ordered = options["ordered"] as? Bool
 
         return BulkWriteOptions(ordered: ordered)
     }

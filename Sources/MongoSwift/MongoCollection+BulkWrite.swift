@@ -314,9 +314,9 @@ public struct BulkWriteOptions: Encodable {
     public let writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional
-    public init(bypassDocumentValidation: Bool? = nil, ordered: Bool = true, writeConcern: WriteConcern? = nil) {
-        self.ordered = ordered
+    public init(bypassDocumentValidation: Bool? = nil, ordered: Bool? = nil, writeConcern: WriteConcern? = nil) {
         self.bypassDocumentValidation = bypassDocumentValidation
+        self.ordered = ordered ?? true
         self.writeConcern = writeConcern
     }
 }
