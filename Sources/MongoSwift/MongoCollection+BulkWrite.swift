@@ -108,7 +108,7 @@ extension MongoCollection {
         /// Adds the `insertOne` operation to a bulk write
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
             let document = try BsonEncoder().encode(self.document)
-            if !document.keys.contains("_id") {
+            if !document.hasKey("_id") {
                 try ObjectId().encode(to: document.storage, forKey: "_id")
             }
 
@@ -314,9 +314,9 @@ public struct BulkWriteOptions: Encodable {
     public let writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional
-    public init(bypassDocumentValidation: Bool? = nil, ordered: Bool = true, writeConcern: WriteConcern? = nil) {
-        self.ordered = ordered
+    public init(bypassDocumentValidation: Bool? = nil, ordered: Bool? = nil, writeConcern: WriteConcern? = nil) {
         self.bypassDocumentValidation = bypassDocumentValidation
+        self.ordered = ordered ?? true
         self.writeConcern = writeConcern
     }
 }
@@ -348,7 +348,7 @@ public struct BulkWriteResult {
     fileprivate var writeConcernError: WriteConcernError?
 
     /**
-     * Create a BulkWriteResult operation from a reply and map of inserted IDs.
+     * Create a `BulkWriteResult` from a reply and map of inserted IDs.
      *
      * Note: we forgo using a Decodable initializer because we still need to
      * build a map for `upsertedIds` and explicitly add `insertedIds`. While

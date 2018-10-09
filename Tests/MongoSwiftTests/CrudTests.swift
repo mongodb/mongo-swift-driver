@@ -36,11 +36,11 @@ final class CrudTests: XCTestCase {
         for (filename, file) in try parseFiles(atPath: forPath) {
 
             if try !client.serverVersionIsInRange(file.minServerVersion, file.maxServerVersion) {
-                print("Skipping tests from file \(filename).json for server version \(try client.serverVersion())")
+                print("Skipping tests from file \(filename) for server version \(try client.serverVersion())")
                 continue
             }
 
-            print("\n------------\nExecuting tests from file \(forPath)/\(filename).json...\n")
+            print("\n------------\nExecuting tests from file \(forPath)/\(filename)...\n")
 
             // For each file, execute the test cases contained in it
             for (i, test) in file.tests.enumerated() {
@@ -140,6 +140,7 @@ private class CrudTest {
     let description: String
     let operationName: String
     let args: Document
+    let error: Bool?
     let result: BsonValue?
     let collection: Document?
 
@@ -165,6 +166,7 @@ private class CrudTest {
         self.operationName = try operation.get("name")
         self.args = try operation.get("arguments")
         let outcome: Document = try test.get("outcome")
+        self.error = outcome["error"] as? Bool
         self.result = outcome["result"]
         self.collection = outcome["collection"] as? Document
     }
@@ -235,9 +237,18 @@ private class BulkWriteTest: CrudTest {
         let requestDocuments: [Document] = try self.args.get("requests")
         let requests = try requestDocuments.map { try BulkWriteTest.parseWriteModel($0) }
         let options = BulkWriteTest.parseBulkWriteOptions(self.args["options"] as? Document)
+        let expectError = self.error ?? false
 
-        if let result = try coll.bulkWrite(requests, options: options) {
-            verifyBulkWriteResult(result)
+        do {
+            if let result = try coll.bulkWrite(requests, options: options) {
+                verifyBulkWriteResult(result)
+            }
+            expect(expectError).to(beFalse())
+        } catch MongoError.bulkWriteError(_, _, let result, _, _) {
+            if let result = result {
+                verifyBulkWriteResult(result)
+            }
+            expect(expectError).to(beTrue())
         }
     }
 
@@ -246,7 +257,7 @@ private class BulkWriteTest: CrudTest {
             return nil
         }
 
-        let ordered = options["ordered"] as? Bool ?? true
+        let ordered = options["ordered"] as? Bool
 
         return BulkWriteOptions(ordered: ordered)
     }
@@ -308,7 +319,8 @@ private class BulkWriteTest: CrudTest {
     private static func prepareIds(_ ids: [Int: BsonValue?]) -> Document {
         var document = Document()
 
-        for (index, id) in ids {
+        // Dictionaries are unsorted. Sort before comparing with expected map
+        for (index, id) in ids.sorted(by: { $0.key < $1.key }) {
             document[String(index)] = id
         }
 
@@ -437,20 +449,55 @@ private class FindOneAndUpdateTest: CrudTest {
 /// A class for executing `insertMany` tests
 private class InsertManyTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<Document>) throws {
-        let docs: [Document] = try self.args.get("documents")
-        let result = try coll.insertMany(docs)
+        let documents: [Document] = try self.args.get("documents")
+        let options = InsertManyTest.parseInsertManyOptions(self.args["options"] as? Document)
+        let expectError = self.error ?? false
 
-        let insertedIds = result?.insertedIds
-        expect(insertedIds).toNot(beNil())
+        do {
+            if let result = try coll.insertMany(documents, options: options) {
+                verifyInsertManyResult(result)
+            }
+            expect(expectError).to(beFalse())
+        } catch MongoError.insertManyError(_, _, let result, _, _) {
+            if let result = result {
+                verifyInsertManyResult(result)
+            }
+            expect(expectError).to(beTrue())
+        }
+    }
 
-        // Convert the result's [Int64: BsonValue] to a Document for easy comparison
-        var reformattedResults = Document()
-        for (index, id) in insertedIds! {
-            reformattedResults[String(index)] = id
+    private static func parseInsertManyOptions(_ options: Document?) -> InsertManyOptions? {
+        guard let options = options else {
+            return nil
         }
 
-        let expected = self.result as? Document
-        expect(reformattedResults).to(equal(expected?["insertedIds"] as? Document))
+        let ordered = options["ordered"] as? Bool
+
+        return InsertManyOptions(ordered: ordered)
+    }
+
+    private static func prepareIds(_ ids: [Int: BsonValue?]) -> Document {
+        var document = Document()
+
+        // Dictionaries are unsorted. Sort before comparing with expected map
+        for (index, id) in ids.sorted(by: { $0.key < $1.key }) {
+            document[String(index)] = id
+        }
+
+        return document
+    }
+
+    private func verifyInsertManyResult(_ result: InsertManyResult) {
+        guard let expected = self.result as? Document else {
+            return
+        }
+
+        if let expectedInsertedCount = expected["insertedCount"] as? Int {
+            expect(result.insertedCount).to(equal(expectedInsertedCount))
+        }
+        if let expectedInsertedIds = expected["insertedIds"] as? Document {
+            expect(InsertManyTest.prepareIds(result.insertedIds)).to(equal(expectedInsertedIds))
+        }
     }
 }
 
