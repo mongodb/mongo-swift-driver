@@ -273,7 +273,7 @@ extension _BSONEncoder {
     }
 
     fileprivate func box<T: Encodable>(_ value: T) throws -> BSONValue? {
-        // if it's already a BSONValue, just return it, unless if it is an 
+        // if it's already a `BSONValue`, just return it, unless if it is an 
         // array. technically [Any] is a BSONValue, but we can only use this
         // short-circuiting if all the elements are actually BSONValues.
         if let bsonValue = value as? BSONValue, !(bsonValue is [Any]) {
