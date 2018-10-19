@@ -195,7 +195,7 @@ internal struct _BSONEncodingStorage {
     }
 }
 
-/// _BSONReferencingEncoder is a special subclass of _BSONEncoder which has its own storage, but references the 
+/// `_BSONReferencingEncoder` is a special subclass of `_BSONEncoder` which has its own storage, but references the 
 /// contents of a different encoder. It's used in superEncoder(), which returns a new encoder for encoding a 
 /// superclass -- the lifetime of the encoder should not escape the scope it's created in, but it doesn't 
 // necessarily know when it's done being used (to write to the original container).
