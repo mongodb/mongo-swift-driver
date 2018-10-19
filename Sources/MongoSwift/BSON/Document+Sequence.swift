@@ -214,7 +214,7 @@ public class DocumentIterator: IteratorProtocol {
             case .dbPointer:
                 return try DBPointer.asDocument(from: self)
             default:
-                return try DocumentIterator.BsonTypeMap[currentType]?.init(from: self)
+                return try DocumentIterator.BSONTypeMap[currentType]?.init(from: self)
             }
         } catch {
             preconditionFailure("Error getting current value from iterator: \(error)")
@@ -222,8 +222,8 @@ public class DocumentIterator: IteratorProtocol {
     }
 
     /// Returns the current value's type. Assumes the iterator is in a valid position.
-    internal var currentType: BsonType {
-        return BsonType(rawValue: bson_iter_type(&self.iter).rawValue) ?? .invalid
+    internal var currentType: BSONType {
+        return BSONType(rawValue: bson_iter_type(&self.iter).rawValue) ?? .invalid
     }
 
     /// Returns the keys from the iterator's current position to the end. The iterator
@@ -280,7 +280,7 @@ public class DocumentIterator: IteratorProtocol {
         try newValue.writeToCurrentPosition(of: self)
     }
 
-    private static let BsonTypeMap: [BsonType: BSONValue.Type] = [
+    private static let BSONTypeMap: [BSONType: BSONValue.Type] = [
         .double: Double.self,
         .string: String.self,
         .document: Document.self,

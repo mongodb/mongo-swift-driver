@@ -282,7 +282,7 @@ private struct _BsonKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
     }
 
     /// Decode a BSONValue type from this container for the given key.
-    private func decodeBsonType<T: BSONValue>(_ type: T.Type, forKey key: Key) throws -> T {
+    private func decodeBSONType<T: BSONValue>(_ type: T.Type, forKey key: Key) throws -> T {
         let entry = try getValue(forKey: key)
         return try self.decoder.with(pushedKey: key) {
             guard let value = try decoder.unboxBsonValue(entry, as: type) else {
@@ -337,7 +337,7 @@ private struct _BsonKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
     }
 
     // swiftlint:disable line_length
-    public func decode(_ type: Bool.Type, forKey key: Key) throws -> Bool { return try decodeBsonType(type, forKey: key) }
+    public func decode(_ type: Bool.Type, forKey key: Key) throws -> Bool { return try decodeBSONType(type, forKey: key) }
     public func decode(_ type: Int.Type, forKey key: Key) throws -> Int { return try decodeNumber(type, forKey: key) }
     public func decode(_ type: Int8.Type, forKey key: Key) throws -> Int8 { return try decodeNumber(type, forKey: key) }
     public func decode(_ type: Int16.Type, forKey key: Key) throws -> Int16 { return try decodeNumber(type, forKey: key) }
@@ -350,7 +350,7 @@ private struct _BsonKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
     public func decode(_ type: UInt64.Type, forKey key: Key) throws -> UInt64 { return try decodeNumber(type, forKey: key) }
     public func decode(_ type: Float.Type, forKey key: Key) throws -> Float { return try decodeNumber(type, forKey: key) }
     public func decode(_ type: Double.Type, forKey key: Key) throws -> Double { return try decodeNumber(type, forKey: key) }
-    public func decode(_ type: String.Type, forKey key: Key) throws -> String { return try decodeBsonType(type, forKey: key) }
+    public func decode(_ type: String.Type, forKey key: Key) throws -> String { return try decodeBSONType(type, forKey: key) }
     // swiftlint:enable line_length
 
     /// Returns the data stored for the given key as represented in a container keyed by the given key type.
@@ -439,7 +439,7 @@ private struct _BsonUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     }
 
     /// Decodes a BSONValue type from this container.
-    private mutating func decodeBsonType<T: BSONValue>(_ type: T.Type) throws -> T {
+    private mutating func decodeBSONType<T: BSONValue>(_ type: T.Type) throws -> T {
         try self.checkAtEnd()
         return try self.decoder.with(pushedKey: _BsonKey(index: self.currentIndex)) {
             guard let typed = try self.decoder.unboxBsonValue(self.container[currentIndex], as: type) else {
@@ -494,7 +494,7 @@ private struct _BsonUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     }
 
     /// Decode all required types from this container using the helpers defined above.
-    public mutating func decode(_ type: Bool.Type) throws -> Bool { return try self.decodeBsonType(type) }
+    public mutating func decode(_ type: Bool.Type) throws -> Bool { return try self.decodeBSONType(type) }
     public mutating func decode(_ type: Int.Type) throws -> Int { return try self.decodeNumber(type) }
     public mutating func decode(_ type: Int8.Type) throws -> Int8 { return try self.decodeNumber(type) }
     public mutating func decode(_ type: Int16.Type) throws -> Int16 { return try self.decodeNumber(type) }
@@ -507,14 +507,14 @@ private struct _BsonUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     public mutating func decode(_ type: UInt64.Type) throws -> UInt64 { return try self.decodeNumber(type) }
     public mutating func decode(_ type: Float.Type) throws -> Float { return try self.decodeNumber(type) }
     public mutating func decode(_ type: Double.Type) throws -> Double { return try self.decodeNumber(type) }
-    public mutating func decode(_ type: String.Type) throws -> String { return try self.decodeBsonType(type) }
+    public mutating func decode(_ type: String.Type) throws -> String { return try self.decodeBSONType(type) }
 
     /// Decodes a nested container keyed by the given type.
     public mutating func nestedContainer<NestedKey: CodingKey>(keyedBy type: NestedKey.Type)
         throws -> KeyedDecodingContainer<NestedKey> {
         return try self.decoder.with(pushedKey: _BsonKey(index: self.currentIndex)) {
             try self.checkAtEnd()
-            let doc = try self.decodeBsonType(Document.self)
+            let doc = try self.decodeBSONType(Document.self)
             self.currentIndex += 1
             let container = _BsonKeyedDecodingContainer<NestedKey>(referencing: self.decoder, wrapping: doc)
             return KeyedDecodingContainer(container)
@@ -525,7 +525,7 @@ private struct _BsonUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     public mutating func nestedUnkeyedContainer() throws -> UnkeyedDecodingContainer {
         return try self.decoder.with(pushedKey: _BsonKey(index: self.currentIndex)) {
             try self.checkAtEnd()
-            let array = try self.decodeBsonType([BSONValue].self)
+            let array = try self.decodeBSONType([BSONValue].self)
             self.currentIndex += 1
             return _BsonUnkeyedDecodingContainer(referencing: self.decoder, wrapping: array)
         }
@@ -556,7 +556,7 @@ extension _BSONDecoder: SingleValueDecodingContainer {
     }
 
     /// Decode a BSONValue type from this container.
-    private func decodeBsonType<T: BSONValue>(_ type: T.Type) throws -> T {
+    private func decodeBSONType<T: BSONValue>(_ type: T.Type) throws -> T {
         try expectNonNull(T.self)
         return try self.unboxBsonValue(self.storage.topContainer, as: T.self)!
     }
@@ -577,7 +577,7 @@ extension _BSONDecoder: SingleValueDecodingContainer {
     public func decodeNil() -> Bool { return self.storage.topContainer == nil }
 
     /// Decode all the required types from this container using the helpers defined above.
-    public func decode(_ type: Bool.Type) throws -> Bool { return try decodeBsonType(type) }
+    public func decode(_ type: Bool.Type) throws -> Bool { return try decodeBSONType(type) }
     public func decode(_ type: Int.Type) throws -> Int { return try decodeNumber(type) }
     public func decode(_ type: Int8.Type) throws -> Int8 { return try decodeNumber(type) }
     public func decode(_ type: Int16.Type) throws -> Int16 { return try decodeNumber(type) }
@@ -590,7 +590,7 @@ extension _BSONDecoder: SingleValueDecodingContainer {
     public func decode(_ type: UInt64.Type) throws -> UInt64 { return try decodeNumber(type) }
     public func decode(_ type: Float.Type) throws -> Float { return try decodeNumber(type) }
     public func decode(_ type: Double.Type) throws -> Double { return try decodeNumber(type) }
-    public func decode(_ type: String.Type) throws -> String { return try decodeBsonType(type) }
+    public func decode(_ type: String.Type) throws -> String { return try decodeBSONType(type) }
 }
 
 internal struct _BsonKey: CodingKey {

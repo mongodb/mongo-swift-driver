@@ -473,27 +473,27 @@ extension _BSONEncoder: SingleValueEncodingContainer {
         self.storage.push(container: nil)
     }
 
-    public func encode(_ value: Bool) throws { try self.encodeBsonType(value) }
-    public func encode(_ value: Int) throws { try self.encodeBsonType(value) }
+    public func encode(_ value: Bool) throws { try self.encodeBSONType(value) }
+    public func encode(_ value: Int) throws { try self.encodeBSONType(value) }
     public func encode(_ value: Int8) throws { try self.encodeNumber(value) }
     public func encode(_ value: Int16) throws { try self.encodeNumber(value) }
-    public func encode(_ value: Int32) throws { try self.encodeBsonType(value) }
-    public func encode(_ value: Int64) throws { try self.encodeBsonType(value) }
+    public func encode(_ value: Int32) throws { try self.encodeBSONType(value) }
+    public func encode(_ value: Int64) throws { try self.encodeBSONType(value) }
     public func encode(_ value: UInt) throws { try self.encodeNumber(value) }
     public func encode(_ value: UInt8) throws { try self.encodeNumber(value) }
     public func encode(_ value: UInt16) throws { try self.encodeNumber(value) }
     public func encode(_ value: UInt32) throws { try self.encodeNumber(value) }
     public func encode(_ value: UInt64) throws { try self.encodeNumber(value) }
-    public func encode(_ value: String) throws { try self.encodeBsonType(value) }
+    public func encode(_ value: String) throws { try self.encodeBSONType(value) }
     public func encode(_ value: Float) throws { try self.encodeNumber(value) }
-    public func encode(_ value: Double) throws { try self.encodeBsonType(value) }
+    public func encode(_ value: Double) throws { try self.encodeBSONType(value) }
 
     private func encodeNumber<T: CodableNumber>(_ value: T) throws {
         assertCanEncodeNewValue()
         self.storage.push(container: try self.boxNumber(value))
     }
 
-    private func encodeBsonType<T: BSONValue>(_ value: T) throws {
+    private func encodeBSONType<T: BSONValue>(_ value: T) throws {
         assertCanEncodeNewValue()
         self.storage.push(container: value)
     }
@@ -509,7 +509,7 @@ extension _BSONEncoder: SingleValueEncodingContainer {
 /// it allows us to preserve Swift type information. 
 private class MutableArray: BSONValue {
 
-    var bsonType: BsonType { return .array }
+    var bsonType: BSONType { return .array }
 
     var array = [BSONValue?]()
 
@@ -547,7 +547,7 @@ private class MutableArray: BSONValue {
 /// because it allows us to preserve Swift type information.
 private class MutableDictionary: BSONValue {
 
-    var bsonType: BsonType { return .document }
+    var bsonType: BSONType { return .document }
 
     // rather than using a dictionary, do this so we preserve key orders
     var keys = [String]()

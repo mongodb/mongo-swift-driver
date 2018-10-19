@@ -210,11 +210,11 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         // if the key already exists in the `Document`, we need to replace it
         if checkForKey, let existingType = DocumentIterator(forDocument: self, advancedTo: key)?.currentType {
 
-            let newBsonType = newValue?.bsonType ?? .null
-            let sameTypes = newBsonType == existingType
+            let newBSONType = newValue?.bsonType ?? .null
+            let sameTypes = newBSONType == existingType
 
             // if the new type is the same and it's a type with no custom data, no-op
-            if sameTypes && [.null, .undefined, .minKey, .maxKey].contains(newBsonType) { return }
+            if sameTypes && [.null, .undefined, .minKey, .maxKey].contains(newBSONType) { return }
 
             // if the new type is the same and it's a fixed length type, we can overwrite
             if let ov = newValue as? Overwritable, ov.bsonType == existingType {
@@ -304,7 +304,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
 
 /// An extension of `Document` to make it a `BSONValue`.
 extension Document: BSONValue {
-    public var bsonType: BsonType { return .document }
+    public var bsonType: BSONType { return .document }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         if !bson_append_document(storage.pointer, key, Int32(key.count), self.data) {

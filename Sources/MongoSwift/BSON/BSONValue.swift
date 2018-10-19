@@ -2,7 +2,7 @@ import Foundation
 import libbson
 
 /// The possible types of BSON values and their corresponding integer values.
-public enum BsonType: UInt32 {
+public enum BSONType: UInt32 {
     /// An invalid type
     case invalid = 0x00,
     /// 64-bit binary floating point
@@ -50,10 +50,10 @@ public enum BsonType: UInt32 {
     maxKey = 0x7f
 }
 
-/// A protocol all types representing BsonTypes must implement.
+/// A protocol all types representing BSONTypes must implement.
 public protocol BSONValue {
-    /// The `BsonType` of this value.
-    var bsonType: BsonType { get }
+    /// The `BSONType` of this value.
+    var bsonType: BSONType { get }
 
     /**
     * Given the `DocumentStorage` backing a `Document`, appends this `BSONValue` to the end.
@@ -74,7 +74,7 @@ public protocol BSONValue {
 /// An extension of `Array` to represent the BSON array type.
 extension Array: BSONValue {
 
-    public var bsonType: BsonType { return .array }
+    public var bsonType: BSONType { return .array }
 
     public init(from iter: DocumentIterator) throws {
         var length: UInt32 = 0
@@ -113,7 +113,7 @@ extension Array: BSONValue {
 /// A struct to represent the BSON Binary type.
 public struct Binary: BSONValue, Equatable, Codable {
 
-    public var bsonType: BsonType { return .binary }
+    public var bsonType: BSONType { return .binary }
 
     /// The binary data.
     public let data: Data
@@ -209,7 +209,7 @@ public struct Binary: BSONValue, Equatable, Codable {
 /// An extension of `Bool` to represent the BSON Boolean type.
 extension Bool: BSONValue {
 
-    public var bsonType: BsonType { return .boolean }
+    public var bsonType: BSONType { return .boolean }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         if !bson_append_bool(storage.pointer, key, Int32(key.count), self) {
@@ -225,7 +225,7 @@ extension Bool: BSONValue {
 /// An extension of `Date` to represent the BSON Datetime type.
 extension Date: BSONValue {
 
-    public var bsonType: BsonType { return .dateTime }
+    public var bsonType: BSONType { return .dateTime }
 
     /// Initializes a new `Date` representing the instance `msSinceEpoch` milliseconds
     /// since the Unix epoch.
@@ -252,7 +252,7 @@ extension Date: BSONValue {
 /// be created, we may need to parse them into `Document`s, and this provides a place for that logic.
 internal struct DBPointer: BSONValue {
 
-    var bsonType: BsonType { return .dbPointer }
+    var bsonType: BSONType { return .dbPointer }
 
     func encode(to storage: DocumentStorage, forKey key: String) throws {
         throw MongoError.bsonEncodeError(message: "`DBPointer`s are deprecated; use a DBRef document instead")
@@ -301,7 +301,7 @@ public struct Decimal128: BSONValue, Equatable, Codable {
     /// This number, represented as a `String`.
     public let data: String
 
-    public var bsonType: BsonType { return .decimal128 }
+    public var bsonType: BSONType { return .decimal128 }
 
     /// Initializes a `Decimal128` value from the provided `String`. Assumes that the input string is correctly
     /// formatted.
@@ -361,7 +361,7 @@ public struct Decimal128: BSONValue, Equatable, Codable {
 /// An extension of `Double` to represent the BSON Double type.
 extension Double: BSONValue {
 
-    public var bsonType: BsonType { return .double }
+    public var bsonType: BSONType { return .double }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         if !bson_append_double(storage.pointer, key, Int32(key.count), self) {
@@ -378,7 +378,7 @@ extension Double: BSONValue {
 /// The `Int` will be encoded as an Int32 if possible, or an Int64 if necessary.
 extension Int: BSONValue {
 
-    public var bsonType: BsonType { return self.int32Value != nil ? .int32 : .int64 }
+    public var bsonType: BSONType { return self.int32Value != nil ? .int32 : .int64 }
 
     internal var int32Value: Int32? { return Int32(exactly: self) }
     internal var int64Value: Int64? { return Int64(exactly: self) }
@@ -402,7 +402,7 @@ extension Int: BSONValue {
 /// An extension of `Int32` to represent the BSON Int32 type.
 extension Int32: BSONValue {
 
-    public var bsonType: BsonType { return .int32 }
+    public var bsonType: BSONType { return .int32 }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         if !bson_append_int32(storage.pointer, key, Int32(key.count), self) {
@@ -418,7 +418,7 @@ extension Int32: BSONValue {
 /// An extension of `Int64` to represent the BSON Int64 type.
 extension Int64: BSONValue {
 
-    public var bsonType: BsonType { return .int64 }
+    public var bsonType: BSONType { return .int64 }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         if !bson_append_int64(storage.pointer, key, Int32(key.count), self) {
@@ -439,7 +439,7 @@ public struct CodeWithScope: BSONValue, Equatable, Codable {
     /// representing the context in which `code` should be evaluated.
     public let scope: Document?
 
-    public var bsonType: BsonType {
+    public var bsonType: BSONType {
         return self.scope == nil ? .javascript : .javascriptWithScope
     }
 
@@ -495,7 +495,7 @@ public struct MaxKey: BSONValue, Equatable, Codable {
 
     private var maxKey = 1
 
-    public var bsonType: BsonType { return .maxKey }
+    public var bsonType: BSONType { return .maxKey }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         if !bson_append_maxkey(storage.pointer, key, Int32(key.count)) {
@@ -516,7 +516,7 @@ public struct MinKey: BSONValue, Equatable, Codable {
 
     private var minKey = 1
 
-    public var bsonType: BsonType { return .minKey }
+    public var bsonType: BSONType { return .minKey }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         if !bson_append_minkey(storage.pointer, key, Int32(key.count)) {
@@ -535,7 +535,7 @@ public struct MinKey: BSONValue, Equatable, Codable {
 /// A struct to represent the BSON ObjectId type.
 public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
 
-    public var bsonType: BsonType { return .objectId }
+    public var bsonType: BSONType { return .objectId }
 
     /// This `ObjectId`'s data represented as a `String`.
     public let oid: String
@@ -626,7 +626,7 @@ extension NSRegularExpression {
 /// A struct to represent a BSON regular expression.
 public struct RegularExpression: BSONValue, Equatable, Codable {
 
-    public var bsonType: BsonType { return .regularExpression }
+    public var bsonType: BSONType { return .regularExpression }
 
     /// The pattern for this regular expression.
     public let pattern: String
@@ -694,7 +694,7 @@ public struct RegularExpression: BSONValue, Equatable, Codable {
 /// An extension of String to represent the BSON string type.
 extension String: BSONValue {
 
-    public var bsonType: BsonType { return .string }
+    public var bsonType: BSONType { return .string }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         if !bson_append_utf8(storage.pointer, key, Int32(key.count), self, Int32(self.count)) {
@@ -715,7 +715,7 @@ extension String: BSONValue {
 /// created, we may need to parse them into `String`s, and this provides a place for that logic.
 internal struct Symbol: BSONValue {
 
-    var bsonType: BsonType { return .symbol }
+    var bsonType: BSONType { return .symbol }
 
     func encode(to storage: DocumentStorage, forKey key: String) throws {
         throw MongoError.bsonEncodeError(message: "Symbols are deprecated; use a string instead")
@@ -739,7 +739,7 @@ internal struct Symbol: BSONValue {
 /// A struct to represent the BSON Timestamp type.
 public struct Timestamp: BSONValue, Equatable, Codable {
 
-    public var bsonType: BsonType { return .timestamp }
+    public var bsonType: BSONType { return .timestamp }
 
     /// A timestamp representing seconds since the Unix epoch.
     public let timestamp: UInt32
