@@ -1,7 +1,7 @@
 import Foundation
 
-/// `BsonDecoder` facilitates the decoding of BSON into semantic `Decodable` types.
-public class BsonDecoder {
+/// `BSONDecoder` facilitates the decoding of BSON into semantic `Decodable` types.
+public class BSONDecoder {
 
     /// Contextual user-provided information for use during decoding.
     public var userInfo: [CodingUserInfoKey: Any] = [:]
@@ -28,7 +28,7 @@ public class BsonDecoder {
     public func decode<T: Decodable>(_ type: T.Type, from document: Document) throws -> T {
         /// if the requested type is `Document` we're done
         if let doc = document as? T { return doc }
-        let _decoder = _BsonDecoder(referencing: document, options: self.options)
+        let _decoder = _BSONDecoder(referencing: document, options: self.options)
         return try type.init(from: _decoder)
     }
 
@@ -78,13 +78,13 @@ public class BsonDecoder {
 }
 
 /// :nodoc: An internal class to actually implement the `Decoder` protocol.
-internal class _BsonDecoder: Decoder {
+internal class _BSONDecoder: Decoder {
 
     /// The decoder's storage.
     internal var storage: _BsonDecodingStorage
 
     /// Options set on the top-level decoder.
-    fileprivate let options: BsonDecoder._Options
+    fileprivate let options: BSONDecoder._Options
 
     /// The path to the current point in decoding.
     public fileprivate(set) var codingPath: [CodingKey]
@@ -107,7 +107,7 @@ internal class _BsonDecoder: Decoder {
 
     /// Initializes `self` with the given top-level container and options.
     fileprivate init(referencing container: BsonValue?, at codingPath: [CodingKey] = [],
-                     options: BsonDecoder._Options) {
+                     options: BSONDecoder._Options) {
         self.storage = _BsonDecodingStorage()
         self.storage.push(container: container)
         self.codingPath = codingPath
@@ -159,7 +159,7 @@ internal class _BsonDecoder: Decoder {
     }
 }
 
-// Storage for a _BsonDecoder.
+// Storage for a _BSONDecoder.
 internal struct _BsonDecodingStorage {
 
     /// The container stack, consisting of `BsonValue?`s. 
@@ -189,8 +189,8 @@ internal struct _BsonDecodingStorage {
     }
 }
 
-/// Extend _BsonDecoder to add methods for "unboxing" values as various types.
-extension _BsonDecoder {
+/// Extend _BSONDecoder to add methods for "unboxing" values as various types.
+extension _BSONDecoder {
 
     fileprivate func unboxBsonValue<T: BsonValue>(_ value: BsonValue?, as type: T.Type) throws -> T? {
         guard let typed = value as? T else {
@@ -234,7 +234,7 @@ private struct _BsonKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
     typealias Key = K
 
     /// A reference to the decoder we're reading from.
-    private let decoder: _BsonDecoder
+    private let decoder: _BSONDecoder
 
     /// A reference to the container we're reading from.
     fileprivate let container: Document
@@ -243,7 +243,7 @@ private struct _BsonKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
     public private(set) var codingPath: [CodingKey]
 
     /// Initializes `self`, referencing the given decoder and container.
-    fileprivate init(referencing decoder: _BsonDecoder, wrapping container: Document) {
+    fileprivate init(referencing decoder: _BSONDecoder, wrapping container: Document) {
         self.decoder = decoder
         self.container = container
         self.codingPath = decoder.codingPath
@@ -385,7 +385,7 @@ private struct _BsonKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
     private func _superDecoder(forKey key: CodingKey) throws -> Decoder {
         return self.decoder.with(pushedKey: key) {
             let value: BsonValue? = self.container[key.stringValue]
-            return _BsonDecoder(referencing: value, at: self.decoder.codingPath, options: self.decoder.options)
+            return _BSONDecoder(referencing: value, at: self.decoder.codingPath, options: self.decoder.options)
         }
     }
 
@@ -403,7 +403,7 @@ private struct _BsonKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
 private struct _BsonUnkeyedDecodingContainer: UnkeyedDecodingContainer {
 
     /// A reference to the decoder we're reading from.
-    private let decoder: _BsonDecoder
+    private let decoder: _BSONDecoder
 
     /// A reference to the container we're reading from.
     private let container: [BsonValue?]
@@ -415,7 +415,7 @@ private struct _BsonUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     public private(set) var currentIndex: Int
 
     /// Initializes `self` by referencing the given decoder and container.
-    fileprivate init(referencing decoder: _BsonDecoder, wrapping container: [BsonValue?]) {
+    fileprivate init(referencing decoder: _BSONDecoder, wrapping container: [BsonValue?]) {
         self.decoder = decoder
         self.container = container
         self.codingPath = decoder.codingPath
@@ -537,13 +537,13 @@ private struct _BsonUnkeyedDecodingContainer: UnkeyedDecodingContainer {
             try self.checkAtEnd()
             let value = self.container[self.currentIndex]
             self.currentIndex += 1
-            return _BsonDecoder(referencing: value, at: self.decoder.codingPath, options: self.decoder.options)
+            return _BSONDecoder(referencing: value, at: self.decoder.codingPath, options: self.decoder.options)
         }
     }
 }
 
 /// :nodoc:
-extension _BsonDecoder: SingleValueDecodingContainer {
+extension _BSONDecoder: SingleValueDecodingContainer {
 
     /// Assert that the top container for this decoder is non-null.
     private func expectNonNull<T>(_ type: T.Type) throws {

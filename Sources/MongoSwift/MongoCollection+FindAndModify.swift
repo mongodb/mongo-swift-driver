@@ -92,7 +92,7 @@ extension MongoCollection {
 
         guard let value = reply["value"] as? Document else { return nil }
 
-        return try BsonDecoder().decode(CollectionType.self, from: value)
+        return try BSONDecoder().decode(CollectionType.self, from: value)
     }
 }
 

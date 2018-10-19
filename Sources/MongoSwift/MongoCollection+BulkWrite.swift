@@ -382,11 +382,11 @@ public struct BulkWriteResult {
         self.upsertedIds = upsertedIds
 
         if let writeErrors = reply["writeErrors"] as? [Document] {
-            self.writeErrors = try writeErrors.map { try BsonDecoder().decode(WriteError.self, from: $0) }
+            self.writeErrors = try writeErrors.map { try BSONDecoder().decode(WriteError.self, from: $0) }
         }
 
         if let writeConcernErrors = reply["writeConcernErrors"] as? [Document], writeConcernErrors.indices.contains(0) {
-            self.writeConcernError = try BsonDecoder().decode(WriteConcernError.self, from: writeConcernErrors[0])
+            self.writeConcernError = try BSONDecoder().decode(WriteConcernError.self, from: writeConcernErrors[0])
         }
     }
 }

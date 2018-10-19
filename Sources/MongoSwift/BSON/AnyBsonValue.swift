@@ -46,7 +46,7 @@ public struct AnyBsonValue: Codable {
 
     /// Initializes a new `AnyBsonValue` from a `Decoder`. 
     ///
-    /// Caveats for usage with `Decoder`s other than MongoSwift's `BsonDecoder` -
+    /// Caveats for usage with `Decoder`s other than MongoSwift's `BSONDecoder` -
     /// 1) This method does *not* support initializing an `AnyBsonValue` wrapping
     /// a `Date`. This is because, in non-BSON formats, `Date`s are encoded
     /// as other types such as `Double` or `String`. We have no way of knowing 
@@ -59,8 +59,8 @@ public struct AnyBsonValue: Codable {
     /// be used.
     // swiftlint:disable:next cyclomatic_complexity
     public init(from decoder: Decoder) throws {
-        // short-circuit in the `BsonDecoder` case
-        if let bsonDecoder = decoder as? _BsonDecoder {
+        // short-circuit in the `BSONDecoder` case
+        if let bsonDecoder = decoder as? _BSONDecoder {
             guard let value = bsonDecoder.storage.topContainer else {
                 throw DecodingError.valueNotFound(
                     BsonValue.self,

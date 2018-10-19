@@ -28,9 +28,9 @@ extension Document: Codable {
     /// of decoding to `AnyBsonValue`s. See `AnyBsonValue.init(from:)` for 
     /// more information.
     public init(from decoder: Decoder) throws {
-        // if it's a `BsonDecoder` we should just short-circuit and 
+        // if it's a `BSONDecoder` we should just short-circuit and 
         // return the container `Document`
-        if let bsonDecoder = decoder as? _BsonDecoder {
+        if let bsonDecoder = decoder as? _BSONDecoder {
             let topContainer = bsonDecoder.storage.topContainer
             guard let doc = topContainer as? Document else {
                 throw DecodingError._typeMismatch(at: [], expectation: Document.self, reality: topContainer)
