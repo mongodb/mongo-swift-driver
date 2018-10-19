@@ -87,7 +87,7 @@ final class Document_SequenceTests: XCTestCase {
                             "decimal128", "minkey", "maxkey", "date", "timestamp"]
         for (k, v) in doc {
             expect(k).to(equal(expectedKeys.removeFirst()))
-            // we can't compare BSONValues for equality, nor can we cast v
+            // we can't compare `BSONValue`s for equality, nor can we cast v
             // to a dynamically determined equatable type, so just verify
             // it's a BSONValue anyway 
             expect(v).to(beAKindOf(BSONValue.self))
