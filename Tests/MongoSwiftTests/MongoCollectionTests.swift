@@ -384,7 +384,7 @@ final class MongoCollectionTests: XCTestCase {
     }
 
     func testEncodeCursorType() throws {
-        let encoder = BsonEncoder()
+        let encoder = BSONEncoder()
 
         let nonTailable = FindOptions(cursorType: .nonTailable)
         expect(try encoder.encode(nonTailable)).to(equal(["awaitData": false, "tailable": false]))
@@ -397,7 +397,7 @@ final class MongoCollectionTests: XCTestCase {
     }
 
     func testEncodeHint() throws {
-        let encoder = BsonEncoder()
+        let encoder = BSONEncoder()
 
         let stringHint = AggregateOptions(hint: .indexName("hi"))
         expect(try encoder.encode(stringHint)).to(equal(["hint": "hi"]))
