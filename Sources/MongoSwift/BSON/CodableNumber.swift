@@ -35,7 +35,7 @@ extension CodableNumber {
     }
 
     /// By default, just try casting the number to a `BSONValue`. Types
-    /// where that will not work provide their own `asBSONValue` impl. 
+    /// where that will not work provide their own implementation of the `bsonValue` computed property. 
     var bsonValue: BSONValue? {
         return self as? BSONValue
     }
