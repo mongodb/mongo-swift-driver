@@ -214,7 +214,7 @@ public class DocumentIterator: IteratorProtocol {
             case .dbPointer:
                 return try DBPointer.asDocument(from: self)
             default:
-                return try DocumentIterator.BSONTypeMap[currentType]?.init(from: self)
+                return try DocumentIterator.bsonTypeMap[currentType]?.init(from: self)
             }
         } catch {
             preconditionFailure("Error getting current value from iterator: \(error)")
