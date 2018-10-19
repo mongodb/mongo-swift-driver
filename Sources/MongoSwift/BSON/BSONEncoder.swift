@@ -163,7 +163,7 @@ internal class _BSONEncoder: Encoder {
 internal struct _BSONEncodingStorage {
 
     /// The container stack.
-    /// Elements may be any BSONValue type.
+    /// Elements may be any `BSONValue` type.
     internal var containers: [BSONValue?] = []
 
     /// Initializes `self` with no containers.
