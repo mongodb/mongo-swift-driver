@@ -50,7 +50,7 @@ public enum BSONType: UInt32 {
     maxKey = 0x7f
 }
 
-/// A protocol all types representing BSONTypes must implement.
+/// A protocol all types representing `BSONType`s must implement.
 public protocol BSONValue {
     /// The `BSONType` of this value.
     var bsonType: BSONType { get }
