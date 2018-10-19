@@ -421,7 +421,7 @@ public struct UpdateResult: Decodable {
     public let modifiedCount: Int
 
     /// The identifier of the inserted document if an upsert took place.
-    public let upsertedId: AnyBsonValue?
+    public let upsertedId: AnyBSONValue?
 
     /// The number of documents that were upserted.
     public let upsertedCount: Int

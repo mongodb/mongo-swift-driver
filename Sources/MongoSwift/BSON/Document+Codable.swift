@@ -11,11 +11,11 @@ extension Document: Codable {
         }
 
         // otherwise, we need to go through each (key, value) pair,
-        // and then wrap the values in `AnyBsonValue`s and encode them
+        // and then wrap the values in `AnyBSONValue`s and encode them
         var container = encoder.container(keyedBy: _BsonKey.self)
         for (k, v) in self {
             let key = _BsonKey(stringValue: k)!
-            if let val = AnyBsonValue(ifPresent: v) {
+            if let val = AnyBSONValue(ifPresent: v) {
                 try container.encode(val, forKey: key)
             } else {
                 try container.encodeNil(forKey: key)
@@ -25,7 +25,7 @@ extension Document: Codable {
 
     /// This method will work with any `Decoder`, but for non-BSON
     /// decoders, we do not support decoding `Date`s, because of limitations
-    /// of decoding to `AnyBsonValue`s. See `AnyBsonValue.init(from:)` for 
+    /// of decoding to `AnyBSONValue`s. See `AnyBSONValue.init(from:)` for 
     /// more information.
     public init(from decoder: Decoder) throws {
         // if it's a `BSONDecoder` we should just short-circuit and 
@@ -39,7 +39,7 @@ extension Document: Codable {
             return
         }
 
-        // otherwise, get a keyed container and decode each key as an `AnyBsonValue`,
+        // otherwise, get a keyed container and decode each key as an `AnyBSONValue`,
         // and then extract the wrapped `BsonValue`s and store them in the doc
         let container = try decoder.container(keyedBy: _BsonKey.self)
         var output = Document()
@@ -48,7 +48,7 @@ extension Document: Codable {
             if try container.decodeNil(forKey: key) {
                 output[k] = nil
             } else {
-                output[k] = try container.decode(AnyBsonValue.self, forKey: key).value
+                output[k] = try container.decode(AnyBSONValue.self, forKey: key).value
             }
         }
         self = output

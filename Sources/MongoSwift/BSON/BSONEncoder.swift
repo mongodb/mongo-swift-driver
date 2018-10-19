@@ -30,7 +30,7 @@ public class BSONEncoder {
         switch value {
         case let doc as Document:
             return doc
-        case let abv as AnyBsonValue:
+        case let abv as AnyBSONValue:
             if let doc = abv.value as? Document { return doc }
         default:
             break

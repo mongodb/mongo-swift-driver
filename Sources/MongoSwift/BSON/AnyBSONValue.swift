@@ -2,16 +2,16 @@ import Foundation
 
 /// A struct wrapping a `BsonValue` type that allows for encoding/
 /// decoding `BsonValue`s of unknown type.  
-public struct AnyBsonValue: Codable {
+public struct AnyBSONValue: Codable {
     /// The `BsonValue` wrapped by this struct. 
     public let value: BsonValue
 
-    /// Initializes a new `AnyBsonValue` wrapping the provided `BsonValue`.
+    /// Initializes a new `AnyBSONValue` wrapping the provided `BsonValue`.
     public init(_ value: BsonValue) {
         self.value = value
     }
 
-    /// If the provided `BsonValue` is not `nil`, initializes a new `AnyBsonValue` 
+    /// If the provided `BsonValue` is not `nil`, initializes a new `AnyBSONValue` 
     /// wrapping that value. Otherwise, returns `nil`. 
     public init?(ifPresent value: BsonValue?) {
         guard let v = value else { return nil }
@@ -26,10 +26,10 @@ public struct AnyBsonValue: Codable {
         }
 
         // in this case, we need to wrap each value in an
-        // `AnyBsonValue`, before we encode, because `[BsonValue]` 
+        // `AnyBSONValue`, before we encode, because `[BsonValue]` 
         // is not considered `Encodable`
         if let arr = self.value as? [BsonValue?] {
-            let mapped = arr.map { AnyBsonValue(ifPresent: $0) }
+            let mapped = arr.map { AnyBSONValue(ifPresent: $0) }
             try mapped.encode(to: encoder)
         } else {
             if let c = self.value as? Codable {
@@ -44,10 +44,10 @@ public struct AnyBsonValue: Codable {
         }
     }
 
-    /// Initializes a new `AnyBsonValue` from a `Decoder`. 
+    /// Initializes a new `AnyBSONValue` from a `Decoder`. 
     ///
     /// Caveats for usage with `Decoder`s other than MongoSwift's `BSONDecoder` -
-    /// 1) This method does *not* support initializing an `AnyBsonValue` wrapping
+    /// 1) This method does *not* support initializing an `AnyBSONValue` wrapping
     /// a `Date`. This is because, in non-BSON formats, `Date`s are encoded
     /// as other types such as `Double` or `String`. We have no way of knowing 
     /// which type is the intended one when decoding to a `Document`, as `Document`s 
@@ -100,7 +100,7 @@ public struct AnyBsonValue: Codable {
             self.value = value
         } else if let value = try? container.decode(MaxKey.self) {
             self.value = value
-        } else if let value = try? container.decode([AnyBsonValue?].self) {
+        } else if let value = try? container.decode([AnyBSONValue?].self) {
             self.value = value.map { $0?.value }
         } else if let value = try? container.decode(Document.self) {
             self.value = value
