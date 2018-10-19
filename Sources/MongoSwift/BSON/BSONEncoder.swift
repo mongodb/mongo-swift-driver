@@ -260,7 +260,7 @@ private class _BSONReferencingEncoder: _BSONEncoder {
 
 }
 
-/// Extend _BSONEncoder to add methods for "boxing" values.
+/// Extend `_BSONEncoder` to add methods for "boxing" values.
 extension _BSONEncoder {
 
     /// Converts a `CodableNumber` to a `BSONValue` type. Throws if `value` cannot be 
