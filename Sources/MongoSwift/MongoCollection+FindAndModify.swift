@@ -44,7 +44,7 @@ extension MongoCollection {
     @discardableResult
     public func findOneAndReplace(filter: Document, replacement: CollectionType,
                                   options: FindOneAndReplaceOptions? = nil) throws -> CollectionType? {
-        let update = try BsonEncoder().encode(replacement)
+        let update = try BSONEncoder().encode(replacement)
         return try self.findAndModify(filter: filter, update: update, options: options)
     }
 
@@ -303,7 +303,7 @@ private class FindAndModifyOptions {
 
         if let wc = writeConcern {
             do {
-                extra["writeConcern"] = try BsonEncoder().encode(wc)
+                extra["writeConcern"] = try BSONEncoder().encode(wc)
             } catch {
                 throw MongoError.invalidArgument(message: "Error encoding WriteConcern \(wc): \(error)")
             }

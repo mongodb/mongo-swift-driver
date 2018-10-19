@@ -15,7 +15,7 @@ extension MongoCollection {
      */
     @discardableResult
     public func insertOne(_ value: CollectionType, options: InsertOneOptions? = nil) throws -> InsertOneResult? {
-        let encoder = BsonEncoder()
+        let encoder = BSONEncoder()
         let document = try encoder.encode(value)
         if !document.hasKey("_id") {
             try ObjectId().encode(to: document.storage, forKey: "_id")
@@ -54,7 +54,7 @@ extension MongoCollection {
             throw MongoError.invalidArgument(message: "values cannot be empty")
         }
 
-        let encoder = BsonEncoder()
+        let encoder = BSONEncoder()
         let opts = try encoder.encode(options)
         let documents = try values.map { try encoder.encode($0) }
         var insertedIds: [Int: BsonValue?] = [:]
@@ -98,7 +98,7 @@ extension MongoCollection {
     @discardableResult
     public func replaceOne(filter: Document, replacement: CollectionType,
                            options: ReplaceOptions? = nil) throws -> UpdateResult? {
-        let encoder = BsonEncoder()
+        let encoder = BSONEncoder()
         let replacementDoc = try encoder.encode(replacement)
         let opts = try encoder.encode(options)
         let reply = Document()
@@ -129,7 +129,7 @@ extension MongoCollection {
      */
     @discardableResult
     public func updateOne(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
-        let encoder = BsonEncoder()
+        let encoder = BSONEncoder()
         let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
@@ -159,7 +159,7 @@ extension MongoCollection {
      */
     @discardableResult
     public func updateMany(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
-        let encoder = BsonEncoder()
+        let encoder = BSONEncoder()
         let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
@@ -188,7 +188,7 @@ extension MongoCollection {
      */
     @discardableResult
     public func deleteOne(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
-        let encoder = BsonEncoder()
+        let encoder = BSONEncoder()
         let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
@@ -217,7 +217,7 @@ extension MongoCollection {
      */
     @discardableResult
     public func deleteMany(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
-        let encoder = BsonEncoder()
+        let encoder = BSONEncoder()
         let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()

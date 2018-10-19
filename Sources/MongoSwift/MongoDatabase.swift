@@ -267,7 +267,7 @@ public class MongoDatabase {
      */
     public func createCollection<T: Codable>(_ name: String, withType: T.Type,
                                              options: CreateCollectionOptions? = nil) throws -> MongoCollection<T> {
-        let encoder = BsonEncoder()
+        let encoder = BSONEncoder()
         let opts = try encoder.encode(options)
         var error = bson_error_t()
 
@@ -291,7 +291,7 @@ public class MongoDatabase {
      * - Returns: a `MongoCursor` over an array of collections
      */
     public func listCollections(options: ListCollectionsOptions? = nil) throws -> MongoCursor<Document> {
-        let encoder = BsonEncoder()
+        let encoder = BSONEncoder()
         let opts = try encoder.encode(options)
         guard let collections = mongoc_database_find_collections_with_opts(self._database, opts?.data) else {
             throw MongoError.invalidResponse()
@@ -314,7 +314,7 @@ public class MongoDatabase {
     @discardableResult
     public func runCommand(_ command: Document, options: RunCommandOptions? = nil) throws -> Document {
         let rp = options?.readPreference?._readPreference
-        let opts = try BsonEncoder().encode(options)
+        let opts = try BSONEncoder().encode(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_database_command_with_opts(self._database, command.data, rp, opts?.data, reply.data, &error) {

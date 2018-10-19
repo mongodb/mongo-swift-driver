@@ -21,7 +21,7 @@ extension MongoCollection {
             throw MongoError.invalidArgument(message: "requests cannot be empty")
         }
 
-        let opts = try BsonEncoder().encode(options)
+        let opts = try BSONEncoder().encode(options)
         let bulk = BulkWriteOperation(collection: self._collection, opts: opts?.data)
 
         try requests.enumerated().forEach { (index, model) in
@@ -54,7 +54,7 @@ extension MongoCollection {
 
         /// Adds the `deleteOne` operation to a bulk write
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
-            let opts = try BsonEncoder().encode(self.options)
+            let opts = try BSONEncoder().encode(self.options)
             var error = bson_error_t()
 
             guard mongoc_bulk_operation_remove_one_with_opts(bulk.bulk, self.filter.data, opts.data, &error) else {
@@ -82,7 +82,7 @@ extension MongoCollection {
 
         /// Adds the `deleteMany` operation to a bulk write
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
-            let opts = try BsonEncoder().encode(options)
+            let opts = try BSONEncoder().encode(options)
             var error = bson_error_t()
 
             guard mongoc_bulk_operation_remove_many_with_opts(bulk.bulk, self.filter.data, opts.data, &error) else {
@@ -107,7 +107,7 @@ extension MongoCollection {
 
         /// Adds the `insertOne` operation to a bulk write
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
-            let document = try BsonEncoder().encode(self.document)
+            let document = try BSONEncoder().encode(self.document)
             if !document.hasKey("_id") {
                 try ObjectId().encode(to: document.storage, forKey: "_id")
             }
@@ -150,7 +150,7 @@ extension MongoCollection {
 
         /// Adds the `replaceOne` operation to a bulk write
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
-            let encoder = BsonEncoder()
+            let encoder = BSONEncoder()
             let replacement = try encoder.encode(self.replacement)
             let opts = try encoder.encode(self.options)
             var error = bson_error_t()
@@ -192,7 +192,7 @@ extension MongoCollection {
 
         /// Adds the `updateOne` operation to a bulk write
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
-            let opts = try BsonEncoder().encode(self.options)
+            let opts = try BSONEncoder().encode(self.options)
             var error = bson_error_t()
 
             guard mongoc_bulk_operation_update_one_with_opts(bulk.bulk, self.filter.data, self.update.data, opts.data, &error) else {
@@ -226,7 +226,7 @@ extension MongoCollection {
 
         /// Adds the `updateMany` operation to a bulk write
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
-            let opts = try BsonEncoder().encode(self.options)
+            let opts = try BSONEncoder().encode(self.options)
             var error = bson_error_t()
 
             guard mongoc_bulk_operation_update_many_with_opts(bulk.bulk, self.filter.data, self.update.data, opts.data, &error) else {

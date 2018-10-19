@@ -3,9 +3,9 @@ import Foundation
 /// An extension of `Document` to implement the `Codable` protocol.
 extension Document: Codable {
     public func encode(to encoder: Encoder) throws {
-        // if we're using a `BsonEncoder`, we can just short-circuit
+        // if we're using a `BSONEncoder`, we can just short-circuit
         // and directly add the `Document` to its storage.
-        if let bsonEncoder = encoder as? _BsonEncoder {
+        if let bsonEncoder = encoder as? _BSONEncoder {
             bsonEncoder.storage.containers.append(self)
             return
         }

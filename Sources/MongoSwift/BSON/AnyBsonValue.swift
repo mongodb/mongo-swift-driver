@@ -19,8 +19,8 @@ public struct AnyBsonValue: Codable {
     }
 
     public func encode(to encoder: Encoder) throws {
-        // short-circuit in the `BsonEncoder` case
-        if let bsonEncoder = encoder as? _BsonEncoder {
+        // short-circuit in the `BSONEncoder` case
+        if let bsonEncoder = encoder as? _BSONEncoder {
             bsonEncoder.storage.containers.append(self.value)
             return
         }

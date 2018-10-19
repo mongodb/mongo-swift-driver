@@ -1,8 +1,8 @@
 import Foundation
 import libmongoc
 
-/// `BsonEncoder` facilitates the encoding of `Encodable` values into BSON.
-public class BsonEncoder {
+/// `BSONEncoder` facilitates the encoding of `Encodable` values into BSON.
+public class BSONEncoder {
 
     /// Contextual user-provided information for use during encoding.
     public var userInfo: [CodingUserInfoKey: Any] = [:]
@@ -36,7 +36,7 @@ public class BsonEncoder {
             break
         }
 
-        let encoder = _BsonEncoder(options: self.options)
+        let encoder = _BSONEncoder(options: self.options)
 
         guard let topLevel = try encoder.box(value) else {
             throw EncodingError.invalidValue(
@@ -90,13 +90,13 @@ public class BsonEncoder {
 }
 
 /// :nodoc: An internal class to implement the `Encoder` protocol.
-internal class _BsonEncoder: Encoder {
+internal class _BSONEncoder: Encoder {
 
     /// The encoder's storage.
     internal var storage: _BsonEncodingStorage
 
     /// Options set on the top-level encoder.
-    fileprivate let options: BsonEncoder._Options
+    fileprivate let options: BSONEncoder._Options
 
     /// The path to the current point in encoding.
     public var codingPath: [CodingKey]
@@ -107,7 +107,7 @@ internal class _BsonEncoder: Encoder {
     }
 
     /// Initializes `self` with the given top-level encoder options.
-    fileprivate init(options: BsonEncoder._Options, codingPath: [CodingKey] = []) {
+    fileprivate init(options: BSONEncoder._Options, codingPath: [CodingKey] = []) {
         self.options = options
         self.storage = _BsonEncodingStorage()
         self.codingPath = codingPath
@@ -195,11 +195,11 @@ internal struct _BsonEncodingStorage {
     }
 }
 
-/// _BsonReferencingEncoder is a special subclass of _BsonEncoder which has its own storage, but references the 
+/// _BsonReferencingEncoder is a special subclass of _BSONEncoder which has its own storage, but references the 
 /// contents of a different encoder. It's used in superEncoder(), which returns a new encoder for encoding a 
 /// superclass -- the lifetime of the encoder should not escape the scope it's created in, but it doesn't 
 // necessarily know when it's done being used (to write to the original container).
-private class _BsonReferencingEncoder: _BsonEncoder {
+private class _BsonReferencingEncoder: _BSONEncoder {
 
     /// The type of container we're referencing.
     private enum Reference {
@@ -211,12 +211,12 @@ private class _BsonReferencingEncoder: _BsonEncoder {
     }
 
     /// The encoder we're referencing.
-    fileprivate let encoder: _BsonEncoder
+    fileprivate let encoder: _BSONEncoder
 
     /// The container reference itself.
     private let reference: Reference
 
-    fileprivate init(referencing encoder: _BsonEncoder, at index: Int, wrapping array: MutableArray) {
+    fileprivate init(referencing encoder: _BSONEncoder, at index: Int, wrapping array: MutableArray) {
         self.encoder = encoder
         self.reference = .array(array, index)
         super.init(options: encoder.options, codingPath: encoder.codingPath)
@@ -225,7 +225,7 @@ private class _BsonReferencingEncoder: _BsonEncoder {
     }
 
     /// Initializes `self` by referencing the given dictionary container in the given encoder.
-    fileprivate init(referencing encoder: _BsonEncoder, key: CodingKey, wrapping dictionary: MutableDictionary) {
+    fileprivate init(referencing encoder: _BSONEncoder, key: CodingKey, wrapping dictionary: MutableDictionary) {
         self.encoder = encoder
         self.reference = .dictionary(dictionary, key.stringValue)
         super.init(options: encoder.options, codingPath: encoder.codingPath)
@@ -260,8 +260,8 @@ private class _BsonReferencingEncoder: _BsonEncoder {
 
 }
 
-/// Extend _BsonEncoder to add methods for "boxing" values.
-extension _BsonEncoder {
+/// Extend _BSONEncoder to add methods for "boxing" values.
+extension _BSONEncoder {
 
     /// Converts a `CodableNumber` to a `BsonValue` type. Throws if `value` cannot be 
     /// exactly represented by an `Int`, `Int32`, `Int64`, or `Double`. 
@@ -282,7 +282,7 @@ extension _BsonEncoder {
             return bsonArray
         }
 
-        // The value should request a container from the _BsonEncoder.
+        // The value should request a container from the _BSONEncoder.
         let depth = self.storage.count
         do {
             try value.encode(to: self)
@@ -302,7 +302,7 @@ private struct _BsonKeyedEncodingContainer<K: CodingKey> : KeyedEncodingContaine
     typealias Key = K
 
     /// A reference to the encoder we're writing to.
-    private let encoder: _BsonEncoder
+    private let encoder: _BSONEncoder
 
     /// A reference to the container we're writing to.
     private let container: MutableDictionary
@@ -311,7 +311,7 @@ private struct _BsonKeyedEncodingContainer<K: CodingKey> : KeyedEncodingContaine
     public private(set) var codingPath: [CodingKey]
 
     /// Initializes `self` with the given references.
-    fileprivate init(referencing encoder: _BsonEncoder, codingPath: [CodingKey],
+    fileprivate init(referencing encoder: _BSONEncoder, codingPath: [CodingKey],
                      wrapping container: MutableDictionary) {
         self.encoder = encoder
         self.codingPath = codingPath
@@ -383,7 +383,7 @@ private struct _BsonKeyedEncodingContainer<K: CodingKey> : KeyedEncodingContaine
 private struct _BsonUnkeyedEncodingContainer: UnkeyedEncodingContainer {
 
     /// A reference to the encoder we're writing to.
-    private let encoder: _BsonEncoder
+    private let encoder: _BSONEncoder
 
     /// A reference to the container we're writing to.
     private let container: MutableArray
@@ -397,7 +397,7 @@ private struct _BsonUnkeyedEncodingContainer: UnkeyedEncodingContainer {
     }
 
     /// Initializes `self` with the given references.
-    fileprivate init(referencing encoder: _BsonEncoder, codingPath: [CodingKey], wrapping container: MutableArray) {
+    fileprivate init(referencing encoder: _BSONEncoder, codingPath: [CodingKey], wrapping container: MutableArray) {
         self.encoder = encoder
         self.codingPath = codingPath
         self.container = container
@@ -461,7 +461,7 @@ private struct _BsonUnkeyedEncodingContainer: UnkeyedEncodingContainer {
 }
 
 /// :nodoc:
-extension _BsonEncoder: SingleValueEncodingContainer {
+extension _BSONEncoder: SingleValueEncodingContainer {
 
     private func assertCanEncodeNewValue() {
         precondition(self.canEncodeNewValue,

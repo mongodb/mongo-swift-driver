@@ -111,7 +111,7 @@ public final class ReadPreference {
                 throw MongoError.readPreferenceError(message: "tagSets may not be used with primary mode")
             }
 
-            let encoder = BsonEncoder()
+            let encoder = BSONEncoder()
             let tags = try encoder.encode(Document(tagSets))
             mongoc_read_prefs_set_tags(self._readPreference, tags.data)
         }
