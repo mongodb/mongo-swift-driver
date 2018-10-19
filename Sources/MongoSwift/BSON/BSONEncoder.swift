@@ -93,7 +93,7 @@ public class BSONEncoder {
 internal class _BSONEncoder: Encoder {
 
     /// The encoder's storage.
-    internal var storage: _BsonEncodingStorage
+    internal var storage: _BSONEncodingStorage
 
     /// Options set on the top-level encoder.
     fileprivate let options: BSONEncoder._Options
@@ -109,7 +109,7 @@ internal class _BSONEncoder: Encoder {
     /// Initializes `self` with the given top-level encoder options.
     fileprivate init(options: BSONEncoder._Options, codingPath: [CodingKey] = []) {
         self.options = options
-        self.storage = _BsonEncodingStorage()
+        self.storage = _BSONEncodingStorage()
         self.codingPath = codingPath
     }
 
@@ -133,7 +133,7 @@ internal class _BSONEncoder: Encoder {
             }
             topContainer = container
         }
-        let container = _BsonKeyedEncodingContainer<Key>(
+        let container = _BSONKeyedEncodingContainer<Key>(
             referencing: self, codingPath: self.codingPath, wrapping: topContainer)
         return KeyedEncodingContainer(container)
     }
@@ -152,7 +152,7 @@ internal class _BSONEncoder: Encoder {
             topContainer = container
         }
 
-        return _BsonUnkeyedEncodingContainer(referencing: self, codingPath: self.codingPath, wrapping: topContainer)
+        return _BSONUnkeyedEncodingContainer(referencing: self, codingPath: self.codingPath, wrapping: topContainer)
     }
 
     public func singleValueContainer() -> SingleValueEncodingContainer {
@@ -160,7 +160,7 @@ internal class _BSONEncoder: Encoder {
     }
 }
 
-internal struct _BsonEncodingStorage {
+internal struct _BSONEncodingStorage {
 
     /// The container stack.
     /// Elements may be any BSONValue type.
@@ -195,11 +195,11 @@ internal struct _BsonEncodingStorage {
     }
 }
 
-/// _BsonReferencingEncoder is a special subclass of _BSONEncoder which has its own storage, but references the 
+/// _BSONReferencingEncoder is a special subclass of _BSONEncoder which has its own storage, but references the 
 /// contents of a different encoder. It's used in superEncoder(), which returns a new encoder for encoding a 
 /// superclass -- the lifetime of the encoder should not escape the scope it's created in, but it doesn't 
 // necessarily know when it's done being used (to write to the original container).
-private class _BsonReferencingEncoder: _BSONEncoder {
+private class _BSONReferencingEncoder: _BSONEncoder {
 
     /// The type of container we're referencing.
     private enum Reference {
@@ -221,7 +221,7 @@ private class _BsonReferencingEncoder: _BSONEncoder {
         self.reference = .array(array, index)
         super.init(options: encoder.options, codingPath: encoder.codingPath)
 
-        self.codingPath.append(_BsonKey(index: index))
+        self.codingPath.append(_BSONKey(index: index))
     }
 
     /// Initializes `self` by referencing the given dictionary container in the given encoder.
@@ -298,7 +298,7 @@ extension _BSONEncoder {
     }
 }
 
-private struct _BsonKeyedEncodingContainer<K: CodingKey> : KeyedEncodingContainerProtocol {
+private struct _BSONKeyedEncodingContainer<K: CodingKey> : KeyedEncodingContainerProtocol {
     typealias Key = K
 
     /// A reference to the encoder we're writing to.
@@ -355,7 +355,7 @@ private struct _BsonKeyedEncodingContainer<K: CodingKey> : KeyedEncodingContaine
         self.codingPath.append(key)
         defer { self.codingPath.removeLast() }
 
-        let container = _BsonKeyedEncodingContainer<NestedKey>(
+        let container = _BSONKeyedEncodingContainer<NestedKey>(
             referencing: self.encoder, codingPath: self.codingPath, wrapping: dictionary)
         return KeyedEncodingContainer(container)
     }
@@ -367,20 +367,20 @@ private struct _BsonKeyedEncodingContainer<K: CodingKey> : KeyedEncodingContaine
         self.codingPath.append(key)
         defer { self.codingPath.removeLast() }
 
-        return _BsonUnkeyedEncodingContainer(referencing: self.encoder, codingPath: self.codingPath, wrapping: array)
+        return _BSONUnkeyedEncodingContainer(referencing: self.encoder, codingPath: self.codingPath, wrapping: array)
     }
 
     public mutating func superEncoder() -> Encoder {
-        return _BsonReferencingEncoder(referencing: self.encoder, key: _BsonKey.super, wrapping: self.container)
+        return _BSONReferencingEncoder(referencing: self.encoder, key: _BSONKey.super, wrapping: self.container)
 
     }
 
     public mutating func superEncoder(forKey key: Key) -> Encoder {
-        return _BsonReferencingEncoder(referencing: self.encoder, key: key, wrapping: self.container)
+        return _BSONReferencingEncoder(referencing: self.encoder, key: key, wrapping: self.container)
     }
 }
 
-private struct _BsonUnkeyedEncodingContainer: UnkeyedEncodingContainer {
+private struct _BSONUnkeyedEncodingContainer: UnkeyedEncodingContainer {
 
     /// A reference to the encoder we're writing to.
     private let encoder: _BSONEncoder
@@ -420,14 +420,14 @@ private struct _BsonUnkeyedEncodingContainer: UnkeyedEncodingContainer {
     public mutating func encode(_ value: Double) throws { self.container.add(value) }
 
     private mutating func encodeNumber<T: CodableNumber>(_ value: T) throws {
-        self.encoder.codingPath.append(_BsonKey(index: self.count))
+        self.encoder.codingPath.append(_BSONKey(index: self.count))
         defer { self.encoder.codingPath.removeLast() }
 
         self.container.add(try encoder.boxNumber(value))
     }
 
     public mutating func encode<T: Encodable>(_ value: T) throws {
-        self.encoder.codingPath.append(_BsonKey(index: self.count))
+        self.encoder.codingPath.append(_BSONKey(index: self.count))
         defer { self.encoder.codingPath.removeLast() }
 
         self.container.add(try encoder.box(value))
@@ -435,28 +435,28 @@ private struct _BsonUnkeyedEncodingContainer: UnkeyedEncodingContainer {
 
     public mutating func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type)
         -> KeyedEncodingContainer<NestedKey> {
-        self.codingPath.append(_BsonKey(index: self.count))
+        self.codingPath.append(_BSONKey(index: self.count))
         defer { self.codingPath.removeLast() }
 
         let dictionary = MutableDictionary()
         self.container.add(dictionary)
 
-        let container = _BsonKeyedEncodingContainer<NestedKey>(
+        let container = _BSONKeyedEncodingContainer<NestedKey>(
             referencing: self.encoder, codingPath: self.codingPath, wrapping: dictionary)
         return KeyedEncodingContainer(container)
     }
 
     public mutating func nestedUnkeyedContainer() -> UnkeyedEncodingContainer {
-        self.codingPath.append(_BsonKey(index: self.count))
+        self.codingPath.append(_BSONKey(index: self.count))
         defer { self.codingPath.removeLast() }
 
         let array = MutableArray()
         self.container.add(array)
-        return _BsonUnkeyedEncodingContainer(referencing: self.encoder, codingPath: self.codingPath, wrapping: array)
+        return _BSONUnkeyedEncodingContainer(referencing: self.encoder, codingPath: self.codingPath, wrapping: array)
     }
 
     public mutating func superEncoder() -> Encoder {
-         return _BsonReferencingEncoder(referencing: self.encoder, at: self.container.count, wrapping: self.container)
+         return _BSONReferencingEncoder(referencing: self.encoder, at: self.container.count, wrapping: self.container)
     }
 }
 

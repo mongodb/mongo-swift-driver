@@ -12,9 +12,9 @@ extension Document: Codable {
 
         // otherwise, we need to go through each (key, value) pair,
         // and then wrap the values in `AnyBSONValue`s and encode them
-        var container = encoder.container(keyedBy: _BsonKey.self)
+        var container = encoder.container(keyedBy: _BSONKey.self)
         for (k, v) in self {
-            let key = _BsonKey(stringValue: k)!
+            let key = _BSONKey(stringValue: k)!
             if let val = AnyBSONValue(ifPresent: v) {
                 try container.encode(val, forKey: key)
             } else {
@@ -41,7 +41,7 @@ extension Document: Codable {
 
         // otherwise, get a keyed container and decode each key as an `AnyBSONValue`,
         // and then extract the wrapped `BSONValue`s and store them in the doc
-        let container = try decoder.container(keyedBy: _BsonKey.self)
+        let container = try decoder.container(keyedBy: _BSONKey.self)
         var output = Document()
         for key in container.allKeys {
             let k = key.stringValue
