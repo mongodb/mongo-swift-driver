@@ -66,7 +66,7 @@ final class CrudTests: XCTestCase {
     // Go through each .json file at the given path and parse the information in it
     // into a corresponding CrudTestFile with a [CrudTest]
     private func parseFiles(atPath path: String) throws -> [(String, CrudTestFile)] {
-        let decoder = BsonDecoder()
+        let decoder = BSONDecoder()
         var tests = [(String, CrudTestFile)]()
 
         let testFiles = try FileManager.default.contentsOfDirectory(atPath: path).filter { $0.hasSuffix(".json") }
@@ -190,7 +190,7 @@ private class CrudTest {
     // Meant for use by subclasses whose operations return `UpdateResult`s, such as `UpdateTest` 
     // and `ReplaceOneTest`. 
     func verifyUpdateResult(_ result: UpdateResult?) throws {
-        let expected = try BsonDecoder().decode(UpdateResult.self, from: self.result as! Document)
+        let expected = try BSONDecoder().decode(UpdateResult.self, from: self.result as! Document)
         expect(result?.matchedCount).to(equal(expected.matchedCount))
         expect(result?.modifiedCount).to(equal(expected.modifiedCount))
         expect(result?.upsertedCount).to(equal(expected.upsertedCount))

@@ -77,7 +77,7 @@ final class CodecTests: XCTestCase {
     /// built in Codable support (strings, arrays, ints, and structs composed of them.)
     func testStructs() throws {
         let encoder = BsonEncoder()
-        let decoder = BsonDecoder()
+        let decoder = BSONDecoder()
 
         let expected: Document = [
             "val1": "a",
@@ -130,7 +130,7 @@ final class CodecTests: XCTestCase {
     /// Test encoding/decoding a struct containing optional values.
     func testOptionals() throws {
         let encoder = BsonEncoder()
-        let decoder = BsonDecoder()
+        let decoder = BSONDecoder()
 
         let s1 = OptionalsStruct(int: 1, bool: true, string: "hi")
         let s1Doc: Document = ["int": 1, "bool": true, "string": "hi"]
@@ -215,7 +215,7 @@ final class CodecTests: XCTestCase {
     /// Test decoding where the requested numeric types are non-BSON
     /// and require conversions.
     func testDecodingNonBsonNumbers() throws {
-        let decoder = BsonDecoder()
+        let decoder = BSONDecoder()
 
         // the struct we expect to get back
         let s = Numbers(int8: 42, int16: 42, uint8: 42, uint16: 42, uint32: 42, uint64: 42, uint: 42, float: 42)
@@ -272,7 +272,7 @@ final class CodecTests: XCTestCase {
     /// Test that BSON number types are encoded properly, and can be decoded from any type they are stored as
     func testBsonNumbers() throws {
         let encoder = BsonEncoder()
-        let decoder = BsonDecoder()
+        let decoder = BSONDecoder()
         // the struct we expect to get back
         let s = BsonNumbers(int: 42, int32: 42, int64: 42, double: 42)
         expect(try encoder.encode(s)).to(equal(["int": Int(42), "int32": Int32(42), "int64": Int64(42), "double": Double(42)]))
@@ -342,7 +342,7 @@ final class CodecTests: XCTestCase {
                             regex: RegularExpression(pattern: "^abc", options: "imx")
                         )
 
-        let decoder = BsonDecoder()
+        let decoder = BSONDecoder()
 
         let doc: Document = [
             "double": Double(2),
@@ -397,7 +397,7 @@ final class CodecTests: XCTestCase {
 
     /// Test decoding extJSON and JSON for standalone values
     func testDecodeScalars() throws {
-        let decoder = BsonDecoder()
+        let decoder = BSONDecoder()
 
         expect(try decoder.decode(Int32.self, from: "42")).to(equal(Int32(42)))
         expect(try decoder.decode(Int32.self, from: "{\"$numberInt\": \"42\"}")).to(equal(Int32(42)))
@@ -501,7 +501,7 @@ final class CodecTests: XCTestCase {
     // test encoding/decoding AnyBsonValues with BsonEncoder and Decoder
     func testAnyBsonValueIsBsonCodable() throws {
         let encoder = BsonEncoder()
-        let decoder = BsonDecoder()
+        let decoder = BSONDecoder()
 
         // standalone document
         let doc: Document = ["y": 1]
@@ -704,7 +704,7 @@ final class CodecTests: XCTestCase {
 
     func testOptionalAnyBsonValue() throws {
         let encoder = BsonEncoder()
-        let decoder = BsonDecoder()
+        let decoder = BSONDecoder()
 
         // non-nil values
         expect(try encoder.encode(OptionalAnyBsonWrapper(5))).to(equal(["val": 5]))
