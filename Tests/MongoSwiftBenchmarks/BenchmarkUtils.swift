@@ -35,7 +35,7 @@ extension XCTestCase {
         // if we can access the "/Tests" directory, assume we're running from command line
         if FileManager.default.fileExists(atPath: "./Tests") { return "./Tests/Specs/benchmarking/data" }
         // otherwise we're in Xcode, get the bundle's resource path
-        guard let path = Bundle(for: BsonBenchmarkTests.self).resourcePath else {
+        guard let path = Bundle(for: BSONBenchmarkTests.self).resourcePath else {
             XCTFail("Missing resource path")
             return ""
         }

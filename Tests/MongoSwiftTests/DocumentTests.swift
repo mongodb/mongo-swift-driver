@@ -180,8 +180,8 @@ final class DocumentTests: XCTestCase {
 
     func testRawBSON() throws {
         let doc = try Document(fromJSON: "{\"a\" : [{\"$numberInt\": \"10\"}]}")
-        let fromRawBson = Document(fromBSON: doc.rawBSON)
-        expect(doc).to(equal(fromRawBson))
+        let fromRawBSON = Document(fromBSON: doc.rawBSON)
+        expect(doc).to(equal(fromRawBSON))
     }
 
     func testValueBehavior() {
