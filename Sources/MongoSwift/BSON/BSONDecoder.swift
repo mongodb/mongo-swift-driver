@@ -106,7 +106,7 @@ internal class _BSONDecoder: Decoder {
     }
 
     /// Initializes `self` with the given top-level container and options.
-    fileprivate init(referencing container: BsonValue?, at codingPath: [CodingKey] = [],
+    fileprivate init(referencing container: BSONValue?, at codingPath: [CodingKey] = [],
                      options: BSONDecoder._Options) {
         self.storage = _BsonDecodingStorage()
         self.storage.push(container: container)
@@ -149,9 +149,9 @@ internal class _BSONDecoder: Decoder {
                                       "Cannot get unkeyed decoding container -- found null value instead."))
         }
 
-        guard let arr = self.storage.topContainer as? [BsonValue?] else {
+        guard let arr = self.storage.topContainer as? [BSONValue?] else {
             throw DecodingError._typeMismatch(at: self.codingPath,
-                                              expectation: [BsonValue?].self,
+                                              expectation: [BSONValue?].self,
                                               reality: self.storage.topContainer)
         }
 
@@ -162,8 +162,8 @@ internal class _BSONDecoder: Decoder {
 // Storage for a _BSONDecoder.
 internal struct _BsonDecodingStorage {
 
-    /// The container stack, consisting of `BsonValue?`s. 
-    fileprivate private(set) var containers: [BsonValue?] = []
+    /// The container stack, consisting of `BSONValue?`s. 
+    fileprivate private(set) var containers: [BSONValue?] = []
 
     /// Initializes `self` with no containers.
     fileprivate init() {}
@@ -172,13 +172,13 @@ internal struct _BsonDecodingStorage {
     fileprivate var count: Int { return self.containers.count }
 
     /// The container at the top of the stack.
-    internal var topContainer: BsonValue? {
+    internal var topContainer: BSONValue? {
         precondition(self.containers.count > 0, "Empty container stack.")
         return self.containers.last!
     }
 
     /// Adds a new container to the stack.
-    fileprivate mutating func push(container: BsonValue?) {
+    fileprivate mutating func push(container: BSONValue?) {
         self.containers.append(container)
     }
 
@@ -192,14 +192,14 @@ internal struct _BsonDecodingStorage {
 /// Extend _BSONDecoder to add methods for "unboxing" values as various types.
 extension _BSONDecoder {
 
-    fileprivate func unboxBsonValue<T: BsonValue>(_ value: BsonValue?, as type: T.Type) throws -> T? {
+    fileprivate func unboxBsonValue<T: BSONValue>(_ value: BSONValue?, as type: T.Type) throws -> T? {
         guard let typed = value as? T else {
             throw DecodingError._typeMismatch(at: self.codingPath, expectation: type, reality: value)
         }
         return typed
     }
 
-    fileprivate func unboxNumber<T: CodableNumber>(_ value: BsonValue?, as type: T.Type) throws -> T? {
+    fileprivate func unboxNumber<T: CodableNumber>(_ value: BSONValue?, as type: T.Type) throws -> T? {
         guard let unwrapped = value else {
             throw DecodingError._typeMismatch(at: self.codingPath, expectation: type, reality: value)
         }
@@ -210,7 +210,7 @@ extension _BSONDecoder {
         return primitive
     }
 
-    fileprivate func unbox<T: Decodable>(_ value: BsonValue?, as type: T.Type) throws -> T? {
+    fileprivate func unbox<T: Decodable>(_ value: BSONValue?, as type: T.Type) throws -> T? {
         // if the data is already stored as the correct type in the document, then we can short-circuit
         // and just return the typed value here
         if let val = value as? T { return val }
@@ -271,7 +271,7 @@ private struct _BsonKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
 
     /// Private helper function to check for a value in self.container. Returns the value stored
     /// under `key`, or throws an error if the value is not found.
-    private func getValue(forKey key: Key) throws -> BsonValue {
+    private func getValue(forKey key: Key) throws -> BSONValue {
         guard let entry = self.container[key.stringValue] else {
             throw DecodingError.keyNotFound(
                 key,
@@ -281,8 +281,8 @@ private struct _BsonKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
         return entry
     }
 
-    /// Decode a BsonValue type from this container for the given key.
-    private func decodeBsonType<T: BsonValue>(_ type: T.Type, forKey key: Key) throws -> T {
+    /// Decode a BSONValue type from this container for the given key.
+    private func decodeBsonType<T: BSONValue>(_ type: T.Type, forKey key: Key) throws -> T {
         let entry = try getValue(forKey: key)
         return try self.decoder.with(pushedKey: key) {
             guard let value = try decoder.unboxBsonValue(entry, as: type) else {
@@ -373,8 +373,8 @@ private struct _BsonKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
         return try self.decoder.with(pushedKey: key) {
             let value = try getValue(forKey: key)
 
-            guard let array = value as? [BsonValue?] else {
-                throw DecodingError._typeMismatch(at: self.codingPath, expectation: [BsonValue?].self, reality: value)
+            guard let array = value as? [BSONValue?] else {
+                throw DecodingError._typeMismatch(at: self.codingPath, expectation: [BSONValue?].self, reality: value)
             }
 
             return _BsonUnkeyedDecodingContainer(referencing: self.decoder, wrapping: array)
@@ -384,7 +384,7 @@ private struct _BsonKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
     /// Private method to create a superDecoder for the provided key.
     private func _superDecoder(forKey key: CodingKey) throws -> Decoder {
         return self.decoder.with(pushedKey: key) {
-            let value: BsonValue? = self.container[key.stringValue]
+            let value: BSONValue? = self.container[key.stringValue]
             return _BSONDecoder(referencing: value, at: self.decoder.codingPath, options: self.decoder.options)
         }
     }
@@ -406,7 +406,7 @@ private struct _BsonUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     private let decoder: _BSONDecoder
 
     /// A reference to the container we're reading from.
-    private let container: [BsonValue?]
+    private let container: [BSONValue?]
 
     /// The path of coding keys taken to get to this point in decoding.
     public private(set) var codingPath: [CodingKey]
@@ -415,7 +415,7 @@ private struct _BsonUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     public private(set) var currentIndex: Int
 
     /// Initializes `self` by referencing the given decoder and container.
-    fileprivate init(referencing decoder: _BSONDecoder, wrapping container: [BsonValue?]) {
+    fileprivate init(referencing decoder: _BSONDecoder, wrapping container: [BSONValue?]) {
         self.decoder = decoder
         self.container = container
         self.codingPath = decoder.codingPath
@@ -432,14 +432,14 @@ private struct _BsonUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     private func checkAtEnd() throws {
         guard !self.isAtEnd else {
             throw DecodingError.valueNotFound(
-                BsonValue?.self,
+                BSONValue?.self,
                 DecodingError.Context(codingPath: self.decoder.codingPath + [_BsonKey(index: self.currentIndex)],
                                       debugDescription: "Unkeyed container is at end."))
         }
     }
 
-    /// Decodes a BsonValue type from this container.
-    private mutating func decodeBsonType<T: BsonValue>(_ type: T.Type) throws -> T {
+    /// Decodes a BSONValue type from this container.
+    private mutating func decodeBsonType<T: BSONValue>(_ type: T.Type) throws -> T {
         try self.checkAtEnd()
         return try self.decoder.with(pushedKey: _BsonKey(index: self.currentIndex)) {
             guard let typed = try self.decoder.unboxBsonValue(self.container[currentIndex], as: type) else {
@@ -525,7 +525,7 @@ private struct _BsonUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     public mutating func nestedUnkeyedContainer() throws -> UnkeyedDecodingContainer {
         return try self.decoder.with(pushedKey: _BsonKey(index: self.currentIndex)) {
             try self.checkAtEnd()
-            let array = try self.decodeBsonType([BsonValue].self)
+            let array = try self.decodeBsonType([BSONValue].self)
             self.currentIndex += 1
             return _BsonUnkeyedDecodingContainer(referencing: self.decoder, wrapping: array)
         }
@@ -555,8 +555,8 @@ extension _BSONDecoder: SingleValueDecodingContainer {
         }
     }
 
-    /// Decode a BsonValue type from this container.
-    private func decodeBsonType<T: BsonValue>(_ type: T.Type) throws -> T {
+    /// Decode a BSONValue type from this container.
+    private func decodeBsonType<T: BSONValue>(_ type: T.Type) throws -> T {
         try expectNonNull(T.self)
         return try self.unboxBsonValue(self.storage.topContainer, as: T.self)!
     }
@@ -621,12 +621,12 @@ internal struct _BsonKey: CodingKey {
 }
 
 internal extension DecodingError {
-    static func _typeMismatch(at path: [CodingKey], expectation: Any.Type, reality: BsonValue?) -> DecodingError {
+    static func _typeMismatch(at path: [CodingKey], expectation: Any.Type, reality: BSONValue?) -> DecodingError {
         let description = "Expected to decode \(expectation) but found \(type(of: reality)) instead."
         return .typeMismatch(expectation, Context(codingPath: path, debugDescription: description))
     }
 
-    static func _numberMismatch(at path: [CodingKey], expectation: Any.Type, reality: BsonValue?) -> DecodingError {
+    static func _numberMismatch(at path: [CodingKey], expectation: Any.Type, reality: BSONValue?) -> DecodingError {
         let description = "Expected to find a value that can be represented as a \(expectation), " +
                          "but found value \(String(describing: reality)) of type \(type(of: reality)) instead."
         return .typeMismatch(expectation, Context(codingPath: path, debugDescription: description))

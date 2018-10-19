@@ -11,7 +11,7 @@ final class CodecTests: XCTestCase {
             ("testEncodingNonBsonNumbers", testEncodingNonBsonNumbers),
             ("testDecodingNonBsonNumbers", testEncodingNonBsonNumbers),
             ("testBsonNumbers", testEncodingNonBsonNumbers),
-            ("testBsonValues", testBsonValues),
+            ("testBSONValues", testBSONValues),
             ("testDecodeScalars", testDecodeScalars),
             ("testDocumentIsCodable", testDocumentIsCodable),
             ("testEncodeArray", testEncodeArray),
@@ -320,7 +320,7 @@ final class CodecTests: XCTestCase {
     }
 
     /// Test decoding/encoding to all possible BSON types
-    func testBsonValues() throws {
+    func testBSONValues() throws {
 
         let expected = AllBsonTypes(
                             double: Double(2),
@@ -493,7 +493,7 @@ final class CodecTests: XCTestCase {
     struct AnyBsonStruct: Codable {
         let x: AnyBSONValue
 
-        init(_ x: BsonValue) {
+        init(_ x: BSONValue) {
             self.x = AnyBSONValue(x)
         }
     }
@@ -538,16 +538,16 @@ final class CodecTests: XCTestCase {
             from: wrappedString.canonicalExtendedJSON).x.value as? String).to(equal(string))
 
         // array
-        let array: [BsonValue] = [1, 2, "hello"]
+        let array: [BSONValue] = [1, 2, "hello"]
 
-        let decodedArray = try decoder.decode(AnyBSONValue.self, from: "[1, 2, \"hello\"]").value as? [BsonValue]
+        let decodedArray = try decoder.decode(AnyBSONValue.self, from: "[1, 2, \"hello\"]").value as? [BSONValue]
         expect(decodedArray?[0] as? Int).to(equal(1))
         expect(decodedArray?[1] as? Int).to(equal(2))
         expect(decodedArray?[2] as? String).to(equal("hello"))
 
         let wrappedArray: Document = ["x": array]
         expect(try encoder.encode(AnyBsonStruct(array))).to(equal(wrappedArray))
-        let decodedWrapped = try decoder.decode(AnyBsonStruct.self, from: wrappedArray).x.value as? [BsonValue]
+        let decodedWrapped = try decoder.decode(AnyBsonStruct.self, from: wrappedArray).x.value as? [BSONValue]
         expect(decodedWrapped?[0] as? Int).to(equal(1))
         expect(decodedWrapped?[1] as? Int).to(equal(2))
         expect(decodedWrapped?[2] as? String).to(equal("hello"))
@@ -697,7 +697,7 @@ final class CodecTests: XCTestCase {
     struct OptionalAnyBsonWrapper: Codable {
         let val: AnyBSONValue?
 
-        init(_ value: BsonValue?) {
+        init(_ value: BSONValue?) {
             self.val = AnyBSONValue(ifPresent: value)
         }
     }
@@ -713,11 +713,11 @@ final class CodecTests: XCTestCase {
         expect(try encoder.encode(OptionalAnyBsonWrapper(doc1))).to(equal(["val": doc1]))
         let doc2: Document = ["x": 1, "y": nil]
         expect(try encoder.encode(OptionalAnyBsonWrapper(doc2))).to(equal(["val": doc2]))
-        let arr1: [BsonValue] = [1, 2, "hi"]
+        let arr1: [BSONValue] = [1, 2, "hi"]
         expect(try encoder.encode(OptionalAnyBsonWrapper(arr1))).to(equal(["val": arr1]))
 
         // an array with a nil
-        let arr2: [BsonValue?] = [1, "hi", nil]
+        let arr2: [BSONValue?] = [1, "hi", nil]
         expect(try encoder.encode(OptionalAnyBsonWrapper(arr2))).to(equal(["val": arr2]))
 
         // nil value

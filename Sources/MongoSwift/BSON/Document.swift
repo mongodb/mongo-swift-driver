@@ -38,8 +38,8 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         return bson_has_field(self.data, key)
     }
 
-    /// Returns a `[BsonValue?]` containing the values stored in this `Document`.
-    public var values: [BsonValue?] {
+    /// Returns a `[BSONValue?]` containing the values stored in this `Document`.
+    public var values: [BSONValue?] {
         return self.makeIterator().values
     }
 
@@ -64,15 +64,15 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
 
     /**
      * Initializes a `Document` using a dictionary literal where the
-     * keys are `String`s and the values are `BsonValue?`s. For example:
+     * keys are `String`s and the values are `BSONValue?`s. For example:
      * `d: Document = ["a" : 1 ]`
      *
      * - Parameters:
-     *   - dictionaryLiteral: a [String: BsonValue?]
+     *   - dictionaryLiteral: a [String: BSONValue?]
      *
      * - Returns: a new `Document`
      */
-    public init(dictionaryLiteral keyValuePairs: (String, BsonValue?)...) {
+    public init(dictionaryLiteral keyValuePairs: (String, BSONValue?)...) {
         // make sure all keys are unique
         if Set(keyValuePairs.map { $0.0 }).count != keyValuePairs.count {
             preconditionFailure("Dictionary literal \(keyValuePairs) contains duplicate keys")
@@ -89,30 +89,30 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     }
     /**
      * Initializes a `Document` using an array literal where the values
-     * are `BsonValue`s. Values are stored under a string of their
+     * are `BSONValue`s. Values are stored under a string of their
      * index in the array. For example:
      * `d: Document = ["a", "b"]` will become `["0": "a", "1": "b"]`
      *
      * - Parameters:
-     *   - arrayLiteral: a `[BsonValue?]`
+     *   - arrayLiteral: a `[BSONValue?]`
      *
      * - Returns: a new `Document`
      */
-    public init(arrayLiteral elements: BsonValue?...) {
+    public init(arrayLiteral elements: BSONValue?...) {
         self.init(elements)
     }
 
     /**
      * Initializes a `Document` using an array where the values are optional
-     * `BsonValue`s. Values are stored under a string of their index in the
+     * `BSONValue`s. Values are stored under a string of their index in the
      * array.
      *
      * - Parameters:
-     *   - elements: a `[BsonValue?]`
+     *   - elements: a `[BSONValue?]`
      *
      * - Returns: a new `Document`
      */
-    internal init(_ elements: [BsonValue?]) {
+    internal init(_ elements: [BSONValue?]) {
         self.storage = DocumentStorage()
         for (i, elt) in elements.enumerated() {
             do {
@@ -194,7 +194,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      *  print(d["a"]) // prints 1
      *  ```
      */
-    public subscript(key: String) -> BsonValue? {
+    public subscript(key: String) -> BSONValue? {
         get { return DocumentIterator(forDocument: self, advancedTo: key)?.currentValue }
         set(newValue) {
             do {
@@ -206,7 +206,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     }
 
     /// Sets key to newValue. if checkForKey=false, the key/value pair will be appended without checking for the key's presence first.
-    private mutating func setValue(forKey key: String, to newValue: BsonValue?, checkForKey: Bool = true) throws {
+    private mutating func setValue(forKey key: String, to newValue: BSONValue?, checkForKey: Bool = true) throws {
         // if the key already exists in the `Document`, we need to replace it
         if checkForKey, let existingType = DocumentIterator(forDocument: self, advancedTo: key)?.currentType {
 
@@ -262,12 +262,12 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      *
      *  - Parameters:
      *      - key: The key under which the value you are looking up is stored
-     *      - `T`: Any type conforming to the `BsonValue` protocol
+     *      - `T`: Any type conforming to the `BSONValue` protocol
      *  - Returns: The value stored under key, as type `T`
      *  - Throws: A `MongoError.typeError` if the value cannot be cast to type `T` or is not in the `Document`
      *
      */
-    public func get<T: BsonValue>(_ key: String) throws -> T {
+    public func get<T: BSONValue>(_ key: String) throws -> T {
         guard let value = self[key] as? T else {
             throw MongoError.typeError(message: "Could not cast value for key \(key) to type \(T.self)")
         }
@@ -302,8 +302,8 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     }
 }
 
-/// An extension of `Document` to make it a `BsonValue`.
-extension Document: BsonValue {
+/// An extension of `Document` to make it a `BSONValue`.
+extension Document: BSONValue {
     public var bsonType: BsonType { return .document }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {

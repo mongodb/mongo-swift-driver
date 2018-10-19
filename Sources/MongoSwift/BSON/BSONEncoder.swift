@@ -163,8 +163,8 @@ internal class _BSONEncoder: Encoder {
 internal struct _BsonEncodingStorage {
 
     /// The container stack.
-    /// Elements may be any BsonValue type.
-    internal var containers: [BsonValue?] = []
+    /// Elements may be any BSONValue type.
+    internal var containers: [BSONValue?] = []
 
     /// Initializes `self` with no containers.
     fileprivate init() {}
@@ -185,11 +185,11 @@ internal struct _BsonEncodingStorage {
         return array
     }
 
-    fileprivate mutating func push(container: BsonValue?) {
+    fileprivate mutating func push(container: BSONValue?) {
         self.containers.append(container)
     }
 
-    fileprivate mutating func popContainer() -> BsonValue? {
+    fileprivate mutating func popContainer() -> BSONValue? {
         precondition(self.containers.count > 0, "Empty container stack.")
         return self.containers.popLast()!
     }
@@ -242,7 +242,7 @@ private class _BsonReferencingEncoder: _BSONEncoder {
 
     /// Finalizes `self` by writing the contents of our storage to the referenced encoder's storage.
     deinit {
-        let value: BsonValue?
+        let value: BSONValue?
         switch self.storage.count {
         case 0: value = nil
         case 1: value = self.storage.popContainer()
@@ -263,22 +263,22 @@ private class _BsonReferencingEncoder: _BSONEncoder {
 /// Extend _BSONEncoder to add methods for "boxing" values.
 extension _BSONEncoder {
 
-    /// Converts a `CodableNumber` to a `BsonValue` type. Throws if `value` cannot be 
+    /// Converts a `CodableNumber` to a `BSONValue` type. Throws if `value` cannot be 
     /// exactly represented by an `Int`, `Int32`, `Int64`, or `Double`. 
-    fileprivate func boxNumber<T: CodableNumber>(_ value: T) throws -> BsonValue {
+    fileprivate func boxNumber<T: CodableNumber>(_ value: T) throws -> BSONValue {
         guard let number = value.bsonValue else {
             throw EncodingError._numberError(at: self.codingPath, value: value)
         }
         return number
     }
 
-    fileprivate func box<T: Encodable>(_ value: T) throws -> BsonValue? {
-        // if it's already a BsonValue, just return it, unless if it is an 
-        // array. technically [Any] is a BsonValue, but we can only use this
-        // short-circuiting if all the elements are actually BsonValues.
-        if let bsonValue = value as? BsonValue, !(bsonValue is [Any]) {
+    fileprivate func box<T: Encodable>(_ value: T) throws -> BSONValue? {
+        // if it's already a BSONValue, just return it, unless if it is an 
+        // array. technically [Any] is a BSONValue, but we can only use this
+        // short-circuiting if all the elements are actually BSONValues.
+        if let bsonValue = value as? BSONValue, !(bsonValue is [Any]) {
             return bsonValue
-        } else if let bsonArray = value as? [BsonValue?] {
+        } else if let bsonArray = value as? [BSONValue?] {
             return bsonArray
         }
 
@@ -493,7 +493,7 @@ extension _BSONEncoder: SingleValueEncodingContainer {
         self.storage.push(container: try self.boxNumber(value))
     }
 
-    private func encodeBsonType<T: BsonValue>(_ value: T) throws {
+    private func encodeBsonType<T: BSONValue>(_ value: T) throws {
         assertCanEncodeNewValue()
         self.storage.push(container: value)
     }
@@ -507,19 +507,19 @@ extension _BSONEncoder: SingleValueEncodingContainer {
 /// A private class wrapping a Swift array so we can pass it by reference for 
 /// encoder storage purposes. We use this rather than NSMutableArray because
 /// it allows us to preserve Swift type information. 
-private class MutableArray: BsonValue {
+private class MutableArray: BSONValue {
 
     var bsonType: BsonType { return .array }
 
-    var array = [BsonValue?]()
+    var array = [BSONValue?]()
 
-    fileprivate func add(_ value: BsonValue?) {
+    fileprivate func add(_ value: BSONValue?) {
         array.append(value)
     }
 
     var count: Int { return array.count }
 
-    func insert(_ value: BsonValue?, at index: Int) {
+    func insert(_ value: BSONValue?, at index: Int) {
         self.array.insert(value, at: index)
     }
 
@@ -529,8 +529,8 @@ private class MutableArray: BsonValue {
 
     init() {}
 
-    /// methods required by the BsonValue protocol that we don't actually need/use. MutableArray
-    /// is just a BsonValue to simplify usage alongside true BsonValues within the encoder.
+    /// methods required by the BSONValue protocol that we don't actually need/use. MutableArray
+    /// is just a BSONValue to simplify usage alongside true BSONValues within the encoder.
     required init(from iter: DocumentIterator) {
         fatalError("`MutableArray` is not meant to be initialized from a `DocumentIterator`")
     }
@@ -545,15 +545,15 @@ private class MutableArray: BsonValue {
 /// A private class wrapping a Swift dictionary so we can pass it by reference
 /// for encoder storage purposes. We use this rather than NSMutableDictionary 
 /// because it allows us to preserve Swift type information.
-private class MutableDictionary: BsonValue {
+private class MutableDictionary: BSONValue {
 
     var bsonType: BsonType { return .document }
 
     // rather than using a dictionary, do this so we preserve key orders
     var keys = [String]()
-    var values = [BsonValue?]()
+    var values = [BSONValue?]()
 
-    subscript(key: String) -> BsonValue? {
+    subscript(key: String) -> BSONValue? {
         get {
             guard let index = keys.index(of: key) else { return nil }
             return values[index]
@@ -579,8 +579,8 @@ private class MutableDictionary: BsonValue {
 
     init() {}
 
-    /// methods required by the BsonValue protocol that we don't actually need/use. MutableDictionary
-    /// is just a BsonValue to simplify usage alongside true BsonValues within the encoder.
+    /// methods required by the BSONValue protocol that we don't actually need/use. MutableDictionary
+    /// is just a BSONValue to simplify usage alongside true BSONValues within the encoder.
     required init(from iter: DocumentIterator) {
         fatalError("`MutableDictionary` is not meant to be initialized from a `DocumentIterator`")
     }

@@ -164,7 +164,7 @@ final class DocumentTests: XCTestCase {
        expect(doc1["1"] as? MinKey).to(beAnInstanceOf(MinKey.self))
        expect(doc1["2"]).to(beNil())
 
-       let elements: [BsonValue?] = ["foo", MinKey(), nil]
+       let elements: [BSONValue?] = ["foo", MinKey(), nil]
        let doc2 = Document(elements)
 
        expect(doc2.keys).to(equal(["0", "1", "2"]))
@@ -414,7 +414,7 @@ final class DocumentTests: XCTestCase {
         let newDoc: Document = ["y": 1]
         let oid = ObjectId()
 
-        let newPairs: [(String, BsonValue?)] = [("string", "hi"), ("doc", newDoc), ("arr", [3, 4]), ("oid", oid)]
+        let newPairs: [(String, BSONValue?)] = [("string", "hi"), ("doc", newDoc), ("arr", [3, 4]), ("oid", oid)]
 
         newPairs.forEach { (k, v) in
             doc[k] = v
@@ -434,7 +434,7 @@ final class DocumentTests: XCTestCase {
         // save a reference to original bson_t so we can verify it changes
         var pointer1 = doc1.data
 
-        let newPairs1: [(String, BsonValue?)] = [("double", Int(10)), ("int32", "hi"), ("int64", Decimal128("1.0")), ("bool", [1, 2, 3]), ("decimal", 100)]
+        let newPairs1: [(String, BSONValue?)] = [("double", Int(10)), ("int32", "hi"), ("int64", Decimal128("1.0")), ("bool", [1, 2, 3]), ("decimal", 100)]
 
         newPairs1.forEach { (k, v) in
             doc1[k] = v
@@ -450,7 +450,7 @@ final class DocumentTests: XCTestCase {
         // save a reference to original bson_t so we can verify it changes
         var pointer2 = doc2.data
 
-        let newPairs2: [(String, BsonValue?)] = [("string", 1), ("nil", "hello"), ("doc", "hi"), ("arr", 5), ("oid", 25.5)]
+        let newPairs2: [(String, BSONValue?)] = [("string", 1), ("nil", "hello"), ("doc", "hi"), ("arr", 5), ("oid", 25.5)]
 
         newPairs2.forEach { (k, v) in
             doc2[k] = v
@@ -493,7 +493,7 @@ final class DocumentTests: XCTestCase {
         var pointer = noops.data
 
         // replace values with own types. these should all be no-ops
-        let newPairs1: [(String, BsonValue?)] = [("null", nil), ("maxkey", MaxKey()), ("minkey", MinKey())]
+        let newPairs1: [(String, BSONValue?)] = [("null", nil), ("maxkey", MaxKey()), ("minkey", MinKey())]
 
         newPairs1.forEach { (k, v) in
             noops[k] = v
@@ -505,7 +505,7 @@ final class DocumentTests: XCTestCase {
         expect(noops).to(equal(["null": nil, "maxkey": MaxKey(), "minkey": MinKey()]))
 
         // now try replacing them with values of different types that do require replacing storage
-        let newPairs2: [(String, BsonValue?)] = [("null", 5), ("maxkey", "hi"), ("minkey", false)]
+        let newPairs2: [(String, BSONValue?)] = [("null", 5), ("maxkey", "hi"), ("minkey", false)]
 
         newPairs2.forEach { (k, v) in
             noops[k] = v

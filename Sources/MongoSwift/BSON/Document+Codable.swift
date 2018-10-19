@@ -40,7 +40,7 @@ extension Document: Codable {
         }
 
         // otherwise, get a keyed container and decode each key as an `AnyBSONValue`,
-        // and then extract the wrapped `BsonValue`s and store them in the doc
+        // and then extract the wrapped `BSONValue`s and store them in the doc
         let container = try decoder.container(keyedBy: _BsonKey.self)
         var output = Document()
         for key in container.allKeys {

@@ -3,8 +3,8 @@ import Foundation
 import Nimble
 import XCTest
 
-final class BsonValueTests: XCTestCase {
-    static var allTests: [(String, (BsonValueTests) -> () throws -> Void)] {
+final class BSONValueTests: XCTestCase {
+    static var allTests: [(String, (BSONValueTests) -> () throws -> Void)] {
         return [
             ("testInvalidDecimal128", testInvalidDecimal128),
             ("testUUIDBytes", testUUIDBytes)

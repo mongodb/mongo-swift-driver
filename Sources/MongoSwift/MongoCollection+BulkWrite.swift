@@ -255,7 +255,7 @@ public protocol WriteModel {
 /// A class encapsulating a `mongoc_bulk_operation_t`.
 public class BulkWriteOperation {
     fileprivate var bulk: OpaquePointer?
-    fileprivate var insertedIds: [Int: BsonValue?] = [:]
+    fileprivate var insertedIds: [Int: BSONValue?] = [:]
 
     /// Indicates whether this bulk operation used an acknowledged write concern.
     private var isAcknowledged: Bool {
@@ -330,7 +330,7 @@ public struct BulkWriteResult {
     public let insertedCount: Int
 
     /// Map of the index of the operation to the id of the inserted document.
-    public let insertedIds: [Int: BsonValue?]
+    public let insertedIds: [Int: BSONValue?]
 
     /// Number of documents matched for update.
     public let matchedCount: Int
@@ -342,7 +342,7 @@ public struct BulkWriteResult {
     public let upsertedCount: Int
 
     /// Map of the index of the operation to the id of the upserted document.
-    public let upsertedIds: [Int: BsonValue?]
+    public let upsertedIds: [Int: BSONValue?]
 
     fileprivate var writeErrors: [WriteError] = []
     fileprivate var writeConcernError: WriteConcernError?
@@ -360,7 +360,7 @@ public struct BulkWriteResult {
      *   - reply: A `Document` result from `mongoc_bulk_operation_execute()`
      *   - insertedIds: Map of inserted IDs
      */
-    fileprivate init(reply: Document, insertedIds: [Int: BsonValue?]) throws {
+    fileprivate init(reply: Document, insertedIds: [Int: BSONValue?]) throws {
         self.deletedCount = reply["nRemoved"] as? Int ?? 0
         self.insertedCount = reply["nInserted"] as? Int ?? 0
         self.insertedIds = insertedIds
@@ -368,7 +368,7 @@ public struct BulkWriteResult {
         self.modifiedCount = reply["nModified"] as? Int ?? 0
         self.upsertedCount = reply["nUpserted"] as? Int ?? 0
 
-        var upsertedIds = [Int: BsonValue?]()
+        var upsertedIds = [Int: BSONValue?]()
 
         if let upserted = reply["upserted"] as? [Document] {
             for upsert in upserted {

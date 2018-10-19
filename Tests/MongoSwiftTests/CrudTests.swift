@@ -141,7 +141,7 @@ private class CrudTest {
     let operationName: String
     let args: Document
     let error: Bool?
-    let result: BsonValue?
+    let result: BSONValue?
     let collection: Document?
 
     var arrayFilters: [Document]? { return self.args["arrayFilters"] as? [Document] }
@@ -316,7 +316,7 @@ private class BulkWriteTest: CrudTest {
         }
     }
 
-    private static func prepareIds(_ ids: [Int: BsonValue?]) -> Document {
+    private static func prepareIds(_ ids: [Int: BSONValue?]) -> Document {
         var document = Document()
 
         // Dictionaries are unsorted. Sort before comparing with expected map
@@ -476,7 +476,7 @@ private class InsertManyTest: CrudTest {
         return InsertManyOptions(ordered: ordered)
     }
 
-    private static func prepareIds(_ ids: [Int: BsonValue?]) -> Document {
+    private static func prepareIds(_ ids: [Int: BSONValue?]) -> Document {
         var document = Document()
 
         // Dictionaries are unsorted. Sort before comparing with expected map

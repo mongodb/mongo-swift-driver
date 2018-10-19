@@ -1,19 +1,19 @@
 import Foundation
 
-/// A struct wrapping a `BsonValue` type that allows for encoding/
-/// decoding `BsonValue`s of unknown type.  
+/// A struct wrapping a `BSONValue` type that allows for encoding/
+/// decoding `BSONValue`s of unknown type.  
 public struct AnyBSONValue: Codable {
-    /// The `BsonValue` wrapped by this struct. 
-    public let value: BsonValue
+    /// The `BSONValue` wrapped by this struct. 
+    public let value: BSONValue
 
-    /// Initializes a new `AnyBSONValue` wrapping the provided `BsonValue`.
-    public init(_ value: BsonValue) {
+    /// Initializes a new `AnyBSONValue` wrapping the provided `BSONValue`.
+    public init(_ value: BSONValue) {
         self.value = value
     }
 
-    /// If the provided `BsonValue` is not `nil`, initializes a new `AnyBSONValue` 
+    /// If the provided `BSONValue` is not `nil`, initializes a new `AnyBSONValue` 
     /// wrapping that value. Otherwise, returns `nil`. 
-    public init?(ifPresent value: BsonValue?) {
+    public init?(ifPresent value: BSONValue?) {
         guard let v = value else { return nil }
         self.value = v
     }
@@ -26,9 +26,9 @@ public struct AnyBSONValue: Codable {
         }
 
         // in this case, we need to wrap each value in an
-        // `AnyBSONValue`, before we encode, because `[BsonValue]` 
+        // `AnyBSONValue`, before we encode, because `[BSONValue]` 
         // is not considered `Encodable`
-        if let arr = self.value as? [BsonValue?] {
+        if let arr = self.value as? [BSONValue?] {
             let mapped = arr.map { AnyBSONValue(ifPresent: $0) }
             try mapped.encode(to: encoder)
         } else {
@@ -51,7 +51,7 @@ public struct AnyBSONValue: Codable {
     /// a `Date`. This is because, in non-BSON formats, `Date`s are encoded
     /// as other types such as `Double` or `String`. We have no way of knowing 
     /// which type is the intended one when decoding to a `Document`, as `Document`s 
-    /// can contain any `BsonValue` type, so for simplicity we always go with a 
+    /// can contain any `BSONValue` type, so for simplicity we always go with a 
     /// `Double` or a `String` over a `Date`.
     /// 2) Numeric values will be attempted to be decoded in the following
     /// order of types: `Int`, `Int32`, `Int64`, `Double`. The first one
@@ -63,9 +63,9 @@ public struct AnyBSONValue: Codable {
         if let bsonDecoder = decoder as? _BSONDecoder {
             guard let value = bsonDecoder.storage.topContainer else {
                 throw DecodingError.valueNotFound(
-                    BsonValue.self,
+                    BSONValue.self,
                     DecodingError.Context(codingPath: bsonDecoder.codingPath,
-                                          debugDescription: "Expected BsonValue but found null instead."))
+                                          debugDescription: "Expected BSONValue but found null instead."))
             }
             self.value = value
             return

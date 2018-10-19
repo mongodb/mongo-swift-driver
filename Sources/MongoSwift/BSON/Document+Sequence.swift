@@ -11,7 +11,7 @@ import libmongoc
 /// ```
 extension Document: Sequence {
     /// The element type of a document: a tuple containing an individual key-value pair.
-    public typealias KeyValuePair = (key: String, value: BsonValue?)
+    public typealias KeyValuePair = (key: String, value: BSONValue?)
 
     /// Returns the number of (key, value) pairs stored at the top level of this `Document`.
     public var count: Int { return Int(bson_count_keys(self.data)) }
@@ -52,15 +52,15 @@ extension Document: Sequence {
      * the given closure.
      *
      * - Parameters:
-     *   - transform: A closure that transforms a `BsonValue?`. `transform` accepts each value of the
-     *                document as its parameter and returns a transformed `BsonValue?` of the same or 
+     *   - transform: A closure that transforms a `BSONValue?`. `transform` accepts each value of the
+     *                document as its parameter and returns a transformed `BSONValue?` of the same or 
      *                of a different type.
      *
      * - Returns: A document containing the keys and transformed values of this document.
      *
      * - Throws: An error if `transform` throws an error.
      */
-    public func mapValues(_ transform: (BsonValue?) throws -> BsonValue?) rethrows -> Document {
+    public func mapValues(_ transform: (BSONValue?) throws -> BSONValue?) rethrows -> Document {
         var output = Document()
         for (k, v) in self {
             output[k] = try transform(v)
@@ -206,7 +206,7 @@ public class DocumentIterator: IteratorProtocol {
     }
 
     /// Returns the current value. Assumes the iterator is in a valid position.
-    internal var currentValue: BsonValue? {
+    internal var currentValue: BSONValue? {
         do {
             switch self.currentType {
             case .symbol:
@@ -236,8 +236,8 @@ public class DocumentIterator: IteratorProtocol {
 
     /// Returns the values from the iterator's current position to the end. The iterator
     /// will be exhausted after this property is accessed.
-    internal var values: [BsonValue?] {
-        var values = [BsonValue?]()
+    internal var values: [BSONValue?] {
+        var values = [BSONValue?]()
         while self.advance() { values.append(self.currentValue) }
         return values
     }
@@ -280,11 +280,11 @@ public class DocumentIterator: IteratorProtocol {
         try newValue.writeToCurrentPosition(of: self)
     }
 
-    private static let BsonTypeMap: [BsonType: BsonValue.Type] = [
+    private static let BsonTypeMap: [BsonType: BSONValue.Type] = [
         .double: Double.self,
         .string: String.self,
         .document: Document.self,
-        .array: [BsonValue?].self,
+        .array: [BSONValue?].self,
         .binary: Binary.self,
         .objectId: ObjectId.self,
         .boolean: Bool.self,
