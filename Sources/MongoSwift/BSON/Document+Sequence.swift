@@ -280,7 +280,7 @@ public class DocumentIterator: IteratorProtocol {
         try newValue.writeToCurrentPosition(of: self)
     }
 
-    private static let BSONTypeMap: [BSONType: BSONValue.Type] = [
+    private static let bsonTypeMap: [BSONType: BSONValue.Type] = [
         .double: Double.self,
         .string: String.self,
         .document: Document.self,
