@@ -194,7 +194,7 @@ extension MongoCollection {
     @discardableResult
     public func createIndexes(_ forModels: [IndexModel], options: CreateIndexOptions? = nil) throws -> [String] {
         let collName = String(cString: mongoc_collection_get_name(self._collection))
-        let encoder = BsonEncoder()
+        let encoder = BSONEncoder()
         var indexData = [Document]()
         for index in forModels {
             var indexDoc = try encoder.encode(index)
@@ -228,7 +228,7 @@ extension MongoCollection {
      *
      */
     public func dropIndex(_ name: String, options: DropIndexOptions? = nil) throws {
-        let opts = try BsonEncoder().encode(options)
+        let opts = try BSONEncoder().encode(options)
         var error = bson_error_t()
         if !mongoc_collection_drop_index_with_opts(self._collection, name, opts?.data, &error) {
             throw MongoError.commandError(message: toErrorString(error))
@@ -281,7 +281,7 @@ extension MongoCollection {
     private func _dropIndexes(keys: Document? = nil, options: DropIndexOptions? = nil) throws -> Document {
         let collName = String(cString: mongoc_collection_get_name(self._collection))
         let command: Document = ["dropIndexes": collName, "index": keys ?? "*"]
-        let opts = try BsonEncoder().encode(options)
+        let opts = try BSONEncoder().encode(options)
         let reply = Document()
         var error = bson_error_t()
         if !mongoc_collection_write_command_with_opts(self._collection, command.data, opts?.data, reply.data, &error) {

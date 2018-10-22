@@ -12,7 +12,7 @@ extension MongoCollection {
      * - Returns: A `MongoCursor` over the resulting `Document`s
      */
     public func find(_ filter: Document = [:], options: FindOptions? = nil) throws -> MongoCursor<CollectionType> {
-        let opts = try BsonEncoder().encode(options)
+        let opts = try BSONEncoder().encode(options)
         let rp = options?.readPreference?._readPreference
         guard let cursor = mongoc_collection_find_with_opts(self._collection, filter.data, opts?.data, rp) else {
             throw MongoError.invalidResponse()
@@ -33,7 +33,7 @@ extension MongoCollection {
      * - Returns: A `MongoCursor` over the resulting `Document`s
      */
     public func aggregate(_ pipeline: [Document], options: AggregateOptions? = nil) throws -> MongoCursor<Document> {
-        let opts = try BsonEncoder().encode(options)
+        let opts = try BSONEncoder().encode(options)
         let rp = options?.readPreference?._readPreference
         let pipeline: Document = ["pipeline": pipeline]
         guard let cursor = mongoc_collection_aggregate(
@@ -57,7 +57,7 @@ extension MongoCollection {
      * - Returns: The count of the documents that matched the filter
      */
     public func count(_ filter: Document = [:], options: CountOptions? = nil) throws -> Int {
-        let opts = try BsonEncoder().encode(options)
+        let opts = try BSONEncoder().encode(options)
         let rp = options?.readPreference?._readPreference
         var error = bson_error_t()
         // because we already encode skip and limit in the options,
@@ -105,10 +105,10 @@ extension MongoCollection {
      *   - filter: a `Document` representing the filter documents must match in order to be considered for the operation
      *   - options: Optional `DistinctOptions` to use when executing the command
      *
-     * - Returns: A `[BsonValue?]` containing the distinct values for the specified criteria
+     * - Returns: A `[BSONValue?]` containing the distinct values for the specified criteria
      */
     public func distinct(fieldName: String, filter: Document = [:],
-                         options: DistinctOptions? = nil) throws -> [BsonValue?] {
+                         options: DistinctOptions? = nil) throws -> [BSONValue?] {
 
         let collName = String(cString: mongoc_collection_get_name(self._collection))
         let command: Document = [
@@ -117,7 +117,7 @@ extension MongoCollection {
             "query": filter
         ]
 
-        let opts = try BsonEncoder().encode(options)
+        let opts = try BSONEncoder().encode(options)
         let rp = options?.readPreference?._readPreference
         let reply = Document()
         var error = bson_error_t()
@@ -126,7 +126,7 @@ extension MongoCollection {
             throw MongoError.commandError(message: toErrorString(error))
         }
 
-        guard let values = reply["values"] as? [BsonValue?] else {
+        guard let values = reply["values"] as? [BSONValue?] else {
             throw MongoError.commandError(message:
                 "expected server reply \(reply) to contain an array of distinct values")
         }

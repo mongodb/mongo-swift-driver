@@ -171,7 +171,7 @@ extension WriteConcern: CustomStringConvertible {
     /// Returns the relaxed extended JSON representation of this `WriteConcern`.
     /// On error, an empty string will be returned.
     public var description: String {
-        guard let description = try? BsonEncoder().encode(self).description else {
+        guard let description = try? BSONEncoder().encode(self).description else {
             return ""
         }
         return description

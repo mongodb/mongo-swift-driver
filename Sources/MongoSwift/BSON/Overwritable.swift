@@ -1,7 +1,7 @@
 import libbson
 
 /// A protocol indicating that a type can be overwritten in-place on a `bson_t`.
-internal protocol Overwritable: BsonValue {
+internal protocol Overwritable: BSONValue {
     /// Overwrites the value at the current position of the iterator with self.
     func writeToCurrentPosition(of iter: DocumentIterator) throws
 }

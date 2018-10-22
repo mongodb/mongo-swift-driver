@@ -3,16 +3,16 @@ import Foundation
 import XCTest
 
 let basePath = XCTestCase.getSpecsPath()
-let flatBsonFile = URL(fileURLWithPath: basePath + "/flat_bson.json")
+let flatBSONFile = URL(fileURLWithPath: basePath + "/flat_bson.json")
 let flatSize = 75.31
-let deepBsonFile = URL(fileURLWithPath: basePath + "/deep_bson.json")
+let deepBSONFile = URL(fileURLWithPath: basePath + "/deep_bson.json")
 let deepSize = 19.64
-let fullBsonFile = URL(fileURLWithPath: basePath + "/full_bson.json")
+let fullBSONFile = URL(fileURLWithPath: basePath + "/full_bson.json")
 let fullSize = 57.34
 
-final class BsonBenchmarkTests: XCTestCase {
+final class BSONBenchmarkTests: XCTestCase {
 
-    static var allTests: [(String, (BsonBenchmarkTests) -> () throws -> Void)] {
+    static var allTests: [(String, (BSONBenchmarkTests) -> () throws -> Void)] {
         return [
             ("testFlatEncoding", testFlatEncoding),
             ("testFlatDecoding", testFlatDecoding),
@@ -42,14 +42,14 @@ final class BsonBenchmarkTests: XCTestCase {
     }
 
     // Recursively visit values 
-    func visit(_ value: BsonValue?) {
+    func visit(_ value: BSONValue?) {
         switch value {
         // if a document or array, iterate to visit each value
         case let val as Document:
             for (_, v) in val {
                 self.visit(v)
             }
-        case let val as [BsonValue]:
+        case let val as [BSONValue]:
             for v in val {
                 self.visit(v)
             }
@@ -76,30 +76,30 @@ final class BsonBenchmarkTests: XCTestCase {
     }
 
     func testFlatEncoding() throws {
-        try doEncodingTest(file: flatBsonFile, size: flatSize)
+        try doEncodingTest(file: flatBSONFile, size: flatSize)
     }
 
     // ~1.551 vs. 0.231 for libbson (6.7x)
     func testFlatDecoding() throws {
-        try doDecodingTest(file: flatBsonFile, size: flatSize)
+        try doDecodingTest(file: flatBSONFile, size: flatSize)
     }
 
     func testDeepEncoding() throws {
-        try doEncodingTest(file: deepBsonFile, size: deepSize, measureOpIterations: 150)
+        try doEncodingTest(file: deepBSONFile, size: deepSize, measureOpIterations: 150)
     }
 
     //  ~1.96 vs .001 for libbson (1960x)
     func testDeepDecoding() throws {
-        try doDecodingTest(file: deepBsonFile, size: deepSize)
+        try doDecodingTest(file: deepBSONFile, size: deepSize)
     }
 
     func testFullEncoding() throws {
-        try doEncodingTest(file: fullBsonFile, size: fullSize)
+        try doEncodingTest(file: fullBSONFile, size: fullSize)
     }
 
     // ~3.296 vs for libbson (42x)
     func testFullDecoding() throws {
-        try doDecodingTest(file: fullBsonFile, size: fullSize, measureOpIterations: 80)
+        try doDecodingTest(file: fullBSONFile, size: fullSize, measureOpIterations: 80)
     }
 
 }

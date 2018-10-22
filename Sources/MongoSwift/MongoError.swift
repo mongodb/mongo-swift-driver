@@ -17,9 +17,9 @@ public enum MongoError {
     case commandError(message: String)
     /// Thrown when there is an error parsing raw BSON `Data`. 
     case bsonParseError(domain: UInt32, code: UInt32, message: String)
-    /// Thrown when there is an error encoding a `BsonValue` to a `Document`.
+    /// Thrown when there is an error encoding a `BSONValue` to a `Document`.
     case bsonEncodeError(message: String)
-    /// Thrown when there is an error decoding a `BsonValue` from a `Document`.
+    /// Thrown when there is an error decoding a `BSONValue` from a `Document`.
     case bsonDecodeError(message: String)
     /// Thrown when the value stored under a key in a `Document` does not match the expected type.
     case typeError(message: String)
@@ -63,7 +63,7 @@ internal func toErrorString(_ error: bson_error_t) -> String {
     }
 }
 
-internal func bsonEncodeError(value: BsonValue, forKey: String) -> MongoError {
+internal func bsonEncodeError(value: BSONValue, forKey: String) -> MongoError {
     return MongoError.bsonEncodeError(message:
         "Failed to set value for key \(forKey) to \(value) with BSON type \(value.bsonType)")
 }

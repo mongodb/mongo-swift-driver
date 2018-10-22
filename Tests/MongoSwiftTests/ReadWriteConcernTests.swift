@@ -377,7 +377,7 @@ final class ReadWriteConcernTests: XCTestCase {
     }
 
     func testDocuments() throws {
-        let encoder = BsonEncoder()
+        let encoder = BSONEncoder()
         let docsPath = "\(self.getSpecsPath())/read-write-concern/tests/document"
         let testFiles = try FileManager.default.contentsOfDirectory(atPath: docsPath).filter { $0.hasSuffix(".json") }
         for filename in testFiles {

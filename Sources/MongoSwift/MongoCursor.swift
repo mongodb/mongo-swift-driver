@@ -60,7 +60,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         let doc = Document(fromPointer: out.pointee!)
 
         do {
-            return try BsonDecoder().decode(T.self, from: doc)
+            return try BSONDecoder().decode(T.self, from: doc)
         } catch {
             self.decodeError = error
             return nil

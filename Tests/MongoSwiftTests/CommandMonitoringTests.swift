@@ -17,7 +17,7 @@ final class CommandMonitoringTests: XCTestCase {
     }
 
     func testCommandMonitoring() throws {
-        let decoder = BsonDecoder()
+        let decoder = BSONDecoder()
         let client = try MongoClient(options: ClientOptions(eventMonitoring: true))
         client.enableMonitoring(forEvents: .commandMonitoring)
 
@@ -225,7 +225,7 @@ private protocol ExpectationType {
 /// Based on the name of the expectation, generate a corresponding
 /// `ExpectationType` to be compared to incoming events
 private func makeExpectation(_ document: Document) throws -> ExpectationType {
-    let decoder = BsonDecoder()
+    let decoder = BSONDecoder()
 
     if let doc = document["command_started_event"] as? Document {
         return try decoder.decode(CommandStartedExpectation.self, from: doc)

@@ -15,7 +15,7 @@ extension MongoCollection {
      */
     @discardableResult
     public func insertOne(_ value: CollectionType, options: InsertOneOptions? = nil) throws -> InsertOneResult? {
-        let encoder = BsonEncoder()
+        let encoder = BSONEncoder()
         let document = try encoder.encode(value)
         if !document.hasKey("_id") {
             try ObjectId().encode(to: document.storage, forKey: "_id")
@@ -54,10 +54,10 @@ extension MongoCollection {
             throw MongoError.invalidArgument(message: "values cannot be empty")
         }
 
-        let encoder = BsonEncoder()
+        let encoder = BSONEncoder()
         let opts = try encoder.encode(options)
         let documents = try values.map { try encoder.encode($0) }
-        var insertedIds: [Int: BsonValue?] = [:]
+        var insertedIds: [Int: BSONValue?] = [:]
 
         try documents.enumerated().forEach { (index, document) in
             if !document.keys.contains("_id") {
@@ -98,7 +98,7 @@ extension MongoCollection {
     @discardableResult
     public func replaceOne(filter: Document, replacement: CollectionType,
                            options: ReplaceOptions? = nil) throws -> UpdateResult? {
-        let encoder = BsonEncoder()
+        let encoder = BSONEncoder()
         let replacementDoc = try encoder.encode(replacement)
         let opts = try encoder.encode(options)
         let reply = Document()
@@ -113,7 +113,7 @@ extension MongoCollection {
             return nil
         }
 
-        return try BsonDecoder().decode(UpdateResult.self, from: reply)
+        return try BSONDecoder().decode(UpdateResult.self, from: reply)
     }
 
     /**
@@ -129,7 +129,7 @@ extension MongoCollection {
      */
     @discardableResult
     public func updateOne(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
-        let encoder = BsonEncoder()
+        let encoder = BSONEncoder()
         let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
@@ -143,7 +143,7 @@ extension MongoCollection {
             return nil
         }
 
-        return try BsonDecoder().decode(UpdateResult.self, from: reply)
+        return try BSONDecoder().decode(UpdateResult.self, from: reply)
     }
 
     /**
@@ -159,7 +159,7 @@ extension MongoCollection {
      */
     @discardableResult
     public func updateMany(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
-        let encoder = BsonEncoder()
+        let encoder = BSONEncoder()
         let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
@@ -173,7 +173,7 @@ extension MongoCollection {
             return nil
         }
 
-        return try BsonDecoder().decode(UpdateResult.self, from: reply)
+        return try BSONDecoder().decode(UpdateResult.self, from: reply)
     }
 
     /**
@@ -188,7 +188,7 @@ extension MongoCollection {
      */
     @discardableResult
     public func deleteOne(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
-        let encoder = BsonEncoder()
+        let encoder = BSONEncoder()
         let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
@@ -202,7 +202,7 @@ extension MongoCollection {
             return nil
         }
 
-        return try BsonDecoder().decode(DeleteResult.self, from: reply)
+        return try BSONDecoder().decode(DeleteResult.self, from: reply)
     }
 
     /**
@@ -217,7 +217,7 @@ extension MongoCollection {
      */
     @discardableResult
     public func deleteMany(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
-        let encoder = BsonEncoder()
+        let encoder = BSONEncoder()
         let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
@@ -231,7 +231,7 @@ extension MongoCollection {
             return nil
         }
 
-        return try BsonDecoder().decode(DeleteResult.self, from: reply)
+        return try BSONDecoder().decode(DeleteResult.self, from: reply)
     }
 
     /**
@@ -368,7 +368,7 @@ public struct DeleteOptions: Encodable {
 public struct InsertOneResult {
     /// The identifier that was inserted. If the document doesn't have an identifier, this value
     /// will be generated and added to the document before insertion.
-    public let insertedId: BsonValue?
+    public let insertedId: BSONValue?
 }
 
 /// The result of a multi-document insert operation on a `MongoCollection`.
@@ -377,7 +377,7 @@ public struct InsertManyResult {
     public let insertedCount: Int
 
     /// Map of the index of the document in `values` to the value of its ID
-    public let insertedIds: [Int: BsonValue?]
+    public let insertedIds: [Int: BSONValue?]
 
     fileprivate var writeErrors: [WriteError] = []
     fileprivate var writeConcernError: WriteConcernError?
@@ -392,16 +392,16 @@ public struct InsertManyResult {
      *   - reply: A `Document` result from `mongoc_collection_insert_many()`
      *   - insertedIds: Map of inserted IDs
      */
-    fileprivate init(reply: Document, insertedIds: [Int: BsonValue?]) throws {
+    fileprivate init(reply: Document, insertedIds: [Int: BSONValue?]) throws {
         self.insertedCount = reply["insertedCount"] as? Int ?? 0
         self.insertedIds = insertedIds
 
         if let writeErrors = reply["writeErrors"] as? [Document] {
-            self.writeErrors = try writeErrors.map { try BsonDecoder().decode(WriteError.self, from: $0) }
+            self.writeErrors = try writeErrors.map { try BSONDecoder().decode(WriteError.self, from: $0) }
         }
 
         if let writeConcernErrors = reply["writeConcernErrors"] as? [Document], writeConcernErrors.indices.contains(0) {
-            self.writeConcernError = try BsonDecoder().decode(WriteConcernError.self, from: writeConcernErrors[0])
+            self.writeConcernError = try BSONDecoder().decode(WriteConcernError.self, from: writeConcernErrors[0])
         }
     }
 }
@@ -421,7 +421,7 @@ public struct UpdateResult: Decodable {
     public let modifiedCount: Int
 
     /// The identifier of the inserted document if an upsert took place.
-    public let upsertedId: AnyBsonValue?
+    public let upsertedId: AnyBSONValue?
 
     /// The number of documents that were upserted.
     public let upsertedCount: Int

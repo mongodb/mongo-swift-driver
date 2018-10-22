@@ -1,35 +1,35 @@
 import Foundation
 
-/// A struct wrapping a `BsonValue` type that allows for encoding/
-/// decoding `BsonValue`s of unknown type.  
-public struct AnyBsonValue: Codable {
-    /// The `BsonValue` wrapped by this struct. 
-    public let value: BsonValue
+/// A struct wrapping a `BSONValue` type that allows for encoding/
+/// decoding `BSONValue`s of unknown type.  
+public struct AnyBSONValue: Codable {
+    /// The `BSONValue` wrapped by this struct. 
+    public let value: BSONValue
 
-    /// Initializes a new `AnyBsonValue` wrapping the provided `BsonValue`.
-    public init(_ value: BsonValue) {
+    /// Initializes a new `AnyBSONValue` wrapping the provided `BSONValue`.
+    public init(_ value: BSONValue) {
         self.value = value
     }
 
-    /// If the provided `BsonValue` is not `nil`, initializes a new `AnyBsonValue` 
+    /// If the provided `BSONValue` is not `nil`, initializes a new `AnyBSONValue` 
     /// wrapping that value. Otherwise, returns `nil`. 
-    public init?(ifPresent value: BsonValue?) {
+    public init?(ifPresent value: BSONValue?) {
         guard let v = value else { return nil }
         self.value = v
     }
 
     public func encode(to encoder: Encoder) throws {
-        // short-circuit in the `BsonEncoder` case
-        if let bsonEncoder = encoder as? _BsonEncoder {
+        // short-circuit in the `BSONEncoder` case
+        if let bsonEncoder = encoder as? _BSONEncoder {
             bsonEncoder.storage.containers.append(self.value)
             return
         }
 
         // in this case, we need to wrap each value in an
-        // `AnyBsonValue`, before we encode, because `[BsonValue]` 
+        // `AnyBSONValue`, before we encode, because `[BSONValue]` 
         // is not considered `Encodable`
-        if let arr = self.value as? [BsonValue?] {
-            let mapped = arr.map { AnyBsonValue(ifPresent: $0) }
+        if let arr = self.value as? [BSONValue?] {
+            let mapped = arr.map { AnyBSONValue(ifPresent: $0) }
             try mapped.encode(to: encoder)
         } else {
             if let c = self.value as? Codable {
@@ -44,14 +44,14 @@ public struct AnyBsonValue: Codable {
         }
     }
 
-    /// Initializes a new `AnyBsonValue` from a `Decoder`. 
+    /// Initializes a new `AnyBSONValue` from a `Decoder`. 
     ///
-    /// Caveats for usage with `Decoder`s other than MongoSwift's `BsonDecoder` -
-    /// 1) This method does *not* support initializing an `AnyBsonValue` wrapping
+    /// Caveats for usage with `Decoder`s other than MongoSwift's `BSONDecoder` -
+    /// 1) This method does *not* support initializing an `AnyBSONValue` wrapping
     /// a `Date`. This is because, in non-BSON formats, `Date`s are encoded
     /// as other types such as `Double` or `String`. We have no way of knowing 
     /// which type is the intended one when decoding to a `Document`, as `Document`s 
-    /// can contain any `BsonValue` type, so for simplicity we always go with a 
+    /// can contain any `BSONValue` type, so for simplicity we always go with a 
     /// `Double` or a `String` over a `Date`.
     /// 2) Numeric values will be attempted to be decoded in the following
     /// order of types: `Int`, `Int32`, `Int64`, `Double`. The first one
@@ -59,13 +59,13 @@ public struct AnyBsonValue: Codable {
     /// be used.
     // swiftlint:disable:next cyclomatic_complexity
     public init(from decoder: Decoder) throws {
-        // short-circuit in the `BsonDecoder` case
-        if let bsonDecoder = decoder as? _BsonDecoder {
+        // short-circuit in the `BSONDecoder` case
+        if let bsonDecoder = decoder as? _BSONDecoder {
             guard let value = bsonDecoder.storage.topContainer else {
                 throw DecodingError.valueNotFound(
-                    BsonValue.self,
+                    BSONValue.self,
                     DecodingError.Context(codingPath: bsonDecoder.codingPath,
-                                          debugDescription: "Expected BsonValue but found null instead."))
+                                          debugDescription: "Expected BSONValue but found null instead."))
             }
             self.value = value
             return
@@ -100,7 +100,7 @@ public struct AnyBsonValue: Codable {
             self.value = value
         } else if let value = try? container.decode(MaxKey.self) {
             self.value = value
-        } else if let value = try? container.decode([AnyBsonValue?].self) {
+        } else if let value = try? container.decode([AnyBSONValue?].self) {
             self.value = value.map { $0?.value }
         } else if let value = try? container.decode(Document.self) {
             self.value = value

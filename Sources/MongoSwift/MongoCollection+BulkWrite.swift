@@ -21,7 +21,7 @@ extension MongoCollection {
             throw MongoError.invalidArgument(message: "requests cannot be empty")
         }
 
-        let opts = try BsonEncoder().encode(options)
+        let opts = try BSONEncoder().encode(options)
         let bulk = BulkWriteOperation(collection: self._collection, opts: opts?.data)
 
         try requests.enumerated().forEach { (index, model) in
@@ -54,7 +54,7 @@ extension MongoCollection {
 
         /// Adds the `deleteOne` operation to a bulk write
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
-            let opts = try BsonEncoder().encode(self.options)
+            let opts = try BSONEncoder().encode(self.options)
             var error = bson_error_t()
 
             guard mongoc_bulk_operation_remove_one_with_opts(bulk.bulk, self.filter.data, opts.data, &error) else {
@@ -82,7 +82,7 @@ extension MongoCollection {
 
         /// Adds the `deleteMany` operation to a bulk write
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
-            let opts = try BsonEncoder().encode(options)
+            let opts = try BSONEncoder().encode(options)
             var error = bson_error_t()
 
             guard mongoc_bulk_operation_remove_many_with_opts(bulk.bulk, self.filter.data, opts.data, &error) else {
@@ -107,7 +107,7 @@ extension MongoCollection {
 
         /// Adds the `insertOne` operation to a bulk write
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
-            let document = try BsonEncoder().encode(self.document)
+            let document = try BSONEncoder().encode(self.document)
             if !document.hasKey("_id") {
                 try ObjectId().encode(to: document.storage, forKey: "_id")
             }
@@ -150,7 +150,7 @@ extension MongoCollection {
 
         /// Adds the `replaceOne` operation to a bulk write
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
-            let encoder = BsonEncoder()
+            let encoder = BSONEncoder()
             let replacement = try encoder.encode(self.replacement)
             let opts = try encoder.encode(self.options)
             var error = bson_error_t()
@@ -192,7 +192,7 @@ extension MongoCollection {
 
         /// Adds the `updateOne` operation to a bulk write
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
-            let opts = try BsonEncoder().encode(self.options)
+            let opts = try BSONEncoder().encode(self.options)
             var error = bson_error_t()
 
             guard mongoc_bulk_operation_update_one_with_opts(bulk.bulk, self.filter.data, self.update.data, opts.data, &error) else {
@@ -226,7 +226,7 @@ extension MongoCollection {
 
         /// Adds the `updateMany` operation to a bulk write
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
-            let opts = try BsonEncoder().encode(self.options)
+            let opts = try BSONEncoder().encode(self.options)
             var error = bson_error_t()
 
             guard mongoc_bulk_operation_update_many_with_opts(bulk.bulk, self.filter.data, self.update.data, opts.data, &error) else {
@@ -255,7 +255,7 @@ public protocol WriteModel {
 /// A class encapsulating a `mongoc_bulk_operation_t`.
 public class BulkWriteOperation {
     fileprivate var bulk: OpaquePointer?
-    fileprivate var insertedIds: [Int: BsonValue?] = [:]
+    fileprivate var insertedIds: [Int: BSONValue?] = [:]
 
     /// Indicates whether this bulk operation used an acknowledged write concern.
     private var isAcknowledged: Bool {
@@ -330,7 +330,7 @@ public struct BulkWriteResult {
     public let insertedCount: Int
 
     /// Map of the index of the operation to the id of the inserted document.
-    public let insertedIds: [Int: BsonValue?]
+    public let insertedIds: [Int: BSONValue?]
 
     /// Number of documents matched for update.
     public let matchedCount: Int
@@ -342,7 +342,7 @@ public struct BulkWriteResult {
     public let upsertedCount: Int
 
     /// Map of the index of the operation to the id of the upserted document.
-    public let upsertedIds: [Int: BsonValue?]
+    public let upsertedIds: [Int: BSONValue?]
 
     fileprivate var writeErrors: [WriteError] = []
     fileprivate var writeConcernError: WriteConcernError?
@@ -360,7 +360,7 @@ public struct BulkWriteResult {
      *   - reply: A `Document` result from `mongoc_bulk_operation_execute()`
      *   - insertedIds: Map of inserted IDs
      */
-    fileprivate init(reply: Document, insertedIds: [Int: BsonValue?]) throws {
+    fileprivate init(reply: Document, insertedIds: [Int: BSONValue?]) throws {
         self.deletedCount = reply["nRemoved"] as? Int ?? 0
         self.insertedCount = reply["nInserted"] as? Int ?? 0
         self.insertedIds = insertedIds
@@ -368,7 +368,7 @@ public struct BulkWriteResult {
         self.modifiedCount = reply["nModified"] as? Int ?? 0
         self.upsertedCount = reply["nUpserted"] as? Int ?? 0
 
-        var upsertedIds = [Int: BsonValue?]()
+        var upsertedIds = [Int: BSONValue?]()
 
         if let upserted = reply["upserted"] as? [Document] {
             for upsert in upserted {
@@ -382,11 +382,11 @@ public struct BulkWriteResult {
         self.upsertedIds = upsertedIds
 
         if let writeErrors = reply["writeErrors"] as? [Document] {
-            self.writeErrors = try writeErrors.map { try BsonDecoder().decode(WriteError.self, from: $0) }
+            self.writeErrors = try writeErrors.map { try BSONDecoder().decode(WriteError.self, from: $0) }
         }
 
         if let writeConcernErrors = reply["writeConcernErrors"] as? [Document], writeConcernErrors.indices.contains(0) {
-            self.writeConcernError = try BsonDecoder().decode(WriteConcernError.self, from: writeConcernErrors[0])
+            self.writeConcernError = try BSONDecoder().decode(WriteConcernError.self, from: writeConcernErrors[0])
         }
     }
 }
