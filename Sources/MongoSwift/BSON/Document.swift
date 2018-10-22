@@ -74,7 +74,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      */
     public init(dictionaryLiteral keyValuePairs: (String, BSONValue?)...) {
         // make sure all keys are unique
-        if Set(keyValuePairs.map { $0.0 }).count != keyValuePairs.count {
+        guard Set(keyValuePairs.map { $0.0 }).count == keyValuePairs.count else {
             preconditionFailure("Dictionary literal \(keyValuePairs) contains duplicate keys")
         }
 
