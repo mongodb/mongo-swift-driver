@@ -186,7 +186,7 @@ public class MongoDatabase {
     /// Drops this database.
     public func drop() throws {
         var error = bson_error_t()
-        if !mongoc_database_drop(self._database, &error) {
+        guard mongoc_database_drop(self._database, &error) else {
             throw MongoError.commandError(message: toErrorString(error))
         }
     }
@@ -317,7 +317,7 @@ public class MongoDatabase {
         let opts = try BSONEncoder().encode(options)
         let reply = Document()
         var error = bson_error_t()
-        if !mongoc_database_command_with_opts(self._database, command.data, rp, opts?.data, reply.data, &error) {
+        guard mongoc_database_command_with_opts(self._database, command.data, rp, opts?.data, reply.data, &error) else {
             throw MongoError.commandError(message: toErrorString(error))
         }
         return reply

@@ -212,7 +212,7 @@ extension MongoCollection {
         let opts = try encoder.encode(options)
         var error = bson_error_t()
 
-        if !mongoc_collection_write_command_with_opts(self._collection, command.data, opts?.data, nil, &error) {
+        guard mongoc_collection_write_command_with_opts(self._collection, command.data, opts?.data, nil, &error) else {
             throw MongoError.commandError(message: toErrorString(error))
         }
 
@@ -230,7 +230,7 @@ extension MongoCollection {
     public func dropIndex(_ name: String, options: DropIndexOptions? = nil) throws {
         let opts = try BSONEncoder().encode(options)
         var error = bson_error_t()
-        if !mongoc_collection_drop_index_with_opts(self._collection, name, opts?.data, &error) {
+        guard mongoc_collection_drop_index_with_opts(self._collection, name, opts?.data, &error) else {
             throw MongoError.commandError(message: toErrorString(error))
         }
     }
@@ -284,7 +284,8 @@ extension MongoCollection {
         let opts = try BSONEncoder().encode(options)
         let reply = Document()
         var error = bson_error_t()
-        if !mongoc_collection_write_command_with_opts(self._collection, command.data, opts?.data, reply.data, &error) {
+        guard mongoc_collection_write_command_with_opts(self._collection, command.data, opts?.data, reply.data, &error)
+        else {
             throw MongoError.commandError(message: toErrorString(error))
         }
         return reply

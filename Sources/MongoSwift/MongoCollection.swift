@@ -62,7 +62,7 @@ public class MongoCollection<T: Codable> {
     /// Drops this collection from its parent database.
     public func drop() throws {
         var error = bson_error_t()
-        if !mongoc_collection_drop(self._collection, &error) {
+        guard mongoc_collection_drop(self._collection, &error) else {
             throw MongoError.commandError(message: toErrorString(error))
         }
     }

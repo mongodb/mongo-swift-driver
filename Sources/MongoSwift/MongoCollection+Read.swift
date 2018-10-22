@@ -121,8 +121,8 @@ extension MongoCollection {
         let rp = options?.readPreference?._readPreference
         let reply = Document()
         var error = bson_error_t()
-        if !mongoc_collection_read_command_with_opts(
-            self._collection, command.data, rp, opts?.data, reply.data, &error) {
+        guard mongoc_collection_read_command_with_opts(
+            self._collection, command.data, rp, opts?.data, reply.data, &error) else {
             throw MongoError.commandError(message: toErrorString(error))
         }
 

@@ -84,8 +84,8 @@ extension MongoCollection {
         let reply = Document()
         var error = bson_error_t()
 
-        if !mongoc_collection_find_and_modify_with_opts(self._collection, filter.data,
-                                                        opts._options, reply.data, &error) {
+        guard mongoc_collection_find_and_modify_with_opts(self._collection, filter.data,
+                                                          opts._options, reply.data, &error) else {
             // TODO SWIFT-144: replace with more descriptive error type(s)
             throw MongoError.commandError(message: toErrorString(error))
         }
@@ -317,7 +317,7 @@ private class FindAndModifyOptions {
     /// Sets the `update` value on a `mongoc_find_and_modify_opts_t`. We need to have this separate from the 
     /// initializer because its value comes from the API methods rather than their options types.
     fileprivate func setUpdate(_ update: Document) throws {
-        if !mongoc_find_and_modify_opts_set_update(self._options, update.data) {
+        guard mongoc_find_and_modify_opts_set_update(self._options, update.data) else {
             throw MongoError.invalidArgument(message: "Error setting update to \(update)")
         }
     }
