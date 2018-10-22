@@ -39,8 +39,8 @@ final class SDAMTests: XCTestCase {
 
         let observer = center.addObserver(forName: nil, object: nil, queue: nil) { (notif) in
 
-            if !["serverDescriptionChanged", "serverOpening", "serverClosed", "topologyDescriptionChanged",
-                "topologyOpening", "topologyClosed"].contains(notif.name.rawValue) { return }
+            guard ["serverDescriptionChanged", "serverOpening", "serverClosed", "topologyDescriptionChanged",
+                "topologyOpening", "topologyClosed"].contains(notif.name.rawValue) else { return }
 
             guard let event = notif.userInfo?["event"] as? MongoEvent else {
                 XCTFail("Notification \(notif) did not contain an event")
