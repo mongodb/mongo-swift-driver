@@ -50,7 +50,7 @@ extension MongoCollection {
      */
     @discardableResult
     public func insertMany(_ values: [CollectionType], options: InsertManyOptions? = nil) throws -> InsertManyResult? {
-        if values.isEmpty {
+        guard !values.isEmpty else {
             throw MongoError.invalidArgument(message: "values cannot be empty")
         }
 

@@ -17,7 +17,7 @@ extension MongoCollection {
      */
     @discardableResult
     public func bulkWrite(_ requests: [WriteModel], options: BulkWriteOptions? = nil) throws -> BulkWriteResult? {
-        if requests.isEmpty {
+        guard !requests.isEmpty else {
             throw MongoError.invalidArgument(message: "requests cannot be empty")
         }
 

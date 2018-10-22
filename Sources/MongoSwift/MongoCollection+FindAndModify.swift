@@ -262,8 +262,10 @@ private class FindAndModifyOptions {
             throw MongoError.invalidArgument(message: "Error setting bypassDocumentValidation to \(bypass)")
         }
 
-        if let fields = projection, !mongoc_find_and_modify_opts_set_fields(self._options, fields.data) {
-            throw MongoError.invalidArgument(message: "Error setting fields to \(fields)")
+        if let fields = projection {
+            guard mongoc_find_and_modify_opts_set_fields(self._options, fields.data) else {
+                throw MongoError.invalidArgument(message: "Error setting fields to \(fields)")
+            }
         }
 
         // build a mongoc_find_and_modify_flags_t
@@ -282,8 +284,10 @@ private class FindAndModifyOptions {
                 "Error setting flags to \(flags); remove=\(remStr), upsert=\(upsStr), returnDocument=\(retStr)")
         }
 
-        if let sort = sort, !mongoc_find_and_modify_opts_set_sort(self._options, sort.data) {
-            throw MongoError.invalidArgument(message: "Error setting sort to \(sort)")
+        if let sort = sort {
+            guard mongoc_find_and_modify_opts_set_sort(self._options, sort.data) else {
+                throw MongoError.invalidArgument(message: "Error setting sort to \(sort)")
+            }
         }
 
         // build an "extra" document of fields without their own setters
@@ -309,7 +313,8 @@ private class FindAndModifyOptions {
             }
         }
 
-        if extra.keys.count > 0 && !mongoc_find_and_modify_opts_append(self._options, extra.data) {
+        let appendSuccess = extra.keys.count <= 0 || mongoc_find_and_modify_opts_append(self._options, extra.data)
+        guard appendSuccess else {
             throw MongoError.invalidArgument(message: "Error appending extra fields \(extra)")
         }
     }
