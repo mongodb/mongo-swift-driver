@@ -56,7 +56,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
             out.deinitialize(count: 1)
             out.deallocate(capacity: 1)
         }
-        if !mongoc_cursor_next(self._cursor, out) { return nil }
+        guard mongoc_cursor_next(self._cursor, out) else { return nil }
         let doc = Document(fromPointer: out.pointee!)
 
         do {
