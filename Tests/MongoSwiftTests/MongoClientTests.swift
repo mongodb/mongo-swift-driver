@@ -26,7 +26,7 @@ final class MongoClientTests: XCTestCase {
         }
 
         let client_t = mongoc_client_new_from_uri(uri)
-        if client_t == nil {
+        guard client_t != nil else {
             throw MongoError.invalidClient()
         }
 

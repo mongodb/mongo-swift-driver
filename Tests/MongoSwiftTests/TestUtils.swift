@@ -41,7 +41,7 @@ extension MongoClient {
         /// initialize a server version from a string
         init(_ str: String) throws {
             let versionComponents = str.split(separator: ".").prefix(3)
-            if versionComponents.count < 2 {
+            guard versionComponents.count >= 2 else {
                 throw TestError(message: "Expected version string \(str) to have at least two .-separated components")
             }
 
