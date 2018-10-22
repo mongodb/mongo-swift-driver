@@ -17,6 +17,10 @@
 * [swiftlint](https://github.com/realm/SwiftLint#using-homebrew): the Swift linter we use. 
 * [libmongoc](http://mongoc.org/libmongoc/current/api.html): the MongoDB C driver, which this library wraps. See the installation instructions provided in our [README](README.md#first-install-the-mongodb-c-driver) or on the [libmongoc docs](http://mongoc.org/libmongoc/current/installing.html). 
 
+### If you are using (Vim/Neovim)
+* [swift.vim](https://github.com/Utagai/swift.vim): A fork of Keith Smiley's `swift.vim` with fixed indenting rules. This adds proper indenting and syntax for Swift to Vim. This fork also provides a match rule for column width highlighting.
+  * Please read the [NOTICE](https://github.com/Utagai/swift.vim#notice) for proper credits.
+
 ## The code
 You should clone this repository, as well as the [MongoDB Driver specifications](https://github.com/mongodb/specifications). 
 Since this library wraps the MongoDB C Driver, we also recommend cloning [mongodb/mongo-c-driver](https://github.com/mongodb/mongo-c-driver) so you have the source code and documentation easily accessible. 
@@ -74,6 +78,9 @@ We use [swiftlint](https://github.com/realm/SwiftLint#using-homebrew) for lintin
 
 ### Sublime Text Setup
 If you use Sublime Text, you can get linting violations shown in the editor by installing the packages [SublimeLinter](https://packagecontrol.io/packages/SublimeLinter) and [SublimeLinter-contrib-swiftlint](https://packagecontrol.io/packages/SublimeLinter-contrib-swiftlint). 
+
+### Vim/Neovim Setup
+If you use Vim or Neovim, then you can get linting support by using [`ale`](https://github.com/w0rp/ale) by `w0rp`. This will show symbols in the gutter for warnings/errors and show linter messages in the status.
 
 ## Workflow
 1. Create a feature branch, named by the corresponding JIRA ticket if exists; for example, `SWIFT-30`. 
