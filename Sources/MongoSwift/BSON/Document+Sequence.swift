@@ -181,7 +181,7 @@ public class DocumentIterator: IteratorProtocol {
     internal init?(forDocument doc: Document) {
         self.iter = bson_iter_t()
         self.storage = doc.storage
-        if !bson_iter_init(&self.iter, doc.data) { return nil }
+        guard bson_iter_init(&self.iter, doc.data) else { return nil }
     }
 
     /// Initializes a new iterator over the contents of `doc`. Returns `nil` if an iterator cannot
@@ -189,7 +189,7 @@ public class DocumentIterator: IteratorProtocol {
     internal init?(forDocument doc: Document, advancedTo key: String) {
         self.iter = bson_iter_t()
         self.storage = doc.storage
-        if !bson_iter_init_find(&iter, doc.data, key.cString(using: .utf8)) {
+        guard bson_iter_init_find(&iter, doc.data, key.cString(using: .utf8)) else {
             return nil
         }
     }

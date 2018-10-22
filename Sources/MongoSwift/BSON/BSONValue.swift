@@ -104,7 +104,7 @@ extension Array: BSONValue {
         // An array is just a document with keys '0', '1', etc. corresponding to indexes
         var arr = Document()
         for (i, v) in self.enumerated() { arr[String(i)] = v as? BSONValue }
-        if !bson_append_array(storage.pointer, key, Int32(key.count), arr.data) {
+        guard bson_append_array(storage.pointer, key, Int32(key.count), arr.data) else {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
@@ -178,7 +178,7 @@ public struct Binary: BSONValue, Equatable, Codable {
         let subtype = bson_subtype_t(UInt32(self.subtype))
         let length = self.data.count
         let byteArray = [UInt8](self.data)
-        if !bson_append_binary(storage.pointer, key, Int32(key.count), subtype, byteArray, UInt32(length)) {
+        guard bson_append_binary(storage.pointer, key, Int32(key.count), subtype, byteArray, UInt32(length)) else {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
@@ -212,7 +212,7 @@ extension Bool: BSONValue {
     public var bsonType: BSONType { return .boolean }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        if !bson_append_bool(storage.pointer, key, Int32(key.count), self) {
+        guard bson_append_bool(storage.pointer, key, Int32(key.count), self) else {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
@@ -238,7 +238,7 @@ extension Date: BSONValue {
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         let seconds = self.timeIntervalSince1970 * 1000
-        if !bson_append_date_time(storage.pointer, key, Int32(key.count), Int64(seconds)) {
+        guard bson_append_date_time(storage.pointer, key, Int32(key.count), Int64(seconds)) else {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
@@ -338,14 +338,14 @@ public struct Decimal128: BSONValue, Equatable, Codable {
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         var value = try Decimal128.encode(self.data)
-        if !bson_append_decimal128(storage.pointer, key, Int32(key.count), &value) {
+        guard bson_append_decimal128(storage.pointer, key, Int32(key.count), &value) else {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
 
     public init(from iter: DocumentIterator) throws {
         var value = bson_decimal128_t()
-        if !bson_iter_decimal128(&iter.iter, &value) {
+        guard bson_iter_decimal128(&iter.iter, &value) else {
             throw MongoError.bsonDecodeError(message: "Failed to retrieve Decimal128 value from iterator")
         }
 
@@ -364,7 +364,7 @@ extension Double: BSONValue {
     public var bsonType: BSONType { return .double }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        if !bson_append_double(storage.pointer, key, Int32(key.count), self) {
+        guard bson_append_double(storage.pointer, key, Int32(key.count), self) else {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
@@ -405,7 +405,7 @@ extension Int32: BSONValue {
     public var bsonType: BSONType { return .int32 }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        if !bson_append_int32(storage.pointer, key, Int32(key.count), self) {
+        guard bson_append_int32(storage.pointer, key, Int32(key.count), self) else {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
@@ -421,7 +421,7 @@ extension Int64: BSONValue {
     public var bsonType: BSONType { return .int64 }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        if !bson_append_int64(storage.pointer, key, Int32(key.count), self) {
+        guard bson_append_int64(storage.pointer, key, Int32(key.count), self) else {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
@@ -451,11 +451,13 @@ public struct CodeWithScope: BSONValue, Equatable, Codable {
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         if let s = self.scope {
-            if !bson_append_code_with_scope(storage.pointer, key, Int32(key.count), self.code, s.data) {
+            guard bson_append_code_with_scope(storage.pointer, key, Int32(key.count), self.code, s.data) else {
                 throw bsonEncodeError(value: self, forKey: key)
             }
-        } else if !bson_append_code(storage.pointer, key, Int32(key.count), self.code) {
-            throw bsonEncodeError(value: self, forKey: key)
+        } else {
+            guard bson_append_code(storage.pointer, key, Int32(key.count), self.code) else {
+                throw bsonEncodeError(value: self, forKey: key)
+            }
         }
     }
 
@@ -498,7 +500,7 @@ public struct MaxKey: BSONValue, Equatable, Codable {
     public var bsonType: BSONType { return .maxKey }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        if !bson_append_maxkey(storage.pointer, key, Int32(key.count)) {
+        guard bson_append_maxkey(storage.pointer, key, Int32(key.count)) else {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
@@ -519,7 +521,7 @@ public struct MinKey: BSONValue, Equatable, Codable {
     public var bsonType: BSONType { return .minKey }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        if !bson_append_minkey(storage.pointer, key, Int32(key.count)) {
+        guard bson_append_minkey(storage.pointer, key, Int32(key.count)) else {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
@@ -567,7 +569,7 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
         var oid = bson_oid_t()
         bson_oid_init_from_string(&oid, self.oid)
         // encode the bson_oid_t to the bson_t
-        if !bson_append_oid(storage.pointer, key, Int32(key.count), &oid) {
+        guard bson_append_oid(storage.pointer, key, Int32(key.count), &oid) else {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
@@ -647,7 +649,7 @@ public struct RegularExpression: BSONValue, Equatable, Codable {
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        if !bson_append_regex(storage.pointer, key, Int32(key.count), self.pattern, self.options) {
+        guard bson_append_regex(storage.pointer, key, Int32(key.count), self.pattern, self.options) else {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
@@ -697,7 +699,7 @@ extension String: BSONValue {
     public var bsonType: BSONType { return .string }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        if !bson_append_utf8(storage.pointer, key, Int32(key.count), self, Int32(self.count)) {
+        guard bson_append_utf8(storage.pointer, key, Int32(key.count), self, Int32(self.count)) else {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }
@@ -760,7 +762,7 @@ public struct Timestamp: BSONValue, Equatable, Codable {
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        if !bson_append_timestamp(storage.pointer, key, Int32(key.count), self.timestamp, self.increment) {
+        guard bson_append_timestamp(storage.pointer, key, Int32(key.count), self.timestamp, self.increment) else {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }

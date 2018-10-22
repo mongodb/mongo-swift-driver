@@ -327,7 +327,7 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
     public func decodeNil(forKey key: Key) throws -> Bool {
         // check if the key exists in the document, so we can differentiate between
         // the key being set to nil and the key not existing at all.
-        if !self.contains(key) {
+        guard self.contains(key) else {
             throw DecodingError.keyNotFound(
                 key,
                 DecodingError.Context(codingPath: self.decoder.codingPath,
