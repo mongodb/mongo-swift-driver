@@ -313,8 +313,7 @@ private class FindAndModifyOptions {
             }
         }
 
-        let appendSuccess = extra.keys.count <= 0 || mongoc_find_and_modify_opts_append(self._options, extra.data)
-        guard appendSuccess else {
+        guard extra.isEmpty || mongoc_find_and_modify_opts_append(self._options, extra.data) else {
             throw MongoError.invalidArgument(message: "Error appending extra fields \(extra)")
         }
     }
