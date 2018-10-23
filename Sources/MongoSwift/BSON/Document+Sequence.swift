@@ -17,7 +17,7 @@ extension Document: Sequence {
     public var count: Int { return Int(bson_count_keys(self.data)) }
 
     /// Returns a `Bool` indicating whether the document is empty.
-    public var isEmpty: Bool { return self.makeIterator().advance() }
+    public var isEmpty: Bool { return !self.makeIterator().advance() }
 
     /// Returns a `DocumentIterator` over the values in this `Document`. 
     public func makeIterator() -> DocumentIterator {

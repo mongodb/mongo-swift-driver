@@ -14,7 +14,8 @@ final class Document_SequenceTests: XCTestCase {
             ("testPrefixLength", testPrefixLength),
             ("testPrefixPredicate", testPrefixPredicate),
             ("testSuffix", testSuffix),
-            ("testSplit", testSplit)
+            ("testSplit", testSplit),
+            ("testIsEmpty", testIsEmpty)
         ]
     }
 
@@ -246,5 +247,11 @@ final class Document_SequenceTests: XCTestCase {
         expect(self.doc.split(maxSplits: 1, omittingEmptySubsequences: false, whereSeparator: self.isInt))
             .to(equal([[:], ["b": "hi", "c": [1, 2] as [Int], "d": false, "e": nil, "f": MinKey(), "g": 10]]))
 
+    }
+
+    func testIsEmpty() throws {
+        expect(self.emptyDoc.isEmpty).to(beTrue())
+        expect(self.smallDoc.isEmpty).to(beFalse())
+        expect(self.doc.isEmpty).to(beFalse())
     }
 }
