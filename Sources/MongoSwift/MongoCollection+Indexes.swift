@@ -284,8 +284,8 @@ extension MongoCollection {
         let opts = try BSONEncoder().encode(options)
         let reply = Document()
         var error = bson_error_t()
-        guard mongoc_collection_write_command_with_opts(self._collection, command.data, opts?.data, reply.data, &error)
-        else {
+        guard mongoc_collection_write_command_with_opts(
+            self._collection, command.data, opts?.data, reply.data, &error) else {
             throw MongoError.commandError(message: toErrorString(error))
         }
         return reply
