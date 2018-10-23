@@ -25,12 +25,11 @@ final class MongoClientTests: XCTestCase {
             throw MongoError.invalidUri(message: toErrorString(error))
         }
 
-        let client_t = mongoc_client_new_from_uri(uri)
-        guard client_t != nil else {
+        guard let client_t = mongoc_client_new_from_uri(uri) else {
             throw MongoError.invalidClient()
         }
 
-        let client = MongoClient(fromPointer: client_t!)
+        let client = MongoClient(fromPointer: client_t)
         let db = try client.db("test")
         let coll = try db.collection("foo")
         let insertResult = try coll.insertOne([ "test": 42 ])
