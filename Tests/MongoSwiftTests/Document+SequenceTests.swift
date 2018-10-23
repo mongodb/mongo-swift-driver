@@ -14,7 +14,8 @@ final class Document_SequenceTests: XCTestCase {
             ("testPrefixLength", testPrefixLength),
             ("testPrefixPredicate", testPrefixPredicate),
             ("testSuffix", testSuffix),
-            ("testSplit", testSplit)
+            ("testSplit", testSplit),
+            ("testIsEmpty", testIsEmpty)
         ]
     }
 
