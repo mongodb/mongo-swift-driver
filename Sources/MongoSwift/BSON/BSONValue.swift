@@ -779,6 +779,42 @@ public struct Timestamp: BSONValue, Equatable, Codable {
     }
 }
 
+// See https://github.com/realm/SwiftLint/issues/461
+// swiftlint:disable cyclomatic_complexity
+func bsonEqual(lhs: BSONValue, rhs: BSONValue) -> Bool? {
+    switch (lhs, rhs) {
+    case (let l as Int, let r as Int): return l == r
+    case (let l as Int32, let r as Int32): return l == r
+    case (let l as Int64, let r as Int64): return l == r
+    case (let l as Double, let r as Double): return l == r
+    case (let l as Decimal128, let r as Decimal128): return l == r
+    case (let l as Bool, let r as Bool): return l == r
+    case (let l as String, let r as String): return l == r
+    case (let l as RegularExpression, let r as RegularExpression): return l == r
+    case (let l as Timestamp, let r as Timestamp): return l == r
+    case (let l as Date, let r as Date): return l == r
+    case (let l as MinKey, let r as MinKey): return l == r
+    case (let l as MaxKey, let r as MaxKey): return l == r
+    case (let l as ObjectId, let r as ObjectId): return l == r
+    case (let l as CodeWithScope, let r as CodeWithScope): return l == r
+    case (let l as Binary, let r as Binary): return l == r
+    case (let l as Document, let r as Document): return l == r
+    // We don't support these cases, meaning there is no verdict of 'true' or 'false' here.
+    case (_ as [Any], _ as [Any]): return nil
+    case (_ as [Symbol], _ as [Symbol]): return nil
+    case (_ as [DBPointer], _ as [DBPointer]): return nil
+    default:
+        // For BSONTypes that do not have actual classes/structs associated
+        // with them, the behavior is known regardless.
+        switch (lhs.bsonType, rhs.bsonType) {
+        case (.invalid, .invalid): return true
+        case (.undefined, .undefined): return true
+        case (.null, .null): return true
+        default: return false
+        }
+    }
+}
+
 func retrieveErrorMsg(type: String, key: String) -> String {
     return "Failed to retrieve the \(type) value for key '\(key)'"
 }
