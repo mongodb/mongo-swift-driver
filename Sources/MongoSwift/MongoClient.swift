@@ -1,5 +1,5 @@
 import Foundation
-import libmongoc
+import mongoc
 
 /// Options to use when creating a `MongoClient`.
 public struct ClientOptions: Encodable {
@@ -56,10 +56,10 @@ public struct ListDatabasesOptions: Encodable {
     }
 }
 
-/// Options to use when retrieving a `MongoDatabase` from a `MongoClient`. 
+/// Options to use when retrieving a `MongoDatabase` from a `MongoClient`.
 public struct DatabaseOptions {
     /// A read concern to set on the retrieved database. If one is not specified,
-    /// the database will inherit the client's read concern. 
+    /// the database will inherit the client's read concern.
     public let readConcern: ReadConcern?
 
     /// A read preference to set on the retrieved database. If one is not

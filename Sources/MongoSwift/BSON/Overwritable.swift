@@ -1,4 +1,4 @@
-import libbson
+import bson
 
 /// A protocol indicating that a type can be overwritten in-place on a `bson_t`.
 internal protocol Overwritable: BSONValue {

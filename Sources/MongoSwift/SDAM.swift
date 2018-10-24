@@ -1,5 +1,5 @@
 import Foundation
-import libmongoc
+import mongoc
 
 /// A struct representing a server connection, consisting of a host and port.
 public struct ConnectionId: Equatable {
@@ -31,7 +31,7 @@ public struct ConnectionId: Equatable {
     }
 }
 
-/// The possible types for a server. 
+/// The possible types for a server.
 public enum ServerType: String {
     /// A standalone mongod server.
     case standalone = "Standalone"
@@ -39,17 +39,17 @@ public enum ServerType: String {
     case mongos = "Mongos"
     /// A replica set member which is not yet checked, but another member thinks it is the primary.
     case possiblePrimary = "PossiblePrimary"
-    /// A replica set primary. 
+    /// A replica set primary.
     case rsPrimary = "RSPrimary"
-    /// A replica set secondary. 
+    /// A replica set secondary.
     case rsSecondary = "RSSecondary"
-    /// A replica set arbiter. 
+    /// A replica set arbiter.
     case rsArbiter = "RSArbiter"
     /// A replica set member that is none of the other types (a passive, for example).
     case rsOther = "RSOther"
     /// A replica set member that does not report a set name or a hosts list.
     case rsGhost = "RSGhost"
-    /// A server type that is not yet known. 
+    /// A server type that is not yet known.
     case unknown = "Unknown"
 }
 
@@ -181,7 +181,7 @@ public struct ServerDescription {
     }
 }
 
-/// The possible types for a topology. 
+/// The possible types for a topology.
 public enum TopologyType: String {
     /// A single mongod server.
     case single = "Single"

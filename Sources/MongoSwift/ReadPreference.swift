@@ -1,4 +1,4 @@
-import libmongoc
+import mongoc
 
 /**
  * A class to represent a MongoDB read preference.

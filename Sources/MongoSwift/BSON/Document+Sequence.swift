@@ -1,5 +1,5 @@
 import Foundation
-import libmongoc
+import mongoc
 
 /// An extension of `Document` to make it conform to the `Sequence` protocol.
 /// This allows you to iterate through the (key, value) pairs, for example:
@@ -19,7 +19,7 @@ extension Document: Sequence {
     /// Returns a `Bool` indicating whether the document is empty.
     public var isEmpty: Bool { return !self.makeIterator().advance() }
 
-    /// Returns a `DocumentIterator` over the values in this `Document`. 
+    /// Returns a `DocumentIterator` over the values in this `Document`.
     public func makeIterator() -> DocumentIterator {
         guard let iter = DocumentIterator(forDocument: self) else {
             preconditionFailure("Failed to initialize an iterator over document \(self)")
@@ -27,12 +27,12 @@ extension Document: Sequence {
         return iter
     }
 
-    // this overrides the Sequence protocol's default implementation for `filter`. 
+    // this overrides the Sequence protocol's default implementation for `filter`.
     /**
      * Returns a new document containing the key-value pairs of the dictionary that satisfy the given predicate.
-     * 
+     *
      * - Parameters:
-     *   - isIncluded: A closure that takes a key-value pair as its argument and returns a `Bool` indicating whether 
+     *   - isIncluded: A closure that takes a key-value pair as its argument and returns a `Bool` indicating whether
      *                 the pair should be included in the returned document.
      *
      * - Returns: A document of the key-value pairs that `isIncluded` allows.
@@ -53,7 +53,7 @@ extension Document: Sequence {
      *
      * - Parameters:
      *   - transform: A closure that transforms a `BSONValue?`. `transform` accepts each value of the
-     *                document as its parameter and returns a transformed `BSONValue?` of the same or 
+     *                document as its parameter and returns a transformed `BSONValue?` of the same or
      *                of a different type.
      *
      * - Returns: A document containing the keys and transformed values of this document.
@@ -168,7 +168,7 @@ extension Document: Sequence {
     }
 }
 
-/// An iterator over the values in a `Document`. 
+/// An iterator over the values in a `Document`.
 public class DocumentIterator: IteratorProtocol {
     /// the libbson iterator. it must be a `var` because we use it as
     /// an inout argument
@@ -176,7 +176,7 @@ public class DocumentIterator: IteratorProtocol {
     /// a reference to the storage for the document we're iterating
     internal let storage: DocumentStorage
 
-    /// Initializes a new iterator over the contents of `doc`. Returns `nil` if the key is not 
+    /// Initializes a new iterator over the contents of `doc`. Returns `nil` if the key is not
     /// found, or if an iterator cannot be created over `doc` due to an error from e.g. corrupt data.
     internal init?(forDocument doc: Document) {
         self.iter = bson_iter_t()
@@ -243,8 +243,8 @@ public class DocumentIterator: IteratorProtocol {
     }
 
     // uses an iterator to copy (key, value) pairs of the provided document from range [startIndex, endIndex) into a new
-    // document. starts at the startIndex-th pair and ends at the end of the document or the (endIndex-1)th index, 
-    // whichever comes first. 
+    // document. starts at the startIndex-th pair and ends at the end of the document or the (endIndex-1)th index,
+    // whichever comes first.
     internal static func subsequence(of doc: Document, startIndex: Int = 0, endIndex: Int = Int.max) -> Document {
         precondition(endIndex >= startIndex, "endIndex must be >= startIndex")
 

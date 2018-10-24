@@ -1,5 +1,5 @@
 import Foundation
-import libmongoc
+import mongoc
 
 /// The possible errors that can occur when using this package.
 public enum MongoError {
@@ -15,7 +15,7 @@ public enum MongoError {
     case invalidCollection(message: String)
     /// Thrown when there is an error executing a command.
     case commandError(message: String)
-    /// Thrown when there is an error parsing raw BSON `Data`. 
+    /// Thrown when there is an error parsing raw BSON `Data`.
     case bsonParseError(domain: UInt32, code: UInt32, message: String)
     /// Thrown when there is an error encoding a `BSONValue` to a `Document`.
     case bsonEncodeError(message: String)
@@ -23,7 +23,7 @@ public enum MongoError {
     case bsonDecodeError(message: String)
     /// Thrown when the value stored under a key in a `Document` does not match the expected type.
     case typeError(message: String)
-    /// Thrown when there is an error involving a `ReadConcern`. 
+    /// Thrown when there is an error involving a `ReadConcern`.
     case readConcernError(message: String)
     /// Thrown when there is an error involving a `ReadPreference`.
     case readPreferenceError(message: String)
