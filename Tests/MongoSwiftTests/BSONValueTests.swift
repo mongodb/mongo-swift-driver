@@ -30,8 +30,8 @@ final class BSONValueTests: XCTestCase {
     }
 
     func testBSONValues(val: BSONValue, alternate: BSONValue) {
-        expect(bsonEqual(lhs: val, rhs: val)).to(beTrue())
-        expect(bsonEqual(lhs: val, rhs: alternate)).to(beFalse())
+        expect(try bsonEqual(lhs: val, rhs: val)).to(beTrue())
+        expect(try bsonEqual(lhs: val, rhs: alternate)).to(beFalse())
     }
 
     func testBSONEquals() throws {
@@ -62,8 +62,8 @@ final class BSONValueTests: XCTestCase {
             alternate: Date(timeIntervalSinceReferenceDate: 5001)
         )
         // MinKey & MaxKey
-        expect(bsonEqual(lhs: MinKey(), rhs: MinKey())).to(beTrue())
-        expect(bsonEqual(lhs: MaxKey(), rhs: MaxKey())).to(beTrue())
+        expect(try bsonEqual(lhs: MinKey(), rhs: MinKey())).to(beTrue())
+        expect(try bsonEqual(lhs: MaxKey(), rhs: MaxKey())).to(beTrue())
         // ObjectId
         testBSONValues(val: ObjectId(), alternate: ObjectId())
         // CodeWithScope

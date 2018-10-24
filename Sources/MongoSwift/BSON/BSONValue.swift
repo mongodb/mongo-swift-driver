@@ -781,8 +781,20 @@ public struct Timestamp: BSONValue, Equatable, Codable {
 
 // See https://github.com/realm/SwiftLint/issues/461
 // swiftlint:disable cyclomatic_complexity
-func bsonEqual(lhs: BSONValue, rhs: BSONValue) -> Bool? {
-    switch (lhs, rhs) {
+func bsonEqual(lhs: BSONValue?, rhs: BSONValue?) throws -> Bool {
+    guard let left = lhs, let right = rhs else {
+        return lhs == nil && rhs == nil
+    }
+
+    let invalidTypes: [BSONType] = [.symbol, .dbPointer]
+    guard !invalidTypes.contains(left.bsonType) else {
+        preconditionFailure("\(left.bsonType) should not be used")
+    }
+    guard !invalidTypes.contains(right.bsonType) else {
+        preconditionFailure("\(right.bsonType) should not be used")
+    }
+
+    switch (left, right) {
     case (let l as Int, let r as Int): return l == r
     case (let l as Int32, let r as Int32): return l == r
     case (let l as Int64, let r as Int64): return l == r
@@ -799,14 +811,14 @@ func bsonEqual(lhs: BSONValue, rhs: BSONValue) -> Bool? {
     case (let l as CodeWithScope, let r as CodeWithScope): return l == r
     case (let l as Binary, let r as Binary): return l == r
     case (let l as Document, let r as Document): return l == r
-    // We don't support these cases, meaning there is no verdict of 'true' or 'false' here.
-    case (_ as [Any], _ as [Any]): return nil
-    case (_ as [Symbol], _ as [Symbol]): return nil
-    case (_ as [DBPointer], _ as [DBPointer]): return nil
+    case (let l as [BSONValue?], let r as [BSONValue?]):
+        return try zip(l, r).reduce(true, {prev, next in try bsonEqual(lhs: next.0, rhs: next.1) && prev})
+    case (_ as [Any], _ as [Any]):
+        preconditionFailure("arrays not of type [BSONValue?] should not be compared with bsonEqual()")
     default:
         // For BSONTypes that do not have actual classes/structs associated
         // with them, the behavior is known regardless.
-        switch (lhs.bsonType, rhs.bsonType) {
+        switch (left.bsonType, right.bsonType) {
         case (.invalid, .invalid): return true
         case (.undefined, .undefined): return true
         case (.null, .null): return true
