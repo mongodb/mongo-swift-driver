@@ -1,4 +1,4 @@
-import libmongoc
+import mongoc
 
 /// An extension of `MongoCollection` encapsulating read operations.
 extension MongoCollection {
@@ -139,7 +139,7 @@ extension MongoCollection {
 public enum Hint: Encodable {
     /// Specifies an index to use by its name.
     case indexName(String)
-    /// Specifies an index to use by a specification `Document` containing the index key(s). 
+    /// Specifies an index to use by a specification `Document` containing the index key(s).
     case indexSpec(Document)
 
     public func encode(to encoder: Encoder) throws {
@@ -228,7 +228,7 @@ public struct CountOptions: Encodable {
     /// The number of documents to skip before counting.
     public let skip: Int64?
 
-    /// A ReadConcern to use for this operation. 
+    /// A ReadConcern to use for this operation.
     public let readConcern: ReadConcern?
 
     /// A ReadPreference to use for this operation.
@@ -251,7 +251,7 @@ public struct CountOptions: Encodable {
     }
 }
 
-/// The `countDocuments` command takes the same options as the deprecated `count`. 
+/// The `countDocuments` command takes the same options as the deprecated `count`.
 public typealias CountDocumentsOptions = CountOptions
 
 /// Options to use when executing an `estimatedDocumentCount` command on a `MongoCollection`.
@@ -268,7 +268,7 @@ public struct DistinctOptions: Encodable {
     /// The maximum amount of time to allow the query to run.
     public let maxTimeMS: Int64?
 
-    /// A ReadConcern to use for this operation. 
+    /// A ReadConcern to use for this operation.
     public let readConcern: ReadConcern?
 
     /// A ReadPreference to use for this operation.
@@ -384,7 +384,7 @@ public struct FindOptions: Encodable {
     /// The order in which to return matching documents.
     public let sort: Document?
 
-    /// A ReadConcern to use for this operation. 
+    /// A ReadConcern to use for this operation.
     public let readConcern: ReadConcern?
 
     /// A ReadPreference to use for this operation.
@@ -422,7 +422,7 @@ public struct FindOptions: Encodable {
         self.sort = sort
     }
 
-    // Encode everything except `self.cursorType`, as we only store it for debugging purposes 
+    // Encode everything except `self.cursorType`, as we only store it for debugging purposes
     private enum CodingKeys: String, CodingKey {
         case allowPartialResults, awaitData, batchSize, collation, comment, hint, limit, max, maxAwaitTimeMS,
             maxScan, maxTimeMS, min, noCursorTimeout, projection, readConcern, returnKey, showRecordId, tailable, skip,

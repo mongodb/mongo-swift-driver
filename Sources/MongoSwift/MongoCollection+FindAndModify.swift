@@ -1,4 +1,4 @@
-import libmongoc
+import mongoc
 
 /// An extension of `MongoCollection` encapsulating find and modify operations.
 extension MongoCollection {
@@ -11,7 +11,7 @@ extension MongoCollection {
      *
      * - Returns: The deleted document, represented as a `CollectionType`, or `nil` if no document was deleted.
      *
-     * - Throws: 
+     * - Throws:
      *   - `MongoError.invalidArgument` if any of the provided options are invalid
      *   - `MongoError.commandError` if there are any errors executing the command.
      *   - A `DecodingError` if the deleted document cannot be decoded to a `CollectionType` value
@@ -26,7 +26,7 @@ extension MongoCollection {
 
     /**
      * Finds a single document and replaces it, returning either the original or the replaced document.
-     * 
+     *
      * - Parameters:
      *   - filter: `Document` representing the match criteria
      *   - replacement: a `CollectionType` to replace the found document
@@ -35,7 +35,7 @@ extension MongoCollection {
      * - Returns: A `CollectionType`, representing either the original document or its replacement,
      *      depending on selected options, or `nil` if there was no match.
      *
-     * - Throws: 
+     * - Throws:
      *   - `MongoError.invalidArgument` if any of the provided options are invalid
      *   - `MongoError.commandError` if there are any errors executing the command.
      *   - An `EncodingError` if `replacement` cannot be encoded to a `Document`
@@ -50,7 +50,7 @@ extension MongoCollection {
 
     /**
      * Finds a single document and updates it, returning either the original or the updated document.
-     * 
+     *
      * - Parameters:
      *   - filter: `Document` representing the match criteria
      *   - update: a `Document` containing updates to apply
@@ -76,7 +76,7 @@ extension MongoCollection {
 
         // encode provided options, or create empty ones. we always need
         // to send *something*, as findAndModify requires one of "remove"
-        // or "update" to be set. 
+        // or "update" to be set.
         let opts = try options?.asOpts() ?? FindAndModifyOptions()
 
         if let update = update { try opts.setUpdate(update) }
@@ -110,7 +110,7 @@ private protocol FindAndModifyOptionsConvertible {
     func asOpts() throws -> FindAndModifyOptions
 }
 
-/// Options to use when executing a `findOneAndDelete` command on a `MongoCollection`. 
+/// Options to use when executing a `findOneAndDelete` command on a `MongoCollection`.
 public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible {
     /// Specifies a collation to use.
     public let collation: Document?
@@ -143,7 +143,7 @@ public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible {
     }
 }
 
-/// Options to use when executing a `findOneAndReplace` command on a `MongoCollection`. 
+/// Options to use when executing a `findOneAndReplace` command on a `MongoCollection`.
 public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible {
     /// If `true`, allows the write to opt-out of document level validation.
     public let bypassDocumentValidation: Bool?
@@ -190,7 +190,7 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible {
     }
 }
 
-/// Options to use when executing a `findOneAndUpdate` command on a `MongoCollection`. 
+/// Options to use when executing a `findOneAndUpdate` command on a `MongoCollection`.
 public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible {
     /// A set of filters specifying to which array elements an update should apply.
     public let arrayFilters: [Document]?
@@ -295,7 +295,7 @@ private class FindAndModifyOptions {
         if let filters = arrayFilters { extra["arrayFilters"] = filters }
         if let coll = collation { extra["collation"] = coll }
 
-        // note: mongoc_find_and_modify_opts_set_max_time_ms() takes in a 
+        // note: mongoc_find_and_modify_opts_set_max_time_ms() takes in a
         // uint32_t, but it should be a positive 64-bit integer, so we
         // set maxTimeMS by directly appending it instead. see CDRIVER-1329
         if let maxTime = maxTimeMS {
@@ -318,7 +318,7 @@ private class FindAndModifyOptions {
         }
     }
 
-    /// Sets the `update` value on a `mongoc_find_and_modify_opts_t`. We need to have this separate from the 
+    /// Sets the `update` value on a `mongoc_find_and_modify_opts_t`. We need to have this separate from the
     /// initializer because its value comes from the API methods rather than their options types.
     fileprivate func setUpdate(_ update: Document) throws {
         guard mongoc_find_and_modify_opts_set_update(self._options, update.data) else {

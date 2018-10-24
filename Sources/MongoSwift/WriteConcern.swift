@@ -1,5 +1,5 @@
 import Foundation
-import libmongoc
+import mongoc
 
 /// A class to represent a MongoDB write concern.
 public class WriteConcern: Codable {
@@ -11,7 +11,7 @@ public class WriteConcern: Codable {
     public enum W: Codable, Equatable {
         /// Specifies the number of nodes that should acknowledge the write. MUST be greater than or equal to 0.
         case number(Int32)
-        /// Indicates a tag for nodes that should acknowledge the write. 
+        /// Indicates a tag for nodes that should acknowledge the write.
         case tag(String)
         /// Specifies that a majority of nodes should acknowledge the write.
         case majority

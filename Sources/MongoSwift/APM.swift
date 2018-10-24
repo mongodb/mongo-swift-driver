@@ -1,5 +1,5 @@
 import Foundation
-import libmongoc
+import mongoc
 
 /// A protocol for monitoring events to implement, specifying their type and name.
 public protocol MongoEvent {

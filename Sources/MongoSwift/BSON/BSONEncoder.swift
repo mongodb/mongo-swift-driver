@@ -1,5 +1,5 @@
 import Foundation
-import libmongoc
+import mongoc
 
 /// `BSONEncoder` facilitates the encoding of `Encodable` values into BSON.
 public class BSONEncoder {
@@ -77,11 +77,11 @@ public class BSONEncoder {
         return try values.map { try self.encode($0) }
     }
 
-    /// Encodes the given array of top-level optional values and returns an array of their BSON representations. 
+    /// Encodes the given array of top-level optional values and returns an array of their BSON representations.
     /// Any value that is nil or contains no data will be mapped to nil.
     ///
     /// - parameter values: The values to encode.
-    /// - returns: A new `[Document?]` containing the encoded BSON data. Any value that is nil or 
+    /// - returns: A new `[Document?]` containing the encoded BSON data. Any value that is nil or
     ///            contains no data will be mapped to nil.
     /// - throws: An error if any value throws an error during encoding.
     public func encode<T: Encodable>(_ values: [T?]) throws -> [Document?] {
@@ -195,9 +195,9 @@ internal struct _BSONEncodingStorage {
     }
 }
 
-/// `_BSONReferencingEncoder` is a special subclass of `_BSONEncoder` which has its own storage, but references the 
-/// contents of a different encoder. It's used in superEncoder(), which returns a new encoder for encoding a 
-/// superclass -- the lifetime of the encoder should not escape the scope it's created in, but it doesn't 
+/// `_BSONReferencingEncoder` is a special subclass of `_BSONEncoder` which has its own storage, but references the
+/// contents of a different encoder. It's used in superEncoder(), which returns a new encoder for encoding a
+/// superclass -- the lifetime of the encoder should not escape the scope it's created in, but it doesn't
 // necessarily know when it's done being used (to write to the original container).
 private class _BSONReferencingEncoder: _BSONEncoder {
 
@@ -263,8 +263,8 @@ private class _BSONReferencingEncoder: _BSONEncoder {
 /// Extend `_BSONEncoder` to add methods for "boxing" values.
 extension _BSONEncoder {
 
-    /// Converts a `CodableNumber` to a `BSONValue` type. Throws if `value` cannot be 
-    /// exactly represented by an `Int`, `Int32`, `Int64`, or `Double`. 
+    /// Converts a `CodableNumber` to a `BSONValue` type. Throws if `value` cannot be
+    /// exactly represented by an `Int`, `Int32`, `Int64`, or `Double`.
     fileprivate func boxNumber<T: CodableNumber>(_ value: T) throws -> BSONValue {
         guard let number = value.bsonValue else {
             throw EncodingError._numberError(at: self.codingPath, value: value)
@@ -273,7 +273,7 @@ extension _BSONEncoder {
     }
 
     fileprivate func box<T: Encodable>(_ value: T) throws -> BSONValue? {
-        // if it's already a `BSONValue`, just return it, unless if it is an 
+        // if it's already a `BSONValue`, just return it, unless if it is an
         // array. technically `[Any]` is a `BSONValue`, but we can only use this
         // short-circuiting if all the elements are actually BSONValues.
         if let bsonValue = value as? BSONValue, !(bsonValue is [Any]) {
@@ -504,9 +504,9 @@ extension _BSONEncoder: SingleValueEncodingContainer {
     }
 }
 
-/// A private class wrapping a Swift array so we can pass it by reference for 
+/// A private class wrapping a Swift array so we can pass it by reference for
 /// encoder storage purposes. We use this rather than NSMutableArray because
-/// it allows us to preserve Swift type information. 
+/// it allows us to preserve Swift type information.
 private class MutableArray: BSONValue {
 
     var bsonType: BSONType { return .array }
@@ -543,7 +543,7 @@ private class MutableArray: BSONValue {
 }
 
 /// A private class wrapping a Swift dictionary so we can pass it by reference
-/// for encoder storage purposes. We use this rather than NSMutableDictionary 
+/// for encoder storage purposes. We use this rather than NSMutableDictionary
 /// because it allows us to preserve Swift type information.
 private class MutableDictionary: BSONValue {
 

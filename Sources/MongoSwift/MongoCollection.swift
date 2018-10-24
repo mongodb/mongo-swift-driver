@@ -1,17 +1,17 @@
-import libmongoc
+import mongoc
 
 /// A MongoDB collection.
 public class MongoCollection<T: Codable> {
     internal var _collection: OpaquePointer?
     internal var _client: MongoClient?
 
-    /// A `Codable` type associated with this `MongoCollection` instance. 
-    /// This allows `CollectionType` values to be directly inserted into and 
-    /// retrieved from the collection, by encoding/decoding them using the 
-    /// `BSONEncoder` and `BSONDecoder`. 
-    /// This type association only exists in the context of this particular 
-    /// `MongoCollection` instance. It is the responsibility of the user to 
-    /// ensure that any data already stored in the collection was encoded 
+    /// A `Codable` type associated with this `MongoCollection` instance.
+    /// This allows `CollectionType` values to be directly inserted into and
+    /// retrieved from the collection, by encoding/decoding them using the
+    /// `BSONEncoder` and `BSONDecoder`.
+    /// This type association only exists in the context of this particular
+    /// `MongoCollection` instance. It is the responsibility of the user to
+    /// ensure that any data already stored in the collection was encoded
     /// from this same type.
     public typealias CollectionType = T
 

@@ -1,5 +1,5 @@
 import Foundation
-import libbson
+import bson
 
 /// The storage backing a MongoSwift `Document`.
 public class DocumentStorage {
@@ -22,7 +22,7 @@ public class DocumentStorage {
 
 /// A struct representing the BSON document type.
 public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral {
-    /// the storage backing this document 
+    /// the storage backing this document
     internal var storage: DocumentStorage
 
     /// direct access to the storage's pointer to a bson_t
@@ -276,7 +276,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         return value
     }
 
-    /// Appends the key/value pairs from the provided `doc` to this `Document`. 
+    /// Appends the key/value pairs from the provided `doc` to this `Document`.
     public mutating func merge(_ doc: Document) throws {
         self.copyStorageIfRequired()
         guard bson_concat(self.data, doc.data) else {
@@ -288,7 +288,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      * Checks if the document is uniquely referenced. If not, makes a copy of the underlying `bson_t`
      * and lets the copy/copies keep the original. This allows us to provide value semantics for `Document`s.
      * This happens if someone copies a document and modifies it.
-     * 
+     *
      * For example:
      *      let doc1: Document = ["a": 1]
      *      var doc2 = doc1

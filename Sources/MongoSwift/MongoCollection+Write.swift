@@ -1,4 +1,4 @@
-import libmongoc
+import mongoc
 
 /// An extension of `MongoCollection` encapsulating write operations.
 extension MongoCollection {
@@ -295,7 +295,7 @@ public struct InsertManyOptions: Encodable {
     }
 }
 
-/// Options to use when executing an `update` command on a `MongoCollection`. 
+/// Options to use when executing an `update` command on a `MongoCollection`.
 public struct UpdateOptions: Encodable {
     /// A set of filters specifying to which array elements an update should apply.
     public let arrayFilters: [Document]?
@@ -323,7 +323,7 @@ public struct UpdateOptions: Encodable {
     }
 }
 
-/// Options to use when executing a `replace` command on a `MongoCollection`. 
+/// Options to use when executing a `replace` command on a `MongoCollection`.
 public struct ReplaceOptions: Encodable {
     /// If true, allows the write to opt-out of document level validation.
     public let bypassDocumentValidation: Bool?
@@ -347,7 +347,7 @@ public struct ReplaceOptions: Encodable {
     }
 }
 
-/// Options to use when executing a `delete` command on a `MongoCollection`. 
+/// Options to use when executing a `delete` command on a `MongoCollection`.
 public struct DeleteOptions: Encodable {
     /// Specifies a collation.
     public let collation: Document?
@@ -364,7 +364,7 @@ public struct DeleteOptions: Encodable {
 
 // Write command results structs
 
-/// The result of an `insertOne` command on a `MongoCollection`. 
+/// The result of an `insertOne` command on a `MongoCollection`.
 public struct InsertOneResult {
     /// The identifier that was inserted. If the document doesn't have an identifier, this value
     /// will be generated and added to the document before insertion.
@@ -406,7 +406,7 @@ public struct InsertManyResult {
     }
 }
 
-/// The result of a `delete` command on a `MongoCollection`. 
+/// The result of a `delete` command on a `MongoCollection`.
 public struct DeleteResult: Decodable {
     /// The number of documents that were deleted.
     public let deletedCount: Int

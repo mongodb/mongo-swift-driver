@@ -1,4 +1,4 @@
-import libmongoc
+import mongoc
 
 /// A struct representing an index on a `MongoCollection`.
 public struct IndexModel: Encodable {
@@ -267,7 +267,7 @@ extension MongoCollection {
 
     /**
      * Drops all indexes in the collection.
-     * 
+     *
      * - Parameters:
      *    - writeConcern: An optional `WriteConcern` to use for the command
      *

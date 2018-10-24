@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>BsonEncoder Class Reference</title>
+    <title>BSONEncoder Class Reference</title>
     <link rel="stylesheet" type="text/css" href="../css/jazzy.css" />
     <link rel="stylesheet" type="text/css" href="../css/highlight.css" />
     <meta charset='utf-8'>
@@ -10,8 +10,8 @@
     
   </head>
   <body>
-    <a name="//apple_ref/swift/Class/BsonEncoder" class="dashAnchor"></a>
-    <a title="BsonEncoder Class Reference"></a>
+    <a name="//apple_ref/swift/Class/BSONEncoder" class="dashAnchor"></a>
+    <a title="BSONEncoder Class Reference"></a>
     <header>
       <div class="content-wrapper">
         <p><a href="../index.html">MongoSwift Docs</a> (99% documented)</p>
@@ -22,7 +22,7 @@
       <p id="breadcrumbs">
         <a href="../index.html">MongoSwift Reference</a>
         <img id="carat" src="../img/carat.png" />
-        BsonEncoder Class Reference
+        BSONEncoder Class Reference
       </p>
     </div>
     <div class="content-wrapper">
@@ -40,10 +40,13 @@
             <a href="../Classes.html">Classes</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="../Classes/BsonDecoder.html">BsonDecoder</a>
+                <a href="../Classes/BSONDecoder.html">BSONDecoder</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Classes/BsonEncoder.html">BsonEncoder</a>
+                <a href="../Classes/BSONEncoder.html">BSONEncoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes.html#/s:10MongoSwift18BulkWriteOperationC">BulkWriteOperation</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Classes/ClientSession.html">ClientSession</a>
@@ -59,6 +62,24 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Classes/MongoCollection.html">MongoCollection</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/DeleteOneModel.html">– DeleteOneModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/DeleteManyModel.html">– DeleteManyModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/InsertOneModel.html">– InsertOneModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/ReplaceOneModel.html">– ReplaceOneModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/UpdateOneModel.html">– UpdateOneModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/UpdateManyModel.html">– UpdateManyModel</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Classes/MongoCursor.html">MongoCursor</a>
@@ -93,7 +114,7 @@
             <a href="../Enums.html">Enumerations</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="../Enums/BsonType.html">BsonType</a>
+                <a href="../Enums/BSONType.html">BSONType</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Enums/CursorType.html">CursorType</a>
@@ -154,13 +175,13 @@
             <a href="../Protocols.html">Protocols</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="../Protocols/BsonValue.html">BsonValue</a>
+                <a href="../Protocols/BSONValue.html">BSONValue</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Protocols/MongoEvent.html">MongoEvent</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Protocols.html#/s:10MongoSwift10WriteModelP">WriteModel</a>
+                <a href="../Protocols/WriteModel.html">WriteModel</a>
               </li>
             </ul>
           </li>
@@ -171,7 +192,7 @@
                 <a href="../Structs/AggregateOptions.html">AggregateOptions</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs/AnyBsonValue.html">AnyBsonValue</a>
+                <a href="../Structs/AnyBSONValue.html">AnyBSONValue</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/Binary.html">Binary</a>
@@ -222,12 +243,6 @@
                 <a href="../Structs/Decimal128.html">Decimal128</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs/DeleteManyModel.html">DeleteManyModel</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Structs/DeleteOneModel.html">DeleteOneModel</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="../Structs/DeleteOptions.html">DeleteOptions</a>
               </li>
               <li class="nav-group-task">
@@ -270,9 +285,6 @@
                 <a href="../Structs/InsertManyResult.html">InsertManyResult</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs/InsertOneModel.html">InsertOneModel</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="../Structs/InsertOneOptions.html">InsertOneOptions</a>
               </li>
               <li class="nav-group-task">
@@ -295,9 +307,6 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/RegularExpression.html">RegularExpression</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Structs/ReplaceOneModel.html">ReplaceOneModel</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/ReplaceOptions.html">ReplaceOptions</a>
@@ -345,16 +354,16 @@
                 <a href="../Structs/TopologyOpeningEvent.html">TopologyOpeningEvent</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs/UpdateManyModel.html">UpdateManyModel</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Structs/UpdateOneModel.html">UpdateOneModel</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="../Structs/UpdateOptions.html">UpdateOptions</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/UpdateResult.html">UpdateResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/WriteConcernError.html">WriteConcernError</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/WriteError.html">WriteError</a>
               </li>
             </ul>
           </li>
@@ -371,14 +380,14 @@
       <article class="main-content">
         <section>
           <section class="section">
-            <h1>BsonEncoder</h1>
+            <h1>BSONEncoder</h1>
               <div class="declaration">
                 <div class="language">
-                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">BsonEncoder</span></code></pre>
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">BSONEncoder</span></code></pre>
 
                 </div>
               </div>
-            <p><code>BsonEncoder</code> facilitates the encoding of <code>Encodable</code> values into BSON.</p>
+            <p><code>BSONEncoder</code> facilitates the encoding of <code>Encodable</code> values into BSON.</p>
 
           </section>
           <section class="section task-group-section">
@@ -387,9 +396,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift11BsonEncoderC8userInfos10DictionaryVys010CodingUserF3KeyVypGvp"></a>
+                    <a name="/s:10MongoSwift11BSONEncoderC8userInfoSDys010CodingUserE3KeyVypGvp"></a>
                     <a name="//apple_ref/swift/Property/userInfo" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift11BsonEncoderC8userInfos10DictionaryVys010CodingUserF3KeyVypGvp">userInfo</a>
+                    <a class="token" href="#/s:10MongoSwift11BSONEncoderC8userInfoSDys010CodingUserE3KeyVypGvp">userInfo</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -414,9 +423,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift11BsonEncoderCACycfc"></a>
+                    <a name="/s:10MongoSwift11BSONEncoderCACycfc"></a>
                     <a name="//apple_ref/swift/Method/init()" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift11BsonEncoderCACycfc">init()</a>
+                    <a class="token" href="#/s:10MongoSwift11BSONEncoderCACycfc">init()</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -441,9 +450,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift11BsonEncoderC6encodeAA8DocumentVxKs9EncodableRzlF"></a>
+                    <a name="/s:10MongoSwift11BSONEncoderC6encodeyAA8DocumentVxKSERzlF"></a>
                     <a name="//apple_ref/swift/Method/encode(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift11BsonEncoderC6encodeAA8DocumentVxKs9EncodableRzlF">encode(_:)</a>
+                    <a class="token" href="#/s:10MongoSwift11BSONEncoderC6encodeyAA8DocumentVxKSERzlF">encode(_:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -496,9 +505,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift11BsonEncoderC6encodeAA8DocumentVSgxSgKs9EncodableRzlF"></a>
+                    <a name="/s:10MongoSwift11BSONEncoderC6encodeyAA8DocumentVSgxSgKSERzlF"></a>
                     <a name="//apple_ref/swift/Method/encode(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift11BsonEncoderC6encodeAA8DocumentVSgxSgKs9EncodableRzlF">encode(_:)</a>
+                    <a class="token" href="#/s:10MongoSwift11BSONEncoderC6encodeyAA8DocumentVSgxSgKSERzlF">encode(_:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -552,9 +561,9 @@ value is nil or if it contains no data.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift11BsonEncoderC6encodeSayAA8DocumentVGSayxGKs9EncodableRzlF"></a>
+                    <a name="/s:10MongoSwift11BSONEncoderC6encodeySayAA8DocumentVGSayxGKSERzlF"></a>
                     <a name="//apple_ref/swift/Method/encode(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift11BsonEncoderC6encodeSayAA8DocumentVGSayxGKs9EncodableRzlF">encode(_:)</a>
+                    <a class="token" href="#/s:10MongoSwift11BSONEncoderC6encodeySayAA8DocumentVGSayxGKSERzlF">encode(_:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -607,9 +616,9 @@ value is nil or if it contains no data.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift11BsonEncoderC6encodeSayAA8DocumentVSgGSayxSgGKs9EncodableRzlF"></a>
+                    <a name="/s:10MongoSwift11BSONEncoderC6encodeySayAA8DocumentVSgGSayxSgGKSERzlF"></a>
                     <a name="//apple_ref/swift/Method/encode(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift11BsonEncoderC6encodeSayAA8DocumentVSgGSayxSgGKs9EncodableRzlF">encode(_:)</a>
+                    <a class="token" href="#/s:10MongoSwift11BSONEncoderC6encodeySayAA8DocumentVSgGSayxSgGKSERzlF">encode(_:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -617,7 +626,7 @@ value is nil or if it contains no data.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Encodes the given array of top-level optional values and returns an array of their BSON representations. 
+                        <p>Encodes the given array of top-level optional values and returns an array of their BSON representations.
 Any value that is nil or contains no data will be mapped to nil.</p>
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
@@ -655,7 +664,7 @@ Any value that is nil or contains no data will be mapped to nil.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>A new <code>[Document?]</code> containing the encoded BSON data. Any value that is nil or 
+                        <p>A new <code>[Document?]</code> containing the encoded BSON data. Any value that is nil or
        contains no data will be mapped to nil.</p>
                       </div>
                     </section>
@@ -666,7 +675,7 @@ Any value that is nil or contains no data will be mapped to nil.</p>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone and Kaitlin Mahar</a>. All rights reserved. (Last updated: 2018-08-21)</p>
+          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Jeremy Mikola</a>. All rights reserved. (Last updated: 2018-10-24)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>

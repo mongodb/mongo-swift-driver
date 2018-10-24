@@ -39,10 +39,13 @@
             <a href="Classes.html">Classes</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="Classes/BsonDecoder.html">BsonDecoder</a>
+                <a href="Classes/BSONDecoder.html">BSONDecoder</a>
               </li>
               <li class="nav-group-task">
-                <a href="Classes/BsonEncoder.html">BsonEncoder</a>
+                <a href="Classes/BSONEncoder.html">BSONEncoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes.html#/s:10MongoSwift18BulkWriteOperationC">BulkWriteOperation</a>
               </li>
               <li class="nav-group-task">
                 <a href="Classes/ClientSession.html">ClientSession</a>
@@ -58,6 +61,24 @@
               </li>
               <li class="nav-group-task">
                 <a href="Classes/MongoCollection.html">MongoCollection</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes/MongoCollection/DeleteOneModel.html">– DeleteOneModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes/MongoCollection/DeleteManyModel.html">– DeleteManyModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes/MongoCollection/InsertOneModel.html">– InsertOneModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes/MongoCollection/ReplaceOneModel.html">– ReplaceOneModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes/MongoCollection/UpdateOneModel.html">– UpdateOneModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes/MongoCollection/UpdateManyModel.html">– UpdateManyModel</a>
               </li>
               <li class="nav-group-task">
                 <a href="Classes/MongoCursor.html">MongoCursor</a>
@@ -92,7 +113,7 @@
             <a href="Enums.html">Enumerations</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="Enums/BsonType.html">BsonType</a>
+                <a href="Enums/BSONType.html">BSONType</a>
               </li>
               <li class="nav-group-task">
                 <a href="Enums/CursorType.html">CursorType</a>
@@ -153,13 +174,13 @@
             <a href="Protocols.html">Protocols</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="Protocols/BsonValue.html">BsonValue</a>
+                <a href="Protocols/BSONValue.html">BSONValue</a>
               </li>
               <li class="nav-group-task">
                 <a href="Protocols/MongoEvent.html">MongoEvent</a>
               </li>
               <li class="nav-group-task">
-                <a href="Protocols.html#/s:10MongoSwift10WriteModelP">WriteModel</a>
+                <a href="Protocols/WriteModel.html">WriteModel</a>
               </li>
             </ul>
           </li>
@@ -170,7 +191,7 @@
                 <a href="Structs/AggregateOptions.html">AggregateOptions</a>
               </li>
               <li class="nav-group-task">
-                <a href="Structs/AnyBsonValue.html">AnyBsonValue</a>
+                <a href="Structs/AnyBSONValue.html">AnyBSONValue</a>
               </li>
               <li class="nav-group-task">
                 <a href="Structs/Binary.html">Binary</a>
@@ -221,12 +242,6 @@
                 <a href="Structs/Decimal128.html">Decimal128</a>
               </li>
               <li class="nav-group-task">
-                <a href="Structs/DeleteManyModel.html">DeleteManyModel</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="Structs/DeleteOneModel.html">DeleteOneModel</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="Structs/DeleteOptions.html">DeleteOptions</a>
               </li>
               <li class="nav-group-task">
@@ -269,9 +284,6 @@
                 <a href="Structs/InsertManyResult.html">InsertManyResult</a>
               </li>
               <li class="nav-group-task">
-                <a href="Structs/InsertOneModel.html">InsertOneModel</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="Structs/InsertOneOptions.html">InsertOneOptions</a>
               </li>
               <li class="nav-group-task">
@@ -294,9 +306,6 @@
               </li>
               <li class="nav-group-task">
                 <a href="Structs/RegularExpression.html">RegularExpression</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="Structs/ReplaceOneModel.html">ReplaceOneModel</a>
               </li>
               <li class="nav-group-task">
                 <a href="Structs/ReplaceOptions.html">ReplaceOptions</a>
@@ -344,16 +353,16 @@
                 <a href="Structs/TopologyOpeningEvent.html">TopologyOpeningEvent</a>
               </li>
               <li class="nav-group-task">
-                <a href="Structs/UpdateManyModel.html">UpdateManyModel</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="Structs/UpdateOneModel.html">UpdateOneModel</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="Structs/UpdateOptions.html">UpdateOptions</a>
               </li>
               <li class="nav-group-task">
                 <a href="Structs/UpdateResult.html">UpdateResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/WriteConcernError.html">WriteConcernError</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/WriteError.html">WriteError</a>
               </li>
             </ul>
           </li>
@@ -395,6 +404,15 @@
 <li><a href="https://github.com/realm/jazzy#installation">jazzy</a>: the tool we use to generate documentation.</li>
 <li><a href="https://github.com/realm/SwiftLint#using-homebrew">swiftlint</a>: the Swift linter we use.</li>
 <li><a href="http://mongoc.org/libmongoc/current/api.html">libmongoc</a>: the MongoDB C driver, which this library wraps. See the installation instructions provided in our <a href="README.md#first-install-the-mongodb-c-driver">README</a> or on the <a href="http://mongoc.org/libmongoc/current/installing.html">libmongoc docs</a>.</li>
+</ul>
+<h3 id='if-you-are-using-vim-neovim' class='heading'>If you are using (Vim/Neovim)</h3>
+
+<ul>
+<li><a href="https://github.com/Utagai/swift.vim">swift.vim</a>: A fork of Keith Smiley&rsquo;s <code>swift.vim</code> with fixed indenting rules. This adds proper indenting and syntax for Swift to Vim. This fork also provides a match rule for column width highlighting.
+
+<ul>
+<li>Please read the <a href="https://github.com/Utagai/swift.vim#notice">NOTICE</a> for proper credits.</li>
+</ul></li>
 </ul>
 <h2 id='the-code' class='heading'>The code</h2>
 
@@ -454,6 +472,9 @@ To regenerate the files after making changes, run <code>make documentation</code
 <h3 id='sublime-text-setup' class='heading'>Sublime Text Setup</h3>
 
 <p>If you use Sublime Text, you can get linting violations shown in the editor by installing the packages <a href="https://packagecontrol.io/packages/SublimeLinter">SublimeLinter</a> and <a href="https://packagecontrol.io/packages/SublimeLinter-contrib-swiftlint">SublimeLinter-contrib-swiftlint</a>. </p>
+<h3 id='vim-neovim-setup' class='heading'>Vim/Neovim Setup</h3>
+
+<p>If you use Vim or Neovim, then you can get linting support by using <a href="https://github.com/w0rp/ale"><code>ale</code></a> by <code>w0rp</code>. This will show symbols in the gutter for warnings/errors and show linter messages in the status.</p>
 <h2 id='workflow' class='heading'>Workflow</h2>
 
 <ol>
@@ -491,7 +512,7 @@ To regenerate the files after making changes, run <code>make documentation</code
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone and Kaitlin Mahar</a>. All rights reserved. (Last updated: 2018-08-21)</p>
+          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Jeremy Mikola</a>. All rights reserved. (Last updated: 2018-10-24)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>

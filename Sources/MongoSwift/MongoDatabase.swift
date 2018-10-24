@@ -1,6 +1,6 @@
-import libmongoc
+import mongoc
 
-/// Options to use when running a command against a `MongoDatabase`. 
+/// Options to use when running a command against a `MongoDatabase`.
 public struct RunCommandOptions: Encodable {
     /// A session to associate with this operation
     public let session: ClientSession?
@@ -205,8 +205,8 @@ public class MongoDatabase {
     }
 
     /**
-     * Access a collection within this database, and associates the specified `Codable` type `T` with the 
-     * returned `MongoCollection`. This association only exists in the context of this particular 
+     * Access a collection within this database, and associates the specified `Codable` type `T` with the
+     * returned `MongoCollection`. This association only exists in the context of this particular
      * `MongoCollection` instance.
      *
      * - Parameters:
@@ -254,10 +254,10 @@ public class MongoDatabase {
     }
 
     /**
-     * Creates a collection in this database with the specified options, and associates the 
+     * Creates a collection in this database with the specified options, and associates the
      * specified `Codable` type `T` with the returned `MongoCollection`. This association only
      * exists in the context of this particular `MongoCollection` instance.
-     * 
+     *
      *
      * - Parameters:
      *   - name: a `String`, the name of the collection to create

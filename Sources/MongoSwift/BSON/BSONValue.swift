@@ -1,5 +1,5 @@
 import Foundation
-import libbson
+import bson
 
 /// The possible types of BSON values and their corresponding integer values.
 public enum BSONType: UInt32 {
@@ -17,7 +17,7 @@ public enum BSONType: UInt32 {
     binary = 0x05,
     /// Undefined value - deprecated
     undefined = 0x06,
-    /// A MongoDB ObjectId. 
+    /// A MongoDB ObjectId.
     /// - SeeAlso: https://docs.mongodb.com/manual/reference/method/ObjectId/
     objectId = 0x07,
     /// A boolean
@@ -65,7 +65,7 @@ public protocol BSONValue {
     func encode(to storage: DocumentStorage, forKey key: String) throws
 
     /**
-    * Given a `DocumentIterator` known to have a next value of this type, 
+    * Given a `DocumentIterator` known to have a next value of this type,
     * initializes the value.
     */
     init(from iter: DocumentIterator) throws
@@ -632,7 +632,7 @@ public struct RegularExpression: BSONValue, Equatable, Codable {
 
     /// The pattern for this regular expression.
     public let pattern: String
-    /// A string containing options for this regular expression. 
+    /// A string containing options for this regular expression.
     /// - SeeAlso: https://docs.mongodb.com/manual/reference/operator/query/regex/#op
     public let options: String
 

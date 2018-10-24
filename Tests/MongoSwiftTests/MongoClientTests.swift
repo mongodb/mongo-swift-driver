@@ -1,4 +1,4 @@
-import libmongoc
+import mongoc
 @testable import MongoSwift
 import Nimble
 import XCTest
@@ -53,7 +53,7 @@ final class MongoClientTests: XCTestCase {
         let three61 = Version(major: 3, minor: 6, patch: 1)
         let three7 = Version(major: 3, minor: 7)
 
-        // test equality 
+        // test equality
         expect(try Version("3.6")).to(equal(three6))
         expect(try Version("3.6.0")).to(equal(three6))
         expect(try Version("3.6.0-rc1")).to(equal(three6))

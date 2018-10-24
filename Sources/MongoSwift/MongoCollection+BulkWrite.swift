@@ -1,4 +1,4 @@
-import libmongoc
+import mongoc
 
 /// An extension of `MongoCollection` encapsulating bulk write operations.
 extension MongoCollection {
