@@ -219,7 +219,7 @@ extension _BSONDecoder {
         // given that its encoded as an Int64 in BSON. therefore, if the value wasn't extracted from 
         // the `Document` as type `Date` but we're trying to decode as a `Date`, we should throw an error
         // rather than calling `Date.init(from decoder: Decoder)`. 
-        if type == Date.self {
+        guard type != Date.self else {
             throw DecodingError._typeMismatch(at: self.codingPath, expectation: type, reality: value)
         }
 
@@ -327,7 +327,7 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
     public func decodeNil(forKey key: Key) throws -> Bool {
         // check if the key exists in the document, so we can differentiate between
         // the key being set to nil and the key not existing at all.
-        if !self.contains(key) {
+        guard self.contains(key) else {
             throw DecodingError.keyNotFound(
                 key,
                 DecodingError.Context(codingPath: self.decoder.codingPath,

@@ -22,7 +22,7 @@ extension MongoCollection {
         }
         let opts = try encoder.encode(options)
         var error = bson_error_t()
-        if !mongoc_collection_insert_one(self._collection, document.data, opts?.data, nil, &error) {
+        guard mongoc_collection_insert_one(self._collection, document.data, opts?.data, nil, &error) else {
             // TODO SWIFT-139: include writeErrors and writeConcernErrors from reply in the error
             throw MongoError.commandError(message: toErrorString(error))
         }
@@ -50,7 +50,7 @@ extension MongoCollection {
      */
     @discardableResult
     public func insertMany(_ values: [CollectionType], options: InsertManyOptions? = nil) throws -> InsertManyResult? {
-        if values.isEmpty {
+        guard !values.isEmpty else {
             throw MongoError.invalidArgument(message: "values cannot be empty")
         }
 
@@ -103,8 +103,8 @@ extension MongoCollection {
         let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
-        if !mongoc_collection_replace_one(
-            self._collection, filter.data, replacementDoc.data, opts?.data, reply.data, &error) {
+        guard mongoc_collection_replace_one(
+            self._collection, filter.data, replacementDoc.data, opts?.data, reply.data, &error) else {
             // TODO SWIFT-139: include writeErrors and writeConcernError from reply in the error
             throw MongoError.commandError(message: toErrorString(error))
         }
@@ -133,8 +133,8 @@ extension MongoCollection {
         let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
-        if !mongoc_collection_update_one(
-            self._collection, filter.data, update.data, opts?.data, reply.data, &error) {
+        guard mongoc_collection_update_one(
+            self._collection, filter.data, update.data, opts?.data, reply.data, &error) else {
             // TODO SWIFT-139: include writeErrors and writeConcernError from reply in the error
             throw MongoError.commandError(message: toErrorString(error))
         }
@@ -163,8 +163,8 @@ extension MongoCollection {
         let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
-        if !mongoc_collection_update_many(
-            self._collection, filter.data, update.data, opts?.data, reply.data, &error) {
+        guard mongoc_collection_update_many(
+            self._collection, filter.data, update.data, opts?.data, reply.data, &error) else {
             // TODO SWIFT-139: include writeErrors and writeConcernErrors from reply in the error
             throw MongoError.commandError(message: toErrorString(error))
         }
@@ -192,8 +192,8 @@ extension MongoCollection {
         let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
-        if !mongoc_collection_delete_one(
-            self._collection, filter.data, opts?.data, reply.data, &error) {
+        guard mongoc_collection_delete_one(
+            self._collection, filter.data, opts?.data, reply.data, &error) else {
              // TODO SWIFT-139: include writeErrors and writeConcernErrors from reply in the error
             throw MongoError.commandError(message: toErrorString(error))
         }
@@ -221,8 +221,8 @@ extension MongoCollection {
         let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
-        if !mongoc_collection_delete_many(
-            self._collection, filter.data, opts?.data, reply.data, &error) {
+        guard mongoc_collection_delete_many(
+            self._collection, filter.data, opts?.data, reply.data, &error) else {
             // TODO SWIFT-139: include writeErrors and writeConcernErrors from reply in the error
             throw MongoError.commandError(message: toErrorString(error))
         }

@@ -57,7 +57,9 @@ final class CommandMonitoringTests: XCTestCase {
                 var expectedEvents = test.expectations
                 let observer = center.addObserver(forName: nil, object: nil, queue: nil) { (notif) in
                     // ignore if it doesn't match one of the names we're looking for
-                    if !["commandStarted", "commandSucceeded", "commandFailed"].contains(notif.name.rawValue) { return }
+                    guard ["commandStarted", "commandSucceeded", "commandFailed"].contains(notif.name.rawValue) else {
+                        return
+                    }
 
                     // remove the next expectation for this test and verify it matches the received event
                     if expectedEvents.count > 0 {

@@ -84,8 +84,8 @@ extension MongoCollection {
         let reply = Document()
         var error = bson_error_t()
 
-        if !mongoc_collection_find_and_modify_with_opts(self._collection, filter.data,
-                                                        opts._options, reply.data, &error) {
+        guard mongoc_collection_find_and_modify_with_opts(self._collection, filter.data,
+                                                          opts._options, reply.data, &error) else {
             // TODO SWIFT-144: replace with more descriptive error type(s)
             throw MongoError.commandError(message: toErrorString(error))
         }
@@ -262,8 +262,10 @@ private class FindAndModifyOptions {
             throw MongoError.invalidArgument(message: "Error setting bypassDocumentValidation to \(bypass)")
         }
 
-        if let fields = projection, !mongoc_find_and_modify_opts_set_fields(self._options, fields.data) {
-            throw MongoError.invalidArgument(message: "Error setting fields to \(fields)")
+        if let fields = projection {
+            guard mongoc_find_and_modify_opts_set_fields(self._options, fields.data) else {
+                throw MongoError.invalidArgument(message: "Error setting fields to \(fields)")
+            }
         }
 
         // build a mongoc_find_and_modify_flags_t
@@ -282,8 +284,10 @@ private class FindAndModifyOptions {
                 "Error setting flags to \(flags); remove=\(remStr), upsert=\(upsStr), returnDocument=\(retStr)")
         }
 
-        if let sort = sort, !mongoc_find_and_modify_opts_set_sort(self._options, sort.data) {
-            throw MongoError.invalidArgument(message: "Error setting sort to \(sort)")
+        if let sort = sort {
+            guard mongoc_find_and_modify_opts_set_sort(self._options, sort.data) else {
+                throw MongoError.invalidArgument(message: "Error setting sort to \(sort)")
+            }
         }
 
         // build an "extra" document of fields without their own setters
@@ -309,7 +313,7 @@ private class FindAndModifyOptions {
             }
         }
 
-        if extra.keys.count > 0 && !mongoc_find_and_modify_opts_append(self._options, extra.data) {
+        guard extra.isEmpty || mongoc_find_and_modify_opts_append(self._options, extra.data) else {
             throw MongoError.invalidArgument(message: "Error appending extra fields \(extra)")
         }
     }
@@ -317,7 +321,7 @@ private class FindAndModifyOptions {
     /// Sets the `update` value on a `mongoc_find_and_modify_opts_t`. We need to have this separate from the 
     /// initializer because its value comes from the API methods rather than their options types.
     fileprivate func setUpdate(_ update: Document) throws {
-        if !mongoc_find_and_modify_opts_set_update(self._options, update.data) {
+        guard mongoc_find_and_modify_opts_set_update(self._options, update.data) else {
             throw MongoError.invalidArgument(message: "Error setting update to \(update)")
         }
     }

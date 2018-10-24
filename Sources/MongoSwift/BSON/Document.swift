@@ -74,7 +74,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      */
     public init(dictionaryLiteral keyValuePairs: (String, BSONValue?)...) {
         // make sure all keys are unique
-        if Set(keyValuePairs.map { $0.0 }).count != keyValuePairs.count {
+        guard Set(keyValuePairs.map { $0.0 }).count == keyValuePairs.count else {
             preconditionFailure("Dictionary literal \(keyValuePairs) contains duplicate keys")
         }
 
@@ -245,8 +245,10 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
 
             if let value = newValue {
                 try value.encode(to: self.storage, forKey: key)
-            } else if !bson_append_null(self.data, key, Int32(key.count)) {
-                throw MongoError.bsonEncodeError(message: "Failed to set the value for key \(key) to null")
+            } else {
+                guard bson_append_null(self.data, key, Int32(key.count)) else {
+                    throw MongoError.bsonEncodeError(message: "Failed to set the value for key \(key) to null")
+                }
             }
         }
     }
@@ -277,7 +279,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     /// Appends the key/value pairs from the provided `doc` to this `Document`. 
     public mutating func merge(_ doc: Document) throws {
         self.copyStorageIfRequired()
-        if !bson_concat(self.data, doc.data) {
+        guard bson_concat(self.data, doc.data) else {
             throw MongoError.bsonEncodeError(message: "Failed to merge \(doc) with \(self)")
         }
     }
@@ -307,7 +309,7 @@ extension Document: BSONValue {
     public var bsonType: BSONType { return .document }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        if !bson_append_document(storage.pointer, key, Int32(key.count), self.data) {
+        guard bson_append_document(storage.pointer, key, Int32(key.count), self.data) else {
             throw bsonEncodeError(value: self, forKey: key)
         }
     }

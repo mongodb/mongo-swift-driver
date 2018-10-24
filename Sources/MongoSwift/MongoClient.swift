@@ -128,7 +128,7 @@ public class MongoClient {
         }
 
         self._client = mongoc_client_new_from_uri(uri)
-        if self._client == nil {
+        guard self._client != nil else {
             throw MongoError.invalidClient()
         }
 

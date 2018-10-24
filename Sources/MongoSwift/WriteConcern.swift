@@ -125,7 +125,7 @@ public class WriteConcern: Codable {
         }
 
         // we don't need to destroy the `mongoc_write_concern_t` here - `deinit` will be called anyway
-        if !self.isValid {
+        guard self.isValid else {
             let journalStr = String(describing: journal)
             let wStr = String(describing: w)
             let timeoutStr = String(describing: wtimeoutMS)
