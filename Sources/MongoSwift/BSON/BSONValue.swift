@@ -793,8 +793,8 @@ func bsonEqual(lhs: BSONValue, rhs: BSONValue) -> Bool? {
     case (let l as RegularExpression, let r as RegularExpression): return l == r
     case (let l as Timestamp, let r as Timestamp): return l == r
     case (let l as Date, let r as Date): return l == r
-    case (let l as MinKey, let r as MinKey): return l == r
-    case (let l as MaxKey, let r as MaxKey): return l == r
+    case (_ as MinKey, _ as MinKey): return true
+    case (_ as MaxKey, _ as MaxKey): return true
     case (let l as ObjectId, let r as ObjectId): return l == r
     case (let l as CodeWithScope, let r as CodeWithScope): return l == r
     case (let l as Binary, let r as Binary): return l == r
