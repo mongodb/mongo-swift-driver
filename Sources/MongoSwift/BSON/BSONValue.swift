@@ -779,8 +779,6 @@ public struct Timestamp: BSONValue, Equatable, Codable {
     }
 }
 
-// See https://github.com/realm/SwiftLint/issues/461
-// swiftlint:disable cyclomatic_complexity
 func bsonEqual(lhs: BSONValue?, rhs: BSONValue?) throws -> Bool {
     guard let left = lhs, let right = rhs else {
         return lhs == nil && rhs == nil
@@ -794,7 +792,13 @@ func bsonEqual(lhs: BSONValue?, rhs: BSONValue?) throws -> Bool {
         preconditionFailure("\(right.bsonType) should not be used")
     }
 
-    switch (left, right) {
+    return try bsonEqual(lhs: left, rhs: right)
+}
+
+// See https://github.com/realm/SwiftLint/issues/461
+// swiftlint:disable cyclomatic_complexity
+func bsonEqual(lhs: BSONValue, rhs: BSONValue) throws -> Bool {
+    switch (lhs, rhs) {
     case (let l as Int, let r as Int): return l == r
     case (let l as Int32, let r as Int32): return l == r
     case (let l as Int64, let r as Int64): return l == r
@@ -818,7 +822,7 @@ func bsonEqual(lhs: BSONValue?, rhs: BSONValue?) throws -> Bool {
     default:
         // For BSONTypes that do not have actual classes/structs associated
         // with them, the behavior is known regardless.
-        switch (left.bsonType, right.bsonType) {
+        switch (lhs.bsonType, rhs.bsonType) {
         case (.invalid, .invalid): return true
         case (.undefined, .undefined): return true
         case (.null, .null): return true
