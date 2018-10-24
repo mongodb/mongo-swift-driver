@@ -40,10 +40,13 @@
             <a href="../Classes.html">Classes</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="../Classes/BsonDecoder.html">BsonDecoder</a>
+                <a href="../Classes/BSONDecoder.html">BSONDecoder</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Classes/BsonEncoder.html">BsonEncoder</a>
+                <a href="../Classes/BSONEncoder.html">BSONEncoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes.html#/s:10MongoSwift18BulkWriteOperationC">BulkWriteOperation</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Classes/ClientSession.html">ClientSession</a>
@@ -59,6 +62,24 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Classes/MongoCollection.html">MongoCollection</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/DeleteOneModel.html">– DeleteOneModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/DeleteManyModel.html">– DeleteManyModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/InsertOneModel.html">– InsertOneModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/ReplaceOneModel.html">– ReplaceOneModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/UpdateOneModel.html">– UpdateOneModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/UpdateManyModel.html">– UpdateManyModel</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Classes/MongoCursor.html">MongoCursor</a>
@@ -93,7 +114,7 @@
             <a href="../Enums.html">Enumerations</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="../Enums/BsonType.html">BsonType</a>
+                <a href="../Enums/BSONType.html">BSONType</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Enums/CursorType.html">CursorType</a>
@@ -154,13 +175,13 @@
             <a href="../Protocols.html">Protocols</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="../Protocols/BsonValue.html">BsonValue</a>
+                <a href="../Protocols/BSONValue.html">BSONValue</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Protocols/MongoEvent.html">MongoEvent</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Protocols.html#/s:10MongoSwift10WriteModelP">WriteModel</a>
+                <a href="../Protocols/WriteModel.html">WriteModel</a>
               </li>
             </ul>
           </li>
@@ -171,7 +192,7 @@
                 <a href="../Structs/AggregateOptions.html">AggregateOptions</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs/AnyBsonValue.html">AnyBsonValue</a>
+                <a href="../Structs/AnyBSONValue.html">AnyBSONValue</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/Binary.html">Binary</a>
@@ -222,12 +243,6 @@
                 <a href="../Structs/Decimal128.html">Decimal128</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs/DeleteManyModel.html">DeleteManyModel</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Structs/DeleteOneModel.html">DeleteOneModel</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="../Structs/DeleteOptions.html">DeleteOptions</a>
               </li>
               <li class="nav-group-task">
@@ -270,9 +285,6 @@
                 <a href="../Structs/InsertManyResult.html">InsertManyResult</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs/InsertOneModel.html">InsertOneModel</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="../Structs/InsertOneOptions.html">InsertOneOptions</a>
               </li>
               <li class="nav-group-task">
@@ -295,9 +307,6 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/RegularExpression.html">RegularExpression</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Structs/ReplaceOneModel.html">ReplaceOneModel</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/ReplaceOptions.html">ReplaceOptions</a>
@@ -345,16 +354,16 @@
                 <a href="../Structs/TopologyOpeningEvent.html">TopologyOpeningEvent</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs/UpdateManyModel.html">UpdateManyModel</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Structs/UpdateOneModel.html">UpdateOneModel</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="../Structs/UpdateOptions.html">UpdateOptions</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/UpdateResult.html">UpdateResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/WriteConcernError.html">WriteConcernError</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/WriteError.html">WriteError</a>
               </li>
             </ul>
           </li>
@@ -387,34 +396,6 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift16BulkWriteOptionsV7orderedSbvp"></a>
-                    <a name="//apple_ref/swift/Property/ordered" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift16BulkWriteOptionsV7orderedSbvp">ordered</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>If <code>true</code> (the default), when an insert fails, return without performing the remaining writes.
-If <code>false</code>, when a write fails, continue with the remaining writes, if any.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">ordered</span><span class="p">:</span> <span class="kt">Bool</span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
                     <a name="/s:10MongoSwift16BulkWriteOptionsV24bypassDocumentValidationSbSgvp"></a>
                     <a name="//apple_ref/swift/Property/bypassDocumentValidation" class="dashAnchor"></a>
                     <a class="token" href="#/s:10MongoSwift16BulkWriteOptionsV24bypassDocumentValidationSbSgvp">bypassDocumentValidation</a>
@@ -439,12 +420,97 @@ If <code>false</code>, when a write fails, continue with the remaining writes, i
                     </section>
                   </div>
                 </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift16BulkWriteOptionsV7orderedSbvp"></a>
+                    <a name="//apple_ref/swift/Property/ordered" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift16BulkWriteOptionsV7orderedSbvp">ordered</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>If <code>true</code> (the default), operations will be executed serially in order
+and a write error will abort execution of the entire bulk write. If
+<code>false</code>, operations may execute in an arbitrary order and execution will
+not stop after encountering a write error (i.e. multiple errors may be
+reported after all operations have been attempted).</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">ordered</span><span class="p">:</span> <span class="kt">Bool</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift16BulkWriteOptionsV12writeConcernAA0dG0CSgvp"></a>
+                    <a name="//apple_ref/swift/Property/writeConcern" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift16BulkWriteOptionsV12writeConcernAA0dG0CSgvp">writeConcern</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>An optional WriteConcern to use for the bulk write.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">writeConcern</span><span class="p">:</span> <span class="kt"><a href="../Classes/WriteConcern.html">WriteConcern</a></span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift16BulkWriteOptionsV24bypassDocumentValidation7ordered12writeConcernACSbSg_AgA0dK0CSgtcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(bypassDocumentValidation:ordered:writeConcern:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift16BulkWriteOptionsV24bypassDocumentValidation7ordered12writeConcernACSbSg_AgA0dK0CSgtcfc">init(bypassDocumentValidation:ordered:writeConcern:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Convenience initializer allowing any/all parameters to be omitted or optional</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">bypassDocumentValidation</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">ordered</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">writeConcern</span><span class="p">:</span> <span class="kt"><a href="../Classes/WriteConcern.html">WriteConcern</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
               </ul>
             </div>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone and Kaitlin Mahar</a>. All rights reserved. (Last updated: 2018-08-21)</p>
+          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Jeremy Mikola</a>. All rights reserved. (Last updated: 2018-10-24)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>

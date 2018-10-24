@@ -40,10 +40,13 @@
             <a href="../Classes.html">Classes</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="../Classes/BsonDecoder.html">BsonDecoder</a>
+                <a href="../Classes/BSONDecoder.html">BSONDecoder</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Classes/BsonEncoder.html">BsonEncoder</a>
+                <a href="../Classes/BSONEncoder.html">BSONEncoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes.html#/s:10MongoSwift18BulkWriteOperationC">BulkWriteOperation</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Classes/ClientSession.html">ClientSession</a>
@@ -59,6 +62,24 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Classes/MongoCollection.html">MongoCollection</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/DeleteOneModel.html">– DeleteOneModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/DeleteManyModel.html">– DeleteManyModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/InsertOneModel.html">– InsertOneModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/ReplaceOneModel.html">– ReplaceOneModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/UpdateOneModel.html">– UpdateOneModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/UpdateManyModel.html">– UpdateManyModel</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Classes/MongoCursor.html">MongoCursor</a>
@@ -93,7 +114,7 @@
             <a href="../Enums.html">Enumerations</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="../Enums/BsonType.html">BsonType</a>
+                <a href="../Enums/BSONType.html">BSONType</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Enums/CursorType.html">CursorType</a>
@@ -154,13 +175,13 @@
             <a href="../Protocols.html">Protocols</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="../Protocols/BsonValue.html">BsonValue</a>
+                <a href="../Protocols/BSONValue.html">BSONValue</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Protocols/MongoEvent.html">MongoEvent</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Protocols.html#/s:10MongoSwift10WriteModelP">WriteModel</a>
+                <a href="../Protocols/WriteModel.html">WriteModel</a>
               </li>
             </ul>
           </li>
@@ -171,7 +192,7 @@
                 <a href="../Structs/AggregateOptions.html">AggregateOptions</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs/AnyBsonValue.html">AnyBsonValue</a>
+                <a href="../Structs/AnyBSONValue.html">AnyBSONValue</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/Binary.html">Binary</a>
@@ -222,12 +243,6 @@
                 <a href="../Structs/Decimal128.html">Decimal128</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs/DeleteManyModel.html">DeleteManyModel</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Structs/DeleteOneModel.html">DeleteOneModel</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="../Structs/DeleteOptions.html">DeleteOptions</a>
               </li>
               <li class="nav-group-task">
@@ -270,9 +285,6 @@
                 <a href="../Structs/InsertManyResult.html">InsertManyResult</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs/InsertOneModel.html">InsertOneModel</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="../Structs/InsertOneOptions.html">InsertOneOptions</a>
               </li>
               <li class="nav-group-task">
@@ -295,9 +307,6 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/RegularExpression.html">RegularExpression</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Structs/ReplaceOneModel.html">ReplaceOneModel</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/ReplaceOptions.html">ReplaceOptions</a>
@@ -345,16 +354,16 @@
                 <a href="../Structs/TopologyOpeningEvent.html">TopologyOpeningEvent</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs/UpdateManyModel.html">UpdateManyModel</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Structs/UpdateOneModel.html">UpdateOneModel</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="../Structs/UpdateOptions.html">UpdateOptions</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/UpdateResult.html">UpdateResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/WriteConcernError.html">WriteConcernError</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/WriteError.html">WriteError</a>
               </li>
             </ul>
           </li>
@@ -397,13 +406,13 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>A <code>Codable</code> type associated with this <code>MongoCollection</code> instance. 
-This allows <code>CollectionType</code> values to be directly inserted into and 
-retrieved from the collection, by encoding/decoding them using the 
-<code><a href="../Classes/BsonEncoder.html">BsonEncoder</a></code> and <code><a href="../Classes/BsonDecoder.html">BsonDecoder</a></code>. 
-This type association only exists in the context of this particular 
-<code>MongoCollection</code> instance. It is the responsibility of the user to 
-ensure that any data already stored in the collection was encoded 
+                        <p>A <code>Codable</code> type associated with this <code>MongoCollection</code> instance.
+This allows <code>CollectionType</code> values to be directly inserted into and
+retrieved from the collection, by encoding/decoding them using the
+<code><a href="../Classes/BSONEncoder.html">BSONEncoder</a></code> and <code><a href="../Classes/BSONDecoder.html">BSONDecoder</a></code>.
+This type association only exists in the context of this particular
+<code>MongoCollection</code> instance. It is the responsibility of the user to
+ensure that any data already stored in the collection was encoded
 from this same type.</p>
 
                       </div>
@@ -560,9 +569,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC9bulkWriteAA04BulkE6ResultVSgSayAA0E5Model_pG_AA0fE7OptionsVSg7optionstKF"></a>
+                    <a name="/s:10MongoSwift0A10CollectionC9bulkWrite_7optionsAA04BulkE6ResultVSgSayAA0E5Model_pG_AA0gE7OptionsVSgtKF"></a>
                     <a name="//apple_ref/swift/Method/bulkWrite(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9bulkWriteAA04BulkE6ResultVSgSayAA0E5Model_pG_AA0fE7OptionsVSg7optionstKF">bulkWrite(_:options:)</a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9bulkWrite_7optionsAA04BulkE6ResultVSgSayAA0E5Model_pG_AA0gE7OptionsVSgtKF">bulkWrite(_:options:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -576,8 +585,8 @@ from this same type.</p>
     <p>Throws:</p>
 
 <ul>
-<li><code><a href="../Enums/MongoError.html#/s:10MongoSwift0A5ErrorO15invalidArgumentACSS7message_tcACmF">MongoError.invalidArgument</a></code> if <code>requests</code> is empty</li>
-<li><code><a href="../Enums/MongoError.html#/s:10MongoSwift0A5ErrorO09bulkWriteC0ACs5Int32V4code_SS7messageAA04BulkE6ResultVSg6resultSayACGSg11writeErrorsACSg0l7ConcernC0tcACmF">MongoError.bulkWriteError</a></code> if any error occurs while performing the writes</li>
+<li><code>MongoError.invalidArgument</code> if <code>requests</code> is empty</li>
+<li><code>MongoError.bulkWriteError</code> if any error occurs while performing the writes</li>
 </ul>
 
 </div>
@@ -588,7 +597,7 @@ from this same type.</p>
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
-<span class="kd">public</span> <span class="kd">func</span> <span class="nf">bulkWrite</span><span class="p">(</span><span class="n">_</span> <span class="nv">requests</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Protocols.html#/s:10MongoSwift10WriteModelP">WriteModel</a></span><span class="p">],</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/BulkWriteOptions.html">BulkWriteOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/BulkWriteResult.html">BulkWriteResult</a></span><span class="p">?</span></code></pre>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">bulkWrite</span><span class="p">(</span><span class="n">_</span> <span class="nv">requests</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Protocols/WriteModel.html">WriteModel</a></span><span class="p">],</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/BulkWriteOptions.html">BulkWriteOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/BulkWriteResult.html">BulkWriteResult</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
@@ -630,6 +639,174 @@ from this same type.</p>
                     </section>
                   </div>
                 </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A10CollectionC14DeleteOneModelV"></a>
+                    <a name="//apple_ref/swift/Struct/DeleteOneModel" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC14DeleteOneModelV">DeleteOneModel</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A model for a <code>deleteOne</code> operation within a bulk write.</p>
+
+                        <a href="../Classes/MongoCollection/DeleteOneModel.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">DeleteOneModel</span> <span class="p">:</span> <span class="kt"><a href="../Protocols/WriteModel.html">WriteModel</a></span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A10CollectionC15DeleteManyModelV"></a>
+                    <a name="//apple_ref/swift/Struct/DeleteManyModel" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC15DeleteManyModelV">DeleteManyModel</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A model for a <code>deleteMany</code> operation within a bulk write.</p>
+
+                        <a href="../Classes/MongoCollection/DeleteManyModel.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">DeleteManyModel</span> <span class="p">:</span> <span class="kt"><a href="../Protocols/WriteModel.html">WriteModel</a></span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A10CollectionC14InsertOneModelV"></a>
+                    <a name="//apple_ref/swift/Struct/InsertOneModel" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC14InsertOneModelV">InsertOneModel</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A model for an <code>insertOne</code> operation within a bulk write.</p>
+
+                        <a href="../Classes/MongoCollection/InsertOneModel.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">InsertOneModel</span> <span class="p">:</span> <span class="kt"><a href="../Protocols/WriteModel.html">WriteModel</a></span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A10CollectionC15ReplaceOneModelV"></a>
+                    <a name="//apple_ref/swift/Struct/ReplaceOneModel" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC15ReplaceOneModelV">ReplaceOneModel</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A model for a <code>replaceOne</code> operation within a bulk write.</p>
+
+                        <a href="../Classes/MongoCollection/ReplaceOneModel.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">ReplaceOneModel</span> <span class="p">:</span> <span class="kt"><a href="../Protocols/WriteModel.html">WriteModel</a></span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A10CollectionC14UpdateOneModelV"></a>
+                    <a name="//apple_ref/swift/Struct/UpdateOneModel" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC14UpdateOneModelV">UpdateOneModel</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A model for an <code>updateOne</code> operation within a bulk write.</p>
+
+                        <a href="../Classes/MongoCollection/UpdateOneModel.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">UpdateOneModel</span> <span class="p">:</span> <span class="kt"><a href="../Protocols/WriteModel.html">WriteModel</a></span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A10CollectionC15UpdateManyModelV"></a>
+                    <a name="//apple_ref/swift/Struct/UpdateManyModel" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC15UpdateManyModelV">UpdateManyModel</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A model for an <code>updateMany</code> operation within a bulk write.</p>
+
+                        <a href="../Classes/MongoCollection/UpdateManyModel.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">UpdateManyModel</span> <span class="p">:</span> <span class="kt"><a href="../Protocols/WriteModel.html">WriteModel</a></span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
               </ul>
             </div>
             <div class="task-group">
@@ -637,9 +814,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC16findOneAndDeletexSgAA8DocumentV_AA04FindefG7OptionsVSg7optionstKF"></a>
+                    <a name="/s:10MongoSwift0A10CollectionC16findOneAndDelete_7optionsxSgAA8DocumentV_AA04FindefG7OptionsVSgtKF"></a>
                     <a name="//apple_ref/swift/Method/findOneAndDelete(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC16findOneAndDeletexSgAA8DocumentV_AA04FindefG7OptionsVSg7optionstKF">findOneAndDelete(_:options:)</a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC16findOneAndDelete_7optionsxSgAA8DocumentV_AA04FindefG7OptionsVSgtKF">findOneAndDelete(_:options:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -650,11 +827,11 @@ from this same type.</p>
                         <p>Finds a single document and deletes it, returning the original.</p>
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
-    <p></p>
+    <p>Throws:</p>
 
 <ul>
-<li><code><a href="../Enums/MongoError.html#/s:10MongoSwift0A5ErrorO15invalidArgumentACSS7message_tcACmF">MongoError.invalidArgument</a></code> if any of the provided options are invalid</li>
-<li><code><a href="../Enums/MongoError.html#/s:10MongoSwift0A5ErrorO07commandC0ACSS7message_tcACmF">MongoError.commandError</a></code> if there are any errors executing the command.</li>
+<li><code>MongoError.invalidArgument</code> if any of the provided options are invalid</li>
+<li><code>MongoError.commandError</code> if there are any errors executing the command.</li>
 <li>A <code>DecodingError</code> if the deleted document cannot be decoded to a <code><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></code> value</li>
 </ul>
 
@@ -712,9 +889,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC17findOneAndReplacexSgAA8DocumentV6filter_x11replacementAA04FindefG7OptionsVSg7optionstKF"></a>
+                    <a name="/s:10MongoSwift0A10CollectionC17findOneAndReplace6filter11replacement7optionsxSgAA8DocumentV_xAA04FindefG7OptionsVSgtKF"></a>
                     <a name="//apple_ref/swift/Method/findOneAndReplace(filter:replacement:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC17findOneAndReplacexSgAA8DocumentV6filter_x11replacementAA04FindefG7OptionsVSg7optionstKF">findOneAndReplace(filter:replacement:options:)</a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC17findOneAndReplace6filter11replacement7optionsxSgAA8DocumentV_xAA04FindefG7OptionsVSgtKF">findOneAndReplace(filter:replacement:options:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -725,11 +902,11 @@ from this same type.</p>
                         <p>Finds a single document and replaces it, returning either the original or the replaced document.</p>
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
-    <p></p>
+    <p>Throws:</p>
 
 <ul>
-<li><code><a href="../Enums/MongoError.html#/s:10MongoSwift0A5ErrorO15invalidArgumentACSS7message_tcACmF">MongoError.invalidArgument</a></code> if any of the provided options are invalid</li>
-<li><code><a href="../Enums/MongoError.html#/s:10MongoSwift0A5ErrorO07commandC0ACSS7message_tcACmF">MongoError.commandError</a></code> if there are any errors executing the command.</li>
+<li><code>MongoError.invalidArgument</code> if any of the provided options are invalid</li>
+<li><code>MongoError.commandError</code> if there are any errors executing the command.</li>
 <li>An <code>EncodingError</code> if <code>replacement</code> cannot be encoded to a <code><a href="../Structs/Document.html">Document</a></code></li>
 <li>A <code>DecodingError</code> if the replaced document cannot be decoded to a <code><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></code> value</li>
 </ul>
@@ -801,9 +978,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC16findOneAndUpdatexSgAA8DocumentV6filter_AG6updateAA04FindefG7OptionsVSg7optionstKF"></a>
+                    <a name="/s:10MongoSwift0A10CollectionC16findOneAndUpdate6filter6update7optionsxSgAA8DocumentV_AjA04FindefG7OptionsVSgtKF"></a>
                     <a name="//apple_ref/swift/Method/findOneAndUpdate(filter:update:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC16findOneAndUpdatexSgAA8DocumentV6filter_AG6updateAA04FindefG7OptionsVSg7optionstKF">findOneAndUpdate(filter:update:options:)</a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC16findOneAndUpdate6filter6update7optionsxSgAA8DocumentV_AjA04FindefG7OptionsVSgtKF">findOneAndUpdate(filter:update:options:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -817,8 +994,8 @@ from this same type.</p>
     <p>Throws:</p>
 
 <ul>
-<li><code><a href="../Enums/MongoError.html#/s:10MongoSwift0A5ErrorO15invalidArgumentACSS7message_tcACmF">MongoError.invalidArgument</a></code> if any of the provided options are invalid</li>
-<li><code><a href="../Enums/MongoError.html#/s:10MongoSwift0A5ErrorO07commandC0ACSS7message_tcACmF">MongoError.commandError</a></code> if there are any errors executing the command.</li>
+<li><code>MongoError.invalidArgument</code> if any of the provided options are invalid</li>
+<li><code>MongoError.commandError</code> if there are any errors executing the command.</li>
 <li>A <code>DecodingError</code> if the updated document cannot be decoded to a <code><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></code> value</li>
 </ul>
 
@@ -893,9 +1070,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC11createIndexSSAA0E5ModelV_AA06CreateE7OptionsVSg7optionstKF"></a>
+                    <a name="/s:10MongoSwift0A10CollectionC11createIndex_7optionsSSAA0E5ModelV_AA06CreateE7OptionsVSgtKF"></a>
                     <a name="//apple_ref/swift/Method/createIndex(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC11createIndexSSAA0E5ModelV_AA06CreateE7OptionsVSg7optionstKF">createIndex(_:options:)</a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC11createIndex_7optionsSSAA0E5ModelV_AA06CreateE7OptionsVSgtKF">createIndex(_:options:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -956,9 +1133,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC11createIndexSSAA8DocumentV_AA0E7OptionsVSg7optionsAA06CreateeG0VSg07commandG0tKF"></a>
+                    <a name="/s:10MongoSwift0A10CollectionC11createIndex_7options14commandOptionsSSAA8DocumentV_AA0eH0VSgAA06CreateeH0VSgtKF"></a>
                     <a name="//apple_ref/swift/Method/createIndex(_:options:commandOptions:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC11createIndexSSAA8DocumentV_AA0E7OptionsVSg7optionsAA06CreateeG0VSg07commandG0tKF">createIndex(_:options:commandOptions:)</a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC11createIndex_7options14commandOptionsSSAA8DocumentV_AA0eH0VSgAA06CreateeH0VSgtKF">createIndex(_:options:commandOptions:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1032,9 +1209,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC13createIndexesSaySSGSayAA10IndexModelVG_AA06CreateF7OptionsVSg7optionstKF"></a>
+                    <a name="/s:10MongoSwift0A10CollectionC13createIndexes_7optionsSaySSGSayAA10IndexModelVG_AA06CreateG7OptionsVSgtKF"></a>
                     <a name="//apple_ref/swift/Method/createIndexes(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC13createIndexesSaySSGSayAA10IndexModelVG_AA06CreateF7OptionsVSg7optionstKF">createIndexes(_:options:)</a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC13createIndexes_7optionsSaySSGSayAA10IndexModelVG_AA06CreateG7OptionsVSgtKF">createIndexes(_:options:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1095,9 +1272,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC9dropIndexySS_AA04DropE7OptionsVSg7optionstKF"></a>
+                    <a name="/s:10MongoSwift0A10CollectionC9dropIndex_7optionsySS_AA04DropE7OptionsVSgtKF"></a>
                     <a name="//apple_ref/swift/Method/dropIndex(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9dropIndexySS_AA04DropE7OptionsVSg7optionstKF">dropIndex(_:options:)</a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9dropIndex_7optionsySS_AA04DropE7OptionsVSgtKF">dropIndex(_:options:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1153,9 +1330,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC9dropIndexAA8DocumentVAF_AA0E7OptionsVSg7optionsAA04DropeG0VSg07commandG0tKF"></a>
+                    <a name="/s:10MongoSwift0A10CollectionC9dropIndex_7options14commandOptionsAA8DocumentVAH_AA0eH0VSgAA04DropeH0VSgtKF"></a>
                     <a name="//apple_ref/swift/Method/dropIndex(_:options:commandOptions:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9dropIndexAA8DocumentVAF_AA0E7OptionsVSg7optionsAA04DropeG0VSg07commandG0tKF">dropIndex(_:options:commandOptions:)</a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9dropIndex_7options14commandOptionsAA8DocumentVAH_AA0eH0VSgAA04DropeH0VSgtKF">dropIndex(_:options:commandOptions:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1229,9 +1406,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC9dropIndexAA8DocumentVAA0E5ModelV_AA04DropE7OptionsVSg7optionstKF"></a>
+                    <a name="/s:10MongoSwift0A10CollectionC9dropIndex_7optionsAA8DocumentVAA0E5ModelV_AA04DropE7OptionsVSgtKF"></a>
                     <a name="//apple_ref/swift/Method/dropIndex(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9dropIndexAA8DocumentVAA0E5ModelV_AA04DropE7OptionsVSg7optionstKF">dropIndex(_:options:)</a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9dropIndex_7optionsAA8DocumentVAA0E5ModelV_AA04DropE7OptionsVSgtKF">dropIndex(_:options:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1292,9 +1469,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC11dropIndexesAA8DocumentVAA16DropIndexOptionsVSg7options_tKF"></a>
+                    <a name="/s:10MongoSwift0A10CollectionC11dropIndexes7optionsAA8DocumentVAA16DropIndexOptionsVSg_tKF"></a>
                     <a name="//apple_ref/swift/Method/dropIndexes(options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC11dropIndexesAA8DocumentVAA16DropIndexOptionsVSg7options_tKF">dropIndexes(options:)</a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC11dropIndexes7optionsAA8DocumentVAA16DropIndexOptionsVSg_tKF">dropIndexes(options:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1378,9 +1555,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC4findAA0A6CursorCyxGAA8DocumentV_AA11FindOptionsVSg7optionstKF"></a>
+                    <a name="/s:10MongoSwift0A10CollectionC4find_7optionsAA0A6CursorCyxGAA8DocumentV_AA11FindOptionsVSgtKF"></a>
                     <a name="//apple_ref/swift/Method/find(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC4findAA0A6CursorCyxGAA8DocumentV_AA11FindOptionsVSg7optionstKF">find(_:options:)</a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC4find_7optionsAA0A6CursorCyxGAA8DocumentV_AA11FindOptionsVSgtKF">find(_:options:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1440,9 +1617,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC9aggregateAA0A6CursorCyAA8DocumentVGSayAHG_AA16AggregateOptionsVSg7optionstKF"></a>
+                    <a name="/s:10MongoSwift0A10CollectionC9aggregate_7optionsAA0A6CursorCyAA8DocumentVGSayAIG_AA16AggregateOptionsVSgtKF"></a>
                     <a name="//apple_ref/swift/Method/aggregate(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9aggregateAA0A6CursorCyAA8DocumentVGSayAHG_AA16AggregateOptionsVSg7optionstKF">aggregate(_:options:)</a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9aggregate_7optionsAA0A6CursorCyAA8DocumentVGSayAIG_AA16AggregateOptionsVSgtKF">aggregate(_:options:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1502,9 +1679,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC5countSiAA8DocumentV_AA12CountOptionsVSg7optionstKF"></a>
+                    <a name="/s:10MongoSwift0A10CollectionC5count_7optionsSiAA8DocumentV_AA12CountOptionsVSgtKF"></a>
                     <a name="//apple_ref/swift/Method/count(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC5countSiAA8DocumentV_AA12CountOptionsVSg7optionstKF">count(_:options:)</a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC5count_7optionsSiAA8DocumentV_AA12CountOptionsVSgtKF">count(_:options:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1564,9 +1741,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC14countDocumentsSiAA8DocumentV_AA12CountOptionsVSg7optionstKF"></a>
+                    <a name="/s:10MongoSwift0A10CollectionC14countDocuments_7optionsSiAA8DocumentV_AA12CountOptionsVSgtKF"></a>
                     <a name="//apple_ref/swift/Method/countDocuments(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC14countDocumentsSiAA8DocumentV_AA12CountOptionsVSg7optionstKF">countDocuments(_:options:)</a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC14countDocuments_7optionsSiAA8DocumentV_AA12CountOptionsVSgtKF">countDocuments(_:options:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1626,9 +1803,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC22estimatedDocumentCountSiAA09EstimatedeF7OptionsVSg7options_tKF"></a>
+                    <a name="/s:10MongoSwift0A10CollectionC22estimatedDocumentCount7optionsSiAA09EstimatedeF7OptionsVSg_tKF"></a>
                     <a name="//apple_ref/swift/Method/estimatedDocumentCount(options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC22estimatedDocumentCountSiAA09EstimatedeF7OptionsVSg7options_tKF">estimatedDocumentCount(options:)</a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC22estimatedDocumentCount7optionsSiAA09EstimatedeF7OptionsVSg_tKF">estimatedDocumentCount(options:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1676,9 +1853,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC8distinctSayAA9BsonValue_pSgGSS9fieldName_AA8DocumentV6filterAA15DistinctOptionsVSg7optionstKF"></a>
+                    <a name="/s:10MongoSwift0A10CollectionC8distinct9fieldName6filter7optionsSayAA9BSONValue_pSgGSS_AA8DocumentVAA15DistinctOptionsVSgtKF"></a>
                     <a name="//apple_ref/swift/Method/distinct(fieldName:filter:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC8distinctSayAA9BsonValue_pSgGSS9fieldName_AA8DocumentV6filterAA15DistinctOptionsVSg7optionstKF">distinct(fieldName:filter:options:)</a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC8distinct9fieldName6filter7optionsSayAA9BSONValue_pSgGSS_AA8DocumentVAA15DistinctOptionsVSgtKF">distinct(fieldName:filter:options:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1694,7 +1871,7 @@ from this same type.</p>
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">distinct</span><span class="p">(</span><span class="nv">fieldName</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span> <span class="o">=</span> <span class="p">[:],</span>
-                     <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/DistinctOptions.html">DistinctOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="kt"><a href="../Protocols/BsonValue.html">BsonValue</a></span><span class="p">?]</span></code></pre>
+                     <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/DistinctOptions.html">DistinctOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="kt"><a href="../Protocols/BSONValue.html">BSONValue</a></span><span class="p">?]</span></code></pre>
 
                         </div>
                       </div>
@@ -1743,7 +1920,7 @@ from this same type.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>A <code>[BsonValue?]</code> containing the distinct values for the specified criteria</p>
+                        <p>A <code>[BSONValue?]</code> containing the distinct values for the specified criteria</p>
                       </div>
                     </section>
                   </div>
@@ -1755,9 +1932,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC9insertOneAA06InsertE6ResultVSgx_AA0fE7OptionsVSg7optionstKF"></a>
+                    <a name="/s:10MongoSwift0A10CollectionC9insertOne_7optionsAA06InsertE6ResultVSgx_AA0gE7OptionsVSgtKF"></a>
                     <a name="//apple_ref/swift/Method/insertOne(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9insertOneAA06InsertE6ResultVSgx_AA0fE7OptionsVSg7optionstKF">insertOne(_:options:)</a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9insertOne_7optionsAA06InsertE6ResultVSgx_AA0gE7OptionsVSgtKF">insertOne(_:options:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1820,9 +1997,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC10insertManyAA06InsertE6ResultVSgSayxG_AA0fE7OptionsVSg7optionstKF"></a>
+                    <a name="/s:10MongoSwift0A10CollectionC10insertMany_7optionsAA06InsertE6ResultVSgSayxG_AA0gE7OptionsVSgtKF"></a>
                     <a name="//apple_ref/swift/Method/insertMany(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC10insertManyAA06InsertE6ResultVSgSayxG_AA0fE7OptionsVSg7optionstKF">insertMany(_:options:)</a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC10insertMany_7optionsAA06InsertE6ResultVSgSayxG_AA0gE7OptionsVSgtKF">insertMany(_:options:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1830,8 +2007,18 @@ from this same type.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Encodes the provided values to BSON and inserts them. If any values are missing identifiers,
- the driver will generate them.</p>
+                        <p>Encodes the provided values to BSON and inserts them. If any values are
+ missing identifiers, the driver will generate them.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p>Throws:</p>
+
+<ul>
+<li><code>MongoError.invalidArgument</code> if <code>values</code> is empty</li>
+<li><code>MongoError.insertManyError</code> if any error occurs while performing the writes</li>
+</ul>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -1850,7 +2037,7 @@ from this same type.</p>
                             <tr>
                               <td>
                                 <code>
-                                <em>documents</em>
+                                <em>values</em>
                                 </code>
                               </td>
                               <td>
@@ -1867,7 +2054,7 @@ from this same type.</p>
                               </td>
                               <td>
                                 <div>
-                                  <p>Optional <code><a href="../Structs/InsertManyOptions.html">InsertManyOptions</a></code> to use when executing the command</p>
+                                  <p>optional <code><a href="../Structs/InsertManyOptions.html">InsertManyOptions</a></code> to use while executing the operation</p>
                                 </div>
                               </td>
                             </tr>
@@ -1876,8 +2063,7 @@ from this same type.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>The optional result of attempting to performing the insert. If the write concern
-        is unacknowledged, nil is returned</p>
+                        <p>an <code><a href="../Structs/InsertManyResult.html">InsertManyResult</a></code>, or <code>nil</code> if the write concern is unacknowledged.</p>
                       </div>
                     </section>
                   </div>
@@ -1885,9 +2071,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC10replaceOneAA12UpdateResultVSgAA8DocumentV6filter_x11replacementAA14ReplaceOptionsVSg7optionstKF"></a>
+                    <a name="/s:10MongoSwift0A10CollectionC10replaceOne6filter11replacement7optionsAA12UpdateResultVSgAA8DocumentV_xAA14ReplaceOptionsVSgtKF"></a>
                     <a name="//apple_ref/swift/Method/replaceOne(filter:replacement:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC10replaceOneAA12UpdateResultVSgAA8DocumentV6filter_x11replacementAA14ReplaceOptionsVSg7optionstKF">replaceOne(filter:replacement:options:)</a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC10replaceOne6filter11replacement7optionsAA12UpdateResultVSgAA8DocumentV_xAA14ReplaceOptionsVSgtKF">replaceOne(filter:replacement:options:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1962,9 +2148,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC9updateOneAA12UpdateResultVSgAA8DocumentV6filter_AI0D0AA0F7OptionsVSg7optionstKF"></a>
+                    <a name="/s:10MongoSwift0A10CollectionC9updateOne6filter0D07optionsAA12UpdateResultVSgAA8DocumentV_AlA0H7OptionsVSgtKF"></a>
                     <a name="//apple_ref/swift/Method/updateOne(filter:update:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9updateOneAA12UpdateResultVSgAA8DocumentV6filter_AI0D0AA0F7OptionsVSg7optionstKF">updateOne(filter:update:options:)</a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9updateOne6filter0D07optionsAA12UpdateResultVSgAA8DocumentV_AlA0H7OptionsVSgtKF">updateOne(filter:update:options:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -2038,9 +2224,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC10updateManyAA12UpdateResultVSgAA8DocumentV6filter_AI0D0AA0F7OptionsVSg7optionstKF"></a>
+                    <a name="/s:10MongoSwift0A10CollectionC10updateMany6filter0D07optionsAA12UpdateResultVSgAA8DocumentV_AlA0H7OptionsVSgtKF"></a>
                     <a name="//apple_ref/swift/Method/updateMany(filter:update:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC10updateManyAA12UpdateResultVSgAA8DocumentV6filter_AI0D0AA0F7OptionsVSg7optionstKF">updateMany(filter:update:options:)</a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC10updateMany6filter0D07optionsAA12UpdateResultVSgAA8DocumentV_AlA0H7OptionsVSgtKF">updateMany(filter:update:options:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -2114,9 +2300,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC9deleteOneAA12DeleteResultVSgAA8DocumentV_AA0F7OptionsVSg7optionstKF"></a>
+                    <a name="/s:10MongoSwift0A10CollectionC9deleteOne_7optionsAA12DeleteResultVSgAA8DocumentV_AA0G7OptionsVSgtKF"></a>
                     <a name="//apple_ref/swift/Method/deleteOne(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9deleteOneAA12DeleteResultVSgAA8DocumentV_AA0F7OptionsVSg7optionstKF">deleteOne(_:options:)</a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9deleteOne_7optionsAA12DeleteResultVSgAA8DocumentV_AA0G7OptionsVSgtKF">deleteOne(_:options:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -2178,9 +2364,9 @@ from this same type.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC10deleteManyAA12DeleteResultVSgAA8DocumentV_AA0F7OptionsVSg7optionstKF"></a>
+                    <a name="/s:10MongoSwift0A10CollectionC10deleteMany_7optionsAA12DeleteResultVSgAA8DocumentV_AA0G7OptionsVSgtKF"></a>
                     <a name="//apple_ref/swift/Method/deleteMany(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC10deleteManyAA12DeleteResultVSgAA8DocumentV_AA0F7OptionsVSg7optionstKF">deleteMany(_:options:)</a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC10deleteMany_7optionsAA12DeleteResultVSgAA8DocumentV_AA0G7OptionsVSgtKF">deleteMany(_:options:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -2244,7 +2430,7 @@ from this same type.</p>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone and Kaitlin Mahar</a>. All rights reserved. (Last updated: 2018-08-21)</p>
+          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Jeremy Mikola</a>. All rights reserved. (Last updated: 2018-10-24)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>

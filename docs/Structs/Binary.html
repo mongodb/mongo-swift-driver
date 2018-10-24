@@ -40,10 +40,13 @@
             <a href="../Classes.html">Classes</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="../Classes/BsonDecoder.html">BsonDecoder</a>
+                <a href="../Classes/BSONDecoder.html">BSONDecoder</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Classes/BsonEncoder.html">BsonEncoder</a>
+                <a href="../Classes/BSONEncoder.html">BSONEncoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes.html#/s:10MongoSwift18BulkWriteOperationC">BulkWriteOperation</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Classes/ClientSession.html">ClientSession</a>
@@ -59,6 +62,24 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Classes/MongoCollection.html">MongoCollection</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/DeleteOneModel.html">– DeleteOneModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/DeleteManyModel.html">– DeleteManyModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/InsertOneModel.html">– InsertOneModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/ReplaceOneModel.html">– ReplaceOneModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/UpdateOneModel.html">– UpdateOneModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/UpdateManyModel.html">– UpdateManyModel</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Classes/MongoCursor.html">MongoCursor</a>
@@ -93,7 +114,7 @@
             <a href="../Enums.html">Enumerations</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="../Enums/BsonType.html">BsonType</a>
+                <a href="../Enums/BSONType.html">BSONType</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Enums/CursorType.html">CursorType</a>
@@ -154,13 +175,13 @@
             <a href="../Protocols.html">Protocols</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="../Protocols/BsonValue.html">BsonValue</a>
+                <a href="../Protocols/BSONValue.html">BSONValue</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Protocols/MongoEvent.html">MongoEvent</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Protocols.html#/s:10MongoSwift10WriteModelP">WriteModel</a>
+                <a href="../Protocols/WriteModel.html">WriteModel</a>
               </li>
             </ul>
           </li>
@@ -171,7 +192,7 @@
                 <a href="../Structs/AggregateOptions.html">AggregateOptions</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs/AnyBsonValue.html">AnyBsonValue</a>
+                <a href="../Structs/AnyBSONValue.html">AnyBSONValue</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/Binary.html">Binary</a>
@@ -222,12 +243,6 @@
                 <a href="../Structs/Decimal128.html">Decimal128</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs/DeleteManyModel.html">DeleteManyModel</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Structs/DeleteOneModel.html">DeleteOneModel</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="../Structs/DeleteOptions.html">DeleteOptions</a>
               </li>
               <li class="nav-group-task">
@@ -270,9 +285,6 @@
                 <a href="../Structs/InsertManyResult.html">InsertManyResult</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs/InsertOneModel.html">InsertOneModel</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="../Structs/InsertOneOptions.html">InsertOneOptions</a>
               </li>
               <li class="nav-group-task">
@@ -295,9 +307,6 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/RegularExpression.html">RegularExpression</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Structs/ReplaceOneModel.html">ReplaceOneModel</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/ReplaceOptions.html">ReplaceOptions</a>
@@ -345,16 +354,16 @@
                 <a href="../Structs/TopologyOpeningEvent.html">TopologyOpeningEvent</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs/UpdateManyModel.html">UpdateManyModel</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Structs/UpdateOneModel.html">UpdateOneModel</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="../Structs/UpdateOptions.html">UpdateOptions</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/UpdateResult.html">UpdateResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/WriteConcernError.html">WriteConcernError</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/WriteError.html">WriteError</a>
               </li>
             </ul>
           </li>
@@ -374,7 +383,7 @@
             <h1>Binary</h1>
               <div class="declaration">
                 <div class="language">
-                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">Binary</span> <span class="p">:</span> <span class="kt"><a href="../Protocols/BsonValue.html">BsonValue</a></span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Codable</span></code></pre>
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">Binary</span> <span class="p">:</span> <span class="kt"><a href="../Protocols/BSONValue.html">BSONValue</a></span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Codable</span></code></pre>
 
                 </div>
               </div>
@@ -387,9 +396,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift9BsonValueP8bsonTypeAA0cF0Ovp"></a>
+                    <a name="/s:10MongoSwift9BSONValueP8bsonTypeAA8BSONTypeOvp"></a>
                     <a name="//apple_ref/swift/Property/bsonType" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift9BsonValueP8bsonTypeAA0cF0Ovp">bsonType</a>
+                    <a class="token" href="#/s:10MongoSwift9BSONValueP8bsonTypeAA8BSONTypeOvp">bsonType</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -403,7 +412,7 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">bsonType</span><span class="p">:</span> <span class="kt"><a href="../Enums/BsonType.html">BsonType</a></span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">bsonType</span><span class="p">:</span> <span class="kt"><a href="../Enums/BSONType.html">BSONType</a></span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
 
                         </div>
                       </div>
@@ -495,9 +504,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift6BinaryVAC10Foundation4DataV4data_s5UInt8V7subtypetKcfc"></a>
+                    <a name="/s:10MongoSwift6BinaryV4data7subtypeAC10Foundation4DataV_s5UInt8VtKcfc"></a>
                     <a name="//apple_ref/swift/Method/init(data:subtype:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift6BinaryVAC10Foundation4DataV4data_s5UInt8V7subtypetKcfc">init(data:subtype:)</a>
+                    <a class="token" href="#/s:10MongoSwift6BinaryV4data7subtypeAC10Foundation4DataV_s5UInt8VtKcfc">init(data:subtype:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -523,9 +532,9 @@ Throws an error if the provided data is incompatible with the specified subtype.
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift6BinaryVAC10Foundation4DataV4data_AC7SubtypeO7subtypetKcfc"></a>
+                    <a name="/s:10MongoSwift6BinaryV4data7subtypeAC10Foundation4DataV_AC7SubtypeOtKcfc"></a>
                     <a name="//apple_ref/swift/Method/init(data:subtype:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift6BinaryVAC10Foundation4DataV4data_AC7SubtypeO7subtypetKcfc">init(data:subtype:)</a>
+                    <a class="token" href="#/s:10MongoSwift6BinaryV4data7subtypeAC10Foundation4DataV_AC7SubtypeOtKcfc">init(data:subtype:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -551,9 +560,9 @@ Throws an error if the provided data is incompatible with the specified subtype.
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift6BinaryVACSS6base64_s5UInt8V7subtypetKcfc"></a>
+                    <a name="/s:10MongoSwift6BinaryV6base647subtypeACSS_s5UInt8VtKcfc"></a>
                     <a name="//apple_ref/swift/Method/init(base64:subtype:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift6BinaryVACSS6base64_s5UInt8V7subtypetKcfc">init(base64:subtype:)</a>
+                    <a class="token" href="#/s:10MongoSwift6BinaryV6base647subtypeACSS_s5UInt8VtKcfc">init(base64:subtype:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -580,9 +589,9 @@ incompatible with the specified subtype.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift6BinaryVACSS6base64_AC7SubtypeO7subtypetKcfc"></a>
+                    <a name="/s:10MongoSwift6BinaryV6base647subtypeACSS_AC7SubtypeOtKcfc"></a>
                     <a name="//apple_ref/swift/Method/init(base64:subtype:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift6BinaryVACSS6base64_AC7SubtypeO7subtypetKcfc">init(base64:subtype:)</a>
+                    <a class="token" href="#/s:10MongoSwift6BinaryV6base647subtypeACSS_AC7SubtypeOtKcfc">init(base64:subtype:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -609,9 +618,9 @@ incompatible with the specified subtype.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift9BsonValueP6encodeyAA15DocumentStorageC2to_SS6forKeytKF"></a>
+                    <a name="/s:10MongoSwift9BSONValueP6encode2to6forKeyyAA15DocumentStorageC_SStKF"></a>
                     <a name="//apple_ref/swift/Method/encode(to:forKey:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift9BsonValueP6encodeyAA15DocumentStorageC2to_SS6forKeytKF">encode(to:forKey:)</a>
+                    <a class="token" href="#/s:10MongoSwift9BSONValueP6encode2to6forKeyyAA15DocumentStorageC_SStKF">encode(to:forKey:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -635,9 +644,9 @@ incompatible with the specified subtype.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift9BsonValuePxAA16DocumentIteratorC4from_tKcfc"></a>
+                    <a name="/s:10MongoSwift9BSONValueP4fromxAA16DocumentIteratorC_tKcfc"></a>
                     <a name="//apple_ref/swift/Method/init(from:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift9BsonValuePxAA16DocumentIteratorC4from_tKcfc">init(from:)</a>
+                    <a class="token" href="#/s:10MongoSwift9BSONValueP4fromxAA16DocumentIteratorC_tKcfc">init(from:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -661,9 +670,9 @@ incompatible with the specified subtype.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:s9EquatableP2eeoiSbx_xtFZ"></a>
+                    <a name="/s:SQ2eeoiySbx_xtFZ"></a>
                     <a name="//apple_ref/swift/Method/==(_:_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:s9EquatableP2eeoiSbx_xtFZ">==(_:_:)</a>
+                    <a class="token" href="#/s:SQ2eeoiySbx_xtFZ">==(_:_:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -689,7 +698,7 @@ incompatible with the specified subtype.</p>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone and Kaitlin Mahar</a>. All rights reserved. (Last updated: 2018-08-21)</p>
+          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Jeremy Mikola</a>. All rights reserved. (Last updated: 2018-10-24)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>
