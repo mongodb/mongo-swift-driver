@@ -60,7 +60,7 @@ extension MongoCollection {
         var insertedIds: [Int: BSONValue?] = [:]
 
         try documents.enumerated().forEach { (index, document) in
-            if !document.keys.contains("_id") {
+            if !document.hasKey("_id") {
                 try ObjectId().encode(to: document.storage, forKey: "_id")
             }
             insertedIds[index] = document["_id"]

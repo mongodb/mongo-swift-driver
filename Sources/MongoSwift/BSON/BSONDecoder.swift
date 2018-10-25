@@ -261,7 +261,7 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
 
     /// Returns a Boolean value indicating whether the decoder contains a value associated with the given key.
     public func contains(_ key: Key) -> Bool {
-        return self.container.keys.contains(key.stringValue)
+        return self.container.hasKey(key.stringValue)
     }
 
     /// A string description of a CodingKey, for use in error messages.
