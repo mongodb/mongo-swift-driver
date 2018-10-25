@@ -113,6 +113,22 @@ extension MongoClient {
 
         return true
     }
+
+    internal convenience init(options: ClientOptions? = nil) throws {
+        try self.init(connectionString: getConnStr(), options: options)
+    }
+
+    internal convenience init() throws {
+        try self.init(connectionString: getConnStr())
+    }
+}
+
+func getConnStr() -> String {
+    if let connStr = ProcessInfo.processInfo.environment["MDB_CONN_STR"] {
+        return connStr
+    } else {
+        return "mongodb://localhost:27017"
+    }
 }
 
 /// Cleans and normalizes a given JSON string for comparison purposes
