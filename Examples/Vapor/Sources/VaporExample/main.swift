@@ -1,5 +1,5 @@
-import Vapor
 import MongoSwift
+import Vapor
 
 struct Kitten: Content {
   var name: String
@@ -11,10 +11,9 @@ let router = try app.make(Router.self)
 let client = try MongoClient()
 let collection = try client.db("home").collection("kittens", withType: Kitten.self)
 
-router.get("kittens") { req -> [Kitten] in
+router.get("kittens") { _ -> [Kitten] in
   let docs = try collection.find()
   return Array(docs)
 }
 
 try app.run()
-
