@@ -29,9 +29,26 @@ final class BSONValueTests: XCTestCase {
         expect(try Binary(data: sixteenBytes, subtype: .uuid)).toNot(throwError())
     }
 
+    func bsonEqual(expectedValue: BSONValue?) -> Predicate<BSONValue> {
+        return Predicate { (actualExpression: Expression<BSONValue>) throws -> PredicateResult in
+            let msg = ExpectationMessage.expectedActualValueTo("equal <\(String(describing: expectedValue)))>")
+            if let actualValue = try actualExpression.evaluate() {
+                return PredicateResult(
+                    bool: try bsonEquals(lhs: actualValue, rhs: expectedValue!),
+                    message: msg
+                )
+            } else {
+                return PredicateResult(
+                    status: .fail,
+                    message: msg.appendedBeNilHint()
+                )
+            }
+        }
+    }
+
     func checkTrueAndFalse(val: BSONValue, alternate: BSONValue) {
-        expect(try bsonEquals(lhs: val, rhs: val)).to(beTrue())
-        expect(try bsonEquals(lhs: val, rhs: alternate)).to(beFalse())
+        expect(val).to(bsonEqual(expectedValue: val))
+        expect(val).toNot(bsonEqual(expectedValue: alternate))
     }
 
     func testBSONEquals() throws {
@@ -62,8 +79,8 @@ final class BSONValueTests: XCTestCase {
             alternate: Date(timeIntervalSinceReferenceDate: 5001)
         )
         // MinKey & MaxKey
-        expect(try bsonEquals(lhs: MinKey(), rhs: MinKey())).to(beTrue())
-        expect(try bsonEquals(lhs: MaxKey(), rhs: MaxKey())).to(beTrue())
+        expect(MinKey()).to(bsonEqual(expectedValue: MinKey()))
+        expect(MaxKey()).to(bsonEqual(expectedValue: MaxKey()))
         // ObjectId
         checkTrueAndFalse(val: ObjectId(), alternate: ObjectId())
         // CodeWithScope
@@ -94,6 +111,6 @@ final class BSONValueTests: XCTestCase {
         // Invalid Array type
         expect(try bsonEquals(lhs: [BSONEncoder()], rhs: [BSONEncoder(), BSONEncoder()])).to(throwError())
         // Different types
-        expect(try bsonEquals(lhs: 4, rhs: "swift")).to(beFalse())
+        expect(4).toNot(bsonEqual(expectedValue: "swift"))
     }
 }
