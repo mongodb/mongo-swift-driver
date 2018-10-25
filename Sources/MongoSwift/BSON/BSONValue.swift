@@ -779,15 +779,7 @@ public struct Timestamp: BSONValue, Equatable, Codable {
     }
 }
 
-// A helper function to test equality between two BSONValue?s. See bsonEquals for BSONValues (non-optional) for more
-// information.
-func bsonEquals(lhs: BSONValue?, rhs: BSONValue?) throws -> Bool {
-    guard let left = lhs, let right = rhs else {
-        return lhs == nil && rhs == nil
-    }
-
-    return try bsonEquals(lhs: left, rhs: right)
-}
+enum BSONEqualsError: Error { case InvalidArrayArgument(String) }
 
 // See https://github.com/realm/SwiftLint/issues/461
 // swiftlint:disable cyclomatic_complexity
@@ -818,12 +810,21 @@ func bsonEquals(lhs: BSONValue, rhs: BSONValue) throws -> Bool {
     case (let l as [BSONValue?], let r as [BSONValue?]):
         return try zip(l, r).reduce(true, {prev, next in try bsonEquals(lhs: next.0, rhs: next.1) && prev})
     case (_ as [Any], _ as [Any]):
-        enum BSONEqualsError: Error { case InvalidArrayArgument(String) }
         throw BSONEqualsError.InvalidArrayArgument(
             "arrays not of type [BSONValue?] should not be compared with bsonEqual()"
         )
     default: return false
     }
+}
+
+// A helper function to test equality between two BSONValue?s. See bsonEquals for BSONValues (non-optional) for more
+// information.
+func bsonEquals(lhs: BSONValue?, rhs: BSONValue?) throws -> Bool {
+    guard let left = lhs, let right = rhs else {
+        return lhs == nil && rhs == nil
+    }
+
+    return try bsonEquals(lhs: left, rhs: right)
 }
 
 // A function for catching invalid BSONTypes that should not ever arise, and triggering a preconditionFailure when it
