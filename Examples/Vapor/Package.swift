@@ -11,4 +11,3 @@ let package = Package(
         .target(name: "VaporExample", dependencies: ["Vapor", "MongoSwift"])
     ]
 )
-
