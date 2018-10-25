@@ -812,7 +812,10 @@ func bsonEquals(lhs: BSONValue, rhs: BSONValue) throws -> Bool {
     case (let l as [BSONValue?], let r as [BSONValue?]):
         return try zip(l, r).reduce(true, {prev, next in try bsonEquals(lhs: next.0, rhs: next.1) && prev})
     case (_ as [Any], _ as [Any]):
-        preconditionFailure("arrays not of type [BSONValue?] should not be compared with bsonEqual()")
+        enum BSONEqualsError: Error { case InvalidArrayArgument(String) }
+        throw BSONEqualsError.InvalidArrayArgument(
+            "arrays not of type [BSONValue?] should not be compared with bsonEqual()"
+        )
     default:
         // For BSONTypes that do not have actual classes/structs associated
         // with them, the behavior is known regardless.
