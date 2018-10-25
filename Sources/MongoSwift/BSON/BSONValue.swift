@@ -1,5 +1,5 @@
-import Foundation
 import bson
+import Foundation
 
 /// The possible types of BSON values and their corresponding integer values.
 public enum BSONType: UInt32 {

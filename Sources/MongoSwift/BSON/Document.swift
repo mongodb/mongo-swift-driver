@@ -1,5 +1,5 @@
-import Foundation
 import bson
+import Foundation
 
 /// The storage backing a MongoSwift `Document`.
 public class DocumentStorage {
