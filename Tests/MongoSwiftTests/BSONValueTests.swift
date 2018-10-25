@@ -29,35 +29,35 @@ final class BSONValueTests: XCTestCase {
         expect(try Binary(data: sixteenBytes, subtype: .uuid)).toNot(throwError())
     }
 
-    func testBSONValues(val: BSONValue, alternate: BSONValue) {
+    func checkTrueAndFalse(val: BSONValue, alternate: BSONValue) {
         expect(try bsonEqual(lhs: val, rhs: val)).to(beTrue())
         expect(try bsonEqual(lhs: val, rhs: alternate)).to(beFalse())
     }
 
     func testBSONEquals() throws {
         // Int
-        testBSONValues(val: 1, alternate: 2)
+        checkTrueAndFalse(val: 1, alternate: 2)
         // Int32
-        testBSONValues(val: Int32(32), alternate: Int32(33))
+        checkTrueAndFalse(val: Int32(32), alternate: Int32(33))
         // Int64
-        testBSONValues(val: Int64(64), alternate: Int64(65))
+        checkTrueAndFalse(val: Int64(64), alternate: Int64(65))
         // Double
-        testBSONValues(val: 1.618, alternate: 2.718)
+        checkTrueAndFalse(val: 1.618, alternate: 2.718)
         // Decimal128
-        testBSONValues(val: Decimal128("1.618"), alternate: Decimal128("2.718"))
+        checkTrueAndFalse(val: Decimal128("1.618"), alternate: Decimal128("2.718"))
         // Bool
-        testBSONValues(val: true, alternate: false)
+        checkTrueAndFalse(val: true, alternate: false)
         // String
-        testBSONValues(val: "some", alternate: "not some")
+        checkTrueAndFalse(val: "some", alternate: "not some")
         // RegularExpression
-        testBSONValues(
+        checkTrueAndFalse(
             val: RegularExpression(pattern: ".*", options: ""),
             alternate: RegularExpression(pattern: ".+", options: "")
         )
         // Timestamp
-        testBSONValues(val: Timestamp(timestamp: 1, inc: 2), alternate: Timestamp(timestamp: 5, inc: 10))
+        checkTrueAndFalse(val: Timestamp(timestamp: 1, inc: 2), alternate: Timestamp(timestamp: 5, inc: 10))
         // Date
-        testBSONValues(
+        checkTrueAndFalse(
             val: Date(timeIntervalSinceReferenceDate: 5000),
             alternate: Date(timeIntervalSinceReferenceDate: 5001)
         )
@@ -65,29 +65,31 @@ final class BSONValueTests: XCTestCase {
         expect(try bsonEqual(lhs: MinKey(), rhs: MinKey())).to(beTrue())
         expect(try bsonEqual(lhs: MaxKey(), rhs: MaxKey())).to(beTrue())
         // ObjectId
-        testBSONValues(val: ObjectId(), alternate: ObjectId())
+        checkTrueAndFalse(val: ObjectId(), alternate: ObjectId())
         // CodeWithScope
-        testBSONValues(
+        checkTrueAndFalse(
             val: CodeWithScope(code: "console.log('foo');"),
             alternate: CodeWithScope(code: "console.log(x);", scope: ["x": 2])
         )
         // Binary
-        testBSONValues(
+        checkTrueAndFalse(
             val: try Binary(data: Data(base64Encoded: "c//SZESzTGmQ6OfR38A11A==")!, subtype: .uuid),
             alternate: try Binary(data: Data(base64Encoded: "c//88KLnfdfefOfR33ddFA==")!, subtype: .uuid)
         )
         // Document
-        testBSONValues(
+        checkTrueAndFalse(
             val: [
                 "foo": 1.414,
                 "bar": "swift",
                 "nested": [ "a": 1, "b": "2" ] as Document
-            ] as Document,
+                ] as Document,
             alternate: [
                 "foo": 1.414,
                 "bar": "swift",
                 "nested": [ "a": 1, "b": "different" ] as Document
-            ] as Document
+                ] as Document
         )
+        // [BSONValue?]
+        checkTrueAndFalse(val: [4, 5, 1, nil, 3], alternate: [4, 5, 1, 2, 3])
     }
 }
