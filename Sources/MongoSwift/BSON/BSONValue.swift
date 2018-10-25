@@ -816,20 +816,12 @@ func bsonEquals(lhs: BSONValue, rhs: BSONValue) throws -> Bool {
         throw BSONEqualsError.InvalidArrayArgument(
             "arrays not of type [BSONValue?] should not be compared with bsonEqual()"
         )
-    default:
-        // For BSONTypes that do not have actual classes/structs associated
-        // with them, the behavior is known regardless.
-        switch (lhs.bsonType, rhs.bsonType) {
-        case (.invalid, .invalid): return true
-        case (.undefined, .undefined): return true
-        case (.null, .null): return true
-        default: return false
-        }
+    default: return false
     }
 }
 
 func validateBSONTypes(lhs: BSONValue, rhs: BSONValue) {
-    let invalidTypes: [BSONType] = [.symbol, .dbPointer]
+    let invalidTypes: [BSONType] = [.symbol, .dbPointer, .invalid, .undefined, .null]
     guard !invalidTypes.contains(lhs.bsonType) else {
         preconditionFailure("\(lhs.bsonType) should not be used")
     }
