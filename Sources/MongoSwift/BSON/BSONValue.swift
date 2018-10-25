@@ -784,20 +784,14 @@ func bsonEqual(lhs: BSONValue?, rhs: BSONValue?) throws -> Bool {
         return lhs == nil && rhs == nil
     }
 
-    let invalidTypes: [BSONType] = [.symbol, .dbPointer]
-    guard !invalidTypes.contains(left.bsonType) else {
-        preconditionFailure("\(left.bsonType) should not be used")
-    }
-    guard !invalidTypes.contains(right.bsonType) else {
-        preconditionFailure("\(right.bsonType) should not be used")
-    }
-
     return try bsonEqual(lhs: left, rhs: right)
 }
 
 // See https://github.com/realm/SwiftLint/issues/461
 // swiftlint:disable cyclomatic_complexity
 func bsonEqual(lhs: BSONValue, rhs: BSONValue) throws -> Bool {
+    validateBSONTypes(lhs: lhs, rhs: rhs)
+
     switch (lhs, rhs) {
     case (let l as Int, let r as Int): return l == r
     case (let l as Int32, let r as Int32): return l == r
@@ -828,6 +822,16 @@ func bsonEqual(lhs: BSONValue, rhs: BSONValue) throws -> Bool {
         case (.null, .null): return true
         default: return false
         }
+    }
+}
+
+func validateBSONTypes(lhs: BSONValue, rhs: BSONValue) {
+    let invalidTypes: [BSONType] = [.symbol, .dbPointer]
+    guard !invalidTypes.contains(lhs.bsonType) else {
+        preconditionFailure("\(lhs.bsonType) should not be used")
+    }
+    guard !invalidTypes.contains(rhs.bsonType) else {
+        preconditionFailure("\(rhs.bsonType) should not be used")
     }
 }
 
