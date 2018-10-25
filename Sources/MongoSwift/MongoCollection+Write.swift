@@ -76,9 +76,9 @@ extension MongoCollection {
 
         guard success else {
             throw MongoError.insertManyError(code: error.code, message: toErrorString(error),
-                                            result: (isAcknowledged ? result : nil),
-                                            writeErrors: result.writeErrors,
-                                            writeConcernError: result.writeConcernError)
+                                             result: (isAcknowledged ? result : nil),
+                                             writeErrors: result.writeErrors,
+                                             writeConcernError: result.writeConcernError)
         }
 
         return isAcknowledged ? result : nil
