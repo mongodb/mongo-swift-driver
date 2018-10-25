@@ -155,7 +155,11 @@ extension MongoCollection {
             let opts = try encoder.encode(self.options)
             var error = bson_error_t()
 
-            guard mongoc_bulk_operation_replace_one_with_opts(bulk.bulk, self.filter.data, replacement.data, opts.data, &error) else {
+            guard mongoc_bulk_operation_replace_one_with_opts(bulk.bulk,
+                                                              self.filter.data,
+                                                              replacement.data,
+                                                              opts.data,
+                                                              &error) else {
                 throw MongoError.invalidArgument(message: toErrorString(error))
             }
         }
@@ -195,7 +199,11 @@ extension MongoCollection {
             let opts = try BSONEncoder().encode(self.options)
             var error = bson_error_t()
 
-            guard mongoc_bulk_operation_update_one_with_opts(bulk.bulk, self.filter.data, self.update.data, opts.data, &error) else {
+            guard mongoc_bulk_operation_update_one_with_opts(bulk.bulk,
+                                                             self.filter.data,
+                                                             self.update.data,
+                                                             opts.data,
+                                                             &error) else {
                 throw MongoError.invalidArgument(message: toErrorString(error))
             }
         }
@@ -229,7 +237,11 @@ extension MongoCollection {
             let opts = try BSONEncoder().encode(self.options)
             var error = bson_error_t()
 
-            guard mongoc_bulk_operation_update_many_with_opts(bulk.bulk, self.filter.data, self.update.data, opts.data, &error) else {
+            guard mongoc_bulk_operation_update_many_with_opts(bulk.bulk,
+                                                              self.filter.data,
+                                                              self.update.data,
+                                                              opts.data,
+                                                              &error) else {
                 throw MongoError.invalidArgument(message: toErrorString(error))
             }
         }

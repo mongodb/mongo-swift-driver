@@ -70,7 +70,12 @@ extension MongoCollection {
         let reply = Document()
         var error = bson_error_t()
 
-        let success = mongoc_collection_insert_many(self._collection, &docPointers, values.count, opts?.data, reply.data, &error)
+        let success = mongoc_collection_insert_many(self._collection,
+                                                    &docPointers,
+                                                    values.count,
+                                                    opts?.data,
+                                                    reply.data,
+                                                    &error)
         let result = try InsertManyResult(reply: reply, insertedIds: insertedIds)
         let isAcknowledged = self.isAcknowledged(options?.writeConcern)
 

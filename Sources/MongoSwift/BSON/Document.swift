@@ -205,7 +205,8 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         }
     }
 
-    /// Sets key to newValue. if checkForKey=false, the key/value pair will be appended without checking for the key's presence first.
+    /// Sets key to newValue. if checkForKey=false, the key/value pair will be appended without checking for the key's
+    // presence first.
     private mutating func setValue(forKey key: String, to newValue: BSONValue?, checkForKey: Bool = true) throws {
         // if the key already exists in the `Document`, we need to replace it
         if checkForKey, let existingType = DocumentIterator(forDocument: self, advancedTo: key)?.currentType {
