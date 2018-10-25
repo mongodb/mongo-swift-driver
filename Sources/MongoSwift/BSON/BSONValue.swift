@@ -779,17 +779,17 @@ public struct Timestamp: BSONValue, Equatable, Codable {
     }
 }
 
-func bsonEqual(lhs: BSONValue?, rhs: BSONValue?) throws -> Bool {
+func bsonEquals(lhs: BSONValue?, rhs: BSONValue?) throws -> Bool {
     guard let left = lhs, let right = rhs else {
         return lhs == nil && rhs == nil
     }
 
-    return try bsonEqual(lhs: left, rhs: right)
+    return try bsonEquals(lhs: left, rhs: right)
 }
 
 // See https://github.com/realm/SwiftLint/issues/461
 // swiftlint:disable cyclomatic_complexity
-func bsonEqual(lhs: BSONValue, rhs: BSONValue) throws -> Bool {
+func bsonEquals(lhs: BSONValue, rhs: BSONValue) throws -> Bool {
     validateBSONTypes(lhs: lhs, rhs: rhs)
 
     switch (lhs, rhs) {
@@ -810,7 +810,7 @@ func bsonEqual(lhs: BSONValue, rhs: BSONValue) throws -> Bool {
     case (let l as Binary, let r as Binary): return l == r
     case (let l as Document, let r as Document): return l == r
     case (let l as [BSONValue?], let r as [BSONValue?]):
-        return try zip(l, r).reduce(true, {prev, next in try bsonEqual(lhs: next.0, rhs: next.1) && prev})
+        return try zip(l, r).reduce(true, {prev, next in try bsonEquals(lhs: next.0, rhs: next.1) && prev})
     case (_ as [Any], _ as [Any]):
         preconditionFailure("arrays not of type [BSONValue?] should not be compared with bsonEqual()")
     default:
