@@ -206,3 +206,21 @@ internal func rearrangeDoc(_ input: Document, toLookLike standard: Document) -> 
     }
     return output
 }
+
+/// A Nimble matcher for testing BSONValue equality.
+internal func bsonEqual(_ expectedValue: BSONValue?) -> Predicate<BSONValue> {
+    return Predicate { (actualExpression: Expression<BSONValue>) throws -> PredicateResult in
+        let msg = ExpectationMessage.expectedActualValueTo("equal <\(String(describing: expectedValue)))>")
+        if let actualValue = try actualExpression.evaluate() {
+            return PredicateResult(
+                bool: try bsonEquals(lhs: actualValue, rhs: expectedValue!),
+                message: msg
+            )
+        } else {
+            return PredicateResult(
+                status: .fail,
+                message: msg.appendedBeNilHint()
+            )
+        }
+    }
+}

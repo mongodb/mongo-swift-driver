@@ -29,26 +29,9 @@ final class BSONValueTests: XCTestCase {
         expect(try Binary(data: sixteenBytes, subtype: .uuid)).toNot(throwError())
     }
 
-    fileprivate func bsonEqual(expectedValue: BSONValue?) -> Predicate<BSONValue> {
-        return Predicate { (actualExpression: Expression<BSONValue>) throws -> PredicateResult in
-            let msg = ExpectationMessage.expectedActualValueTo("equal <\(String(describing: expectedValue)))>")
-            if let actualValue = try actualExpression.evaluate() {
-                return PredicateResult(
-                    bool: try bsonEquals(lhs: actualValue, rhs: expectedValue!),
-                    message: msg
-                )
-            } else {
-                return PredicateResult(
-                    status: .fail,
-                    message: msg.appendedBeNilHint()
-                )
-            }
-        }
-    }
-
     fileprivate func checkTrueAndFalse(val: BSONValue, alternate: BSONValue) {
-        expect(val).to(bsonEqual(expectedValue: val))
-        expect(val).toNot(bsonEqual(expectedValue: alternate))
+        expect(val).to(bsonEqual(val))
+        expect(val).toNot(bsonEqual(alternate))
     }
 
     func testBSONEquals() throws {
@@ -79,8 +62,8 @@ final class BSONValueTests: XCTestCase {
             alternate: Date(timeIntervalSinceReferenceDate: 5001)
         )
         // MinKey & MaxKey
-        expect(MinKey()).to(bsonEqual(expectedValue: MinKey()))
-        expect(MaxKey()).to(bsonEqual(expectedValue: MaxKey()))
+        expect(MinKey()).to(bsonEqual(MinKey()))
+        expect(MaxKey()).to(bsonEqual(MaxKey()))
         // ObjectId
         checkTrueAndFalse(val: ObjectId(), alternate: ObjectId())
         // CodeWithScope
@@ -111,6 +94,6 @@ final class BSONValueTests: XCTestCase {
         // Invalid Array type
         expect(try bsonEquals(lhs: [BSONEncoder()], rhs: [BSONEncoder(), BSONEncoder()])).to(throwError())
         // Different types
-        expect(4).toNot(bsonEqual(expectedValue: "swift"))
+        expect(4).toNot(bsonEqual("swift"))
     }
 }
