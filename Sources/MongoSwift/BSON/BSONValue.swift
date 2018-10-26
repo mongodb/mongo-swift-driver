@@ -790,6 +790,12 @@ enum BSONEqualsError: Error { case InvalidArrayArgument(String) }
  *
  *  e.g.
  *      4.0 (Double) != 4 (Int)
+ *
+ *  * - Parameters:
+ *   - lhs: The left-hand-side BSONValue to compare.
+ *   - rhs: The right-hand-side BSONValue to compare.
+ *
+ * - Returns: True if lhs is equal to rhs, false otherwise.
  */
 func bsonEquals(lhs: BSONValue, rhs: BSONValue) throws -> Bool {
     validateBSONTypes(lhs: lhs, rhs: rhs)
@@ -821,8 +827,16 @@ func bsonEquals(lhs: BSONValue, rhs: BSONValue) throws -> Bool {
     }
 }
 
-/// A helper function to test equality between two BSONValue?s. See bsonEquals for BSONValues (non-optional) for more
-/// information.
+/**
+ *  A helper function to test equality between two BSONValue?s. See bsonEquals for BSONValues (non-optional) for more
+ *  information.
+ *
+ *  * - Parameters:
+ *   - lhs: The left-hand-side BSONValue? to compare.
+ *   - rhs: The right-hand-side BSONValue? to compare.
+ *
+ * - Returns: True if lhs is equal to rhs, false otherwise.
+ */
 public func bsonEquals(lhs: BSONValue?, rhs: BSONValue?) throws -> Bool {
     guard let left = lhs, let right = rhs else {
         return lhs == nil && rhs == nil
