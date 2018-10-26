@@ -29,7 +29,7 @@ final class BSONValueTests: XCTestCase {
         expect(try Binary(data: sixteenBytes, subtype: .uuid)).toNot(throwError())
     }
 
-    func bsonEqual(expectedValue: BSONValue?) -> Predicate<BSONValue> {
+    fileprivate func bsonEqual(expectedValue: BSONValue?) -> Predicate<BSONValue> {
         return Predicate { (actualExpression: Expression<BSONValue>) throws -> PredicateResult in
             let msg = ExpectationMessage.expectedActualValueTo("equal <\(String(describing: expectedValue)))>")
             if let actualValue = try actualExpression.evaluate() {
@@ -46,7 +46,7 @@ final class BSONValueTests: XCTestCase {
         }
     }
 
-    func checkTrueAndFalse(val: BSONValue, alternate: BSONValue) {
+    fileprivate func checkTrueAndFalse(val: BSONValue, alternate: BSONValue) {
         expect(val).to(bsonEqual(expectedValue: val))
         expect(val).toNot(bsonEqual(expectedValue: alternate))
     }
