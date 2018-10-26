@@ -791,13 +791,16 @@ enum BSONEqualsError: Error { case InvalidArrayArgument(String) }
  *  e.g.
  *      4.0 (Double) != 4 (Int)
  *
+ *  NOTE: This function will always return false if it is used with two arrays that are not of the type [BSONValue] or
+ *  [BSONValue?], because any arrays that are not of these types are not valid `BSONValue`'s.
+ *
  *  * - Parameters:
  *   - lhs: The left-hand-side BSONValue to compare.
  *   - rhs: The right-hand-side BSONValue to compare.
  *
  * - Returns: True if lhs is equal to rhs, false otherwise.
  */
-func bsonEquals(lhs: BSONValue, rhs: BSONValue) throws -> Bool {
+func bsonEquals(lhs: BSONValue, rhs: BSONValue) -> Bool {
     validateBSONTypes(lhs: lhs, rhs: rhs)
 
     switch (lhs, rhs) {
@@ -818,11 +821,8 @@ func bsonEquals(lhs: BSONValue, rhs: BSONValue) throws -> Bool {
     case (let l as Binary, let r as Binary): return l == r
     case (let l as Document, let r as Document): return l == r
     case (let l as [BSONValue?], let r as [BSONValue?]):
-        return try zip(l, r).reduce(true, {prev, next in try bsonEquals(lhs: next.0, rhs: next.1) && prev})
-    case (_ as [Any], _ as [Any]):
-        throw BSONEqualsError.InvalidArrayArgument(
-            "arrays not of type [BSONValue?] should not be compared with bsonEqual()"
-        )
+        return zip(l, r).reduce(true, {prev, next in bsonEquals(lhs: next.0, rhs: next.1) && prev})
+    case (_ as [Any], _ as [Any]): return false
     default: return false
     }
 }
@@ -837,12 +837,12 @@ func bsonEquals(lhs: BSONValue, rhs: BSONValue) throws -> Bool {
  *
  * - Returns: True if lhs is equal to rhs, false otherwise.
  */
-public func bsonEquals(lhs: BSONValue?, rhs: BSONValue?) throws -> Bool {
+public func bsonEquals(lhs: BSONValue?, rhs: BSONValue?) -> Bool {
     guard let left = lhs, let right = rhs else {
         return lhs == nil && rhs == nil
     }
 
-    return try bsonEquals(lhs: left, rhs: right)
+    return bsonEquals(lhs: left, rhs: right)
 }
 
 /// A function for catching invalid BSONTypes that should not ever arise, and triggering a preconditionFailure when it
