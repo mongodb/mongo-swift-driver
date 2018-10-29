@@ -792,7 +792,7 @@ public struct Timestamp: BSONValue, Equatable, Codable {
  *  [BSONValue?], because any arrays that are not of these types are not valid `BSONValue`'s.
  *
  *  * - Parameters:
- *   - lhs: The left-hand-side BSONValue to compare.
+ *   - lhs: The left-hand-side `BSONValue` to compare.
  *   - rhs: The right-hand-side `BSONValue` to compare.
  *
  * - Returns: `true` if `lhs` is equal to `rhs`, `false` otherwise.
