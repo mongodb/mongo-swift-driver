@@ -788,8 +788,8 @@ public struct Timestamp: BSONValue, Equatable, Codable {
  *  e.g.
  *      4.0 (Double) != 4 (Int)
  *
- *  NOTE: This function will always return `false` if it is used with two arrays that are not of the type `[BSONValue]` or
- *  `[BSONValue?]`, because any arrays that are not of these types are not valid `BSONValue`'s.
+ *  NOTE: This function will always return `false` if it is used with two arrays that are not of the type `[BSONValue]`
+ *  or `[BSONValue?]`, because any arrays that are not of these types are not valid `BSONValue`'s.
  *
  *  * - Parameters:
  *   - lhs: The left-hand-side `BSONValue` to compare.
