@@ -844,7 +844,7 @@ public func bsonEquals(_ lhs: BSONValue?, _ rhs: BSONValue?) -> Bool {
 
 /// A function for catching invalid BSONTypes that should not ever arise, and triggering a preconditionFailure when it
 /// finds such types.
-fileprivate func validateBSONTypes(_ lhs: BSONValue, _ rhs: BSONValue) {
+private func validateBSONTypes(_ lhs: BSONValue, _ rhs: BSONValue) {
     let invalidTypes: [BSONType] = [.symbol, .dbPointer, .invalid, .undefined, .null]
     guard !invalidTypes.contains(lhs.bsonType) else {
         preconditionFailure("\(lhs.bsonType) should not be used")
