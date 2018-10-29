@@ -793,7 +793,7 @@ public struct Timestamp: BSONValue, Equatable, Codable {
  *
  *  * - Parameters:
  *   - lhs: The left-hand-side BSONValue to compare.
- *   - rhs: The right-hand-side BSONValue to compare.
+ *   - rhs: The right-hand-side `BSONValue` to compare.
  *
  * - Returns: `true` if `lhs` is equal to `rhs`, `false` otherwise.
  */
