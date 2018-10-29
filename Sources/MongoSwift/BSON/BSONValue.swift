@@ -782,7 +782,7 @@ public struct Timestamp: BSONValue, Equatable, Codable {
 // See https://github.com/realm/SwiftLint/issues/461
 // swiftlint:disable cyclomatic_complexity
 /**
- *  A helper function to test equality between two BSONValues. This function tests for exact BSON equality.
+ *  A helper function to test equality between two `BSONValue`s. This function tests for exact BSON equality.
  *  This means that differing types with equivalent value are not equivalent.
  *
  *  e.g.
