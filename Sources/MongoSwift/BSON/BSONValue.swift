@@ -817,7 +817,7 @@ func bsonEquals(lhs: BSONValue, rhs: BSONValue) -> Bool {
     case (let l as CodeWithScope, let r as CodeWithScope): return l == r
     case (let l as Binary, let r as Binary): return l == r
     case (let l as Document, let r as Document): return l == r
-    case (let l as [BSONValue?], let r as [BSONValue?]):
+    case (let l as [BSONValue?], let r as [BSONValue?]): // TODO: SWIFT-242
         return zip(l, r).reduce(true, {prev, next in bsonEquals(lhs: next.0, rhs: next.1) && prev})
     case (_ as [Any], _ as [Any]): return false
     default: return false
