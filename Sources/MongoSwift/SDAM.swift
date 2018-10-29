@@ -210,8 +210,8 @@ public struct TopologyDescription {
     /// The largest electionId ever reported by a primary.
     public var maxElectionId: ObjectId?
 
-    /// The servers comprising this topology. By default, a single server at localhost:270107.
-    public var servers: [ServerDescription] = [ServerDescription(connectionId: ConnectionId())]
+    /// The servers comprising this topology. By default, no servers.
+    public var servers: [ServerDescription] = []
 
     /// For single-threaded clients, indicates whether the topology must be re-scanned.
     public let stale: Bool = false // currently, this will never be set
