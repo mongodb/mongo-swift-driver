@@ -779,8 +779,6 @@ public struct Timestamp: BSONValue, Equatable, Codable {
     }
 }
 
-enum BSONEqualsError: Error { case InvalidArrayArgument(String) }
-
 // See https://github.com/realm/SwiftLint/issues/461
 // swiftlint:disable cyclomatic_complexity
 /**
