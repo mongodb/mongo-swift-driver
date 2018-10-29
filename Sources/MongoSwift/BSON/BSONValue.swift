@@ -795,7 +795,7 @@ public struct Timestamp: BSONValue, Equatable, Codable {
  *   - lhs: The left-hand-side BSONValue to compare.
  *   - rhs: The right-hand-side BSONValue to compare.
  *
- * - Returns: True if lhs is equal to rhs, false otherwise.
+ * - Returns: `true` if `lhs` is equal to `rhs`, `false` otherwise.
  */
 func bsonEquals(_ lhs: BSONValue, _ rhs: BSONValue) -> Bool {
     validateBSONTypes(lhs, rhs)
