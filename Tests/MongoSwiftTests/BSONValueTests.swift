@@ -92,7 +92,7 @@ final class BSONValueTests: XCTestCase {
         // [BSONValue?]
         checkTrueAndFalse(val: [4, 5, 1, nil, 3], alternate: [4, 5, 1, 2, 3])
         // Invalid Array type
-        expect(bsonEquals(lhs: [BSONEncoder()], rhs: [BSONEncoder(), BSONEncoder()])).to(beFalse())
+        expect(bsonEquals([BSONEncoder()], [BSONEncoder(), BSONEncoder()])).to(beFalse())
         // Different types
         expect(4).toNot(bsonEqual("swift"))
     }

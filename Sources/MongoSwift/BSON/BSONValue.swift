@@ -797,8 +797,8 @@ public struct Timestamp: BSONValue, Equatable, Codable {
  *
  * - Returns: True if lhs is equal to rhs, false otherwise.
  */
-func bsonEquals(lhs: BSONValue, rhs: BSONValue) -> Bool {
-    validateBSONTypes(lhs: lhs, rhs: rhs)
+func bsonEquals(_ lhs: BSONValue, _ rhs: BSONValue) -> Bool {
+    validateBSONTypes(lhs, rhs)
 
     switch (lhs, rhs) {
     case (let l as Int, let r as Int): return l == r
@@ -818,7 +818,7 @@ func bsonEquals(lhs: BSONValue, rhs: BSONValue) -> Bool {
     case (let l as Binary, let r as Binary): return l == r
     case (let l as Document, let r as Document): return l == r
     case (let l as [BSONValue?], let r as [BSONValue?]): // TODO: SWIFT-242
-        return zip(l, r).reduce(true, {prev, next in bsonEquals(lhs: next.0, rhs: next.1) && prev})
+        return zip(l, r).reduce(true, {prev, next in bsonEquals(next.0, next.1) && prev})
     case (_ as [Any], _ as [Any]): return false
     default: return false
     }
@@ -834,17 +834,17 @@ func bsonEquals(lhs: BSONValue, rhs: BSONValue) -> Bool {
  *
  * - Returns: True if lhs is equal to rhs, false otherwise.
  */
-public func bsonEquals(lhs: BSONValue?, rhs: BSONValue?) -> Bool {
+public func bsonEquals(_ lhs: BSONValue?, _ rhs: BSONValue?) -> Bool {
     guard let left = lhs, let right = rhs else {
         return lhs == nil && rhs == nil
     }
 
-    return bsonEquals(lhs: left, rhs: right)
+    return bsonEquals(left, right)
 }
 
 /// A function for catching invalid BSONTypes that should not ever arise, and triggering a preconditionFailure when it
 /// finds such types.
-internal func validateBSONTypes(lhs: BSONValue, rhs: BSONValue) {
+fileprivate func validateBSONTypes(_ lhs: BSONValue, _ rhs: BSONValue) {
     let invalidTypes: [BSONType] = [.symbol, .dbPointer, .invalid, .undefined, .null]
     guard !invalidTypes.contains(lhs.bsonType) else {
         preconditionFailure("\(lhs.bsonType) should not be used")

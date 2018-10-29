@@ -213,7 +213,7 @@ internal func bsonEqual(_ expectedValue: BSONValue?) -> Predicate<BSONValue> {
         let msg = ExpectationMessage.expectedActualValueTo("equal <\(String(describing: expectedValue)))>")
         if let actualValue = try actualExpression.evaluate() {
             return PredicateResult(
-                bool: bsonEquals(lhs: actualValue, rhs: expectedValue!),
+                bool: bsonEquals(actualValue, expectedValue!),
                 message: msg
             )
         } else {
