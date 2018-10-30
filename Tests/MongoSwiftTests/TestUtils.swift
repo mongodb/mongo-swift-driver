@@ -117,10 +117,6 @@ extension MongoClient {
     internal convenience init(options: ClientOptions? = nil) throws {
         try self.init(connectionString: getConnStr(), options: options)
     }
-
-    internal convenience init() throws {
-        try self.init(connectionString: getConnStr())
-    }
 }
 
 func getConnStr() -> String {
