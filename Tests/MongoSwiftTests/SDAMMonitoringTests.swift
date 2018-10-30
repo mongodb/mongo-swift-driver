@@ -82,6 +82,8 @@ final class SDAMTests: XCTestCase {
         expect(event1.topologyId).to(equal(event0.topologyId))
         expect(event1.previousDescription.type).to(equal(TopologyType.unknown))
         expect(event1.newDescription.type).to(equal(TopologyType.single))
+        // This is a bit of a deviation from the SDAM spec tests linked above. However, this is how mongoc responds so
+        // there is no other way to get around this.
         expect(event1.newDescription.servers).to(beEmpty())
 
         let event2 = receivedEvents[2] as! ServerOpeningEvent
