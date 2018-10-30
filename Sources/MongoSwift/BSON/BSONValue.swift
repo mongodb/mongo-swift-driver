@@ -465,7 +465,7 @@ public struct CodeWithScope: BSONValue, Equatable, Codable {
 
         var length: UInt32 = 0
 
-        if iter.currentType.rawValue == BSON_TYPE_CODE.rawValue {
+        if iter.currentType.rawValue == BSONType.javascript.rawValue {
             let code = String(cString: bson_iter_code(&iter.iter, &length))
             self.init(code: code)
             return
