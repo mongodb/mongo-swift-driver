@@ -104,6 +104,7 @@ final class SDAMTests: XCTestCase {
         expect(event4.topologyId).to(equal(event3.topologyId))
         let prevTopology = event4.previousDescription
         expect(prevTopology.type).to(equal(TopologyType.single))
+        expect(prevTopology.servers).to(beEmpty())
 
         let newTopology = event4.newDescription
         expect(newTopology.type).to(equal(TopologyType.single))
