@@ -779,6 +779,81 @@ public struct Timestamp: BSONValue, Equatable, Codable {
     }
 }
 
+// See https://github.com/realm/SwiftLint/issues/461
+// swiftlint:disable cyclomatic_complexity
+/**
+ *  A helper function to test equality between two `BSONValue`s. This function tests for exact BSON equality.
+ *  This means that differing types with equivalent value are not equivalent.
+ *
+ *  e.g.
+ *      4.0 (Double) != 4 (Int)
+ *
+ *  NOTE: This function will always return `false` if it is used with two arrays that are not of the type `[BSONValue]`
+ *  or `[BSONValue?]`, because any arrays that are not of these types are not valid `BSONValue`'s.
+ *
+ *  * - Parameters:
+ *   - lhs: The left-hand-side `BSONValue` to compare.
+ *   - rhs: The right-hand-side `BSONValue` to compare.
+ *
+ * - Returns: `true` if `lhs` is equal to `rhs`, `false` otherwise.
+ */
+func bsonEquals(_ lhs: BSONValue, _ rhs: BSONValue) -> Bool {
+    validateBSONTypes(lhs, rhs)
+
+    switch (lhs, rhs) {
+    case (let l as Int, let r as Int): return l == r
+    case (let l as Int32, let r as Int32): return l == r
+    case (let l as Int64, let r as Int64): return l == r
+    case (let l as Double, let r as Double): return l == r
+    case (let l as Decimal128, let r as Decimal128): return l == r
+    case (let l as Bool, let r as Bool): return l == r
+    case (let l as String, let r as String): return l == r
+    case (let l as RegularExpression, let r as RegularExpression): return l == r
+    case (let l as Timestamp, let r as Timestamp): return l == r
+    case (let l as Date, let r as Date): return l == r
+    case (_ as MinKey, _ as MinKey): return true
+    case (_ as MaxKey, _ as MaxKey): return true
+    case (let l as ObjectId, let r as ObjectId): return l == r
+    case (let l as CodeWithScope, let r as CodeWithScope): return l == r
+    case (let l as Binary, let r as Binary): return l == r
+    case (let l as Document, let r as Document): return l == r
+    case (let l as [BSONValue?], let r as [BSONValue?]): // TODO: SWIFT-242
+        return zip(l, r).reduce(true, {prev, next in bsonEquals(next.0, next.1) && prev})
+    case (_ as [Any], _ as [Any]): return false
+    default: return false
+    }
+}
+
+/**
+ *  A helper function to test equality between two BSONValue?s. See bsonEquals for BSONValues (non-optional) for more
+ *  information.
+ *
+ *  * - Parameters:
+ *   - lhs: The left-hand-side BSONValue? to compare.
+ *   - rhs: The right-hand-side BSONValue? to compare.
+ *
+ * - Returns: True if lhs is equal to rhs, false otherwise.
+ */
+public func bsonEquals(_ lhs: BSONValue?, _ rhs: BSONValue?) -> Bool {
+    guard let left = lhs, let right = rhs else {
+        return lhs == nil && rhs == nil
+    }
+
+    return bsonEquals(left, right)
+}
+
+/// A function for catching invalid BSONTypes that should not ever arise, and triggering a preconditionFailure when it
+/// finds such types.
+private func validateBSONTypes(_ lhs: BSONValue, _ rhs: BSONValue) {
+    let invalidTypes: [BSONType] = [.symbol, .dbPointer, .invalid, .undefined, .null]
+    guard !invalidTypes.contains(lhs.bsonType) else {
+        preconditionFailure("\(lhs.bsonType) should not be used")
+    }
+    guard !invalidTypes.contains(rhs.bsonType) else {
+        preconditionFailure("\(rhs.bsonType) should not be used")
+    }
+}
+
 func retrieveErrorMsg(type: String, key: String) -> String {
     return "Failed to retrieve the \(type) value for key '\(key)'"
 }
