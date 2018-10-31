@@ -15,7 +15,7 @@
 	* Use this to install Swift 4.0 if you don't have it already.
 * [jazzy](https://github.com/realm/jazzy#installation): the tool we use to generate documentation.
 * [swiftlint](https://github.com/realm/SwiftLint#using-homebrew): the Swift linter we use. 
-* [libmongoc](http://mongoc.org/libmongoc/current/api.html): the MongoDB C driver, which this library wraps. See the installation instructions provided in our [README](README.md#first-install-the-mongodb-c-driver) or on the [libmongoc docs](http://mongoc.org/libmongoc/current/installing.html). 
+* [libmongoc](http://mongoc.org/libmongoc/current/api.html): the MongoDB C driver, which this library wraps. See the installation instructions provided in our [README](https://github.com/mongodb/mongo-swift-driver#first-install-the-mongodb-c-driver) or on the [libmongoc docs](http://mongoc.org/libmongoc/current/installing.html).
 
 ### If you are using (Vim/Neovim)
 * [swift.vim](https://github.com/Utagai/swift.vim): A fork of Keith Smiley's `swift.vim` with fixed indenting rules. This adds proper indenting and syntax for Swift to Vim. This fork also provides a match rule for column width highlighting.
