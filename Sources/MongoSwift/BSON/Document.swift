@@ -195,7 +195,18 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      *  ```
      */
     public subscript(key: String) -> BSONValue? {
-        get { return DocumentIterator(forDocument: self, advancedTo: key)?.currentValue }
+        get {
+            let iter = DocumentIterator(forDocument: self, advancedTo: key)
+            if iter == nil {
+                debugPrint("Invalid key given probably, so iter is null.")
+                return BSONMissing()
+            }
+            if let iter = iter {
+                return iter.currentValue
+            } else {
+                return nil
+            }
+        }
         set(newValue) {
             do {
                 try self.setValue(for: key, to: newValue)

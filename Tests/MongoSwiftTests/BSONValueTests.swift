@@ -8,7 +8,8 @@ final class BSONValueTests: XCTestCase {
         return [
             ("testInvalidDecimal128", testInvalidDecimal128),
             ("testUUIDBytes", testUUIDBytes),
-            ("testBSONEquals", testBSONEquals)
+            ("testBSONEquals", testBSONEquals),
+            ("testBSONInterfaces", testBSONInterfaces)
         ]
     }
 
@@ -95,5 +96,74 @@ final class BSONValueTests: XCTestCase {
         expect(bsonEquals([BSONEncoder()], [BSONEncoder(), BSONEncoder()])).to(beFalse())
         // Different types
         expect(4).toNot(bsonEqual("swift"))
+    }
+
+    func testBSONInterfaces() throws {
+        var dict: [String: BSONValue?] = [:]
+        dict["hello"] = 42
+        dict["what is up"] = "nothing much man"
+        dict["what is the meaning of life"] = nil as BSONValue?
+        dict["why is pizza so good"] = true
+
+        var doc: Document = [
+            "hello": 42,
+            "what is up": "nothing much man",
+            "what is the meaning of life": nil,
+            "why is pizza so good": true
+        ]
+
+        // use cases
+        // 1. Get existing key's value from document:
+        let existingKeyValueDoc = doc["hello"] as? Int
+        debugPrint("Got back existing key value from doc: \(existingKeyValueDoc)")
+        if let existingKeyValueDoc = existingKeyValueDoc {
+            let sumDoc = existingKeyValueDoc + 10
+            debugPrint("sumDoc: \(sumDoc)")
+        }
+
+        let existingKeyValueDict = dict["hello"] as? Int
+        debugPrint("Got back existing key value from dict: \(existingKeyValueDict)")
+        if let existingKeyValueDoc = existingKeyValueDoc {
+            let sumDict = existingKeyValueDoc + 10
+            debugPrint("sumDoc: \(sumDict)")
+        }
+
+        // 2. Distinguishing between nil value for key, missing value for key, and existing value for key
+        let keys = ["hello", "i am missing", "what is the meaning of life"]
+        print("DOING FOR DOC=========================")
+        for key in keys {
+            let keyVal = doc[key]
+            if let keyVal = keyVal, keyVal == BSONMissing() {
+                debugPrint("Key DNE!")
+            } else if keyVal != nil {
+                debugPrint("Key exists!")
+            } else {
+                debugPrint("Key is nil!")
+            }
+        }
+
+        print("Doing for DICT=====================")
+        for key in keys {
+            let keyVal = dict[key]
+            if let keyVal = keyVal {
+                if keyVal == nil {
+                    debugPrint("Key is nil!")
+                } else {
+                    debugPrint("Key exists!")
+                }
+            } else {
+                debugPrint("Key DNE!")
+            }
+        }
+
+        // 3. Getting the value for a key, where the value is nil
+
+        let nulValDoc = doc["what is the meaning of life"]
+        debugPrint("Got back null val from doc: \(nulValDoc)")
+
+        let nulValDict = dict["what is the meaning of life"]
+        if let nulValDict = nulValDict {
+            debugPrint("Got back null val from dict: \(nulValDict)")
+        }
     }
 }

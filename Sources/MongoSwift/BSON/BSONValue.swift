@@ -115,6 +115,40 @@ extension Array: BSONValue {
     }
 }
 
+public struct BSONNull: BSONValue, Equatable {
+    public var bsonType: BSONType { return .null }
+
+    public init(from iter: DocumentIterator) throws {}
+
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {}
+
+    public static func == (lhs: BSONNull, rhs: BSONNull) -> Bool {
+        return true
+    }
+}
+
+
+public struct BSONMissing: BSONValue, Equatable {
+    public var bsonType: BSONType { return .undefined }
+
+    public init() {}
+    public init(from iter: DocumentIterator) throws {}
+
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {}
+
+    public static func == (lhs: BSONMissing, rhs: BSONMissing) -> Bool {
+        return true
+    }
+
+    public static func == (lhs: BSONValue, rhs: BSONMissing) -> Bool {
+        return lhs.bsonType == .undefined
+    }
+
+    public static func == (lhs: BSONMissing, rhs: BSONValue) -> Bool {
+        return rhs == lhs
+    }
+}
+
 /// A struct to represent the BSON Binary type.
 public struct Binary: BSONValue, Equatable, Codable {
 
