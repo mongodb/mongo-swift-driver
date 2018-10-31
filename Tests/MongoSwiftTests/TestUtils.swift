@@ -120,7 +120,7 @@ extension MongoClient {
 }
 
 func getConnStr() -> String {
-    if let connStr = ProcessInfo.processInfo.environment["MDB_CONN_STR"] {
+    if let connStr = ProcessInfo.processInfo.environment["MONGODB_URI"] {
         return connStr
     } else {
         return "mongodb://localhost:27017"
