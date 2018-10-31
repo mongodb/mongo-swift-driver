@@ -123,7 +123,7 @@ func getConnStr() -> String {
     if let connStr = ProcessInfo.processInfo.environment["MONGODB_URI"] {
         return connStr
     } else {
-        return "mongodb://localhost:27017"
+        return "mongodb://127.0.0.1/"
     }
 }
 
