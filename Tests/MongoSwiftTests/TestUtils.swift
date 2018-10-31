@@ -3,6 +3,7 @@ import MongoSwift
 import Nimble
 import XCTest
 
+// TODO: Move contents of this extension to the base test class in SWIFT-207.
 extension XCTestCase {
     /// Gets the path of the directory containing spec files, depending on whether
     /// we're running from XCode or the command line
