@@ -68,7 +68,7 @@ public protocol BSONValue {
     * Given a `DocumentIterator` known to have a next value of this type,
     * initializes the value.
     */
-    init(from iter: DocumentIterator) throws
+    static func from(iterator iter: DocumentIterator) throws -> BSONValue
 }
 
 /// An extension of `Array` to represent the BSON array type.
@@ -76,7 +76,7 @@ extension Array: BSONValue {
 
     public var bsonType: BSONType { return .array }
 
-    public init(from iter: DocumentIterator) throws {
+    public static func from(iterator iter: DocumentIterator) throws -> BSONValue {
         var length: UInt32 = 0
         let array = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
         defer {
@@ -97,7 +97,7 @@ extension Array: BSONValue {
             preconditionFailure("Failed to cast values for document \(arrDoc) to array")
         }
 
-       self = arr
+       return arr
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
@@ -109,9 +109,36 @@ extension Array: BSONValue {
         for (i, v) in self.enumerated() {
             try arr.setValue(for: String(i), to: v as? BSONValue)
         }
+
         guard bson_append_array(storage.pointer, key, Int32(key.count), arr.data) else {
             throw bsonEncodeError(value: self, forKey: key)
         }
+    }
+}
+
+extension NSNull: BSONValue {
+    public var bsonType: BSONType { return .null }
+
+    public static func from(iterator iter: DocumentIterator) throws -> BSONValue {
+        guard iter.currentType == .null else {
+            throw MongoError.bsonDecodeError(message: "expected iterator type null for encoding a NSNull")
+        }
+
+        return NSNull()
+    }
+
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
+        guard bson_append_null(storage.pointer, key, Int32(key.count)) else {
+            throw bsonEncodeError(value: self, forKey: key)
+        }
+    }
+
+    public static func == (lhs: BSONValue, rhs: NSNull) -> Bool {
+        return lhs.bsonType == .null
+    }
+
+    public static func == (lhs: NSNull, rhs: BSONValue) -> Bool {
+        return rhs == lhs
     }
 }
 
@@ -188,7 +215,7 @@ public struct Binary: BSONValue, Equatable, Codable {
         }
     }
 
-    public init(from iter: DocumentIterator) throws {
+    public static func from(iterator iter: DocumentIterator) throws -> BSONValue {
         var subtype = bson_subtype_t(rawValue: 0)
         var length: UInt32 = 0
         let dataPointer = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
@@ -203,7 +230,7 @@ public struct Binary: BSONValue, Equatable, Codable {
         }
 
         let dataObj = Data(bytes: data, count: Int(length))
-        try self.init(data: dataObj, subtype: UInt8(subtype.rawValue))
+        return try self.init(data: dataObj, subtype: UInt8(subtype.rawValue))
     }
 
     public static func == (lhs: Binary, rhs: Binary) -> Bool {
@@ -222,8 +249,8 @@ extension Bool: BSONValue {
         }
     }
 
-    public init(from iter: DocumentIterator) throws {
-        self.init(bson_iter_bool(&iter.iter))
+    public static func from(iterator iter: DocumentIterator) throws -> BSONValue {
+        return self.init(bson_iter_bool(&iter.iter))
     }
 }
 
@@ -248,8 +275,8 @@ extension Date: BSONValue {
         }
     }
 
-    public init(from iter: DocumentIterator) throws {
-        self.init(msSinceEpoch: bson_iter_date_time(&iter.iter))
+    public static func from(iterator iter: DocumentIterator) throws -> BSONValue {
+        return self.init(msSinceEpoch: bson_iter_date_time(&iter.iter))
     }
 }
 
@@ -263,7 +290,7 @@ internal struct DBPointer: BSONValue {
         throw MongoError.bsonEncodeError(message: "`DBPointer`s are deprecated; use a DBRef document instead")
     }
 
-    init(from iter: DocumentIterator) throws {
+    public static func from(iterator iter: DocumentIterator) throws -> BSONValue {
         throw MongoError.bsonDecodeError(message:
             "`DBPointer`s are deprecated; use `DBPointer.asDocument` to create a DBRef document instead")
     }
@@ -348,14 +375,14 @@ public struct Decimal128: BSONValue, Equatable, Codable {
         }
     }
 
-    public init(from iter: DocumentIterator) throws {
+    public static func from(iterator iter: DocumentIterator) throws -> BSONValue {
         var value = bson_decimal128_t()
         guard bson_iter_decimal128(&iter.iter, &value) else {
             throw MongoError.bsonDecodeError(message: "Failed to retrieve Decimal128 value from iterator")
         }
 
         var str = Data(count: Int(BSON_DECIMAL128_STRING))
-        self.init(str.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<Int8>) in
+        return self.init(str.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<Int8>) in
             bson_decimal128_to_string(&value, bytes)
             return String(cString: bytes)
         })
@@ -374,8 +401,8 @@ extension Double: BSONValue {
         }
     }
 
-    public init(from iter: DocumentIterator) throws {
-        self.init(bson_iter_double(&iter.iter))
+    public static func from(iterator iter: DocumentIterator) throws -> BSONValue {
+        return self.init(bson_iter_double(&iter.iter))
     }
 }
 
@@ -399,8 +426,8 @@ extension Int: BSONValue {
         throw MongoError.bsonEncodeError(message: "`Int` value \(self) could not be encoded as `Int32` or `Int64`")
     }
 
-    public init(from iter: DocumentIterator) throws {
-        self.init(Int(bson_iter_int32(&iter.iter)))
+    public static func from(iterator iter: DocumentIterator) throws -> BSONValue {
+        return self.init(Int(bson_iter_int32(&iter.iter)))
     }
 }
 
@@ -415,8 +442,8 @@ extension Int32: BSONValue {
         }
     }
 
-    public init(from iter: DocumentIterator) throws {
-        self.init(bson_iter_int32(&iter.iter))
+    public static func from(iterator iter: DocumentIterator) throws -> BSONValue {
+        return self.init(bson_iter_int32(&iter.iter))
     }
 }
 
@@ -431,8 +458,8 @@ extension Int64: BSONValue {
         }
     }
 
-    public init(from iter: DocumentIterator) throws {
-        self.init(bson_iter_int64(&iter.iter))
+    public static func from(iterator iter: DocumentIterator) throws -> BSONValue {
+        return self.init(bson_iter_int64(&iter.iter))
     }
 }
 
@@ -466,14 +493,13 @@ public struct CodeWithScope: BSONValue, Equatable, Codable {
         }
     }
 
-    public init(from iter: DocumentIterator) throws {
+    public static func from(iterator iter: DocumentIterator) throws -> BSONValue {
 
         var length: UInt32 = 0
 
         if iter.currentType.rawValue == BSONType.javascript.rawValue {
             let code = String(cString: bson_iter_code(&iter.iter, &length))
-            self.init(code: code)
-            return
+            return self.init(code: code)
         }
 
         var scopeLength: UInt32 = 0
@@ -489,7 +515,7 @@ public struct CodeWithScope: BSONValue, Equatable, Codable {
         }
         let scopeDoc = Document(fromPointer: scopeData)
 
-        self.init(code: code, scope: scopeDoc)
+        return self.init(code: code, scope: scopeDoc)
     }
 
     public static func == (lhs: CodeWithScope, rhs: CodeWithScope) -> Bool {
@@ -513,7 +539,7 @@ public struct MaxKey: BSONValue, Equatable, Codable {
     /// Initializes a new `MaxKey` instance.
     public init() {}
 
-    public init(from iter: DocumentIterator) { self.init() }
+    public static func from(iterator iter: DocumentIterator) -> BSONValue { return self.init() }
 
     public static func == (lhs: MaxKey, rhs: MaxKey) -> Bool { return true }
 }
@@ -534,7 +560,7 @@ public struct MinKey: BSONValue, Equatable, Codable {
     /// Initializes a new `MinKey` instance.
     public init() {}
 
-    public init(from iter: DocumentIterator) { self.init() }
+    public static func from(iterator iter: DocumentIterator) -> BSONValue { return self.init() }
 
     public static func == (lhs: MinKey, rhs: MinKey) -> Bool { return true }
 }
@@ -600,11 +626,11 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
         }
     }
 
-    public init(from iter: DocumentIterator) throws {
+    public static func from(iterator iter: DocumentIterator) throws -> BSONValue {
         guard let oid = bson_iter_oid(&iter.iter) else {
             throw MongoError.bsonDecodeError(message: "Failed to retrieve ObjectID value")
         }
-        self.init(fromPointer: oid)
+        return self.init(fromPointer: oid)
     }
 
     public var description: String {
@@ -680,7 +706,7 @@ public struct RegularExpression: BSONValue, Equatable, Codable {
         }
     }
 
-    public init(from iter: DocumentIterator) throws {
+    public static func from(iterator iter: DocumentIterator) throws -> BSONValue {
         let options = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: 1)
         defer {
             options.deinitialize(count: 1)
@@ -697,7 +723,7 @@ public struct RegularExpression: BSONValue, Equatable, Codable {
         }
         let optionsString = String(cString: stringOptions)
 
-        self.init(pattern: patternString, options: optionsString)
+        return self.init(pattern: patternString, options: optionsString)
     }
 
     /// Creates an `NSRegularExpression` with the pattern and options of this `RegularExpression`.
@@ -730,12 +756,12 @@ extension String: BSONValue {
         }
     }
 
-    public init(from iter: DocumentIterator) throws {
+    public static func from(iterator iter: DocumentIterator) throws -> BSONValue {
         var length: UInt32 = 0
         guard let strValue = bson_iter_utf8(&iter.iter, &length) else {
            throw MongoError.bsonDecodeError(message: retrieveErrorMsg(type: "UTF-8", key: iter.currentKey))
         }
-        self.init(cString: strValue)
+        return self.init(cString: strValue)
     }
 }
 
@@ -749,7 +775,7 @@ internal struct Symbol: BSONValue {
         throw MongoError.bsonEncodeError(message: "Symbols are deprecated; use a string instead")
     }
 
-    init(from iter: DocumentIterator) throws {
+    public static func from(iterator iter: DocumentIterator) throws -> BSONValue {
         throw MongoError.bsonDecodeError(message:
             "`Symbol`s are deprecated; use `Symbol.asString` to parse as a string instead")
 
@@ -793,11 +819,11 @@ public struct Timestamp: BSONValue, Equatable, Codable {
         }
     }
 
-    public init(from iter: DocumentIterator) throws {
+    public static func from(iterator iter: DocumentIterator) throws -> BSONValue {
         var t: UInt32 = 0
         var i: UInt32 = 0
         bson_iter_timestamp(&iter.iter, &t, &i)
-        self.init(timestamp: t, inc: i)
+        return self.init(timestamp: t, inc: i)
     }
 
     public static func == (lhs: Timestamp, rhs: Timestamp) -> Bool {

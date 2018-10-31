@@ -219,7 +219,7 @@ public class DocumentIterator: IteratorProtocol {
             case .dbPointer:
                 return try DBPointer.asDocument(from: self)
             default:
-                return try DocumentIterator.bsonTypeMap[currentType]?.init(from: self)
+                return try DocumentIterator.bsonTypeMap[currentType]?.from(iterator: self)
             }
         } catch {
             preconditionFailure("Error getting current value from iterator: \(error)")
@@ -255,7 +255,7 @@ public class DocumentIterator: IteratorProtocol {
         case .dbPointer:
             return try DBPointer.asDocument(from: self)
         default:
-            return try DocumentIterator.bsonTypeMap[currentType]?.init(from: self)
+            return try DocumentIterator.bsonTypeMap[currentType]?.from(iterator: self)
         }
     }
 
@@ -316,6 +316,7 @@ public class DocumentIterator: IteratorProtocol {
         .int64: Int64.self,
         .decimal128: Decimal128.self,
         .minKey: MinKey.self,
-        .maxKey: MaxKey.self
+        .maxKey: MaxKey.self,
+        .null: NSNull.self
     ]
 }

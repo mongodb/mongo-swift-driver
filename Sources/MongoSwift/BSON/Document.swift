@@ -195,7 +195,20 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      *  ```
      */
     public subscript(key: String) -> BSONValue? {
-        get { return DocumentIterator(forDocument: self, advancedTo: key)?.currentValue }
+        get {
+            let iterOptional = DocumentIterator(forDocument: self)
+            guard let iter = iterOptional else {
+                preconditionFailure("Could not get document iterator for document in subscript")
+            }
+
+            // TODO: he following added logic should be propagated to other areas of the codebase, such as for
+            // getValue().
+            guard iter.move(to: key) else {
+                return nil // BSONNull/NSNull
+            }
+
+            return iter.currentValue == nil ? NSNull() : iter.currentValue // BSONNull/NSNull/Simultaneous
+        }
         set(newValue) {
             do {
                 try self.setValue(for: key, to: newValue)
@@ -332,7 +345,7 @@ extension Document: BSONValue {
         }
     }
 
-    public init(from iter: DocumentIterator) throws {
+    public static func from(iterator iter: DocumentIterator) throws -> BSONValue {
         var length: UInt32 = 0
         let document = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
         defer {
@@ -346,7 +359,7 @@ extension Document: BSONValue {
             throw MongoError.bsonDecodeError(message: "Failed to create a bson_t from document data")
         }
 
-        self.init(fromPointer: docData)
+        return self.init(fromPointer: docData)
     }
 }
 
