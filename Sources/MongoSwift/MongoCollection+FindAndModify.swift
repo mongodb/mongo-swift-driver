@@ -292,8 +292,8 @@ private class FindAndModifyOptions {
 
         // build an "extra" document of fields without their own setters
         var extra = Document()
-        if let filters = arrayFilters { extra["arrayFilters"] = filters }
-        if let coll = collation { extra["collation"] = coll }
+        if let filters = arrayFilters { try extra.setValue(forKey: "arrayFilters", to: filters) }
+        if let coll = collation { try extra.setValue(forKey: "collation", to: coll) }
 
         // note: mongoc_find_and_modify_opts_set_max_time_ms() takes in a
         // uint32_t, but it should be a positive 64-bit integer, so we
@@ -302,12 +302,12 @@ private class FindAndModifyOptions {
             guard maxTime > 0 else {
                 throw MongoError.invalidArgument(message: "maxTimeMS must be positive, but got value \(maxTime)")
             }
-            extra["maxTimeMS"] = maxTime
+            try extra.setValue(forKey: "maxTimeMS", to: maxTime)
         }
 
         if let wc = writeConcern {
             do {
-                extra["writeConcern"] = try BSONEncoder().encode(wc)
+                try extra.setValue(forKey: "writeConcern", to: try BSONEncoder().encode(wc))
             } catch {
                 throw MongoError.invalidArgument(message: "Error encoding WriteConcern \(wc): \(error)")
             }

@@ -103,7 +103,7 @@ extension Array: BSONValue {
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         // An array is just a document with keys '0', '1', etc. corresponding to indexes
         var arr = Document()
-        for (i, v) in self.enumerated() { arr[String(i)] = v as? BSONValue }
+        for (i, v) in self.enumerated() { try arr.setValue(forKey: String(i), to: v as? BSONValue) }
         guard bson_append_array(storage.pointer, key, Int32(key.count), arr.data) else {
             throw bsonEncodeError(value: self, forKey: key)
         }
