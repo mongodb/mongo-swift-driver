@@ -470,13 +470,13 @@ final class DocumentTests: XCTestCase {
     // test replacing both overwritable and nonoverwritable values with values of different types
     func testReplaceValueWithNewType() throws {
         // make a deep copy so we start off with uniquely referenced storage
-        var doc1 = Document(fromPointer: DocumentTests.overwritables.data)
+        var overwritableDoc = Document(fromPointer: DocumentTests.overwritables.data)
 
         // save a reference to original bson_t so we can verify it changes
-        var pointer1 = doc1.data
+        var overwritablePointer = overwritableDoc.data
 
         let newOid = ObjectId()
-        let newPairs1: [(String, BSONValue?)] = [
+        let overwritablePairs: [(String, BSONValue?)] = [
             ("double", Int(10)),
             ("int32", "hi"),
             ("int64", Decimal128("1.0")),
@@ -487,13 +487,13 @@ final class DocumentTests: XCTestCase {
             ("datetime", Timestamp(timestamp: 1, inc: 2))
         ]
 
-        newPairs1.forEach { (k, v) in
-            doc1[k] = v
-            expect(doc1.data).toNot(equal(pointer1))
-            pointer1 = doc1.data
+        overwritablePairs.forEach { (k, v) in
+            overwritableDoc[k] = v
+            expect(overwritableDoc.data).toNot(equal(overwritablePointer))
+            overwritablePointer = overwritableDoc.data
         }
 
-        expect(doc1).to(equal([
+        expect(overwritableDoc).to(equal([
             "double": 10,
             "int32": "hi",
             "int64": Decimal128("1.0"),
@@ -505,45 +505,45 @@ final class DocumentTests: XCTestCase {
         ]))
 
         // make a deep copy so we start off with uniquely referenced storage
-        var doc2 = Document(fromPointer: DocumentTests.nonOverwritables.data)
+        var nonOverwritableDoc = Document(fromPointer: DocumentTests.nonOverwritables.data)
 
         // save a reference to original bson_t so we can verify it changes
-        var pointer2 = doc2.data
+        var nonOverwritablePointer = nonOverwritableDoc.data
 
-        let newPairs2: [(String, BSONValue?)] = [("string", 1), ("nil", "hello"), ("doc", "hi"), ("arr", 5)]
+        let nonOverwritablePairs: [(String, BSONValue?)] = [("string", 1), ("nil", "hello"), ("doc", "hi"), ("arr", 5)]
 
-        newPairs2.forEach { (k, v) in
-            doc2[k] = v
-            expect(doc2.data).toNot(equal(pointer2))
-            pointer2 = doc2.data
+        nonOverwritablePairs.forEach { (k, v) in
+            nonOverwritableDoc[k] = v
+            expect(nonOverwritableDoc.data).toNot(equal(nonOverwritablePointer))
+            nonOverwritablePointer = nonOverwritableDoc.data
         }
 
-        expect(doc2).to(equal(["string": 1, "nil": "hello", "doc": "hi", "arr": 5]))
+        expect(nonOverwritableDoc).to(equal(["string": 1, "nil": "hello", "doc": "hi", "arr": 5]))
     }
 
     // test setting both overwritable and nonoverwritable values to nil
     func testReplaceValueWithNil() throws {
-        var doc1 = Document(fromPointer: DocumentTests.overwritables.data)
-        var pointer1 = doc1.data
+        var overwritableDoc = Document(fromPointer: DocumentTests.overwritables.data)
+        var overwritablePointer = overwritableDoc.data
 
         ["double", "int32", "int64", "bool", "decimal", "oid", "timestamp", "datetime"].forEach {
-            doc1[$0] = nil
+            overwritableDoc[$0] = nil
             // the storage should change every time 
-            expect(doc1.data).toNot(equal(pointer1))
-            pointer1 = doc1.data
+            expect(overwritableDoc.data).toNot(equal(overwritablePointer))
+            overwritablePointer = overwritableDoc.data
         }
 
-        var doc2 = Document(fromPointer: DocumentTests.nonOverwritables.data)
-        var pointer2 = doc2.data
+        var nonOverwritableDoc = Document(fromPointer: DocumentTests.nonOverwritables.data)
+        var nonOverwritablePointer = nonOverwritableDoc.data
 
         ["string", "doc", "arr"].forEach {
-            doc2[$0] = nil
+            nonOverwritableDoc[$0] = nil
             // the storage should change every time 
-            expect(doc2.data).toNot(equal(pointer2))
-            pointer2 = doc2.data
+            expect(nonOverwritableDoc.data).toNot(equal(nonOverwritablePointer))
+            nonOverwritablePointer = nonOverwritableDoc.data
         }
 
-        expect(doc2).to(equal(["string": nil, "nil": nil, "doc": nil, "arr": nil]))
+        expect(nonOverwritableDoc).to(equal(["string": nil, "nil": nil, "doc": nil, "arr": nil]))
     }
 
     // Test types where replacing them with an instance of their own type is a no-op
