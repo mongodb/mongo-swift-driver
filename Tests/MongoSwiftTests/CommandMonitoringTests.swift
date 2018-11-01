@@ -21,7 +21,7 @@ final class CommandMonitoringTests: XCTestCase {
         let client = try MongoClient(options: ClientOptions(eventMonitoring: true))
         client.enableMonitoring(forEvents: .commandMonitoring)
 
-        let cmPath = self.getSpecsPath() + "/command-monitoring/tests"
+        let cmPath = self.specsPath + "/command-monitoring/tests"
         let testFiles = try FileManager.default.contentsOfDirectory(atPath: cmPath).filter { $0.hasSuffix(".json") }
         for filename in testFiles {
             // read in the file data and parse into a struct
