@@ -354,7 +354,16 @@ final class DocumentTests: XCTestCase {
     }
 
     // exclude Int64 value on 32-bit platforms
-    static let overwritables: Document = ["double": 2.5, "int32": Int32(32), "int64": Int64.max, "bool": false, "decimal": Decimal128("1.2E+10")]
+    static let overwritables: Document = [
+        "double": 2.5,
+        "int32": Int32(32),
+        "int64": Int64.max,
+        "bool": false,
+        "decimal": Decimal128("1.2E+10"),
+        "oid": ObjectId(),
+        "timestamp": Timestamp(timestamp: 1, inc: 2),
+        "datetime": Date(msSinceEpoch: 1000)
+    ]
 
     static let nonOverwritables: Document = ["string": "hello", "nil": nil, "doc": ["x": 1] as Document, "arr": [1, 2] as [Int]]
 
@@ -398,8 +407,27 @@ final class DocumentTests: XCTestCase {
         doc["int64"] = bigInt
         expect(doc.data).to(equal(pointer))
 
+        let newOid = ObjectId()
+        doc["oid"] = newOid
+        expect(doc.data).to(equal(pointer))
+
+        doc["timestamp"] = Timestamp(timestamp: 5, inc: 10)
+        expect(doc.data).to(equal(pointer))
+
+        doc["datetime"] = Date(msSinceEpoch: 2000)
+        expect(doc.data).to(equal(pointer))
+
         // final values
-        expect(doc).to(equal(["double": 3.0, "int32": 20, "int64": bigInt, "bool": true, "decimal": Decimal128("100")]))
+        expect(doc).to(equal([
+            "double": 3.0,
+            "int32": 20,
+            "int64": bigInt,
+            "bool": true,
+            "decimal": Decimal128("100"),
+            "oid": newOid,
+            "timestamp": Timestamp(timestamp: 5, inc: 10),
+            "datetime": Date(msSinceEpoch: 2000)
+        ]))
     }
 
     // test replacing some of the non-Overwritable types with values of their own types
