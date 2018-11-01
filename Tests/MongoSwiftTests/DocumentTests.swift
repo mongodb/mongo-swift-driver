@@ -461,7 +461,17 @@ final class DocumentTests: XCTestCase {
         // save a reference to original bson_t so we can verify it changes
         var pointer1 = doc1.data
 
-        let newPairs1: [(String, BSONValue?)] = [("double", Int(10)), ("int32", "hi"), ("int64", Decimal128("1.0")), ("bool", [1, 2, 3]), ("decimal", 100)]
+        let newOid = ObjectId()
+        let newPairs1: [(String, BSONValue?)] = [
+            ("double", Int(10)),
+            ("int32", "hi"),
+            ("int64", Decimal128("1.0")),
+            ("bool", [1, 2, 3]),
+            ("decimal", 100),
+            ("oid", 25.5),
+            ("timestamp", newOid),
+            ("datetime", Timestamp(timestamp: 1, inc: 2))
+        ]
 
         newPairs1.forEach { (k, v) in
             doc1[k] = v
@@ -469,7 +479,16 @@ final class DocumentTests: XCTestCase {
             pointer1 = doc1.data
         }
 
-        expect(doc1).to(equal(["double": 10, "int32": "hi", "int64": Decimal128("1.0"), "bool": [1, 2, 3] as [Int], "decimal": 100]))
+        expect(doc1).to(equal([
+            "double": 10,
+            "int32": "hi",
+            "int64": Decimal128("1.0"),
+            "bool": [1, 2, 3] as [Int],
+            "decimal": 100,
+            "oid": 25.5,
+            "timestamp": newOid,
+            "datetime": Timestamp(timestamp: 1, inc: 2)
+        ]))
 
         // make a deep copy so we start off with uniquely referenced storage
         var doc2 = Document(fromPointer: DocumentTests.nonOverwritables.data)
@@ -477,7 +496,7 @@ final class DocumentTests: XCTestCase {
         // save a reference to original bson_t so we can verify it changes
         var pointer2 = doc2.data
 
-        let newPairs2: [(String, BSONValue?)] = [("string", 1), ("nil", "hello"), ("doc", "hi"), ("arr", 5), ("oid", 25.5)]
+        let newPairs2: [(String, BSONValue?)] = [("string", 1), ("nil", "hello"), ("doc", "hi"), ("arr", 5)]
 
         newPairs2.forEach { (k, v) in
             doc2[k] = v
@@ -485,7 +504,7 @@ final class DocumentTests: XCTestCase {
             pointer2 = doc2.data
         }
 
-        expect(doc2).to(equal(["string": 1, "nil": "hello", "doc": "hi", "arr": 5, "oid": 25.5]))
+        expect(doc2).to(equal(["string": 1, "nil": "hello", "doc": "hi", "arr": 5]))
     }
 
     // test setting both overwritable and nonoverwritable values to nil
