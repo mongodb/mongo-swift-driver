@@ -58,7 +58,7 @@ final class SDAMTests: XCTestCase {
         center.removeObserver(observer)
 
         var error = bson_error_t()
-        guard let uri = mongoc_uri_new_with_error(XCTestCase.getConnStr(), &error) else {
+        guard let uri = mongoc_uri_new_with_error(XCTestCase.connStr, &error) else {
             throw MongoError.invalidUri(message: toErrorString(error))
         }
 

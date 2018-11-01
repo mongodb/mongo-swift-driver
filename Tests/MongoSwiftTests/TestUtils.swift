@@ -18,11 +18,13 @@ extension XCTestCase {
         return path
     }
 
-    static func getConnStr() -> String {
-        if let connStr = ProcessInfo.processInfo.environment["MONGODB_URI"] {
-            return connStr
-        } else {
-            return "mongodb://127.0.0.1/"
+    static var connStr: String {
+        get {
+            if let connStr = ProcessInfo.processInfo.environment["MONGODB_URI"] {
+                return connStr
+            } else {
+                return "mongodb://127.0.0.1/"
+            }
         }
     }
 
@@ -124,7 +126,7 @@ extension MongoClient {
     }
 
     internal convenience init(options: ClientOptions? = nil) throws {
-        try self.init(connectionString: XCTestCase.getConnStr(), options: options)
+        try self.init(connectionString: XCTestCase.connStr, options: options)
     }
 }
 
