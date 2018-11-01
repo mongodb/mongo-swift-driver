@@ -526,7 +526,7 @@ final class DocumentTests: XCTestCase {
         var doc1 = Document(fromPointer: DocumentTests.overwritables.data)
         var pointer1 = doc1.data
 
-        ["double", "int32", "int64", "bool", "decimal"].forEach {
+        ["double", "int32", "int64", "bool", "decimal", "oid", "timestamp", "datetime"].forEach {
             doc1[$0] = nil
             // the storage should change every time 
             expect(doc1.data).toNot(equal(pointer1))
@@ -536,14 +536,14 @@ final class DocumentTests: XCTestCase {
         var doc2 = Document(fromPointer: DocumentTests.nonOverwritables.data)
         var pointer2 = doc2.data
 
-        ["string", "doc", "arr", "oid"].forEach {
+        ["string", "doc", "arr"].forEach {
             doc2[$0] = nil
             // the storage should change every time 
             expect(doc2.data).toNot(equal(pointer2))
             pointer2 = doc2.data
         }
 
-        expect(doc2).to(equal(["string": nil, "nil": nil, "doc": nil, "arr": nil, "oid": nil]))
+        expect(doc2).to(equal(["string": nil, "nil": nil, "doc": nil, "arr": nil]))
     }
 
     // Test types where replacing them with an instance of their own type is a no-op
