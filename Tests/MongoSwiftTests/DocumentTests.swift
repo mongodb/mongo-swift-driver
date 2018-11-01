@@ -228,7 +228,7 @@ final class DocumentTests: XCTestCase {
             "Double type": ["1.23456789012345677E+18", "-1.23456789012345677E+18"]
         ]
 
-        let testFilesPath = self.specsPath + "/bson-corpus/tests"
+        let testFilesPath = XCTestCase.specsPath + "/bson-corpus/tests"
         var testFiles = try FileManager.default.contentsOfDirectory(atPath: testFilesPath)
         testFiles = testFiles.filter { $0.hasSuffix(".json") }
 
