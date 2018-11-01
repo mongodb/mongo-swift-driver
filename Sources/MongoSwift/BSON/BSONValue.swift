@@ -564,10 +564,16 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
         }
     }
 
+    /// Returns the provided string as a `bson_oid_t`.
+    internal static func encode(_ str: String) -> bson_oid_t {
+        var value = bson_oid_t()
+        bson_oid_init_from_string(&value, str)
+        return value
+    }
+
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         // create a new bson_oid_t with self.oid
-        var oid = bson_oid_t()
-        bson_oid_init_from_string(&oid, self.oid)
+        var oid = ObjectId.encode(self.oid)
         // encode the bson_oid_t to the bson_t
         guard bson_append_oid(storage.pointer, key, Int32(key.count), &oid) else {
             throw bsonEncodeError(value: self, forKey: key)

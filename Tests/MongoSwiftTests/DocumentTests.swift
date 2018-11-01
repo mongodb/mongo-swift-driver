@@ -356,7 +356,7 @@ final class DocumentTests: XCTestCase {
     // exclude Int64 value on 32-bit platforms
     static let overwritables: Document = ["double": 2.5, "int32": Int32(32), "int64": Int64.max, "bool": false, "decimal": Decimal128("1.2E+10")]
 
-    static let nonOverwritables: Document = ["string": "hello", "nil": nil, "doc": ["x": 1] as Document, "arr": [1, 2] as [Int], "oid": ObjectId()]
+    static let nonOverwritables: Document = ["string": "hello", "nil": nil, "doc": ["x": 1] as Document, "arr": [1, 2] as [Int]]
 
     // test replacing `Overwritable` types with values of their own type
     func testOverwritable() throws {
@@ -412,9 +412,8 @@ final class DocumentTests: XCTestCase {
 
         // save these to compare to at the end
         let newDoc: Document = ["y": 1]
-        let oid = ObjectId()
 
-        let newPairs: [(String, BSONValue?)] = [("string", "hi"), ("doc", newDoc), ("arr", [3, 4]), ("oid", oid)]
+        let newPairs: [(String, BSONValue?)] = [("string", "hi"), ("doc", newDoc), ("arr", [3, 4])]
 
         newPairs.forEach { (k, v) in
             doc[k] = v
@@ -423,7 +422,7 @@ final class DocumentTests: XCTestCase {
             pointer = doc.data
         }
 
-        expect(doc).to(equal(["string": "hi", "nil": nil, "doc": newDoc, "arr": [3, 4] as [Int], "oid": oid]))
+        expect(doc).to(equal(["string": "hi", "nil": nil, "doc": newDoc, "arr": [3, 4] as [Int]]))
     }
 
     // test replacing both overwritable and nonoverwritable values with values of different types
