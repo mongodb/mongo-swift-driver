@@ -8,27 +8,23 @@ extension XCTestCase {
     /// Gets the path of the directory containing spec files, depending on whether
     /// we're running from XCode or the command line
     static var specsPath: String {
-        get {
-            // if we can access the "/Tests" directory, assume we're running from command line
-            if FileManager.default.fileExists(atPath: "./Tests") { return "./Tests/Specs" }
-            // otherwise we're in Xcode, get the bundle's resource path
-            guard let path = Bundle(for: self).resourcePath else {
-                XCTFail("Missing resource path")
-                return ""
-            }
-            return path
+        // if we can access the "/Tests" directory, assume we're running from command line
+        if FileManager.default.fileExists(atPath: "./Tests") { return "./Tests/Specs" }
+        // otherwise we're in Xcode, get the bundle's resource path
+        guard let path = Bundle(for: self).resourcePath else {
+            XCTFail("Missing resource path")
+            return ""
         }
+        return path
     }
 
     /// Gets the connection string for the database being used for testing from the environment variable, $MONGODB_URI.
     /// If the environment variable does not exist, this will use a default of "mongodb://127.0.0.1/".
     static var connStr: String {
-        get {
-            if let connStr = ProcessInfo.processInfo.environment["MONGODB_URI"] {
-                return connStr
-            } else {
-                return "mongodb://127.0.0.1/"
-            }
+        if let connStr = ProcessInfo.processInfo.environment["MONGODB_URI"] {
+            return connStr
+        } else {
+            return "mongodb://127.0.0.1/"
         }
     }
 
