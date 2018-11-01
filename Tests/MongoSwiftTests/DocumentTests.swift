@@ -398,15 +398,6 @@ final class DocumentTests: XCTestCase {
         doc["int64"] = Int64.min
         expect(doc.data).to(equal(pointer))
 
-        // return early as we will to use an Int requiring > 32 bits after this 
-        if XCTestCase.is32Bit {
-            expect(doc).to(equal(["double": 3.0, "int32": 20, "int64": Int64.min, "bool": true, "decimal": Decimal128("100")]))
-        }
-
-        let bigInt = Int(Int32.max) + 1
-        doc["int64"] = bigInt
-        expect(doc.data).to(equal(pointer))
-
         let newOid = ObjectId()
         doc["oid"] = newOid
         expect(doc.data).to(equal(pointer))
@@ -415,6 +406,24 @@ final class DocumentTests: XCTestCase {
         expect(doc.data).to(equal(pointer))
 
         doc["datetime"] = Date(msSinceEpoch: 2000)
+        expect(doc.data).to(equal(pointer))
+
+        // return early as we will to use an Int requiring > 32 bits after this 
+        if XCTestCase.is32Bit {
+            expect(doc).to(equal([
+                "double": 3.0,
+                "int32": 20,
+                "int64": Int64.min,
+                "bool": true,
+                "decimal": Decimal128("100"),
+                "oid": newOid,
+                "timestamp": Timestamp(timestamp: 5, inc: 10),
+                "datetime": Date(msSinceEpoch: 2000)
+            ]))
+        }
+
+        let bigInt = Int(Int32.max) + 1
+        doc["int64"] = bigInt
         expect(doc.data).to(equal(pointer))
 
         // final values
