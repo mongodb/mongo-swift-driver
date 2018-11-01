@@ -18,6 +18,14 @@ extension XCTestCase {
         return path
     }
 
+    static func getConnStr() -> String {
+        if let connStr = ProcessInfo.processInfo.environment["MONGODB_URI"] {
+            return connStr
+        } else {
+            return "mongodb://127.0.0.1/"
+        }
+    }
+
     // indicates whether we are running on a 32-bit platform
     // Use MemoryLayout instead of Int.bitWidth to avoid a compiler warning.
     // See: https://forums.swift.org/t/how-can-i-condition-on-the-size-of-int/9080/4 */
@@ -116,15 +124,7 @@ extension MongoClient {
     }
 
     internal convenience init(options: ClientOptions? = nil) throws {
-        try self.init(connectionString: getConnStr(), options: options)
-    }
-}
-
-func getConnStr() -> String {
-    if let connStr = ProcessInfo.processInfo.environment["MONGODB_URI"] {
-        return connStr
-    } else {
-        return "mongodb://127.0.0.1/"
+        try self.init(connectionString: XCTestCase.getConnStr(), options: options)
     }
 }
 
