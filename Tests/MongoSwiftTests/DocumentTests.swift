@@ -365,7 +365,12 @@ final class DocumentTests: XCTestCase {
         "datetime": Date(msSinceEpoch: 1000)
     ]
 
-    static let nonOverwritables: Document = ["string": "hello", "nil": nil, "doc": ["x": 1] as Document, "arr": [1, 2] as [Int]]
+    static let nonOverwritables: Document = [
+        "string": "hello",
+        "nil": nil,
+        "doc": ["x": 1] as Document,
+        "arr": [1, 2] as [Int]
+    ]
 
     // test replacing `Overwritable` types with values of their own type
     func testOverwritable() throws {
