@@ -20,6 +20,8 @@ extension XCTestCase {
         }
     }
 
+    /// Gets the connection string for the database being used for testing from the environment variable, $MONGODB_URI.
+    /// If the environment variable does not exist, this will use a default of "mongodb://127.0.0.1/".
     static var connStr: String {
         get {
             if let connStr = ProcessInfo.processInfo.environment["MONGODB_URI"] {
