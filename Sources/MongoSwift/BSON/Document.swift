@@ -254,6 +254,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         }
     }
 
+    /// Retrieves the value associated with forKey as a BSONValue?, which can be nil.
     internal func getValue(forKey key: String) throws -> BSONValue? {
         guard let iter = DocumentIterator(forDocument: self, advancedTo: key) else {
             return nil
