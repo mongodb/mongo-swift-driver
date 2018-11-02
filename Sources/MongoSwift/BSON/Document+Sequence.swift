@@ -242,6 +242,17 @@ public class DocumentIterator: IteratorProtocol {
         return values
     }
 
+    internal func safeCurrentValue() throws -> BSONValue? {
+        switch self.currentType {
+        case .symbol:
+            return try Symbol.asString(from: self)
+        case .dbPointer:
+            return try DBPointer.asDocument(from: self)
+        default:
+            return try DocumentIterator.bsonTypeMap[currentType]?.init(from: self)
+        }
+    }
+
     // uses an iterator to copy (key, value) pairs of the provided document from range [startIndex, endIndex) into a new
     // document. starts at the startIndex-th pair and ends at the end of the document or the (endIndex-1)th index,
     // whichever comes first.
