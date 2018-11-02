@@ -90,7 +90,7 @@ extension MongoCollection {
             throw MongoError.commandError(message: toErrorString(error))
         }
 
-        guard let value = reply["value"] as? Document else { return nil }
+        guard let value = try reply.getValue(forKey: "value") as? Document else { return nil }
 
         return try BSONDecoder().decode(CollectionType.self, from: value)
     }

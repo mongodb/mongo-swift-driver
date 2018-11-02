@@ -256,7 +256,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
 
     internal func getValue(forKey key: String) throws -> BSONValue? {
         guard let iter = DocumentIterator(forDocument: self, advancedTo: key) else {
-            throw MongoError.invalidArgument(message: "Failed to construct an iterator advanced to \(key)")
+            return nil
         }
         return try iter.safeCurrentValue()
     }

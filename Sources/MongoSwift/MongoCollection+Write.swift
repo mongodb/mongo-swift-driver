@@ -31,7 +31,7 @@ extension MongoCollection {
             return nil
         }
 
-        return InsertOneResult(insertedId: document["_id"])
+        return InsertOneResult(insertedId: try document.getValue(forKey: "_id"))
     }
 
     /**
@@ -398,14 +398,15 @@ public struct InsertManyResult {
      *   - insertedIds: Map of inserted IDs
      */
     fileprivate init(reply: Document, insertedIds: [Int: BSONValue?]) throws {
-        self.insertedCount = reply["insertedCount"] as? Int ?? 0
+        self.insertedCount = try reply.getValue(forKey: "insertedCount") as? Int ?? 0
         self.insertedIds = insertedIds
 
-        if let writeErrors = reply["writeErrors"] as? [Document] {
+        if let writeErrors = try reply.getValue(forKey: "writeErrors") as? [Document] {
             self.writeErrors = try writeErrors.map { try BSONDecoder().decode(WriteError.self, from: $0) }
         }
 
-        if let writeConcernErrors = reply["writeConcernErrors"] as? [Document], writeConcernErrors.indices.contains(0) {
+        if let writeConcernErrors = try reply.getValue(forKey: "writeConcernErrors") as? [Document],
+            writeConcernErrors.indices.contains(0) {
             self.writeConcernError = try BSONDecoder().decode(WriteConcernError.self, from: writeConcernErrors[0])
         }
     }
