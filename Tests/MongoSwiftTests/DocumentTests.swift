@@ -413,18 +413,20 @@ final class DocumentTests: XCTestCase {
         doc["datetime"] = Date(msSinceEpoch: 2000)
         expect(doc.data).to(equal(pointer))
 
+        expect(doc).to(equal([
+            "double": 3.0,
+            "int32": 20,
+            "int64": Int64.min,
+            "bool": true,
+            "decimal": Decimal128("100"),
+            "oid": newOid,
+            "timestamp": Timestamp(timestamp: 5, inc: 10),
+            "datetime": Date(msSinceEpoch: 2000)
+        ]))
+
         // return early as we will to use an Int requiring > 32 bits after this 
         if XCTestCase.is32Bit {
-            expect(doc).to(equal([
-                "double": 3.0,
-                "int32": 20,
-                "int64": Int64.min,
-                "bool": true,
-                "decimal": Decimal128("100"),
-                "oid": newOid,
-                "timestamp": Timestamp(timestamp: 5, inc: 10),
-                "datetime": Date(msSinceEpoch: 2000)
-            ]))
+            return
         }
 
         let bigInt = Int(Int32.max) + 1
