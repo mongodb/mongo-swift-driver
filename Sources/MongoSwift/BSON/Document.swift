@@ -293,7 +293,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      * For example:
      *      let doc1: Document = ["a": 1]
      *      var doc2 = doc1
-     *      doc2["b"] = 2
+     *      doc2.setValue(forKey: "b", to: 2)
      *
      * Therefore, this function should be called just before we are about to modify a document - either by
      * setting a value or merging in another doc.
