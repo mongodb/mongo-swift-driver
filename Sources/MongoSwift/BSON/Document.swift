@@ -258,7 +258,6 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         guard let iter = DocumentIterator(forDocument: self, advancedTo: key) else {
             throw MongoError.invalidArgument(message: "Failed to construct an iterator advanced to \(key)")
         }
-
         return try iter.safeCurrentValue()
     }
 
@@ -279,7 +278,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      *
      */
     public func get<T: BSONValue>(_ key: String) throws -> T {
-        guard let value = self[key] as? T else {
+        guard let value = try self.getValue(forKey: key) as? T else {
             throw MongoError.typeError(message: "Could not cast value for key \(key) to type \(T.self)")
         }
         return value
