@@ -242,8 +242,7 @@ public class DocumentIterator: IteratorProtocol {
         return values
     }
 
-    /// Returns the current value, equivalently to the `currentValue` property, but in the case of error, will throw
-    /// instead of causing a fatal `preconditionFailure`.
+    /// Returns the current value (equivalent to the currentValue property) or throws on error
     internal func safeCurrentValue() throws -> BSONValue? {
         switch self.currentType {
         case .symbol:
