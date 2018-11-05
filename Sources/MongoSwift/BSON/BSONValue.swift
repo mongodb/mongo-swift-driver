@@ -559,11 +559,10 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
     /// ObjectId.
     /// - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/objectid.rst
     public init?(ifValid oid: String) {
-        do {
-            _ = try ObjectId.toLibBSONType(oid)
-            self.init(fromString: oid)
-        } catch {
+        if !bson_oid_is_valid(oid, oid.count) {
             return nil
+        } else {
+            self.init(fromString: oid)
         }
     }
 
