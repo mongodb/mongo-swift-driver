@@ -63,7 +63,8 @@ final class SDAMTests: XCTestCase {
         }
 
         guard let hostlist = mongoc_uri_get_hosts(uri) else {
-            throw MongoError.invalidResponse()
+            XCTFail("Could not get hostlists for uri: \(uri)")
+            return
         }
 
         // check event count and that events are of the expected types
