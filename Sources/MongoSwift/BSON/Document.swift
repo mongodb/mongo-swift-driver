@@ -207,7 +207,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
 
     /// Sets key to newValue. if checkForKey=false, the key/value pair will be appended without checking for the key's
     /// presence first.
-    private mutating func setValue(forKey key: String, to newValue: BSONValue?, checkForKey: Bool = true) throws {
+    internal mutating func setValue(forKey key: String, to newValue: BSONValue?, checkForKey: Bool = true) throws {
         // if the key already exists in the `Document`, we need to replace it
         if checkForKey, let existingType = DocumentIterator(forDocument: self, advancedTo: key)?.currentType {
 
@@ -270,7 +270,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      *  - Throws: A `MongoError.typeError` if the value cannot be cast to type `T` or is not in the `Document`
      *
      */
-    public func get<T: BSONValue>(_ key: String) throws -> T {
+    internal func get<T: BSONValue>(_ key: String) throws -> T {
         guard let value = self[key] as? T else {
             throw MongoError.typeError(message: "Could not cast value for key \(key) to type \(T.self)")
         }
@@ -293,7 +293,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      * For example:
      *      let doc1: Document = ["a": 1]
      *      var doc2 = doc1
-     *      doc2["b"] = 2
+     *      doc2.setValue(forKey: "b", to: 2)
      *
      * Therefore, this function should be called just before we are about to modify a document - either by
      * setting a value or merging in another doc.
