@@ -37,14 +37,14 @@ extension Double: Overwritable {
 
 extension Decimal128: Overwritable {
     func writeToCurrentPosition(of iter: DocumentIterator) throws {
-        var encoded = try Decimal128.encode(self.data)
+        var encoded = try Decimal128.toLibBSONType(self.data)
         bson_iter_overwrite_decimal128(&iter.iter, &encoded)
     }
 }
 
 extension ObjectId: Overwritable {
     func writeToCurrentPosition(of iter: DocumentIterator) {
-        var encoded = ObjectId.encode(self.oid)
+        var encoded = ObjectId.toLibBSONType(self.oid)
         bson_iter_overwrite_oid(&iter.iter, &encoded)
     }
 }

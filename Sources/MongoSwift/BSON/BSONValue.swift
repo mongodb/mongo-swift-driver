@@ -315,7 +315,7 @@ public struct Decimal128: BSONValue, Equatable, Codable {
     /// - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/bson-decimal128/decimal128.rst
     public init?(ifValid data: String) {
         do {
-            _ = try Decimal128.encode(data)
+            _ = try Decimal128.toLibBSONType(data)
             self.init(data)
         } catch {
             return nil
@@ -324,7 +324,7 @@ public struct Decimal128: BSONValue, Equatable, Codable {
 
     /// Returns the provided string as a `bson_decimal128_t`, or throws an error if initialization fails due an
     /// invalid string.
-    internal static func encode(_ str: String) throws -> bson_decimal128_t {
+    internal static func toLibBSONType(_ str: String) throws -> bson_decimal128_t {
         var value = bson_decimal128_t()
         guard bson_decimal128_from_string(str, &value) else {
             throw MongoError.bsonEncodeError(message: "Invalid Decimal128 string \(str)")
@@ -337,7 +337,7 @@ public struct Decimal128: BSONValue, Equatable, Codable {
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        var value = try Decimal128.encode(self.data)
+        var value = try Decimal128.toLibBSONType(self.data)
         guard bson_append_decimal128(storage.pointer, key, Int32(key.count), &value) else {
             throw bsonEncodeError(value: self, forKey: key)
         }
@@ -565,7 +565,7 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
     }
 
     /// Returns the provided string as a `bson_oid_t`.
-    internal static func encode(_ str: String) -> bson_oid_t {
+    internal static func toLibBSONType(_ str: String) -> bson_oid_t {
         var value = bson_oid_t()
         bson_oid_init_from_string(&value, str)
         return value
@@ -573,7 +573,7 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         // create a new bson_oid_t with self.oid
-        var oid = ObjectId.encode(self.oid)
+        var oid = ObjectId.toLibBSONType(self.oid)
         // encode the bson_oid_t to the bson_t
         guard bson_append_oid(storage.pointer, key, Int32(key.count), &oid) else {
             throw bsonEncodeError(value: self, forKey: key)
