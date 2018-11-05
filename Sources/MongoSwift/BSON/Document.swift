@@ -259,6 +259,10 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         guard let iter = DocumentIterator(forDocument: self) else {
             throw MongoError.bsonDecodeError(message: "BSON buffer is unexpectedly too small (< 5 bytes)")
         }
+        
+        // TODO: Because documents can hold null as a valid value for a key, this currently means that there is no way
+        // to be sure that the return value from this function suggests that the key does not exist or if the key's
+        // value is nil. This should be considered for SWIFT-193.
         guard iter.move(to: key) else {
             return nil
         }
