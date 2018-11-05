@@ -720,6 +720,10 @@ final class CodecTests: XCTestCase {
         let arr2: [BSONValue?] = [1, "hi", nil]
         expect(try encoder.encode(OptionalAnyBSONWrapper(arr2))).to(equal(["val": arr2]))
 
+        // an array with a non-BSONValue
+        let arr3: [Any?] = [1, "hi", nil, Int16(4)]
+        expect(try arr3.encode(to: DocumentStorage(), forKey: "arr3")).to(throwError())
+
         // nil value
         expect(try encoder.encode(OptionalAnyBSONWrapper(nil))).to(beNil())
 
