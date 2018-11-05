@@ -270,7 +270,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      *  - Throws: A `MongoError.typeError` if the value cannot be cast to type `T` or is not in the `Document`
      *
      */
-    public func get<T: BSONValue>(_ key: String) throws -> T {
+    internal func get<T: BSONValue>(_ key: String) throws -> T {
         guard let value = self[key] as? T else {
             throw MongoError.typeError(message: "Could not cast value for key \(key) to type \(T.self)")
         }
