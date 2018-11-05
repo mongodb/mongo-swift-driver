@@ -247,7 +247,7 @@ public class DocumentIterator: IteratorProtocol {
         return values
     }
 
-    /// Returns the current value (equivalent to the currentValue property) or throws on error
+    /// Returns the current value (equivalent to the `currentValue` property) or throws on error.
     internal func safeCurrentValue() throws -> BSONValue? {
         switch self.currentType {
         case .symbol:

@@ -254,7 +254,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         }
     }
 
-    /// Retrieves the value associated with for as a BSONValue?, which can be nil.
+    /// Retrieves the value associated with for as a `BSONValue?`, which can be nil.
     internal func getValue(for key: String) throws -> BSONValue? {
         guard let iter = DocumentIterator(forDocument: self) else {
             throw MongoError.bsonDecodeError(message: "BSON buffer is unexpectedly too small (< 5 bytes)")
