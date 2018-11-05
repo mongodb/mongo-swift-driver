@@ -549,9 +549,22 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
         self.init(fromPointer: &oid_t)
     }
 
-    /// Initializes an `ObjectId` from the provided `String`.
+    /// Initializes an `ObjectId` from the provided `String`. Assumes that the given string is a valid ObjectId.
+    /// - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/objectid.rst
     public init(fromString oid: String) {
         self.oid = oid
+    }
+
+    /// Initializes an `ObjectId` from the provided `String`. Returns `nil` if the string is not a valid
+    /// ObjectId.
+    /// - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/objectid.rst
+    public init?(ifValid oid: String) {
+        do {
+            _ = try ObjectId.toLibBSONType(oid)
+            self.init(fromString: oid)
+        } catch {
+            return nil
+        }
     }
 
     /// Initializes an `ObjectId` from an `UnsafePointer<bson_oid_t>` by copying the data
@@ -565,15 +578,18 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
     }
 
     /// Returns the provided string as a `bson_oid_t`.
-    internal static func toLibBSONType(_ str: String) -> bson_oid_t {
+    internal static func toLibBSONType(_ str: String) throws -> bson_oid_t {
         var value = bson_oid_t()
+        if !bson_oid_is_valid(str, str.count) {
+            throw MongoError.invalidArgument(message: "ObjectId string is invalid")
+        }
         bson_oid_init_from_string(&value, str)
         return value
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         // create a new bson_oid_t with self.oid
-        var oid = ObjectId.toLibBSONType(self.oid)
+        var oid = try ObjectId.toLibBSONType(self.oid)
         // encode the bson_oid_t to the bson_t
         guard bson_append_oid(storage.pointer, key, Int32(key.count), &oid) else {
             throw bsonEncodeError(value: self, forKey: key)
