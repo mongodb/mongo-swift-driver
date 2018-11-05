@@ -81,7 +81,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         self.storage = DocumentStorage()
         for (key, value) in keyValuePairs {
             do {
-                try self.setValue(forKey: key, to: value, checkForKey: false)
+                try self.setValue(for: key, to: value, checkForKey: false)
             } catch {
                 preconditionFailure("Error setting key \(key) to value \(String(describing: value)): \(error)")
             }
@@ -116,7 +116,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         self.storage = DocumentStorage()
         for (i, elt) in elements.enumerated() {
             do {
-                try self.setValue(forKey: String(i), to: elt, checkForKey: false)
+                try self.setValue(for: String(i), to: elt, checkForKey: false)
             } catch {
                 preconditionFailure("Failed to set the value for index \(i) to \(String(describing: elt)): \(error)")
             }
@@ -198,7 +198,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         get { return DocumentIterator(forDocument: self, advancedTo: key)?.currentValue }
         set(newValue) {
             do {
-                try self.setValue(forKey: key, to: newValue)
+                try self.setValue(for: key, to: newValue)
             } catch {
                 preconditionFailure("Failed to set the value for key \(key) to \(newValue ?? "nil"): \(error)")
             }
@@ -207,7 +207,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
 
     /// Sets key to newValue. if checkForKey=false, the key/value pair will be appended without checking for the key's
     /// presence first.
-    private mutating func setValue(forKey key: String, to newValue: BSONValue?, checkForKey: Bool = true) throws {
+    private mutating func setValue(for key: String, to newValue: BSONValue?, checkForKey: Bool = true) throws {
         // if the key already exists in the `Document`, we need to replace it
         if checkForKey, let existingType = DocumentIterator(forDocument: self, advancedTo: key)?.currentType {
 
@@ -232,9 +232,9 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
                 try self.forEach { pair in
                     if !seen && pair.key == key {
                         seen = true
-                        try newSelf.setValue(forKey: pair.key, to: newValue)
+                        try newSelf.setValue(for: pair.key, to: newValue)
                     } else {
-                        try newSelf.setValue(forKey: pair.key, to: pair.value)
+                        try newSelf.setValue(for: pair.key, to: pair.value)
                     }
                 }
                 self = newSelf
@@ -254,12 +254,12 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         }
     }
 
-    /// Retrieves the value associated with forKey as a BSONValue?, which can be nil.
-    internal func getValue(forKey key: String) throws -> BSONValue? {
+    /// Retrieves the value associated with for as a BSONValue?, which can be nil.
+    internal func getValue(for key: String) throws -> BSONValue? {
         guard let iter = DocumentIterator(forDocument: self) else {
             throw MongoError.bsonDecodeError(message: "BSON buffer is unexpectedly too small (< 5 bytes)")
         }
-        
+
         // TODO: Because documents can hold null as a valid value for a key, this currently means that there is no way
         // to be sure that the return value from this function suggests that the key does not exist or if the key's
         // value is nil. This should be considered for SWIFT-193.
@@ -288,7 +288,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      *
      */
     public func get<T: BSONValue>(_ key: String) throws -> T {
-        guard let value = try self.getValue(forKey: key) as? T else {
+        guard let value = try self.getValue(for: key) as? T else {
             throw MongoError.typeError(message: "Could not cast value for key \(key) to type \(T.self)")
         }
         return value

@@ -272,7 +272,7 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
     /// Private helper function to check for a value in self.container. Returns the value stored
     /// under `key`, or throws an error if the value is not found.
     private func getValue(forKey key: Key) throws -> BSONValue {
-        guard let entry = try self.container.getValue(forKey: key.stringValue) else {
+        guard let entry = try self.container.getValue(for: key.stringValue) else {
             throw DecodingError.keyNotFound(
                 key,
                 DecodingError.Context(codingPath: self.decoder.codingPath,
@@ -333,7 +333,7 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
                 DecodingError.Context(codingPath: self.decoder.codingPath,
                                       debugDescription: "Key \(_errorDescription(of: key)) not found."))
         }
-        return try self.container.getValue(forKey: key.stringValue) == nil
+        return try self.container.getValue(for: key.stringValue) == nil
     }
 
     // swiftlint:disable line_length
@@ -384,7 +384,7 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
     /// Private method to create a superDecoder for the provided key.
     private func _superDecoder(forKey key: CodingKey) throws -> Decoder {
         return try self.decoder.with(pushedKey: key) {
-            let value: BSONValue? = try self.container.getValue(forKey: key.stringValue)
+            let value: BSONValue? = try self.container.getValue(for: key.stringValue)
             return _BSONDecoder(referencing: value, at: self.decoder.codingPath, options: self.decoder.options)
         }
     }
