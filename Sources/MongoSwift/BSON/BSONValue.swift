@@ -109,6 +109,7 @@ extension Array: BSONValue {
         for (i, v) in self.enumerated() {
             try arr.setValue(for: String(i), to: v as? BSONValue)
         }
+
         guard bson_append_array(storage.pointer, key, Int32(key.count), arr.data) else {
             throw bsonEncodeError(value: self, forKey: key)
         }
@@ -125,8 +126,6 @@ public struct BSONNull: BSONValue, Equatable {
         guard bson_iter_type(&iter.iter) != nullType else {
             throw MongoError.bsonDecodeError(message: "expected iterator type null for encoding a BSONNull")
         }
-
-        self.init()
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
@@ -135,8 +134,12 @@ public struct BSONNull: BSONValue, Equatable {
         }
     }
 
-    public static func == (lhs: BSONNull, rhs: BSONNull) -> Bool {
-        return true
+    public static func == (lhs: BSONValue, rhs: BSONNull) -> Bool {
+        return lhs.bsonType == .null
+    }
+
+    public static func == (lhs: BSONNull, rhs: BSONValue) -> Bool {
+        return rhs == lhs
     }
 }
 
