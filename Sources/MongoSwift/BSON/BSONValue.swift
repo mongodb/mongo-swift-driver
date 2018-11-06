@@ -118,9 +118,22 @@ extension Array: BSONValue {
 public struct BSONNull: BSONValue, Equatable {
     public var bsonType: BSONType { return .null }
 
-    public init(from iter: DocumentIterator) throws {}
+    public init() {}
 
-    public func encode(to storage: DocumentStorage, forKey key: String) throws {}
+    public init(from iter: DocumentIterator) throws {
+        let nullType = bson_type_t(BSONType.null.rawValue)
+        guard bson_iter_type(&iter.iter) != nullType else {
+            throw MongoError.bsonDecodeError(message: "expected iterator type null for encoding a BSONNull")
+        }
+
+        self.init()
+    }
+
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
+        guard bson_append_null(storage.pointer, key, Int32(key.count)) else {
+            throw bsonEncodeError(value: self, forKey: key)
+        }
+    }
 
     public static func == (lhs: BSONNull, rhs: BSONNull) -> Bool {
         return true
@@ -132,9 +145,13 @@ public struct BSONMissing: BSONValue, Equatable {
     public var bsonType: BSONType { return .undefined }
 
     public init() {}
-    public init(from iter: DocumentIterator) throws {}
+    public init(from iter: DocumentIterator) throws {
+        throw MongoError.bsonDecodeError(message: "BSONMissing cannot be initialized from an iterator")
+    }
 
-    public func encode(to storage: DocumentStorage, forKey key: String) throws {}
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
+        throw MongoError.bsonEncodeError(message: "BSONMissing cannot be encoded into a document")
+    }
 
     public static func == (lhs: BSONMissing, rhs: BSONMissing) -> Bool {
         return true
