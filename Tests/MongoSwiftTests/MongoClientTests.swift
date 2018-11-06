@@ -19,7 +19,7 @@ final class MongoClientTests: XCTestCase {
     }
 
     func testOpaqueInitialization() throws {
-        let connectionString = "mongodb://localhost"
+        let connectionString = XCTestCase.connStr
         var error = bson_error_t()
         guard let uri = mongoc_uri_new_with_error(connectionString, &error) else {
             throw MongoError.invalidUri(message: toErrorString(error))

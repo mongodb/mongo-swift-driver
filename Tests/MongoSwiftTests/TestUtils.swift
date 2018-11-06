@@ -3,18 +3,29 @@ import MongoSwift
 import Nimble
 import XCTest
 
+// TODO: Move contents of this extension to the base test class in SWIFT-207.
 extension XCTestCase {
     /// Gets the path of the directory containing spec files, depending on whether
     /// we're running from XCode or the command line
-    func getSpecsPath() -> String {
+    static var specsPath: String {
         // if we can access the "/Tests" directory, assume we're running from command line
         if FileManager.default.fileExists(atPath: "./Tests") { return "./Tests/Specs" }
         // otherwise we're in Xcode, get the bundle's resource path
-        guard let path = Bundle(for: type(of: self)).resourcePath else {
+        guard let path = Bundle(for: self).resourcePath else {
             XCTFail("Missing resource path")
             return ""
         }
         return path
+    }
+
+    /// Gets the connection string for the database being used for testing from the environment variable, $MONGODB_URI.
+    /// If the environment variable does not exist, this will use a default of "mongodb://127.0.0.1/".
+    static var connStr: String {
+        if let connStr = ProcessInfo.processInfo.environment["MONGODB_URI"] {
+            return connStr
+        } else {
+            return "mongodb://127.0.0.1/"
+        }
     }
 
     // indicates whether we are running on a 32-bit platform
@@ -112,6 +123,10 @@ extension MongoClient {
         if let max = max, version.isGreaterThan(try ServerVersion(max)) { return false }
 
         return true
+    }
+
+    internal convenience init(options: ClientOptions? = nil) throws {
+        try self.init(connectionString: XCTestCase.connStr, options: options)
     }
 }
 
