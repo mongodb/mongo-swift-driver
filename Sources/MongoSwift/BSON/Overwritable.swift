@@ -1,4 +1,5 @@
 import bson
+import Foundation
 
 /// A protocol indicating that a type can be overwritten in-place on a `bson_t`.
 internal protocol Overwritable: BSONValue {
@@ -36,7 +37,26 @@ extension Double: Overwritable {
 
 extension Decimal128: Overwritable {
     func writeToCurrentPosition(of iter: DocumentIterator) throws {
-        var encoded = try Decimal128.encode(self.data)
+        var encoded = try Decimal128.toLibBSONType(self.data)
         bson_iter_overwrite_decimal128(&iter.iter, &encoded)
+    }
+}
+
+extension ObjectId: Overwritable {
+    func writeToCurrentPosition(of iter: DocumentIterator) throws {
+        var encoded = try ObjectId.toLibBSONType(self.oid)
+        bson_iter_overwrite_oid(&iter.iter, &encoded)
+    }
+}
+
+extension Timestamp: Overwritable {
+    func writeToCurrentPosition(of iter: DocumentIterator) {
+        bson_iter_overwrite_timestamp(&iter.iter, self.timestamp, self.increment)
+    }
+}
+
+extension Date: Overwritable {
+    func writeToCurrentPosition(of iter: DocumentIterator) {
+        bson_iter_overwrite_date_time(&iter.iter, self.msSinceEpoch)
     }
 }
