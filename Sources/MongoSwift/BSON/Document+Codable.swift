@@ -46,10 +46,10 @@ extension Document: Codable {
         for key in container.allKeys {
             let k = key.stringValue
             if try container.decodeNil(forKey: key) {
-                try output.setValue(forKey: k, to: nil)
+                try output.setValue(for: k, to: nil)
             } else {
                 let val = try container.decode(AnyBSONValue.self, forKey: key).value
-                try output.setValue(forKey: k, to: val)
+                try output.setValue(for: k, to: val)
             }
         }
         self = output
