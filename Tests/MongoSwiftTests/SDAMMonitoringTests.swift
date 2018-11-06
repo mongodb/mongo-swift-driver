@@ -59,7 +59,8 @@ final class SDAMTests: XCTestCase {
 
         var error = bson_error_t()
         guard let uri = mongoc_uri_new_with_error(XCTestCase.connStr, &error) else {
-            throw MongoError.invalidUri(message: toErrorString(error))
+            XCTFail(toErrorString(error))
+            return
         }
 
         guard let hostlist = mongoc_uri_get_hosts(uri) else {
