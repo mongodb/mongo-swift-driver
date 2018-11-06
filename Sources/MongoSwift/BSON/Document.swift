@@ -196,16 +196,26 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      */
     public subscript(key: String) -> BSONValue? {
         get {
-            let iter = DocumentIterator(forDocument: self, advancedTo: key)
-            if iter == nil {
-                debugPrint("Invalid key given probably, so iter is null.")
-                return BSONMissing()
+            let iterOptional = DocumentIterator(forDocument: self)
+            guard let iter = iterOptional else {
+                preconditionFailure("Could not get document iterator for document in subscript")
             }
-            if let iter = iter {
-                return iter.currentValue
-            } else {
+            guard iter.move(to: key) else {
                 return nil
             }
+
+//            if iter == nil {
+//                // This logic should be propagated to other parts of the codebase for getting a value, but for PoC
+//                // purposes, this is sufficient.
+//                debugPrint("Invalid key given probably, so iter is null.")
+//                return BSONMissing()
+//            }
+//            if let iter = iter {
+//                return iter.currentValue
+//            } else {
+//                return nil
+//            }
+            return iter.currentValue == nil ? BSONNull() : iter.currentValue
         }
         set(newValue) {
             do {
