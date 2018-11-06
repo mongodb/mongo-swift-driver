@@ -107,7 +107,7 @@ extension Array: BSONValue {
         }
         var arr = Document()
         for (i, v) in self.enumerated() {
-            try arr.setValue(forKey: String(i), to: v as? BSONValue)
+            try arr.setValue(for: String(i), to: v as? BSONValue)
         }
         guard bson_append_array(storage.pointer, key, Int32(key.count), arr.data) else {
             throw bsonEncodeError(value: self, forKey: key)

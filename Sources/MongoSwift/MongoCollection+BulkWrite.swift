@@ -373,18 +373,18 @@ public struct BulkWriteResult {
      *   - insertedIds: Map of inserted IDs
      */
     fileprivate init(reply: Document, insertedIds: [Int: BSONValue?]) throws {
-        self.deletedCount = reply["nRemoved"] as? Int ?? 0
-        self.insertedCount = reply["nInserted"] as? Int ?? 0
+        self.deletedCount = try reply.getValue(for: "nRemoved") as? Int ?? 0
+        self.insertedCount = try reply.getValue(for: "nInserted") as? Int ?? 0
         self.insertedIds = insertedIds
-        self.matchedCount = reply["nMatched"] as? Int ?? 0
-        self.modifiedCount = reply["nModified"] as? Int ?? 0
-        self.upsertedCount = reply["nUpserted"] as? Int ?? 0
+        self.matchedCount = try reply.getValue(for: "nMatched") as? Int ?? 0
+        self.modifiedCount = try reply.getValue(for: "nModified") as? Int ?? 0
+        self.upsertedCount = try reply.getValue(for: "nUpserted") as? Int ?? 0
 
         var upsertedIds = [Int: BSONValue?]()
 
-        if let upserted = reply["upserted"] as? [Document] {
+        if let upserted = try reply.getValue(for: "upserted") as? [Document] {
             for upsert in upserted {
-                guard let index = upsert["index"] as? Int else {
+                guard let index = try upsert.getValue(for: "index") as? Int else {
                     throw MongoError.typeError(message: "Could not cast upserted index to `Int`")
                 }
                 upsertedIds[index] = upsert["_id"]
@@ -393,11 +393,12 @@ public struct BulkWriteResult {
 
         self.upsertedIds = upsertedIds
 
-        if let writeErrors = reply["writeErrors"] as? [Document] {
+        if let writeErrors = try reply.getValue(for: "writeErrors") as? [Document] {
             self.writeErrors = try writeErrors.map { try BSONDecoder().decode(WriteError.self, from: $0) }
         }
 
-        if let writeConcernErrors = reply["writeConcernErrors"] as? [Document], writeConcernErrors.indices.contains(0) {
+        if let writeConcernErrors = try reply.getValue(for: "writeConcernErrors") as? [Document],
+            writeConcernErrors.indices.contains(0) {
             self.writeConcernError = try BSONDecoder().decode(WriteConcernError.self, from: writeConcernErrors[0])
         }
     }

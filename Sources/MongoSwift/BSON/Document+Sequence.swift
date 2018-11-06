@@ -200,6 +200,11 @@ public class DocumentIterator: IteratorProtocol {
         return bson_iter_next(&self.iter)
     }
 
+    /// Moves the iterator to the specified key. Returns false if the key does not exist. Returns true otherwise.
+    internal func move(to key: String) -> Bool {
+        return bson_iter_find(&self.iter, key.cString(using: .utf8))
+    }
+
     /// Returns the current key. Assumes the iterator is in a valid position.
     internal var currentKey: String {
         return String(cString: bson_iter_key(&self.iter))
@@ -240,6 +245,18 @@ public class DocumentIterator: IteratorProtocol {
         var values = [BSONValue?]()
         while self.advance() { values.append(self.currentValue) }
         return values
+    }
+
+    /// Returns the current value (equivalent to the `currentValue` property) or throws on error.
+    internal func safeCurrentValue() throws -> BSONValue? {
+        switch self.currentType {
+        case .symbol:
+            return try Symbol.asString(from: self)
+        case .dbPointer:
+            return try DBPointer.asDocument(from: self)
+        default:
+            return try DocumentIterator.bsonTypeMap[currentType]?.init(from: self)
+        }
     }
 
     // uses an iterator to copy (key, value) pairs of the provided document from range [startIndex, endIndex) into a new
