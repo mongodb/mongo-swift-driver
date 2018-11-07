@@ -488,7 +488,8 @@ final class MongoCollectionTests: XCTestCase {
         let result2 = try self.coll.insertMany([["_id": NSNull()], ["_id": 20]])
         expect(result2).toNot(beNil())
         //expect(result2?.insertedIds[0]!).to(beNil())
-        expect(result2?.insertedIds[0] as? NSNull).to(equal(NSNull()))
+        //expect(result2?.insertedIds[0] as? NSNull).to(equal(NSNull()))
+        expect(result2?.insertedIds[0] as? BSONNull).to(equal(BSONNull()))
         expect(result2?.insertedIds[1] as? Int).to(equal(20))
     }
 }

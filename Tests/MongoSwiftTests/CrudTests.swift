@@ -205,7 +205,6 @@ private class CrudTest {
     /// Given the response to a findAndModify command, verify that it matches the expected
     /// results for this `CrudTest`. Meant for use by findAndModify subclasses, i.e. findOneAndX. 
     func verifyFindAndModifyResult(_ result: Document?) {
-        debugPrint("Got back self.result: \(self.result)")
         if self.result == nil {
             expect(result).to(beNil())
         } else if let res = self.result, res == NSNull() {

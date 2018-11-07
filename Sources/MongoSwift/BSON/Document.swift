@@ -209,8 +209,8 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
             }
 
             //return iter.currentValue // BSONMissing
-            //let nullVal = BSONNull() // BSONNull
-            let nullVal = NSNull() // NSNull
+            let nullVal = BSONNull() // BSONNull
+            //let nullVal = NSNull() // NSNull
             return iter.currentValue == nil ? nullVal : iter.currentValue // BSONNull/NSNull/Simultaneous
         }
         set(newValue) {
