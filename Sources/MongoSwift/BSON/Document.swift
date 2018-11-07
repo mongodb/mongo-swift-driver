@@ -201,13 +201,15 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
                 preconditionFailure("Could not get document iterator for document in subscript")
             }
 
+            // The following added logic for this PoC should be propagated to other areas of the codebase, such as for
+            // getValue(), but for demo purposes, it is sufficient.
             guard iter.move(to: key) else {
                 return BSONMissing() // BSONMissing/Simultaneous
                 //return nil // BSONNull
             }
 
-            return iter.currentValue // BSONMissing
-            //return iter.currentValue == nil ? BSONNull() : iter.currentValue // BSONNull/Simultaneous
+            //return iter.currentValue // BSONMissing
+            return iter.currentValue == nil ? BSONNull() : iter.currentValue // BSONNull/Simultaneous
         }
         set(newValue) {
             do {
