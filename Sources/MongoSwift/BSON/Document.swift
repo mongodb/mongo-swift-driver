@@ -204,12 +204,14 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
             // The following added logic for this PoC should be propagated to other areas of the codebase, such as for
             // getValue(), but for demo purposes, it is sufficient.
             guard iter.move(to: key) else {
-                return BSONMissing() // BSONMissing/Simultaneous
-                //return nil // BSONNull
+                //return BSONMissing() // BSONMissing/Simultaneous
+                return nil // BSONNull/NSNull
             }
 
             //return iter.currentValue // BSONMissing
-            return iter.currentValue == nil ? BSONNull() : iter.currentValue // BSONNull/Simultaneous
+            //let nullVal = BSONNull() // BSONNull
+            let nullVal = NSNull() // NSNull
+            return iter.currentValue == nil ? nullVal : iter.currentValue // BSONNull/NSNull/Simultaneous
         }
         set(newValue) {
             do {
