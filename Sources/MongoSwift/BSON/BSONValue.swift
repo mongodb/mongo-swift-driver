@@ -139,7 +139,7 @@ extension NSNull: BSONValue {
     }
 
     public static func == (lhs: NSNull, rhs: BSONValue) -> Bool {
-        return rhs.bsonType == .null
+        return rhs == lhs
     }
 }
 
