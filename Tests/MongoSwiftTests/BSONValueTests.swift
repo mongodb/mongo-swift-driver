@@ -98,13 +98,17 @@ final class BSONValueTests: XCTestCase {
         expect(4).toNot(bsonEqual("swift"))
     }
 
-    static var (swiftDocHeader, bsonMissingHeader, bsonNullHeader, bsonBothHeader, nsNullHeader) = (
-        "BSONMissing ========================================",
-        "SWIFT (BSONValue?) =================================",
-        "BSONNull ===========================================",
-        "Both BSONNull and BSONMissing ======================",
-        "NSNull ======================"
-    )
+    internal struct DocumentTest {
+        public var header: String
+        public var doc: Document
+
+        public init(_ header: String, _ doc: Document) {
+            self.header = header
+            self.doc = doc
+        }
+    }
+
+    static var swiftDocHeader = "SWIFT (BSONValue?) ================================="
 
     static var (hello, whatIsUp, meaningOfLife, pizza) = (
         "hello",
@@ -121,61 +125,72 @@ final class BSONValueTests: XCTestCase {
             BSONValueTests.pizza: true
         ]
 
-        let bsonMissingDoc: Document = [
-            BSONValueTests.hello: 42,
-            BSONValueTests.whatIsUp: "nothing much man",
-            BSONValueTests.meaningOfLife: nil,
-            BSONValueTests.pizza: true
-        ]
-
-        let bsonNullDoc: Document = [
-            BSONValueTests.hello: 42,
-            BSONValueTests.whatIsUp: "nothing much man",
-            BSONValueTests.meaningOfLife: BSONNull(),
-            BSONValueTests.pizza: true
-        ]
-
-        let bsonBothDoc: Document = [
-            BSONValueTests.hello: 42,
-            BSONValueTests.whatIsUp: "nothing much man",
-            BSONValueTests.meaningOfLife: BSONNull(),
-            BSONValueTests.pizza: true
-        ]
-
-        let nsNullDoc: Document = [
-            BSONValueTests.hello: 42,
-            BSONValueTests.whatIsUp: "nothing much man",
-            BSONValueTests.meaningOfLife: NSNull(),
-            BSONValueTests.pizza: true
+        let docTests = [
+            DocumentTest(
+                "BSONMissing ========================================",
+                [
+                    BSONValueTests.hello: 42,
+                    BSONValueTests.whatIsUp: "nothing much man",
+                    BSONValueTests.meaningOfLife: nil,
+                    BSONValueTests.pizza: true
+                ]
+            ),
+            DocumentTest(
+                "BSONNull ===========================================",
+                 [
+                    BSONValueTests.hello: 42,
+                    BSONValueTests.whatIsUp: "nothing much man",
+                    BSONValueTests.meaningOfLife: BSONNull(),
+                    BSONValueTests.pizza: true
+                 ]
+            ),
+            DocumentTest(
+                "Both BSONNull and BSONMissing ======================",
+                [
+                    BSONValueTests.hello: 42,
+                    BSONValueTests.whatIsUp: "nothing much man",
+                    BSONValueTests.meaningOfLife: BSONNull(),
+                    BSONValueTests.pizza: true
+                ]
+            ),
+            DocumentTest(
+                "NSNull ======================",
+                [
+                    BSONValueTests.hello: 42,
+                    BSONValueTests.whatIsUp: "nothing much man",
+                    BSONValueTests.meaningOfLife: NSNull(),
+                    BSONValueTests.pizza: true
+                ]
+            )
         ]
 
         // use cases
         // 1. Get existing key's value from document and using it:
-        usingExistingKeyValue(swiftDoc, bsonMissingDoc, bsonNullDoc, bsonBothDoc, nsNullDoc)
+        usingExistingKeyValue(swiftDoc, docTests)
 
         // 2. Distinguishing between nil value for key, missing value for key, and existing value for key
-        distinguishingValueKinds(swiftDoc, bsonMissingDoc, bsonNullDoc, bsonBothDoc, nsNullDoc)
+        distinguishingValueKinds(swiftDoc, docTests)
 
         // 3. Getting the value for a key, where the value is nil
-        gettingNilKeyValue(swiftDoc, bsonMissingDoc, bsonNullDoc, bsonBothDoc, nsNullDoc)
+        gettingNilKeyValue(swiftDoc, docTests)
     }
 
-    func usingExistingKeyValue(_ swiftDoc: [String: BSONValue?], _ testDocs: Document...) {
-        let (bsonMissingDoc, bsonNullDoc, bsonBothDoc, nsNullDoc) = getTestingDocuments(testDocs)
+    func usingExistingKeyValue(_ swiftDoc: [String: BSONValue?], _ testDocs: [DocumentTest]) {
+        let (bsonMissing, bsonNull, bsonBoth, nsNull) = getDocumentTests(testDocs)
         let msg = "Got back existing key value from: "
         let sumDocMsg = "sumDoc: "
 
         print("\n=== EXISTING KEY VALUE ===\n")
 
-        print(BSONValueTests.bsonMissingHeader)
-        let existingBSONMissing = bsonMissingDoc["hello"] as? Int
+        print(bsonMissing.header)
+        let existingBSONMissing = bsonMissing.doc["hello"] as? Int
         debugPrint(msg + "\(String(describing: existingBSONMissing))")
         if let existingBSONMissing = existingBSONMissing {
             let sumDoc = existingBSONMissing + 10
             debugPrint(sumDocMsg + "\(sumDoc)")
         }
 
-        print(BSONValueTests.bsonMissingHeader)
+        print(BSONValueTests.swiftDocHeader)
         let existingSwift = swiftDoc["hello"] as? Int
         debugPrint(msg + "\(String(describing: existingSwift))")
         if let existingSwift = existingSwift {
@@ -183,24 +198,24 @@ final class BSONValueTests: XCTestCase {
             debugPrint(sumDocMsg + "\(sumDict)")
         }
 
-        print(BSONValueTests.bsonNullHeader)
-        let existingBSONNull = bsonNullDoc["hello"] as? Int
+        print(bsonNull.header)
+        let existingBSONNull = bsonNull.doc["hello"] as? Int
         debugPrint(msg + "\(String(describing: existingBSONNull))")
         if let existingBSONNull = existingBSONNull {
             let sumDict = existingBSONNull + 10
             debugPrint(sumDocMsg + "\(sumDict)")
         }
 
-        print(BSONValueTests.bsonBothHeader)
-        let existingBSONBoth = bsonBothDoc["hello"] as? Int
+        print(bsonBoth.header)
+        let existingBSONBoth = bsonBoth.doc["hello"] as? Int
         debugPrint(msg + "\(String(describing: existingBSONBoth))")
         if let existingBSONBoth = existingBSONBoth {
             let sumDict = existingBSONBoth + 10
             debugPrint(sumDocMsg + "\(sumDict)")
         }
 
-        print(BSONValueTests.nsNullHeader)
-        let existingNSNull = nsNullDoc["hello"] as? Int
+        print(nsNull.header)
+        let existingNSNull = nsNull.doc["hello"] as? Int
         debugPrint(msg + "\(String(describing: existingNSNull))")
         if let existingNSNull = existingNSNull {
             let sumDict = existingNSNull + 10
@@ -208,16 +223,16 @@ final class BSONValueTests: XCTestCase {
         }
     }
 
-    func distinguishingValueKinds(_ swiftDoc: [String: BSONValue?], _ testDocs: Document...) {
-        let (bsonMissingDoc, bsonNullDoc, bsonBothDoc, nsNullDoc) = getTestingDocuments(testDocs)
+    func distinguishingValueKinds(_ swiftDoc: [String: BSONValue?], _ testDocs: [DocumentTest]) {
+        let (bsonMissing, bsonNull, bsonBoth, nsNull) = getDocumentTests(testDocs)
         let keys = ["hello", "i am missing", "what is the meaning of life"]
         let (dne, exists, null) = ("Key DNE!", "Key exists!", "Key is null!")
 
         print("\n=== DISTINGUISHING VALUE KINDS ===\n")
 
-        print(BSONValueTests.bsonMissingHeader)
+        print(bsonMissing.header)
         for key in keys {
-            let keyVal = bsonMissingDoc[key]
+            let keyVal = bsonMissing.doc[key]
             if let keyVal = keyVal, keyVal == BSONMissing() {
                 debugPrint(dne)
             } else if keyVal != nil {
@@ -241,9 +256,9 @@ final class BSONValueTests: XCTestCase {
             }
         }
 
-        print(BSONValueTests.bsonNullHeader)
+        print(bsonNull.header)
         for key in keys {
-            let keyVal = bsonNullDoc[key]
+            let keyVal = bsonNull.doc[key]
             if let keyVal = keyVal, keyVal == BSONNull() {
                 debugPrint(null)
             } else if keyVal != nil {
@@ -255,9 +270,9 @@ final class BSONValueTests: XCTestCase {
 
         // Note that one can also combine NSNull with BSONMissing, the semantics are identical, with
         // BSONNull() -> NSNull().
-        print(BSONValueTests.bsonBothHeader)
+        print(bsonBoth.header)
         for key in keys {
-            let keyVal = bsonBothDoc[key]
+            let keyVal = bsonBoth.doc[key]
             if let keyVal = keyVal, keyVal == BSONNull() {
                 debugPrint(null)
             } else if let keyVal = keyVal, keyVal == BSONMissing() {
@@ -267,9 +282,9 @@ final class BSONValueTests: XCTestCase {
             }
         }
 
-        print(BSONValueTests.nsNullHeader)
+        print(nsNull.header)
         for key in keys {
-            let keyVal = nsNullDoc[key]
+            let keyVal = nsNull.doc[key]
             if let keyVal = keyVal, keyVal == NSNull() {
                 debugPrint(null)
             } else if keyVal != nil {
@@ -280,15 +295,15 @@ final class BSONValueTests: XCTestCase {
         }
     }
 
-    func gettingNilKeyValue(_ swiftDoc: [String: BSONValue?], _ testDocs: Document...) {
-        let (bsonMissingDoc, bsonNullDoc, bsonBothDoc, nsNullDoc) = getTestingDocuments(testDocs)
+    func gettingNilKeyValue(_ swiftDoc: [String: BSONValue?], _ testDocs: [DocumentTest]) {
+        let (bsonMissing, bsonNull, bsonBoth, nsNull) = getDocumentTests(testDocs)
         let nullKey = "what is the meaning of life"
         let msg = "Got back null val: "
 
         print("\n=== GETTING A NIL VALUE ===\n")
 
-        print(BSONValueTests.bsonMissingHeader)
-        let bsonMissingVal = bsonMissingDoc[nullKey]
+        print(bsonMissing.header)
+        let bsonMissingVal = bsonMissing.doc[nullKey]
         if bsonMissingVal == nil {
             debugPrint(msg + "\(String(describing: bsonMissingVal))")
         }
@@ -301,24 +316,24 @@ final class BSONValueTests: XCTestCase {
             }
         }
 
-        print(BSONValueTests.bsonNullHeader)
-        let bsonNullVal = bsonNullDoc[nullKey]
+        print(bsonNull.header)
+        let bsonNullVal = bsonNull.doc[nullKey]
         if let bsonNullVal = bsonNullVal {
             if bsonNullVal == BSONNull() {
                 debugPrint(msg + "\(String(describing: bsonNullVal))")
             }
         }
 
-        print(BSONValueTests.bsonBothHeader)
-        let bsonBothVal = bsonBothDoc[nullKey]
+        print(bsonBoth.header)
+        let bsonBothVal = bsonBoth.doc[nullKey]
         if let bsonBothVal = bsonBothVal {
             if bsonBothVal == BSONNull() {
                 debugPrint(msg + "\(String(describing: bsonBothVal))")
             }
         }
 
-        print(BSONValueTests.nsNullHeader)
-        let nsNullVal = nsNullDoc[nullKey]
+        print(nsNull.header)
+        let nsNullVal = nsNull.doc[nullKey]
         if let nsNullVal = nsNullVal {
             if nsNullVal == NSNull() {
                 debugPrint(msg + "\(String(describing: nsNullVal))")
@@ -326,7 +341,7 @@ final class BSONValueTests: XCTestCase {
         }
     }
 
-    func getTestingDocuments(_ documents: [Document]) -> (Document, Document, Document, Document) {
-        return (documents[0], documents[1], documents[2], documents[3])
+    func getDocumentTests(_ tests: [DocumentTest]) -> (DocumentTest, DocumentTest, DocumentTest, DocumentTest) {
+        return (tests[0], tests[1], tests[2], tests[3])
     }
 }
