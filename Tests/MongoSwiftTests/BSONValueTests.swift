@@ -113,7 +113,7 @@ final class BSONValueTests: XCTestCase {
         }
     }
 
-    static var swiftDocHeader = "SWIFT (BSONValue?) ================================="
+    static var doubleOptionalHeader = "SWIFT (BSONValue?) ================================="
 
     static var (hello, whatIsUp, meaningOfLife, pizza) = (
         "hello",
@@ -123,7 +123,7 @@ final class BSONValueTests: XCTestCase {
     )
 
     func testBSONInterfaces() throws {
-        let swiftDoc: [String: BSONValue?] = [
+        let doubleOptional: [String: BSONValue?] = [
             BSONValueTests.hello: 42,
             BSONValueTests.whatIsUp: "nothing much man",
             BSONValueTests.meaningOfLife: nil as BSONValue?,
@@ -151,24 +151,24 @@ final class BSONValueTests: XCTestCase {
 
         // use cases
         // 1. Get existing key's value from document and using it:
-        usingExistingKeyValue(swiftDoc, docTests)
+        usingExistingKeyValue(doubleOptional, docTests)
 
         // 2. Distinguishing between nil value for key, missing value for key, and existing value for key
-        distinguishingValueKinds(swiftDoc, docTests)
+        distinguishingValueKinds(doubleOptional, docTests)
 
         // 3. Getting the value for a key, where the value is nil
-        gettingNilKeyValue(swiftDoc, docTests)
+        gettingNilKeyValue(doubleOptional, docTests)
     }
 
-    func usingExistingKeyValue(_ swiftDoc: [String: BSONValue?], _ testDocs: [DocumentTest]) {
+    func usingExistingKeyValue(_ doubleOptional: [String: BSONValue?], _ testDocs: [DocumentTest]) {
         let (bsonMissing, bsonNull, bsonBoth, nsNull) = getDocumentTests(testDocs)
         let msg = "Got back existing key value from: "
         let sumDocMsg = "sumDoc: "
 
         print("\n=== EXISTING KEY VALUE ===\n")
 
-        print(BSONValueTests.swiftDocHeader)
-        let existingSwift = swiftDoc["hello"] as? Int
+        print(BSONValueTests.doubleOptionalHeader)
+        let existingSwift = doubleOptional["hello"] as? Int
         debugPrint(msg + "\(String(describing: existingSwift))")
         if let existingSwift = existingSwift {
             let sumDict = existingSwift + 10
@@ -208,14 +208,17 @@ final class BSONValueTests: XCTestCase {
         }
     }
 
-    func distinguishingValueKinds(_ swiftDoc: [String: BSONValue?], _ testDocs: [DocumentTest]) {
+    func distinguishingValueKinds(_ doubleOptional: [String: BSONValue?], _ testDocs: [DocumentTest]) {
         let (bsonMissing, bsonNull, bsonBoth, nsNull) = getDocumentTests(testDocs)
         let keys = [BSONValueTests.hello, "i am missing", BSONValueTests.meaningOfLife]
         let (dne, exists, null) = ("Key DNE!", "Key exists!", "Key is null!")
 
         print("\n=== DISTINGUISHING VALUE KINDS ===\n")
 
-        print(BSONValueTests.swiftDocHeader)
+        // NOTE: Since we are merging various approaches into this single PoC branch, some of these will not function
+        // correctly. E.g., if we've disabled using BSONMissing, the BSONMissing test case below will not work. However,
+        // this demo only serves to show what the code _would_ look like, so I've kept them all here for comparison.
+        print(BSONValueTests.doubleOptionalHeader)
         for key in keys {
             let keyVal = doubleOptional[key]
             if let keyVal = keyVal { // Having double optional makes us lose brevity/clarity here.
@@ -236,8 +239,8 @@ final class BSONValueTests: XCTestCase {
             let keyVal = bsonMissing.doc[key]
             if let keyVal = keyVal, keyVal == BSONMissing() {
                 debugPrint(dne)
-            } else if keyVal != nil {
-                debugPrint(exists)
+            } else if keyVal != nil, let keyVal = keyVal {
+                debugPrint(exists + ": \(keyVal)")
             } else {
                 debugPrint(null)
             }
@@ -248,8 +251,8 @@ final class BSONValueTests: XCTestCase {
             let keyVal = bsonNull.doc[key]
             if let keyVal = keyVal, keyVal == BSONNull() {
                 debugPrint(null)
-            } else if keyVal != nil {
-                debugPrint(exists)
+            } else if keyVal != nil, let keyVal = keyVal {
+                debugPrint(exists + ": \(keyVal)")
             } else {
                 debugPrint(dne)
             }
@@ -264,8 +267,8 @@ final class BSONValueTests: XCTestCase {
                 debugPrint(null)
             } else if let keyVal = keyVal, keyVal == BSONMissing() {
                 debugPrint(dne)
-            } else {
-                debugPrint(exists)
+            } else if let keyVal = keyVal {
+                debugPrint(exists + ": \(keyVal)")
             }
         }
 
@@ -282,15 +285,15 @@ final class BSONValueTests: XCTestCase {
         }
     }
 
-    func gettingNilKeyValue(_ swiftDoc: [String: BSONValue?], _ testDocs: [DocumentTest]) {
+    func gettingNilKeyValue(_ doubleOptional: [String: BSONValue?], _ testDocs: [DocumentTest]) {
         let (bsonMissing, bsonNull, bsonBoth, nsNull) = getDocumentTests(testDocs)
         let nullKey = BSONValueTests.meaningOfLife
         let msg = "Got back null val: "
 
         print("\n=== GETTING A NIL VALUE ===\n")
 
-        print(BSONValueTests.swiftDocHeader)
-        let swiftVal = swiftDoc[nullKey]
+        print(BSONValueTests.doubleOptionalHeader)
+        let swiftVal = doubleOptional[nullKey]
         if let swiftVal = swiftVal {
             if swiftVal == nil {
                 debugPrint(msg + "\(String(describing: swiftVal))")
@@ -299,13 +302,13 @@ final class BSONValueTests: XCTestCase {
 
         print(bsonMissing.header)
         let bsonMissingVal = bsonMissing.doc[nullKey]
-        if bsonMissingVal == nil {
+        if bsonMissingVal == nil { // No unwrapping via if let needed, null is native `nil`.
             debugPrint(msg + "\(String(describing: bsonMissingVal))")
         }
 
         print(bsonNull.header)
         let bsonNullVal = bsonNull.doc[nullKey]
-        if let bsonNullVal = bsonNullVal {
+        if let bsonNullVal = bsonNullVal { // We need to unwrap, since 'null' is actually an Object in these cases.
             if bsonNullVal == BSONNull() {
                 debugPrint(msg + "\(String(describing: bsonNullVal))")
             }
