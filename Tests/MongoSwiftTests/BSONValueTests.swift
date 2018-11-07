@@ -258,8 +258,10 @@ final class BSONValueTests: XCTestCase {
             }
         }
 
-        // Note that one can also combine NSNull with BSONMissing, the semantics are identical, with
+        // NOTE: that one can also combine NSNull with BSONMissing, the semantics are identical, with
         // BSONNull() -> NSNull().
+        // NOTE: This has uses of `if let`, but in fact, we can remove `BSONValue?` (optional) entirely with this
+        // approach.
         print(bsonBoth.header)
         for key in keys {
             let keyVal = bsonBoth.doc[key]
