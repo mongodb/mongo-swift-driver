@@ -163,6 +163,10 @@ public struct BSONNull: BSONValue, Equatable {
         }
     }
 
+    public static func == (lhs: BSONNull, rhs: BSONNull) -> Bool {
+        return true
+    }
+
     public static func == (lhs: BSONValue, rhs: BSONNull) -> Bool {
         return lhs.bsonType == .null
     }
