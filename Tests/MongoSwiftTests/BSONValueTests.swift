@@ -217,12 +217,14 @@ final class BSONValueTests: XCTestCase {
 
         print(BSONValueTests.swiftDocHeader)
         for key in keys {
-            let keyVal = swiftDoc[key]
-            if let keyVal = keyVal {
+            let keyVal = doubleOptional[key]
+            if let keyVal = keyVal { // Having double optional makes us lose brevity/clarity here.
                 if keyVal == nil {
                     debugPrint(null)
                 } else {
-                    debugPrint(exists)
+                    if let keyValInner = keyVal {
+                        debugPrint(exists + ": \(keyValInner)")
+                    }
                 }
             } else {
                 debugPrint(dne)
