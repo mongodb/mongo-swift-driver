@@ -102,9 +102,14 @@ final class BSONValueTests: XCTestCase {
         public var header: String
         public var doc: Document
 
-        public init(_ header: String, _ doc: Document) {
+        public init(_ header: String, _ meaning: BSONValue?) {
             self.header = header
-            self.doc = doc
+            self.doc = [
+                BSONValueTests.hello: 42,
+                BSONValueTests.whatIsUp: "nothing much man",
+                BSONValueTests.meaningOfLife: meaning,
+                BSONValueTests.pizza: true
+            ]
         }
     }
 
@@ -128,39 +133,19 @@ final class BSONValueTests: XCTestCase {
         let docTests = [
             DocumentTest(
                 "BSONMissing ========================================",
-                [
-                    BSONValueTests.hello: 42,
-                    BSONValueTests.whatIsUp: "nothing much man",
-                    BSONValueTests.meaningOfLife: nil,
-                    BSONValueTests.pizza: true
-                ]
+                nil
             ),
             DocumentTest(
                 "BSONNull ===========================================",
-                 [
-                    BSONValueTests.hello: 42,
-                    BSONValueTests.whatIsUp: "nothing much man",
-                    BSONValueTests.meaningOfLife: BSONNull(),
-                    BSONValueTests.pizza: true
-                 ]
+                 BSONNull()
             ),
             DocumentTest(
                 "Both BSONNull and BSONMissing ======================",
-                [
-                    BSONValueTests.hello: 42,
-                    BSONValueTests.whatIsUp: "nothing much man",
-                    BSONValueTests.meaningOfLife: BSONNull(),
-                    BSONValueTests.pizza: true
-                ]
+                BSONNull()
             ),
             DocumentTest(
                 "NSNull ======================",
-                [
-                    BSONValueTests.hello: 42,
-                    BSONValueTests.whatIsUp: "nothing much man",
-                    BSONValueTests.meaningOfLife: NSNull(),
-                    BSONValueTests.pizza: true
-                ]
+                NSNull()
             )
         ]
 
@@ -225,7 +210,7 @@ final class BSONValueTests: XCTestCase {
 
     func distinguishingValueKinds(_ swiftDoc: [String: BSONValue?], _ testDocs: [DocumentTest]) {
         let (bsonMissing, bsonNull, bsonBoth, nsNull) = getDocumentTests(testDocs)
-        let keys = ["hello", "i am missing", "what is the meaning of life"]
+        let keys = [BSONValueTests.hello, "i am missing", BSONValueTests.meaningOfLife]
         let (dne, exists, null) = ("Key DNE!", "Key exists!", "Key is null!")
 
         print("\n=== DISTINGUISHING VALUE KINDS ===\n")
@@ -297,7 +282,7 @@ final class BSONValueTests: XCTestCase {
 
     func gettingNilKeyValue(_ swiftDoc: [String: BSONValue?], _ testDocs: [DocumentTest]) {
         let (bsonMissing, bsonNull, bsonBoth, nsNull) = getDocumentTests(testDocs)
-        let nullKey = "what is the meaning of life"
+        let nullKey = BSONValueTests.meaningOfLife
         let msg = "Got back null val: "
 
         print("\n=== GETTING A NIL VALUE ===\n")
