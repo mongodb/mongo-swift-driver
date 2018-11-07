@@ -130,9 +130,9 @@ final class DocumentTests: XCTestCase {
 
         expect(doc["array1"] as? [Int]).to(equal([1, 2]))
         expect(doc["array2"] as? [String]).to(equal(["string1", "string2"]))
-        expect(doc["null"] as? BSONNull).to(equal(BSONNull()))
+        //expect(doc["null"] as? BSONNull).to(equal(BSONNull()))
         //expect(doc["null"] as? NSNull).to(equal(NSNull()))
-        //expect(doc["null"]).to(beNil())
+        expect(doc["null"]).to(beNil())
 
         let code = doc["code"] as? CodeWithScope
         expect(code?.code).to(equal("console.log('hi');"))
@@ -164,9 +164,9 @@ final class DocumentTests: XCTestCase {
        expect(doc1.keys).to(equal(["0", "1", "2"]))
        expect(doc1["0"] as? String).to(equal("foo"))
        expect(doc1["1"] as? MinKey).to(beAnInstanceOf(MinKey.self))
-       expect(doc1["2"] as? BSONNull).to(equal(BSONNull()))
+       //expect(doc1["2"] as? BSONNull).to(equal(BSONNull()))
        //expect(doc1["2"] as? NSNull).to(equal(NSNull()))
-       //expect(doc1["2"]).to(beNil())
+       expect(doc1["2"]).to(beNil())
 
        let elements: [BSONValue?] = ["foo", MinKey(), nil]
        let doc2 = Document(elements)
@@ -174,9 +174,9 @@ final class DocumentTests: XCTestCase {
        expect(doc2.keys).to(equal(["0", "1", "2"]))
        expect(doc2["0"] as? String).to(equal("foo"))
        expect(doc2["1"] as? MinKey).to(beAnInstanceOf(MinKey.self))
-       expect(doc2["2"] as? BSONNull).to(equal(BSONNull()))
+       //expect(doc2["2"] as? BSONNull).to(equal(BSONNull()))
        //expect(doc2["2"] as? NSNull).to(equal(NSNull()))
-       //expect(doc2["2"]).to(beNil())
+       expect(doc2["2"]).to(beNil())
     }
 
     func testEquatable() {
@@ -195,7 +195,8 @@ final class DocumentTests: XCTestCase {
         var doc2 = doc1
         doc2["b"] = 2
         XCTAssertEqual(doc2["b"] as? Int, 2)
-        XCTAssertNil(doc1["b"])
+        //XCTAssertNil(doc1["b"])
+        XCTAssertEqual(doc1["b"] as? BSONMissing, BSONMissing())
         XCTAssertNotEqual(doc1, doc2)
     }
 
