@@ -182,20 +182,20 @@ final class BSONValueTests: XCTestCase {
 
         print("\n=== EXISTING KEY VALUE ===\n")
 
-        print(bsonMissing.header)
-        let existingBSONMissing = bsonMissing.doc["hello"] as? Int
-        debugPrint(msg + "\(String(describing: existingBSONMissing))")
-        if let existingBSONMissing = existingBSONMissing {
-            let sumDoc = existingBSONMissing + 10
-            debugPrint(sumDocMsg + "\(sumDoc)")
-        }
-
         print(BSONValueTests.swiftDocHeader)
         let existingSwift = swiftDoc["hello"] as? Int
         debugPrint(msg + "\(String(describing: existingSwift))")
         if let existingSwift = existingSwift {
             let sumDict = existingSwift + 10
             debugPrint(sumDocMsg + "\(sumDict)")
+        }
+
+        print(bsonMissing.header)
+        let existingBSONMissing = bsonMissing.doc["hello"] as? Int
+        debugPrint(msg + "\(String(describing: existingBSONMissing))")
+        if let existingBSONMissing = existingBSONMissing {
+            let sumDoc = existingBSONMissing + 10
+            debugPrint(sumDocMsg + "\(sumDoc)")
         }
 
         print(bsonNull.header)
@@ -230,18 +230,6 @@ final class BSONValueTests: XCTestCase {
 
         print("\n=== DISTINGUISHING VALUE KINDS ===\n")
 
-        print(bsonMissing.header)
-        for key in keys {
-            let keyVal = bsonMissing.doc[key]
-            if let keyVal = keyVal, keyVal == BSONMissing() {
-                debugPrint(dne)
-            } else if keyVal != nil {
-                debugPrint(exists)
-            } else {
-                debugPrint(null)
-            }
-        }
-
         print(BSONValueTests.swiftDocHeader)
         for key in keys {
             let keyVal = swiftDoc[key]
@@ -253,6 +241,18 @@ final class BSONValueTests: XCTestCase {
                 }
             } else {
                 debugPrint(dne)
+            }
+        }
+
+        print(bsonMissing.header)
+        for key in keys {
+            let keyVal = bsonMissing.doc[key]
+            if let keyVal = keyVal, keyVal == BSONMissing() {
+                debugPrint(dne)
+            } else if keyVal != nil {
+                debugPrint(exists)
+            } else {
+                debugPrint(null)
             }
         }
 
@@ -302,18 +302,18 @@ final class BSONValueTests: XCTestCase {
 
         print("\n=== GETTING A NIL VALUE ===\n")
 
-        print(bsonMissing.header)
-        let bsonMissingVal = bsonMissing.doc[nullKey]
-        if bsonMissingVal == nil {
-            debugPrint(msg + "\(String(describing: bsonMissingVal))")
-        }
-
         print(BSONValueTests.swiftDocHeader)
         let swiftVal = swiftDoc[nullKey]
         if let swiftVal = swiftVal {
             if swiftVal == nil {
                 debugPrint(msg + "\(String(describing: swiftVal))")
             }
+        }
+
+        print(bsonMissing.header)
+        let bsonMissingVal = bsonMissing.doc[nullKey]
+        if bsonMissingVal == nil {
+            debugPrint(msg + "\(String(describing: bsonMissingVal))")
         }
 
         print(bsonNull.header)
