@@ -347,7 +347,7 @@ extension Document: BSONValue {
         }
     }
 
-    public init(from iter: DocumentIterator) throws {
+    public static func fromIterator(from iter: DocumentIterator) throws -> BSONValue {
         var length: UInt32 = 0
         let document = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
         defer {
@@ -361,7 +361,7 @@ extension Document: BSONValue {
             throw MongoError.bsonDecodeError(message: "Failed to create a bson_t from document data")
         }
 
-        self.init(fromPointer: docData)
+        return self.init(fromPointer: docData)
     }
 }
 
