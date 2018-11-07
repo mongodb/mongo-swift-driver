@@ -172,7 +172,6 @@ public struct BSONNull: BSONValue, Equatable {
     }
 }
 
-
 public struct BSONMissing: BSONValue, Equatable {
     public var bsonType: BSONType { return .undefined }
 
@@ -331,7 +330,7 @@ extension Date: BSONValue {
         }
     }
 
-    public static func from(iterator iter: DocumentIterator) throws -> BSONValue  {
+    public static func from(iterator iter: DocumentIterator) throws -> BSONValue {
         return self.init(msSinceEpoch: bson_iter_date_time(&iter.iter))
     }
 }
