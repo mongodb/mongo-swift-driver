@@ -98,33 +98,47 @@ final class BSONValueTests: XCTestCase {
         expect(4).toNot(bsonEqual("swift"))
     }
 
+    static var (swiftDocHeader, bsonMissingHeader, bsonNullHeader, bsonBothHeader) = (
+        "BSONMissing ========================================",
+        "SWIFT (BSONValue?) =================================",
+        "BSONNull ===========================================",
+        "Both BSONNull and BSONMissing ======================"
+    )
+
+    static var (hello, whatIsUp, meaningOfLife, pizza) = (
+        "hello",
+        "what is up",
+        "what is the meaning of life",
+        "why is pizza so good"
+    )
+
     func testBSONInterfaces() throws {
         let swiftDoc: [String: BSONValue?] = [
-            "hello": 42,
-            "what is up": "nothing much man",
-            "what is the meaning of life": nil as BSONValue?,
-            "why is pizza so good": true
+            BSONValueTests.hello: 42,
+            BSONValueTests.whatIsUp: "nothing much man",
+            BSONValueTests.meaningOfLife: nil as BSONValue?,
+            BSONValueTests.pizza: true
         ]
 
         let bsonMissingDoc: Document = [
-            "hello": 42,
-            "what is up": "nothing much man",
-            "what is the meaning of life": nil,
-            "why is pizza so good": true
+            BSONValueTests.hello: 42,
+            BSONValueTests.whatIsUp: "nothing much man",
+            BSONValueTests.meaningOfLife: nil,
+            BSONValueTests.pizza: true
         ]
 
         let bsonNullDoc: Document = [
-            "hello": 42,
-            "what is up": "nothing much man",
-            "what is the meaning of life": BSONNull(),
-            "why is pizza so good": true
+            BSONValueTests.hello: 42,
+            BSONValueTests.whatIsUp: "nothing much man",
+            BSONValueTests.meaningOfLife: BSONNull(),
+            BSONValueTests.pizza: true
         ]
 
         let bsonBothDoc: Document = [
-            "hello": 42,
-            "what is up": "nothing much man",
-            "what is the meaning of life": BSONNull(),
-            "why is pizza so good": true
+            BSONValueTests.hello: 42,
+            BSONValueTests.whatIsUp: "nothing much man",
+            BSONValueTests.meaningOfLife: BSONNull(),
+            BSONValueTests.pizza: true
         ]
 
         // use cases
@@ -140,118 +154,136 @@ final class BSONValueTests: XCTestCase {
 
     func usingExistingKeyValue(_ swiftDoc: [String: BSONValue?], _ testDocs: Document...) {
         let (bsonMissingDoc, bsonNullDoc, bsonBothDoc) = getTestingDocuments(testDocs)
+        let msg = "Got back existing key value from: "
+        let sumDocMsg = "sumDoc: "
 
+        print("\n=== EXISTING KEY VALUE ===\n")
+
+        print(BSONValueTests.bsonMissingHeader)
         let existingBSONMissing = bsonMissingDoc["hello"] as? Int
-        debugPrint("Got back existing key value from bsonMissingDoc: \(String(describing: existingBSONMissing))")
+        debugPrint(msg + "\(String(describing: existingBSONMissing))")
         if let existingBSONMissing = existingBSONMissing {
             let sumDoc = existingBSONMissing + 10
-            debugPrint("sumDoc: \(sumDoc)")
+            debugPrint(sumDocMsg + "\(sumDoc)")
         }
 
+        print(BSONValueTests.bsonMissingHeader)
         let existingSwift = swiftDoc["hello"] as? Int
-        debugPrint("Got back existing key value from swiftDoc: \(String(describing: existingSwift))")
+        debugPrint(msg + "\(String(describing: existingSwift))")
         if let existingSwift = existingSwift {
             let sumDict = existingSwift + 10
-            debugPrint("sumDoc: \(sumDict)")
+            debugPrint(sumDocMsg + "\(sumDict)")
         }
 
+        print(BSONValueTests.bsonNullHeader)
         let existingBSONNull = bsonNullDoc["hello"] as? Int
-        debugPrint("Got back existing key value from bsonNullDoc: \(String(describing: existingBSONNull))")
+        debugPrint(msg + "\(String(describing: existingBSONNull))")
         if let existingBSONNull = existingBSONNull {
             let sumDict = existingBSONNull + 10
-            debugPrint("sumDoc: \(sumDict)")
+            debugPrint(sumDocMsg + "\(sumDict)")
         }
 
+        print(BSONValueTests.bsonBothHeader)
         let existingBSONBoth = bsonBothDoc["hello"] as? Int
-        debugPrint("Got back existing key value from bsonBothDoc: \(String(describing: existingBSONBoth))")
+        debugPrint(msg + "\(String(describing: existingBSONBoth))")
         if let existingBSONBoth = existingBSONBoth {
             let sumDict = existingBSONBoth + 10
-            debugPrint("sumDoc: \(sumDict)")
+            debugPrint(sumDocMsg + "\(sumDict)")
         }
     }
 
     func distinguishingValueKinds(_ swiftDoc: [String: BSONValue?], _ testDocs: Document...) {
         let (bsonMissingDoc, bsonNullDoc, bsonBothDoc) = getTestingDocuments(testDocs)
         let keys = ["hello", "i am missing", "what is the meaning of life"]
+        let (dne, exists, null) = ("Key DNE!", "Key exists!", "Key is null!")
 
-        print("BSONMissing =========================")
+        print("\n=== DISTINGUISHING VALUE KINDS ===\n")
+
+        print(BSONValueTests.bsonMissingHeader)
         for key in keys {
             let keyVal = bsonMissingDoc[key]
             if let keyVal = keyVal, keyVal == BSONMissing() {
-                debugPrint("Key DNE!")
+                debugPrint(dne)
             } else if keyVal != nil {
-                debugPrint("Key exists!")
+                debugPrint(exists)
             } else {
-                debugPrint("Key is null!")
+                debugPrint(null)
             }
         }
 
-        print("SWIFT (BSONValue?) =====================")
+        print(BSONValueTests.swiftDocHeader)
         for key in keys {
             let keyVal = swiftDoc[key]
             if let keyVal = keyVal {
                 if keyVal == nil {
-                    debugPrint("Key is null!")
+                    debugPrint(null)
                 } else {
-                    debugPrint("Key exists!")
+                    debugPrint(exists)
                 }
             } else {
-                debugPrint("Key DNE!")
+                debugPrint(dne)
             }
         }
 
-        print("BSONNull =====================")
+        print(BSONValueTests.bsonNullHeader)
         for key in keys {
             let keyVal = bsonNullDoc[key]
             if let keyVal = keyVal, keyVal == BSONNull() {
-                debugPrint("Key is null!")
+                debugPrint(null)
             } else if keyVal != nil {
-                debugPrint("Key exists!")
+                debugPrint(exists)
             } else {
-                debugPrint("Key DNE!")
+                debugPrint(dne)
             }
         }
 
-        print("Both BSONNull and BSONMissing ==========s===========")
+        print(BSONValueTests.bsonBothHeader)
         for key in keys {
             let keyVal = bsonBothDoc[key]
-            debugPrint("\(key) -> \(keyVal)")
             if let keyVal = keyVal, keyVal == BSONNull() {
-                debugPrint("Key is null!")
+                debugPrint(null)
             } else if let keyVal = keyVal, keyVal == BSONMissing() {
-                debugPrint("Key DNE!")
+                debugPrint(dne)
             } else {
-                debugPrint("Key exists!")
+                debugPrint(exists)
             }
         }
     }
 
     func gettingNilKeyValue(_ swiftDoc: [String: BSONValue?], _ testDocs: Document...) {
         let (bsonMissingDoc, bsonNullDoc, bsonBothDoc) = getTestingDocuments(testDocs)
+        let nullKey = "what is the meaning of life"
+        let msg = "Got back null val: "
 
-        let bsonMissingVal = bsonMissingDoc["what is the meaning of life"]
+        print("\n=== GETTING A NIL VALUE ===\n")
+
+        print(BSONValueTests.bsonMissingHeader)
+        let bsonMissingVal = bsonMissingDoc[nullKey]
         if bsonMissingVal == nil {
-            debugPrint("Got back null val from doc: \(String(describing: bsonMissingVal))")
+            debugPrint(msg + "\(String(describing: bsonMissingVal))")
         }
 
-        let swiftVal = swiftDoc["what is the meaning of life"]
+        print(BSONValueTests.swiftDocHeader)
+        let swiftVal = swiftDoc[nullKey]
         if let swiftVal = swiftVal {
             if swiftVal == nil {
-                debugPrint("Got back null val from dict: \(String(describing: swiftVal))")
+                debugPrint(msg + "\(String(describing: swiftVal))")
             }
         }
 
-        let bsonNullVal = bsonNullDoc["what is the meaning of life"]
+        print(BSONValueTests.bsonNullHeader)
+        let bsonNullVal = bsonNullDoc[nullKey]
         if let bsonNullVal = bsonNullVal {
             if bsonNullVal == BSONNull() {
-                debugPrint("Got back null val from doc: \(String(describing: bsonNullVal))")
+                debugPrint(msg + "\(String(describing: bsonNullVal))")
             }
         }
 
-        let bsonBothVal = bsonBothDoc["what is the meaning of life"]
+        print(BSONValueTests.bsonBothHeader)
+        let bsonBothVal = bsonBothDoc[nullKey]
         if let bsonBothVal = bsonBothVal {
             if bsonBothVal == BSONNull() {
-                debugPrint("Got back null val from doc: \(String(describing: bsonBothVal))")
+                debugPrint(msg + "\(String(describing: bsonBothVal))")
             }
         }
     }
