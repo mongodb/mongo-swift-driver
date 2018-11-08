@@ -12,6 +12,7 @@ import mongoc
 extension Document: Sequence {
     /// The element type of a document: a tuple containing an individual key-value pair.
     public typealias KeyValuePair = (key: String, value: BSONValue?)
+    public typealias SubSequence = Document
 
     /// Returns the number of (key, value) pairs stored at the top level of this `Document`.
     public var count: Int { return Int(bson_count_keys(self.data)) }

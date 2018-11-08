@@ -28,7 +28,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     /// direct access to the storage's pointer to a bson_t
     internal var data: UnsafeMutablePointer<bson_t>! { return storage.pointer }
 
-    /// Returns a `[String]` containing the keys in this `Document`.
+    /// Returns a `[String]` containing the keys in this `Document`. TODO: Create at initialization.
     public var keys: [String] {
         return self.makeIterator().keys
     }
