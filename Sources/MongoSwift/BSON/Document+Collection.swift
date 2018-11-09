@@ -21,7 +21,7 @@ extension Document: Collection {
     public func index(after i: Int) -> Int {
         // Index must be a valid one, meaning it must exist somewhere in self.keys.
         precondition(self.startIndex ... self.endIndex - 1 ~= i)
-        return self.keys.index(after: i)
+        return i + 1
     }
 
     public subscript(position: Int) -> Document.KeyValuePair {
