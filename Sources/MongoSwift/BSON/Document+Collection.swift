@@ -18,13 +18,18 @@ extension Document: Collection {
         return self.count
     }
 
+    private func validIndex(_ i: Int) -> Bool {
+        return self.startIndex ... self.endIndex - 1 ~= i
+    }
+
     public func index(after i: Int) -> Int {
         // Index must be a valid one, meaning it must exist somewhere in self.keys.
-        precondition(self.startIndex ... self.endIndex - 1 ~= i)
+        precondition(validIndex(i))
         return i + 1
     }
 
     public subscript(position: Int) -> Document.KeyValuePair {
-        return (self.keys[position], self.values[position])
+        precondition(validIndex(position))
+        return self.makeIterator().keyValuePairs[position]
     }
 }
