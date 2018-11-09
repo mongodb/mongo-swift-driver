@@ -195,6 +195,9 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      *  ```
      */
     public subscript(key: String) -> BSONValue? {
+        // TODO: This `get` method _should_ guarantee constant-time O(1) access, and it is possible to make it do so.
+        // This criticism also applies to indexed-based subscripting via `Int`.
+        // See SWIFT-250.
         get { return DocumentIterator(forDocument: self, advancedTo: key)?.currentValue }
         set(newValue) {
             do {
