@@ -85,7 +85,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         self.storage = DocumentStorage()
         // This is technically not consistent, but the only way this inconsistency can cause an issue is if we fail to
         // setValue(), in which case we crash anyways.
-        self.countFast = keyValuePairs.count
+        self.countFast = 0
         for (key, value) in keyValuePairs {
             do {
                 try self.setValue(for: key, to: value, checkForKey: false)
