@@ -1,3 +1,4 @@
+import bson
 import Foundation
 @testable import MongoSwift
 import Nimble
@@ -43,7 +44,8 @@ final class DocumentTests: MongoSwiftTestCase {
             ("testNonOverwritable", testNonOverwritable),
             ("testReplaceValueWithNewType", testReplaceValueWithNewType),
             ("testReplaceValueWithNil", testReplaceValueWithNil),
-            ("testReplaceValueNoop", testReplaceValueNoop)
+            ("testReplaceValueNoop", testReplaceValueNoop),
+            ("testDocumentConformanceToCollection", testDocumentConformanceToCollection)
         ]
     }
 
@@ -582,5 +584,28 @@ final class DocumentTests: MongoSwiftTestCase {
         }
 
         expect(noops).to(equal(["null": 5, "maxkey": "hi", "minkey": false]))
+    }
+
+    func testDocumentConformanceToCollection() throws {
+        func trueDocCount(_ document: Document) -> Int {
+            return Int(bson_count_keys(document.data))
+        }
+        let secondKey = "b"
+        let secondVal: BSONValue = 2
+
+        var doc: Document = [ "a": 4, secondKey: secondVal ]
+        expect(doc.startIndex).to(equal(0))
+        expect(doc.endIndex).to(equal(doc.count))
+        expect(doc.index(after: doc.index(after: doc.startIndex))).to(equal(doc.endIndex))
+        expect(doc[1].key).to(equal(secondKey))
+        expect(doc[1].value).to(bsonEqual(secondVal))
+
+        expect(doc.count).to(equal(trueDocCount(doc)))
+        let otherDoc: Document = ["c": 3, "d": "hello world"]
+        try doc.merge(otherDoc)
+        expect(doc.count).to(equal(trueDocCount(doc)))
+
+        doc["new_key"] = "new value"
+        expect(doc.count).to(equal(trueDocCount(doc)))
     }
 }
