@@ -248,6 +248,8 @@ public class DocumentIterator: IteratorProtocol {
         return values
     }
 
+    /// Returns an array of KeyValue pairs from the iterator's current position to the end. The iter will be exhausted
+    /// after this property is accessed.
     internal var keyValuePairs: [Document.KeyValuePair] {
         var keyValuePairs = [Document.KeyValuePair]()
         while self.advance() { keyValuePairs.append((self.currentKey, self.currentValue)) }

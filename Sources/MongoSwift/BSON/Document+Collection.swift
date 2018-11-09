@@ -8,11 +8,13 @@
 import Foundation
 
 extension Document: Collection {
+    /// Returns the start index of the Document.
     public var startIndex: Int {
         precondition(self.count > 0)
         return 0
     }
 
+    /// Returns the end index of the Document.
     public var endIndex: Int {
         precondition(self.count > 0)
         return self.count
@@ -22,6 +24,7 @@ extension Document: Collection {
         return self.startIndex ... self.endIndex - 1 ~= i
     }
 
+    /// Returns the index after the given index for this Document.
     public func index(after i: Int) -> Int {
         // Index must be a valid one, meaning it must exist somewhere in self.keys.
         precondition(validIndex(i))
