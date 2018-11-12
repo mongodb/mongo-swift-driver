@@ -45,7 +45,9 @@ final class MongoClientTests: XCTestCase {
     }
 
     func testServerVersion() throws {
+        // swiftlint:disable nesting
         typealias Version = MongoClient.ServerVersion
+        // swiftlint:enable nesting
 
         expect(try MongoClient().serverVersion()).toNot(throwError())
 
