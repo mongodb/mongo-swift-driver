@@ -7,7 +7,9 @@ prove useful to a contributor!
 ### Issues
 
 Before creating a new issue, look at current and past issues both on Github
-**AND** MongoDB JIRA. Also look at outstanding PRs, and overall, ensure that
+(https://github.com/mongodb/mongo-swift-driver/issues) **AND** MongoDB JIRA
+(https://jira.mongodb.org/projects/SWIFT/issues). Also look at outstanding PRs
+(https://github.com/mongodb/mongo-swift-driver/pulls), and overall, ensure that
 the issue hasn't already been reported. In particular, MongoDB's JIRA has most
 of the active development information on this driver.
 
