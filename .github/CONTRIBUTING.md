@@ -6,12 +6,12 @@ prove useful to a contributor!
 
 ### Issues
 
-Before creating a new issue, look at current and past issues both on Github
-(https://github.com/mongodb/mongo-swift-driver/issues) **AND** MongoDB JIRA
-(https://jira.mongodb.org/projects/SWIFT/issues). Also look at outstanding PRs
-(https://github.com/mongodb/mongo-swift-driver/pulls), and overall, ensure that
-the issue hasn't already been reported. In particular, MongoDB's JIRA has most
-of the active development information on this driver.
+Before creating a new issue, look at current and past issues both on
+[Github](https://github.com/mongodb/mongo-swift-driver/issues) **AND** [MongoDB
+JIRA](https://jira.mongodb.org/projects/SWIFT/issues). Also look at
+[outstanding PRs](https://github.com/mongodb/mongo-swift-driver/pulls), and
+overall, ensure that the issue hasn't already been reported. In particular,
+MongoDB's JIRA has most of the active development information on this driver.
 
 If you decide that your issue truly is unique and new, then please follow the
 guidelines for submitting an issue, for which there is a template (you'll see
