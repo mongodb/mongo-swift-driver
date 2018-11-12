@@ -9,38 +9,40 @@
 
 ## Information
 
-**Swift version**
+### Swift version
 
 What does this command give you?
 ```
 $ swift --version
 ```
 
-Operating System:
+### Operating system
 
 What does this command give you?
 ```
 $ uname -a
 ```
 
-Driver version:
+### Driver version
 
 What does this command give you?
 ```
-$ cat Package.swift
+$ cat Package.swift # Only applies if you are using Swift package manager
 ```
 
-Version of `libmongoc` and `libbson`:
+### Version of `libmongoc` and `libbson`
+
+What does this command give you?
 ```
 $ brew list --versions mongo-c-driver # Only applies if you installed via brew
 ```
 
-How did you install `libmongoc` and `libbson` on your system:
+### How did you install `libmongoc` and `libbson` on your system
 Did you use `brew`? Did you install them manually? etc.
 
 ## What is the problem? 
 
-*BE SPECIFIC*:
+**BE SPECIFIC**:
 * What is the _expected_ behavior and what is _actually_ happening?
 * Do you have any particular output that demonstrates this problem?
 * Do you have any ideas on _why_ this may be happening that could give us a
