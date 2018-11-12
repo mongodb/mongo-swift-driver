@@ -34,15 +34,15 @@ $ cat Package.swift # Only applies if you are using Swift package manager
 $ cat Podfile # Only applies if you are using Cocoapods
 ```
 
+### How did you install `libmongoc` and `libbson` on your system
+Did you use `brew`? Did you install them manually? etc.
+
 ### Version of `libmongoc` and `libbson`
 
 What does this command give you?
 ```
 $ brew list --versions mongo-c-driver # Only applies if you installed via brew
 ```
-
-### How did you install `libmongoc` and `libbson` on your system
-Did you use `brew`? Did you install them manually? etc.
 
 ## What is the problem? 
 
