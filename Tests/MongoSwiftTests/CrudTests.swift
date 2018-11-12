@@ -301,7 +301,11 @@ private class BulkWriteTest: CrudTest {
             let arrayFilters = args["arrayFilters"] as? [Document]
             let collation = args["collation"] as? Document
             let upsert = args["upsert"] as? Bool
-            return UpdateOneModel(filter: filter, update: update, arrayFilters: arrayFilters, collation: collation, upsert: upsert)
+            return UpdateOneModel(filter: filter,
+                                  update: update,
+                                  arrayFilters: arrayFilters,
+                                  collation: collation,
+                                  upsert: upsert)
 
         case "updateMany":
             let filter: Document = try args.get("filter")
@@ -309,7 +313,11 @@ private class BulkWriteTest: CrudTest {
             let arrayFilters = args["arrayFilters"] as? [Document]
             let collation = args["collation"] as? Document
             let upsert = args["upsert"] as? Bool
-            return UpdateManyModel(filter: filter, update: update, arrayFilters: arrayFilters, collation: collation, upsert: upsert)
+            return UpdateManyModel(filter: filter,
+                                   update: update,
+                                   arrayFilters: arrayFilters,
+                                   collation: collation,
+                                   upsert: upsert)
 
         default:
             throw TestError(message: "Unknown bulkWrite request name: \(name)")
@@ -390,7 +398,9 @@ private class DistinctTest: CrudTest {
         let fieldName: String = try self.args.get("fieldName")
         let options = DistinctOptions(collation: self.collation)
         // rather than casting to all the possible BSON types, just wrap the arrays in documents to compare them
-        let resultDoc: Document = ["result": try coll.distinct(fieldName: fieldName, filter: filter ?? [:], options: options)]
+        let resultDoc: Document = ["result": try coll.distinct(fieldName: fieldName,
+                                                               filter: filter ?? [:],
+                                                               options: options)]
         let expectedDoc: Document = ["result": self.result]
         expect(resultDoc).to(equal(expectedDoc))
     }
@@ -401,7 +411,7 @@ private class FindTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let filter: Document = try self.args.get("filter")
         let options = FindOptions(batchSize: self.batchSize, collation: self.collation, limit: self.limit,
-                                    skip: self.skip, sort: self.sort)
+                                  skip: self.skip, sort: self.sort)
         let result = try Array(coll.find(filter, options: options))
         expect(result).to(equal(self.result as? [Document]))
     }
@@ -439,7 +449,8 @@ private class FindOneAndUpdateTest: CrudTest {
         let update: Document = try self.args.get("update")
 
         let opts = FindOneAndUpdateOptions(arrayFilters: self.arrayFilters, collation: self.collation,
-            projection: self.projection, returnDocument: self.returnDoc, sort: self.sort, upsert: self.upsert)
+                                           projection: self.projection, returnDocument: self.returnDoc,
+                                           sort: self.sort, upsert: self.upsert)
 
         let result = try coll.findOneAndUpdate(filter: filter, update: update, options: opts)
         self.verifyFindAndModifyResult(result)
