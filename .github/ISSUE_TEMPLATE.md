@@ -29,6 +29,10 @@ What does this command give you?
 ```
 $ cat Package.swift # Only applies if you are using Swift package manager
 ```
+*or*
+```
+$ cat Podfile # Only applies if you are using Cocoapods
+```
 
 ### Version of `libmongoc` and `libbson`
 
