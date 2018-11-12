@@ -1,6 +1,6 @@
 import Foundation
-@testable import MongoSwift
 import mongoc
+@testable import MongoSwift
 import Nimble
 import XCTest
 

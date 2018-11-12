@@ -77,8 +77,8 @@ final class MongoCollection_BulkWriteTests: XCTestCase {
 
     func testInserts() throws {
         let requests = [
-            InsertOneModel(["_id" : 1, "x": 11]),
-            InsertOneModel(["x" : 22])
+            InsertOneModel(["_id": 1, "x": 11]),
+            InsertOneModel(["x": 22])
         ]
 
         let result: BulkWriteResult! = try self.coll.bulkWrite(requests)
@@ -97,10 +97,10 @@ final class MongoCollection_BulkWriteTests: XCTestCase {
         try createFixtures(4)
 
         let requests: [WriteModel] = [
-            UpdateOneModel(filter: ["_id" : 2], update: ["$inc": ["x": 1] as Document]),
+            UpdateOneModel(filter: ["_id": 2], update: ["$inc": ["x": 1] as Document]),
             UpdateManyModel(filter: ["_id": ["$gt": 2] as Document], update: ["$inc": ["x": -1] as Document]),
-            UpdateOneModel(filter: ["_id" : 5], update: ["$set": ["x": 55] as Document], upsert: true),
-            UpdateOneModel(filter: ["x" : 66], update: ["$set": ["x": 66] as Document], upsert: true),
+            UpdateOneModel(filter: ["_id": 5], update: ["$set": ["x": 55] as Document], upsert: true),
+            UpdateOneModel(filter: ["x": 66], update: ["$set": ["x": 66] as Document], upsert: true),
             UpdateManyModel(filter: ["x": ["$gt": 50] as Document], update: ["$inc": ["x": 1] as Document])
         ]
 
@@ -126,7 +126,7 @@ final class MongoCollection_BulkWriteTests: XCTestCase {
         try createFixtures(4)
 
         let requests: [WriteModel] = [
-            DeleteOneModel(["_id" : 1]),
+            DeleteOneModel(["_id": 1]),
             DeleteManyModel(["_id": ["$gt": 2] as Document])
         ]
 
@@ -143,8 +143,8 @@ final class MongoCollection_BulkWriteTests: XCTestCase {
         try createFixtures(3)
 
         let requests: [WriteModel] = [
-            UpdateOneModel(filter: ["_id" : ["$gt": 1] as Document], update: ["$inc": ["x": 1] as Document]),
-            UpdateManyModel(filter: ["_id" : ["$gt": 1] as Document], update: ["$inc": ["x": 1] as Document]),
+            UpdateOneModel(filter: ["_id": ["$gt": 1] as Document], update: ["$inc": ["x": 1] as Document]),
+            UpdateManyModel(filter: ["_id": ["$gt": 1] as Document], update: ["$inc": ["x": 1] as Document]),
             InsertOneModel(["_id": 4]),
             DeleteManyModel(["x": ["$nin": [24, 34]] as Document]),
             ReplaceOneModel(filter: ["_id": 4], replacement: ["_id": 4, "x": 44], upsert: true)
@@ -169,7 +169,7 @@ final class MongoCollection_BulkWriteTests: XCTestCase {
 
     func testUnacknowledgedWriteConcern() throws {
         let requests = [
-            InsertOneModel(["_id" : 1])
+            InsertOneModel(["_id": 1])
         ]
 
         let options = BulkWriteOptions(writeConcern: try WriteConcern(w: .number(0)))

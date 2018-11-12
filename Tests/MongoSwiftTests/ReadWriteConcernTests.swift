@@ -9,14 +9,14 @@ extension WriteConcern {
     fileprivate convenience init(_ doc: Document) throws {
         let j = doc["journal"] as? Bool
 
-        var w: W? = nil
+        var w: W?
         if let wtag = doc["w"] as? String {
             w = wtag == "majority" ? .majority : .tag(wtag)
         } else if let wInt = doc["w"] as? Int {
             w = .number(Int32(wInt))
         }
 
-        var wt: Int32? = nil
+        var wt: Int32?
         if let wtInt = doc["wtimeoutMS"] as? Int {
             wt = Int32(wtInt)
         }

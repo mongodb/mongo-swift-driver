@@ -97,7 +97,7 @@ extension MongoClient {
                     return self.patch < version.patch
                 }
                 // major equal but minor isn't, so compare minor
-                return self.minor < version.minor 
+                return self.minor < version.minor
             }
             // just compare major versions
             return self.major < version.major
