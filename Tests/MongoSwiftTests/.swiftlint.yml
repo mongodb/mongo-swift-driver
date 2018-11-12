@@ -18,8 +18,3 @@ opt_in_rules:
   - missing_docs
   - implicit_return
   - fatal_error_message
-
-excluded:
-  - build
-  - .build
-  - Specs
