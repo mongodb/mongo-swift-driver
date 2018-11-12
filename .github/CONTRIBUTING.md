@@ -15,7 +15,7 @@ driver.
 If you decide that your issue truly is unique and new, then please follow the
 guidelines for submitting an issue, for which there is a template (you'll see
 this template when you go to create the issue). Make sure to write in clear and
-easy-to-understand English. Your issue is more likely to be resolved quicker if
+easy-to-understand English. Your issue is more likely to be resolved quickly if
 the maintainers and contributors of this project can understand what you are
 saying.
 
