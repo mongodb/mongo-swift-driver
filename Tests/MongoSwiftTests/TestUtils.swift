@@ -36,7 +36,10 @@ extension XCTestCase {
 
 extension MongoClient {
     internal func serverVersion() throws -> ServerVersion {
-        let buildInfo = try self.db("admin").runCommand(["buildInfo": 1], options: RunCommandOptions(readPreference: ReadPreference(.primary)))
+        let buildInfo = try self.db("admin").runCommand(["buildInfo": 1],
+                                                        options: RunCommandOptions(
+                                                            readPreference: ReadPreference(.primary)
+                                                        ))
         guard let versionString = buildInfo["version"] as? String else {
             throw TestError(message: "buildInfo reply missing version string: \(buildInfo)")
         }
@@ -135,7 +138,8 @@ func clean(json: String?) -> String {
     guard let str = json else { return "" }
     do {
         // parse as [String: Any] so we get consistent key ordering
-        guard let object = try JSONSerialization.jsonObject(with: str.data(using: .utf8)!, options: []) as? [String: Any] else {
+        guard let object = try JSONSerialization.jsonObject(with: str.data(using: .utf8)!,
+                                                            options: []) as? [String: Any] else {
             return String()
         }
         let data = try JSONSerialization.data(withJSONObject: object, options: [])
