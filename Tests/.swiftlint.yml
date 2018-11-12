@@ -5,6 +5,8 @@ disabled_rules:
   - todo
   - type_name
   - type_body_length
+  - force_try
+  - force_cast
 
 opt_in_rules:
   - vertical_parameter_alignment_on_call
@@ -20,4 +22,4 @@ opt_in_rules:
 excluded:
   - build
   - .build
-  - docs
+  - Specs
