@@ -103,10 +103,12 @@ final class DocumentTests: XCTestCase {
         expect(try Binary(data: testData, subtype: .uuidDeprecated)).to(throwError())
         expect(try Binary(data: testData, subtype: .uuid)).to(throwError())
 
-        let expectedKeys = ["string", "true", "false", "int", "int32", "int64", "double", "decimal128",
-                                "minkey", "maxkey", "date", "timestamp", "nestedarray", "nesteddoc", "oid",
-                                "regex", "array1", "array2", "null", "code", "codewscope", "binary0", "binary1",
-                                "binary2", "binary3", "binary4", "binary5", "binary6", "binary7"]
+        let expectedKeys = [
+            "string", "true", "false", "int", "int32", "int64", "double", "decimal128",
+            "minkey", "maxkey", "date", "timestamp", "nestedarray", "nesteddoc", "oid",
+            "regex", "array1", "array2", "null", "code", "codewscope", "binary0", "binary1",
+            "binary2", "binary3", "binary4", "binary5", "binary6", "binary7"
+        ]
         expect(doc.count).to(equal(expectedKeys.count))
         expect(doc.keys).to(equal(expectedKeys))
 
@@ -126,7 +128,10 @@ final class DocumentTests: XCTestCase {
 
         let regex = doc["regex"] as? RegularExpression
         expect(regex).to(equal(RegularExpression(pattern: "^abc", options: "imx")))
-        expect(regex?.nsRegularExpression).to(equal(try NSRegularExpression(pattern: "^abc", options: NSRegularExpression.optionsFromString("imx"))))
+        expect(regex?.nsRegularExpression).to(equal(try NSRegularExpression(
+            pattern: "^abc",
+            options: NSRegularExpression.optionsFromString("imx")
+        )))
 
         expect(doc["array1"] as? [Int]).to(equal([1, 2]))
         expect(doc["array2"] as? [String]).to(equal(["string1", "string2"]))
