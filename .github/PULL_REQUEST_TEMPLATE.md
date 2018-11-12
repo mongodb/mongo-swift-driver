@@ -9,8 +9,8 @@ new warnings or errors.
 the documentation as part of a separate commit).
 * If you added new functionality, then you've added new tests that correctly
 verify its correctness.
-* You ran `make test` and `make benchmark` and ensured that the driver still
-passes all of its pre-existing tests.
+* You ran `make test` and ensured that the driver still passes all of its
+pre-existing tests.
 * You read `CONTRIBUTING.md`!
 
 <!--
