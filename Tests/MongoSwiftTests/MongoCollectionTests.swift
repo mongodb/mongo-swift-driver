@@ -238,7 +238,9 @@ final class MongoCollectionTests: XCTestCase {
         try coll.insertOne(["cat": nil])
         let distinct2 = try coll.distinct(fieldName: "cat", filter: [:])
         expect(distinct2).to(haveCount(3))
+        // swiftlint:disable trailing_closure
         expect(distinct2).to(containElementSatisfying({ $0 == nil }))
+        // swiftlint:enable trailing_closure
     }
 
     func testCreateIndexFromModel() throws {
@@ -429,19 +431,25 @@ final class MongoCollectionTests: XCTestCase {
     func testFindOneAndReplace() throws {
         // test using maxTimeMS
         let opts1 = FindOneAndReplaceOptions(maxTimeMS: 100)
-        let result1 = try self.coll.findOneAndReplace(filter: ["cat": "cat"], replacement: ["cat": "blah"], options: opts1)
+        let result1 = try self.coll.findOneAndReplace(filter: ["cat": "cat"],
+                                                      replacement: ["cat": "blah"],
+                                                      options: opts1)
         expect(result1).to(equal(self.doc2))
         expect(try self.coll.count()).to(equal(2))
 
         // test using bypassDocumentValidation
         let opts2 = FindOneAndReplaceOptions(bypassDocumentValidation: true)
-        let result2 = try self.coll.findOneAndReplace(filter: ["cat": "dog"], replacement: ["cat": "hi"], options: opts2)
+        let result2 = try self.coll.findOneAndReplace(filter: ["cat": "dog"],
+                                                      replacement: ["cat": "hi"],
+                                                      options: opts2)
         expect(result2).to(equal(self.doc1))
         expect(try self.coll.count()).to(equal(2))
 
         // test using a write concern
         let opts3 = FindOneAndReplaceOptions(writeConcern: try WriteConcern(w: .majority))
-        let result3 = try self.coll.findOneAndReplace(filter: ["cat": "blah"], replacement: ["cat": "cat"], options: opts3)
+        let result3 = try self.coll.findOneAndReplace(filter: ["cat": "blah"],
+                                                      replacement: ["cat": "cat"],
+                                                      options: opts3)
         expect(result3).to(equal(["_id": 2, "cat": "blah"]))
         expect(try self.coll.count()).to(equal(2))
 
@@ -455,19 +463,25 @@ final class MongoCollectionTests: XCTestCase {
     func testFindOneAndUpdate() throws {
         // test using maxTimeMS
         let opts1 = FindOneAndUpdateOptions(maxTimeMS: 100)
-        let result1 = try self.coll.findOneAndUpdate(filter: ["cat": "cat"], update: ["$set": ["cat": "blah"] as Document], options: opts1)
+        let result1 = try self.coll.findOneAndUpdate(filter: ["cat": "cat"],
+                                                     update: ["$set": ["cat": "blah"] as Document],
+                                                     options: opts1)
         expect(result1).to(equal(self.doc2))
         expect(try self.coll.count()).to(equal(2))
 
         // test using bypassDocumentValidation
         let opts2 = FindOneAndUpdateOptions(bypassDocumentValidation: true)
-        let result2 = try self.coll.findOneAndUpdate(filter: ["cat": "dog"], update: ["$set": ["cat": "hi"] as Document], options: opts2)
+        let result2 = try self.coll.findOneAndUpdate(filter: ["cat": "dog"],
+                                                     update: ["$set": ["cat": "hi"] as Document],
+                                                     options: opts2)
         expect(result2).to(equal(self.doc1))
         expect(try self.coll.count()).to(equal(2))
 
         // test using a write concern
         let opts3 = FindOneAndUpdateOptions(writeConcern: try WriteConcern(w: .majority))
-        let result3 = try self.coll.findOneAndUpdate(filter: ["cat": "blah"], update: ["$set": ["cat": "cat"] as Document], options: opts3)
+        let result3 = try self.coll.findOneAndUpdate(filter: ["cat": "blah"],
+                                                     update: ["$set": ["cat": "cat"] as Document],
+                                                     options: opts3)
         expect(result3).to(equal(["_id": 2, "cat": "blah"]))
         expect(try self.coll.count()).to(equal(2))
 
