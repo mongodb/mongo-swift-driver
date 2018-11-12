@@ -41,14 +41,14 @@ Did you use `brew`? Did you install them manually? etc.
 ## What is the problem? 
 
 *BE SPECIFIC*:
-1. What is the _expected_ behavior and what is _actually_ happening?
-2. Do you have any particular output that demonstrates this problem?
-3. Do you have any ideas on _why_ this may be happening that could give us a
+* What is the _expected_ behavior and what is _actually_ happening?
+* Do you have any particular output that demonstrates this problem?
+* Do you have any ideas on _why_ this may be happening that could give us a
 clue in the right direction?
-4. Did this issue arise out of nowhere, after an update (of the driver? of
+* Did this issue arise out of nowhere, after an update (of the driver? of
 Swift?)? 
-5. Is there a workaround that seems to avoid this this issue?
-6. Are there multiple ways of triggering this bug (perhaps more than one
+* Is there a workaround that seems to avoid this this issue?
+* Are there multiple ways of triggering this bug (perhaps more than one
 function produce a crash)?
 
 ## Reproducing the bug
