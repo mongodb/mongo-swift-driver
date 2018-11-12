@@ -1,6 +1,8 @@
 ## Contributing
 
-First, thanks for considering contributing to our project!
+First, thanks for considering contributing to our project! In general, our
+`Development.md` contains a lot of development-related information that could
+prove useful to a contributor!
 
 ### Issues
 
