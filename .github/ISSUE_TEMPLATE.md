@@ -34,6 +34,19 @@ $ cat Package.swift # Only applies if you are using Swift package manager
 $ cat Podfile # Only applies if you are using Cocoapods
 ```
 
+### What is the version(s) of `mongod` that you are running with the driver?
+Try running:
+```
+$ mongod --version
+```
+or, running this in a MongoDB shell connected to the relevant node(s):
+```
+> db.version()
+```
+
+### What is your server topology?
+How is your MongoDB deployment configured?
+
 ### How did you install `libmongoc` and `libbson` on your system
 Did you use `brew`? Did you install them manually? etc.
 
