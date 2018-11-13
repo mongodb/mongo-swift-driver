@@ -4,7 +4,7 @@ import XCTest
 
 let center = NotificationCenter.default
 
-final class CommandMonitoringTests: XCTestCase {
+final class CommandMonitoringTests: MongoSwiftTestCase {
     static var allTests: [(String, (CommandMonitoringTests) -> () throws -> Void)] {
         return [
             ("testCommandMonitoring", testCommandMonitoring),
@@ -21,7 +21,7 @@ final class CommandMonitoringTests: XCTestCase {
         let client = try MongoClient(options: ClientOptions(eventMonitoring: true))
         client.enableMonitoring(forEvents: .commandMonitoring)
 
-        let cmPath = XCTestCase.specsPath + "/command-monitoring/tests"
+        let cmPath = MongoSwiftTestCase.specsPath + "/command-monitoring/tests"
         let testFiles = try FileManager.default.contentsOfDirectory(atPath: cmPath).filter { $0.hasSuffix(".json") }
         for filename in testFiles {
             // read in the file data and parse into a struct

@@ -2,7 +2,7 @@
 import Nimble
 import XCTest
 
-final class CodecTests: XCTestCase {
+final class CodecTests: MongoSwiftTestCase {
     static var allTests: [(String, (CodecTests) -> () throws -> Void)] {
         return [
             ("testEncodeListDatabasesOptions", testEncodeListDatabasesOptions),

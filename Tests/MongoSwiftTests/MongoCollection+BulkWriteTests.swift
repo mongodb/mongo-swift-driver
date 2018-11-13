@@ -2,7 +2,7 @@
 import Nimble
 import XCTest
 
-final class MongoCollection_BulkWriteTests: XCTestCase {
+final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
     static var allTests: [(String, (MongoCollection_BulkWriteTests) -> () throws -> Void)] {
         return [
             ("testEmptyRequests", testEmptyRequests),

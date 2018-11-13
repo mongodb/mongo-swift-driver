@@ -27,7 +27,7 @@ extension Data {
     }
 }
 
-final class DocumentTests: XCTestCase {
+final class DocumentTests: MongoSwiftTestCase {
     static var allTests: [(String, (DocumentTests) -> () throws -> Void)] {
         return [
             ("testDocument", testDocument),
@@ -199,7 +199,7 @@ final class DocumentTests: XCTestCase {
     }
 
     func testIntEncodesAsInt32OrInt64() {
-        if XCTestCase.is32Bit { return }
+        if MongoSwiftTestCase.is32Bit { return }
 
         let int32min_sub1 = Int64(Int32.min) - Int64(1)
         let int32max_add1 = Int64(Int32.max) + Int64(1)
@@ -233,7 +233,7 @@ final class DocumentTests: XCTestCase {
             "Double type": ["1.23456789012345677E+18", "-1.23456789012345677E+18"]
         ]
 
-        let testFilesPath = XCTestCase.specsPath + "/bson-corpus/tests"
+        let testFilesPath = MongoSwiftTestCase.specsPath + "/bson-corpus/tests"
         var testFiles = try FileManager.default.contentsOfDirectory(atPath: testFilesPath)
         testFiles = testFiles.filter { $0.hasSuffix(".json") }
 
@@ -430,7 +430,7 @@ final class DocumentTests: XCTestCase {
         ]))
 
         // return early as we will to use an Int requiring > 32 bits after this 
-        if XCTestCase.is32Bit {
+        if MongoSwiftTestCase.is32Bit {
             return
         }
 

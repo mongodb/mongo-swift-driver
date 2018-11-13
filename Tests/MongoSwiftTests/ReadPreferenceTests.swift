@@ -2,7 +2,7 @@
 import Nimble
 import XCTest
 
-final class ReadPreferenceTests: XCTestCase {
+final class ReadPreferenceTests: MongoSwiftTestCase {
     static var allTests: [(String, (ReadPreferenceTests) -> () throws -> Void)] {
         return [
             ("testMode", testMode),
