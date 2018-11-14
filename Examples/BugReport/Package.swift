@@ -18,6 +18,6 @@ let package = Package(
             dependencies: ["MongoSwift"]),
         .testTarget(
             name: "BugReportTests",
-            dependencies: ["BugReport"]),
+            dependencies: ["BugReport", "MongoSwift"]),
     ]
 )
