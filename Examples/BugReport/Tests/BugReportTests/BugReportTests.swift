@@ -5,7 +5,7 @@ import class Foundation.Bundle
 
 final class BugReportTests: XCTestCase {
     static var allTests = [
-        ("testBug", testBug),
+        ("testBug", testBug)
     ]
 
     func testBug() throws {
