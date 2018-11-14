@@ -16,12 +16,14 @@ What does this command give you?
 $ swift --version
 ```
 
+
 ### Operating system
 
 What does this command give you?
 ```
 $ uname -a
 ```
+
 
 ### Driver version
 
@@ -34,6 +36,7 @@ $ cat Package.swift # Only applies if you are using Swift package manager
 $ cat Podfile # Only applies if you are using Cocoapods
 ```
 
+
 ### What is the version(s) of `mongod` that you are running with the driver?
 Try running:
 ```
@@ -44,11 +47,16 @@ or, running this in a MongoDB shell connected to the relevant node(s):
 > db.version()
 ```
 
+
 ### What is your server topology?
+
 How is your MongoDB deployment configured?
 
+
 ### How did you install `libmongoc` and `libbson` on your system
+
 Did you use `brew`? Did you install them manually? etc.
+
 
 ### Version of `libmongoc` and `libbson`
 
@@ -56,6 +64,7 @@ What does this command give you?
 ```
 $ brew list --versions mongo-c-driver # Only applies if you installed via brew
 ```
+
 
 ## What is the problem? 
 
@@ -69,6 +78,7 @@ server, and/or Swift)?
 * Is there a workaround that seems to avoid this this issue?
 * Are there multiple ways of triggering this bug (perhaps more than one
 function produce a crash)?
+
 
 ## Reproducing the bug
 
