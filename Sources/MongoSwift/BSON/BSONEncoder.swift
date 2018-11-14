@@ -318,7 +318,7 @@ private struct _BSONKeyedEncodingContainer<K: CodingKey> : KeyedEncodingContaine
         self.container = container
     }
 
-    public mutating func encodeNil(forKey key: Key) throws { self.container[key.stringValue] = nil }
+    public mutating func encodeNil(forKey key: Key) throws { self.container[key.stringValue] = NSNull() }
     public mutating func encode(_ value: Bool, forKey key: Key) throws { self.container[key.stringValue] = value }
     public mutating func encode(_ value: Int, forKey key: Key) throws { self.container[key.stringValue] = value }
     public mutating func encode(_ value: Int8, forKey key: Key) throws { try self.encodeNumber(value, forKey: key) }
@@ -403,7 +403,7 @@ private struct _BSONUnkeyedEncodingContainer: UnkeyedEncodingContainer {
         self.container = container
     }
 
-    public mutating func encodeNil() throws { self.container.add(nil) }
+    public mutating func encodeNil() throws { self.container.add(NSNull()) }
     public mutating func encode(_ value: Bool) throws { self.container.add(value) }
     public mutating func encode(_ value: Int) throws { self.container.add(value) }
     public mutating func encode(_ value: Int8) throws { try self.encodeNumber(value) }
@@ -470,7 +470,7 @@ extension _BSONEncoder: SingleValueEncodingContainer {
 
     public func encodeNil() throws {
         assertCanEncodeNewValue()
-        self.storage.push(container: nil)
+        self.storage.push(container: NSNull())
     }
 
     public func encode(_ value: Bool) throws { try self.encodeBSONType(value) }

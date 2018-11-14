@@ -2,7 +2,7 @@ import Foundation
 
 /// A struct wrapping a `BSONValue` type that allows for encoding/
 /// decoding `BSONValue`s of unknown type.  
-public struct AnyBSONValue: Codable {
+public struct AnyBSONValue: Codable, Equatable {
     /// The `BSONValue` wrapped by this struct. 
     public let value: BSONValue
 
@@ -44,6 +44,10 @@ public struct AnyBSONValue: Codable {
         }
     }
 
+    public static func == (lhs: AnyBSONValue, rhs: AnyBSONValue) -> Bool {
+        return bsonEquals(lhs.value, rhs.value)
+    }
+
     /// Initializes a new `AnyBSONValue` from a `Decoder`. 
     ///
     /// Caveats for usage with `Decoder`s other than MongoSwift's `BSONDecoder` -
@@ -72,9 +76,12 @@ public struct AnyBSONValue: Codable {
         }
 
         let container = try decoder.singleValueContainer()
+
         // since we aren't sure which BSON type this is, just try decoding
         // to each of them and go with the first one that succeeds
-        if let value = try? container.decode(String.self) {
+        if container.decodeNil() {
+            self.value = NSNull()
+        } else if let value = try? container.decode(String.self) {
             self.value = value
         } else if let value = try? container.decode(Binary.self) {
             self.value = value

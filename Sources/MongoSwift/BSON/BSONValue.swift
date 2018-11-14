@@ -868,6 +868,7 @@ func bsonEquals(_ lhs: BSONValue, _ rhs: BSONValue) -> Bool {
     case (let l as ObjectId, let r as ObjectId): return l == r
     case (let l as CodeWithScope, let r as CodeWithScope): return l == r
     case (let l as Binary, let r as Binary): return l == r
+    case (_ as NSNull, _ as NSNull): return true
     case (let l as Document, let r as Document): return l == r
     case (let l as [BSONValue?], let r as [BSONValue?]): // TODO: SWIFT-242
         return zip(l, r).reduce(true, {prev, next in bsonEquals(next.0, next.1) && prev})
@@ -897,7 +898,7 @@ public func bsonEquals(_ lhs: BSONValue?, _ rhs: BSONValue?) -> Bool {
 /// A function for catching invalid BSONTypes that should not ever arise, and triggering a preconditionFailure when it
 /// finds such types.
 private func validateBSONTypes(_ lhs: BSONValue, _ rhs: BSONValue) {
-    let invalidTypes: [BSONType] = [.symbol, .dbPointer, .invalid, .undefined, .null]
+    let invalidTypes: [BSONType] = [.symbol, .dbPointer, .invalid, .undefined]
     guard !invalidTypes.contains(lhs.bsonType) else {
         preconditionFailure("\(lhs.bsonType) should not be used")
     }

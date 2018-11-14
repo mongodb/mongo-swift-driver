@@ -333,7 +333,7 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
                 DecodingError.Context(codingPath: self.decoder.codingPath,
                                       debugDescription: "Key \(_errorDescription(of: key)) not found."))
         }
-        return try self.container.getValue(for: key.stringValue) == nil
+        return try self.container.getValue(for: key.stringValue) is NSNull
     }
 
     // swiftlint:disable line_length
@@ -486,7 +486,7 @@ private struct _BSONUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     public mutating func decodeNil() throws -> Bool {
         try self.checkAtEnd()
 
-        if self.container[self.currentIndex] == nil {
+        if self.container[self.currentIndex] is NSNull {
             self.currentIndex += 1
             return true
         }
@@ -574,7 +574,7 @@ extension _BSONDecoder: SingleValueDecodingContainer {
     }
 
     /// Decode a null value from this container.
-    public func decodeNil() -> Bool { return self.storage.topContainer == nil }
+    public func decodeNil() -> Bool { return self.storage.topContainer is NSNull }
 
     /// Decode all the required types from this container using the helpers defined above.
     public func decode(_ type: Bool.Type) throws -> Bool { return try decodeBSONType(type) }

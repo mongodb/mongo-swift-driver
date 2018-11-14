@@ -142,8 +142,8 @@ final class CodecTests: MongoSwiftTestCase {
         expect(try encoder.encode(s2)).to(equal(s2Doc1))
         expect(try decoder.decode(OptionalsStruct.self, from: s2Doc1)).to(equal(s2))
 
-        // test with key in doc explicitly set to nil
-        let s2Doc2: Document = ["int": nil, "bool": true, "string": "hi"]
+        // test with key in doc explicitly set to NSNull
+        let s2Doc2: Document = ["int": NSNull(), "bool": true, "string": "hi"]
         expect(try decoder.decode(OptionalsStruct.self, from: s2Doc2)).to(equal(s2))
     }
 
@@ -716,11 +716,15 @@ final class CodecTests: MongoSwiftTestCase {
                                   from: wrappedMinKey.canonicalExtendedJSON).x.value as? MinKey).to(equal(minKey))
     }
 
-    struct OptionalAnyBSONWrapper: Codable {
-        let val: AnyBSONValue?
+    struct OptionalAnyBSONWrapper: Codable, Equatable {
+        let val: AnyBSONValue
 
-        init(_ value: BSONValue?) {
-            self.val = AnyBSONValue(ifPresent: value)
+        init(_ value: BSONValue) {
+            self.val = AnyBSONValue(value)
+        }
+
+        static func == (lhs: OptionalAnyBSONWrapper, rhs: OptionalAnyBSONWrapper) -> Bool {
+            return lhs.val == rhs.val
         }
     }
 
@@ -733,22 +737,24 @@ final class CodecTests: MongoSwiftTestCase {
 
         let doc1: Document = ["y": 1]
         expect(try encoder.encode(OptionalAnyBSONWrapper(doc1))).to(equal(["val": doc1]))
-        let doc2: Document = ["x": 1, "y": nil]
+        let doc2: Document = ["x": 1, "y": NSNull()]
         expect(try encoder.encode(OptionalAnyBSONWrapper(doc2))).to(equal(["val": doc2]))
         let arr1: [BSONValue] = [1, 2, "hi"]
         expect(try encoder.encode(OptionalAnyBSONWrapper(arr1))).to(equal(["val": arr1]))
 
         // an array with a nil
-        let arr2: [BSONValue?] = [1, "hi", nil]
+        let arr2: [BSONValue?] = [1, "hi", NSNull()]
         expect(try encoder.encode(OptionalAnyBSONWrapper(arr2))).to(equal(["val": arr2]))
 
         // an array with a non-BSONValue
-        let arr3: [Any?] = [1, "hi", nil, Int16(4)]
+        let arr3: [Any?] = [1, "hi", NSNull(), Int16(4)]
         expect(try arr3.encode(to: DocumentStorage(), forKey: "arr3")).to(throwError())
 
         // nil value
-        expect(try encoder.encode(OptionalAnyBSONWrapper(nil))).to(beNil())
+        expect(try encoder.encode(OptionalAnyBSONWrapper(NSNull()))).to(equal(["val": NSNull()]))
 
-        expect(try decoder.decode(OptionalAnyBSONWrapper.self, from: ["val": nil]).val).to(beNil())
+        expect(
+            try decoder.decode(OptionalAnyBSONWrapper.self, from: ["val": NSNull()]).val
+        ).to(equal(AnyBSONValue(NSNull())))
     }
 }

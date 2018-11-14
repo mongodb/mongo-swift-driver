@@ -96,14 +96,14 @@ final class Document_SequenceTests: MongoSwiftTestCase {
     }
 
     func testMapFilter() throws {
-        let doc1: Document = ["a": 1, "b": nil, "c": 3, "d": 4, "e": nil]
-        expect(doc1.mapValues { $0 ?? 1 }).to(equal(["a": 1, "b": 1, "c": 3, "d": 4, "e": 1]))
+        let doc1: Document = ["a": 1, "b": NSNull(), "c": 3, "d": 4, "e": NSNull()]
+        expect(doc1.mapValues { $0 is NSNull ? 1 : $0 }).to(equal(["a": 1, "b": 1, "c": 3, "d": 4, "e": 1]))
         let output1 = doc1.mapValues { val in
             if let int = val as? Int { return int + 1 }
             return val
         }
-        expect(output1).to(equal(["a": 2, "b": nil, "c": 4, "d": 5, "e": nil]))
-        expect(doc1.filter { $0.value != nil }).to(equal(["a": 1, "c": 3, "d": 4]))
+        expect(output1).to(equal(["a": 2, "b": NSNull(), "c": 4, "d": 5, "e": NSNull()]))
+        expect(doc1.filter { !($0.value is NSNull) }).to(equal(["a": 1, "c": 3, "d": 4]))
 
         let doc2: Document = ["a": 1, "b": "hello", "c": [1, 2] as [Int]]
         expect(doc2.filter { $0.value is String }).to(equal(["b": "hello"]))
@@ -125,11 +125,11 @@ final class Document_SequenceTests: MongoSwiftTestCase {
     // shared docs for subsequence tests
     let emptyDoc = Document()
     let smallDoc: Document = ["x": 1]
-    let doc: Document = ["a": 1, "b": "hi", "c": [1, 2] as [Int], "d": false, "e": nil, "f": MinKey(), "g": 10]
+    let doc: Document = ["a": 1, "b": "hi", "c": [1, 2] as [Int], "d": false, "e": NSNull(), "f": MinKey(), "g": 10]
 
     // shared predicates for subsequence tests
     func isInt(_ pair: Document.KeyValuePair) -> Bool { return pair.value is Int }
-    func isNotNil(_ pair: Document.KeyValuePair) -> Bool { return pair.value != nil }
+    func isNotNil(_ pair: Document.KeyValuePair) -> Bool { return !(pair.value is NSNull) }
     func is10(_ pair: Document.KeyValuePair) -> Bool {
         if let int = pair.value as? Int { return int == 10 } else { return false }
     }
@@ -148,11 +148,11 @@ final class Document_SequenceTests: MongoSwiftTestCase {
             "b": "hi",
             "c": [1, 2] as [Int],
             "d": false,
-            "e": nil,
+            "e": NSNull(),
             "f": MinKey(),
             "g": 10
         ]))
-        expect(self.doc.dropFirst(4)).to(equal(["e": nil, "f": MinKey(), "g": 10]))
+        expect(self.doc.dropFirst(4)).to(equal(["e": NSNull(), "f": MinKey(), "g": 10]))
         expect(self.doc.dropFirst(7)).to(equal([:]))
         expect(self.doc.dropFirst(8)).to(equal([:]))
     }
@@ -171,7 +171,7 @@ final class Document_SequenceTests: MongoSwiftTestCase {
             "b": "hi",
             "c": [1, 2] as [Int],
             "d": false,
-            "e": nil,
+            "e": NSNull(),
             "f": MinKey()
         ]))
         expect(self.doc.dropLast(4)).to(equal(["a": 1, "b": "hi", "c": [1, 2] as [Int]]))
@@ -186,14 +186,14 @@ final class Document_SequenceTests: MongoSwiftTestCase {
             "b": "hi",
             "c": [1, 2] as [Int],
             "d": false,
-            "e": nil,
+            "e": NSNull(),
             "f": MinKey(),
             "g": 10
         ]))
 
         expect(self.emptyDoc.drop(while: self.isNotNil)).to(equal([:]))
         expect(self.smallDoc.drop(while: self.isNotNil)).to(equal([:]))
-        expect(self.doc.drop(while: self.isNotNil)).to(equal(["e": nil, "f": MinKey(), "g": 10]))
+        expect(self.doc.drop(while: self.isNotNil)).to(equal(["e": NSNull(), "f": MinKey(), "g": 10]))
 
         expect(self.emptyDoc.drop(while: self.isNot10)).to(equal([:]))
         expect(self.smallDoc.drop(while: self.isNot10)).to(equal([:]))
@@ -236,7 +236,7 @@ final class Document_SequenceTests: MongoSwiftTestCase {
             "b": "hi",
             "c": [1, 2] as [Int],
             "d": false,
-            "e": nil,
+            "e": NSNull(),
             "f": MinKey()
         ]))
 
@@ -258,7 +258,7 @@ final class Document_SequenceTests: MongoSwiftTestCase {
         expect(self.doc.suffix(0)).to(equal([]))
         expect(self.doc.suffix(1)).to(equal(["g": 10]))
         expect(self.doc.suffix(2)).to(equal(["f": MinKey(), "g": 10]))
-        expect(self.doc.suffix(4)).to(equal(["d": false, "e": nil, "f": MinKey(), "g": 10]))
+        expect(self.doc.suffix(4)).to(equal(["d": false, "e": NSNull(), "f": MinKey(), "g": 10]))
         expect(self.doc.suffix(7)).to(equal(doc))
         expect(self.doc.suffix(8)).to(equal(doc))
     }
@@ -270,7 +270,7 @@ final class Document_SequenceTests: MongoSwiftTestCase {
             "b": "hi",
             "c": [1, 2] as [Int],
             "d": false,
-            "e": nil,
+            "e": NSNull(),
             "f": MinKey()
         ]]))
 
@@ -280,12 +280,12 @@ final class Document_SequenceTests: MongoSwiftTestCase {
             "b": "hi",
             "c": [1, 2] as [Int],
             "d": false,
-            "e": nil,
+            "e": NSNull(),
             "f": MinKey()
         ], [:]]))
 
         expect(self.doc.split(maxSplits: 1, omittingEmptySubsequences: false, whereSeparator: self.isInt))
-            .to(equal([[:], ["b": "hi", "c": [1, 2] as [Int], "d": false, "e": nil, "f": MinKey(), "g": 10]]))
+            .to(equal([[:], ["b": "hi", "c": [1, 2] as [Int], "d": false, "e": NSNull(), "f": MinKey(), "g": 10]]))
 
     }
 

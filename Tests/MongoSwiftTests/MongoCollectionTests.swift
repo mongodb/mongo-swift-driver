@@ -495,7 +495,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     func testNullIds() throws {
         let result1 = try self.coll.insertOne(["_id": NSNull(), "hi": "hello"])
         expect(result1).toNot(beNil())
-        expect(result1?.insertedId).to(beNil())
+        expect(result1?.insertedId as? NSNull).to(equal(NSNull()))
 
         try self.coll.deleteOne(["_id": NSNull()])
 
