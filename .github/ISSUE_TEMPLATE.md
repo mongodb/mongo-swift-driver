@@ -78,6 +78,9 @@ server, and/or Swift)?
 * Is there a workaround that seems to avoid this this issue?
 * Are there multiple ways of triggering this bug (perhaps more than one
 function produce a crash)?
+* If you know how to reproduce the bug, use the `BugReport` project in our
+`Examples/` directory to write some demo code showcasing it so that we have
+something to go off of.
 
 
 ## Reproducing the bug
