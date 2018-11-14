@@ -10,9 +10,6 @@ let package = Package(
     targets: [
         .target(
             name: "BugReport",
-            dependencies: ["MongoSwift"]),
-        .testTarget(
-            name: "BugReportTests",
-            dependencies: ["BugReport", "MongoSwift"])
+            dependencies: ["MongoSwift"])
     ]
 )
