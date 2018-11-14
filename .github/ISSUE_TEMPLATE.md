@@ -29,11 +29,11 @@ $ uname -a
 
 What does this command give you?
 ```
-$ cat Package.swift # Applies if you are using Swift package manager
+$ cat Package.resolved # Applies if you are using Swift package manager
 ```
 *or*
 ```
-$ cat Podfile # Applies if you are using Cocoapods
+$ cat Podfile.lock # Applies if you are using Cocoapods
 ```
 
 
