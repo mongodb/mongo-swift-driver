@@ -68,6 +68,11 @@ $ brew list --versions mongo-c-driver # Applies if you installed via brew
 ```
 $ apt list --installed | grep -E '(libmongoc|libbson)' # Applies if you installed via apt
 ```
+*or*
+```
+$ pkg-config --modversion libmongoc-1.0 # Applies if you use pkg-config
+$ pkg-config --modversion libbson-1.0
+```
 
 
 ## What is the problem? 
