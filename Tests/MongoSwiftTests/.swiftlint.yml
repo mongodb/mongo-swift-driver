@@ -5,6 +5,8 @@ disabled_rules:
   - todo
   - type_name
   - type_body_length
+  - force_try
+  - force_cast
 
 opt_in_rules:
   - vertical_parameter_alignment_on_call
@@ -16,8 +18,3 @@ opt_in_rules:
   - missing_docs
   - implicit_return
   - fatal_error_message
-
-excluded:
-  - build
-  - .build
-  - docs

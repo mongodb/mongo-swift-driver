@@ -9,14 +9,14 @@ extension WriteConcern {
     fileprivate convenience init(_ doc: Document) throws {
         let j = doc["journal"] as? Bool
 
-        var w: W? = nil
+        var w: W?
         if let wtag = doc["w"] as? String {
             w = wtag == "majority" ? .majority : .tag(wtag)
         } else if let wInt = doc["w"] as? Int {
             w = .number(Int32(wInt))
         }
 
-        var wt: Int32? = nil
+        var wt: Int32?
         if let wtInt = doc["wtimeoutMS"] as? Int {
             wt = Int32(wtInt)
         }
@@ -270,12 +270,12 @@ final class ReadWriteConcernTests: XCTestCase {
         expect(try coll.find(options: FindOptions(readConcern: ReadConcern(.local)))).toNot(throwError())
 
         expect(try coll.aggregate([["$project": ["a": 1] as Document]],
-            options: AggregateOptions(readConcern: ReadConcern(.majority)))).toNot(throwError())
+                                  options: AggregateOptions(readConcern: ReadConcern(.majority)))).toNot(throwError())
 
         expect(try coll.count(options: CountOptions(readConcern: ReadConcern(.majority)))).toNot(throwError())
 
         expect(try coll.distinct(fieldName: "a",
-            options: DistinctOptions(readConcern: ReadConcern(.local)))).toNot(throwError())
+                                 options: DistinctOptions(readConcern: ReadConcern(.local)))).toNot(throwError())
     }
 
     func testOperationWriteConcerns() throws {
@@ -309,22 +309,30 @@ final class ReadWriteConcernTests: XCTestCase {
         expect(try coll.insertOne(nextDoc(), options: InsertOneOptions(writeConcern: wc1))).toNot(throwError())
         expect(try coll.insertOne(nextDoc(), options: InsertOneOptions(writeConcern: wc3))).toNot(throwError())
 
-        expect(try coll.insertMany([nextDoc(), nextDoc()], options: InsertManyOptions(writeConcern: wc1))).toNot(throwError())
-        expect(try coll.insertMany([nextDoc(), nextDoc()], options: InsertManyOptions(writeConcern: wc3))).toNot(throwError())
+        expect(try coll.insertMany([nextDoc(), nextDoc()],
+                                   options: InsertManyOptions(writeConcern: wc1))).toNot(throwError())
+        expect(try coll.insertMany([nextDoc(), nextDoc()],
+                                   options: InsertManyOptions(writeConcern: wc3))).toNot(throwError())
 
-        expect(try coll.updateOne(filter: ["x": 1], update: ["$set": nextDoc()], options: UpdateOptions(writeConcern: wc2))).toNot(throwError())
-        expect(try coll.updateOne(filter: ["x": 2], update: ["$set": nextDoc()], options: UpdateOptions(writeConcern: wc3))).toNot(throwError())
+        expect(try coll.updateOne(filter: ["x": 1], update: ["$set": nextDoc()],
+                                  options: UpdateOptions(writeConcern: wc2))).toNot(throwError())
+        expect(try coll.updateOne(filter: ["x": 2], update: ["$set": nextDoc()],
+                                  options: UpdateOptions(writeConcern: wc3))).toNot(throwError())
 
-        expect(try coll.updateMany(filter: ["x": 3], update: ["$set": nextDoc()], options: UpdateOptions(writeConcern: wc2))).toNot(throwError())
-        expect(try coll.updateMany(filter: ["x": 4], update: ["$set": nextDoc()], options: UpdateOptions(writeConcern: wc3))).toNot(throwError())
+        expect(try coll.updateMany(filter: ["x": 3], update: ["$set": nextDoc()],
+                                   options: UpdateOptions(writeConcern: wc2))).toNot(throwError())
+        expect(try coll.updateMany(filter: ["x": 4], update: ["$set": nextDoc()],
+                                   options: UpdateOptions(writeConcern: wc3))).toNot(throwError())
 
         let coll2 = try db.createCollection("coll2")
         defer { try? coll2.drop() }
         let pipeline: [Document] = [["$out": "test.coll2"]]
         expect(try coll.aggregate(pipeline, options: AggregateOptions(writeConcern: wc1))).toNot(throwError())
 
-        expect(try coll.replaceOne(filter: ["x": 5], replacement: nextDoc(), options: ReplaceOptions(writeConcern: wc1))).toNot(throwError())
-        expect(try coll.replaceOne(filter: ["x": 6], replacement: nextDoc(), options: ReplaceOptions(writeConcern: wc3))).toNot(throwError())
+        expect(try coll.replaceOne(filter: ["x": 5], replacement: nextDoc(),
+                                   options: ReplaceOptions(writeConcern: wc1))).toNot(throwError())
+        expect(try coll.replaceOne(filter: ["x": 6], replacement: nextDoc(),
+                                   options: ReplaceOptions(writeConcern: wc3))).toNot(throwError())
 
         expect(try coll.deleteOne(["x": 7], options: DeleteOptions(writeConcern: wc1))).toNot(throwError())
         expect(try coll.deleteOne(["x": 8], options: DeleteOptions(writeConcern: wc3))).toNot(throwError())
@@ -332,8 +340,10 @@ final class ReadWriteConcernTests: XCTestCase {
         expect(try coll.deleteMany(["x": 9], options: DeleteOptions(writeConcern: wc1))).toNot(throwError())
         expect(try coll.deleteMany(["x": 10], options: DeleteOptions(writeConcern: wc3))).toNot(throwError())
 
-        expect(try coll.createIndex(["x": 1], commandOptions: CreateIndexOptions(writeConcern: wc1))).toNot(throwError())
-        expect(try coll.createIndexes([IndexModel(keys: ["x": -1])], options: CreateIndexOptions(writeConcern: wc3))).toNot(throwError())
+        expect(try coll.createIndex(["x": 1],
+                                    commandOptions: CreateIndexOptions(writeConcern: wc1))).toNot(throwError())
+        expect(try coll.createIndexes([IndexModel(keys: ["x": -1])],
+                                      options: CreateIndexOptions(writeConcern: wc3))).toNot(throwError())
 
         expect(try coll.dropIndex(["x": 1], commandOptions: DropIndexOptions(writeConcern: wc1))).toNot(throwError())
         expect(try coll.dropIndexes(options: DropIndexOptions(writeConcern: wc3))).toNot(throwError())

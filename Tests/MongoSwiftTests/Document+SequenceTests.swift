@@ -144,7 +144,14 @@ final class Document_SequenceTests: XCTestCase {
         expect(self.smallDoc.dropFirst(2)).to(equal([:]))
 
         expect(self.doc.dropFirst(0)).to(equal(doc))
-        expect(self.doc.dropFirst()).to(equal(["b": "hi", "c": [1, 2] as [Int], "d": false, "e": nil, "f": MinKey(), "g": 10]))
+        expect(self.doc.dropFirst()).to(equal([
+            "b": "hi",
+            "c": [1, 2] as [Int],
+            "d": false,
+            "e": nil,
+            "f": MinKey(),
+            "g": 10
+        ]))
         expect(self.doc.dropFirst(4)).to(equal(["e": nil, "f": MinKey(), "g": 10]))
         expect(self.doc.dropFirst(7)).to(equal([:]))
         expect(self.doc.dropFirst(8)).to(equal([:]))
@@ -159,7 +166,14 @@ final class Document_SequenceTests: XCTestCase {
         expect(self.smallDoc.dropLast(2)).to(equal([:]))
 
         expect(self.doc.dropLast(0)).to(equal(doc))
-        expect(self.doc.dropLast()).to(equal(["a": 1, "b": "hi", "c": [1, 2] as [Int], "d": false, "e": nil, "f": MinKey()]))
+        expect(self.doc.dropLast()).to(equal([
+            "a": 1,
+            "b": "hi",
+            "c": [1, 2] as [Int],
+            "d": false,
+            "e": nil,
+            "f": MinKey()
+        ]))
         expect(self.doc.dropLast(4)).to(equal(["a": 1, "b": "hi", "c": [1, 2] as [Int]]))
         expect(self.doc.dropLast(7)).to(equal([:]))
         expect(self.doc.dropLast(8)).to(equal([:]))
@@ -168,7 +182,14 @@ final class Document_SequenceTests: XCTestCase {
     func testDropPredicate() throws {
         expect(self.emptyDoc.drop(while: self.isInt)).to(equal([:]))
         expect(self.smallDoc.drop(while: self.isInt)).to(equal([:]))
-        expect(self.doc.drop(while: self.isInt)).to(equal(["b": "hi", "c": [1, 2] as [Int], "d": false, "e": nil, "f": MinKey(), "g": 10]))
+        expect(self.doc.drop(while: self.isInt)).to(equal([
+            "b": "hi",
+            "c": [1, 2] as [Int],
+            "d": false,
+            "e": nil,
+            "f": MinKey(),
+            "g": 10
+        ]))
 
         expect(self.emptyDoc.drop(while: self.isNotNil)).to(equal([:]))
         expect(self.smallDoc.drop(while: self.isNotNil)).to(equal([:]))
@@ -210,7 +231,14 @@ final class Document_SequenceTests: XCTestCase {
 
         expect(self.emptyDoc.prefix(while: self.isNot10)).to(equal([:]))
         expect(self.smallDoc.prefix(while: self.isNot10)).to(equal(smallDoc))
-        expect(self.doc.prefix(while: self.isNot10)).to(equal(["a": 1, "b": "hi", "c": [1, 2] as [Int], "d": false, "e": nil, "f": MinKey()]))
+        expect(self.doc.prefix(while: self.isNot10)).to(equal([
+            "a": 1,
+            "b": "hi",
+            "c": [1, 2] as [Int],
+            "d": false,
+            "e": nil,
+            "f": MinKey()
+        ]))
 
         expect(self.emptyDoc.prefix(while: self.is10)).to(equal([:]))
         expect(self.smallDoc.prefix(while: self.is10)).to(equal([:]))
@@ -238,11 +266,23 @@ final class Document_SequenceTests: XCTestCase {
     func testSplit() throws {
         expect(self.emptyDoc.split(whereSeparator: self.isInt)).to(equal([]))
         expect(self.smallDoc.split(whereSeparator: self.isInt)).to(equal([]))
-        expect(self.doc.split(whereSeparator: self.isInt)).to(equal([["b": "hi", "c": [1, 2] as [Int], "d": false, "e": nil, "f": MinKey()]]))
+        expect(self.doc.split(whereSeparator: self.isInt)).to(equal([[
+            "b": "hi",
+            "c": [1, 2] as [Int],
+            "d": false,
+            "e": nil,
+            "f": MinKey()
+        ]]))
 
         expect(self.emptyDoc.split(omittingEmptySubsequences: false, whereSeparator: self.isInt)).to(equal([[:]]))
         expect(self.smallDoc.split(omittingEmptySubsequences: false, whereSeparator: self.isInt)).to(equal([[:], [:]]))
-        expect(self.doc.split(omittingEmptySubsequences: false, whereSeparator: self.isInt)).to(equal([[:], ["b": "hi", "c": [1, 2] as [Int], "d": false, "e": nil, "f": MinKey()], [:]]))
+        expect(self.doc.split(omittingEmptySubsequences: false, whereSeparator: self.isInt)).to(equal([[:], [
+            "b": "hi",
+            "c": [1, 2] as [Int],
+            "d": false,
+            "e": nil,
+            "f": MinKey()
+        ], [:]]))
 
         expect(self.doc.split(maxSplits: 1, omittingEmptySubsequences: false, whereSeparator: self.isInt))
             .to(equal([[:], ["b": "hi", "c": [1, 2] as [Int], "d": false, "e": nil, "f": MinKey(), "g": 10]]))

@@ -27,11 +27,13 @@ final class SingleDocumentBenchmarks: XCTestCase {
 
         // Run the command {ismaster:true} 10,000 times, 
         // reading (and discarding) the result each time.
+        // swiftlint:disable trailing_closure
         let result = try measureOp({
             for _ in 1...10000 {
                 try db.runCommand(command)
             }
         })
+        // swiftlint:enable trailing_closure
 
         printResults(time: result, size: commandSize)
     }
@@ -55,6 +57,7 @@ final class SingleDocumentBenchmarks: XCTestCase {
         // make sure the documents were actually inserted
         expect(try collection.count([:])).to(equal(10000))
 
+        // swiftlint:disable trailing_closure
         let result = try measureOp({
             // For each of the 10,000 sequential _id numbers, issue a find command for 
             // that _id on the 'corpus' collection and retrieve the single-document result.
@@ -63,6 +66,7 @@ final class SingleDocumentBenchmarks: XCTestCase {
                 _ = try collection.find(["_id": i]).next()
             }
         })
+        // swiftlint:enable trailing_closure
 
         printResults(time: result, size: tweetSize)
 
@@ -87,11 +91,11 @@ final class SingleDocumentBenchmarks: XCTestCase {
 
             // Insert the document with the insertOne CRUD method. DO NOT manually add an _id field;
             // leave it to the driver or database. Repeat this `numDocs` times.
-            results.append(try measureTime({
+            results.append(try measureTime {
                 for doc in documents {
                     try collection.insertOne(doc)
                 }
-            }))
+            })
 
             expect(try collection.count([:])).to(equal(numDocs))
 
@@ -154,9 +158,9 @@ public class MultiDocumentBenchmarks: XCTestCase {
 
             // Do an ordered 'insert_many' with `numDocs` copies of the document.
             // DO NOT manually add an _id field; leave it to the driver or database.
-            results.append(try measureTime({
+            results.append(try measureTime {
                 try collection.insertMany(documents)
-            }))
+            })
 
             // make sure the documents were actually inserted
             expect(try collection.count([:])).to(equal(numDocs))

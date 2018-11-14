@@ -1,6 +1,6 @@
 import Foundation
-@testable import MongoSwift
 import mongoc
+@testable import MongoSwift
 import Nimble
 import XCTest
 
@@ -30,7 +30,9 @@ final class SDAMTests: XCTestCase {
     }
 
     // Basic test based on the "standalone" spec test for SDAM monitoring:
+    // swiftlint:disable line_length
     // https://github.com/mongodb/specifications/blob/master/source/server-discovery-and-monitoring/tests/monitoring/standalone.json
+    // swiftlint:enable line_length
     func testMonitoring() throws {
         let client = try MongoClient(options: ClientOptions(eventMonitoring: true))
         client.enableMonitoring(forEvents: .serverMonitoring)

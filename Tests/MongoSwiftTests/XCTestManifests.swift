@@ -1,6 +1,7 @@
 import XCTest
 
 #if !os(macOS)
+/// A function that returns all tests that can be run.
 public func allTests() -> [XCTestCaseEntry] {
     return [
         testCase(BSONValueTests.allTests),

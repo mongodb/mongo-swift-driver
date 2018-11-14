@@ -110,7 +110,7 @@ private struct CMTestFile: Decodable {
     let namespace: String?
 
     enum CodingKeys: String, CodingKey {
-        case data, collectionName = "collection_name", 
+        case data, collectionName = "collection_name",
         databaseName = "database_name", tests, namespace
     }
 }
@@ -123,9 +123,11 @@ private struct CMTest: Decodable {
         let args: Document
         let readPreference: Document?
 
+        // swiftlint:disable nesting
         enum CodingKeys: String, CodingKey {
             case name, args = "arguments", readPreference
         }
+        // swiftlint:enable nesting
     }
 
     let op: Operation
@@ -151,6 +153,7 @@ private struct CMTest: Decodable {
     // try? each operation because we expect some of them to fail.
     // If something fails/succeeds incorrectly, we'll know because the generated
     // events won't match up.
+    // swiftlint:disable cyclomatic_complexity
     func doOperation(withCollection collection: MongoCollection<Document>) throws {
         // TODO SWIFT-31: use readPreferences for commands if provided
         let filter: Document = self.op.args["filter"] as? Document ?? [:]
@@ -179,16 +182,16 @@ private struct CMTest: Decodable {
                 hint = .indexSpec(hintDoc)
             }
             let options = FindOptions(batchSize: batchSize,
-                                        comment: modifiers?["$comment"] as? String,
-                                        hint: hint,
-                                        limit: self.op.args["limit"] as? Int64,
-                                        max: modifiers?["$max"] as? Document,
-                                        maxTimeMS: maxTime,
-                                        min: modifiers?["$min"] as? Document,
-                                        returnKey: modifiers?["$returnKey"] as? Bool,
-                                        showRecordId: modifiers?["$showDiskLoc"] as? Bool,
-                                        skip: self.op.args["skip"] as? Int64,
-                                        sort: self.op.args["sort"] as? Document)
+                                      comment: modifiers?["$comment"] as? String,
+                                      hint: hint,
+                                      limit: self.op.args["limit"] as? Int64,
+                                      max: modifiers?["$max"] as? Document,
+                                      maxTimeMS: maxTime,
+                                      min: modifiers?["$min"] as? Document,
+                                      returnKey: modifiers?["$returnKey"] as? Bool,
+                                      showRecordId: modifiers?["$showDiskLoc"] as? Bool,
+                                      skip: self.op.args["skip"] as? Int64,
+                                      sort: self.op.args["sort"] as? Document)
 
             // we have to iterate the cursor to make the command execute
             for _ in try! collection.find(filter, options: options) {}
@@ -215,6 +218,7 @@ private struct CMTest: Decodable {
             XCTFail("Unrecognized operation name \(self.op.name)")
         }
     }
+    // swiftlint:enable cyclomatic_complexity
 }
 
 /// A protocol for the different types of expected events to implement
