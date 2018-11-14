@@ -29,11 +29,11 @@ $ uname -a
 
 What does this command give you?
 ```
-$ cat Package.swift # Only applies if you are using Swift package manager
+$ cat Package.swift # Applies if you are using Swift package manager
 ```
 *or*
 ```
-$ cat Podfile # Only applies if you are using Cocoapods
+$ cat Podfile # Applies if you are using Cocoapods
 ```
 
 
@@ -62,7 +62,11 @@ Did you use `brew`? Did you install them manually? etc.
 
 What does this command give you?
 ```
-$ brew list --versions mongo-c-driver # Only applies if you installed via brew
+$ brew list --versions mongo-c-driver # Applies if you installed via brew
+```
+*or*
+```
+$ apt list --installed | grep -E '(libmongoc|libbson)' # Applies if you installed via apt
 ```
 
 
