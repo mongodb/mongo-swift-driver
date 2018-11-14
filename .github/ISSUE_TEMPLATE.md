@@ -64,7 +64,7 @@ $ brew list --versions mongo-c-driver # Only applies if you installed via brew
 * Do you have any particular output that demonstrates this problem?
 * Do you have any ideas on _why_ this may be happening that could give us a
 clue in the right direction?
-* Did this issue arise out of nowhere, after an update (of the driver,
+* Did this issue arise out of nowhere, or after an update (of the driver,
 server, and/or Swift)? 
 * Is there a workaround that seems to avoid this this issue?
 * Are there multiple ways of triggering this bug (perhaps more than one
