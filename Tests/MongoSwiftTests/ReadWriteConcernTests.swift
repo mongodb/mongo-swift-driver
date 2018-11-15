@@ -25,7 +25,7 @@ extension WriteConcern {
     }
 }
 
-final class ReadWriteConcernTests: XCTestCase {
+final class ReadWriteConcernTests: MongoSwiftTestCase {
     static var allTests: [(String, (ReadWriteConcernTests) -> () throws -> Void)] {
         return [
             ("testReadConcernType", testReadConcernType),
@@ -350,7 +350,7 @@ final class ReadWriteConcernTests: XCTestCase {
     }
 
     func testConnectionStrings() throws {
-        let csPath = "\(XCTestCase.specsPath)/read-write-concern/tests/connection-string"
+        let csPath = "\(MongoSwiftTestCase.specsPath)/read-write-concern/tests/connection-string"
         let testFiles = try FileManager.default.contentsOfDirectory(atPath: csPath).filter { $0.hasSuffix(".json") }
         for filename in testFiles {
             let testFilePath = URL(fileURLWithPath: "\(csPath)/\(filename)")
@@ -388,7 +388,7 @@ final class ReadWriteConcernTests: XCTestCase {
 
     func testDocuments() throws {
         let encoder = BSONEncoder()
-        let docsPath = "\(XCTestCase.specsPath)/read-write-concern/tests/document"
+        let docsPath = "\(MongoSwiftTestCase.specsPath)/read-write-concern/tests/document"
         let testFiles = try FileManager.default.contentsOfDirectory(atPath: docsPath).filter { $0.hasSuffix(".json") }
         for filename in testFiles {
             let testFilePath = URL(fileURLWithPath: "\(docsPath)/\(filename)")

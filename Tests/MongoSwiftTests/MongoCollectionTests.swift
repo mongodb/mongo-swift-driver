@@ -4,7 +4,7 @@ import XCTest
 
 var _client: MongoClient?
 
-final class MongoCollectionTests: XCTestCase {
+final class MongoCollectionTests: MongoSwiftTestCase {
     static var allTests: [(String, (MongoCollectionTests) -> () throws -> Void)] {
         return [
             ("testCount", testCount),

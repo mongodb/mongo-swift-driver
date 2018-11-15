@@ -4,7 +4,7 @@ import mongoc
 import Nimble
 import XCTest
 
-final class SDAMTests: XCTestCase {
+final class SDAMTests: MongoSwiftTestCase {
     static var allTests: [(String, (SDAMTests) -> () throws -> Void)] {
         return [
             ("testMonitoring", testMonitoring)
@@ -60,7 +60,7 @@ final class SDAMTests: XCTestCase {
         center.removeObserver(observer)
 
         var error = bson_error_t()
-        guard let uri = mongoc_uri_new_with_error(XCTestCase.connStr, &error) else {
+        guard let uri = mongoc_uri_new_with_error(MongoSwiftTestCase.connStr, &error) else {
             XCTFail(toErrorString(error))
             return
         }

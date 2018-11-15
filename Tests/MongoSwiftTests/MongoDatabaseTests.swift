@@ -2,7 +2,7 @@
 import Nimble
 import XCTest
 
-final class MongoDatabaseTests: XCTestCase {
+final class MongoDatabaseTests: MongoSwiftTestCase {
     static var allTests: [(String, (MongoDatabaseTests) -> () throws -> Void)] {
         return [
             ("testDatabase", testDatabase)
@@ -14,7 +14,7 @@ final class MongoDatabaseTests: XCTestCase {
     }
 
     func testDatabase() throws {
-        let client = try MongoClient(connectionString: XCTestCase.connStr)
+        let client = try MongoClient(connectionString: MongoSwiftTestCase.connStr)
         let db = try client.db("testDB")
 
         let command: Document = ["create": "coll1"]

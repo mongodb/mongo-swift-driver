@@ -10,7 +10,7 @@ internal extension Document {
     }
 }
 
-final class CrudTests: XCTestCase {
+final class CrudTests: MongoSwiftTestCase {
 
     static var allTests: [(String, (CrudTests) -> () throws -> Void)] {
         return [
@@ -81,13 +81,13 @@ final class CrudTests: XCTestCase {
 
     // Run all the tests at the /read path
     func testReads() throws {
-        let testFilesPath = XCTestCase.specsPath + "/crud/tests/read"
+        let testFilesPath = MongoSwiftTestCase.specsPath + "/crud/tests/read"
         try doTests(forPath: testFilesPath)
     }
 
     // Run all the tests at the /write path
     func testWrites() throws {
-        let testFilesPath = XCTestCase.specsPath + "/crud/tests/write"
+        let testFilesPath = MongoSwiftTestCase.specsPath + "/crud/tests/write"
         try doTests(forPath: testFilesPath)
     }
 }

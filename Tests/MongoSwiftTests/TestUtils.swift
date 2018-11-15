@@ -3,8 +3,7 @@ import MongoSwift
 import Nimble
 import XCTest
 
-// TODO: Move contents of this extension to the base test class in SWIFT-207.
-extension XCTestCase {
+class MongoSwiftTestCase: XCTestCase {
     /// Gets the path of the directory containing spec files, depending on whether
     /// we're running from XCode or the command line
     static var specsPath: String {
@@ -129,7 +128,7 @@ extension MongoClient {
     }
 
     internal convenience init(options: ClientOptions? = nil) throws {
-        try self.init(connectionString: XCTestCase.connStr, options: options)
+        try self.init(connectionString: MongoSwiftTestCase.connStr, options: options)
     }
 }
 

@@ -3,7 +3,7 @@ import Foundation
 import Nimble
 import XCTest
 
-final class Document_SequenceTests: XCTestCase {
+final class Document_SequenceTests: MongoSwiftTestCase {
     static var allTests: [(String, (Document_SequenceTests) -> () throws -> Void)] {
         return [
             ("testIterator", testIterator),

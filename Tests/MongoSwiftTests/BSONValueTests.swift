@@ -3,7 +3,7 @@ import Foundation
 import Nimble
 import XCTest
 
-final class BSONValueTests: XCTestCase {
+final class BSONValueTests: MongoSwiftTestCase {
     static var allTests: [(String, (BSONValueTests) -> () throws -> Void)] {
         return [
             ("testInvalidDecimal128", testInvalidDecimal128),

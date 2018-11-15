@@ -3,7 +3,7 @@ import mongoc
 import Nimble
 import XCTest
 
-final class MongoClientTests: XCTestCase {
+final class MongoClientTests: MongoSwiftTestCase {
     static var allTests: [(String, (MongoClientTests) -> () throws -> Void)] {
         return [
             ("testListDatabases", testListDatabases),
@@ -19,7 +19,7 @@ final class MongoClientTests: XCTestCase {
     }
 
     func testOpaqueInitialization() throws {
-        let connectionString = XCTestCase.connStr
+        let connectionString = MongoSwiftTestCase.connStr
         var error = bson_error_t()
         guard let uri = mongoc_uri_new_with_error(connectionString, &error) else {
             throw MongoError.invalidUri(message: toErrorString(error))
