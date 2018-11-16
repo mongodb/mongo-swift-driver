@@ -560,7 +560,7 @@ final class DocumentTests: MongoSwiftTestCase {
         var pointer = noops.data
 
         // replace values with own types. these should all be no-ops
-        let newPairs1: [(String, BSONValue?)] = [("null", nil), ("maxkey", MaxKey()), ("minkey", MinKey())]
+        let newPairs1: [(String, BSONValue?)] = [("null", NSNull()), ("maxkey", MaxKey()), ("minkey", MinKey())]
 
         newPairs1.forEach { (k, v) in
             noops[k] = v
