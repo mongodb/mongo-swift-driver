@@ -52,8 +52,8 @@ extension Document: Sequence {
      * the given closure.
      *
      * - Parameters:
-     *   - transform: A closure that transforms a `BSONValue?`. `transform` accepts each value of the
-     *                document as its parameter and returns a transformed `BSONValue?` of the same or
+     *   - transform: A closure that transforms a `BSONValue`. `transform` accepts each value of the
+     *                document as its parameter and returns a transformed `BSONValue` of the same or
      *                of a different type.
      *
      * - Returns: A document containing the keys and transformed values of this document.

@@ -64,11 +64,11 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
 
     /**
      * Initializes a `Document` using a dictionary literal where the
-     * keys are `String`s and the values are `BSONValue?`s. For example:
+     * keys are `String`s and the values are `BSONValue`s. For example:
      * `d: Document = ["a" : 1 ]`
      *
      * - Parameters:
-     *   - dictionaryLiteral: a [String: BSONValue?]
+     *   - dictionaryLiteral: a [String: BSONValue]
      *
      * - Returns: a new `Document`
      */
@@ -94,7 +94,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      * `d: Document = ["a", "b"]` will become `["0": "a", "1": "b"]`
      *
      * - Parameters:
-     *   - arrayLiteral: a `[BSONValue?]`
+     *   - arrayLiteral: a `[BSONValue]`
      *
      * - Returns: a new `Document`
      */
@@ -108,7 +108,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      * array.
      *
      * - Parameters:
-     *   - elements: a `[BSONValue?]`
+     *   - elements: a `[BSONValue]`
      *
      * - Returns: a new `Document`
      */
@@ -193,6 +193,8 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      *  d["a"] = 1
      *  print(d["a"]) // prints 1
      *  ```
+     * A nil return suggests that the subscripted key does not exist in the `Document`. A true BSON null is returned as
+     * an `NSNull`.
      */
     public subscript(key: String) -> BSONValue? {
         get {
@@ -265,7 +267,8 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         }
     }
 
-    /// Retrieves the value associated with for as a `BSONValue?`, which can be nil.
+    /// Retrieves the value associated with for as a `BSONValue?`, which can be nil if the key does not exist in the
+    /// `Document`.
     internal func getValue(for key: String) throws -> BSONValue? {
         guard let iter = DocumentIterator(forDocument: self) else {
             throw MongoError.bsonDecodeError(message: "BSON buffer is unexpectedly too small (< 5 bytes)")
