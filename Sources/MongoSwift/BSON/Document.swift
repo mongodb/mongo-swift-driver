@@ -72,7 +72,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      *
      * - Returns: a new `Document`
      */
-    public init(dictionaryLiteral keyValuePairs: (String, BSONValue?)...) {
+    public init(dictionaryLiteral keyValuePairs: (String, BSONValue)...) {
         // make sure all keys are unique
         guard Set(keyValuePairs.map { $0.0 }).count == keyValuePairs.count else {
             preconditionFailure("Dictionary literal \(keyValuePairs) contains duplicate keys")
@@ -98,7 +98,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      *
      * - Returns: a new `Document`
      */
-    public init(arrayLiteral elements: BSONValue?...) {
+    public init(arrayLiteral elements: BSONValue...) {
         self.init(elements)
     }
 
@@ -112,7 +112,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      *
      * - Returns: a new `Document`
      */
-    internal init(_ elements: [BSONValue?]) {
+    internal init(_ elements: [BSONValue]) {
         self.storage = DocumentStorage()
         for (i, elt) in elements.enumerated() {
             do {
@@ -211,7 +211,11 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         }
         set(newValue) {
             do {
-                try self.setValue(for: key, to: newValue)
+                if let newValue = newValue {
+                    try self.setValue(for: key, to: newValue)
+                } else {
+                    // TODO: Delete the element here.
+                }
             } catch {
                 preconditionFailure("Failed to set the value for key \(key) to \(newValue ?? "nil"): \(error)")
             }
@@ -220,15 +224,15 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
 
     /// Sets key to newValue. if checkForKey=false, the key/value pair will be appended without checking for the key's
     /// presence first.
-    internal mutating func setValue(for key: String, to newValue: BSONValue?, checkForKey: Bool = true) throws {
+    internal mutating func setValue(for key: String, to newValue: BSONValue, checkForKey: Bool = true) throws {
         // if the key already exists in the `Document`, we need to replace it
         if checkForKey, let existingType = DocumentIterator(forDocument: self, advancedTo: key)?.currentType {
 
-            let newBSONType = newValue?.bsonType ?? .null
+            let newBSONType = newValue.bsonType
             let sameTypes = newBSONType == existingType
 
             // if the new type is the same and it's a type with no custom data, no-op
-            if sameTypes && [.null, .undefined, .minKey, .maxKey].contains(newBSONType) { return }
+            if sameTypes && [.undefined, .minKey, .maxKey].contains(newBSONType) { return }
 
             // if the new type is the same and it's a fixed length type, we can overwrite
             if let ov = newValue as? Overwritable, ov.bsonType == existingType {
@@ -256,14 +260,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         // otherwise, it's a new key
         } else {
             self.copyStorageIfRequired()
-
-            if let value = newValue {
-                try value.encode(to: self.storage, forKey: key)
-            } else {
-                guard bson_append_null(self.data, key, Int32(key.count)) else {
-                    throw MongoError.bsonEncodeError(message: "Failed to set the value for key \(key) to null")
-                }
-            }
+            try newValue.encode(to: self.storage, forKey: key)
         }
     }
 

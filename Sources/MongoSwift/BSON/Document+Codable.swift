@@ -46,7 +46,7 @@ extension Document: Codable {
         for key in container.allKeys {
             let k = key.stringValue
             if try container.decodeNil(forKey: key) {
-                try output.setValue(for: k, to: nil)
+                try output.setValue(for: k, to: NSNull())
             } else {
                 let val = try container.decode(AnyBSONValue.self, forKey: key).value
                 try output.setValue(for: k, to: val)

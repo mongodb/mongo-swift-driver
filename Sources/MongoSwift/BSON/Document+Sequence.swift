@@ -11,7 +11,7 @@ import mongoc
 /// ```
 extension Document: Sequence {
     /// The element type of a document: a tuple containing an individual key-value pair.
-    public typealias KeyValuePair = (key: String, value: BSONValue?)
+    public typealias KeyValuePair = (key: String, value: BSONValue)
 
     /// Returns the number of (key, value) pairs stored at the top level of this `Document`.
     public var count: Int { return Int(bson_count_keys(self.data)) }
@@ -60,7 +60,7 @@ extension Document: Sequence {
      *
      * - Throws: An error if `transform` throws an error.
      */
-    public func mapValues(_ transform: (BSONValue?) throws -> BSONValue?) rethrows -> Document {
+    public func mapValues(_ transform: (BSONValue) throws -> BSONValue) rethrows -> Document {
         var output = Document()
         for (k, v) in self {
             output[k] = try transform(v)
@@ -211,7 +211,7 @@ public class DocumentIterator: IteratorProtocol {
     }
 
     /// Returns the current value. Assumes the iterator is in a valid position.
-    internal var currentValue: BSONValue? {
+    internal var currentValue: BSONValue {
         do {
             switch self.currentType {
             case .symbol:
@@ -219,7 +219,11 @@ public class DocumentIterator: IteratorProtocol {
             case .dbPointer:
                 return try DBPointer.asDocument(from: self)
             default:
-                return try DocumentIterator.bsonTypeMap[currentType]?.from(iterator: self)
+                if let curVal = try DocumentIterator.bsonTypeMap[currentType]?.from(iterator: self) {
+                    return curVal
+                } else {
+                    preconditionFailure("Unknown BSONType for iterator's current value.")
+                }
             }
         } catch {
             preconditionFailure("Error getting current value from iterator: \(error)")
@@ -241,8 +245,8 @@ public class DocumentIterator: IteratorProtocol {
 
     /// Returns the values from the iterator's current position to the end. The iterator
     /// will be exhausted after this property is accessed.
-    internal var values: [BSONValue?] {
-        var values = [BSONValue?]()
+    internal var values: [BSONValue] {
+        var values = [BSONValue]()
         while self.advance() { values.append(self.currentValue) }
         return values
     }

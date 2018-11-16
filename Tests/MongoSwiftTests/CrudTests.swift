@@ -141,7 +141,7 @@ private class CrudTest {
     let operationName: String
     let args: Document
     let error: Bool?
-    let result: BSONValue?
+    let result: BSONValue
     let collection: Document?
 
     var arrayFilters: [Document]? { return self.args["arrayFilters"] as? [Document] }
@@ -167,7 +167,7 @@ private class CrudTest {
         self.args = try operation.get("arguments")
         let outcome: Document = try test.get("outcome")
         self.error = outcome["error"] as? Bool
-        self.result = outcome["result"]
+        self.result = outcome["result"]!
         self.collection = outcome["collection"] as? Document
     }
 

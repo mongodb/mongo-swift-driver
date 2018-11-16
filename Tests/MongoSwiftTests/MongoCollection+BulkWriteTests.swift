@@ -183,7 +183,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         var documents: [Document] = []
 
         for i in 1...n {
-            documents.append(["_id": i, "x": Int("\(i)\(i)")])
+            documents.append(["_id": i, "x": Int("\(i)\(i)")!])
         }
 
         try self.coll.insertMany(documents)

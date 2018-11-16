@@ -162,14 +162,14 @@ final class DocumentTests: MongoSwiftTestCase {
     }
 
     func testDocumentFromArray() {
-       let doc1: Document = ["foo", MinKey(), nil]
+       let doc1: Document = ["foo", MinKey(), NSNull()]
 
        expect(doc1.keys).to(equal(["0", "1", "2"]))
        expect(doc1["0"] as? String).to(equal("foo"))
        expect(doc1["1"] as? MinKey).to(beAnInstanceOf(MinKey.self))
        expect(doc1["2"] as? NSNull).to(equal(NSNull()))
 
-       let elements: [BSONValue?] = ["foo", MinKey(), nil]
+       let elements: [BSONValue] = ["foo", MinKey(), NSNull()]
        let doc2 = Document(elements)
 
        expect(doc2.keys).to(equal(["0", "1", "2"]))
@@ -372,7 +372,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
     static let nonOverwritables: Document = [
         "string": "hello",
-        "nil": nil,
+        "nil": NSNull(),
         "doc": ["x": 1] as Document,
         "arr": [1, 2] as [Int]
     ]
@@ -471,7 +471,7 @@ final class DocumentTests: MongoSwiftTestCase {
             pointer = doc.data
         }
 
-        expect(doc).to(equal(["string": "hi", "nil": nil, "doc": newDoc, "arr": [3, 4] as [Int]]))
+        expect(doc).to(equal(["string": "hi", "nil": NSNull(), "doc": newDoc, "arr": [3, 4] as [Int]]))
     }
 
     // test replacing both overwritable and nonoverwritable values with values of different types
@@ -534,7 +534,7 @@ final class DocumentTests: MongoSwiftTestCase {
         var overwritablePointer = overwritableDoc.data
 
         ["double", "int32", "int64", "bool", "decimal", "oid", "timestamp", "datetime"].forEach {
-            overwritableDoc[$0] = nil
+            overwritableDoc[$0] = NSNull()
             // the storage should change every time 
             expect(overwritableDoc.data).toNot(equal(overwritablePointer))
             overwritablePointer = overwritableDoc.data
@@ -544,18 +544,18 @@ final class DocumentTests: MongoSwiftTestCase {
         var nonOverwritablePointer = nonOverwritableDoc.data
 
         ["string", "doc", "arr"].forEach {
-            nonOverwritableDoc[$0] = nil
+            nonOverwritableDoc[$0] = NSNull()
             // the storage should change every time 
             expect(nonOverwritableDoc.data).toNot(equal(nonOverwritablePointer))
             nonOverwritablePointer = nonOverwritableDoc.data
         }
 
-        expect(nonOverwritableDoc).to(equal(["string": nil, "nil": nil, "doc": nil, "arr": nil]))
+        expect(nonOverwritableDoc).to(equal(["string": NSNull(), "nil": NSNull(), "doc": NSNull(), "arr": NSNull()]))
     }
 
     // Test types where replacing them with an instance of their own type is a no-op
     func testReplaceValueNoop() throws {
-        var noops: Document = ["null": nil, "maxkey": MaxKey(), "minkey": MinKey()]
+        var noops: Document = ["null": NSNull(), "maxkey": MaxKey(), "minkey": MinKey()]
 
         var pointer = noops.data
 
@@ -569,7 +569,7 @@ final class DocumentTests: MongoSwiftTestCase {
         }
 
         // we should still have exactly the same document we started with
-        expect(noops).to(equal(["null": nil, "maxkey": MaxKey(), "minkey": MinKey()]))
+        expect(noops).to(equal(["null": NSNull(), "maxkey": MaxKey(), "minkey": MinKey()]))
 
         // now try replacing them with values of different types that do require replacing storage
         let newPairs2: [(String, BSONValue?)] = [("null", 5), ("maxkey", "hi"), ("minkey", false)]
