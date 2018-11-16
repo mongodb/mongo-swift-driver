@@ -324,7 +324,7 @@ private class BulkWriteTest: CrudTest {
         }
     }
 
-    private static func prepareIds(_ ids: [Int: BSONValue?]) -> Document {
+    private static func prepareIds(_ ids: [Int: BSONValue]) -> Document {
         var document = Document()
 
         // Dictionaries are unsorted. Sort before comparing with expected map
@@ -487,7 +487,7 @@ private class InsertManyTest: CrudTest {
         return InsertManyOptions(ordered: ordered)
     }
 
-    private static func prepareIds(_ ids: [Int: BSONValue?]) -> Document {
+    private static func prepareIds(_ ids: [Int: BSONValue]) -> Document {
         var document = Document()
 
         // Dictionaries are unsorted. Sort before comparing with expected map

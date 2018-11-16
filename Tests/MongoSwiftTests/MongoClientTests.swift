@@ -33,7 +33,7 @@ final class MongoClientTests: MongoSwiftTestCase {
         let db = try client.db("test")
         let coll = try db.collection("foo")
         let insertResult = try coll.insertOne([ "test": 42 ])
-        let findResult = try coll.find([ "_id": insertResult!.insertedId! ])
+        let findResult = try coll.find([ "_id": insertResult!.insertedId ])
         let docs = Array(findResult)
         expect(docs[0]["test"] as? Int).to(equal(42))
         try db.drop()

@@ -31,7 +31,11 @@ extension MongoCollection {
             return nil
         }
 
-        return InsertOneResult(insertedId: try document.getValue(for: "_id"))
+        if let insertedId = try document.getValue(for: "_id") {
+            return InsertOneResult(insertedId: insertedId)
+        } else { // This case should not ever really happen, since we handle it above and give the document an _id.
+            throw MongoError.invalidArgument(message: "Failed to get value for _id from document")
+        }
     }
 
     /**
@@ -57,7 +61,7 @@ extension MongoCollection {
         let encoder = BSONEncoder()
         let opts = try encoder.encode(options)
         let documents = try values.map { try encoder.encode($0) }
-        var insertedIds: [Int: BSONValue?] = [:]
+        var insertedIds: [Int: BSONValue] = [:]
 
         try documents.enumerated().forEach { (index, document) in
             if !document.hasKey("_id") {
@@ -373,7 +377,7 @@ public struct DeleteOptions: Encodable {
 public struct InsertOneResult {
     /// The identifier that was inserted. If the document doesn't have an identifier, this value
     /// will be generated and added to the document before insertion.
-    public let insertedId: BSONValue?
+    public let insertedId: BSONValue
 }
 
 /// The result of a multi-document insert operation on a `MongoCollection`.
@@ -382,7 +386,7 @@ public struct InsertManyResult {
     public let insertedCount: Int
 
     /// Map of the index of the document in `values` to the value of its ID
-    public let insertedIds: [Int: BSONValue?]
+    public let insertedIds: [Int: BSONValue]
 
     fileprivate var writeErrors: [WriteError] = []
     fileprivate var writeConcernError: WriteConcernError?
@@ -397,7 +401,7 @@ public struct InsertManyResult {
      *   - reply: A `Document` result from `mongoc_collection_insert_many()`
      *   - insertedIds: Map of inserted IDs
      */
-    fileprivate init(reply: Document, insertedIds: [Int: BSONValue?]) throws {
+    fileprivate init(reply: Document, insertedIds: [Int: BSONValue]) throws {
         self.insertedCount = try reply.getValue(for: "insertedCount") as? Int ?? 0
         self.insertedIds = insertedIds
 
