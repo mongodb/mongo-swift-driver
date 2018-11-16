@@ -43,7 +43,8 @@ final class DocumentTests: MongoSwiftTestCase {
             ("testNonOverwritable", testNonOverwritable),
             ("testReplaceValueWithNewType", testReplaceValueWithNewType),
             ("testReplaceValueWithNil", testReplaceValueWithNil),
-            ("testReplaceValueNoop", testReplaceValueNoop)
+            ("testReplaceValueNoop", testReplaceValueNoop),
+            ("testDocumentDictionarySimilarity", testDocumentDictionarySimilarity)
         ]
     }
 
@@ -582,5 +583,20 @@ final class DocumentTests: MongoSwiftTestCase {
         }
 
         expect(noops).to(equal(["null": 5, "maxkey": "hi", "minkey": false]))
+    }
+
+    func testDocumentDictionarySimilarity() throws {
+        var doc: Document = ["hello": "world", "swift": 4.2, "null": NSNull(), "remove_me": "please"]
+        var dict: [String:BSONValue] = ["hello": "world", "swift": 4.2, "null": NSNull(), "remove_me": "please"]
+
+        expect(doc["hello"]).to(bsonEqual(dict["hello"]))
+        expect(doc["swift"]).to(bsonEqual(dict["swift"]))
+        expect(doc["nonexistent key"]).to(beNil())
+        expect(doc["null"]).to(bsonEqual(dict["null"]))
+
+        doc["remove_me"] = nil
+
+        expect(doc["remove_me"]).to(beNil())
+
     }
 }

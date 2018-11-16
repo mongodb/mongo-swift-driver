@@ -214,7 +214,10 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
                 if let newValue = newValue {
                     try self.setValue(for: key, to: newValue)
                 } else {
-                    // TODO: Delete the element here.
+                    // TODO SWIFT-224: use va_list variant of bson_copy_to_excluding to improve performance
+                    self = self.filter {
+                        $0.key != key
+                    }
                 }
             } catch {
                 preconditionFailure("Failed to set the value for key \(key) to \(newValue ?? "nil"): \(error)")
