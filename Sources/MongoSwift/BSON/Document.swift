@@ -201,8 +201,6 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
                 preconditionFailure("Could not get document iterator for document in subscript")
             }
 
-            // TODO: he following added logic should be propagated to other areas of the codebase, such as for
-            // getValue().
             guard iter.move(to: key) else {
                 return nil
             }
