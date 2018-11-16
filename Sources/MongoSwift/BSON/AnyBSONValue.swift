@@ -28,7 +28,7 @@ public struct AnyBSONValue: Codable, Equatable {
         // in this case, we need to wrap each value in an
         // `AnyBSONValue`, before we encode, because `[BSONValue]` 
         // is not considered `Encodable`
-        if let arr = self.value as? [BSONValue?] {
+        if let arr = self.value as? [BSONValue] {
             let mapped = arr.map { AnyBSONValue(ifPresent: $0) }
             try mapped.encode(to: encoder)
         } else {
