@@ -204,10 +204,10 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
             // TODO: he following added logic should be propagated to other areas of the codebase, such as for
             // getValue().
             guard iter.move(to: key) else {
-                return nil // BSONNull/NSNull
+                return nil
             }
 
-            return iter.currentValue == nil ? NSNull() : iter.currentValue // BSONNull/NSNull/Simultaneous
+            return iter.currentValue
         }
         set(newValue) {
             do {
