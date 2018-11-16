@@ -38,8 +38,8 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         return bson_has_field(self.data, key)
     }
 
-    /// Returns a `[BSONValue?]` containing the values stored in this `Document`.
-    public var values: [BSONValue?] {
+    /// Returns a `[BSONValue]` containing the values stored in this `Document`.
+    public var values: [BSONValue] {
         return self.makeIterator().values
     }
 
