@@ -213,19 +213,8 @@ public class DocumentIterator: IteratorProtocol {
     /// Returns the current value. Assumes the iterator is in a valid position.
     internal var currentValue: BSONValue {
         do {
-            switch self.currentType {
-            case .symbol:
-                return try Symbol.asString(from: self)
-            case .dbPointer:
-                return try DBPointer.asDocument(from: self)
-            default:
-                if let curVal = try DocumentIterator.bsonTypeMap[currentType]?.from(iterator: self) {
-                    return curVal
-                } else {
-                    preconditionFailure("Unknown BSONType for iterator's current value.")
-                }
-            }
-        } catch {
+            return try self.safeCurrentValue()
+        } catch { // Since properties cannot throw, we need to catch and raise a preconditionFailure.
             preconditionFailure("Error getting current value from iterator: \(error)")
         }
     }
@@ -252,14 +241,18 @@ public class DocumentIterator: IteratorProtocol {
     }
 
     /// Returns the current value (equivalent to the `currentValue` property) or throws on error.
-    internal func safeCurrentValue() throws -> BSONValue? {
+    internal func safeCurrentValue() throws -> BSONValue {
         switch self.currentType {
         case .symbol:
             return try Symbol.asString(from: self)
         case .dbPointer:
             return try DBPointer.asDocument(from: self)
         default:
-            return try DocumentIterator.bsonTypeMap[currentType]?.from(iterator: self)
+            if let curVal = try DocumentIterator.bsonTypeMap[currentType]?.from(iterator: self) {
+                return curVal
+            } else {
+                preconditionFailure("Unknown BSONType for iterator's current value.")
+            }
         }
     }
 
