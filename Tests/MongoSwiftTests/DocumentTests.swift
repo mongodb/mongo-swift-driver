@@ -349,13 +349,13 @@ final class DocumentTests: MongoSwiftTestCase {
     }
 
     func testNilInNestedArray() throws {
-        let arr1 = ["a", "b", "c", nil]
-        let arr2 = ["d", "e", nil, "f"]
+        let arr1: [BSONValue] = ["a", "b", "c", NSNull()]
+        let arr2: [BSONValue] = ["d", "e", NSNull(), "f"]
 
         let doc = ["a1": arr1, "a2": arr2]
 
-        expect(doc["a1"]).to(equal(arr1))
-        expect(doc["a2"]).to(equal(arr2))
+        expect(doc["a1"]).to(bsonEqual(arr1))
+        expect(doc["a2"]).to(bsonEqual(arr2))
     }
 
     // exclude Int64 value on 32-bit platforms
