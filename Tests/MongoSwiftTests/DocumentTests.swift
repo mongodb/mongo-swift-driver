@@ -463,7 +463,7 @@ final class DocumentTests: MongoSwiftTestCase {
         // save these to compare to at the end
         let newDoc: Document = ["y": 1]
 
-        let newPairs: [(String, BSONValue?)] = [("string", "hi"), ("doc", newDoc), ("arr", [3, 4])]
+        let newPairs: [(String, BSONValue)] = [("string", "hi"), ("doc", newDoc), ("arr", [3, 4])]
 
         newPairs.forEach { (k, v) in
             doc[k] = v
@@ -484,7 +484,7 @@ final class DocumentTests: MongoSwiftTestCase {
         var overwritablePointer = overwritableDoc.data
 
         let newOid = ObjectId()
-        let overwritablePairs: [(String, BSONValue?)] = [
+        let overwritablePairs: [(String, BSONValue)] = [
             ("double", Int(10)),
             ("int32", "hi"),
             ("int64", Decimal128("1.0")),
@@ -518,7 +518,7 @@ final class DocumentTests: MongoSwiftTestCase {
         // save a reference to original bson_t so we can verify it changes
         var nonOverwritablePointer = nonOverwritableDoc.data
 
-        let nonOverwritablePairs: [(String, BSONValue?)] = [("string", 1), ("nil", "hello"), ("doc", "hi"), ("arr", 5)]
+        let nonOverwritablePairs: [(String, BSONValue)] = [("string", 1), ("nil", "hello"), ("doc", "hi"), ("arr", 5)]
 
         nonOverwritablePairs.forEach { (k, v) in
             nonOverwritableDoc[k] = v
@@ -561,7 +561,7 @@ final class DocumentTests: MongoSwiftTestCase {
         var pointer = noops.data
 
         // replace values with own types. these should all be no-ops
-        let newPairs1: [(String, BSONValue?)] = [("null", NSNull()), ("maxkey", MaxKey()), ("minkey", MinKey())]
+        let newPairs1: [(String, BSONValue)] = [("null", NSNull()), ("maxkey", MaxKey()), ("minkey", MinKey())]
 
         newPairs1.forEach { (k, v) in
             noops[k] = v
@@ -573,7 +573,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(noops).to(equal(["null": NSNull(), "maxkey": MaxKey(), "minkey": MinKey()]))
 
         // now try replacing them with values of different types that do require replacing storage
-        let newPairs2: [(String, BSONValue?)] = [("null", 5), ("maxkey", "hi"), ("minkey", false)]
+        let newPairs2: [(String, BSONValue)] = [("null", 5), ("maxkey", "hi"), ("minkey", false)]
 
         newPairs2.forEach { (k, v) in
             noops[k] = v

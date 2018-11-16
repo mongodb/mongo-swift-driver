@@ -743,7 +743,7 @@ final class CodecTests: MongoSwiftTestCase {
         expect(try encoder.encode(OptionalAnyBSONWrapper(arr1))).to(equal(["val": arr1]))
 
         // an array with a nil
-        let arr2: [BSONValue?] = [1, "hi", NSNull()]
+        let arr2: [BSONValue] = [1, "hi", NSNull()]
         expect(try encoder.encode(OptionalAnyBSONWrapper(arr2))).to(equal(["val": arr2]))
 
         // an array with a non-BSONValue
