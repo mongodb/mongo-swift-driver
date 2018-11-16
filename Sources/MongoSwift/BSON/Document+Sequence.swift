@@ -298,7 +298,7 @@ public class DocumentIterator: IteratorProtocol {
         .double: Double.self,
         .string: String.self,
         .document: Document.self,
-        .array: [BSONValue?].self,
+        .array: [BSONValue].self,
         .binary: Binary.self,
         .objectId: ObjectId.self,
         .boolean: Bool.self,

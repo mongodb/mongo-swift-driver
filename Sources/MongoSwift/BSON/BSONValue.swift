@@ -839,8 +839,8 @@ public struct Timestamp: BSONValue, Equatable, Codable {
  *  e.g.
  *      4.0 (Double) != 4 (Int)
  *
- *  NOTE: This function will always return `false` if it is used with two arrays that are not of the type `[BSONValue]`
- *  or `[BSONValue?]`, because any arrays that are not of these types are not valid `BSONValue`'s.
+ *  NOTE: This function will always return `false` if it is used with two arrays that are not of the type `[BSONValue]`,
+ *  because any arrays that are not of this type is not a valid `BSONValue`'s.
  *
  *  * - Parameters:
  *   - lhs: The left-hand-side `BSONValue` to compare.
@@ -869,7 +869,7 @@ func bsonEquals(_ lhs: BSONValue, _ rhs: BSONValue) -> Bool {
     case (let l as Binary, let r as Binary): return l == r
     case (_ as NSNull, _ as NSNull): return true
     case (let l as Document, let r as Document): return l == r
-    case (let l as [BSONValue?], let r as [BSONValue?]): // TODO: SWIFT-242
+    case (let l as [BSONValue], let r as [BSONValue]): // TODO: SWIFT-242
         return zip(l, r).reduce(true, {prev, next in bsonEquals(next.0, next.1) && prev})
     case (_ as [Any], _ as [Any]): return false
     default: return false
