@@ -587,7 +587,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
     func testDocumentDictionarySimilarity() throws {
         var doc: Document = ["hello": "world", "swift": 4.2, "null": NSNull(), "remove_me": "please"]
-        var dict: [String:BSONValue] = ["hello": "world", "swift": 4.2, "null": NSNull(), "remove_me": "please"]
+        var dict: [String: BSONValue] = ["hello": "world", "swift": 4.2, "null": NSNull(), "remove_me": "please"]
 
         expect(doc["hello"]).to(bsonEqual(dict["hello"]))
         expect(doc["swift"]).to(bsonEqual(dict["swift"]))
