@@ -118,7 +118,7 @@ extension Array: BSONValue {
 extension NSNull: BSONValue {
     public var bsonType: BSONType { return .null }
 
-    public static func from(iterator iter: DocumentIterator) throws -> BSONValue { return self.init() }
+    public static func from(iterator iter: DocumentIterator) throws -> BSONValue { return NSNull() }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         guard bson_append_null(storage.pointer, key, Int32(key.count)) else {
