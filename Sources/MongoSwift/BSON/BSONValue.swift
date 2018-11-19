@@ -118,26 +118,12 @@ extension Array: BSONValue {
 extension NSNull: BSONValue {
     public var bsonType: BSONType { return .null }
 
-    public static func from(iterator iter: DocumentIterator) throws -> BSONValue {
-        guard iter.currentType == .null else {
-            throw MongoError.bsonDecodeError(message: "expected iterator type null for encoding a NSNull")
-        }
-
-        return NSNull()
-    }
+    public static func from(iterator iter: DocumentIterator) throws -> BSONValue { return self.init() }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         guard bson_append_null(storage.pointer, key, Int32(key.count)) else {
             throw bsonEncodeError(value: self, forKey: key)
         }
-    }
-
-    public static func == (lhs: BSONValue, rhs: NSNull) -> Bool {
-        return lhs.bsonType == .null
-    }
-
-    public static func == (lhs: NSNull, rhs: BSONValue) -> Bool {
-        return rhs == lhs
     }
 }
 
