@@ -554,14 +554,20 @@ private class MutableDictionary: BSONValue {
     var keys = [String]()
     var values = [BSONValue]()
 
-    subscript(key: String) -> BSONValue {
+    subscript(key: String) -> BSONValue? {
         get {
-            guard let index = keys.index(of: key) else { return NSNull() }
+            guard let index = keys.index(of: key) else { return nil }
             return values[index]
         }
         set(newValue) {
             keys.append(key)
-            values.append(newValue)
+            if let newValue = newValue {
+                values.append(newValue)
+            } else {
+                guard let index = keys.index(of: key) else { return }
+                values.remove(at: index)
+                keys.remove(at: index)
+            }
         }
     }
 
