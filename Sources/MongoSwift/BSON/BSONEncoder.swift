@@ -38,14 +38,15 @@ public class BSONEncoder {
 
         let encoder = _BSONEncoder(options: self.options)
 
-        guard let topLevel = try encoder.box(value) else {
+        let boxedValue = try encoder.box(value)
+        guard !(boxedValue is NSNull) else {
             throw EncodingError.invalidValue(
                 value,
                 EncodingError.Context(codingPath: [],
                                       debugDescription: "Top-level \(T.self) did not encode any values."))
         }
 
-        guard let dict = topLevel as? MutableDictionary else {
+        guard let dict = boxedValue as? MutableDictionary else {
             throw EncodingError.invalidValue(
                 value,
                 EncodingError.Context(codingPath: [],
@@ -164,7 +165,7 @@ internal struct _BSONEncodingStorage {
 
     /// The container stack.
     /// Elements may be any `BSONValue` type.
-    internal var containers: [BSONValue?] = []
+    internal var containers: [BSONValue] = []
 
     /// Initializes `self` with no containers.
     fileprivate init() {}
@@ -185,11 +186,11 @@ internal struct _BSONEncodingStorage {
         return array
     }
 
-    fileprivate mutating func push(container: BSONValue?) {
+    fileprivate mutating func push(container: BSONValue) {
         self.containers.append(container)
     }
 
-    fileprivate mutating func popContainer() -> BSONValue? {
+    fileprivate mutating func popContainer() -> BSONValue {
         precondition(self.containers.count > 0, "Empty container stack.")
         return self.containers.popLast()!
     }
@@ -242,9 +243,9 @@ private class _BSONReferencingEncoder: _BSONEncoder {
 
     /// Finalizes `self` by writing the contents of our storage to the referenced encoder's storage.
     deinit {
-        let value: BSONValue?
+        let value: BSONValue
         switch self.storage.count {
-        case 0: value = nil
+        case 0: value = NSNull()
         case 1: value = self.storage.popContainer()
         default: fatalError("Referencing encoder deallocated with multiple containers on stack.")
         }
@@ -272,13 +273,13 @@ extension _BSONEncoder {
         return number
     }
 
-    fileprivate func box<T: Encodable>(_ value: T) throws -> BSONValue? {
+    fileprivate func box<T: Encodable>(_ value: T) throws -> BSONValue {
         // if it's already a `BSONValue`, just return it, unless if it is an
         // array. technically `[Any]` is a `BSONValue`, but we can only use this
         // short-circuiting if all the elements are actually BSONValues.
         if let bsonValue = value as? BSONValue, !(bsonValue is [Any]) {
             return bsonValue
-        } else if let bsonArray = value as? [BSONValue?] {
+        } else if let bsonArray = value as? [BSONValue] {
             return bsonArray
         }
 
@@ -293,7 +294,7 @@ extension _BSONEncoder {
         }
 
         // The top container should be a new container.
-        guard self.storage.count > depth else { return nil }
+        guard self.storage.count > depth else { return NSNull() }
         return self.storage.popContainer()
     }
 }
@@ -511,15 +512,15 @@ private class MutableArray: BSONValue {
 
     var bsonType: BSONType { return .array }
 
-    var array = [BSONValue?]()
+    var array = [BSONValue]()
 
-    fileprivate func add(_ value: BSONValue?) {
+    fileprivate func add(_ value: BSONValue) {
         array.append(value)
     }
 
     var count: Int { return array.count }
 
-    func insert(_ value: BSONValue?, at index: Int) {
+    func insert(_ value: BSONValue, at index: Int) {
         self.array.insert(value, at: index)
     }
 
@@ -551,11 +552,11 @@ private class MutableDictionary: BSONValue {
 
     // rather than using a dictionary, do this so we preserve key orders
     var keys = [String]()
-    var values = [BSONValue?]()
+    var values = [BSONValue]()
 
-    subscript(key: String) -> BSONValue? {
+    subscript(key: String) -> BSONValue {
         get {
-            guard let index = keys.index(of: key) else { return nil }
+            guard let index = keys.index(of: key) else { return NSNull() }
             return values[index]
         }
         set(newValue) {

@@ -65,13 +65,7 @@ public struct AnyBSONValue: Codable, Equatable {
     public init(from decoder: Decoder) throws {
         // short-circuit in the `BSONDecoder` case
         if let bsonDecoder = decoder as? _BSONDecoder {
-            guard let value = bsonDecoder.storage.topContainer else {
-                throw DecodingError.valueNotFound(
-                    BSONValue.self,
-                    DecodingError.Context(codingPath: bsonDecoder.codingPath,
-                                          debugDescription: "Expected BSONValue but found null instead."))
-            }
-            self.value = value
+            self.value = bsonDecoder.storage.topContainer
             return
         }
 
@@ -107,8 +101,8 @@ public struct AnyBSONValue: Codable, Equatable {
             self.value = value
         } else if let value = try? container.decode(MaxKey.self) {
             self.value = value
-        } else if let value = try? container.decode([AnyBSONValue?].self) {
-            self.value = value.map { $0?.value }
+        } else if let value = try? container.decode([AnyBSONValue].self) {
+            self.value = value.map { $0.value }
         } else if let value = try? container.decode(Document.self) {
             self.value = value
         } else {
