@@ -192,14 +192,14 @@ internal struct _BSONDecodingStorage {
 /// Extend _BSONDecoder to add methods for "unboxing" values as various types.
 extension _BSONDecoder {
 
-    fileprivate func unboxBSONValue<T: BSONValue>(_ value: BSONValue, as type: T.Type) throws -> T? {
+    fileprivate func unboxBSONValue<T: BSONValue>(_ value: BSONValue, as type: T.Type) throws -> T {
         guard let typed = value as? T else {
             throw DecodingError._typeMismatch(at: self.codingPath, expectation: type, reality: value)
         }
         return typed
     }
 
-    fileprivate func unboxNumber<T: CodableNumber>(_ value: BSONValue, as type: T.Type) throws -> T? {
+    fileprivate func unboxNumber<T: CodableNumber>(_ value: BSONValue, as type: T.Type) throws -> T {
         guard !(value is NSNull) else {
             throw DecodingError._typeMismatch(at: self.codingPath, expectation: type, reality: value)
         }
@@ -210,7 +210,7 @@ extension _BSONDecoder {
         return primitive
     }
 
-    fileprivate func unbox<T: Decodable>(_ value: BSONValue, as type: T.Type) throws -> T? {
+    fileprivate func unbox<T: Decodable>(_ value: BSONValue, as type: T.Type) throws -> T {
         // if the data is already stored as the correct type in the document, then we can short-circuit
         // and just return the typed value here
         if let val = value as? T { return val }
@@ -285,7 +285,8 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
     private func decodeBSONType<T: BSONValue>(_ type: T.Type, forKey key: Key) throws -> T {
         let entry = try getValue(forKey: key)
         return try self.decoder.with(pushedKey: key) {
-            guard let value = try decoder.unboxBSONValue(entry, as: type) else {
+            let value = try decoder.unboxBSONValue(entry, as: type)
+            guard !(value is NSNull) else {
                 throw DecodingError.valueNotFound(
                     type,
                     DecodingError.Context(codingPath: self.decoder.codingPath,
@@ -299,7 +300,8 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
     private func decodeNumber<T: CodableNumber>(_ type: T.Type, forKey key: Key) throws -> T {
         let entry = try getValue(forKey: key)
         return try self.decoder.with(pushedKey: key) {
-            guard let value = try decoder.unboxNumber(entry, as: type) else {
+            let value = try decoder.unboxNumber(entry, as: type)
+            guard !(value is NSNull) else {
                 throw DecodingError.valueNotFound(
                     type,
                     DecodingError.Context(codingPath: self.decoder.codingPath,
@@ -313,7 +315,8 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
     public func decode<T: Decodable>(_ type: T.Type, forKey key: Key) throws -> T {
         let entry = try getValue(forKey: key)
         return try self.decoder.with(pushedKey: key) {
-            guard let value = try decoder.unbox(entry, as: type) else {
+            let value = try decoder.unbox(entry, as: type)
+            guard !(value is NSNull) else {
                 throw DecodingError.valueNotFound(
                     type,
                     DecodingError.Context(codingPath: self.decoder.codingPath,
@@ -449,7 +452,8 @@ private struct _BSONUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     private mutating func decodeBSONType<T: BSONValue>(_ type: T.Type) throws -> T {
         try self.checkAtEnd()
         return try self.decoder.with(pushedKey: _BSONKey(index: self.currentIndex)) {
-            guard let typed = try self.decoder.unboxBSONValue(self.container[currentIndex], as: type) else {
+            let typed = try self.decoder.unboxBSONValue(self.container[currentIndex], as: type)
+            guard !(typed is NSNull) else {
                 throw DecodingError._typeMismatch(at: self.codingPath,
                                                   expectation: type,
                                                   reality: self.container[self.currentIndex])
@@ -463,7 +467,8 @@ private struct _BSONUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     private mutating func decodeNumber<T: CodableNumber>(_ type: T.Type) throws -> T {
         try self.checkAtEnd()
         return try self.decoder.with(pushedKey: _BSONKey(index: self.currentIndex)) {
-            guard let typed = try self.decoder.unboxNumber(self.container[currentIndex], as: type) else {
+            let typed = try self.decoder.unboxNumber(self.container[currentIndex], as: type)
+            guard !(typed is NSNull) else {
                 throw DecodingError._typeMismatch(at: self.codingPath,
                                                   expectation: type,
                                                   reality: self.container[self.currentIndex])
@@ -477,7 +482,8 @@ private struct _BSONUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     public mutating func decode<T: Decodable>(_ type: T.Type) throws -> T {
         try self.checkAtEnd()
         return try self.decoder.with(pushedKey: _BSONKey(index: self.currentIndex)) {
-            guard let decoded = try self.decoder.unbox(self.container[currentIndex], as: T.self) else {
+            let decoded = try self.decoder.unbox(self.container[currentIndex], as: T.self)
+            guard !(decoded is NSNull) else {
                 throw DecodingError.valueNotFound(
                     type,
                     DecodingError.Context(
@@ -565,19 +571,19 @@ extension _BSONDecoder: SingleValueDecodingContainer {
     /// Decode a BSONValue type from this container.
     private func decodeBSONType<T: BSONValue>(_ type: T.Type) throws -> T {
         try expectNonNull(T.self)
-        return try self.unboxBSONValue(self.storage.topContainer, as: T.self)!
+        return try self.unboxBSONValue(self.storage.topContainer, as: T.self)
     }
 
     /// Decode a CodableNumber type from this container.
     private func decodeNumber<T: CodableNumber>(_ type: T.Type) throws -> T {
         try expectNonNull(T.self)
-        return try self.unboxNumber(self.storage.topContainer, as: T.self)!
+        return try self.unboxNumber(self.storage.topContainer, as: T.self)
     }
 
     /// Decode a Decodable type from this container.
     public func decode<T: Decodable>(_ type: T.Type) throws -> T {
         try expectNonNull(T.self)
-        return try self.unbox(self.storage.topContainer, as: T.self)!
+        return try self.unbox(self.storage.topContainer, as: T.self)
     }
 
     /// Decode a null value from this container.
