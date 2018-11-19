@@ -597,6 +597,6 @@ final class DocumentTests: MongoSwiftTestCase {
         doc["remove_me"] = nil
 
         expect(doc["remove_me"]).to(beNil())
-
+        expect(doc.hasKey("remove_me")).to(beFalse())
     }
 }
