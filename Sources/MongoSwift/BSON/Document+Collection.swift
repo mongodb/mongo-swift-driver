@@ -20,15 +20,10 @@ extension Document: Collection {
         return self.countFast
     }
 
-    // TODO: Can we use the internal helpers as defined in Collection.swift for this?
-    private func validIndex(_ i: Int) -> Bool {
-        return self.startIndex ... self.endIndex - 1 ~= i
-    }
-
     /// Returns the index after the given index for this Document.
     public func index(after i: Int) -> Int {
         // Index must be a valid one, meaning it must exist somewhere in self.keys.
-        precondition(validIndex(i))
+        _failEarlyRangeCheck(i, bounds: self.startIndex ... self.endIndex)
         return i + 1
     }
 
@@ -38,7 +33,7 @@ extension Document: Collection {
         // TODO: This method _should_ guarantee constant-time O(1) access, and it is possible to make it do so. This
         // criticism also applies to key-based subscripting via `String`.
         // See SWIFT-250.
-        precondition(validIndex(position))
+        _failEarlyRangeCheck(position, bounds: self.startIndex ... self.endIndex)
         return self.makeIterator().keyValuePairs[position]
     }
 
