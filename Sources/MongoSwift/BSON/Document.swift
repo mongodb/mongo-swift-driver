@@ -30,7 +30,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
 
     public var countFast: Int
 
-    /// Returns a `[String]` containing the keys in this `Document`. TODO: Create at initialization.
+    /// Returns a `[String]` containing the keys in this `Document`.
     public var keys: [String] {
         return self.makeIterator().keys
     }
