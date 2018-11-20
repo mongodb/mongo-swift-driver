@@ -627,7 +627,6 @@ final class DocumentTests: MongoSwiftTestCase {
             expect(doc.index(doc.startIndex, offsetBy: 99, limitedBy: 1)).to(beNil())
 
             // firstIndex(where:)
-            // TODO: Perhaps make Document.KeyValuePair conform to Equatable?
             expect(doc.firstIndex() { return $0.key == "a" && bsonEquals($0.value, 3) }).to(equal(doc.startIndex))
         }
 
