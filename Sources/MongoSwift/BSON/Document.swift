@@ -45,6 +45,11 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         return self.makeIterator().values
     }
 
+    /// Returns a `[KeyValuePair]` containing the key-value pairs stored in this `Document`.
+    public var keyValuePairs: [KeyValuePair] {
+        return self.makeIterator().keyValuePairs
+    }
+
     /// Initializes a new, empty `Document`.
     public init() {
         self.storage = DocumentStorage()
@@ -121,12 +126,32 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      */
     internal init(_ elements: [BSONValue?]) {
         self.storage = DocumentStorage()
-        self.countFast = elements.count
+        self.countFast = 0
         for (i, elt) in elements.enumerated() {
             do {
                 try self.setValue(for: String(i), to: elt, checkForKey: false)
             } catch {
                 preconditionFailure("Failed to set the value for index \(i) to \(String(describing: elt)): \(error)")
+            }
+        }
+    }
+
+    /**
+     * Initializes a `Document` using an array where the values are KeyValuePairs.
+     *
+     * - Parameters:
+     *   - elements: a `[KeyValuePair]`
+     *
+     * - Returns: a new `Document`
+     */
+    internal init(_ elements: [KeyValuePair]) {
+        self.storage = DocumentStorage()
+        self.countFast = 0
+        for (key, value) in elements {
+            do {
+                try self.setValue(for: key, to: value)
+            } catch {
+                preconditionFailure("Failed to set the value for \(key) to \(String(describing: value)): \(error)")
             }
         }
     }

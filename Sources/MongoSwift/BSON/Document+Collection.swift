@@ -20,6 +20,7 @@ extension Document: Collection {
         return self.countFast
     }
 
+    // TODO: Can we use the internal helpers as defined in Collection.swift for this?
     private func validIndex(_ i: Int) -> Bool {
         return self.startIndex ... self.endIndex - 1 ~= i
     }
@@ -39,5 +40,13 @@ extension Document: Collection {
         // See SWIFT-250.
         precondition(validIndex(position))
         return self.makeIterator().keyValuePairs[position]
+    }
+
+    /// Allows access to a `KeyValuePair` from the `Document`, given a range of indices of the desired `KeyValuePair`'s
+    /// held within. This method does not guarantee constant-time (O(1)) access.
+    public subscript(bounds: Range<Int>) -> Document {
+        let keyValues = self.keyValuePairs
+        // TODO: SWIFT-252 should provide a more efficient implementation for this.
+        return Document(Array(keyValues[bounds]))
     }
 }

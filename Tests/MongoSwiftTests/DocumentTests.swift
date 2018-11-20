@@ -600,6 +600,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(doc[1].key).to(equal(secondKey))
         expect(doc[1].value).to(bsonEqual(secondVal))
 
+        // TODO: Change these `count` to `countFast` eventually
         expect(doc.count).to(equal(trueDocCount(doc)))
         let otherDoc: Document = ["c": 3, "d": "hello world"]
         try doc.merge(otherDoc)
@@ -607,5 +608,9 @@ final class DocumentTests: MongoSwiftTestCase {
 
         doc["new_key"] = "new value"
         expect(doc.count).to(equal(trueDocCount(doc)))
+
+        debugPrint("Doc: \(doc) with countfast: \(doc.countFast)")
+        let removedElem = doc.removeFirst()
+        debugPrint("removed elem: \(removedElem) and doc: \(doc) and now doc has countFast: \(doc.countFast)")
     }
 }
