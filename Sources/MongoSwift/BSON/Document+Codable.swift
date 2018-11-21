@@ -15,10 +15,11 @@ extension Document: Codable {
         var container = encoder.container(keyedBy: _BSONKey.self)
         for (k, v) in self {
             let key = _BSONKey(stringValue: k)!
-            if let val = AnyBSONValue(ifPresent: v) {
-                try container.encode(val, forKey: key)
-            } else {
+            let val = AnyBSONValue(v)
+            if v is NSNull {
                 try container.encodeNil(forKey: key)
+            } else {
+                try container.encode(val, forKey: key)
             }
         }
     }

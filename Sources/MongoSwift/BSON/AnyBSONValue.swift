@@ -11,13 +11,6 @@ public struct AnyBSONValue: Codable, Equatable {
         self.value = value
     }
 
-    /// If the provided `BSONValue` is not `nil`, initializes a new `AnyBSONValue` 
-    /// wrapping that value. Otherwise, returns `nil`. 
-    public init?(ifPresent value: BSONValue?) {
-        guard let v = value else { return nil }
-        self.value = v
-    }
-
     public func encode(to encoder: Encoder) throws {
         // short-circuit in the `BSONEncoder` case
         if let bsonEncoder = encoder as? _BSONEncoder {
@@ -29,7 +22,7 @@ public struct AnyBSONValue: Codable, Equatable {
         // `AnyBSONValue`, before we encode, because `[BSONValue]` 
         // is not considered `Encodable`
         if let arr = self.value as? [BSONValue] {
-            let mapped = arr.map { AnyBSONValue(ifPresent: $0) }
+            let mapped = arr.map { AnyBSONValue($0) }
             try mapped.encode(to: encoder)
         } else {
             if let c = self.value as? Codable {
