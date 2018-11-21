@@ -32,8 +32,8 @@ extension MongoCollection {
         }
 
         guard let insertedId = try document.getValue(for: "_id") else {
-            // This case should not ever really happen, since we handle it above and give the document an _id.
-            throw MongoError.invalidArgument(message: "Failed to get value for _id from document")
+            // This case should never really happen, since we handle it above and give the document an _id.
+            preconditionFailure("Failed to get value for _id from document")
         }
 
         return InsertOneResult(insertedId: insertedId)
