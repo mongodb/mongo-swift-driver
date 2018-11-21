@@ -588,7 +588,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
     private struct CollectionConformance {
         private static func checkCount(_ document: Document) -> Bool {
-            return document.countFast == Int(bson_count_keys(document.data))
+            return document.count == Int(bson_count_keys(document.data))
         }
 
         fileprivate static func testDocumentIndexLogic() {
@@ -613,8 +613,8 @@ final class DocumentTests: MongoSwiftTestCase {
             expect(doc.first?.value).to(bsonEqual(firstElem.value))
 
             // doc.distance
-            expect(doc.distance(from: doc.startIndex, to: doc.endIndex)).to(equal(doc.countFast))
-            expect(doc.distance(from: doc.index(after: doc.startIndex), to: doc.endIndex)).to(equal(doc.countFast - 1))
+            expect(doc.distance(from: doc.startIndex, to: doc.endIndex)).to(equal(doc.count))
+            expect(doc.distance(from: doc.index(after: doc.startIndex), to: doc.endIndex)).to(equal(doc.count - 1))
 
             // doc.formIndex
             var firstIndex = 0

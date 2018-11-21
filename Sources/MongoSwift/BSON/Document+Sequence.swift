@@ -14,9 +14,6 @@ extension Document: Sequence {
     public typealias KeyValuePair = (key: String, value: BSONValue?)
     public typealias SubSequence = Document
 
-    /// Returns the number of (key, value) pairs stored at the top level of this `Document`.
-    public var count: Int { return Int(bson_count_keys(self.data)) }
-
     /// Returns a `Bool` indicating whether the document is empty.
     public var isEmpty: Bool { return !self.makeIterator().advance() }
 

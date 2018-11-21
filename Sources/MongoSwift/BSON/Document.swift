@@ -28,7 +28,8 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     /// direct access to the storage's pointer to a bson_t
     internal var data: UnsafeMutablePointer<bson_t>! { return storage.pointer }
 
-    public var countFast: Int
+    /// Returns the number of (key, value) pairs stored at the top level of this `Document`.
+    public var count: Int
 
     /// Returns a `[String]` containing the keys in this `Document`.
     public var keys: [String] {
@@ -53,7 +54,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     /// Initializes a new, empty `Document`.
     public init() {
         self.storage = DocumentStorage()
-        self.countFast = 0
+        self.count = 0
     }
 
     /**
@@ -68,7 +69,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      */
     internal init(fromPointer pointer: UnsafePointer<bson_t>) {
         self.storage = DocumentStorage(fromPointer: pointer)
-        self.countFast = Int(bson_count_keys(self.storage.pointer))
+        self.count = Int(bson_count_keys(self.storage.pointer))
     }
 
     /**
@@ -90,7 +91,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         self.storage = DocumentStorage()
         // This is technically not consistent, but the only way this inconsistency can cause an issue is if we fail to
         // setValue(), in which case we crash anyways.
-        self.countFast = 0
+        self.count = 0
         for (key, value) in keyValuePairs {
             do {
                 try self.setValue(for: key, to: value, checkForKey: false)
@@ -126,7 +127,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      */
     internal init(_ elements: [BSONValue?]) {
         self.storage = DocumentStorage()
-        self.countFast = 0
+        self.count = 0
         for (i, elt) in elements.enumerated() {
             do {
                 try self.setValue(for: String(i), to: elt, checkForKey: false)
@@ -146,7 +147,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      */
     internal init(_ elements: [KeyValuePair]) {
         self.storage = DocumentStorage()
-        self.countFast = 0
+        self.count = 0
         for (key, value) in elements {
             do {
                 try self.setValue(for: key, to: value)
@@ -177,7 +178,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
 
             return UnsafePointer(bson)
         })
-        self.countFast = Int(bson_count_keys(self.storage.pointer))
+        self.count = Int(bson_count_keys(self.storage.pointer))
     }
 
     /// Convenience initializer for constructing a `Document` from a `String`
@@ -190,7 +191,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         self.storage = DocumentStorage(fromPointer: fromBSON.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) in
             bson_new_from_data(bytes, fromBSON.count)
         })
-        self.countFast = Int(bson_count_keys(self.storage.pointer))
+        self.count = Int(bson_count_keys(self.storage.pointer))
     }
 
     /// Returns the relaxed extended JSON representation of this `Document`.
@@ -289,7 +290,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
                     throw MongoError.bsonEncodeError(message: "Failed to set the value for key \(key) to null")
                 }
             }
-            self.countFast += 1
+            self.count += 1
         }
     }
 
@@ -340,7 +341,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         guard bson_concat(self.data, doc.data) else {
             throw MongoError.bsonEncodeError(message: "Failed to merge \(doc) with \(self)")
         }
-        self.countFast += doc.countFast
+        self.count += doc.count
     }
 
     /**

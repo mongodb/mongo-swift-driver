@@ -17,7 +17,7 @@ extension Document: Collection {
     /// Returns the end index of the Document.
     public var endIndex: Int {
         precondition(self.count > 0)
-        return self.countFast
+        return self.count
     }
 
     /// Returns the index after the given index for this Document.
