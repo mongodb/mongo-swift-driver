@@ -663,15 +663,15 @@ final class DocumentTests: MongoSwiftTestCase {
 
             // doc.prefix(upTo:)
             expect(upToPrefixDoc).to(equal(["a": 3, "b": 2]))
-            expect(doc).to(haveCorrectCount())
+            expect(upToPrefixDoc).to(haveCorrectCount())
 
             // doc.prefix(through:)
             expect(throughPrefixDoc).to(equal(["a": 3, "b": 2]))
-            expect(doc).to(haveCorrectCount())
+            expect(throughPrefixDoc).to(haveCorrectCount())
 
             // doc.suffix
             expect(suffixDoc).to(equal(["b": 2, "c": 5, "d": 4, "e": 3]))
-            expect(doc).to(haveCorrectCount())
+            expect(suffixDoc).to(haveCorrectCount())
         }
     }
 
