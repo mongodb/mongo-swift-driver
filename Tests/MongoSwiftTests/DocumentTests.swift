@@ -623,7 +623,7 @@ final class DocumentTests: MongoSwiftTestCase {
             expect(doc.index(doc.startIndex, offsetBy: 99, limitedBy: 1)).to(beNil())
 
             // firstIndex(where:)
-            expect(doc.firstIndex() { return $0.key == "a" && bsonEquals($0.value, 3) }).to(equal(doc.startIndex))
+            expect(doc.firstIndex { $0.key == "a" && bsonEquals($0.value, 3) }).to(equal(doc.startIndex))
         }
 
         fileprivate static func testMutators() throws {
@@ -683,16 +683,16 @@ final class DocumentTests: MongoSwiftTestCase {
 }
 
 /// A Nimble matcher for testing that the count of a Document is what it should be.
-fileprivate func haveCorrectCount() -> Predicate<Document> {
+private func haveCorrectCount() -> Predicate<Document> {
     return Predicate.define("have the correct count") { actualExpression, msg in
         let actualValue = try actualExpression.evaluate()
-        switch (actualValue) {
+        switch actualValue {
         case nil:
             return PredicateResult(status: .fail, message: msg)
         case let actual?:
             let expectedCount = Int(bson_count_keys(actual.data))
             let failMsg = ExpectationMessage.expectedCustomValueTo("equal a count of \(expectedCount)",
-                "\(actual.count)")
+                                                                   "\(actual.count)")
             let matches = (actual.count == expectedCount)
             return PredicateResult(bool: matches, message: matches ? msg : failMsg)
         }
