@@ -279,7 +279,9 @@ extension _BSONEncoder {
         // short-circuiting if all the elements are actually BSONValues.
         if let bsonValue = value as? BSONValue, !(bsonValue is [Any]) {
             return bsonValue
-        } else if let bsonArray = value as? [BSONValue] {
+        }
+
+        if let bsonArray = value as? [BSONValue] {
             return bsonArray
         }
 
