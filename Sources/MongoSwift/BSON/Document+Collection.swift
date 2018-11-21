@@ -6,7 +6,6 @@ import Foundation
 extension Document: Collection {
     /// Returns the start index of the Document.
     public var startIndex: Int {
-        precondition(self.count > 0)
         return 0
     }
 
