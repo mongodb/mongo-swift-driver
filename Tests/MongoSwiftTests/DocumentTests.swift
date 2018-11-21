@@ -587,10 +587,6 @@ final class DocumentTests: MongoSwiftTestCase {
     }
 
     private struct CollectionConformance {
-        private static func checkCount(_ document: Document) -> Bool {
-            return document.count == Int(bson_count_keys(document.data))
-        }
-
         fileprivate static func testDocumentIndexLogic() {
             let doc: Document = ["a": 3, "b": 4]
 
@@ -630,7 +626,7 @@ final class DocumentTests: MongoSwiftTestCase {
             expect(doc.firstIndex() { return $0.key == "a" && bsonEquals($0.value, 3) }).to(equal(doc.startIndex))
         }
 
-        fileprivate static func testMutators() {
+        fileprivate static func testMutators() throws {
             var doc: Document = ["a": 3, "b": 2, "c": 5, "d": 4]
 
             // doc.removeFirst
@@ -638,19 +634,24 @@ final class DocumentTests: MongoSwiftTestCase {
             expect(firstElem.key).to(equal("a"))
             expect(firstElem.value).to(bsonEqual(3))
             expect(doc).to(equal(["b": 2, "c": 5, "d": 4]))
-            expect(CollectionConformance.checkCount(doc)).to(beTrue())
+            expect(doc).to(haveCorrectCount())
 
             // doc.removeFirst(k:)
             doc.removeFirst(2)
             expect(doc).to(equal(["d": 4]))
-            expect(CollectionConformance.checkCount(doc)).to(beTrue())
+            expect(doc).to(haveCorrectCount())
 
             // doc.popFirst
             let lastElem = doc.popFirst()
             expect(lastElem?.key).to(equal("d"))
             expect(lastElem?.value).to(bsonEqual(4))
             expect(doc).to(equal([:]))
-            expect(CollectionConformance.checkCount(doc)).to(beTrue())
+            expect(doc).to(haveCorrectCount())
+
+            // doc.merge
+            let newDoc: Document = ["e": 4, "f": 2]
+            try doc.merge(newDoc)
+            expect(doc).to(haveCorrectCount())
         }
 
         fileprivate static func testPrefixSuffix() {
@@ -662,21 +663,38 @@ final class DocumentTests: MongoSwiftTestCase {
 
             // doc.prefix(upTo:)
             expect(upToPrefixDoc).to(equal(["a": 3, "b": 2]))
-            expect(CollectionConformance.checkCount(upToPrefixDoc)).to(beTrue())
+            expect(doc).to(haveCorrectCount())
 
             // doc.prefix(through:)
             expect(throughPrefixDoc).to(equal(["a": 3, "b": 2]))
-            expect(CollectionConformance.checkCount(throughPrefixDoc)).to(beTrue())
+            expect(doc).to(haveCorrectCount())
 
             // doc.suffix
             expect(suffixDoc).to(equal(["b": 2, "c": 5, "d": 4, "e": 3]))
-            expect(CollectionConformance.checkCount(suffixDoc)).to(beTrue())
+            expect(doc).to(haveCorrectCount())
         }
     }
 
     func testDocumentConformanceToCollection() throws {
         CollectionConformance.testDocumentIndexLogic()
-        CollectionConformance.testMutators()
+        try CollectionConformance.testMutators()
         CollectionConformance.testPrefixSuffix()
+    }
+}
+
+/// A Nimble matcher for testing that the count of a Document is what it should be.
+fileprivate func haveCorrectCount() -> Predicate<Document> {
+    return Predicate.define("have the correct count") { actualExpression, msg in
+        let actualValue = try actualExpression.evaluate()
+        switch (actualValue) {
+        case nil:
+            return PredicateResult(status: .fail, message: msg)
+        case let actual?:
+            let expectedCount = Int(bson_count_keys(actual.data))
+            let failMsg = ExpectationMessage.expectedCustomValueTo("equal a count of \(expectedCount)",
+                "\(actual.count)")
+            let matches = (actual.count == expectedCount)
+            return PredicateResult(bool: matches, message: matches ? msg : failMsg)
+        }
     }
 }
