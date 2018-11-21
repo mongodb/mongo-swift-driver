@@ -1,12 +1,8 @@
-//
-//  Document+Collection.swift
-//  MongoSwift
-//
-//  Created by may on 11/8/18.
-//
-
 import Foundation
 
+/// An extension of `Document` to make it conform to the `Collection` protocol.
+/// This gives guarantees on non-destructive iteration, and offers an indexed
+/// ordering to the key value pairs in the document.
 extension Document: Collection {
     /// Returns the start index of the Document.
     public var startIndex: Int {
