@@ -141,7 +141,7 @@ private class CrudTest {
     let operationName: String
     let args: Document
     let error: Bool?
-    let result: BSONValue
+    let result: BSONValue?
     let collection: Document?
 
     var arrayFilters: [Document]? { return self.args["arrayFilters"] as? [Document] }
@@ -167,7 +167,7 @@ private class CrudTest {
         self.args = try operation.get("arguments")
         let outcome: Document = try test.get("outcome")
         self.error = outcome["error"] as? Bool
-        self.result = outcome["result"]!
+        self.result = outcome["result"]
         self.collection = outcome["collection"] as? Document
     }
 
@@ -205,6 +205,10 @@ private class CrudTest {
     /// Given the response to a findAndModify command, verify that it matches the expected
     /// results for this `CrudTest`. Meant for use by findAndModify subclasses, i.e. findOneAndX. 
     func verifyFindAndModifyResult(_ result: Document?) {
+        guard self.result != nil else {
+            return
+        }
+
         if self.result is NSNull {
             expect(result).to(beNil())
         } else {
@@ -401,7 +405,12 @@ private class DistinctTest: CrudTest {
         let resultDoc: Document = ["result": try coll.distinct(fieldName: fieldName,
                                                                filter: filter ?? [:],
                                                                options: options)]
-        let expectedDoc: Document = ["result": self.result]
+        let expectedDoc: Document
+        if let result = self.result {
+            expectedDoc = ["result": result]
+        } else {
+            expectedDoc = [:]
+        }
         expect(resultDoc).to(equal(expectedDoc))
     }
 }
