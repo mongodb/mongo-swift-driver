@@ -265,7 +265,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         }
     }
 
-    /// Retrieves the value associated with for as a `BSONValue?`, which can be nil if the key does not exist in the
+    /// Retrieves the value associated with `for` as a `BSONValue?`, which can be nil if the key does not exist in the
     /// `Document`.
     internal func getValue(for key: String) throws -> BSONValue? {
         guard let iter = DocumentIterator(forDocument: self) else {
