@@ -198,8 +198,8 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      */
     public subscript(key: String) -> BSONValue? {
         get {
-            let iterOptional = DocumentIterator(forDocument: self)
-            guard let iter = iterOptional else {
+            //let iterOptional = DocumentIterator(forDocument: self)
+            guard let iter = DocumentIterator(forDocument: self) else {
                 preconditionFailure("Could not get document iterator for document in subscript")
             }
 
