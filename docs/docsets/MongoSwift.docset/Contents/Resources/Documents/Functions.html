@@ -14,7 +14,8 @@
     <a title="Functions  Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="index.html">MongoSwift Docs</a> (100% documented)</p>
+        <p><a href="index.html">MongoSwift Docs</a> (99% documented)</p>
+        <p class="header-right"><a href="dash-feed://https%3A%2F%2Fmongodb%2Egithub%2Eio%2Fmongo%2Dswift%2Ddriver%2Fdocsets%2FMongoSwift%2Exml"><img src="img/dash.png"/>Install in Dash</a></p>
       </div>
     </header>
     <div class="content-wrapper">
@@ -28,22 +29,57 @@
       <nav class="sidebar">
         <ul class="nav-groups">
           <li class="nav-group-name">
+            <a href="Guides.html">Guides</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="development.html">Development</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
             <a href="Classes.html">Classes</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="Classes/BsonDecoder.html">BsonDecoder</a>
+                <a href="Classes/BSONDecoder.html">BSONDecoder</a>
               </li>
               <li class="nav-group-task">
-                <a href="Classes/BsonEncoder.html">BsonEncoder</a>
+                <a href="Classes/BSONEncoder.html">BSONEncoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes.html#/s:10MongoSwift18BulkWriteOperationC">BulkWriteOperation</a>
               </li>
               <li class="nav-group-task">
                 <a href="Classes/ClientSession.html">ClientSession</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes/DocumentIterator.html">DocumentIterator</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes.html#/s:10MongoSwift15DocumentStorageC">DocumentStorage</a>
               </li>
               <li class="nav-group-task">
                 <a href="Classes/MongoClient.html">MongoClient</a>
               </li>
               <li class="nav-group-task">
                 <a href="Classes/MongoCollection.html">MongoCollection</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes/MongoCollection/DeleteOneModel.html">– DeleteOneModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes/MongoCollection/DeleteManyModel.html">– DeleteManyModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes/MongoCollection/InsertOneModel.html">– InsertOneModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes/MongoCollection/ReplaceOneModel.html">– ReplaceOneModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes/MongoCollection/UpdateOneModel.html">– UpdateOneModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes/MongoCollection/UpdateManyModel.html">– UpdateManyModel</a>
               </li>
               <li class="nav-group-task">
                 <a href="Classes/MongoCursor.html">MongoCursor</a>
@@ -61,6 +97,12 @@
                 <a href="Classes/ReadConcern/Level.html">– Level</a>
               </li>
               <li class="nav-group-task">
+                <a href="Classes/ReadPreference.html">ReadPreference</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes/ReadPreference/Mode.html">– Mode</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="Classes/WriteConcern.html">WriteConcern</a>
               </li>
               <li class="nav-group-task">
@@ -72,19 +114,22 @@
             <a href="Enums.html">Enumerations</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="Enums/BsonSubtype.html">BsonSubtype</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="Enums/BsonType.html">BsonType</a>
+                <a href="Enums/BSONType.html">BSONType</a>
               </li>
               <li class="nav-group-task">
                 <a href="Enums/CursorType.html">CursorType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Enums/Hint.html">Hint</a>
               </li>
               <li class="nav-group-task">
                 <a href="Enums/MongoError.html">MongoError</a>
               </li>
               <li class="nav-group-task">
                 <a href="Enums/MongoEventType.html">MongoEventType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Enums/ReturnDocument.html">ReturnDocument</a>
               </li>
               <li class="nav-group-task">
                 <a href="Enums/ServerType.html">ServerType</a>
@@ -130,7 +175,7 @@
             <a href="Functions.html">Functions</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="Functions.html#/s:10MongoSwift7versionSSyF">version()</a>
+                <a href="Functions.html#/s:10MongoSwift10bsonEqualsySbAA9BSONValue_pSg_ADtF">bsonEquals(_:_:)</a>
               </li>
             </ul>
           </li>
@@ -138,10 +183,13 @@
             <a href="Protocols.html">Protocols</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="Protocols/BsonValue.html">BsonValue</a>
+                <a href="Protocols/BSONValue.html">BSONValue</a>
               </li>
               <li class="nav-group-task">
                 <a href="Protocols/MongoEvent.html">MongoEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Protocols/WriteModel.html">WriteModel</a>
               </li>
             </ul>
           </li>
@@ -152,7 +200,19 @@
                 <a href="Structs/AggregateOptions.html">AggregateOptions</a>
               </li>
               <li class="nav-group-task">
+                <a href="Structs/AnyBSONValue.html">AnyBSONValue</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="Structs/Binary.html">Binary</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/Binary/Subtype.html">– Subtype</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/BulkWriteOptions.html">BulkWriteOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/BulkWriteResult.html">BulkWriteResult</a>
               </li>
               <li class="nav-group-task">
                 <a href="Structs/ClientOptions.html">ClientOptions</a>
@@ -203,10 +263,19 @@
                 <a href="Structs/Document.html">Document</a>
               </li>
               <li class="nav-group-task">
-                <a href="Structs/Document/DocumentIterator.html">– DocumentIterator</a>
+                <a href="Structs/DropIndexOptions.html">DropIndexOptions</a>
               </li>
               <li class="nav-group-task">
-                <a href="Structs/DropIndexOptions.html">DropIndexOptions</a>
+                <a href="Structs/EstimatedDocumentCountOptions.html">EstimatedDocumentCountOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/FindOneAndDeleteOptions.html">FindOneAndDeleteOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/FindOneAndReplaceOptions.html">FindOneAndReplaceOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/FindOneAndUpdateOptions.html">FindOneAndUpdateOptions</a>
               </li>
               <li class="nav-group-task">
                 <a href="Structs/FindOptions.html">FindOptions</a>
@@ -243,6 +312,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="Structs/ObjectId.html">ObjectId</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/RegularExpression.html">RegularExpression</a>
               </li>
               <li class="nav-group-task">
                 <a href="Structs/ReplaceOptions.html">ReplaceOptions</a>
@@ -295,6 +367,20 @@
               <li class="nav-group-task">
                 <a href="Structs/UpdateResult.html">UpdateResult</a>
               </li>
+              <li class="nav-group-task">
+                <a href="Structs/WriteConcernError.html">WriteConcernError</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/WriteError.html">WriteError</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="Typealiases.html">Type Aliases</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="Typealiases.html#/s:10MongoSwift21CountDocumentsOptionsa">CountDocumentsOptions</a>
+              </li>
             </ul>
           </li>
         </ul>
@@ -312,9 +398,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift7versionSSyF"></a>
-                    <a name="//apple_ref/swift/Function/version()" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift7versionSSyF">version()</a>
+                    <a name="/s:10MongoSwift10bsonEqualsySbAA9BSONValue_pSg_ADtF"></a>
+                    <a name="//apple_ref/swift/Function/bsonEquals(_:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift10bsonEqualsySbAA9BSONValue_pSg_ADtF">bsonEquals(_:_:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -322,16 +408,28 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Returns a <code>String</code> indicating the version of the driver.</p>
+                        <p>A helper function to test equality between two BSONValue?s. See bsonEquals for BSONValues (non-optional) for more
+  information.</p>
+
+<ul>
+<li><ul>
+<li>lhs: The left-hand-side BSONValue? to compare.</li>
+<li>rhs: The right-hand-side BSONValue? to compare.</li>
+</ul></li>
+</ul>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">version</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">String</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">bsonEquals</span><span class="p">(</span><span class="n">_</span> <span class="nv">lhs</span><span class="p">:</span> <span class="kt"><a href="Protocols/BSONValue.html">BSONValue</a></span><span class="p">?,</span> <span class="n">_</span> <span class="nv">rhs</span><span class="p">:</span> <span class="kt"><a href="Protocols/BSONValue.html">BSONValue</a></span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">Bool</span></code></pre>
 
                         </div>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>True if lhs is equal to rhs, false otherwise.</p>
                       </div>
                     </section>
                   </div>
@@ -341,8 +439,8 @@
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone and Kaitlin Mahar</a>. All rights reserved. (Last updated: 2018-06-22)</p>
-          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Jeremy Mikola</a>. All rights reserved. (Last updated: 2018-11-26)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>
     </div>
