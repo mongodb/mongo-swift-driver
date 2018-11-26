@@ -104,7 +104,11 @@ extension Array: BSONValue {
         var arr = Document()
         for (i, v) in self.enumerated() {
             guard let val = v as? BSONValue else {
-                throw MongoError.invalidArgument(message: "Cannot encode a non-BSONValue array element")
+                throw MongoError.invalidArgument(
+                    message: "Cannot encode a non-BSONValue array element: \(String(describing: v)) "
+                        + "with type: \(type(of: v)) "
+                        + "at index: \(i)"
+                )
             }
             try arr.setValue(for: String(i), to: val)
         }
