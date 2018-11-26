@@ -7,9 +7,10 @@ The official [MongoDB](https://www.mongodb.com/) driver for Swift.
 - [Documentation](#documentation)
 - [Bugs/Feature Requests](#bugs--feature-requests)
 - [Installation](#installation)
-    - [FIRST: Install the MongoDB C Driver](#first-install-the-mongodb-c-driver)
-    -  [NEXT: Install the Driver Using Swift Package Manager](#next-install-the-driver-using-swift-package-manager)
-    - [OR: Install the Driver Using CocoaPods](#or-install-the-driver-using-cocoapods)
+    - [OS X and Linux](#os-x-and-linux)
+      - [Step 1: Install the MongoDB C Driver](#step-1-install-the-mongodb-c-driver)
+      - [Step 2: Install MongoSwift](#step-2-install-mongoswift)
+    - [iOS, tvOS, and watchOS](#ios-tvos-and-watchos)
 - [Example Usage](#example-usage)
     - [Connect to MongoDB and Create a Collection](#connect-to-mongodb-and-create-a-collection)
     - [Create and Insert a Document](#create-and-insert-a-document)
@@ -34,26 +35,26 @@ Core Server (i.e. SERVER) project are **public**.
 ## Installation
 `MongoSwift` works with Swift 4.0+.
 
-### FIRST: Install the MongoDB C Driver
-Because the driver wraps the MongoDB C driver, using it requires having the C driver's two components, `libbson` and `libmongoc`, installed on your system. The minimum required version of the C Driver is **1.13.0**.
+### OS X and Linux
+
+Installation on OS X and Linux is supported via [Swift Package Manager](https://swift.org/package-manager/).
+
+#### Step 1: Install the MongoDB C Driver
+The driver wraps the MongoDB C driver, and using it requires having the C driver's two components, `libbson` and `libmongoc`, installed on your system. The minimum required version of the C Driver is **1.13.0**.
 
 On a Mac, you can install both components at once using [Homebrew](https://brew.sh/):
 `brew install mongo-c-driver`.
 
-Or on Linux, use `apt-get` to install `libmongoc` (which includes `libbson` as a dependency) and `pkg-config` (which enables Swift Package Manager to find the components):
+On Linux, use `apt-get` to install `libmongoc` (which includes `libbson` as a dependency) and `pkg-config` (which enables Swift Package Manager to find the components):
 ```
 sudo apt-get install pkg-config
 sudo apt-get install libmongoc-1.0.0
 ```
 
-Alternatively, see the [installation guide](http://mongoc.org/libmongoc/current/installing.html) from libmongoc's documentation.
+See the [installation guide](http://mongoc.org/libmongoc/current/installing.html) from libmongoc's documentation for more information.
 
-Next, see instructions for installation with either Swift Package Manager or CocoaPods in the following sections.
-
-### NEXT: Install the Driver Using Swift Package Manager
+#### Step 2: Install MongoSwift
 *Please make sure you have followed the instructions in the previous section on installing the MongoDB C Driver before proceeding.*
-
-The Swift Package Manager is integrated with the Swift build system in Swift 3.0+. See the [documentation](https://swift.org/package-manager/) for more information.
 
 Add MongoSwift to your dependencies in `Package.swift`:
 
@@ -64,7 +65,7 @@ import PackageDescription
 let package = Package(
     name: "MyPackage",
     dependencies: [
-        .package(url: "https://github.com/mongodb/mongo-swift-driver.git", from: "0.0.5"),
+        .package(url: "https://github.com/mongodb/mongo-swift-driver.git", from: "VERSION.STRING.HERE"),
     ],
     targets: [
         .target(name: "MyPackage", dependencies: ["MongoSwift"])
@@ -74,23 +75,21 @@ let package = Package(
 
 Then run `swift build` to download, compile, and link all your dependencies.
 
-### OR: Install the Driver Using CocoaPods
-*Please make sure you have followed the instructions in the previous section on installing the MongoDB C Driver before proceeding.*
+## iOS, tvOS, and watchOS
+Installation is supported via [CocoaPods](https://cocoapods.org/). The pod includes as a dependency an embedded version of the MongoDB C Driver, meant for use on these OSes. 
 
-CocoaPods is a dependency manager for Swift and Objective-C. You can install it by running `gem install cocoapods`. See [the CocoaPods documentation](https://cocoapods.org/) for more information.
-
-If you don't already have a `Podfile` for your project, run `pod init` in the main directory to automatically create one with smart defaults. Add `MongoSwift` as follows:
+Add `MongoSwift` to your Podfile as follows:
 
 ```ruby
-platform :osx, '10.10'
+platform :ios, '11.0'
 use_frameworks!
 
 target 'MyApp' do
-    pod 'MongoSwift', '~> 0.0.2'
+    pod 'MongoSwift', '~> VERSION.STRING.HERE'
 end
 ```
 
-Finally, run `pod install` to install your project's dependencies.
+Then run `pod install` to install your project's dependencies.
 
 ## Example Usage
 
