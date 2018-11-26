@@ -562,8 +562,8 @@ private class MutableDictionary: BSONValue {
             return values[index]
         }
         set(newValue) {
-            keys.append(key)
             if let newValue = newValue {
+                keys.append(key)
                 values.append(newValue)
             } else {
                 guard let index = keys.index(of: key) else { return }
