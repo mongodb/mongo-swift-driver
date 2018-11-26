@@ -16,6 +16,7 @@ The official [MongoDB](https://www.mongodb.com/) driver for Swift.
     - [Create and Insert a Document](#create-and-insert-a-document)
     - [Find Documents](#find-documents)
     - [Work With and Modify Documents](#work-with-and-modify-documents)
+    - [Usage With Kitura and Vapor](#usage-with-kitura-and-vapor)
 - [Development Instructions](#development-instructions)
 
 ## Documentation
@@ -162,11 +163,15 @@ let doubled = doc.map { elem -> Int in
 }
 print(doubled) // prints `[2, 4, 6, 8]`
 ```
+
 Note that `Document` conforms to `Collection`, so useful methods from
 [`Sequence`](https://developer.apple.com/documentation/swift/sequence) and
 [`Collection`](https://developer.apple.com/documentation/swift/collection) are
 all available. However, runtime guarantees are not yet met for many of these
 methods.
+
+### Usage With Kitura and Vapor
+The `Examples/` directory contains sample projects that use the driver with [Kitura](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/Kitura) and [Vapor](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/Vapor).
 
 ## Development Instructions
 
