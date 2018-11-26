@@ -725,16 +725,4 @@ final class CodecTests: MongoSwiftTestCase {
 
         expect(try encoder.encode(AnyBSONStruct(NSNull()))).to(equal(["x": NSNull()]))
     }
-
-    struct OptionalAnyBSONWrapper: Codable, Equatable {
-        let val: AnyBSONValue
-
-        init(_ value: BSONValue) {
-            self.val = AnyBSONValue(value)
-        }
-
-        static func == (lhs: OptionalAnyBSONWrapper, rhs: OptionalAnyBSONWrapper) -> Bool {
-            return lhs.val == rhs.val
-        }
-    }
 }
