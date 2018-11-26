@@ -15,7 +15,8 @@ final class CodecTests: MongoSwiftTestCase {
             ("testDecodeScalars", testDecodeScalars),
             ("testDocumentIsCodable", testDocumentIsCodable),
             ("testEncodeArray", testEncodeArray),
-            ("testAnyBSONValueIsBSONCodable", testAnyBSONValueIsBSONCodable)
+            ("testAnyBSONValueIsBSONCodable", testAnyBSONValueIsBSONCodable),
+            ("testIncorrectEncodeFunction", testIncorrectEncodeFunction)
         ]
     }
 
@@ -724,5 +725,43 @@ final class CodecTests: MongoSwiftTestCase {
         ).to(equal(AnyBSONValue(NSNull())))
 
         expect(try encoder.encode(AnyBSONStruct(NSNull()))).to(equal(["x": NSNull()]))
+    }
+
+    fileprivate struct IncorrectTopLevelEncode : Encodable {
+        let x: AnyBSONValue
+
+        // An empty encode here is incorrect.
+        func encode(to encoder: Encoder) throws {}
+
+        init(_ x: BSONValue) {
+            self.x = AnyBSONValue(x)
+        }
+    }
+
+    fileprivate struct CorrectTopLevelEncode : Encodable {
+        let x: IncorrectTopLevelEncode
+
+        enum CodingKeys: CodingKey {
+            case x
+        }
+
+        // An empty encode here is incorrect.
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(x, forKey: .x)
+        }
+
+        init(_ x: BSONValue) {
+            self.x = IncorrectTopLevelEncode(x)
+        }
+    }
+
+    func testIncorrectEncodeFunction() {
+        let encoder = BSONEncoder()
+
+        // A top-level `encode()` problem should throw an error, but any such issues deeper in the recursion should not.
+        expect(try encoder.encode(IncorrectTopLevelEncode(NSNull()))).to(throwError())
+        expect(try encoder.encode(CorrectTopLevelEncode(NSNull()))).toNot(throwError())
+
     }
 }
