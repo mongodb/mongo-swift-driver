@@ -12,7 +12,6 @@ let package = Package(
     ],
     targets: [
         .target(name: "MongoSwift", dependencies: ["mongoc", "bson"]),
-        .testTarget(name: "MongoSwiftTests", dependencies: ["MongoSwift", "Nimble"]),
-        .testTarget(name: "MongoSwiftBenchmarks", dependencies: ["MongoSwift"])
+        .testTarget(name: "MongoSwiftTests", dependencies: ["MongoSwift", "Nimble"])
     ]
 )

@@ -1,18 +1,13 @@
-# CFLAGS = -Xcc -DMONGOC_COMPILATION -Xcc -DBSON_COMPILATION -Xcc -ISources/libbson -Xcc -ISources/libbson/include -Xcc -ISources/libbson/generated -Xcc -ISources/libmongoc/generated
-# LDFLAGS = -Xlinker -lsasl2 -Xlinker -lz
-CFLAGS =
-LDFLAGS =
-
 # If FILTER is not provided, a default filter of `MongoSwiftTests` will be used.
 # Else, any test matching the filter in *either target* (MongoSwiftTests or MongoSwiftBenchmarks) will run.
 ifdef FILTER
 	FILTERARG = --filter $(FILTER)
 else
-	FILTERARG = --filter MongoSwiftTests
+	FILTERARG =
 endif
 
 all:
-	swift build -v $(CFLAGS) $(LDFLAGS)
+	swift build -v
 
 project:
 	swift package generate-xcodeproj
@@ -21,10 +16,7 @@ project:
 	ruby add_json_files.rb
 
 test:
-	swift test -v $(CFLAGS) $(LDFLAGS) $(FILTERARG)
-
-benchmark:
-	swift test -v $(CFLAGS) $(LDFLAGS) --filter MongoSwiftBenchmarks
+	swift test -v $(FILTERARG)
 
 lint:
 	swiftlint autocorrect
