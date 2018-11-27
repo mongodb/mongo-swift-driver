@@ -5,6 +5,9 @@ import Foundation
 public class DocumentStorage {
     internal var pointer: UnsafeMutablePointer<bson_t>!
 
+    // Normally, this would go under Document, but computed properties cannot be used before all stored properties are
+    // initialized. Putting this under DocumentStorage gives a correct count and use of it inside of an init() as long
+    // as we have initialized Document.storage beforehand.
     internal var count: Int {
         return Int(bson_count_keys(self.pointer))
     }
