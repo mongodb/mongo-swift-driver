@@ -101,7 +101,9 @@ final class Document_CollectionTests: MongoSwiftTestCase {
     }
 }
 
-/// A Nimble matcher for testing that the count of a Document is what it should be.
+/// A Nimble matcher for testing that the count of a Document is what it should be. This Nimble matcher is used in only
+/// this file for verifying that Document.count (a bookkeeping number in Document) matches the count that is reported by
+/// libbson.
 private func haveCorrectCount() -> Predicate<Document> {
     return Predicate.define("have the correct count") { actualExpression, msg in
         let actualValue = try actualExpression.evaluate()
