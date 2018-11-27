@@ -1,4 +1,3 @@
-import bson
 import Foundation
 @testable import MongoSwift
 import Nimble
