@@ -14,10 +14,14 @@ extension Document: Collection {
         return self.count
     }
 
+    private func failIndexCheck(_ i: Int) {
+        precondition(self.startIndex ... self.endIndex - 1 ~= i, "Index \(i) is invalid")
+    }
+
     /// Returns the index after the given index for this Document.
     public func index(after i: Int) -> Int {
         // Index must be a valid one, meaning it must exist somewhere in self.keys.
-        _failEarlyRangeCheck(i, bounds: self.startIndex ... self.endIndex)
+        failIndexCheck(i)
         return i + 1
     }
 
@@ -27,7 +31,7 @@ extension Document: Collection {
         // TODO: This method _should_ guarantee constant-time O(1) access, and it is possible to make it do so. This
         // criticism also applies to key-based subscripting via `String`.
         // See SWIFT-250.
-        _failEarlyRangeCheck(position, bounds: self.startIndex ... self.endIndex)
+        failIndexCheck(position)
         return self.makeIterator().keyValuePairs[position]
     }
 
