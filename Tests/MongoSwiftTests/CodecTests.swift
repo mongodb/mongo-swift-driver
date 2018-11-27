@@ -727,7 +727,7 @@ final class CodecTests: MongoSwiftTestCase {
         expect(try encoder.encode(AnyBSONStruct(NSNull()))).to(equal(["x": NSNull()]))
     }
 
-    fileprivate struct IncorrectTopLevelEncode : Encodable {
+    fileprivate struct IncorrectTopLevelEncode: Encodable {
         let x: AnyBSONValue
 
         // An empty encode here is incorrect.
@@ -738,9 +738,10 @@ final class CodecTests: MongoSwiftTestCase {
         }
     }
 
-    fileprivate struct CorrectTopLevelEncode : Encodable {
+    fileprivate struct CorrectTopLevelEncode: Encodable {
         let x: IncorrectTopLevelEncode
 
+        // swiftlint:disable nesting
         enum CodingKeys: CodingKey {
             case x
         }
