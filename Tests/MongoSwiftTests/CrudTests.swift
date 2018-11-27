@@ -405,9 +405,8 @@ private class DistinctTest: CrudTest {
         let resultDoc: Document = ["result": try coll.distinct(fieldName: fieldName,
                                                                filter: filter ?? [:],
                                                                options: options)]
-        let expectedDoc: Document
         if let result = self.result {
-            expectedDoc = ["result": result]
+            let expectedDoc: Document = ["result": result]
             expect(resultDoc).to(equal(expectedDoc))
         }
     }
