@@ -598,7 +598,7 @@ final class DocumentTests: MongoSwiftTestCase {
             expect(doc[1].value).to(bsonEqual(4))
 
             // doc.indices
-            expect(doc.indices.count).to(equal(Int(bson_count_keys(doc.data))))
+            expect(doc.indices.count).to(equal(doc.storage.count))
             expect(doc.indices.startIndex).to(equal(doc.startIndex))
             expect(doc.indices[1]).to(equal(doc.index(after: doc.startIndex)))
             expect(doc.indices.endIndex).to(equal(doc.endIndex))
@@ -690,7 +690,7 @@ private func haveCorrectCount() -> Predicate<Document> {
         case nil:
             return PredicateResult(status: .fail, message: msg)
         case let actual?:
-            let expectedCount = Int(bson_count_keys(actual.data))
+            let expectedCount = actual.storage.count
             let failMsg = ExpectationMessage.expectedCustomValueTo("equal a count of \(expectedCount)",
                                                                    "\(actual.count)")
             let matches = (actual.count == expectedCount)

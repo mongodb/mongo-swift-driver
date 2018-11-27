@@ -5,6 +5,10 @@ import Foundation
 public class DocumentStorage {
     internal var pointer: UnsafeMutablePointer<bson_t>!
 
+    internal var count: Int {
+        return Int(bson_count_keys(self.pointer))
+    }
+
     init() {
         self.pointer = bson_new()
     }
@@ -69,7 +73,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      */
     internal init(fromPointer pointer: UnsafePointer<bson_t>) {
         self.storage = DocumentStorage(fromPointer: pointer)
-        self.count = Int(bson_count_keys(self.storage.pointer))
+        self.count = self.storage.count
     }
 
     /**
@@ -178,7 +182,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
 
             return UnsafePointer(bson)
         })
-        self.count = Int(bson_count_keys(self.storage.pointer))
+        self.count = self.storage.count
     }
 
     /// Convenience initializer for constructing a `Document` from a `String`
@@ -191,7 +195,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         self.storage = DocumentStorage(fromPointer: fromBSON.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) in
             bson_new_from_data(bytes, fromBSON.count)
         })
-        self.count = Int(bson_count_keys(self.storage.pointer))
+        self.count = self.storage.count
     }
 
     /// Returns the relaxed extended JSON representation of this `Document`.
