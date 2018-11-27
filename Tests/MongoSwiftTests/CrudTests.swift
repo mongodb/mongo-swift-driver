@@ -408,10 +408,8 @@ private class DistinctTest: CrudTest {
         let expectedDoc: Document
         if let result = self.result {
             expectedDoc = ["result": result]
-        } else {
-            expectedDoc = [:]
+            expect(resultDoc).to(equal(expectedDoc))
         }
-        expect(resultDoc).to(equal(expectedDoc))
     }
 }
 
