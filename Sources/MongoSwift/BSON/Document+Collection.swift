@@ -15,7 +15,11 @@ extension Document: Collection {
     }
 
     private func failIndexCheck(_ i: Int) {
-        precondition(self.startIndex ... self.endIndex - 1 ~= i, "Index \(i) is invalid")
+        let invalidIndexMsg = "Index \(i) is invalid"
+        if self.count == 0 {
+            precondition(i == 0, invalidIndexMsg)
+        }
+        precondition(self.startIndex ... self.endIndex - 1 ~= i, invalidIndexMsg)
     }
 
     /// Returns the index after the given index for this Document.
