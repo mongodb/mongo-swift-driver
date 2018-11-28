@@ -32,7 +32,7 @@ extension Document: Collection {
         // criticism also applies to key-based subscripting via `String`.
         // See SWIFT-250.
         failIndexCheck(position)
-        return self.makeIterator().keyValuePairs[position]
+        return self.keyValuePairs[position]
     }
 
     /// Allows access to a `KeyValuePair` from the `Document`, given a range of indices of the desired `KeyValuePair`'s
