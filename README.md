@@ -164,7 +164,8 @@ print(doubled) // prints `[2, 4, 6, 8]`
 Note that `Document` conforms to `Collection`, so useful methods from
 [`Sequence`](https://developer.apple.com/documentation/swift/sequence) and
 [`Collection`](https://developer.apple.com/documentation/swift/collection) are
-all available.
+all available. However, runtime guarantees are not yet met for many of these
+methods.
 
 ## Development Instructions
 
