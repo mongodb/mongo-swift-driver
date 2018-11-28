@@ -14,6 +14,7 @@ public func allTests() -> [XCTestCaseEntry] {
         testCase(MongoDatabaseTests.allTests),
         testCase(DocumentTests.allTests),
         testCase(Document_SequenceTests.allTests),
+        testCase(Document_CollectionTests.allTests),
         testCase(ReadPreferenceTests.allTests),
         testCase(ReadWriteConcernTests.allTests),
         testCase(SDAMTests.allTests)
