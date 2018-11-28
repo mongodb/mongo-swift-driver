@@ -27,7 +27,7 @@ Since this library wraps the MongoDB C Driver, we also recommend cloning [mongod
 
 ## Building 
 ### From the Command line
-Run `make` from the project's root directory. 
+Run `swift build` or simply `make` in the project's root directory. 
 
 ### In Xcode
 We do not provide or maintain an already-generated `.xcodeproj` in our repository. Instead, you must generate it locally.
@@ -45,11 +45,13 @@ Why is this necessary? The project requires a customized "copy resources" build 
 You can run tests from Xcode as usual. If you prefer to test from the command line, keep reading.
 
 ### From the Command Line 
-Tests can be run from the command line with `make test`. By default, this will run all the tests.
+We recommend installing the ruby gem `xcpretty` and running tests by executing `make test-pretty`, as this provides output in a much more readable format. 
 
-To only run particular tests, use the `FILTER` environment variable, which is passed as the `filter` argument to `swift test`. This will run test cases with names matching a regular expression, formatted as follows: `<test-target>.<test-case>` or `<test-target>.<test-case>/<test>`.
+Alternatively, you can just run the tests with `swift test`, or `make test`.
 
-For example, `make test FILTER=ClientTests` will run `MongoSwiftTests.ClientTests/*`. Or, `make test FILTER=testInsertOne` will only run `MongoSwiftTests.CollectionTests/testInsertOne`. 
+To filter tests by regular expression:
+- If you are using `swift test`, provide the `--filter` argument: for example, `swift test --filter=MongoClientTests`. 
+- If you are using `make test` or `make test-pretty`, provide the `FILTER` environment variable: for example, `make test-pretty FILTER=MongoCollectionTests`. 
 
 ### Diagnosing Backtraces on Linux
 
