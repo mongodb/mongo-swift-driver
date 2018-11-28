@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/mongodb/mongo-swift-driver.svg?branch=master)](https://travis-ci.org/mongodb/mongo-swift-driver)
+
 # MongoSwift
 The official [MongoDB](https://www.mongodb.com/) driver for Swift.
 
