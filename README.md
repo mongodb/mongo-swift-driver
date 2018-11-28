@@ -41,21 +41,15 @@ Core Server (i.e. SERVER) project are **public**.
 Installation on OS X and Linux is supported via [Swift Package Manager](https://swift.org/package-manager/).
 
 #### Step 1: Install the MongoDB C Driver
-The driver wraps the MongoDB C driver, and using it requires having the C driver's two components, `libbson` and `libmongoc`, installed on your system. The minimum required version of the C Driver is **1.13.0**.
+The driver wraps the MongoDB C driver, and using it requires having the C driver's two components, `libbson` and `libmongoc`, installed on your system. **The minimum required version of the C Driver is 1.13.0**.
 
 On a Mac, you can install both components at once using [Homebrew](https://brew.sh/):
 `brew install mongo-c-driver`.
 
-On Linux, use `apt-get` to install `libmongoc` (which includes `libbson` as a dependency) and `pkg-config` (which enables Swift Package Manager to find the components):
-```
-sudo apt-get install pkg-config
-sudo apt-get install libmongoc-1.0.0
-```
-
-See the [installation guide](http://mongoc.org/libmongoc/current/installing.html) from libmongoc's documentation for more information.
+On Linux: as of now, the `libmongoc` version provided by `apt-get` is < 1.13.0 and is insufficient for use with `MongoSwift`. Please follow the [instructions](http://mongoc.org/libmongoc/current/installing.html#building-on-unix) for building and installing from source from `libmongoc`'s documentation.
 
 #### Step 2: Install MongoSwift
-*Please make sure you have followed the instructions in the previous section on installing the MongoDB C Driver before proceeding.*
+*Please follow the instructions in the previous section on installing the MongoDB C Driver before proceeding.*
 
 Add MongoSwift to your dependencies in `Package.swift`:
 
@@ -77,9 +71,14 @@ let package = Package(
 Then run `swift build` to download, compile, and link all your dependencies.
 
 ## iOS, tvOS, and watchOS
-Installation is supported via [CocoaPods](https://cocoapods.org/). The pod includes as a dependency an embedded version of the MongoDB C Driver, meant for use on these OSes. 
+Installation is supported via [CocoaPods](https://cocoapods.org/).
+
+The pod includes as a dependency an embedded version of the MongoDB C Driver, meant for use on these OSes.
+
+**Note**: the embedded driver currently does not support SSL. See [#141](https://github.com/mongodb/mongo-swift-driver/issues/141) and [CDRIVER-2850](https://jira.mongodb.org/browse/CDRIVER-2850) for more information.
 
 Add `MongoSwift` to your Podfile as follows:
+
 
 ```ruby
 platform :ios, '11.0'
