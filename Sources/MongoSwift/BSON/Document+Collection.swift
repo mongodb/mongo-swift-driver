@@ -36,14 +36,14 @@ extension Document: Collection {
         // criticism also applies to key-based subscripting via `String`.
         // See SWIFT-250.
         failIndexCheck(position)
-        return self.keyValuePairs[position]
+        // Because of our failIndexCheck precondition, this call is guaranteed to provide a non-nil result.
+        return DocumentIterator.subsequence(of: self, startIndex: position, endIndex: position + 1).first!
     }
 
     /// Allows access to a `KeyValuePair` from the `Document`, given a range of indices of the desired `KeyValuePair`'s
     /// held within. This method does not guarantee constant-time (O(1)) access.
     public subscript(bounds: Range<Int>) -> Document {
-        let keyValues = self.keyValuePairs
         // TODO: SWIFT-252 should provide a more efficient implementation for this.
-        return Document(Array(keyValues[bounds]))
+        return DocumentIterator.subsequence(of: self, startIndex: bounds.lowerBound, endIndex: bounds.upperBound)
     }
 }
