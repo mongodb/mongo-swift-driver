@@ -12,7 +12,6 @@ final class Document_CollectionTests: MongoSwiftTestCase {
         ]
     }
 
-
     func testDocumentIndexLogic() {
         let doc: Document = ["a": 3, "b": 4]
 
@@ -113,10 +112,9 @@ private func haveCorrectCount() -> Predicate<Document> {
         case let actual?:
             let expectedCount = actual.storage.count
             let failMsg = ExpectationMessage.expectedCustomValueTo("equal a count of \(expectedCount)",
-                "\(actual.count)")
+                                                                   "\(actual.count)")
             let matches = (actual.count == expectedCount)
             return PredicateResult(bool: matches, message: matches ? msg : failMsg)
         }
     }
 }
-

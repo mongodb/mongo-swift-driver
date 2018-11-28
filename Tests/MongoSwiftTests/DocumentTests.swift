@@ -584,4 +584,3 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(noops).to(equal(["null": 5, "maxkey": "hi", "minkey": false]))
     }
 }
-
