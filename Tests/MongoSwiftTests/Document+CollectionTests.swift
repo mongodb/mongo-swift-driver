@@ -6,13 +6,18 @@ import XCTest
 final class Document_CollectionTests: MongoSwiftTestCase {
     static var allTests: [(String, (Document_CollectionTests) -> () throws -> Void)] {
         return [
-            ("testDocumentIndexLogic", testDocumentIndexLogic),
+            ("testIndexLogic", testIndexLogic),
             ("testMutators", testMutators),
             ("testPrefixSuffix", testPrefixSuffix)
         ]
     }
 
-    func testDocumentIndexLogic() {
+    func testIndexLogic() {
+        var emptyDoc: Document = [:]
+
+        expect(emptyDoc.startIndex).to(equal(0))
+        expect(emptyDoc.endIndex).to(equal(emptyDoc.startIndex))
+
         let doc: Document = ["a": 3, "b": 4]
 
         // doc.startIndex, doc.endIndex, doc.index(after:), etc.
