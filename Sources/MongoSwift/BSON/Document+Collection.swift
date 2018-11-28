@@ -31,7 +31,7 @@ extension Document: Collection {
 
     /// Allows access to a `KeyValuePair` from the `Document`, given the position of the desired `KeyValuePair` held
     /// within. This method does not guarantee constant-time (O(1)) access.
-    public subscript(position: Int) -> Document.KeyValuePair {
+    public subscript(position: Int) -> KeyValuePair {
         // TODO: This method _should_ guarantee constant-time O(1) access, and it is possible to make it do so. This
         // criticism also applies to key-based subscripting via `String`.
         // See SWIFT-250.
