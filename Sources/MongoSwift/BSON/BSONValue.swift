@@ -119,6 +119,7 @@ extension Array: BSONValue {
     }
 }
 
+/// An extension of `NSNull` to represent BSON null values.
 extension NSNull: BSONValue {
     public var bsonType: BSONType { return .null }
 
