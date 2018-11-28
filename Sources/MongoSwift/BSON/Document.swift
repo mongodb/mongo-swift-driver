@@ -53,11 +53,6 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         return self.makeIterator().values
     }
 
-    /// Returns a `[KeyValuePair]` containing the key-value pairs stored in this `Document`.
-    public var keyValuePairs: [KeyValuePair] {
-        return self.makeIterator().keyValuePairs
-    }
-
     /// Initializes a new, empty `Document`.
     public init() {
         self.storage = DocumentStorage()

@@ -245,14 +245,6 @@ public class DocumentIterator: IteratorProtocol {
         return values
     }
 
-    /// Returns an array of `KeyValuePair`s from the iterator's current position to the end. The iter will be exhausted
-    /// after this property is accessed.
-    internal var keyValuePairs: [Document.KeyValuePair] {
-        var keyValuePairs = [Document.KeyValuePair]()
-        while self.advance() { keyValuePairs.append((self.currentKey, self.currentValue)) }
-        return keyValuePairs
-    }
-
     /// Returns the current value (equivalent to the `currentValue` property) or throws on error.
     internal func safeCurrentValue() throws -> BSONValue? {
         switch self.currentType {
