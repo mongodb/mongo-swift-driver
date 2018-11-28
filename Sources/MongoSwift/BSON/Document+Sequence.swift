@@ -12,6 +12,8 @@ import mongoc
 extension Document: Sequence {
     /// The element type of a document: a tuple containing an individual key-value pair.
     public typealias KeyValuePair = (key: String, value: BSONValue?)
+    /// Since a `Document` is a recursive structure, we want to enforce the use of it as a subsequence of itself,
+    /// instead of something like `Slice<Document>`.
     public typealias SubSequence = Document
 
     /// Returns a `Bool` indicating whether the document is empty.
