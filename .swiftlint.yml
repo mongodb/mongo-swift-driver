@@ -21,3 +21,5 @@ excluded:
   - build
   - .build
   - docs
+  - Examples/*/build
+  - Examples/*/.build
