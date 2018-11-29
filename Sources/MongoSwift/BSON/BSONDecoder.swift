@@ -133,14 +133,6 @@ internal class _BSONDecoder: Decoder {
 
     // Returns the data stored in this decoder in a container appropriate for holding values with no keys.
     public func unkeyedContainer() throws -> UnkeyedDecodingContainer {
-        guard !(self.storage.topContainer is NSNull) else {
-            throw DecodingError.valueNotFound(
-                UnkeyedDecodingContainer.self,
-                DecodingError.Context(codingPath: self.codingPath,
-                                      debugDescription:
-                                      "Cannot get unkeyed decoding container -- found null value instead."))
-        }
-
         guard let arr = self.storage.topContainer as? [BSONValue] else {
             throw DecodingError._typeMismatch(at: self.codingPath,
                                               expectation: [BSONValue].self,
