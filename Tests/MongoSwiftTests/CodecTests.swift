@@ -761,6 +761,7 @@ final class CodecTests: MongoSwiftTestCase {
         let encoder = BSONEncoder()
 
         // A top-level `encode()` problem should throw an error, but any such issues deeper in the recursion should not.
+        // These tests are to ensure that we handle incorrect encode() implementations in the same way as JSONEncoder.
         expect(try encoder.encode(IncorrectTopLevelEncode(NSNull()))).to(throwError())
         expect(try encoder.encode(CorrectTopLevelEncode(NSNull()))).toNot(throwError())
         expect(try encoder.encode(CorrectTopLevelEncode(NSNull()))).to(equal(["x": Document()]))
