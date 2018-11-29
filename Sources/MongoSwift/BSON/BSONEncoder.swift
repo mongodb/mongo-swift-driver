@@ -245,7 +245,7 @@ private class _BSONReferencingEncoder: _BSONEncoder {
     deinit {
         let value: BSONValue
         switch self.storage.count {
-        case 0: value = NSNull()
+        case 0: value = Document()
         case 1: value = self.storage.popContainer()
         default: fatalError("Referencing encoder deallocated with multiple containers on stack.")
         }
