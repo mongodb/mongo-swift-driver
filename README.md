@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/mongodb/mongo-swift-driver.svg?branch=master)](https://travis-ci.org/mongodb/mongo-swift-driver)
+
 # MongoSwift
 The official [MongoDB](https://www.mongodb.com/) driver for Swift.
 
@@ -142,7 +144,31 @@ print(doc["a"] ?? "") // prints `1`
 // Set a new value
 doc["d"] = 4
 print(doc) // prints `{"a" : 1, "b" : 2, "c" : 3, "d" : 4}`
+
+// Using functional methods like map, filter:
+let evensDoc = doc.filter { elem in
+    guard let value = elem.value as? Int else {
+        return false
+    }
+    return value % 2 == 0
+}
+print(evensDoc) // prints `{ "b" : 2, "d" : 4 }`
+
+let doubled = doc.map { elem -> Int in
+    guard let value = elem.value as? Int else {
+        return 0
+    }
+
+    return value * 2
+}
+print(doubled) // prints `[2, 4, 6, 8]`
 ```
+Note that `Document` conforms to `Collection`, so useful methods from
+[`Sequence`](https://developer.apple.com/documentation/swift/sequence) and
+[`Collection`](https://developer.apple.com/documentation/swift/collection) are
+all available. However, runtime guarantees are not yet met for many of these
+methods.
+
 ## Development Instructions
 
 See our [development guide](https://mongodb.github.io/mongo-swift-driver/development.html) for instructions for building and testing the driver.

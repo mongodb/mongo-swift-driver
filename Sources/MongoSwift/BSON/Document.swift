@@ -5,6 +5,13 @@ import Foundation
 public class DocumentStorage {
     internal var pointer: UnsafeMutablePointer<bson_t>!
 
+    // Normally, this would go under Document, but computed properties cannot be used before all stored properties are
+    // initialized. Putting this under DocumentStorage gives a correct count and use of it inside of an init() as long
+    // as we have initialized Document.storage beforehand.
+    internal var count: Int {
+        return Int(bson_count_keys(self.pointer))
+    }
+
     init() {
         self.pointer = bson_new()
     }
@@ -28,6 +35,9 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     /// direct access to the storage's pointer to a bson_t
     internal var data: UnsafeMutablePointer<bson_t>! { return storage.pointer }
 
+    /// Returns the number of (key, value) pairs stored at the top level of this `Document`.
+    public var count: Int
+
     /// Returns a `[String]` containing the keys in this `Document`.
     public var keys: [String] {
         return self.makeIterator().keys
@@ -46,6 +56,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     /// Initializes a new, empty `Document`.
     public init() {
         self.storage = DocumentStorage()
+        self.count = 0
     }
 
     /**
@@ -60,6 +71,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      */
     internal init(fromPointer pointer: UnsafePointer<bson_t>) {
         self.storage = DocumentStorage(fromPointer: pointer)
+        self.count = self.storage.count
     }
 
     /**
@@ -79,6 +91,9 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         }
 
         self.storage = DocumentStorage()
+        // This is technically not consistent, but the only way this inconsistency can cause an issue is if we fail to
+        // setValue(), in which case we crash anyways.
+        self.count = 0
         for (key, value) in keyValuePairs {
             do {
                 try self.setValue(for: key, to: value, checkForKey: false)
@@ -114,11 +129,32 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      */
     internal init(_ elements: [BSONValue]) {
         self.storage = DocumentStorage()
+        self.count = 0
         for (i, elt) in elements.enumerated() {
             do {
                 try self.setValue(for: String(i), to: elt, checkForKey: false)
             } catch {
                 preconditionFailure("Failed to set the value for index \(i) to \(String(describing: elt)): \(error)")
+            }
+        }
+    }
+
+    /**
+     * Initializes a `Document` using an array where the values are KeyValuePairs.
+     *
+     * - Parameters:
+     *   - elements: a `[KeyValuePair]`
+     *
+     * - Returns: a new `Document`
+     */
+    internal init(_ elements: [KeyValuePair]) {
+        self.storage = DocumentStorage()
+        self.count = 0
+        for (key, value) in elements {
+            do {
+                try self.setValue(for: key, to: value)
+            } catch {
+                preconditionFailure("Failed to set the value for \(key) to \(String(describing: value)): \(error)")
             }
         }
     }
@@ -144,6 +180,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
 
             return UnsafePointer(bson)
         })
+        self.count = self.storage.count
     }
 
     /// Convenience initializer for constructing a `Document` from a `String`
@@ -156,6 +193,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         self.storage = DocumentStorage(fromPointer: fromBSON.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) in
             bson_new_from_data(bytes, fromBSON.count)
         })
+        self.count = self.storage.count
     }
 
     /// Returns the relaxed extended JSON representation of this `Document`.
@@ -197,17 +235,10 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      * an `NSNull`.
      */
     public subscript(key: String) -> BSONValue? {
-        get {
-            guard let iter = DocumentIterator(forDocument: self) else {
-                preconditionFailure("Could not get document iterator for document in subscript")
-            }
-
-            guard iter.move(to: key) else {
-                return nil
-            }
-
-            return iter.currentValue
-        }
+        // TODO: This `get` method _should_ guarantee constant-time O(1) access, and it is possible to make it do so.
+        // This criticism also applies to indexed-based subscripting via `Int`.
+        // See SWIFT-250.
+        get { return DocumentIterator(forDocument: self, advancedTo: key)?.currentValue }
         set(newValue) {
             do {
                 if let newValue = newValue {
@@ -261,6 +292,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         } else {
             self.copyStorageIfRequired()
             try newValue.encode(to: self.storage, forKey: key)
+            self.count += 1
         }
     }
 
@@ -303,11 +335,13 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     }
 
     /// Appends the key/value pairs from the provided `doc` to this `Document`.
+    /// Note: This function does not check for or clean away duplicate keys.
     public mutating func merge(_ doc: Document) throws {
         self.copyStorageIfRequired()
         guard bson_concat(self.data, doc.data) else {
             throw MongoError.bsonEncodeError(message: "Failed to merge \(doc) with \(self)")
         }
+        self.count += doc.count
     }
 
     /**
