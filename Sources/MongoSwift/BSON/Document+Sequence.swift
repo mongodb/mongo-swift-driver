@@ -17,9 +17,6 @@ extension Document: Sequence {
     // instead of something like `Slice<Document>`.
     /// The type that is returned from methods such as `dropFirst()` and `split()`.
     public typealias SubSequence = Document
-  
-    /// Returns the number of (key, value) pairs stored at the top level of this `Document`.
-    public var count: Int { return Int(bson_count_keys(self.data)) }
 
     /// Returns a `Bool` indicating whether the document is empty.
     public var isEmpty: Bool { return !self.makeIterator().advance() }
