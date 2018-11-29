@@ -28,26 +28,6 @@ extension Document: Sequence {
         return iter
     }
 
-    // this overrides the Sequence protocol's default implementation for `filter`.
-    /**
-     * Returns a new document containing the key-value pairs of the dictionary that satisfy the given predicate.
-     *
-     * - Parameters:
-     *   - isIncluded: A closure that takes a key-value pair as its argument and returns a `Bool` indicating whether
-     *                 the pair should be included in the returned document.
-     *
-     * - Returns: A document of the key-value pairs that `isIncluded` allows.
-     *
-     * - Throws: An error if `isIncluded` throws an error.
-     */
-    public func filter(_ isIncluded: (KeyValuePair) throws -> Bool) rethrows -> Document {
-        var output = Document()
-        for elt in self where try isIncluded(elt) {
-            output[elt.key] = elt.value
-        }
-        return output
-    }
-
     /**
      * Returns a new document containing the keys of this document with the values transformed by
      * the given closure.
@@ -165,6 +145,30 @@ extension Document: Sequence {
             output.append(doc)
         }
 
+        return output
+    }
+}
+
+extension Document {
+    // this is an alternative to the built-in `Document.filter` that returns an `[KeyValuePair]`. 
+    // this variant is called by default, but the other is still accessible by explicitly stating
+    // return type: `let newDocPairs: [Document.KeyValuePair] = newDoc.filter { ... }`
+    /**
+     * Returns a new document containing the key-value pairs of the dictionary that satisfy the given predicate.
+     *
+     * - Parameters:
+     *   - isIncluded: A closure that takes a key-value pair as its argument and returns a `Bool` indicating whether
+     *                 the pair should be included in the returned document.
+     *
+     * - Returns: A document of the key-value pairs that `isIncluded` allows.
+     *
+     * - Throws: An error if `isIncluded` throws an error.
+     */
+    public func filter(_ isIncluded: (KeyValuePair) throws -> Bool) rethrows -> Document {
+        var output = Document()
+        for elt in self where try isIncluded(elt) {
+            output[elt.key] = elt.value
+        }
         return output
     }
 }
