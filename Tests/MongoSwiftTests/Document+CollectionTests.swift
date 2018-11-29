@@ -13,7 +13,7 @@ final class Document_CollectionTests: MongoSwiftTestCase {
     }
 
     func testIndexLogic() {
-        var emptyDoc: Document = [:]
+        let emptyDoc: Document = [:]
 
         expect(emptyDoc.startIndex).to(equal(0))
         expect(emptyDoc.endIndex).to(equal(emptyDoc.startIndex))
