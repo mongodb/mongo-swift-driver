@@ -284,14 +284,7 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
     private func decodeNumber<T: CodableNumber>(_ type: T.Type, forKey key: Key) throws -> T {
         let entry = try getValue(forKey: key)
         return try self.decoder.with(pushedKey: key) {
-            let value = try decoder.unboxNumber(entry, as: type)
-            guard !(value is NSNull) else {
-                throw DecodingError.valueNotFound(
-                    type,
-                    DecodingError.Context(codingPath: self.decoder.codingPath,
-                                          debugDescription: "Expected \(type) value but found null instead."))
-            }
-            return value
+            return try decoder.unboxNumber(entry, as: type)
         }
     }
 
@@ -452,11 +445,6 @@ private struct _BSONUnkeyedDecodingContainer: UnkeyedDecodingContainer {
         try self.checkAtEnd()
         return try self.decoder.with(pushedKey: _BSONKey(index: self.currentIndex)) {
             let typed = try self.decoder.unboxNumber(self.container[currentIndex], as: type)
-            guard !(typed is NSNull) else {
-                throw DecodingError._typeMismatch(at: self.codingPath,
-                                                  expectation: type,
-                                                  reality: self.container[self.currentIndex])
-            }
             self.currentIndex += 1
             return typed
         }
