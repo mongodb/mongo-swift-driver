@@ -42,7 +42,7 @@ final class BSONBenchmarkTests: XCTestCase {
     }
 
     // Recursively visit values 
-    func visit(_ value: BSONValue) {
+    func visit(_ value: BSONValue?) {
         switch value {
         // if a document or array, iterate to visit each value
         case let val as Document:
