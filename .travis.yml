@@ -10,6 +10,7 @@ env:
   matrix:
     - MONGODB_VERSION=3.6.5 SWIFT_VERSION=4.0
     - MONGODB_VERSION=3.6.5 SWIFT_VERSION=4.1
+    - MONGODB_VERSION=3.6.5 SWIFT_VERSION=4.2
 
 install:
   - MONGODB_BASE="mongodb-linux-x86_64"
