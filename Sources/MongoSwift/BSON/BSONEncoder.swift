@@ -39,7 +39,7 @@ public class BSONEncoder {
         let encoder = _BSONEncoder(options: self.options)
 
         let boxedValue = try encoder.box_(value)
-        guard !(boxedValue is NSNull) else {
+        guard boxedValue != nil else {
             throw EncodingError.invalidValue(
                 value,
                 EncodingError.Context(codingPath: [],
@@ -274,11 +274,10 @@ extension _BSONEncoder {
     }
 
     fileprivate func box<T: Encodable>(_ value: T) throws -> BSONValue {
-        let boxedValue = try self.box_(value)
-        return boxedValue is NSNull ? Document() : boxedValue
+        return try self.box_(value) ?? Document()
     }
 
-    fileprivate func box_<T: Encodable>(_ value: T) throws -> BSONValue {
+    fileprivate func box_<T: Encodable>(_ value: T) throws -> BSONValue? {
         // if it's already a `BSONValue`, just return it, unless if it is an
         // array. technically `[Any]` is a `BSONValue`, but we can only use this
         // short-circuiting if all the elements are actually BSONValues.
@@ -301,7 +300,7 @@ extension _BSONEncoder {
         }
 
         // The top container should be a new container.
-        guard self.storage.count > depth else { return NSNull() }
+        guard self.storage.count > depth else { return nil }
         return self.storage.popContainer()
     }
 }
