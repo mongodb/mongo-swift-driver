@@ -40,4 +40,4 @@ before_script:
 
 script:
   - swift build -v
-  - swift test -v --filter MongoSwiftTests
+  - swift test -v

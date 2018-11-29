@@ -1,30 +1,30 @@
-# CFLAGS = -Xcc -DMONGOC_COMPILATION -Xcc -DBSON_COMPILATION -Xcc -ISources/libbson -Xcc -ISources/libbson/include -Xcc -ISources/libbson/generated -Xcc -ISources/libmongoc/generated
-# LDFLAGS = -Xlinker -lsasl2 -Xlinker -lz
-CFLAGS =
-LDFLAGS =
-
-# If FILTER is not provided, a default filter of `MongoSwiftTests` will be used.
-# Else, any test matching the filter in *either target* (MongoSwiftTests or MongoSwiftBenchmarks) will run.
+# if provided, FILTER is used as the --filter argument to `swift test`. 
 ifdef FILTER
 	FILTERARG = --filter $(FILTER)
 else
-	FILTERARG = --filter MongoSwiftTests
+	FILTERARG =
 endif
 
-all:
-	swift build -v $(CFLAGS) $(LDFLAGS)
+define check_for_gem
+	gem list $(1) -i > /dev/null || gem install $(1) || { echo "ERROR: Failed to locate or install the ruby gem $(1); please install yourself with 'gem install $(1)' (you may need to use sudo)"; exit 1; }
+endef
 
+all:
+	swift build -v
+
+# project generates the .xcodeproj, and then modifies it to add
+# spec .JSON files to the project
 project:
 	swift package generate-xcodeproj
-	@# use xcodeproj to add .json files to the project
-	@gem list xcodeproj -i > /dev/null || gem install xcodeproj || { echo "ERROR: Failed to locate or install the ruby gem xcodeproj; please install yourself with 'gem install xcodeproj' (you may need to use sudo)"; exit 1; }
+	@$(call check_for_gem, xcodeproj)
 	ruby add_json_files.rb
 
 test:
-	swift test -v $(CFLAGS) $(LDFLAGS) $(FILTERARG)
+	swift test -v $(FILTERARG)
 
-benchmark:
-	swift test -v $(CFLAGS) $(LDFLAGS) --filter MongoSwiftBenchmarks
+test-pretty:
+	@$(call check_for_gem, xcpretty)
+	swift test $(FILTERARG) 2>&1 | xcpretty
 
 lint:
 	swiftlint autocorrect
@@ -38,5 +38,5 @@ clean:
 
 documentation:
 	make project
-	@gem list jazzy -i > /dev/null || gem install jazzy || { echo "ERROR: Failed to locate or install the ruby gem jazzy; please install yourself with 'gem install jazzy' (you may need to use sudo)"; exit 1; }
+	@$(call check_for_gem, jazzy)
 	jazzy --module MongoSwift --module-version 0.0.7 --root-url https://mongodb.github.io/mongo-swift-driver/ --documentation Development.md
