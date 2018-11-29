@@ -116,14 +116,6 @@ internal class _BSONDecoder: Decoder {
 
     // Returns the data stored in this decoder as represented in a container keyed by the given key type.
     public func container<Key>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> {
-        guard !(self.storage.topContainer is NSNull)  else {
-            throw DecodingError.valueNotFound(
-                KeyedDecodingContainer<Key>.self,
-                DecodingError.Context(codingPath: self.codingPath,
-                                      debugDescription:
-                                      "Cannot get keyed decoding container -- found null value instead."))
-        }
-
         guard let topContainer = self.storage.topContainer as? Document else {
             throw DecodingError._typeMismatch(at: self.codingPath,
                                               expectation: Document.self,
