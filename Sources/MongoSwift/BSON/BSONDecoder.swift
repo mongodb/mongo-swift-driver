@@ -273,7 +273,7 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
     private func decodeBSONType<T: BSONValue>(_ type: T.Type, forKey key: Key) throws -> T {
         let entry = try getValue(forKey: key)
         return try self.decoder.with(pushedKey: key) {
-            return try decoder.unboxBSONValue(entry, as: type)
+            try decoder.unboxBSONValue(entry, as: type)
         }
     }
 
