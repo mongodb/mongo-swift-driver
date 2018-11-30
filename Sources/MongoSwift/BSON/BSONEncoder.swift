@@ -38,8 +38,7 @@ public class BSONEncoder {
 
         let encoder = _BSONEncoder(options: self.options)
 
-        let boxedValue = try encoder.box_(value)
-        guard boxedValue != nil else {
+        guard let boxedValue = try encoder.box_(value) else {
             throw EncodingError.invalidValue(
                 value,
                 EncodingError.Context(codingPath: [],
