@@ -284,7 +284,7 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
     private func decodeNumber<T: CodableNumber>(_ type: T.Type, forKey key: Key) throws -> T {
         let entry = try getValue(forKey: key)
         return try self.decoder.with(pushedKey: key) {
-            return try decoder.unboxNumber(entry, as: type)
+            try decoder.unboxNumber(entry, as: type)
         }
     }
 
