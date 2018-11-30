@@ -184,11 +184,7 @@ extension _BSONDecoder {
     }
 
     fileprivate func unboxNumber<T: CodableNumber>(_ value: BSONValue, as type: T.Type) throws -> T {
-        guard !(value is NSNull) else {
-            throw DecodingError._typeMismatch(at: self.codingPath, expectation: type, reality: value)
-        }
-
-        guard let primitive = T(from: value) else {
+        guard !(value is NSNull), let primitive = T(from: value) else {
             throw DecodingError._numberMismatch(at: self.codingPath, expectation: type, reality: value)
         }
         return primitive
