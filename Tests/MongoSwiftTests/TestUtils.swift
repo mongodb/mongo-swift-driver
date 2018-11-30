@@ -6,7 +6,7 @@ import XCTest
 class MongoSwiftTestCase: XCTestCase {
     /* Ensure libmongoc is initialized. This will be called multiple times, but that's ok
      * as repeated calls have no effect. There is no way to call final cleanup code just
-     * once at the very end, either explicitly or with a deinit). This may appear as a 
+     * once at the very end, either explicitly or with a deinit. This may appear as a 
      * memory leak. */
     override class func setUp() {
         MongoSwift.initialize()
