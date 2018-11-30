@@ -44,7 +44,8 @@ final class DocumentTests: MongoSwiftTestCase {
             ("testReplaceValueWithNewType", testReplaceValueWithNewType),
             ("testReplaceValueWithNil", testReplaceValueWithNil),
             ("testReplaceValueNoop", testReplaceValueNoop),
-            ("testDocumentDictionarySimilarity", testDocumentDictionarySimilarity)
+            ("testDocumentDictionarySimilarity", testDocumentDictionarySimilarity),
+            ("testDefaultSubscript", testDefaultSubscript)
         ]
     }
 
@@ -598,5 +599,15 @@ final class DocumentTests: MongoSwiftTestCase {
 
         expect(doc["remove_me"]).to(beNil())
         expect(doc.hasKey("remove_me")).to(beFalse())
+    }
+
+    func testDefaultSubscript() throws {
+        let doc: Document = ["hello": "world"]
+        let floatVal = 18.2
+        let stringVal = "this is a string"
+        expect(doc["DNE", default: floatVal]).to(bsonEqual(floatVal))
+        expect(doc["hello", default: floatVal]).to(bsonEqual(doc["hello"]))
+        expect(doc["DNE", default: stringVal]).to(bsonEqual(stringVal))
+        expect(doc["DNE", default: NSNull()]).to(bsonEqual(NSNull()))
     }
 }
