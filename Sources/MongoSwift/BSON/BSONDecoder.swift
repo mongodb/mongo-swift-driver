@@ -177,6 +177,14 @@ internal struct _BSONDecodingStorage {
 extension _BSONDecoder {
 
     fileprivate func unboxBSONValue<T: BSONValue>(_ value: BSONValue, as type: T.Type) throws -> T {
+        // We throw in the case of NSNull because nulls should be requested through decodeNil().
+        guard !(value is NSNull) else {
+            throw DecodingError.valueNotFound(
+                type,
+                DecodingError.Context(codingPath: self.codingPath,
+                                      debugDescription: "Expected \(type) value but found null instead."))
+        }
+
         guard let typed = value as? T else {
             throw DecodingError._typeMismatch(at: self.codingPath, expectation: type, reality: value)
         }
@@ -265,14 +273,7 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
     private func decodeBSONType<T: BSONValue>(_ type: T.Type, forKey key: Key) throws -> T {
         let entry = try getValue(forKey: key)
         return try self.decoder.with(pushedKey: key) {
-            let value = try decoder.unboxBSONValue(entry, as: type)
-            guard !(value is NSNull) else {
-                throw DecodingError.valueNotFound(
-                    type,
-                    DecodingError.Context(codingPath: self.decoder.codingPath,
-                                          debugDescription: "Expected \(type) value but found null instead."))
-            }
-            return value
+            return try decoder.unboxBSONValue(entry, as: type)
         }
     }
 
@@ -426,11 +427,6 @@ private struct _BSONUnkeyedDecodingContainer: UnkeyedDecodingContainer {
         try self.checkAtEnd()
         return try self.decoder.with(pushedKey: _BSONKey(index: self.currentIndex)) {
             let typed = try self.decoder.unboxBSONValue(self.container[currentIndex], as: type)
-            guard !(typed is NSNull) else {
-                throw DecodingError._typeMismatch(at: self.codingPath,
-                                                  expectation: type,
-                                                  reality: self.container[self.currentIndex])
-            }
             self.currentIndex += 1
             return typed
         }
