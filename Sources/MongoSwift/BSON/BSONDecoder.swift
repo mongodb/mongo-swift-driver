@@ -182,7 +182,7 @@ extension _BSONDecoder {
             throw DecodingError.valueNotFound(
                 type,
                 DecodingError.Context(codingPath: self.codingPath,
-                                      debugDescription: "Expected \(type) value but found null instead."))
+                                      debugDescription: "Expected a non-null type."))
         }
 
         guard let typed = value as? T else {
