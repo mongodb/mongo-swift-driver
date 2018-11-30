@@ -4,6 +4,11 @@ import Nimble
 import XCTest
 
 class MongoSwiftTestCase: XCTestCase {
+    // this will be called multiple times, but that's ok as repeated calls have no effect.
+    override class func setUp() {
+        MongoSwift.initialize()
+    }
+
     /// Gets the path of the directory containing spec files, depending on whether
     /// we're running from XCode or the command line
     static var specsPath: String {
