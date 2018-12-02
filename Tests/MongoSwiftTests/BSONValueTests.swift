@@ -1,4 +1,5 @@
 import Foundation
+import mongoc
 @testable import MongoSwift
 import Nimble
 import XCTest
@@ -8,7 +9,8 @@ final class BSONValueTests: MongoSwiftTestCase {
         return [
             ("testInvalidDecimal128", testInvalidDecimal128),
             ("testUUIDBytes", testUUIDBytes),
-            ("testBSONEquals", testBSONEquals)
+            ("testBSONEquals", testBSONEquals),
+            ("testObjectIdRoundTrip", testObjectIdRoundTrip)
         ]
     }
 
@@ -95,5 +97,42 @@ final class BSONValueTests: MongoSwiftTestCase {
         expect(bsonEquals([BSONEncoder()], [BSONEncoder(), BSONEncoder()])).to(beFalse())
         // Different types
         expect(4).toNot(bsonEqual("swift"))
+    }
+
+    func testObjectIdRoundTrip() throws {
+        // alloc new bson_oid_t
+        var oid_t = bson_oid_t()
+        bson_oid_init(&oid_t, nil)
+
+        // read the hex string of the oid_t
+        var oid_c = [CChar].init(repeating: 0, count: 25)
+        bson_oid_to_string(&oid_t, &oid_c)
+        let oid = String.init(cString: &oid_c)
+
+        // read the timestamp used to create the oid
+        let timestamp = TimeInterval(bson_oid_get_time_t(&oid_t))
+
+        // initialize a new oid with the oid_t ptr
+        // expect the values to be equal
+        let objectId = ObjectId.init(fromPointer: &oid_t)
+        expect(objectId.oid).to(equal(oid))
+        expect(objectId.timestamp).to(equal(timestamp))
+
+        // round trip the objectId.
+        // expect the encoded oid to equal the original
+        let encoded = try BSONEncoder().encode(["_id": objectId])
+        guard let _id = encoded["_id"] as? ObjectId else {
+            fail("encoded document did not contain objectId _id")
+            return
+        }
+
+        expect(_id.oid).to(equal(objectId.oid))
+        expect(_id.timestamp).to(equal(objectId.timestamp))
+
+        // expect that we can pull the correct timestamp if
+        // initialized from the original string
+        let objectIdFromString = ObjectId.init(fromString: oid)
+        expect(objectIdFromString.oid).to(equal(oid))
+        expect(objectIdFromString.timestamp).to(equal(timestamp))
     }
 }
