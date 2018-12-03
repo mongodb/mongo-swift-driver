@@ -121,10 +121,8 @@ final class BSONValueTests: MongoSwiftTestCase {
         // round trip the objectId.
         // expect the encoded oid to equal the original
         let encoded = try BSONEncoder().encode(["_id": objectId])
-        print(encoded)
-        print(type(of: encoded))
-        print(encoded["_id"])
-        print(type(of: encoded["_id"]))
+        print("!!DEBUG!!")
+        print(encoded["_id"] as! Document)
         guard let _id = encoded["_id"] as? ObjectId else {
             fail("encoded document did not contain objectId _id")
             return
