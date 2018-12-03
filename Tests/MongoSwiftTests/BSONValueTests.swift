@@ -100,7 +100,7 @@ final class BSONValueTests: MongoSwiftTestCase {
     }
 
     /// Test object for ObjectIdRoundTrip
-    struct TestObject: Codable {
+    private struct TestObject: Codable {
         private let _id: ObjectId
         private let foo = "bar"
 
@@ -115,16 +115,16 @@ final class BSONValueTests: MongoSwiftTestCase {
         bson_oid_init(&oid_t, nil)
 
         // read the hex string of the oid_t
-        var oid_c = [CChar].init(repeating: 0, count: 25)
+        var oid_c = [CChar](repeating: 0, count: 25)
         bson_oid_to_string(&oid_t, &oid_c)
-        let oid = String.init(cString: &oid_c)
+        let oid = String(cString: &oid_c)
 
         // read the timestamp used to create the oid
         let timestamp = UInt32(bson_oid_get_time_t(&oid_t))
 
         // initialize a new oid with the oid_t ptr
         // expect the values to be equal
-        let objectId = ObjectId.init(fromPointer: &oid_t)
+        let objectId = ObjectId(fromPointer: &oid_t)
         expect(objectId.oid).to(equal(oid))
         expect(objectId.timestamp).to(equal(timestamp))
 
@@ -143,7 +143,7 @@ final class BSONValueTests: MongoSwiftTestCase {
 
         // expect that we can pull the correct timestamp if
         // initialized from the original string
-        let objectIdFromString = ObjectId.init(fromString: oid)
+        let objectIdFromString = ObjectId(fromString: oid)
         expect(objectIdFromString.oid).to(equal(oid))
         expect(objectIdFromString.timestamp).to(equal(timestamp))
     }
