@@ -548,7 +548,7 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
     public let oid: String
 
     /// The timestamp used to create this `ObjectId`
-    public let timestamp: TimeInterval
+    public let timestamp: UInt32
 
     /// Initializes a new `ObjectId`.
     public init() {
@@ -563,7 +563,7 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
         self.oid = oid
         var oid_t = bson_oid_t()
         bson_oid_init_from_string(&oid_t, oid)
-        self.timestamp = TimeInterval(bson_oid_get_time_t(&oid_t))
+        self.timestamp = UInt32(bson_oid_get_time_t(&oid_t))
     }
 
     /// Initializes an `ObjectId` from the provided `String`. Returns `nil` if the string is not a valid
@@ -585,7 +585,7 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
             bson_oid_to_string(oid_t, bytes)
             return String(cString: bytes)
         }
-        self.timestamp = TimeInterval(bson_oid_get_time_t(oid_t))
+        self.timestamp = UInt32(bson_oid_get_time_t(oid_t))
     }
 
     /// Returns the provided string as a `bson_oid_t`.

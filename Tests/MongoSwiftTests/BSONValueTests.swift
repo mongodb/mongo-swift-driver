@@ -110,7 +110,7 @@ final class BSONValueTests: MongoSwiftTestCase {
         let oid = String.init(cString: &oid_c)
 
         // read the timestamp used to create the oid
-        let timestamp = TimeInterval(bson_oid_get_time_t(&oid_t))
+        let timestamp = UInt32(bson_oid_get_time_t(&oid_t))
 
         // initialize a new oid with the oid_t ptr
         // expect the values to be equal
