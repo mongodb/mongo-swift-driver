@@ -99,6 +99,16 @@ final class BSONValueTests: MongoSwiftTestCase {
         expect(4).toNot(bsonEqual("swift"))
     }
 
+    /// Test object for ObjectIdRoundTrip
+    struct TestObject: Codable {
+        private let _id: ObjectId
+        private let foo = "bar"
+
+        init(id: ObjectId) {
+            self._id = id
+        }
+    }
+
     func testObjectIdRoundTrip() throws {
         // alloc new bson_oid_t
         var oid_t = bson_oid_t()
@@ -120,15 +130,6 @@ final class BSONValueTests: MongoSwiftTestCase {
 
         // round trip the objectId.
         // expect the encoded oid to equal the original
-        struct TestObject: Codable {
-            private let _id: ObjectId
-            private let foo = "bar"
-
-            init(id: ObjectId) {
-                self._id = id
-            }
-        }
-        
         let testObject = TestObject(id: objectId)
         let encodedTestObject = try BSONEncoder().encode(testObject)
 
