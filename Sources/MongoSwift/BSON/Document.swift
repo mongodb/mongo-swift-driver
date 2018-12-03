@@ -338,10 +338,11 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
 
     /// Appends the key/value pairs from the provided `doc` to this `Document`.
     /// Note: This function does not check for or clean away duplicate keys.
-    public mutating func merge(_ doc: Document) throws {
+    internal mutating func merge(_ doc: Document) throws {
         self.copyStorageIfRequired()
         guard bson_concat(self.data, doc.data) else {
-            throw MongoError.bsonEncodeError(message: "Failed to merge \(doc) with \(self)")
+            throw MongoError.bsonEncodeError(message: "Failed to merge \(doc) with \(self). This is likely due to " +
+                    "the merged document being too large.")
         }
         self.count += doc.count
     }
