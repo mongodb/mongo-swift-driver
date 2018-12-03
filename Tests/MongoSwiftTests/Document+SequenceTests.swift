@@ -120,6 +120,9 @@ final class Document_SequenceTests: MongoSwiftTestCase {
             }
         }
         expect(output2).to(equal(["a": 2, "b": "hello there", "c": 3]))
+
+        // test that the protocol-supplied version of filter is still available
+        let _: [Document.KeyValuePair] = doc1.filter { $0.key != "a" }
     }
 
     // shared docs for subsequence tests
