@@ -81,7 +81,7 @@ extension Array: BSONValue {
         let array = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
         defer {
             array.deinitialize(count: 1)
-            array.deallocate(capacity: 1)
+            array.deallocate()
         }
         bson_iter_array(&iter.iter, &length, array)
 
@@ -194,7 +194,7 @@ public struct Binary: BSONValue, Equatable, Codable {
         let dataPointer = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
         defer {
             dataPointer.deinitialize(count: 1)
-            dataPointer.deallocate(capacity: 1)
+            dataPointer.deallocate()
         }
         bson_iter_binary(&iter.iter, &subtype, &length, dataPointer)
 
@@ -274,13 +274,13 @@ internal struct DBPointer: BSONValue {
         let collectionPP = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: 1)
         defer {
             collectionPP.deinitialize(count: 1)
-            collectionPP.deallocate(capacity: 1)
+            collectionPP.deallocate()
         }
 
         let oidPP = UnsafeMutablePointer<UnsafePointer<bson_oid_t>?>.allocate(capacity: 1)
         defer {
             oidPP.deinitialize(count: 1)
-            oidPP.deallocate(capacity: 1)
+            oidPP.deallocate()
         }
 
         bson_iter_dbpointer(&iter.iter, &length, collectionPP, oidPP)
@@ -480,7 +480,7 @@ public struct CodeWithScope: BSONValue, Equatable, Codable {
         let scopePointer = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
         defer {
             scopePointer.deinitialize(count: 1)
-            scopePointer.deallocate(capacity: 1)
+            scopePointer.deallocate()
         }
 
         let code = String(cString: bson_iter_codewscope(&iter.iter, &length, &scopeLength, scopePointer))
@@ -684,7 +684,7 @@ public struct RegularExpression: BSONValue, Equatable, Codable {
         let options = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: 1)
         defer {
             options.deinitialize(count: 1)
-            options.deallocate(capacity: 1)
+            options.deallocate()
         }
 
         guard let pattern = bson_iter_regex(&iter.iter, options) else {

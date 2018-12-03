@@ -54,7 +54,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         let out = UnsafeMutablePointer<UnsafePointer<bson_t>?>.allocate(capacity: 1)
         defer {
             out.deinitialize(count: 1)
-            out.deallocate(capacity: 1)
+            out.deallocate()
         }
         guard mongoc_cursor_next(self._cursor, out) else { return nil }
         let doc = Document(fromPointer: out.pointee!)

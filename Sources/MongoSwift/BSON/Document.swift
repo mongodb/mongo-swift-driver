@@ -381,7 +381,7 @@ extension Document: BSONValue {
         let document = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
         defer {
             document.deinitialize(count: 1)
-            document.deallocate(capacity: 1)
+            document.deallocate()
         }
 
         bson_iter_document(&iter.iter, &length, document)
