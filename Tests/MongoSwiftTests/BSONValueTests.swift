@@ -89,8 +89,10 @@ final class BSONValueTests: MongoSwiftTestCase {
                 "nested": [ "a": 1, "b": "different" ] as Document
                 ] as Document
         )
-        // Invalid Array type
-        expect(bsonEquals([BSONEncoder()], [BSONEncoder(), BSONEncoder()])).to(beFalse())
+        // Check that when an array contains non-BSONValues, we return false
+        let arr = [[String: Int]()]
+        expect(bsonEquals(arr, arr)).to(beFalse())
+
         // Different types
         expect(4).toNot(bsonEqual("swift"))
     }
