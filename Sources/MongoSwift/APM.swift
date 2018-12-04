@@ -163,8 +163,8 @@ public struct ServerDescriptionChangedEvent: MongoEvent, InitializableFromOpaque
         var oid = bson_oid_t()
         mongoc_apm_server_changed_get_topology_id(event, &oid)
         self.topologyId = ObjectId(fromPointer: &oid)
-        self.previousDescription = ServerDescription(mongoc_apm_server_changed_get_previous_description(event))
-        self.newDescription = ServerDescription(mongoc_apm_server_changed_get_new_description(event))
+        self.previousDescription = ServerDescription(mongoc_apm_server_changed_get_previous_description(event), nil)
+        self.newDescription = ServerDescription(mongoc_apm_server_changed_get_new_description(event), Date())
     }
 }
 

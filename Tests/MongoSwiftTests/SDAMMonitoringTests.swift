@@ -118,4 +118,113 @@ final class SDAMTests: MongoSwiftTestCase {
         expect(newTopology.servers[0].type).to(equal(ServerType.standalone))
         checkEmptyLists(newTopology.servers[0])
     }
+
+    func runHasReadableAsserts(_ topology: TopologyDescription, _ testCase: [(ReadPreference, Bool)]) {
+        var primaryCase = false
+
+        testCase.forEach { (readPref, avail) in
+            expect(topology.hasReadableServer(readPref)).to(equal(avail), description: "With topology \(topology) " +
+                    "and Read Preference { mode: \(readPref.mode), tags: \(readPref.tagSets)}, expected " +
+                    "hasReadableServer to return \(avail)")
+
+            if readPref.mode == .primary {
+                primaryCase = avail
+            }
+        }
+        expect(topology.hasReadableServer()).to(equal(primaryCase))
+    }
+
+    func testHasReadableServers() throws {
+        let hosts = [
+            "a:1",
+            "b:2",
+            "c:3"
+        ]
+
+        let tags: Document = ["dog": 1, "cat": "two"]
+        let tags1: Document = ["sdaf": "sadfsf", "f": 2]
+        let wrongTags: Document = ["a": "b"]
+
+        let primaryLastWrite = Date() - 600
+        let lw: Document = ["lastWriteDate": primaryLastWrite]
+
+        let isMasterPrimary: Document = [
+            "hosts": hosts,
+            "primary": hosts[0],
+            "lastWrite": lw
+        ]
+
+        let isMasterSecondary: Document = [
+            "hosts": hosts,
+            "primary": hosts[0],
+            "tags": tags,
+            "lastWrite": lw
+        ]
+
+        let isMasterSecondary1: Document = [
+            "hosts": hosts,
+            "primary": hosts[0],
+            "tags": tags1,
+            "lastWrite": lw
+        ]
+
+        let servers: [ServerDescription] = [
+            ServerDescription(ConnectionId(hosts[0]), 12, isMasterPrimary, ServerType.rsPrimary, primaryLastWrite + 10),
+            ServerDescription(ConnectionId(
+                    hosts[1]),
+                    12,
+                    isMasterSecondary,
+                    ServerType.rsSecondary,
+                    primaryLastWrite + 600),
+            ServerDescription(ConnectionId(
+                    hosts[2]),
+                    12,
+                    isMasterSecondary1,
+                    ServerType.rsSecondary,
+                    primaryLastWrite + 10)
+        ]
+
+        let serversNoPrimary: [ServerDescription] = Array(servers[1...])
+
+        let topology1 = TopologyDescription(TopologyType.replicaSetWithPrimary, servers)
+        let case1: [(ReadPreference, Bool)] = [
+            (ReadPreference(.primary), true),
+            (ReadPreference(.secondary), true),
+            (ReadPreference(.primaryPreferred), true),
+            (ReadPreference(.secondaryPreferred), true),
+            (ReadPreference(.nearest), true),
+            (try ReadPreference(.secondary, maxStalenessSeconds: 90), true),
+            (try ReadPreference(.secondary, tagSets: [tags], maxStalenessSeconds: 90), false),
+            (try ReadPreference(.secondary, tagSets: [tags1], maxStalenessSeconds: 90), true)
+        ]
+        runHasReadableAsserts(topology1, case1)
+
+        let topology2 = TopologyDescription(TopologyType.replicaSetNoPrimary, serversNoPrimary)
+        let case2: [(ReadPreference, Bool)] = [
+            (ReadPreference(.primary), false),
+            (ReadPreference(.secondary), true),
+            (ReadPreference(.primaryPreferred), true),
+            (ReadPreference(.secondaryPreferred), true),
+            (ReadPreference(.nearest), true)
+        ]
+        runHasReadableAsserts(topology2, case2)
+
+        let topology3 = TopologyDescription(TopologyType.replicaSetWithPrimary, servers)
+        let case3: [(ReadPreference, Bool)] = [
+            (ReadPreference(.primary), true),
+            (ReadPreference(.secondary), true),
+            (try ReadPreference(.secondary, tagSets: [wrongTags, tags]), true),
+            (try ReadPreference(.secondary, tagSets: [wrongTags]), false),
+            (try ReadPreference(.secondaryPreferred, tagSets: [wrongTags]), true)
+        ]
+        runHasReadableAsserts(topology3, case3)
+
+        let topology4 = TopologyDescription(TopologyType.replicaSetNoPrimary, serversNoPrimary)
+        let case4: [(ReadPreference, Bool)] = [
+            (ReadPreference(.primary), false),
+            (try ReadPreference(.primaryPreferred, tagSets: [tags]), true),
+            (try ReadPreference(.primaryPreferred, tagSets: [wrongTags]), false)
+        ]
+        runHasReadableAsserts(topology4, case4)
+    }
 }

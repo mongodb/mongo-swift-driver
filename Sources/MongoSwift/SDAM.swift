@@ -94,7 +94,7 @@ public struct ServerDescription {
     public var passives: [ConnectionId] = []
 
     /// Tags for this server.
-    public var tags: [String: String] = [:]
+    public var tags: Document?
 
     /// The replica set name.
     public var setName: String?
@@ -109,7 +109,7 @@ public struct ServerDescription {
     public var primary: ConnectionId?
 
     /// When this server was last checked.
-    public let lastUpdateTime: Date? = nil // currently, this will never be set
+    public var lastUpdateTime: Date?
 
     /// The logicalSessionTimeoutMinutes value for this server.
     public var logicalSessionTimeoutMinutes: Int64?
@@ -150,15 +150,10 @@ public struct ServerDescription {
             self.arbiters = arbiters.map { ConnectionId($0) }
         }
 
-        if let tags = isMaster["tags"] as? Document {
-            for (k, v) in tags {
-                self.tags[k] = v as? String
-            }
-        }
-
         self.setName = isMaster["setName"] as? String
         self.setVersion = isMaster["setVersion"] as? Int64
         self.electionId = isMaster["electionId"] as? ObjectId
+        self.tags = isMaster["tags"] as? Document
 
         if let primary = isMaster["primary"] as? String {
             self.primary = ConnectionId(primary)
@@ -167,9 +162,35 @@ public struct ServerDescription {
         self.logicalSessionTimeoutMinutes = isMaster["logicalSessionTimeoutMinutes"] as? Int64
     }
 
+    /// An internal function used to determine if a given server matches a tag set.
+    internal func matchesTagSet(_ tagSet: Document) -> Bool {
+        guard let serverTags = self.tags else {
+            return false
+        }
+
+        for kvp in tagSet {
+            if !serverTags.keys.contains(kvp.key) || !bsonEquals(serverTags[kvp.key]!, kvp.value!) {
+                return false
+            }
+        }
+
+        return true
+    }
+
+    /// An internal initializer to create a `ServerDescription` for testing purposes.
+    internal init(_ connectionId: ConnectionId, _ rtt: Int64, _ isMaster: Document, _ type: ServerType,
+                  _ updateTime: Date?) {
+        self.connectionId = connectionId
+        self.roundTripTime = rtt
+        self.parseIsMaster(isMaster)
+        self.type = type
+        self.lastUpdateTime = updateTime // TODO: get lastUpdateTime from mongoc_server_description_t after CDRIVER-2896
+    }
+
     /// An internal initializer to create a `ServerDescription` from an OpaquePointer to a
     /// mongoc_server_description_t.
-    internal init(_ description: OpaquePointer) {
+    internal init(_ description: OpaquePointer, _ updateTime: Date?) {
+        self.lastUpdateTime = updateTime // TODO: get lastUpdateTime from mongoc_server_description_t after CDRIVER-2896
         self.connectionId = ConnectionId(mongoc_server_description_host(description))
         self.roundTripTime = mongoc_server_description_round_trip_time(description)
 
@@ -198,6 +219,9 @@ public enum TopologyType: String {
 /// A struct describing the state of a MongoDB deployment: its type (standalone, replica set, or sharded),
 /// which servers are up, what type of servers they are, which is primary, and so on.
 public struct TopologyDescription {
+    /// The interval between server checks, can be configured via the URI.
+    public static var heartbeatFrequencyMS: Int = 10000
+
     /// The type of this topology.
     public let type: TopologyType
 
@@ -231,10 +255,85 @@ public struct TopologyDescription {
         }
     }
 
+    /// An internal function used to determine if there are suitable servers to read from in a replica set.
+    internal func hasSuitableReadServer(_ readPref: ReadPreference) -> Bool {
+        var suitableModes: [ServerType]
+
+        switch readPref.mode {
+        case ReadPreference.Mode.primary:
+            suitableModes = [ServerType.rsPrimary]
+        case ReadPreference.Mode.secondary:
+            suitableModes = [ServerType.rsSecondary]
+        default:
+            suitableModes = [ServerType.rsSecondary, ServerType.rsPrimary]
+        }
+
+        var candidates: [ServerDescription] = servers.filter { suitableModes.contains($0.type) }
+
+        // If read preference specifies a max staleness, first filter out too stale servers
+        if let maxStalenessSeconds = readPref.maxStalenessSeconds {
+            candidates = candidates.filter { (candidate: ServerDescription) in
+                let staleness = { () -> Double in
+                    let delta = { (serverDesc: ServerDescription) -> Double in
+                        (serverDesc.lastUpdateTime!.timeIntervalSinceReferenceDate -
+                                serverDesc.lastWriteDate!.timeIntervalSinceReferenceDate) * 1000.0
+                    }
+
+                    if self.type == .replicaSetWithPrimary {
+                        let primary = self.servers.filter {server in server.type == .rsPrimary} [0]
+                        return delta(candidate) - delta(primary) + Double(TopologyDescription.heartbeatFrequencyMS)
+                    } else {
+                        let sMax = self.servers.max {
+                            $0.lastWriteDate!.timeIntervalSinceReferenceDate <
+                                    $1.lastWriteDate!.timeIntervalSinceReferenceDate
+                        }
+                        return (sMax!.lastWriteDate!.timeIntervalSinceReferenceDate -
+                                candidate.lastWriteDate!.timeIntervalSinceReferenceDate)
+                                + Double(TopologyDescription.heartbeatFrequencyMS)
+                    }
+                }()
+
+                return staleness < Double(maxStalenessSeconds * 1000)
+            }
+        }
+
+        // If the read preference specifies tags, find a server that matches
+        if readPref.tagSets.count > 0 {
+            for candidate in candidates {
+                if candidate.type == ServerType.rsPrimary {
+                    return true
+                }
+
+                for tagSet in readPref.tagSets {
+                    if candidate.matchesTagSet(tagSet) {
+                        return true
+                    }
+                }
+            }
+            return false
+        }
+
+        return candidates.count > 0
+    }
+
     /// Returns `true` if the topology has a readable server available, and `false` otherwise.
-    public func hasReadableServer() -> Bool {
-        // (this function should take in an optional ReadPreference, but we have yet to implement that type.)
-        return [.single, .replicaSetWithPrimary, .sharded].contains(self.type)
+    public func hasReadableServer(_ readPref: ReadPreference = ReadPreference(ReadPreference.Mode.primary)) -> Bool {
+        switch self.type {
+        case .unknown:
+            return false
+        case .single, .sharded:
+            return true
+        case .replicaSetNoPrimary:
+            if readPref.mode == ReadPreference.Mode.primary {
+                return false
+            }
+            return hasSuitableReadServer(readPref)
+        case .replicaSetWithPrimary:
+            if readPref.mode == ReadPreference.Mode.primary {
+                return true
+            }
+            return hasSuitableReadServer(readPref)
+        }
     }
 
     /// Returns `true` if the topology has a writable server available, and `false` otherwise.
@@ -242,10 +341,16 @@ public struct TopologyDescription {
         return [.single, .replicaSetWithPrimary].contains(self.type)
     }
 
-    /// An internal initializer to create a `TopologyDescription` from an OpaquePointer
-    /// to a `mongoc_server_description_t`
-    internal init(_ description: OpaquePointer) {
+    /// An internal initializer to create a `TopologyDescription` for testing purposes
+    internal init(_ type: TopologyType, _ servers: [ServerDescription]) {
+        self.type = type
+        self.servers = servers
+    }
 
+    /// An internal initializer to create a `TopologyDescription` from an OpaquePointer
+    /// to a `mongoc_topology_description_t`
+    internal init(_ description: OpaquePointer) {
+        let updateTime = Date()
         let topologyType = String(cString: mongoc_topology_description_type(description))
         self.type = TopologyType(rawValue: topologyType)!
 
@@ -253,7 +358,7 @@ public struct TopologyDescription {
         let serverData = mongoc_topology_description_get_servers(description, &size)
         let buffer = UnsafeBufferPointer(start: serverData, count: size)
         if size > 0 {
-            self.servers = Array(buffer).map { ServerDescription($0!) }
+            self.servers = Array(buffer).map { ServerDescription($0!, updateTime) }
         }
     }
 }
