@@ -6,7 +6,7 @@
 * [Building](#building)
 * [Running Tests](#running-tests)
 * [Writing and Generating Documentation](#writing-and-generating-documentation)
-* [Linting](#linting)
+* [Linting and Style](#linting-and-style)
 * [Workflow](#workflow)
 * [Resources](#resources)
 
@@ -71,8 +71,10 @@ Comments that are _not_ documentation should use two slashes (`//`).
 Our documentation site is automatically generated from the source code using [jazzy](https://github.com/realm/jazzy#installation). 
 To regenerate the files after making changes, run `make documentation` from the project's root directory. You can then inspect the changes to the site by opening the files in `/docs` in your web browser.
 
-## Linting
+## Linting and Style
 We use [swiftlint](https://github.com/realm/SwiftLint#using-homebrew) for linting. You can see our configuration in the `.swiftlint.yml` file in the project's root directory.  Run `swiftlint` in the `/Sources` directory to lint all of our files. Running `swiftlint autocorrect` will correct some types of violations.
+
+For style guidance, look at Swift's [API design guidelines](https://swift.org/documentation/api-design-guidelines/) and Google's [Swift Style Guide](https://google.github.io/swift/).
 
 ### Sublime Text Setup
 If you use Sublime Text, you can get linting violations shown in the editor by installing the packages [SublimeLinter](https://packagecontrol.io/packages/SublimeLinter) and [SublimeLinter-contrib-swiftlint](https://packagecontrol.io/packages/SublimeLinter-contrib-swiftlint). 
