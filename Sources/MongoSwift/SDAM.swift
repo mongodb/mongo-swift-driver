@@ -169,7 +169,7 @@ public struct ServerDescription {
         }
 
         for kvp in tagSet {
-            if !serverTags.keys.contains(kvp.key) || !bsonEquals(serverTags[kvp.key]!, kvp.value!) {
+            if !serverTags.keys.contains(kvp.key) || !bsonEquals(serverTags[kvp.key]!, kvp.value) {
                 return false
             }
         }
