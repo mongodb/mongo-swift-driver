@@ -11,7 +11,8 @@ import mongoc
 /// ```
 extension Document: Sequence {
     /// The element type of a document: a tuple containing an individual key-value pair.
-    public typealias KeyValuePair = (key: String, value: BSONValue?)
+    public typealias KeyValuePair = (key: String, value: BSONValue)
+
     // Since a `Document` is a recursive structure, we want to enforce the use of it as a subsequence of itself.
     // instead of something like `Slice<Document>`.
     /// The type that is returned from methods such as `dropFirst()` and `split()`.
@@ -33,15 +34,15 @@ extension Document: Sequence {
      * the given closure.
      *
      * - Parameters:
-     *   - transform: A closure that transforms a `BSONValue?`. `transform` accepts each value of the
-     *                document as its parameter and returns a transformed `BSONValue?` of the same or
+     *   - transform: A closure that transforms a `BSONValue`. `transform` accepts each value of the
+     *                document as its parameter and returns a transformed `BSONValue` of the same or
      *                of a different type.
      *
      * - Returns: A document containing the keys and transformed values of this document.
      *
      * - Throws: An error if `transform` throws an error.
      */
-    public func mapValues(_ transform: (BSONValue?) throws -> BSONValue?) rethrows -> Document {
+    public func mapValues(_ transform: (BSONValue) throws -> BSONValue) rethrows -> Document {
         var output = Document()
         for (k, v) in self {
             output[k] = try transform(v)
@@ -216,17 +217,10 @@ public class DocumentIterator: IteratorProtocol {
     }
 
     /// Returns the current value. Assumes the iterator is in a valid position.
-    internal var currentValue: BSONValue? {
+    internal var currentValue: BSONValue {
         do {
-            switch self.currentType {
-            case .symbol:
-                return try Symbol.asString(from: self)
-            case .dbPointer:
-                return try DBPointer.asDocument(from: self)
-            default:
-                return try DocumentIterator.bsonTypeMap[currentType]?.init(from: self)
-            }
-        } catch {
+            return try self.safeCurrentValue()
+        } catch { // Since properties cannot throw, we need to catch and raise a preconditionFailure.
             preconditionFailure("Error getting current value from iterator: \(error)")
         }
     }
@@ -246,21 +240,25 @@ public class DocumentIterator: IteratorProtocol {
 
     /// Returns the values from the iterator's current position to the end. The iterator
     /// will be exhausted after this property is accessed.
-    internal var values: [BSONValue?] {
-        var values = [BSONValue?]()
+    internal var values: [BSONValue] {
+        var values = [BSONValue]()
         while self.advance() { values.append(self.currentValue) }
         return values
     }
 
     /// Returns the current value (equivalent to the `currentValue` property) or throws on error.
-    internal func safeCurrentValue() throws -> BSONValue? {
+    internal func safeCurrentValue() throws -> BSONValue {
         switch self.currentType {
         case .symbol:
             return try Symbol.asString(from: self)
         case .dbPointer:
             return try DBPointer.asDocument(from: self)
         default:
-            return try DocumentIterator.bsonTypeMap[currentType]?.init(from: self)
+            guard let curVal = try DocumentIterator.bsonTypeMap[currentType]?.from(iterator: self) else {
+                throw MongoError.invalidArgument(message: "Unknown BSONType for iterator's current value.")
+            }
+
+            return curVal
         }
     }
 
@@ -306,7 +304,7 @@ public class DocumentIterator: IteratorProtocol {
         .double: Double.self,
         .string: String.self,
         .document: Document.self,
-        .array: [BSONValue?].self,
+        .array: [BSONValue].self,
         .binary: Binary.self,
         .objectId: ObjectId.self,
         .boolean: Bool.self,
@@ -321,6 +319,7 @@ public class DocumentIterator: IteratorProtocol {
         .int64: Int64.self,
         .decimal128: Decimal128.self,
         .minKey: MinKey.self,
-        .maxKey: MaxKey.self
+        .maxKey: MaxKey.self,
+        .null: NSNull.self
     ]
 }

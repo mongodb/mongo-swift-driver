@@ -48,8 +48,8 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         return bson_has_field(self.data, key)
     }
 
-    /// Returns a `[BSONValue?]` containing the values stored in this `Document`.
-    public var values: [BSONValue?] {
+    /// Returns a `[BSONValue]` containing the values stored in this `Document`.
+    public var values: [BSONValue] {
         return self.makeIterator().values
     }
 
@@ -76,15 +76,15 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
 
     /**
      * Initializes a `Document` using a dictionary literal where the
-     * keys are `String`s and the values are `BSONValue?`s. For example:
+     * keys are `String`s and the values are `BSONValue`s. For example:
      * `d: Document = ["a" : 1 ]`
      *
      * - Parameters:
-     *   - dictionaryLiteral: a [String: BSONValue?]
+     *   - dictionaryLiteral: a [String: BSONValue]
      *
      * - Returns: a new `Document`
      */
-    public init(dictionaryLiteral keyValuePairs: (String, BSONValue?)...) {
+    public init(dictionaryLiteral keyValuePairs: (String, BSONValue)...) {
         // make sure all keys are unique
         guard Set(keyValuePairs.map { $0.0 }).count == keyValuePairs.count else {
             preconditionFailure("Dictionary literal \(keyValuePairs) contains duplicate keys")
@@ -109,11 +109,11 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      * `d: Document = ["a", "b"]` will become `["0": "a", "1": "b"]`
      *
      * - Parameters:
-     *   - arrayLiteral: a `[BSONValue?]`
+     *   - arrayLiteral: a `[BSONValue]`
      *
      * - Returns: a new `Document`
      */
-    public init(arrayLiteral elements: BSONValue?...) {
+    public init(arrayLiteral elements: BSONValue...) {
         self.init(elements)
     }
 
@@ -123,11 +123,11 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      * array.
      *
      * - Parameters:
-     *   - elements: a `[BSONValue?]`
+     *   - elements: a `[BSONValue]`
      *
      * - Returns: a new `Document`
      */
-    internal init(_ elements: [BSONValue?]) {
+    internal init(_ elements: [BSONValue]) {
         self.storage = DocumentStorage()
         self.count = 0
         for (i, elt) in elements.enumerated() {
@@ -231,6 +231,8 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
      *  d["a"] = 1
      *  print(d["a"]) // prints 1
      *  ```
+     * A nil return suggests that the subscripted key does not exist in the `Document`. A true BSON null is returned as
+     * an `NSNull`.
      */
     public subscript(key: String) -> BSONValue? {
         // TODO: This `get` method _should_ guarantee constant-time O(1) access, and it is possible to make it do so.
@@ -239,7 +241,12 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         get { return DocumentIterator(forDocument: self, advancedTo: key)?.currentValue }
         set(newValue) {
             do {
-                try self.setValue(for: key, to: newValue)
+                if let newValue = newValue {
+                    try self.setValue(for: key, to: newValue)
+                } else {
+                    // TODO SWIFT-224: use va_list variant of bson_copy_to_excluding to improve performance
+                    self = self.filter { $0.key != key }
+                }
             } catch {
                 preconditionFailure("Failed to set the value for key \(key) to \(newValue ?? "nil"): \(error)")
             }
@@ -248,11 +255,11 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
 
     /// Sets key to newValue. if checkForKey=false, the key/value pair will be appended without checking for the key's
     /// presence first.
-    internal mutating func setValue(for key: String, to newValue: BSONValue?, checkForKey: Bool = true) throws {
+    internal mutating func setValue(for key: String, to newValue: BSONValue, checkForKey: Bool = true) throws {
         // if the key already exists in the `Document`, we need to replace it
         if checkForKey, let existingType = DocumentIterator(forDocument: self, advancedTo: key)?.currentType {
 
-            let newBSONType = newValue?.bsonType ?? .null
+            let newBSONType = newValue.bsonType
             let sameTypes = newBSONType == existingType
 
             // if the new type is the same and it's a type with no custom data, no-op
@@ -284,27 +291,18 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         // otherwise, it's a new key
         } else {
             self.copyStorageIfRequired()
-
-            if let value = newValue {
-                try value.encode(to: self.storage, forKey: key)
-            } else {
-                guard bson_append_null(self.data, key, Int32(key.count)) else {
-                    throw MongoError.bsonEncodeError(message: "Failed to set the value for key \(key) to null")
-                }
-            }
+            try newValue.encode(to: self.storage, forKey: key)
             self.count += 1
         }
     }
 
-    /// Retrieves the value associated with for as a `BSONValue?`, which can be nil.
+    /// Retrieves the value associated with `for` as a `BSONValue?`, which can be nil if the key does not exist in the
+    /// `Document`.
     internal func getValue(for key: String) throws -> BSONValue? {
         guard let iter = DocumentIterator(forDocument: self) else {
             throw MongoError.bsonDecodeError(message: "BSON buffer is unexpectedly too small (< 5 bytes)")
         }
 
-        // TODO: Because documents can hold null as a valid value for a key, this currently means that there is no way
-        // to be sure that the return value from this function suggests that the key does not exist or if the key's
-        // value is nil. This should be considered for SWIFT-193.
         guard iter.move(to: key) else {
             return nil
         }
@@ -377,7 +375,7 @@ extension Document: BSONValue {
         }
     }
 
-    public init(from iter: DocumentIterator) throws {
+    public static func from(iterator iter: DocumentIterator) throws -> BSONValue {
         var length: UInt32 = 0
         let document = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
         defer {
@@ -391,7 +389,7 @@ extension Document: BSONValue {
             throw MongoError.bsonDecodeError(message: "Failed to create a bson_t from document data")
         }
 
-        self.init(fromPointer: docData)
+        return self.init(fromPointer: docData)
     }
 }
 

@@ -85,11 +85,11 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
 
         expect(result.insertedCount).to(equal(2))
         expect(result.insertedIds[0]! as? Int).to(equal(1))
-        expect(result.insertedIds[1]!!).to(beAnInstanceOf(ObjectId.self))
+        expect(result.insertedIds[1]!).to(beAnInstanceOf(ObjectId.self))
 
         let cursor = try coll.find()
         expect(cursor.next()).to(equal(["_id": 1, "x": 11]))
-        expect(cursor.next()).to(equal(["_id": result.insertedIds[1]!!, "x": 22]))
+        expect(cursor.next()).to(equal(["_id": result.insertedIds[1]!, "x": 22]))
         expect(cursor.next()).to(beNil())
     }
 
@@ -110,7 +110,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         expect(result.modifiedCount).to(equal(5))
         expect(result.upsertedCount).to(equal(2))
         expect(result.upsertedIds[2]! as? Int).to(equal(5))
-        expect(result.upsertedIds[3]!!).to(beAnInstanceOf(ObjectId.self))
+        expect(result.upsertedIds[3]!).to(beAnInstanceOf(ObjectId.self))
 
         let cursor = try coll.find()
         expect(cursor.next()).to(equal(["_id": 1, "x": 11]))
@@ -118,7 +118,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         expect(cursor.next()).to(equal(["_id": 3, "x": 32]))
         expect(cursor.next()).to(equal(["_id": 4, "x": 43]))
         expect(cursor.next()).to(equal(["_id": 5, "x": 56]))
-        expect(cursor.next()).to(equal(["_id": result.upsertedIds[3]!!, "x": 67]))
+        expect(cursor.next()).to(equal(["_id": result.upsertedIds[3]!, "x": 67]))
         expect(cursor.next()).to(beNil())
     }
 
@@ -183,7 +183,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         var documents: [Document] = []
 
         for i in 1...n {
-            documents.append(["_id": i, "x": Int("\(i)\(i)")])
+            documents.append(["_id": i, "x": Int("\(i)\(i)")!])
         }
 
         try self.coll.insertMany(documents)

@@ -105,10 +105,10 @@ extension MongoCollection {
      *   - filter: a `Document` representing the filter documents must match in order to be considered for the operation
      *   - options: Optional `DistinctOptions` to use when executing the command
      *
-     * - Returns: A `[BSONValue?]` containing the distinct values for the specified criteria
+     * - Returns: A `[BSONValue]` containing the distinct values for the specified criteria
      */
     public func distinct(fieldName: String, filter: Document = [:],
-                         options: DistinctOptions? = nil) throws -> [BSONValue?] {
+                         options: DistinctOptions? = nil) throws -> [BSONValue] {
 
         let collName = String(cString: mongoc_collection_get_name(self._collection))
         let command: Document = [
@@ -126,7 +126,7 @@ extension MongoCollection {
             throw MongoError.commandError(message: toErrorString(error))
         }
 
-        guard let values = try reply.getValue(for: "values") as? [BSONValue?] else {
+        guard let values = try reply.getValue(for: "values") as? [BSONValue] else {
             throw MongoError.commandError(message:
                 "expected server reply \(reply) to contain an array of distinct values")
         }

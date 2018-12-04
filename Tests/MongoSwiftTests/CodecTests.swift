@@ -16,7 +16,7 @@ final class CodecTests: MongoSwiftTestCase {
             ("testDocumentIsCodable", testDocumentIsCodable),
             ("testEncodeArray", testEncodeArray),
             ("testAnyBSONValueIsBSONCodable", testAnyBSONValueIsBSONCodable),
-            ("testOptionalAnyBSONValue", testOptionalAnyBSONValue)
+            ("testIncorrectEncodeFunction", testIncorrectEncodeFunction)
         ]
     }
 
@@ -142,8 +142,8 @@ final class CodecTests: MongoSwiftTestCase {
         expect(try encoder.encode(s2)).to(equal(s2Doc1))
         expect(try decoder.decode(OptionalsStruct.self, from: s2Doc1)).to(equal(s2))
 
-        // test with key in doc explicitly set to nil
-        let s2Doc2: Document = ["int": nil, "bool": true, "string": "hi"]
+        // test with key in doc explicitly set to NSNull
+        let s2Doc2: Document = ["int": NSNull(), "bool": true, "string": "hi"]
         expect(try decoder.decode(OptionalsStruct.self, from: s2Doc2)).to(equal(s2))
     }
 
@@ -561,6 +561,10 @@ final class CodecTests: MongoSwiftTestCase {
         expect(decodedWrapped?[1] as? Int).to(equal(2))
         expect(decodedWrapped?[2] as? String).to(equal("hello"))
 
+        // an array with a non-BSONValue
+        let arrWithNonBSONValue: [Any?] = [1, "hi", NSNull(), Int16(4)]
+        expect(try arrWithNonBSONValue.encode(to: DocumentStorage(), forKey: "arrWithNonBSONValue")).to(throwError())
+
         // binary
         let binary = try Binary(base64: "//8=", subtype: .generic)
 
@@ -714,41 +718,52 @@ final class CodecTests: MongoSwiftTestCase {
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedMinKey).x.value as? MinKey).to(equal(minKey))
         expect(try decoder.decode(AnyBSONStruct.self,
                                   from: wrappedMinKey.canonicalExtendedJSON).x.value as? MinKey).to(equal(minKey))
+
+        // NSNull
+        expect(
+            try decoder.decode(AnyBSONStruct.self, from: ["x": NSNull()]).x
+        ).to(equal(AnyBSONValue(NSNull())))
+
+        expect(try encoder.encode(AnyBSONStruct(NSNull()))).to(equal(["x": NSNull()]))
     }
 
-    struct OptionalAnyBSONWrapper: Codable {
-        let val: AnyBSONValue?
+    fileprivate struct IncorrectTopLevelEncode: Encodable {
+        let x: AnyBSONValue
 
-        init(_ value: BSONValue?) {
-            self.val = AnyBSONValue(ifPresent: value)
+        // An empty encode here is incorrect.
+        func encode(to encoder: Encoder) throws {}
+
+        init(_ x: BSONValue) {
+            self.x = AnyBSONValue(x)
         }
     }
 
-    func testOptionalAnyBSONValue() throws {
+    fileprivate struct CorrectTopLevelEncode: Encodable {
+        let x: IncorrectTopLevelEncode
+
+        // swiftlint:disable nesting
+        enum CodingKeys: CodingKey {
+            case x
+        }
+
+        // An empty encode here is incorrect.
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(x, forKey: .x)
+        }
+
+        init(_ x: BSONValue) {
+            self.x = IncorrectTopLevelEncode(x)
+        }
+    }
+
+    func testIncorrectEncodeFunction() {
         let encoder = BSONEncoder()
-        let decoder = BSONDecoder()
 
-        // non-nil values
-        expect(try encoder.encode(OptionalAnyBSONWrapper(5))).to(equal(["val": 5]))
+        // A top-level `encode()` problem should throw an error, but any such issues deeper in the recursion should not.
+        // These tests are to ensure that we handle incorrect encode() implementations in the same way as JSONEncoder.
+        expect(try encoder.encode(IncorrectTopLevelEncode(NSNull()))).to(throwError())
+        expect(try encoder.encode(CorrectTopLevelEncode(NSNull()))).to(equal(["x": Document()]))
 
-        let doc1: Document = ["y": 1]
-        expect(try encoder.encode(OptionalAnyBSONWrapper(doc1))).to(equal(["val": doc1]))
-        let doc2: Document = ["x": 1, "y": nil]
-        expect(try encoder.encode(OptionalAnyBSONWrapper(doc2))).to(equal(["val": doc2]))
-        let arr1: [BSONValue] = [1, 2, "hi"]
-        expect(try encoder.encode(OptionalAnyBSONWrapper(arr1))).to(equal(["val": arr1]))
-
-        // an array with a nil
-        let arr2: [BSONValue?] = [1, "hi", nil]
-        expect(try encoder.encode(OptionalAnyBSONWrapper(arr2))).to(equal(["val": arr2]))
-
-        // an array with a non-BSONValue
-        let arr3: [Any?] = [1, "hi", nil, Int16(4)]
-        expect(try arr3.encode(to: DocumentStorage(), forKey: "arr3")).to(throwError())
-
-        // nil value
-        expect(try encoder.encode(OptionalAnyBSONWrapper(nil))).to(beNil())
-
-        expect(try decoder.decode(OptionalAnyBSONWrapper.self, from: ["val": nil]).val).to(beNil())
     }
 }

@@ -15,10 +15,11 @@ extension Document: Codable {
         var container = encoder.container(keyedBy: _BSONKey.self)
         for (k, v) in self {
             let key = _BSONKey(stringValue: k)!
-            if let val = AnyBSONValue(ifPresent: v) {
-                try container.encode(val, forKey: key)
-            } else {
+            if v is NSNull {
                 try container.encodeNil(forKey: key)
+            } else {
+                let val = AnyBSONValue(v)
+                try container.encode(val, forKey: key)
             }
         }
     }
@@ -46,7 +47,7 @@ extension Document: Codable {
         for key in container.allKeys {
             let k = key.stringValue
             if try container.decodeNil(forKey: key) {
-                try output.setValue(for: k, to: nil)
+                try output.setValue(for: k, to: NSNull())
             } else {
                 let val = try container.decode(AnyBSONValue.self, forKey: key).value
                 try output.setValue(for: k, to: val)

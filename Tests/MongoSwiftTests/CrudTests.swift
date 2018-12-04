@@ -205,7 +205,11 @@ private class CrudTest {
     /// Given the response to a findAndModify command, verify that it matches the expected
     /// results for this `CrudTest`. Meant for use by findAndModify subclasses, i.e. findOneAndX. 
     func verifyFindAndModifyResult(_ result: Document?) {
-        if self.result == nil {
+        guard self.result != nil else {
+            return
+        }
+
+        if self.result is NSNull {
             expect(result).to(beNil())
         } else {
             expect(result).to(equal(self.result as? Document))
@@ -324,7 +328,7 @@ private class BulkWriteTest: CrudTest {
         }
     }
 
-    private static func prepareIds(_ ids: [Int: BSONValue?]) -> Document {
+    private static func prepareIds(_ ids: [Int: BSONValue]) -> Document {
         var document = Document()
 
         // Dictionaries are unsorted. Sort before comparing with expected map
@@ -401,8 +405,10 @@ private class DistinctTest: CrudTest {
         let resultDoc: Document = ["result": try coll.distinct(fieldName: fieldName,
                                                                filter: filter ?? [:],
                                                                options: options)]
-        let expectedDoc: Document = ["result": self.result]
-        expect(resultDoc).to(equal(expectedDoc))
+        if let result = self.result {
+            let expectedDoc: Document = ["result": result]
+            expect(resultDoc).to(equal(expectedDoc))
+        }
     }
 }
 
@@ -487,7 +493,7 @@ private class InsertManyTest: CrudTest {
         return InsertManyOptions(ordered: ordered)
     }
 
-    private static func prepareIds(_ ids: [Int: BSONValue?]) -> Document {
+    private static func prepareIds(_ ids: [Int: BSONValue]) -> Document {
         var document = Document()
 
         // Dictionaries are unsorted. Sort before comparing with expected map

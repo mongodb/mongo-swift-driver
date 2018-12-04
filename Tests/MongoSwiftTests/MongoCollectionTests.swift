@@ -235,11 +235,11 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(try self.coll.distinct(fieldName: "abc", filter: [:])).to(beEmpty())
 
         // test a null distinct value
-        try coll.insertOne(["cat": nil])
+        try coll.insertOne(["cat": NSNull()])
         let distinct2 = try coll.distinct(fieldName: "cat", filter: [:])
         expect(distinct2).to(haveCount(3))
         // swiftlint:disable trailing_closure
-        expect(distinct2).to(containElementSatisfying({ $0 == nil }))
+        expect(distinct2).to(containElementSatisfying({ $0 is NSNull }))
         // swiftlint:enable trailing_closure
     }
 
@@ -493,15 +493,15 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     }
 
     func testNullIds() throws {
-        let result1 = try self.coll.insertOne(["_id": nil, "hi": "hello"])
+        let result1 = try self.coll.insertOne(["_id": NSNull(), "hi": "hello"])
         expect(result1).toNot(beNil())
-        expect(result1?.insertedId).to(beNil())
+        expect(result1?.insertedId as? NSNull).to(equal(NSNull()))
 
-        try self.coll.deleteOne(["_id": nil])
+        try self.coll.deleteOne(["_id": NSNull()])
 
-        let result2 = try self.coll.insertMany([["_id": nil], ["_id": 20]])
+        let result2 = try self.coll.insertMany([["_id": NSNull()], ["_id": 20]])
         expect(result2).toNot(beNil())
-        expect(result2?.insertedIds[0]!).to(beNil())
+        expect(result2?.insertedIds[0] as? NSNull).to(equal(NSNull()))
         expect(result2?.insertedIds[1] as? Int).to(equal(20))
     }
 }

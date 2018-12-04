@@ -267,7 +267,7 @@ public protocol WriteModel {
 /// A class encapsulating a `mongoc_bulk_operation_t`.
 public class BulkWriteOperation {
     fileprivate var bulk: OpaquePointer?
-    fileprivate var insertedIds: [Int: BSONValue?] = [:]
+    fileprivate var insertedIds: [Int: BSONValue] = [:]
 
     /// Indicates whether this bulk operation used an acknowledged write concern.
     private var isAcknowledged: Bool {
@@ -342,7 +342,7 @@ public struct BulkWriteResult {
     public let insertedCount: Int
 
     /// Map of the index of the operation to the id of the inserted document.
-    public let insertedIds: [Int: BSONValue?]
+    public let insertedIds: [Int: BSONValue]
 
     /// Number of documents matched for update.
     public let matchedCount: Int
@@ -354,7 +354,7 @@ public struct BulkWriteResult {
     public let upsertedCount: Int
 
     /// Map of the index of the operation to the id of the upserted document.
-    public let upsertedIds: [Int: BSONValue?]
+    public let upsertedIds: [Int: BSONValue]
 
     fileprivate var writeErrors: [WriteError] = []
     fileprivate var writeConcernError: WriteConcernError?
@@ -372,7 +372,7 @@ public struct BulkWriteResult {
      *   - reply: A `Document` result from `mongoc_bulk_operation_execute()`
      *   - insertedIds: Map of inserted IDs
      */
-    fileprivate init(reply: Document, insertedIds: [Int: BSONValue?]) throws {
+    fileprivate init(reply: Document, insertedIds: [Int: BSONValue]) throws {
         self.deletedCount = try reply.getValue(for: "nRemoved") as? Int ?? 0
         self.insertedCount = try reply.getValue(for: "nInserted") as? Int ?? 0
         self.insertedIds = insertedIds
@@ -380,7 +380,7 @@ public struct BulkWriteResult {
         self.modifiedCount = try reply.getValue(for: "nModified") as? Int ?? 0
         self.upsertedCount = try reply.getValue(for: "nUpserted") as? Int ?? 0
 
-        var upsertedIds = [Int: BSONValue?]()
+        var upsertedIds = [Int: BSONValue]()
 
         if let upserted = try reply.getValue(for: "upserted") as? [Document] {
             for upsert in upserted {

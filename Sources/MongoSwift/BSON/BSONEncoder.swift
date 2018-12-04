@@ -38,14 +38,14 @@ public class BSONEncoder {
 
         let encoder = _BSONEncoder(options: self.options)
 
-        guard let topLevel = try encoder.box(value) else {
+        guard let boxedValue = try encoder.box_(value) else {
             throw EncodingError.invalidValue(
                 value,
                 EncodingError.Context(codingPath: [],
                                       debugDescription: "Top-level \(T.self) did not encode any values."))
         }
 
-        guard let dict = topLevel as? MutableDictionary else {
+        guard let dict = boxedValue as? MutableDictionary else {
             throw EncodingError.invalidValue(
                 value,
                 EncodingError.Context(codingPath: [],
@@ -164,7 +164,7 @@ internal struct _BSONEncodingStorage {
 
     /// The container stack.
     /// Elements may be any `BSONValue` type.
-    internal var containers: [BSONValue?] = []
+    internal var containers: [BSONValue] = []
 
     /// Initializes `self` with no containers.
     fileprivate init() {}
@@ -185,11 +185,11 @@ internal struct _BSONEncodingStorage {
         return array
     }
 
-    fileprivate mutating func push(container: BSONValue?) {
+    fileprivate mutating func push(container: BSONValue) {
         self.containers.append(container)
     }
 
-    fileprivate mutating func popContainer() -> BSONValue? {
+    fileprivate mutating func popContainer() -> BSONValue {
         precondition(self.containers.count > 0, "Empty container stack.")
         return self.containers.popLast()!
     }
@@ -242,9 +242,9 @@ private class _BSONReferencingEncoder: _BSONEncoder {
 
     /// Finalizes `self` by writing the contents of our storage to the referenced encoder's storage.
     deinit {
-        let value: BSONValue?
+        let value: BSONValue
         switch self.storage.count {
-        case 0: value = nil
+        case 0: value = Document()
         case 1: value = self.storage.popContainer()
         default: fatalError("Referencing encoder deallocated with multiple containers on stack.")
         }
@@ -272,13 +272,19 @@ extension _BSONEncoder {
         return number
     }
 
-    fileprivate func box<T: Encodable>(_ value: T) throws -> BSONValue? {
+    fileprivate func box<T: Encodable>(_ value: T) throws -> BSONValue {
+        return try self.box_(value) ?? Document()
+    }
+
+    fileprivate func box_<T: Encodable>(_ value: T) throws -> BSONValue? {
         // if it's already a `BSONValue`, just return it, unless if it is an
         // array. technically `[Any]` is a `BSONValue`, but we can only use this
         // short-circuiting if all the elements are actually BSONValues.
         if let bsonValue = value as? BSONValue, !(bsonValue is [Any]) {
             return bsonValue
-        } else if let bsonArray = value as? [BSONValue?] {
+        }
+
+        if let bsonArray = value as? [BSONValue] {
             return bsonArray
         }
 
@@ -318,7 +324,7 @@ private struct _BSONKeyedEncodingContainer<K: CodingKey> : KeyedEncodingContaine
         self.container = container
     }
 
-    public mutating func encodeNil(forKey key: Key) throws { self.container[key.stringValue] = nil }
+    public mutating func encodeNil(forKey key: Key) throws { self.container[key.stringValue] = NSNull() }
     public mutating func encode(_ value: Bool, forKey key: Key) throws { self.container[key.stringValue] = value }
     public mutating func encode(_ value: Int, forKey key: Key) throws { self.container[key.stringValue] = value }
     public mutating func encode(_ value: Int8, forKey key: Key) throws { try self.encodeNumber(value, forKey: key) }
@@ -403,7 +409,7 @@ private struct _BSONUnkeyedEncodingContainer: UnkeyedEncodingContainer {
         self.container = container
     }
 
-    public mutating func encodeNil() throws { self.container.add(nil) }
+    public mutating func encodeNil() throws { self.container.add(NSNull()) }
     public mutating func encode(_ value: Bool) throws { self.container.add(value) }
     public mutating func encode(_ value: Int) throws { self.container.add(value) }
     public mutating func encode(_ value: Int8) throws { try self.encodeNumber(value) }
@@ -470,7 +476,7 @@ extension _BSONEncoder: SingleValueEncodingContainer {
 
     public func encodeNil() throws {
         assertCanEncodeNewValue()
-        self.storage.push(container: nil)
+        self.storage.push(container: NSNull())
     }
 
     public func encode(_ value: Bool) throws { try self.encodeBSONType(value) }
@@ -511,15 +517,15 @@ private class MutableArray: BSONValue {
 
     var bsonType: BSONType { return .array }
 
-    var array = [BSONValue?]()
+    var array = [BSONValue]()
 
-    fileprivate func add(_ value: BSONValue?) {
+    fileprivate func add(_ value: BSONValue) {
         array.append(value)
     }
 
     var count: Int { return array.count }
 
-    func insert(_ value: BSONValue?, at index: Int) {
+    func insert(_ value: BSONValue, at index: Int) {
         self.array.insert(value, at: index)
     }
 
@@ -531,7 +537,7 @@ private class MutableArray: BSONValue {
 
     /// methods required by the BSONValue protocol that we don't actually need/use. MutableArray
     /// is just a BSONValue to simplify usage alongside true BSONValues within the encoder.
-    required init(from iter: DocumentIterator) {
+    public static func from(iterator iter: DocumentIterator) -> BSONValue {
         fatalError("`MutableArray` is not meant to be initialized from a `DocumentIterator`")
     }
     func encode(to encoder: Encoder) throws {
@@ -551,7 +557,7 @@ private class MutableDictionary: BSONValue {
 
     // rather than using a dictionary, do this so we preserve key orders
     var keys = [String]()
-    var values = [BSONValue?]()
+    var values = [BSONValue]()
 
     subscript(key: String) -> BSONValue? {
         get {
@@ -559,8 +565,14 @@ private class MutableDictionary: BSONValue {
             return values[index]
         }
         set(newValue) {
-            keys.append(key)
-            values.append(newValue)
+            if let newValue = newValue {
+                keys.append(key)
+                values.append(newValue)
+            } else {
+                guard let index = keys.index(of: key) else { return }
+                values.remove(at: index)
+                keys.remove(at: index)
+            }
         }
     }
 
@@ -581,7 +593,7 @@ private class MutableDictionary: BSONValue {
 
     /// methods required by the BSONValue protocol that we don't actually need/use. MutableDictionary
     /// is just a BSONValue to simplify usage alongside true BSONValues within the encoder.
-    required init(from iter: DocumentIterator) {
+    public static func from(iterator iter: DocumentIterator) -> BSONValue {
         fatalError("`MutableDictionary` is not meant to be initialized from a `DocumentIterator`")
     }
     func encode(to encoder: Encoder) throws {
