@@ -53,7 +53,7 @@ final class SDAMTests: MongoSwiftTestCase {
             receivedEvents.append(event)
         }
         // do some basic operations
-        let db = try client.db("testing")
+        let db = try client.db(type(of: self).testDatabase())
         _ = try db.createCollection("testColl")
         try db.drop()
 

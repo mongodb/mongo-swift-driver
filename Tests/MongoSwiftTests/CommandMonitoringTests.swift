@@ -16,6 +16,10 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
         self.continueAfterFailure = false
     }
 
+    override class func testDatabase() -> String {
+        return "commandTest"
+    }
+
     func testCommandMonitoring() throws {
         let decoder = BSONDecoder()
         let client = try MongoClient(options: ClientOptions(eventMonitoring: true))
@@ -84,7 +88,7 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
 
     func testAlternateNotificationCenters() throws {
         let client = try MongoClient(options: ClientOptions(eventMonitoring: true))
-        let db = try client.db("commandTest")
+        let db = try client.db(type(of: self).testDatabase())
         let collection = try db.createCollection("coll1")
         let customCenter = NotificationCenter()
         client.enableMonitoring(forEvents: .commandMonitoring, usingCenter: customCenter)
