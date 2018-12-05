@@ -177,7 +177,8 @@ public struct ServerDescription {
         return true
     }
 
-    /// An internal initializer to create a `ServerDescription` for testing purposes.
+    /// An internal initializer to create a `ServerDescription` for testing purposes. This is defined here instead of
+    /// in an extension in the test files due to restrictions introduced in SE-0189.
     internal init(connectionId: ConnectionId, type: ServerType, isMaster: Document, updateTime: Date?) {
         self.connectionId = connectionId
         self.type = type
@@ -339,7 +340,8 @@ public struct TopologyDescription {
         return [.single, .replicaSetWithPrimary].contains(self.type)
     }
 
-    /// An internal initializer to create a `TopologyDescription` for testing purposes
+    /// An internal initializer to create a `TopologyDescription` for testing purposes. This is defined here instead of
+    /// in an extension in the test files due to restrictions introduced in SE-0189.
     internal init(type: TopologyType, servers: [ServerDescription]) {
         self.type = type
         self.servers = servers
