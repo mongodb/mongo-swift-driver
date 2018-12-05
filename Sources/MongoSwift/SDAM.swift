@@ -178,18 +178,16 @@ public struct ServerDescription {
     }
 
     /// An internal initializer to create a `ServerDescription` for testing purposes.
-    internal init(_ connectionId: ConnectionId, _ rtt: Int64, _ isMaster: Document, _ type: ServerType,
-                  _ updateTime: Date?) {
+    internal init(connectionId: ConnectionId, type: ServerType, isMaster: Document, updateTime: Date?) {
         self.connectionId = connectionId
-        self.roundTripTime = rtt
-        self.parseIsMaster(isMaster)
         self.type = type
+        self.parseIsMaster(isMaster)
         self.lastUpdateTime = updateTime // TODO: get lastUpdateTime from mongoc_server_description_t after CDRIVER-2896
     }
 
     /// An internal initializer to create a `ServerDescription` from an OpaquePointer to a
     /// mongoc_server_description_t.
-    internal init(_ description: OpaquePointer, _ updateTime: Date?) {
+    internal init(_ description: OpaquePointer, updateTime: Date? = nil) {
         self.lastUpdateTime = updateTime // TODO: get lastUpdateTime from mongoc_server_description_t after CDRIVER-2896
         self.connectionId = ConnectionId(mongoc_server_description_host(description))
         self.roundTripTime = mongoc_server_description_round_trip_time(description)
@@ -317,7 +315,7 @@ public struct TopologyDescription {
     }
 
     /// Returns `true` if the topology has a readable server available, and `false` otherwise.
-    public func hasReadableServer(_ readPref: ReadPreference = ReadPreference(ReadPreference.Mode.primary)) -> Bool {
+    public func hasReadableServer(_ readPref: ReadPreference = ReadPreference(.primary)) -> Bool {
         switch self.type {
         case .unknown:
             return false
@@ -342,7 +340,7 @@ public struct TopologyDescription {
     }
 
     /// An internal initializer to create a `TopologyDescription` for testing purposes
-    internal init(_ type: TopologyType, _ servers: [ServerDescription]) {
+    internal init(type: TopologyType, servers: [ServerDescription]) {
         self.type = type
         self.servers = servers
     }
@@ -358,7 +356,7 @@ public struct TopologyDescription {
         let serverData = mongoc_topology_description_get_servers(description, &size)
         let buffer = UnsafeBufferPointer(start: serverData, count: size)
         if size > 0 {
-            self.servers = Array(buffer).map { ServerDescription($0!, updateTime) }
+            self.servers = Array(buffer).map { ServerDescription($0!, updateTime: updateTime) }
         }
     }
 }

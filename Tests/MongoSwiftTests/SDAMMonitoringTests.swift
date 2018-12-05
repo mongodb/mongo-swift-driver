@@ -7,7 +7,8 @@ import XCTest
 final class SDAMTests: MongoSwiftTestCase {
     static var allTests: [(String, (SDAMTests) -> () throws -> Void)] {
         return [
-            ("testMonitoring", testMonitoring)
+            ("testMonitoring", testMonitoring),
+            ("testHasReadableServers", testHasReadableServers)
         ]
     }
 
@@ -169,24 +170,26 @@ final class SDAMTests: MongoSwiftTestCase {
         ]
 
         let servers: [ServerDescription] = [
-            ServerDescription(ConnectionId(hosts[0]), 12, isMasterPrimary, ServerType.rsPrimary, primaryLastWrite + 10),
-            ServerDescription(ConnectionId(
-                    hosts[1]),
-                    12,
-                    isMasterSecondary,
-                    ServerType.rsSecondary,
-                    primaryLastWrite + 600),
-            ServerDescription(ConnectionId(
-                    hosts[2]),
-                    12,
-                    isMasterSecondary1,
-                    ServerType.rsSecondary,
-                    primaryLastWrite + 10)
+            ServerDescription(
+                    connectionId: ConnectionId(hosts[0]),
+                    type: ServerType.rsPrimary,
+                    isMaster: isMasterPrimary,
+                    updateTime: primaryLastWrite + 10),
+            ServerDescription(
+                    connectionId: ConnectionId(hosts[1]),
+                    type: ServerType.rsSecondary,
+                    isMaster: isMasterSecondary,
+                    updateTime: primaryLastWrite + 600),
+            ServerDescription(
+                    connectionId: ConnectionId(hosts[1]),
+                    type: ServerType.rsSecondary,
+                    isMaster: isMasterSecondary1,
+                    updateTime: primaryLastWrite + 10)
         ]
 
         let serversNoPrimary: [ServerDescription] = Array(servers[1...])
 
-        let topology1 = TopologyDescription(TopologyType.replicaSetWithPrimary, servers)
+        let topology1 = TopologyDescription(type: TopologyType.replicaSetWithPrimary, servers: servers)
         let case1: [(ReadPreference, Bool)] = [
             (ReadPreference(.primary), true),
             (ReadPreference(.secondary), true),
@@ -199,7 +202,7 @@ final class SDAMTests: MongoSwiftTestCase {
         ]
         runHasReadableAsserts(topology1, case1)
 
-        let topology2 = TopologyDescription(TopologyType.replicaSetNoPrimary, serversNoPrimary)
+        let topology2 = TopologyDescription(type: TopologyType.replicaSetNoPrimary, servers: serversNoPrimary)
         let case2: [(ReadPreference, Bool)] = [
             (ReadPreference(.primary), false),
             (ReadPreference(.secondary), true),
@@ -209,7 +212,7 @@ final class SDAMTests: MongoSwiftTestCase {
         ]
         runHasReadableAsserts(topology2, case2)
 
-        let topology3 = TopologyDescription(TopologyType.replicaSetWithPrimary, servers)
+        let topology3 = TopologyDescription(type: TopologyType.replicaSetWithPrimary, servers: servers)
         let case3: [(ReadPreference, Bool)] = [
             (ReadPreference(.primary), true),
             (ReadPreference(.secondary), true),
@@ -219,7 +222,7 @@ final class SDAMTests: MongoSwiftTestCase {
         ]
         runHasReadableAsserts(topology3, case3)
 
-        let topology4 = TopologyDescription(TopologyType.replicaSetNoPrimary, serversNoPrimary)
+        let topology4 = TopologyDescription(type: TopologyType.replicaSetNoPrimary, servers: serversNoPrimary)
         let case4: [(ReadPreference, Bool)] = [
             (ReadPreference(.primary), false),
             (try ReadPreference(.primaryPreferred, tagSets: [tags]), true),
