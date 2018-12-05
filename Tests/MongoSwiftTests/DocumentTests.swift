@@ -31,6 +31,7 @@ final class DocumentTests: MongoSwiftTestCase {
     static var allTests: [(String, (DocumentTests) -> () throws -> Void)] {
         return [
             ("testDocument", testDocument),
+            ("testDocumentDynamicMemberLookup", testDocumentDynamicMemberLookup),
             ("testDocumentFromArray", testDocumentFromArray),
             ("testEquatable", testEquatable),
             ("testRawBSON", testRawBSON),
@@ -48,7 +49,34 @@ final class DocumentTests: MongoSwiftTestCase {
         ]
     }
 
+    // Set up test document values
+    static let testDoc: Document = [
+        "string": "test string",
+        "true": true,
+        "false": false,
+        "int": 25,
+        "int32": Int32(5),
+        "int64": Int64(10),
+        "double": Double(15),
+        "decimal128": Decimal128("1.2E+10"),
+        "minkey": MinKey(),
+        "maxkey": MaxKey(),
+        "date": Date(timeIntervalSince1970: 500.004),
+        "timestamp": Timestamp(timestamp: 5, inc: 10),
+        "nestedarray": [[1, 2], [Int32(3), Int32(4)]] as [[Int32]],
+        "nesteddoc": ["a": 1, "b": 2, "c": false, "d": [3, 4]] as Document,
+        "oid": ObjectId(fromString: "507f1f77bcf86cd799439011"),
+        "regex": RegularExpression(pattern: "^abc", options: "imx"),
+        "array1": [1, 2],
+        "array2": ["string1", "string2"],
+        "null": NSNull(),
+        "code": CodeWithScope(code: "console.log('hi');"),
+        "codewscope": CodeWithScope(code: "console.log(x);", scope: ["x": 2])
+    ]
+
     func testDocument() throws {
+        var doc = DocumentTests.testDoc // make a copy to mutate in this test
+
         // A Data object to pass into test BSON Binary objects
         guard let testData = Data(base64Encoded: "//8=") else {
             XCTFail("Failed to create test binary data")
@@ -59,31 +87,6 @@ final class DocumentTests: MongoSwiftTestCase {
             XCTFail("Failed to create test UUID data")
             return
         }
-
-        // Set up test document values
-        var doc: Document = [
-            "string": "test string",
-            "true": true,
-            "false": false,
-            "int": 25,
-            "int32": Int32(5),
-            "int64": Int64(10),
-            "double": Double(15),
-            "decimal128": Decimal128("1.2E+10"),
-            "minkey": MinKey(),
-            "maxkey": MaxKey(),
-            "date": Date(timeIntervalSince1970: 500.004),
-            "timestamp": Timestamp(timestamp: 5, inc: 10),
-            "nestedarray": [[1, 2], [Int32(3), Int32(4)]] as [[Int32]],
-            "nesteddoc": ["a": 1, "b": 2, "c": false, "d": [3, 4]] as Document,
-            "oid": ObjectId(fromString: "507f1f77bcf86cd799439011"),
-            "regex": RegularExpression(pattern: "^abc", options: "imx"),
-            "array1": [1, 2],
-            "array2": ["string1", "string2"],
-            "null": NSNull(),
-            "code": CodeWithScope(code: "console.log('hi');"),
-            "codewscope": CodeWithScope(code: "console.log(x);", scope: ["x": 2])
-        ]
 
         // splitting this out is necessary because the swift 4.0 compiler 
         // can't handle all the keys being declared together
@@ -160,6 +163,69 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(nestedArray?[1]).to(equal([3, 4]))
 
         expect(doc["nesteddoc"]).to(bsonEqual(["a": 1, "b": 2, "c": false, "d": [3, 4]] as Document))
+    }
+
+    func testDocumentDynamicMemberLookup() throws {
+#if swift(>=4.2)
+        // Test reading various types
+        expect(DocumentTests.testDoc.string).to(bsonEqual("test string"))
+        expect(DocumentTests.testDoc.true).to(bsonEqual(true))
+        expect(DocumentTests.testDoc.false).to(bsonEqual(false))
+        expect(DocumentTests.testDoc.int).to(bsonEqual(25))
+        expect(DocumentTests.testDoc.int32).to(bsonEqual(5))
+        expect(DocumentTests.testDoc.int64).to(bsonEqual(Int64(10)))
+        expect(DocumentTests.testDoc.double).to(bsonEqual(15.0))
+        expect(DocumentTests.testDoc.decimal128).to(bsonEqual(Decimal128("1.2E+10")))
+        expect(DocumentTests.testDoc.minkey).to(bsonEqual(MinKey()))
+        expect(DocumentTests.testDoc.maxkey).to(bsonEqual(MaxKey()))
+        expect(DocumentTests.testDoc.date).to(bsonEqual(Date(timeIntervalSince1970: 500.004)))
+        expect(DocumentTests.testDoc.timestamp).to(bsonEqual(Timestamp(timestamp: 5, inc: 10)))
+        expect(DocumentTests.testDoc.oid).to(bsonEqual(ObjectId(fromString: "507f1f77bcf86cd799439011")))
+
+        let codewscope = DocumentTests.testDoc.codewscope as? CodeWithScope
+        expect(codewscope?.code).to(equal("console.log(x);"))
+        expect(codewscope?.scope).to(equal(["x": 2]))
+
+        let code = DocumentTests.testDoc.code as? CodeWithScope
+        expect(code?.code).to(equal("console.log('hi');"))
+        expect(code?.scope).to(beNil())
+
+        expect(DocumentTests.testDoc.array1).to(bsonEqual([1, 2]))
+        expect(DocumentTests.testDoc.array2).to(bsonEqual(["string1", "string2"]))
+        expect(DocumentTests.testDoc.null).to(bsonEqual(NSNull()))
+
+        let regex = DocumentTests.testDoc.regex as? RegularExpression
+        expect(regex).to(equal(RegularExpression(pattern: "^abc", options: "imx")))
+        expect(regex?.nsRegularExpression).to(equal(try NSRegularExpression(
+                pattern: "^abc",
+                options: NSRegularExpression.optionsFromString("imx")
+        )))
+
+        let nestedArray = DocumentTests.testDoc.nestedarray as? [[Int]]
+        expect(nestedArray?[0]).to(equal([1, 2]))
+        expect(nestedArray?[1]).to(equal([3, 4]))
+
+        expect(DocumentTests.testDoc.nesteddoc).to(bsonEqual(["a": 1, "b": 2, "c": false, "d": [3, 4]] as Document))
+        expect((DocumentTests.testDoc.nesteddoc as? Document)?.a).to(bsonEqual(1))
+
+        // Test assignment
+        var doc = Document()
+        let subdoc: Document = ["d": 2.5]
+
+        doc.a = 1
+        doc.b = "b"
+        doc.c = subdoc
+
+        expect(doc.a).to(bsonEqual(1))
+        expect(doc.b).to(bsonEqual("b"))
+        expect(doc.c).to(bsonEqual(subdoc))
+
+        doc.a = 2
+        doc.b = "different"
+
+        expect(doc.a).to(bsonEqual(2))
+        expect(doc.b).to(bsonEqual("different"))
+#endif
     }
 
     func testDocumentFromArray() {
