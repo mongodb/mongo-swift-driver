@@ -16,7 +16,7 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
         self.continueAfterFailure = false
     }
 
-    override class func testDatabase() -> String {
+    override internal class var testDatabase: String {
         return "commandTest"
     }
 
@@ -88,7 +88,7 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
 
     func testAlternateNotificationCenters() throws {
         let client = try MongoClient(options: ClientOptions(eventMonitoring: true))
-        let db = try client.db(type(of: self).testDatabase())
+        let db = try client.db(type(of: self).testDatabase)
         let collection = try db.createCollection("coll1")
         let customCenter = NotificationCenter()
         client.enableMonitoring(forEvents: .commandMonitoring, usingCenter: customCenter)

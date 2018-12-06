@@ -5,11 +5,11 @@ import XCTest
 final class MongoDatabaseTests: MongoSwiftTestCase {
     static var allTests: [(String, (MongoDatabaseTests) -> () throws -> Void)] {
         return [
-            ("testDatabase", testDatabase)
+            ("testDatabase", testMongoDatabase)
         ]
     }
 
-    override class func testDatabase() -> String {
+    override internal class var testDatabase: String {
         return "testDB"
     }
 
@@ -17,9 +17,9 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         continueAfterFailure = false
     }
 
-    func testDatabase() throws {
+    func testMongoDatabase() throws {
         let client = try MongoClient(connectionString: MongoSwiftTestCase.connStr)
-        let db = try client.db(type(of: self).testDatabase())
+        let db = try client.db(type(of: self).testDatabase)
 
         let command: Document = ["create": "coll1"]
         expect(try db.runCommand(command)).to(equal(["ok": 1.0]))
@@ -35,8 +35,8 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         expect(try db.drop()).toNot(throwError())
         let dbs = try client.listDatabases(options: ListDatabasesOptions(nameOnly: true))
         let names = (Array(dbs) as [Document]).map { $0["name"] as? String ?? "" }
-        expect(names).toNot(contain([type(of: self).testDatabase()]))
+        expect(names).toNot(contain([type(of: self).testDatabase]))
 
-        expect(db.name).to(equal(type(of: self).testDatabase()))
+        expect(db.name).to(equal(type(of: self).testDatabase))
     }
 }

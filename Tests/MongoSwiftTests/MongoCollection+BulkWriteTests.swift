@@ -17,7 +17,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
     static var client: MongoClient?
     var coll: MongoCollection<Document>!
 
-    override class func testDatabase() -> String {
+    override internal class var testDatabase: String {
         return "collectionTest"
     }
 
@@ -43,7 +43,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         let collectionName = String(describing: self)
 
         do {
-            coll = try client.db(type(of: self).testDatabase()).collection(collectionName)
+            coll = try client.db(type(of: self).testDatabase).collection(collectionName)
         } catch {
             return XCTFail("Setup failed: \(error)")
         }

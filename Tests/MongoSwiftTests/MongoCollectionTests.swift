@@ -65,7 +65,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
                 XCTFail("Invalid client")
                 return
             }
-            coll = try client.db(type(of: self).testDatabase()).createCollection("coll1")
+            coll = try client.db(type(of: self).testDatabase).createCollection("coll1")
             try coll.insertMany([doc1, doc2])
         } catch {
             XCTFail("Setup failed: \(error)")
@@ -90,7 +90,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
                 print("Invalid client")
                 return
             }
-            try client.db(testDatabase()).drop()
+            try client.db(testDatabase).drop()
         } catch {
             print("Dropping test database collectionTest failed: \(error)")
         }
@@ -358,7 +358,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
     func testCodableCollection() throws {
         let client = try MongoClient()
-        let db = try client.db(type(of: self).testDatabase())
+        let db = try client.db(type(of: self).testDatabase)
         let coll1 = try db.createCollection("codablecoll", withType: Basic.self)
         defer { try? coll1.drop() }
 

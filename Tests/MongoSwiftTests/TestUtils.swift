@@ -13,7 +13,7 @@ class MongoSwiftTestCase: XCTestCase {
     }
 
     /// Gets the name of the database the test case is running against.
-    class func testDatabase() -> String {
+    internal class var testDatabase: String {
         return "test"
     }
 

@@ -30,7 +30,7 @@ final class MongoClientTests: MongoSwiftTestCase {
         }
 
         let client = MongoClient(fromPointer: client_t)
-        let db = try client.db(type(of: self).testDatabase())
+        let db = try client.db(type(of: self).testDatabase)
         let coll = try db.collection("foo")
         let insertResult = try coll.insertOne([ "test": 42 ])
         let findResult = try coll.find([ "_id": insertResult!.insertedId ])

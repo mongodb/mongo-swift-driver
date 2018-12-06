@@ -19,7 +19,7 @@ final class CrudTests: MongoSwiftTestCase {
         ]
     }
 
-    override class func testDatabase() -> String {
+    override internal class var testDatabase: String {
         return "crudTests"
     }
 
@@ -27,16 +27,16 @@ final class CrudTests: MongoSwiftTestCase {
     override class func tearDown() {
         super.tearDown()
         do {
-            try MongoClient().db(testDatabase()).drop()
+            try MongoClient().db(testDatabase).drop()
         } catch {
-            print("Dropping test db \(testDatabase()) failed: \(error)")
+            print("Dropping test db \(testDatabase) failed: \(error)")
         }
     }
 
     // Run tests for .json files at the provided path
     func doTests(forPath: String) throws {
         let client = try MongoClient()
-        let db = try client.db(type(of: self).testDatabase())
+        let db = try client.db(type(of: self).testDatabase)
         for (filename, file) in try parseFiles(atPath: forPath) {
 
             if try !client.serverVersionIsInRange(file.minServerVersion, file.maxServerVersion) {
