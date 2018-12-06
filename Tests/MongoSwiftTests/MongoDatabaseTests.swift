@@ -5,7 +5,7 @@ import XCTest
 final class MongoDatabaseTests: MongoSwiftTestCase {
     static var allTests: [(String, (MongoDatabaseTests) -> () throws -> Void)] {
         return [
-            ("testDatabase", testMongoDatabase)
+            ("testMongoDatabase", testMongoDatabase)
         ]
     }
 
