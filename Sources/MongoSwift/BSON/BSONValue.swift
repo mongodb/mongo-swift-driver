@@ -640,6 +640,37 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
 
 }
 
+extension UUID: BSONValue {
+    public var bsonType: BSONType {
+        return .binary
+    }
+
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
+        let uuid = self.uuid
+        let uuidData = withUnsafePointer(to: uuid) { unsafePointer in
+            return Data(bytes: unsafePointer, count: MemoryLayout.size(ofValue: uuid))
+        }
+        try Binary(data: uuidData, subtype: .uuid).encode(to: storage, forKey: key)
+    }
+
+    public init(from iter: DocumentIterator) throws {
+        let data = try Binary(from: iter).data
+
+        guard data.count == 16 else {
+            throw MongoError.bsonDecodeError(message: "Failed to retrieve UUID data")
+        }
+
+        let uuid: uuid_t = (
+            data[0], data[1], data[2], data[3],
+            data[4], data[5], data[6], data[7],
+            data[8], data[9], data[10], data[11],
+            data[12], data[13], data[14], data[15]
+        )
+
+        self.init(uuid: uuid)
+    }
+}
+
 // A mapping of regex option characters to their equivalent `NSRegularExpression` option.
 // note that there is a BSON regexp option 'l' that `NSRegularExpression`
 // doesn't support. The flag will be dropped if BSON containing it is parsed,
