@@ -169,7 +169,7 @@ final class SDAMTests: MongoSwiftTestCase {
             "lastWrite": lw
         ]
 
-        let servers: [ServerDescription] = [
+        let servers = [
             ServerDescription(
                     connectionId: ConnectionId(hosts[0]),
                     type: .rsPrimary,
@@ -187,10 +187,10 @@ final class SDAMTests: MongoSwiftTestCase {
                     updateTime: primaryLastWrite + 10)
         ]
 
-        let serversNoPrimary: [ServerDescription] = Array(servers[1...])
+        let serversNoPrimary = Array(servers[1...])
 
         let topology1 = TopologyDescription(type: .replicaSetWithPrimary, servers: servers)
-        let case1: [(ReadPreference, Bool)] = [
+        let case1 = [
             (ReadPreference(.primary), true),
             (ReadPreference(.secondary), true),
             (ReadPreference(.primaryPreferred), true),
@@ -203,7 +203,7 @@ final class SDAMTests: MongoSwiftTestCase {
         runHasReadableAsserts(topology1, case1)
 
         let topology2 = TopologyDescription(type: .replicaSetNoPrimary, servers: serversNoPrimary)
-        let case2: [(ReadPreference, Bool)] = [
+        let case2 = [
             (ReadPreference(.primary), false),
             (ReadPreference(.secondary), true),
             (ReadPreference(.primaryPreferred), true),
@@ -213,7 +213,7 @@ final class SDAMTests: MongoSwiftTestCase {
         runHasReadableAsserts(topology2, case2)
 
         let topology3 = TopologyDescription(type: .replicaSetWithPrimary, servers: servers)
-        let case3: [(ReadPreference, Bool)] = [
+        let case3 = [
             (ReadPreference(.primary), true),
             (ReadPreference(.secondary), true),
             (try ReadPreference(.secondary, tagSets: [wrongTags, tags]), true),
@@ -223,7 +223,7 @@ final class SDAMTests: MongoSwiftTestCase {
         runHasReadableAsserts(topology3, case3)
 
         let topology4 = TopologyDescription(type: .replicaSetNoPrimary, servers: serversNoPrimary)
-        let case4: [(ReadPreference, Bool)] = [
+        let case4 = [
             (ReadPreference(.primary), false),
             (try ReadPreference(.primaryPreferred, tagSets: [tags]), true),
             (try ReadPreference(.primaryPreferred, tagSets: [wrongTags]), false)

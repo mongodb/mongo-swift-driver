@@ -274,8 +274,7 @@ public struct TopologyDescription {
                 guard let serverLastUpdate = serverDesc.lastUpdateTime else {
                     return nil
                 }
-                return (serverLastUpdate.timeIntervalSinceReferenceDate -
-                        serverDesc.lastWriteDate!.timeIntervalSinceReferenceDate) * 1000.0
+                return (serverLastUpdate - serverDesc.lastWriteDate!) * 1000.0
             }
 
             guard let clientToServer = delta(server), let clientToPrimary = delta(primary) else {
@@ -283,18 +282,14 @@ public struct TopologyDescription {
             }
 
             return clientToServer - clientToPrimary + Double(TopologyDescription.heartbeatFrequencyMS)
-        } else {
-            let possibleSMax = self.servers.filter { $0.type == .rsSecondary }.max {
-                $0.lastWriteDate!.timeIntervalSinceReferenceDate < $1.lastWriteDate!.timeIntervalSinceReferenceDate
-            }
-
-            guard let sMax = possibleSMax else {
+        } else { // ReplicaSetNoPrimary case
+            let secondaries = self.servers.filter { $0.type == .rsSecondary }
+            guard secondaries.count > 0 else {
                 return nil
             }
+            let sMax = secondaries.max { $0.lastWriteDate! < $1.lastWriteDate! }!
 
-            return (sMax.lastWriteDate!.timeIntervalSinceReferenceDate -
-                    server.lastWriteDate!.timeIntervalSinceReferenceDate)
-                    + Double(TopologyDescription.heartbeatFrequencyMS)
+            return (sMax.lastWriteDate! - server.lastWriteDate!) + Double(TopologyDescription.heartbeatFrequencyMS)
         }
     }
 

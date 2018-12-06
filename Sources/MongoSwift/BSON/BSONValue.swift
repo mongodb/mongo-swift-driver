@@ -267,6 +267,10 @@ extension Date: BSONValue {
     public static func from(iterator iter: DocumentIterator) throws -> BSONValue {
         return self.init(msSinceEpoch: bson_iter_date_time(&iter.iter))
     }
+
+    internal static func - (lhs: Date, rhs: Date) -> TimeInterval {
+        return lhs.timeIntervalSinceReferenceDate - rhs.timeIntervalSinceReferenceDate
+    }
 }
 
 /// An internal struct to represent the deprecated DBPointer type. While DBPointers cannot
