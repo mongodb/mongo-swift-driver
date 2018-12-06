@@ -254,44 +254,68 @@ public struct TopologyDescription {
         }
     }
 
+    /// An internal function used to calculate staleness of a given server in a replica set
+    internal func staleness(for server: ServerDescription) -> Double? {
+        guard [.replicaSetWithPrimary, .replicaSetNoPrimary].contains(self.type) else {
+            return nil
+        }
+
+        guard server.type == .rsSecondary else {
+            return 0.0
+        }
+
+        if self.type == .replicaSetWithPrimary {
+            let primary = self.servers.filter { server in server.type == .rsPrimary }[0]
+
+            let delta = { (serverDesc: ServerDescription) -> Double? in
+                guard let serverLastUpdate = serverDesc.lastUpdateTime else {
+                    return nil
+                }
+                return (serverLastUpdate.timeIntervalSinceReferenceDate -
+                        serverDesc.lastWriteDate!.timeIntervalSinceReferenceDate) * 1000.0
+            }
+
+            guard let clientToCandidate = delta(server), let clientToPrimary = delta(primary) else {
+                return nil
+            }
+
+            return clientToCandidate - clientToPrimary + Double(TopologyDescription.heartbeatFrequencyMS)
+        } else {
+            let possibleSMax = self.servers.filter { $0.type == .rsSecondary }.max {
+                $0.lastWriteDate!.timeIntervalSinceReferenceDate < $1.lastWriteDate!.timeIntervalSinceReferenceDate
+            }
+
+            guard let sMax = possibleSMax else {
+                return nil
+            }
+
+            return (sMax.lastWriteDate!.timeIntervalSinceReferenceDate -
+                    server.lastWriteDate!.timeIntervalSinceReferenceDate)
+                    + Double(TopologyDescription.heartbeatFrequencyMS)
+        }
+    }
+
     /// An internal function used to determine if there are suitable servers to read from in a replica set.
     internal func hasSuitableReadServer(_ readPref: ReadPreference) -> Bool {
         var suitableModes: [ServerType]
 
         switch readPref.mode {
-        case ReadPreference.Mode.primary:
-            suitableModes = [ServerType.rsPrimary]
-        case ReadPreference.Mode.secondary:
-            suitableModes = [ServerType.rsSecondary]
+        case .primary:
+            suitableModes = [.rsPrimary]
+        case .secondary:
+            suitableModes = [.rsSecondary]
         default:
-            suitableModes = [ServerType.rsSecondary, ServerType.rsPrimary]
+            suitableModes = [.rsSecondary, .rsPrimary]
         }
 
-        var candidates: [ServerDescription] = servers.filter { suitableModes.contains($0.type) }
+        var candidates = self.servers.filter { suitableModes.contains($0.type) }
 
         // If read preference specifies a max staleness, first filter out too stale servers
-        if let maxStalenessSeconds = readPref.maxStalenessSeconds {
-            candidates = candidates.filter { (candidate: ServerDescription) in
-                let staleness = { () -> Double in
-                    let delta = { (serverDesc: ServerDescription) -> Double in
-                        (serverDesc.lastUpdateTime!.timeIntervalSinceReferenceDate -
-                                serverDesc.lastWriteDate!.timeIntervalSinceReferenceDate) * 1000.0
-                    }
-
-                    if self.type == .replicaSetWithPrimary {
-                        let primary = self.servers.filter {server in server.type == .rsPrimary} [0]
-                        return delta(candidate) - delta(primary) + Double(TopologyDescription.heartbeatFrequencyMS)
-                    } else {
-                        let sMax = self.servers.max {
-                            $0.lastWriteDate!.timeIntervalSinceReferenceDate <
-                                    $1.lastWriteDate!.timeIntervalSinceReferenceDate
-                        }
-                        return (sMax!.lastWriteDate!.timeIntervalSinceReferenceDate -
-                                candidate.lastWriteDate!.timeIntervalSinceReferenceDate)
-                                + Double(TopologyDescription.heartbeatFrequencyMS)
-                    }
-                }()
-
+        if let maxStalenessSeconds = readPref.maxStalenessSeconds, maxStalenessSeconds > 0 {
+            candidates = candidates.filter { (candidate) in
+                guard let staleness = self.staleness(for: candidate) else {
+                    return false
+                }
                 return staleness < Double(maxStalenessSeconds * 1000)
             }
         }
@@ -299,7 +323,7 @@ public struct TopologyDescription {
         // If the read preference specifies tags, find a server that matches
         if readPref.tagSets.count > 0 {
             for candidate in candidates {
-                if candidate.type == ServerType.rsPrimary {
+                if candidate.type == .rsPrimary && readPref.mode != .nearest {
                     return true
                 }
 
@@ -311,7 +335,6 @@ public struct TopologyDescription {
             }
             return false
         }
-
         return candidates.count > 0
     }
 
@@ -323,12 +346,12 @@ public struct TopologyDescription {
         case .single, .sharded:
             return true
         case .replicaSetNoPrimary:
-            if readPref.mode == ReadPreference.Mode.primary {
+            if readPref.mode == .primary {
                 return false
             }
             return hasSuitableReadServer(readPref)
         case .replicaSetWithPrimary:
-            if readPref.mode == ReadPreference.Mode.primary {
+            if readPref.mode == .primary {
                 return true
             }
             return hasSuitableReadServer(readPref)
