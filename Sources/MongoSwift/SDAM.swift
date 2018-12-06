@@ -260,10 +260,13 @@ public struct TopologyDescription {
             return nil
         }
 
+        // From spec: Non-secondary servers have zero staleness
         guard server.type == .rsSecondary else {
             return 0.0
         }
 
+        // Can force unwrap lastWriteDate in here since it's always present in the the ismaster output of primaries
+        // and secondaries, and we filter out all other types of servers.
         if self.type == .replicaSetWithPrimary {
             let primary = self.servers.filter { server in server.type == .rsPrimary }[0]
 
@@ -275,11 +278,11 @@ public struct TopologyDescription {
                         serverDesc.lastWriteDate!.timeIntervalSinceReferenceDate) * 1000.0
             }
 
-            guard let clientToCandidate = delta(server), let clientToPrimary = delta(primary) else {
+            guard let clientToServer = delta(server), let clientToPrimary = delta(primary) else {
                 return nil
             }
 
-            return clientToCandidate - clientToPrimary + Double(TopologyDescription.heartbeatFrequencyMS)
+            return clientToServer - clientToPrimary + Double(TopologyDescription.heartbeatFrequencyMS)
         } else {
             let possibleSMax = self.servers.filter { $0.type == .rsSecondary }.max {
                 $0.lastWriteDate!.timeIntervalSinceReferenceDate < $1.lastWriteDate!.timeIntervalSinceReferenceDate
