@@ -3,19 +3,19 @@ disabled_rules:
   - function_body_length
   - identifier_name
   - todo
-  - type_name
   - type_body_length
+  - type_name
 
 opt_in_rules:
-  - vertical_parameter_alignment_on_call
-  - trailing_closure
-  - sorted_imports
-  - redundant_type_annotation
-  - operator_usage_whitespace
-  - modifier_order
-  - missing_docs
-  - implicit_return
   - fatal_error_message
+  - implicit_return
+  - missing_docs
+  - modifier_order 
+  - operator_usage_whitespace
+  - redundant_type_annotation
+  - sorted_imports
+  - trailing_closure
+  - vertical_parameter_alignment_on_call
 
 excluded:
   - build
