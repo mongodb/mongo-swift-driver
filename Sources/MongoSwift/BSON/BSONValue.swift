@@ -648,7 +648,7 @@ extension UUID: BSONValue {
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         let uuid = self.uuid
         let uuidData = withUnsafePointer(to: uuid) { unsafePointer in
-            return Data(bytes: unsafePointer, count: MemoryLayout.size(ofValue: uuid))
+            Data(bytes: unsafePointer, count: MemoryLayout.size(ofValue: uuid))
         }
         try Binary(data: uuidData, subtype: .uuid).encode(to: storage, forKey: key)
     }
