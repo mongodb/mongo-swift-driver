@@ -647,9 +647,13 @@ extension UUID: BSONValue {
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         let uuid = self.uuid
-        let uuidData = withUnsafePointer(to: uuid) { unsafePointer in
-            Data(bytes: unsafePointer, count: MemoryLayout.size(ofValue: uuid))
-        }
+        let uuidData = Data(bytes: [
+            uuid.0, uuid.1, uuid.2, uuid.3,
+            uuid.4, uuid.5, uuid.6, uuid.7,
+            uuid.8, uuid.9, uuid.10, uuid.11,
+            uuid.12, uuid.13, uuid.14, uuid.15
+            ])
+
         try Binary(data: uuidData, subtype: .uuid).encode(to: storage, forKey: key)
     }
 
