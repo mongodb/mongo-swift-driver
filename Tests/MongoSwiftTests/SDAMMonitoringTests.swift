@@ -120,6 +120,101 @@ final class SDAMTests: MongoSwiftTestCase {
         checkEmptyLists(newTopology.servers[0])
     }
 
+    // Test based on some of the max staleness spec tests.
+    // See: https://github.com/mongodb/specifications/tree/master/source/max-staleness/tests
+    func testMaxStaleness() throws {
+        let makeServerDescription = { (id: String,
+                                       type: ServerType,
+                                       lastUpdateTime: TimeInterval,
+                                       lastWrite: TimeInterval) -> ServerDescription in
+
+            let lastWriteDate = Date(timeIntervalSinceReferenceDate: lastWrite)
+            let ismaster: Document = ["lastWrite": ["lastWriteDate": lastWriteDate] as Document]
+
+            return ServerDescription(
+                    connectionId: ConnectionId(id),
+                    type: type,
+                    isMaster: ismaster,
+                    updateTime: Date(timeIntervalSinceReferenceDate: lastUpdateTime))
+        }
+
+        var topology: TopologyDescription
+        var servers: [ServerDescription] = []
+        var maxStalenessSeconds = 150.0
+
+        // ReplicaSetWithPrimary
+
+        // "lastUpdateTime" test
+        TopologyDescription.heartbeatFrequencyMS = 25000
+        maxStalenessSeconds = 150.0
+        servers = [
+            makeServerDescription("a:1", .rsPrimary, 0.001, 0.002),
+            makeServerDescription("b:1", .rsSecondary, 125.001, 0.002),
+            makeServerDescription("c:1", .rsSecondary, 125.001, 0.001)
+        ]
+        topology = TopologyDescription(type: .replicaSetWithPrimary, servers: servers)
+
+        expect(topology.staleness(for: servers[0])) <= maxStalenessSeconds
+        expect(topology.staleness(for: servers[1])) <= maxStalenessSeconds
+        expect(topology.staleness(for: servers[2])) > maxStalenessSeconds
+
+        // "LongHeartbeat" test
+        TopologyDescription.heartbeatFrequencyMS = 120000 // 120 seconds
+        maxStalenessSeconds = 130.0
+        servers = [
+            makeServerDescription("a:1", .rsPrimary, 0.0, 0.001),
+            makeServerDescription("b:1", .rsSecondary, 0.0, 0.001)
+        ]
+        topology = TopologyDescription(type: .replicaSetWithPrimary, servers: servers)
+
+        expect(topology.staleness(for: servers[0])) <= maxStalenessSeconds
+        expect(topology.staleness(for: servers[1])) <= maxStalenessSeconds
+
+        // "Nearest" test
+        TopologyDescription.heartbeatFrequencyMS = 25000 // 25 seconds
+        maxStalenessSeconds = 150.0
+        servers = [
+            makeServerDescription("a:1", .rsPrimary, 0.0, 125.002),
+            makeServerDescription("b:1", .rsSecondary, 0.0, 0.002),
+            makeServerDescription("c:1", .rsSecondary, 0.0, 0.001)
+        ]
+        topology = TopologyDescription(type: .replicaSetWithPrimary, servers: servers)
+
+        expect(topology.staleness(for: servers[0])) <= maxStalenessSeconds
+        expect(topology.staleness(for: servers[1])) <= maxStalenessSeconds
+        expect(topology.staleness(for: servers[2])) > maxStalenessSeconds
+
+        // ReplicaSetNoPrimary
+
+        // "LastUpdateTime" test
+        TopologyDescription.heartbeatFrequencyMS = 25000 // 25 seconds
+        maxStalenessSeconds = 150.0
+        servers = [
+            makeServerDescription("a:1", .rsSecondary, 0.001, 125.002),
+            makeServerDescription("b:1", .rsSecondary, 25.002, 0.002),
+            makeServerDescription("c:1", .rsSecondary, 25.001, 0.001)
+        ]
+        topology = TopologyDescription(type: .replicaSetNoPrimary, servers: servers)
+
+        expect(topology.staleness(for: servers[0])) <= maxStalenessSeconds
+        expect(topology.staleness(for: servers[1])) <= maxStalenessSeconds
+        expect(topology.staleness(for: servers[2])) > maxStalenessSeconds
+
+        // "Nearest" test
+        TopologyDescription.heartbeatFrequencyMS = 25000 // 25 seconds
+        maxStalenessSeconds = 150.0
+        servers = [
+            makeServerDescription("a:1", .rsSecondary, 0.0, 125.002),
+            makeServerDescription("b:1", .rsSecondary, 0.0, 0.002),
+            makeServerDescription("c:1", .rsSecondary, 0.0, 0.001)
+        ]
+        topology = TopologyDescription(type: .replicaSetNoPrimary, servers: servers)
+
+        expect(topology.staleness(for: servers[0])) <= maxStalenessSeconds
+        expect(topology.staleness(for: servers[1])) <= maxStalenessSeconds
+        expect(topology.staleness(for: servers[2])) > maxStalenessSeconds
+    }
+
     func runHasReadableAsserts(_ topology: TopologyDescription, _ testCase: [(ReadPreference, Bool)]) {
         var primaryCase = false
 
@@ -147,26 +242,28 @@ final class SDAMTests: MongoSwiftTestCase {
         let wrongTags: Document = ["a": "b"]
 
         let primaryLastWrite = Date() - 600
-        let lw: Document = ["lastWriteDate": primaryLastWrite]
+        let lastUpdate = primaryLastWrite + 600
 
         let isMasterPrimary: Document = [
             "hosts": hosts,
             "primary": hosts[0],
-            "lastWrite": lw
+            "lastWrite": ["lastWriteDate": primaryLastWrite] as Document
         ]
 
+        // Has replicated most recent write
         let isMasterSecondary: Document = [
             "hosts": hosts,
             "primary": hosts[0],
             "tags": tags,
-            "lastWrite": lw
+            "lastWrite": ["lastWriteDate": primaryLastWrite + 50] as Document
         ]
 
+        // Stale
         let isMasterSecondary1: Document = [
             "hosts": hosts,
             "primary": hosts[0],
             "tags": tags1,
-            "lastWrite": lw
+            "lastWrite": ["lastWriteDate": primaryLastWrite - 100] as Document
         ]
 
         let servers = [
@@ -174,17 +271,17 @@ final class SDAMTests: MongoSwiftTestCase {
                     connectionId: ConnectionId(hosts[0]),
                     type: .rsPrimary,
                     isMaster: isMasterPrimary,
-                    updateTime: primaryLastWrite + 10),
+                    updateTime: lastUpdate),
             ServerDescription(
                     connectionId: ConnectionId(hosts[1]),
                     type: .rsSecondary,
                     isMaster: isMasterSecondary,
-                    updateTime: primaryLastWrite + 600),
+                    updateTime: lastUpdate),
             ServerDescription(
                     connectionId: ConnectionId(hosts[1]),
                     type: .rsSecondary,
                     isMaster: isMasterSecondary1,
-                    updateTime: primaryLastWrite + 10)
+                    updateTime: lastUpdate)
         ]
 
         let serversNoPrimary = Array(servers[1...])
@@ -197,8 +294,8 @@ final class SDAMTests: MongoSwiftTestCase {
             (ReadPreference(.secondaryPreferred), true),
             (ReadPreference(.nearest), true),
             (try ReadPreference(.secondary, maxStalenessSeconds: 90), true),
-            (try ReadPreference(.secondary, tagSets: [tags], maxStalenessSeconds: 90), false),
-            (try ReadPreference(.secondary, tagSets: [tags1], maxStalenessSeconds: 90), true)
+            (try ReadPreference(.secondary, tagSets: [tags], maxStalenessSeconds: 90), true),
+            (try ReadPreference(.secondary, tagSets: [tags1], maxStalenessSeconds: 90), false)
         ]
         runHasReadableAsserts(topology1, case1)
 
@@ -208,7 +305,10 @@ final class SDAMTests: MongoSwiftTestCase {
             (ReadPreference(.secondary), true),
             (ReadPreference(.primaryPreferred), true),
             (ReadPreference(.secondaryPreferred), true),
-            (ReadPreference(.nearest), true)
+            (ReadPreference(.nearest), true),
+            (try ReadPreference(.secondary, maxStalenessSeconds: 90), true),
+            (try ReadPreference(.secondary, tagSets: [tags], maxStalenessSeconds: 90), true),
+            (try ReadPreference(.secondary, tagSets: [tags1], maxStalenessSeconds: 90), false)
         ]
         runHasReadableAsserts(topology2, case2)
 

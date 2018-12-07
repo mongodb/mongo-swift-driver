@@ -254,8 +254,8 @@ public struct TopologyDescription {
         }
     }
 
-    /// An internal function used to calculate staleness of a given server in a replica set
-    internal func staleness(for server: ServerDescription) -> Double? {
+    /// An internal function used to calculate staleness of a given server in a replica set in seconds.
+    internal func staleness(for server: ServerDescription) -> TimeInterval? {
         guard [.replicaSetWithPrimary, .replicaSetNoPrimary].contains(self.type) else {
             return nil
         }
@@ -270,18 +270,18 @@ public struct TopologyDescription {
         if self.type == .replicaSetWithPrimary {
             let primary = self.servers.filter { server in server.type == .rsPrimary }[0]
 
-            let delta = { (serverDesc: ServerDescription) -> Double? in
+            let delta = { (serverDesc: ServerDescription) -> TimeInterval? in
                 guard let serverLastUpdate = serverDesc.lastUpdateTime else {
                     return nil
                 }
-                return (serverLastUpdate - serverDesc.lastWriteDate!) * 1000.0
+                return (serverLastUpdate - serverDesc.lastWriteDate!)
             }
 
             guard let clientToServer = delta(server), let clientToPrimary = delta(primary) else {
                 return nil
             }
 
-            return clientToServer - clientToPrimary + Double(TopologyDescription.heartbeatFrequencyMS)
+            return clientToServer - clientToPrimary + TimeInterval(TopologyDescription.heartbeatFrequencyMS) / 1000.0
         } else { // ReplicaSetNoPrimary case
             let secondaries = self.servers.filter { $0.type == .rsSecondary }
             guard secondaries.count > 0 else {
@@ -289,7 +289,8 @@ public struct TopologyDescription {
             }
             let sMax = secondaries.max { $0.lastWriteDate! < $1.lastWriteDate! }!
 
-            return (sMax.lastWriteDate! - server.lastWriteDate!) + Double(TopologyDescription.heartbeatFrequencyMS)
+            return (sMax.lastWriteDate! - server.lastWriteDate!)
+                    + TimeInterval(TopologyDescription.heartbeatFrequencyMS) / 1000.0
         }
     }
 
@@ -314,7 +315,8 @@ public struct TopologyDescription {
                 guard let staleness = self.staleness(for: candidate) else {
                     return false
                 }
-                return staleness < Double(maxStalenessSeconds * 1000)
+
+                return staleness <= TimeInterval(maxStalenessSeconds)
             }
         }
 

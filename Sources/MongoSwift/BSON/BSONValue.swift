@@ -268,6 +268,7 @@ extension Date: BSONValue {
         return self.init(msSinceEpoch: bson_iter_date_time(&iter.iter))
     }
 
+    /// Returns the difference in seconds between the two dates.
     internal static func - (lhs: Date, rhs: Date) -> TimeInterval {
         return lhs.timeIntervalSinceReferenceDate - rhs.timeIntervalSinceReferenceDate
     }
