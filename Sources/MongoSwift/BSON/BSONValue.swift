@@ -244,7 +244,7 @@ extension Bool: BSONValue {
     }
 }
 
-/// An extension of `Date` to represent the BSON Datetime type.
+/// An extension of `Date` to represent the BSON Datetime type. Supports millisecond level precision.
 extension Date: BSONValue {
 
     public var bsonType: BSONType { return .dateTime }
