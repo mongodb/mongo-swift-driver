@@ -903,6 +903,7 @@ func bsonEquals(_ lhs: BSONValue, _ rhs: BSONValue) -> Bool {
     case (_ as MinKey, _ as MinKey): return true
     case (_ as MaxKey, _ as MaxKey): return true
     case (let l as ObjectId, let r as ObjectId): return l == r
+    case (let l as UUID, let r as UUID): return l == r
     case (let l as CodeWithScope, let r as CodeWithScope): return l == r
     case (let l as Binary, let r as Binary): return l == r
     case (_ as NSNull, _ as NSNull): return true
