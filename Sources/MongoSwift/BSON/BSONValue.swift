@@ -653,7 +653,7 @@ extension UUID: BSONValue {
         try Binary(data: uuidData, subtype: .uuid).encode(to: storage, forKey: key)
     }
 
-    public init(from iter: DocumentIterator) throws {
+    public static func from(iterator iter: DocumentIterator) throws -> BSONValue {
         let data = try Binary(from: iter).data
 
         guard data.count == 16 else {
@@ -667,7 +667,7 @@ extension UUID: BSONValue {
             data[12], data[13], data[14], data[15]
         )
 
-        self.init(uuid: uuid)
+        return UUID(uuid: uuid)
     }
 }
 
