@@ -654,7 +654,12 @@ extension UUID: BSONValue {
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> BSONValue {
-        let data = try Binary(from: iter).data
+        // See https://github.com/mongodb/mongo-swift-driver/issues/164
+        guard let binary = try Binary.from(iterator: iter) as? Binary else {
+            throw MongoError.bsonDecodeError(message: "Failed to retrieve Binary UUID data")
+        }
+
+        let data = binary.data
 
         guard data.count == 16 else {
             throw MongoError.bsonDecodeError(message: "Failed to retrieve UUID data")
