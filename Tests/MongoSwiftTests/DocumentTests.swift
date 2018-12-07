@@ -72,7 +72,7 @@ final class DocumentTests: MongoSwiftTestCase {
             "decimal128": Decimal128("1.2E+10"),
             "minkey": MinKey(),
             "maxkey": MaxKey(),
-            "date": Date(timeIntervalSince1970: 5000),
+            "date": Date(timeIntervalSince1970: 500.004),
             "timestamp": Timestamp(timestamp: 5, inc: 10),
             "nestedarray": [[1, 2], [Int32(3), Int32(4)]] as [[Int32]],
             "nesteddoc": ["a": 1, "b": 2, "c": false, "d": [3, 4]] as Document,
@@ -123,7 +123,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(doc["decimal128"] as? Decimal128).to(equal(Decimal128("1.2E+10")))
         expect(doc["minkey"] as? MinKey).to(beAnInstanceOf(MinKey.self))
         expect(doc["maxkey"] as? MaxKey).to(beAnInstanceOf(MaxKey.self))
-        expect(doc["date"] as? Date).to(equal(Date(timeIntervalSince1970: 5000)))
+        expect(doc["date"] as? Date).to(equal(Date(timeIntervalSince1970: 500.004)))
         expect(doc["timestamp"] as? Timestamp).to(equal(Timestamp(timestamp: 5, inc: 10)))
         expect(doc["oid"] as? ObjectId).to(equal(ObjectId(fromString: "507f1f77bcf86cd799439011")))
 
