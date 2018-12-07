@@ -8,6 +8,7 @@ final class SDAMTests: MongoSwiftTestCase {
     static var allTests: [(String, (SDAMTests) -> () throws -> Void)] {
         return [
             ("testMonitoring", testMonitoring),
+            ("testMaxStaleness", testMaxStaleness),
             ("testHasReadableServers", testHasReadableServers)
         ]
     }
