@@ -177,8 +177,8 @@ internal struct _BSONDecodingStorage {
 extension _BSONDecoder {
 
     fileprivate func unboxBSONValue<T: BSONValue>(_ value: BSONValue, as type: T.Type) throws -> T {
-        // We throw in the case of NSNull because nulls should be requested through decodeNil().
-        guard !(value is NSNull) else {
+        // We throw in the case of BSONNull because nulls should be requested through decodeNil().
+        guard !(value is BSONNull) else {
             throw DecodingError.valueNotFound(
                 type,
                 DecodingError.Context(codingPath: self.codingPath,
@@ -290,7 +290,7 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
         let entry = try getValue(forKey: key)
         return try self.decoder.with(pushedKey: key) {
             let value = try decoder.unbox(entry, as: type)
-            guard !(value is NSNull) else {
+            guard !(value is BSONNull) else {
                 throw DecodingError.valueNotFound(
                     type,
                     DecodingError.Context(codingPath: self.decoder.codingPath,
@@ -310,7 +310,7 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
                 DecodingError.Context(codingPath: self.decoder.codingPath,
                                       debugDescription: "Key \(_errorDescription(of: key)) not found."))
         }
-        return try self.container.getValue(for: key.stringValue) is NSNull
+        return try self.container.getValue(for: key.stringValue) is BSONNull
     }
 
     // swiftlint:disable line_length
@@ -447,7 +447,7 @@ private struct _BSONUnkeyedDecodingContainer: UnkeyedDecodingContainer {
         try self.checkAtEnd()
         return try self.decoder.with(pushedKey: _BSONKey(index: self.currentIndex)) {
             let decoded = try self.decoder.unbox(self.container[currentIndex], as: T.self)
-            guard !(decoded is NSNull) else {
+            guard !(decoded is BSONNull) else {
                 throw DecodingError.valueNotFound(
                     type,
                     DecodingError.Context(
@@ -463,7 +463,7 @@ private struct _BSONUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     public mutating func decodeNil() throws -> Bool {
         try self.checkAtEnd()
 
-        if self.container[self.currentIndex] is NSNull {
+        if self.container[self.currentIndex] is BSONNull {
             self.currentIndex += 1
             return true
         }
@@ -551,7 +551,7 @@ extension _BSONDecoder: SingleValueDecodingContainer {
     }
 
     /// Decode a null value from this container.
-    public func decodeNil() -> Bool { return self.storage.topContainer is NSNull }
+    public func decodeNil() -> Bool { return self.storage.topContainer is BSONNull }
 
     /// Decode all the required types from this container using the helpers defined above.
     public func decode(_ type: Bool.Type) throws -> Bool { return try decodeBSONType(type) }

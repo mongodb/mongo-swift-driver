@@ -67,7 +67,7 @@ public struct AnyBSONValue: Codable, Equatable {
         // since we aren't sure which BSON type this is, just try decoding
         // to each of them and go with the first one that succeeds
         if container.decodeNil() {
-            self.value = NSNull()
+            self.value = BSONNull()
         } else if let value = try? container.decode(String.self) {
             self.value = value
         } else if let value = try? container.decode(Binary.self) {

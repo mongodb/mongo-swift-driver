@@ -323,7 +323,7 @@ extension Document {
      *  print(d["a"]) // prints 1
      *  ```
      * A nil return suggests that the subscripted key does not exist in the `Document`. A true BSON null is returned as
-     * an `NSNull`.
+     * a `BSONNull`.
      */
     public subscript(key: String) -> BSONValue? {
         // TODO: This `get` method _should_ guarantee constant-time O(1) access, and it is possible to make it do so.
@@ -378,7 +378,7 @@ extension Document: BSONValue {
         }
     }
 
-    public static func from(iterator iter: DocumentIterator) throws -> BSONValue {
+    public static func from(iterator iter: DocumentIterator) throws -> Document {
         var length: UInt32 = 0
         let document = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
         defer {

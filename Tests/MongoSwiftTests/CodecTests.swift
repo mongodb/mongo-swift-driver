@@ -142,8 +142,8 @@ final class CodecTests: MongoSwiftTestCase {
         expect(try encoder.encode(s2)).to(equal(s2Doc1))
         expect(try decoder.decode(OptionalsStruct.self, from: s2Doc1)).to(equal(s2))
 
-        // test with key in doc explicitly set to NSNull
-        let s2Doc2: Document = ["int": NSNull(), "bool": true, "string": "hi"]
+        // test with key in doc explicitly set to BSONNull
+        let s2Doc2: Document = ["int": BSONNull(), "bool": true, "string": "hi"]
         expect(try decoder.decode(OptionalsStruct.self, from: s2Doc2)).to(equal(s2))
     }
 
@@ -562,7 +562,7 @@ final class CodecTests: MongoSwiftTestCase {
         expect(decodedWrapped?[2]).to(bsonEqual("hello"))
 
         // an array with a non-BSONValue
-        let arrWithNonBSONValue: [Any?] = [1, "hi", NSNull(), Int16(4)]
+        let arrWithNonBSONValue: [Any?] = [1, "hi", BSONNull(), Int16(4)]
         expect(try arrWithNonBSONValue.encode(to: DocumentStorage(), forKey: "arrWithNonBSONValue")).to(throwError())
 
         // binary
@@ -719,12 +719,12 @@ final class CodecTests: MongoSwiftTestCase {
         expect(try decoder.decode(AnyBSONStruct.self,
                                   from: wrappedMinKey.canonicalExtendedJSON).x.value).to(bsonEqual(minKey))
 
-        // NSNull
+        // BSONNull
         expect(
-            try decoder.decode(AnyBSONStruct.self, from: ["x": NSNull()]).x
-        ).to(equal(AnyBSONValue(NSNull())))
+            try decoder.decode(AnyBSONStruct.self, from: ["x": BSONNull()]).x
+        ).to(equal(AnyBSONValue(BSONNull())))
 
-        expect(try encoder.encode(AnyBSONStruct(NSNull()))).to(equal(["x": NSNull()]))
+        expect(try encoder.encode(AnyBSONStruct(BSONNull()))).to(equal(["x": BSONNull()]))
     }
 
     fileprivate struct IncorrectTopLevelEncode: Encodable {
@@ -762,8 +762,8 @@ final class CodecTests: MongoSwiftTestCase {
 
         // A top-level `encode()` problem should throw an error, but any such issues deeper in the recursion should not.
         // These tests are to ensure that we handle incorrect encode() implementations in the same way as JSONEncoder.
-        expect(try encoder.encode(IncorrectTopLevelEncode(NSNull()))).to(throwError())
-        expect(try encoder.encode(CorrectTopLevelEncode(NSNull()))).to(equal(["x": Document()]))
+        expect(try encoder.encode(IncorrectTopLevelEncode(BSONNull()))).to(throwError())
+        expect(try encoder.encode(CorrectTopLevelEncode(BSONNull()))).to(equal(["x": Document()]))
 
     }
 }

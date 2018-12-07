@@ -209,7 +209,7 @@ private class CrudTest {
             return
         }
 
-        if self.result is NSNull {
+        if self.result is BSONNull {
             expect(result).to(beNil())
         } else {
             expect(result).to(equal(self.result as? Document))
