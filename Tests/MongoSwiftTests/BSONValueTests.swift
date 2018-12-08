@@ -8,6 +8,7 @@ final class BSONValueTests: MongoSwiftTestCase {
     static var allTests: [(String, (BSONValueTests) -> () throws -> Void)] {
         return [
             ("testInvalidDecimal128", testInvalidDecimal128),
+            ("testUUIDBSONValue", testUUIDBSONValue),
             ("testUUIDBytes", testUUIDBytes),
             ("testBSONEquals", testBSONEquals),
             ("testObjectIdRoundTrip", testObjectIdRoundTrip)
@@ -18,6 +19,20 @@ final class BSONValueTests: MongoSwiftTestCase {
         expect(Decimal128(ifValid: "hi")).to(beNil())
         expect(Decimal128(ifValid: "123.4.5")).to(beNil())
         expect(Decimal128(ifValid: "10")).toNot(beNil())
+    }
+
+    func testUUIDBSONValue() throws {
+        struct UUIDTestModel: Codable {
+            let _id: UUID
+        }
+        let model = UUIDTestModel(_id: UUID())
+        let document = try BSONEncoder().encode(model)
+        let binary = document["_id"] as! Binary
+        let decoded = try BSONDecoder().decode(UUIDTestModel.self, from: document)
+
+        expect(binary.bsonType).to(equal(.binary))
+        expect(binary.subtype).to(equal(Binary.Subtype.uuid.rawValue))
+        XCTAssertEqual(decoded._id, model._id)
     }
 
     func testUUIDBytes() throws {
@@ -68,6 +83,8 @@ final class BSONValueTests: MongoSwiftTestCase {
         expect(MaxKey()).to(bsonEqual(MaxKey()))
         // ObjectId
         checkTrueAndFalse(val: ObjectId(), alternate: ObjectId())
+        // UUID
+        checkTrueAndFalse(val: UUID(), alternate: UUID())
         // CodeWithScope
         checkTrueAndFalse(
             val: CodeWithScope(code: "console.log('foo');"),

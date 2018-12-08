@@ -74,6 +74,8 @@ public struct AnyBSONValue: Codable, Equatable {
             self.value = value
         } else if let value = try? container.decode(ObjectId.self) {
             self.value = value
+        } else if let value = try? container.decode(UUID.self) {
+            self.value = value
         } else if let value = try? container.decode(Bool.self) {
             self.value = value
         } else if let value = try? container.decode(RegularExpression.self) {

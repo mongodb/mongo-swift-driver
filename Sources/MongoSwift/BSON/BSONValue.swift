@@ -654,19 +654,36 @@ extension UUID: BSONValue {
             uuid.12, uuid.13, uuid.14, uuid.15
             ])
 
-        try Binary(data: uuidData, subtype: .uuid).encode(to: storage, forKey: key)
+        let subtype = bson_subtype_t(UInt32(Binary.Subtype.uuid.rawValue))
+        let length = uuidData.count
+        let byteArray = [UInt8](uuidData)
+        guard bson_append_binary(storage.pointer, key, Int32(key.count), subtype, byteArray, UInt32(length)) else {
+            throw bsonEncodeError(value: self, forKey: key)
+        }
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> BSONValue {
-        // See https://github.com/mongodb/mongo-swift-driver/issues/164
-        guard let binary = try Binary.from(iterator: iter) as? Binary else {
-            throw MongoError.bsonDecodeError(message: "Failed to retrieve Binary UUID data")
+        var subtype = bson_subtype_t(rawValue: 0)
+        var length: UInt32 = 0
+        let dataPointer = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
+        defer {
+            dataPointer.deinitialize(count: 1)
+            dataPointer.deallocate(capacity: 1)
+        }
+        bson_iter_binary(&iter.iter, &subtype, &length, dataPointer)
+
+        guard let bytes = dataPointer.pointee else {
+            throw MongoError.bsonDecodeError(message: "failed to retrieve data stored for binary BSON value")
         }
 
-        let data = binary.data
+        let data = Data(bytes: bytes, count: Int(length))
 
         guard data.count == 16 else {
             throw MongoError.bsonDecodeError(message: "Failed to retrieve UUID data")
+        }
+
+        guard UInt8(subtype.rawValue) == Binary.Subtype.uuid.rawValue else {
+            throw MongoError.bsonDecodeError(message: "Incorrect UUID binary data subtype")
         }
 
         let uuid: uuid_t = (
