@@ -32,31 +32,15 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     /// the storage backing this document
     internal var storage: DocumentStorage
 
-    /// direct access to the storage's pointer to a bson_t
-    internal var data: UnsafeMutablePointer<bson_t>! { return storage.pointer }
-
     /// Returns the number of (key, value) pairs stored at the top level of this `Document`.
     public var count: Int
+}
 
-    /// Returns a `[String]` containing the keys in this `Document`.
-    public var keys: [String] {
-        return self.makeIterator().keys
-    }
-
-    /// Returns a `Boolean` indicating whether this `Document` contains the provided key.
-    public func hasKey(_ key: String) -> Bool {
-        return bson_has_field(self.data, key)
-    }
-
-    /// Returns a `[BSONValue]` containing the values stored in this `Document`.
-    public var values: [BSONValue] {
-        return self.makeIterator().values
-    }
-
-    /// Initializes a new, empty `Document`.
-    public init() {
-        self.storage = DocumentStorage()
-        self.count = 0
+/// An extension of `Document` containing its private/internal functionality.
+extension Document {
+    /// direct access to the storage's pointer to a bson_t
+    internal var data: UnsafeMutablePointer<bson_t>! {
+        return storage.pointer
     }
 
     /**
@@ -75,46 +59,23 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     }
 
     /**
-     * Initializes a `Document` using a dictionary literal where the
-     * keys are `String`s and the values are `BSONValue`s. For example:
-     * `d: Document = ["a" : 1 ]`
+     * Initializes a `Document` using an array where the values are KeyValuePairs.
      *
      * - Parameters:
-     *   - dictionaryLiteral: a [String: BSONValue]
+     *   - elements: a `[KeyValuePair]`
      *
      * - Returns: a new `Document`
      */
-    public init(dictionaryLiteral keyValuePairs: (String, BSONValue)...) {
-        // make sure all keys are unique
-        guard Set(keyValuePairs.map { $0.0 }).count == keyValuePairs.count else {
-            preconditionFailure("Dictionary literal \(keyValuePairs) contains duplicate keys")
-        }
-
+    internal init(_ elements: [KeyValuePair]) {
         self.storage = DocumentStorage()
-        // This is technically not consistent, but the only way this inconsistency can cause an issue is if we fail to
-        // setValue(), in which case we crash anyways.
         self.count = 0
-        for (key, value) in keyValuePairs {
+        for (key, value) in elements {
             do {
-                try self.setValue(for: key, to: value, checkForKey: false)
+                try self.setValue(for: key, to: value)
             } catch {
-                preconditionFailure("Error setting key \(key) to value \(String(describing: value)): \(error)")
+                preconditionFailure("Failed to set the value for \(key) to \(String(describing: value)): \(error)")
             }
         }
-    }
-    /**
-     * Initializes a `Document` using an array literal where the values
-     * are `BSONValue`s. Values are stored under a string of their
-     * index in the array. For example:
-     * `d: Document = ["a", "b"]` will become `["0": "a", "1": "b"]`
-     *
-     * - Parameters:
-     *   - arrayLiteral: a `[BSONValue]`
-     *
-     * - Returns: a new `Document`
-     */
-    public init(arrayLiteral elements: BSONValue...) {
-        self.init(elements)
     }
 
     /**
@@ -139,120 +100,6 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
         }
     }
 
-    /**
-     * Initializes a `Document` using an array where the values are KeyValuePairs.
-     *
-     * - Parameters:
-     *   - elements: a `[KeyValuePair]`
-     *
-     * - Returns: a new `Document`
-     */
-    internal init(_ elements: [KeyValuePair]) {
-        self.storage = DocumentStorage()
-        self.count = 0
-        for (key, value) in elements {
-            do {
-                try self.setValue(for: key, to: value)
-            } catch {
-                preconditionFailure("Failed to set the value for \(key) to \(String(describing: value)): \(error)")
-            }
-        }
-    }
-
-    /**
-     * Constructs a new `Document` from the provided JSON text
-     *
-     * - Parameters:
-     *   - fromJSON: a JSON document as `Data` to parse into a `Document`
-     *
-     * - Returns: the parsed `Document`
-     */
-    public init(fromJSON: Data) throws {
-        self.storage = DocumentStorage(fromPointer: try fromJSON.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) in
-            var error = bson_error_t()
-            guard let bson = bson_new_from_json(bytes, fromJSON.count, &error) else {
-                throw MongoError.bsonParseError(
-                    domain: error.domain,
-                    code: error.code,
-                    message: toErrorString(error)
-                )
-            }
-
-            return UnsafePointer(bson)
-        })
-        self.count = self.storage.count
-    }
-
-    /// Convenience initializer for constructing a `Document` from a `String`
-    public init(fromJSON json: String) throws {
-        try self.init(fromJSON: json.data(using: .utf8)!)
-    }
-
-    /// Constructs a `Document` from raw BSON `Data`
-    public init(fromBSON: Data) {
-        self.storage = DocumentStorage(fromPointer: fromBSON.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) in
-            bson_new_from_data(bytes, fromBSON.count)
-        })
-        self.count = self.storage.count
-    }
-
-    /// Returns the relaxed extended JSON representation of this `Document`.
-    /// On error, an empty string will be returned.
-    public var extendedJSON: String {
-        guard let json = bson_as_relaxed_extended_json(self.data, nil) else {
-            return ""
-        }
-
-        return String(cString: json)
-    }
-
-    /// Returns the canonical extended JSON representation of this `Document`.
-    /// On error, an empty string will be returned.
-    public var canonicalExtendedJSON: String {
-        guard let json = bson_as_canonical_extended_json(self.data, nil) else {
-            return ""
-        }
-
-        return String(cString: json)
-    }
-
-    /// Returns a copy of the raw BSON data for this `Document`, represented as `Data`
-    public var rawBSON: Data {
-        let data = bson_get_data(self.data)
-        let length = self.data.pointee.len
-        return Data(bytes: data!, count: Int(length))
-    }
-
-    /**
-     * Allows setting values and retrieving values using subscript syntax.
-     * For example:
-     *  ```
-     *  let d = Document()
-     *  d["a"] = 1
-     *  print(d["a"]) // prints 1
-     *  ```
-     * A nil return suggests that the subscripted key does not exist in the `Document`. A true BSON null is returned as
-     * an `NSNull`.
-     */
-    public subscript(key: String) -> BSONValue? {
-        // TODO: This `get` method _should_ guarantee constant-time O(1) access, and it is possible to make it do so.
-        // This criticism also applies to indexed-based subscripting via `Int`.
-        // See SWIFT-250.
-        get { return DocumentIterator(forDocument: self, advancedTo: key)?.currentValue }
-        set(newValue) {
-            do {
-                if let newValue = newValue {
-                    try self.setValue(for: key, to: newValue)
-                } else {
-                    // TODO SWIFT-224: use va_list variant of bson_copy_to_excluding to improve performance
-                    self = self.filter { $0.key != key }
-                }
-            } catch {
-                preconditionFailure("Failed to set the value for key \(key) to \(newValue ?? "nil"): \(error)")
-            }
-        }
-    }
-
     /// Sets key to newValue. if checkForKey=false, the key/value pair will be appended without checking for the key's
     /// presence first.
     internal mutating func setValue(for key: String, to newValue: BSONValue, checkForKey: Bool = true) throws {
@@ -272,7 +119,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
                 /// so initialization will succeed and ! is safe.
                 try DocumentIterator(forDocument: self, advancedTo: key)!.overwriteCurrentValue(with: ov)
 
-            // otherwise, we just create a new document and replace this key
+                // otherwise, we just create a new document and replace this key
             } else {
                 // TODO SWIFT-224: use va_list variant of bson_copy_to_excluding to improve performance
                 var newSelf = Document()
@@ -288,7 +135,7 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
                 self = newSelf
             }
 
-        // otherwise, it's a new key
+            // otherwise, it's a new key
         } else {
             self.copyStorageIfRequired()
             try newValue.encode(to: self.storage, forKey: key)
@@ -361,6 +208,167 @@ public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLitera
     private mutating func copyStorageIfRequired() {
         if !isKnownUniquelyReferenced(&self.storage) {
             self.storage = DocumentStorage(fromPointer: self.data)
+        }
+    }
+}
+
+/// An extension of `Document` containing its public API.
+extension Document {
+    /// Returns a `[String]` containing the keys in this `Document`.
+    public var keys: [String] {
+        return self.makeIterator().keys
+    }
+
+    /// Returns a `[BSONValue]` containing the values stored in this `Document`.
+    public var values: [BSONValue] {
+        return self.makeIterator().values
+    }
+
+    /// Returns the relaxed extended JSON representation of this `Document`.
+    /// On error, an empty string will be returned.
+    public var extendedJSON: String {
+        guard let json = bson_as_relaxed_extended_json(self.data, nil) else {
+            return ""
+        }
+
+        return String(cString: json)
+    }
+
+    /// Returns the canonical extended JSON representation of this `Document`.
+    /// On error, an empty string will be returned.
+    public var canonicalExtendedJSON: String {
+        guard let json = bson_as_canonical_extended_json(self.data, nil) else {
+            return ""
+        }
+
+        return String(cString: json)
+    }
+
+    /// Returns a copy of the raw BSON data for this `Document`, represented as `Data`
+    public var rawBSON: Data {
+        let data = bson_get_data(self.data)
+        let length = self.data.pointee.len
+        return Data(bytes: data!, count: Int(length))
+    }
+
+    /// Initializes a new, empty `Document`.
+    public init() {
+        self.storage = DocumentStorage()
+        self.count = 0
+    }
+
+    /**
+     * Initializes a `Document` using a dictionary literal where the
+     * keys are `String`s and the values are `BSONValue`s. For example:
+     * `d: Document = ["a" : 1 ]`
+     *
+     * - Parameters:
+     *   - dictionaryLiteral: a [String: BSONValue]
+     *
+     * - Returns: a new `Document`
+     */
+    public init(dictionaryLiteral keyValuePairs: (String, BSONValue)...) {
+        // make sure all keys are unique
+        guard Set(keyValuePairs.map { $0.0 }).count == keyValuePairs.count else {
+            preconditionFailure("Dictionary literal \(keyValuePairs) contains duplicate keys")
+        }
+
+        self.storage = DocumentStorage()
+        // This is technically not consistent, but the only way this inconsistency can cause an issue is if we fail to
+        // setValue(), in which case we crash anyways.
+        self.count = 0
+        for (key, value) in keyValuePairs {
+            do {
+                try self.setValue(for: key, to: value, checkForKey: false)
+            } catch {
+                preconditionFailure("Error setting key \(key) to value \(String(describing: value)): \(error)")
+            }
+        }
+    }
+    /**
+     * Initializes a `Document` using an array literal where the values
+     * are `BSONValue`s. Values are stored under a string of their
+     * index in the array. For example:
+     * `d: Document = ["a", "b"]` will become `["0": "a", "1": "b"]`
+     *
+     * - Parameters:
+     *   - arrayLiteral: a `[BSONValue]`
+     *
+     * - Returns: a new `Document`
+     */
+    public init(arrayLiteral elements: BSONValue...) {
+        self.init(elements)
+    }
+
+    /**
+     * Constructs a new `Document` from the provided JSON text
+     *
+     * - Parameters:
+     *   - fromJSON: a JSON document as `Data` to parse into a `Document`
+     *
+     * - Returns: the parsed `Document`
+     */
+    public init(fromJSON: Data) throws {
+        self.storage = DocumentStorage(fromPointer: try fromJSON.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) in
+            var error = bson_error_t()
+            guard let bson = bson_new_from_json(bytes, fromJSON.count, &error) else {
+                throw MongoError.bsonParseError(
+                    domain: error.domain,
+                    code: error.code,
+                    message: toErrorString(error)
+                )
+            }
+
+            return UnsafePointer(bson)
+        })
+        self.count = self.storage.count
+    }
+
+    /// Convenience initializer for constructing a `Document` from a `String`
+    public init(fromJSON json: String) throws {
+        try self.init(fromJSON: json.data(using: .utf8)!)
+    }
+
+    /// Constructs a `Document` from raw BSON `Data`
+    public init(fromBSON: Data) {
+        self.storage = DocumentStorage(fromPointer: fromBSON.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) in
+            bson_new_from_data(bytes, fromBSON.count)
+        })
+        self.count = self.storage.count
+    }
+
+    /// Returns a `Boolean` indicating whether this `Document` contains the provided key.
+    public func hasKey(_ key: String) -> Bool {
+        return bson_has_field(self.data, key)
+    }
+
+    /**
+     * Allows setting values and retrieving values using subscript syntax.
+     * For example:
+     *  ```
+     *  let d = Document()
+     *  d["a"] = 1
+     *  print(d["a"]) // prints 1
+     *  ```
+     * A nil return suggests that the subscripted key does not exist in the `Document`. A true BSON null is returned as
+     * an `NSNull`.
+     */
+    public subscript(key: String) -> BSONValue? {
+        // TODO: This `get` method _should_ guarantee constant-time O(1) access, and it is possible to make it do so.
+        // This criticism also applies to indexed-based subscripting via `Int`.
+        // See SWIFT-250.
+        get { return DocumentIterator(forDocument: self, advancedTo: key)?.currentValue }
+        set(newValue) {
+            do {
+                if let newValue = newValue {
+                    try self.setValue(for: key, to: newValue)
+                } else {
+                    // TODO SWIFT-224: use va_list variant of bson_copy_to_excluding to improve performance
+                    self = self.filter { $0.key != key }
+                }
+            } catch {
+                preconditionFailure("Failed to set the value for key \(key) to \(newValue ?? "nil"): \(error)")
+            }
         }
     }
 }
