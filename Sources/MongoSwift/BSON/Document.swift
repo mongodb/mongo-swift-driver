@@ -119,7 +119,7 @@ extension Document {
                 /// so initialization will succeed and ! is safe.
                 try DocumentIterator(forDocument: self, advancedTo: key)!.overwriteCurrentValue(with: ov)
 
-                // otherwise, we just create a new document and replace this key
+            // otherwise, we just create a new document and replace this key
             } else {
                 // TODO SWIFT-224: use va_list variant of bson_copy_to_excluding to improve performance
                 var newSelf = Document()
@@ -135,7 +135,7 @@ extension Document {
                 self = newSelf
             }
 
-            // otherwise, it's a new key
+        // otherwise, it's a new key
         } else {
             self.copyStorageIfRequired()
             try newValue.encode(to: self.storage, forKey: key)
