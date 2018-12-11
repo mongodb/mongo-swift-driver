@@ -19,7 +19,7 @@ final class CrudTests: MongoSwiftTestCase {
         ]
     }
 
-    // Teardown at the very end of the suite by dropping the "crudTests" db.
+    // Teardown at the very end of the suite by dropping the db we tested on.
     override class func tearDown() {
         super.tearDown()
         do {
