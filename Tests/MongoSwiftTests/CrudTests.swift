@@ -23,9 +23,9 @@ final class CrudTests: MongoSwiftTestCase {
     override class func tearDown() {
         super.tearDown()
         do {
-            try MongoClient().db(testDatabase).drop()
+            try MongoClient().db(self.testDatabase).drop()
         } catch {
-            print("Dropping test db \(testDatabase) failed: \(error)")
+            print("Dropping test db \(self.testDatabase) failed: \(error)")
         }
     }
 

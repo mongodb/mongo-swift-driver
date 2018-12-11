@@ -90,7 +90,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
                 print("Invalid client")
                 return
             }
-            try client.db(testDatabase).drop()
+            try client.db(self.testDatabase).drop()
         } catch {
             print("Dropping test database collectionTest failed: \(error)")
         }
