@@ -28,7 +28,7 @@ public class DocumentStorage {
 }
 
 /// A struct representing the BSON document type.
-public struct Document: ExpressibleByDictionaryLiteral, ExpressibleByArrayLiteral {
+public struct Document {
     /// the storage backing this document
     internal var storage: DocumentStorage
 
@@ -258,49 +258,6 @@ extension Document {
     }
 
     /**
-     * Initializes a `Document` using a dictionary literal where the
-     * keys are `String`s and the values are `BSONValue`s. For example:
-     * `d: Document = ["a" : 1 ]`
-     *
-     * - Parameters:
-     *   - dictionaryLiteral: a [String: BSONValue]
-     *
-     * - Returns: a new `Document`
-     */
-    public init(dictionaryLiteral keyValuePairs: (String, BSONValue)...) {
-        // make sure all keys are unique
-        guard Set(keyValuePairs.map { $0.0 }).count == keyValuePairs.count else {
-            preconditionFailure("Dictionary literal \(keyValuePairs) contains duplicate keys")
-        }
-
-        self.storage = DocumentStorage()
-        // This is technically not consistent, but the only way this inconsistency can cause an issue is if we fail to
-        // setValue(), in which case we crash anyways.
-        self.count = 0
-        for (key, value) in keyValuePairs {
-            do {
-                try self.setValue(for: key, to: value, checkForKey: false)
-            } catch {
-                preconditionFailure("Error setting key \(key) to value \(String(describing: value)): \(error)")
-            }
-        }
-    }
-    /**
-     * Initializes a `Document` using an array literal where the values
-     * are `BSONValue`s. Values are stored under a string of their
-     * index in the array. For example:
-     * `d: Document = ["a", "b"]` will become `["0": "a", "1": "b"]`
-     *
-     * - Parameters:
-     *   - arrayLiteral: a `[BSONValue]`
-     *
-     * - Returns: a new `Document`
-     */
-    public init(arrayLiteral elements: BSONValue...) {
-        self.init(elements)
-    }
-
-    /**
      * Constructs a new `Document` from the provided JSON text
      *
      * - Parameters:
@@ -414,5 +371,55 @@ extension Document: CustomStringConvertible {
     /// On error, an empty string will be returned.
     public var description: String {
         return self.extendedJSON
+    }
+}
+
+/// An extension of `Document` to add the capability to be initialized with a dictionary literal.
+extension Document: ExpressibleByDictionaryLiteral {
+    /**
+     * Initializes a `Document` using a dictionary literal where the
+     * keys are `String`s and the values are `BSONValue`s. For example:
+     * `d: Document = ["a" : 1 ]`
+     *
+     * - Parameters:
+     *   - dictionaryLiteral: a [String: BSONValue]
+     *
+     * - Returns: a new `Document`
+     */
+    public init(dictionaryLiteral keyValuePairs: (String, BSONValue)...) {
+        // make sure all keys are unique
+        guard Set(keyValuePairs.map { $0.0 }).count == keyValuePairs.count else {
+            preconditionFailure("Dictionary literal \(keyValuePairs) contains duplicate keys")
+        }
+
+        self.storage = DocumentStorage()
+        // This is technically not consistent, but the only way this inconsistency can cause an issue is if we fail to
+        // setValue(), in which case we crash anyways.
+        self.count = 0
+        for (key, value) in keyValuePairs {
+            do {
+                try self.setValue(for: key, to: value, checkForKey: false)
+            } catch {
+                preconditionFailure("Error setting key \(key) to value \(String(describing: value)): \(error)")
+            }
+        }
+    }
+}
+
+/// An extension of `Document` to add the capability to be initialized with an array literal
+extension Document: ExpressibleByArrayLiteral {
+    /**
+     * Initializes a `Document` using an array literal where the values
+     * are `BSONValue`s. Values are stored under a string of their
+     * index in the array. For example:
+     * `d: Document = ["a", "b"]` will become `["0": "a", "1": "b"]`
+     *
+     * - Parameters:
+     *   - arrayLiteral: a `[BSONValue]`
+     *
+     * - Returns: a new `Document`
+     */
+    public init(arrayLiteral elements: BSONValue...) {
+        self.init(elements)
     }
 }
