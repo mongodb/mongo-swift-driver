@@ -274,8 +274,8 @@ private struct CommandStartedExpectation: ExpectationType, Decodable {
             // verify that the getMore ID matches the stored cursor ID for this test
             expect(event.command["getMore"]).to(bsonEqual(testContext["cursorId"] as? Int64))
             // compare collection and batchSize fields
-            expect(event.command["collection"]).to(bsonEqual(self.command["collection"] as? String))
-            expect(event.command["batchSize"]).to(bsonEqual(self.command["batchSize"] as? Int64))
+            expect(event.command["collection"]).to(bsonEqual(self.command["collection"]))
+            expect(event.command["batchSize"]).to(bsonEqual(self.command["batchSize"]))
         } else {
             // remove fields from the command we received that are not in the expected
             // command, and reorder them, so we can do a direct comparison of the documents
@@ -413,7 +413,7 @@ private struct CommandSucceededExpectation: ExpectationType, Decodable {
     /// (handled in `compare` because we need the test context).
     func compareCursors(expected: Document, actual: Document) {
         let ordered = rearrangeDoc(actual, toLookLike: expected)
-        expect(ordered["ns"]).to(bsonEqual(expected["ns"] as? String))
+        expect(ordered["ns"]).to(bsonEqual(expected["ns"]))
         if let firstBatch = expected["firstBatch"] as? [Document] {
             expect(ordered["firstBatch"]).to(bsonEqual(firstBatch))
         } else if let nextBatch = expected["nextBatch"] as? [Document] {
