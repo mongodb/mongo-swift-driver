@@ -9,10 +9,6 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         ]
     }
 
-    override internal class var testDatabase: String {
-        return "testDB"
-    }
-
     override func setUp() {
         continueAfterFailure = false
     }

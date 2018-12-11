@@ -19,10 +19,6 @@ final class CrudTests: MongoSwiftTestCase {
         ]
     }
 
-    override internal class var testDatabase: String {
-        return "crudTests"
-    }
-
     // Teardown at the very end of the suite by dropping the "crudTests" db.
     override class func tearDown() {
         super.tearDown()

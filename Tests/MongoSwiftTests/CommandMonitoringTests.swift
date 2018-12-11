@@ -16,10 +16,6 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
         self.continueAfterFailure = false
     }
 
-    override internal class var testDatabase: String {
-        return "commandTest"
-    }
-
     func testCommandMonitoring() throws {
         let decoder = BSONDecoder()
         let client = try MongoClient(options: ClientOptions(eventMonitoring: true))
