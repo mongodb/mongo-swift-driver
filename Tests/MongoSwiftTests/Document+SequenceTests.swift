@@ -39,47 +39,47 @@ final class Document_SequenceTests: MongoSwiftTestCase {
 
         let stringTup = iter.next()!
         expect(stringTup.key).to(equal("string"))
-        expect(stringTup.value as? String).to(equal("test string"))
+        expect(stringTup.value).to(bsonEqual("test string"))
 
         let trueTup = iter.next()!
         expect(trueTup.key).to(equal("true"))
-        expect(trueTup.value as? Bool).to(beTrue())
+        expect(trueTup.value).to(bsonEqual(true))
 
         let falseTup = iter.next()!
         expect(falseTup.key).to(equal("false"))
-        expect(falseTup.value as? Bool).to(beFalse())
+        expect(falseTup.value).to(bsonEqual(false))
 
         let intTup = iter.next()!
         expect(intTup.key).to(equal("int"))
-        expect(intTup.value as? Int).to(equal(25))
+        expect(intTup.value).to(bsonEqual(25))
 
         let int32Tup = iter.next()!
         expect(int32Tup.key).to(equal("int32"))
-        expect(int32Tup.value as? Int).to(equal(5))
+        expect(int32Tup.value).to(bsonEqual(5))
 
         let doubleTup = iter.next()!
         expect(doubleTup.key).to(equal("double"))
-        expect(doubleTup.value as? Double).to(equal(15))
+        expect(doubleTup.value).to(bsonEqual(15.0))
 
         let decimalTup = iter.next()!
         expect(decimalTup.key).to(equal("decimal128"))
-        expect(decimalTup.value as? Decimal128).to(equal(Decimal128("1.2E+10")))
+        expect(decimalTup.value).to(bsonEqual(Decimal128("1.2E+10")))
 
         let minTup = iter.next()!
         expect(minTup.key).to(equal("minkey"))
-        expect(minTup.value as? MinKey).to(equal(MinKey()))
+        expect(minTup.value).to(bsonEqual(MinKey()))
 
         let maxTup = iter.next()!
         expect(maxTup.key).to(equal("maxkey"))
-        expect(maxTup.value as? MaxKey).to(equal(MaxKey()))
+        expect(maxTup.value).to(bsonEqual(MaxKey()))
 
         let dateTup = iter.next()!
         expect(dateTup.key).to(equal("date"))
-        expect(dateTup.value as? Date).to(equal(Date(timeIntervalSince1970: 5000)))
+        expect(dateTup.value).to(bsonEqual(Date(timeIntervalSince1970: 5000)))
 
         let timeTup = iter.next()!
         expect(timeTup.key).to(equal("timestamp"))
-        expect(timeTup.value as? Timestamp).to(equal(Timestamp(timestamp: 5, inc: 10)))
+        expect(timeTup.value).to(bsonEqual(Timestamp(timestamp: 5, inc: 10)))
 
         expect(iter.next()).to(beNil())
 

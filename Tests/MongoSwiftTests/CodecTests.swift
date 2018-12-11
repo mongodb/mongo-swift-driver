@@ -515,51 +515,51 @@ final class CodecTests: MongoSwiftTestCase {
         // standalone document
         let doc: Document = ["y": 1]
         expect(try encoder.encode(AnyBSONValue(doc))).to(equal(doc))
-        expect(try decoder.decode(AnyBSONValue.self, from: doc).value as? Document).to(equal(doc))
-        expect(try decoder.decode(AnyBSONValue.self, from: doc.canonicalExtendedJSON).value as? Document).to(equal(doc))
+        expect(try decoder.decode(AnyBSONValue.self, from: doc).value).to(bsonEqual(doc))
+        expect(try decoder.decode(AnyBSONValue.self, from: doc.canonicalExtendedJSON).value).to(bsonEqual(doc))
         // doc wrapped in a struct
 
         let wrappedDoc: Document = ["x": doc]
         expect(try encoder.encode(AnyBSONStruct(doc))).to(equal(wrappedDoc))
-        expect(try decoder.decode(AnyBSONStruct.self, from: wrappedDoc).x.value as? Document).to(equal(doc))
+        expect(try decoder.decode(AnyBSONStruct.self, from: wrappedDoc).x.value).to(bsonEqual(doc))
         expect(try decoder.decode(AnyBSONStruct.self,
-                                  from: wrappedDoc.canonicalExtendedJSON).x.value as? Document).to(equal(doc))
+                                  from: wrappedDoc.canonicalExtendedJSON).x.value).to(bsonEqual(doc))
 
         // values wrapped in an `AnyBSONStruct`
         let double = 42.0
         expect(try decoder.decode(AnyBSONValue.self,
-                                  from: "{\"$numberDouble\": \"42\"}").value as? Double).to(equal(double))
+                                  from: "{\"$numberDouble\": \"42\"}").value).to(bsonEqual(double))
 
         let wrappedDouble: Document = ["x": double]
         expect(try encoder.encode(AnyBSONStruct(double))).to(equal(wrappedDouble))
-        expect(try decoder.decode(AnyBSONStruct.self, from: wrappedDouble).x.value as? Double).to(equal(double))
+        expect(try decoder.decode(AnyBSONStruct.self, from: wrappedDouble).x.value).to(bsonEqual(double))
         expect(try decoder.decode(AnyBSONStruct.self,
-                                  from: wrappedDouble.canonicalExtendedJSON).x.value as? Double).to(equal(double))
+                                  from: wrappedDouble.canonicalExtendedJSON).x.value).to(bsonEqual(double))
 
         // string
         let string = "hi"
-        expect(try decoder.decode(AnyBSONValue.self, from: "\"hi\"").value as? String).to(equal(string))
+        expect(try decoder.decode(AnyBSONValue.self, from: "\"hi\"").value).to(bsonEqual(string))
 
         let wrappedString: Document = ["x": string]
         expect(try encoder.encode(AnyBSONStruct(string))).to(equal(wrappedString))
-        expect(try decoder.decode(AnyBSONStruct.self, from: wrappedString).x.value as? String).to(equal(string))
+        expect(try decoder.decode(AnyBSONStruct.self, from: wrappedString).x.value).to(bsonEqual(string))
         expect(try decoder.decode(AnyBSONStruct.self,
-                                  from: wrappedString.canonicalExtendedJSON).x.value as? String).to(equal(string))
+                                  from: wrappedString.canonicalExtendedJSON).x.value).to(bsonEqual(string))
 
         // array
         let array: [BSONValue] = [1, 2, "hello"]
 
         let decodedArray = try decoder.decode(AnyBSONValue.self, from: "[1, 2, \"hello\"]").value as? [BSONValue]
-        expect(decodedArray?[0] as? Int).to(equal(1))
-        expect(decodedArray?[1] as? Int).to(equal(2))
-        expect(decodedArray?[2] as? String).to(equal("hello"))
+        expect(decodedArray?[0]).to(bsonEqual(1))
+        expect(decodedArray?[1]).to(bsonEqual(2))
+        expect(decodedArray?[2]).to(bsonEqual("hello"))
 
         let wrappedArray: Document = ["x": array]
         expect(try encoder.encode(AnyBSONStruct(array))).to(equal(wrappedArray))
         let decodedWrapped = try decoder.decode(AnyBSONStruct.self, from: wrappedArray).x.value as? [BSONValue]
-        expect(decodedWrapped?[0] as? Int).to(equal(1))
-        expect(decodedWrapped?[1] as? Int).to(equal(2))
-        expect(decodedWrapped?[2] as? String).to(equal("hello"))
+        expect(decodedWrapped?[0]).to(bsonEqual(1))
+        expect(decodedWrapped?[1]).to(bsonEqual(2))
+        expect(decodedWrapped?[2]).to(bsonEqual("hello"))
 
         // an array with a non-BSONValue
         let arrWithNonBSONValue: [Any?] = [1, "hi", NSNull(), Int16(4)]
@@ -575,32 +575,32 @@ final class CodecTests: MongoSwiftTestCase {
 
         let wrappedBinary: Document = ["x": binary]
         expect(try encoder.encode(AnyBSONStruct(binary))).to(equal(wrappedBinary))
-        expect(try decoder.decode(AnyBSONStruct.self, from: wrappedBinary).x.value as? Binary).to(equal(binary))
+        expect(try decoder.decode(AnyBSONStruct.self, from: wrappedBinary).x.value).to(bsonEqual(binary))
         expect(try decoder.decode(AnyBSONStruct.self,
-                                  from: wrappedBinary.canonicalExtendedJSON).x.value as? Binary).to(equal(binary))
+                                  from: wrappedBinary.canonicalExtendedJSON).x.value).to(bsonEqual(binary))
 
         // objectid
         let oid = ObjectId()
 
         expect(try decoder.decode(AnyBSONValue.self,
-                                  from: "{\"$oid\": \"\(oid.oid)\"}").value as? ObjectId).to(equal(oid))
+                                  from: "{\"$oid\": \"\(oid.oid)\"}").value).to(bsonEqual(oid))
 
         let wrappedOid: Document = ["x": oid]
         expect(try encoder.encode(AnyBSONStruct(oid))).to(equal(wrappedOid))
-        expect(try decoder.decode(AnyBSONStruct.self, from: wrappedOid).x.value as? ObjectId).to(equal(oid))
+        expect(try decoder.decode(AnyBSONStruct.self, from: wrappedOid).x.value).to(bsonEqual(oid))
         expect(try decoder.decode(AnyBSONStruct.self,
-                                  from: wrappedOid.canonicalExtendedJSON).x.value as? ObjectId).to(equal(oid))
+                                  from: wrappedOid.canonicalExtendedJSON).x.value).to(bsonEqual(oid))
 
         // bool
         let bool = true
 
-        expect(try decoder.decode(AnyBSONValue.self, from: "true").value as? Bool).to(equal(bool))
+        expect(try decoder.decode(AnyBSONValue.self, from: "true").value).to(bsonEqual(bool))
 
         let wrappedBool: Document = ["x": bool]
         expect(try encoder.encode(AnyBSONStruct(bool))).to(equal(wrappedBool))
-        expect(try decoder.decode(AnyBSONStruct.self, from: wrappedBool).x.value as? Bool).to(equal(bool))
+        expect(try decoder.decode(AnyBSONStruct.self, from: wrappedBool).x.value).to(bsonEqual(bool))
         expect(try decoder.decode(AnyBSONStruct.self,
-                                  from: wrappedBool.canonicalExtendedJSON).x.value as? Bool).to(equal(bool))
+                                  from: wrappedBool.canonicalExtendedJSON).x.value).to(bsonEqual(bool))
 
         // date
         let date = Date(timeIntervalSince1970: 5000)
@@ -612,21 +612,21 @@ final class CodecTests: MongoSwiftTestCase {
 
         let wrappedDate: Document = ["x": date]
         expect(try encoder.encode(AnyBSONStruct(date))).to(equal(wrappedDate))
-        expect(try decoder.decode(AnyBSONStruct.self, from: wrappedDate).x.value as? Date).to(equal(date))
+        expect(try decoder.decode(AnyBSONStruct.self, from: wrappedDate).x.value).to(bsonEqual(date))
         expect(try decoder.decode(AnyBSONStruct.self,
-                                  from: wrappedDate.canonicalExtendedJSON).x.value as? Date).to(equal(date))
+                                  from: wrappedDate.canonicalExtendedJSON).x.value).to(bsonEqual(date))
 
         // regex
         let regex = RegularExpression(pattern: "abc", options: "imx")
 
         expect(try decoder.decode(AnyBSONValue.self,
                                   from: "{ \"$regularExpression\" : { \"pattern\" : \"abc\", \"options\" : \"imx\" } }")
-            .value as? RegularExpression).to(equal(regex))
+            .value).to(bsonEqual(regex))
 
         let wrappedRegex: Document = ["x": regex]
         expect(try encoder.encode(AnyBSONStruct(regex))).to(equal(wrappedRegex))
         expect(try decoder.decode(AnyBSONStruct.self,
-                                  from: wrappedRegex).x.value as? RegularExpression).to(equal(regex))
+                                  from: wrappedRegex).x.value).to(bsonEqual(regex))
         expect(
             try decoder.decode(AnyBSONStruct.self,
                                from: wrappedRegex.canonicalExtendedJSON).x.value as? RegularExpression
@@ -644,32 +644,32 @@ final class CodecTests: MongoSwiftTestCase {
         let wrappedCode: Document = ["x": code]
         expect(try encoder.encode(AnyBSONStruct(code))).to(equal(wrappedCode))
         expect(try decoder.decode(AnyBSONStruct.self,
-                                  from: wrappedCode).x.value as? CodeWithScope).to(equal(code))
+                                  from: wrappedCode).x.value).to(bsonEqual(code))
         expect(try decoder.decode(AnyBSONStruct.self,
-                                  from: wrappedCode.canonicalExtendedJSON).x.value as? CodeWithScope).to(equal(code))
+                                  from: wrappedCode.canonicalExtendedJSON).x.value).to(bsonEqual(code))
 
         // int32
         let int32 = Int32(5)
 
-        expect(try decoder.decode(AnyBSONValue.self, from: "{ \"$numberInt\" : \"5\" }").value as? Int).to(equal(5))
+        expect(try decoder.decode(AnyBSONValue.self, from: "{ \"$numberInt\" : \"5\" }").value).to(bsonEqual(5))
 
         let wrappedInt32: Document = ["x": int32]
         expect(try encoder.encode(AnyBSONStruct(int32))).to(equal(wrappedInt32))
         // as int because we convert Int32 -> Int when decoding
-        expect(try decoder.decode(AnyBSONStruct.self, from: wrappedInt32).x.value as? Int).to(equal(5))
+        expect(try decoder.decode(AnyBSONStruct.self, from: wrappedInt32).x.value).to(bsonEqual(5))
         expect(try decoder.decode(AnyBSONStruct.self,
-                                  from: wrappedInt32.canonicalExtendedJSON).x.value as? Int).to(equal(5))
+                                  from: wrappedInt32.canonicalExtendedJSON).x.value).to(bsonEqual(5))
 
         // int
         let int = 5
 
-        expect(try decoder.decode(AnyBSONValue.self, from: "{ \"$numberInt\" : \"5\" }").value as? Int).to(equal(int))
+        expect(try decoder.decode(AnyBSONValue.self, from: "{ \"$numberInt\" : \"5\" }").value).to(bsonEqual(int))
 
         let wrappedInt: Document = ["x": int]
         expect(try encoder.encode(AnyBSONStruct(int))).to(equal(wrappedInt))
-        expect(try decoder.decode(AnyBSONStruct.self, from: wrappedInt).x.value as? Int).to(equal(int))
+        expect(try decoder.decode(AnyBSONStruct.self, from: wrappedInt).x.value).to(bsonEqual(int))
         expect(try decoder.decode(AnyBSONStruct.self,
-                                  from: wrappedInt.canonicalExtendedJSON).x.value as? Int).to(equal(int))
+                                  from: wrappedInt.canonicalExtendedJSON).x.value).to(bsonEqual(int))
 
         // int64
         let int64 = Int64(5)
@@ -680,9 +680,9 @@ final class CodecTests: MongoSwiftTestCase {
 
         let wrappedInt64: Document = ["x": int64]
         expect(try encoder.encode(AnyBSONStruct(Int64(5)))).to(equal(wrappedInt64))
-        expect(try decoder.decode(AnyBSONStruct.self, from: wrappedInt64).x.value as? Int64).to(equal(int64))
+        expect(try decoder.decode(AnyBSONStruct.self, from: wrappedInt64).x.value).to(bsonEqual(int64))
         expect(try decoder.decode(AnyBSONStruct.self,
-                                  from: wrappedInt64.canonicalExtendedJSON).x.value as? Int64).to(equal(int64))
+                                  from: wrappedInt64.canonicalExtendedJSON).x.value).to(bsonEqual(int64))
 
         // decimal128
         let decimal = Decimal128("1.2E+10")
@@ -693,31 +693,31 @@ final class CodecTests: MongoSwiftTestCase {
 
         let wrappedDecimal: Document = ["x": decimal]
         expect(try encoder.encode(AnyBSONStruct(decimal))).to(equal(wrappedDecimal))
-        expect(try decoder.decode(AnyBSONStruct.self, from: wrappedDecimal).x.value as? Decimal128).to(equal(decimal))
+        expect(try decoder.decode(AnyBSONStruct.self, from: wrappedDecimal).x.value).to(bsonEqual(decimal))
         expect(try decoder.decode(AnyBSONStruct.self,
-                                  from: wrappedDecimal.canonicalExtendedJSON).x.value as? Decimal128).to(equal(decimal))
+                                  from: wrappedDecimal.canonicalExtendedJSON).x.value).to(bsonEqual(decimal))
 
         // maxkey
         let maxKey = MaxKey()
 
-        expect(try decoder.decode(AnyBSONValue.self, from: "{ \"$maxKey\" : 1 }").value as? MaxKey).to(equal(maxKey))
+        expect(try decoder.decode(AnyBSONValue.self, from: "{ \"$maxKey\" : 1 }").value).to(bsonEqual(maxKey))
 
         let wrappedMaxKey: Document = ["x": maxKey]
         expect(try encoder.encode(AnyBSONStruct(maxKey))).to(equal(wrappedMaxKey))
-        expect(try decoder.decode(AnyBSONStruct.self, from: wrappedMaxKey).x.value as? MaxKey).to(equal(maxKey))
+        expect(try decoder.decode(AnyBSONStruct.self, from: wrappedMaxKey).x.value).to(bsonEqual(maxKey))
         expect(try decoder.decode(AnyBSONStruct.self,
-                                  from: wrappedMaxKey.canonicalExtendedJSON).x.value as? MaxKey).to(equal(maxKey))
+                                  from: wrappedMaxKey.canonicalExtendedJSON).x.value).to(bsonEqual(maxKey))
 
         // minkey
         let minKey = MinKey()
 
-        expect(try decoder.decode(AnyBSONValue.self, from: "{ \"$minKey\" : 1 }").value as? MinKey).to(equal(minKey))
+        expect(try decoder.decode(AnyBSONValue.self, from: "{ \"$minKey\" : 1 }").value).to(bsonEqual(minKey))
 
         let wrappedMinKey: Document = ["x": minKey]
         expect(try encoder.encode(AnyBSONStruct(minKey))).to(equal(wrappedMinKey))
-        expect(try decoder.decode(AnyBSONStruct.self, from: wrappedMinKey).x.value as? MinKey).to(equal(minKey))
+        expect(try decoder.decode(AnyBSONStruct.self, from: wrappedMinKey).x.value).to(bsonEqual(minKey))
         expect(try decoder.decode(AnyBSONStruct.self,
-                                  from: wrappedMinKey.canonicalExtendedJSON).x.value as? MinKey).to(equal(minKey))
+                                  from: wrappedMinKey.canonicalExtendedJSON).x.value).to(bsonEqual(minKey))
 
         // NSNull
         expect(

@@ -104,8 +104,8 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
     func testInsertOne() throws {
         expect(try self.coll.deleteMany([:])).toNot(beNil())
-        expect(try self.coll.insertOne(self.doc1)?.insertedId as? Int).to(equal(1))
-        expect(try self.coll.insertOne(self.doc2)?.insertedId as? Int).to(equal(2))
+        expect(try self.coll.insertOne(self.doc1)?.insertedId).to(bsonEqual(1))
+        expect(try self.coll.insertOne(self.doc2)?.insertedId).to(bsonEqual(2))
         expect(try self.coll.count()).to(equal(2))
 
         // try inserting a document without an ID to verify one is generated and returned
@@ -247,8 +247,8 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         let model = IndexModel(keys: ["cat": 1])
         expect(try self.coll.createIndex(model)).to(equal("cat_1"))
         let indexes = try coll.listIndexes()
-        expect(indexes.next()?["name"] as? String).to(equal("_id_"))
-        expect(indexes.next()?["name"] as? String).to(equal("cat_1"))
+        expect(indexes.next()?["name"]).to(bsonEqual("_id_"))
+        expect(indexes.next()?["name"]).to(bsonEqual("cat_1"))
         expect(indexes.next()).to(beNil())
     }
 
@@ -257,9 +257,9 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         let model2 = IndexModel(keys: ["cat": -1])
         expect( try self.coll.createIndexes([model1, model2]) ).to(equal(["cat_1", "cat_-1"]))
         let indexes = try coll.listIndexes()
-        expect(indexes.next()?["name"] as? String).to(equal("_id_"))
-        expect(indexes.next()?["name"] as? String).to(equal("cat_1"))
-        expect(indexes.next()?["name"] as? String).to(equal("cat_-1"))
+        expect(indexes.next()?["name"]).to(bsonEqual("_id_"))
+        expect(indexes.next()?["name"]).to(bsonEqual("cat_1"))
+        expect(indexes.next()?["name"]).to(bsonEqual("cat_-1"))
         expect(indexes.next()).to(beNil())
     }
 
@@ -271,12 +271,12 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(try self.coll.createIndex(model)).to(equal("blah"))
 
         let indexes = try coll.listIndexes()
-        expect(indexes.next()?["name"] as? String).to(equal("_id_"))
-        expect(indexes.next()?["name"] as? String).to(equal("cat_1"))
+        expect(indexes.next()?["name"]).to(bsonEqual("_id_"))
+        expect(indexes.next()?["name"]).to(bsonEqual("cat_1"))
 
         let thirdIndex = indexes.next()
-        expect(thirdIndex?["name"] as? String).to(equal("blah"))
-        expect(thirdIndex?["unique"] as? Bool).to(beTrue())
+        expect(thirdIndex?["name"]).to(bsonEqual("blah"))
+        expect(thirdIndex?["unique"]).to(bsonEqual(true))
 
         expect(indexes.next()).to(beNil())
     }
@@ -288,49 +288,49 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
         // now there should only be _id_ left
         let indexes = try coll.listIndexes()
-        expect(indexes.next()?["name"] as? String).to(equal("_id_"))
+        expect(indexes.next()?["name"]).to(bsonEqual("_id_"))
         expect(indexes.next()).to(beNil())
     }
 
     func testDropIndexByModel() throws {
         let model = IndexModel(keys: ["cat": 1])
         expect(try self.coll.createIndex(model)).to(equal("cat_1"))
-        expect(try self.coll.dropIndex(model)["ok"] as? Double).to(equal(1.0))
+        expect(try self.coll.dropIndex(model)["ok"]).to(bsonEqual(1.0))
 
         // now there should only be _id_ left
         let indexes = try coll.listIndexes()
         expect(indexes).toNot(beNil())
-        expect(indexes.next()?["name"] as? String).to(equal("_id_"))
+        expect(indexes.next()?["name"]).to(bsonEqual("_id_"))
         expect(indexes.next()).to(beNil())
     }
 
     func testDropIndexByKeys() throws {
         let model = IndexModel(keys: ["cat": 1])
         expect(try self.coll.createIndex(model)).to(equal("cat_1"))
-        expect(try self.coll.dropIndex(["cat": 1])["ok"] as? Double).to(equal(1.0))
+        expect(try self.coll.dropIndex(["cat": 1])["ok"]).to(bsonEqual(1.0))
 
         // now there should only be _id_ left
         let indexes = try coll.listIndexes()
         expect(indexes).toNot(beNil())
-        expect(indexes.next()?["name"] as? String).to(equal("_id_"))
+        expect(indexes.next()?["name"]).to(bsonEqual("_id_"))
         expect(indexes.next()).to(beNil())
     }
 
     func testDropAllIndexes() throws {
         let model = IndexModel(keys: ["cat": 1])
         expect(try self.coll.createIndex(model)).to(equal("cat_1"))
-        expect(try self.coll.dropIndexes()["ok"] as? Double).to(equal(1.0))
+        expect(try self.coll.dropIndexes()["ok"]).to(bsonEqual(1.0))
 
         // now there should only be _id_ left
         let indexes = try coll.listIndexes()
-        expect(indexes.next()?["name"] as? String).to(equal("_id_"))
+        expect(indexes.next()?["name"]).to(bsonEqual("_id_"))
         expect(indexes.next()).to(beNil())
     }
 
     func testListIndexes() throws {
         let indexes = try coll.listIndexes()
         // New collection, so expect just the _id_ index to exist. 
-        expect(indexes.next()?["name"] as? String).to(equal("_id_"))
+        expect(indexes.next()?["name"]).to(bsonEqual("_id_"))
         expect(indexes.next()).to(beNil())
     }
 
@@ -495,13 +495,13 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     func testNullIds() throws {
         let result1 = try self.coll.insertOne(["_id": NSNull(), "hi": "hello"])
         expect(result1).toNot(beNil())
-        expect(result1?.insertedId as? NSNull).to(equal(NSNull()))
+        expect(result1?.insertedId).to(bsonEqual(NSNull()))
 
         try self.coll.deleteOne(["_id": NSNull()])
 
         let result2 = try self.coll.insertMany([["_id": NSNull()], ["_id": 20]])
         expect(result2).toNot(beNil())
-        expect(result2?.insertedIds[0] as? NSNull).to(equal(NSNull()))
-        expect(result2?.insertedIds[1] as? Int).to(equal(20))
+        expect(result2?.insertedIds[0]).to(bsonEqual(NSNull()))
+        expect(result2?.insertedIds[1]).to(bsonEqual(20))
     }
 }

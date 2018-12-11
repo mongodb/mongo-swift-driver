@@ -255,12 +255,12 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
         // run command with a valid readConcern
         let options1 = RunCommandOptions(readConcern: ReadConcern(.local))
         let res1 = try db.runCommand(command, options: options1)
-        expect(res1["ok"] as? Double).to(equal(1.0))
+        expect(res1["ok"]).to(bsonEqual(1.0))
 
         // run command with an empty readConcern
         let options2 = RunCommandOptions(readConcern: ReadConcern())
         let res2 = try db.runCommand(command, options: options2)
-        expect(res2["ok"] as? Double).to(equal(1.0))
+        expect(res2["ok"]).to(bsonEqual(1.0))
 
         // running command with an invalid RC level should throw
         let options3 = RunCommandOptions(readConcern: ReadConcern("blah"))
@@ -299,12 +299,12 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
         // run command with a valid writeConcern
         let options1 = RunCommandOptions(writeConcern: wc1)
         let res1 = try db.runCommand(command, options: options1)
-        expect(res1["ok"] as? Double).to(equal(1.0))
+        expect(res1["ok"]).to(bsonEqual(1.0))
 
         // run command with an empty writeConcern
         let options2 = RunCommandOptions(writeConcern: wc2)
         let res2 = try db.runCommand(command, options: options2)
-        expect(res2["ok"] as? Double).to(equal(1.0))
+        expect(res2["ok"]).to(bsonEqual(1.0))
 
         expect(try coll.insertOne(nextDoc(), options: InsertOneOptions(writeConcern: wc1))).toNot(throwError())
         expect(try coll.insertOne(nextDoc(), options: InsertOneOptions(writeConcern: wc3))).toNot(throwError())
