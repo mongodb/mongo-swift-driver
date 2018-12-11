@@ -523,7 +523,7 @@ private class InsertOneTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let doc: Document = try self.args.get("document")
         let result = try coll.insertOne(doc)
-        expect(doc["_id"] as? Int).to(equal(result?.insertedId as? Int))
+        expect(doc["_id"]).to(bsonEqual(result?.insertedId))
     }
 }
 
