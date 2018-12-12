@@ -12,6 +12,11 @@ class MongoSwiftTestCase: XCTestCase {
         MongoSwift.initialize()
     }
 
+    /// Gets the name of the database the test case is running against.
+    internal class var testDatabase: String {
+        return "test"
+    }
+
     /// Gets the path of the directory containing spec files, depending on whether
     /// we're running from XCode or the command line
     static var specsPath: String {

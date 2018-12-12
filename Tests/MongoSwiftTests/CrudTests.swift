@@ -19,20 +19,20 @@ final class CrudTests: MongoSwiftTestCase {
         ]
     }
 
-    // Teardown at the very end of the suite by dropping the "crudTests" db.
+    // Teardown at the very end of the suite by dropping the db we tested on.
     override class func tearDown() {
         super.tearDown()
         do {
-            try MongoClient().db("crudTests").drop()
+            try MongoClient().db(self.testDatabase).drop()
         } catch {
-            print("Dropping test db crudTests failed: \(error)")
+            print("Dropping test db \(self.testDatabase) failed: \(error)")
         }
     }
 
     // Run tests for .json files at the provided path
     func doTests(forPath: String) throws {
         let client = try MongoClient()
-        let db = try client.db("crudTests")
+        let db = try client.db(type(of: self).testDatabase)
         for (filename, file) in try parseFiles(atPath: forPath) {
 
             if try !client.serverVersionIsInRange(file.minServerVersion, file.maxServerVersion) {

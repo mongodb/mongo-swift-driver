@@ -88,11 +88,11 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
             expect(client.readConcern).to(beNil())
 
             // expect that a DB created from this client inherits its unset RC 
-            let db1 = try client.db("test")
+            let db1 = try client.db(type(of: self).testDatabase)
             expect(db1.readConcern).to(beNil())
 
             // expect that a DB created from this client can override the client's unset RC
-            let db2 = try client.db("test", options: DatabaseOptions(readConcern: majority))
+            let db2 = try client.db(type(of: self).testDatabase, options: DatabaseOptions(readConcern: majority))
             expect(db2.readConcern?.level).to(equal("majority"))
         }
 
@@ -103,11 +103,11 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
             expect(client.readConcern?.level).to(equal("local"))
 
             // expect that a DB created from this client inherits its local RC 
-            let db1 = try client.db("test")
+            let db1 = try client.db(type(of: self).testDatabase)
             expect(db1.readConcern?.level).to(equal("local"))
 
             // expect that a DB created from this client can override the client's local RC
-            let db2 = try client.db("test", options: DatabaseOptions(readConcern: majority))
+            let db2 = try client.db(type(of: self).testDatabase, options: DatabaseOptions(readConcern: majority))
             expect(db2.readConcern?.level).to(equal("majority"))
         }
 
@@ -117,7 +117,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
             expect(client.readConcern?.level).to(equal("majority"))
 
             // expect that a DB created from this client can override the client's majority RC with an unset one
-            let db = try client.db("test", options: DatabaseOptions(readConcern: ReadConcern()))
+            let db = try client.db(type(of: self).testDatabase, options: DatabaseOptions(readConcern: ReadConcern()))
             expect(db.readConcern).to(beNil())
         }
     }
@@ -134,11 +134,11 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
             expect(client1.writeConcern).to(beNil())
 
             // expect that a DB created from this client inherits its default WC
-            let db1 = try client1.db("test")
+            let db1 = try client1.db(type(of: self).testDatabase)
             expect(db1.writeConcern).to(beNil())
 
             // expect that a DB created from this client can override the client's default WC
-            let db2 = try client1.db("test", options: DatabaseOptions(writeConcern: wc2))
+            let db2 = try client1.db(type(of: self).testDatabase, options: DatabaseOptions(writeConcern: wc2))
             expect(db2.writeConcern?.w).to(equal(w2))
         }
 
@@ -149,11 +149,11 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
             expect(client2.writeConcern?.w).to(equal(w1))
 
             // expect that a DB created from this client inherits its WC
-            let db3 = try client2.db("test")
+            let db3 = try client2.db(type(of: self).testDatabase)
             expect(db3.writeConcern?.w).to(equal(w1))
 
             // expect that a DB created from this client can override the client's WC
-            let db4 = try client2.db("test", options: DatabaseOptions(writeConcern: wc2))
+            let db4 = try client2.db(type(of: self).testDatabase, options: DatabaseOptions(writeConcern: wc2))
             expect(db4.writeConcern?.w).to(equal(w2))
         }
 
@@ -163,7 +163,9 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
             expect(client3.writeConcern?.w).to(equal(w2))
 
             // expect that a DB created from this client can override the client's WC with an unset one
-            let db5 = try client3.db("test", options: DatabaseOptions(writeConcern: WriteConcern()))
+            let db5 = try client3.db(
+                    type(of: self).testDatabase,
+                    options: DatabaseOptions(writeConcern: WriteConcern()))
             expect(db5.writeConcern).to(beNil())
         }
     }
@@ -171,7 +173,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
     func testDatabaseReadConcern() throws {
         let client = try MongoClient()
 
-        let db1 = try client.db("test")
+        let db1 = try client.db(type(of: self).testDatabase)
         defer { try? db1.drop() }
 
         // expect that a collection created from a DB with unset RC also has unset RC
@@ -188,7 +190,9 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
 
         try db1.drop()
 
-        let db2 = try client.db("test", options: DatabaseOptions(readConcern: ReadConcern(.local)))
+        let db2 = try client.db(
+                type(of: self).testDatabase,
+                options: DatabaseOptions(readConcern: ReadConcern(.local)))
         defer { try? db2.drop() }
 
         // expect that a collection created from a DB with local RC also has local RC
@@ -207,7 +211,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
     func testDatabaseWriteConcern() throws {
         let client = try MongoClient()
 
-        let db1 = try client.db("test")
+        let db1 = try client.db(type(of: self).testDatabase)
         defer { try? db1.drop() }
 
         // expect that a collection created from a DB with default WC also has default WC
@@ -227,7 +231,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
 
         try db1.drop()
 
-        let db2 = try client.db("test", options: DatabaseOptions(writeConcern: wc1))
+        let db2 = try client.db(type(of: self).testDatabase, options: DatabaseOptions(writeConcern: wc1))
         defer { try? db2.drop() }
 
         // expect that a collection created from a DB with w:1 also has w:1
@@ -246,7 +250,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
     func testOperationReadConcerns() throws {
         // setup a collection 
         let client = try MongoClient()
-        let db = try client.db("test")
+        let db = try client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
         let coll = try db.createCollection("coll1")
 
@@ -280,7 +284,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
 
     func testOperationWriteConcerns() throws {
         let client = try MongoClient()
-        let db = try client.db("test")
+        let db = try client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
 
         var counter = 0

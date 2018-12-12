@@ -39,7 +39,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         let collectionName = String(describing: self)
 
         do {
-            coll = try client.db("collectionTest").collection(collectionName)
+            coll = try client.db(type(of: self).testDatabase).collection(collectionName)
         } catch {
             return XCTFail("Setup failed: \(error)")
         }
