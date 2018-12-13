@@ -94,7 +94,7 @@ public struct ServerDescription {
     public var passives: [ConnectionId] = []
 
     /// Tags for this server.
-    public var tags: Document?
+    public var tags: [String: String] = [:]
 
     /// The replica set name.
     public var setName: String?
@@ -150,10 +150,15 @@ public struct ServerDescription {
             self.arbiters = arbiters.map { ConnectionId($0) }
         }
 
+        if let tags = isMaster["tags"] as? Document {
+            for (k, v) in tags {
+                self.tags[k] = v as? String
+            }
+        }
+
         self.setName = isMaster["setName"] as? String
         self.setVersion = isMaster["setVersion"] as? Int64
         self.electionId = isMaster["electionId"] as? ObjectId
-        self.tags = isMaster["tags"] as? Document
 
         if let primary = isMaster["primary"] as? String {
             self.primary = ConnectionId(primary)
@@ -164,16 +169,11 @@ public struct ServerDescription {
 
     /// An internal function used to determine if a given server matches a tag set.
     internal func matchesTagSet(_ tagSet: Document) -> Bool {
-        guard let serverTags = self.tags else {
-            return false
-        }
-
         for kvp in tagSet {
-            if !serverTags.keys.contains(kvp.key) || !bsonEquals(serverTags[kvp.key]!, kvp.value) {
+            if !self.tags.keys.contains(kvp.key) || !bsonEquals(self.tags[kvp.key], kvp.value) {
                 return false
             }
         }
-
         return true
     }
 
@@ -219,7 +219,7 @@ public enum TopologyType: String {
 /// which servers are up, what type of servers they are, which is primary, and so on.
 public struct TopologyDescription {
     /// The interval between server checks, can be configured via the URI.
-    public static var heartbeatFrequencyMS: Int = 10000
+    internal static var heartbeatFrequencyMS: Int = 60000
 
     /// The type of this topology.
     public let type: TopologyType

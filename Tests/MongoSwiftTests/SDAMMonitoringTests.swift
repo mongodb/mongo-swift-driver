@@ -238,8 +238,8 @@ final class SDAMTests: MongoSwiftTestCase {
             "c:3"
         ]
 
-        let tags: Document = ["dog": 1, "cat": "two"]
-        let tags1: Document = ["sdaf": "sadfsf", "f": 2]
+        let tags: Document = ["dog": "1", "cat": "two"]
+        let tags1: Document = ["sdaf": "sadfsf", "f": "2"]
         let wrongTags: Document = ["a": "b"]
 
         let primaryLastWrite = Date() - 600
