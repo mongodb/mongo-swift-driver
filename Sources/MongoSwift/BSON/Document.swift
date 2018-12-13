@@ -27,6 +27,9 @@ public class DocumentStorage {
     }
 }
 
+// The attribute @dynamicMemberLookup must immediately precede the type declaration. Since Swift doesn't have a real
+// preprocessor, we can't just conditionally apply the attribute (the #endif between the attribute and the type
+// declaration is apparently a problem) and have to conditionally declare the entire struct.
 #if swift(>=4.2)
 /// A struct representing the BSON document type.
 @dynamicMemberLookup
@@ -341,7 +344,6 @@ extension Document {
         }
     }
 
-#if swift(>=4.2)
     /**
      * Allows setting values and retrieving values using dot-notation syntax.
      * For example:
@@ -355,6 +357,7 @@ extension Document {
      *
      * Only available in Swift 4.2+.
      */
+    @available(swift 4.2)
     public subscript(dynamicMember member: String) -> BSONValue? {
         get {
             return self[member]
@@ -363,7 +366,6 @@ extension Document {
             self[member] = newValue
         }
     }
-#endif
 }
 
 /// An extension of `Document` to make it a `BSONValue`.
