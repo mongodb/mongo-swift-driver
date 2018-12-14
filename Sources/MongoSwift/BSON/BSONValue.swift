@@ -119,7 +119,7 @@ extension Array: BSONValue {
     }
 }
 
-/// A class to represent the BSON null type
+/// A struct to represent the BSON null type.
 public struct BSONNull: BSONValue, Codable {
     public var bsonType: BSONType { return .null }
 
