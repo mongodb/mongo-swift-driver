@@ -100,12 +100,6 @@ extension Document {
         }
     }
 
-    /// An implementation identical to subscript(key: String), but offers the ability to choose a default value if the
-    /// key is missing.
-    public subscript(key: String, default defaultValue: @autoclosure () -> BSONValue) -> BSONValue {
-        return self[key] ?? defaultValue()
-    }
-
     /// Sets key to newValue. if checkForKey=false, the key/value pair will be appended without checking for the key's
     /// presence first.
     internal mutating func setValue(for key: String, to newValue: BSONValue, checkForKey: Bool = true) throws {
@@ -333,6 +327,12 @@ extension Document {
                 preconditionFailure("Failed to set the value for key \(key) to \(newValue ?? "nil"): \(error)")
             }
         }
+    }
+
+    /// An implementation identical to subscript(key: String), but offers the ability to choose a default value if the
+    /// key is missing.
+    public subscript(key: String, default defaultValue: @autoclosure () -> BSONValue) -> BSONValue {
+        return self[key] ?? defaultValue()
     }
 }
 
