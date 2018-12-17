@@ -27,6 +27,20 @@ public class DocumentStorage {
     }
 }
 
+// The attribute @dynamicMemberLookup must immediately precede the type declaration. Since Swift doesn't have a real
+// preprocessor, we can't just conditionally apply the attribute (the #endif between the attribute and the type
+// declaration is apparently a problem) and have to conditionally declare the entire struct.
+#if swift(>=4.2)
+/// A struct representing the BSON document type.
+@dynamicMemberLookup
+public struct Document {
+    /// the storage backing this document
+    internal var storage: DocumentStorage
+
+    /// Returns the number of (key, value) pairs stored at the top level of this `Document`.
+    public var count: Int
+}
+#else
 /// A struct representing the BSON document type.
 public struct Document {
     /// the storage backing this document
@@ -35,6 +49,7 @@ public struct Document {
     /// Returns the number of (key, value) pairs stored at the top level of this `Document`.
     public var count: Int
 }
+#endif
 
 /// An extension of `Document` containing its private/internal functionality.
 extension Document {
@@ -326,6 +341,29 @@ extension Document {
             } catch {
                 preconditionFailure("Failed to set the value for key \(key) to \(newValue ?? "nil"): \(error)")
             }
+        }
+    }
+
+    /**
+     * Allows setting values and retrieving values using dot-notation syntax.
+     * For example:
+     *  ```
+     *  let d = Document()
+     *  d.a = 1
+     *  print(d.a) // prints 1
+     *  ```
+     * A nil return suggests that the key does not exist in the `Document`. A true BSON null is returned as
+     * an `NSNull`.
+     *
+     * Only available in Swift 4.2+.
+     */
+    @available(swift 4.2)
+    public subscript(dynamicMember member: String) -> BSONValue? {
+        get {
+            return self[member]
+        }
+        set(newValue) {
+            self[member] = newValue
         }
     }
 }
