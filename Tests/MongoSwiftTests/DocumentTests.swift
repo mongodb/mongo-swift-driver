@@ -192,7 +192,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
         expect(DocumentTests.testDoc.array1).to(bsonEqual([1, 2]))
         expect(DocumentTests.testDoc.array2).to(bsonEqual(["string1", "string2"]))
-        expect(DocumentTests.testDoc.null).to(bsonEqual(NSNull()))
+        expect(DocumentTests.testDoc.null).to(bsonEqual(BSONNull()))
 
         let regex = DocumentTests.testDoc.regex as? RegularExpression
         expect(regex).to(equal(RegularExpression(pattern: "^abc", options: "imx")))

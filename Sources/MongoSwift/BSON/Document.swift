@@ -353,7 +353,7 @@ extension Document {
      *  print(d.a) // prints 1
      *  ```
      * A nil return suggests that the key does not exist in the `Document`. A true BSON null is returned as
-     * an `NSNull`.
+     * a `BSONNull`.
      *
      * Only available in Swift 4.2+.
      */
