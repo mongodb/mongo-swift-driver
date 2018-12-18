@@ -125,6 +125,7 @@ public struct BSONNull: BSONValue, Codable {
 
     public static func from(iterator iter: DocumentIterator) throws -> BSONNull { return BSONNull() }
 
+    /// Initializes a new, empty `BSONNull` instance.
     public init() { }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
