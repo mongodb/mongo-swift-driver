@@ -125,6 +125,9 @@ public struct BSONNull: BSONValue, Codable {
 
     public static func from(iterator iter: DocumentIterator) throws -> BSONNull { return BSONNull() }
 
+    /// Initializes a new `BSONNull` instance.
+    public init() { }
+
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         guard bson_append_null(storage.pointer, key, Int32(key.count)) else {
             throw bsonEncodeError(value: self, forKey: key)
