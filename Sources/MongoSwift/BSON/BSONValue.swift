@@ -642,6 +642,32 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
 
 }
 
+/// Extension to allow a UUID to be initialized from a Binary BSONValue
+extension UUID {
+    // TODO: fill the rest of this out for full BSONValue conformance
+
+    internal init(fromBinary binary: Binary) throws {
+        guard binary.subtype == Binary.Subtype.uuid.rawValue else {
+            throw MongoError.bsonDecodeError(message: "Expected a UUID binary type, got \(binary.subtype) instead")
+        }
+
+        guard binary.data.count == 16 else {
+            throw MongoError.bsonDecodeError(message: "UUIDs must be exactly 16 bytes")
+        }
+
+        let data = binary.data
+
+        let uuid: uuid_t = (
+                data[0], data[1], data[2], data[3],
+                data[4], data[5], data[6], data[7],
+                data[8], data[9], data[10], data[11],
+                data[12], data[13], data[14], data[15]
+        )
+
+        self.init(uuid: uuid)
+    }
+}
+
 // A mapping of regex option characters to their equivalent `NSRegularExpression` option.
 // note that there is a BSON regexp option 'l' that `NSRegularExpression`
 // doesn't support. The flag will be dropped if BSON containing it is parsed,

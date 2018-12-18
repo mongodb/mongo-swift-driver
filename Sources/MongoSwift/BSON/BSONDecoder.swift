@@ -3,17 +3,74 @@ import Foundation
 /// `BSONDecoder` facilitates the decoding of BSON into semantic `Decodable` types.
 public class BSONDecoder {
 
+    @available(OSX 10.12, *)
+    internal static var iso8601Formatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = .withInternetDateTime
+        return formatter
+    }()
+
+    /// Enum representing the different options for decoding `Date`s from BSON
+    public enum DateDecodingStrategy {
+        /// Decoding `Date`s stored as 64 bit integers counting the number of milliseconds since January 1, 1970
+        case millisecondsSince1970Int64
+
+        /// Decoding `Date`s stored as 64 bit integers counting the number of seconds since January 1, 1970
+        case secondsSince1970Int64
+
+        /// Decoding `Date`s stored as `Double`s counting the number of seconds since January 1, 1970
+        case millisecondsSince1970
+
+        /// Decoding `Date`s stored as `Double`s counting the number of milliseconds since January 1, 1970
+        case secondsSince1970
+
+        /// Decoding `Date`s by deferring to their default decoding implementation
+        case deferredToDate
+
+        /// Decoding `Date`s represented by ISO8601 formatted strings
+        @available(OSX 10.12, *)
+        case iso8601
+
+        /// Decoding `Date`s stored as strings parsable by the given formatter
+        case formatted(DateFormatter)
+
+        /// Decoding `Date`s using the provided closure
+        case custom((_ decoder: Decoder) throws -> Date)
+    }
+
+    /// Enum representing the different options for decoding `UUID`s from BSON
+    public enum UUIDDecodingStrategy {
+        /// Decoding `UUID`s by deferring to their default decoding implementation
+        case deferredToUUID
+
+        /// Decoding `UUID`s from strings
+        case fromString
+
+        /// Decoding `UUID`s from the BSON `Binary` type
+        case fromBinary
+    }
+
     /// Contextual user-provided information for use during decoding.
     public var userInfo: [CodingUserInfoKey: Any] = [:]
+
+    /// The strategy used for decoding dates with this instance.
+    public var dateDecodingStrategy: DateDecodingStrategy = .millisecondsSince1970Int64
+
+    /// The strategy used for decoding UUIDs with this instance
+    public var uuidDecodingStrategy: UUIDDecodingStrategy = .fromBinary
 
     /// Options set on the top-level decoder to pass down the decoding hierarchy.
     fileprivate struct _Options {
         let userInfo: [CodingUserInfoKey: Any]
+        let dateDecodingStrategy: DateDecodingStrategy
+        let uuidDecodingStrategy: UUIDDecodingStrategy
     }
 
     /// The options set on the top-level decoder.
     fileprivate var options: _Options {
-        return _Options(userInfo: userInfo)
+        return _Options(userInfo: self.userInfo,
+                        dateDecodingStrategy: self.dateDecodingStrategy,
+                        uuidDecodingStrategy: self.uuidDecodingStrategy)
     }
 
     /// Initializes `self`.
@@ -198,18 +255,81 @@ extension _BSONDecoder {
         return primitive
     }
 
+    /// Private helper function used specifically for decoding dates
+    // swiftlint:disable cyclomatic_complexity
+    fileprivate func unboxDate(_ value: BSONValue) throws -> Date {
+        switch self.options.dateDecodingStrategy {
+        case .deferredToDate:
+            self.storage.push(container: value)
+            defer { self.storage.popContainer() }
+            return try Date(from: self)
+        case .millisecondsSince1970:
+            let val = try self.unbox(value, as: TimeInterval.self)
+            return Date(timeIntervalSince1970: val / 1000.0)
+        case .secondsSince1970:
+            let val = try self.unbox(value, as: TimeInterval.self)
+            return Date(timeIntervalSince1970: val)
+        case .millisecondsSince1970Int64:
+            let val = try self.unbox(value, as: Int64.self)
+            return Date(msSinceEpoch: val)
+        case .secondsSince1970Int64:
+            let val = try self.unbox(value, as: Int64.self)
+            return Date(timeIntervalSince1970: TimeInterval(val))
+        case .iso8601:
+            if #available(OSX 10.12, *) {
+                let isoString = try self.unbox(value, as: String.self)
+                guard let date = BSONDecoder.iso8601Formatter.date(from: isoString) else {
+                    throw MongoError.bsonDecodeError(message: "Improperly formatted ISO 8601 Date string")
+                }
+                return date
+            } else {
+                throw MongoError.bsonDecodeError(message: "ISO8601DateFormatter is unavailable on this platform.")
+            }
+        case .custom(let f):
+            self.storage.push(container: value)
+            defer { self.storage.popContainer() }
+            return try f(self)
+        case .formatted(let formatter):
+            let dateString = try self.unbox(value, as: String.self)
+            guard let date = formatter.date(from: dateString) else {
+                throw MongoError.bsonDecodeError(message: "Date string does not match format expected by formatter.")
+            }
+            return date
+        }
+    }
+    // swiftlint:enable cyclomatic_complexity
+
+    /// Private helper used specifically for decoding UUIDs
+    fileprivate func unboxUUID(_ value: BSONValue) throws -> UUID {
+        switch self.options.uuidDecodingStrategy {
+        case .deferredToUUID:
+            self.storage.push(container: value)
+            defer { self.storage.popContainer() }
+            return try UUID(from: self)
+        case .fromString:
+            let uuidString = try self.unbox(value, as: String.self)
+             guard let uuid = UUID(uuidString: uuidString) else {
+                throw MongoError.bsonDecodeError(message: "Could not decode UUID from \(uuidString)")
+            }
+            return uuid
+        case .fromBinary:
+            let val: Binary = try self.unbox(value, as: Binary.self)
+            return try UUID(fromBinary: val)
+        }
+    }
+
     fileprivate func unbox<T: Decodable>(_ value: BSONValue, as type: T.Type) throws -> T {
         // if the data is already stored as the correct type in the document, then we can short-circuit
         // and just return the typed value here
         if let val = value as? T { return val }
 
-        // `Date`'s decode method looks for a `Double`. however, this is not how *we* want to look for it
-        // given that its encoded as an Int64 in BSON. therefore, if the value wasn't extracted from 
-        // the `Document` as type `Date` but we're trying to decode as a `Date`, we should throw an error
-        // rather than calling `Date.init(from decoder: Decoder)`. 
-        guard type != Date.self else {
-            throw DecodingError._typeMismatch(at: self.codingPath, expectation: type, reality: value)
+        // swiftlint:disable force_cast
+        if type == Date.self {
+            return try unboxDate(value) as! T
+        } else if type == UUID.self {
+            return try unboxUUID(value) as! T
         }
+        // swiftlint:enable force_cast
 
         self.storage.push(container: value)
         defer { self.storage.popContainer() }
