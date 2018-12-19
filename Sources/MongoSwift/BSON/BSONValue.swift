@@ -647,8 +647,13 @@ extension UUID {
     // TODO: fill the rest of this out for full BSONValue conformance
 
     internal init(fromBinary binary: Binary) throws {
+        guard binary.subtype != Binary.Subtype.uuidDeprecated.rawValue else {
+            throw MongoError.bsonDecodeError(message: "Binary subtype \(binary.subtype) is deprecated, " +
+                    "use \(Binary.Subtype.uuid) instead")
+        }
         guard binary.subtype == Binary.Subtype.uuid.rawValue else {
-            throw MongoError.bsonDecodeError(message: "Expected a UUID binary type, got \(binary.subtype) instead")
+            throw MongoError.bsonDecodeError(message: "Expected a UUID binary type " +
+                    "(\(Binary.Subtype.uuidDeprecated)), got \(binary.subtype) instead")
         }
 
         let data = binary.data

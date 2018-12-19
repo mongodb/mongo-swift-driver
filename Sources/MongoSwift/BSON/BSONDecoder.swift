@@ -329,8 +329,10 @@ extension _BSONDecoder {
     fileprivate func unbox<T: Decodable>(_ value: BSONValue, as type: T.Type) throws -> T {
         // swiftlint:disable force_cast
         if type == Date.self {
+            // We know T is a Date and unboxDate returns a Date or throws, so this cast will always work
             return try unboxDate(value) as! T
         } else if type == UUID.self {
+            // We know T is a Date and unboxUUID returns a UUID or throws, so this cast will always work
             return try unboxUUID(value) as! T
         }
         // swiftlint:enable force_cast
