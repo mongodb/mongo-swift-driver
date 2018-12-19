@@ -737,14 +737,23 @@ final class DocumentTests: MongoSwiftTestCase {
         }
         // swiftlint:enable nesting
 
-        let date = Date(timeIntervalSince1970: 125)
+        let date = Date(timeIntervalSince1970: 125.0)
 
         let decoder = BSONDecoder()
 
+        // Default is .bsonDateTime
+        let bsonDate: Document = ["date": date]
+        let defaultStruct = try decoder.decode(DateWrapper.self, from: bsonDate)
+        expect(defaultStruct.date).to(equal(date))
+
+        decoder.dateDecodingStrategy = .bsonDateTime
+        let bsonDateStruct = try decoder.decode(DateWrapper.self, from: bsonDate)
+        expect(bsonDateStruct.date).to(equal(date))
+
         decoder.dateDecodingStrategy = .millisecondsSince1970Int64
         let msInt64: Document = ["date": date.msSinceEpoch]
-        let a: DateWrapper = try decoder.decode(DateWrapper.self, from: msInt64)
-        expect(a.date).to(equal(date))
+        let msInt64Struct = try decoder.decode(DateWrapper.self, from: msInt64)
+        expect(msInt64Struct.date).to(equal(date))
 
         decoder.dateDecodingStrategy = .secondsSince1970Int64
         let sInt64: Document = ["date": Int64(date.timeIntervalSince1970)]
@@ -783,13 +792,14 @@ final class DocumentTests: MongoSwiftTestCase {
         }
 
         decoder.dateDecodingStrategy = .custom({ decode in try Date(from: decode) })
-        let defaultDoc: Document = ["date": date]
-        let defaultStruct = try decoder.decode(DateWrapper.self, from: defaultDoc)
-        expect(defaultStruct.date).to(equal(date))
+        let customDoc: Document = ["date": date.timeIntervalSinceReferenceDate]
+        let customStruct = try decoder.decode(DateWrapper.self, from: customDoc)
+        expect(customStruct.date).to(equal(date))
         expect(try decoder.decode(DateWrapper.self, from: badlyFormatted)).to(throwError())
 
         decoder.dateDecodingStrategy = .deferredToDate
-        expect(defaultStruct.date).to(equal(date))
+        let deferredStruct = try decoder.decode(DateWrapper.self, from: customDoc)
+        expect(deferredStruct.date).to(equal(date))
         expect(try decoder.decode(DateWrapper.self, from: badlyFormatted)).to(throwError())
     }
 }

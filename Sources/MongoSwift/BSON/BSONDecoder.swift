@@ -12,6 +12,9 @@ public class BSONDecoder {
 
     /// Enum representing the different options for decoding `Date`s from BSON.
     public enum DateDecodingStrategy {
+        /// Decode `Date`s stored as BSON datetimes.
+        case bsonDateTime
+
         /// Decode `Date`s stored as 64 bit integers counting the number of milliseconds since January 1, 1970.
         case millisecondsSince1970Int64
 
@@ -54,7 +57,7 @@ public class BSONDecoder {
     public var userInfo: [CodingUserInfoKey: Any] = [:]
 
     /// The strategy used for decoding dates with this instance.
-    public var dateDecodingStrategy: DateDecodingStrategy = .millisecondsSince1970Int64
+    public var dateDecodingStrategy: DateDecodingStrategy = .bsonDateTime
 
     /// The strategy used for decoding UUIDs with this instance.
     public var uuidDecodingStrategy: UUIDDecodingStrategy = .fromBinary
@@ -259,6 +262,11 @@ extension _BSONDecoder {
     // swiftlint:disable cyclomatic_complexity
     fileprivate func unboxDate(_ value: BSONValue) throws -> Date {
         switch self.options.dateDecodingStrategy {
+        case .bsonDateTime:
+            guard let date = value as? Date else {
+                throw DecodingError._typeMismatch(at: self.codingPath, expectation: Date.self, reality: value)
+            }
+            return date
         case .deferredToDate:
             self.storage.push(container: value)
             defer { self.storage.popContainer() }
@@ -319,10 +327,6 @@ extension _BSONDecoder {
     }
 
     fileprivate func unbox<T: Decodable>(_ value: BSONValue, as type: T.Type) throws -> T {
-        // if the data is already stored as the correct type in the document, then we can short-circuit
-        // and just return the typed value here
-        if let val = value as? T { return val }
-
         // swiftlint:disable force_cast
         if type == Date.self {
             return try unboxDate(value) as! T
@@ -330,6 +334,10 @@ extension _BSONDecoder {
             return try unboxUUID(value) as! T
         }
         // swiftlint:enable force_cast
+
+        // if the data is already stored as the correct type in the document, then we can short-circuit
+        // and just return the typed value here
+        if let val = value as? T { return val }
 
         self.storage.push(container: value)
         defer { self.storage.popContainer() }
