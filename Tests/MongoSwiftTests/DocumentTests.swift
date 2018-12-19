@@ -675,7 +675,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(doc["DNE", default: floatVal]).to(bsonEqual(floatVal))
         expect(doc["hello", default: floatVal]).to(bsonEqual(doc["hello"]))
         expect(doc["DNE", default: stringVal]).to(bsonEqual(stringVal))
-        expect(doc["DNE", default: NSNull()]).to(bsonEqual(NSNull()))
+        expect(doc["DNE", default: BSONNull()]).to(bsonEqual(BSONNull()))
         expect(doc["autoclosure test", default: floatVal * floatVal]).to(bsonEqual(floatVal * floatVal))
         expect(doc["autoclosure test", default: "\(stringVal) and \(floatVal)" + stringVal])
             .to(bsonEqual("\(stringVal) and \(floatVal)" + stringVal))
