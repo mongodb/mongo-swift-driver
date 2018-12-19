@@ -892,24 +892,24 @@ func bsonEquals(_ lhs: BSONValue, _ rhs: BSONValue) -> Bool {
     validateBSONTypes(lhs, rhs)
 
     switch (lhs, rhs) {
-    case (let l as Int, let r as Int): return l == r
-    case (let l as Int32, let r as Int32): return l == r
-    case (let l as Int64, let r as Int64): return l == r
-    case (let l as Double, let r as Double): return l == r
-    case (let l as Decimal128, let r as Decimal128): return l == r
-    case (let l as Bool, let r as Bool): return l == r
-    case (let l as String, let r as String): return l == r
-    case (let l as RegularExpression, let r as RegularExpression): return l == r
-    case (let l as Timestamp, let r as Timestamp): return l == r
-    case (let l as Date, let r as Date): return l == r
+    case let (l as Int, r as Int): return l == r
+    case let (l as Int32, r as Int32): return l == r
+    case let (l as Int64, r as Int64): return l == r
+    case let (l as Double, r as Double): return l == r
+    case let (l as Decimal128, r as Decimal128): return l == r
+    case let (l as Bool, r as Bool): return l == r
+    case let (l as String, r as String): return l == r
+    case let (l as RegularExpression, r as RegularExpression): return l == r
+    case let (l as Timestamp, r as Timestamp): return l == r
+    case let (l as Date, r as Date): return l == r
     case (_ as MinKey, _ as MinKey): return true
     case (_ as MaxKey, _ as MaxKey): return true
-    case (let l as ObjectId, let r as ObjectId): return l == r
-    case (let l as CodeWithScope, let r as CodeWithScope): return l == r
-    case (let l as Binary, let r as Binary): return l == r
+    case let (l as ObjectId, r as ObjectId): return l == r
+    case let (l as CodeWithScope, r as CodeWithScope): return l == r
+    case let (l as Binary, r as Binary): return l == r
     case (_ as BSONNull, _ as BSONNull): return true
-    case (let l as Document, let r as Document): return l == r
-    case (let l as [BSONValue], let r as [BSONValue]): // TODO: SWIFT-242
+    case let (l as Document, r as Document): return l == r
+    case let (l as [BSONValue], r as [BSONValue]): // TODO: SWIFT-242
         return l.count == r.count && zip(l, r).reduce(true, { prev, next in prev && bsonEquals(next.0, next.1) })
     case (_ as [Any], _ as [Any]): return false
     default: return false

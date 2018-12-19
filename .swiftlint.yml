@@ -22,6 +22,7 @@ opt_in_rules:
   - modifier_order 
   - multiline_function_chains
   - operator_usage_whitespace
+  - pattern_matching_keywords
   - redundant_nil_coalescing
   - redundant_type_annotation
   - sorted_first_last

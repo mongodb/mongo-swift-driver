@@ -304,10 +304,10 @@ private class _BSONReferencingEncoder: _BSONEncoder {
         }
 
         switch self.reference {
-        case .array(let array, let index):
+        case let .array(array, index):
             array.insert(value, at: index)
 
-        case .dictionary(let dictionary, let key):
+        case let .dictionary(dictionary, key):
             dictionary[key] = value
         }
     }
