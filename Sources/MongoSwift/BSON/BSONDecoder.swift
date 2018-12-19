@@ -284,15 +284,20 @@ extension _BSONDecoder {
             let val = try self.unbox(value, as: Int64.self)
             return Date(timeIntervalSince1970: TimeInterval(val))
         case .iso8601:
-            if #available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) {
-                let isoString = try self.unbox(value, as: String.self)
-                guard let date = BSONDecoder.iso8601Formatter.date(from: isoString) else {
-                    throw MongoError.bsonDecodeError(message: "Improperly formatted ISO 8601 Date string")
-                }
-                return date
-            } else {
+            guard #available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) else {
                 throw MongoError.bsonDecodeError(message: "ISO8601DateFormatter is unavailable on this platform.")
             }
+            let isoString = try self.unbox(value, as: String.self)
+            guard let date = BSONDecoder.iso8601Formatter.date(from: isoString) else {
+                throw DecodingError.dataCorrupted(
+                        DecodingError.Context(
+                                codingPath: self.codingPath,
+                                debugDescription: "String \"\(isoString)\" is not a properly formatted " +
+                                        "ISO 8601 Date string"
+                        )
+                )
+            }
+            return date
         case .custom(let f):
             self.storage.push(container: value)
             defer { self.storage.popContainer() }
@@ -300,7 +305,13 @@ extension _BSONDecoder {
         case .formatted(let formatter):
             let dateString = try self.unbox(value, as: String.self)
             guard let date = formatter.date(from: dateString) else {
-                throw MongoError.bsonDecodeError(message: "Date string does not match format expected by formatter.")
+                throw DecodingError.dataCorrupted(
+                        DecodingError.Context(
+                                codingPath: self.codingPath,
+                                debugDescription: "String \"\(dateString)\" does not match the format " +
+                                        "expected by formatter."
+                        )
+                )
             }
             return date
         }
@@ -317,7 +328,11 @@ extension _BSONDecoder {
         case .fromString:
             let uuidString = try self.unbox(value, as: String.self)
              guard let uuid = UUID(uuidString: uuidString) else {
-                throw MongoError.bsonDecodeError(message: "Could not decode UUID from \(uuidString)")
+                 throw DecodingError.dataCorrupted(
+                         DecodingError.Context(
+                                 codingPath: self.codingPath,
+                                 debugDescription: "Could not decode UUID from string \"\(uuidString)\"")
+                 )
             }
             return uuid
         case .fromBinary:
