@@ -62,10 +62,10 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
                     }
 
                     // remove the next expectation for this test and verify it matches the received event
-                    if expectedEvents.count > 0 {
-                        expectedEvents.removeFirst().compare(to: notif, testContext: &test.context)
-                    } else {
+                    if expectedEvents.isEmpty {
                         XCTFail("Got a notification, but ran out of expected events")
+                    } else {
+                        expectedEvents.removeFirst().compare(to: notif, testContext: &test.context)
                     }
                 }
 

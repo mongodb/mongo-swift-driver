@@ -12,6 +12,7 @@ opt_in_rules:
   - array_init
   - contains_over_first_not_nil
   - closure_end_indentation
+  - empty_count
   - empty_string
   - explicit_init
   - explicit_self

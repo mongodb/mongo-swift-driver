@@ -244,7 +244,7 @@ internal struct _BSONEncodingStorage {
     }
 
     fileprivate mutating func popContainer() -> BSONValue {
-        precondition(self.containers.count > 0, "Empty container stack.")
+        precondition(!self.containers.isEmpty, "Empty container stack.")
         return self.containers.popLast()!
     }
 }

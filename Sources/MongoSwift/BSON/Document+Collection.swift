@@ -16,7 +16,7 @@ extension Document: Collection {
 
     private func failIndexCheck(_ i: Int) {
         let invalidIndexMsg = "Index \(i) is invalid"
-        if self.count == 0 {
+        if self.isEmpty {
             preconditionFailure(invalidIndexMsg)
         }
         precondition(self.startIndex ... self.endIndex - 1 ~= i, invalidIndexMsg)
