@@ -8,6 +8,7 @@ disabled_rules:
 
 opt_in_rules:
   - array_init
+  - collection_alignment
   - contains_over_first_not_nil
   - closure_end_indentation
   - closure_spacing

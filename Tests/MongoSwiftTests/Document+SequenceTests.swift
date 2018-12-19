@@ -279,13 +279,13 @@ final class Document_SequenceTests: MongoSwiftTestCase {
 
         expect(self.emptyDoc.split(omittingEmptySubsequences: false, whereSeparator: self.isInt)).to(equal([[:]]))
         expect(self.smallDoc.split(omittingEmptySubsequences: false, whereSeparator: self.isInt)).to(equal([[:], [:]]))
-        expect(self.doc.split(omittingEmptySubsequences: false, whereSeparator: self.isInt)).to(equal([[:], [
-            "b": "hi",
-            "c": [1, 2] as [Int],
-            "d": false,
-            "e": BSONNull(),
-            "f": MinKey()
-        ], [:]]))
+        expect(self.doc.split(omittingEmptySubsequences: false, whereSeparator: self.isInt)).to(equal(
+            [
+                [:],
+                ["b": "hi", "c": [1, 2] as [Int], "d": false, "e": BSONNull(), "f": MinKey()],
+                [:]
+            ]
+        ))
 
         expect(self.doc.split(maxSplits: 1, omittingEmptySubsequences: false, whereSeparator: self.isInt))
             .to(equal([[:], ["b": "hi", "c": [1, 2] as [Int], "d": false, "e": BSONNull(), "f": MinKey(), "g": 10]]))

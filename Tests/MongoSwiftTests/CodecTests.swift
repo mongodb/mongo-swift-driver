@@ -187,7 +187,7 @@ final class CodecTests: MongoSwiftTestCase {
         let s1 = Numbers(int8: 42, int16: 42, uint8: 42, uint16: 42, uint32: 42, uint64: 42, uint: 42, float: 42)
         // all should be stored as Int32s, except the float should be stored as a double
         let doc1: Document = ["int8": 42, "int16": 42, "uint8": 42, "uint16": 42,
-                    "uint32": 42, "uint64": 42, "uint": 42, "float": 42.0]
+                              "uint32": 42, "uint64": 42, "uint": 42, "float": 42.0]
 
         expect(try encoder.encode(s1)).to(equal(doc1))
 
