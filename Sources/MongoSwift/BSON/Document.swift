@@ -357,7 +357,7 @@ extension Document {
     public subscript(key: String, default defaultValue: @autoclosure () -> BSONValue) -> BSONValue {
         return self[key] ?? defaultValue()
     }
-  
+
     /**
      * Allows setting values and retrieving values using dot-notation syntax.
      * For example:
