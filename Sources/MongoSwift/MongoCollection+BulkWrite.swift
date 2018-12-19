@@ -24,7 +24,7 @@ extension MongoCollection {
         let opts = try BSONEncoder().encode(options)
         let bulk = BulkWriteOperation(collection: self._collection, opts: opts?.data)
 
-        try requests.enumerated().forEach { (index, model) in
+        try requests.enumerated().forEach { index, model in
             try model.addToBulkWrite(bulk: bulk, index: index)
         }
 

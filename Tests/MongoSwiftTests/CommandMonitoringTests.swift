@@ -55,7 +55,7 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
 
                 // 2. Add an observer that looks for all events
                 var expectedEvents = test.expectations
-                let observer = center.addObserver(forName: nil, object: nil, queue: nil) { (notif) in
+                let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
                     // ignore if it doesn't match one of the names we're looking for
                     guard ["commandStarted", "commandSucceeded", "commandFailed"].contains(notif.name.rawValue) else {
                         return
@@ -89,7 +89,7 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
         let customCenter = NotificationCenter()
         client.enableMonitoring(forEvents: .commandMonitoring, usingCenter: customCenter)
         var eventCount = 0
-        let observer = customCenter.addObserver(forName: nil, object: nil, queue: nil) { (_) in
+        let observer = customCenter.addObserver(forName: nil, object: nil, queue: nil) { _ in
             eventCount += 1
         }
 

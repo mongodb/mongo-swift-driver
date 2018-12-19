@@ -11,7 +11,7 @@ public struct ConnectionId: Equatable {
     /// Initializes a ConnectionId from an UnsafePointer to a mongoc_host_list_t.
     internal init(_ hostList: UnsafePointer<mongoc_host_list_t>) {
         var hostData = hostList.pointee
-        self.host = withUnsafeBytes(of: &hostData.host) { (rawPtr) -> String in
+        self.host = withUnsafeBytes(of: &hostData.host) { rawPtr -> String in
             let ptr = rawPtr.baseAddress!.assumingMemoryBound(to: CChar.self)
             return String(cString: ptr)
         }

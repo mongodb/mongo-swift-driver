@@ -40,7 +40,7 @@ final class SDAMTests: MongoSwiftTestCase {
         let center = NotificationCenter.default
         var receivedEvents = [MongoEvent]()
 
-        let observer = center.addObserver(forName: nil, object: nil, queue: nil) { (notif) in
+        let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
 
             guard ["serverDescriptionChanged", "serverOpening", "serverClosed", "topologyDescriptionChanged",
                 "topologyOpening", "topologyClosed"].contains(notif.name.rawValue) else { return }

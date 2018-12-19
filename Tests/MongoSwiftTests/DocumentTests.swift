@@ -536,7 +536,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
         let newPairs: [(String, BSONValue)] = [("string", "hi"), ("doc", newDoc), ("arr", [3, 4])]
 
-        newPairs.forEach { (k, v) in
+        newPairs.forEach { k, v in
             doc[k] = v
             // the storage should change every time
             expect(doc.data).toNot(equal(pointer))
@@ -566,7 +566,7 @@ final class DocumentTests: MongoSwiftTestCase {
             ("datetime", Timestamp(timestamp: 1, inc: 2))
         ]
 
-        overwritablePairs.forEach { (k, v) in
+        overwritablePairs.forEach { k, v in
             overwritableDoc[k] = v
             expect(overwritableDoc.data).toNot(equal(overwritablePointer))
             overwritablePointer = overwritableDoc.data
@@ -591,7 +591,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
         let nonOverwritablePairs: [(String, BSONValue)] = [("string", 1), ("nil", "hello"), ("doc", "hi"), ("arr", 5)]
 
-        nonOverwritablePairs.forEach { (k, v) in
+        nonOverwritablePairs.forEach { k, v in
             nonOverwritableDoc[k] = v
             expect(nonOverwritableDoc.data).toNot(equal(nonOverwritablePointer))
             nonOverwritablePointer = nonOverwritableDoc.data
@@ -635,7 +635,7 @@ final class DocumentTests: MongoSwiftTestCase {
         // replace values with own types. these should all be no-ops
         let newPairs1: [(String, BSONValue)] = [("null", BSONNull()), ("maxkey", MaxKey()), ("minkey", MinKey())]
 
-        newPairs1.forEach { (k, v) in
+        newPairs1.forEach { k, v in
             noops[k] = v
             // the storage should never change
             expect(noops.data).to(equal(pointer))
@@ -647,7 +647,7 @@ final class DocumentTests: MongoSwiftTestCase {
         // now try replacing them with values of different types that do require replacing storage
         let newPairs2: [(String, BSONValue)] = [("null", 5), ("maxkey", "hi"), ("minkey", false)]
 
-        newPairs2.forEach { (k, v) in
+        newPairs2.forEach { k, v in
             noops[k] = v
             // the storage should change every time
             expect(noops.data).toNot(equal(pointer))
