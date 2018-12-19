@@ -18,6 +18,7 @@ opt_in_rules:
   - explicit_self
   - fatal_error_message
   - first_where
+  - force_unwrapping
   - implicit_return
   - missing_docs
   - modifier_order 

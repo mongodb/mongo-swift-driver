@@ -245,6 +245,7 @@ internal struct _BSONEncodingStorage {
 
     fileprivate mutating func popContainer() -> BSONValue {
         precondition(!self.containers.isEmpty, "Empty container stack.")
+        // swiftlint:disable:next force_unwrapping - guaranteed safe because of precondition.
         return self.containers.popLast()!
     }
 }

@@ -36,7 +36,7 @@ extension Document: Collection {
         // criticism also applies to key-based subscripting via `String`.
         // See SWIFT-250.
         failIndexCheck(position)
-        // Because of our failIndexCheck precondition, this call is guaranteed to provide a non-nil result.
+        // swiftlint:disable:next force_unwrapping - failIndexCheck precondition ensures non-nil result.
         return DocumentIterator.subsequence(of: self, startIndex: position, endIndex: position + 1).first!
     }
 

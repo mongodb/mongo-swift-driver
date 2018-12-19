@@ -218,6 +218,7 @@ internal struct _BSONDecodingStorage {
     /// The container at the top of the stack.
     internal var topContainer: BSONValue {
         precondition(!self.containers.isEmpty, "Empty container stack.")
+        // swiftlint:disable:next force_unwrapping - guaranteed safe because of precondition.
         return self.containers.last!
     }
 
@@ -540,6 +541,8 @@ private struct _BSONUnkeyedDecodingContainer: UnkeyedDecodingContainer {
 
     /// A Boolean value indicating whether there are no more elements left to be decoded in the container.
     public var isAtEnd: Bool { return self.currentIndex >= self.count! }
+    // swiftlint:disable:previous force_unwrapping - `.count` always returns a value and is only an `Int?`
+    // because it's required of the UnkeyedDecodingContainer protocol.
 
     /// A private helper function to check if we're at the end of the container, and if so throw an error. 
     private func checkAtEnd() throws {
@@ -723,6 +726,7 @@ internal struct _BSONKey: CodingKey {
         self.intValue = index
     }
 
+    // swiftlint:disable:next force_unwrapping - this initializer never actually returns nil.
     internal static let `super` = _BSONKey(stringValue: "super")!
 }
 

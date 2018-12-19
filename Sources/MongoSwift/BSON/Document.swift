@@ -130,8 +130,7 @@ extension Document {
             // if the new type is the same and it's a fixed length type, we can overwrite
             if let ov = newValue as? Overwritable, ov.bsonType == existingType {
                 self.copyStorageIfRequired()
-                // make a new iterator referencing our new storage. we already know the key is present
-                /// so initialization will succeed and ! is safe.
+                // swiftlint:disable:next force_unwrapping - key is guaranteed present so initialization will succeed.
                 try DocumentIterator(forDocument: self, advancedTo: key)!.overwriteCurrentValue(with: ov)
 
             // otherwise, we just create a new document and replace this key
@@ -298,7 +297,9 @@ extension Document {
 
     /// Convenience initializer for constructing a `Document` from a `String`
     public init(fromJSON json: String) throws {
-        try self.init(fromJSON: json.data(using: .utf8)!)
+        // `String`s are Unicode under the hood so force unwrap always succeeds.
+        // see https://www.objc.io/blog/2018/02/13/string-to-data-and-back/
+        try self.init(fromJSON: json.data(using: .utf8)!) // swiftlint:disable:this force_unwrapping
     }
 
     /// Constructs a `Document` from raw BSON `Data`
