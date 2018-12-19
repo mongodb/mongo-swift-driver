@@ -10,43 +10,43 @@ public class BSONDecoder {
         return formatter
     }()
 
-    /// Enum representing the different options for decoding `Date`s from BSON
+    /// Enum representing the different options for decoding `Date`s from BSON.
     public enum DateDecodingStrategy {
-        /// Decoding `Date`s stored as 64 bit integers counting the number of milliseconds since January 1, 1970
+        /// Decode `Date`s stored as 64 bit integers counting the number of milliseconds since January 1, 1970.
         case millisecondsSince1970Int64
 
-        /// Decoding `Date`s stored as 64 bit integers counting the number of seconds since January 1, 1970
+        /// Decode `Date`s stored as 64 bit integers counting the number of seconds since January 1, 1970.
         case secondsSince1970Int64
 
-        /// Decoding `Date`s stored as `Double`s counting the number of seconds since January 1, 1970
+        /// Decode `Date`s stored as `Double`s counting the number of seconds since January 1, 1970.
         case millisecondsSince1970
 
-        /// Decoding `Date`s stored as `Double`s counting the number of milliseconds since January 1, 1970
+        /// Decode `Date`s stored as BSON doubles counting the number of milliseconds since January 1, 1970.
         case secondsSince1970
 
-        /// Decoding `Date`s by deferring to their default decoding implementation
+        /// Decode `Date`s by deferring to their default decoding implementation.
         case deferredToDate
 
-        /// Decoding `Date`s represented by ISO8601 formatted strings
+        /// Decode `Date`s represented by ISO8601 formatted strings.
         @available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *)
         case iso8601
 
-        /// Decoding `Date`s stored as strings parsable by the given formatter
+        /// Decode `Date`s stored as strings parsable by the given formatter.
         case formatted(DateFormatter)
 
-        /// Decoding `Date`s using the provided closure
+        /// Decode `Date`s using the provided closure.
         case custom((_ decoder: Decoder) throws -> Date)
     }
 
-    /// Enum representing the different options for decoding `UUID`s from BSON
+    /// Enum representing the different options for decoding `UUID`s from BSON.
     public enum UUIDDecodingStrategy {
-        /// Decoding `UUID`s by deferring to their default decoding implementation
+        /// Decode `UUID`s by deferring to their default decoding implementation.
         case deferredToUUID
 
-        /// Decoding `UUID`s from strings
+        /// Decode `UUID`s from strings.
         case fromString
 
-        /// Decoding `UUID`s from the BSON `Binary` type
+        /// Decode `UUID`s from the BSON `Binary` type.
         case fromBinary
     }
 
@@ -56,7 +56,7 @@ public class BSONDecoder {
     /// The strategy used for decoding dates with this instance.
     public var dateDecodingStrategy: DateDecodingStrategy = .millisecondsSince1970Int64
 
-    /// The strategy used for decoding UUIDs with this instance
+    /// The strategy used for decoding UUIDs with this instance.
     public var uuidDecodingStrategy: UUIDDecodingStrategy = .fromBinary
 
     /// Options set on the top-level decoder to pass down the decoding hierarchy.
@@ -255,7 +255,7 @@ extension _BSONDecoder {
         return primitive
     }
 
-    /// Private helper function used specifically for decoding dates
+    /// Private helper function used specifically for decoding dates.
     // swiftlint:disable cyclomatic_complexity
     fileprivate func unboxDate(_ value: BSONValue) throws -> Date {
         switch self.options.dateDecodingStrategy {
@@ -299,7 +299,7 @@ extension _BSONDecoder {
     }
     // swiftlint:enable cyclomatic_complexity
 
-    /// Private helper used specifically for decoding UUIDs
+    /// Private helper used specifically for decoding UUIDs.
     fileprivate func unboxUUID(_ value: BSONValue) throws -> UUID {
         switch self.options.uuidDecodingStrategy {
         case .deferredToUUID:
