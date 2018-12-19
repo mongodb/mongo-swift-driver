@@ -702,12 +702,15 @@ final class DocumentTests: MongoSwiftTestCase {
         // UUID default decoder expects a string
         decoder.uuidDecodingStrategy = .deferredToUUID
         let stringDoc: Document = ["uuid": uuid.description]
+        let badString: Document = ["uuid": "hello"]
         let deferredStruct = try decoder.decode(UUIDWrapper.self, from: stringDoc)
         expect(deferredStruct.uuid).to(equal(uuid))
+        expect(try decoder.decode(UUIDWrapper.self, from: badString)).to(throwError())
 
         decoder.uuidDecodingStrategy = .fromString
         let stringStruct = try decoder.decode(UUIDWrapper.self, from: stringDoc)
         expect(stringStruct.uuid).to(equal(uuid))
+        expect(try decoder.decode(UUIDWrapper.self, from: badString)).to(throwError())
 
         decoder.uuidDecodingStrategy = .fromBinary
         let uuidt = uuid.uuid
@@ -720,6 +723,9 @@ final class DocumentTests: MongoSwiftTestCase {
         let binaryDoc: Document = ["uuid": try Binary(data: bytes, subtype: .uuid)]
         let binaryStruct = try decoder.decode(UUIDWrapper.self, from: binaryDoc)
         expect(binaryStruct.uuid).to(equal(uuid))
+
+        let badBinary: Document = ["uuid": try Binary(data: bytes, subtype: .generic)]
+        expect(try decoder.decode(UUIDWrapper.self, from: badBinary)).to(throwError())
     }
 
     func testDateCodingStrategies() throws {
@@ -735,7 +741,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
         let decoder = BSONDecoder()
 
-        decoder.dateDecodingStrategy = .millisecondsSince1970
+        decoder.dateDecodingStrategy = .millisecondsSince1970Int64
         let msInt64: Document = ["date": date.msSinceEpoch]
         let a: DateWrapper = try decoder.decode(DateWrapper.self, from: msInt64)
         expect(a.date).to(equal(date))
@@ -755,13 +761,6 @@ final class DocumentTests: MongoSwiftTestCase {
         let sDoubleStruct = try decoder.decode(DateWrapper.self, from: sDouble)
         expect(sDoubleStruct.date).to(equal(date))
 
-        if #available(macOS 10.12, *) {
-            decoder.dateDecodingStrategy = .iso8601
-            let isoDoc: Document = ["date": BSONDecoder.iso8601Formatter.string(from: date)]
-            let isoStruct = try decoder.decode(DateWrapper.self, from: isoDoc)
-            expect(isoStruct.date).to(equal(date))
-        }
-
         let formatter = DateFormatter()
         formatter.dateStyle = .short
         formatter.timeStyle = .medium
@@ -769,7 +768,28 @@ final class DocumentTests: MongoSwiftTestCase {
 
         decoder.dateDecodingStrategy = .formatted(formatter)
         let formatted: Document = ["date": formatter.string(from: date)]
+        let badlyFormatted: Document = ["date": "this is not a date"]
         let formattedStruct = try decoder.decode(DateWrapper.self, from: formatted)
         expect(formattedStruct.date).to(equal(date))
+        expect(try decoder.decode(DateWrapper.self, from: badlyFormatted)).to(throwError())
+
+        if #available(macOS 10.12, *) {
+            decoder.dateDecodingStrategy = .iso8601
+            let isoDoc: Document = ["date": BSONDecoder.iso8601Formatter.string(from: date)]
+            let isoStruct = try decoder.decode(DateWrapper.self, from: isoDoc)
+            expect(isoStruct.date).to(equal(date))
+            expect(try decoder.decode(DateWrapper.self, from: formatted)).to(throwError())
+            expect(try decoder.decode(DateWrapper.self, from: badlyFormatted)).to(throwError())
+        }
+
+        decoder.dateDecodingStrategy = .custom({ decode in try Date(from: decode) })
+        let defaultDoc: Document = ["date": date]
+        let defaultStruct = try decoder.decode(DateWrapper.self, from: defaultDoc)
+        expect(defaultStruct.date).to(equal(date))
+        expect(try decoder.decode(DateWrapper.self, from: badlyFormatted)).to(throwError())
+
+        decoder.dateDecodingStrategy = .deferredToDate
+        expect(defaultStruct.date).to(equal(date))
+        expect(try decoder.decode(DateWrapper.self, from: badlyFormatted)).to(throwError())
     }
 }

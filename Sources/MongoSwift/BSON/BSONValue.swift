@@ -651,12 +651,7 @@ extension UUID {
             throw MongoError.bsonDecodeError(message: "Expected a UUID binary type, got \(binary.subtype) instead")
         }
 
-        guard binary.data.count == 16 else {
-            throw MongoError.bsonDecodeError(message: "UUIDs must be exactly 16 bytes")
-        }
-
         let data = binary.data
-
         let uuid: uuid_t = (
                 data[0], data[1], data[2], data[3],
                 data[4], data[5], data[6], data[7],
