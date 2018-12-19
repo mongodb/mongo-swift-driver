@@ -345,6 +345,20 @@ extension Document {
     }
 
     /**
+     * An implementation identical to subscript(key: String), but offers the ability to choose a default value if the
+     * key is missing.
+     * For example:
+     *  ```
+     *  let d: Document = ["hello": "world"]
+     *  print(d["hello", default: "foo"]) // prints "world"
+     *  print(d["a", default: "foo"]) // prints "foo"
+     *  ```
+     */
+    public subscript(key: String, default defaultValue: @autoclosure () -> BSONValue) -> BSONValue {
+        return self[key] ?? defaultValue()
+    }
+
+    /**
      * Allows setting values and retrieving values using dot-notation syntax.
      * For example:
      *  ```
