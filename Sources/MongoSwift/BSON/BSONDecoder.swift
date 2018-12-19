@@ -3,7 +3,7 @@ import Foundation
 /// `BSONDecoder` facilitates the decoding of BSON into semantic `Decodable` types.
 public class BSONDecoder {
 
-    @available(OSX 10.12, *)
+    @available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *)
     internal static var iso8601Formatter: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = .withInternetDateTime
@@ -28,7 +28,7 @@ public class BSONDecoder {
         case deferredToDate
 
         /// Decoding `Date`s represented by ISO8601 formatted strings
-        @available(OSX 10.12, *)
+        @available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *)
         case iso8601
 
         /// Decoding `Date`s stored as strings parsable by the given formatter
@@ -276,7 +276,7 @@ extension _BSONDecoder {
             let val = try self.unbox(value, as: Int64.self)
             return Date(timeIntervalSince1970: TimeInterval(val))
         case .iso8601:
-            if #available(OSX 10.12, *) {
+            if #available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) {
                 let isoString = try self.unbox(value, as: String.self)
                 guard let date = BSONDecoder.iso8601Formatter.date(from: isoString) else {
                     throw MongoError.bsonDecodeError(message: "Improperly formatted ISO 8601 Date string")
@@ -313,8 +313,8 @@ extension _BSONDecoder {
             }
             return uuid
         case .fromBinary:
-            let val: Binary = try self.unbox(value, as: Binary.self)
-            return try UUID(fromBinary: val)
+            let binary = try self.unbox(value, as: Binary.self)
+            return try UUID(fromBinary: binary)
         }
     }
 
