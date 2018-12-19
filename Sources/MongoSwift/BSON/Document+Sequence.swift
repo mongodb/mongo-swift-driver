@@ -320,6 +320,6 @@ public class DocumentIterator: IteratorProtocol {
         .decimal128: Decimal128.self,
         .minKey: MinKey.self,
         .maxKey: MaxKey.self,
-        .null: NSNull.self
+        .null: BSONNull.self
     ]
 }

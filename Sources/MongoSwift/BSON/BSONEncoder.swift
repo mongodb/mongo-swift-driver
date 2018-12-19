@@ -324,7 +324,7 @@ private struct _BSONKeyedEncodingContainer<K: CodingKey> : KeyedEncodingContaine
         self.container = container
     }
 
-    public mutating func encodeNil(forKey key: Key) throws { self.container[key.stringValue] = NSNull() }
+    public mutating func encodeNil(forKey key: Key) throws { self.container[key.stringValue] = BSONNull() }
     public mutating func encode(_ value: Bool, forKey key: Key) throws { self.container[key.stringValue] = value }
     public mutating func encode(_ value: Int, forKey key: Key) throws { self.container[key.stringValue] = value }
     public mutating func encode(_ value: Int8, forKey key: Key) throws { try self.encodeNumber(value, forKey: key) }
@@ -409,7 +409,7 @@ private struct _BSONUnkeyedEncodingContainer: UnkeyedEncodingContainer {
         self.container = container
     }
 
-    public mutating func encodeNil() throws { self.container.add(NSNull()) }
+    public mutating func encodeNil() throws { self.container.add(BSONNull()) }
     public mutating func encode(_ value: Bool) throws { self.container.add(value) }
     public mutating func encode(_ value: Int) throws { self.container.add(value) }
     public mutating func encode(_ value: Int8) throws { try self.encodeNumber(value) }
@@ -476,7 +476,7 @@ extension _BSONEncoder: SingleValueEncodingContainer {
 
     public func encodeNil() throws {
         assertCanEncodeNewValue()
-        self.storage.push(container: NSNull())
+        self.storage.push(container: BSONNull())
     }
 
     public func encode(_ value: Bool) throws { try self.encodeBSONType(value) }
@@ -537,7 +537,7 @@ private class MutableArray: BSONValue {
 
     /// methods required by the BSONValue protocol that we don't actually need/use. MutableArray
     /// is just a BSONValue to simplify usage alongside true BSONValues within the encoder.
-    public static func from(iterator iter: DocumentIterator) -> BSONValue {
+    public static func from(iterator iter: DocumentIterator) -> Self {
         fatalError("`MutableArray` is not meant to be initialized from a `DocumentIterator`")
     }
     func encode(to encoder: Encoder) throws {
@@ -593,7 +593,7 @@ private class MutableDictionary: BSONValue {
 
     /// methods required by the BSONValue protocol that we don't actually need/use. MutableDictionary
     /// is just a BSONValue to simplify usage alongside true BSONValues within the encoder.
-    public static func from(iterator iter: DocumentIterator) -> BSONValue {
+    public static func from(iterator iter: DocumentIterator) -> Self {
         fatalError("`MutableDictionary` is not meant to be initialized from a `DocumentIterator`")
     }
     func encode(to encoder: Encoder) throws {

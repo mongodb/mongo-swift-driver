@@ -31,6 +31,7 @@ final class DocumentTests: MongoSwiftTestCase {
     static var allTests: [(String, (DocumentTests) -> () throws -> Void)] {
         return [
             ("testDocument", testDocument),
+            ("testDocumentDynamicMemberLookup", testDocumentDynamicMemberLookup),
             ("testDocumentFromArray", testDocumentFromArray),
             ("testEquatable", testEquatable),
             ("testRawBSON", testRawBSON),
@@ -49,7 +50,34 @@ final class DocumentTests: MongoSwiftTestCase {
         ]
     }
 
+    // Set up test document values
+    static let testDoc: Document = [
+        "string": "test string",
+        "true": true,
+        "false": false,
+        "int": 25,
+        "int32": Int32(5),
+        "int64": Int64(10),
+        "double": Double(15),
+        "decimal128": Decimal128("1.2E+10"),
+        "minkey": MinKey(),
+        "maxkey": MaxKey(),
+        "date": Date(timeIntervalSince1970: 500.004),
+        "timestamp": Timestamp(timestamp: 5, inc: 10),
+        "nestedarray": [[1, 2], [Int32(3), Int32(4)]] as [[Int32]],
+        "nesteddoc": ["a": 1, "b": 2, "c": false, "d": [3, 4]] as Document,
+        "oid": ObjectId(fromString: "507f1f77bcf86cd799439011"),
+        "regex": RegularExpression(pattern: "^abc", options: "imx"),
+        "array1": [1, 2],
+        "array2": ["string1", "string2"],
+        "null": BSONNull(),
+        "code": CodeWithScope(code: "console.log('hi');"),
+        "codewscope": CodeWithScope(code: "console.log(x);", scope: ["x": 2])
+    ]
+
     func testDocument() throws {
+        var doc = DocumentTests.testDoc // make a copy to mutate in this test
+
         // A Data object to pass into test BSON Binary objects
         guard let testData = Data(base64Encoded: "//8=") else {
             XCTFail("Failed to create test binary data")
@@ -60,31 +88,6 @@ final class DocumentTests: MongoSwiftTestCase {
             XCTFail("Failed to create test UUID data")
             return
         }
-
-        // Set up test document values
-        var doc: Document = [
-            "string": "test string",
-            "true": true,
-            "false": false,
-            "int": 25,
-            "int32": Int32(5),
-            "int64": Int64(10),
-            "double": Double(15),
-            "decimal128": Decimal128("1.2E+10"),
-            "minkey": MinKey(),
-            "maxkey": MaxKey(),
-            "date": Date(timeIntervalSince1970: 500.004),
-            "timestamp": Timestamp(timestamp: 5, inc: 10),
-            "nestedarray": [[1, 2], [Int32(3), Int32(4)]] as [[Int32]],
-            "nesteddoc": ["a": 1, "b": 2, "c": false, "d": [3, 4]] as Document,
-            "oid": ObjectId(fromString: "507f1f77bcf86cd799439011"),
-            "regex": RegularExpression(pattern: "^abc", options: "imx"),
-            "array1": [1, 2],
-            "array2": ["string1", "string2"],
-            "null": NSNull(),
-            "code": CodeWithScope(code: "console.log('hi');"),
-            "codewscope": CodeWithScope(code: "console.log(x);", scope: ["x": 2])
-        ]
 
         // splitting this out is necessary because the swift 4.0 compiler 
         // can't handle all the keys being declared together
@@ -137,7 +140,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
         expect(doc["array1"]).to(bsonEqual([1, 2]))
         expect(doc["array2"]).to(bsonEqual(["string1", "string2"]))
-        expect(doc["null"]).to(bsonEqual(NSNull()))
+        expect(doc["null"]).to(bsonEqual(BSONNull()))
 
         let code = doc["code"] as? CodeWithScope
         expect(code?.code).to(equal("console.log('hi');"))
@@ -163,21 +166,84 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(doc["nesteddoc"]).to(bsonEqual(["a": 1, "b": 2, "c": false, "d": [3, 4]] as Document))
     }
 
+    func testDocumentDynamicMemberLookup() throws {
+#if swift(>=4.2)
+        // Test reading various types
+        expect(DocumentTests.testDoc.string).to(bsonEqual("test string"))
+        expect(DocumentTests.testDoc.true).to(bsonEqual(true))
+        expect(DocumentTests.testDoc.false).to(bsonEqual(false))
+        expect(DocumentTests.testDoc.int).to(bsonEqual(25))
+        expect(DocumentTests.testDoc.int32).to(bsonEqual(5))
+        expect(DocumentTests.testDoc.int64).to(bsonEqual(Int64(10)))
+        expect(DocumentTests.testDoc.double).to(bsonEqual(15.0))
+        expect(DocumentTests.testDoc.decimal128).to(bsonEqual(Decimal128("1.2E+10")))
+        expect(DocumentTests.testDoc.minkey).to(bsonEqual(MinKey()))
+        expect(DocumentTests.testDoc.maxkey).to(bsonEqual(MaxKey()))
+        expect(DocumentTests.testDoc.date).to(bsonEqual(Date(timeIntervalSince1970: 500.004)))
+        expect(DocumentTests.testDoc.timestamp).to(bsonEqual(Timestamp(timestamp: 5, inc: 10)))
+        expect(DocumentTests.testDoc.oid).to(bsonEqual(ObjectId(fromString: "507f1f77bcf86cd799439011")))
+
+        let codewscope = DocumentTests.testDoc.codewscope as? CodeWithScope
+        expect(codewscope?.code).to(equal("console.log(x);"))
+        expect(codewscope?.scope).to(equal(["x": 2]))
+
+        let code = DocumentTests.testDoc.code as? CodeWithScope
+        expect(code?.code).to(equal("console.log('hi');"))
+        expect(code?.scope).to(beNil())
+
+        expect(DocumentTests.testDoc.array1).to(bsonEqual([1, 2]))
+        expect(DocumentTests.testDoc.array2).to(bsonEqual(["string1", "string2"]))
+        expect(DocumentTests.testDoc.null).to(bsonEqual(BSONNull()))
+
+        let regex = DocumentTests.testDoc.regex as? RegularExpression
+        expect(regex).to(equal(RegularExpression(pattern: "^abc", options: "imx")))
+        expect(regex?.nsRegularExpression).to(equal(try NSRegularExpression(
+                pattern: "^abc",
+                options: NSRegularExpression.optionsFromString("imx")
+        )))
+
+        let nestedArray = DocumentTests.testDoc.nestedarray as? [[Int]]
+        expect(nestedArray?[0]).to(equal([1, 2]))
+        expect(nestedArray?[1]).to(equal([3, 4]))
+
+        expect(DocumentTests.testDoc.nesteddoc).to(bsonEqual(["a": 1, "b": 2, "c": false, "d": [3, 4]] as Document))
+        expect((DocumentTests.testDoc.nesteddoc as? Document)?.a).to(bsonEqual(1))
+
+        // Test assignment
+        var doc = Document()
+        let subdoc: Document = ["d": 2.5]
+
+        doc.a = 1
+        doc.b = "b"
+        doc.c = subdoc
+
+        expect(doc.a).to(bsonEqual(1))
+        expect(doc.b).to(bsonEqual("b"))
+        expect(doc.c).to(bsonEqual(subdoc))
+
+        doc.a = 2
+        doc.b = "different"
+
+        expect(doc.a).to(bsonEqual(2))
+        expect(doc.b).to(bsonEqual("different"))
+#endif
+    }
+
     func testDocumentFromArray() {
-       let doc1: Document = ["foo", MinKey(), NSNull()]
+       let doc1: Document = ["foo", MinKey(), BSONNull()]
 
        expect(doc1.keys).to(equal(["0", "1", "2"]))
        expect(doc1["0"]).to(bsonEqual("foo"))
        expect(doc1["1"]).to(bsonEqual(MinKey()))
-       expect(doc1["2"]).to(bsonEqual(NSNull()))
+       expect(doc1["2"]).to(bsonEqual(BSONNull()))
 
-       let elements: [BSONValue] = ["foo", MinKey(), NSNull()]
+       let elements: [BSONValue] = ["foo", MinKey(), BSONNull()]
        let doc2 = Document(elements)
 
        expect(doc2.keys).to(equal(["0", "1", "2"]))
        expect(doc2["0"]).to(bsonEqual("foo"))
        expect(doc2["1"]).to(bsonEqual(MinKey()))
-       expect(doc2["2"]).to(bsonEqual(NSNull()))
+       expect(doc2["2"]).to(bsonEqual(BSONNull()))
     }
 
     func testEquatable() {
@@ -351,8 +417,8 @@ final class DocumentTests: MongoSwiftTestCase {
     }
 
     func testNilInNestedArray() throws {
-        let arr1: [BSONValue] = ["a", "b", "c", NSNull()]
-        let arr2: [BSONValue] = ["d", "e", NSNull(), "f"]
+        let arr1: [BSONValue] = ["a", "b", "c", BSONNull()]
+        let arr2: [BSONValue] = ["d", "e", BSONNull(), "f"]
 
         let doc = ["a1": arr1, "a2": arr2]
 
@@ -374,7 +440,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
     static let nonOverwritables: Document = [
         "string": "hello",
-        "nil": NSNull(),
+        "nil": BSONNull(),
         "doc": ["x": 1] as Document,
         "arr": [1, 2] as [Int]
     ]
@@ -473,7 +539,7 @@ final class DocumentTests: MongoSwiftTestCase {
             pointer = doc.data
         }
 
-        expect(doc).to(equal(["string": "hi", "nil": NSNull(), "doc": newDoc, "arr": [3, 4] as [Int]]))
+        expect(doc).to(equal(["string": "hi", "nil": BSONNull(), "doc": newDoc, "arr": [3, 4] as [Int]]))
     }
 
     // test replacing both overwritable and nonoverwritable values with values of different types
@@ -536,7 +602,7 @@ final class DocumentTests: MongoSwiftTestCase {
         var overwritablePointer = overwritableDoc.data
 
         ["double", "int32", "int64", "bool", "decimal", "oid", "timestamp", "datetime"].forEach {
-            overwritableDoc[$0] = NSNull()
+            overwritableDoc[$0] = BSONNull()
             // the storage should change every time 
             expect(overwritableDoc.data).toNot(equal(overwritablePointer))
             overwritablePointer = overwritableDoc.data
@@ -546,23 +612,24 @@ final class DocumentTests: MongoSwiftTestCase {
         var nonOverwritablePointer = nonOverwritableDoc.data
 
         ["string", "doc", "arr"].forEach {
-            nonOverwritableDoc[$0] = NSNull()
+            nonOverwritableDoc[$0] = BSONNull()
             // the storage should change every time 
             expect(nonOverwritableDoc.data).toNot(equal(nonOverwritablePointer))
             nonOverwritablePointer = nonOverwritableDoc.data
         }
 
-        expect(nonOverwritableDoc).to(equal(["string": NSNull(), "nil": NSNull(), "doc": NSNull(), "arr": NSNull()]))
+        expect(nonOverwritableDoc).to(
+                equal(["string": BSONNull(), "nil": BSONNull(), "doc": BSONNull(), "arr": BSONNull()]))
     }
 
     // Test types where replacing them with an instance of their own type is a no-op
     func testReplaceValueNoop() throws {
-        var noops: Document = ["null": NSNull(), "maxkey": MaxKey(), "minkey": MinKey()]
+        var noops: Document = ["null": BSONNull(), "maxkey": MaxKey(), "minkey": MinKey()]
 
         var pointer = noops.data
 
         // replace values with own types. these should all be no-ops
-        let newPairs1: [(String, BSONValue)] = [("null", NSNull()), ("maxkey", MaxKey()), ("minkey", MinKey())]
+        let newPairs1: [(String, BSONValue)] = [("null", BSONNull()), ("maxkey", MaxKey()), ("minkey", MinKey())]
 
         newPairs1.forEach { (k, v) in
             noops[k] = v
@@ -571,7 +638,7 @@ final class DocumentTests: MongoSwiftTestCase {
         }
 
         // we should still have exactly the same document we started with
-        expect(noops).to(equal(["null": NSNull(), "maxkey": MaxKey(), "minkey": MinKey()]))
+        expect(noops).to(equal(["null": BSONNull(), "maxkey": MaxKey(), "minkey": MinKey()]))
 
         // now try replacing them with values of different types that do require replacing storage
         let newPairs2: [(String, BSONValue)] = [("null", 5), ("maxkey", "hi"), ("minkey", false)]
@@ -587,8 +654,8 @@ final class DocumentTests: MongoSwiftTestCase {
     }
 
     func testDocumentDictionarySimilarity() throws {
-        var doc: Document = ["hello": "world", "swift": 4.2, "null": NSNull(), "remove_me": "please"]
-        var dict: [String: BSONValue] = ["hello": "world", "swift": 4.2, "null": NSNull(), "remove_me": "please"]
+        var doc: Document = ["hello": "world", "swift": 4.2, "null": BSONNull(), "remove_me": "please"]
+        var dict: [String: BSONValue] = ["hello": "world", "swift": 4.2, "null": BSONNull(), "remove_me": "please"]
 
         expect(doc["hello"]).to(bsonEqual(dict["hello"]))
         expect(doc["swift"]).to(bsonEqual(dict["swift"]))
