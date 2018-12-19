@@ -750,17 +750,11 @@ final class DocumentTests: MongoSwiftTestCase {
         let bsonDateStruct = try decoder.decode(DateWrapper.self, from: bsonDate)
         expect(bsonDateStruct.date).to(equal(date))
 
-        decoder.dateDecodingStrategy = .millisecondsSince1970Int64
+        decoder.dateDecodingStrategy = .millisecondsSince1970
         let msInt64: Document = ["date": date.msSinceEpoch]
         let msInt64Struct = try decoder.decode(DateWrapper.self, from: msInt64)
         expect(msInt64Struct.date).to(equal(date))
 
-        decoder.dateDecodingStrategy = .secondsSince1970Int64
-        let sInt64: Document = ["date": Int64(date.timeIntervalSince1970)]
-        let sInt64Struct = try decoder.decode(DateWrapper.self, from: sInt64)
-        expect(sInt64Struct.date).to(equal(date))
-
-        decoder.dateDecodingStrategy = .millisecondsSince1970
         let msDouble: Document = ["date": TimeInterval(date.msSinceEpoch)]
         let msDoubleStruct = try decoder.decode(DateWrapper.self, from: msDouble)
         expect(msDoubleStruct.date).to(equal(date))
@@ -769,6 +763,10 @@ final class DocumentTests: MongoSwiftTestCase {
         let sDouble: Document = ["date": date.timeIntervalSince1970]
         let sDoubleStruct = try decoder.decode(DateWrapper.self, from: sDouble)
         expect(sDoubleStruct.date).to(equal(date))
+
+        let sInt64: Document = ["date": Int64(date.timeIntervalSince1970)]
+        let sInt64Struct = try decoder.decode(DateWrapper.self, from: sInt64)
+        expect(sInt64Struct.date).to(equal(date))
 
         let formatter = DateFormatter()
         formatter.dateStyle = .short
@@ -782,7 +780,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(formattedStruct.date).to(equal(date))
         expect(try decoder.decode(DateWrapper.self, from: badlyFormatted)).to(throwError())
 
-        if #available(macOS 10.12, *) {
+        if #available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) {
             decoder.dateDecodingStrategy = .iso8601
             let isoDoc: Document = ["date": BSONDecoder.iso8601Formatter.string(from: date)]
             let isoStruct = try decoder.decode(DateWrapper.self, from: isoDoc)

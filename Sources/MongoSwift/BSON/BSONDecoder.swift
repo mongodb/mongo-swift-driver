@@ -15,22 +15,16 @@ public class BSONDecoder {
         /// Decode `Date`s stored as BSON datetimes.
         case bsonDateTime
 
-        /// Decode `Date`s stored as 64 bit integers counting the number of milliseconds since January 1, 1970.
-        case millisecondsSince1970Int64
-
-        /// Decode `Date`s stored as 64 bit integers counting the number of seconds since January 1, 1970.
-        case secondsSince1970Int64
-
-        /// Decode `Date`s stored as `Double`s counting the number of seconds since January 1, 1970.
+        /// Decode `Date`s stored as numbers of seconds since January 1, 1970.
         case millisecondsSince1970
 
-        /// Decode `Date`s stored as BSON doubles counting the number of milliseconds since January 1, 1970.
+        /// Decode `Date`s stored as numbers of milliseconds since January 1, 1970.
         case secondsSince1970
 
         /// Decode `Date`s by deferring to their default decoding implementation.
         case deferredToDate
 
-        /// Decode `Date`s represented by ISO8601 formatted strings.
+        /// Decode `Date`s stored as ISO8601 formatted strings.
         @available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *)
         case iso8601
 
@@ -46,20 +40,20 @@ public class BSONDecoder {
         /// Decode `UUID`s by deferring to their default decoding implementation.
         case deferredToUUID
 
-        /// Decode `UUID`s from strings.
+        /// Decode `UUID`s stored as strings.
         case fromString
 
-        /// Decode `UUID`s from the BSON `Binary` type.
+        /// Decode `UUID`s stored as the BSON `Binary` type.
         case fromBinary
     }
 
     /// Contextual user-provided information for use during decoding.
     public var userInfo: [CodingUserInfoKey: Any] = [:]
 
-    /// The strategy used for decoding dates with this instance.
+    /// The strategy used for decoding `Date`s with this instance.
     public var dateDecodingStrategy: DateDecodingStrategy = .bsonDateTime
 
-    /// The strategy used for decoding UUIDs with this instance.
+    /// The strategy used for decoding `UUID`s with this instance.
     public var uuidDecodingStrategy: UUIDDecodingStrategy = .fromBinary
 
     /// Options set on the top-level decoder to pass down the decoding hierarchy.
@@ -272,17 +266,11 @@ extension _BSONDecoder {
             defer { self.storage.popContainer() }
             return try Date(from: self)
         case .millisecondsSince1970:
-            let val = try self.unbox(value, as: TimeInterval.self)
-            return Date(timeIntervalSince1970: val / 1000.0)
+            let ms = try unboxNumber(value, as: Int64.self)
+            return Date(msSinceEpoch: ms)
         case .secondsSince1970:
-            let val = try self.unbox(value, as: TimeInterval.self)
-            return Date(timeIntervalSince1970: val)
-        case .millisecondsSince1970Int64:
-            let val = try self.unbox(value, as: Int64.self)
-            return Date(msSinceEpoch: val)
-        case .secondsSince1970Int64:
-            let val = try self.unbox(value, as: Int64.self)
-            return Date(timeIntervalSince1970: TimeInterval(val))
+            let seconds = try unboxNumber(value, as: Double.self)
+            return Date(timeIntervalSince1970: seconds)
         case .iso8601:
             guard #available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) else {
                 throw MongoError.bsonDecodeError(message: "ISO8601DateFormatter is unavailable on this platform.")
