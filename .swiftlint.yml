@@ -7,14 +7,26 @@ disabled_rules:
   - type_name
 
 opt_in_rules:
+  - array_init
+  - contains_over_first_not_nil
+  - closure_end_indentation
+  - empty_string
+  - explicit_init
+  - explicit_self
   - fatal_error_message
+  - first_where
   - implicit_return
   - missing_docs
   - modifier_order 
+  - multiline_function_chains
   - operator_usage_whitespace
+  - redundant_nil_coalescing
   - redundant_type_annotation
+  - sorted_first_last
   - sorted_imports
   - trailing_closure
+  - unused_import
+  - unused_private_declaration
   - vertical_parameter_alignment_on_call
 
 excluded:
