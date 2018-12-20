@@ -680,4 +680,81 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(doc["autoclosure test", default: "\(stringVal) and \(floatVal)" + stringVal])
             .to(bsonEqual("\(stringVal) and \(floatVal)" + stringVal))
     }
+
+    func testDateEncodingStrategies() throws {
+        // swiftlint:disable nesting
+        struct DateWrapper: Codable {
+            let date: Date
+        }
+        // swiftlint:enable nesting
+
+        let date = Date(timeIntervalSince1970: 123)
+        let dateStruct = DateWrapper(date: date)
+
+        let encoder = BSONEncoder()
+
+        let defaultEncoding = try encoder.encode(dateStruct)
+        expect(defaultEncoding["date"] as? Date).to(equal(date))
+
+        encoder.dateEncodingStrategy = .bsonDate
+        let bsonDate = try encoder.encode(dateStruct)
+        expect(bsonDate["date"] as? Date).to(equal(date))
+
+        encoder.dateEncodingStrategy = .secondsSince1970
+        let secondsSince1970 = try encoder.encode(dateStruct)
+        expect(secondsSince1970["date"] as? TimeInterval).to(equal(date.timeIntervalSince1970))
+
+        encoder.dateEncodingStrategy = .millisecondsSince1970
+        let millisecondsSince1970 = try encoder.encode(dateStruct)
+        expect(millisecondsSince1970["date"] as? Int64).to(equal(date.msSinceEpoch))
+
+        if #available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) {
+            encoder.dateEncodingStrategy = .iso8601
+            let iso = try encoder.encode(dateStruct)
+            expect(iso["date"] as? String).to(equal(BSONEncoder.iso8601Formatter.string(from: date)))
+        }
+
+        let formatter = DateFormatter()
+        formatter.timeStyle = .full
+        formatter.dateStyle = .short
+
+        encoder.dateEncodingStrategy = .formatted(formatter)
+        let formatted = try encoder.encode(dateStruct)
+        expect(formatted["date"] as? String).to(equal(formatter.string(from: date)))
+
+        encoder.dateEncodingStrategy = .deferToDate
+        let deferred = try encoder.encode(dateStruct)
+        expect(deferred["date"] as? TimeInterval).to(equal(date.timeIntervalSinceReferenceDate))
+
+        encoder.dateEncodingStrategy = .custom({ d in Int64(d.timeIntervalSince1970 + 12) })
+        let custom = try encoder.encode(dateStruct)
+        expect(custom["date"] as? Int64).to(equal(Int64(date.timeIntervalSince1970 + 12)))
+    }
+
+    func testUUIDEncodingStrategies() throws {
+        // swiftlint:disable nesting
+        struct UUIDWrapper: Encodable {
+            let uuid: UUID
+        }
+        // swiftlint:enable nesting
+
+        guard let uuid = UUID(uuidString: "26cd7610-fd5a-4253-94b7-e8c4ea97b6cb") else {
+            throw MongoError.bsonEncodeError(message: "Couldn't create UUID.")
+        }
+
+        let binary = try uuid.asBinary()
+        let uuidStruct = UUIDWrapper(uuid: uuid)
+        let encoder = BSONEncoder()
+
+        let defaultEncoding = try encoder.encode(uuidStruct)
+        expect(defaultEncoding["uuid"] as? Binary).to(equal(binary))
+
+        encoder.uuidEncodingStrategy = .binary
+        let binaryEncoding = try encoder.encode(uuidStruct)
+        expect(binaryEncoding["uuid"] as? Binary).to(equal(binary))
+
+        encoder.uuidEncodingStrategy = .deferToUUID
+        let deferred = try encoder.encode(uuidStruct)
+        expect(deferred["uuid"] as? String).to(equal(uuid.uuidString))
+    }
 }

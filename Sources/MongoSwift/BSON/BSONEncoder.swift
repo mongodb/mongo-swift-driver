@@ -4,18 +4,69 @@ import mongoc
 /// `BSONEncoder` facilitates the encoding of `Encodable` values into BSON.
 public class BSONEncoder {
 
+    /// Enum representing the various strategies for encoding `Date`s
+    public enum DateEncodingStrategy {
+        /// Encode the `Date` by deferring to its default encoding implementation.
+        case deferToDate
+
+        /// Encode the `Date` as a BSON datetime object.
+        case bsonDate
+
+        /// Encode the `Date` as a 64-bit integer counting the number of milliseconds since January 1, 1970.
+        case millisecondsSince1970
+
+        /// Encode the `Date` as a BSON double counting the number of seconds since January 1, 1970.
+        case secondsSince1970
+
+        /// Encode the `Date` as an ISO-8601-formatted string (in RFC 339 format).
+        @available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *)
+        case iso8601
+
+        /// Encode the `Date` as a string formatted by the given formatter.
+        case formatted(DateFormatter)
+
+        /// Encode the `Date` as the value returned by the provided closure.
+        case custom((Date) throws -> BSONValue)
+    }
+
+    /// Enum representing the various strategies for encoding `UUID`s
+    public enum UUIDEncodingStrategy {
+        /// Encode the `UUID` by deferring to its default encoding implementation.
+        case deferToUUID
+
+        /// Encode the `UUID` as a BSON binary type (default).
+        case binary
+    }
+
+    /// The strategy to use for encoding `Date`s with this instance.
+    public var dateEncodingStrategy: DateEncodingStrategy = .bsonDate
+
+    /// The strategy to use for encoding `UUID`s with this instance.
+    public var uuidEncodingStrategy: UUIDEncodingStrategy = .binary
+
     /// Contextual user-provided information for use during encoding.
     public var userInfo: [CodingUserInfoKey: Any] = [:]
 
     /// Options set on the top-level encoder to pass down the encoding hierarchy.
     fileprivate struct _Options {
         let userInfo: [CodingUserInfoKey: Any]
+        let dateEncodingStrategy: DateEncodingStrategy
+        let uuidEncodingStrategy: UUIDEncodingStrategy
     }
 
     /// The options set on the top-level encoder.
     fileprivate var options: _Options {
-        return _Options(userInfo: userInfo)
+        return _Options(userInfo: self.userInfo,
+                        dateEncodingStrategy: self.dateEncodingStrategy,
+                        uuidEncodingStrategy: self.uuidEncodingStrategy)
     }
+
+    @available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *)
+    internal static var iso8601Formatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = .withInternetDateTime
+        return formatter
+    }()
 
     /// Initializes `self`.
     public init() {}
@@ -276,7 +327,51 @@ extension _BSONEncoder {
         return try self.box_(value) ?? Document()
     }
 
+    fileprivate func boxDate(_ date: Date) throws -> BSONValue {
+        switch self.options.dateEncodingStrategy {
+        case .bsonDate:
+            return date
+        case .deferToDate:
+            try date.encode(to: self)
+            return self.storage.popContainer()
+        case .millisecondsSince1970:
+            return date.msSinceEpoch
+        case .secondsSince1970:
+            return date.timeIntervalSince1970
+        case .formatted(let formatter):
+            return formatter.string(from: date)
+        case .iso8601:
+            if #available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) {
+                return BSONEncoder.iso8601Formatter.string(from: date)
+            } else {
+                throw MongoError.bsonEncodeError(message: "ISO8601DateFormatter is unavailable on this platform.")
+            }
+        case .custom(let f):
+            return try f(date)
+        }
+    }
+
+    fileprivate func boxUUID(_ uuid: UUID) throws -> BSONValue {
+        switch self.options.uuidEncodingStrategy {
+        case .deferToUUID:
+            try uuid.encode(to: self)
+            return self.storage.popContainer()
+        case .binary:
+            return try uuid.asBinary()
+        }
+    }
+
     fileprivate func box_<T: Encodable>(_ value: T) throws -> BSONValue? {
+        // swiftlint:disable force_cast
+        if T.self == Date.self {
+            // We know T is a date, so this force cast works
+            return try boxDate(value as! Date)
+        } else if T.self == UUID.self {
+            // We know T is a UUID, so this force csat works
+            return try boxUUID(value as! UUID)
+        }
+        // swiftlint:enable force_cast
+
         // if it's already a `BSONValue`, just return it, unless if it is an
         // array. technically `[Any]` is a `BSONValue`, but we can only use this
         // short-circuiting if all the elements are actually BSONValues.
