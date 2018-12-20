@@ -870,15 +870,7 @@ func bsonEquals(_ lhs: BSONValue, _ rhs: BSONValue) -> Bool {
     case (_ as BSONNull, _ as BSONNull): return true
     case (let l as Document, let r as Document): return l == r
     case (let l as [BSONValue], let r as [BSONValue]): // TODO: SWIFT-242
-        guard l.count == r.count else {
-            return false
-        }
-        for (lhs, rhs) in zip(l, r) {
-            guard bsonEquals(lhs, rhs) else {
-                return false
-            }
-        }
-        return true
+        return l.count == r.count && zip(l, r).reduce(true, {prev, next in prev && bsonEquals(next.0, next.1)})
     case (_ as [Any], _ as [Any]): return false
     default: return false
     }
