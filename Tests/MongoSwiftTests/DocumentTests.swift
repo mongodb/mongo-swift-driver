@@ -707,11 +707,6 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(deferredStruct.uuid).to(equal(uuid))
         expect(try decoder.decode(UUIDWrapper.self, from: badString)).to(throwError())
 
-        decoder.uuidDecodingStrategy = .fromString
-        let stringStruct = try decoder.decode(UUIDWrapper.self, from: stringDoc)
-        expect(stringStruct.uuid).to(equal(uuid))
-        expect(try decoder.decode(UUIDWrapper.self, from: badString)).to(throwError())
-
         decoder.uuidDecodingStrategy = .fromBinary
         let uuidt = uuid.uuid
         let bytes = Data(bytes: [
@@ -755,7 +750,7 @@ final class DocumentTests: MongoSwiftTestCase {
         let msInt64Struct = try decoder.decode(DateWrapper.self, from: msInt64)
         expect(msInt64Struct.date).to(equal(date))
 
-        let msDouble: Document = ["date": TimeInterval(date.msSinceEpoch)]
+        let msDouble: Document = ["date": Double(date.msSinceEpoch)]
         let msDoubleStruct = try decoder.decode(DateWrapper.self, from: msDouble)
         expect(msDoubleStruct.date).to(equal(date))
 

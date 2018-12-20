@@ -40,9 +40,6 @@ public class BSONDecoder {
         /// Decode `UUID`s by deferring to their default decoding implementation.
         case deferredToUUID
 
-        /// Decode `UUID`s stored as strings.
-        case fromString
-
         /// Decode `UUID`s stored as the BSON `Binary` type.
         case fromBinary
     }
@@ -313,16 +310,6 @@ extension _BSONDecoder {
             self.storage.push(container: value)
             defer { self.storage.popContainer() }
             return try UUID(from: self)
-        case .fromString:
-            let uuidString = try self.unbox(value, as: String.self)
-             guard let uuid = UUID(uuidString: uuidString) else {
-                 throw DecodingError.dataCorrupted(
-                         DecodingError.Context(
-                                 codingPath: self.codingPath,
-                                 debugDescription: "Could not decode UUID from string \"\(uuidString)\"")
-                 )
-            }
-            return uuid
         case .fromBinary:
             let binary = try self.unbox(value, as: Binary.self)
             return try UUID(fromBinary: binary)
