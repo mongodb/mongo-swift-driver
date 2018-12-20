@@ -4,7 +4,7 @@ import mongoc
 /// `BSONEncoder` facilitates the encoding of `Encodable` values into BSON.
 public class BSONEncoder {
 
-    /// Enum representing the various strategies for encoding `Date`s
+    /// Enum representing the various strategies for encoding `Date`s.
     public enum DateEncodingStrategy {
         /// Encode the `Date` by deferring to its default encoding implementation.
         case deferToDate
