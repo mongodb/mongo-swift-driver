@@ -653,7 +653,7 @@ extension UUID {
         }
         guard binary.subtype == Binary.Subtype.uuid.rawValue else {
             throw MongoError.bsonDecodeError(message: "Expected a UUID binary type " +
-                    "(\(Binary.Subtype.uuidDeprecated)), got \(binary.subtype) instead.")
+                    "(\(Binary.Subtype.uuid)), got \(binary.subtype) instead.")
         }
 
         let data = binary.data

@@ -694,7 +694,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
         // randomly generated uuid
         guard let uuid = UUID(uuidString: "2c380a6c-7bc5-48cb-84a2-b26777a72276") else {
-            throw MongoError.bsonDecodeError(message: "Cant create URI")
+            throw MongoError.bsonDecodeError(message: "Cant create UUID.")
         }
 
         let decoder = BSONDecoder()
