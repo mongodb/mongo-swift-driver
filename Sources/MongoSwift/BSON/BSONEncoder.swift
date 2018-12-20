@@ -29,7 +29,7 @@ public class BSONEncoder {
         case custom((Date) throws -> BSONValue)
     }
 
-    /// Enum representing the various strategies for encoding `UUID`s
+    /// Enum representing the various strategies for encoding `UUID`s.
     public enum UUIDEncodingStrategy {
         /// Encode the `UUID` by deferring to its default encoding implementation.
         case deferToUUID

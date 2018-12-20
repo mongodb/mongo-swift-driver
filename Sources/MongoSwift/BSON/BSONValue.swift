@@ -643,7 +643,7 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
 }
 
 extension UUID {
-    /// Copies this `UUID` into a `Binary`
+    /// Copies `self` into a `Binary`.
     internal func asBinary() throws -> Binary {
         let uuid = self.uuid
         let uuidData = Data(bytes: [
