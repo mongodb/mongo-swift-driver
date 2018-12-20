@@ -644,7 +644,7 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
 
 /// Extension to allow a UUID to be initialized from a Binary BSONValue.
 extension UUID {
-    // TODO: fill the rest of this out for full BSONValue conformance.
+    // TODO: fill the rest of this out for full BSONValue conformance (SWIFT-295).
 
     internal init(fromBinary binary: Binary) throws {
         guard binary.subtype != Binary.Subtype.uuidDeprecated.rawValue else {
