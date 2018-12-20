@@ -707,7 +707,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(deferredStruct.uuid).to(equal(uuid))
         expect(try decoder.decode(UUIDWrapper.self, from: badString)).to(throwError())
 
-        decoder.uuidDecodingStrategy = .fromBinary
+        decoder.uuidDecodingStrategy = .binary
         let uuidt = uuid.uuid
         let bytes = Data(bytes: [
             uuidt.0, uuidt.1, uuidt.2, uuidt.3,

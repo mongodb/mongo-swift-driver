@@ -41,7 +41,7 @@ public class BSONDecoder {
         case deferredToUUID
 
         /// Decode `UUID`s stored as the BSON `Binary` type.
-        case fromBinary
+        case binary
     }
 
     /// Contextual user-provided information for use during decoding.
@@ -51,7 +51,7 @@ public class BSONDecoder {
     public var dateDecodingStrategy: DateDecodingStrategy = .bsonDateTime
 
     /// The strategy used for decoding `UUID`s with this instance.
-    public var uuidDecodingStrategy: UUIDDecodingStrategy = .fromBinary
+    public var uuidDecodingStrategy: UUIDDecodingStrategy = .binary
 
     /// Options set on the top-level decoder to pass down the decoding hierarchy.
     fileprivate struct _Options {
@@ -310,7 +310,7 @@ extension _BSONDecoder {
             self.storage.push(container: value)
             defer { self.storage.popContainer() }
             return try UUID(from: self)
-        case .fromBinary:
+        case .binary:
             let binary = try self.unbox(value, as: Binary.self)
             return try UUID(fromBinary: binary)
         }
