@@ -9,7 +9,7 @@ public class BSONEncoder {
         /// Encode the `Date` by deferring to its default encoding implementation.
         case deferToDate
 
-        /// Encode the `Date` as a BSON datetime object.
+        /// Encode the `Date` as a BSON datetime object (default).
         case bsonDate
 
         /// Encode the `Date` as a 64-bit integer counting the number of milliseconds since January 1, 1970.
@@ -62,7 +62,7 @@ public class BSONEncoder {
     }
 
     @available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *)
-    internal static var iso8601Formatter: ISO8601DateFormatter = {
+    internal static let iso8601Formatter: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = .withInternetDateTime
         return formatter
@@ -362,15 +362,11 @@ extension _BSONEncoder {
     }
 
     fileprivate func box_<T: Encodable>(_ value: T) throws -> BSONValue? {
-        // swiftlint:disable force_cast
-        if T.self == Date.self {
-            // We know T is a date, so this force cast works
-            return try boxDate(value as! Date)
-        } else if T.self == UUID.self {
-            // We know T is a UUID, so this force csat works
-            return try boxUUID(value as! UUID)
+        if let date = value as? Date {
+            return try boxDate(date)
+        } else if let uuid = value as? UUID {
+            return try boxUUID(uuid)
         }
-        // swiftlint:enable force_cast
 
         // if it's already a `BSONValue`, just return it, unless if it is an
         // array. technically `[Any]` is a `BSONValue`, but we can only use this
