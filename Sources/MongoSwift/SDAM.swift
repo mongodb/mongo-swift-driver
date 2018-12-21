@@ -31,30 +31,30 @@ public struct ConnectionId: Equatable {
     }
 }
 
-/// The possible types for a server.
-public enum ServerType: String {
-    /// A standalone mongod server.
-    case standalone = "Standalone"
-    /// A router to a sharded cluster, i.e. a mongos server.
-    case mongos = "Mongos"
-    /// A replica set member which is not yet checked, but another member thinks it is the primary.
-    case possiblePrimary = "PossiblePrimary"
-    /// A replica set primary.
-    case rsPrimary = "RSPrimary"
-    /// A replica set secondary.
-    case rsSecondary = "RSSecondary"
-    /// A replica set arbiter.
-    case rsArbiter = "RSArbiter"
-    /// A replica set member that is none of the other types (a passive, for example).
-    case rsOther = "RSOther"
-    /// A replica set member that does not report a set name or a hosts list.
-    case rsGhost = "RSGhost"
-    /// A server type that is not yet known.
-    case unknown = "Unknown"
-}
-
 /// A struct describing a mongod or mongos process.
 public struct ServerDescription {
+    /// The possible types for a server.
+    public enum ServerType: String {
+        /// A standalone mongod server.
+        case standalone = "Standalone"
+        /// A router to a sharded cluster, i.e. a mongos server.
+        case mongos = "Mongos"
+        /// A replica set member which is not yet checked, but another member thinks it is the primary.
+        case possiblePrimary = "PossiblePrimary"
+        /// A replica set primary.
+        case rsPrimary = "RSPrimary"
+        /// A replica set secondary.
+        case rsSecondary = "RSSecondary"
+        /// A replica set arbiter.
+        case rsArbiter = "RSArbiter"
+        /// A replica set member that is none of the other types (a passive, for example).
+        case rsOther = "RSOther"
+        /// A replica set member that does not report a set name or a hosts list.
+        case rsGhost = "RSGhost"
+        /// A server type that is not yet known.
+        case unknown = "Unknown"
+    }
+
     /// The hostname or IP and the port number that the client connects to. Note that this is not the
     /// server's ismaster.me field, in the case that the server reports an address different from the
     /// address the client uses.
@@ -181,23 +181,23 @@ public struct ServerDescription {
     }
 }
 
-/// The possible types for a topology.
-public enum TopologyType: String {
-    /// A single mongod server.
-    case single = "Single"
-    /// A replica set with no primary.
-    case replicaSetNoPrimary = "ReplicaSetNoPrimary"
-    /// A replica set with a primary.
-    case replicaSetWithPrimary = "ReplicaSetWithPrimary"
-    /// Sharded topology.
-    case sharded = "Sharded"
-    /// A topology whose type is not yet known.
-    case unknown = "Unknown"
-}
-
 /// A struct describing the state of a MongoDB deployment: its type (standalone, replica set, or sharded),
 /// which servers are up, what type of servers they are, which is primary, and so on.
 public struct TopologyDescription {
+    /// The possible types for a topology.
+    public enum TopologyType: String {
+        /// A single mongod server.
+        case single = "Single"
+        /// A replica set with no primary.
+        case replicaSetNoPrimary = "ReplicaSetNoPrimary"
+        /// A replica set with a primary.
+        case replicaSetWithPrimary = "ReplicaSetWithPrimary"
+        /// Sharded topology.
+        case sharded = "Sharded"
+        /// A topology whose type is not yet known.
+        case unknown = "Unknown"
+    }
+
     /// The type of this topology.
     public let type: TopologyType
 
