@@ -14,7 +14,7 @@ class MongoSwiftTestCase: XCTestCase {
 
     /// Gets the name of the database the test case is running against.
     internal class var testDatabase: String {
-        return "test"
+        return String(describing: self)
     }
 
     /// Gets the path of the directory containing spec files, depending on whether
@@ -44,6 +44,12 @@ class MongoSwiftTestCase: XCTestCase {
     // Use MemoryLayout instead of Int.bitWidth to avoid a compiler warning.
     // See: https://forums.swift.org/t/how-can-i-condition-on-the-size-of-int/9080/4 */
     static let is32Bit = MemoryLayout<Int>.size == 4
+
+    /// Generates a unique collection name. Not guaranteed to be unique if tests are run in parallel. Pass in custom
+    /// salt to guarantee uniqueness in a multithreaded context.
+    internal class func generateCollectionName(salt: String = "\(Float.random(in: 0 ..< 1))") -> String {
+        return "\(self.className)-\(salt)-\(Date().msSinceEpoch)"
+    }
 }
 
 extension MongoClient {

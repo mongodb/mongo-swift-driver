@@ -42,6 +42,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         ]
     }
 
+    var collName: String = ""
     var coll: MongoCollection<Document>!
     let doc1: Document = ["_id": 1, "cat": "dog"]
     let doc2: Document = ["_id": 2, "cat": "cat"]
@@ -60,12 +61,14 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     override func setUp() {
         super.setUp()
         self.continueAfterFailure = false
+        self.collName = type(of: self).generateCollectionName()
+
         do {
             guard let client = _client else {
                 XCTFail("Invalid client")
                 return
             }
-            coll = try client.db(type(of: self).testDatabase).createCollection("coll1")
+            coll = try client.db(type(of: self).testDatabase).createCollection(self.collName)
             try coll.insertMany([doc1, doc2])
         } catch {
             XCTFail("Setup failed: \(error)")
@@ -78,7 +81,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         do {
             if coll != nil { try coll.drop() }
         } catch {
-            XCTFail("Dropping test collection collectionTest.coll1 failed: \(error)")
+            XCTFail("Dropping test collection \(type(of: self).testDatabase).\(self.collName) failed: \(error)")
         }
     }
 
@@ -92,7 +95,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
             }
             try client.db(self.testDatabase).drop()
         } catch {
-            print("Dropping test database collectionTest failed: \(error)")
+            print("Dropping test database \(self.testDatabase) failed: \(error)")
         }
     }
 
@@ -335,7 +338,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     }
 
     func testGetName() {
-        expect(self.coll.name).to(equal("coll1"))
+        expect(self.coll.name).to(equal(self.collName))
     }
 
     func testCursorIteration() throws {
@@ -359,7 +362,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     func testCodableCollection() throws {
         let client = try MongoClient()
         let db = try client.db(type(of: self).testDatabase)
-        let coll1 = try db.createCollection("codablecoll", withType: Basic.self)
+        let coll1 = try db.createCollection(type(of: self).generateCollectionName(), withType: Basic.self)
         defer { try? coll1.drop() }
 
         let b1 = Basic(x: 1, y: "hi")
