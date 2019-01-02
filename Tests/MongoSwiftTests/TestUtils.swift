@@ -45,10 +45,9 @@ class MongoSwiftTestCase: XCTestCase {
     // See: https://forums.swift.org/t/how-can-i-condition-on-the-size-of-int/9080/4 */
     static let is32Bit = MemoryLayout<Int>.size == 4
 
-    /// Generates a unique collection name. Not guaranteed to be unique if tests are run in parallel. Pass in custom
-    /// salt to guarantee uniqueness in a multithreaded context.
-    internal class func generateCollectionName(salt: String = "\(Float.random(in: 0 ..< 1))") -> String {
-        return "\(self.className)-\(salt)-\(Date().msSinceEpoch)"
+    /// Generates a unique collection name of the format "-[<Test Case> <Test Name>]-<timestamp>".
+    internal func generateCollectionName() -> String {
+        return "\(self.name)-\(Date().timeIntervalSinceReferenceDate)"
     }
 }
 
