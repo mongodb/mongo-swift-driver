@@ -107,39 +107,37 @@ public struct AnyBSONValue: Codable, Hashable, Equatable {
     public func hash(into hasher: inout Hasher) {
         switch self.value {
         case let value as Int:
-            hasher.combine(value)
+            value.hash(into: &hasher)
         case let value as Int32:
-            hasher.combine(value)
+            value.hash(into: &hasher)
         case let value as Int64:
-            hasher.combine(value)
+            value.hash(into: &hasher)
         case let value as Double:
-            hasher.combine(value)
+            value.hash(into: &hasher)
         case let value as Decimal128:
-            hasher.combine(value.data)
+            value.hash(into: &hasher)
         case let value as Bool:
-            hasher.combine(value)
+            value.hash(into: &hasher)
         case let value as String:
-            hasher.combine(value)
+            value.hash(into: &hasher)
         case let value as RegularExpression:
-            hasher.combine(value.options)
-            hasher.combine(value.pattern)
+            value.hash(into: &hasher)
         case let value as Timestamp:
-            hasher.combine(value.timestamp)
+            value.hash(into: &hasher)
         case let value as Date:
-            hasher.combine(value)
-        case _ as MinKey:
-            hasher.combine(1)
-        case _ as MaxKey:
-            hasher.combine(1)
+            value.hash(into: &hasher)
+        case let value as MinKey:
+            value.hash(into: &hasher)
+        case let value as MaxKey:
+            value.hash(into: &hasher)
         case let value as ObjectId:
-            hasher.combine(value.description)
+            value.hash(into: &hasher)
         case let value as CodeWithScope:
-            hasher.combine(value.code)
-            value.scope?.canonicalExtendedJSON.hash(into: &hasher)
+            value.hash(into: &hasher)
         case let value as Document:
-            hasher.combine(value.canonicalExtendedJSON)
+            value.hash(into: &hasher)
         case let value as Binary:
-            hasher.combine(value.data)
+            value.hash(into: &hasher)
         case let value as [BSONValue?]:
             value.forEach({$0.map({AnyBSONValue($0).hash(into: &hasher)})})
         default: break
@@ -149,188 +147,85 @@ public struct AnyBSONValue: Codable, Hashable, Equatable {
     /// This value as a BsonDocument if it is one, otherwise nil
     public lazy var asDocument = value as? Document
 
-    /// This value as a BsonArray if it is one, otherwise throws exception
+    /// This value as a BsonArray if it is one, otherwise nil
     public lazy var asArray = value as? [BSONValue?]
 
-    /// This value as a BsonString if it is one, otherwise throws exception
+    /// This value as a BsonString if it is one, otherwise nil
     public lazy var asString = value as? String
 
-    /**
-     * Gets this value as a BsonNumber if it is one, otherwise throws exception
-     *
-     * @return a BsonNumber
-     * @throws org.bson.BsonInvalidOperationException if this value is not of the expected type
-     */
+    //// This value as a BsonNumber if it is one, otherwise nil
     public lazy var asNumber = value as? Int
 
-    /**
-     * Gets this value as a BsonInt32 if it is one, otherwise throws exception
-     *
-     * @return a BsonInt32
-     * @throws org.bson.BsonInvalidOperationException if this value is not of the expected type
-     */
-    public lazy var asInt32 = value as? Int32
+    /// This value as a BsonInt32 if it is one, otherwise nil
+    public lazy var asInt = value as? Int
 
-    /**
-     * Gets this value as a BsonInt64 if it is one, otherwise throws exception
-     *
-     * @return a BsonInt64
-     * @throws org.bson.BsonInvalidOperationException if this value is not of the expected type
-     */
+    /// This value as a BsonInt64 if it is one, otherwise nil
     public lazy var asInt64 = value as? Int64
 
-    /**
-     * Gets this value as a BsonDecimal128 if it is one, otherwise throws exception
-     *
-     * @return a BsonDecimal128
-     * @throws org.bson.BsonInvalidOperationException if this value is not of the expected type
-     * @since 3.4
-     */
-    public lazy var asDecimal128 = value as? Decimal
+    /// This value as a BsonDecimal128 if it is one, otherwise nil
+    public lazy var asDecimal128 = value as? Decimal128
 
-    /**
-     * Gets this value as a BsonDouble if it is one, otherwise throws exception
-     *
-     * @return a BsonDouble
-     * @throws org.bson.BsonInvalidOperationException if this value is not of the expected type
-     */
+    /// This value as a BsonDouble if it is one, otherwise nil
     public lazy var asDouble = value as? Double
 
-    /**
-     * Gets this value as a BsonBoolean if it is one, otherwise throws exception
-     *
-     * @return a BsonBoolean
-     * @throws org.bson.BsonInvalidOperationException if this value is not of the expected type
-     */
+    /// This value as a BsonBoolean if it is one, otherwise nil
     public lazy var asBoolean = value as? Bool
 
-    /**
-     * Gets this value as an BsonObjectId if it is one, otherwise throws exception
-     *
-     * @return an BsonObjectId
-     * @throws org.bson.BsonInvalidOperationException if this value is not of the expected type
-     */
+    /// This value as an BsonObjectId if it is one, otherwise nil
     public lazy var asObjectId = value as? ObjectId
 
-    /**
-     * Gets this value as a BsonDbPointer if it is one, otherwise throws exception
-     *
-     * @return an BsonDbPointer
-     * @throws org.bson.BsonInvalidOperationException if this value is not of the expected type
-     */
+    /// This value as a BsonDbPointer if it is one, otherwise nil
     internal lazy var asDBPointer = value as? DBPointer
 
-    /**
-     * Gets this value as a BsonTimestamp if it is one, otherwise throws exception
-     *
-     * @return an BsonTimestamp
-     * @throws org.bson.BsonInvalidOperationException if this value is not of the expected type
-     */
+    /// This value as a BsonTimestamp if it is one, otherwise nil
     public lazy var asTimestamp = value as? Timestamp
 
-    /**
-     * Gets this value as a BsonBinary if it is one, otherwise throws exception
-     *
-     * @return an BsonBinary
-     * @throws org.bson.BsonInvalidOperationException if this value is not of the expected type
-     */
+    /// This value as a BsonBinary if it is one, otherwise nil
     public lazy var asBinary = value as? Binary
 
-    /**
-     * Gets this value as a BsonDateTime if it is one, otherwise throws exception
-     *
-     * @return an BsonDateTime
-     * @throws org.bson.BsonInvalidOperationException if this value is not of the expected type
-     */
+    /// This value as a BsonDateTime if it is one, otherwise nil
     public lazy var asDateTime = value as? Date
 
-    /**
-     * Gets this value as a BsonSymbol if it is one, otherwise throws exception
-     *
-     * @return an BsonSymbol
-     * @throws org.bson.BsonInvalidOperationException if this value is not of the expected type
-     */
+    /// This value as a MaxKey if it is one, otherwise nil
+    public lazy var asMaxKey = value as? MaxKey
+
+    /// This value as a MinKey if it is one, otherwise nil
+    public lazy var asMinKey = value as? MinKey
+
+    /// This value as a BsonSymbol if it is one, otherwise nil
     internal lazy var asSymbol = value as? Symbol
 
-    /**
-     * Gets this value as a BsonRegularExpression if it is one, otherwise throws exception
-     *
-     * @return an BsonRegularExpression
-     * @throws org.bson.BsonInvalidOperationException if this value is not of the expected type
-     */
+    /// This value as a BsonRegularExpression if it is one, otherwise nil
     public lazy var asRegularExpression = value as? RegularExpression
 
-    /**
-     * Gets this value as a {@code BsonJavaScript} if it is one, otherwise throws exception
-     *
-     * @return a BsonJavaScript
-     * @throws org.bson.BsonInvalidOperationException if this value is not of the expected type
-     */
+    /// This value as a CodeWithScope if it is one, otherwise nil
     public lazy var asCodeWithScope = value as? CodeWithScope
 
+    /// True if this is a BsonNull, false otherwise.
+    public lazy var isBSONNull = value is BSONNull
 
-    /**
-     * Returns true if this is a BsonNull, false otherwise.
-     *
-     * @return true if this is a BsonNull, false otherwise
-     */
-    public lazy var isNil = value is NSNull
-
-    /**
-     * Returns true if this is a BsonDocument, false otherwise.
-     *
-     * @return true if this is a BsonDocument, false otherwise
-     */
+    /// True if this is a BsonDocument, false otherwise.
     public lazy var isDocument = value is Document
 
-    /**
-     * Returns true if this is a BsonArray, false otherwise.
-     *
-     * @return true if this is a BsonArray, false otherwise
-     */
+    /// True if this is a BsonArray, false otherwise.
     public lazy var isArray = value is Array<BSONValue?>
 
-    /**
-     * Returns true if this is a BsonString, false otherwise.
-     *
-     * @return true if this is a BsonString, false otherwise
-     */
+    /// True if this is a BsonString, false otherwise.
     public lazy var isString = value is String
 
-    /**
-     * Returns true if this is a BsonNumber, false otherwise.
-     *
-     * @return true if this is a BsonNumber, false otherwise
-     */
+    /// True if this is a BsonNumber, false otherwise.
     public lazy var isNumber = value is Int || value is Int32 || value is Int64
 
-    /**
-     * Returns true if this is a BsonInt32, false otherwise.
-     *
-     * @return true if this is a BsonInt32, false otherwise
-     */
-    public lazy var isInt32 = value is Int32
+    /// True if this is a BsonInt32, false otherwise.
+    public lazy var isInt = value is Int
 
-    /**
-     * Returns true if this is a BsonInt64, false otherwise.
-     *
-     * @return true if this is a BsonInt64, false otherwise
-     */
+    /// True if this is a BsonInt64, false otherwise.
     public lazy var isInt64 = value is Int64
 
-    /**
-     * Returns true if this is a BsonDecimal128, false otherwise.
-     *
-     * @return true if this is a BsonDecimal128, false otherwise
-     * @since 3.4
-     */
-    public lazy var isDecimal128 = value is Decimal
+    /// True if this is a BsonDecimal128, false otherwise.
+    public lazy var isDecimal128 = value is Decimal128
 
-    /**
-     * Returns true if this is a BsonDouble, false otherwise.
-     *
-     * @return true if this is a BsonDouble, false otherwise
-     */
+    /// True if this is a BsonDouble, false otherwise.
     public lazy var isDouble = value is Double
 
     /// True if this is a BsonBoolean, false otherwise.
@@ -359,8 +254,14 @@ public struct AnyBSONValue: Codable, Hashable, Equatable {
 
     /// True if this is a BsonJavaScriptWithScope, false otherwise.
     public lazy var isCodeWithScope: Bool = value is CodeWithScope
+
+    /// True if this is a MaxKey, false otherwise.
+    public lazy var isMaxKey: Bool = value is MaxKey
+
+    /// True if this is a MinKey, false otherwise.
+    public lazy var isMinKey: Bool = value is MinKey
 }
 
-func ~=(pattern: BSONValue, value: AnyBSONValue) -> Bool {
+public func ~=(pattern: BSONValue, value: AnyBSONValue) -> Bool {
     return bsonEquals(value.value, pattern)
 }

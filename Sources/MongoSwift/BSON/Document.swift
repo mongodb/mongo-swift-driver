@@ -475,3 +475,9 @@ extension Document: ExpressibleByArrayLiteral {
         self.init(elements)
     }
 }
+
+extension Document: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.canonicalExtendedJSON)
+    }
+}

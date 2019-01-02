@@ -14,20 +14,6 @@ final class BSONValueTests: MongoSwiftTestCase {
         ]
     }
 
-
-    func test() {
-        let any = AnyBSONValue(ObjectId())
-        guard case let oid = any as? ObjectId else {
-            fatalError()
-        }
-
-        guard let uh = any as? ObjectId else {
-            fatalError()
-        }
-        print(oid)
-    }
-
-
     func testInvalidDecimal128() throws {
         expect(Decimal128(ifValid: "hi")).to(beNil())
         expect(Decimal128(ifValid: "123.4.5")).to(beNil())
