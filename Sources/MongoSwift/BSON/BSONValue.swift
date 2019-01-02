@@ -164,6 +164,20 @@ public struct Binary: BSONValue, Equatable, Codable {
         userDefined = 0x80
     }
 
+    /// Initializes a `Binary` instance from a `UUID`.
+    public init(from uuid: UUID) throws {
+        let uuidt = uuid.uuid
+
+        let uuidData = Data(bytes: [
+            uuidt.0, uuidt.1, uuidt.2, uuidt.3,
+            uuidt.4, uuidt.5, uuidt.6, uuidt.7,
+            uuidt.8, uuidt.9, uuidt.10, uuidt.11,
+            uuidt.12, uuidt.13, uuidt.14, uuidt.15
+        ])
+
+        try self.init(data: uuidData, subtype: Binary.Subtype.uuid)
+    }
+
     /// Initializes a `Binary` instance from a `Data` object and a `UInt8` subtype.
     /// Throws an error if the provided data is incompatible with the specified subtype.
     public init(data: Data, subtype: UInt8) throws {
@@ -640,20 +654,6 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
         return lhs.oid == rhs.oid
     }
 
-}
-
-extension UUID {
-    /// Copies `self` into a `Binary`.
-    internal func asBinary() throws -> Binary {
-        let uuid = self.uuid
-        let uuidData = Data(bytes: [
-            uuid.0, uuid.1, uuid.2, uuid.3,
-            uuid.4, uuid.5, uuid.6, uuid.7,
-            uuid.8, uuid.9, uuid.10, uuid.11,
-            uuid.12, uuid.13, uuid.14, uuid.15
-        ])
-        return try Binary(data: uuidData, subtype: Binary.Subtype.uuid)
-    }
 }
 
 // A mapping of regex option characters to their equivalent `NSRegularExpression` option.

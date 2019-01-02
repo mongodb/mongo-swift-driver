@@ -357,7 +357,7 @@ extension _BSONEncoder {
             try uuid.encode(to: self)
             return self.storage.popContainer()
         case .binary:
-            return try uuid.asBinary()
+            return try Binary(from: uuid)
         }
     }
 

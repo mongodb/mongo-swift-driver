@@ -742,7 +742,7 @@ final class DocumentTests: MongoSwiftTestCase {
             throw MongoError.bsonEncodeError(message: "Couldn't create UUID.")
         }
 
-        let binary = try uuid.asBinary()
+        let binary = try Binary(from: uuid)
         let uuidStruct = UUIDWrapper(uuid: uuid)
         let encoder = BSONEncoder()
 
