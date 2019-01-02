@@ -646,7 +646,7 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
 extension UUID {
     // TODO: fill the rest of this out for full BSONValue conformance (SWIFT-295).
 
-    internal init(fromBinary binary: Binary) throws {
+    internal init(from binary: Binary) throws {
         guard binary.subtype != Binary.Subtype.uuidDeprecated.rawValue else {
             throw MongoError.bsonDecodeError(message: "Binary subtype \(binary.subtype) is deprecated, " +
                     "use \(Binary.Subtype.uuid) instead.")

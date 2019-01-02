@@ -312,7 +312,7 @@ extension _BSONDecoder {
             return try UUID(from: self)
         case .binary:
             let binary = try self.unbox(value, as: Binary.self)
-            return try UUID(fromBinary: binary)
+            return try UUID(from: binary)
         }
     }
 
