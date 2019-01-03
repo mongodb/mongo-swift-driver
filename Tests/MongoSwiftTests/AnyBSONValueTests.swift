@@ -66,7 +66,6 @@ final class AnyBSONValueTests: MongoSwiftTestCase {
             expected.double: Double(2),
             expected.string: "hi",
             expected.doc: ["x": 1] as Document,
-            expected.arr: [1, 2],
             expected.binary: try Binary(base64: "//8=", subtype: .generic),
             expected.oid: ObjectId(fromString: "507f1f77bcf86cd799439011"),
             expected.bool: true,
@@ -84,7 +83,6 @@ final class AnyBSONValueTests: MongoSwiftTestCase {
         expect(doc[expected.double]).to(equal(expected.double))
         expect(doc[expected.string]).to(equal(expected.string))
         expect(doc[expected.doc]).to(equal(expected.doc))
-        expect(doc[expected.arr]).to(equal(expected.arr))
         expect(doc[expected.binary]).to(equal(expected.binary))
         expect(doc[expected.oid]).to(equal(expected.oid))
         expect(doc[expected.bool]).to(equal(expected.bool))
