@@ -68,14 +68,6 @@ extension String: HashableCompat {
 }
 
 #if !swift(>=4.2)
-/// Synthesized equatable conformance for BSONValue
-extension BSONValue {
-    /// Equatable conformance
-    public static func == (lhs: Self, rhs: Self) -> Bool {
-        return bsonEquals(lhs, rhs)
-    }
-}
-
 /// Compat structure for Hasher if not swift >= 4.2
 internal struct Hasher {
     /// Current hashValue

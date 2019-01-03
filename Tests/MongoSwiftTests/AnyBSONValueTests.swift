@@ -45,19 +45,20 @@ final class AnyBSONValueTests: MongoSwiftTestCase {
         children.forEach { child in
             let (key, value) = child
             children.forEach {
+                let eval = { (keyMatch: Bool, value1: AnyHashable, value2: AnyHashable) in
+                    if keyMatch {
+                        expect(value1.hashValue).to(equal(value2.hashValue))
+                    } else {
+                        expect(value1.hashValue).notTo(equal(value2.hashValue))
+                    }
+                }
                 switch $0.value.value {
+                case is Int, is Bool:
+                    eval(value.value is Int || value.value is Bool || $0.key == key, $0.value, value)
                 case is MinKey, is MaxKey:
-                    if value.value is MinKey || value.value is MaxKey {
-                        expect($0.value.hashValue).to(equal(value.hashValue))
-                    } else {
-                        fallthrough
-                    }
+                    eval(value.value is MinKey || value.value is MaxKey || $0.key == key, $0.value, value)
                 default:
-                    if $0.key == key {
-                        expect($0.value.hashValue).to(equal(value.hashValue))
-                    } else {
-                        expect($0.value.hashValue).notTo(equal(value.hashValue))
-                    }
+                    eval($0.key == key, $0.value, value)
                 }
             }
         }
@@ -73,7 +74,7 @@ final class AnyBSONValueTests: MongoSwiftTestCase {
             expected.code: CodeWithScope(code: "hi", scope: ["x": 1]),
             expected.int: 1,
             expected.ts: Timestamp(timestamp: 1, inc: 2),
-            expected.int32: 5,
+            expected.int32: Int32(5),
             expected.int64: Int64(6),
             expected.dec: Decimal128("1.2E+10"),
             expected.maxkey: MaxKey(),

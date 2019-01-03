@@ -120,6 +120,10 @@ extension Array: BSONValue {
 
 /// A struct to represent the BSON null type.
 public struct BSONNull: BSONValue, Codable, HashableCompat {
+    public static func == (lhs: BSONNull, rhs: BSONNull) -> Bool {
+        return true
+    }
+
     public var bsonType: BSONType { return .null }
 
     public static func from(iterator iter: DocumentIterator) throws -> BSONNull { return BSONNull() }
@@ -773,6 +777,7 @@ public struct RegularExpression: BSONValue, HashableCompat, Codable {
     }
 
     func hashCompat(into hasher: inout Hasher) {
+        hasher.combine(bsonType)
         hasher.combine(pattern)
         hasher.combine(options)
     }
@@ -864,6 +869,7 @@ public struct Timestamp: BSONValue, HashableCompat, Codable {
     }
 
     func hashCompat(into hasher: inout Hasher) {
+        hasher.combine(bsonType)
         hasher.combine(timestamp)
         hasher.combine(increment)
     }
