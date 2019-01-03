@@ -25,8 +25,9 @@ public class BSONEncoder {
         /// Encode the `Date` as a string formatted by the given formatter.
         case formatted(DateFormatter)
 
-        /// Encode the `Date` as the value returned by the provided closure.
-        case custom((Date) throws -> BSONValue)
+        /// Encode the `Date` by using the given closure.
+        /// If the closure does not encode a value, an empty document will be encoded in its place.
+        case custom((Date, Encoder) throws -> Void)
     }
 
     /// Enum representing the various strategies for encoding `UUID`s.
@@ -327,7 +328,7 @@ extension _BSONEncoder {
         return try self.box_(value) ?? Document()
     }
 
-    fileprivate func boxDate(_ date: Date) throws -> BSONValue {
+    fileprivate func boxDate(_ date: Date) throws -> BSONValue? {
         switch self.options.dateEncodingStrategy {
         case .bsonDate:
             return date
@@ -347,7 +348,23 @@ extension _BSONEncoder {
                 throw MongoError.bsonEncodeError(message: "ISO8601DateFormatter is unavailable on this platform.")
             }
         case .custom(let f):
-            return try f(date)
+            let depth = self.storage.count
+
+            do {
+                try f(date, self)
+            } catch {
+                if self.storage.count > depth {
+                    _ = self.storage.popContainer()
+                }
+                throw error
+            }
+
+            // If they didn't encode anything, will default to empty subdocument
+            guard self.storage.count > depth else {
+                return nil
+            }
+
+            return self.storage.popContainer()
         }
     }
 

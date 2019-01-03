@@ -726,9 +726,46 @@ final class DocumentTests: MongoSwiftTestCase {
         let deferred = try encoder.encode(dateStruct)
         expect(deferred["date"] as? TimeInterval).to(equal(date.timeIntervalSinceReferenceDate))
 
-        encoder.dateEncodingStrategy = .custom({ d in Int64(d.timeIntervalSince1970 + 12) })
+        encoder.dateEncodingStrategy = .custom({ d, e in
+            var container = e.singleValueContainer()
+            try container.encode(Int64(d.timeIntervalSince1970 + 12))
+        })
         let custom = try encoder.encode(dateStruct)
         expect(custom["date"] as? Int64).to(equal(Int64(date.timeIntervalSince1970 + 12)))
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = .short
+        dateFormatter.timeStyle = .none
+
+        let noSecondsDate = DateWrapper(date: dateFormatter.date(from: "1/2/19")!)
+        encoder.dateEncodingStrategy = .custom({d, e in
+            var container = e.unkeyedContainer()
+            try dateFormatter.string(from: d).split(separator: "/").forEach { component in
+                try container.encode(String(component))
+            }
+        })
+        let customArr = try encoder.encode(noSecondsDate)
+        expect(dateFormatter.date(from: (customArr["date"] as! [String]).joined(separator: "/")))
+                .to(equal(noSecondsDate.date))
+
+        // swiftlint:disable nesting
+        enum DateKeys: String, CodingKey {
+            case month, day, year
+        }
+        // swiftlint:enable nesting
+        encoder.dateEncodingStrategy = .custom({d, e in
+            var container = e.container(keyedBy: DateKeys.self)
+            let components = dateFormatter.string(from: d).split(separator: "/").map { String($0) }
+            try container.encode(components[0], forKey: .month)
+            try container.encode(components[1], forKey: .day)
+            try container.encode(components[2], forKey: .year)
+        })
+        let customDoc = try encoder.encode(noSecondsDate)
+        expect(customDoc["date"] as? Document).to(bsonEqual(["month": "1", "day": "2", "year": "19"] as Document))
+
+        encoder.dateEncodingStrategy = .custom({ _, _ in })
+        let customNoop = try encoder.encode(noSecondsDate)
+        expect(customNoop["date"] as? Document).to(bsonEqual([:] as Document))
     }
 
     func testUUIDEncodingStrategies() throws {
