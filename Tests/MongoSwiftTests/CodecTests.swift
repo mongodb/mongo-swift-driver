@@ -62,9 +62,9 @@ final class CodecTests: MongoSwiftTestCase {
 
         public static func == (lhs: NestedArray, rhs: NestedArray) -> Bool {
             return lhs.array.count == rhs.array.count &&
-                zip(lhs.array, rhs.array).reduce(
-                    true,
-                    { prev, next in prev && next.0 == next.1 })
+                zip(lhs.array, rhs.array).reduce(true) { prev, next in
+                    prev && next.0 == next.1
+                }
         }
     }
 
