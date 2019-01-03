@@ -83,6 +83,7 @@ internal struct Hasher {
             self.hashValue = hashable.hashValue
             return
         }
+        // swiftlint:disable:next line_length
         // else, see: https://github.com/apple/swift-evolution/blob/master/proposals/0206-hashable-enhancements.md#source-compatibility
         self.hashValue! = hashValue ^ hashable.hashValue &* 16777619
     }
