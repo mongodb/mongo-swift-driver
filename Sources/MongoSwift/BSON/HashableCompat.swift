@@ -16,8 +16,8 @@ extension HashableCompat {
         self.hashCompat(into: &hasher)
     }
     #else
-    // swiftlint:disable:next legacy_hashing
     /// Legacy hash value which defers to hashcompat
+    // swiftlint:disable:next legacy_hashing
     public var hashValue: Int {
         var hasher = Hasher()
         self.hashCompat(into: &hasher)
@@ -93,7 +93,16 @@ internal struct Hasher {
         }
         // else, combine the hashValues. adapted from
         // https://www.boost.org/doc/libs/1_64_0/boost/functional/hash/hash.hpp
-        self.hashValue! ^= hashable.hashValue + 0x9e3779b9 + (hashValue << 6) + (hashValue >> 2)
+        // and https://github.com/krzysztofzablocki/Sourcery
+        #if arch(x86_64) || arch(arm64)
+        let magic: UInt = 0x9e3779b97f4a7c15
+        #elseif arch(i386) || arch(arm)
+        let magic: UInt = 0x9e3779b9
+        #endif
+        var lhs = UInt(bitPattern: hashValue)
+        let rhs = UInt(bitPattern: hashable.hashValue)
+        lhs ^= rhs &+ magic &+ (lhs << 6) &+ (lhs >> 2)
+        self.hashValue = Int(bitPattern: lhs)
     }
 
     func finalize() -> Int {
