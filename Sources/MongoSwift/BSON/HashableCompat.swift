@@ -1,3 +1,4 @@
+// swiftlint:disable superfluous_disable_command
 // swiftlint:disable legacy_hashing
 import Foundation
 
