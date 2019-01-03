@@ -172,11 +172,12 @@ public struct ServerDescription {
     internal init(_ description: OpaquePointer) {
         self.connectionId = ConnectionId(mongoc_server_description_host(description))
         self.roundTripTime = mongoc_server_description_round_trip_time(description)
-
+        // swiftlint:disable:next force_unwrapping - documented as always returning a `bson_t`. 
         let isMaster = Document(fromPointer: mongoc_server_description_ismaster(description)!)
         self.parseIsMaster(isMaster)
 
         let serverType = String(cString: mongoc_server_description_type(description))
+        // swiftlint:disable:next force_unwrapping - libmongoc will always give us a valid raw value.
         self.type = ServerType(rawValue: serverType)!
     }
 }
@@ -226,9 +227,9 @@ public struct TopologyDescription {
         let timeoutValues = self.servers.map { $0.logicalSessionTimeoutMinutes }
         if timeoutValues.contains (where: { $0 == nil }) {
             return nil
-        } else {
-            return timeoutValues.map { $0! }.min()
         }
+        // swiftlint:disable:next force_unwrapping - we filtered out nil values already.
+        return timeoutValues.map { $0! }.min()
     }
 
     /// Returns `true` if the topology has a readable server available, and `false` otherwise.
@@ -245,14 +246,15 @@ public struct TopologyDescription {
     /// An internal initializer to create a `TopologyDescription` from an OpaquePointer
     /// to a `mongoc_server_description_t`
     internal init(_ description: OpaquePointer) {
-
         let topologyType = String(cString: mongoc_topology_description_type(description))
+        // swiftlint:disable:next force_unwrapping - libmongoc will only give us back valid raw values.
         self.type = TopologyType(rawValue: topologyType)!
 
         var size = size_t()
         let serverData = mongoc_topology_description_get_servers(description, &size)
         let buffer = UnsafeBufferPointer(start: serverData, count: size)
         if size > 0 {
+            // swiftlint:disable:next force_unwrapping - libmongoc func not documented as ever returning a null.
             self.servers = Array(buffer).map { ServerDescription($0!) }
         }
     }
