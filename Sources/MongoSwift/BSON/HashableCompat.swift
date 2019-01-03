@@ -17,7 +17,6 @@ extension HashableCompat {
     }
     #else
     /// Legacy hash value which defers to hashcompat
-    // swiftlint:disable:next legacy_hashing
     public var hashValue: Int {
         var hasher = Hasher()
         self.hashCompat(into: &hasher)
@@ -71,6 +70,7 @@ extension String: HashableCompat {
 #if !swift(>=4.2)
 /// Synthesized equatable conformance for BSONValue
 extension BSONValue {
+    /// Equatable conformance
     public static func == (lhs: Self, rhs: Self) -> Bool {
         return bsonEquals(lhs, rhs)
     }

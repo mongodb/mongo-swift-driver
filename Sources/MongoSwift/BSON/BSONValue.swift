@@ -73,10 +73,6 @@ public protocol BSONValue {
 
 /// An extension of `Array` to represent the BSON array type.
 extension Array: BSONValue {
-    public static func == (lhs: Array, rhs: Array) -> Bool {
-        return bsonEquals(lhs, rhs)
-    }
-
     public var bsonType: BSONType { return .array }
 
     public static func from(iterator iter: DocumentIterator) throws -> Array {
