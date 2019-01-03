@@ -576,7 +576,9 @@ final class CodecTests: MongoSwiftTestCase {
 
         // binary
         let binary = try Binary(base64: "//8=", subtype: .generic)
-        any = try decoder.decode(AnyBSONValue.self, from: "{\"$binary\" : {\"base64\": \"//8=\", \"subType\" : \"00\"}}")
+        any = try decoder.decode(
+            AnyBSONValue.self,
+            from: "{\"$binary\" : {\"base64\": \"//8=\", \"subType\" : \"00\"}}")
         expect(any.isBinary).to(beTrue())
         expect(any.asBinary).to(bsonEqual(binary))
         expect(any.value as? Binary).to(equal(binary))
@@ -630,7 +632,9 @@ final class CodecTests: MongoSwiftTestCase {
 
         // regex
         let regex = RegularExpression(pattern: "abc", options: "imx")
-        any = try decoder.decode(AnyBSONValue.self, from: "{ \"$regularExpression\" : { \"pattern\" : \"abc\", \"options\" : \"imx\" } }")
+        any = try decoder.decode(
+            AnyBSONValue.self,
+            from: "{ \"$regularExpression\" : { \"pattern\" : \"abc\", \"options\" : \"imx\" } }")
         expect(any.isRegularExpression).to(beTrue())
         expect(any.asRegularExpression).to(bsonEqual(regex))
         expect(any.value).to(bsonEqual(regex))

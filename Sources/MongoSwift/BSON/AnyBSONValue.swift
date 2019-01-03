@@ -104,6 +104,7 @@ public struct AnyBSONValue: Codable, Hashable, Equatable {
         }
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     public func hash(into hasher: inout Hasher) {
         switch self.value {
         case let value as Int:
@@ -143,6 +144,13 @@ public struct AnyBSONValue: Codable, Hashable, Equatable {
         default:
             preconditionFailure("invalid bson type")
         }
+    }
+
+    // Default implementation from protocol extension. Needed for Swift < 4.2
+    public var hashValue: Int {
+        var hasher = Hasher()
+        self.hash(into: &hasher)
+        return hasher.finalize()
     }
 
     /// This value as a BsonDocument if it is one, otherwise nil
@@ -209,7 +217,7 @@ public struct AnyBSONValue: Codable, Hashable, Equatable {
     public lazy var isDocument = value is Document
 
     /// True if this is a BsonArray, false otherwise.
-    public lazy var isArray = value is Array<BSONValue?>
+    public lazy var isArray = value is [BSONValue?]
 
     /// True if this is a BsonString, false otherwise.
     public lazy var isString = value is String

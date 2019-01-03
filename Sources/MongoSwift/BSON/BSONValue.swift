@@ -137,6 +137,13 @@ public struct BSONNull: BSONValue, Codable, Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(0)
     }
+
+    // Default implementation from protocol extension. Needed for Swift < 4.2
+    public var hashValue: Int {
+        var hasher = Hasher()
+        self.hash(into: &hasher)
+        return hasher.finalize()
+    }
 }
 
 /// A struct to represent the BSON Binary type.
@@ -237,6 +244,13 @@ public struct Binary: BSONValue, Hashable, Codable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(data)
         hasher.combine(subtype)
+    }
+
+    // Default implementation from protocol extension. Needed for Swift < 4.2
+    public var hashValue: Int {
+        var hasher = Hasher()
+        self.hash(into: &hasher)
+        return hasher.finalize()
     }
 }
 
@@ -392,6 +406,13 @@ public struct Decimal128: BSONValue, Hashable, Codable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(data)
     }
+
+    // Default implementation from protocol extension. Needed for Swift < 4.2
+    public var hashValue: Int {
+        var hasher = Hasher()
+        self.hash(into: &hasher)
+        return hasher.finalize()
+    }
 }
 
 /// An extension of `Double` to represent the BSON Double type.
@@ -530,6 +551,13 @@ public struct CodeWithScope: BSONValue, Hashable, Codable {
         hasher.combine(code)
         hasher.combine(scope)
     }
+
+    // Default implementation from protocol extension. Needed for Swift < 4.2
+    public var hashValue: Int {
+        var hasher = Hasher()
+        self.hash(into: &hasher)
+        return hasher.finalize()
+    }
 }
 
 /// A struct to represent the BSON MaxKey type.
@@ -555,6 +583,13 @@ public struct MaxKey: BSONValue, Hashable, Codable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(0)
     }
+
+    // Default implementation from protocol extension. Needed for Swift < 4.2
+    public var hashValue: Int {
+        var hasher = Hasher()
+        self.hash(into: &hasher)
+        return hasher.finalize()
+    }
 }
 
 /// A struct to represent the BSON MinKey type.
@@ -579,6 +614,13 @@ public struct MinKey: BSONValue, Hashable, Codable {
 
     public func hash(into hasher: inout Hasher) {
         hasher.combine(0)
+    }
+
+    // Default implementation from protocol extension. Needed for Swift < 4.2
+    public var hashValue: Int {
+        var hasher = Hasher()
+        self.hash(into: &hasher)
+        return hasher.finalize()
     }
 }
 
@@ -667,6 +709,13 @@ public struct ObjectId: BSONValue, Hashable, CustomStringConvertible, Codable {
 
     public func hash(into hasher: inout Hasher) {
         hasher.combine(oid)
+    }
+
+    // Default implementation from protocol extension. Needed for Swift < 4.2
+    public var hashValue: Int {
+        var hasher = Hasher()
+        self.hash(into: &hasher)
+        return hasher.finalize()
     }
 }
 
@@ -775,6 +824,13 @@ public struct RegularExpression: BSONValue, Hashable, Codable {
         hasher.combine(pattern)
         hasher.combine(options)
     }
+
+    // Default implementation from protocol extension. Needed for Swift < 4.2
+    public var hashValue: Int {
+        var hasher = Hasher()
+        self.hash(into: &hasher)
+        return hasher.finalize()
+    }
 }
 
 /// An extension of String to represent the BSON string type.
@@ -865,6 +921,13 @@ public struct Timestamp: BSONValue, Hashable, Codable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(timestamp)
         hasher.combine(increment)
+    }
+
+    // Default implementation from protocol extension. Needed for Swift < 4.2
+    public var hashValue: Int {
+        var hasher = Hasher()
+        self.hash(into: &hasher)
+        return hasher.finalize()
     }
 }
 
