@@ -61,5 +61,48 @@ final class AnyBSONValueTests: MongoSwiftTestCase {
                 }
             }
         }
+
+        let doc: [AnyHashable: AnyHashable] = [
+            expected.double: Double(2),
+            expected.string: "hi",
+            expected.doc: ["x": 1] as Document,
+            expected.arr: [1, 2],
+            expected.binary: try Binary(base64: "//8=", subtype: .generic),
+            expected.oid: ObjectId(fromString: "507f1f77bcf86cd799439011"),
+            expected.bool: true,
+            expected.date: Date(timeIntervalSinceReferenceDate: 5000),
+            expected.code: CodeWithScope(code: "hi", scope: ["x": 1]),
+            expected.int: 1,
+            expected.ts: Timestamp(timestamp: 1, inc: 2),
+            expected.int32: 5,
+            expected.int64: Int64(6),
+            expected.dec: Decimal128("1.2E+10"),
+            expected.maxkey: MaxKey(),
+            expected.regex: RegularExpression(pattern: "^abc", options: "imx")
+        ]
+
+        expect(doc[expected.double]).to(equal(expected.double))
+        expect(doc[expected.string]).to(equal(expected.string))
+        expect(doc[expected.doc]).to(equal(expected.doc))
+        expect(doc[expected.arr]).to(equal(expected.arr))
+        expect(doc[expected.binary]).to(equal(expected.binary))
+        expect(doc[expected.oid]).to(equal(expected.oid))
+        expect(doc[expected.bool]).to(equal(expected.bool))
+        expect(doc[expected.date]).to(equal(expected.date))
+        expect(doc[expected.code]).to(equal(expected.code))
+        expect(doc[expected.int]).to(equal(expected.int))
+        expect(doc[expected.ts]).to(equal(expected.ts))
+        expect(doc[expected.int32]).to(equal(expected.int32))
+        expect(doc[expected.int64]).to(equal(expected.int64))
+        expect(doc[expected.dec]).to(equal(expected.dec))
+        expect(doc[expected.maxkey]).to(equal(expected.maxkey))
+        expect(doc[expected.regex]).to(equal(expected.regex))
+
+        let oid1 = ObjectId()
+        let oid2 = ObjectId()
+
+        let dict = [oid1: 1, oid2: 2]
+        expect(dict[oid1]).to(equal(1))
+        expect(dict[oid2]).to(equal(2))
     }
 }

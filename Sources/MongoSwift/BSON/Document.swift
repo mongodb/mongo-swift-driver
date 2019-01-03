@@ -476,15 +476,8 @@ extension Document: ExpressibleByArrayLiteral {
     }
 }
 
-extension Document: Hashable {
-    public func hash(into hasher: inout Hasher) {
+extension Document: HashableCompat {
+    func hashCompat(into hasher: inout Hasher) {
         hasher.combine(self.canonicalExtendedJSON)
-    }
-
-    // Default implementation from protocol extension. Needed for Swift < 4.2
-    public var hashValue: Int {
-        var hasher = Hasher()
-        self.hash(into: &hasher)
-        return hasher.finalize()
     }
 }

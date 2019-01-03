@@ -120,7 +120,7 @@ extension Array: BSONValue {
 }
 
 /// A struct to represent the BSON null type.
-public struct BSONNull: BSONValue, Codable, Hashable {
+public struct BSONNull: BSONValue, Codable, HashableCompat {
     public var bsonType: BSONType { return .null }
 
     public static func from(iterator iter: DocumentIterator) throws -> BSONNull { return BSONNull() }
@@ -134,20 +134,13 @@ public struct BSONNull: BSONValue, Codable, Hashable {
         }
     }
 
-    public func hash(into hasher: inout Hasher) {
+    func hashCompat(into hasher: inout Hasher) {
         hasher.combine(0)
-    }
-
-    // Default implementation from protocol extension. Needed for Swift < 4.2
-    public var hashValue: Int {
-        var hasher = Hasher()
-        self.hash(into: &hasher)
-        return hasher.finalize()
     }
 }
 
 /// A struct to represent the BSON Binary type.
-public struct Binary: BSONValue, Hashable, Codable {
+public struct Binary: BSONValue, HashableCompat, Codable {
 
     public var bsonType: BSONType { return .binary }
 
@@ -241,16 +234,9 @@ public struct Binary: BSONValue, Hashable, Codable {
         return lhs.data == rhs.data && lhs.subtype == rhs.subtype
     }
 
-    public func hash(into hasher: inout Hasher) {
+    func hashCompat(into hasher: inout Hasher) {
         hasher.combine(data)
         hasher.combine(subtype)
-    }
-
-    // Default implementation from protocol extension. Needed for Swift < 4.2
-    public var hashValue: Int {
-        var hasher = Hasher()
-        self.hash(into: &hasher)
-        return hasher.finalize()
     }
 }
 
@@ -344,7 +330,7 @@ internal struct DBPointer: BSONValue {
 }
 
 /// A struct to represent the BSON Decimal128 type.
-public struct Decimal128: BSONValue, Hashable, Codable {
+public struct Decimal128: BSONValue, HashableCompat, Codable {
     /// This number, represented as a `String`.
     public let data: String
 
@@ -403,15 +389,8 @@ public struct Decimal128: BSONValue, Hashable, Codable {
         })
      }
 
-    public func hash(into hasher: inout Hasher) {
+    func hashCompat(into hasher: inout Hasher) {
         hasher.combine(data)
-    }
-
-    // Default implementation from protocol extension. Needed for Swift < 4.2
-    public var hashValue: Int {
-        var hasher = Hasher()
-        self.hash(into: &hasher)
-        return hasher.finalize()
     }
 }
 
@@ -489,7 +468,7 @@ extension Int64: BSONValue {
 }
 
 /// A struct to represent the BSON Code and CodeWithScope types.
-public struct CodeWithScope: BSONValue, Hashable, Codable {
+public struct CodeWithScope: BSONValue, HashableCompat, Codable {
     /// A string containing Javascript code.
     public let code: String
     /// An optional scope `Document` containing a mapping of identifiers to values,
@@ -547,21 +526,16 @@ public struct CodeWithScope: BSONValue, Hashable, Codable {
         return lhs.code == rhs.code && lhs.scope == rhs.scope
     }
 
-    public func hash(into hasher: inout Hasher) {
+    func hashCompat(into hasher: inout Hasher) {
         hasher.combine(code)
-        hasher.combine(scope)
-    }
-
-    // Default implementation from protocol extension. Needed for Swift < 4.2
-    public var hashValue: Int {
-        var hasher = Hasher()
-        self.hash(into: &hasher)
-        return hasher.finalize()
+        if let scope = scope {
+            hasher.combine(scope)
+        }
     }
 }
 
 /// A struct to represent the BSON MaxKey type.
-public struct MaxKey: BSONValue, Hashable, Codable {
+public struct MaxKey: BSONValue, HashableCompat, Codable {
 
     private var maxKey = 1
 
@@ -580,20 +554,13 @@ public struct MaxKey: BSONValue, Hashable, Codable {
 
     public static func == (lhs: MaxKey, rhs: MaxKey) -> Bool { return true }
 
-    public func hash(into hasher: inout Hasher) {
+    func hashCompat(into hasher: inout Hasher) {
         hasher.combine(0)
-    }
-
-    // Default implementation from protocol extension. Needed for Swift < 4.2
-    public var hashValue: Int {
-        var hasher = Hasher()
-        self.hash(into: &hasher)
-        return hasher.finalize()
     }
 }
 
 /// A struct to represent the BSON MinKey type.
-public struct MinKey: BSONValue, Hashable, Codable {
+public struct MinKey: BSONValue, HashableCompat, Codable {
 
     private var minKey = 1
 
@@ -612,20 +579,13 @@ public struct MinKey: BSONValue, Hashable, Codable {
 
     public static func == (lhs: MinKey, rhs: MinKey) -> Bool { return true }
 
-    public func hash(into hasher: inout Hasher) {
+    func hashCompat(into hasher: inout Hasher) {
         hasher.combine(0)
-    }
-
-    // Default implementation from protocol extension. Needed for Swift < 4.2
-    public var hashValue: Int {
-        var hasher = Hasher()
-        self.hash(into: &hasher)
-        return hasher.finalize()
     }
 }
 
 /// A struct to represent the BSON ObjectId type.
-public struct ObjectId: BSONValue, Hashable, CustomStringConvertible, Codable {
+public struct ObjectId: BSONValue, HashableCompat, CustomStringConvertible, Codable {
 
     public var bsonType: BSONType { return .objectId }
 
@@ -707,15 +667,8 @@ public struct ObjectId: BSONValue, Hashable, CustomStringConvertible, Codable {
         return lhs.oid == rhs.oid
     }
 
-    public func hash(into hasher: inout Hasher) {
+    func hashCompat(into hasher: inout Hasher) {
         hasher.combine(oid)
-    }
-
-    // Default implementation from protocol extension. Needed for Swift < 4.2
-    public var hashValue: Int {
-        var hasher = Hasher()
-        self.hash(into: &hasher)
-        return hasher.finalize()
     }
 }
 
@@ -754,7 +707,7 @@ extension NSRegularExpression {
 }
 
 /// A struct to represent a BSON regular expression.
-public struct RegularExpression: BSONValue, Hashable, Codable {
+public struct RegularExpression: BSONValue, HashableCompat, Codable {
 
     public var bsonType: BSONType { return .regularExpression }
 
@@ -820,16 +773,9 @@ public struct RegularExpression: BSONValue, Hashable, Codable {
         return lhs.pattern == rhs.pattern && lhs.options == rhs.options
     }
 
-    public func hash(into hasher: inout Hasher) {
+    func hashCompat(into hasher: inout Hasher) {
         hasher.combine(pattern)
         hasher.combine(options)
-    }
-
-    // Default implementation from protocol extension. Needed for Swift < 4.2
-    public var hashValue: Int {
-        var hasher = Hasher()
-        self.hash(into: &hasher)
-        return hasher.finalize()
     }
 }
 
@@ -879,7 +825,7 @@ internal struct Symbol: BSONValue {
 }
 
 /// A struct to represent the BSON Timestamp type.
-public struct Timestamp: BSONValue, Hashable, Codable {
+public struct Timestamp: BSONValue, HashableCompat, Codable {
 
     public var bsonType: BSONType { return .timestamp }
 
@@ -918,16 +864,9 @@ public struct Timestamp: BSONValue, Hashable, Codable {
         return lhs.timestamp == rhs.timestamp && lhs.increment == rhs.increment
     }
 
-    public func hash(into hasher: inout Hasher) {
+    func hashCompat(into hasher: inout Hasher) {
         hasher.combine(timestamp)
         hasher.combine(increment)
-    }
-
-    // Default implementation from protocol extension. Needed for Swift < 4.2
-    public var hashValue: Int {
-        var hasher = Hasher()
-        self.hash(into: &hasher)
-        return hasher.finalize()
     }
 }
 
