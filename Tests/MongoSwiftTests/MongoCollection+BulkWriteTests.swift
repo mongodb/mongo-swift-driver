@@ -36,10 +36,8 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
             return XCTFail("Client is not initialized")
         }
 
-        let collectionName = self.generateCollectionName()
-
         do {
-            coll = try client.db(type(of: self).testDatabase).collection(collectionName)
+            coll = try client.db(type(of: self).testDatabase).collection(self.getCollectionName())
         } catch {
             return XCTFail("Setup failed: \(error)")
         }

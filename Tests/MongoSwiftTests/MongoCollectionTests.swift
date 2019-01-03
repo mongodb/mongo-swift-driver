@@ -61,7 +61,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     override func setUp() {
         super.setUp()
         self.continueAfterFailure = false
-        self.collName = self.generateCollectionName()
+        self.collName = self.getCollectionName()
 
         do {
             guard let client = _client else {
@@ -362,7 +362,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     func testCodableCollection() throws {
         let client = try MongoClient()
         let db = try client.db(type(of: self).testDatabase)
-        let coll1 = try db.createCollection(self.generateCollectionName(), withType: Basic.self)
+        let coll1 = try db.createCollection(self.getCollectionName(suffix: "codable"), withType: Basic.self)
         defer { try? coll1.drop() }
 
         let b1 = Basic(x: 1, y: "hi")

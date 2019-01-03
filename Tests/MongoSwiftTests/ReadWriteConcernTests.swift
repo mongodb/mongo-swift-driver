@@ -176,7 +176,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
         let db1 = try client.db(type(of: self).testDatabase)
         defer { try? db1.drop() }
 
-        let coll1Name = self.generateCollectionName()
+        let coll1Name = self.getCollectionName(suffix: "1")
         // expect that a collection created from a DB with unset RC also has unset RC
         var coll1 = try db1.createCollection(coll1Name)
         expect(coll1.readConcern).to(beNil())
@@ -187,7 +187,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
 
         // expect that a collection retrieved from a DB with unset RC can override the DB's RC
         var coll2 = try db1.collection(
-                self.generateCollectionName(),
+                self.getCollectionName(suffix: "2"),
                 options: CollectionOptions(readConcern: ReadConcern(.local))
         )
         expect(coll2.readConcern?.level).to(equal("local"))
@@ -199,7 +199,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
                 options: DatabaseOptions(readConcern: ReadConcern(.local)))
         defer { try? db2.drop() }
 
-        let coll3Name = self.generateCollectionName()
+        let coll3Name = self.getCollectionName(suffix: "3")
         // expect that a collection created from a DB with local RC also has local RC
         var coll3 = try db2.createCollection(coll3Name)
         expect(coll3.readConcern?.level).to(equal("local"))
@@ -210,7 +210,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
 
         // expect that a collection retrieved from a DB with local RC can override the DB's RC
         let coll4 = try db2.collection(
-                self.generateCollectionName(),
+                self.getCollectionName(suffix: "4"),
                 options: CollectionOptions(readConcern: ReadConcern(.majority))
         )
         expect(coll4.readConcern?.level).to(equal("majority"))
@@ -223,7 +223,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
         defer { try? db1.drop() }
 
         // expect that a collection created from a DB with default WC also has default WC
-        var coll1 = try db1.createCollection(self.generateCollectionName())
+        var coll1 = try db1.createCollection(self.getCollectionName(suffix: "1"))
         expect(coll1.writeConcern).to(beNil())
 
         // expect that a collection retrieved from a DB with default WC also has default WC
@@ -235,7 +235,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
 
         // expect that a collection retrieved from a DB with default WC can override the DB's WC
         var coll2 = try db1.collection(
-                self.generateCollectionName(),
+                self.getCollectionName(suffix: "2"),
                 options: CollectionOptions(writeConcern: wc1)
         )
         expect(coll2.writeConcern?.w).to(equal(wc1.w))
@@ -246,7 +246,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
         defer { try? db2.drop() }
 
         // expect that a collection created from a DB with w:1 also has w:1
-        var coll3 = try db2.createCollection(self.generateCollectionName())
+        var coll3 = try db2.createCollection(self.getCollectionName(suffix: "3"))
         expect(coll3.writeConcern?.w).to(equal(wc1.w))
 
         // expect that a collection retrieved from a DB with w:1 also has w:1
@@ -255,7 +255,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
 
         // expect that a collection retrieved from a DB with w:1 can override the DB's WC
         let coll4 = try db2.collection(
-                self.generateCollectionName(),
+                self.getCollectionName(suffix: "4"),
                 options: CollectionOptions(writeConcern: wc2))
         expect(coll4.writeConcern?.w).to(equal(wc2.w))
     }
@@ -265,7 +265,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
         let client = try MongoClient()
         let db = try client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
-        let coll = try db.createCollection(self.generateCollectionName())
+        let coll = try db.createCollection(self.getCollectionName())
 
         let command: Document = ["count": coll.name]
 
@@ -306,7 +306,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
             return ["x": counter]
         }
 
-        let coll = try db.createCollection(self.generateCollectionName())
+        let coll = try db.createCollection(self.getCollectionName())
         let wc1 = try WriteConcern(w: .number(1))
         let wc2 = WriteConcern()
         let wc3 = try WriteConcern(journal: true)
@@ -341,7 +341,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
         expect(try coll.updateMany(filter: ["x": 4], update: ["$set": nextDoc()],
                                    options: UpdateOptions(writeConcern: wc3))).toNot(throwError())
 
-        let coll2 = try db.createCollection(self.generateCollectionName())
+        let coll2 = try db.createCollection(self.getCollectionName(suffix: "2"))
         defer { try? coll2.drop() }
         let pipeline: [Document] = [["$out": "\(db.name).\(coll2.name)"]]
         expect(try coll.aggregate(pipeline, options: AggregateOptions(writeConcern: wc1))).toNot(throwError())

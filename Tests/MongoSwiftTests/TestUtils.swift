@@ -45,9 +45,12 @@ class MongoSwiftTestCase: XCTestCase {
     // See: https://forums.swift.org/t/how-can-i-condition-on-the-size-of-int/9080/4 */
     static let is32Bit = MemoryLayout<Int>.size == 4
 
-    /// Generates a unique collection name of the format "-[<Test Case> <Test Name>]-<timestamp>".
-    internal func generateCollectionName() -> String {
-        return "\(self.name)-\(Date().timeIntervalSinceReferenceDate)"
+    /// Generates a unique collection name of the format "<Test Suite>_<Test Name>_<suffix>". If no suffix is provided,
+    /// the last underscore is omitted.
+    internal func getCollectionName(suffix: String = "") -> String {
+        let firstPart = self.name.replacingOccurrences(of: "[\\[\\]-]", with: "", options: [.regularExpression])
+        let bothParts = suffix.count > 0 ? "\(firstPart)_\(suffix)" : firstPart
+        return bothParts.replacingOccurrences(of: "[ \\+\\$]", with: "_", options: [.regularExpression])
     }
 }
 
