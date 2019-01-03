@@ -12,7 +12,7 @@ extension HashableCompat {
     #else
     public var hashValue: Int {
         var hasher = Hasher()
-        self._hash(into: &hasher)
+        self.hashCompat(into: &hasher)
         return hasher.finalize()
     }
     #endif
