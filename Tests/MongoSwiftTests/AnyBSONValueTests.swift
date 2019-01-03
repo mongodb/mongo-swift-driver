@@ -54,10 +54,13 @@ final class AnyBSONValueTests: MongoSwiftTestCase {
                 }
                 switch $0.value.value {
                 // int and bool hash values are calculated differently in >= 4.2
-                #if !swift(>=4.2)
+
                 case is Int, is Bool:
+                    #if !swift(>=4.2)
                     eval(value.value is Int || value.value is Bool || $0.key == key, $0.value, value)
-                #endif
+                    #else
+                    eval($0.key == key, $0.value, value)
+                    #endif
                 case is MinKey, is MaxKey:
                     eval(value.value is MinKey || value.value is MaxKey || $0.key == key, $0.value, value)
                 default:
