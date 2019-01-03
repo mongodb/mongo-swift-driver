@@ -83,18 +83,8 @@ internal struct Hasher {
             self.hashValue = hashable.hashValue
             return
         }
-        // else, combine the hashValues. adapted from
-        // https://www.boost.org/doc/libs/1_64_0/boost/functional/hash/hash.hpp
-        // and https://github.com/krzysztofzablocki/Sourcery
-        #if arch(x86_64) || arch(arm64)
-        let magic: UInt = 0x9e3779b97f4a7c15
-        #elseif arch(i386) || arch(arm)
-        let magic: UInt = 0x9e3779b9
-        #endif
-        var lhs = UInt(bitPattern: hashValue)
-        let rhs = UInt(bitPattern: hashable.hashValue)
-        lhs ^= rhs &+ magic &+ (lhs << 6) &+ (lhs >> 2)
-        self.hashValue = Int(bitPattern: lhs)
+        // else, see: https://github.com/apple/swift-evolution/blob/master/proposals/0206-hashable-enhancements.md#source-compatibility
+        self.hashValue! = hashValue ^ hashable.hashValue &* 16777619
     }
 
     func finalize() -> Int {
