@@ -1,7 +1,7 @@
 import Foundation
 
 /// A struct wrapping a `BSONValue` type that allows for encoding/
-/// decoding `BSONValue`s of unknown type.  
+/// decoding and hashing `BSONValue`s of unknown type.
 public struct AnyBSONValue: Codable, Hashable, Equatable {
     /// The `BSONValue` wrapped by this struct. 
     public let value: BSONValue
@@ -140,7 +140,8 @@ public struct AnyBSONValue: Codable, Hashable, Equatable {
             value.hash(into: &hasher)
         case let value as [BSONValue?]:
             value.forEach({$0.map({AnyBSONValue($0).hash(into: &hasher)})})
-        default: break
+        default:
+            preconditionFailure("invalid bson type")
         }
     }
 
@@ -260,8 +261,4 @@ public struct AnyBSONValue: Codable, Hashable, Equatable {
 
     /// True if this is a MinKey, false otherwise.
     public lazy var isMinKey: Bool = value is MinKey
-}
-
-public func ~=(pattern: BSONValue, value: AnyBSONValue) -> Bool {
-    return bsonEquals(value.value, pattern)
 }
