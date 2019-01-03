@@ -1,3 +1,4 @@
+// swiftlint:disable legacy_hashing
 import Foundation
 
 /*
