@@ -324,10 +324,12 @@ extension _BSONEncoder {
         return number
     }
 
+    /// Returns the value as a `BSONValue` if possible. Otherwise, returns an empty `Document`.
     fileprivate func box<T: Encodable>(_ value: T) throws -> BSONValue {
         return try self.box_(value) ?? Document()
     }
 
+    /// Returns the date as a `BSONValue`, or nil if no values were encoded by the custom encoder strategy.
     fileprivate func boxDate(_ date: Date) throws -> BSONValue? {
         switch self.options.dateEncodingStrategy {
         case .bsonDate:
@@ -359,7 +361,7 @@ extension _BSONEncoder {
                 throw error
             }
 
-            // If they didn't encode anything, will default to empty subdocument
+            // The closure didn't encode anything.
             guard self.storage.count > depth else {
                 return nil
             }
@@ -368,6 +370,7 @@ extension _BSONEncoder {
         }
     }
 
+    /// Returns the uuid as a `BSONValue`.
     fileprivate func boxUUID(_ uuid: UUID) throws -> BSONValue {
         switch self.options.uuidEncodingStrategy {
         case .deferToUUID:
@@ -378,6 +381,7 @@ extension _BSONEncoder {
         }
     }
 
+    /// Returns the value as a `BSONValue` if possible. Otherwise, returns nil.
     fileprivate func box_<T: Encodable>(_ value: T) throws -> BSONValue? {
         if let date = value as? Date {
             return try boxDate(date)
