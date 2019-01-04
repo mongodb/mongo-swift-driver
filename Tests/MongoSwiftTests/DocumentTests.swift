@@ -696,7 +696,7 @@ final class DocumentTests: MongoSwiftTestCase {
         let defaultEncoding = try encoder.encode(dateStruct)
         expect(defaultEncoding["date"] as? Date).to(equal(date))
 
-        encoder.dateEncodingStrategy = .bsonDate
+        encoder.dateEncodingStrategy = .bsonDateTime
         let bsonDate = try encoder.encode(dateStruct)
         expect(bsonDate["date"] as? Date).to(equal(date))
 

@@ -14,7 +14,7 @@ public class BSONEncoder {
         case deferToDate
 
         /// Encode the `Date` as a BSON datetime object (default).
-        case bsonDate
+        case bsonDateTime
 
         /// Encode the `Date` as a 64-bit integer counting the number of milliseconds since January 1, 1970.
         case millisecondsSince1970
@@ -49,7 +49,7 @@ public class BSONEncoder {
     }
 
     /// The strategy to use for encoding `Date`s with this instance.
-    public var dateEncodingStrategy: DateEncodingStrategy = .bsonDate
+    public var dateEncodingStrategy: DateEncodingStrategy = .bsonDateTime
 
     /// The strategy to use for encoding `UUID`s with this instance.
     public var uuidEncodingStrategy: UUIDEncodingStrategy = .binary
@@ -341,7 +341,7 @@ extension _BSONEncoder {
     /// Returns the date as a `BSONValue`, or nil if no values were encoded by the custom encoder strategy.
     fileprivate func boxDate(_ date: Date) throws -> BSONValue? {
         switch self.options.dateEncodingStrategy {
-        case .bsonDate:
+        case .bsonDateTime:
             return date
         case .deferToDate:
             try date.encode(to: self)
