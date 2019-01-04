@@ -14,7 +14,7 @@ public class BSONDecoder {
     ///
     /// As per the BSON specification, the default strategy is to decode `Date`s from BSON datetime objects.
     ///
-    /// See bsonspec.org for more information.
+    /// - SeeAlso: bsonspec.org
     public enum DateDecodingStrategy {
         /// Decode `Date`s stored as BSON datetimes.
         case bsonDateTime
@@ -44,7 +44,7 @@ public class BSONDecoder {
     /// As per the BSON specification, the default strategy is to decode `UUID`s from BSON binary types with the UUID
     /// subtype.
     ///
-    /// See bsonspec.org for more information.
+    /// - SeeAlso: bsonspec.org
     public enum UUIDDecodingStrategy {
         /// Decode `UUID`s by deferring to their default decoding implementation.
         case deferredToUUID
