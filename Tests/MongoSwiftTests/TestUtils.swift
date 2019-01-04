@@ -48,11 +48,11 @@ class MongoSwiftTestCase: XCTestCase {
     /// Generates a unique collection name of the format "<Test Suite>_<Test Name>_<suffix>". If no suffix is provided,
     /// the last underscore is omitted.
     internal func getCollectionName(suffix: String? = nil) -> String {
-        let name = self.name.replacingOccurrences(of: "[\\[\\]-]", with: "", options: [.regularExpression])
-
-        return [name, suffix].compactMap { $0 }
-                .joined(separator: "_")
-                .replacingOccurrences(of: "[ \\+\\$]", with: "_", options: [.regularExpression])
+        var name = self.name.replacingOccurrences(of: "[\\[\\]-]", with: "", options: [.regularExpression])
+        if let suf = suffix {
+            name += "_" + suf
+        }
+        return name.replacingOccurrences(of: "[ \\+\\$]", with: "_", options: [.regularExpression])
     }
 }
 
