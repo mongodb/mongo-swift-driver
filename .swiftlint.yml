@@ -12,6 +12,7 @@ opt_in_rules:
   - contains_over_first_not_nil
   - closure_end_indentation
   - closure_spacing
+  - conditional_returns_on_newline
   - empty_count
   - empty_string
   - explicit_init

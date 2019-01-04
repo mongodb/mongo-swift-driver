@@ -87,7 +87,9 @@ public class BSONDecoder {
     /// - throws: An error if any value throws an error during decoding.
     public func decode<T: Decodable>(_ type: T.Type, from document: Document) throws -> T {
         /// if the requested type is `Document` we're done
-        if let doc = document as? T { return doc }
+        if let doc = document as? T {
+            return doc
+        }
         let _decoder = _BSONDecoder(referencing: document, options: self.options)
         return try type.init(from: _decoder)
     }
@@ -339,7 +341,9 @@ extension _BSONDecoder {
 
         // if the data is already stored as the correct type in the document, then we can short-circuit
         // and just return the typed value here
-        if let val = value as? T { return val }
+        if let val = value as? T {
+            return val
+        }
 
         self.storage.push(container: value)
         defer { self.storage.popContainer() }

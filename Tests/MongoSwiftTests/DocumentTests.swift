@@ -271,7 +271,9 @@ final class DocumentTests: MongoSwiftTestCase {
     }
 
     func testIntEncodesAsInt32OrInt64() {
-        if MongoSwiftTestCase.is32Bit { return }
+        guard !MongoSwiftTestCase.is32Bit else {
+            return
+        }
 
         let int32min_sub1 = Int64(Int32.min) - Int64(1)
         let int32max_add1 = Int64(Int32.max) + Int64(1)

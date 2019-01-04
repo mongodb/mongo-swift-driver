@@ -83,8 +83,7 @@ public class WriteConcern: Codable {
     /// the operation will return an error. The value MUST be greater than or equal to 0.
     public var wtimeoutMS: Int32? {
         let timeout = mongoc_write_concern_get_wtimeout(self._writeConcern)
-        if timeout == 0 { return nil }
-        return timeout
+        return timeout == 0 ? nil : timeout
     }
 
     /// Indicates whether this is an acknowledged write concern.
@@ -136,7 +135,7 @@ public class WriteConcern: Codable {
 
     /// Initializes a new `WriteConcern` by copying a `mongoc_write_concern_t`.
     /// The caller is responsible for freeing the original `mongoc_write_concern_t`.
-    internal init(_ writeConcern: OpaquePointer?) {
+    internal init(from writeConcern: OpaquePointer?) {
         self._writeConcern = mongoc_write_concern_copy(writeConcern)
     }
 
@@ -160,7 +159,9 @@ public class WriteConcern: Codable {
     }
 
     deinit {
-        guard let writeConcern = self._writeConcern else { return }
+        guard let writeConcern = self._writeConcern else {
+            return
+        }
         mongoc_write_concern_destroy(writeConcern)
         self._writeConcern = nil
     }

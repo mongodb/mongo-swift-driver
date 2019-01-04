@@ -21,7 +21,9 @@ public class DocumentStorage {
     }
 
     deinit {
-        guard let pointer = self.pointer else { return }
+        guard let pointer = self.pointer else {
+            return
+        }
         bson_destroy(pointer)
         self.pointer = nil
     }
@@ -125,7 +127,9 @@ extension Document {
             let sameTypes = newBSONType == existingType
 
             // if the new type is the same and it's a type with no custom data, no-op
-            if sameTypes && [.null, .undefined, .minKey, .maxKey].contains(newBSONType) { return }
+            if sameTypes && [.null, .undefined, .minKey, .maxKey].contains(newBSONType) {
+                return
+            }
 
             // if the new type is the same and it's a fixed length type, we can overwrite
             if let ov = newValue as? Overwritable, ov.bsonType == existingType {

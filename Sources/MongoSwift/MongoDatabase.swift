@@ -149,10 +149,8 @@ public class MongoDatabase {
     /// The `ReadConcern` set on this database, or `nil` if one is not set.
     public var readConcern: ReadConcern? {
         // per libmongoc docs, we don't need to handle freeing this ourselves
-        let readConcern = mongoc_database_get_read_concern(self._database)
-        let rcObj = ReadConcern(from: readConcern)
-        if rcObj.isDefault { return nil }
-        return rcObj
+        let rc = ReadConcern(from: mongoc_database_get_read_concern(self._database))
+        return rc.isDefault ? nil : rc
     }
 
     /// The `ReadPreference` set on this database
@@ -163,10 +161,8 @@ public class MongoDatabase {
     /// The `WriteConcern` set on this database, or `nil` if one is not set.
     public var writeConcern: WriteConcern? {
         // per libmongoc docs, we don't need to handle freeing this ourselves
-        let writeConcern = mongoc_database_get_write_concern(self._database)
-        let wcObj = WriteConcern(writeConcern)
-        if wcObj.isDefault { return nil }
-        return wcObj
+        let wc = WriteConcern(from: mongoc_database_get_write_concern(self._database))
+        return wc.isDefault ? nil : wc
     }
 
     /// Initializes a new `MongoDatabase` instance, not meant to be instantiated directly.
@@ -178,7 +174,9 @@ public class MongoDatabase {
     /// Deinitializes a MongoDatabase, cleaning up the internal `mongoc_database_t`.
     deinit {
         self._client = nil
-        guard let database = self._database else { return }
+        guard let database = self._database else {
+            return
+        }
         mongoc_database_destroy(database)
         self._database = nil
     }

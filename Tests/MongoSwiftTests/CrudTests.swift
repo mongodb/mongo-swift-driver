@@ -145,11 +145,26 @@ private class CrudTest {
     let collection: Document?
 
     var arrayFilters: [Document]? { return self.args["arrayFilters"] as? [Document] }
-    var batchSize: Int32? { if let b = self.args["batchSize"] as? Int { return Int32(b) } else { return nil } }
+    var batchSize: Int32? {
+        if let b = self.args["batchSize"] as? Int {
+            return Int32(b)
+        }
+        return nil
+    }
     var collation: Document? { return self.args["collation"] as? Document }
     var sort: Document? { return self.args["sort"] as? Document }
-    var skip: Int64? { if let s = self.args["skip"] as? Int { return Int64(s) } else { return nil } }
-    var limit: Int64? { if let l = self.args["limit"] as? Int { return Int64(l) } else { return nil } }
+    var skip: Int64? {
+        if let s = self.args["skip"] as? Int {
+            return Int64(s)
+            }
+            return nil
+        }
+    var limit: Int64? {
+        if let l = self.args["limit"] as? Int {
+            return Int64(l)
+        }
+        return nil
+    }
     var projection: Document? { return self.args["projection"] as? Document }
     var returnDoc: ReturnDocument? {
         if let ret = self.args["returnDocument"] as? String {
@@ -177,7 +192,10 @@ private class CrudTest {
     // If the test has a `collection` field in its `outcome`, verify that the expected
     // data is present. If there is no `collection` field, do nothing. 
     func verifyData(testCollection coll: MongoCollection<Document>, db: MongoDatabase) throws {
-        guard let collection = self.collection else { return } // only  some tests have data to verify
+        // only  some tests have data to verify
+        guard let collection = self.collection else {
+            return
+        }
         // if a name is not specified, check the current collection
         var collToCheck = coll
         if let name = collection["name"] as? String {

@@ -21,7 +21,9 @@ class MongoSwiftTestCase: XCTestCase {
     /// we're running from XCode or the command line
     static var specsPath: String {
         // if we can access the "/Tests" directory, assume we're running from command line
-        if FileManager.default.fileExists(atPath: "./Tests") { return "./Tests/Specs" }
+        if FileManager.default.fileExists(atPath: "./Tests") {
+            return "./Tests/Specs"
+        }
         // otherwise we're in Xcode, get the bundle's resource path
         guard let path = Bundle(for: self).resourcePath else {
             XCTFail("Missing resource path")
@@ -144,8 +146,12 @@ extension MongoClient {
     internal func serverVersionIsInRange(_ min: String?, _ max: String?) throws -> Bool {
         let version = try self.serverVersion()
 
-        if let min = min, version.isLessThan(try ServerVersion(min)) { return false }
-        if let max = max, version.isGreaterThan(try ServerVersion(max)) { return false }
+        if let min = min, version.isLessThan(try ServerVersion(min)) {
+            return false
+        }
+        if let max = max, version.isGreaterThan(try ServerVersion(max)) {
+            return false
+        }
 
         return true
     }
@@ -157,7 +163,9 @@ extension MongoClient {
 
 /// Cleans and normalizes a given JSON string for comparison purposes
 func clean(json: String?) -> String {
-    guard let str = json else { return "" }
+    guard let str = json else {
+        return ""
+    }
     do {
         // parse as [String: Any] so we get consistent key ordering
         guard let object = try JSONSerialization.jsonObject(with: str.data(using: .utf8)!,

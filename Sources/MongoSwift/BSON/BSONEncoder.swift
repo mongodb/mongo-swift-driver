@@ -85,7 +85,9 @@ public class BSONEncoder {
         case let doc as Document:
             return doc
         case let abv as AnyBSONValue:
-            if let doc = abv.value as? Document { return doc }
+            if let doc = abv.value as? Document {
+                return doc
+            }
         default:
             break
         }
@@ -116,10 +118,11 @@ public class BSONEncoder {
     /// - returns: A new `Document` containing the encoded BSON data, or nil if there is no data to encode.
     /// - throws: An error if any value throws an error during encoding.
     public func encode<T: Encodable>(_ value: T?) throws -> Document? {
-        guard let value = value else { return nil }
+        guard let value = value else {
+            return nil
+        }
         let encoded = try self.encode(value)
-        if encoded == [:] { return nil }
-        return encoded
+        return encoded == [:] ? nil : encoded
     }
 
     /// Encodes the given array of top-level values and returns an array of their BSON representations.
@@ -414,7 +417,9 @@ extension _BSONEncoder {
         }
 
         // The top container should be a new container.
-        guard self.storage.count > depth else { return nil }
+        guard self.storage.count > depth else {
+            return nil
+        }
         return self.storage.popContainer()
     }
 }
@@ -676,7 +681,9 @@ private class MutableDictionary: BSONValue {
 
     subscript(key: String) -> BSONValue? {
         get {
-            guard let index = keys.index(of: key) else { return nil }
+            guard let index = keys.index(of: key) else {
+                return nil
+            }
             return values[index]
         }
         set(newValue) {
@@ -684,7 +691,9 @@ private class MutableDictionary: BSONValue {
                 keys.append(key)
                 values.append(newValue)
             } else {
-                guard let index = keys.index(of: key) else { return }
+                guard let index = keys.index(of: key) else {
+                    return
+                }
                 values.remove(at: index)
                 keys.remove(at: index)
             }

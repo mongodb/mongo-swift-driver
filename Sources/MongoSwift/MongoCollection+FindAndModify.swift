@@ -90,7 +90,9 @@ extension MongoCollection {
             throw MongoError.commandError(message: toErrorString(error))
         }
 
-        guard let value = try reply.getValue(for: "value") as? Document else { return nil }
+        guard let value = try reply.getValue(for: "value") as? Document else {
+            return nil
+        }
 
         return try BSONDecoder().decode(CollectionType.self, from: value)
     }
@@ -327,7 +329,9 @@ private class FindAndModifyOptions {
     }
 
     deinit {
-        guard let options = self._options else { return }
+        guard let options = self._options else {
+            return
+        }
         mongoc_find_and_modify_opts_destroy(options)
         self._options = nil
     }

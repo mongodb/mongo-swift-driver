@@ -99,7 +99,9 @@ final class Document_SequenceTests: MongoSwiftTestCase {
         let doc1: Document = ["a": 1, "b": BSONNull(), "c": 3, "d": 4, "e": BSONNull()]
         expect(doc1.mapValues { $0 is BSONNull ? 1 : $0 }).to(equal(["a": 1, "b": 1, "c": 3, "d": 4, "e": 1]))
         let output1 = doc1.mapValues { val in
-            if let int = val as? Int { return int + 1 }
+            if let int = val as? Int {
+                return int + 1
+            }
             return val
         }
         expect(output1).to(equal(["a": 2, "b": BSONNull(), "c": 4, "d": 5, "e": BSONNull()]))
@@ -134,7 +136,10 @@ final class Document_SequenceTests: MongoSwiftTestCase {
     func isInt(_ pair: Document.KeyValuePair) -> Bool { return pair.value is Int }
     func isNotNil(_ pair: Document.KeyValuePair) -> Bool { return !(pair.value is BSONNull) }
     func is10(_ pair: Document.KeyValuePair) -> Bool {
-        if let int = pair.value as? Int { return int == 10 } else { return false }
+        if let int = pair.value as? Int {
+            return int == 10
+         }
+        return false
     }
     func isNot10(_ pair: Document.KeyValuePair) -> Bool { return !is10(pair) }
 

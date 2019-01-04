@@ -271,7 +271,7 @@ public class BulkWriteOperation {
 
     /// Indicates whether this bulk operation used an acknowledged write concern.
     private var isAcknowledged: Bool {
-        let wc = WriteConcern(mongoc_bulk_operation_get_write_concern(self.bulk))
+        let wc = WriteConcern(from: mongoc_bulk_operation_get_write_concern(self.bulk))
         return wc.isAcknowledged
     }
 

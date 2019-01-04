@@ -89,7 +89,9 @@ public class ReadConcern: Codable {
 
     /// Cleans up the internal `mongoc_read_concern_t`.
     deinit {
-        guard let readConcern = self._readConcern else { return }
+        guard let readConcern = self._readConcern else {
+            return
+        }
         mongoc_read_concern_destroy(readConcern)
         self._readConcern = nil
     }
