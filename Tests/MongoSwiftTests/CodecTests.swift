@@ -326,7 +326,6 @@ final class CodecTests: MongoSwiftTestCase {
 
     /// Test decoding/encoding to all possible BSON types
     func testBSONValues() throws {
-
         let expected = AllBSONTypes(
                             double: Double(2),
                             string: "hi",
@@ -772,6 +771,5 @@ final class CodecTests: MongoSwiftTestCase {
         // These tests are to ensure that we handle incorrect encode() implementations in the same way as JSONEncoder.
         expect(try encoder.encode(IncorrectTopLevelEncode(BSONNull()))).to(throwError())
         expect(try encoder.encode(CorrectTopLevelEncode(BSONNull()))).to(equal(["x": Document()]))
-
     }
 }

@@ -61,7 +61,6 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
         // test init from doc
         let rc4 = ReadConcern(["level": "majority"])
         expect(rc4.level).to(equal("majority"))
-
     }
 
     func testWriteConcernType() throws {
@@ -78,7 +77,6 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
     }
 
     func testClientReadConcern() throws {
-
         let majority = ReadConcern(.majority)
 
         // test behavior of a client with initialized with no RC

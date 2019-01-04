@@ -3,7 +3,6 @@ import mongoc
 
 /// A class to represent a MongoDB write concern.
 public class WriteConcern: Codable {
-
     /// A pointer to a mongoc_write_concern_t
     internal var _writeConcern: OpaquePointer?
 

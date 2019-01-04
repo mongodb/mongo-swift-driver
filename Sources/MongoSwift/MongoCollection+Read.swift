@@ -109,7 +109,6 @@ extension MongoCollection {
      */
     public func distinct(fieldName: String, filter: Document = [:],
                          options: DistinctOptions? = nil) throws -> [BSONValue] {
-
         let collName = String(cString: mongoc_collection_get_name(self._collection))
         let command: Document = [
             "distinct": collName,

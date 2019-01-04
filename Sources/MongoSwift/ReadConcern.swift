@@ -2,7 +2,6 @@ import mongoc
 
 /// A class to represent a MongoDB read concern.
 public class ReadConcern: Codable {
-
     /// An enumeration of possible ReadConcern levels.
     public enum Level: String {
         /// See https://docs.mongodb.com/manual/reference/read-concern-local/

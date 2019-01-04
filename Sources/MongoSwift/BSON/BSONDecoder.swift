@@ -2,7 +2,6 @@ import Foundation
 
 /// `BSONDecoder` facilitates the decoding of BSON into semantic `Decodable` types.
 public class BSONDecoder {
-
     @available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *)
     internal static var iso8601Formatter: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
@@ -141,7 +140,6 @@ public class BSONDecoder {
 
 /// :nodoc: An internal class to actually implement the `Decoder` protocol.
 internal class _BSONDecoder: Decoder {
-
     /// The decoder's storage.
     internal var storage: _BSONDecodingStorage
 
@@ -207,7 +205,6 @@ internal class _BSONDecoder: Decoder {
 
 // Storage for a _BSONDecoder.
 internal struct _BSONDecodingStorage {
-
     /// The container stack, consisting of `BSONValue`s.
     fileprivate private(set) var containers: [BSONValue] = []
 
@@ -238,7 +235,6 @@ internal struct _BSONDecodingStorage {
 
 /// Extend _BSONDecoder to add methods for "unboxing" values as various types.
 extension _BSONDecoder {
-
     fileprivate func unboxBSONValue<T: BSONValue>(_ value: BSONValue, as type: T.Type) throws -> T {
         // We throw in the case of BSONNull because nulls should be requested through decodeNil().
         guard !(value is BSONNull) else {
@@ -378,7 +374,6 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
         #else
         return self.container.keys.flatMap { Key(stringValue: $0) }
         #endif
-
     }
 
     /// Returns a Boolean value indicating whether the decoder contains a value associated with the given key.
@@ -519,7 +514,6 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
 }
 
 private struct _BSONUnkeyedDecodingContainer: UnkeyedDecodingContainer {
-
     /// A reference to the decoder we're reading from.
     private let decoder: _BSONDecoder
 
@@ -657,7 +651,6 @@ private struct _BSONUnkeyedDecodingContainer: UnkeyedDecodingContainer {
 
 /// :nodoc:
 extension _BSONDecoder: SingleValueDecodingContainer {
-
     /// Assert that the top container for this decoder is non-null.
     private func expectNonNull<T>(_ type: T.Type) throws {
         guard !self.decodeNil() else {

@@ -6,7 +6,6 @@ public struct SessionOptions: Encodable {
 
 /// A session for ordering sequential operations.
 public class ClientSession: Encodable {
-
     /// Initializes a new client session.
     public init() {
     }

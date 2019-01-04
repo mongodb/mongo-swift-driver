@@ -3,7 +3,6 @@ import mongoc
 
 /// `BSONEncoder` facilitates the encoding of `Encodable` values into BSON.
 public class BSONEncoder {
-
     /// Enum representing the various strategies for encoding `Date`s.
     ///
     /// As per the BSON specification, the default strategy is to encode `Date`s as BSON datetime objects.
@@ -148,7 +147,6 @@ public class BSONEncoder {
 
 /// :nodoc: An internal class to implement the `Encoder` protocol.
 internal class _BSONEncoder: Encoder {
-
     /// The encoder's storage.
     internal var storage: _BSONEncodingStorage
 
@@ -218,7 +216,6 @@ internal class _BSONEncoder: Encoder {
 }
 
 internal struct _BSONEncodingStorage {
-
     /// The container stack.
     /// Elements may be any `BSONValue` type.
     internal var containers: [BSONValue] = []
@@ -258,7 +255,6 @@ internal struct _BSONEncodingStorage {
 /// superclass -- the lifetime of the encoder should not escape the scope it's created in, but it doesn't
 // necessarily know when it's done being used (to write to the original container).
 private class _BSONReferencingEncoder: _BSONEncoder {
-
     /// The type of container we're referencing.
     private enum Reference {
         /// Referencing a specific index in an array container.
@@ -315,12 +311,10 @@ private class _BSONReferencingEncoder: _BSONEncoder {
             dictionary[key] = value
         }
     }
-
 }
 
 /// Extend `_BSONEncoder` to add methods for "boxing" values.
 extension _BSONEncoder {
-
     /// Converts a `CodableNumber` to a `BSONValue` type. Throws if `value` cannot be
     /// exactly represented by an `Int`, `Int32`, `Int64`, or `Double`.
     fileprivate func boxNumber<T: CodableNumber>(_ value: T) throws -> BSONValue {
@@ -498,7 +492,6 @@ private struct _BSONKeyedEncodingContainer<K: CodingKey> : KeyedEncodingContaine
 
     public mutating func superEncoder() -> Encoder {
         return _BSONReferencingEncoder(referencing: self.encoder, key: _BSONKey.super, wrapping: self.container)
-
     }
 
     public mutating func superEncoder(forKey key: Key) -> Encoder {
@@ -507,7 +500,6 @@ private struct _BSONKeyedEncodingContainer<K: CodingKey> : KeyedEncodingContaine
 }
 
 private struct _BSONUnkeyedEncodingContainer: UnkeyedEncodingContainer {
-
     /// A reference to the encoder we're writing to.
     private let encoder: _BSONEncoder
 
@@ -588,7 +580,6 @@ private struct _BSONUnkeyedEncodingContainer: UnkeyedEncodingContainer {
 
 /// :nodoc:
 extension _BSONEncoder: SingleValueEncodingContainer {
-
     private func assertCanEncodeNewValue() {
         precondition(self.canEncodeNewValue,
                      "Attempt to encode value through single value container when previously value already encoded.")
@@ -634,7 +625,6 @@ extension _BSONEncoder: SingleValueEncodingContainer {
 /// encoder storage purposes. We use this rather than NSMutableArray because
 /// it allows us to preserve Swift type information.
 private class MutableArray: BSONValue {
-
     var bsonType: BSONType { return .array }
 
     var array = [BSONValue]()
@@ -672,7 +662,6 @@ private class MutableArray: BSONValue {
 /// for encoder storage purposes. We use this rather than NSMutableDictionary
 /// because it allows us to preserve Swift type information.
 private class MutableDictionary: BSONValue {
-
     var bsonType: BSONType { return .document }
 
     // rather than using a dictionary, do this so we preserve key orders

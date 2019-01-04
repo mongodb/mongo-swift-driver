@@ -11,7 +11,6 @@ internal extension Document {
 }
 
 final class CrudTests: MongoSwiftTestCase {
-
     static var allTests: [(String, (CrudTests) -> () throws -> Void)] {
         return [
             ("testReads", testReads),
@@ -34,7 +33,6 @@ final class CrudTests: MongoSwiftTestCase {
         let client = try MongoClient()
         let db = try client.db(type(of: self).testDatabase)
         for (filename, file) in try parseFiles(atPath: forPath) {
-
             if try !client.serverVersionIsInRange(file.minServerVersion, file.maxServerVersion) {
                 print("Skipping tests from file \(filename) for server version \(try client.serverVersion())")
                 continue
@@ -44,7 +42,6 @@ final class CrudTests: MongoSwiftTestCase {
 
             // For each file, execute the test cases contained in it
             for (i, test) in file.tests.enumerated() {
-
                 print("Executing test: \(test.description)")
 
                 // for each test case:

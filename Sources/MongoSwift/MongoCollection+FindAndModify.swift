@@ -73,7 +73,6 @@ extension MongoCollection {
     /// A private helper method for findAndModify operations to use
     private func findAndModify(filter: Document, update: Document? = nil,
                                options: FindAndModifyOptionsConvertible? = nil) throws -> CollectionType? {
-
         // encode provided options, or create empty ones. we always need
         // to send *something*, as findAndModify requires one of "remove"
         // or "update" to be set.

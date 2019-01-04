@@ -39,7 +39,6 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
 
             // execute the tests for this file
             for var test in testFile.tests {
-
                 if try !client.serverVersionIsInRange(test.minServerVersion, test.maxServerVersion) {
                     print("Skipping test case \(test.description) for server version \(try client.serverVersion())")
                     continue
@@ -117,7 +116,6 @@ private struct CMTestFile: Decodable {
 
 /// A struct to hold the data for a single test from a CMTestFile.
 private struct CMTest: Decodable {
-
     struct Operation: Decodable {
         let name: String
         let args: Document
@@ -159,7 +157,6 @@ private struct CMTest: Decodable {
         let filter: Document = self.op.args["filter"] as? Document ?? [:]
 
         switch self.op.name {
-
         case "count":
             _ = try? collection.count(filter)
         case "deleteMany":
@@ -376,7 +373,6 @@ private struct CommandSucceededExpectation: ExpectationType, Decodable {
 
         let receivedCursor = event.reply["cursor"] as? Document
         if let expectedCursor = self.cursor {
-
             // if the received cursor has an ID, and the expected ID is not 0, compare cursor IDs
             if let id = receivedCursor!["id"] as? Int64, expectedCursor["id"] as? Int64 != 0 {
                 let storedId = testContext["cursorId"] as? Int64
@@ -387,13 +383,11 @@ private struct CommandSucceededExpectation: ExpectationType, Decodable {
                 } else {
                     expect(storedId).to(equal(id))
                 }
-
             }
             compareCursors(expected: expectedCursor, actual: receivedCursor!)
         } else {
             expect(receivedCursor).to(beNil())
         }
-
     }
 
     /// Compare expected vs actual write errors.

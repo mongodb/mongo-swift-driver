@@ -29,7 +29,6 @@ public struct IndexModel: Encodable {
         try container.encode(keys, forKey: .key)
         try container.encode(self.options?.name ?? self.defaultName, forKey: .name)
     }
-
 }
 
 /// Options to use when creating an index for a collection.
