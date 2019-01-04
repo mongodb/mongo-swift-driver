@@ -1,15 +1,15 @@
 import MongoSwift
 import Vapor
 
-struct Kitten: Content {
+private struct Kitten: Content {
   var name: String
   var color: String
 }
 
-let app = try Application()
-let router = try app.make(Router.self)
-let client = try MongoClient()
-let collection = try client.db("home").collection("kittens", withType: Kitten.self)
+private let app = try Application()
+private let router = try app.make(Router.self)
+private let client = try MongoClient()
+private let collection = try client.db("home").collection("kittens", withType: Kitten.self)
 
 router.get("kittens") { _ -> [Kitten] in
   let docs = try collection.find()

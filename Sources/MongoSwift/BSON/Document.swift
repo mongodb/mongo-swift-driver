@@ -12,11 +12,11 @@ public class DocumentStorage {
         return Int(bson_count_keys(self.pointer))
     }
 
-    init() {
+    internal init() {
         self.pointer = bson_new()
     }
 
-    init(fromPointer pointer: UnsafePointer<bson_t>) {
+    internal init(fromPointer pointer: UnsafePointer<bson_t>) {
         self.pointer = bson_copy(pointer)
     }
 

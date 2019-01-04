@@ -15,6 +15,7 @@ opt_in_rules:
   - conditional_returns_on_newline
   - empty_count
   - empty_string
+  - explicit_acl
   - explicit_init
   - explicit_self
   - fatal_error_message
@@ -44,3 +45,8 @@ excluded:
   - docs
   - Examples/*/build
   - Examples/*/.build
+  - Sources/libbson
+  - Sources/libmongoc
+  - Package.swift
+  - Package@swift-4.2.swift
+  - Examples/*/Package.swift

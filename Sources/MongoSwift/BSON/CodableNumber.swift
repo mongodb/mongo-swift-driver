@@ -18,7 +18,7 @@ internal protocol CodableNumber {
 }
 
 extension CodableNumber {
-    init?(from value: BSONValue) {
+    internal init?(from value: BSONValue) {
         switch value {
         case let v as Int:
             if let exact = Self(exactly: v) {
@@ -49,7 +49,7 @@ extension CodableNumber {
     /// By default, just try casting the number to a `BSONValue`. Types
     /// where that will not work provide their own implementation of the
     /// `bsonValue` computed property.
-    var bsonValue: BSONValue? {
+    internal var bsonValue: BSONValue? {
         return self as? BSONValue
     }
 }
@@ -59,35 +59,35 @@ extension Int32: CodableNumber {}
 extension Int64: CodableNumber {}
 
 extension Int8: CodableNumber {
-    var bsonValue: BSONValue? {
+    internal var bsonValue: BSONValue? {
         // Int8 always fits in an Int32
         return Int32(exactly: self)
     }
 }
 
 extension Int16: CodableNumber {
-    var bsonValue: BSONValue? {
+    internal var bsonValue: BSONValue? {
         // Int16 always fits in an Int32
         return Int32(exactly: self)
     }
 }
 
 extension UInt8: CodableNumber {
-    var bsonValue: BSONValue? {
+    internal var bsonValue: BSONValue? {
         // UInt8 always fits in an Int32
         return Int32(exactly: self)
     }
 }
 
 extension UInt16: CodableNumber {
-    var bsonValue: BSONValue? {
+    internal var bsonValue: BSONValue? {
         // UInt16 always fits in an Int32
         return Int(exactly: self)
     }
 }
 
 extension UInt32: CodableNumber {
-    var bsonValue: BSONValue? {
+    internal var bsonValue: BSONValue? {
         // try an Int32 first
         if let int32 = Int32(exactly: self) {
             return int32
@@ -98,7 +98,7 @@ extension UInt32: CodableNumber {
 }
 
 extension UInt64: CodableNumber {
-    var bsonValue: BSONValue? {
+    internal var bsonValue: BSONValue? {
         if let int32 = Int32(exactly: self) {
             return int32
         }
@@ -117,7 +117,7 @@ extension UInt64: CodableNumber {
 }
 
 extension UInt: CodableNumber {
-    var bsonValue: BSONValue? {
+    internal var bsonValue: BSONValue? {
         if let int32 = Int32(exactly: self) {
             return int32
         }
@@ -138,7 +138,7 @@ extension UInt: CodableNumber {
 /// Override the default initializer due to a runtime assertion that fails
 /// when initializing a Double from an Int (possible Swift bug?)
 extension Double: CodableNumber {
-    init?(from value: BSONValue) {
+    internal init?(from value: BSONValue) {
         switch value {
         case let v as Int:
             if let exact = Double(exactly: v) {
@@ -168,7 +168,7 @@ extension Double: CodableNumber {
 /// Override the default initializer due to a runtime assertion that fails
 /// when initializing a Float from an Int (possible Swift bug?)
 extension Float: CodableNumber {
-    init?(from value: BSONValue) {
+    internal init?(from value: BSONValue) {
         switch value {
         case let v as Int:
             if let exact = Float(exactly: v) {
@@ -196,7 +196,7 @@ extension Float: CodableNumber {
         return nil
     }
 
-    var bsonValue: BSONValue? {
+    internal var bsonValue: BSONValue? {
         // a Float can always be represented as a Double
         return Double(exactly: self)
     }

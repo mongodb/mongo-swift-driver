@@ -5,10 +5,10 @@ public final class MongoSwift {
     /// The version of `MongoSwift`.
     public static let versionString = "0.0.2"
 
-    final class MongocInitializer {
+    private final class MongocInitializer {
         static let shared = MongocInitializer()
 
-        private init() {
+        init() {
             mongoc_init()
             mongoc_handshake_data_append("MongoSwift", versionString, nil)
         }

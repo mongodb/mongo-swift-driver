@@ -1,20 +1,20 @@
 import Kitura
 import MongoSwift
 
-struct Kitten: Codable {
+private struct Kitten: Codable {
   var name: String
   var color: String
 }
 
-let client = try MongoClient()
-let collection = try client.db("home").collection("kittens", withType: Kitten.self)
+private let client = try MongoClient()
+private let collection = try client.db("home").collection("kittens", withType: Kitten.self)
 
-let router: Router = {
+private let router: Router = {
   let router = Router()
 
   router.get("kittens") { _, response, _ in
-    let docs = try collection.find()
-    response.send(Array(docs))
+	let docs = try collection.find()
+	response.send(Array(docs))
   }
 
   return router

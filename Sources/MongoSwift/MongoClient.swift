@@ -172,7 +172,7 @@ public class MongoClient {
      *
      * - Returns: A `ClientSession` instance
      */
-    public func startSession(options: SessionOptions) throws -> ClientSession {
+    private func startSession(options: SessionOptions) throws -> ClientSession {
         return ClientSession()
     }
 

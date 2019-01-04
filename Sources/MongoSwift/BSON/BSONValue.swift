@@ -285,9 +285,9 @@ extension Date: BSONValue {
 /// An internal struct to represent the deprecated DBPointer type. While DBPointers cannot
 /// be created, we may need to parse them into `Document`s, and this provides a place for that logic.
 internal struct DBPointer: BSONValue {
-    var bsonType: BSONType { return .dbPointer }
+    public var bsonType: BSONType { return .dbPointer }
 
-    func encode(to storage: DocumentStorage, forKey key: String) throws {
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
         throw MongoError.bsonEncodeError(message: "`DBPointer`s are deprecated; use a DBRef document instead")
     }
 
@@ -297,7 +297,7 @@ internal struct DBPointer: BSONValue {
     }
 
     /// Reads DBPointer data from `iter` and converts it to DBRef format
-    static func asDocument(from iter: DocumentIterator) throws -> Document {
+    internal static func asDocument(from iter: DocumentIterator) throws -> Document {
         var length: UInt32 = 0
         let collectionPP = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: 1)
         defer {
@@ -671,7 +671,7 @@ extension UUID {
 // note that there is a BSON regexp option 'l' that `NSRegularExpression`
 // doesn't support. The flag will be dropped if BSON containing it is parsed,
 // and it will be ignored if passed into `optionsFromString`.
-let regexOptsMap: [Character: NSRegularExpression.Options] = [
+private let regexOptsMap: [Character: NSRegularExpression.Options] = [
     "i": .caseInsensitive,
     "m": .anchorsMatchLines,
     "s": .dotMatchesLineSeparators,
@@ -682,7 +682,7 @@ let regexOptsMap: [Character: NSRegularExpression.Options] = [
 /// An extension of `NSRegularExpression` to support converting options to and from strings.
 extension NSRegularExpression {
     /// Convert a string of options flags into an equivalent `NSRegularExpression.Options`
-    static func optionsFromString(_ stringOptions: String) -> NSRegularExpression.Options {
+    internal static func optionsFromString(_ stringOptions: String) -> NSRegularExpression.Options {
         var optsObj: NSRegularExpression.Options = []
         for o in stringOptions {
             if let value = regexOptsMap[o] {
@@ -693,7 +693,7 @@ extension NSRegularExpression {
     }
 
     /// Convert this instance's options object into an alphabetically-sorted string of characters
-    public var stringOptions: String {
+    internal var stringOptions: String {
         var optsString = ""
         for (char, o) in regexOptsMap { if options.contains(o) { optsString += String(char) } }
         return String(optsString.sorted())
@@ -789,9 +789,9 @@ extension String: BSONValue {
 /// An internal struct to represent the deprecated Symbol type. While Symbols cannot be
 /// created, we may need to parse them into `String`s, and this provides a place for that logic.
 internal struct Symbol: BSONValue {
-    var bsonType: BSONType { return .symbol }
+    public var bsonType: BSONType { return .symbol }
 
-    func encode(to storage: DocumentStorage, forKey key: String) throws {
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
         throw MongoError.bsonEncodeError(message: "Symbols are deprecated; use a string instead")
     }
 
@@ -800,7 +800,7 @@ internal struct Symbol: BSONValue {
             "`Symbol`s are deprecated; use `Symbol.asString` to parse as a string instead")
     }
 
-    static func asString(from iter: DocumentIterator) throws -> String {
+    internal static func asString(from iter: DocumentIterator) throws -> String {
         var length: UInt32 = 0
         guard let strValue = bson_iter_symbol(&iter.iter, &length) else {
             throw MongoError.bsonDecodeError(message: retrieveErrorMsg(type: "Symbol", key: iter.currentKey))
@@ -867,7 +867,7 @@ public struct Timestamp: BSONValue, Equatable, Codable {
  *
  * - Returns: `true` if `lhs` is equal to `rhs`, `false` otherwise.
  */
-func bsonEquals(_ lhs: BSONValue, _ rhs: BSONValue) -> Bool {
+public func bsonEquals(_ lhs: BSONValue, _ rhs: BSONValue) -> Bool {
     validateBSONTypes(lhs, rhs)
 
     switch (lhs, rhs) {
@@ -925,6 +925,6 @@ private func validateBSONTypes(_ lhs: BSONValue, _ rhs: BSONValue) {
     }
 }
 
-func retrieveErrorMsg(type: String, key: String) -> String {
+private func retrieveErrorMsg(type: String, key: String) -> String {
     return "Failed to retrieve the \(type) value for key '\(key)'"
 }
