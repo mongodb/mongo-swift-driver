@@ -8,7 +8,7 @@ public class BSONEncoder {
     ///
     /// As per the BSON specification, the default strategy is to encode `Date`s as BSON datetime objects.
     ///
-    /// See bsonspec.org for more information.
+    /// - SeeAlso: bsonspec.org
     public enum DateEncodingStrategy {
         /// Encode the `Date` by deferring to its default encoding implementation.
         case deferToDate
@@ -39,7 +39,7 @@ public class BSONEncoder {
     /// As per the BSON specification, the default strategy is to encode `UUID`s as BSON binary types with the UUID
     /// subtype.
     ///
-    /// See bsonspec.org for more information.
+    /// - SeeAlso: bsonspec.org
     public enum UUIDEncodingStrategy {
         /// Encode the `UUID` by deferring to its default encoding implementation.
         case deferToUUID
