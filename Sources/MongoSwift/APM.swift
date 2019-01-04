@@ -48,6 +48,7 @@ public struct CommandStartedEvent: MongoEvent, InitializableFromOpaquePointer {
 
     /// Initializes a CommandStartedEvent from an OpaquePointer to a mongoc_apm_command_started_t
     fileprivate init(_ event: OpaquePointer) {
+        // swiftlint:disable:next force_unwrapping - documented as always returning a value.
         self.command = Document(fromPointer: mongoc_apm_command_started_get_command(event)!)
         self.databaseName = String(cString: mongoc_apm_command_started_get_database_name(event))
         self.commandName = String(cString: mongoc_apm_command_started_get_command_name(event))
@@ -88,6 +89,7 @@ public struct CommandSucceededEvent: MongoEvent, InitializableFromOpaquePointer 
     /// Initializes a CommandSucceededEvent from an OpaquePointer to a mongoc_apm_command_succeeded_t
     fileprivate init(_ event: OpaquePointer) {
         self.duration = mongoc_apm_command_succeeded_get_duration(event)
+        // swiftlint:disable:next force_unwrapping - documented as always returning a value.
         self.reply = Document(fromPointer: mongoc_apm_command_succeeded_get_reply(event)!)
         self.commandName = String(cString: mongoc_apm_command_succeeded_get_command_name(event))
         self.requestId = mongoc_apm_command_succeeded_get_request_id(event)
@@ -317,6 +319,7 @@ public struct ServerHeartbeatSucceededEvent: MongoEvent, InitializableFromOpaque
     /// Initializes a ServerHeartbeatSucceededEvent from an OpaquePointer to a mongoc_apm_server_heartbeat_succeeded_t
     fileprivate init(_ event: OpaquePointer) {
         self.duration = mongoc_apm_server_heartbeat_succeeded_get_duration(event)
+        // swiftlint:disable:next force_unwrapping - documented as always returning a value.
         self.reply = Document(fromPointer: mongoc_apm_server_heartbeat_succeeded_get_reply(event)!)
         self.connectionId = ConnectionId(mongoc_apm_server_heartbeat_succeeded_get_host(event))
     }

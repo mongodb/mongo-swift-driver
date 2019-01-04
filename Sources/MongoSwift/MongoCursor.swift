@@ -57,6 +57,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
             out.deallocate()
         }
         guard mongoc_cursor_next(self._cursor, out) else { return nil }
+        // swiftlint:disable:next force_unwrapping - if mongoc_cursor_next returned `true`, this is filled out.
         let doc = Document(fromPointer: out.pointee!)
 
         do {

@@ -258,11 +258,12 @@ extension Document {
         return String(cString: json)
     }
 
-    /// Returns a copy of the raw BSON data for this `Document`, represented as `Data`
+    /// Returns a copy of the raw BSON data for this `Document`, represented as `Data`.
     public var rawBSON: Data {
-        let data = bson_get_data(self.data)
+        // swiftlint:disable:next force_unwrapping - documented as always returning a value.
+        let data = bson_get_data(self.data)!
         let length = self.data.pointee.len
-        return Data(bytes: data!, count: Int(length))
+        return Data(bytes: data, count: Int(length))
     }
 
     /// Initializes a new, empty `Document`.
@@ -272,7 +273,7 @@ extension Document {
     }
 
     /**
-     * Constructs a new `Document` from the provided JSON text
+     * Constructs a new `Document` from the provided JSON text.
      *
      * - Parameters:
      *   - fromJSON: a JSON document as `Data` to parse into a `Document`
@@ -295,14 +296,14 @@ extension Document {
         self.count = self.storage.count
     }
 
-    /// Convenience initializer for constructing a `Document` from a `String`
+    /// Convenience initializer for constructing a `Document` from a `String`.
     public init(fromJSON json: String) throws {
         // `String`s are Unicode under the hood so force unwrap always succeeds.
         // see https://www.objc.io/blog/2018/02/13/string-to-data-and-back/
         try self.init(fromJSON: json.data(using: .utf8)!) // swiftlint:disable:this force_unwrapping
     }
 
-    /// Constructs a `Document` from raw BSON `Data`
+    /// Constructs a `Document` from raw BSON `Data`.
     public init(fromBSON: Data) {
         self.storage = DocumentStorage(fromPointer: fromBSON.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) in
             bson_new_from_data(bytes, fromBSON.count)
@@ -459,7 +460,7 @@ extension Document: ExpressibleByDictionaryLiteral {
     }
 }
 
-/// An extension of `Document` to add the capability to be initialized with an array literal
+/// An extension of `Document` to add the capability to be initialized with an array literal.
 extension Document: ExpressibleByArrayLiteral {
     /**
      * Initializes a `Document` using an array literal where the values

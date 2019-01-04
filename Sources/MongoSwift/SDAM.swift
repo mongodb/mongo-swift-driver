@@ -12,8 +12,11 @@ public struct ConnectionId: Equatable {
     internal init(_ hostList: UnsafePointer<mongoc_host_list_t>) {
         var hostData = hostList.pointee
         self.host = withUnsafeBytes(of: &hostData.host) { rawPtr -> String in
-            let ptr = rawPtr.baseAddress!.assumingMemoryBound(to: CChar.self)
-            return String(cString: ptr)
+            // if baseAddress is nil, the buffer is empty.
+            guard let baseAddress = rawPtr.baseAddress else {
+                return ""
+            }
+            return String(cString: baseAddress.assumingMemoryBound(to: CChar.self))
         }
         self.port = hostData.port
     }
@@ -22,6 +25,7 @@ public struct ConnectionId: Equatable {
     internal init(_ hostAndPort: String = "localhost:27017") {
         let parts = hostAndPort.split(separator: ":")
         self.host = String(parts[0])
+        // swiftlint:disable:next force_unwrapping - should be valid UInt16 unless server response malformed.
         self.port = UInt16(parts[1])!
     }
 
@@ -172,7 +176,7 @@ public struct ServerDescription {
     internal init(_ description: OpaquePointer) {
         self.connectionId = ConnectionId(mongoc_server_description_host(description))
         self.roundTripTime = mongoc_server_description_round_trip_time(description)
-        // swiftlint:disable:next force_unwrapping - documented as always returning a `bson_t`. 
+        // swiftlint:disable:next force_unwrapping - documented as always returning a value.
         let isMaster = Document(fromPointer: mongoc_server_description_ismaster(description)!)
         self.parseIsMaster(isMaster)
 
@@ -254,7 +258,7 @@ public struct TopologyDescription {
         let serverData = mongoc_topology_description_get_servers(description, &size)
         let buffer = UnsafeBufferPointer(start: serverData, count: size)
         if size > 0 {
-            // swiftlint:disable:next force_unwrapping - libmongoc func not documented as ever returning a null.
+            // swiftlint:disable:next force_unwrapping - documented as always returning a value.
             self.servers = Array(buffer).map { ServerDescription($0!) }
         }
     }
