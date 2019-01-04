@@ -121,11 +121,9 @@ private struct CMTest: Decodable {
         let args: Document
         let readPreference: Document?
 
-        // swiftlint:disable nesting
         enum CodingKeys: String, CodingKey {
             case name, args = "arguments", readPreference
         }
-        // swiftlint:enable nesting
     }
 
     let op: Operation

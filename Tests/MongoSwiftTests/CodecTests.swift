@@ -748,7 +748,6 @@ final class CodecTests: MongoSwiftTestCase {
     fileprivate struct CorrectTopLevelEncode: Encodable {
         let x: IncorrectTopLevelEncode
 
-        // swiftlint:disable nesting
         enum CodingKeys: CodingKey {
             case x
         }
