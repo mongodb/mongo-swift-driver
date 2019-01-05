@@ -22,8 +22,10 @@ public struct ClientOptions: Encodable {
     public let writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all to be omitted or optional
-    public init(eventMonitoring: Bool = false, readConcern: ReadConcern? = nil,
-                readPreference: ReadPreference? = nil, retryWrites: Bool? = nil,
+    public init(eventMonitoring: Bool = false,
+                readConcern: ReadConcern? = nil,
+                readPreference: ReadPreference? = nil,
+                retryWrites: Bool? = nil,
                 writeConcern: WriteConcern? = nil) {
         self.retryWrites = retryWrites
         self.eventMonitoring = eventMonitoring
@@ -71,7 +73,8 @@ public struct DatabaseOptions {
     public let writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all arguments to be omitted or optional
-    public init(readConcern: ReadConcern? = nil, readPreference: ReadPreference? = nil,
+    public init(readConcern: ReadConcern? = nil,
+                readPreference: ReadPreference? = nil,
                 writeConcern: WriteConcern? = nil) {
         self.readConcern = readConcern
         self.readPreference = readPreference

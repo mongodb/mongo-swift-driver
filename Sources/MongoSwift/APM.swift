@@ -443,7 +443,8 @@ private func serverHeartbeatFailed(_event: OpaquePointer?) {
 
 /// Posts a Notification with the specified name, containing an event of type T generated using the provided _event
 /// and context function.
-private func postNotification<T: MongoEvent>(type: T.Type, _event: OpaquePointer?,
+private func postNotification<T: MongoEvent>(type: T.Type,
+                                             _event: OpaquePointer?,
                                              contextFunc: (OpaquePointer) -> UnsafeMutableRawPointer?
                                             ) where T: InitializableFromOpaquePointer {
     guard let event = _event else {

@@ -166,8 +166,14 @@ final class CodecTests: MongoSwiftTestCase {
                     lhs.uint == rhs.uint && lhs.float == rhs.float
         }
 
-        init(int8: Int8? = nil, int16: Int16? = nil, uint8: UInt8? = nil, uint16: UInt16? = nil,
-             uint32: UInt32? = nil, uint64: UInt64? = nil, uint: UInt? = nil, float: Float? = nil) {
+        init(int8: Int8? = nil,
+             int16: Int16? = nil,
+             uint8: UInt8? = nil,
+             uint16: UInt16? = nil,
+             uint32: UInt32? = nil,
+             uint64: UInt64? = nil,
+             uint: UInt? = nil,
+             float: Float? = nil) {
             self.int8 = int8
             self.int16 = int16
             self.uint8 = uint8

@@ -15,8 +15,10 @@ public struct RunCommandOptions: Encodable {
     public let writeConcern: WriteConcern?
 
     /// Convenience initializer allowing session to be omitted or optional
-    public init(readConcern: ReadConcern? = nil, readPreference: ReadPreference? = nil,
-                session: ClientSession? = nil, writeConcern: WriteConcern? = nil) {
+    public init(readConcern: ReadConcern? = nil,
+                readPreference: ReadPreference? = nil,
+                session: ClientSession? = nil,
+                writeConcern: WriteConcern? = nil) {
         self.readConcern = readConcern
         self.readPreference = readPreference
         self.session = session
@@ -92,10 +94,18 @@ public struct CreateCollectionOptions: Encodable {
     public let writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional
-    public init(autoIndexId: Bool? = nil, capped: Bool? = nil, collation: Document? = nil,
-                indexOptionDefaults: Document? = nil, max: Int64? = nil, session: ClientSession? = nil,
-                size: Int64? = nil, storageEngine: Document? = nil, validationAction: String? = nil,
-                validationLevel: String? = nil, validator: Document? = nil, viewOn: String? = nil,
+    public init(autoIndexId: Bool? = nil,
+                capped: Bool? = nil,
+                collation: Document? = nil,
+                indexOptionDefaults: Document? = nil,
+                max: Int64? = nil,
+                session: ClientSession? = nil,
+                size: Int64? = nil,
+                storageEngine: Document? = nil,
+                validationAction: String? = nil,
+                validationLevel: String? = nil,
+                validator: Document? = nil,
+                viewOn: String? = nil,
                 writeConcern: WriteConcern? = nil) {
         self.autoIndexId = autoIndexId
         self.capped = capped
@@ -128,7 +138,8 @@ public struct CollectionOptions {
     public let writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all arguments to be omitted or optional
-    public init(readConcern: ReadConcern? = nil, readPreference: ReadPreference? = nil,
+    public init(readConcern: ReadConcern? = nil,
+                readPreference: ReadPreference? = nil,
                 writeConcern: WriteConcern? = nil) {
         self.readConcern = readConcern
         self.readPreference = readPreference
@@ -213,7 +224,8 @@ public class MongoDatabase {
      *
      * - Returns: the requested `MongoCollection<T>`
      */
-    public func collection<T: Codable>(_ name: String, withType: T.Type,
+    public func collection<T: Codable>(_ name: String,
+                                       withType: T.Type,
                                        options: CollectionOptions? = nil) throws -> MongoCollection<T> {
         guard let collection = mongoc_database_get_collection(self._database, name) else {
             throw MongoError.invalidCollection(message: "Could not get collection '\(name)'")
@@ -263,7 +275,8 @@ public class MongoDatabase {
      *
      * - Returns: the newly created `MongoCollection<T>`
      */
-    public func createCollection<T: Codable>(_ name: String, withType: T.Type,
+    public func createCollection<T: Codable>(_ name: String,
+                                             withType: T.Type,
                                              options: CreateCollectionOptions? = nil) throws -> MongoCollection<T> {
         let encoder = BSONEncoder()
         let opts = try encoder.encode(options)

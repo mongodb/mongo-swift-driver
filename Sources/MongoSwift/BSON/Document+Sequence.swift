@@ -131,7 +131,8 @@ extension Document: Sequence {
         }
     }
 
-    public func split(maxSplits: Int = Int.max, omittingEmptySubsequences: Bool = true,
+    public func split(maxSplits: Int = Int.max,
+                      omittingEmptySubsequences: Bool = true,
                       whereSeparator isSeparator: (KeyValuePair) throws -> Bool) rethrows -> [Document] {
         // rather than implementing the complex logic necessary for split, convert to an array and call split on that
         let asArr = Array(self)

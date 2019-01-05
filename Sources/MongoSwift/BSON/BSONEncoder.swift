@@ -431,7 +431,8 @@ private struct _BSONKeyedEncodingContainer<K: CodingKey> : KeyedEncodingContaine
     public private(set) var codingPath: [CodingKey]
 
     /// Initializes `self` with the given references.
-    fileprivate init(referencing encoder: _BSONEncoder, codingPath: [CodingKey],
+    fileprivate init(referencing encoder: _BSONEncoder,
+                     codingPath: [CodingKey],
                      wrapping container: MutableDictionary) {
         self.encoder = encoder
         self.codingPath = codingPath

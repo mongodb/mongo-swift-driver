@@ -103,11 +103,23 @@ public struct IndexOptions: Encodable {
     public let collation: Document?
 
     /// Convenience initializer allowing any/all parameters to be omitted.
-    public init(background: Bool? = nil, expireAfter: Int32? = nil, name: String? = nil, sparse: Bool? = nil,
-                storageEngine: String? = nil, unique: Bool? = nil, version: Int32? = nil,
-                defaultLanguage: String? = nil, languageOverride: String? = nil, textVersion: Int32? = nil,
-                weights: Document? = nil, sphereVersion: Int32? = nil, bits: Int32? = nil, max: Double? = nil,
-                min: Double? = nil, bucketSize: Int32? = nil, partialFilterExpression: Document? = nil,
+    public init(background: Bool? = nil,
+                expireAfter: Int32? = nil,
+                name: String? = nil,
+                sparse: Bool? = nil,
+                storageEngine: String? = nil,
+                unique: Bool? = nil,
+                version: Int32? = nil,
+                defaultLanguage: String? = nil,
+                languageOverride: String? = nil,
+                textVersion: Int32? = nil,
+                weights: Document? = nil,
+                sphereVersion: Int32? = nil,
+                bits: Int32? = nil,
+                max: Double? = nil,
+                min: Double? = nil,
+                bucketSize: Int32? = nil,
+                partialFilterExpression: Document? = nil,
                 collation: Document? = nil) {
         self.background = background
         self.expireAfter = expireAfter
@@ -176,7 +188,8 @@ extension MongoCollection {
      * - Returns: The name of the created index
      */
     @discardableResult
-    public func createIndex(_ keys: Document, options: IndexOptions? = nil,
+    public func createIndex(_ keys: Document,
+                            options: IndexOptions? = nil,
                             commandOptions: CreateIndexOptions? = nil) throws -> String {
         return try createIndex(IndexModel(keys: keys, options: options), options: commandOptions)
     }
@@ -245,7 +258,8 @@ extension MongoCollection {
      * - Returns: a `Document` containing the server's response to the command.
      */
     @discardableResult
-    public func dropIndex(_ keys: Document, options: IndexOptions? = nil,
+    public func dropIndex(_ keys: Document,
+                          options: IndexOptions? = nil,
                           commandOptions: DropIndexOptions? = nil) throws -> Document {
         return try dropIndex(IndexModel(keys: keys, options: options), options: commandOptions)
     }

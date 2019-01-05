@@ -187,7 +187,10 @@ extension MongoCollection {
          *   - collation: Specifies a collation to use
          *   - upsert: When `true`, creates a new document if no document matches the query
          */
-        public init(filter: Document, update: Document, arrayFilters: [Document]? = nil, collation: Document? = nil,
+        public init(filter: Document,
+                    update: Document,
+                    arrayFilters: [Document]? = nil,
+                    collation: Document? = nil,
                     upsert: Bool? = nil) {
             self.filter = filter
             self.update = update
@@ -225,7 +228,10 @@ extension MongoCollection {
          *   - collation: Specifies a collation to use
          *   - upsert: When `true`, creates a new document if no document matches the query
          */
-        public init(filter: Document, update: Document, arrayFilters: [Document]? = nil, collation: Document? = nil,
+        public init(filter: Document,
+                    update: Document,
+                    arrayFilters: [Document]? = nil,
+                    collation: Document? = nil,
                     upsert: Bool? = nil) {
             self.filter = filter
             self.update = update

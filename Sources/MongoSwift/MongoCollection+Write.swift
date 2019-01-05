@@ -107,7 +107,8 @@ extension MongoCollection {
      *            is unacknowledged, `nil` is returned.
      */
     @discardableResult
-    public func replaceOne(filter: Document, replacement: CollectionType,
+    public func replaceOne(filter: Document,
+                           replacement: CollectionType,
                            options: ReplaceOptions? = nil) throws -> UpdateResult? {
         let encoder = BSONEncoder()
         let replacementDoc = try encoder.encode(replacement)
@@ -324,8 +325,11 @@ public struct UpdateOptions: Encodable {
     public let writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all parameters to be optional
-    public init(arrayFilters: [Document]? = nil, bypassDocumentValidation: Bool? = nil, collation: Document? = nil,
-                upsert: Bool? = nil, writeConcern: WriteConcern? = nil) {
+    public init(arrayFilters: [Document]? = nil,
+                bypassDocumentValidation: Bool? = nil,
+                collation: Document? = nil,
+                upsert: Bool? = nil,
+                writeConcern: WriteConcern? = nil) {
         self.arrayFilters = arrayFilters
         self.bypassDocumentValidation = bypassDocumentValidation
         self.collation = collation
@@ -349,7 +353,9 @@ public struct ReplaceOptions: Encodable {
     public let writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all parameters to be optional
-    public init(bypassDocumentValidation: Bool? = nil, collation: Document? = nil, upsert: Bool? = nil,
+    public init(bypassDocumentValidation: Bool? = nil,
+                collation: Document? = nil,
+                upsert: Bool? = nil,
                 writeConcern: WriteConcern? = nil) {
         self.bypassDocumentValidation = bypassDocumentValidation
         self.collation = collation
