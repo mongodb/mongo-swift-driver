@@ -23,7 +23,8 @@ opt_in_rules:
   - force_unwrapping
   - implicit_return
   - missing_docs
-  - modifier_order 
+  - modifier_order
+  - multiline_arguments
   - multiline_function_chains
   - operator_usage_whitespace
   - pattern_matching_keywords

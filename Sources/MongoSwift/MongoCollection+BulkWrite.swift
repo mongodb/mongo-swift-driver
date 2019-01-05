@@ -291,7 +291,8 @@ public class BulkWriteOperation {
         let result = try BulkWriteResult(reply: reply, insertedIds: self.insertedIds)
 
         guard serverId != 0 else {
-            throw MongoError.bulkWriteError(code: error.code, message: toErrorString(error),
+            throw MongoError.bulkWriteError(code: error.code,
+                                            message: toErrorString(error),
                                             result: (self.isAcknowledged ? result : nil),
                                             writeErrors: result.writeErrors,
                                             writeConcernError: result.writeConcernError)

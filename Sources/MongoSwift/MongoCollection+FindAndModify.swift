@@ -83,8 +83,11 @@ extension MongoCollection {
         let reply = Document()
         var error = bson_error_t()
 
-        guard mongoc_collection_find_and_modify_with_opts(self._collection, filter.data,
-                                                          opts._options, reply.data, &error) else {
+        guard mongoc_collection_find_and_modify_with_opts(self._collection,
+                                                          filter.data,
+                                                          opts._options,
+                                                          reply.data,
+                                                          &error) else {
             // TODO SWIFT-144: replace with more descriptive error type(s)
             throw MongoError.commandError(message: toErrorString(error))
         }
@@ -129,8 +132,12 @@ public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible {
     public let writeConcern: WriteConcern?
 
     fileprivate func asOpts() throws -> FindAndModifyOptions {
-        return try FindAndModifyOptions(collation: collation, maxTimeMS: maxTimeMS, projection: projection,
-                                        remove: true, sort: sort, writeConcern: writeConcern)
+        return try FindAndModifyOptions(collation: collation,
+                                        maxTimeMS: maxTimeMS,
+                                        projection: projection,
+                                        remove: true,
+                                        sort: sort,
+                                        writeConcern: writeConcern)
     }
 
     /// Convenience initializer allowing any/all parameters to be omitted/optional
@@ -171,9 +178,14 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible {
     public let writeConcern: WriteConcern?
 
     fileprivate func asOpts() throws -> FindAndModifyOptions {
-        return try FindAndModifyOptions(bypassDocumentValidation: bypassDocumentValidation, collation: collation,
-                                        maxTimeMS: maxTimeMS, projection: projection, returnDocument: returnDocument,
-                                        sort: sort, upsert: upsert, writeConcern: writeConcern)
+        return try FindAndModifyOptions(bypassDocumentValidation: bypassDocumentValidation,
+                                        collation: collation,
+                                        maxTimeMS: maxTimeMS,
+                                        projection: projection,
+                                        returnDocument: returnDocument,
+                                        sort: sort,
+                                        upsert: upsert,
+                                        writeConcern: writeConcern)
     }
 
     /// Convenience initializer allowing any/all parameters to be omitted/optional
@@ -221,9 +233,14 @@ public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible {
     public let writeConcern: WriteConcern?
 
     fileprivate func asOpts() throws -> FindAndModifyOptions {
-        return try FindAndModifyOptions(arrayFilters: arrayFilters, bypassDocumentValidation: bypassDocumentValidation,
-                                        collation: collation, maxTimeMS: maxTimeMS, projection: projection,
-                                        returnDocument: returnDocument, sort: sort, upsert: upsert,
+        return try FindAndModifyOptions(arrayFilters: arrayFilters,
+                                        bypassDocumentValidation: bypassDocumentValidation,
+                                        collation: collation,
+                                        maxTimeMS: maxTimeMS,
+                                        projection: projection,
+                                        returnDocument: returnDocument,
+                                        sort: sort,
+                                        upsert: upsert,
                                         writeConcern: writeConcern)
     }
 

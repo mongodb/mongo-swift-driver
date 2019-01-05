@@ -431,8 +431,11 @@ private class DistinctTest: CrudTest {
 private class FindTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let filter: Document = try self.args.get("filter")
-        let options = FindOptions(batchSize: self.batchSize, collation: self.collation, limit: self.limit,
-                                  skip: self.skip, sort: self.sort)
+        let options = FindOptions(batchSize: self.batchSize,
+                                  collation: self.collation,
+                                  limit: self.limit,
+                                  skip: self.skip,
+                                  sort: self.sort)
         let result = try Array(coll.find(filter, options: options))
         expect(result).to(equal(self.result as? [Document]))
     }
@@ -455,8 +458,11 @@ private class FindOneAndReplaceTest: CrudTest {
         let filter: Document = try self.args.get("filter")
         let replacement: Document = try self.args.get("replacement")
 
-        let opts = FindOneAndReplaceOptions(collation: self.collation, projection: self.projection,
-                                            returnDocument: self.returnDoc, sort: self.sort, upsert: self.upsert)
+        let opts = FindOneAndReplaceOptions(collation: self.collation,
+                                            projection: self.projection,
+                                            returnDocument: self.returnDoc,
+                                            sort: self.sort,
+                                            upsert: self.upsert)
 
         let result = try coll.findOneAndReplace(filter: filter, replacement: replacement, options: opts)
         self.verifyFindAndModifyResult(result)
@@ -469,9 +475,12 @@ private class FindOneAndUpdateTest: CrudTest {
         let filter: Document = try self.args.get("filter")
         let update: Document = try self.args.get("update")
 
-        let opts = FindOneAndUpdateOptions(arrayFilters: self.arrayFilters, collation: self.collation,
-                                           projection: self.projection, returnDocument: self.returnDoc,
-                                           sort: self.sort, upsert: self.upsert)
+        let opts = FindOneAndUpdateOptions(arrayFilters: self.arrayFilters,
+                                           collation: self.collation,
+                                           projection: self.projection,
+                                           returnDocument: self.returnDoc,
+                                           sort: self.sort,
+                                           upsert: self.upsert)
 
         let result = try coll.findOneAndUpdate(filter: filter, update: update, options: opts)
         self.verifyFindAndModifyResult(result)

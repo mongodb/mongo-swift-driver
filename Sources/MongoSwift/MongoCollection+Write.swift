@@ -85,7 +85,8 @@ extension MongoCollection {
         let isAcknowledged = self.isAcknowledged(options?.writeConcern)
 
         guard success else {
-            throw MongoError.insertManyError(code: error.code, message: toErrorString(error),
+            throw MongoError.insertManyError(code: error.code,
+                                             message: toErrorString(error),
                                              result: (isAcknowledged ? result : nil),
                                              writeErrors: result.writeErrors,
                                              writeConcernError: result.writeConcernError)
