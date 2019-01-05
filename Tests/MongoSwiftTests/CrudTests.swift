@@ -417,9 +417,9 @@ private class DistinctTest: CrudTest {
         let fieldName: String = try self.args.get("fieldName")
         let options = DistinctOptions(collation: self.collation)
         // rather than casting to all the possible BSON types, just wrap the arrays in documents to compare them
-        let resultDoc: Document = ["result": try coll.distinct(fieldName: fieldName,
-                                                               filter: filter ?? [:],
-                                                               options: options)]
+        let resultDoc: Document = [
+            "result": try coll.distinct(fieldName: fieldName, filter: filter ?? [:], options: options)
+        ]
         if let result = self.result {
             let expectedDoc: Document = ["result": result]
             expect(resultDoc).to(equal(expectedDoc))

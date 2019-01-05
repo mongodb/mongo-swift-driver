@@ -84,8 +84,10 @@ final class Document_SequenceTests: MongoSwiftTestCase {
         expect(iter.next()).to(beNil())
 
         // iterate via looping
-        var expectedKeys = ["string", "true", "false", "int", "int32", "double",
-                            "decimal128", "minkey", "maxkey", "date", "timestamp"]
+        var expectedKeys = [
+            "string", "true", "false", "int", "int32", "double",
+            "decimal128", "minkey", "maxkey", "date", "timestamp"
+        ]
         for (k, v) in doc {
             expect(k).to(equal(expectedKeys.removeFirst()))
             // we can't compare `BSONValue`s for equality, nor can we cast v
@@ -152,14 +154,16 @@ final class Document_SequenceTests: MongoSwiftTestCase {
         expect(self.smallDoc.dropFirst(2)).to(equal([:]))
 
         expect(self.doc.dropFirst(0)).to(equal(doc))
-        expect(self.doc.dropFirst()).to(equal([
-            "b": "hi",
-            "c": [1, 2] as [Int],
-            "d": false,
-            "e": BSONNull(),
-            "f": MinKey(),
-            "g": 10
-        ]))
+        expect(self.doc.dropFirst()).to(equal(
+            [
+                "b": "hi",
+                "c": [1, 2] as [Int],
+                "d": false,
+                "e": BSONNull(),
+                "f": MinKey(),
+                "g": 10
+            ]
+        ))
         expect(self.doc.dropFirst(4)).to(equal(["e": BSONNull(), "f": MinKey(), "g": 10]))
         expect(self.doc.dropFirst(7)).to(equal([:]))
         expect(self.doc.dropFirst(8)).to(equal([:]))
@@ -239,14 +243,16 @@ final class Document_SequenceTests: MongoSwiftTestCase {
 
         expect(self.emptyDoc.prefix(while: self.isNot10)).to(equal([:]))
         expect(self.smallDoc.prefix(while: self.isNot10)).to(equal(smallDoc))
-        expect(self.doc.prefix(while: self.isNot10)).to(equal([
-            "a": 1,
-            "b": "hi",
-            "c": [1, 2] as [Int],
-            "d": false,
-            "e": BSONNull(),
-            "f": MinKey()
-        ]))
+        expect(self.doc.prefix(while: self.isNot10)).to(equal(
+            [
+                "a": 1,
+                "b": "hi",
+                "c": [1, 2] as [Int],
+                "d": false,
+                "e": BSONNull(),
+                "f": MinKey()
+            ]
+        ))
 
         expect(self.emptyDoc.prefix(while: self.is10)).to(equal([:]))
         expect(self.smallDoc.prefix(while: self.is10)).to(equal([:]))
@@ -274,13 +280,17 @@ final class Document_SequenceTests: MongoSwiftTestCase {
     func testSplit() throws {
         expect(self.emptyDoc.split(whereSeparator: self.isInt)).to(equal([]))
         expect(self.smallDoc.split(whereSeparator: self.isInt)).to(equal([]))
-        expect(self.doc.split(whereSeparator: self.isInt)).to(equal([[
-            "b": "hi",
-            "c": [1, 2] as [Int],
-            "d": false,
-            "e": BSONNull(),
-            "f": MinKey()
-        ]]))
+        expect(self.doc.split(whereSeparator: self.isInt)).to(equal(
+            [
+                [
+                    "b": "hi",
+                    "c": [1, 2] as [Int],
+                    "d": false,
+                    "e": BSONNull(),
+                    "f": MinKey()
+                ]
+            ]
+        ))
 
         expect(self.emptyDoc.split(omittingEmptySubsequences: false, whereSeparator: self.isInt)).to(equal([[:]]))
         expect(self.smallDoc.split(omittingEmptySubsequences: false, whereSeparator: self.isInt)).to(equal([[:], [:]]))
