@@ -22,7 +22,6 @@ opt_in_rules:
   - first_where
   - force_unwrapping
   - implicit_return
-  - implicitly_unwrapped_optional
   - missing_docs
   - modifier_order
   - multiline_arguments

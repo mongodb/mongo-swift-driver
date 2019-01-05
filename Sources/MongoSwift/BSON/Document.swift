@@ -3,7 +3,7 @@ import Foundation
 
 /// The storage backing a MongoSwift `Document`.
 public class DocumentStorage {
-    internal var pointer: UnsafeMutablePointer<bson_t>?
+    internal var pointer: UnsafeMutablePointer<bson_t>!
 
     // Normally, this would go under Document, but computed properties cannot be used before all stored properties are
     // initialized. Putting this under DocumentStorage gives a correct count and use of it inside of an init() as long

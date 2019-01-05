@@ -1,7 +1,6 @@
 disabled_rules:
-  - explicit_acl
   - force_cast
   - force_try
   - force_unwrapping
-  - implicitly_unwrapped_optional
   - nesting
+  - explicit_acl
