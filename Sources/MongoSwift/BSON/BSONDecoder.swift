@@ -63,7 +63,7 @@ public class BSONDecoder {
     public var uuidDecodingStrategy: UUIDDecodingStrategy = .binary
 
     /// Options set on the top-level decoder to pass down the decoding hierarchy.
-    fileprivate struct _Options {
+    internal struct _Options {
         let userInfo: [CodingUserInfoKey: Any]
         let dateDecodingStrategy: DateDecodingStrategy
         let uuidDecodingStrategy: UUIDDecodingStrategy
@@ -144,7 +144,7 @@ internal class _BSONDecoder: Decoder {
     internal var storage: _BSONDecodingStorage
 
     /// Options set on the top-level decoder.
-    fileprivate let options: BSONDecoder._Options
+    internal let options: BSONDecoder._Options
 
     /// The path to the current point in decoding.
     public fileprivate(set) var codingPath: [CodingKey]
