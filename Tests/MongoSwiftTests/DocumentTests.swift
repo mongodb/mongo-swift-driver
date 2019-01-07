@@ -46,7 +46,9 @@ final class DocumentTests: MongoSwiftTestCase {
             ("testReplaceValueWithNil", testReplaceValueWithNil),
             ("testReplaceValueNoop", testReplaceValueNoop),
             ("testDocumentDictionarySimilarity", testDocumentDictionarySimilarity),
-            ("testDefaultSubscript", testDefaultSubscript)
+            ("testDefaultSubscript", testDefaultSubscript),
+            ("testUUIDCodingStrategies", testUUIDCodingStrategies),
+            ("testDateCodingStrategies", testDateCodingStrategies)
         ]
     }
 
@@ -679,5 +681,118 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(doc["autoclosure test", default: floatVal * floatVal]).to(bsonEqual(floatVal * floatVal))
         expect(doc["autoclosure test", default: "\(stringVal) and \(floatVal)" + stringVal])
             .to(bsonEqual("\(stringVal) and \(floatVal)" + stringVal))
+    }
+
+    func testUUIDCodingStrategies() throws {
+        // TODO: add encoding strategy tests SWIFT-282
+
+        // swiftlint:disable nesting
+        struct UUIDWrapper: Codable {
+            let uuid: UUID
+        }
+        // swiftlint:enable nesting
+
+        // randomly generated uuid
+        guard let uuid = UUID(uuidString: "2c380a6c-7bc5-48cb-84a2-b26777a72276") else {
+            throw MongoError.bsonDecodeError(message: "Cant create UUID.")
+        }
+
+        let decoder = BSONDecoder()
+
+        // UUID default decoder expects a string
+        decoder.uuidDecodingStrategy = .deferredToUUID
+        let stringDoc: Document = ["uuid": uuid.description]
+        let badString: Document = ["uuid": "hello"]
+        let deferredStruct = try decoder.decode(UUIDWrapper.self, from: stringDoc)
+        expect(deferredStruct.uuid).to(equal(uuid))
+        expect(try decoder.decode(UUIDWrapper.self, from: badString)).to(throwError())
+
+        decoder.uuidDecodingStrategy = .binary
+        let uuidt = uuid.uuid
+        let bytes = Data(bytes: [
+            uuidt.0, uuidt.1, uuidt.2, uuidt.3,
+            uuidt.4, uuidt.5, uuidt.6, uuidt.7,
+            uuidt.8, uuidt.9, uuidt.10, uuidt.11,
+            uuidt.12, uuidt.13, uuidt.14, uuidt.15
+        ])
+        let binaryDoc: Document = ["uuid": try Binary(data: bytes, subtype: .uuid)]
+        let binaryStruct = try decoder.decode(UUIDWrapper.self, from: binaryDoc)
+        expect(binaryStruct.uuid).to(equal(uuid))
+
+        let badBinary: Document = ["uuid": try Binary(data: bytes, subtype: .generic)]
+        expect(try decoder.decode(UUIDWrapper.self, from: badBinary)).to(throwError())
+    }
+
+    func testDateCodingStrategies() throws {
+        // TODO: add encoding strategy tests SWIFT-282
+
+        // swiftlint:disable nesting
+        struct DateWrapper: Codable {
+            let date: Date
+        }
+        // swiftlint:enable nesting
+
+        let date = Date(timeIntervalSince1970: 125.0)
+
+        let decoder = BSONDecoder()
+
+        // Default is .bsonDateTime
+        let bsonDate: Document = ["date": date]
+        let defaultStruct = try decoder.decode(DateWrapper.self, from: bsonDate)
+        expect(defaultStruct.date).to(equal(date))
+
+        decoder.dateDecodingStrategy = .bsonDateTime
+        let bsonDateStruct = try decoder.decode(DateWrapper.self, from: bsonDate)
+        expect(bsonDateStruct.date).to(equal(date))
+
+        decoder.dateDecodingStrategy = .millisecondsSince1970
+        let msInt64: Document = ["date": date.msSinceEpoch]
+        let msInt64Struct = try decoder.decode(DateWrapper.self, from: msInt64)
+        expect(msInt64Struct.date).to(equal(date))
+
+        let msDouble: Document = ["date": Double(date.msSinceEpoch)]
+        let msDoubleStruct = try decoder.decode(DateWrapper.self, from: msDouble)
+        expect(msDoubleStruct.date).to(equal(date))
+
+        decoder.dateDecodingStrategy = .secondsSince1970
+        let sDouble: Document = ["date": date.timeIntervalSince1970]
+        let sDoubleStruct = try decoder.decode(DateWrapper.self, from: sDouble)
+        expect(sDoubleStruct.date).to(equal(date))
+
+        let sInt64: Document = ["date": Int64(date.timeIntervalSince1970)]
+        let sInt64Struct = try decoder.decode(DateWrapper.self, from: sInt64)
+        expect(sInt64Struct.date).to(equal(date))
+
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        formatter.timeStyle = .medium
+        formatter.locale = Locale(identifier: "en_US")
+
+        decoder.dateDecodingStrategy = .formatted(formatter)
+        let formatted: Document = ["date": formatter.string(from: date)]
+        let badlyFormatted: Document = ["date": "this is not a date"]
+        let formattedStruct = try decoder.decode(DateWrapper.self, from: formatted)
+        expect(formattedStruct.date).to(equal(date))
+        expect(try decoder.decode(DateWrapper.self, from: badlyFormatted)).to(throwError())
+
+        if #available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) {
+            decoder.dateDecodingStrategy = .iso8601
+            let isoDoc: Document = ["date": BSONDecoder.iso8601Formatter.string(from: date)]
+            let isoStruct = try decoder.decode(DateWrapper.self, from: isoDoc)
+            expect(isoStruct.date).to(equal(date))
+            expect(try decoder.decode(DateWrapper.self, from: formatted)).to(throwError())
+            expect(try decoder.decode(DateWrapper.self, from: badlyFormatted)).to(throwError())
+        }
+
+        decoder.dateDecodingStrategy = .custom({ decode in try Date(from: decode) })
+        let customDoc: Document = ["date": date.timeIntervalSinceReferenceDate]
+        let customStruct = try decoder.decode(DateWrapper.self, from: customDoc)
+        expect(customStruct.date).to(equal(date))
+        expect(try decoder.decode(DateWrapper.self, from: badlyFormatted)).to(throwError())
+
+        decoder.dateDecodingStrategy = .deferredToDate
+        let deferredStruct = try decoder.decode(DateWrapper.self, from: customDoc)
+        expect(deferredStruct.date).to(equal(date))
+        expect(try decoder.decode(DateWrapper.self, from: badlyFormatted)).to(throwError())
     }
 }
