@@ -14,7 +14,14 @@ public struct AnyBSONValue: Codable, Equatable {
     public func encode(to encoder: Encoder) throws {
         // short-circuit in the `BSONEncoder` case
         if let bsonEncoder = encoder as? _BSONEncoder {
-            bsonEncoder.storage.containers.append(self.value)
+            // Need to handle `Date`s and `UUID`s separately to respect the encoding strategy choices.
+            if let date = self.value as? Date {
+                try bsonEncoder.encode(date)
+            } else if let uuid = self.value as? UUID {
+                try bsonEncoder.encode(uuid)
+            } else {
+                bsonEncoder.storage.containers.append(self.value)
+            }
             return
         }
 
