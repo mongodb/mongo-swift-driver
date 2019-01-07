@@ -58,11 +58,8 @@ public struct AnyBSONValue: Codable, Equatable {
     public init(from decoder: Decoder) throws {
         // short-circuit in the `BSONDecoder` case
         if let bsonDecoder = decoder as? _BSONDecoder {
-            if bsonDecoder.storage.topContainer as? Date != nil {
-                switch bsonDecoder.options.dateDecodingStrategy {
-                case BSONDecoder.DateDecodingStrategy.bsonDateTime:
-                    break
-                default:
+            if bsonDecoder.storage.topContainer is Date {
+                guard case .bsonDateTime = bsonDecoder.options.dateDecodingStrategy else {
                     throw MongoError.bsonDecodeError(message: "Got a BSON datetime but was expecting another format. " +
                             "To decode from BSON datetimes, use the default .bsonDateTime DateDecodingStrategy.")
                 }
