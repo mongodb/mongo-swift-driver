@@ -620,6 +620,10 @@ final class CodecTests: MongoSwiftTestCase {
         dateEncoder.dateEncodingStrategy = .millisecondsSince1970
         expect(try dateEncoder.encode(AnyBSONStruct(date))).to(bsonEqual(["x": date.msSinceEpoch] as Document))
 
+        let dateDecoder = BSONDecoder()
+        dateDecoder.dateDecodingStrategy = .millisecondsSince1970
+        expect(try dateDecoder.decode(AnyBSONStruct.self, from: wrappedDate)).to(throwError())
+
         // regex
         let regex = RegularExpression(pattern: "abc", options: "imx")
 

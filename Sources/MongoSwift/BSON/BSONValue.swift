@@ -656,6 +656,32 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
 
 }
 
+/// Extension to allow a UUID to be initialized from a Binary BSONValue.
+extension UUID {
+    // TODO: fill the rest of this out for full BSONValue conformance (SWIFT-295).
+
+    internal init(from binary: Binary) throws {
+        guard binary.subtype != Binary.Subtype.uuidDeprecated.rawValue else {
+            throw MongoError.bsonDecodeError(message: "Binary subtype \(binary.subtype) is deprecated, " +
+                    "use \(Binary.Subtype.uuid) instead.")
+        }
+        guard binary.subtype == Binary.Subtype.uuid.rawValue else {
+            throw MongoError.bsonDecodeError(message: "Expected a UUID binary type " +
+                    "(\(Binary.Subtype.uuid)), got \(binary.subtype) instead.")
+        }
+
+        let data = binary.data
+        let uuid: uuid_t = (
+                data[0], data[1], data[2], data[3],
+                data[4], data[5], data[6], data[7],
+                data[8], data[9], data[10], data[11],
+                data[12], data[13], data[14], data[15]
+        )
+
+        self.init(uuid: uuid)
+    }
+}
+
 // A mapping of regex option characters to their equivalent `NSRegularExpression` option.
 // note that there is a BSON regexp option 'l' that `NSRegularExpression`
 // doesn't support. The flag will be dropped if BSON containing it is parsed,
@@ -884,7 +910,7 @@ func bsonEquals(_ lhs: BSONValue, _ rhs: BSONValue) -> Bool {
     case (_ as BSONNull, _ as BSONNull): return true
     case (let l as Document, let r as Document): return l == r
     case (let l as [BSONValue], let r as [BSONValue]): // TODO: SWIFT-242
-        return zip(l, r).reduce(true, {prev, next in bsonEquals(next.0, next.1) && prev})
+        return l.count == r.count && zip(l, r).reduce(true, {prev, next in prev && bsonEquals(next.0, next.1)})
     case (_ as [Any], _ as [Any]): return false
     default: return false
     }
