@@ -412,11 +412,8 @@ public struct BulkWriteResult {
     }
 }
 
-/// A struct to represent a write error resulting from an executed bulk write.
+/// A struct to represent a single write error not resulting from an executed bulk write.
 public struct WriteError: Codable {
-    /// The index of the request that errored.
-    public let index: Int
-
     /// An integer value identifying the error.
     public let code: Int
 
@@ -424,7 +421,6 @@ public struct WriteError: Codable {
     public let message: String
 
     private enum CodingKeys: String, CodingKey {
-        case index
         case code
         case message = "errmsg"
     }
@@ -436,14 +432,35 @@ public struct WriteConcernError: Codable {
     public let code: Int
 
     /// A document identifying the write concern setting related to the error.
-    public let info: Document
+    public let details: Document
 
-    ///  A description of the error.
+    /// A description of the error.
     public let message: String
 
     private enum CodingKeys: String, CodingKey {
         case code
-        case info = "errInfo"
+        case details = "errInfo"
         case message = "errmsg"
+    }
+}
+
+/// A struct to represent a write error resulting from an executed bulk write.
+public struct BulkWriteError: Codable {
+    /// An integer value identifying the error.
+    public let code: Int
+
+    /// A description of the error.
+    public let message: String
+
+    /// The index of the request that errored.
+    public let index: Int
+
+    /// The request that errored.
+    public let request: WriteModel? = nil
+
+    private enum CodingKeys: String, CodingKey {
+        case code
+        case message = "errmsg"
+        case index
     }
 }
