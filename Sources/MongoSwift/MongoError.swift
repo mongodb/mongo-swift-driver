@@ -26,12 +26,13 @@ public enum ServerError: MongoSwiftError, Equatable {
         switch (lhs, rhs) {
         case let (.commandError(code: lhsCode, message: _, errorLabels: lhsErrorLabels),
                   .commandError(code: rhsCode, message: _, errorLabels: rhsErrorLabels)):
-            return lhsCode == rhsCode && lhsErrorLabels?.sorted() == rhsErrorLabels?.sorted()
+            return lhsCode == rhsCode
+                    && sortAndCompareOptionalArrays(lhs: lhsErrorLabels, rhs: rhsErrorLabels, cmp: { $0 < $1 })
         case let (.writeError(writeError: lhsWriteError, writeConcernError: lhsWCError, errorLabels: lhsErrorLabels),
                   .writeError(writeError: rhsWriteError, writeConcernError: rhsWCError, errorLabels: rhsErrorLabels)):
             return lhsWriteError == rhsWriteError
                     && lhsWCError == rhsWCError
-                    && lhsErrorLabels?.sorted() == rhsErrorLabels?.sorted()
+                    && sortAndCompareOptionalArrays(lhs: lhsErrorLabels, rhs: rhsErrorLabels, cmp: { $0 < $1 })
         case let (.bulkWriteError(writeErrors: lhsWriteErrors,
                                   writeConcernError: lhsWCError,
                                   result: _,
@@ -41,9 +42,10 @@ public enum ServerError: MongoSwiftError, Equatable {
                                   result: _,
                                   errorLabels: rhsErrorLabels)):
             let cmp = { (l: BulkWriteError, r: BulkWriteError) in l.index < r.index }
-            return lhsWriteErrors?.sorted(by: cmp) == rhsWriteErrors?.sorted(by: cmp)
+
+            return sortAndCompareOptionalArrays(lhs: lhsWriteErrors, rhs: rhsWriteErrors, cmp: cmp)
                     && lhsWCError == rhsWCError
-                    && lhsErrorLabels?.sorted() == rhsErrorLabels?.sorted()
+                    && sortAndCompareOptionalArrays(lhs: lhsErrorLabels, rhs: rhsErrorLabels, cmp: { $0 < $1 })
         default:
             return false
         }
@@ -187,4 +189,13 @@ internal func toErrorString(_ error: bson_error_t) -> String {
 internal func bsonEncodeError(value: BSONValue, forKey: String) -> MongoError {
     return MongoError.bsonEncodeError(message:
         "Failed to set value for key \(forKey) to \(value) with BSON type \(value.bsonType)")
+}
+
+/// Private function for sorting, then comparing two optional arrays.
+/// TODO: remove this function and just use optional chaining once we drop Swift 4.0 support (SWIFT-283)
+private func sortAndCompareOptionalArrays<T: Equatable>(lhs: [T]?, rhs: [T]?, cmp: (T, T) -> Bool) -> Bool {
+    guard let lhsArr = lhs, let rhsArr = rhs else {
+        return lhs == nil && rhs == nil
+    }
+    return lhsArr.sorted(by: cmp) == rhsArr.sorted(by: cmp)
 }
