@@ -164,6 +164,20 @@ public struct Binary: BSONValue, Equatable, Codable {
         userDefined = 0x80
     }
 
+    /// Initializes a `Binary` instance from a `UUID`.
+    public init(from uuid: UUID) throws {
+        let uuidt = uuid.uuid
+
+        let uuidData = Data(bytes: [
+            uuidt.0, uuidt.1, uuidt.2, uuidt.3,
+            uuidt.4, uuidt.5, uuidt.6, uuidt.7,
+            uuidt.8, uuidt.9, uuidt.10, uuidt.11,
+            uuidt.12, uuidt.13, uuidt.14, uuidt.15
+        ])
+
+        try self.init(data: uuidData, subtype: Binary.Subtype.uuid)
+    }
+
     /// Initializes a `Binary` instance from a `Data` object and a `UInt8` subtype.
     /// Throws an error if the provided data is incompatible with the specified subtype.
     public init(data: Data, subtype: UInt8) throws {
