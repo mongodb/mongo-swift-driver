@@ -17,12 +17,12 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         let client = try MongoClient(connectionString: MongoSwiftTestCase.connStr)
         let db = try client.db(type(of: self).testDatabase)
 
-        let command: Document = ["create": "coll1"]
+        let command: Document = ["create": self.getCollectionName(suffix: "1")]
         expect(try db.runCommand(command)).to(equal(["ok": 1.0]))
-        expect(try db.collection("coll1")).toNot(throwError())
+        expect(try db.collection(command["create"] as! String)).toNot(throwError())
 
         // create collection using createCollection
-        expect(try db.createCollection("coll2")).toNot(throwError())
+        expect(try db.createCollection(self.getCollectionName(suffix: "2"))).toNot(throwError())
         expect(try (Array(db.listCollections()) as [Document]).count).to(equal(2))
 
         let opts = ListCollectionsOptions(filter: ["type": "view"] as Document)

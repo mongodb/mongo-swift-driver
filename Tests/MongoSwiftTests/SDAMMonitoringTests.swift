@@ -54,7 +54,7 @@ final class SDAMTests: MongoSwiftTestCase {
         }
         // do some basic operations
         let db = try client.db(type(of: self).testDatabase)
-        _ = try db.createCollection("testColl")
+        _ = try db.createCollection(self.getCollectionName())
         try db.drop()
 
         center.removeObserver(observer)

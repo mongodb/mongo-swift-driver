@@ -53,7 +53,7 @@ final class CrudTests: MongoSwiftTestCase {
                 // 3) execute the test according to the type's execute method
                 // 4) verify that expected data is present
                 // 5) drop the collection to clean up
-                let collection = try db.collection("\(filename)+\(i)")
+                let collection = try db.collection(self.getCollectionName(suffix: "\(filename)_\(i)"))
                 try collection.insertMany(file.data)
                 try test.execute(usingCollection: collection)
                 try test.verifyData(testCollection: collection, db: db)

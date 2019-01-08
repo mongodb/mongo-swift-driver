@@ -44,6 +44,16 @@ class MongoSwiftTestCase: XCTestCase {
     // Use MemoryLayout instead of Int.bitWidth to avoid a compiler warning.
     // See: https://forums.swift.org/t/how-can-i-condition-on-the-size-of-int/9080/4 */
     static let is32Bit = MemoryLayout<Int>.size == 4
+
+    /// Generates a unique collection name of the format "<Test Suite>_<Test Name>_<suffix>". If no suffix is provided,
+    /// the last underscore is omitted.
+    internal func getCollectionName(suffix: String? = nil) -> String {
+        var name = self.name.replacingOccurrences(of: "[\\[\\]-]", with: "", options: [.regularExpression])
+        if let suf = suffix {
+            name += "_" + suf
+        }
+        return name.replacingOccurrences(of: "[ \\+\\$]", with: "_", options: [.regularExpression])
+    }
 }
 
 extension MongoClient {
