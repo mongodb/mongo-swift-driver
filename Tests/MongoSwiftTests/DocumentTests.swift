@@ -893,5 +893,4 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(deferredStruct.date).to(equal(date))
         expect(try decoder.decode(DateWrapper.self, from: badlyFormatted)).to(throwError())
     }
-
 }
