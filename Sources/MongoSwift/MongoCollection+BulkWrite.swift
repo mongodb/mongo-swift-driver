@@ -364,7 +364,7 @@ public struct BulkWriteResult {
     /// Map of the index of the operation to the id of the upserted document.
     public let upsertedIds: [Int: BSONValue]
 
-    fileprivate var writeErrors: [WriteError] = []
+    fileprivate var writeErrors: [BulkWriteError] = []
     fileprivate var writeConcernError: WriteConcernError?
 
     /**
@@ -402,7 +402,7 @@ public struct BulkWriteResult {
         self.upsertedIds = upsertedIds
 
         if let writeErrors = try reply.getValue(for: "writeErrors") as? [Document] {
-            self.writeErrors = try writeErrors.map { try BSONDecoder().decode(WriteError.self, from: $0) }
+            self.writeErrors = try writeErrors.map { try BSONDecoder().decode(BulkWriteError.self, from: $0) }
         }
 
         if let writeConcernErrors = try reply.getValue(for: "writeConcernErrors") as? [Document],
@@ -413,7 +413,7 @@ public struct BulkWriteResult {
 }
 
 /// A struct to represent a single write error not resulting from an executed bulk write.
-public struct WriteError: Codable {
+public struct WriteError: Codable, Equatable {
     /// An integer value identifying the error.
     public let code: Int
 
@@ -424,10 +424,14 @@ public struct WriteError: Codable {
         case code
         case message = "errmsg"
     }
+
+    public static func == (lhs: WriteError, rhs: WriteError) -> Bool {
+        return lhs.code == rhs.code
+    }
 }
 
 /// A struct to represent a write concern error resulting from an executed bulk write.
-public struct WriteConcernError: Codable {
+public struct WriteConcernError: Codable, Equatable {
     /// An integer value identifying the write concern error.
     public let code: Int
 
@@ -442,10 +446,14 @@ public struct WriteConcernError: Codable {
         case details = "errInfo"
         case message = "errmsg"
     }
+
+    public static func == (lhs: WriteConcernError, rhs: WriteConcernError) -> Bool {
+        return lhs.code == rhs.code && lhs.details == rhs.details
+    }
 }
 
 /// A struct to represent a write error resulting from an executed bulk write.
-public struct BulkWriteError: Codable {
+public struct BulkWriteError: Codable, Equatable {
     /// An integer value identifying the error.
     public let code: Int
 
@@ -462,5 +470,9 @@ public struct BulkWriteError: Codable {
         case code
         case message = "errmsg"
         case index
+    }
+
+    public static func == (lhs: BulkWriteError, rhs: BulkWriteError) -> Bool {
+        return lhs.code == rhs.code && lhs.index == rhs.index
     }
 }

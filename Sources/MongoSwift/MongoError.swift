@@ -7,7 +7,7 @@ protocol MongoSwiftError: Error {}
 /// The possible errors corresponding to types of errors encountered in the MongoDB server.
 ///
 /// - SeeAlso: https://github.com/mongodb/mongo/blob/master/src/mongo/base/error_codes.err
-public enum ServerError: MongoSwiftError {
+public enum ServerError: MongoSwiftError, Equatable {
     /// Thrown when commands experience errors on the server that prevent execution.
     case commandError(code: Int, message: String)
 
@@ -20,10 +20,26 @@ public enum ServerError: MongoSwiftError {
     ///
     /// Note: writeErrors may not be present if the error experienced was a Write Concern related error.
     case bulkWriteError(writeErrors: [BulkWriteError]?, writeConcernError: WriteConcernError?, result: BulkWriteResult?)
+
+    public static func == (lhs: ServerError, rhs: ServerError) -> Bool {
+        switch (lhs, rhs) {
+        case let (.commandError(code: lhsCode, message: _), .commandError(code: rhsCode, message: _)):
+            return lhsCode == rhsCode
+        case let (.writeError(writeError: lhsWriteError, writeConcernError: lhsWCError),
+                  .writeError(writeError: rhsWriteError, writeConcernError: rhsWCError)):
+            return lhsWriteError == rhsWriteError && lhsWCError == rhsWCError
+        case let (.bulkWriteError(writeErrors: lhsWriteErrors, writeConcernError: lhsWCError, result: _),
+                      .bulkWriteError(writeErrors: rhsWriteErrors, writeConcernError: rhsWCError, result: _)):
+            let cmp = { (l: BulkWriteError, r: BulkWriteError) in l.index < r.index }
+            return lhsWriteErrors?.sorted(by: cmp) == rhsWriteErrors?.sorted(by: cmp) && lhsWCError == rhsWCError
+        default:
+            return false
+        }
+    }
 }
 
 /// The possible errors caused by improper use of the driver by the user.
-public enum UserError: MongoSwiftError {
+public enum UserError: MongoSwiftError, Equatable {
     /// Thrown when the driver is incorrectly used.
     case logicError(message: String)
 
@@ -32,7 +48,7 @@ public enum UserError: MongoSwiftError {
 }
 
 /// The possible errors that can occur unexpectedly during runtime.
-public enum RuntimeError: MongoSwiftError {
+public enum RuntimeError: MongoSwiftError, Equatable {
     /// Thrown when the driver encounters a internal error not caused by the user. This is usually indicative of a bug
     /// or system related failure (e.g. during memory allocation).
     case internalError(message: String)
@@ -143,7 +159,7 @@ public enum MongoError {
     case insertManyError(code: UInt32, message: String, result: InsertManyResult?, writeErrors: [WriteError],
         writeConcernError: WriteConcernError?)
     /// Thrown when there is an error executing a bulk write operation.
-    case bulkWriteError(code: UInt32, message: String, result: BulkWriteResult?, writeErrors: [WriteError],
+    case bulkWriteError(code: UInt32, message: String, result: BulkWriteResult?, writeErrors: [BulkWriteError],
         writeConcernError: WriteConcernError?)
 }
 
