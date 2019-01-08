@@ -87,9 +87,11 @@ public enum RuntimeError: MongoSwiftError, Equatable {
     public static func == (lhs: RuntimeError, rhs: RuntimeError) -> Bool {
         switch (lhs, rhs) {
         case (.internalError(message: _), .internalError(message: _)),
-             (.connectionError(message: _, errorLabels: _), .connectionError(message: _, errorLabels: _)),
              (.authenticationError(message: _), .authenticationError(message: _)):
             return true
+        case let (.connectionError(message: _, errorLabels: lhsLabels),
+                  .connectionError(message: _, errorLabels: rhsLabels)):
+            return sortAndCompareOptionalArrays(lhs: lhsLabels, rhs: rhsLabels, cmp: { $0 < $1 })
         default:
             return false
         }
