@@ -770,7 +770,7 @@ final class DocumentTests: MongoSwiftTestCase {
         if #available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) {
             encoder.dateEncodingStrategy = .iso8601
             let iso = try encoder.encode(dateStruct)
-            expect(iso["date"] as? String).to(equal(BSONEncoder.iso8601Formatter.string(from: date)))
+            expect(iso["date"] as? String).to(equal(BSONDecoder.iso8601Formatter.string(from: date)))
         }
 
         let formatter = DateFormatter()

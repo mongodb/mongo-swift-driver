@@ -71,13 +71,6 @@ public class BSONEncoder {
                         uuidEncodingStrategy: self.uuidEncodingStrategy)
     }
 
-    @available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *)
-    internal static let iso8601Formatter: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = .withInternetDateTime
-        return formatter
-    }()
-
     /// Initializes `self`.
     public init() {}
 
@@ -354,7 +347,7 @@ extension _BSONEncoder {
             return formatter.string(from: date)
         case .iso8601:
             if #available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) {
-                return BSONEncoder.iso8601Formatter.string(from: date)
+                return BSONDecoder.iso8601Formatter.string(from: date)
             } else {
                 throw MongoError.bsonEncodeError(message: "ISO8601DateFormatter is unavailable on this platform.")
             }
