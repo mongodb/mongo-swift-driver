@@ -57,6 +57,16 @@ public enum UserError: MongoSwiftError, Equatable {
 
     /// Thrown when the user passes in invalid arguments to a driver method.
     case invalidArgument(message: String)
+
+    public static func == (lhs: UserError, rhs: UserError) -> Bool {
+        switch (lhs, rhs) {
+        case (.logicError(message: _), .logicError(message: _)),
+             (.invalidArgument(message: _), .invalidArgument(message: _)):
+            return true
+        default:
+            return false
+        }
+    }
 }
 
 /// The possible errors that can occur unexpectedly during runtime.
@@ -71,6 +81,17 @@ public enum RuntimeError: MongoSwiftError, Equatable {
 
     /// Thrown when encountering an authentication related error (e.g. invalid credentials).
     case authenticationError(message: String)
+
+    public static func == (lhs: RuntimeError, rhs: RuntimeError) -> Bool {
+        switch (lhs, rhs) {
+        case (.internalError(message: _), .internalError(message: _)),
+             (.connectionError(message: _, errorLabels: _), .connectionError(message: _, errorLabels: _)),
+             (.authenticationError(message: _), .authenticationError(message: _)):
+            return true
+        default:
+            return false
+        }
+    }
 }
 
 /// Internal helper function used to get an appropriate error from a libmongoc error. This should NOT be used to get
