@@ -2,36 +2,48 @@ import Foundation
 import mongoc
 
 /// An empty protocol for encapsulating all errors that this package can throw.
-protocol MongoSwiftError: Error {}
+public protocol MongoSwiftError: Error {}
 
 /// The possible errors corresponding to types of errors encountered in the MongoDB server.
-///
+/// These errors may contain labels providing additional information on their origin.
 /// - SeeAlso: https://github.com/mongodb/mongo/blob/master/src/mongo/base/error_codes.err
 public enum ServerError: MongoSwiftError, Equatable {
     /// Thrown when commands experience errors on the server that prevent execution.
-    case commandError(code: Int, message: String)
+    case commandError(code: Int, message: String, errorLabels: [String]?)
 
-    /// Thrown when errors occur on the server during commands that write not as part of a bulk write.
-    ///
+    /// Thrown when errors occur on the server during commands that write not as part of a bulk write
     /// Note: Only one of writeConcernError or writeError will populated at a time.
-    case writeError(writeError: WriteError?, writeConcernError: WriteConcernError?)
+    case writeError(writeError: WriteError?, writeConcernError: WriteConcernError?, errorLabels: [String]?)
 
     /// Thrown when the server returns errors as part of an executed bulk write.
-    ///
     /// Note: writeErrors may not be present if the error experienced was a Write Concern related error.
-    case bulkWriteError(writeErrors: [BulkWriteError]?, writeConcernError: WriteConcernError?, result: BulkWriteResult?)
+    case bulkWriteError(writeErrors: [BulkWriteError]?,
+                        writeConcernError: WriteConcernError?,
+                        result: BulkWriteResult?,
+                        errorLabels: [String]?)
 
     public static func == (lhs: ServerError, rhs: ServerError) -> Bool {
         switch (lhs, rhs) {
-        case let (.commandError(code: lhsCode, message: _), .commandError(code: rhsCode, message: _)):
-            return lhsCode == rhsCode
-        case let (.writeError(writeError: lhsWriteError, writeConcernError: lhsWCError),
-                  .writeError(writeError: rhsWriteError, writeConcernError: rhsWCError)):
-            return lhsWriteError == rhsWriteError && lhsWCError == rhsWCError
-        case let (.bulkWriteError(writeErrors: lhsWriteErrors, writeConcernError: lhsWCError, result: _),
-                      .bulkWriteError(writeErrors: rhsWriteErrors, writeConcernError: rhsWCError, result: _)):
+        case let (.commandError(code: lhsCode, message: _, errorLabels: lhsErrorLabels),
+                  .commandError(code: rhsCode, message: _, errorLabels: rhsErrorLabels)):
+            return lhsCode == rhsCode && lhsErrorLabels?.sorted() == rhsErrorLabels?.sorted()
+        case let (.writeError(writeError: lhsWriteError, writeConcernError: lhsWCError, errorLabels: lhsErrorLabels),
+                  .writeError(writeError: rhsWriteError, writeConcernError: rhsWCError, errorLabels: rhsErrorLabels)):
+            return lhsWriteError == rhsWriteError
+                    && lhsWCError == rhsWCError
+                    && lhsErrorLabels?.sorted() == rhsErrorLabels?.sorted()
+        case let (.bulkWriteError(writeErrors: lhsWriteErrors,
+                                  writeConcernError: lhsWCError,
+                                  result: _,
+                                  errorLabels: lhsErrorLabels),
+                  .bulkWriteError(writeErrors: rhsWriteErrors,
+                                  writeConcernError: rhsWCError,
+                                  result: _,
+                                  errorLabels: rhsErrorLabels)):
             let cmp = { (l: BulkWriteError, r: BulkWriteError) in l.index < r.index }
-            return lhsWriteErrors?.sorted(by: cmp) == rhsWriteErrors?.sorted(by: cmp) && lhsWCError == rhsWCError
+            return lhsWriteErrors?.sorted(by: cmp) == rhsWriteErrors?.sorted(by: cmp)
+                    && lhsWCError == rhsWCError
+                    && lhsErrorLabels?.sorted() == rhsErrorLabels?.sorted()
         default:
             return false
         }
@@ -54,77 +66,36 @@ public enum RuntimeError: MongoSwiftError, Equatable {
     case internalError(message: String)
 
     /// Thrown when encountering a connection or socket related error.
-    case connectionError(message: String)
+    /// May contain labels providing additional information on the nature of the error.
+    case connectionError(message: String, errorLabels: [String]?)
 
     /// Thrown when encountering an authentication related error (e.g. invalid credentials).
     case authenticationError(message: String)
 }
 
-/// Internal listing of mongoc error domains. Because they're defined in libmongoc via a typedef'd enum, we cannot get
-/// their raw values in Swift. Hence, we define them here. The same goes for the error codes below.
-internal enum MongoCErrorDomain: UInt32 {
-    case clientError = 1
-    case streamError
-    case protocolError
-    case cursorError
-    case queryError
-    case insertError
-    case saslError
-    case bsonError
-    case matcherError
-    case namespaceError
-    case commandError
-    case collectionError
-    case gridfsError
-    case scramError
-    case serverSelectionError
-    case writeConcernError
-    case serverError
-    case transactionError
-}
-
-/// Internal listing of relevant mongoc error codes.
-internal enum MongoCErrorCode: UInt32 {
-    case authenticateError = 11
-    case invalidArg = 22
-    case badWireVersion = 15
-    case selectionFailure = 13051
-}
-
 /// Internal helper function used to get an appropriate error from a libmongoc error. This should NOT be used to get
 /// `.writeError`s or `.bulkWriteError`s.
-// swiftlint:disable:next cyclomatic_complexity
-internal func parseMongocError(domain: UInt32, code: UInt32, message: String) -> MongoSwiftError {
-    guard let mongocDomain = MongoCErrorDomain(rawValue: domain) else {
+internal func parseMongocError(error: bson_error_t, errorLabels: [String]? = nil) -> MongoSwiftError {
+    let domain = mongoc_error_domain_t(rawValue: error.domain)
+    let code = mongoc_error_code_t(rawValue: error.code)
+    let message = toErrorString(error)
+
+    switch (domain, code) {
+    case (MONGOC_ERROR_CLIENT, MONGOC_ERROR_CLIENT_AUTHENTICATE):
+        return RuntimeError.authenticationError(message: message)
+    case (MONGOC_ERROR_COMMAND, MONGOC_ERROR_COMMAND_INVALID_ARG):
+        return UserError.invalidArgument(message: message)
+    case (MONGOC_ERROR_SERVER, _):
+        return ServerError.commandError(code: Int(code.rawValue), message: message, errorLabels: errorLabels)
+    case (MONGOC_ERROR_STREAM, _):
+        return RuntimeError.connectionError(message: message, errorLabels: errorLabels)
+    case (MONGOC_ERROR_SERVER_SELECTION, MONGOC_ERROR_SERVER_SELECTION_FAILURE):
+        return RuntimeError.connectionError(message: message, errorLabels: errorLabels)
+    case (MONGOC_ERROR_PROTOCOL, MONGOC_ERROR_PROTOCOL_BAD_WIRE_VERSION):
+        return RuntimeError.connectionError(message: message, errorLabels: errorLabels)
+    default:
         return RuntimeError.internalError(message: message)
     }
-
-    switch mongocDomain {
-    case .clientError:
-        if code == MongoCErrorCode.authenticateError.rawValue {
-            return RuntimeError.authenticationError(message: message)
-        }
-    case .commandError:
-        if code == MongoCErrorCode.invalidArg.rawValue {
-            return UserError.invalidArgument(message: message)
-        }
-    case .serverError:
-        return ServerError.commandError(code: Int(code), message: message)
-    case .streamError:
-        return RuntimeError.connectionError(message: message)
-    case .serverSelectionError:
-        if code == MongoCErrorCode.selectionFailure.rawValue {
-            return RuntimeError.connectionError(message: message)
-        }
-    case .protocolError:
-        if code == MongoCErrorCode.badWireVersion.rawValue {
-            return RuntimeError.connectionError(message: message)
-        }
-    default:
-        break
-    }
-
-    return RuntimeError.internalError(message: message)
 }
 
 /// The possible errors that can occur when using this package.
