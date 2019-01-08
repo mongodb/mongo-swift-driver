@@ -24,7 +24,7 @@ extension MongoCollection {
         let opts = try BSONEncoder().encode(options)
         let bulk = BulkWriteOperation(collection: self._collection, opts: opts?.data)
 
-        try requests.enumerated().forEach { (index, model) in
+        try requests.enumerated().forEach { index, model in
             try model.addToBulkWrite(bulk: bulk, index: index)
         }
 
@@ -187,7 +187,10 @@ extension MongoCollection {
          *   - collation: Specifies a collation to use
          *   - upsert: When `true`, creates a new document if no document matches the query
          */
-        public init(filter: Document, update: Document, arrayFilters: [Document]? = nil, collation: Document? = nil,
+        public init(filter: Document,
+                    update: Document,
+                    arrayFilters: [Document]? = nil,
+                    collation: Document? = nil,
                     upsert: Bool? = nil) {
             self.filter = filter
             self.update = update
@@ -225,7 +228,10 @@ extension MongoCollection {
          *   - collation: Specifies a collation to use
          *   - upsert: When `true`, creates a new document if no document matches the query
          */
-        public init(filter: Document, update: Document, arrayFilters: [Document]? = nil, collation: Document? = nil,
+        public init(filter: Document,
+                    update: Document,
+                    arrayFilters: [Document]? = nil,
+                    collation: Document? = nil,
                     upsert: Bool? = nil) {
             self.filter = filter
             self.update = update
@@ -271,12 +277,13 @@ public class BulkWriteOperation {
 
     /// Indicates whether this bulk operation used an acknowledged write concern.
     private var isAcknowledged: Bool {
-        let wc = WriteConcern(mongoc_bulk_operation_get_write_concern(self.bulk))
+        let wc = WriteConcern(from: mongoc_bulk_operation_get_write_concern(self.bulk))
         return wc.isAcknowledged
     }
 
     /// Initializes the object from a `mongoc_collection_t` and `bson_t`.
     fileprivate init(collection: OpaquePointer?, opts: UnsafePointer<bson_t>?) {
+        // swiftlint:disable:next force_unwrapping - documented as always returning a value.
         self.bulk = mongoc_collection_create_bulk_operation_with_opts(collection, opts)!
     }
 
@@ -290,7 +297,8 @@ public class BulkWriteOperation {
         let result = try BulkWriteResult(reply: reply, insertedIds: self.insertedIds)
 
         guard serverId != 0 else {
-            throw MongoError.bulkWriteError(code: error.code, message: toErrorString(error),
+            throw MongoError.bulkWriteError(code: error.code,
+                                            message: toErrorString(error),
                                             result: (self.isAcknowledged ? result : nil),
                                             writeErrors: result.writeErrors,
                                             writeConcernError: result.writeConcernError)

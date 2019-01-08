@@ -73,7 +73,6 @@ public protocol BSONValue {
 
 /// An extension of `Array` to represent the BSON array type.
 extension Array: BSONValue {
-
     public var bsonType: BSONType { return .array }
 
     public static func from(iterator iter: DocumentIterator) throws -> Array {
@@ -137,7 +136,6 @@ public struct BSONNull: BSONValue, Codable {
 
 /// A struct to represent the BSON Binary type.
 public struct Binary: BSONValue, Equatable, Codable {
-
     public var bsonType: BSONType { return .binary }
 
     /// The binary data.
@@ -247,7 +245,6 @@ public struct Binary: BSONValue, Equatable, Codable {
 
 /// An extension of `Bool` to represent the BSON Boolean type.
 extension Bool: BSONValue {
-
     public var bsonType: BSONType { return .boolean }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
@@ -263,7 +260,6 @@ extension Bool: BSONValue {
 
 /// An extension of `Date` to represent the BSON Datetime type. Supports millisecond level precision.
 extension Date: BSONValue {
-
     public var bsonType: BSONType { return .dateTime }
 
     /// Initializes a new `Date` representing the instance `msSinceEpoch` milliseconds
@@ -289,10 +285,9 @@ extension Date: BSONValue {
 /// An internal struct to represent the deprecated DBPointer type. While DBPointers cannot
 /// be created, we may need to parse them into `Document`s, and this provides a place for that logic.
 internal struct DBPointer: BSONValue {
+    public var bsonType: BSONType { return .dbPointer }
 
-    var bsonType: BSONType { return .dbPointer }
-
-    func encode(to storage: DocumentStorage, forKey key: String) throws {
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
         throw MongoError.bsonEncodeError(message: "`DBPointer`s are deprecated; use a DBRef document instead")
     }
 
@@ -302,7 +297,7 @@ internal struct DBPointer: BSONValue {
     }
 
     /// Reads DBPointer data from `iter` and converts it to DBRef format
-    static func asDocument(from iter: DocumentIterator) throws -> Document {
+    internal static func asDocument(from iter: DocumentIterator) throws -> Document {
         var length: UInt32 = 0
         let collectionPP = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: 1)
         defer {
@@ -393,12 +388,10 @@ public struct Decimal128: BSONValue, Equatable, Codable {
             return String(cString: bytes)
         })
      }
-
 }
 
 /// An extension of `Double` to represent the BSON Double type.
 extension Double: BSONValue {
-
     public var bsonType: BSONType { return .double }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
@@ -415,7 +408,6 @@ extension Double: BSONValue {
 /// An extension of `Int` to represent the BSON Int32 or Int64 type.
 /// The `Int` will be encoded as an Int32 if possible, or an Int64 if necessary.
 extension Int: BSONValue {
-
     public var bsonType: BSONType { return self.int32Value != nil ? .int32 : .int64 }
 
     internal var int32Value: Int32? { return Int32(exactly: self) }
@@ -439,7 +431,6 @@ extension Int: BSONValue {
 
 /// An extension of `Int32` to represent the BSON Int32 type.
 extension Int32: BSONValue {
-
     public var bsonType: BSONType { return .int32 }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
@@ -455,7 +446,6 @@ extension Int32: BSONValue {
 
 /// An extension of `Int64` to represent the BSON Int64 type.
 extension Int64: BSONValue {
-
     public var bsonType: BSONType { return .int64 }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
@@ -500,7 +490,6 @@ public struct CodeWithScope: BSONValue, Equatable, Codable {
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> CodeWithScope {
-
         var length: UInt32 = 0
 
         if iter.currentType.rawValue == BSONType.javascript.rawValue {
@@ -531,7 +520,6 @@ public struct CodeWithScope: BSONValue, Equatable, Codable {
 
 /// A struct to represent the BSON MaxKey type.
 public struct MaxKey: BSONValue, Equatable, Codable {
-
     private var maxKey = 1
 
     public var bsonType: BSONType { return .maxKey }
@@ -552,7 +540,6 @@ public struct MaxKey: BSONValue, Equatable, Codable {
 
 /// A struct to represent the BSON MinKey type.
 public struct MinKey: BSONValue, Equatable, Codable {
-
     private var minKey = 1
 
     public var bsonType: BSONType { return .minKey }
@@ -573,7 +560,6 @@ public struct MinKey: BSONValue, Equatable, Codable {
 
 /// A struct to represent the BSON ObjectId type.
 public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
-
     public var bsonType: BSONType { return .objectId }
 
     /// This `ObjectId`'s data represented as a `String`.
@@ -653,7 +639,6 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
     public static func == (lhs: ObjectId, rhs: ObjectId) -> Bool {
         return lhs.oid == rhs.oid
     }
-
 }
 
 /// Extension to allow a UUID to be initialized from a Binary BSONValue.
@@ -686,7 +671,7 @@ extension UUID {
 // note that there is a BSON regexp option 'l' that `NSRegularExpression`
 // doesn't support. The flag will be dropped if BSON containing it is parsed,
 // and it will be ignored if passed into `optionsFromString`.
-let regexOptsMap: [Character: NSRegularExpression.Options] = [
+private let regexOptsMap: [Character: NSRegularExpression.Options] = [
     "i": .caseInsensitive,
     "m": .anchorsMatchLines,
     "s": .dotMatchesLineSeparators,
@@ -696,9 +681,8 @@ let regexOptsMap: [Character: NSRegularExpression.Options] = [
 
 /// An extension of `NSRegularExpression` to support converting options to and from strings.
 extension NSRegularExpression {
-
     /// Convert a string of options flags into an equivalent `NSRegularExpression.Options`
-    static func optionsFromString(_ stringOptions: String) -> NSRegularExpression.Options {
+    internal static func optionsFromString(_ stringOptions: String) -> NSRegularExpression.Options {
         var optsObj: NSRegularExpression.Options = []
         for o in stringOptions {
             if let value = regexOptsMap[o] {
@@ -709,7 +693,7 @@ extension NSRegularExpression {
     }
 
     /// Convert this instance's options object into an alphabetically-sorted string of characters
-    public var stringOptions: String {
+    internal var stringOptions: String {
         var optsString = ""
         for (char, o) in regexOptsMap { if options.contains(o) { optsString += String(char) } }
         return String(optsString.sorted())
@@ -718,7 +702,6 @@ extension NSRegularExpression {
 
 /// A struct to represent a BSON regular expression.
 public struct RegularExpression: BSONValue, Equatable, Codable {
-
     public var bsonType: BSONType { return .regularExpression }
 
     /// The pattern for this regular expression.
@@ -786,7 +769,6 @@ public struct RegularExpression: BSONValue, Equatable, Codable {
 
 /// An extension of String to represent the BSON string type.
 extension String: BSONValue {
-
     public var bsonType: BSONType { return .string }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
@@ -807,20 +789,18 @@ extension String: BSONValue {
 /// An internal struct to represent the deprecated Symbol type. While Symbols cannot be
 /// created, we may need to parse them into `String`s, and this provides a place for that logic.
 internal struct Symbol: BSONValue {
+    public var bsonType: BSONType { return .symbol }
 
-    var bsonType: BSONType { return .symbol }
-
-    func encode(to storage: DocumentStorage, forKey key: String) throws {
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
         throw MongoError.bsonEncodeError(message: "Symbols are deprecated; use a string instead")
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> Symbol {
         throw MongoError.bsonDecodeError(message:
             "`Symbol`s are deprecated; use `Symbol.asString` to parse as a string instead")
-
     }
 
-    static func asString(from iter: DocumentIterator) throws -> String {
+    internal static func asString(from iter: DocumentIterator) throws -> String {
         var length: UInt32 = 0
         guard let strValue = bson_iter_symbol(&iter.iter, &length) else {
             throw MongoError.bsonDecodeError(message: retrieveErrorMsg(type: "Symbol", key: iter.currentKey))
@@ -831,7 +811,6 @@ internal struct Symbol: BSONValue {
 
 /// A struct to represent the BSON Timestamp type.
 public struct Timestamp: BSONValue, Equatable, Codable {
-
     public var bsonType: BSONType { return .timestamp }
 
     /// A timestamp representing seconds since the Unix epoch.
@@ -888,29 +867,29 @@ public struct Timestamp: BSONValue, Equatable, Codable {
  *
  * - Returns: `true` if `lhs` is equal to `rhs`, `false` otherwise.
  */
-func bsonEquals(_ lhs: BSONValue, _ rhs: BSONValue) -> Bool {
+public func bsonEquals(_ lhs: BSONValue, _ rhs: BSONValue) -> Bool {
     validateBSONTypes(lhs, rhs)
 
     switch (lhs, rhs) {
-    case (let l as Int, let r as Int): return l == r
-    case (let l as Int32, let r as Int32): return l == r
-    case (let l as Int64, let r as Int64): return l == r
-    case (let l as Double, let r as Double): return l == r
-    case (let l as Decimal128, let r as Decimal128): return l == r
-    case (let l as Bool, let r as Bool): return l == r
-    case (let l as String, let r as String): return l == r
-    case (let l as RegularExpression, let r as RegularExpression): return l == r
-    case (let l as Timestamp, let r as Timestamp): return l == r
-    case (let l as Date, let r as Date): return l == r
+    case let (l as Int, r as Int): return l == r
+    case let (l as Int32, r as Int32): return l == r
+    case let (l as Int64, r as Int64): return l == r
+    case let (l as Double, r as Double): return l == r
+    case let (l as Decimal128, r as Decimal128): return l == r
+    case let (l as Bool, r as Bool): return l == r
+    case let (l as String, r as String): return l == r
+    case let (l as RegularExpression, r as RegularExpression): return l == r
+    case let (l as Timestamp, r as Timestamp): return l == r
+    case let (l as Date, r as Date): return l == r
     case (_ as MinKey, _ as MinKey): return true
     case (_ as MaxKey, _ as MaxKey): return true
-    case (let l as ObjectId, let r as ObjectId): return l == r
-    case (let l as CodeWithScope, let r as CodeWithScope): return l == r
-    case (let l as Binary, let r as Binary): return l == r
+    case let (l as ObjectId, r as ObjectId): return l == r
+    case let (l as CodeWithScope, r as CodeWithScope): return l == r
+    case let (l as Binary, r as Binary): return l == r
     case (_ as BSONNull, _ as BSONNull): return true
-    case (let l as Document, let r as Document): return l == r
-    case (let l as [BSONValue], let r as [BSONValue]): // TODO: SWIFT-242
-        return l.count == r.count && zip(l, r).reduce(true, {prev, next in prev && bsonEquals(next.0, next.1)})
+    case let (l as Document, r as Document): return l == r
+    case let (l as [BSONValue], r as [BSONValue]): // TODO: SWIFT-242
+        return l.count == r.count && zip(l, r).reduce(true, { prev, next in prev && bsonEquals(next.0, next.1) })
     case (_ as [Any], _ as [Any]): return false
     default: return false
     }
@@ -946,6 +925,6 @@ private func validateBSONTypes(_ lhs: BSONValue, _ rhs: BSONValue) {
     }
 }
 
-func retrieveErrorMsg(type: String, key: String) -> String {
+private func retrieveErrorMsg(type: String, key: String) -> String {
     return "Failed to retrieve the \(type) value for key '\(key)'"
 }

@@ -107,9 +107,9 @@ extension MongoCollection {
      *
      * - Returns: A `[BSONValue]` containing the distinct values for the specified criteria
      */
-    public func distinct(fieldName: String, filter: Document = [:],
+    public func distinct(fieldName: String,
+                         filter: Document = [:],
                          options: DistinctOptions? = nil) throws -> [BSONValue] {
-
         let collName = String(cString: mongoc_collection_get_name(self._collection))
         let command: Document = [
             "distinct": collName,
@@ -189,9 +189,15 @@ public struct AggregateOptions: Encodable {
     public let writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all parameters to be optional
-    public init(allowDiskUse: Bool? = nil, batchSize: Int32? = nil, bypassDocumentValidation: Bool? = nil,
-                collation: Document? = nil, comment: String? = nil, hint: Hint? = nil, maxTimeMS: Int64? = nil,
-                readConcern: ReadConcern? = nil, readPreference: ReadPreference? = nil,
+    public init(allowDiskUse: Bool? = nil,
+                batchSize: Int32? = nil,
+                bypassDocumentValidation: Bool? = nil,
+                collation: Document? = nil,
+                comment: String? = nil,
+                hint: Hint? = nil,
+                maxTimeMS: Int64? = nil,
+                readConcern: ReadConcern? = nil,
+                readPreference: ReadPreference? = nil,
                 writeConcern: WriteConcern? = nil) {
         self.allowDiskUse = allowDiskUse
         self.batchSize = batchSize
@@ -235,8 +241,13 @@ public struct CountOptions: Encodable {
     public let readPreference: ReadPreference?
 
     /// Convenience initializer allowing any/all parameters to be optional
-    public init(collation: Document? = nil, hint: Hint? = nil, limit: Int64? = nil, maxTimeMS: Int64? = nil,
-                readConcern: ReadConcern? = nil, readPreference: ReadPreference? = nil, skip: Int64? = nil) {
+    public init(collation: Document? = nil,
+                hint: Hint? = nil,
+                limit: Int64? = nil,
+                maxTimeMS: Int64? = nil,
+                readConcern: ReadConcern? = nil,
+                readPreference: ReadPreference? = nil,
+                skip: Int64? = nil) {
         self.collation = collation
         self.hint = hint
         self.limit = limit
@@ -275,7 +286,9 @@ public struct DistinctOptions: Encodable {
     public let readPreference: ReadPreference?
 
     /// Convenience initializer allowing any/all parameters to be optional
-    public init(collation: Document? = nil, maxTimeMS: Int64? = nil, readConcern: ReadConcern? = nil,
+    public init(collation: Document? = nil,
+                maxTimeMS: Int64? = nil,
+                readConcern: ReadConcern? = nil,
                 readPreference: ReadPreference? = nil) {
         self.collation = collation
         self.maxTimeMS = maxTimeMS
@@ -391,12 +404,26 @@ public struct FindOptions: Encodable {
     public let readPreference: ReadPreference?
 
     /// Convenience initializer allowing any/all parameters to be optional
-    public init(allowPartialResults: Bool? = nil, batchSize: Int32? = nil, collation: Document? = nil,
-                comment: String? = nil, cursorType: CursorType? = nil, hint: Hint? = nil, limit: Int64? = nil,
-                max: Document? = nil, maxAwaitTimeMS: Int64? = nil, maxScan: Int64? = nil, maxTimeMS: Int64? = nil,
-                min: Document? = nil, noCursorTimeout: Bool? = nil, projection: Document? = nil,
-                readConcern: ReadConcern? = nil, readPreference: ReadPreference? = nil, returnKey: Bool? = nil,
-                showRecordId: Bool? = nil, skip: Int64? = nil, sort: Document? = nil) {
+    public init(allowPartialResults: Bool? = nil,
+                batchSize: Int32? = nil,
+                collation: Document? = nil,
+                comment: String? = nil,
+                cursorType: CursorType? = nil,
+                hint: Hint? = nil,
+                limit: Int64? = nil,
+                max: Document? = nil,
+                maxAwaitTimeMS: Int64? = nil,
+                maxScan: Int64? = nil,
+                maxTimeMS: Int64? = nil,
+                min: Document? = nil,
+                noCursorTimeout: Bool? = nil,
+                projection: Document? = nil,
+                readConcern: ReadConcern? = nil,
+                readPreference: ReadPreference? = nil,
+                returnKey: Bool? = nil,
+                showRecordId: Bool? = nil,
+                skip: Int64? = nil,
+                sort: Document? = nil) {
         self.allowPartialResults = allowPartialResults
         self.batchSize = batchSize
         self.collation = collation

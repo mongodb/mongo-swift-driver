@@ -1,7 +1,7 @@
 import MongoSwiftTests
 import XCTest
 
-var tests = [XCTestCaseEntry]()
+internal var tests = [XCTestCaseEntry]()
 tests += MongoSwiftTests.allTests()
 
 XCTMain(tests)

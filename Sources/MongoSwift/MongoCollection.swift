@@ -23,10 +23,8 @@ public class MongoCollection<T: Codable> {
     /// The `ReadConcern` set on this collection, or `nil` if one is not set.
     public var readConcern: ReadConcern? {
         // per libmongoc docs, we don't need to handle freeing this ourselves
-        let readConcern = mongoc_collection_get_read_concern(self._collection)
-        let rcObj = ReadConcern(from: readConcern)
-        if rcObj.isDefault { return nil }
-        return rcObj
+        let rc = ReadConcern(from: mongoc_collection_get_read_concern(self._collection))
+        return rc.isDefault ? nil : rc
     }
 
     /// The `ReadPreference` set on this collection
@@ -37,10 +35,8 @@ public class MongoCollection<T: Codable> {
     /// The `WriteConcern` set on this collection, or nil if one is not set.
     public var writeConcern: WriteConcern? {
         // per libmongoc docs, we don't need to handle freeing this ourselves
-        let writeConcern = mongoc_collection_get_write_concern(self._collection)
-        let wcObj = WriteConcern(writeConcern)
-        if wcObj.isDefault { return nil }
-        return wcObj
+        let wc = WriteConcern(from: mongoc_collection_get_write_concern(self._collection))
+        return wc.isDefault ? nil : wc
     }
 
     /// Initializes a new `MongoCollection` instance, not meant to be instantiated directly

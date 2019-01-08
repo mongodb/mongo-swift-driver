@@ -85,7 +85,9 @@ extension Document: Sequence {
         return try self.filter { elt in
             if drop {
                 // still in "drop" mode and it matches predicate
-                if try predicate(elt) { return false }
+                if try predicate(elt) {
+                    return false
+                }
                 // else we've encountered our first non-matching element
                 drop = false
                 return true
@@ -129,7 +131,8 @@ extension Document: Sequence {
         }
     }
 
-    public func split(maxSplits: Int = Int.max, omittingEmptySubsequences: Bool = true,
+    public func split(maxSplits: Int = Int.max,
+                      omittingEmptySubsequences: Bool = true,
                       whereSeparator isSeparator: (KeyValuePair) throws -> Bool) rethrows -> [Document] {
         // rather than implementing the complex logic necessary for split, convert to an array and call split on that
         let asArr = Array(self)
@@ -187,7 +190,9 @@ public class DocumentIterator: IteratorProtocol {
     internal init?(forDocument doc: Document) {
         self.iter = bson_iter_t()
         self.storage = doc.storage
-        guard bson_iter_init(&self.iter, doc.data) else { return nil }
+        guard bson_iter_init(&self.iter, doc.data) else {
+            return nil
+        }
     }
 
     /// Initializes a new iterator over the contents of `doc`. Returns `nil` if an iterator cannot
@@ -268,7 +273,9 @@ public class DocumentIterator: IteratorProtocol {
     internal static func subsequence(of doc: Document, startIndex: Int = 0, endIndex: Int = Int.max) -> Document {
         precondition(endIndex >= startIndex, "endIndex must be >= startIndex")
 
-        guard let iter = DocumentIterator(forDocument: doc) else { return [:] }
+        guard let iter = DocumentIterator(forDocument: doc) else {
+            return [:]
+        }
 
         // skip the values preceding startIndex. this is more performant than calling next, because
         // it doesn't pull the unneeded key/values out of the iterator

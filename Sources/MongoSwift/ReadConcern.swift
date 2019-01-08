@@ -2,7 +2,6 @@ import mongoc
 
 /// A class to represent a MongoDB read concern.
 public class ReadConcern: Codable {
-
     /// An enumeration of possible ReadConcern levels.
     public enum Level: String {
         /// See https://docs.mongodb.com/manual/reference/read-concern-local/
@@ -89,7 +88,9 @@ public class ReadConcern: Codable {
 
     /// Cleans up the internal `mongoc_read_concern_t`.
     deinit {
-        guard let readConcern = self._readConcern else { return }
+        guard let readConcern = self._readConcern else {
+            return
+        }
         mongoc_read_concern_destroy(readConcern)
         self._readConcern = nil
     }

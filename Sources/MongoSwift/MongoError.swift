@@ -57,9 +57,12 @@ extension MongoError: LocalizedError {
 
 internal func toErrorString(_ error: bson_error_t) -> String {
     var e = error
-    return withUnsafeBytes(of: &e.message) { (rawPtr) -> String in
-        let ptr = rawPtr.baseAddress!.assumingMemoryBound(to: CChar.self)
-        return String(cString: ptr)
+    return withUnsafeBytes(of: &e.message) { rawPtr -> String in
+        // if baseAddress is nil, the buffer is empty.
+        guard let baseAddress = rawPtr.baseAddress else {
+            return ""
+        }
+        return String(cString: baseAddress.assumingMemoryBound(to: CChar.self))
     }
 }
 

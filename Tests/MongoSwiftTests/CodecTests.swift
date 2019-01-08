@@ -166,8 +166,14 @@ final class CodecTests: MongoSwiftTestCase {
                     lhs.uint == rhs.uint && lhs.float == rhs.float
         }
 
-        init(int8: Int8? = nil, int16: Int16? = nil, uint8: UInt8? = nil, uint16: UInt16? = nil,
-             uint32: UInt32? = nil, uint64: UInt64? = nil, uint: UInt? = nil, float: Float? = nil) {
+        init(int8: Int8? = nil,
+             int16: Int16? = nil,
+             uint8: UInt8? = nil,
+             uint16: UInt16? = nil,
+             uint32: UInt32? = nil,
+             uint64: UInt64? = nil,
+             uint: UInt? = nil,
+             float: Float? = nil) {
             self.int8 = int8
             self.int16 = int16
             self.uint8 = uint8
@@ -186,8 +192,10 @@ final class CodecTests: MongoSwiftTestCase {
 
         let s1 = Numbers(int8: 42, int16: 42, uint8: 42, uint16: 42, uint32: 42, uint64: 42, uint: 42, float: 42)
         // all should be stored as Int32s, except the float should be stored as a double
-        let doc1: Document = ["int8": 42, "int16": 42, "uint8": 42, "uint16": 42,
-                    "uint32": 42, "uint64": 42, "uint": 42, "float": 42.0]
+        let doc1: Document = [
+            "int8": 42, "int16": 42, "uint8": 42, "uint16": 42,
+            "uint32": 42, "uint64": 42, "uint": 42, "float": 42.0
+        ]
 
         expect(try encoder.encode(s1)).to(equal(doc1))
 
@@ -326,7 +334,6 @@ final class CodecTests: MongoSwiftTestCase {
 
     /// Test decoding/encoding to all possible BSON types
     func testBSONValues() throws {
-
         let expected = AllBSONTypes(
                             double: Double(2),
                             string: "hi",
@@ -749,7 +756,6 @@ final class CodecTests: MongoSwiftTestCase {
     fileprivate struct CorrectTopLevelEncode: Encodable {
         let x: IncorrectTopLevelEncode
 
-        // swiftlint:disable nesting
         enum CodingKeys: CodingKey {
             case x
         }
@@ -772,6 +778,5 @@ final class CodecTests: MongoSwiftTestCase {
         // These tests are to ensure that we handle incorrect encode() implementations in the same way as JSONEncoder.
         expect(try encoder.encode(IncorrectTopLevelEncode(BSONNull()))).to(throwError())
         expect(try encoder.encode(CorrectTopLevelEncode(BSONNull()))).to(equal(["x": Document()]))
-
     }
 }

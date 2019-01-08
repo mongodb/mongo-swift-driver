@@ -48,6 +48,7 @@ public struct CommandStartedEvent: MongoEvent, InitializableFromOpaquePointer {
 
     /// Initializes a CommandStartedEvent from an OpaquePointer to a mongoc_apm_command_started_t
     fileprivate init(_ event: OpaquePointer) {
+        // swiftlint:disable:next force_unwrapping - documented as always returning a value.
         self.command = Document(fromPointer: mongoc_apm_command_started_get_command(event)!)
         self.databaseName = String(cString: mongoc_apm_command_started_get_database_name(event))
         self.commandName = String(cString: mongoc_apm_command_started_get_command_name(event))
@@ -88,6 +89,7 @@ public struct CommandSucceededEvent: MongoEvent, InitializableFromOpaquePointer 
     /// Initializes a CommandSucceededEvent from an OpaquePointer to a mongoc_apm_command_succeeded_t
     fileprivate init(_ event: OpaquePointer) {
         self.duration = mongoc_apm_command_succeeded_get_duration(event)
+        // swiftlint:disable:next force_unwrapping - documented as always returning a value.
         self.reply = Document(fromPointer: mongoc_apm_command_succeeded_get_reply(event)!)
         self.commandName = String(cString: mongoc_apm_command_succeeded_get_command_name(event))
         self.requestId = mongoc_apm_command_succeeded_get_request_id(event)
@@ -317,6 +319,7 @@ public struct ServerHeartbeatSucceededEvent: MongoEvent, InitializableFromOpaque
     /// Initializes a ServerHeartbeatSucceededEvent from an OpaquePointer to a mongoc_apm_server_heartbeat_succeeded_t
     fileprivate init(_ event: OpaquePointer) {
         self.duration = mongoc_apm_server_heartbeat_succeeded_get_duration(event)
+        // swiftlint:disable:next force_unwrapping - documented as always returning a value.
         self.reply = Document(fromPointer: mongoc_apm_server_heartbeat_succeeded_get_reply(event)!)
         self.connectionId = ConnectionId(mongoc_apm_server_heartbeat_succeeded_get_host(event))
     }
@@ -440,7 +443,8 @@ private func serverHeartbeatFailed(_event: OpaquePointer?) {
 
 /// Posts a Notification with the specified name, containing an event of type T generated using the provided _event
 /// and context function.
-private func postNotification<T: MongoEvent>(type: T.Type, _event: OpaquePointer?,
+private func postNotification<T: MongoEvent>(type: T.Type,
+                                             _event: OpaquePointer?,
                                              contextFunc: (OpaquePointer) -> UnsafeMutableRawPointer?
                                             ) where T: InitializableFromOpaquePointer {
     guard let event = _event else {
@@ -464,18 +468,30 @@ private func postNotification<T: MongoEvent>(type: T.Type, _event: OpaquePointer
 /// Extend Notification.Name to have class properties corresponding to each type
 /// of event. This allows creating notifications and observers using these names.
 extension Notification.Name {
-    static let commandStarted = Notification.Name(rawValue: "commandStarted")
-    static let commandSucceeded = Notification.Name(rawValue: "commandSucceeded")
-    static let commandFailed = Notification.Name(rawValue: "commandFailed")
-    static let serverDescriptionChanged = Notification.Name(rawValue: "serverDescriptionChanged")
-    static let serverOpening = Notification.Name(rawValue: "serverOpening")
-    static let serverClosed = Notification.Name(rawValue: "serverClosed")
-    static let topologyDescriptionChanged = Notification.Name(rawValue: "topologyDescriptionChanged")
-    static let topologyOpening = Notification.Name(rawValue: "topologyOpening")
-    static let topologyClosed = Notification.Name(rawValue: "topologyClosed")
-    static let serverHeartbeatStarted = Notification.Name(rawValue: "serverHeartbeatStarted")
-    static let serverHeartbeatSucceeded = Notification.Name(rawValue: "serverHeartbeatSucceeded")
-    static let serverHeartbeatFailed = Notification.Name(rawValue: "serverHeartbeatFailed")
+    /// The name corresponding to a `CommandStartedEvent`.
+    public static let commandStarted = Notification.Name(rawValue: "commandStarted")
+    ///  The name corresponding to a `CommandSucceededEvent`.
+    public static let commandSucceeded = Notification.Name(rawValue: "commandSucceeded")
+    /// The name corresponding to a `CommandFailedEvent`.
+    public static let commandFailed = Notification.Name(rawValue: "commandFailed")
+    /// The name corresponding to a `ServerDescriptionChangedEvent`.
+    public static let serverDescriptionChanged = Notification.Name(rawValue: "serverDescriptionChanged")
+    /// The name corresponding to a `ServerOpeningEvent`.
+    public static let serverOpening = Notification.Name(rawValue: "serverOpening")
+    /// The name corresponding to a `ServerClosedEvent`.
+    public static let serverClosed = Notification.Name(rawValue: "serverClosed")
+    /// The name corresponding to a `TopologyDescriptionChangedEvent`.
+    public static let topologyDescriptionChanged = Notification.Name(rawValue: "topologyDescriptionChanged")
+    /// The name corresponding to a `TopologyOpeningEvent`.
+    public static let topologyOpening = Notification.Name(rawValue: "topologyOpening")
+    /// The name corresponding to a `TopologyClosedEvent`.
+    public static let topologyClosed = Notification.Name(rawValue: "topologyClosed")
+    /// The name corresponding to a `ServerHeartbeatStartedEvent`.
+    public static let serverHeartbeatStarted = Notification.Name(rawValue: "serverHeartbeatStarted")
+    /// The name corresponding to a `ServerHeartbeatSucceededEvent`.
+    public static let serverHeartbeatSucceeded = Notification.Name(rawValue: "serverHeartbeatSucceeded")
+    /// The name corresponding to a `ServerHeartbeatFailedEvent`.
+    public static let serverHeartbeatFailed = Notification.Name(rawValue: "serverHeartbeatFailed")
 }
 
 /// The two categories of events that can be monitored. One or both can be enabled for a `MongoClient`.

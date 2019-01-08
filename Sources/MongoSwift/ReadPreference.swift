@@ -6,7 +6,6 @@ import mongoc
  * - SeeAlso: https://docs.mongodb.com/manual/reference/read-preference/
  */
 public final class ReadPreference {
-
     /// An enumeration of possible ReadPreference modes.
     public enum Mode: String {
         case primary
@@ -139,7 +138,9 @@ public final class ReadPreference {
 
     /// Cleans up the internal `mongoc_read_prefs_t`.
     deinit {
-        guard let readPreference = self._readPreference else { return }
+        guard let readPreference = self._readPreference else {
+            return
+        }
         mongoc_read_prefs_destroy(readPreference)
         self._readPreference = nil
     }

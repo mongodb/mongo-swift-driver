@@ -39,7 +39,6 @@ public struct AnyBSONValue: Codable, Equatable {
                     self.value,
                     EncodingError.Context(codingPath: [],
                                           debugDescription: "Encountered a non-Codable value while encoding \(self)"))
-
             }
         }
     }

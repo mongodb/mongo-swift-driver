@@ -11,9 +11,12 @@ public struct ConnectionId: Equatable {
     /// Initializes a ConnectionId from an UnsafePointer to a mongoc_host_list_t.
     internal init(_ hostList: UnsafePointer<mongoc_host_list_t>) {
         var hostData = hostList.pointee
-        self.host = withUnsafeBytes(of: &hostData.host) { (rawPtr) -> String in
-            let ptr = rawPtr.baseAddress!.assumingMemoryBound(to: CChar.self)
-            return String(cString: ptr)
+        self.host = withUnsafeBytes(of: &hostData.host) { rawPtr -> String in
+            // if baseAddress is nil, the buffer is empty.
+            guard let baseAddress = rawPtr.baseAddress else {
+                return ""
+            }
+            return String(cString: baseAddress.assumingMemoryBound(to: CChar.self))
         }
         self.port = hostData.port
     }
@@ -22,6 +25,7 @@ public struct ConnectionId: Equatable {
     internal init(_ hostAndPort: String = "localhost:27017") {
         let parts = hostAndPort.split(separator: ":")
         self.host = String(parts[0])
+        // swiftlint:disable:next force_unwrapping - should be valid UInt16 unless server response malformed.
         self.port = UInt16(parts[1])!
     }
 
@@ -172,11 +176,12 @@ public struct ServerDescription {
     internal init(_ description: OpaquePointer) {
         self.connectionId = ConnectionId(mongoc_server_description_host(description))
         self.roundTripTime = mongoc_server_description_round_trip_time(description)
-
+        // swiftlint:disable:next force_unwrapping - documented as always returning a value.
         let isMaster = Document(fromPointer: mongoc_server_description_ismaster(description)!)
         self.parseIsMaster(isMaster)
 
         let serverType = String(cString: mongoc_server_description_type(description))
+        // swiftlint:disable:next force_unwrapping - libmongoc will always give us a valid raw value.
         self.type = ServerType(rawValue: serverType)!
     }
 }
@@ -226,9 +231,14 @@ public struct TopologyDescription {
         let timeoutValues = self.servers.map { $0.logicalSessionTimeoutMinutes }
         if timeoutValues.contains (where: { $0 == nil }) {
             return nil
-        } else {
-            return timeoutValues.map { $0! }.min()
         }
+
+        #if swift(>=4.1)
+        return timeoutValues.compactMap { $0 }.min()
+        #else
+        // swiftlint:disable:next force_unwrapping - we filtered out nil values already.
+        return timeoutValues.map { $0! }.min()
+        #endif
     }
 
     /// Returns `true` if the topology has a readable server available, and `false` otherwise.
@@ -245,14 +255,15 @@ public struct TopologyDescription {
     /// An internal initializer to create a `TopologyDescription` from an OpaquePointer
     /// to a `mongoc_server_description_t`
     internal init(_ description: OpaquePointer) {
-
         let topologyType = String(cString: mongoc_topology_description_type(description))
+        // swiftlint:disable:next force_unwrapping - libmongoc will only give us back valid raw values.
         self.type = TopologyType(rawValue: topologyType)!
 
         var size = size_t()
         let serverData = mongoc_topology_description_get_servers(description, &size)
         let buffer = UnsafeBufferPointer(start: serverData, count: size)
         if size > 0 {
+            // swiftlint:disable:next force_unwrapping - documented as always returning a value.
             self.servers = Array(buffer).map { ServerDescription($0!) }
         }
     }

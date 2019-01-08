@@ -12,16 +12,18 @@ public class DocumentStorage {
         return Int(bson_count_keys(self.pointer))
     }
 
-    init() {
+    internal init() {
         self.pointer = bson_new()
     }
 
-    init(fromPointer pointer: UnsafePointer<bson_t>) {
+    internal init(fromPointer pointer: UnsafePointer<bson_t>) {
         self.pointer = bson_copy(pointer)
     }
 
     deinit {
-        guard let pointer = self.pointer else { return }
+        guard let pointer = self.pointer else {
+            return
+        }
         bson_destroy(pointer)
         self.pointer = nil
     }
@@ -120,18 +122,18 @@ extension Document {
     internal mutating func setValue(for key: String, to newValue: BSONValue, checkForKey: Bool = true) throws {
         // if the key already exists in the `Document`, we need to replace it
         if checkForKey, let existingType = DocumentIterator(forDocument: self, advancedTo: key)?.currentType {
-
             let newBSONType = newValue.bsonType
             let sameTypes = newBSONType == existingType
 
             // if the new type is the same and it's a type with no custom data, no-op
-            if sameTypes && [.null, .undefined, .minKey, .maxKey].contains(newBSONType) { return }
+            if sameTypes && [.null, .undefined, .minKey, .maxKey].contains(newBSONType) {
+                return
+            }
 
             // if the new type is the same and it's a fixed length type, we can overwrite
             if let ov = newValue as? Overwritable, ov.bsonType == existingType {
                 self.copyStorageIfRequired()
-                // make a new iterator referencing our new storage. we already know the key is present
-                /// so initialization will succeed and ! is safe.
+                // swiftlint:disable:next force_unwrapping - key is guaranteed present so initialization will succeed.
                 try DocumentIterator(forDocument: self, advancedTo: key)!.overwriteCurrentValue(with: ov)
 
             // otherwise, we just create a new document and replace this key
@@ -259,11 +261,12 @@ extension Document {
         return String(cString: json)
     }
 
-    /// Returns a copy of the raw BSON data for this `Document`, represented as `Data`
+    /// Returns a copy of the raw BSON data for this `Document`, represented as `Data`.
     public var rawBSON: Data {
-        let data = bson_get_data(self.data)
+        // swiftlint:disable:next force_unwrapping - documented as always returning a value.
+        let data = bson_get_data(self.data)!
         let length = self.data.pointee.len
-        return Data(bytes: data!, count: Int(length))
+        return Data(bytes: data, count: Int(length))
     }
 
     /// Initializes a new, empty `Document`.
@@ -273,7 +276,7 @@ extension Document {
     }
 
     /**
-     * Constructs a new `Document` from the provided JSON text
+     * Constructs a new `Document` from the provided JSON text.
      *
      * - Parameters:
      *   - fromJSON: a JSON document as `Data` to parse into a `Document`
@@ -296,12 +299,14 @@ extension Document {
         self.count = self.storage.count
     }
 
-    /// Convenience initializer for constructing a `Document` from a `String`
+    /// Convenience initializer for constructing a `Document` from a `String`.
     public init(fromJSON json: String) throws {
-        try self.init(fromJSON: json.data(using: .utf8)!)
+        // `String`s are Unicode under the hood so force unwrap always succeeds.
+        // see https://www.objc.io/blog/2018/02/13/string-to-data-and-back/
+        try self.init(fromJSON: json.data(using: .utf8)!) // swiftlint:disable:this force_unwrapping
     }
 
-    /// Constructs a `Document` from raw BSON `Data`
+    /// Constructs a `Document` from raw BSON `Data`.
     public init(fromBSON: Data) {
         self.storage = DocumentStorage(fromPointer: fromBSON.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) in
             bson_new_from_data(bytes, fromBSON.count)
@@ -458,7 +463,7 @@ extension Document: ExpressibleByDictionaryLiteral {
     }
 }
 
-/// An extension of `Document` to add the capability to be initialized with an array literal
+/// An extension of `Document` to add the capability to be initialized with an array literal.
 extension Document: ExpressibleByArrayLiteral {
     /**
      * Initializes a `Document` using an array literal where the values

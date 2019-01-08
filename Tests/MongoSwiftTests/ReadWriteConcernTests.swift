@@ -61,7 +61,6 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
         // test init from doc
         let rc4 = ReadConcern(["level": "majority"])
         expect(rc4.level).to(equal("majority"))
-
     }
 
     func testWriteConcernType() throws {
@@ -78,7 +77,6 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
     }
 
     func testClientReadConcern() throws {
-
         let majority = ReadConcern(.majority)
 
         // test behavior of a client with initialized with no RC
@@ -331,14 +329,18 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
         expect(try coll.insertMany([nextDoc(), nextDoc()],
                                    options: InsertManyOptions(writeConcern: wc3))).toNot(throwError())
 
-        expect(try coll.updateOne(filter: ["x": 1], update: ["$set": nextDoc()],
+        expect(try coll.updateOne(filter: ["x": 1],
+                                  update: ["$set": nextDoc()],
                                   options: UpdateOptions(writeConcern: wc2))).toNot(throwError())
-        expect(try coll.updateOne(filter: ["x": 2], update: ["$set": nextDoc()],
+        expect(try coll.updateOne(filter: ["x": 2],
+                                  update: ["$set": nextDoc()],
                                   options: UpdateOptions(writeConcern: wc3))).toNot(throwError())
 
-        expect(try coll.updateMany(filter: ["x": 3], update: ["$set": nextDoc()],
+        expect(try coll.updateMany(filter: ["x": 3],
+                                   update: ["$set": nextDoc()],
                                    options: UpdateOptions(writeConcern: wc2))).toNot(throwError())
-        expect(try coll.updateMany(filter: ["x": 4], update: ["$set": nextDoc()],
+        expect(try coll.updateMany(filter: ["x": 4],
+                                   update: ["$set": nextDoc()],
                                    options: UpdateOptions(writeConcern: wc3))).toNot(throwError())
 
         let coll2 = try db.createCollection(self.getCollectionName(suffix: "2"))
@@ -346,9 +348,11 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
         let pipeline: [Document] = [["$out": "\(db.name).\(coll2.name)"]]
         expect(try coll.aggregate(pipeline, options: AggregateOptions(writeConcern: wc1))).toNot(throwError())
 
-        expect(try coll.replaceOne(filter: ["x": 5], replacement: nextDoc(),
+        expect(try coll.replaceOne(filter: ["x": 5],
+                                   replacement: nextDoc(),
                                    options: ReplaceOptions(writeConcern: wc1))).toNot(throwError())
-        expect(try coll.replaceOne(filter: ["x": 6], replacement: nextDoc(),
+        expect(try coll.replaceOne(filter: ["x": 6],
+                                   replacement: nextDoc(),
                                    options: ReplaceOptions(writeConcern: wc3))).toNot(throwError())
 
         expect(try coll.deleteOne(["x": 7], options: DeleteOptions(writeConcern: wc1))).toNot(throwError())

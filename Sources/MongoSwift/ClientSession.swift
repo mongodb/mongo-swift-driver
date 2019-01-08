@@ -1,14 +1,13 @@
 /// Options to use when creating a ClientSession.
-public struct SessionOptions: Encodable {
+internal struct SessionOptions: Encodable {
     /// Specifies whether read operations should be causally ordered within the session.
-    public let causalConsistency: Bool?
+    private let causalConsistency: Bool?
 }
 
-/// A session for ordering sequential operations.
+/// :nodoc: A session for ordering sequential operations.
 public class ClientSession: Encodable {
-
     /// Initializes a new client session.
-    public init() {
+    internal init() {
     }
 
     /// Clean up the internal mongoc_session_t.
@@ -16,21 +15,21 @@ public class ClientSession: Encodable {
     }
 
     /// Finish the session.
-    func endSession() {
+    private func endSession() {
     }
 
     /// The server session id for this session.
-    var sessionId: Document {
+    private var sessionId: Document {
         return Document()
     }
 
     /// The cluster time returned by the last operation executed in this session.
-    var clusterTime: Int64 {
+    private var clusterTime: Int64 {
         return Int64()
     }
 
     /// The operation time returned by the last operation executed in this session.
-    var operationTime: Int64 {
+    private var operationTime: Int64 {
         return Int64()
     }
 }

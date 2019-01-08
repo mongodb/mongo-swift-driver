@@ -1,20 +1,6 @@
 disabled_rules:
-  - file_length
-  - function_body_length
-  - identifier_name
-  - todo
-  - type_name
-  - type_body_length
-  - force_try
   - force_cast
-
-opt_in_rules:
-  - vertical_parameter_alignment_on_call
-  - trailing_closure
-  - sorted_imports
-  - redundant_type_annotation
-  - operator_usage_whitespace
-  - modifier_order
-  - missing_docs
-  - implicit_return
-  - fatal_error_message
+  - force_try
+  - force_unwrapping
+  - nesting
+  - explicit_acl

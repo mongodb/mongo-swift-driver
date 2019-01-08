@@ -11,7 +11,6 @@ internal extension Document {
 }
 
 final class CrudTests: MongoSwiftTestCase {
-
     static var allTests: [(String, (CrudTests) -> () throws -> Void)] {
         return [
             ("testReads", testReads),
@@ -34,7 +33,6 @@ final class CrudTests: MongoSwiftTestCase {
         let client = try MongoClient()
         let db = try client.db(type(of: self).testDatabase)
         for (filename, file) in try parseFiles(atPath: forPath) {
-
             if try !client.serverVersionIsInRange(file.minServerVersion, file.maxServerVersion) {
                 print("Skipping tests from file \(filename) for server version \(try client.serverVersion())")
                 continue
@@ -44,7 +42,6 @@ final class CrudTests: MongoSwiftTestCase {
 
             // For each file, execute the test cases contained in it
             for (i, test) in file.tests.enumerated() {
-
                 print("Executing test: \(test.description)")
 
                 // for each test case:
@@ -145,11 +142,26 @@ private class CrudTest {
     let collection: Document?
 
     var arrayFilters: [Document]? { return self.args["arrayFilters"] as? [Document] }
-    var batchSize: Int32? { if let b = self.args["batchSize"] as? Int { return Int32(b) } else { return nil } }
+    var batchSize: Int32? {
+        if let b = self.args["batchSize"] as? Int {
+            return Int32(b)
+        }
+        return nil
+    }
     var collation: Document? { return self.args["collation"] as? Document }
     var sort: Document? { return self.args["sort"] as? Document }
-    var skip: Int64? { if let s = self.args["skip"] as? Int { return Int64(s) } else { return nil } }
-    var limit: Int64? { if let l = self.args["limit"] as? Int { return Int64(l) } else { return nil } }
+    var skip: Int64? {
+        if let s = self.args["skip"] as? Int {
+            return Int64(s)
+            }
+            return nil
+        }
+    var limit: Int64? {
+        if let l = self.args["limit"] as? Int {
+            return Int64(l)
+        }
+        return nil
+    }
     var projection: Document? { return self.args["projection"] as? Document }
     var returnDoc: ReturnDocument? {
         if let ret = self.args["returnDocument"] as? String {
@@ -177,7 +189,10 @@ private class CrudTest {
     // If the test has a `collection` field in its `outcome`, verify that the expected
     // data is present. If there is no `collection` field, do nothing. 
     func verifyData(testCollection coll: MongoCollection<Document>, db: MongoDatabase) throws {
-        guard let collection = self.collection else { return } // only  some tests have data to verify
+        // only  some tests have data to verify
+        guard let collection = self.collection else {
+            return
+        }
         // if a name is not specified, check the current collection
         var collToCheck = coll
         if let name = collection["name"] as? String {
@@ -402,9 +417,9 @@ private class DistinctTest: CrudTest {
         let fieldName: String = try self.args.get("fieldName")
         let options = DistinctOptions(collation: self.collation)
         // rather than casting to all the possible BSON types, just wrap the arrays in documents to compare them
-        let resultDoc: Document = ["result": try coll.distinct(fieldName: fieldName,
-                                                               filter: filter ?? [:],
-                                                               options: options)]
+        let resultDoc: Document = [
+            "result": try coll.distinct(fieldName: fieldName, filter: filter ?? [:], options: options)
+        ]
         if let result = self.result {
             let expectedDoc: Document = ["result": result]
             expect(resultDoc).to(equal(expectedDoc))
@@ -416,8 +431,11 @@ private class DistinctTest: CrudTest {
 private class FindTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let filter: Document = try self.args.get("filter")
-        let options = FindOptions(batchSize: self.batchSize, collation: self.collation, limit: self.limit,
-                                  skip: self.skip, sort: self.sort)
+        let options = FindOptions(batchSize: self.batchSize,
+                                  collation: self.collation,
+                                  limit: self.limit,
+                                  skip: self.skip,
+                                  sort: self.sort)
         let result = try Array(coll.find(filter, options: options))
         expect(result).to(equal(self.result as? [Document]))
     }
@@ -440,8 +458,11 @@ private class FindOneAndReplaceTest: CrudTest {
         let filter: Document = try self.args.get("filter")
         let replacement: Document = try self.args.get("replacement")
 
-        let opts = FindOneAndReplaceOptions(collation: self.collation, projection: self.projection,
-                                            returnDocument: self.returnDoc, sort: self.sort, upsert: self.upsert)
+        let opts = FindOneAndReplaceOptions(collation: self.collation,
+                                            projection: self.projection,
+                                            returnDocument: self.returnDoc,
+                                            sort: self.sort,
+                                            upsert: self.upsert)
 
         let result = try coll.findOneAndReplace(filter: filter, replacement: replacement, options: opts)
         self.verifyFindAndModifyResult(result)
@@ -454,9 +475,12 @@ private class FindOneAndUpdateTest: CrudTest {
         let filter: Document = try self.args.get("filter")
         let update: Document = try self.args.get("update")
 
-        let opts = FindOneAndUpdateOptions(arrayFilters: self.arrayFilters, collation: self.collation,
-                                           projection: self.projection, returnDocument: self.returnDoc,
-                                           sort: self.sort, upsert: self.upsert)
+        let opts = FindOneAndUpdateOptions(arrayFilters: self.arrayFilters,
+                                           collation: self.collation,
+                                           projection: self.projection,
+                                           returnDocument: self.returnDoc,
+                                           sort: self.sort,
+                                           upsert: self.upsert)
 
         let result = try coll.findOneAndUpdate(filter: filter, update: update, options: opts)
         self.verifyFindAndModifyResult(result)

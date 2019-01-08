@@ -39,7 +39,6 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
 
             // execute the tests for this file
             for var test in testFile.tests {
-
                 if try !client.serverVersionIsInRange(test.minServerVersion, test.maxServerVersion) {
                     print("Skipping test case \(test.description) for server version \(try client.serverVersion())")
                     continue
@@ -55,17 +54,17 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
 
                 // 2. Add an observer that looks for all events
                 var expectedEvents = test.expectations
-                let observer = center.addObserver(forName: nil, object: nil, queue: nil) { (notif) in
+                let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
                     // ignore if it doesn't match one of the names we're looking for
                     guard ["commandStarted", "commandSucceeded", "commandFailed"].contains(notif.name.rawValue) else {
                         return
                     }
 
                     // remove the next expectation for this test and verify it matches the received event
-                    if expectedEvents.count > 0 {
-                        expectedEvents.removeFirst().compare(to: notif, testContext: &test.context)
-                    } else {
+                    if expectedEvents.isEmpty {
                         XCTFail("Got a notification, but ran out of expected events")
+                    } else {
+                        expectedEvents.removeFirst().compare(to: notif, testContext: &test.context)
                     }
                 }
 
@@ -89,7 +88,7 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
         let customCenter = NotificationCenter()
         client.enableMonitoring(forEvents: .commandMonitoring, usingCenter: customCenter)
         var eventCount = 0
-        let observer = customCenter.addObserver(forName: nil, object: nil, queue: nil) { (_) in
+        let observer = customCenter.addObserver(forName: nil, object: nil, queue: nil) { _ in
             eventCount += 1
         }
 
@@ -117,17 +116,14 @@ private struct CMTestFile: Decodable {
 
 /// A struct to hold the data for a single test from a CMTestFile.
 private struct CMTest: Decodable {
-
     struct Operation: Decodable {
         let name: String
         let args: Document
         let readPreference: Document?
 
-        // swiftlint:disable nesting
         enum CodingKeys: String, CodingKey {
             case name, args = "arguments", readPreference
         }
-        // swiftlint:enable nesting
     }
 
     let op: Operation
@@ -159,7 +155,6 @@ private struct CMTest: Decodable {
         let filter: Document = self.op.args["filter"] as? Document ?? [:]
 
         switch self.op.name {
-
         case "count":
             _ = try? collection.count(filter)
         case "deleteMany":
@@ -376,7 +371,6 @@ private struct CommandSucceededExpectation: ExpectationType, Decodable {
 
         let receivedCursor = event.reply["cursor"] as? Document
         if let expectedCursor = self.cursor {
-
             // if the received cursor has an ID, and the expected ID is not 0, compare cursor IDs
             if let id = receivedCursor!["id"] as? Int64, expectedCursor["id"] as? Int64 != 0 {
                 let storedId = testContext["cursorId"] as? Int64
@@ -387,13 +381,11 @@ private struct CommandSucceededExpectation: ExpectationType, Decodable {
                 } else {
                     expect(storedId).to(equal(id))
                 }
-
             }
             compareCursors(expected: expectedCursor, actual: receivedCursor!)
         } else {
             expect(receivedCursor).to(beNil())
         }
-
     }
 
     /// Compare expected vs actual write errors.

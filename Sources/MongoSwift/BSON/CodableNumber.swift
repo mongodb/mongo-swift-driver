@@ -18,16 +18,28 @@ internal protocol CodableNumber {
 }
 
 extension CodableNumber {
-    init?(from value: BSONValue) {
+    internal init?(from value: BSONValue) {
         switch value {
         case let v as Int:
-            if let exact = Self(exactly: v) { self = exact; return }
+            if let exact = Self(exactly: v) {
+                self = exact
+                return
+            }
         case let v as Int32:
-            if let exact = Self(exactly: v) { self = exact; return }
+            if let exact = Self(exactly: v) {
+                self = exact
+                return
+            }
         case let v as Int64:
-            if let exact = Self(exactly: v) { self = exact; return }
+            if let exact = Self(exactly: v) {
+                self = exact
+                return
+            }
         case let v as Double:
-            if let exact = Self(exactly: v) { self = exact; return }
+            if let exact = Self(exactly: v) {
+                self = exact
+                return
+            }
         default:
             break
         }
@@ -37,7 +49,7 @@ extension CodableNumber {
     /// By default, just try casting the number to a `BSONValue`. Types
     /// where that will not work provide their own implementation of the
     /// `bsonValue` computed property.
-    var bsonValue: BSONValue? {
+    internal var bsonValue: BSONValue? {
         return self as? BSONValue
     }
 }
@@ -47,50 +59,55 @@ extension Int32: CodableNumber {}
 extension Int64: CodableNumber {}
 
 extension Int8: CodableNumber {
-    var bsonValue: BSONValue? {
+    internal var bsonValue: BSONValue? {
         // Int8 always fits in an Int32
         return Int32(exactly: self)
     }
 }
 
 extension Int16: CodableNumber {
-    var bsonValue: BSONValue? {
+    internal var bsonValue: BSONValue? {
         // Int16 always fits in an Int32
         return Int32(exactly: self)
     }
 }
 
 extension UInt8: CodableNumber {
-    var bsonValue: BSONValue? {
+    internal var bsonValue: BSONValue? {
         // UInt8 always fits in an Int32
         return Int32(exactly: self)
     }
 }
 
 extension UInt16: CodableNumber {
-    var bsonValue: BSONValue? {
+    internal var bsonValue: BSONValue? {
         // UInt16 always fits in an Int32
         return Int(exactly: self)
     }
 }
 
 extension UInt32: CodableNumber {
-    var bsonValue: BSONValue? {
+    internal var bsonValue: BSONValue? {
         // try an Int32 first
-        if let int32 = Int32(exactly: self) { return int32 }
+        if let int32 = Int32(exactly: self) {
+            return int32
+        }
         // otherwise, will always fit in an Int64
         return Int64(exactly: self)
     }
 }
 
 extension UInt64: CodableNumber {
-    var bsonValue: BSONValue? {
-        // try an Int32 first
-        if let int32 = Int32(exactly: self) { return int32 }
-        // then an Int64
-        if let int64 = Int64(exactly: self) { return int64 }
-        // finally try a double
-        if let double = Double(exactly: self) { return double }
+    internal var bsonValue: BSONValue? {
+        if let int32 = Int32(exactly: self) {
+            return int32
+        }
+        if let int64 = Int64(exactly: self) {
+            return int64
+        }
+        if let double = Double(exactly: self) {
+            return double
+        }
         // we could consider trying a Decimal128 here. However,
         // it's not clear how we could support decoding something
         // stored as Decimal128 back to a UInt64 without access
@@ -100,13 +117,16 @@ extension UInt64: CodableNumber {
 }
 
 extension UInt: CodableNumber {
-    var bsonValue: BSONValue? {
-        // try an Int32 first
-        if let int32 = Int32(exactly: self) { return int32 }
-        // then an Int64
-        if let int64 = Int64(exactly: self) { return int64 }
-        // finally try a double
-        if let double = Double(exactly: self) { return double }
+    internal var bsonValue: BSONValue? {
+        if let int32 = Int32(exactly: self) {
+            return int32
+        }
+        if let int64 = Int64(exactly: self) {
+            return int64
+        }
+        if let double = Double(exactly: self) {
+            return double
+        }
         // we could consider trying a Decimal128 here. However,
         // it's not clear how we could support decoding something
         // stored as Decimal128 back to a UInt without access 
@@ -118,14 +138,23 @@ extension UInt: CodableNumber {
 /// Override the default initializer due to a runtime assertion that fails
 /// when initializing a Double from an Int (possible Swift bug?)
 extension Double: CodableNumber {
-    init?(from value: BSONValue) {
+    internal init?(from value: BSONValue) {
         switch value {
         case let v as Int:
-            if let exact = Double(exactly: v) { self = exact; return }
+            if let exact = Double(exactly: v) {
+                self = exact
+                return
+            }
         case let v as Int32:
-            if let exact = Double(exactly: v) { self = exact; return }
+            if let exact = Double(exactly: v) {
+                self = exact
+                return
+            }
         case let v as Int64:
-            if let exact = Double(exactly: v) { self = exact; return }
+            if let exact = Double(exactly: v) {
+                self = exact
+                return
+            }
         case let v as Double:
             self = v
             return
@@ -139,23 +168,35 @@ extension Double: CodableNumber {
 /// Override the default initializer due to a runtime assertion that fails
 /// when initializing a Float from an Int (possible Swift bug?)
 extension Float: CodableNumber {
-    init?(from value: BSONValue) {
+    internal init?(from value: BSONValue) {
         switch value {
         case let v as Int:
-            if let exact = Float(exactly: v) { self = exact; return }
+            if let exact = Float(exactly: v) {
+                self = exact
+                return
+            }
         case let v as Int32:
-            if let exact = Float(exactly: v) { self = exact; return }
+            if let exact = Float(exactly: v) {
+                self = exact
+                return
+            }
         case let v as Int64:
-            if let exact = Float(exactly: v) { self = exact; return }
+            if let exact = Float(exactly: v) {
+                self = exact
+                return
+            }
         case let v as Double:
-            if let exact = Float(exactly: v) { self = exact; return }
+            if let exact = Float(exactly: v) {
+                self = exact
+                return
+            }
         default:
             break
         }
         return nil
     }
 
-    var bsonValue: BSONValue? {
+    internal var bsonValue: BSONValue? {
         // a Float can always be represented as a Double
         return Double(exactly: self)
     }

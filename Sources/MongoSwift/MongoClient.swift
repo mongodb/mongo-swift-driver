@@ -22,8 +22,10 @@ public struct ClientOptions: Encodable {
     public let writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all to be omitted or optional
-    public init(eventMonitoring: Bool = false, readConcern: ReadConcern? = nil,
-                readPreference: ReadPreference? = nil, retryWrites: Bool? = nil,
+    public init(eventMonitoring: Bool = false,
+                readConcern: ReadConcern? = nil,
+                readPreference: ReadPreference? = nil,
+                retryWrites: Bool? = nil,
                 writeConcern: WriteConcern? = nil) {
         self.retryWrites = retryWrites
         self.eventMonitoring = eventMonitoring
@@ -71,7 +73,8 @@ public struct DatabaseOptions {
     public let writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all arguments to be omitted or optional
-    public init(readConcern: ReadConcern? = nil, readPreference: ReadPreference? = nil,
+    public init(readConcern: ReadConcern? = nil,
+                readPreference: ReadPreference? = nil,
                 writeConcern: WriteConcern? = nil) {
         self.readConcern = readConcern
         self.readPreference = readPreference
@@ -92,10 +95,8 @@ public class MongoClient {
     /// The read concern set on this client, or nil if one is not set.
     public var readConcern: ReadConcern? {
         // per libmongoc docs, we don't need to handle freeing this ourselves
-        let readConcern = mongoc_client_get_read_concern(self._client)
-        let rcObj = ReadConcern(from: readConcern)
-        if rcObj.isDefault { return nil }
-        return rcObj
+        let rc = ReadConcern(from: mongoc_client_get_read_concern(self._client))
+        return rc.isDefault ? nil : rc
     }
 
     /// The `ReadPreference` set on this client
@@ -106,10 +107,8 @@ public class MongoClient {
     /// The write concern set on this client, or nil if one is not set.
     public var writeConcern: WriteConcern? {
         // per libmongoc docs, we don't need to handle freeing this ourselves
-        let writeConcern = mongoc_client_get_write_concern(self._client)
-        let wcObj = WriteConcern(writeConcern)
-        if wcObj.isDefault { return nil }
-        return wcObj
+        let wc = WriteConcern(from: mongoc_client_get_write_concern(self._client))
+        return wc.isDefault ? nil : wc
     }
 
     /**
@@ -176,7 +175,7 @@ public class MongoClient {
      *
      * - Returns: A `ClientSession` instance
      */
-    public func startSession(options: SessionOptions) throws -> ClientSession {
+    private func startSession(options: SessionOptions) throws -> ClientSession {
         return ClientSession()
     }
 
