@@ -809,11 +809,10 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(dateFormatter.date(from: (customArr["date"] as! [String]).joined(separator: "/")))
                 .to(equal(noSecondsDate.date))
 
-        // swiftlint:disable nesting
         enum DateKeys: String, CodingKey {
             case month, day, year
         }
-        // swiftlint:enable nesting
+
         encoder.dateEncodingStrategy = .custom({d, e in
             var container = e.container(keyedBy: DateKeys.self)
             let components = dateFormatter.string(from: d).split(separator: "/").map { String($0) }
