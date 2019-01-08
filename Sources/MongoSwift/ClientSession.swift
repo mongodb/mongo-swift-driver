@@ -1,10 +1,10 @@
 /// Options to use when creating a ClientSession.
-public struct SessionOptions: Encodable {
+internal struct SessionOptions: Encodable {
     /// Specifies whether read operations should be causally ordered within the session.
-    public let causalConsistency: Bool?
+    private let causalConsistency: Bool?
 }
 
-/// A session for ordering sequential operations.
+/// :nodoc: A session for ordering sequential operations.
 public class ClientSession: Encodable {
     /// Initializes a new client session.
     internal init() {
