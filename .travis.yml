@@ -47,7 +47,7 @@ install:
 before_script:
   - mkdir ${PWD}/mongodb-${MONGODB_VERSION}/data
   - ${PWD}/mongodb-${MONGODB_VERSION}/bin/mongod --dbpath ${PWD}/mongodb-${MONGODB_VERSION}/data --logpath ${PWD}/mongodb-${MONGODB_VERSION}/mongodb.log --enableMajorityReadConcern --fork
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; mkdir ${PWD}/swiftlint; curl -LO https://github.com/realm/SwiftLint/releases/download/0.29.3/portable_swiftlint.zip -o ${PWD}/swiftlint/swiftlint.zip; unzip ${PWD}/swiftlint/swiftlint.zip -d ${PWD}/swiftlint; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir ${PWD}/swiftlint; curl -L https://github.com/realm/SwiftLint/releases/download/0.29.3/portable_swiftlint.zip -o ${PWD}/swiftlint/swiftlint.zip; unzip ${PWD}/swiftlint/swiftlint.zip -d ${PWD}/swiftlint; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ${PWD}/swiftlint/swiftlint --strict; fi
 
 script:
