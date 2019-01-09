@@ -12,11 +12,11 @@ public enum ServerError: MongoSwiftError, Equatable {
     case commandError(code: Int, message: String, errorLabels: [String]?)
 
     /// Thrown when errors occur on the server during commands that write not as part of a bulk write
-    /// Note: Only one of writeConcernError or writeError will populated at a time.
+    /// Note: Only one of `writeConcernError` or `writeError` will populated at a time.
     case writeError(writeError: WriteError?, writeConcernError: WriteConcernError?, errorLabels: [String]?)
 
     /// Thrown when the server returns errors as part of an executed bulk write.
-    /// Note: writeErrors may not be present if the error experienced was a Write Concern related error.
+    /// Note: `writeErrors` may not be present if the error experienced was a Write Concern related error.
     case bulkWriteError(writeErrors: [BulkWriteError]?,
                         writeConcernError: WriteConcernError?,
                         result: BulkWriteResult?,
