@@ -7,7 +7,7 @@ public protocol MongoSwiftError: Error {}
 /// The possible errors corresponding to types of errors encountered in the MongoDB server.
 /// These errors may contain labels providing additional information on their origin.
 /// - SeeAlso: https://github.com/mongodb/mongo/blob/master/src/mongo/base/error_codes.err
-public enum ServerError: MongoSwiftError, Equatable {
+public enum ServerError: MongoSwiftError {
     /// Thrown when commands experience errors on the server that prevent execution.
     case commandError(code: Int, message: String, errorLabels: [String]?)
 
@@ -21,58 +21,19 @@ public enum ServerError: MongoSwiftError, Equatable {
                         writeConcernError: WriteConcernError?,
                         result: BulkWriteResult?,
                         errorLabels: [String]?)
-
-    public static func == (lhs: ServerError, rhs: ServerError) -> Bool {
-        switch (lhs, rhs) {
-        case let (.commandError(code: lhsCode, message: _, errorLabels: lhsErrorLabels),
-                  .commandError(code: rhsCode, message: _, errorLabels: rhsErrorLabels)):
-            return lhsCode == rhsCode
-                    && sortAndCompareOptionalArrays(lhs: lhsErrorLabels, rhs: rhsErrorLabels, cmp: { $0 < $1 })
-        case let (.writeError(writeError: lhsWriteError, writeConcernError: lhsWCError, errorLabels: lhsErrorLabels),
-                  .writeError(writeError: rhsWriteError, writeConcernError: rhsWCError, errorLabels: rhsErrorLabels)):
-            return lhsWriteError == rhsWriteError
-                    && lhsWCError == rhsWCError
-                    && sortAndCompareOptionalArrays(lhs: lhsErrorLabels, rhs: rhsErrorLabels, cmp: { $0 < $1 })
-        case let (.bulkWriteError(writeErrors: lhsWriteErrors,
-                                  writeConcernError: lhsWCError,
-                                  result: _,
-                                  errorLabels: lhsErrorLabels),
-                  .bulkWriteError(writeErrors: rhsWriteErrors,
-                                  writeConcernError: rhsWCError,
-                                  result: _,
-                                  errorLabels: rhsErrorLabels)):
-            let cmp = { (l: BulkWriteError, r: BulkWriteError) in l.index < r.index }
-
-            return sortAndCompareOptionalArrays(lhs: lhsWriteErrors, rhs: rhsWriteErrors, cmp: cmp)
-                    && lhsWCError == rhsWCError
-                    && sortAndCompareOptionalArrays(lhs: lhsErrorLabels, rhs: rhsErrorLabels, cmp: { $0 < $1 })
-        default:
-            return false
-        }
-    }
 }
 
 /// The possible errors caused by improper use of the driver by the user.
-public enum UserError: MongoSwiftError, Equatable {
+public enum UserError: MongoSwiftError {
     /// Thrown when the driver is incorrectly used.
     case logicError(message: String)
 
     /// Thrown when the user passes in invalid arguments to a driver method.
     case invalidArgument(message: String)
-
-    public static func == (lhs: UserError, rhs: UserError) -> Bool {
-        switch (lhs, rhs) {
-        case (.logicError(message: _), .logicError(message: _)),
-             (.invalidArgument(message: _), .invalidArgument(message: _)):
-            return true
-        default:
-            return false
-        }
-    }
 }
 
 /// The possible errors that can occur unexpectedly during runtime.
-public enum RuntimeError: MongoSwiftError, Equatable {
+public enum RuntimeError: MongoSwiftError {
     /// Thrown when the driver encounters a internal error not caused by the user. This is usually indicative of a bug
     /// or system related failure (e.g. during memory allocation).
     case internalError(message: String)
@@ -83,23 +44,10 @@ public enum RuntimeError: MongoSwiftError, Equatable {
 
     /// Thrown when encountering an authentication related error (e.g. invalid credentials).
     case authenticationError(message: String)
-
-    public static func == (lhs: RuntimeError, rhs: RuntimeError) -> Bool {
-        switch (lhs, rhs) {
-        case (.internalError(message: _), .internalError(message: _)),
-             (.authenticationError(message: _), .authenticationError(message: _)):
-            return true
-        case let (.connectionError(message: _, errorLabels: lhsLabels),
-                  .connectionError(message: _, errorLabels: rhsLabels)):
-            return sortAndCompareOptionalArrays(lhs: lhsLabels, rhs: rhsLabels, cmp: { $0 < $1 })
-        default:
-            return false
-        }
-    }
 }
 
 /// Internal helper function used to get an appropriate error from a libmongoc error. This should NOT be used to get
-/// `.writeError`s or `.bulkWriteError`s.
+/// `.writeError`s or `.bulkWriteError`s. Instead, construct those from replies returned from libmongoc functions.
 internal func parseMongocError(error: bson_error_t, errorLabels: [String]? = nil) -> MongoSwiftError {
     let domain = mongoc_error_domain_t(rawValue: error.domain)
     let code = mongoc_error_code_t(rawValue: error.code)
@@ -191,13 +139,4 @@ internal func toErrorString(_ error: bson_error_t) -> String {
 internal func bsonEncodeError(value: BSONValue, forKey: String) -> MongoError {
     return MongoError.bsonEncodeError(message:
         "Failed to set value for key \(forKey) to \(value) with BSON type \(value.bsonType)")
-}
-
-/// Private function for sorting, then comparing two optional arrays.
-/// TODO: remove this function and just use optional chaining once we drop Swift 4.0 support (SWIFT-283)
-private func sortAndCompareOptionalArrays<T: Equatable>(lhs: [T]?, rhs: [T]?, cmp: (T, T) -> Bool) -> Bool {
-    guard let lhsArr = lhs, let rhsArr = rhs else {
-        return lhs == nil && rhs == nil
-    }
-    return lhsArr.sorted(by: cmp) == rhsArr.sorted(by: cmp)
 }

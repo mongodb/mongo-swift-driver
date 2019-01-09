@@ -58,6 +58,64 @@ class MongoSwiftTestCase: XCTestCase {
     }
 }
 
+extension RuntimeError: Equatable {
+    public static func == (lhs: RuntimeError, rhs: RuntimeError) -> Bool {
+        switch (lhs, rhs) {
+        case (.internalError(message: _), .internalError(message: _)),
+             (.authenticationError(message: _), .authenticationError(message: _)):
+            return true
+        case let (.connectionError(message: _, errorLabels: lhsLabels),
+                  .connectionError(message: _, errorLabels: rhsLabels)):
+            return sortAndCompareOptionalArrays(lhs: lhsLabels, rhs: rhsLabels, cmp: { $0 < $1 })
+        default:
+            return false
+        }
+    }
+}
+
+extension ServerError: Equatable {
+    public static func == (lhs: ServerError, rhs: ServerError) -> Bool {
+        switch (lhs, rhs) {
+        case let (.commandError(code: lhsCode, message: _, errorLabels: lhsErrorLabels),
+                  .commandError(code: rhsCode, message: _, errorLabels: rhsErrorLabels)):
+            return lhsCode == rhsCode
+                    && sortAndCompareOptionalArrays(lhs: lhsErrorLabels, rhs: rhsErrorLabels, cmp: { $0 < $1 })
+        case let (.writeError(writeError: lhsWriteError, writeConcernError: lhsWCError, errorLabels: lhsErrorLabels),
+                  .writeError(writeError: rhsWriteError, writeConcernError: rhsWCError, errorLabels: rhsErrorLabels)):
+            return lhsWriteError == rhsWriteError
+                    && lhsWCError == rhsWCError
+                    && sortAndCompareOptionalArrays(lhs: lhsErrorLabels, rhs: rhsErrorLabels, cmp: { $0 < $1 })
+        case let (.bulkWriteError(writeErrors: lhsWriteErrors,
+                                  writeConcernError: lhsWCError,
+                                  result: _,
+                                  errorLabels: lhsErrorLabels),
+                  .bulkWriteError(writeErrors: rhsWriteErrors,
+                                  writeConcernError: rhsWCError,
+                                  result: _,
+                                  errorLabels: rhsErrorLabels)):
+            let cmp = { (l: BulkWriteError, r: BulkWriteError) in l.index < r.index }
+
+            return sortAndCompareOptionalArrays(lhs: lhsWriteErrors, rhs: rhsWriteErrors, cmp: cmp)
+                    && lhsWCError == rhsWCError
+                    && sortAndCompareOptionalArrays(lhs: lhsErrorLabels, rhs: rhsErrorLabels, cmp: { $0 < $1 })
+        default:
+            return false
+        }
+    }
+}
+
+extension UserError: Equatable {
+    public static func == (lhs: UserError, rhs: UserError) -> Bool {
+        switch (lhs, rhs) {
+        case (.logicError(message: _), .logicError(message: _)),
+             (.invalidArgument(message: _), .invalidArgument(message: _)):
+            return true
+        default:
+            return false
+        }
+    }
+}
+
 extension MongoClient {
     internal func serverVersion() throws -> ServerVersion {
         let buildInfo = try self.db("admin").runCommand(["buildInfo": 1],
@@ -270,4 +328,13 @@ internal func bsonEqual(_ expectedValue: BSONValue?) -> Predicate<BSONValue> {
             return PredicateResult(bool: matches, message: msg)
         }
     }
+}
+
+/// Private function for sorting, then comparing two optional arrays.
+/// TODO: remove this function and just use optional chaining once we drop Swift 4.0 support (SWIFT-283)
+private func sortAndCompareOptionalArrays<T: Equatable>(lhs: [T]?, rhs: [T]?, cmp: (T, T) -> Bool) -> Bool {
+    guard let lhsArr = lhs, let rhsArr = rhs else {
+        return lhs == nil && rhs == nil
+    }
+    return lhsArr.sorted(by: cmp) == rhsArr.sorted(by: cmp)
 }
