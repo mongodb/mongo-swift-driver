@@ -119,7 +119,7 @@ extension Array: BSONValue {
 }
 
 /// A struct to represent the BSON null type.
-public struct BSONNull: BSONValue, Codable {
+public struct BSONNull: BSONValue, Codable, Equatable {
     public var bsonType: BSONType { return .null }
 
     public static func from(iterator iter: DocumentIterator) throws -> BSONNull { return BSONNull() }
@@ -131,6 +131,10 @@ public struct BSONNull: BSONValue, Codable {
         guard bson_append_null(storage.pointer, key, Int32(key.count)) else {
             throw bsonEncodeError(value: self, forKey: key)
         }
+    }
+
+    public static func == (lhs: BSONNull, rhs: BSONNull) -> Bool {
+        return true
     }
 }
 
