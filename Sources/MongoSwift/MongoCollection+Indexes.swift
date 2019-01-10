@@ -153,12 +153,22 @@ public struct IndexOptions: Encodable {
 public struct CreateIndexOptions: Encodable {
     /// An optional `WriteConcern` to use for the command
     public let writeConcern: WriteConcern?
+
+    /// Initializer allowing any/all parameters to be omitted.
+    public init(writeConcern: WriteConcern? = nil) {
+        self.writeConcern = writeConcern
+    }
 }
 
 /// Options to use when dropping an index from a `MongoCollection`.
 public struct DropIndexOptions: Encodable {
     /// An optional `WriteConcern` to use for the command
     public let writeConcern: WriteConcern?
+
+    /// Initializer allowing any/all parameters to be omitted.
+    public init(writeConcern: WriteConcern? = nil) {
+        self.writeConcern = writeConcern
+    }
 }
 
 /// An extension of `MongoCollection` encapsulating index management capabilities.
