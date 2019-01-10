@@ -5,9 +5,7 @@ import Foundation
 public struct AnyBSONValue: Codable, Equatable, Hashable {
     // swiftlint:disable:next legacy_hashing
     public var hashValue: Int {
-        if let value = self.value as? String {
-            return value.hashValue
-        } else if let bool = self.value as? Bool {
+        if let bool = self.value as? Bool {
             return bool.hashValue
         } else if let int = self.value as? Int {
             return int.hashValue
@@ -17,6 +15,8 @@ public struct AnyBSONValue: Codable, Equatable, Hashable {
             return int64.hashValue
         } else if let double = self.value as? Double {
             return double.hashValue
+        } else if let date = self.value as? Date {
+            return date.hashValue
         } else if let doc = self.value as? Document {
             return doc.extendedJSON.hashValue
         } else {
