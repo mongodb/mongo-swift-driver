@@ -79,7 +79,7 @@ extension MongoCollection {
      *
      * - Returns: The count of the documents that matched the filter
      */
-    public func countDocuments(_ filter: Document = [:], options: CountDocumentsOptions? = nil) throws -> Int {
+    private func countDocuments(_ filter: Document = [:], options: CountDocumentsOptions? = nil) throws -> Int {
         // TODO SWIFT-133: implement this https://jira.mongodb.org/browse/SWIFT-133
         throw MongoError.commandError(message: "Unimplemented command")
     }
@@ -92,7 +92,7 @@ extension MongoCollection {
      *
      * - Returns: an estimate of the count of documents in this collection
      */
-    public func estimatedDocumentCount(options: EstimatedDocumentCountOptions? = nil) throws -> Int {
+    private func estimatedDocumentCount(options: EstimatedDocumentCountOptions? = nil) throws -> Int {
         // TODO SWIFT-133: implement this https://jira.mongodb.org/browse/SWIFT-133
         throw MongoError.commandError(message: "Unimplemented command")
     }
@@ -263,10 +263,10 @@ public struct CountOptions: Encodable {
 }
 
 /// The `countDocuments` command takes the same options as the deprecated `count`.
-public typealias CountDocumentsOptions = CountOptions
+private typealias CountDocumentsOptions = CountOptions
 
 /// Options to use when executing an `estimatedDocumentCount` command on a `MongoCollection`.
-public struct EstimatedDocumentCountOptions {
+private struct EstimatedDocumentCountOptions {
     /// The maximum amount of time to allow the query to run.
     public let maxTimeMS: Int64?
 
