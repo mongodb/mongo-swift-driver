@@ -126,6 +126,11 @@ public class MongoClient {
             throw MongoError.invalidUri(message: toErrorString(error))
         }
 
+        // if retryWrites is specified, set it on the uri (libmongoc does not provide api for setting it on the client).
+        if let rw = options?.retryWrites {
+            mongoc_uri_set_option_as_bool(uri, MONGOC_URI_RETRYWRITES, rw)
+        }
+
         self._client = mongoc_client_new_from_uri(uri)
         guard self._client != nil else {
             throw MongoError.invalidClient()
