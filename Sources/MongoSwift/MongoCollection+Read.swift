@@ -269,6 +269,11 @@ public typealias CountDocumentsOptions = CountOptions
 public struct EstimatedDocumentCountOptions {
     /// The maximum amount of time to allow the query to run.
     public let maxTimeMS: Int64?
+
+    /// Initializer allowing any/all parameters to be omitted.
+    public init(maxTimeMS: Int64? = nil) {
+        self.maxTimeMS = maxTimeMS
+    }
 }
 
 /// Options to use when executing a `distinct` command on a `MongoCollection`.
