@@ -10,7 +10,8 @@ final class BSONValueTests: MongoSwiftTestCase {
             ("testInvalidDecimal128", testInvalidDecimal128),
             ("testUUIDBytes", testUUIDBytes),
             ("testBSONEquals", testBSONEquals),
-            ("testObjectIdRoundTrip", testObjectIdRoundTrip)
+            ("testObjectIdRoundTrip", testObjectIdRoundTrip),
+            ("testHashable", testHashable)
         ]
     }
 
@@ -151,5 +152,32 @@ final class BSONValueTests: MongoSwiftTestCase {
         let objectIdFromString = ObjectId(fromString: oid)
         expect(objectIdFromString.oid).to(equal(oid))
         expect(objectIdFromString.timestamp).to(equal(timestamp))
+    }
+
+    /// Test AnyBSONValue Hashable conformance
+    func testHashable() throws {
+        let values: [AnyBSONValue] = try ([
+            5,
+            Int32(5),
+            Int64(5),
+            "hello world",
+            true,
+            Binary(from: UUID()),
+            BSONNull(),
+            [1],
+            Decimal128("123"),
+            5.5,
+            CodeWithScope(code: "{}"),
+            MaxKey(),
+            MinKey(),
+            ObjectId(),
+            RegularExpression(pattern: "match me", options: "")
+        ] as [BSONValue]).map { AnyBSONValue($0) }
+
+        var set = Set<AnyBSONValue>()
+        values.forEach { value in set.insert(value) }
+
+        expect(set.count).to(equal(values.count))
+        expect(values).to(contain(Array(set)))
     }
 }
