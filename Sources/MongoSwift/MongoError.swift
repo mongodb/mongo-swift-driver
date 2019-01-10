@@ -4,15 +4,19 @@ import mongoc
 /// An empty protocol for encapsulating all errors that this package can throw.
 public protocol MongoSwiftError: Error {}
 
+/// Type to be used when referring to error codes returned from the server.
+/// - SeeAlso: https://github.com/mongodb/mongo/blob/master/src/mongo/base/error_codes.err
+public typealias ServerErrorCode = Int
+
 /// The possible errors corresponding to types of errors encountered in the MongoDB server.
 /// These errors may contain labels providing additional information on their origin.
 /// - SeeAlso: https://github.com/mongodb/mongo/blob/master/src/mongo/base/error_codes.err
 public enum ServerError: MongoSwiftError {
     /// Thrown when commands experience errors on the server that prevent execution.
-    case commandError(code: Int, message: String, errorLabels: [String]?)
+    case commandError(code: ServerErrorCode, message: String, errorLabels: [String]?)
 
-    /// Thrown when errors occur on the server during commands that write not as part of a bulk write
-    /// Note: Only one of `writeConcernError` or `writeError` will populated at a time.
+    /// Thrown when a single write command fails on the server.
+    /// Note: Only one of `writeConcernError` or `writeError` will be populated at a time.
     case writeError(writeError: WriteError?, writeConcernError: WriteConcernError?, errorLabels: [String]?)
 
     /// Thrown when the server returns errors as part of an executed bulk write.
@@ -29,7 +33,7 @@ public enum UserError: MongoSwiftError {
     case logicError(message: String)
 
     /// Thrown when the user passes in invalid arguments to a driver method.
-    case invalidArgument(message: String)
+    case invalidArgumentError(message: String)
 }
 
 /// The possible errors that can occur unexpectedly during runtime.
@@ -46,6 +50,59 @@ public enum RuntimeError: MongoSwiftError {
     case authenticationError(message: String)
 }
 
+/// A struct to represent a single write error not resulting from an executed bulk write.
+public struct WriteError: Codable {
+    /// An integer value identifying the error.
+    public let code: Int
+
+    /// A description of the error.
+    public let message: String
+
+    private enum CodingKeys: String, CodingKey {
+        case code
+        case message = "errmsg"
+    }
+}
+
+/// A struct to represent a write concern error resulting from an executed bulk write.
+public struct WriteConcernError: Codable {
+    /// An integer value identifying the write concern error.
+    public let code: ServerErrorCode
+
+    /// A document identifying the write concern setting related to the error.
+    public let details: Document
+
+    /// A description of the error.
+    public let message: String
+
+    private enum CodingKeys: String, CodingKey {
+        case code
+        case details = "errInfo"
+        case message = "errmsg"
+    }
+}
+
+/// A struct to represent a write error resulting from an executed bulk write.
+public struct BulkWriteError: Codable {
+    /// An integer value identifying the error.
+    public let code: ServerErrorCode
+
+    /// A description of the error.
+    public let message: String
+
+    /// The index of the request that errored.
+    public let index: Int
+
+    /// The request that errored.
+    public let request: WriteModel? = nil
+
+    private enum CodingKeys: String, CodingKey {
+        case code
+        case message = "errmsg"
+        case index
+    }
+}
+
 /// Internal helper function used to get an appropriate error from a libmongoc error. This should NOT be used to get
 /// `.writeError`s or `.bulkWriteError`s. Instead, construct those from replies returned from libmongoc functions.
 internal func parseMongocError(error: bson_error_t, errorLabels: [String]? = nil) -> MongoSwiftError {
@@ -57,7 +114,7 @@ internal func parseMongocError(error: bson_error_t, errorLabels: [String]? = nil
     case (MONGOC_ERROR_CLIENT, MONGOC_ERROR_CLIENT_AUTHENTICATE):
         return RuntimeError.authenticationError(message: message)
     case (MONGOC_ERROR_COMMAND, MONGOC_ERROR_COMMAND_INVALID_ARG):
-        return UserError.invalidArgument(message: message)
+        return UserError.invalidArgumentError(message: message)
     case (MONGOC_ERROR_SERVER, _):
         return ServerError.commandError(code: Int(code.rawValue), message: message, errorLabels: errorLabels)
     case (MONGOC_ERROR_STREAM, _):
