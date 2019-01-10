@@ -16,7 +16,8 @@ final class CodecTests: MongoSwiftTestCase {
             ("testDocumentIsCodable", testDocumentIsCodable),
             ("testEncodeArray", testEncodeArray),
             ("testAnyBSONValueIsBSONCodable", testAnyBSONValueIsBSONCodable),
-            ("testIncorrectEncodeFunction", testIncorrectEncodeFunction)
+            ("testIncorrectEncodeFunction", testIncorrectEncodeFunction),
+            ("testOptionsEncoding", testOptionsEncoding)
         ]
     }
 
@@ -780,6 +781,7 @@ final class CodecTests: MongoSwiftTestCase {
         expect(try encoder.encode(CorrectTopLevelEncode(BSONNull()))).to(equal(["x": Document()]))
     }
 
+    // test encoding options structs that have non-standard CodingKeys
     func testOptionsEncoding() throws {
         let encoder = BSONEncoder()
 
