@@ -4,6 +4,7 @@ import mongoc
 /// An empty protocol for encapsulating all errors that this package can throw.
 public protocol MongoSwiftError: Error {}
 
+// TODO: update this link and the one below (SWIFT-319)
 /// Type to be used when referring to error codes returned from the server.
 /// - SeeAlso: https://github.com/mongodb/mongo/blob/master/src/mongo/base/error_codes.err
 public typealias ServerErrorCode = Int
