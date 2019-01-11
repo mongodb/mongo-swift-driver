@@ -200,11 +200,23 @@ final class BSONValueTests: MongoSwiftTestCase {
         expect(map[abv2]).to(equal(3))
         expect(map[abv3]).to(equal(5))
 
-        let doc = AnyBSONValue(["hello": "world"] as Document)
-        let str = AnyBSONValue((doc.value as! Document).extendedJSON)
+        let str = AnyBSONValue("world")
+        let doc = AnyBSONValue(["value": str.value] as Document)
+        let json = AnyBSONValue((doc.value as! Document).extendedJSON)
 
-        map[doc] = 12
-        map[str] = 13
-        expect(map[doc]).toNot(equal(map[str]))
+        map[str] = 12
+        map[doc] = 13
+        map[json] = 14
+
+        expect(map[str]).to(equal(12))
+        expect(map[doc]).to(equal(13))
+        expect(map[json]).to(equal(14))
+
+        var hashCodes = Set<Int>()
+        hashCodes.insert(str.hashValue)
+        hashCodes.insert(doc.hashValue)
+        hashCodes.insert(json.hashValue)
+
+        expect(hashCodes.count).to(equal(3))
     }
 }

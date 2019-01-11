@@ -21,7 +21,8 @@ public struct AnyBSONValue: Codable, Equatable, Hashable {
             return doc.extendedJSON.hashValue
         } else {
             let doc: Document = ["value": self.value]
-            return doc.extendedJSON.hashValue
+            // need to add some string to the beginning to ensure no collisions with the document case.
+            return ("EXT_JSON" + doc.extendedJSON).hashValue
         }
     }
 
