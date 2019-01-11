@@ -16,7 +16,8 @@ final class CodecTests: MongoSwiftTestCase {
             ("testDocumentIsCodable", testDocumentIsCodable),
             ("testEncodeArray", testEncodeArray),
             ("testAnyBSONValueIsBSONCodable", testAnyBSONValueIsBSONCodable),
-            ("testIncorrectEncodeFunction", testIncorrectEncodeFunction)
+            ("testIncorrectEncodeFunction", testIncorrectEncodeFunction),
+            ("testOptionsEncoding", testOptionsEncoding)
         ]
     }
 
@@ -778,5 +779,163 @@ final class CodecTests: MongoSwiftTestCase {
         // These tests are to ensure that we handle incorrect encode() implementations in the same way as JSONEncoder.
         expect(try encoder.encode(IncorrectTopLevelEncode(BSONNull()))).to(throwError())
         expect(try encoder.encode(CorrectTopLevelEncode(BSONNull()))).to(equal(["x": Document()]))
+    }
+
+    // test encoding options structs that have non-standard CodingKeys
+    func testOptionsEncoding() throws {
+        let encoder = BSONEncoder()
+
+        let rc = ReadConcern(.majority)
+        let wc = try WriteConcern(wtimeoutMS: 123)
+        let rp = ReadPreference(.primary)
+
+        let agg = AggregateOptions(
+                allowDiskUse: true,
+                batchSize: 5,
+                bypassDocumentValidation: false,
+                collation: Document(),
+                comment: "hello",
+                hint: .indexName("hint"),
+                maxTimeMS: 12,
+                readConcern: rc,
+                readPreference: rp,
+                writeConcern: wc)
+
+        expect(try encoder.encode(agg).keys.sorted()).to(equal([
+            "allowDiskUse",
+            "batchSize",
+            "bypassDocumentValidation",
+            "collation",
+            "comment",
+            "hint",
+            "maxTimeMS",
+            "readConcern",
+            "writeConcern"
+        ]))
+
+        let count = CountOptions(
+                collation: Document(),
+                hint: .indexName("hint"),
+                limit: 123,
+                maxTimeMS: 12,
+                readConcern: rc,
+                readPreference: rp,
+                skip: 123
+        )
+        expect(try encoder.encode(count).keys.sorted()).to(equal([
+            "collation",
+            "hint",
+            "limit",
+            "maxTimeMS",
+            "readConcern",
+            "skip"
+        ]))
+
+        let distinct = DistinctOptions(
+                collation: Document(),
+                maxTimeMS: 123,
+                readConcern: rc,
+                readPreference: rp
+        )
+        expect(try encoder.encode(distinct).keys.sorted()).to(equal([
+            "collation",
+            "maxTimeMS",
+            "readConcern"
+        ].sorted()))
+
+        let find = FindOptions(
+                allowPartialResults: false,
+                batchSize: 123,
+                collation: Document(),
+                comment: "asdf",
+                cursorType: .tailable,
+                hint: .indexName("sdf"),
+                limit: 123,
+                max: Document(),
+                maxAwaitTimeMS: 123,
+                maxScan: 23,
+                maxTimeMS: 123,
+                min: Document(),
+                noCursorTimeout: true,
+                projection: Document(),
+                readConcern: rc,
+                readPreference: rp,
+                returnKey: true,
+                showRecordId: false,
+                skip: 45,
+                sort: Document())
+        expect(try encoder.encode(find).keys.sorted()).to(equal([
+            "allowPartialResults",
+            "awaitData",
+            "batchSize",
+            "collation",
+            "comment",
+            "hint",
+            "limit",
+            "max",
+            "maxAwaitTimeMS",
+            "maxScan",
+            "maxTimeMS",
+            "min",
+            "noCursorTimeout",
+            "projection",
+            "readConcern",
+            "returnKey",
+            "showRecordId",
+            "skip",
+            "sort",
+            "tailable"
+        ]))
+
+        let index = IndexOptions(
+                background: false,
+                expireAfter: 123,
+                name: "sadf",
+                sparse: false,
+                storageEngine: "sdaf",
+                unique: true,
+                version: 123,
+                defaultLanguage: "english",
+                languageOverride: "asdf",
+                textVersion: 123,
+                weights: Document(),
+                sphereVersion: 959,
+                bits: 32,
+                max: 5.5,
+                min: 4.4,
+                bucketSize: 333,
+                partialFilterExpression: Document(),
+                collation: Document())
+        expect(try encoder.encode(index).keys.sorted()).to(equal([
+            "background",
+            "expireAfter",
+            "sparse",
+            "storageEngine",
+            "unique",
+            "version",
+            "defaultLanguage",
+            "languageOverride",
+            "textVersion",
+            "weights",
+            "sphereVersion",
+            "bits",
+            "max",
+            "min",
+            "bucketSize",
+            "partialFilterExpression",
+            "collation"
+        ].sorted()))
+
+        let runCommand = RunCommandOptions(
+                readConcern: rc,
+                readPreference: rp,
+                session: ClientSession(),
+                writeConcern: wc
+        )
+
+        expect(try encoder.encode(runCommand).keys.sorted()).to(equal([
+            "readConcern",
+            "writeConcern"
+        ]))
     }
 }
