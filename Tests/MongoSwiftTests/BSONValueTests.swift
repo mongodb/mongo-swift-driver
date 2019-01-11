@@ -176,10 +176,9 @@ final class BSONValueTests: MongoSwiftTestCase {
                 regex: RegularExpression(pattern: "^abc", options: "imx"))
 
         let values = Mirror(reflecting: expected).children.map { child in AnyBSONValue(child.value as! BSONValue) }
+        let set = Set<AnyBSONValue>(values)
 
-        var set = Set<AnyBSONValue>()
-        values.forEach { value in set.insert(value) }
-
+        expect(Set<Int>(set.map { abv in abv.hashValue }).count).to(equal(values.count))
         expect(set.count).to(equal(values.count))
         expect(values).to(contain(Array(set)))
 
@@ -187,7 +186,7 @@ final class BSONValueTests: MongoSwiftTestCase {
         let abv2 = AnyBSONValue(Int64(1))
         let abv3 = AnyBSONValue(Int32(5))
 
-        var map: [AnyBSONValue: Int] = [AnyBSONValue(Int32(1)): 1, AnyBSONValue(Int64(1)): 2]
+        var map: [AnyBSONValue: Int] = [abv1: 1, abv2: 2]
 
         expect(map[abv1]).to(equal(1))
         expect(map[abv2]).to(equal(2))
@@ -212,11 +211,6 @@ final class BSONValueTests: MongoSwiftTestCase {
         expect(map[doc]).to(equal(13))
         expect(map[json]).to(equal(14))
 
-        var hashCodes = Set<Int>()
-        hashCodes.insert(str.hashValue)
-        hashCodes.insert(doc.hashValue)
-        hashCodes.insert(json.hashValue)
-
-        expect(hashCodes.count).to(equal(3))
+        expect(Set([str.hashValue, doc.hashValue, json.hashValue]).count).to(equal(3))
     }
 }
