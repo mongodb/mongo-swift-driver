@@ -47,11 +47,31 @@ public class BSONEncoder {
         case binary
     }
 
+    /// Enum representing the various strategies for encoding `Data`s.
+    ///
+    /// As per the BSON specification, the default strategy is to encode `Data`s as BSON binary types with the generic
+    /// binary subtype.
+    ///
+    /// - SeeAlso: bsonspec.org
+    public enum DataEncodingStrategy {
+        /// Encode the `Data` by deferring to its default encoding implementation.
+        ///
+        /// Note: The default encoding implementation attempts to encode the `Data` as a [UInt8], but because BSON does
+        /// not support integer types besides `Int32` or `Int64`, it actually gets encoded to BSON as an `[Int]`.
+        case deferredToData
+
+        /// Encode the `Data` as a BSON binary type (default).
+        case binary
+    }
+
     /// The strategy to use for encoding `Date`s with this instance.
     public var dateEncodingStrategy: DateEncodingStrategy = .bsonDateTime
 
     /// The strategy to use for encoding `UUID`s with this instance.
     public var uuidEncodingStrategy: UUIDEncodingStrategy = .binary
+
+    /// The strategy to use for encoding `Data`s with this instance.
+    public var dataEncodingStrategy: DataEncodingStrategy = .binary
 
     /// Contextual user-provided information for use during encoding.
     public var userInfo: [CodingUserInfoKey: Any] = [:]
@@ -61,13 +81,16 @@ public class BSONEncoder {
         let userInfo: [CodingUserInfoKey: Any]
         let dateEncodingStrategy: DateEncodingStrategy
         let uuidEncodingStrategy: UUIDEncodingStrategy
+        let dataEncodingStrategy: DataEncodingStrategy
     }
 
     /// The options set on the top-level encoder.
     fileprivate var options: _Options {
         return _Options(userInfo: self.userInfo,
                         dateEncodingStrategy: self.dateEncodingStrategy,
-                        uuidEncodingStrategy: self.uuidEncodingStrategy)
+                        uuidEncodingStrategy: self.uuidEncodingStrategy,
+                        dataEncodingStrategy: self.dataEncodingStrategy
+                )
     }
 
     /// Initializes `self`.
@@ -381,12 +404,24 @@ extension _BSONEncoder {
         }
     }
 
+    fileprivate func boxData(_ data: Data) throws -> BSONValue {
+        switch self.options.dataEncodingStrategy {
+        case .deferredToData:
+            try data.encode(to: self)
+            return self.storage.popContainer()
+        case .binary:
+            return try Binary(data: data, subtype: .generic)
+        }
+    }
+
     /// Returns the value as a `BSONValue` if possible. Otherwise, returns nil.
     fileprivate func box_<T: Encodable>(_ value: T) throws -> BSONValue? {
         if let date = value as? Date {
             return try boxDate(date)
         } else if let uuid = value as? UUID {
             return try boxUUID(uuid)
+        } else if let data = value as? Data {
+            return try boxData(data)
         }
 
         // if it's already a `BSONValue`, just return it, unless if it is an

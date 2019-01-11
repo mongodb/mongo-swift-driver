@@ -892,4 +892,39 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(deferredStruct.date).to(equal(date))
         expect(try decoder.decode(DateWrapper.self, from: badlyFormatted)).to(throwError())
     }
+
+    func testDataCodingStrategies() throws {
+        struct DataWrapper: Codable {
+            let data: Data
+        }
+
+        let encoder = BSONEncoder()
+        let decoder = BSONDecoder()
+
+        let data = Data(base64Encoded: "dGhlIHF1aWNrIGJyb3duIGZveCBqdW1wZWQgb3ZlciB0aGUgbGF6eSBzaGVlcCBkb2cu")!
+        let binaryData = try Binary(data: data, subtype: .generic)
+        let arrData = data.map { byte in Int(byte) }
+        let dataStruct = DataWrapper(data: data)
+
+        let defaultDoc = try encoder.encode(dataStruct)
+        expect(defaultDoc["data"] as? Binary).to(equal(binaryData))
+        let roundTripDefault = try decoder.decode(DataWrapper.self, from: defaultDoc)
+        expect(roundTripDefault.data).to(equal(data))
+
+        encoder.dataEncodingStrategy = .binary
+        decoder.dataDecodingStrategy = .binary
+        let binaryDoc = try encoder.encode(dataStruct)
+        expect(binaryDoc["data"] as? Binary).to(bsonEqual(binaryData))
+        let roundTripBinary = try decoder.decode(DataWrapper.self, from: binaryDoc)
+        expect(roundTripBinary.data).to(equal(data))
+
+        encoder.dataEncodingStrategy = .deferredToData
+        decoder.dataDecodingStrategy = .deferredToData
+        let deferredDoc = try encoder.encode(dataStruct)
+        expect(deferredDoc["data"]).to(bsonEqual(arrData))
+        let roundTripDeferred = try decoder.decode(DataWrapper.self, from: deferredDoc)
+        expect(roundTripDeferred.data).to(equal(data))
+
+        expect(try decoder.decode(DateWrapper.self, from: defaultDoc)).to(throwError())
+    }
 }
