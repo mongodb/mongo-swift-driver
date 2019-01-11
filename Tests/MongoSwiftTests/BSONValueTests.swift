@@ -176,11 +176,11 @@ final class BSONValueTests: MongoSwiftTestCase {
                 regex: RegularExpression(pattern: "^abc", options: "imx"))
 
         let values = Mirror(reflecting: expected).children.map { child in AnyBSONValue(child.value as! BSONValue) }
-        let set = Set<AnyBSONValue>(values)
+        let valuesSet = Set<AnyBSONValue>(values)
 
-        expect(Set<Int>(set.map { abv in abv.hashValue }).count).to(equal(values.count))
-        expect(set.count).to(equal(values.count))
-        expect(values).to(contain(Array(set)))
+        expect(Set<Int>(valuesSet.map { abv in abv.hashValue }).count).to(equal(values.count))
+        expect(valuesSet.count).to(equal(values.count))
+        expect(values).to(contain(Array(valuesSet)))
 
         let abv1 = AnyBSONValue(Int32(1))
         let abv2 = AnyBSONValue(Int64(1))
