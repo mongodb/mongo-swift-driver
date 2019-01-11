@@ -2,7 +2,7 @@ import Foundation
 import mongoc
 
 /// Options to use when creating a `MongoClient`.
-public struct ClientOptions {
+public struct ClientOptions: Encodable {
     /// Determines whether the client should retry supported write operations
     public let retryWrites: Bool?
 
@@ -32,6 +32,10 @@ public struct ClientOptions {
         self.readConcern = readConcern
         self.readPreference = readPreference
         self.writeConcern = writeConcern
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case retryWrites
     }
 }
 
