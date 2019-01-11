@@ -54,7 +54,7 @@ public enum RuntimeError: MongoSwiftError {
 /// A struct to represent a single write error not resulting from an executed bulk write.
 public struct WriteError: Codable {
     /// An integer value identifying the error.
-    public let code: Int
+    public let code: ServerErrorCode
 
     /// A description of the error.
     public let message: String
@@ -117,7 +117,10 @@ internal func parseMongocError(error: bson_error_t, errorLabels: [String]? = nil
     case (MONGOC_ERROR_COMMAND, MONGOC_ERROR_COMMAND_INVALID_ARG):
         return UserError.invalidArgumentError(message: message)
     case (MONGOC_ERROR_SERVER, _):
-        return ServerError.commandError(code: Int(code.rawValue), message: message, errorLabels: errorLabels)
+        return ServerError.commandError(
+                code: ServerErrorCode(code.rawValue),
+                message: message,
+                errorLabels: errorLabels)
     case (MONGOC_ERROR_STREAM, _):
         return RuntimeError.connectionError(message: message, errorLabels: errorLabels)
     case (MONGOC_ERROR_SERVER_SELECTION, MONGOC_ERROR_SERVER_SELECTION_FAILURE):
