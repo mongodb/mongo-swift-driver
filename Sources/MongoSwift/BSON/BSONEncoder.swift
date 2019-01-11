@@ -10,7 +10,7 @@ public class BSONEncoder {
     /// - SeeAlso: bsonspec.org
     public enum DateEncodingStrategy {
         /// Encode the `Date` by deferring to its default encoding implementation.
-        case deferToDate
+        case deferredToDate
 
         /// Encode the `Date` as a BSON datetime object (default).
         case bsonDateTime
@@ -41,7 +41,7 @@ public class BSONEncoder {
     /// - SeeAlso: bsonspec.org
     public enum UUIDEncodingStrategy {
         /// Encode the `UUID` by deferring to its default encoding implementation.
-        case deferToUUID
+        case deferredToUUID
 
         /// Encode the `UUID` as a BSON binary type (default).
         case binary
@@ -334,7 +334,7 @@ extension _BSONEncoder {
         switch self.options.dateEncodingStrategy {
         case .bsonDateTime:
             return date
-        case .deferToDate:
+        case .deferredToDate:
             try date.encode(to: self)
             return self.storage.popContainer()
         case .millisecondsSince1970:
@@ -373,7 +373,7 @@ extension _BSONEncoder {
     /// Returns the uuid as a `BSONValue`.
     fileprivate func boxUUID(_ uuid: UUID) throws -> BSONValue {
         switch self.options.uuidEncodingStrategy {
-        case .deferToUUID:
+        case .deferredToUUID:
             try uuid.encode(to: self)
             return self.storage.popContainer()
         case .binary:

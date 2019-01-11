@@ -707,7 +707,7 @@ final class DocumentTests: MongoSwiftTestCase {
         let binaryEncoding = try encoder.encode(uuidStruct)
         expect(binaryEncoding["uuid"] as? Binary).to(equal(binary))
 
-        encoder.uuidEncodingStrategy = .deferToUUID
+        encoder.uuidEncodingStrategy = .deferredToUUID
         let deferred = try encoder.encode(uuidStruct)
         expect(deferred["uuid"] as? String).to(equal(uuid.uuidString))
     }
@@ -783,7 +783,7 @@ final class DocumentTests: MongoSwiftTestCase {
         let formatted = try encoder.encode(dateStruct)
         expect(formatted["date"] as? String).to(equal(formatter.string(from: date)))
 
-        encoder.dateEncodingStrategy = .deferToDate
+        encoder.dateEncodingStrategy = .deferredToDate
         let deferred = try encoder.encode(dateStruct)
         expect(deferred["date"] as? TimeInterval).to(equal(date.timeIntervalSinceReferenceDate))
 

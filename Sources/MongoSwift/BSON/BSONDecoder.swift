@@ -11,13 +11,13 @@ public class BSONDecoder {
     }()
     // swiftlint:enable explicit_acl
 
-    /// Enum representing the different options for decoding `Date`s from BSON.
+    /// Enum representing the various strategies for decoding `Date`s from BSON.
     ///
     /// As per the BSON specification, the default strategy is to decode `Date`s from BSON datetime objects.
     ///
     /// - SeeAlso: bsonspec.org
     public enum DateDecodingStrategy {
-        /// Decode `Date`s stored as BSON datetimes.
+        /// Decode `Date`s stored as BSON datetimes (default).
         case bsonDateTime
 
         /// Decode `Date`s stored as numbers of seconds since January 1, 1970.
@@ -40,7 +40,7 @@ public class BSONDecoder {
         case custom((_ decoder: Decoder) throws -> Date)
     }
 
-    /// Enum representing the different options for decoding `UUID`s from BSON.
+    /// Enum representing the various strategies for decoding `UUID`s from BSON.
     ///
     /// As per the BSON specification, the default strategy is to decode `UUID`s from BSON binary types with the UUID
     /// subtype.
@@ -50,7 +50,7 @@ public class BSONDecoder {
         /// Decode `UUID`s by deferring to their default decoding implementation.
         case deferredToUUID
 
-        /// Decode `UUID`s stored as the BSON `Binary` type.
+        /// Decode `UUID`s stored as the BSON `Binary` type (default).
         case binary
     }
 
