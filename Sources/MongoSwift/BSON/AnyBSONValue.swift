@@ -5,13 +5,7 @@ import Foundation
 public struct AnyBSONValue: Codable, Equatable, Hashable {
     // swiftlint:disable:next legacy_hashing
     public var hashValue: Int {
-        if let doc = self.value as? Document {
-            return doc.extendedJSON.hashValue
-        } else {
-            let doc: Document = ["value": self.value]
-            // need to add some string to the beginning to ensure no collisions with the document case.
-            return ("EXT_JSON" + doc.extendedJSON).hashValue
-        }
+        return "\(self.value.bsonType)-\(self.value)".hashValue
     }
 
     /// The `BSONValue` wrapped by this struct.
