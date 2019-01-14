@@ -10,17 +10,18 @@ extension MongoCollection {
      *   - options: Optional `FindOptions` to use when executing the command
      *
      * - Returns: A `MongoCursor` over the resulting `Document`s
+     *
+     * - Throws: A `userError.invalidArgumentError` if the options passed are an invalid combination.
      */
     public func find(_ filter: Document = [:], options: FindOptions? = nil) throws -> MongoCursor<CollectionType> {
         let opts = try BSONEncoder().encode(options)
         let rp = options?.readPreference?._readPreference
+
         guard let cursor = mongoc_collection_find_with_opts(self._collection, filter.data, opts?.data, rp) else {
-            throw MongoError.invalidResponse()
+            fatalError("Couldn't get cursor from the server")
         }
-        guard let client = self._client else {
-            throw MongoError.invalidClient()
-        }
-        return MongoCursor(fromCursor: cursor, withClient: client)
+
+        return try MongoCursor(fromCursor: cursor, withClient: self._client)
     }
 
     /**
@@ -31,19 +32,20 @@ extension MongoCollection {
      *   - options: Optional `AggregateOptions` to use when executing the command
      *
      * - Returns: A `MongoCursor` over the resulting `Document`s
+     *
+     * - Throws: A `userError.invalidArgumentError` if the options passed are an invalid combination.
      */
     public func aggregate(_ pipeline: [Document], options: AggregateOptions? = nil) throws -> MongoCursor<Document> {
         let opts = try BSONEncoder().encode(options)
         let rp = options?.readPreference?._readPreference
         let pipeline: Document = ["pipeline": pipeline]
+
         guard let cursor = mongoc_collection_aggregate(
             self._collection, MONGOC_QUERY_NONE, pipeline.data, opts?.data, rp) else {
-            throw MongoError.invalidResponse()
+            fatalError("Couldn't get cursor from the server")
         }
-        guard let client = self._client else {
-            throw MongoError.invalidClient()
-        }
-        return MongoCursor(fromCursor: cursor, withClient: client)
+
+        return try MongoCursor(fromCursor: cursor, withClient: self._client)
     }
 
     // TODO SWIFT-133: mark this method deprecated https://jira.mongodb.org/browse/SWIFT-133

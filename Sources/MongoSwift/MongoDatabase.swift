@@ -150,7 +150,7 @@ public struct CollectionOptions {
 /// A MongoDB Database
 public class MongoDatabase {
     private var _database: OpaquePointer?
-    private var _client: MongoClient?
+    private var _client: MongoClient
 
     /// The name of this database.
     public var name: String {
@@ -184,7 +184,6 @@ public class MongoDatabase {
 
     /// Deinitializes a MongoDatabase, cleaning up the internal `mongoc_database_t`.
     deinit {
-        self._client = nil
         guard let database = self._database else {
             return
         }
@@ -209,8 +208,8 @@ public class MongoDatabase {
      *
      * - Returns: the requested `MongoCollection<Document>`
      */
-    public func collection(_ name: String, options: CollectionOptions? = nil) throws -> MongoCollection<Document> {
-        return try self.collection(name, withType: Document.self, options: options)
+    public func collection(_ name: String, options: CollectionOptions? = nil) -> MongoCollection<Document> {
+        return self.collection(name, withType: Document.self, options: options)
     }
 
     /**
@@ -226,9 +225,9 @@ public class MongoDatabase {
      */
     public func collection<T: Codable>(_ name: String,
                                        withType: T.Type,
-                                       options: CollectionOptions? = nil) throws -> MongoCollection<T> {
+                                       options: CollectionOptions? = nil) -> MongoCollection<T> {
         guard let collection = mongoc_database_get_collection(self._database, name) else {
-            throw MongoError.invalidCollection(message: "Could not get collection '\(name)'")
+            fatalError("Could not get collection '\(name)'")
         }
 
         if let rc = options?.readConcern {
@@ -243,10 +242,7 @@ public class MongoDatabase {
             mongoc_collection_set_write_concern(collection, wc._writeConcern)
         }
 
-        guard let client = self._client else {
-            throw MongoError.invalidClient()
-        }
-        return MongoCollection(fromCollection: collection, withClient: client)
+        return MongoCollection(fromCollection: collection, withClient: self._client)
     }
 
     /**
@@ -286,10 +282,7 @@ public class MongoDatabase {
             throw MongoError.commandError(message: toErrorString(error))
         }
 
-        guard let client = self._client else {
-            throw MongoError.invalidClient()
-        }
-        return MongoCollection(fromCollection: collection, withClient: client)
+        return MongoCollection(fromCollection: collection, withClient: self._client)
     }
 
     /**
@@ -300,17 +293,18 @@ public class MongoDatabase {
      *   - options: Optional `ListCollectionsOptions` to use when executing this command
      *
      * - Returns: a `MongoCursor` over an array of collections
+     *
+     * - Throws: A `userError.invalidArgumentError` if the options passed are an invalid combination.
      */
     public func listCollections(options: ListCollectionsOptions? = nil) throws -> MongoCursor<Document> {
         let encoder = BSONEncoder()
         let opts = try encoder.encode(options)
+
         guard let collections = mongoc_database_find_collections_with_opts(self._database, opts?.data) else {
-            throw MongoError.invalidResponse()
+            fatalError("Couldn't get cursor from the server")
         }
-        guard let client = self._client else {
-            throw MongoError.invalidClient()
-        }
-        return MongoCursor(fromCursor: collections, withClient: client)
+
+        return try MongoCursor(fromCursor: collections, withClient: self._client)
     }
 
     /**

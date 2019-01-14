@@ -22,16 +22,16 @@ final class MongoClientTests: MongoSwiftTestCase {
         let connectionString = MongoSwiftTestCase.connStr
         var error = bson_error_t()
         guard let uri = mongoc_uri_new_with_error(connectionString, &error) else {
-            throw MongoError.invalidUri(message: toErrorString(error))
+            throw parseMongocError(error: error)
         }
 
         guard let client_t = mongoc_client_new_from_uri(uri) else {
-            throw MongoError.invalidClient()
+            throw RuntimeError.internalError(message: "creating client from uri failed")
         }
 
         let client = MongoClient(fromPointer: client_t)
-        let db = try client.db(type(of: self).testDatabase)
-        let coll = try db.collection(self.getCollectionName())
+        let db = client.db(type(of: self).testDatabase)
+        let coll = db.collection(self.getCollectionName())
         let insertResult = try coll.insertOne([ "test": 42 ])
         let findResult = try coll.find([ "_id": insertResult!.insertedId ])
         let docs = Array(findResult)

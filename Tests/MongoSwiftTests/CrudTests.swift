@@ -31,7 +31,7 @@ final class CrudTests: MongoSwiftTestCase {
     // Run tests for .json files at the provided path
     func doTests(forPath: String) throws {
         let client = try MongoClient()
-        let db = try client.db(type(of: self).testDatabase)
+        let db = client.db(type(of: self).testDatabase)
         for (filename, file) in try parseFiles(atPath: forPath) {
             if try !client.serverVersionIsInRange(file.minServerVersion, file.maxServerVersion) {
                 print("Skipping tests from file \(filename) for server version \(try client.serverVersion())")
@@ -50,7 +50,7 @@ final class CrudTests: MongoSwiftTestCase {
                 // 3) execute the test according to the type's execute method
                 // 4) verify that expected data is present
                 // 5) drop the collection to clean up
-                let collection = try db.collection(self.getCollectionName(suffix: "\(filename)_\(i)"))
+                let collection = db.collection(self.getCollectionName(suffix: "\(filename)_\(i)"))
                 try collection.insertMany(file.data)
                 try test.execute(usingCollection: collection)
                 try test.verifyData(testCollection: collection, db: db)
@@ -196,7 +196,7 @@ private class CrudTest {
         // if a name is not specified, check the current collection
         var collToCheck = coll
         if let name = collection["name"] as? String {
-            collToCheck = try db.collection(name)
+            collToCheck = db.collection(name)
         }
         expect(Array(try collToCheck.find([:]))).to(equal(try collection.get("data")))
     }

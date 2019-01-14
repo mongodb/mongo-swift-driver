@@ -369,7 +369,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
     func testCodableCollection() throws {
         let client = try MongoClient()
-        let db = try client.db(type(of: self).testDatabase)
+        let db = client.db(type(of: self).testDatabase)
         let coll1 = try db.createCollection(self.getCollectionName(suffix: "codable"), withType: Basic.self)
         defer { try? coll1.drop() }
 

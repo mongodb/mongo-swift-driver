@@ -115,11 +115,16 @@ public class MongoClient {
      *   - options: optional `ClientOptions` to use for this client
      *
      * - SeeAlso: https://docs.mongodb.com/manual/reference/connection-string/
+     *
+     * - Throws:
+     *   - A `UserError.invalidArgumentError` if the connection string passed in is improperly formatted.
+     *   - A `UserError.invalidArgumentError` if the connection string specifies the use of TLS but libmongoc was not
+     *     built with TLS support.
      */
     public init(connectionString: String = "mongodb://localhost:27017", options: ClientOptions? = nil) throws {
         var error = bson_error_t()
         guard let uri = mongoc_uri_new_with_error(connectionString, &error) else {
-            throw MongoError.invalidUri(message: toErrorString(error))
+            throw parseMongocError(error: error)
         }
 
         // if retryWrites is specified, set it on the uri (libmongoc does not provide api for setting it on the client).
@@ -129,7 +134,7 @@ public class MongoClient {
 
         self._client = mongoc_client_new_from_uri(uri)
         guard self._client != nil else {
-            throw MongoError.invalidClient()
+            throw UserError.invalidArgumentError(message: "libmongoc not built with TLS support.")
         }
 
         // if a readConcern is provided, set it on the client
@@ -214,14 +219,16 @@ public class MongoClient {
      *   - options: Optional `ListDatabasesOptions` to use when executing the command
      *
      * - Returns: A `MongoCursor` over `Document`s describing the databases matching provided criteria
+     *
+     * - Throws: A `userError.invalidArgumentError` if the options passed are an invalid combination.
      */
     public func listDatabases(options: ListDatabasesOptions? = nil) throws -> MongoCursor<Document> {
         let encoder = BSONEncoder()
         let opts = try encoder.encode(options)
         guard let cursor = mongoc_client_find_databases_with_opts(self._client, opts?.data) else {
-            throw MongoError.invalidResponse()
+            fatalError("Couldn't get cursor from the server")
         }
-        return MongoCursor(fromCursor: cursor, withClient: self)
+        return try MongoCursor(fromCursor: cursor, withClient: self)
     }
 
     /**
@@ -233,9 +240,9 @@ public class MongoClient {
      *
      * - Returns: a `MongoDatabase` corresponding to the provided database name
      */
-    public func db(_ name: String, options: DatabaseOptions? = nil) throws -> MongoDatabase {
+    public func db(_ name: String, options: DatabaseOptions? = nil) -> MongoDatabase {
         guard let db = mongoc_client_get_database(self._client, name) else {
-            throw MongoError.invalidClient()
+            fatalError("Couldn't get database '\(name)'")
         }
 
         if let rc = options?.readConcern {

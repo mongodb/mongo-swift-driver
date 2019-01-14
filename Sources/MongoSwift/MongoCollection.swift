@@ -3,7 +3,7 @@ import mongoc
 /// A MongoDB collection.
 public class MongoCollection<T: Codable> {
     internal var _collection: OpaquePointer?
-    internal var _client: MongoClient?
+    internal var _client: MongoClient
 
     /// A `Codable` type associated with this `MongoCollection` instance.
     /// This allows `CollectionType` values to be directly inserted into and
@@ -47,7 +47,6 @@ public class MongoCollection<T: Codable> {
 
     /// Deinitializes a `MongoCollection`, cleaning up the internal `mongoc_collection_t`
     deinit {
-        self._client = nil
         guard let collection = self._collection else {
             return
         }

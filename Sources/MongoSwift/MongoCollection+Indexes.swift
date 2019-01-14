@@ -318,14 +318,14 @@ extension MongoCollection {
      * Retrieves a list of the indexes currently on this collection.
      *
      * - Returns: A `MongoCursor` over the index names.
+     *
+     * - Throws: A `userError.invalidArgumentError` if the options passed are an invalid combination.
      */
     public func listIndexes() throws -> MongoCursor<Document> {
         guard let cursor = mongoc_collection_find_indexes_with_opts(self._collection, nil) else {
-            throw MongoError.invalidResponse()
+            fatalError("Couldn't get cursor from the server")
         }
-        guard let client = self._client else {
-            throw MongoError.invalidClient()
-        }
-        return MongoCursor(fromCursor: cursor, withClient: client)
+
+        return try MongoCursor(fromCursor: cursor, withClient: self._client)
     }
 }

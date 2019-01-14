@@ -7,7 +7,7 @@ private struct Kitten: Codable {
 }
 
 private let client = try MongoClient()
-private let collection = try client.db("home").collection("kittens", withType: Kitten.self)
+private let collection = client.db("home").collection("kittens", withType: Kitten.self)
 
 private let router: Router = {
     let router = Router()

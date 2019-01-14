@@ -9,7 +9,7 @@ private struct Kitten: Content {
 private let app = try Application()
 private let router = try app.make(Router.self)
 private let client = try MongoClient()
-private let collection = try client.db("home").collection("kittens", withType: Kitten.self)
+private let collection = client.db("home").collection("kittens", withType: Kitten.self)
 
 router.get("kittens") { _ -> [Kitten] in
     let docs = try collection.find()

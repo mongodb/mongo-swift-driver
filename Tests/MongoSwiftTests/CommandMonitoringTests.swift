@@ -47,7 +47,7 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
                 print("Test case: \(test.description)")
 
                 // 1. Setup the specified DB and collection with provided data
-                let db = try client.db(testFile.databaseName)
+                let db = client.db(testFile.databaseName)
                 try db.drop() // In case last test run failed, drop to clear out DB
                 let collection = try db.createCollection(testFile.collectionName)
                 try collection.insertMany(testFile.data)
@@ -83,7 +83,7 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
 
     func testAlternateNotificationCenters() throws {
         let client = try MongoClient(options: ClientOptions(eventMonitoring: true))
-        let db = try client.db(type(of: self).testDatabase)
+        let db = client.db(type(of: self).testDatabase)
         let collection = try db.createCollection(self.getCollectionName())
         let customCenter = NotificationCenter()
         client.enableMonitoring(forEvents: .commandMonitoring, usingCenter: customCenter)
