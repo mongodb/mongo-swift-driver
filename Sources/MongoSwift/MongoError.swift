@@ -121,13 +121,13 @@ internal func parseMongocError(error: bson_error_t, errorLabels: [String]? = nil
                 code: ServerErrorCode(code.rawValue),
                 message: message,
                 errorLabels: errorLabels)
-    case (MONGOC_ERROR_STREAM, _):
-        return RuntimeError.connectionError(message: message, errorLabels: errorLabels)
-    case (MONGOC_ERROR_SERVER_SELECTION, MONGOC_ERROR_SERVER_SELECTION_FAILURE):
-        return RuntimeError.connectionError(message: message, errorLabels: errorLabels)
-    case (MONGOC_ERROR_PROTOCOL, MONGOC_ERROR_PROTOCOL_BAD_WIRE_VERSION):
+    case (MONGOC_ERROR_STREAM, _),
+         (MONGOC_ERROR_SERVER_SELECTION, MONGOC_ERROR_SERVER_SELECTION_FAILURE),
+         (MONGOC_ERROR_PROTOCOL, MONGOC_ERROR_PROTOCOL_BAD_WIRE_VERSION):
         return RuntimeError.connectionError(message: message, errorLabels: errorLabels)
     default:
+        assert(errorLabels == nil, "errorLabels set on error, but were not thrown as a MongoSwiftError. " +
+                "Labels: \(errorLabels ?? [])")
         return RuntimeError.internalError(message: message)
     }
 }
