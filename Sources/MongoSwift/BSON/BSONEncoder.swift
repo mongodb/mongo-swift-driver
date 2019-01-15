@@ -56,8 +56,8 @@ public class BSONEncoder {
     public enum DataEncodingStrategy {
         /// Encode the `Data` by deferring to its default encoding implementation.
         ///
-        /// Note: The default encoding implementation attempts to encode the `Data` as a [UInt8], but because BSON does
-        /// not support integer types besides `Int32` or `Int64`, it actually gets encoded to BSON as an `[Int]`.
+        /// Note: The default encoding implementation attempts to encode the `Data` as a `[UInt8]`, but because BSON does
+        /// not support integer types besides `Int32` or `Int64`, it actually gets encoded to BSON as an `[Int32]`.
         case deferredToData
 
         /// Encode the `Data` as a BSON binary type (default).
