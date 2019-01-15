@@ -63,6 +63,13 @@ public class BSONEncoder {
 
         /// Encode the `Data` as a BSON binary type (default).
         case binary
+
+        /// Encode the `Data` as a base64 encoded string.
+        case base64
+
+        /// Encode the `Data` by using the given closure.
+        /// If the closure does not encode a value, an empty document will be encoded in its place.
+        case custom((Data, Encoder) throws -> Void)
     }
 
     /// The strategy to use for encoding `Date`s with this instance.
@@ -353,6 +360,29 @@ extension _BSONEncoder {
         return try self.box_(value) ?? Document()
     }
 
+    fileprivate func handleCustomStrategy<T: Encodable>(
+            encode f: (T, Encoder) throws -> Void,
+            value: T
+    ) throws -> BSONValue? {
+        let depth = self.storage.count
+
+        do {
+            try f(value, self)
+        } catch {
+            if self.storage.count > depth {
+                _ = self.storage.popContainer()
+            }
+            throw error
+        }
+
+        // The closure didn't encode anything.
+        guard self.storage.count > depth else {
+            return nil
+        }
+
+        return self.storage.popContainer()
+    }
+
     /// Returns the date as a `BSONValue`, or nil if no values were encoded by the custom encoder strategy.
     fileprivate func boxDate(_ date: Date) throws -> BSONValue? {
         switch self.options.dateEncodingStrategy {
@@ -374,23 +404,7 @@ extension _BSONEncoder {
                 throw MongoError.bsonEncodeError(message: "ISO8601DateFormatter is unavailable on this platform.")
             }
         case .custom(let f):
-            let depth = self.storage.count
-
-            do {
-                try f(date, self)
-            } catch {
-                if self.storage.count > depth {
-                    _ = self.storage.popContainer()
-                }
-                throw error
-            }
-
-            // The closure didn't encode anything.
-            guard self.storage.count > depth else {
-                return nil
-            }
-
-            return self.storage.popContainer()
+            return try handleCustomStrategy(encode: f, value: date)
         }
     }
 
@@ -405,13 +419,17 @@ extension _BSONEncoder {
         }
     }
 
-    fileprivate func boxData(_ data: Data) throws -> BSONValue {
+    fileprivate func boxData(_ data: Data) throws -> BSONValue? {
         switch self.options.dataEncodingStrategy {
         case .deferredToData:
             try data.encode(to: self)
             return self.storage.popContainer()
         case .binary:
             return try Binary(data: data, subtype: .generic)
+        case .base64:
+            return data.base64EncodedString()
+        case .custom(let f):
+            return try handleCustomStrategy(encode: f, value: data)
         }
     }
 

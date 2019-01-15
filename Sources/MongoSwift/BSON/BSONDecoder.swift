@@ -71,6 +71,12 @@ public class BSONDecoder {
 
         /// Decode `Data`s stored as the BSON `Binary` type (default).
         case binary
+
+        /// Decode `Data`s stored as base64 encoded strings.
+        case base64
+
+        /// Decode `Data`s using the provided closure.
+        case custom((_ decoder: Decoder) throws -> Data)
     }
 
     /// Contextual user-provided information for use during decoding.
@@ -294,6 +300,23 @@ extension _BSONDecoder {
         case .binary:
             let binary = try self.unbox(value, as: Binary.self)
             return binary.data
+        case.base64:
+            guard let base64Str = value as? String else {
+                throw DecodingError._typeMismatch(at: self.codingPath, expectation: String.self, reality: value)
+            }
+
+            guard let data = Data(base64Encoded: base64Str) else {
+                throw DecodingError.dataCorrupted(
+                        DecodingError.Context(
+                                codingPath: self.codingPath,
+                                debugDescription: "Malformatted base64 encoded string. Got: \(value)")
+                )
+            }
+            return data
+        case .custom(let f):
+            self.storage.push(container: value)
+            defer { self.storage.popContainer() }
+            return try f(self)
         }
     }
 

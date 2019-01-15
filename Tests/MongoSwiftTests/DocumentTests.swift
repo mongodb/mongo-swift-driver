@@ -924,7 +924,35 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(deferredDoc["data"]).to(bsonEqual(arrData))
         let roundTripDeferred = try decoder.decode(DataWrapper.self, from: deferredDoc)
         expect(roundTripDeferred.data).to(equal(data))
+        expect(try decoder.decode(DataWrapper.self, from: defaultDoc)).to(throwError())
 
-        expect(try decoder.decode(DateWrapper.self, from: defaultDoc)).to(throwError())
+        encoder.dataEncodingStrategy = .base64
+        decoder.dataDecodingStrategy = .base64
+        let base64Doc = try encoder.encode(dataStruct)
+        expect(base64Doc["data"]).to(bsonEqual(data.base64EncodedString()))
+        let roundTripBase64 = try decoder.decode(DataWrapper.self, from: base64Doc)
+        expect(roundTripBase64.data).to(equal(data))
+        expect(try decoder.decode(DataWrapper.self, from: ["data": "this is not base64 encoded~"])).to(throwError())
+
+        let customEncodedDoc = ["d": data.base64EncodedString(), "hash": data.hashValue] as Document
+        encoder.dataEncodingStrategy = .custom({ d, encoder in
+            var container = encoder.singleValueContainer()
+            try container.encode(customEncodedDoc)
+        })
+        decoder.dataDecodingStrategy = .custom({ decoder in
+            let doc = try Document(from: decoder)
+            guard let d = Data(base64Encoded: doc["d"] as! String) else {
+                throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: [], debugDescription: "bad base64"))
+            }
+            expect(d.hashValue).to(equal(data.hashValue))
+            return d
+        })
+        let customDoc = try encoder.encode(dataStruct)
+        expect(customDoc["data"]).to(bsonEqual(customEncodedDoc))
+        let roundTripCustom = try decoder.decode(DataWrapper.self, from: customDoc)
+        expect(roundTripCustom.data).to(equal(data))
+
+        encoder.dataEncodingStrategy = .custom({ _, _ in })
+        expect(try encoder.encode(dataStruct)).to(bsonEqual(["data": [:] as Document] as Document))
     }
 }
