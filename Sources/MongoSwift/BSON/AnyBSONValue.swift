@@ -5,6 +5,13 @@ import Foundation
 public struct AnyBSONValue: Codable, Equatable, Hashable {
     // swiftlint:disable:next legacy_hashing
     public var hashValue: Int {
+        if let date = self.value as? Date {
+            return "\(self.value.bsonType)-\(date.hashValue)".hashValue
+        } else if let binary = self.value as? Binary {
+            return "\(self.value.bsonType)-\(binary.data.hashValue)-\(binary.subtype)".hashValue
+        } else if let arr = self.value as? [BSONValue] {
+            return "\(self.value.bsonType)-\((["value": arr] as Document).extendedJSON)".hashValue
+        }
         return "\(self.value.bsonType)-\(self.value)".hashValue
     }
 
