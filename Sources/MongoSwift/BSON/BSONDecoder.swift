@@ -62,6 +62,11 @@ public class BSONDecoder {
     /// - SeeAlso: bsonspec.org
     public enum DataDecodingStrategy {
         /// Decode `Data`s by deferring to their default decoding implementation.
+        ///
+        /// Note: The default decoding implementation attempts to decode the `Data` from a `[UInt8]`, but because BSON
+        /// does not support integer types other `Int32` and `Int64`, it actually decodes from an `[Int32]` stored
+        /// in BSON. This strategy paired with its corresponding encoding strategy results in an inefficient storage of
+        /// the `Data` in BSON.
         case deferredToData
 
         /// Decode `Data`s stored as the BSON `Binary` type (default).
@@ -361,15 +366,18 @@ extension _BSONDecoder {
 
     fileprivate func unbox<T: Decodable>(_ value: BSONValue, as type: T.Type) throws -> T {
         // swiftlint:disable force_cast
-        if type == Date.self {
+        switch type {
+        case is Date.Type:
             // We know T is a Date and unboxDate returns a Date or throws, so this cast will always work.
             return try unboxDate(value) as! T
-        } else if type == UUID.self {
+        case is UUID.Type:
             // We know T is a UUID and unboxUUID returns a UUID or throws, so this cast will always work.
             return try unboxUUID(value) as! T
-        } else if type == Data.self {
+        case is Data.Type:
             // We know T is a Data and unboxData returns a Data or throws, so this cast will always work.
             return try unboxData(value) as! T
+        default:
+            break
         }
         // swiftlint:enable force_cast
 
