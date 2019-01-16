@@ -2,7 +2,7 @@ import Foundation
 import mongoc
 
 /// An empty protocol for encapsulating all errors that this package can throw.
-public protocol MongoSwiftError: Error {}
+public protocol MongoSwiftError: LocalizedError {}
 
 // TODO: update this link and the one below (SWIFT-319)
 /// A MongoDB server error code.
@@ -26,6 +26,27 @@ public enum ServerError: MongoSwiftError {
                         writeConcernError: WriteConcernError?,
                         result: BulkWriteResult?,
                         errorLabels: [String]?)
+
+    public var errorDescription: String? {
+        switch self {
+        case let .commandError(code: _, message: msg, errorLabels: _):
+            return msg
+        case let .writeError(writeError: writeErr, writeConcernError: wcErr, errorLabels: _):
+            if let writeErr = writeErr {
+                return writeErr.message
+            } else if let wcErr = wcErr {
+                return wcErr.message
+            }
+            return "" // should never get here
+        case let .bulkWriteError(writeErrors: writeErrs, writeConcernError: wcErr, result: _, errorLabels: _):
+            if let writeErrs = writeErrs {
+                return writeErrs.map({ bwe in bwe.message }).joined(separator: ", ")
+            } else if let wcErr = wcErr {
+                return wcErr.message
+            }
+            return "" // should never get here
+        }
+    }
 }
 
 /// The possible errors caused by improper use of the driver by the user.
@@ -35,6 +56,13 @@ public enum UserError: MongoSwiftError {
 
     /// Thrown when the user passes in invalid arguments to a driver method.
     case invalidArgumentError(message: String)
+
+    public var errorDescription: String? {
+        switch self {
+        case let .invalidArgumentError(message: msg), let .logicError(message: msg):
+            return msg
+        }
+    }
 }
 
 /// The possible errors that can occur unexpectedly during runtime.
@@ -49,6 +77,15 @@ public enum RuntimeError: MongoSwiftError {
 
     /// Thrown when encountering an authentication related error (e.g. invalid credentials).
     case authenticationError(message: String)
+
+    public var errorDescription: String? {
+        switch self {
+        case let .internalError(message: msg),
+             let .connectionError(message: msg, errorLabels: _),
+             let .authenticationError(message: msg):
+            return msg
+        }
+    }
 }
 
 /// A struct to represent a single write error not resulting from an executed bulk write.
