@@ -361,8 +361,8 @@ extension _BSONEncoder {
     }
 
     fileprivate func handleCustomStrategy<T: Encodable>(
-            encode f: (T, Encoder) throws -> Void,
-            value: T
+            encodeFunc f: (T, Encoder) throws -> Void,
+            forValue value: T
     ) throws -> BSONValue? {
         let depth = self.storage.count
 
@@ -404,7 +404,7 @@ extension _BSONEncoder {
                 throw MongoError.bsonEncodeError(message: "ISO8601DateFormatter is unavailable on this platform.")
             }
         case .custom(let f):
-            return try handleCustomStrategy(encode: f, value: date)
+            return try handleCustomStrategy(encodeFunc: f, forValue: date)
         }
     }
 
@@ -429,7 +429,7 @@ extension _BSONEncoder {
         case .base64:
             return data.base64EncodedString()
         case .custom(let f):
-            return try handleCustomStrategy(encode: f, value: data)
+            return try handleCustomStrategy(encodeFunc: f, forValue: data)
         }
     }
 
