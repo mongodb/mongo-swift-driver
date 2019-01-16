@@ -10,7 +10,8 @@ final class BSONValueTests: MongoSwiftTestCase {
             ("testInvalidDecimal128", testInvalidDecimal128),
             ("testUUIDBytes", testUUIDBytes),
             ("testBSONEquals", testBSONEquals),
-            ("testObjectIdRoundTrip", testObjectIdRoundTrip)
+            ("testObjectIdRoundTrip", testObjectIdRoundTrip),
+            ("testHashable", testHashable)
         ]
     }
 
@@ -151,5 +152,65 @@ final class BSONValueTests: MongoSwiftTestCase {
         let objectIdFromString = ObjectId(fromString: oid)
         expect(objectIdFromString.oid).to(equal(oid))
         expect(objectIdFromString.timestamp).to(equal(timestamp))
+    }
+
+    /// Test AnyBSONValue Hashable conformance
+    func testHashable() throws {
+        let expected = CodecTests.AllBSONTypes(
+                double: Double(2),
+                string: "hi",
+                doc: ["x": 1],
+                arr: [1, 2],
+                binary: try Binary(base64: "//8=", subtype: .generic),
+                oid: ObjectId(fromString: "507f1f77bcf86cd799439011"),
+                bool: true,
+                date: Date(timeIntervalSinceReferenceDate: 5000),
+                code: CodeWithScope(code: "hi", scope: ["x": 1]),
+                int: 1,
+                ts: Timestamp(timestamp: 1, inc: 2),
+                int32: 5,
+                int64: 6,
+                dec: Decimal128("1.2E+10"),
+                minkey: MinKey(),
+                maxkey: MaxKey(),
+                regex: RegularExpression(pattern: "^abc", options: "imx"))
+
+        let values = Mirror(reflecting: expected).children.map { child in AnyBSONValue(child.value as! BSONValue) }
+        let valuesSet = Set<AnyBSONValue>(values)
+
+        expect(Set<Int>(valuesSet.map { abv in abv.hashValue }).count).to(equal(values.count))
+        expect(valuesSet.count).to(equal(values.count))
+        expect(values).to(contain(Array(valuesSet)))
+
+        let abv1 = AnyBSONValue(Int32(1))
+        let abv2 = AnyBSONValue(Int64(1))
+        let abv3 = AnyBSONValue(Int32(5))
+
+        var map: [AnyBSONValue: Int] = [abv1: 1, abv2: 2]
+
+        expect(map[abv1]).to(equal(1))
+        expect(map[abv2]).to(equal(2))
+
+        map[abv1] = 4
+        map[abv2] = 3
+        map[abv3] = 5
+
+        expect(map[abv1]).to(equal(4))
+        expect(map[abv2]).to(equal(3))
+        expect(map[abv3]).to(equal(5))
+
+        let str = AnyBSONValue("world")
+        let doc = AnyBSONValue(["value": str.value] as Document)
+        let json = AnyBSONValue((doc.value as! Document).extendedJSON)
+
+        map[str] = 12
+        map[doc] = 13
+        map[json] = 14
+
+        expect(map[str]).to(equal(12))
+        expect(map[doc]).to(equal(13))
+        expect(map[json]).to(equal(14))
+
+        expect(Set([str.hashValue, doc.hashValue, json.hashValue]).count).to(equal(3))
     }
 }
