@@ -228,8 +228,8 @@ extension Document {
         }
     }
 
-    /// If the document already has an "_id" field, returns it as-is. Otherwise, returns a new document
-    /// containing all the keys from this document, with an _id field prepended.
+    /// If the document already has an _id, returns it as-is. Otherwise, returns a new document
+    /// containing all the keys from this document, with an _id prepended.
     internal func withID() throws -> Document {
         if self.hasKey("_id") {
             return self
