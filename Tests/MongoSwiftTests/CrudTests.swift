@@ -263,7 +263,7 @@ private class BulkWriteTest: CrudTest {
                 verifyBulkWriteResult(result)
             }
             expect(expectError).to(beFalse())
-        } catch MongoError.bulkWriteError(_, _, let result, _, _) {
+        } catch ServerError.bulkWriteError(_, _, let result, _) {
             if let result = result {
                 verifyBulkWriteResult(result)
             }
@@ -499,9 +499,9 @@ private class InsertManyTest: CrudTest {
                 verifyInsertManyResult(result)
             }
             expect(expectError).to(beFalse())
-        } catch MongoError.insertManyError(_, _, let result, _, _) {
+        } catch ServerError.bulkWriteError(_, _, let result, _) {
             if let result = result {
-                verifyInsertManyResult(result)
+                verifyInsertManyResult(InsertManyResult(from: result)!)
             }
             expect(expectError).to(beTrue())
         }

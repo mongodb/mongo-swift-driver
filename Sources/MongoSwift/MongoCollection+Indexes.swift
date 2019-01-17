@@ -181,6 +181,12 @@ extension MongoCollection {
      *   - writeConcern: Optional WriteConcern to use for the command
      *
      * - Returns: The name of the created index.
+     *
+     * - Throws:
+     *   - `ServerError.writeError` if an error occurs while performing the write.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from performing the command.
+     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `EncodingError` if an error occurs while encoding the index specification or options.
      */
     @discardableResult
     public func createIndex(_ forModel: IndexModel, options: CreateIndexOptions? = nil) throws -> String {
@@ -196,6 +202,12 @@ extension MongoCollection {
      *   - writeConcern: Optional `WriteConcern` to use for the command
      *
      * - Returns: The name of the created index
+     *
+     * - Throws:
+     *   - `ServerError.writeError` if an error occurs while performing the write.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from performing the command.
+     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `EncodingError` if an error occurs while encoding the index specification or options.
      */
     @discardableResult
     public func createIndex(_ keys: Document,
@@ -212,6 +224,12 @@ extension MongoCollection {
      *   - writeConcern: Optional `WriteConcern` to use for the command
      *
      * - Returns: An `[String]` containing the names of all the indexes that were created.
+     *
+     * - Throws:
+     *   - `ServerError.writeError` if an error occurs while performing the write.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from performing the command.
+     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `EncodingError` if an error occurs while encoding the index specifications or options.
      */
     @discardableResult
     public func createIndexes(_ forModels: [IndexModel], options: CreateIndexOptions? = nil) throws -> [String] {
@@ -233,9 +251,11 @@ extension MongoCollection {
 
         let opts = try encoder.encode(options)
         var error = bson_error_t()
+        let reply = Document()
 
-        guard mongoc_collection_write_command_with_opts(self._collection, command.data, opts?.data, nil, &error) else {
-            throw MongoError.commandError(message: toErrorString(error))
+        guard mongoc_collection_write_command_with_opts(
+                self._collection, command.data, opts?.data, reply.data, &error) else {
+            throw getErrorFromReply(bsonError: error, from: reply)
         }
 
         return forModels.map { $0.options?.name ?? $0.defaultName }
@@ -248,12 +268,15 @@ extension MongoCollection {
      *   - name: The name of the index to drop
      *   - writeConcern: An optional WriteConcern to use for the command
      *
+     * - Throws:
+     *   - `ServerError.commandError` if an error occurs that prevents the command from performing the command.
+     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
      */
     public func dropIndex(_ name: String, options: DropIndexOptions? = nil) throws {
         let opts = try BSONEncoder().encode(options)
         var error = bson_error_t()
         guard mongoc_collection_drop_index_with_opts(self._collection, name, opts?.data, &error) else {
-            throw MongoError.commandError(message: toErrorString(error))
+            throw parseMongocError(error: error)
         }
     }
 
@@ -266,6 +289,12 @@ extension MongoCollection {
      *   - writeConcern: An optional `WriteConcern` to use for the command
      *
      * - Returns: a `Document` containing the server's response to the command.
+     *
+     * - Throws:
+     *   - `ServerError.writeError` if an error occurs while performing the command.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from performing the command.
+     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `EncodingError` if an error occurs while encoding the options.
      */
     @discardableResult
     public func dropIndex(_ keys: Document,
@@ -282,6 +311,12 @@ extension MongoCollection {
      *   - writeConcern: An optional `WriteConcern` to use for the command
      *
      * - Returns: a `Document` containing the server's response to the command.
+     *
+     * - Throws:
+     *   - `ServerError.writeError` if an error occurs while performing the command.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from performing the command.
+     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `EncodingError` if an error occurs while encoding the options.
      */
     @discardableResult
     public func dropIndex(_ model: IndexModel, options: DropIndexOptions? = nil) throws -> Document {
@@ -295,6 +330,12 @@ extension MongoCollection {
      *    - writeConcern: An optional `WriteConcern` to use for the command
      *
      * - Returns: a `Document` containing the server's response to the command.
+     *
+     * - Throws:
+     *   - `ServerError.writeError` if an error occurs while performing the command.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from performing the command.
+     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `EncodingError` if an error occurs while encoding the options.
      */
     @discardableResult
     public func dropIndexes(options: DropIndexOptions? = nil) throws -> Document {
@@ -308,8 +349,8 @@ extension MongoCollection {
         let reply = Document()
         var error = bson_error_t()
         guard mongoc_collection_write_command_with_opts(
-            self._collection, command.data, opts?.data, reply.data, &error) else {
-            throw MongoError.commandError(message: toErrorString(error))
+                self._collection, command.data, opts?.data, reply.data, &error) else {
+            throw getErrorFromReply(bsonError: error, from: reply)
         }
         return reply
     }

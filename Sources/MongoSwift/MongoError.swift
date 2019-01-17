@@ -132,7 +132,10 @@ public struct BulkWriteError: Codable {
     public let index: Int
 
     /// The request that errored.
-    public let request: WriteModel? = nil
+    // Swift 4.0 requires a default value here because request isn't a CodingKey. Later versions do not have this
+    // problem. TODO: remove this default value and linter ignore (SWIFT-283).
+    // swiftlint:disable:next redundant_optional_initialization
+    public var request: WriteModel? = nil
 
     private enum CodingKeys: String, CodingKey {
         case code
@@ -142,7 +145,7 @@ public struct BulkWriteError: Codable {
 }
 
 /// Internal helper function used to get an appropriate error from a libmongoc error. This should NOT be used to get
-/// `.writeError`s or `.bulkWriteError`s. Instead, construct those from replies returned from libmongoc functions.
+/// `.writeError`s or `.bulkWriteError`s. Instead, construct those using `getErrorFromReply`.
 internal func parseMongocError(error: bson_error_t, errorLabels: [String]? = nil) -> MongoSwiftError {
     let domain = mongoc_error_domain_t(rawValue: error.domain)
     let code = mongoc_error_code_t(rawValue: error.code)
@@ -166,6 +169,95 @@ internal func parseMongocError(error: bson_error_t, errorLabels: [String]? = nil
         assert(errorLabels == nil, "errorLabels set on error, but were not thrown as a MongoSwiftError. " +
                 "Labels: \(errorLabels ?? [])")
         return RuntimeError.internalError(message: message)
+    }
+}
+
+/// Internal function used to get an appropriate error from a server reply to a command.
+internal func getErrorFromReply(
+        bsonError: bson_error_t,
+        from reply: Document,
+        forBulkWrite bulkWrite: BulkWriteOperation? = nil,
+        withResult result: BulkWriteResult? = nil) -> MongoSwiftError {
+    // if writeErrors or writeConcernErrors aren't present, then this is likely a commandError.
+    guard reply["writeErrors"] != nil || reply["writeConcernErrors"] != nil else {
+        return parseMongocError(error: bsonError, errorLabels: reply["errorLabels"] as? [String])
+    }
+
+    let fallback = RuntimeError.internalError(message: "Got error from the server but couldn't parse it. " +
+            "Message: \(toErrorString(bsonError))")
+
+    do {
+        let decoder = BSONDecoder()
+
+        var writeConcernError: WriteConcernError?
+        if let writeConcernErrors = reply["writeConcernErrors"] as? [Document], !writeConcernErrors.isEmpty {
+            writeConcernError = try decoder.decode(WriteConcernError.self, from: writeConcernErrors[0])
+        }
+
+        if let bulkWrite = bulkWrite {
+            var insertedIds = result?.insertedIds
+
+            var bulkWriteErrors: [BulkWriteError]?
+            if let writeErrors = reply["writeErrors"] as? [Document], !writeErrors.isEmpty {
+                bulkWriteErrors = try writeErrors.map {
+                    var err = try decoder.decode(BulkWriteError.self, from: $0)
+                    err.request = bulkWrite.requests[err.index]
+                    insertedIds?[err.index] = nil
+                    return err
+                }
+
+                let ordered = try bulkWrite.opts?.getValue(for: "ordered") as? Bool ?? true
+
+                // If ordered, remove all inserted ids after the one that errored.
+                if ordered {
+                    // we know bulkWriteErrors is non-nil because we initialize it above
+                    // swiftlint:disable:next force_unwrapping
+                    insertedIds = insertedIds?.filter { $0.key < bulkWriteErrors![0].index }
+                }
+            }
+
+            guard bulkWriteErrors != nil || writeConcernError != nil else {
+                return fallback
+            }
+
+            // Need to create new result that omits the ids that failed in insertedIds.
+            var errResult: BulkWriteResult?
+            if let result = result {
+                errResult = BulkWriteResult(
+                        deletedCount: result.deletedCount,
+                        insertedCount: result.insertedCount,
+                        insertedIds: insertedIds,
+                        matchedCount: result.matchedCount,
+                        modifiedCount: result.modifiedCount,
+                        upsertedCount: result.upsertedCount,
+                        upsertedIds: result.upsertedIds
+                )
+            }
+
+            return ServerError.bulkWriteError(
+                    writeErrors: bulkWriteErrors,
+                    writeConcernError: writeConcernError,
+                    result: errResult,
+                    errorLabels: reply["errorLabels"] as? [String]
+            )
+        } else {
+            var writeError: WriteError?
+            if let writeErrors = reply["writeErrors"] as? [Document], !writeErrors.isEmpty {
+                writeError = try decoder.decode(WriteError.self, from: writeErrors[0])
+            }
+
+            guard writeError != nil || writeConcernError != nil else {
+                return fallback
+            }
+
+            return ServerError.writeError(
+                    writeError: writeError,
+                    writeConcernError: writeConcernError,
+                    errorLabels: reply["errorLabels"] as? [String]
+            )
+        }
+    } catch {
+        return fallback
     }
 }
 

@@ -63,7 +63,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
     }
 
     func testEmptyRequests() {
-        expect(try self.coll.bulkWrite([])).to(throwError(MongoError.invalidArgument(message: "")))
+        expect(try self.coll.bulkWrite([])).to(throwError(UserError.invalidArgumentError(message: "")))
     }
 
     private typealias DeleteOneModel = MongoCollection<Document>.DeleteOneModel
@@ -92,6 +92,43 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         expect(cursor.next()).to(equal(["_id": 1, "x": 11]))
         expect(cursor.next()).to(equal(["_id": result.insertedIds[1]!, "x": 22]))
         expect(cursor.next()).to(beNil())
+    }
+
+    func testBulkWriteErrors() throws {
+        let id = ObjectId()
+        let id2 = ObjectId()
+        let id3 = ObjectId()
+
+        let doc = ["_id": id] as Document
+
+        try self.coll.insertOne(doc)
+
+        let requests: [WriteModel] = [
+            InsertOneModel(["_id": id2] as Document),
+            InsertOneModel(doc),
+            UpdateOneModel(filter: ["_id": id3], update: ["$set": ["asdfasdf": 1] as Document], upsert: true)
+        ]
+
+        let expectedResult = BulkWriteResult(
+                deletedCount: 0,
+                insertedCount: 1,
+                insertedIds: [0: id2],
+                matchedCount: 0,
+                modifiedCount: 0,
+                upsertedCount: 1,
+                upsertedIds: [2: id3]
+        )
+
+        // Expect a duplicate key error (11000)
+        let expectedError = ServerError.bulkWriteError(
+                writeErrors: [BulkWriteError(code: 11000, message: "", index: 1, request: nil)],
+                writeConcernError: nil,
+                result: expectedResult,
+                errorLabels: nil)
+
+        let options = BulkWriteOptions(ordered: false)
+
+        expect(try self.coll.bulkWrite(requests, options: options)).to(throwError(expectedError))
     }
 
     func testUpdates() throws {

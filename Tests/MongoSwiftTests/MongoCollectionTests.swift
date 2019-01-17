@@ -110,13 +110,24 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(try self.coll.insertOne(self.doc1)?.insertedId).to(bsonEqual(1))
         expect(try self.coll.insertOne(self.doc2)?.insertedId).to(bsonEqual(2))
         expect(try self.coll.count()).to(equal(2))
-
+        
         // try inserting a document without an ID
         let docNoID: Document = ["x": 1]
         // verify that an _id is returned in the InsertOneResult
         expect(try self.coll.insertOne(docNoID)?.insertedId).toNot(beNil())
         // verify that the original document was not modified
         expect(docNoID).to(equal(["x": 1]))
+
+        // error code 11000: DuplicateKey
+        let expectedError = ServerError.writeError(
+                writeError: WriteError(code: 11000, message: ""),
+                writeConcernError: nil,
+                errorLabels: nil
+        )
+
+        expect(try self.coll.insertOne(["_id": 1])).to(throwError(expectedError))
+        expect(try self.coll.insertOne(["$asf": 12])).to(throwError(UserError.invalidArgumentError(message: "")))
+
     }
 
     func testInsertOneWithUnacknowledgedWriteConcern() throws {
@@ -160,10 +171,42 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         // verify that docs without _ids were not modified.
         expect(docNoId1).to(equal(["x": 1]))
         expect(docNoId2).to(equal(["x": 2]))
+
+        let newDoc1: Document = ["_id": ObjectId()]
+        let newDoc2: Document = ["_id": ObjectId()]
+        let newDoc3: Document = ["_id": ObjectId()]
+        let newDoc4: Document = ["_id": ObjectId()]
+
+        let expectedResultOrdered = BulkWriteResult(insertedCount: 1, insertedIds: [0: newDoc1["_id"]!])
+        let expectedErrorsOrdered = [
+            BulkWriteError(code: 11000, message: "", index: 1, request: nil)
+        ]
+
+        let expectedErrorOrdered = ServerError.bulkWriteError(
+                writeErrors: expectedErrorsOrdered,
+                writeConcernError: nil,
+                result: expectedResultOrdered,
+                errorLabels: nil)
+
+        expect(try self.coll.insertMany([newDoc1, docId1, newDoc2, docId2])).to(throwError(expectedErrorOrdered))
+
+        let expectedErrors = [
+            BulkWriteError(code: 11000, message: "", index: 1, request: nil),
+            BulkWriteError(code: 11000, message: "", index: 3, request: nil)
+        ]
+        let expectedResult = BulkWriteResult(insertedCount: 2, insertedIds: [0: newDoc3["_id"]!, 2: newDoc4["_id"]!])
+        let expectedError = ServerError.bulkWriteError(
+                writeErrors: expectedErrors,
+                writeConcernError: nil,
+                result: expectedResult,
+                errorLabels: nil)
+
+        expect(try self.coll.insertMany([newDoc3, docId1, newDoc4, docId2], options: InsertManyOptions(ordered: false)))
+                .to(throwError(expectedError))
     }
 
     func testInsertManyWithEmptyValues() {
-        expect(try self.coll.insertMany([])).to(throwError(MongoError.invalidArgument(message: "")))
+        expect(try self.coll.insertMany([])).to(throwError(UserError.invalidArgumentError(message: "")))
     }
 
     func testInsertManyWithUnacknowledgedWriteConcern() throws {
@@ -435,8 +478,10 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         // test invalid maxTimeMS throws error
         let invalidOpts1 = FindOneAndDeleteOptions(maxTimeMS: 0)
         let invalidOpts2 = FindOneAndDeleteOptions(maxTimeMS: -1)
-        expect(try self.coll.findOneAndDelete([:], options: invalidOpts1)).to(throwError())
-        expect(try self.coll.findOneAndDelete([:], options: invalidOpts2)).to(throwError())
+        expect(try self.coll.findOneAndDelete([:], options: invalidOpts1))
+                .to(throwError(UserError.invalidArgumentError(message: "")))
+        expect(try self.coll.findOneAndDelete([:], options: invalidOpts2))
+                .to(throwError(UserError.invalidArgumentError(message: "")))
     }
 
     func testFindOneAndReplace() throws {
@@ -467,8 +512,10 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         // test invalid maxTimeMS throws error
         let invalidOpts1 = FindOneAndReplaceOptions(maxTimeMS: 0)
         let invalidOpts2 = FindOneAndReplaceOptions(maxTimeMS: -1)
-        expect(try self.coll.findOneAndReplace(filter: [:], replacement: [:], options: invalidOpts1)).to(throwError())
-        expect(try self.coll.findOneAndReplace(filter: [:], replacement: [:], options: invalidOpts2)).to(throwError())
+        expect(try self.coll.findOneAndReplace(filter: [:], replacement: [:], options: invalidOpts1))
+                .to(throwError(UserError.invalidArgumentError(message: "")))
+        expect(try self.coll.findOneAndReplace(filter: [:], replacement: [:], options: invalidOpts2))
+                .to(throwError(UserError.invalidArgumentError(message: "")))
     }
 
     func testFindOneAndUpdate() throws {
@@ -499,8 +546,10 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         // test invalid maxTimeMS throws error
         let invalidOpts1 = FindOneAndUpdateOptions(maxTimeMS: 0)
         let invalidOpts2 = FindOneAndUpdateOptions(maxTimeMS: -1)
-        expect(try self.coll.findOneAndUpdate(filter: [:], update: [:], options: invalidOpts1)).to(throwError())
-        expect(try self.coll.findOneAndUpdate(filter: [:], update: [:], options: invalidOpts2)).to(throwError())
+        expect(try self.coll.findOneAndUpdate(filter: [:], update: [:], options: invalidOpts1))
+                .to(throwError(UserError.invalidArgumentError(message: "")))
+        expect(try self.coll.findOneAndUpdate(filter: [:], update: [:], options: invalidOpts2))
+                .to(throwError(UserError.invalidArgumentError(message: "")))
     }
 
     func testNullIds() throws {

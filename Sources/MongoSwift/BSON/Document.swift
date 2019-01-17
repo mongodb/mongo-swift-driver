@@ -203,7 +203,7 @@ extension Document {
     internal mutating func merge(_ doc: Document) throws {
         self.copyStorageIfRequired()
         guard bson_concat(self.data, doc.data) else {
-            throw MongoError.bsonEncodeError(message: "Failed to merge \(doc) with \(self). This is likely due to " +
+            throw RuntimeError.internalError(message: "Failed to merge \(doc) with \(self). This is likely due to " +
                     "the merged document being too large.")
         }
         self.count += doc.count

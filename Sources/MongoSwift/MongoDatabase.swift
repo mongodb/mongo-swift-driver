@@ -193,10 +193,13 @@ public class MongoDatabase {
     }
 
     /// Drops this database.
+    /// - Throws:
+    ///   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+    ///   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
     public func drop() throws {
         var error = bson_error_t()
         guard mongoc_database_drop(self._database, &error) else {
-            throw MongoError.commandError(message: toErrorString(error))
+            throw parseMongocError(error: error)
         }
     }
 
@@ -274,6 +277,11 @@ public class MongoDatabase {
      *   - options: Optional `CreateCollectionOptions` to use for the collection
      *
      * - Returns: the newly created `MongoCollection<T>`
+     *
+     * - Throws:
+     *   - `ServerError.commandError` if an error occurs that prevents the command from performing the command.
+     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func createCollection<T: Codable>(_ name: String,
                                              withType: T.Type,
@@ -283,7 +291,7 @@ public class MongoDatabase {
         var error = bson_error_t()
 
         guard let collection = mongoc_database_create_collection(self._database, name, opts?.data, &error) else {
-            throw MongoError.commandError(message: toErrorString(error))
+            throw parseMongocError(error: error)
         }
 
         guard let client = self._client else {
@@ -321,6 +329,12 @@ public class MongoDatabase {
      *   - options: Optional `RunCommandOptions` to use when executing this command
      *
      * - Returns: a `Document` containing the server response for the command
+     *
+     * - Throws:
+     *   - `UserError.invalidArgument` if `requests` is empty.
+     *   - `ServerError.writeError` if any error occurs while the command was performing a write.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from being performed.
+     *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     @discardableResult
     public func runCommand(_ command: Document, options: RunCommandOptions? = nil) throws -> Document {
@@ -329,7 +343,7 @@ public class MongoDatabase {
         let reply = Document()
         var error = bson_error_t()
         guard mongoc_database_command_with_opts(self._database, command.data, rp, opts?.data, reply.data, &error) else {
-            throw MongoError.commandError(message: toErrorString(error))
+            throw getErrorFromReply(bsonError: error, from: reply)
         }
         return reply
     }

@@ -30,20 +30,35 @@ extension ServerError: Equatable {
                     && sortAndCompareOptionalArrays(lhs: lhsErrorLabels, rhs: rhsErrorLabels, cmp: { $0 < $1 })
         case let (.bulkWriteError(writeErrors: lhsWriteErrors,
                                   writeConcernError: lhsWCError,
-                                  result: _,
+                                  result: lhsResult,
                                   errorLabels: lhsErrorLabels),
                   .bulkWriteError(writeErrors: rhsWriteErrors,
                                   writeConcernError: rhsWCError,
-                                  result: _,
+                                  result: rhsResult,
                                   errorLabels: rhsErrorLabels)):
             let cmp = { (l: BulkWriteError, r: BulkWriteError) in l.index < r.index }
 
             return sortAndCompareOptionalArrays(lhs: lhsWriteErrors, rhs: rhsWriteErrors, cmp: cmp)
                     && lhsWCError == rhsWCError
                     && sortAndCompareOptionalArrays(lhs: lhsErrorLabels, rhs: rhsErrorLabels, cmp: { $0 < $1 })
+                    && lhsResult == rhsResult
         default:
             return false
         }
+    }
+}
+
+extension BulkWriteResult: Equatable {
+    public static func == (lhs: BulkWriteResult, rhs: BulkWriteResult) -> Bool {
+        let iidsEqual = lhs.insertedIds.mapValues { AnyBSONValue($0) } == rhs.insertedIds.mapValues { AnyBSONValue($0) }
+        let uidsEqual = lhs.upsertedIds.mapValues { AnyBSONValue($0) } == rhs.upsertedIds.mapValues { AnyBSONValue($0) }
+
+        return iidsEqual
+                && uidsEqual
+                && lhs.upsertedCount == rhs.upsertedCount
+                && lhs.modifiedCount == rhs.modifiedCount
+                && lhs.matchedCount == rhs.matchedCount
+                && lhs.insertedCount == rhs.insertedCount
     }
 }
 
