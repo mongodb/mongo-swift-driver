@@ -111,8 +111,12 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(try self.coll.insertOne(self.doc2)?.insertedId).to(bsonEqual(2))
         expect(try self.coll.count()).to(equal(2))
 
-        // try inserting a document without an ID to verify one is generated and returned
-        expect(try self.coll.insertOne(["x": 1])?.insertedId).toNot(beNil())
+        // try inserting a document without an ID
+        let docNoID: Document = ["x": 1]
+        // verify that an _id is returned in the InsertOneResult
+        expect(try self.coll.insertOne(docNoID)?.insertedId).toNot(beNil())
+        // verify that the original document was not modified
+        expect(docNoID).to(equal(["x": 1]))
     }
 
     func testInsertOneWithUnacknowledgedWriteConcern() throws {
@@ -152,6 +156,10 @@ final class MongoCollectionTests: MongoSwiftTestCase {
                 expect(v).to(beAnInstanceOf(ObjectId.self))
             }
         }
+
+        // verify that docs without _ids were not modified.
+        expect(docNoId1).to(equal(["x": 1]))
+        expect(docNoId2).to(equal(["x": 2]))
     }
 
     func testInsertManyWithEmptyValues() {
