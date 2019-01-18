@@ -42,7 +42,7 @@ public final class ReadPreference {
             case MONGOC_READ_NEAREST:
                 self = .nearest
             default:
-                preconditionFailure("Unexpected read preference mode: \(readMode)")
+                fatalError("Unexpected read preference mode: \(readMode)")
             }
         }
     }
@@ -60,7 +60,7 @@ public final class ReadPreference {
     /// The tags of this `ReadPreference`
     public var tagSets: [Document] {
         guard let bson = mongoc_read_prefs_get_tags(self._readPreference) else {
-            preconditionFailure("Failed to retrieve read preference tags")
+            fatalError("Failed to retrieve read preference tags")
         }
 
         let wrapped = Document(fromPointer: bson)

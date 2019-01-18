@@ -24,7 +24,7 @@ extension Document: Sequence {
     /// Returns a `DocumentIterator` over the values in this `Document`.
     public func makeIterator() -> DocumentIterator {
         guard let iter = DocumentIterator(forDocument: self) else {
-            preconditionFailure("Failed to initialize an iterator over document \(self)")
+            fatalError("Failed to initialize an iterator over document \(self)")
         }
         return iter
     }
@@ -53,7 +53,7 @@ extension Document: Sequence {
     public func dropFirst(_ n: Int) -> Document {
         switch n {
         case ..<0:
-            preconditionFailure("Can't drop a negative number of elements from a document")
+            fatalError("Can't drop a negative number of elements from a document")
         case 0:
             return self
         default:
@@ -67,7 +67,7 @@ extension Document: Sequence {
     public func dropLast(_ n: Int) -> Document {
         switch n {
         case ..<0:
-            preconditionFailure("Can't drop a negative number of elements from a `Document`")
+            fatalError("Can't drop a negative number of elements from a `Document`")
         case 0:
             return self
         default:
@@ -100,7 +100,7 @@ extension Document: Sequence {
     public func prefix(_ maxLength: Int) -> Document {
         switch maxLength {
         case ..<0:
-            preconditionFailure("Can't retrieve a negative length prefix of a `Document`")
+            fatalError("Can't retrieve a negative length prefix of a `Document`")
         case 0:
             return [:]
         default:
@@ -121,7 +121,7 @@ extension Document: Sequence {
     public func suffix(_ maxLength: Int) -> Document {
         switch maxLength {
         case ..<0:
-            preconditionFailure("Can't retrieve a negative length suffix of a `Document`")
+            fatalError("Can't retrieve a negative length suffix of a `Document`")
         case 0:
             return [:]
         default:
@@ -225,8 +225,8 @@ public class DocumentIterator: IteratorProtocol {
     internal var currentValue: BSONValue {
         do {
             return try self.safeCurrentValue()
-        } catch { // Since properties cannot throw, we need to catch and raise a preconditionFailure.
-            preconditionFailure("Error getting current value from iterator: \(error)")
+        } catch { // Since properties cannot throw, we need to catch and raise a fatalError.
+            fatalError("Error getting current value from iterator: \(error)")
         }
     }
 
@@ -271,7 +271,9 @@ public class DocumentIterator: IteratorProtocol {
     // document. starts at the startIndex-th pair and ends at the end of the document or the (endIndex-1)th index,
     // whichever comes first.
     internal static func subsequence(of doc: Document, startIndex: Int = 0, endIndex: Int = Int.max) -> Document {
-        precondition(endIndex >= startIndex, "endIndex must be >= startIndex")
+        guard endIndex >= startIndex else {
+            fatalError("endIndex must be >= startIndex")
+        }
 
         guard let iter = DocumentIterator(forDocument: doc) else {
             return [:]
@@ -302,8 +304,9 @@ public class DocumentIterator: IteratorProtocol {
     }
 
     internal func overwriteCurrentValue(with newValue: Overwritable) throws {
-        precondition(newValue.bsonType == self.currentType,
-                     "Expected \(newValue) to have BSON type \(self.currentType), but has type \(newValue.bsonType)")
+        guard newValue.bsonType == self.currentType else {
+            fatalError("Expected \(newValue) to have BSON type \(self.currentType), but has type \(newValue.bsonType)")
+        }
         try newValue.writeToCurrentPosition(of: self)
     }
 

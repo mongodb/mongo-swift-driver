@@ -183,7 +183,7 @@ internal class _BSONEncoder: Encoder {
             topContainer = self.storage.pushKeyedContainer()
         } else {
             guard let container = self.storage.containers.last as? MutableDictionary else {
-                preconditionFailure(
+                fatalError(
                     "Attempt to push new keyed encoding container when already previously encoded at this path.")
             }
             topContainer = container
@@ -201,7 +201,7 @@ internal class _BSONEncoder: Encoder {
             topContainer = self.storage.pushUnkeyedContainer()
         } else {
             guard let container = self.storage.containers.last as? MutableArray else {
-                preconditionFailure(
+                fatalError(
                     "Attempt to push new unkeyed encoding container when already previously encoded at this path.")
             }
             topContainer = container
@@ -244,7 +244,9 @@ internal struct _BSONEncodingStorage {
     }
 
     fileprivate mutating func popContainer() -> BSONValue {
-        precondition(!self.containers.isEmpty, "Empty container stack.")
+        guard !self.containers.isEmpty else {
+            fatalError("Empty container stack.")
+        }
         // swiftlint:disable:next force_unwrapping - guaranteed safe because of precondition.
         return self.containers.popLast()!
     }
@@ -582,8 +584,9 @@ private struct _BSONUnkeyedEncodingContainer: UnkeyedEncodingContainer {
 /// :nodoc:
 extension _BSONEncoder: SingleValueEncodingContainer {
     private func assertCanEncodeNewValue() {
-        precondition(self.canEncodeNewValue,
-                     "Attempt to encode value through single value container when previously value already encoded.")
+        guard self.canEncodeNewValue else {
+            fatalError("Attempt to encode value through single value container when previously value already encoded.")
+        }
     }
 
     public func encodeNil() throws {

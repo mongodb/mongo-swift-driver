@@ -448,10 +448,10 @@ private func postNotification<T: MongoEvent>(type: T.Type,
                                              contextFunc: (OpaquePointer) -> UnsafeMutableRawPointer?
                                             ) where T: InitializableFromOpaquePointer {
     guard let event = _event else {
-        preconditionFailure("Missing event pointer for \(type)")
+        fatalError("Missing event pointer for \(type)")
     }
     guard let context = contextFunc(event) else {
-        preconditionFailure("Missing context for \(type)")
+        fatalError("Missing context for \(type)")
     }
 
     let client = Unmanaged<MongoClient>.fromOpaque(context).takeUnretainedValue()

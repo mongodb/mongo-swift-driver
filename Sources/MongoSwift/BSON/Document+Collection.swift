@@ -16,10 +16,9 @@ extension Document: Collection {
 
     private func failIndexCheck(_ i: Int) {
         let invalidIndexMsg = "Index \(i) is invalid"
-        if self.isEmpty {
-            preconditionFailure(invalidIndexMsg)
+        guard !self.isEmpty && self.startIndex ... self.endIndex - 1 ~= i else {
+            fatalError(invalidIndexMsg)
         }
-        precondition(self.startIndex ... self.endIndex - 1 ~= i, invalidIndexMsg)
     }
 
     /// Returns the index after the given index for this Document.
