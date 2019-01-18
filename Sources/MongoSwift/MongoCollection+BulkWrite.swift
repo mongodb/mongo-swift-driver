@@ -420,7 +420,7 @@ public struct WriteError: Codable {
     /// An integer value identifying the error.
     public let code: Int
 
-    /// A description of the error.w
+    /// A description of the error.
     public let message: String
 
     private enum CodingKeys: String, CodingKey {
