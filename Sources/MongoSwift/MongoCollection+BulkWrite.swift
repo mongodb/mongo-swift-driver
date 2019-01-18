@@ -115,7 +115,7 @@ extension MongoCollection {
 
             guard let insertedId = try document.getValue(for: "_id") else {
                 // we called `withID()`, so this should be present.
-                preconditionFailure("Failed to get value for _id from document")
+                fatalError("Failed to get value for _id from document")
             }
 
             bulk.insertedIds[index] = insertedId
