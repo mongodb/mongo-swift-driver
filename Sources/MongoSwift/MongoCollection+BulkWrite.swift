@@ -93,7 +93,7 @@ extension MongoCollection {
 
     /// A model for an `insertOne` operation within a bulk write.
     public struct InsertOneModel: WriteModel {
-        private let document: CollectionType
+        internal let document: CollectionType
 
         /**
          * Create an `insertOne` operation for a bulk write.
@@ -107,18 +107,18 @@ extension MongoCollection {
 
         /// Adds the `insertOne` operation to a bulk write
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
-            let document = try BSONEncoder().encode(self.document)
-            if !document.hasKey("_id") {
-                try ObjectId().encode(to: document.storage, forKey: "_id")
-            }
-
+            let document = try BSONEncoder().encode(self.document).withID()
             var error = bson_error_t()
-
             guard mongoc_bulk_operation_insert_with_opts(bulk.bulk, document.data, nil, &error) else {
                 throw MongoError.invalidArgument(message: toErrorString(error))
             }
 
-            bulk.insertedIds[index] = document["_id"]
+            guard let insertedId = try document.getValue(for: "_id") else {
+                // we called `withID()`, so this should be present.
+                fatalError("Failed to get value for _id from document")
+            }
+
+            bulk.insertedIds[index] = insertedId
         }
     }
 

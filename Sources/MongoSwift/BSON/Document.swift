@@ -227,6 +227,18 @@ extension Document {
             self.storage = DocumentStorage(fromPointer: self.data)
         }
     }
+
+    /// If the document already has an _id, returns it as-is. Otherwise, returns a new document
+    /// containing all the keys from this document, with an _id prepended.
+    internal func withID() throws -> Document {
+        if self.hasKey("_id") {
+            return self
+        }
+
+        var idDoc: Document = ["_id": ObjectId()]
+        try idDoc.merge(self)
+        return idDoc
+    }
 }
 
 /// An extension of `Document` containing its public API.

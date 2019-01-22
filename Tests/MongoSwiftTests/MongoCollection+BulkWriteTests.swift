@@ -85,6 +85,9 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         expect(result.insertedIds[0]!).to(bsonEqual(1))
         expect(result.insertedIds[1]!).to(beAnInstanceOf(ObjectId.self))
 
+        // verify inserted doc without _id was not modified.
+        expect(requests[1].document).to(equal(["x": 22]))
+
         let cursor = try coll.find()
         expect(cursor.next()).to(equal(["_id": 1, "x": 11]))
         expect(cursor.next()).to(equal(["_id": result.insertedIds[1]!, "x": 22]))
