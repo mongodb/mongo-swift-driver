@@ -154,8 +154,10 @@ public class MongoClient {
     }
 
     /**
+     * :nodoc:
      * Create a new client from an existing `mongoc_client_t`.
      * Do not use this initializer unless you know what you are doing.
+     *
      * If this client was derived from a pool, ensure that the error api version was set to 2 on the pool.
      *
      * - Parameters:
