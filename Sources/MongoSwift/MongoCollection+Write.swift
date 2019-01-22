@@ -16,10 +16,7 @@ extension MongoCollection {
     @discardableResult
     public func insertOne(_ value: CollectionType, options: InsertOneOptions? = nil) throws -> InsertOneResult? {
         let encoder = BSONEncoder()
-        let document = try encoder.encode(value)
-        if !document.hasKey("_id") {
-            try ObjectId().encode(to: document.storage, forKey: "_id")
-        }
+        let document = try encoder.encode(value).withID()
         let opts = try encoder.encode(options)
         var error = bson_error_t()
         guard mongoc_collection_insert_one(self._collection, document.data, opts?.data, nil, &error) else {
@@ -32,7 +29,7 @@ extension MongoCollection {
         }
 
         guard let insertedId = try document.getValue(for: "_id") else {
-            // This case should never really happen, since we handle it above and give the document an _id.
+            // we called `withID()`, so this should be present.
             fatalError("Failed to get value for _id from document")
         }
 
@@ -61,14 +58,15 @@ extension MongoCollection {
 
         let encoder = BSONEncoder()
         let opts = try encoder.encode(options)
-        let documents = try values.map { try encoder.encode($0) }
+        let documents = try values.map { try encoder.encode($0).withID() }
         var insertedIds: [Int: BSONValue] = [:]
 
         try documents.enumerated().forEach { index, document in
-            if !document.hasKey("_id") {
-                try ObjectId().encode(to: document.storage, forKey: "_id")
+            guard let id = try document.getValue(for: "_id") else {
+                // we called `withID()`, so this should be present.
+                fatalError("Failed to get value for _id from document")
             }
-            insertedIds[index] = document["_id"]
+            insertedIds[index] = id
         }
 
         var docPointers = documents.map { UnsafePointer($0.data) }
