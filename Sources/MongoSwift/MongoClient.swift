@@ -147,6 +147,8 @@ public class MongoClient {
         }
 
         if options?.eventMonitoring == true { self.initializeMonitoring() }
+
+        mongoc_client_set_error_api(self._client, MONGOC_ERROR_API_VERSION_2)
     }
 
     /**
@@ -158,6 +160,8 @@ public class MongoClient {
      */
     public init(fromPointer: OpaquePointer) {
         self._client = fromPointer
+
+        mongoc_client_set_error_api(self._client, MONGOC_ERROR_API_VERSION_2)
     }
 
     /**
