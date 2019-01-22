@@ -892,4 +892,67 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(deferredStruct.date).to(equal(date))
         expect(try decoder.decode(DateWrapper.self, from: badlyFormatted)).to(throwError())
     }
+
+    func testDataCodingStrategies() throws {
+        struct DataWrapper: Codable {
+            let data: Data
+        }
+
+        let encoder = BSONEncoder()
+        let decoder = BSONDecoder()
+
+        let data = Data(base64Encoded: "dGhlIHF1aWNrIGJyb3duIGZveCBqdW1wZWQgb3ZlciB0aGUgbGF6eSBzaGVlcCBkb2cu")!
+        let binaryData = try Binary(data: data, subtype: .generic)
+        let arrData = data.map { byte in Int(byte) }
+        let dataStruct = DataWrapper(data: data)
+
+        let defaultDoc = try encoder.encode(dataStruct)
+        expect(defaultDoc["data"] as? Binary).to(equal(binaryData))
+        let roundTripDefault = try decoder.decode(DataWrapper.self, from: defaultDoc)
+        expect(roundTripDefault.data).to(equal(data))
+
+        encoder.dataEncodingStrategy = .binary
+        decoder.dataDecodingStrategy = .binary
+        let binaryDoc = try encoder.encode(dataStruct)
+        expect(binaryDoc["data"] as? Binary).to(bsonEqual(binaryData))
+        let roundTripBinary = try decoder.decode(DataWrapper.self, from: binaryDoc)
+        expect(roundTripBinary.data).to(equal(data))
+
+        encoder.dataEncodingStrategy = .deferredToData
+        decoder.dataDecodingStrategy = .deferredToData
+        let deferredDoc = try encoder.encode(dataStruct)
+        expect(deferredDoc["data"]).to(bsonEqual(arrData))
+        let roundTripDeferred = try decoder.decode(DataWrapper.self, from: deferredDoc)
+        expect(roundTripDeferred.data).to(equal(data))
+        expect(try decoder.decode(DataWrapper.self, from: defaultDoc)).to(throwError())
+
+        encoder.dataEncodingStrategy = .base64
+        decoder.dataDecodingStrategy = .base64
+        let base64Doc = try encoder.encode(dataStruct)
+        expect(base64Doc["data"]).to(bsonEqual(data.base64EncodedString()))
+        let roundTripBase64 = try decoder.decode(DataWrapper.self, from: base64Doc)
+        expect(roundTripBase64.data).to(equal(data))
+        expect(try decoder.decode(DataWrapper.self, from: ["data": "this is not base64 encoded~"])).to(throwError())
+
+        let customEncodedDoc = ["d": data.base64EncodedString(), "hash": data.hashValue] as Document
+        encoder.dataEncodingStrategy = .custom({ d, encoder in
+            var container = encoder.singleValueContainer()
+            try container.encode(customEncodedDoc)
+        })
+        decoder.dataDecodingStrategy = .custom({ decoder in
+            let doc = try Document(from: decoder)
+            guard let d = Data(base64Encoded: doc["d"] as! String) else {
+                throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: [], debugDescription: "bad base64"))
+            }
+            expect(d.hashValue).to(equal(data.hashValue))
+            return d
+        })
+        let customDoc = try encoder.encode(dataStruct)
+        expect(customDoc["data"]).to(bsonEqual(customEncodedDoc))
+        let roundTripCustom = try decoder.decode(DataWrapper.self, from: customDoc)
+        expect(roundTripCustom.data).to(equal(data))
+
+        encoder.dataEncodingStrategy = .custom({ _, _ in })
+        expect(try encoder.encode(dataStruct)).to(bsonEqual(["data": [:] as Document] as Document))
+    }
 }

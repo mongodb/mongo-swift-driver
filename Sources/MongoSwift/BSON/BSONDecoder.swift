@@ -54,6 +54,31 @@ public class BSONDecoder {
         case binary
     }
 
+    /// Enum representing the various strategies for decoding `Data`s from BSON.
+    ///
+    /// As per the BSON specification, the default strategy is to decode `Data`s from BSON binary types with the generic
+    /// binary subtype.
+    ///
+    /// - SeeAlso: bsonspec.org
+    public enum DataDecodingStrategy {
+        /// Decode `Data`s by deferring to their default decoding implementation.
+        ///
+        /// Note: The default decoding implementation attempts to decode the `Data` from a `[UInt8]`, but because BSON
+        /// does not support integer types other `Int32` and `Int64`, it actually decodes from an `[Int32]` stored
+        /// in BSON. This strategy paired with its corresponding encoding strategy results in an inefficient storage of
+        /// the `Data` in BSON.
+        case deferredToData
+
+        /// Decode `Data`s stored as the BSON `Binary` type (default).
+        case binary
+
+        /// Decode `Data`s stored as base64 encoded strings.
+        case base64
+
+        /// Decode `Data`s using the provided closure.
+        case custom((_ decoder: Decoder) throws -> Data)
+    }
+
     /// Contextual user-provided information for use during decoding.
     public var userInfo: [CodingUserInfoKey: Any] = [:]
 
@@ -63,18 +88,24 @@ public class BSONDecoder {
     /// The strategy used for decoding `UUID`s with this instance.
     public var uuidDecodingStrategy: UUIDDecodingStrategy = .binary
 
+    /// The strategy used for decoding `Data`s with this instance.
+    public var dataDecodingStrategy: DataDecodingStrategy = .binary
+
     /// Options set on the top-level decoder to pass down the decoding hierarchy.
     internal struct _Options {
         internal let userInfo: [CodingUserInfoKey: Any]
         internal let dateDecodingStrategy: DateDecodingStrategy
         internal let uuidDecodingStrategy: UUIDDecodingStrategy
+        internal let dataDecodingStrategy: DataDecodingStrategy
     }
 
     /// The options set on the top-level decoder.
     fileprivate var options: _Options {
         return _Options(userInfo: self.userInfo,
                         dateDecodingStrategy: self.dateDecodingStrategy,
-                        uuidDecodingStrategy: self.uuidDecodingStrategy)
+                        uuidDecodingStrategy: self.uuidDecodingStrategy,
+                        dataDecodingStrategy: self.dataDecodingStrategy
+        )
     }
 
     /// Initializes `self`.
@@ -260,6 +291,35 @@ extension _BSONDecoder {
         return primitive
     }
 
+    fileprivate func unboxData(_ value: BSONValue) throws -> Data {
+        switch self.options.dataDecodingStrategy {
+        case .deferredToData:
+            self.storage.push(container: value)
+            defer { self.storage.popContainer() }
+            return try Data(from: self)
+        case .binary:
+            let binary = try self.unbox(value, as: Binary.self)
+            return binary.data
+        case.base64:
+            guard let base64Str = value as? String else {
+                throw DecodingError._typeMismatch(at: self.codingPath, expectation: String.self, reality: value)
+            }
+
+            guard let data = Data(base64Encoded: base64Str) else {
+                throw DecodingError.dataCorrupted(
+                        DecodingError.Context(
+                                codingPath: self.codingPath,
+                                debugDescription: "Malformatted base64 encoded string. Got: \(value)")
+                )
+            }
+            return data
+        case .custom(let f):
+            self.storage.push(container: value)
+            defer { self.storage.popContainer() }
+            return try f(self)
+        }
+    }
+
     /// Private helper function used specifically for decoding dates.
     // swiftlint:disable cyclomatic_complexity
     fileprivate func unboxDate(_ value: BSONValue) throws -> Date {
@@ -329,12 +389,18 @@ extension _BSONDecoder {
 
     fileprivate func unbox<T: Decodable>(_ value: BSONValue, as type: T.Type) throws -> T {
         // swiftlint:disable force_cast
-        if type == Date.self {
+        switch type {
+        case is Date.Type:
             // We know T is a Date and unboxDate returns a Date or throws, so this cast will always work.
             return try unboxDate(value) as! T
-        } else if type == UUID.self {
+        case is UUID.Type:
             // We know T is a UUID and unboxUUID returns a UUID or throws, so this cast will always work.
             return try unboxUUID(value) as! T
+        case is Data.Type:
+            // We know T is a Data and unboxData returns a Data or throws, so this cast will always work.
+            return try unboxData(value) as! T
+        default:
+            break
         }
         // swiftlint:enable force_cast
 
