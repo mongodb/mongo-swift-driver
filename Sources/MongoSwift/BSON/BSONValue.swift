@@ -93,7 +93,7 @@ extension Array: BSONValue {
         let arrDoc = Document(fromPointer: arrayData)
 
         guard let arr = arrDoc.values as? Array else {
-            preconditionFailure("Failed to cast values for document \(arrDoc) to array")
+            fatalError("Failed to cast values for document \(arrDoc) to array")
         }
 
        return arr
@@ -759,7 +759,7 @@ public struct RegularExpression: BSONValue, Equatable, Codable {
         do {
             return try NSRegularExpression(pattern: self.pattern, options: opts)
         } catch {
-            preconditionFailure("Failed to initialize NSRegularExpression with " +
+            fatalError("Failed to initialize NSRegularExpression with " +
                 "pattern '\(self.pattern)'' and options '\(self.options)'")
         }
     }
@@ -916,15 +916,15 @@ public func bsonEquals(_ lhs: BSONValue?, _ rhs: BSONValue?) -> Bool {
     return bsonEquals(left, right)
 }
 
-/// A function for catching invalid BSONTypes that should not ever arise, and triggering a preconditionFailure when it
+/// A function for catching invalid BSONTypes that should not ever arise, and triggering a fatalError when it
 /// finds such types.
 private func validateBSONTypes(_ lhs: BSONValue, _ rhs: BSONValue) {
     let invalidTypes: [BSONType] = [.symbol, .dbPointer, .invalid, .undefined]
     guard !invalidTypes.contains(lhs.bsonType) else {
-        preconditionFailure("\(lhs.bsonType) should not be used")
+        fatalError("\(lhs.bsonType) should not be used")
     }
     guard !invalidTypes.contains(rhs.bsonType) else {
-        preconditionFailure("\(rhs.bsonType) should not be used")
+        fatalError("\(rhs.bsonType) should not be used")
     }
 }
 

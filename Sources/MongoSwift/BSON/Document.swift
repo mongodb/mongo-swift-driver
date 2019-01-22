@@ -90,7 +90,7 @@ extension Document {
             do {
                 try self.setValue(for: key, to: value)
             } catch {
-                preconditionFailure("Failed to set the value for \(key) to \(String(describing: value)): \(error)")
+                fatalError("Failed to set the value for \(key) to \(String(describing: value)): \(error)")
             }
         }
     }
@@ -112,7 +112,7 @@ extension Document {
             do {
                 try self.setValue(for: String(i), to: elt, checkForKey: false)
             } catch {
-                preconditionFailure("Failed to set the value for index \(i) to \(String(describing: elt)): \(error)")
+                fatalError("Failed to set the value for index \(i) to \(String(describing: elt)): \(error)")
             }
         }
     }
@@ -356,7 +356,7 @@ extension Document {
                     self = self.filter { $0.key != key }
                 }
             } catch {
-                preconditionFailure("Failed to set the value for key \(key) to \(newValue ?? "nil"): \(error)")
+                fatalError("Failed to set the value for key \(key) to \(newValue ?? "nil"): \(error)")
             }
         }
     }
@@ -458,7 +458,7 @@ extension Document: ExpressibleByDictionaryLiteral {
     public init(dictionaryLiteral keyValuePairs: (String, BSONValue)...) {
         // make sure all keys are unique
         guard Set(keyValuePairs.map { $0.0 }).count == keyValuePairs.count else {
-            preconditionFailure("Dictionary literal \(keyValuePairs) contains duplicate keys")
+            fatalError("Dictionary literal \(keyValuePairs) contains duplicate keys")
         }
 
         self.storage = DocumentStorage()
@@ -469,7 +469,7 @@ extension Document: ExpressibleByDictionaryLiteral {
             do {
                 try self.setValue(for: key, to: value, checkForKey: false)
             } catch {
-                preconditionFailure("Error setting key \(key) to value \(String(describing: value)): \(error)")
+                fatalError("Error setting key \(key) to value \(String(describing: value)): \(error)")
             }
         }
     }

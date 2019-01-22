@@ -250,7 +250,9 @@ internal struct _BSONDecodingStorage {
 
     /// The container at the top of the stack.
     internal var topContainer: BSONValue {
-        precondition(!self.containers.isEmpty, "Empty container stack.")
+        guard !self.containers.isEmpty else {
+            fatalError("Empty container stack.")
+        }
         // swiftlint:disable:next force_unwrapping - guaranteed safe because of precondition.
         return self.containers.last!
     }
@@ -262,7 +264,9 @@ internal struct _BSONDecodingStorage {
 
     /// Pops the top container from the stack. 
     fileprivate mutating func popContainer() {
-        precondition(!self.containers.isEmpty, "Empty container stack.")
+        guard !self.containers.isEmpty else {
+            fatalError("Empty container stack.")
+        }
         self.containers.removeLast()
     }
 }
