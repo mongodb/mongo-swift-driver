@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name       = "MongoSwift"
-  spec.version    = "0.0.8"
+  spec.version    = "0.0.9"
   spec.summary    = "The Swift driver for MongoDB"
   spec.homepage   = "https://github.com/mongodb/mongo-swift-driver"
   spec.license    = 'Apache License, Version 2.0'
@@ -12,7 +12,7 @@ Pod::Spec.new do |spec|
 
   spec.source     = {
     :git => "https://github.com/mongodb/mongo-swift-driver.git",
-    :tag => 'v0.0.8'
+    :tag => 'v0.0.9'
   }
 
   spec.ios.deployment_target = "11.0"
