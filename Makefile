@@ -39,4 +39,4 @@ clean:
 documentation:
 	make project
 	@$(call check_for_gem, jazzy)
-	jazzy --module MongoSwift --module-version 0.0.7 --root-url https://mongodb.github.io/mongo-swift-driver/ --documentation Development.md
+	jazzy --module MongoSwift --module-version 0.0.9 --root-url https://mongodb.github.io/mongo-swift-driver/ --documentation Development.md
