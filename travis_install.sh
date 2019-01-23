@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script for installing various dependencies for Travis jobs.
-# Usage: ./install.sh libmongoc|mongodb|swiftlint
+# Usage: ./travis_install.sh libmongoc|mongodb|swiftlint
 
 if [[ $1 == "libmongoc" ]]
 then
@@ -31,5 +31,5 @@ then
 
 else
 	echo Missing/unknown install option: "$1"
-	echo Usage: "./install.sh libmongoc|mongodb|swiftlint"
+	echo Usage: "./travis_install.sh libmongoc|mongodb|swiftlint"
 fi
