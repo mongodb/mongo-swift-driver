@@ -359,7 +359,7 @@ extension _BSONDecoder {
             return Date(timeIntervalSince1970: seconds)
         case .iso8601:
             guard #available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) else {
-                throw MongoError.bsonDecodeError(message: "ISO8601DateFormatter is unavailable on this platform.")
+                fatalError("ISO8601DateFormatter is unavailable on this platform.")
             }
             let isoString = try self.unbox(value, as: String.self)
             guard let date = BSONDecoder.iso8601Formatter.date(from: isoString) else {

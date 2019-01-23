@@ -692,9 +692,7 @@ final class DocumentTests: MongoSwiftTestCase {
     }
 
     func testUUIDEncodingStrategies() throws {
-        guard let uuid = UUID(uuidString: "26cd7610-fd5a-4253-94b7-e8c4ea97b6cb") else {
-            throw MongoError.bsonEncodeError(message: "Couldn't create UUID.")
-        }
+        let uuid = UUID(uuidString: "26cd7610-fd5a-4253-94b7-e8c4ea97b6cb")!
 
         let binary = try Binary(from: uuid)
         let uuidStruct = UUIDWrapper(uuid: uuid)
@@ -714,9 +712,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
     func testUUIDDecodingStrategies() throws {
         // randomly generated uuid
-        guard let uuid = UUID(uuidString: "2c380a6c-7bc5-48cb-84a2-b26777a72276") else {
-            throw MongoError.bsonDecodeError(message: "Cant create UUID.")
-        }
+        let uuid = UUID(uuidString: "2c380a6c-7bc5-48cb-84a2-b26777a72276")!
 
         let decoder = BSONDecoder()
 

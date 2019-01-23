@@ -19,7 +19,7 @@ extension Int: Overwritable {
             return int64.writeToCurrentPosition(of: iter)
         }
 
-        throw MongoError.bsonEncodeError(message: "`Int` value \(self) could not be encoded as `Int32` or `Int64`")
+        throw RuntimeError.internalError(message: "`Int` value \(self) could not be encoded as `Int32` or `Int64`")
     }
 }
 
