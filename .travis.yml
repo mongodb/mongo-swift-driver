@@ -31,9 +31,9 @@ matrix:
       env: MONGODB_VERSION=3.6.5 SWIFT_VERSION=4.2 TASK=TEST
 
 install:
-  - if [[ "$TASK" == "TEST" ]]; then ./install.sh libmongoc; eval "$(curl -sL https://swiftenv.fuller.li/install.sh)"; ./install.sh mongodb; fi
-  - if [[ "$TASK" == "LINT" ]]; then ./install.sh swiftlint; fi
-  - if [[ "$TASK" == "COV" ]]; then ./install.sh libmongoc; ./install.sh mongodb; fi
+  - if [[ "$TASK" == "TEST" ]]; then ./travis_install.sh libmongoc; eval "$(curl -sL https://swiftenv.fuller.li/install.sh)"; ./travis_install.sh mongodb; fi
+  - if [[ "$TASK" == "LINT" ]]; then ./travis_install.sh swiftlint; fi
+  - if [[ "$TASK" == "COV" ]]; then ./travis_install.sh libmongoc; ./travis_install.sh mongodb; fi
 
 before_script:
   - export MONGODIR=${PWD}/mongodb-${MONGODB_VERSION}
