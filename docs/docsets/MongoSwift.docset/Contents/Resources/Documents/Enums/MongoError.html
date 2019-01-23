@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>MongoError Enumeration Reference</title>
+    <link rel="stylesheet" type="text/css" href="../css/jazzy.css" />
+    <link rel="stylesheet" type="text/css" href="../css/highlight.css" />
+    <meta charset='utf-8'>
+    <script src="../js/jquery.min.js" defer></script>
+    <script src="../js/jazzy.js" defer></script>
+    
+  </head>
+  <body>
+    <a name="//apple_ref/swift/Enum/MongoError" class="dashAnchor"></a>
+    <a title="MongoError Enumeration Reference"></a>
+    <header>
+      <div class="content-wrapper">
+        <p><a href="../index.html">MongoSwift Docs</a> (99% documented)</p>
+        <p class="header-right"><a href="dash-feed://https%3A%2F%2Fmongodb%2Egithub%2Eio%2Fmongo%2Dswift%2Ddriver%2Fdocsets%2FMongoSwift%2Exml"><img src="../img/dash.png"/>Install in Dash</a></p>
+      </div>
+    </header>
+    <div class="content-wrapper">
+      <p id="breadcrumbs">
+        <a href="../index.html">MongoSwift Reference</a>
+        <img id="carat" src="../img/carat.png" />
+        MongoError Enumeration Reference
+      </p>
+    </div>
+    <div class="content-wrapper">
+      <nav class="sidebar">
+        <ul class="nav-groups">
+          <li class="nav-group-name">
+            <a href="../Guides.html">Guides</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../development.html">Development</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Classes.html">Classes</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Classes/BSONDecoder.html">BSONDecoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BSONDecoder/DateDecodingStrategy.html">– DateDecodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BSONDecoder/UUIDDecodingStrategy.html">– UUIDDecodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BSONDecoder/DataDecodingStrategy.html">– DataDecodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BSONEncoder.html">BSONEncoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BSONEncoder/DateEncodingStrategy.html">– DateEncodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BSONEncoder/UUIDEncodingStrategy.html">– UUIDEncodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BSONEncoder/DataEncodingStrategy.html">– DataEncodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes.html#/s:10MongoSwift18BulkWriteOperationC">BulkWriteOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/DocumentIterator.html">DocumentIterator</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes.html#/s:10MongoSwift15DocumentStorageC">DocumentStorage</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoClient.html">MongoClient</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection.html">MongoCollection</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/DeleteOneModel.html">– DeleteOneModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/DeleteManyModel.html">– DeleteManyModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/InsertOneModel.html">– InsertOneModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/ReplaceOneModel.html">– ReplaceOneModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/UpdateOneModel.html">– UpdateOneModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCollection/UpdateManyModel.html">– UpdateManyModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoCursor.html">MongoCursor</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoDatabase.html">MongoDatabase</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/MongoSwift.html">MongoSwift</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/ReadConcern.html">ReadConcern</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/ReadConcern/Level.html">– Level</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/ReadPreference.html">ReadPreference</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/ReadPreference/Mode.html">– Mode</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/WriteConcern.html">WriteConcern</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/WriteConcern/W.html">– W</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Enums.html">Enumerations</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Enums/BSONType.html">BSONType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/CursorType.html">CursorType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/Hint.html">Hint</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/MongoError.html">MongoError</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/MongoEventType.html">MongoEventType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/ReturnDocument.html">ReturnDocument</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Extensions.html">Extensions</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Extensions/Array.html">Array</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Extensions/Bool.html">Bool</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Extensions/Date.html">Date</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Extensions/Double.html">Double</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Extensions/Int.html">Int</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Extensions/Int32.html">Int32</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Extensions/Int64.html">Int64</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Extensions/Notification.html">Notification</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Extensions/Notification/Name.html">– Name</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Extensions/String.html">String</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Extensions/UUID.html">UUID</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Functions.html">Functions</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Functions.html#/s:10MongoSwift10bsonEqualsySbAA9BSONValue_pSg_ADtF">bsonEquals(_:_:)</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Functions.html#/s:10MongoSwift10bsonEqualsySbAA9BSONValue_p_AaC_ptF">bsonEquals(_:_:)</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Protocols.html">Protocols</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Protocols/BSONValue.html">BSONValue</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/MongoEvent.html">MongoEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/WriteModel.html">WriteModel</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Structs.html">Structures</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Structs/AggregateOptions.html">AggregateOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/AnyBSONValue.html">AnyBSONValue</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/BSONNull.html">BSONNull</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/Binary.html">Binary</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/Binary/Subtype.html">– Subtype</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/BulkWriteOptions.html">BulkWriteOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/BulkWriteResult.html">BulkWriteResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/ClientOptions.html">ClientOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/CodeWithScope.html">CodeWithScope</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/CollectionOptions.html">CollectionOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/CommandFailedEvent.html">CommandFailedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/CommandStartedEvent.html">CommandStartedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/CommandSucceededEvent.html">CommandSucceededEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/ConnectionId.html">ConnectionId</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/CountOptions.html">CountOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/CreateCollectionOptions.html">CreateCollectionOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/CreateIndexOptions.html">CreateIndexOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/DatabaseOptions.html">DatabaseOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/Decimal128.html">Decimal128</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/DeleteOptions.html">DeleteOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/DeleteResult.html">DeleteResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/DistinctOptions.html">DistinctOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/Document.html">Document</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/DropIndexOptions.html">DropIndexOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/FindOneAndDeleteOptions.html">FindOneAndDeleteOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/FindOneAndReplaceOptions.html">FindOneAndReplaceOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/FindOneAndUpdateOptions.html">FindOneAndUpdateOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/FindOptions.html">FindOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/IndexModel.html">IndexModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/IndexOptions.html">IndexOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/InsertManyOptions.html">InsertManyOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/InsertManyResult.html">InsertManyResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/InsertOneOptions.html">InsertOneOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/InsertOneResult.html">InsertOneResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/ListCollectionsOptions.html">ListCollectionsOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/ListDatabasesOptions.html">ListDatabasesOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/MaxKey.html">MaxKey</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/MinKey.html">MinKey</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/ObjectId.html">ObjectId</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/RegularExpression.html">RegularExpression</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/ReplaceOptions.html">ReplaceOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/RunCommandOptions.html">RunCommandOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/ServerClosedEvent.html">ServerClosedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/ServerDescription.html">ServerDescription</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/ServerDescription/ServerType.html">– ServerType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/ServerDescriptionChangedEvent.html">ServerDescriptionChangedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/ServerHeartbeatFailedEvent.html">ServerHeartbeatFailedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/ServerHeartbeatStartedEvent.html">ServerHeartbeatStartedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/ServerHeartbeatSucceededEvent.html">ServerHeartbeatSucceededEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/ServerOpeningEvent.html">ServerOpeningEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/Timestamp.html">Timestamp</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/TopologyClosedEvent.html">TopologyClosedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/TopologyDescription.html">TopologyDescription</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/TopologyDescription/TopologyType.html">– TopologyType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/TopologyDescriptionChangedEvent.html">TopologyDescriptionChangedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/TopologyOpeningEvent.html">TopologyOpeningEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/UpdateOptions.html">UpdateOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/UpdateResult.html">UpdateResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/WriteConcernError.html">WriteConcernError</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/WriteError.html">WriteError</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <article class="main-content">
+        <section>
+          <section class="section">
+            <h1>MongoError</h1>
+              <div class="declaration">
+                <div class="language">
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">MongoError</span></code></pre>
+
+                </div>
+              </div>
+            <p>The possible errors that can occur when using this package.</p>
+
+          </section>
+          <section class="section task-group-section">
+            <div class="task-group">
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A5ErrorO10invalidUriyACSS_tcACmF"></a>
+                    <a name="//apple_ref/swift/Element/invalidUri(message:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A5ErrorO10invalidUriyACSS_tcACmF">invalidUri(message:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Thrown when an invalid connection string is provided when initializing a <code><a href="../Classes/MongoClient.html">MongoClient</a></code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="nf">invalidUri</span><span class="p">(</span><span class="nv">message</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A5ErrorO13invalidClientyACycACmF"></a>
+                    <a name="//apple_ref/swift/Element/invalidClient()" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A5ErrorO13invalidClientyACycACmF">invalidClient()</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Thrown when a <code><a href="../Classes/MongoClient.html">MongoClient</a></code> is invalid.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="nf">invalidClient</span><span class="p">()</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A5ErrorO15invalidResponseyACycACmF"></a>
+                    <a name="//apple_ref/swift/Element/invalidResponse()" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A5ErrorO15invalidResponseyACycACmF">invalidResponse()</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Thrown when the server sends an invalid response.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="nf">invalidResponse</span><span class="p">()</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A5ErrorO13invalidCursoryACSS_tcACmF"></a>
+                    <a name="//apple_ref/swift/Element/invalidCursor(message:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A5ErrorO13invalidCursoryACSS_tcACmF">invalidCursor(message:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Thrown when a <code><a href="../Classes/MongoCursor.html">MongoCursor</a></code> is invalid.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="nf">invalidCursor</span><span class="p">(</span><span class="nv">message</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A5ErrorO17invalidCollectionyACSS_tcACmF"></a>
+                    <a name="//apple_ref/swift/Element/invalidCollection(message:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A5ErrorO17invalidCollectionyACSS_tcACmF">invalidCollection(message:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Thrown when a <code><a href="../Classes/MongoCollection.html">MongoCollection</a></code> is invalid.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="nf">invalidCollection</span><span class="p">(</span><span class="nv">message</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A5ErrorO07commandC0yACSS_tcACmF"></a>
+                    <a name="//apple_ref/swift/Element/commandError(message:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A5ErrorO07commandC0yACSS_tcACmF">commandError(message:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Thrown when there is an error executing a command.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="nf">commandError</span><span class="p">(</span><span class="nv">message</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A5ErrorO09bsonParseC0yACs6UInt32V_AFSStcACmF"></a>
+                    <a name="//apple_ref/swift/Element/bsonParseError(domain:code:message:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A5ErrorO09bsonParseC0yACs6UInt32V_AFSStcACmF">bsonParseError(domain:code:message:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Thrown when there is an error parsing raw BSON <code>Data</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="nf">bsonParseError</span><span class="p">(</span><span class="nv">domain</span><span class="p">:</span> <span class="kt">UInt32</span><span class="p">,</span> <span class="nv">code</span><span class="p">:</span> <span class="kt">UInt32</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A5ErrorO010bsonEncodeC0yACSS_tcACmF"></a>
+                    <a name="//apple_ref/swift/Element/bsonEncodeError(message:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A5ErrorO010bsonEncodeC0yACSS_tcACmF">bsonEncodeError(message:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Thrown when there is an error encoding a <code><a href="../Protocols/BSONValue.html">BSONValue</a></code> to a <code><a href="../Structs/Document.html">Document</a></code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="nf">bsonEncodeError</span><span class="p">(</span><span class="nv">message</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A5ErrorO010bsonDecodeC0yACSS_tcACmF"></a>
+                    <a name="//apple_ref/swift/Element/bsonDecodeError(message:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A5ErrorO010bsonDecodeC0yACSS_tcACmF">bsonDecodeError(message:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Thrown when there is an error decoding a <code><a href="../Protocols/BSONValue.html">BSONValue</a></code> from a <code><a href="../Structs/Document.html">Document</a></code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="nf">bsonDecodeError</span><span class="p">(</span><span class="nv">message</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A5ErrorO04typeC0yACSS_tcACmF"></a>
+                    <a name="//apple_ref/swift/Element/typeError(message:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A5ErrorO04typeC0yACSS_tcACmF">typeError(message:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Thrown when the value stored under a key in a <code><a href="../Structs/Document.html">Document</a></code> does not match the expected type.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="nf">typeError</span><span class="p">(</span><span class="nv">message</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A5ErrorO011readConcernC0yACSS_tcACmF"></a>
+                    <a name="//apple_ref/swift/Element/readConcernError(message:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A5ErrorO011readConcernC0yACSS_tcACmF">readConcernError(message:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Thrown when there is an error involving a <code><a href="../Classes/ReadConcern.html">ReadConcern</a></code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="nf">readConcernError</span><span class="p">(</span><span class="nv">message</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A5ErrorO014readPreferenceC0yACSS_tcACmF"></a>
+                    <a name="//apple_ref/swift/Element/readPreferenceError(message:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A5ErrorO014readPreferenceC0yACSS_tcACmF">readPreferenceError(message:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Thrown when there is an error involving a <code><a href="../Classes/ReadPreference.html">ReadPreference</a></code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="nf">readPreferenceError</span><span class="p">(</span><span class="nv">message</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A5ErrorO15invalidArgumentyACSS_tcACmF"></a>
+                    <a name="//apple_ref/swift/Element/invalidArgument(message:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A5ErrorO15invalidArgumentyACSS_tcACmF">invalidArgument(message:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Thrown when a user-provided argument is invalid.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="nf">invalidArgument</span><span class="p">(</span><span class="nv">message</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A5ErrorO010insertManyC0yACs6UInt32V_SSAA06InsertE6ResultVSgSayAA05WriteC0VGAA0i7ConcernC0VSgtcACmF"></a>
+                    <a name="//apple_ref/swift/Element/insertManyError(code:message:result:writeErrors:writeConcernError:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A5ErrorO010insertManyC0yACs6UInt32V_SSAA06InsertE6ResultVSgSayAA05WriteC0VGAA0i7ConcernC0VSgtcACmF">insertManyError(code:message:result:writeErrors:writeConcernError:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Thrown when there is an error executing a multi-document insert operation.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="nf">insertManyError</span><span class="p">(</span><span class="nv">code</span><span class="p">:</span> <span class="kt">UInt32</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">result</span><span class="p">:</span> <span class="kt"><a href="../Structs/InsertManyResult.html">InsertManyResult</a></span><span class="p">?,</span> <span class="nv">writeErrors</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/WriteError.html">WriteError</a></span><span class="p">],</span> <span class="nv">writeConcernError</span><span class="p">:</span> <span class="kt"><a href="../Structs/WriteConcernError.html">WriteConcernError</a></span><span class="p">?)</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A5ErrorO09bulkWriteC0yACs6UInt32V_SSAA04BulkE6ResultVSgSayAA0eC0VGAA0e7ConcernC0VSgtcACmF"></a>
+                    <a name="//apple_ref/swift/Element/bulkWriteError(code:message:result:writeErrors:writeConcernError:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A5ErrorO09bulkWriteC0yACs6UInt32V_SSAA04BulkE6ResultVSgSayAA0eC0VGAA0e7ConcernC0VSgtcACmF">bulkWriteError(code:message:result:writeErrors:writeConcernError:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Thrown when there is an error executing a bulk write operation.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="nf">bulkWriteError</span><span class="p">(</span><span class="nv">code</span><span class="p">:</span> <span class="kt">UInt32</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">result</span><span class="p">:</span> <span class="kt"><a href="../Structs/BulkWriteResult.html">BulkWriteResult</a></span><span class="p">?,</span> <span class="nv">writeErrors</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/WriteError.html">WriteError</a></span><span class="p">],</span> <span class="nv">writeConcernError</span><span class="p">:</span> <span class="kt"><a href="../Structs/WriteConcernError.html">WriteConcernError</a></span><span class="p">?)</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10Foundation14LocalizedErrorP16errorDescriptionSSSgvp"></a>
+                    <a name="//apple_ref/swift/Property/errorDescription" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10Foundation14LocalizedErrorP16errorDescriptionSSSgvp">errorDescription</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">errorDescription</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </section>
+        </section>
+        <section id="footer">
+          <p>&copy; 2019 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Jeremy Mikola</a>. All rights reserved. (Last updated: 2019-01-23)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+        </section>
+      </article>
+    </div>
+  </body>
+</div>
+</html>
