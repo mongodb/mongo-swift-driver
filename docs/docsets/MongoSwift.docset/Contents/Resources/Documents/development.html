@@ -42,13 +42,28 @@
                 <a href="Classes/BSONDecoder.html">BSONDecoder</a>
               </li>
               <li class="nav-group-task">
+                <a href="Classes/BSONDecoder/DateDecodingStrategy.html">– DateDecodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes/BSONDecoder/UUIDDecodingStrategy.html">– UUIDDecodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes/BSONDecoder/DataDecodingStrategy.html">– DataDecodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="Classes/BSONEncoder.html">BSONEncoder</a>
               </li>
               <li class="nav-group-task">
-                <a href="Classes.html#/s:10MongoSwift18BulkWriteOperationC">BulkWriteOperation</a>
+                <a href="Classes/BSONEncoder/DateEncodingStrategy.html">– DateEncodingStrategy</a>
               </li>
               <li class="nav-group-task">
-                <a href="Classes/ClientSession.html">ClientSession</a>
+                <a href="Classes/BSONEncoder/UUIDEncodingStrategy.html">– UUIDEncodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes/BSONEncoder/DataEncodingStrategy.html">– DataEncodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes.html#/s:10MongoSwift18BulkWriteOperationC">BulkWriteOperation</a>
               </li>
               <li class="nav-group-task">
                 <a href="Classes/DocumentIterator.html">DocumentIterator</a>
@@ -130,12 +145,6 @@
               <li class="nav-group-task">
                 <a href="Enums/ReturnDocument.html">ReturnDocument</a>
               </li>
-              <li class="nav-group-task">
-                <a href="Enums/ServerType.html">ServerType</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="Enums/TopologyType.html">TopologyType</a>
-              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -163,10 +172,16 @@
                 <a href="Extensions/Int64.html">Int64</a>
               </li>
               <li class="nav-group-task">
-                <a href="Extensions/NSRegularExpression.html">NSRegularExpression</a>
+                <a href="Extensions/Notification.html">Notification</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Extensions/Notification/Name.html">– Name</a>
               </li>
               <li class="nav-group-task">
                 <a href="Extensions/String.html">String</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Extensions/UUID.html">UUID</a>
               </li>
             </ul>
           </li>
@@ -175,6 +190,9 @@
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
                 <a href="Functions.html#/s:10MongoSwift10bsonEqualsySbAA9BSONValue_pSg_ADtF">bsonEquals(_:_:)</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Functions.html#/s:10MongoSwift10bsonEqualsySbAA9BSONValue_p_AaC_ptF">bsonEquals(_:_:)</a>
               </li>
             </ul>
           </li>
@@ -200,6 +218,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="Structs/AnyBSONValue.html">AnyBSONValue</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/BSONNull.html">BSONNull</a>
               </li>
               <li class="nav-group-task">
                 <a href="Structs/Binary.html">Binary</a>
@@ -265,9 +286,6 @@
                 <a href="Structs/DropIndexOptions.html">DropIndexOptions</a>
               </li>
               <li class="nav-group-task">
-                <a href="Structs/EstimatedDocumentCountOptions.html">EstimatedDocumentCountOptions</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="Structs/FindOneAndDeleteOptions.html">FindOneAndDeleteOptions</a>
               </li>
               <li class="nav-group-task">
@@ -328,6 +346,9 @@
                 <a href="Structs/ServerDescription.html">ServerDescription</a>
               </li>
               <li class="nav-group-task">
+                <a href="Structs/ServerDescription/ServerType.html">– ServerType</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="Structs/ServerDescriptionChangedEvent.html">ServerDescriptionChangedEvent</a>
               </li>
               <li class="nav-group-task">
@@ -343,9 +364,6 @@
                 <a href="Structs/ServerOpeningEvent.html">ServerOpeningEvent</a>
               </li>
               <li class="nav-group-task">
-                <a href="Structs/SessionOptions.html">SessionOptions</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="Structs/Timestamp.html">Timestamp</a>
               </li>
               <li class="nav-group-task">
@@ -353,6 +371,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="Structs/TopologyDescription.html">TopologyDescription</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/TopologyDescription/TopologyType.html">– TopologyType</a>
               </li>
               <li class="nav-group-task">
                 <a href="Structs/TopologyDescriptionChangedEvent.html">TopologyDescriptionChangedEvent</a>
@@ -374,14 +395,6 @@
               </li>
             </ul>
           </li>
-          <li class="nav-group-name">
-            <a href="Typealiases.html">Type Aliases</a>
-            <ul class="nav-group-tasks">
-              <li class="nav-group-task">
-                <a href="Typealiases.html#/s:10MongoSwift21CountDocumentsOptionsa">CountDocumentsOptions</a>
-              </li>
-            </ul>
-          </li>
         </ul>
       </nav>
       <article class="main-content">
@@ -397,7 +410,7 @@
 <li><a href="#building">Building</a></li>
 <li><a href="#running-tests">Running Tests</a></li>
 <li><a href="#writing-and-generating-documentation">Writing and Generating Documentation</a></li>
-<li><a href="#linting">Linting</a></li>
+<li><a href="#linting-and-style">Linting and Style</a></li>
 <li><a href="#workflow">Workflow</a></li>
 <li><a href="#resources">Resources</a></li>
 </ul>
@@ -429,7 +442,7 @@ Since this library wraps the MongoDB C Driver, we also recommend cloning <a href
 <h2 id='building' class='heading'>Building</h2>
 <h3 id='from-the-command-line' class='heading'>From the Command line</h3>
 
-<p>Run <code>make</code> from the project&rsquo;s root directory. </p>
+<p>Run <code>swift build</code> or simply <code>make</code> in the project&rsquo;s root directory. </p>
 <h3 id='in-xcode' class='heading'>In Xcode</h3>
 
 <p>We do not provide or maintain an already-generated <code>.xcodeproj</code> in our repository. Instead, you must generate it locally.</p>
@@ -447,18 +460,19 @@ Since this library wraps the MongoDB C Driver, we also recommend cloning <a href
 
 <p><strong>NOTE</strong>: Several of the tests require a mongod instance to be running on the default host/port, <code>localhost:27017</code>.</p>
 
-<p>Additionally, please note that each benchmark test runs for a minimum of 1 minute and therefore <strong>the entire benchmark suite will take around 20-30 minutes to complete</strong>.</p>
-
 <p>You can run tests from Xcode as usual. If you prefer to test from the command line, keep reading.</p>
 <h3 id='from-the-command-line' class='heading'>From the Command Line</h3>
 
-<p>Tests can be run from the command line with <code>make test</code>. By default, this will run all the tests excluding the benchmarks.</p>
+<p>We recommend installing the ruby gem <code>xcpretty</code> and running tests by executing <code>make test-pretty</code>, as this provides output in a much more readable format. </p>
 
-<p>To only run particular tests, use the <code>FILTER</code> environment variable, which is passed as the <code>filter</code> argument to <code>swift test</code>. This will run test cases with names matching a regular expression, formatted as follows: <code>&lt;test-target&gt;.&lt;test-case&gt;</code> or <code>&lt;test-target&gt;.&lt;test-case&gt;/&lt;test&gt;</code>.</p>
+<p>Alternatively, you can just run the tests with <code>swift test</code>, or <code>make test</code>.</p>
 
-<p>For example, <code>make test FILTER=ClientTests</code> will run <code>MongoSwiftTests.ClientTests/*</code>. Or, <code>make test FILTER=testInsertOne</code> will only run <code>MongoSwiftTests.CollectionTests/testInsertOne</code>. </p>
+<p>To filter tests by regular expression:</p>
 
-<p>To run all of the benchmarks, use <code>make benchmark</code> (equivalent to <code>FILTER=MongoSwiftBenchmarks</code>). To run a particular benchmark, use the <code>FILTER</code> environment variable to specify the name. To have the benchmark results all printed out at the end, run with <code>make benchmark | python Tests/MongoSwiftBenchmarks/benchmark.py</code>.</p>
+<ul>
+<li>If you are using <code>swift test</code>, provide the <code>--filter</code> argument: for example, <code>swift test --filter=MongoClientTests</code>.</li>
+<li>If you are using <code>make test</code> or <code>make test-pretty</code>, provide the <code>FILTER</code> environment variable: for example, <code>make test-pretty FILTER=MongoCollectionTests</code>.</li>
+</ul>
 <h3 id='diagnosing-backtraces-on-linux' class='heading'>Diagnosing Backtraces on Linux</h3>
 
 <p><a href="https://bugs.swift.org/browse/SR-755">SWIFT-755</a> documents an outstanding problem on Linux where backtraces do not contain debug symbols. As discussed in <a href="https://stackoverflow.com/a/44956167/162228">this Stack Overflow thread</a>, a <a href="https://github.com/apple/swift/blob/master/utils/symbolicate-linux-fatal"><code>symbolicate-linux-fatal</code></a> script may be used to add symbols to an existing backtrace. Consider the following:</p>
@@ -474,9 +488,11 @@ Comments that are <em>not</em> documentation should use two slashes (<code>//</c
 
 <p>Our documentation site is automatically generated from the source code using <a href="https://github.com/realm/jazzy#installation">jazzy</a>. 
 To regenerate the files after making changes, run <code>make documentation</code> from the project&rsquo;s root directory. You can then inspect the changes to the site by opening the files in <code>/docs</code> in your web browser.</p>
-<h2 id='linting' class='heading'>Linting</h2>
+<h2 id='linting-and-style' class='heading'>Linting and Style</h2>
 
 <p>We use <a href="https://github.com/realm/SwiftLint#using-homebrew">swiftlint</a> for linting. You can see our configuration in the <code>.swiftlint.yml</code> file in the project&rsquo;s root directory.  Run <code>swiftlint</code> in the <code>/Sources</code> directory to lint all of our files. Running <code>swiftlint autocorrect</code> will correct some types of violations.</p>
+
+<p>For style guidance, look at Swift&rsquo;s <a href="https://swift.org/documentation/api-design-guidelines/">API design guidelines</a> and Google&rsquo;s <a href="https://google.github.io/swift/">Swift Style Guide</a>.</p>
 <h3 id='sublime-text-setup' class='heading'>Sublime Text Setup</h3>
 
 <p>If you use Sublime Text, you can get linting violations shown in the editor by installing the packages <a href="https://packagecontrol.io/packages/SublimeLinter">SublimeLinter</a> and <a href="https://packagecontrol.io/packages/SublimeLinter-contrib-swiftlint">SublimeLinter-contrib-swiftlint</a>. </p>
@@ -491,12 +507,13 @@ To regenerate the files after making changes, run <code>make documentation</code
 <li>Open a pull request on the repository. Make sure you have rebased your branch onto the latest commits on <code>master</code>.</li>
 </ol>
 
+<p><strong>Note</strong>: GitHub allows marking comment threads on pull requests as <q>resolved</q>, which hides them from view. Always allow the original commenter to resolve a conversation. This allows them to verify that your changes match what they requested before the conversation is hidden.</p>
+
 <p>Once you get the required approvals and your code passes all tests:</p>
 
 <ol>
 <li>Rebase on master again if needed.</li>
 <li>Build and rerun tests.</li>
-<li>If your code includes any new documentation or changes to documentation, run <code>make documentation</code> and commit the resulting changes.</li>
 <li>Squash all commits into a single, descriptive commit method, formatted as: <code>TICKET-NUMBER: Description of changes</code>. For example, <code>SWIFT-30: Implement WriteConcern type</code>.</li>
 <li>Merge it, or if you don&rsquo;t have permissions, ask someone to merge it for you.</li>
 </ol>
@@ -520,7 +537,7 @@ To regenerate the files after making changes, run <code>make documentation</code
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Jeremy Mikola</a>. All rights reserved. (Last updated: 2018-11-26)</p>
+          <p>&copy; 2019 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Jeremy Mikola</a>. All rights reserved. (Last updated: 2019-01-23)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>

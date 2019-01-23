@@ -42,13 +42,28 @@
                 <a href="Classes/BSONDecoder.html">BSONDecoder</a>
               </li>
               <li class="nav-group-task">
+                <a href="Classes/BSONDecoder/DateDecodingStrategy.html">– DateDecodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes/BSONDecoder/UUIDDecodingStrategy.html">– UUIDDecodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes/BSONDecoder/DataDecodingStrategy.html">– DataDecodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="Classes/BSONEncoder.html">BSONEncoder</a>
               </li>
               <li class="nav-group-task">
-                <a href="Classes.html#/s:10MongoSwift18BulkWriteOperationC">BulkWriteOperation</a>
+                <a href="Classes/BSONEncoder/DateEncodingStrategy.html">– DateEncodingStrategy</a>
               </li>
               <li class="nav-group-task">
-                <a href="Classes/ClientSession.html">ClientSession</a>
+                <a href="Classes/BSONEncoder/UUIDEncodingStrategy.html">– UUIDEncodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes/BSONEncoder/DataEncodingStrategy.html">– DataEncodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes.html#/s:10MongoSwift18BulkWriteOperationC">BulkWriteOperation</a>
               </li>
               <li class="nav-group-task">
                 <a href="Classes/DocumentIterator.html">DocumentIterator</a>
@@ -130,12 +145,6 @@
               <li class="nav-group-task">
                 <a href="Enums/ReturnDocument.html">ReturnDocument</a>
               </li>
-              <li class="nav-group-task">
-                <a href="Enums/ServerType.html">ServerType</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="Enums/TopologyType.html">TopologyType</a>
-              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -163,10 +172,16 @@
                 <a href="Extensions/Int64.html">Int64</a>
               </li>
               <li class="nav-group-task">
-                <a href="Extensions/NSRegularExpression.html">NSRegularExpression</a>
+                <a href="Extensions/Notification.html">Notification</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Extensions/Notification/Name.html">– Name</a>
               </li>
               <li class="nav-group-task">
                 <a href="Extensions/String.html">String</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Extensions/UUID.html">UUID</a>
               </li>
             </ul>
           </li>
@@ -175,6 +190,9 @@
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
                 <a href="Functions.html#/s:10MongoSwift10bsonEqualsySbAA9BSONValue_pSg_ADtF">bsonEquals(_:_:)</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Functions.html#/s:10MongoSwift10bsonEqualsySbAA9BSONValue_p_AaC_ptF">bsonEquals(_:_:)</a>
               </li>
             </ul>
           </li>
@@ -200,6 +218,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="Structs/AnyBSONValue.html">AnyBSONValue</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/BSONNull.html">BSONNull</a>
               </li>
               <li class="nav-group-task">
                 <a href="Structs/Binary.html">Binary</a>
@@ -265,9 +286,6 @@
                 <a href="Structs/DropIndexOptions.html">DropIndexOptions</a>
               </li>
               <li class="nav-group-task">
-                <a href="Structs/EstimatedDocumentCountOptions.html">EstimatedDocumentCountOptions</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="Structs/FindOneAndDeleteOptions.html">FindOneAndDeleteOptions</a>
               </li>
               <li class="nav-group-task">
@@ -328,6 +346,9 @@
                 <a href="Structs/ServerDescription.html">ServerDescription</a>
               </li>
               <li class="nav-group-task">
+                <a href="Structs/ServerDescription/ServerType.html">– ServerType</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="Structs/ServerDescriptionChangedEvent.html">ServerDescriptionChangedEvent</a>
               </li>
               <li class="nav-group-task">
@@ -343,9 +364,6 @@
                 <a href="Structs/ServerOpeningEvent.html">ServerOpeningEvent</a>
               </li>
               <li class="nav-group-task">
-                <a href="Structs/SessionOptions.html">SessionOptions</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="Structs/Timestamp.html">Timestamp</a>
               </li>
               <li class="nav-group-task">
@@ -353,6 +371,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="Structs/TopologyDescription.html">TopologyDescription</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/TopologyDescription/TopologyType.html">– TopologyType</a>
               </li>
               <li class="nav-group-task">
                 <a href="Structs/TopologyDescriptionChangedEvent.html">TopologyDescriptionChangedEvent</a>
@@ -374,21 +395,14 @@
               </li>
             </ul>
           </li>
-          <li class="nav-group-name">
-            <a href="Typealiases.html">Type Aliases</a>
-            <ul class="nav-group-tasks">
-              <li class="nav-group-task">
-                <a href="Typealiases.html#/s:10MongoSwift21CountDocumentsOptionsa">CountDocumentsOptions</a>
-              </li>
-            </ul>
-          </li>
         </ul>
       </nav>
       <article class="main-content">
         <section>
           <section class="section">
             
-            <h1 id='mongoswift' class='heading'>MongoSwift</h1>
+            <p><a href="https://travis-ci.org/mongodb/mongo-swift-driver"><img src="https://travis-ci.org/mongodb/mongo-swift-driver.svg?branch=master" alt="Build Status"></a></p>
+<h1 id='mongoswift' class='heading'>MongoSwift</h1>
 
 <p>The official <a href="https://www.mongodb.com/">MongoDB</a> driver for Swift.</p>
 <h3 id='index' class='heading'>Index</h3>
@@ -399,9 +413,13 @@
 <li><a href="#installation">Installation</a>
 
 <ul>
-<li><a href="#first-install-the-mongodb-c-driver">FIRST: Install the MongoDB C Driver</a></li>
-<li><a href="#next-install-the-driver-using-swift-package-manager">NEXT: Install the Driver Using Swift Package Manager</a></li>
-<li><a href="#or-install-the-driver-using-cocoapods">OR: Install the Driver Using CocoaPods</a></li>
+<li><a href="#os-x-and-linux">OS X and Linux</a>
+
+<ul>
+<li><a href="#step-1-install-the-mongodb-c-driver">Step 1: Install the MongoDB C Driver</a></li>
+<li><a href="#step-2-install-mongoswift">Step 2: Install MongoSwift</a></li>
+</ul></li>
+<li><a href="#ios-tvos-and-watchos">iOS, tvOS, and watchOS</a></li>
 </ul></li>
 <li><a href="#example-usage">Example Usage</a>
 
@@ -410,6 +428,7 @@
 <li><a href="#create-and-insert-a-document">Create and Insert a Document</a></li>
 <li><a href="#find-documents">Find Documents</a></li>
 <li><a href="#work-with-and-modify-documents">Work With and Modify Documents</a></li>
+<li><a href="#usage-with-kitura-and-vapor">Usage With Kitura and Vapor</a></li>
 </ul></li>
 <li><a href="#development-instructions">Development Instructions</a></li>
 </ul>
@@ -431,26 +450,20 @@ Core Server (i.e. SERVER) project are <strong>public</strong>.</p>
 <h2 id='installation' class='heading'>Installation</h2>
 
 <p><code><a href="Classes/MongoSwift.html">MongoSwift</a></code> works with Swift 4.0+.</p>
-<h3 id='first-install-the-mongodb-c-driver' class='heading'>FIRST: Install the MongoDB C Driver</h3>
+<h3 id='os-x-and-linux' class='heading'>OS X and Linux</h3>
 
-<p>Because the driver wraps the MongoDB C driver, using it requires having the C driver&rsquo;s two components, <code>libbson</code> and <code>libmongoc</code>, installed on your system. The minimum required version of the C Driver is <strong>1.13.0</strong>.</p>
+<p>Installation on OS X and Linux is supported via <a href="https://swift.org/package-manager/">Swift Package Manager</a>.</p>
+<h4 id='step-1-install-the-mongodb-c-driver' class='heading'>Step 1: Install the MongoDB C Driver</h4>
+
+<p>The driver wraps the MongoDB C driver, and using it requires having the C driver&rsquo;s two components, <code>libbson</code> and <code>libmongoc</code>, installed on your system. <strong>The minimum required version of the C Driver is 1.13.0</strong>.</p>
 
 <p>On a Mac, you can install both components at once using <a href="https://brew.sh/">Homebrew</a>:
 <code>brew install mongo-c-driver</code>.</p>
 
-<p>Or on Linux, use <code>apt-get</code> to install <code>libmongoc</code> (which includes <code>libbson</code> as a dependency) and <code>pkg-config</code> (which enables Swift Package Manager to find the components):</p>
-<pre class="highlight plaintext"><code>sudo apt-get install pkg-config
-sudo apt-get install libmongoc-1.0.0
-</code></pre>
+<p>On Linux: please follow the <a href="http://mongoc.org/libmongoc/current/installing.html#building-on-unix">instructions</a> from <code>libmongoc</code>&lsquo;s documentation. Note that the versions provided by your package manager may be too old, in which case you can follow the instructions for building and installing from source.</p>
+<h4 id='step-2-install-mongoswift' class='heading'>Step 2: Install MongoSwift</h4>
 
-<p>Alternatively, see the <a href="http://mongoc.org/libmongoc/current/installing.html">installation guide</a> from libmongoc&rsquo;s documentation.</p>
-
-<p>Next, see instructions for installation with either Swift Package Manager or CocoaPods in the following sections.</p>
-<h3 id='next-install-the-driver-using-swift-package-manager' class='heading'>NEXT: Install the Driver Using Swift Package Manager</h3>
-
-<p><em>Please make sure you have followed the instructions in the previous section on installing the MongoDB C Driver before proceeding.</em></p>
-
-<p>The Swift Package Manager is integrated with the Swift build system in Swift 3.0+. See the <a href="https://swift.org/package-manager/">documentation</a> for more information.</p>
+<p><em>Please follow the instructions in the previous section on installing the MongoDB C Driver before proceeding.</em></p>
 
 <p>Add MongoSwift to your dependencies in <code>Package.swift</code>:</p>
 <pre class="highlight swift"><code><span class="c1">// swift-tools-version:4.0</span>
@@ -459,7 +472,7 @@ sudo apt-get install libmongoc-1.0.0
 <span class="k">let</span> <span class="nv">package</span> <span class="o">=</span> <span class="kt">Package</span><span class="p">(</span>
     <span class="nv">name</span><span class="p">:</span> <span class="s">"MyPackage"</span><span class="p">,</span>
     <span class="nv">dependencies</span><span class="p">:</span> <span class="p">[</span>
-        <span class="o">.</span><span class="nf">package</span><span class="p">(</span><span class="nv">url</span><span class="p">:</span> <span class="s">"https://github.com/mongodb/mongo-swift-driver.git"</span><span class="p">,</span> <span class="nv">from</span><span class="p">:</span> <span class="s">"0.0.5"</span><span class="p">),</span>
+        <span class="o">.</span><span class="nf">package</span><span class="p">(</span><span class="nv">url</span><span class="p">:</span> <span class="s">"https://github.com/mongodb/mongo-swift-driver.git"</span><span class="p">,</span> <span class="nv">from</span><span class="p">:</span> <span class="s">"VERSION.STRING.HERE"</span><span class="p">),</span>
     <span class="p">],</span>
     <span class="nv">targets</span><span class="p">:</span> <span class="p">[</span>
         <span class="o">.</span><span class="nf">target</span><span class="p">(</span><span class="nv">name</span><span class="p">:</span> <span class="s">"MyPackage"</span><span class="p">,</span> <span class="nv">dependencies</span><span class="p">:</span> <span class="p">[</span><span class="s">"MongoSwift"</span><span class="p">])</span>
@@ -468,22 +481,24 @@ sudo apt-get install libmongoc-1.0.0
 </code></pre>
 
 <p>Then run <code>swift build</code> to download, compile, and link all your dependencies.</p>
-<h3 id='or-install-the-driver-using-cocoapods' class='heading'>OR: Install the Driver Using CocoaPods</h3>
+<h2 id='ios-tvos-and-watchos' class='heading'>iOS, tvOS, and watchOS</h2>
 
-<p><em>Please make sure you have followed the instructions in the previous section on installing the MongoDB C Driver before proceeding.</em></p>
+<p>Installation is supported via <a href="https://cocoapods.org/">CocoaPods</a>.</p>
 
-<p>CocoaPods is a dependency manager for Swift and Objective-C. You can install it by running <code>gem install cocoapods</code>. See <a href="https://cocoapods.org/">the CocoaPods documentation</a> for more information.</p>
+<p>The pod includes as a dependency an embedded version of the MongoDB C Driver, meant for use on these OSes.</p>
 
-<p>If you don&rsquo;t already have a <code>Podfile</code> for your project, run <code>pod init</code> in the main directory to automatically create one with smart defaults. Add <code><a href="Classes/MongoSwift.html">MongoSwift</a></code> as follows:</p>
-<pre class="highlight ruby"><code><span class="n">platform</span> <span class="ss">:osx</span><span class="p">,</span> <span class="s1">'10.10'</span>
+<p><strong>Note</strong>: the embedded driver currently does not support SSL. See <a href="https://github.com/mongodb/mongo-swift-driver/issues/141">#141</a> and <a href="https://jira.mongodb.org/browse/CDRIVER-2850">CDRIVER-2850</a> for more information.</p>
+
+<p>Add <code><a href="Classes/MongoSwift.html">MongoSwift</a></code> to your Podfile as follows:</p>
+<pre class="highlight ruby"><code><span class="n">platform</span> <span class="ss">:ios</span><span class="p">,</span> <span class="s1">'11.0'</span>
 <span class="n">use_frameworks!</span>
 
 <span class="n">target</span> <span class="s1">'MyApp'</span> <span class="k">do</span>
-    <span class="n">pod</span> <span class="s1">'MongoSwift'</span><span class="p">,</span> <span class="s1">'~&gt; 0.0.2'</span>
+    <span class="n">pod</span> <span class="s1">'MongoSwift'</span><span class="p">,</span> <span class="s1">'~&gt; VERSION.STRING.HERE'</span>
 <span class="k">end</span>
 </code></pre>
 
-<p>Finally, run <code>pod install</code> to install your project&rsquo;s dependencies.</p>
+<p>Then run <code>pod install</code> to install your project&rsquo;s dependencies.</p>
 <h2 id='example-usage' class='heading'>Example Usage</h2>
 <h3 id='initialization' class='heading'>Initialization</h3>
 
@@ -528,7 +543,34 @@ will <em>not</em> reinitialize the driver after <code><a href="Classes/MongoSwif
 <span class="c1">// Set a new value</span>
 <span class="n">doc</span><span class="p">[</span><span class="s">"d"</span><span class="p">]</span> <span class="o">=</span> <span class="mi">4</span>
 <span class="nf">print</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span> <span class="c1">// prints `{"a" : 1, "b" : 2, "c" : 3, "d" : 4}`</span>
+
+<span class="c1">// Using functional methods like map, filter:</span>
+<span class="k">let</span> <span class="nv">evensDoc</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">filter</span> <span class="p">{</span> <span class="n">elem</span> <span class="k">in</span>
+    <span class="k">guard</span> <span class="k">let</span> <span class="nv">value</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">value</span> <span class="k">as?</span> <span class="kt">Int</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kc">false</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">value</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span>
+<span class="p">}</span>
+<span class="nf">print</span><span class="p">(</span><span class="n">evensDoc</span><span class="p">)</span> <span class="c1">// prints `{ "b" : 2, "d" : 4 }`</span>
+
+<span class="k">let</span> <span class="nv">doubled</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="n">elem</span> <span class="o">-&gt;</span> <span class="kt">Int</span> <span class="k">in</span>
+    <span class="k">guard</span> <span class="k">let</span> <span class="nv">value</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">value</span> <span class="k">as?</span> <span class="kt">Int</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">value</span> <span class="o">*</span> <span class="mi">2</span>
+<span class="p">}</span>
+<span class="nf">print</span><span class="p">(</span><span class="n">doubled</span><span class="p">)</span> <span class="c1">// prints `[2, 4, 6, 8]`</span>
 </code></pre>
+
+<p>Note that <code><a href="Structs/Document.html">Document</a></code> conforms to <code>Collection</code>, so useful methods from
+<a href="https://developer.apple.com/documentation/swift/sequence"><code>Sequence</code></a> and
+<a href="https://developer.apple.com/documentation/swift/collection"><code>Collection</code></a> are
+all available. However, runtime guarantees are not yet met for many of these
+methods.</p>
+<h3 id='usage-with-kitura-and-vapor' class='heading'>Usage With Kitura and Vapor</h3>
+
+<p>The <code>Examples/</code> directory contains sample projects that use the driver with <a href="https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/Kitura">Kitura</a> and <a href="https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/Vapor">Vapor</a>.</p>
 <h2 id='development-instructions' class='heading'>Development Instructions</h2>
 
 <p>See our <a href="https://mongodb.github.io/mongo-swift-driver/development.html">development guide</a> for instructions for building and testing the driver.</p>
@@ -536,7 +578,7 @@ will <em>not</em> reinitialize the driver after <code><a href="Classes/MongoSwif
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Jeremy Mikola</a>. All rights reserved. (Last updated: 2018-11-26)</p>
+          <p>&copy; 2019 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Jeremy Mikola</a>. All rights reserved. (Last updated: 2019-01-23)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>

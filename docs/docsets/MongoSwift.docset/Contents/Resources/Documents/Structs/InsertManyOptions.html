@@ -43,13 +43,28 @@
                 <a href="../Classes/BSONDecoder.html">BSONDecoder</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Classes/BSONDecoder/DateDecodingStrategy.html">– DateDecodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BSONDecoder/UUIDDecodingStrategy.html">– UUIDDecodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BSONDecoder/DataDecodingStrategy.html">– DataDecodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Classes/BSONEncoder.html">BSONEncoder</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Classes.html#/s:10MongoSwift18BulkWriteOperationC">BulkWriteOperation</a>
+                <a href="../Classes/BSONEncoder/DateEncodingStrategy.html">– DateEncodingStrategy</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Classes/ClientSession.html">ClientSession</a>
+                <a href="../Classes/BSONEncoder/UUIDEncodingStrategy.html">– UUIDEncodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BSONEncoder/DataEncodingStrategy.html">– DataEncodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes.html#/s:10MongoSwift18BulkWriteOperationC">BulkWriteOperation</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Classes/DocumentIterator.html">DocumentIterator</a>
@@ -131,12 +146,6 @@
               <li class="nav-group-task">
                 <a href="../Enums/ReturnDocument.html">ReturnDocument</a>
               </li>
-              <li class="nav-group-task">
-                <a href="../Enums/ServerType.html">ServerType</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Enums/TopologyType.html">TopologyType</a>
-              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -164,10 +173,16 @@
                 <a href="../Extensions/Int64.html">Int64</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Extensions/NSRegularExpression.html">NSRegularExpression</a>
+                <a href="../Extensions/Notification.html">Notification</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Extensions/Notification/Name.html">– Name</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Extensions/String.html">String</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Extensions/UUID.html">UUID</a>
               </li>
             </ul>
           </li>
@@ -176,6 +191,9 @@
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
                 <a href="../Functions.html#/s:10MongoSwift10bsonEqualsySbAA9BSONValue_pSg_ADtF">bsonEquals(_:_:)</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Functions.html#/s:10MongoSwift10bsonEqualsySbAA9BSONValue_p_AaC_ptF">bsonEquals(_:_:)</a>
               </li>
             </ul>
           </li>
@@ -201,6 +219,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/AnyBSONValue.html">AnyBSONValue</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/BSONNull.html">BSONNull</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/Binary.html">Binary</a>
@@ -266,9 +287,6 @@
                 <a href="../Structs/DropIndexOptions.html">DropIndexOptions</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs/EstimatedDocumentCountOptions.html">EstimatedDocumentCountOptions</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="../Structs/FindOneAndDeleteOptions.html">FindOneAndDeleteOptions</a>
               </li>
               <li class="nav-group-task">
@@ -329,6 +347,9 @@
                 <a href="../Structs/ServerDescription.html">ServerDescription</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Structs/ServerDescription/ServerType.html">– ServerType</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Structs/ServerDescriptionChangedEvent.html">ServerDescriptionChangedEvent</a>
               </li>
               <li class="nav-group-task">
@@ -344,9 +365,6 @@
                 <a href="../Structs/ServerOpeningEvent.html">ServerOpeningEvent</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs/SessionOptions.html">SessionOptions</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="../Structs/Timestamp.html">Timestamp</a>
               </li>
               <li class="nav-group-task">
@@ -354,6 +372,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/TopologyDescription.html">TopologyDescription</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/TopologyDescription/TopologyType.html">– TopologyType</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/TopologyDescriptionChangedEvent.html">TopologyDescriptionChangedEvent</a>
@@ -372,14 +393,6 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/WriteError.html">WriteError</a>
-              </li>
-            </ul>
-          </li>
-          <li class="nav-group-name">
-            <a href="../Typealiases.html">Type Aliases</a>
-            <ul class="nav-group-tasks">
-              <li class="nav-group-task">
-                <a href="../Typealiases.html#/s:10MongoSwift21CountDocumentsOptionsa">CountDocumentsOptions</a>
               </li>
             </ul>
           </li>
@@ -516,7 +529,7 @@ if any. Defaults to true.</p>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2018 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Jeremy Mikola</a>. All rights reserved. (Last updated: 2018-11-26)</p>
+          <p>&copy; 2019 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Jeremy Mikola</a>. All rights reserved. (Last updated: 2019-01-23)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>
