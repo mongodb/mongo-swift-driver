@@ -5,7 +5,7 @@
 
 if [[ $1 == "libmongoc" ]]
 then
-	git clone -b r1.13 https://github.com/mongodb/mongo-c-driver /tmp/libmongoc
+	git clone -b ${LIBMONGOC_VERSION} https://github.com/mongodb/mongo-c-driver /tmp/libmongoc
 	pushd /tmp/libmongoc
 	if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr/local; fi
 	if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr; fi
