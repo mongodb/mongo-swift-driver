@@ -128,7 +128,14 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
 
         let options = BulkWriteOptions(ordered: false)
 
-        expect(try self.coll.bulkWrite(requests, options: options)).to(throwError(expectedError))
+        expect(try self.coll.bulkWrite(requests, options: options)).to(throwError { err in
+            expect(err as? ServerError).to(equal(expectedError))
+
+            if case let ServerError.bulkWriteError(writeErrors, _, _, _) = err {
+                expect(writeErrors?.count).to(equal(1))
+                expect(writeErrors?[0].request as? InsertOneModel).to(equal(requests[1] as? InsertOneModel))
+            }
+        })
     }
 
     func testUpdates() throws {

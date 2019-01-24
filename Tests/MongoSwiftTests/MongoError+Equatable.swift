@@ -1,5 +1,5 @@
 import Foundation
-import MongoSwift
+@testable import MongoSwift
 
 extension RuntimeError: Equatable {
     public static func == (lhs: RuntimeError, rhs: RuntimeError) -> Bool {
@@ -77,6 +77,12 @@ extension UserError: Equatable {
 extension WriteError: Equatable {
     public static func == (lhs: WriteError, rhs: WriteError) -> Bool {
         return lhs.code == rhs.code
+    }
+}
+
+extension MongoCollection.InsertOneModel: Equatable where T: Equatable {
+    public static func == (lhs: MongoCollection.InsertOneModel, rhs: MongoCollection.InsertOneModel) -> Bool {
+        return lhs.document == rhs.document
     }
 }
 

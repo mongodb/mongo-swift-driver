@@ -12,9 +12,10 @@ extension MongoCollection {
      * - Returns: The deleted document, represented as a `CollectionType`, or `nil` if no document was deleted.
      *
      * - Throws:
-     *   - `MongoError.invalidArgument` if any of the provided options are invalid
-     *   - `MongoError.commandError` if there are any errors executing the command.
-     *   - A `DecodingError` if the deleted document cannot be decoded to a `CollectionType` value
+     *   - `UserError.invalidArgumentError` if any of the provided options are invalid.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `ServerError.writeError` if an error occurs while executing the command.
+     *   - `DecodingError` if the deleted document cannot be decoded to a `CollectionType` value.
      */
     @discardableResult
     public func findOneAndDelete(_ filter: Document,
@@ -36,10 +37,11 @@ extension MongoCollection {
      *      depending on selected options, or `nil` if there was no match.
      *
      * - Throws:
-     *   - `MongoError.invalidArgument` if any of the provided options are invalid
-     *   - `MongoError.commandError` if there are any errors executing the command.
-     *   - An `EncodingError` if `replacement` cannot be encoded to a `Document`
-     *   - A `DecodingError` if the replaced document cannot be decoded to a `CollectionType` value
+     *   - `UserError.invalidArgumentError` if any of the provided options are invalid.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `ServerError.writeError` if an error occurs while executing the command.
+     *   - `DecodingError` if the replaced document cannot be decoded to a `CollectionType` value.
+     *   - `EncodingError` if `replacement` cannot be encoded to a `Document`.
      */
     @discardableResult
     public func findOneAndReplace(filter: Document,
@@ -61,9 +63,10 @@ extension MongoCollection {
      *      depending on selected options, or `nil` if there was no match.
      *
      * - Throws:
-     *   - `MongoError.invalidArgument` if any of the provided options are invalid
-     *   - `MongoError.commandError` if there are any errors executing the command.
-     *   - A `DecodingError` if the updated document cannot be decoded to a `CollectionType` value
+     *   - `UserError.invalidArgumentError` if any of the provided options are invalid.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `ServerError.writeError` if an error occurs while executing the command.
+     *   - `DecodingError` if the updated document cannot be decoded to a `CollectionType` value.
      */
     @discardableResult
     public func findOneAndUpdate(filter: Document,

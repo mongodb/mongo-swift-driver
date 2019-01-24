@@ -110,7 +110,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(try self.coll.insertOne(self.doc1)?.insertedId).to(bsonEqual(1))
         expect(try self.coll.insertOne(self.doc2)?.insertedId).to(bsonEqual(2))
         expect(try self.coll.count()).to(equal(2))
-        
+
         // try inserting a document without an ID
         let docNoID: Document = ["x": 1]
         // verify that an _id is returned in the InsertOneResult
@@ -127,7 +127,6 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
         expect(try self.coll.insertOne(["_id": 1])).to(throwError(expectedError))
         expect(try self.coll.insertOne(["$asf": 12])).to(throwError(UserError.invalidArgumentError(message: "")))
-
     }
 
     func testInsertOneWithUnacknowledgedWriteConcern() throws {
@@ -148,6 +147,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(try self.coll.insertOne(self.doc1)).toNot(throwError())
     }
 
+    private typealias InsertOne = MongoCollection<Document>.InsertOneModel
     func testInsertMany() throws {
         expect(try self.coll.count()).to(equal(2))
         // try inserting a mix of documents with and without IDs to verify they are generated
@@ -202,7 +202,18 @@ final class MongoCollectionTests: MongoSwiftTestCase {
                 errorLabels: nil)
 
         expect(try self.coll.insertMany([newDoc3, docId1, newDoc4, docId2], options: InsertManyOptions(ordered: false)))
-                .to(throwError(expectedError))
+                .to(throwError { err in
+                    expect(err as? ServerError).to(equal(expectedError))
+
+                    if case let ServerError.bulkWriteError(writeErrors, _, _, _) = err {
+                        var errRequests: [Int: WriteModel] = [:]
+                        writeErrors?.forEach { errRequests[$0.index] = $0.request }
+                        expect(errRequests[0]).to(beNil())
+                        expect((errRequests[1] as? InsertOne)?.document).to(equal(docId1))
+                        expect(errRequests[2]).to(beNil())
+                        expect((errRequests[3] as? InsertOne)?.document).to(equal(docId2))
+                    }
+                })
     }
 
     func testInsertManyWithEmptyValues() {

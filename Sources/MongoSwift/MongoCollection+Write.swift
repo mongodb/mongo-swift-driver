@@ -231,7 +231,7 @@ extension MongoCollection {
      *
      * - Returns: The optional result of performing the deletion. If the `WriteConcern` is
      *            unacknowledged, `nil` is returned.
-     * - Throws:
+     *
      * - Throws:
      *   - `ServerError.writeError` if an error occurs while performing the command.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
@@ -423,6 +423,7 @@ public struct InsertManyResult {
         self.insertedIds = insertedIds
     }
 
+    /// Internal initializer used for converting from a `BulkWriteResult` optional to an `InsertManyResult` optional.
     internal init?(from result: BulkWriteResult?) {
         guard let result = result else {
             return nil

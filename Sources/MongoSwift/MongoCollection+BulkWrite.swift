@@ -12,7 +12,7 @@ extension MongoCollection {
      * - Returns: a `BulkWriteResult`, or `nil` if the write concern is unacknowledged.
      *
      * - Throws:
-     *   - `UserError.invalidArgument` if `requests` is empty.
+     *   - `UserError.invalidArgumentError` if `requests` is empty.
      *   - `ServerError.bulkWriteError` if any error occurs while performing the writes.
      *   - `ServerError.commandError` if an error occurs that prevents the operation from being performed.
      *   - `EncodingError` if an error occurs while encoding the `CollectionType` or the options to BSON.
@@ -28,6 +28,7 @@ extension MongoCollection {
 
         try requests.enumerated().forEach { index, model in
             try model.addToBulkWrite(bulk: bulk, index: index)
+            bulk.requests[index] = model
         }
 
         return try bulk.execute()
@@ -60,7 +61,7 @@ extension MongoCollection {
         ///   - `UserError.invalidArgumentError` if the options form an invalid combination.
         ///   - `EncodingError` if an error occurs while encoding the options to BSON.
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
-            let opts: Document = try BSONEncoder().encode(options)
+            let opts = try BSONEncoder().encode(options)
 
             var error = bson_error_t()
 
@@ -371,6 +372,7 @@ public struct BulkWriteOptions: Encodable {
         self.writeConcern = writeConcern
     }
 
+    /// Internal initializer used to convert an `InsertManyOptions` optional to a `BulkWriteOptions` optional.
     internal init?(from insertManyOptions: InsertManyOptions?) {
         guard let options = insertManyOptions else {
             return nil
@@ -438,18 +440,6 @@ public struct BulkWriteResult {
         }
 
         self.upsertedIds = upsertedIds
-    }
-
-    /// Internal initializer used to create a `BulkWriteResult` from an `InsertManyResult`.
-    internal init(from result: InsertManyResult) {
-        self.insertedIds = result.insertedIds
-        self.insertedCount = result.insertedCount
-
-        self.deletedCount = 0
-        self.matchedCount = 0
-        self.modifiedCount = 0
-        self.upsertedCount = 0
-        self.upsertedIds = [:]
     }
 
     /// Internal initializer used for testing purposes and error handling.

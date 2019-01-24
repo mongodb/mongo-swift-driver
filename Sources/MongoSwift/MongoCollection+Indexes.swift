@@ -184,7 +184,7 @@ extension MongoCollection {
      *
      * - Throws:
      *   - `ServerError.writeError` if an error occurs while performing the write.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from performing the command.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
      *   - `EncodingError` if an error occurs while encoding the index specification or options.
      */
@@ -205,7 +205,7 @@ extension MongoCollection {
      *
      * - Throws:
      *   - `ServerError.writeError` if an error occurs while performing the write.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from performing the command.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
      *   - `EncodingError` if an error occurs while encoding the index specification or options.
      */
@@ -227,7 +227,7 @@ extension MongoCollection {
      *
      * - Throws:
      *   - `ServerError.writeError` if an error occurs while performing the write.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from performing the command.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
      *   - `EncodingError` if an error occurs while encoding the index specifications or options.
      */
@@ -269,7 +269,7 @@ extension MongoCollection {
      *   - writeConcern: An optional WriteConcern to use for the command
      *
      * - Throws:
-     *   - `ServerError.commandError` if an error occurs that prevents the command from performing the command.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
      */
     public func dropIndex(_ name: String, options: DropIndexOptions? = nil) throws {
@@ -292,7 +292,7 @@ extension MongoCollection {
      *
      * - Throws:
      *   - `ServerError.writeError` if an error occurs while performing the command.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from performing the command.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
      *   - `EncodingError` if an error occurs while encoding the options.
      */
@@ -314,7 +314,7 @@ extension MongoCollection {
      *
      * - Throws:
      *   - `ServerError.writeError` if an error occurs while performing the command.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from performing the command.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
      *   - `EncodingError` if an error occurs while encoding the options.
      */
@@ -333,7 +333,7 @@ extension MongoCollection {
      *
      * - Throws:
      *   - `ServerError.writeError` if an error occurs while performing the command.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from performing the command.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
      *   - `EncodingError` if an error occurs while encoding the options.
      */
