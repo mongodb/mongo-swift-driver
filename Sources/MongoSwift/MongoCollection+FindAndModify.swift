@@ -47,7 +47,7 @@ extension MongoCollection {
     public func findOneAndReplace(filter: Document,
                                   replacement: CollectionType,
                                   options: FindOneAndReplaceOptions? = nil) throws -> CollectionType? {
-        let update = try BSONEncoder().encode(replacement)
+        let update = try self.encoder.encode(replacement)
         return try self.findAndModify(filter: filter, update: update, options: options)
     }
 

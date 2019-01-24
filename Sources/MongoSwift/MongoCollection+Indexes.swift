@@ -234,11 +234,11 @@ extension MongoCollection {
     @discardableResult
     public func createIndexes(_ forModels: [IndexModel], options: CreateIndexOptions? = nil) throws -> [String] {
         let collName = String(cString: mongoc_collection_get_name(self._collection))
-        let encoder = BSONEncoder()
+
         var indexData = [Document]()
         for index in forModels {
-            var indexDoc = try encoder.encode(index)
-            if let opts = try encoder.encode(index.options) {
+            var indexDoc = try self.encoder.encode(index)
+            if let opts = try self.encoder.encode(index.options) {
                 try indexDoc.merge(opts)
             }
             indexData.append(indexDoc)
@@ -249,7 +249,7 @@ extension MongoCollection {
             "indexes": indexData
         ]
 
-        let opts = try encoder.encode(options)
+        let opts = try self.encoder.encode(options)
         var error = bson_error_t()
         let reply = Document()
 
@@ -273,7 +273,7 @@ extension MongoCollection {
      *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
      */
     public func dropIndex(_ name: String, options: DropIndexOptions? = nil) throws {
-        let opts = try BSONEncoder().encode(options)
+        let opts = try self.encoder.encode(options)
         var error = bson_error_t()
         guard mongoc_collection_drop_index_with_opts(self._collection, name, opts?.data, &error) else {
             throw parseMongocError(error)
@@ -345,7 +345,7 @@ extension MongoCollection {
     private func _dropIndexes(keys: Document? = nil, options: DropIndexOptions? = nil) throws -> Document {
         let collName = String(cString: mongoc_collection_get_name(self._collection))
         let command: Document = ["dropIndexes": collName, "index": keys ?? "*"]
-        let opts = try BSONEncoder().encode(options)
+        let opts = try self.encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
         guard mongoc_collection_write_command_with_opts(
@@ -367,6 +367,6 @@ extension MongoCollection {
             fatalError("Couldn't get cursor from the server")
         }
 
-        return try MongoCursor(fromCursor: cursor, withClient: self._client)
+        return try MongoCursor(fromCursor: cursor, withClient: self._client, withDecoder: self.decoder)
     }
 }

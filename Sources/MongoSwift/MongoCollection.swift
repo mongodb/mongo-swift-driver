@@ -5,6 +5,9 @@ public class MongoCollection<T: Codable> {
     internal var _collection: OpaquePointer?
     internal var _client: MongoClient
 
+    internal let encoder: BSONEncoder
+    internal let decoder: BSONDecoder
+
     /// A `Codable` type associated with this `MongoCollection` instance.
     /// This allows `CollectionType` values to be directly inserted into and
     /// retrieved from the collection, by encoding/decoding them using the
@@ -40,9 +43,14 @@ public class MongoCollection<T: Codable> {
     }
 
     /// Initializes a new `MongoCollection` instance, not meant to be instantiated directly
-    internal init(fromCollection: OpaquePointer, withClient: MongoClient) {
+    internal init(fromCollection: OpaquePointer,
+                  withClient: MongoClient,
+                  withEncoder: BSONEncoder,
+                  withDecoder: BSONDecoder) {
         self._collection = fromCollection
         self._client = withClient
+        self.encoder = withEncoder
+        self.decoder = withDecoder
     }
 
     /// Deinitializes a `MongoCollection`, cleaning up the internal `mongoc_collection_t`

@@ -21,17 +21,35 @@ public struct ClientOptions {
     /// the server's default write concern will be used.
     public let writeConcern: WriteConcern?
 
+    /// Specifies the strategy to use when coding `Date`s to/from BSON.
+    /// This strategy will be inherited by `MongoDatabase`s and `MongoCollection`s that derive from this client.
+    public let dateCodingStrategy: DateCodingStrategy?
+
+    /// Specifies the strategy to use when coding `UUID`s to/from BSON.
+    /// This strategy will be inherited by `MongoDatabase`s and `MongoCollection`s that derive from this client.
+    public let uuidCodingStrategy: UUIDCodingStrategy?
+
+    /// Specifies the strategy to use when coding `Data`s to/from BSON.
+    /// This strategy will be inherited by `MongoDatabase`s and `MongoCollection`s that derive from this client.
+    public let dataCodingStrategy: DataCodingStrategy?
+
     /// Convenience initializer allowing any/all to be omitted or optional
     public init(eventMonitoring: Bool = false,
                 readConcern: ReadConcern? = nil,
                 readPreference: ReadPreference? = nil,
                 retryWrites: Bool? = nil,
-                writeConcern: WriteConcern? = nil) {
+                writeConcern: WriteConcern? = nil,
+                dateCodingStrategy: DateCodingStrategy? = nil,
+                uuidCodingStrategy: UUIDCodingStrategy? = nil,
+                dataCodingStrategy: DataCodingStrategy? = nil) {
         self.retryWrites = retryWrites
         self.eventMonitoring = eventMonitoring
         self.readConcern = readConcern
         self.readPreference = readPreference
         self.writeConcern = writeConcern
+        self.dateCodingStrategy = dateCodingStrategy
+        self.uuidCodingStrategy = uuidCodingStrategy
+        self.dataCodingStrategy = dataCodingStrategy
     }
 }
 
@@ -68,13 +86,31 @@ public struct DatabaseOptions {
     /// the database will inherit the client's write concern.
     public let writeConcern: WriteConcern?
 
+    /// Specifies the strategy to use when coding `Date`s to/from BSON.
+    /// This strategy will be inherited by `MongoCollection`s that derive from the database using these options.
+    public let dateCodingStrategy: DateCodingStrategy?
+
+    /// Specifies the strategy to use when coding `UUID`s to/from BSON.
+    /// This strategy will be inherited by `MongoCollection`s that derive from the database using these options.
+    public let uuidCodingStrategy: UUIDCodingStrategy?
+
+    /// Specifies the strategy to use when coding `Data`s to/from BSON.
+    /// This strategy will be inherited by `MongoCollection`s that derive from the database using these options.
+    public let dataCodingStrategy: DataCodingStrategy?
+
     /// Convenience initializer allowing any/all arguments to be omitted or optional
     public init(readConcern: ReadConcern? = nil,
                 readPreference: ReadPreference? = nil,
-                writeConcern: WriteConcern? = nil) {
+                writeConcern: WriteConcern? = nil,
+                dateCodingStrategy: DateCodingStrategy? = nil,
+                uuidCodingStrategy: UUIDCodingStrategy? = nil,
+                dataCodingStrategy: DataCodingStrategy? = nil) {
         self.readConcern = readConcern
         self.readPreference = readPreference
         self.writeConcern = writeConcern
+        self.dateCodingStrategy = dateCodingStrategy
+        self.uuidCodingStrategy = uuidCodingStrategy
+        self.dataCodingStrategy = dataCodingStrategy
     }
 }
 
@@ -87,6 +123,10 @@ public class MongoClient {
 
     /// If command and/or server monitoring is enabled, indicates what event types notifications will be posted for.
     internal var monitoringEventTypes: [MongoEventType]?
+
+    internal var encoder = BSONEncoder()
+
+    internal var decoder = BSONDecoder()
 
     /// The read concern set on this client, or nil if one is not set.
     public var readConcern: ReadConcern? {
@@ -154,10 +194,29 @@ public class MongoClient {
 
         if options?.eventMonitoring == true { self.initializeMonitoring() }
 
+        // if a DateCodingStrategy is provided, set it on the encoder and decoder.
+        if let (e, d) = options?.dateCodingStrategy?.rawValue {
+            self.encoder.dateEncodingStrategy = e
+            self.decoder.dateDecodingStrategy = d
+        }
+
+        // if a UUIDCodingStrategy is provided, set it on the encoder and decoder.
+        if let (e, d) = options?.uuidCodingStrategy?.rawValue {
+            self.encoder.uuidEncodingStrategy = e
+            self.decoder.uuidDecodingStrategy = d
+        }
+
+        // if a DataCodingStrategy is procided, set it on the encoder and decoder.
+        if let (e, d) = options?.dataCodingStrategy?.rawValue {
+            self.encoder.dataEncodingStrategy = e
+            self.decoder.dataDecodingStrategy = d
+        }
+
         guard mongoc_client_set_error_api(self._client, MONGOC_ERROR_API_VERSION_2) else {
             self.close()
             throw RuntimeError.internalError(message: "Could not configure error handling on client")
         }
+
     }
 
     /**
@@ -226,12 +285,11 @@ public class MongoClient {
      *   - `EncodingError` if an error is encountered while encoding the options to BSON.
      */
     public func listDatabases(options: ListDatabasesOptions? = nil) throws -> MongoCursor<Document> {
-        let encoder = BSONEncoder()
-        let opts = try encoder.encode(options)
+        let opts = try self.encoder.encode(options)
         guard let cursor = mongoc_client_find_databases_with_opts(self._client, opts?.data) else {
             fatalError("Couldn't get cursor from the server")
         }
-        return try MongoCursor(fromCursor: cursor, withClient: self)
+        return try MongoCursor(fromCursor: cursor, withClient: self, withDecoder: self.decoder)
     }
 
     /**
@@ -260,6 +318,24 @@ public class MongoClient {
             mongoc_database_set_write_concern(db, wc._writeConcern)
         }
 
-        return MongoDatabase(fromDatabase: db, withClient: self)
+        let encoder = BSONEncoder(copies: self.encoder)
+        let decoder = BSONDecoder(copies: self.decoder)
+
+        if let (e, d) = options?.dateCodingStrategy?.rawValue {
+            encoder.dateEncodingStrategy = e
+            decoder.dateDecodingStrategy = d
+        }
+
+        if let (e, d) = options?.uuidCodingStrategy?.rawValue {
+            encoder.uuidEncodingStrategy = e
+            decoder.uuidDecodingStrategy = d
+        }
+
+        if let (e, d) = options?.dataCodingStrategy?.rawValue {
+            encoder.dataEncodingStrategy = e
+            decoder.dataDecodingStrategy = d
+        }
+
+        return MongoDatabase(fromDatabase: db, withClient: self, withEncoder: encoder, withDecoder: decoder)
     }
 }

@@ -111,6 +111,14 @@ public class BSONDecoder {
     /// Initializes `self`.
     public init() {}
 
+    /// Initializes `self` by copying the options of another `BSONDecoder`.
+    public init(copies other: BSONDecoder) {
+        self.userInfo = other.userInfo
+        self.dateDecodingStrategy = other.dateDecodingStrategy
+        self.uuidDecodingStrategy = other.uuidDecodingStrategy
+        self.dataDecodingStrategy = other.dataDecodingStrategy
+    }
+
     /**
      * Decodes a top-level value of the given type from the given BSON document.
      *
