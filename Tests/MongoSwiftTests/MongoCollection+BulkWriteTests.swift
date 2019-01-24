@@ -133,7 +133,8 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
 
             if case let ServerError.bulkWriteError(writeErrors, _, _, _) = err {
                 expect(writeErrors?.count).to(equal(1))
-                expect(writeErrors?[0].request as? InsertOneModel).to(equal(requests[1] as? InsertOneModel))
+                expect((writeErrors?[0].request! as! InsertOneModel).document)
+                        .to(equal((requests[1] as! InsertOneModel).document))
             }
         })
     }

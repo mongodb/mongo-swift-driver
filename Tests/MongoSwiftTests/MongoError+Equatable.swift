@@ -80,12 +80,6 @@ extension WriteError: Equatable {
     }
 }
 
-extension MongoCollection.InsertOneModel: Equatable where T: Equatable {
-    public static func == (lhs: MongoCollection.InsertOneModel, rhs: MongoCollection.InsertOneModel) -> Bool {
-        return lhs.document == rhs.document
-    }
-}
-
 extension BulkWriteError: Equatable {
     public static func == (lhs: BulkWriteError, rhs: BulkWriteError) -> Bool {
         return lhs.code == rhs.code && lhs.index == rhs.index
