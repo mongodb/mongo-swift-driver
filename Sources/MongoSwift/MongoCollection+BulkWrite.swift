@@ -364,7 +364,7 @@ public struct BulkWriteResult {
     /// Map of the index of the operation to the id of the upserted document.
     public let upsertedIds: [Int: BSONValue]
 
-    fileprivate var writeErrors: [WriteError] = []
+    fileprivate var writeErrors: [BulkWriteError] = []
     fileprivate var writeConcernError: WriteConcernError?
 
     /**
@@ -402,48 +402,12 @@ public struct BulkWriteResult {
         self.upsertedIds = upsertedIds
 
         if let writeErrors = try reply.getValue(for: "writeErrors") as? [Document] {
-            self.writeErrors = try writeErrors.map { try BSONDecoder().decode(WriteError.self, from: $0) }
+            self.writeErrors = try writeErrors.map { try BSONDecoder().decode(BulkWriteError.self, from: $0) }
         }
 
         if let writeConcernErrors = try reply.getValue(for: "writeConcernErrors") as? [Document],
             writeConcernErrors.indices.contains(0) {
             self.writeConcernError = try BSONDecoder().decode(WriteConcernError.self, from: writeConcernErrors[0])
         }
-    }
-}
-
-/// A struct to represent a write error resulting from an executed bulk write.
-public struct WriteError: Codable {
-    /// The index of the request that errored.
-    public let index: Int
-
-    /// An integer value identifying the error.
-    public let code: Int
-
-    /// A description of the error.
-    public let message: String
-
-    private enum CodingKeys: String, CodingKey {
-        case index
-        case code
-        case message = "errmsg"
-    }
-}
-
-/// A struct to represent a write concern error resulting from an executed bulk write.
-public struct WriteConcernError: Codable {
-    /// An integer value identifying the write concern error.
-    public let code: Int
-
-    /// A document identifying the write concern setting related to the error.
-    public let info: Document
-
-    ///  A description of the error.
-    public let message: String
-
-    private enum CodingKeys: String, CodingKey {
-        case code
-        case info = "errInfo"
-        case message = "errmsg"
     }
 }

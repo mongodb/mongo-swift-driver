@@ -148,17 +148,29 @@ public class MongoClient {
         }
 
         if options?.eventMonitoring == true { self.initializeMonitoring() }
+
+        guard mongoc_client_set_error_api(self._client, MONGOC_ERROR_API_VERSION_2) else {
+            throw RuntimeError.internalError(message: "Could not configure error handling on client")
+        }
     }
 
     /**
+     * :nodoc:
      * Create a new client from an existing `mongoc_client_t`.
      * Do not use this initializer unless you know what you are doing.
+     *
+     * If this client was derived from a pool, ensure that the error api version was set to 2 on the pool.
      *
      * - Parameters:
      *   - fromPointer: the `mongoc_client_t` to store and use internally
      */
     public init(fromPointer: OpaquePointer) {
         self._client = fromPointer
+
+        // This call may fail, and if it does, either the error api version was already set or the client was derived
+        // from a pool. In either case, the error handling in MongoSwift will be incorrect unless the correct api
+        // version was set by the caller.
+        mongoc_client_set_error_api(self._client, MONGOC_ERROR_API_VERSION_2)
     }
 
     /**
