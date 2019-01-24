@@ -146,7 +146,7 @@ public struct BulkWriteError: Codable {
 
 /// Internal helper function used to get an appropriate error from a libmongoc error. This should NOT be used to get
 /// `.writeError`s or `.bulkWriteError`s. Instead, construct those using `getErrorFromReply`.
-internal func parseMongocError(error: bson_error_t, errorLabels: [String]? = nil) -> MongoSwiftError {
+internal func parseMongocError(_ error: bson_error_t, errorLabels: [String]? = nil) -> MongoSwiftError {
     let domain = mongoc_error_domain_t(rawValue: error.domain)
     let code = mongoc_error_code_t(rawValue: error.code)
     let message = toErrorString(error)
@@ -180,7 +180,7 @@ internal func getErrorFromReply(
         withResult result: BulkWriteResult? = nil) -> MongoSwiftError {
     // if writeErrors or writeConcernErrors aren't present, then this is likely a commandError.
     guard reply["writeErrors"] != nil || reply["writeConcernErrors"] != nil else {
-        return parseMongocError(error: bsonError, errorLabels: reply["errorLabels"] as? [String])
+        return parseMongocError(bsonError, errorLabels: reply["errorLabels"] as? [String])
     }
 
     let fallback = RuntimeError.internalError(message: "Got error from the server but couldn't parse it. " +

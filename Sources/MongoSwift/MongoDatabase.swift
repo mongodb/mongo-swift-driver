@@ -199,7 +199,7 @@ public class MongoDatabase {
     public func drop() throws {
         var error = bson_error_t()
         guard mongoc_database_drop(self._database, &error) else {
-            throw parseMongocError(error: error)
+            throw parseMongocError(error)
         }
     }
 
@@ -291,7 +291,7 @@ public class MongoDatabase {
         var error = bson_error_t()
 
         guard let collection = mongoc_database_create_collection(self._database, name, opts?.data, &error) else {
-            throw parseMongocError(error: error)
+            throw parseMongocError(error)
         }
 
         guard let client = self._client else {

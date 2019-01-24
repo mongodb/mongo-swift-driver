@@ -55,18 +55,20 @@ extension MongoCollection {
             self.options = DeleteModelOptions(collation: collation)
         }
 
-        /// Adds the `deleteOne` operation to a bulk write
-        ///
-        /// - Throws:
-        ///   - `UserError.invalidArgumentError` if the options form an invalid combination.
-        ///   - `EncodingError` if an error occurs while encoding the options to BSON.
+        /**
+         * Adds the `deleteOne` operation to a bulk write
+         *
+         * - Throws:
+         *   - `UserError.invalidArgumentError` if the options form an invalid combination.
+         *   - `EncodingError` if an error occurs while encoding the options to BSON.
+         */
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
-            let opts = try BSONEncoder().encode(options)
+            let opts = try BSONEncoder().encode(self.options)
 
             var error = bson_error_t()
 
             guard mongoc_bulk_operation_remove_one_with_opts(bulk.bulk, self.filter.data, opts.data, &error) else {
-                throw UserError.invalidArgumentError(message: toErrorString(error))
+                throw parseMongocError(error) // Should be invalidArgumentError
             }
         }
     }
@@ -88,17 +90,19 @@ extension MongoCollection {
             self.options = DeleteModelOptions(collation: collation)
         }
 
-        /// Adds the `deleteMany` operation to a bulk write
-        ///
-        /// - Throws:
-        ///   - `UserError.invalidArgumentError` if the options form an invalid combination.
-        ///   - `EncodingError` if an error occurs while encoding the options to BSON.
+        /**
+         * Adds the `deleteMany` operation to a bulk write
+         *
+         * - Throws:
+         *   - `UserError.invalidArgumentError` if the options form an invalid combination.
+         *   - `EncodingError` if an error occurs while encoding the options to BSON.
+         */
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
             let opts = try BSONEncoder().encode(options)
             var error = bson_error_t()
 
             guard mongoc_bulk_operation_remove_many_with_opts(bulk.bulk, self.filter.data, opts.data, &error) else {
-                throw UserError.invalidArgumentError(message: toErrorString(error))
+                throw parseMongocError(error) // should be invalidArgumentError
             }
         }
     }
@@ -117,16 +121,17 @@ extension MongoCollection {
             self.document = document
         }
 
-        /// Adds the `insertOne` operation to a bulk write
-        ///
-        /// - Throws:
-        ///   - `EncodingError` if an error occurs while encoding the `CollectionType` to BSON.
-        ///   - `UserError.invalidArgumentError` if the options form an invalid combination.
+        /** Adds the `insertOne` operation to a bulk write
+         *
+         * - Throws:
+         *   - `EncodingError` if an error occurs while encoding the `CollectionType` to BSON.
+         *   - `UserError.invalidArgumentError` if the options form an invalid combination.
+         */
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
             let document = try BSONEncoder().encode(self.document).withID()
             var error = bson_error_t()
             guard mongoc_bulk_operation_insert_with_opts(bulk.bulk, document.data, nil, &error) else {
-                throw UserError.invalidArgumentError(message: toErrorString(error))
+                throw parseMongocError(error) // should be invalidArgumentError
             }
 
             guard let insertedId = try document.getValue(for: "_id") else {
@@ -164,11 +169,12 @@ extension MongoCollection {
             self.options = ReplaceOneModelOptions(collation: collation, upsert: upsert)
         }
 
-        /// Adds the `replaceOne` operation to a bulk write
-        ///
-        /// - Throws:
-        ///   - `EncodingError` if an error occurs while encoding the `CollectionType` or options to BSON.
-        ///   - `UserError.invalidArgumentError` if the options form an invalid combination.
+        /** Adds the `replaceOne` operation to a bulk write
+         *
+         * - Throws:
+         *   - `EncodingError` if an error occurs while encoding the `CollectionType` or options to BSON.
+         *   - `UserError.invalidArgumentError` if the options form an invalid combination.
+         */
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
             let encoder = BSONEncoder()
             let replacement = try encoder.encode(self.replacement)
@@ -180,7 +186,7 @@ extension MongoCollection {
                                                               replacement.data,
                                                               opts.data,
                                                               &error) else {
-                throw UserError.invalidArgumentError(message: toErrorString(error))
+                throw parseMongocError(error) // should be invalidArgumentError
             }
         }
     }
@@ -217,11 +223,12 @@ extension MongoCollection {
             self.options = UpdateModelOptions(arrayFilters: arrayFilters, collation: collation, upsert: upsert)
         }
 
-        /// Adds the `updateOne` operation to a bulk write.
-        ///
-        /// - Throws:
-        ///   - `EncodingError` if an error occurs while encoding the options to BSON.
-        ///   - `UserError.invalidArgumentError` if the options form an invalid combination.
+        /** Adds the `updateOne` operation to a bulk write.
+         *
+         * - Throws:
+         *   - `EncodingError` if an error occurs while encoding the options to BSON.
+         *   - `UserError.invalidArgumentError` if the options form an invalid combination.
+         */
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
             let opts = try BSONEncoder().encode(self.options)
             var error = bson_error_t()
@@ -231,7 +238,7 @@ extension MongoCollection {
                                                              self.update.data,
                                                              opts.data,
                                                              &error) else {
-                throw UserError.invalidArgumentError(message: toErrorString(error))
+                throw parseMongocError(error) // should be invalidArgumentError
             }
         }
     }
@@ -262,11 +269,13 @@ extension MongoCollection {
             self.options = UpdateModelOptions(arrayFilters: arrayFilters, collation: collation, upsert: upsert)
         }
 
-        /// Adds the `updateMany` operation to a bulk write
-        ///
-        /// - Throws:
-        ///   - `EncodingError` if an error occurs while encoding the options to BSON.
-        ///   - `UserError.invalidArgumentError` if the options form an invalid combination.
+        /**
+         * Adds the `updateMany` operation to a bulk write
+         *
+         * - Throws:
+         *   - `EncodingError` if an error occurs while encoding the options to BSON.
+         *   - `UserError.invalidArgumentError` if the options form an invalid combination.
+         */
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
             let opts = try BSONEncoder().encode(self.options)
             var error = bson_error_t()
@@ -276,7 +285,7 @@ extension MongoCollection {
                                                               self.update.data,
                                                               opts.data,
                                                               &error) else {
-                throw UserError.invalidArgumentError(message: toErrorString(error))
+                throw parseMongocError(error) // should be invalidArgumentError
             }
         }
     }

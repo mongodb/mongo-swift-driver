@@ -164,9 +164,9 @@ public class BSONDecoder {
                                   debugDescription: "Unable to parse JSON string \(json)"))
     }
 
-    /// Internal function used to  convert encountered `DecodingError`s to `.internalErrors`. Use this when using the
+    /// Internal version of decode that throws `.internalErrors` instead of `DecodingErrors`. Use this when using the
     /// decoder internally on non-user-modified types.
-    public func internalDecode<T: Decodable>(
+    internal func internalDecode<T: Decodable>(
             _ type: T.Type,
             from document: Document,
             withError errMsg: String = "Failed to decode \(T.self)")

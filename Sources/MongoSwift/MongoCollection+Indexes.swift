@@ -276,7 +276,7 @@ extension MongoCollection {
         let opts = try BSONEncoder().encode(options)
         var error = bson_error_t()
         guard mongoc_collection_drop_index_with_opts(self._collection, name, opts?.data, &error) else {
-            throw parseMongocError(error: error)
+            throw parseMongocError(error)
         }
     }
 

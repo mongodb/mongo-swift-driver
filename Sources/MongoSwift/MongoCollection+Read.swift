@@ -70,7 +70,7 @@ extension MongoCollection {
         let count = mongoc_collection_count_with_opts(
             self._collection, MONGOC_QUERY_NONE, filter.data, 0, 0, opts?.data, rp, &error)
 
-        if count == -1 { throw parseMongocError(error: error) }
+        if count == -1 { throw parseMongocError(error) }
 
         return Int(count)
     }
@@ -133,7 +133,7 @@ extension MongoCollection {
         var error = bson_error_t()
         guard mongoc_collection_read_command_with_opts(
             self._collection, command.data, rp, opts?.data, reply.data, &error) else {
-            throw parseMongocError(error: error, errorLabels: reply["errorLabels"] as? [String])
+            throw parseMongocError(error, errorLabels: reply["errorLabels"] as? [String])
         }
 
         guard let values = try reply.getValue(for: "values") as? [BSONValue] else {

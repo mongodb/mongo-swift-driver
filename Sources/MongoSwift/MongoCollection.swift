@@ -62,7 +62,7 @@ public class MongoCollection<T: Codable> {
     public func drop() throws {
         var error = bson_error_t()
         guard mongoc_collection_drop(self._collection, &error) else {
-            throw parseMongocError(error: error)
+            throw parseMongocError(error)
         }
     }
 }
