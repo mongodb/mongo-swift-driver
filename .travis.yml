@@ -2,54 +2,66 @@ language: generic
 sudo: required
 dist: trusty
 
-matrix:
+jobs:
   include:
-    - os: osx
-      osx_image: xcode9.4 
-      env: MONGODB_VERSION=3.6.5 SWIFT_VERSION=4.0
-    - os: osx
+    - stage: tests
+      os: osx
       osx_image: xcode9.4
-      env: MONGODB_VERSION=3.6.5 SWIFT_VERSION=4.1
-    - os: osx
+      env: SWIFT_VERSION=4.0
+
+    - stage: tests
+      os: osx
+      osx_image: xcode9.4
+      env: SWIFT_VERSION=4.1
+
+    - stage: tests
+      os: osx
       osx_image: xcode10.1
-      env: MONGODB_VERSION=3.6.5 SWIFT_VERSION=4.1
-    - os: osx
+      env: SWIFT_VERSION=4.1
+
+    - stage: tests
+      os: osx
       osx_image: xcode10.1
-      env: MONGODB_VERSION=3.6.5 SWIFT_VERSION=4.2
-    - os: linux
-      env: MONGODB_VERSION=3.6.5 SWIFT_VERSION=4.0
-    - os: linux
-      env: MONGODB_VERSION=3.6.5 SWIFT_VERSION=4.1
-    - os: linux
-      env: MONGODB_VERSION=3.6.5 SWIFT_VERSION=4.2
+      env: SWIFT_VERSION=4.2
+
+    - stage: tests
+      os: linux
+      env: SWIFT_VERSION=4.0
+
+    - stage: tests
+      os: linux
+      env: SWIFT_VERSION=4.1
+
+    - stage: tests
+      os: linux
+      env: SWIFT_VERSION=4.2
+
+    - stage: code coverage
+      os: osx
+      osx_image: xcode10.1
+      script: make coverage
+      after_success: bash <(curl -s https://codecov.io/bash)
+
+    - stage: lint
+      os: osx
+      install: ./Tests/Scripts/install_dependencies.sh swiftlint
+      before_script: skip
+      script: ${PWD}/swiftlint/swiftlint --strict
+
 
 install:
-  - MONGODB_BASE="mongodb-linux-x86_64"
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then MONGODB_BASE="mongodb-osx-ssl-x86_64"; fi
-
-  # install mongodb
-  - wget http://fastdl.mongodb.org/${TRAVIS_OS_NAME}/${MONGODB_BASE}-${MONGODB_VERSION}.tgz
-  - mkdir mongodb-${MONGODB_VERSION}
-  - tar xzvf ${MONGODB_BASE}-${MONGODB_VERSION}.tgz -C mongodb-${MONGODB_VERSION} --strip-components 1
-  - ${PWD}/mongodb-${MONGODB_VERSION}/bin/mongod --version
-
-  # install swiftenv
-  - eval "$(curl -sL https://swiftenv.fuller.li/install.sh)"
-  
-  # clone and build libmongoc
-  - git clone -b r1.13 https://github.com/mongodb/mongo-c-driver /tmp/libmongoc
-  - pushd /tmp/libmongoc
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr/local; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr; fi
-  - sudo make -j8 install
-  - popd
+  - INSTALLER=Tests/Scripts/install_dependencies.sh
+  - export LIBMONGOC_VERSION=r1.13
+  - export MONGODB_VERSION=3.6.5
+  - ./${INSTALLER} libmongoc
+  - ./${INSTALLER} mongodb
+  - if [[ "$TRAVIS_STAGE_NAME" != "Code coverage" ]]; then eval "$(curl -sL https://swiftenv.fuller.li/install.sh)"; fi
 
 before_script:
-  - mkdir ${PWD}/mongodb-${MONGODB_VERSION}/data
-  - ${PWD}/mongodb-${MONGODB_VERSION}/bin/mongod --dbpath ${PWD}/mongodb-${MONGODB_VERSION}/data --logpath ${PWD}/mongodb-${MONGODB_VERSION}/mongodb.log --enableMajorityReadConcern --fork
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir ${PWD}/swiftlint; curl -L https://github.com/realm/SwiftLint/releases/download/0.29.3/portable_swiftlint.zip -o ${PWD}/swiftlint/swiftlint.zip; unzip ${PWD}/swiftlint/swiftlint.zip -d ${PWD}/swiftlint; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ${PWD}/swiftlint/swiftlint --strict; fi
+  - MONGODIR=${PWD}/mongodb-${MONGODB_VERSION}
+  - mkdir ${MONGODIR}/data
+  - ${MONGODIR}/bin/mongod --dbpath ${MONGODIR}/data --logpath ${MONGODIR}/mongodb.log --fork
 
 script:
-  - swift build -v
-  - swift test -v
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then make test-pretty; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then make test; fi
