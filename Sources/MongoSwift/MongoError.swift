@@ -195,70 +195,92 @@ internal func getErrorFromReply(
         }
 
         if let bulkWrite = bulkWrite {
-            var insertedIds = result?.insertedIds
-
-            var bulkWriteErrors: [BulkWriteError]?
-            if let writeErrors = reply["writeErrors"] as? [Document], !writeErrors.isEmpty {
-                bulkWriteErrors = try writeErrors.map {
-                    var err = try decoder.decode(BulkWriteError.self, from: $0)
-                    err.request = bulkWrite.requests[err.index]
-                    insertedIds?[err.index] = nil
-                    return err
-                }
-
-                let ordered = try bulkWrite.opts?.getValue(for: "ordered") as? Bool ?? true
-
-                // If ordered, remove all inserted ids after the one that errored.
-                if ordered {
-                    // we know bulkWriteErrors is non-nil because we initialize it above
-                    // swiftlint:disable:next force_unwrapping
-                    insertedIds = insertedIds?.filter { $0.key < bulkWriteErrors![0].index }
-                }
-            }
-
-            guard bulkWriteErrors != nil || writeConcernError != nil else {
-                return fallback
-            }
-
-            // Need to create new result that omits the ids that failed in insertedIds.
-            var errResult: BulkWriteResult?
-            if let result = result {
-                errResult = BulkWriteResult(
-                        deletedCount: result.deletedCount,
-                        insertedCount: result.insertedCount,
-                        insertedIds: insertedIds,
-                        matchedCount: result.matchedCount,
-                        modifiedCount: result.modifiedCount,
-                        upsertedCount: result.upsertedCount,
-                        upsertedIds: result.upsertedIds
-                )
-            }
-
-            return ServerError.bulkWriteError(
-                    writeErrors: bulkWriteErrors,
-                    writeConcernError: writeConcernError,
-                    result: errResult,
-                    errorLabels: reply["errorLabels"] as? [String]
-            )
-        } else {
-            var writeError: WriteError?
-            if let writeErrors = reply["writeErrors"] as? [Document], !writeErrors.isEmpty {
-                writeError = try decoder.decode(WriteError.self, from: writeErrors[0])
-            }
-
-            guard writeError != nil || writeConcernError != nil else {
-                return fallback
-            }
-
-            return ServerError.writeError(
-                    writeError: writeError,
-                    writeConcernError: writeConcernError,
-                    errorLabels: reply["errorLabels"] as? [String]
-            )
+            return try getBulkWriteErrorFromReply(
+                    from: reply,
+                    forBulkWrite: bulkWrite,
+                    withResult: result,
+                    withWriteConcernError: writeConcernError) ?? fallback
         }
+
+        return try getWriteErrorFromReply(from: reply, withWriteConcernError: writeConcernError) ?? fallback
     } catch {
         return fallback
     }
+}
+
+/// Function used to extract a write error from a server reply.
+private func getWriteErrorFromReply(
+        from reply: Document,
+        withWriteConcernError wcErr: WriteConcernError? = nil) throws -> MongoSwiftError? {
+    let decoder = BSONDecoder()
+    var writeError: WriteError?
+    if let writeErrors = reply["writeErrors"] as? [Document], !writeErrors.isEmpty {
+        writeError = try decoder.decode(WriteError.self, from: writeErrors[0])
+    }
+
+    guard writeError != nil || wcErr != nil else {
+        return nil
+    }
+
+    return ServerError.writeError(
+            writeError: writeError,
+            writeConcernError: wcErr,
+            errorLabels: reply["errorLabels"] as? [String]
+    )
+}
+
+/// Function used to extract bulk write errors from a server reply.
+private func getBulkWriteErrorFromReply(
+        from reply: Document,
+        forBulkWrite bulkWrite: BulkWriteOperation,
+        withResult result: BulkWriteResult? = nil,
+        withWriteConcernError wcErr: WriteConcernError? = nil) throws -> MongoSwiftError? {
+    let decoder = BSONDecoder()
+    var insertedIds = result?.insertedIds
+
+    var bulkWriteErrors: [BulkWriteError]?
+    if let writeErrors = reply["writeErrors"] as? [Document], !writeErrors.isEmpty {
+        bulkWriteErrors = try writeErrors.map {
+            var err = try decoder.decode(BulkWriteError.self, from: $0)
+            err.request = bulkWrite.requests[err.index]
+            insertedIds?[err.index] = nil
+            return err
+        }
+
+        let ordered = try bulkWrite.opts?.getValue(for: "ordered") as? Bool ?? true
+
+        // If ordered, remove all inserted ids after the one that errored.
+        if ordered {
+            // we know bulkWriteErrors is non-nil because we initialize it above
+            // swiftlint:disable:next force_unwrapping
+            insertedIds = insertedIds?.filter { $0.key < bulkWriteErrors![0].index }
+        }
+    }
+
+    guard wcErr != nil || bulkWriteErrors != nil else {
+        return nil
+    }
+
+    // Need to create new result that omits the ids that failed in insertedIds.
+    var errResult: BulkWriteResult?
+    if let result = result {
+        errResult = BulkWriteResult(
+                deletedCount: result.deletedCount,
+                insertedCount: result.insertedCount,
+                insertedIds: insertedIds,
+                matchedCount: result.matchedCount,
+                modifiedCount: result.modifiedCount,
+                upsertedCount: result.upsertedCount,
+                upsertedIds: result.upsertedIds
+        )
+    }
+
+    return ServerError.bulkWriteError(
+            writeErrors: bulkWriteErrors,
+            writeConcernError: wcErr,
+            result: errResult,
+            errorLabels: reply["errorLabels"] as? [String]
+    )
 }
 
 /// The possible errors that can occur when using this package.

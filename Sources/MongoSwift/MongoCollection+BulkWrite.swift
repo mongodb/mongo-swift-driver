@@ -6,8 +6,8 @@ extension MongoCollection {
      * Execute multiple write operations.
      *
      * - Parameters:
-     *   - requests: a `[WriteModel]` containing the writes to perform
-     *   - options: optional `BulkWriteOptions` to use while executing the operation
+     *   - requests: a `[WriteModel]` containing the writes to perform.
+     *   - options: optional `BulkWriteOptions` to use while executing the operation.
      *
      * - Returns: a `BulkWriteResult`, or `nil` if the write concern is unacknowledged.
      *
@@ -47,8 +47,8 @@ extension MongoCollection {
          * Create a `deleteOne` operation for a bulk write.
          *
          * - Parameters:
-         *   - filter: A `Document` representing the match criteria
-         *   - collation: Specifies a collation to use
+         *   - filter: A `Document` representing the match criteria.
+         *   - collation: Specifies a collation to use.
          */
         public init(_ filter: Document, collation: Document? = nil) {
             self.filter = filter
@@ -56,7 +56,7 @@ extension MongoCollection {
         }
 
         /**
-         * Adds the `deleteOne` operation to a bulk write
+         * Adds the `deleteOne` operation to a bulk write.
          *
          * - Throws:
          *   - `UserError.invalidArgumentError` if the options form an invalid combination.
@@ -82,8 +82,8 @@ extension MongoCollection {
          * Create a `deleteMany` operation for a bulk write.
          *
          * - Parameters:
-         *   - filter: A `Document` representing the match criteria
-         *   - collation: Specifies a collation to use
+         *   - filter: A `Document` representing the match criteria.
+         *   - collation: Specifies a collation to use.
          */
         public init(_ filter: Document, collation: Document? = nil) {
             self.filter = filter
@@ -91,7 +91,7 @@ extension MongoCollection {
         }
 
         /**
-         * Adds the `deleteMany` operation to a bulk write
+         * Adds the `deleteMany` operation to a bulk write.
          *
          * - Throws:
          *   - `UserError.invalidArgumentError` if the options form an invalid combination.
@@ -115,13 +115,13 @@ extension MongoCollection {
          * Create an `insertOne` operation for a bulk write.
          *
          * - Parameters:
-         *   - document: The `CollectionType` to insert
+         *   - document: The `CollectionType` to insert.
          */
         public init(_ document: CollectionType) {
             self.document = document
         }
 
-        /** Adds the `insertOne` operation to a bulk write
+        /** Adds the `insertOne` operation to a bulk write.
          *
          * - Throws:
          *   - `EncodingError` if an error occurs while encoding the `CollectionType` to BSON.
@@ -158,10 +158,10 @@ extension MongoCollection {
          * Create a `replaceOne` operation for a bulk write.
          *
          * - Parameters:
-         *   - filter: A `Document` representing the match criteria
-         *   - replacement: The `CollectionType` to use as the replacement value
-         *   - collation: Specifies a collation to use
-         *   - upsert: When `true`, creates a new document if no document matches the query
+         *   - filter: A `Document` representing the match criteria.
+         *   - replacement: The `CollectionType` to use as the replacement value.
+         *   - collation: Specifies a collation to use.
+         *   - upsert: When `true`, creates a new document if no document matches the query.
          */
         public init(filter: Document, replacement: CollectionType, collation: Document? = nil, upsert: Bool? = nil) {
             self.filter = filter
@@ -169,7 +169,7 @@ extension MongoCollection {
             self.options = ReplaceOneModelOptions(collation: collation, upsert: upsert)
         }
 
-        /** Adds the `replaceOne` operation to a bulk write
+        /** Adds the `replaceOne` operation to a bulk write.
          *
          * - Throws:
          *   - `EncodingError` if an error occurs while encoding the `CollectionType` or options to BSON.
@@ -207,11 +207,11 @@ extension MongoCollection {
          * Create an `updateOne` operation for a bulk write.
          *
          * - Parameters:
-         *   - filter: A `Document` representing the match criteria
-         *   - update: A `Document` containing update operators
-         *   - arrayFilters: A set of filters specifying to which array elements an update should apply
-         *   - collation: Specifies a collation to use
-         *   - upsert: When `true`, creates a new document if no document matches the query
+         *   - filter: A `Document` representing the match criteria.
+         *   - update: A `Document` containing update operators.
+         *   - arrayFilters: A set of filters specifying to which array elements an update should apply.
+         *   - collation: Specifies a collation to use.
+         *   - upsert: When `true`, creates a new document if no document matches the query.
          */
         public init(filter: Document,
                     update: Document,
@@ -253,11 +253,11 @@ extension MongoCollection {
          * Create a `updateMany` operation for a bulk write.
          *
          * - Parameters:
-         *   - filter: A `Document` representing the match criteria
-         *   - update: A `Document` containing update operators
-         *   - arrayFilters: A set of filters specifying to which array elements an update should apply
-         *   - collation: Specifies a collation to use
-         *   - upsert: When `true`, creates a new document if no document matches the query
+         *   - filter: A `Document` representing the match criteria.
+         *   - update: A `Document` containing update operators.
+         *   - arrayFilters: A set of filters specifying to which array elements an update should apply.
+         *   - collation: Specifies a collation to use.
+         *   - upsert: When `true`, creates a new document if no document matches the query.
          */
         public init(filter: Document,
                     update: Document,
@@ -270,7 +270,7 @@ extension MongoCollection {
         }
 
         /**
-         * Adds the `updateMany` operation to a bulk write
+         * Adds the `updateMany` operation to a bulk write.
          *
          * - Throws:
          *   - `EncodingError` if an error occurs while encoding the options to BSON.
@@ -301,8 +301,8 @@ public protocol WriteModel {
      * `MongoCollection.bulkWrite`.
      *
      * - Parameters:
-     *   - bulk: A `BulkWriteOperation`
-     *   - index: Index of the operation within the `MongoCollection.bulkWrite` `requests` array
+     *   - bulk: A `BulkWriteOperation`.
+     *   - index: Index of the operation within the `MongoCollection.bulkWrite` `requests` array.
      */
     func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws
 }
@@ -329,7 +329,7 @@ public class BulkWriteOperation {
     }
 
     /// Executes the bulk write operation and returns a `BulkWriteResult` or
-    /// `nil` is the write concern is unacknowledged
+    /// `nil` is the write concern is unacknowledged.
     fileprivate func execute() throws -> BulkWriteResult? {
         let reply = Document()
         var error = bson_error_t()
