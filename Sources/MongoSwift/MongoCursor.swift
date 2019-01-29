@@ -13,7 +13,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
 
         if let err = self.error {
             // Need to explicitly close since deinit will not execute if we throw.
-            close()
+            self.close()
 
             // Errors in creation of the cursor are limited to invalid argument errors, but some errors are reported
             // by libmongoc as invalid cursor errors. These would be parsed to .logicErrors, so we need to rethrow them
@@ -28,7 +28,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
 
     /// Deinitializes a `MongoCursor`, cleaning up the internal `mongoc_cursor_t`.
     deinit {
-        close()
+        self.close()
     }
 
     /// Closes the cursor.
