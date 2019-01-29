@@ -131,12 +131,6 @@ public struct BulkWriteError: Codable {
     /// The index of the request that errored.
     public let index: Int
 
-    /// The request that errored.
-    // Swift 4.0 requires a default value here because request isn't a CodingKey. Later versions do not have this
-    // problem. TODO: remove this default value and linter ignore (SWIFT-283).
-    // swiftlint:disable:next redundant_optional_initialization
-    public var request: WriteModel? = nil
-
     private enum CodingKeys: String, CodingKey {
         case code
         case message = "errmsg"
@@ -241,8 +235,7 @@ private func getBulkWriteErrorFromReply(
     var bulkWriteErrors: [BulkWriteError]?
     if let writeErrors = reply["writeErrors"] as? [Document], !writeErrors.isEmpty {
         bulkWriteErrors = try writeErrors.map {
-            var err = try decoder.decode(BulkWriteError.self, from: $0)
-            err.request = bulkWrite.requests[err.index]
+            let err = try decoder.decode(BulkWriteError.self, from: $0)
             insertedIds?[err.index] = nil
             return err
         }

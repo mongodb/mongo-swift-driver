@@ -28,7 +28,6 @@ extension MongoCollection {
 
         try requests.enumerated().forEach { index, model in
             try model.addToBulkWrite(bulk: bulk, index: index)
-            bulk.requests[index] = model
         }
 
         return try bulk.execute()
@@ -312,7 +311,6 @@ public class BulkWriteOperation {
     fileprivate var bulk: OpaquePointer?
     fileprivate var insertedIds: [Int: BSONValue] = [:]
 
-    internal var requests: [Int: WriteModel] = [:]
     internal let opts: Document?
 
     /// Indicates whether this bulk operation used an acknowledged write concern.

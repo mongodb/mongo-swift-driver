@@ -121,22 +121,14 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
 
         // Expect a duplicate key error (11000)
         let expectedError = ServerError.bulkWriteError(
-                writeErrors: [BulkWriteError(code: 11000, message: "", index: 1, request: nil)],
+                writeErrors: [BulkWriteError(code: 11000, message: "", index: 1)],
                 writeConcernError: nil,
                 result: expectedResult,
                 errorLabels: nil)
 
         let options = BulkWriteOptions(ordered: false)
 
-        expect(try self.coll.bulkWrite(requests, options: options)).to(throwError { err in
-            expect(err as? ServerError).to(equal(expectedError))
-
-            if case let ServerError.bulkWriteError(writeErrors, _, _, _) = err {
-                expect(writeErrors?.count).to(equal(1))
-                expect((writeErrors?[0].request! as! InsertOneModel).document)
-                        .to(equal((requests[1] as! InsertOneModel).document))
-            }
-        })
+        expect(try self.coll.bulkWrite(requests, options: options)).to(throwError(expectedError))
     }
 
     func testUpdates() throws {

@@ -179,7 +179,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
         let expectedResultOrdered = BulkWriteResult(insertedCount: 1, insertedIds: [0: newDoc1["_id"]!])
         let expectedErrorsOrdered = [
-            BulkWriteError(code: 11000, message: "", index: 1, request: nil)
+            BulkWriteError(code: 11000, message: "", index: 1)
         ]
 
         let expectedErrorOrdered = ServerError.bulkWriteError(
@@ -191,8 +191,8 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(try self.coll.insertMany([newDoc1, docId1, newDoc2, docId2])).to(throwError(expectedErrorOrdered))
 
         let expectedErrors = [
-            BulkWriteError(code: 11000, message: "", index: 1, request: nil),
-            BulkWriteError(code: 11000, message: "", index: 3, request: nil)
+            BulkWriteError(code: 11000, message: "", index: 1),
+            BulkWriteError(code: 11000, message: "", index: 3)
         ]
         let expectedResult = BulkWriteResult(insertedCount: 2, insertedIds: [0: newDoc3["_id"]!, 2: newDoc4["_id"]!])
         let expectedError = ServerError.bulkWriteError(
@@ -202,18 +202,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
                 errorLabels: nil)
 
         expect(try self.coll.insertMany([newDoc3, docId1, newDoc4, docId2], options: InsertManyOptions(ordered: false)))
-                .to(throwError { err in
-                    expect(err as? ServerError).to(equal(expectedError))
-
-                    if case let ServerError.bulkWriteError(writeErrors, _, _, _) = err {
-                        var errRequests: [Int: WriteModel] = [:]
-                        writeErrors?.forEach { errRequests[$0.index] = $0.request }
-                        expect(errRequests[0]).to(beNil())
-                        expect((errRequests[1] as? InsertOne)?.document).to(equal(docId1))
-                        expect(errRequests[2]).to(beNil())
-                        expect((errRequests[3] as? InsertOne)?.document).to(equal(docId2))
-                    }
-                })
+                .to(throwError(expectedError))
     }
 
     func testInsertManyWithEmptyValues() {
