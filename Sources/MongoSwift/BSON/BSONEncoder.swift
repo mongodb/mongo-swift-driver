@@ -400,11 +400,10 @@ extension _BSONEncoder {
         case .formatted(let formatter):
             return formatter.string(from: date)
         case .iso8601:
-            if #available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) {
-                return BSONDecoder.iso8601Formatter.string(from: date)
-            } else {
-                throw MongoError.bsonEncodeError(message: "ISO8601DateFormatter is unavailable on this platform.")
+            guard #available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) else {
+                fatalError("ISO8601DateFormatter is unavailable on this platform.")
             }
+            return BSONDecoder.iso8601Formatter.string(from: date)
         case .custom(let f):
             return try handleCustomStrategy(encodeFunc: f, forValue: date)
         }

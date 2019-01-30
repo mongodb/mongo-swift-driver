@@ -61,12 +61,20 @@ public protocol BSONValue {
     * - Parameters:
     *   - storage: A `DocumentStorage` to write to.
     *   - key: A `String`, the key under which to store the value.
+    *
+    * - Throws:
+    *   - `RuntimeError.internalError` if the `DocumentStorage` would exceed the maximum size by encoding this
+    *     key-value pair.
+    *   - `UserError.logicError` if the value is an `Array` and it contains a non-`BSONValue` element.
     */
     func encode(to storage: DocumentStorage, forKey key: String) throws
 
     /**
     * Given a `DocumentIterator` known to have a next value of this type,
     * initializes the value.
+    *
+    * - Throws: `UserError.logicError` if the current type of the `DocumentIterator` does not correspond to the
+    *           associated type of this `BSONValue`.
     */
     static func from(iterator iter: DocumentIterator) throws -> Self
 }
@@ -76,6 +84,10 @@ extension Array: BSONValue {
     public var bsonType: BSONType { return .array }
 
     public static func from(iterator iter: DocumentIterator) throws -> Array {
+        guard iter.currentType == .array else {
+            throw wrongIterTypeError(iter, expected: Array.self)
+        }
+
         var length: UInt32 = 0
         let array = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
         defer {
@@ -87,7 +99,7 @@ extension Array: BSONValue {
         // since an array is a nested object with keys '0', '1', etc.,
         // create a new Document using the array data so we can recursively parse
         guard let arrayData = bson_new_from_data(array.pointee, Int(length)) else {
-            throw MongoError.bsonDecodeError(message: "Failed to create a bson_t from array data")
+            throw RuntimeError.internalError(message: "Failed to create an Array from iterator")
         }
 
         let arrDoc = Document(fromPointer: arrayData)
@@ -103,7 +115,7 @@ extension Array: BSONValue {
         var arr = Document()
         for (i, v) in self.enumerated() {
             guard let val = v as? BSONValue else {
-                throw MongoError.invalidArgument(
+                throw UserError.logicError(
                     message: "Cannot encode a non-BSONValue array element: \(String(describing: v)) "
                         + "with type: \(type(of: v)) "
                         + "at index: \(i)"
@@ -113,7 +125,7 @@ extension Array: BSONValue {
         }
 
         guard bson_append_array(storage.pointer, key, Int32(key.count), arr.data) else {
-            throw bsonEncodeError(value: self, forKey: key)
+            throw bsonTooLargeError(value: self, forKey: key)
         }
     }
 }
@@ -122,14 +134,19 @@ extension Array: BSONValue {
 public struct BSONNull: BSONValue, Codable, Equatable {
     public var bsonType: BSONType { return .null }
 
-    public static func from(iterator iter: DocumentIterator) throws -> BSONNull { return BSONNull() }
+    public static func from(iterator iter: DocumentIterator) throws -> BSONNull {
+        guard iter.currentType == .null else {
+            throw wrongIterTypeError(iter, expected: BSONNull.self)
+        }
+        return BSONNull()
+    }
 
     /// Initializes a new `BSONNull` instance.
     public init() { }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         guard bson_append_null(storage.pointer, key, Int32(key.count)) else {
-            throw bsonEncodeError(value: self, forKey: key)
+            throw bsonTooLargeError(value: self, forKey: key)
         }
     }
 
@@ -220,7 +237,7 @@ public struct Binary: BSONValue, Equatable, Codable {
         let length = self.data.count
         let byteArray = [UInt8](self.data)
         guard bson_append_binary(storage.pointer, key, Int32(key.count), subtype, byteArray, UInt32(length)) else {
-            throw bsonEncodeError(value: self, forKey: key)
+            throw bsonTooLargeError(value: self, forKey: key)
         }
     }
 
@@ -232,10 +249,15 @@ public struct Binary: BSONValue, Equatable, Codable {
             dataPointer.deinitialize(count: 1)
             dataPointer.deallocate()
         }
+
+        guard iter.currentType == .binary else {
+            throw wrongIterTypeError(iter, expected: Binary.self)
+        }
+
         bson_iter_binary(&iter.iter, &subtype, &length, dataPointer)
 
         guard let data = dataPointer.pointee else {
-            throw MongoError.bsonDecodeError(message: "failed to retrieve data stored for binary BSON value")
+            throw RuntimeError.internalError(message: "failed to retrieve data stored for binary BSON value")
         }
 
         let dataObj = Data(bytes: data, count: Int(length))
@@ -253,11 +275,15 @@ extension Bool: BSONValue {
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         guard bson_append_bool(storage.pointer, key, Int32(key.count), self) else {
-            throw bsonEncodeError(value: self, forKey: key)
+            throw bsonTooLargeError(value: self, forKey: key)
         }
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> Bool {
+        guard iter.currentType == .boolean else {
+            throw wrongIterTypeError(iter, expected: Bool.self)
+        }
+
         return self.init(bson_iter_bool(&iter.iter))
     }
 }
@@ -277,11 +303,15 @@ extension Date: BSONValue {
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         guard bson_append_date_time(storage.pointer, key, Int32(key.count), self.msSinceEpoch) else {
-            throw bsonEncodeError(value: self, forKey: key)
+            throw bsonTooLargeError(value: self, forKey: key)
         }
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> Date {
+        guard iter.currentType == .dateTime else {
+            throw wrongIterTypeError(iter, expected: Date.self)
+        }
+
         return self.init(msSinceEpoch: bson_iter_date_time(&iter.iter))
     }
 }
@@ -292,11 +322,11 @@ internal struct DBPointer: BSONValue {
     public var bsonType: BSONType { return .dbPointer }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        throw MongoError.bsonEncodeError(message: "`DBPointer`s are deprecated; use a DBRef document instead")
+        throw RuntimeError.internalError(message: "`DBPointer`s are deprecated; use a DBRef document instead")
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> DBPointer {
-        throw MongoError.bsonDecodeError(message:
+        throw RuntimeError.internalError(message:
             "`DBPointer`s are deprecated; use `DBPointer.asDocument` to create a DBRef document instead")
     }
 
@@ -317,13 +347,8 @@ internal struct DBPointer: BSONValue {
 
         bson_iter_dbpointer(&iter.iter, &length, collectionPP, oidPP)
 
-        guard let oidP = oidPP.pointee else {
-            throw MongoError.bsonDecodeError(message:
-                retrieveErrorMsg(type: "DBPointer ObjectId", key: iter.currentKey))
-        }
-        guard let collectionP = collectionPP.pointee else {
-            throw MongoError.bsonDecodeError(message:
-                retrieveErrorMsg(type: "DBPointer collection name", key: iter.currentKey))
+        guard let oidP = oidPP.pointee, let collectionP = collectionPP.pointee else {
+            throw wrongIterTypeError(iter, expected: DBPointer.self)
         }
 
         return [
@@ -364,7 +389,7 @@ public struct Decimal128: BSONValue, Equatable, Codable {
     internal static func toLibBSONType(_ str: String) throws -> bson_decimal128_t {
         var value = bson_decimal128_t()
         guard bson_decimal128_from_string(str, &value) else {
-            throw MongoError.bsonEncodeError(message: "Invalid Decimal128 string \(str)")
+            throw RuntimeError.internalError(message: "Invalid Decimal128 string \(str)")
         }
         return value
     }
@@ -376,14 +401,14 @@ public struct Decimal128: BSONValue, Equatable, Codable {
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         var value = try Decimal128.toLibBSONType(self.data)
         guard bson_append_decimal128(storage.pointer, key, Int32(key.count), &value) else {
-            throw bsonEncodeError(value: self, forKey: key)
+            throw bsonTooLargeError(value: self, forKey: key)
         }
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> Decimal128 {
         var value = bson_decimal128_t()
         guard bson_iter_decimal128(&iter.iter, &value) else {
-            throw MongoError.bsonDecodeError(message: "Failed to retrieve Decimal128 value from iterator")
+            throw wrongIterTypeError(iter, expected: Decimal128.self)
         }
 
         var str = Data(count: Int(BSON_DECIMAL128_STRING))
@@ -400,11 +425,15 @@ extension Double: BSONValue {
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         guard bson_append_double(storage.pointer, key, Int32(key.count), self) else {
-            throw bsonEncodeError(value: self, forKey: key)
+            throw bsonTooLargeError(value: self, forKey: key)
         }
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> Double {
+        guard iter.currentType == .double else {
+            throw wrongIterTypeError(iter, expected: Double.self)
+        }
+
         return self.init(bson_iter_double(&iter.iter))
     }
 }
@@ -425,11 +454,17 @@ extension Int: BSONValue {
             return try int64.encode(to: storage, forKey: key)
         }
 
-        throw MongoError.bsonEncodeError(message: "`Int` value \(self) could not be encoded as `Int32` or `Int64`")
+        throw RuntimeError.internalError(message: "`Int` value \(self) could not be encoded as `Int32` or `Int64`")
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> Int {
-        return self.init(Int(bson_iter_int32(&iter.iter)))
+        // TODO: handle this more gracefully (SWIFT-221)
+        switch iter.currentType {
+        case .int32, .int64:
+            return self.init(Int(bson_iter_int32(&iter.iter)))
+        default:
+            throw wrongIterTypeError(iter, expected: Int.self)
+        }
     }
 }
 
@@ -439,11 +474,14 @@ extension Int32: BSONValue {
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         guard bson_append_int32(storage.pointer, key, Int32(key.count), self) else {
-            throw bsonEncodeError(value: self, forKey: key)
+            throw bsonTooLargeError(value: self, forKey: key)
         }
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> Int32 {
+        guard iter.currentType == .int32 else {
+            throw wrongIterTypeError(iter, expected: Int32.self)
+        }
         return self.init(bson_iter_int32(&iter.iter))
     }
 }
@@ -454,11 +492,14 @@ extension Int64: BSONValue {
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         guard bson_append_int64(storage.pointer, key, Int32(key.count), self) else {
-            throw bsonEncodeError(value: self, forKey: key)
+            throw bsonTooLargeError(value: self, forKey: key)
         }
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> Int64 {
+        guard iter.currentType == .int64 else {
+            throw wrongIterTypeError(iter, expected: Int64.self)
+        }
         return self.init(bson_iter_int64(&iter.iter))
     }
 }
@@ -484,11 +525,11 @@ public struct CodeWithScope: BSONValue, Equatable, Codable {
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         if let s = self.scope {
             guard bson_append_code_with_scope(storage.pointer, key, Int32(key.count), self.code, s.data) else {
-                throw bsonEncodeError(value: self, forKey: key)
+                throw bsonTooLargeError(value: self, forKey: key)
             }
         } else {
             guard bson_append_code(storage.pointer, key, Int32(key.count), self.code) else {
-                throw bsonEncodeError(value: self, forKey: key)
+                throw bsonTooLargeError(value: self, forKey: key)
             }
         }
     }
@@ -501,6 +542,10 @@ public struct CodeWithScope: BSONValue, Equatable, Codable {
             return self.init(code: code)
         }
 
+        guard iter.currentType == .javascriptWithScope else {
+            throw wrongIterTypeError(iter, expected: CodeWithScope.self)
+        }
+
         var scopeLength: UInt32 = 0
         let scopePointer = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
         defer {
@@ -510,7 +555,7 @@ public struct CodeWithScope: BSONValue, Equatable, Codable {
 
         let code = String(cString: bson_iter_codewscope(&iter.iter, &length, &scopeLength, scopePointer))
         guard let scopeData = bson_new_from_data(scopePointer.pointee, Int(scopeLength)) else {
-            throw MongoError.bsonDecodeError(message: "Failed to create a bson_t from scope data")
+            throw RuntimeError.internalError(message: "Failed to create a bson_t from scope data")
         }
         let scopeDoc = Document(fromPointer: scopeData)
 
@@ -530,14 +575,19 @@ public struct MaxKey: BSONValue, Equatable, Codable {
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         guard bson_append_maxkey(storage.pointer, key, Int32(key.count)) else {
-            throw bsonEncodeError(value: self, forKey: key)
+            throw bsonTooLargeError(value: self, forKey: key)
         }
     }
 
     /// Initializes a new `MaxKey` instance.
     public init() {}
 
-    public static func from(iterator iter: DocumentIterator) -> MaxKey { return self.init() }
+    public static func from(iterator iter: DocumentIterator) throws -> MaxKey {
+        guard iter.currentType == .maxKey else {
+            throw wrongIterTypeError(iter, expected: MaxKey.self)
+        }
+        return MaxKey()
+    }
 
     public static func == (lhs: MaxKey, rhs: MaxKey) -> Bool { return true }
 }
@@ -550,14 +600,19 @@ public struct MinKey: BSONValue, Equatable, Codable {
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         guard bson_append_minkey(storage.pointer, key, Int32(key.count)) else {
-            throw bsonEncodeError(value: self, forKey: key)
+            throw bsonTooLargeError(value: self, forKey: key)
         }
     }
 
     /// Initializes a new `MinKey` instance.
     public init() {}
 
-    public static func from(iterator iter: DocumentIterator) -> MinKey { return self.init() }
+    public static func from(iterator iter: DocumentIterator) throws -> MinKey {
+        guard iter.currentType == .minKey else {
+            throw wrongIterTypeError(iter, expected: MinKey.self)
+        }
+        return MinKey()
+    }
 
     public static func == (lhs: MinKey, rhs: MinKey) -> Bool { return true }
 }
@@ -625,13 +680,13 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
         var oid = try ObjectId.toLibBSONType(self.oid)
         // encode the bson_oid_t to the bson_t
         guard bson_append_oid(storage.pointer, key, Int32(key.count), &oid) else {
-            throw bsonEncodeError(value: self, forKey: key)
+            throw bsonTooLargeError(value: self, forKey: key)
         }
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> ObjectId {
         guard let oid = bson_iter_oid(&iter.iter) else {
-            throw MongoError.bsonDecodeError(message: "Failed to retrieve ObjectID value")
+            throw wrongIterTypeError(iter, expected: ObjectId.self)
         }
         return self.init(fromPointer: oid)
     }
@@ -650,11 +705,11 @@ extension UUID {
     /// Initializes a `UUID` instance from a `Binary` `BSONValue`.
     public init(from binary: Binary) throws {
         guard binary.subtype != Binary.Subtype.uuidDeprecated.rawValue else {
-            throw MongoError.bsonDecodeError(message: "Binary subtype \(binary.subtype) is deprecated, " +
+            throw UserError.logicError(message: "Binary subtype \(binary.subtype) is deprecated, " +
                     "use \(Binary.Subtype.uuid) instead.")
         }
         guard binary.subtype == Binary.Subtype.uuid.rawValue else {
-            throw MongoError.bsonDecodeError(message: "Expected a UUID binary type " +
+            throw UserError.invalidArgumentError(message: "Expected a UUID binary type " +
                     "(\(Binary.Subtype.uuid)), got \(binary.subtype) instead.")
         }
 
@@ -727,7 +782,7 @@ public struct RegularExpression: BSONValue, Equatable, Codable {
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         guard bson_append_regex(storage.pointer, key, Int32(key.count), self.pattern, self.options) else {
-            throw bsonEncodeError(value: self, forKey: key)
+            throw bsonTooLargeError(value: self, forKey: key)
         }
     }
 
@@ -739,12 +794,12 @@ public struct RegularExpression: BSONValue, Equatable, Codable {
         }
 
         guard let pattern = bson_iter_regex(&iter.iter, options) else {
-            throw MongoError.bsonDecodeError(message: "Failed to retrieve regular expression pattern")
+            throw wrongIterTypeError(iter, expected: RegularExpression.self)
         }
         let patternString = String(cString: pattern)
 
         guard let stringOptions = options.pointee else {
-            throw MongoError.bsonDecodeError(message: "Failed to retrieve regular expression options")
+            throw RuntimeError.internalError(message: "Failed to retrieve regular expression options")
         }
         let optionsString = String(cString: stringOptions)
 
@@ -776,15 +831,20 @@ extension String: BSONValue {
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         guard bson_append_utf8(storage.pointer, key, Int32(key.count), self, Int32(self.count)) else {
-            throw bsonEncodeError(value: self, forKey: key)
+            throw bsonTooLargeError(value: self, forKey: key)
         }
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> String {
         var length: UInt32 = 0
-        guard let strValue = bson_iter_utf8(&iter.iter, &length) else {
-           throw MongoError.bsonDecodeError(message: retrieveErrorMsg(type: "UTF-8", key: iter.currentKey))
+        guard iter.currentType == .string, let strValue = bson_iter_utf8(&iter.iter, &length) else {
+           throw wrongIterTypeError(iter, expected: String.self)
         }
+
+        guard bson_utf8_validate(strValue, Int(length), false) else {
+            throw RuntimeError.internalError(message: "String \(strValue) not valid UTF-8")
+        }
+
         return self.init(cString: strValue)
     }
 }
@@ -795,18 +855,19 @@ internal struct Symbol: BSONValue {
     public var bsonType: BSONType { return .symbol }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        throw MongoError.bsonEncodeError(message: "Symbols are deprecated; use a string instead")
+        throw RuntimeError.internalError(message: "Symbols are deprecated; use a string instead")
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> Symbol {
-        throw MongoError.bsonDecodeError(message:
-            "`Symbol`s are deprecated; use `Symbol.asString` to parse as a string instead")
+        throw RuntimeError.internalError(
+                message: "`Symbol`s are deprecated; use `Symbol.asString` to parse as a string instead"
+        )
     }
 
     internal static func asString(from iter: DocumentIterator) throws -> String {
         var length: UInt32 = 0
-        guard let strValue = bson_iter_symbol(&iter.iter, &length) else {
-            throw MongoError.bsonDecodeError(message: retrieveErrorMsg(type: "Symbol", key: iter.currentKey))
+        guard iter.currentType == .symbol, let strValue = bson_iter_symbol(&iter.iter, &length) else {
+            throw wrongIterTypeError(iter, expected: Symbol.self)
         }
         return String(cString: strValue)
     }
@@ -836,14 +897,19 @@ public struct Timestamp: BSONValue, Equatable, Codable {
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         guard bson_append_timestamp(storage.pointer, key, Int32(key.count), self.timestamp, self.increment) else {
-            throw bsonEncodeError(value: self, forKey: key)
+            throw bsonTooLargeError(value: self, forKey: key)
         }
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> Timestamp {
+        guard iter.currentType == .timestamp else {
+            throw wrongIterTypeError(iter, expected: Timestamp.self)
+        }
         var t: UInt32 = 0
         var i: UInt32 = 0
+
         bson_iter_timestamp(&iter.iter, &t, &i)
+
         return self.init(timestamp: t, inc: i)
     }
 
@@ -926,8 +992,4 @@ private func validateBSONTypes(_ lhs: BSONValue, _ rhs: BSONValue) {
     guard !invalidTypes.contains(rhs.bsonType) else {
         fatalError("\(rhs.bsonType) should not be used")
     }
-}
-
-private func retrieveErrorMsg(type: String, key: String) -> String {
-    return "Failed to retrieve the \(type) value for key '\(key)'"
 }

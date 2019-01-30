@@ -162,9 +162,11 @@ extension Document {
 
     /// Retrieves the value associated with `for` as a `BSONValue?`, which can be nil if the key does not exist in the
     /// `Document`.
+    ///
+    /// - Throws: `RuntimeError.internalError` if the BSON buffer is too small (< 5 bytes).
     internal func getValue(for key: String) throws -> BSONValue? {
         guard let iter = DocumentIterator(forDocument: self) else {
-            throw MongoError.bsonDecodeError(message: "BSON buffer is unexpectedly too small (< 5 bytes)")
+            throw RuntimeError.internalError(message: "BSON buffer is unexpectedly too small (< 5 bytes)")
         }
 
         guard iter.move(to: key) else {
@@ -192,8 +194,8 @@ extension Document {
      *
      */
     internal func get<T: BSONValue>(_ key: String) throws -> T {
-        guard let value = self[key] as? T else {
-            throw MongoError.typeError(message: "Could not cast value for key \(key) to type \(T.self)")
+        guard let value = try self.getValue(for: key) as? T else {
+            throw RuntimeError.internalError(message: "Could not cast value for key \(key) to type \(T.self)")
         }
         return value
     }
@@ -409,11 +411,15 @@ extension Document: BSONValue {
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         guard bson_append_document(storage.pointer, key, Int32(key.count), self.data) else {
-            throw bsonEncodeError(value: self, forKey: key)
+            throw bsonTooLargeError(value: self, forKey: key)
         }
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> Document {
+        guard iter.currentType == .document else {
+            throw wrongIterTypeError(iter, expected: Document.self)
+        }
+
         var length: UInt32 = 0
         let document = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
         defer {
@@ -424,7 +430,7 @@ extension Document: BSONValue {
         bson_iter_document(&iter.iter, &length, document)
 
         guard let docData = bson_new_from_data(document.pointee, Int(length)) else {
-            throw MongoError.bsonDecodeError(message: "Failed to create a bson_t from document data")
+            throw RuntimeError.internalError(message: "Failed to create a Document from iterator")
         }
 
         return self.init(fromPointer: docData)

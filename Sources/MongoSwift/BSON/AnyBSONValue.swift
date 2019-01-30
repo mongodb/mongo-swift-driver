@@ -66,27 +66,41 @@ public struct AnyBSONValue: Codable, Equatable, Hashable {
         return bsonEquals(lhs.value, rhs.value)
     }
 
-    /// Initializes a new `AnyBSONValue` from a `Decoder`. 
-    ///
-    /// Caveats for usage with `Decoder`s other than MongoSwift's `BSONDecoder` -
-    /// 1) This method does *not* support initializing an `AnyBSONValue` wrapping
-    /// a `Date`. This is because, in non-BSON formats, `Date`s are encoded
-    /// as other types such as `Double` or `String`. We have no way of knowing 
-    /// which type is the intended one when decoding to a `Document`, as `Document`s 
-    /// can contain any `BSONValue` type, so for simplicity we always go with a 
-    /// `Double` or a `String` over a `Date`.
-    /// 2) Numeric values will be attempted to be decoded in the following
-    /// order of types: `Int`, `Int32`, `Int64`, `Double`. The first one
-    /// that can successfully represent the value with no loss of precision will 
-    /// be used.
+    /**
+     * Initializes a new `AnyBSONValue` from a `Decoder`.
+     *
+     * Caveats for usage with `Decoder`s other than MongoSwift's `BSONDecoder` -
+     * 1) This method does *not* support initializing an `AnyBSONValue` wrapping
+     * a `Date`. This is because, in non-BSON formats, `Date`s are encoded
+     * as other types such as `Double` or `String`. We have no way of knowing
+     * which type is the intended one when decoding to a `Document`, as `Document`s
+     * can contain any `BSONValue` type, so for simplicity we always go with a
+     * `Double` or a `String` over a `Date`.
+     * 2) Numeric values will be attempted to be decoded in the following
+     * order of types: `Int`, `Int32`, `Int64`, `Double`. The first one
+     * that can successfully represent the value with no loss of precision will
+     * be used.
+     *
+     * - Throws:
+     *   - `DecodingError` if a `BSONValue` could not be decoded from the given decoder (which is not a `BSONDecoder`).
+     *   - `DecodingError` if a BSON datetime is encountered but a non-default date decoding strategy was set on the
+     *     decoder (which is a `BSONDecoder`).
+     */
     // swiftlint:disable:next cyclomatic_complexity
     public init(from decoder: Decoder) throws {
         // short-circuit in the `BSONDecoder` case
         if let bsonDecoder = decoder as? _BSONDecoder {
             if bsonDecoder.storage.topContainer is Date {
                 guard case .bsonDateTime = bsonDecoder.options.dateDecodingStrategy else {
-                    throw MongoError.bsonDecodeError(message: "Got a BSON datetime but was expecting another format. " +
-                            "To decode from BSON datetimes, use the default .bsonDateTime DateDecodingStrategy.")
+                    throw DecodingError.typeMismatch(
+                            AnyBSONValue.self,
+                            DecodingError.Context(
+                                    codingPath: bsonDecoder.codingPath,
+                                    debugDescription: "Got a BSON datetime but was expecting another format. To " +
+                                            "decode from BSON datetimes, use the default .bsonDateTime " +
+                                            "DateDecodingStrategy."
+                            )
+                    )
                 }
             }
             self.value = bsonDecoder.storage.topContainer
@@ -130,8 +144,12 @@ public struct AnyBSONValue: Codable, Equatable, Hashable {
         } else if let value = try? container.decode(Document.self) {
             self.value = value
         } else {
-            throw MongoError.typeError(
-                message: "Encountered a value that could not be decoded to any BSON type")
+            throw DecodingError.typeMismatch(
+                    AnyBSONValue.self,
+                    DecodingError.Context(
+                            codingPath: decoder.codingPath,
+                            debugDescription: "Encountered a value that could not be decoded to any BSON type")
+            )
         }
     }
 }
