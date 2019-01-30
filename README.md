@@ -47,7 +47,7 @@ The driver wraps the MongoDB C driver, and using it requires having the C driver
 *On a Mac*, you can install both components at once using [Homebrew](https://brew.sh/):
 `brew install mongo-c-driver`.
 
-*On Linux*: please follow the [instructions](http://mongoc.org/libmongoc/current/installing.html#building-on-unix) from `libmongoc`'s documentation. Note that the versions provided by your package manager is probably too old, in which case you can follow the instructions for building and installing from source.
+*On Linux*: please follow the [instructions](http://mongoc.org/libmongoc/current/installing.html#building-on-unix) from `libmongoc`'s documentation. Note that the versions provided by your package manager may be too old, in which case you can follow the instructions for building and installing from source.
 
 See example installation from source on Ubuntu in [Docker](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/Docker).
 
