@@ -6,23 +6,25 @@ extension MongoCollection {
      * Execute multiple write operations.
      *
      * - Parameters:
-     *   - requests: a `[WriteModel]` containing the writes to perform
-     *   - options: optional `BulkWriteOptions` to use while executing the operation
+     *   - requests: a `[WriteModel]` containing the writes to perform.
+     *   - options: optional `BulkWriteOptions` to use while executing the operation.
      *
      * - Returns: a `BulkWriteResult`, or `nil` if the write concern is unacknowledged.
      *
      * - Throws:
-     *   - `MongoError.invalidArgument` if `requests` is empty
-     *   - `MongoError.bulkWriteError` if any error occurs while performing the writes
+     *   - `UserError.invalidArgumentError` if `requests` is empty.
+     *   - `ServerError.bulkWriteError` if any error occurs while performing the writes.
+     *   - `ServerError.commandError` if an error occurs that prevents the operation from being performed.
+     *   - `EncodingError` if an error occurs while encoding the `CollectionType` or the options to BSON.
      */
     @discardableResult
     public func bulkWrite(_ requests: [WriteModel], options: BulkWriteOptions? = nil) throws -> BulkWriteResult? {
         guard !requests.isEmpty else {
-            throw MongoError.invalidArgument(message: "requests cannot be empty")
+            throw UserError.invalidArgumentError(message: "requests cannot be empty")
         }
 
         let opts = try BSONEncoder().encode(options)
-        let bulk = BulkWriteOperation(collection: self._collection, opts: opts?.data)
+        let bulk = BulkWriteOperation(collection: self._collection, opts: opts)
 
         try requests.enumerated().forEach { index, model in
             try model.addToBulkWrite(bulk: bulk, index: index)
@@ -44,21 +46,28 @@ extension MongoCollection {
          * Create a `deleteOne` operation for a bulk write.
          *
          * - Parameters:
-         *   - filter: A `Document` representing the match criteria
-         *   - collation: Specifies a collation to use
+         *   - filter: A `Document` representing the match criteria.
+         *   - collation: Specifies a collation to use.
          */
         public init(_ filter: Document, collation: Document? = nil) {
             self.filter = filter
             self.options = DeleteModelOptions(collation: collation)
         }
 
-        /// Adds the `deleteOne` operation to a bulk write
+        /**
+         * Adds the `deleteOne` operation to a bulk write.
+         *
+         * - Throws:
+         *   - `UserError.invalidArgumentError` if the options form an invalid combination.
+         *   - `EncodingError` if an error occurs while encoding the options to BSON.
+         */
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
             let opts = try BSONEncoder().encode(self.options)
+
             var error = bson_error_t()
 
             guard mongoc_bulk_operation_remove_one_with_opts(bulk.bulk, self.filter.data, opts.data, &error) else {
-                throw MongoError.invalidArgument(message: toErrorString(error))
+                throw parseMongocError(error) // Should be invalidArgumentError
             }
         }
     }
@@ -72,21 +81,27 @@ extension MongoCollection {
          * Create a `deleteMany` operation for a bulk write.
          *
          * - Parameters:
-         *   - filter: A `Document` representing the match criteria
-         *   - collation: Specifies a collation to use
+         *   - filter: A `Document` representing the match criteria.
+         *   - collation: Specifies a collation to use.
          */
         public init(_ filter: Document, collation: Document? = nil) {
             self.filter = filter
             self.options = DeleteModelOptions(collation: collation)
         }
 
-        /// Adds the `deleteMany` operation to a bulk write
+        /**
+         * Adds the `deleteMany` operation to a bulk write.
+         *
+         * - Throws:
+         *   - `UserError.invalidArgumentError` if the options form an invalid combination.
+         *   - `EncodingError` if an error occurs while encoding the options to BSON.
+         */
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
-            let opts = try BSONEncoder().encode(options)
+            let opts = try BSONEncoder().encode(self.options)
             var error = bson_error_t()
 
             guard mongoc_bulk_operation_remove_many_with_opts(bulk.bulk, self.filter.data, opts.data, &error) else {
-                throw MongoError.invalidArgument(message: toErrorString(error))
+                throw parseMongocError(error) // should be invalidArgumentError
             }
         }
     }
@@ -99,18 +114,23 @@ extension MongoCollection {
          * Create an `insertOne` operation for a bulk write.
          *
          * - Parameters:
-         *   - document: The `CollectionType` to insert
+         *   - document: The `CollectionType` to insert.
          */
         public init(_ document: CollectionType) {
             self.document = document
         }
 
-        /// Adds the `insertOne` operation to a bulk write
+        /** Adds the `insertOne` operation to a bulk write.
+         *
+         * - Throws:
+         *   - `EncodingError` if an error occurs while encoding the `CollectionType` to BSON.
+         *   - `UserError.invalidArgumentError` if the options form an invalid combination.
+         */
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
             let document = try BSONEncoder().encode(self.document).withID()
             var error = bson_error_t()
             guard mongoc_bulk_operation_insert_with_opts(bulk.bulk, document.data, nil, &error) else {
-                throw MongoError.invalidArgument(message: toErrorString(error))
+                throw parseMongocError(error) // should be invalidArgumentError
             }
 
             guard let insertedId = try document.getValue(for: "_id") else {
@@ -137,10 +157,10 @@ extension MongoCollection {
          * Create a `replaceOne` operation for a bulk write.
          *
          * - Parameters:
-         *   - filter: A `Document` representing the match criteria
-         *   - replacement: The `CollectionType` to use as the replacement value
-         *   - collation: Specifies a collation to use
-         *   - upsert: When `true`, creates a new document if no document matches the query
+         *   - filter: A `Document` representing the match criteria.
+         *   - replacement: The `CollectionType` to use as the replacement value.
+         *   - collation: Specifies a collation to use.
+         *   - upsert: When `true`, creates a new document if no document matches the query.
          */
         public init(filter: Document, replacement: CollectionType, collation: Document? = nil, upsert: Bool? = nil) {
             self.filter = filter
@@ -148,7 +168,12 @@ extension MongoCollection {
             self.options = ReplaceOneModelOptions(collation: collation, upsert: upsert)
         }
 
-        /// Adds the `replaceOne` operation to a bulk write
+        /** Adds the `replaceOne` operation to a bulk write.
+         *
+         * - Throws:
+         *   - `EncodingError` if an error occurs while encoding the `CollectionType` or options to BSON.
+         *   - `UserError.invalidArgumentError` if the options form an invalid combination.
+         */
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
             let encoder = BSONEncoder()
             let replacement = try encoder.encode(self.replacement)
@@ -160,7 +185,7 @@ extension MongoCollection {
                                                               replacement.data,
                                                               opts.data,
                                                               &error) else {
-                throw MongoError.invalidArgument(message: toErrorString(error))
+                throw parseMongocError(error) // should be invalidArgumentError
             }
         }
     }
@@ -181,11 +206,11 @@ extension MongoCollection {
          * Create an `updateOne` operation for a bulk write.
          *
          * - Parameters:
-         *   - filter: A `Document` representing the match criteria
-         *   - update: A `Document` containing update operators
-         *   - arrayFilters: A set of filters specifying to which array elements an update should apply
-         *   - collation: Specifies a collation to use
-         *   - upsert: When `true`, creates a new document if no document matches the query
+         *   - filter: A `Document` representing the match criteria.
+         *   - update: A `Document` containing update operators.
+         *   - arrayFilters: A set of filters specifying to which array elements an update should apply.
+         *   - collation: Specifies a collation to use.
+         *   - upsert: When `true`, creates a new document if no document matches the query.
          */
         public init(filter: Document,
                     update: Document,
@@ -197,7 +222,12 @@ extension MongoCollection {
             self.options = UpdateModelOptions(arrayFilters: arrayFilters, collation: collation, upsert: upsert)
         }
 
-        /// Adds the `updateOne` operation to a bulk write
+        /** Adds the `updateOne` operation to a bulk write.
+         *
+         * - Throws:
+         *   - `EncodingError` if an error occurs while encoding the options to BSON.
+         *   - `UserError.invalidArgumentError` if the options form an invalid combination.
+         */
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
             let opts = try BSONEncoder().encode(self.options)
             var error = bson_error_t()
@@ -207,7 +237,7 @@ extension MongoCollection {
                                                              self.update.data,
                                                              opts.data,
                                                              &error) else {
-                throw MongoError.invalidArgument(message: toErrorString(error))
+                throw parseMongocError(error) // should be invalidArgumentError
             }
         }
     }
@@ -222,11 +252,11 @@ extension MongoCollection {
          * Create a `updateMany` operation for a bulk write.
          *
          * - Parameters:
-         *   - filter: A `Document` representing the match criteria
-         *   - update: A `Document` containing update operators
-         *   - arrayFilters: A set of filters specifying to which array elements an update should apply
-         *   - collation: Specifies a collation to use
-         *   - upsert: When `true`, creates a new document if no document matches the query
+         *   - filter: A `Document` representing the match criteria.
+         *   - update: A `Document` containing update operators.
+         *   - arrayFilters: A set of filters specifying to which array elements an update should apply.
+         *   - collation: Specifies a collation to use.
+         *   - upsert: When `true`, creates a new document if no document matches the query.
          */
         public init(filter: Document,
                     update: Document,
@@ -238,7 +268,13 @@ extension MongoCollection {
             self.options = UpdateModelOptions(arrayFilters: arrayFilters, collation: collation, upsert: upsert)
         }
 
-        /// Adds the `updateMany` operation to a bulk write
+        /**
+         * Adds the `updateMany` operation to a bulk write.
+         *
+         * - Throws:
+         *   - `EncodingError` if an error occurs while encoding the options to BSON.
+         *   - `UserError.invalidArgumentError` if the options form an invalid combination.
+         */
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
             let opts = try BSONEncoder().encode(self.options)
             var error = bson_error_t()
@@ -248,7 +284,7 @@ extension MongoCollection {
                                                               self.update.data,
                                                               opts.data,
                                                               &error) else {
-                throw MongoError.invalidArgument(message: toErrorString(error))
+                throw parseMongocError(error) // should be invalidArgumentError
             }
         }
     }
@@ -264,8 +300,8 @@ public protocol WriteModel {
      * `MongoCollection.bulkWrite`.
      *
      * - Parameters:
-     *   - bulk: A `BulkWriteOperation`
-     *   - index: Index of the operation within the `MongoCollection.bulkWrite` `requests` array
+     *   - bulk: A `BulkWriteOperation`.
+     *   - index: Index of the operation within the `MongoCollection.bulkWrite` `requests` array.
      */
     func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws
 }
@@ -275,6 +311,8 @@ public class BulkWriteOperation {
     fileprivate var bulk: OpaquePointer?
     fileprivate var insertedIds: [Int: BSONValue] = [:]
 
+    internal let opts: Document?
+
     /// Indicates whether this bulk operation used an acknowledged write concern.
     private var isAcknowledged: Bool {
         let wc = WriteConcern(from: mongoc_bulk_operation_get_write_concern(self.bulk))
@@ -282,13 +320,14 @@ public class BulkWriteOperation {
     }
 
     /// Initializes the object from a `mongoc_collection_t` and `bson_t`.
-    fileprivate init(collection: OpaquePointer?, opts: UnsafePointer<bson_t>?) {
+    fileprivate init(collection: OpaquePointer?, opts: Document?) {
         // swiftlint:disable:next force_unwrapping - documented as always returning a value.
-        self.bulk = mongoc_collection_create_bulk_operation_with_opts(collection, opts)!
+        self.bulk = mongoc_collection_create_bulk_operation_with_opts(collection, opts?.data)!
+        self.opts = opts
     }
 
     /// Executes the bulk write operation and returns a `BulkWriteResult` or
-    /// `nil` is the write concern is unacknowledged
+    /// `nil` is the write concern is unacknowledged.
     fileprivate func execute() throws -> BulkWriteResult? {
         let reply = Document()
         var error = bson_error_t()
@@ -297,11 +336,11 @@ public class BulkWriteOperation {
         let result = try BulkWriteResult(reply: reply, insertedIds: self.insertedIds)
 
         guard serverId != 0 else {
-            throw MongoError.bulkWriteError(code: error.code,
-                                            message: toErrorString(error),
-                                            result: (self.isAcknowledged ? result : nil),
-                                            writeErrors: result.writeErrors,
-                                            writeConcernError: result.writeConcernError)
+            throw getErrorFromReply(
+                    bsonError: error,
+                    from: reply,
+                    forBulkWrite: self,
+                    withResult: self.isAcknowledged ? result : nil)
         }
 
         return self.isAcknowledged ? result : nil
@@ -339,6 +378,17 @@ public struct BulkWriteOptions: Encodable {
         self.ordered = ordered ?? true
         self.writeConcern = writeConcern
     }
+
+    /// Internal initializer used to convert an `InsertManyOptions` optional to a `BulkWriteOptions` optional.
+    internal init?(from insertManyOptions: InsertManyOptions?) {
+        guard let options = insertManyOptions else {
+            return nil
+        }
+
+        self.bypassDocumentValidation = options.bypassDocumentValidation
+        self.ordered = options.ordered
+        self.writeConcern = options.writeConcern
+    }
 }
 
 /// The result of a bulk write operation on a `MongoCollection`.
@@ -363,9 +413,6 @@ public struct BulkWriteResult {
 
     /// Map of the index of the operation to the id of the upserted document.
     public let upsertedIds: [Int: BSONValue]
-
-    fileprivate var writeErrors: [BulkWriteError] = []
-    fileprivate var writeConcernError: WriteConcernError?
 
     /**
      * Create a `BulkWriteResult` from a reply and map of inserted IDs.
@@ -393,21 +440,30 @@ public struct BulkWriteResult {
         if let upserted = try reply.getValue(for: "upserted") as? [Document] {
             for upsert in upserted {
                 guard let index = try upsert.getValue(for: "index") as? Int else {
-                    throw MongoError.typeError(message: "Could not cast upserted index to `Int`")
+                    throw RuntimeError.internalError(message: "Could not cast upserted index to `Int`")
                 }
                 upsertedIds[index] = upsert["_id"]
             }
         }
 
         self.upsertedIds = upsertedIds
+    }
 
-        if let writeErrors = try reply.getValue(for: "writeErrors") as? [Document] {
-            self.writeErrors = try writeErrors.map { try BSONDecoder().decode(BulkWriteError.self, from: $0) }
-        }
-
-        if let writeConcernErrors = try reply.getValue(for: "writeConcernErrors") as? [Document],
-            writeConcernErrors.indices.contains(0) {
-            self.writeConcernError = try BSONDecoder().decode(WriteConcernError.self, from: writeConcernErrors[0])
-        }
+    /// Internal initializer used for testing purposes and error handling.
+    internal init(
+            deletedCount: Int? = nil,
+            insertedCount: Int? = nil,
+            insertedIds: [Int: BSONValue]? = nil,
+            matchedCount: Int? = nil,
+            modifiedCount: Int? = nil,
+            upsertedCount: Int? = nil,
+            upsertedIds: [Int: BSONValue]? = nil) {
+        self.deletedCount = deletedCount ?? 0
+        self.insertedCount = insertedCount ?? 0
+        self.insertedIds = insertedIds ?? [:]
+        self.matchedCount = matchedCount ?? 0
+        self.modifiedCount = modifiedCount ?? 0
+        self.upsertedCount = upsertedCount ?? 0
+        self.upsertedIds = upsertedIds ?? [:]
     }
 }

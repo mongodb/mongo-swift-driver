@@ -279,7 +279,9 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
 
         // running command with an invalid RC level should throw
         let options3 = RunCommandOptions(readConcern: ReadConcern("blah"))
-        expect(try db.runCommand(command, options: options3)).to(throwError())
+        // error code 9: FailedToParse
+        expect(try db.runCommand(command, options: options3))
+                .to(throwError(ServerError.commandError(code: 9, message: "", errorLabels: nil)))
 
         // try various command + read concern pairs to make sure they work
         expect(try coll.find(options: FindOptions(readConcern: ReadConcern(.local)))).toNot(throwError())

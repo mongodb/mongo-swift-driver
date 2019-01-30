@@ -150,6 +150,7 @@ public class MongoClient {
         if options?.eventMonitoring == true { self.initializeMonitoring() }
 
         guard mongoc_client_set_error_api(self._client, MONGOC_ERROR_API_VERSION_2) else {
+            self.close()
             throw RuntimeError.internalError(message: "Could not configure error handling on client")
         }
     }

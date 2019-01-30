@@ -12,9 +12,10 @@ extension MongoCollection {
      * - Returns: The deleted document, represented as a `CollectionType`, or `nil` if no document was deleted.
      *
      * - Throws:
-     *   - `MongoError.invalidArgument` if any of the provided options are invalid
-     *   - `MongoError.commandError` if there are any errors executing the command.
-     *   - A `DecodingError` if the deleted document cannot be decoded to a `CollectionType` value
+     *   - `UserError.invalidArgumentError` if any of the provided options are invalid.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `ServerError.writeError` if an error occurs while executing the command.
+     *   - `DecodingError` if the deleted document cannot be decoded to a `CollectionType` value.
      */
     @discardableResult
     public func findOneAndDelete(_ filter: Document,
@@ -36,10 +37,11 @@ extension MongoCollection {
      *      depending on selected options, or `nil` if there was no match.
      *
      * - Throws:
-     *   - `MongoError.invalidArgument` if any of the provided options are invalid
-     *   - `MongoError.commandError` if there are any errors executing the command.
-     *   - An `EncodingError` if `replacement` cannot be encoded to a `Document`
-     *   - A `DecodingError` if the replaced document cannot be decoded to a `CollectionType` value
+     *   - `UserError.invalidArgumentError` if any of the provided options are invalid.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `ServerError.writeError` if an error occurs while executing the command.
+     *   - `DecodingError` if the replaced document cannot be decoded to a `CollectionType` value.
+     *   - `EncodingError` if `replacement` cannot be encoded to a `Document`.
      */
     @discardableResult
     public func findOneAndReplace(filter: Document,
@@ -61,9 +63,10 @@ extension MongoCollection {
      *      depending on selected options, or `nil` if there was no match.
      *
      * - Throws:
-     *   - `MongoError.invalidArgument` if any of the provided options are invalid
-     *   - `MongoError.commandError` if there are any errors executing the command.
-     *   - A `DecodingError` if the updated document cannot be decoded to a `CollectionType` value
+     *   - `UserError.invalidArgumentError` if any of the provided options are invalid.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `ServerError.writeError` if an error occurs while executing the command.
+     *   - `DecodingError` if the updated document cannot be decoded to a `CollectionType` value.
      */
     @discardableResult
     public func findOneAndUpdate(filter: Document,
@@ -91,8 +94,7 @@ extension MongoCollection {
                                                           opts._options,
                                                           reply.data,
                                                           &error) else {
-            // TODO SWIFT-144: replace with more descriptive error type(s)
-            throw MongoError.commandError(message: toErrorString(error))
+            throw getErrorFromReply(bsonError: error, from: reply)
         }
 
         guard let value = try reply.getValue(for: "value") as? Document else {
@@ -301,12 +303,12 @@ private class FindAndModifyOptions {
 
         if let bypass = bypassDocumentValidation,
         !mongoc_find_and_modify_opts_set_bypass_document_validation(self._options, bypass) {
-            throw MongoError.invalidArgument(message: "Error setting bypassDocumentValidation to \(bypass)")
+            throw UserError.invalidArgumentError(message: "Error setting bypassDocumentValidation to \(bypass)")
         }
 
         if let fields = projection {
             guard mongoc_find_and_modify_opts_set_fields(self._options, fields.data) else {
-                throw MongoError.invalidArgument(message: "Error setting fields to \(fields)")
+                throw UserError.invalidArgumentError(message: "Error setting fields to \(fields)")
             }
         }
 
@@ -322,13 +324,13 @@ private class FindAndModifyOptions {
             let remStr = String(describing: remove)
             let upsStr = String(describing: upsert)
             let retStr = String(describing: returnDocument)
-            throw MongoError.invalidArgument(message:
+            throw UserError.invalidArgumentError(message:
                 "Error setting flags to \(flags); remove=\(remStr), upsert=\(upsStr), returnDocument=\(retStr)")
         }
 
         if let sort = sort {
             guard mongoc_find_and_modify_opts_set_sort(self._options, sort.data) else {
-                throw MongoError.invalidArgument(message: "Error setting sort to \(sort)")
+                throw UserError.invalidArgumentError(message: "Error setting sort to \(sort)")
             }
         }
 
@@ -342,7 +344,7 @@ private class FindAndModifyOptions {
         // set maxTimeMS by directly appending it instead. see CDRIVER-1329
         if let maxTime = maxTimeMS {
             guard maxTime > 0 else {
-                throw MongoError.invalidArgument(message: "maxTimeMS must be positive, but got value \(maxTime)")
+                throw UserError.invalidArgumentError(message: "maxTimeMS must be positive, but got value \(maxTime)")
             }
             try extra.setValue(for: "maxTimeMS", to: maxTime)
         }
@@ -351,12 +353,12 @@ private class FindAndModifyOptions {
             do {
                 try extra.setValue(for: "writeConcern", to: try BSONEncoder().encode(wc))
             } catch {
-                throw MongoError.invalidArgument(message: "Error encoding WriteConcern \(wc): \(error)")
+                throw RuntimeError.internalError(message: "Error encoding WriteConcern \(wc): \(error)")
             }
         }
 
         guard extra.isEmpty || mongoc_find_and_modify_opts_append(self._options, extra.data) else {
-            throw MongoError.invalidArgument(message: "Error appending extra fields \(extra)")
+            throw UserError.invalidArgumentError(message: "Error appending extra fields \(extra)")
         }
     }
 
@@ -364,7 +366,7 @@ private class FindAndModifyOptions {
     /// initializer because its value comes from the API methods rather than their options types.
     fileprivate func setUpdate(_ update: Document) throws {
         guard mongoc_find_and_modify_opts_set_update(self._options, update.data) else {
-            throw MongoError.invalidArgument(message: "Error setting update to \(update)")
+            throw UserError.invalidArgumentError(message: "Error setting update to \(update)")
         }
     }
 

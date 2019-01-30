@@ -12,6 +12,12 @@ extension MongoCollection {
      *
      * - Returns: The optional result of attempting to perform the insert. If the `WriteConcern`
      *            is unacknowledged, `nil` is returned.
+     *
+     * - Throws:
+     *   - `ServerError.writeError` if an error occurs while performing the command.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `EncodingError` if an error occurs while encoding the `CollectionType` to BSON.
      */
     @discardableResult
     public func insertOne(_ value: CollectionType, options: InsertOneOptions? = nil) throws -> InsertOneResult? {
@@ -19,9 +25,9 @@ extension MongoCollection {
         let document = try encoder.encode(value).withID()
         let opts = try encoder.encode(options)
         var error = bson_error_t()
-        guard mongoc_collection_insert_one(self._collection, document.data, opts?.data, nil, &error) else {
-            // TODO SWIFT-139: include writeErrors and writeConcernErrors from reply in the error
-            throw MongoError.commandError(message: toErrorString(error))
+        let reply = Document()
+        guard mongoc_collection_insert_one(self._collection, document.data, opts?.data, reply.data, &error) else {
+            throw getErrorFromReply(bsonError: error, from: reply)
         }
 
         guard isAcknowledged(options?.writeConcern) else {
@@ -47,50 +53,19 @@ extension MongoCollection {
      * - Returns: an `InsertManyResult`, or `nil` if the write concern is unacknowledged.
      *
      * - Throws:
-     *   - `MongoError.invalidArgument` if `values` is empty
-     *   - `MongoError.insertManyError` if any error occurs while performing the writes
+     *   - `ServerError.writeError` if an error occurs while performing the write.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `EncodingError` if an error occurs while encoding the `CollectionType` or options to BSON.
      */
     @discardableResult
     public func insertMany(_ values: [CollectionType], options: InsertManyOptions? = nil) throws -> InsertManyResult? {
         guard !values.isEmpty else {
-            throw MongoError.invalidArgument(message: "values cannot be empty")
+            throw UserError.invalidArgumentError(message: "values cannot be empty")
         }
 
-        let encoder = BSONEncoder()
-        let opts = try encoder.encode(options)
-        let documents = try values.map { try encoder.encode($0).withID() }
-        var insertedIds: [Int: BSONValue] = [:]
-
-        try documents.enumerated().forEach { index, document in
-            guard let id = try document.getValue(for: "_id") else {
-                // we called `withID()`, so this should be present.
-                fatalError("Failed to get value for _id from document")
-            }
-            insertedIds[index] = id
-        }
-
-        var docPointers = documents.map { UnsafePointer($0.data) }
-        let reply = Document()
-        var error = bson_error_t()
-
-        let success = mongoc_collection_insert_many(self._collection,
-                                                    &docPointers,
-                                                    values.count,
-                                                    opts?.data,
-                                                    reply.data,
-                                                    &error)
-        let result = try InsertManyResult(reply: reply, insertedIds: insertedIds)
-        let isAcknowledged = self.isAcknowledged(options?.writeConcern)
-
-        guard success else {
-            throw MongoError.insertManyError(code: error.code,
-                                             message: toErrorString(error),
-                                             result: (isAcknowledged ? result : nil),
-                                             writeErrors: result.writeErrors,
-                                             writeConcernError: result.writeConcernError)
-        }
-
-        return isAcknowledged ? result : nil
+        let result = try self.bulkWrite(values.map { InsertOneModel($0) }, options: BulkWriteOptions(from: options))
+        return InsertManyResult(from: result)
     }
 
     /**
@@ -103,6 +78,12 @@ extension MongoCollection {
      *
      * - Returns: The optional result of attempting to replace a document. If the `WriteConcern`
      *            is unacknowledged, `nil` is returned.
+     *
+     * - Throws:
+     *   - `ServerError.writeError` if an error occurs while performing the command.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `EncodingError` if an error occurs while encoding the `CollectionType` or options to BSON.
      */
     @discardableResult
     public func replaceOne(filter: Document,
@@ -115,15 +96,17 @@ extension MongoCollection {
         var error = bson_error_t()
         guard mongoc_collection_replace_one(
             self._collection, filter.data, replacementDoc.data, opts?.data, reply.data, &error) else {
-            // TODO SWIFT-139: include writeErrors and writeConcernError from reply in the error
-            throw MongoError.commandError(message: toErrorString(error))
+            throw getErrorFromReply(bsonError: error, from: reply)
         }
 
         guard isAcknowledged(options?.writeConcern) else {
             return nil
         }
 
-        return try BSONDecoder().decode(UpdateResult.self, from: reply)
+        return try BSONDecoder().internalDecode(
+                UpdateResult.self,
+                from: reply,
+                withError: "Couldn't understand response from the server.")
     }
 
     /**
@@ -136,6 +119,12 @@ extension MongoCollection {
      *
      * - Returns: The optional result of attempting to update a document. If the `WriteConcern` is
      *            unacknowledged, `nil` is returned.
+     *
+     * - Throws:
+     *   - `ServerError.writeError` if an error occurs while performing the command.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     @discardableResult
     public func updateOne(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
@@ -145,15 +134,17 @@ extension MongoCollection {
         var error = bson_error_t()
         guard mongoc_collection_update_one(
             self._collection, filter.data, update.data, opts?.data, reply.data, &error) else {
-            // TODO SWIFT-139: include writeErrors and writeConcernError from reply in the error
-            throw MongoError.commandError(message: toErrorString(error))
+            throw getErrorFromReply(bsonError: error, from: reply)
         }
 
         guard isAcknowledged(options?.writeConcern) else {
             return nil
         }
 
-        return try BSONDecoder().decode(UpdateResult.self, from: reply)
+        return try BSONDecoder().internalDecode(
+                UpdateResult.self,
+                from: reply,
+                withError: "Couldn't understand response from the server.")
     }
 
     /**
@@ -166,6 +157,12 @@ extension MongoCollection {
      *
      * - Returns: The optional result of attempting to update multiple documents. If the write
      *            concern is unacknowledged, nil is returned
+     *
+     * - Throws:
+     *   - `ServerError.writeError` if an error occurs while performing the command.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     @discardableResult
     public func updateMany(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
@@ -175,15 +172,17 @@ extension MongoCollection {
         var error = bson_error_t()
         guard mongoc_collection_update_many(
             self._collection, filter.data, update.data, opts?.data, reply.data, &error) else {
-            // TODO SWIFT-139: include writeErrors and writeConcernErrors from reply in the error
-            throw MongoError.commandError(message: toErrorString(error))
+            throw getErrorFromReply(bsonError: error, from: reply)
         }
 
         guard isAcknowledged(options?.writeConcern) else {
             return nil
         }
 
-        return try BSONDecoder().decode(UpdateResult.self, from: reply)
+        return try BSONDecoder().internalDecode(
+                UpdateResult.self,
+                from: reply,
+                withError: "Couldn't understand response from the server.")
     }
 
     /**
@@ -195,6 +194,12 @@ extension MongoCollection {
      *
      * - Returns: The optional result of performing the deletion. If the `WriteConcern` is
      *            unacknowledged, `nil` is returned.
+     *
+     * - Throws:
+     *   - `ServerError.writeError` if an error occurs while performing the command.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     @discardableResult
     public func deleteOne(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
@@ -202,17 +207,19 @@ extension MongoCollection {
         let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
-        guard mongoc_collection_delete_one(
-            self._collection, filter.data, opts?.data, reply.data, &error) else {
-             // TODO SWIFT-139: include writeErrors and writeConcernErrors from reply in the error
-            throw MongoError.commandError(message: toErrorString(error))
+
+        guard mongoc_collection_delete_one(self._collection, filter.data, opts?.data, reply.data, &error) else {
+            throw getErrorFromReply(bsonError: error, from: reply)
         }
 
         guard isAcknowledged(options?.writeConcern) else {
             return nil
         }
 
-        return try BSONDecoder().decode(DeleteResult.self, from: reply)
+        return try BSONDecoder().internalDecode(
+                DeleteResult.self,
+                from: reply,
+                withError: "Couldn't understand response from the server.")
     }
 
     /**
@@ -224,6 +231,12 @@ extension MongoCollection {
      *
      * - Returns: The optional result of performing the deletion. If the `WriteConcern` is
      *            unacknowledged, `nil` is returned.
+     *
+     * - Throws:
+     *   - `ServerError.writeError` if an error occurs while performing the command.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     @discardableResult
     public func deleteMany(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
@@ -231,17 +244,18 @@ extension MongoCollection {
         let opts = try encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
-        guard mongoc_collection_delete_many(
-            self._collection, filter.data, opts?.data, reply.data, &error) else {
-            // TODO SWIFT-139: include writeErrors and writeConcernErrors from reply in the error
-            throw MongoError.commandError(message: toErrorString(error))
+        guard mongoc_collection_delete_many(self._collection, filter.data, opts?.data, reply.data, &error) else {
+            throw getErrorFromReply(bsonError: error, from: reply)
         }
 
         guard isAcknowledged(options?.writeConcern) else {
             return nil
         }
 
-        return try BSONDecoder().decode(DeleteResult.self, from: reply)
+        return try BSONDecoder().internalDecode(
+                DeleteResult.self,
+                from: reply,
+                withError: "Couldn't understand response from the server.")
     }
 
     /**
@@ -394,9 +408,6 @@ public struct InsertManyResult {
     /// Map of the index of the document in `values` to the value of its ID
     public let insertedIds: [Int: BSONValue]
 
-    fileprivate var writeErrors: [WriteError] = []
-    fileprivate var writeConcernError: WriteConcernError?
-
     /**
      * Create an `InsertManyResult` from a reply and map of inserted IDs.
      *
@@ -410,15 +421,16 @@ public struct InsertManyResult {
     fileprivate init(reply: Document, insertedIds: [Int: BSONValue]) throws {
         self.insertedCount = try reply.getValue(for: "insertedCount") as? Int ?? 0
         self.insertedIds = insertedIds
+    }
 
-        if let writeErrors = try reply.getValue(for: "writeErrors") as? [Document] {
-            self.writeErrors = try writeErrors.map { try BSONDecoder().decode(WriteError.self, from: $0) }
+    /// Internal initializer used for converting from a `BulkWriteResult` optional to an `InsertManyResult` optional.
+    internal init?(from result: BulkWriteResult?) {
+        guard let result = result else {
+            return nil
         }
 
-        if let writeConcernErrors = try reply.getValue(for: "writeConcernErrors") as? [Document],
-            writeConcernErrors.indices.contains(0) {
-            self.writeConcernError = try BSONDecoder().decode(WriteConcernError.self, from: writeConcernErrors[0])
-        }
+        self.insertedCount = result.insertedCount
+        self.insertedIds = result.insertedIds
     }
 }
 

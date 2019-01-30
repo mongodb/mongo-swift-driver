@@ -55,6 +55,11 @@ extension MongoCollection {
      *   - options: Optional `CountOptions` to use when executing the command
      *
      * - Returns: The count of the documents that matched the filter
+     *
+     * - Throws:
+     *   - `ServerError.commandError` if an error occurs that prevents the command from performing the write.
+     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func count(_ filter: Document = [:], options: CountOptions? = nil) throws -> Int {
         let opts = try BSONEncoder().encode(options)
@@ -65,7 +70,7 @@ extension MongoCollection {
         let count = mongoc_collection_count_with_opts(
             self._collection, MONGOC_QUERY_NONE, filter.data, 0, 0, opts?.data, rp, &error)
 
-        if count == -1 { throw MongoError.commandError(message: toErrorString(error)) }
+        if count == -1 { throw parseMongocError(error) }
 
         return Int(count)
     }
@@ -81,7 +86,7 @@ extension MongoCollection {
      */
     private func countDocuments(_ filter: Document = [:], options: CountDocumentsOptions? = nil) throws -> Int {
         // TODO SWIFT-133: implement this https://jira.mongodb.org/browse/SWIFT-133
-        throw MongoError.commandError(message: "Unimplemented command")
+        throw UserError.logicError(message: "Unimplemented command")
     }
 
     /**
@@ -94,7 +99,7 @@ extension MongoCollection {
      */
     private func estimatedDocumentCount(options: EstimatedDocumentCountOptions? = nil) throws -> Int {
         // TODO SWIFT-133: implement this https://jira.mongodb.org/browse/SWIFT-133
-        throw MongoError.commandError(message: "Unimplemented command")
+        throw UserError.logicError(message: "Unimplemented command")
     }
 
     /**
@@ -106,6 +111,11 @@ extension MongoCollection {
      *   - options: Optional `DistinctOptions` to use when executing the command
      *
      * - Returns: A `[BSONValue]` containing the distinct values for the specified criteria
+     *
+     * - Throws:
+     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func distinct(fieldName: String,
                          filter: Document = [:],
@@ -123,11 +133,11 @@ extension MongoCollection {
         var error = bson_error_t()
         guard mongoc_collection_read_command_with_opts(
             self._collection, command.data, rp, opts?.data, reply.data, &error) else {
-            throw MongoError.commandError(message: toErrorString(error))
+            throw parseMongocError(error, errorLabels: reply["errorLabels"] as? [String])
         }
 
         guard let values = try reply.getValue(for: "values") as? [BSONValue] else {
-            throw MongoError.commandError(message:
+            throw RuntimeError.internalError(message:
                 "expected server reply \(reply) to contain an array of distinct values")
         }
 
