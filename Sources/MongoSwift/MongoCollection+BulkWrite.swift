@@ -97,7 +97,7 @@ extension MongoCollection {
          *   - `EncodingError` if an error occurs while encoding the options to BSON.
          */
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
-            let opts = try BSONEncoder().encode(options)
+            let opts = try BSONEncoder().encode(self.options)
             var error = bson_error_t()
 
             guard mongoc_bulk_operation_remove_many_with_opts(bulk.bulk, self.filter.data, opts.data, &error) else {
