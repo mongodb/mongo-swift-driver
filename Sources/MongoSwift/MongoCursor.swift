@@ -74,12 +74,12 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         // but we will still parse the mongoc error to cover all cases.
         if let docPtr = replyPtr.pointee {
             let reply = Document(fromPointer: docPtr)
-            return parseMongocError(error: error, errorLabels: reply["errorLabels"] as? [String])
+            return parseMongocError(error, errorLabels: reply["errorLabels"] as? [String])
         }
 
         // Otherwise, the only feasible error is that the user tried to advance a dead cursor, which is a logic error.
         // We will still parse the mongoc error to cover all cases.
-        return parseMongocError(error: error)
+        return parseMongocError(error)
     }
 
     /// Returns the next `Document` in this cursor, or nil. Once this function returns `nil`, the caller should use

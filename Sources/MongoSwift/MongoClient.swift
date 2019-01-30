@@ -124,7 +124,7 @@ public class MongoClient {
     public init(connectionString: String = "mongodb://localhost:27017", options: ClientOptions? = nil) throws {
         var error = bson_error_t()
         guard let uri = mongoc_uri_new_with_error(connectionString, &error) else {
-            throw parseMongocError(error: error)
+            throw parseMongocError(error)
         }
 
         // if retryWrites is specified, set it on the uri (libmongoc does not provide api for setting it on the client).
