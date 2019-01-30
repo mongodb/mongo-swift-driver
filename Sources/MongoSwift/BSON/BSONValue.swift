@@ -201,7 +201,7 @@ public struct Binary: BSONValue, Equatable, Codable {
     /// Throws an error if the provided data is incompatible with the specified subtype.
     public init(data: Data, subtype: UInt8) throws {
         if [Subtype.uuid.rawValue, Subtype.uuidDeprecated.rawValue].contains(subtype) && data.count != 16 {
-            throw MongoError.invalidArgument(message:
+            throw UserError.invalidArgumentError(message:
                 "Binary data with UUID subtype must be 16 bytes, but data has \(data.count) bytes")
         }
         self.subtype = subtype
@@ -219,7 +219,7 @@ public struct Binary: BSONValue, Equatable, Codable {
     /// incompatible with the specified subtype.
     public init(base64: String, subtype: UInt8) throws {
         guard let dataObj = Data(base64Encoded: base64) else {
-            throw MongoError.invalidArgument(message:
+            throw UserError.invalidArgumentError(message:
                 "failed to create Data object from invalid base64 string \(base64)")
         }
         try self.init(data: dataObj, subtype: subtype)
@@ -669,7 +669,7 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
     internal static func toLibBSONType(_ str: String) throws -> bson_oid_t {
         var value = bson_oid_t()
         if !bson_oid_is_valid(str, str.count) {
-            throw MongoError.invalidArgument(message: "ObjectId string is invalid")
+            throw UserError.invalidArgumentError(message: "ObjectId string is invalid")
         }
         bson_oid_init_from_string(&value, str)
         return value

@@ -260,7 +260,7 @@ public class DocumentIterator: IteratorProtocol {
             return try DBPointer.asDocument(from: self)
         default:
             guard let curVal = try DocumentIterator.bsonTypeMap[currentType]?.from(iterator: self) else {
-                throw MongoError.invalidArgument(message: "Unknown BSONType for iterator's current value.")
+                throw RuntimeError.internalError(message: "Unknown BSONType for iterator's current value.")
             }
 
             return curVal
