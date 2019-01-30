@@ -8,7 +8,7 @@ The official [MongoDB](https://www.mongodb.com/) driver for Swift.
 - [Documentation](#documentation)
 - [Bugs/Feature Requests](#bugs--feature-requests)
 - [Installation](#installation)
-    - [OS X and Linux](#os-x-and-linux)
+    - [macOS and Linux](#os-x-and-linux)
       - [Step 1: Install the MongoDB C Driver](#step-1-install-the-mongodb-c-driver)
       - [Step 2: Install MongoSwift](#step-2-install-mongoswift)
     - [iOS, tvOS, and watchOS](#ios-tvos-and-watchos)
@@ -37,17 +37,19 @@ Core Server (i.e. SERVER) project are **public**.
 ## Installation
 `MongoSwift` works with Swift 4.0+.
 
-### OS X and Linux
+### macOS and Linux
 
-Installation on OS X and Linux is supported via [Swift Package Manager](https://swift.org/package-manager/).
+Installation on macOS and Linux is supported via [Swift Package Manager](https://swift.org/package-manager/).
 
 #### Step 1: Install the MongoDB C Driver
 The driver wraps the MongoDB C driver, and using it requires having the C driver's two components, `libbson` and `libmongoc`, installed on your system. **The minimum required version of the C Driver is 1.13.0**.
 
-On a Mac, you can install both components at once using [Homebrew](https://brew.sh/):
+*On a Mac*, you can install both components at once using [Homebrew](https://brew.sh/):
 `brew install mongo-c-driver`.
 
-On Linux: please follow the [instructions](http://mongoc.org/libmongoc/current/installing.html#building-on-unix) from `libmongoc`'s documentation. Note that the versions provided by your package manager may be too old, in which case you can follow the instructions for building and installing from source.
+*On Linux*: please follow the [instructions](http://mongoc.org/libmongoc/current/installing.html#building-on-unix) from `libmongoc`'s documentation. Note that the versions provided by your package manager is probably too old, in which case you can follow the instructions for building and installing from source.
+
+See example installation from source on Ubuntu in [Docker](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/Docker).
 
 #### Step 2: Install MongoSwift
 *Please follow the instructions in the previous section on installing the MongoDB C Driver before proceeding.*
