@@ -106,6 +106,8 @@ public class WriteConcern: Codable {
     }
 
     /// Initializes a new `WriteConcern`.
+    /// - Throws:
+    ///   - `UserError.invalidArgumentError` if the options form an invalid combination.
     public init(journal: Bool? = nil, w: W? = nil, wtimeoutMS: Int32? = nil) throws {
         self._writeConcern = mongoc_write_concern_new()
         if let journal = journal { mongoc_write_concern_set_journal(self._writeConcern, journal) }
