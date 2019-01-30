@@ -4,17 +4,31 @@ import mongoc
 public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     private var _cursor: OpaquePointer?
     private var _client: MongoClient?
-    private var decodeError: Error?
+    private var swiftError: Error?
 
     /// Initializes a new `MongoCursor` instance, not meant to be instantiated directly.
-    internal init(fromCursor: OpaquePointer, withClient: MongoClient) {
+    internal init(fromCursor: OpaquePointer, withClient: MongoClient) throws {
         self._cursor = fromCursor
         self._client = withClient
+
+        if let err = self.error {
+            // Need to explicitly close since deinit will not execute if we throw.
+            self.close()
+
+            // Errors in creation of the cursor are limited to invalid argument errors, but some errors are reported
+            // by libmongoc as invalid cursor errors. These would be parsed to .logicErrors, so we need to rethrow them
+            // as the correct case.
+            if let mongoSwiftErr = err as? MongoSwiftError {
+                throw UserError.invalidArgumentError(message: mongoSwiftErr.errorDescription ?? "")
+            }
+
+            throw err
+        }
     }
 
     /// Deinitializes a `MongoCursor`, cleaning up the internal `mongoc_cursor_t`.
     deinit {
-        close()
+        self.close()
     }
 
     /// Closes the cursor.
@@ -44,19 +58,38 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     /// The error that occurred while iterating this cursor, if one exists. This should be used to check for errors
     /// after `next()` returns `nil`.
     public var error: Error? {
-        if let err = self.decodeError {
+        if let err = self.swiftError {
             return err
         }
+
+        var replyPtr = UnsafeMutablePointer<UnsafePointer<bson_t>?>.allocate(capacity: 1)
+        defer { replyPtr.deallocate() }
+
         var error = bson_error_t()
-        if mongoc_cursor_error(self._cursor, &error) {
-            return MongoError.invalidCursor(message: toErrorString(error))
+        guard mongoc_cursor_error_document(self._cursor, &error, replyPtr) else {
+            return nil
         }
-        return nil
+
+        // If a reply is present, it implies the error occurred on the server. This *should* always be a commandError,
+        // but we will still parse the mongoc error to cover all cases.
+        if let docPtr = replyPtr.pointee {
+            let reply = Document(fromPointer: docPtr)
+            return parseMongocError(error: error, errorLabels: reply["errorLabels"] as? [String])
+        }
+
+        // Otherwise, the only feasible error is that the user tried to advance a dead cursor, which is a logic error.
+        // We will still parse the mongoc error to cover all cases.
+        return parseMongocError(error: error)
     }
 
     /// Returns the next `Document` in this cursor, or nil. Once this function returns `nil`, the caller should use
     /// the `.error` property to check for errors.
     public func next() -> T? {
+        guard self._cursor != nil else {
+            self.swiftError = UserError.logicError(message: "Tried to iterate a closed cursor.")
+            return nil
+        }
+
         let out = UnsafeMutablePointer<UnsafePointer<bson_t>?>.allocate(capacity: 1)
         defer {
             out.deinitialize(count: 1)
@@ -69,9 +102,11 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         let doc = Document(fromPointer: out.pointee!)
 
         do {
-            return try BSONDecoder().decode(T.self, from: doc)
+            let outDoc = try BSONDecoder().decode(T.self, from: doc)
+            self.swiftError = nil
+            return outDoc
         } catch {
-            self.decodeError = error
+            self.swiftError = error
             return nil
         }
     }

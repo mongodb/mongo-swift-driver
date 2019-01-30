@@ -159,6 +159,8 @@ internal func parseMongocError(_ error: bson_error_t, errorLabels: [String]? = n
          (MONGOC_ERROR_SERVER_SELECTION, MONGOC_ERROR_SERVER_SELECTION_FAILURE),
          (MONGOC_ERROR_PROTOCOL, MONGOC_ERROR_PROTOCOL_BAD_WIRE_VERSION):
         return RuntimeError.connectionError(message: message, errorLabels: errorLabels)
+    case (MONGOC_ERROR_CURSOR, MONGOC_ERROR_CURSOR_INVALID_CURSOR):
+        return UserError.logicError(message: message)
     default:
         assert(errorLabels == nil, "errorLabels set on error, but were not thrown as a MongoSwiftError. " +
                 "Labels: \(errorLabels ?? [])")

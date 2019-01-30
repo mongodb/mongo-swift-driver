@@ -294,16 +294,18 @@ extension Document {
      *   - fromJSON: a JSON document as `Data` to parse into a `Document`
      *
      * - Returns: the parsed `Document`
+     *
+     * - Throws:
+     *   - A `UserError.invalidArgumentError` if the data passed in is invalid JSON.
      */
     public init(fromJSON: Data) throws {
         self.storage = DocumentStorage(fromPointer: try fromJSON.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) in
             var error = bson_error_t()
             guard let bson = bson_new_from_json(bytes, fromJSON.count, &error) else {
-                throw MongoError.bsonParseError(
-                    domain: error.domain,
-                    code: error.code,
-                    message: toErrorString(error)
-                )
+                if error.domain == BSON_ERROR_JSON {
+                    throw UserError.invalidArgumentError(message: "Invalid JSON: \(toErrorString(error))")
+                }
+                throw RuntimeError.internalError(message: toErrorString(error))
             }
 
             return UnsafePointer(bson)
@@ -312,6 +314,8 @@ extension Document {
     }
 
     /// Convenience initializer for constructing a `Document` from a `String`.
+    /// - Throws:
+    ///   - A `UserError.invalidArgumentError` if the string passed in is invalid JSON.
     public init(fromJSON json: String) throws {
         // `String`s are Unicode under the hood so force unwrap always succeeds.
         // see https://www.objc.io/blog/2018/02/13/string-to-data-and-back/
