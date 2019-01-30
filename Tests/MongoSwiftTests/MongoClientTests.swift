@@ -26,7 +26,7 @@ final class MongoClientTests: MongoSwiftTestCase {
         }
 
         guard let client_t = mongoc_client_new_from_uri(uri) else {
-            throw RuntimeError.internalError(message: "creating client from uri failed")
+            throw UserError.invalidArgumentError(message: "libmongoc not built with TLS support.")
         }
 
         let client = MongoClient(fromPointer: client_t)

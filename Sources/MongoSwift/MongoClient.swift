@@ -134,7 +134,7 @@ public class MongoClient {
 
         self._client = mongoc_client_new_from_uri(uri)
         guard self._client != nil else {
-            throw UserError.invalidArgumentError(message: "libmongoc not built with TLS support.")
+            throw UserError.invalidArgumentError(message: "libmongoc not built with TLS support")
         }
 
         // if a readConcern is provided, set it on the client
