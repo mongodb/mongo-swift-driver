@@ -50,7 +50,8 @@ final class DocumentTests: MongoSwiftTestCase {
             ("testUUIDEncodingStrategies", testUUIDEncodingStrategies),
             ("testUUIDDecodingStrategies", testUUIDDecodingStrategies),
             ("testDateEncodingStrategies", testDateEncodingStrategies),
-            ("testDateDecodingStrategies", testDateDecodingStrategies)
+            ("testDateDecodingStrategies", testDateDecodingStrategies),
+            ("testDataCodingStrategies", testDataCodingStrategies)
         ]
     }
 
@@ -109,8 +110,10 @@ final class DocumentTests: MongoSwiftTestCase {
         try doc.merge(binaryData)
 
         // UUIDs must have 16 bytes
-        expect(try Binary(data: testData, subtype: .uuidDeprecated)).to(throwError())
-        expect(try Binary(data: testData, subtype: .uuid)).to(throwError())
+        expect(try Binary(data: testData, subtype: .uuidDeprecated))
+                .to(throwError(UserError.invalidArgumentError(message: "")))
+        expect(try Binary(data: testData, subtype: .uuid))
+                .to(throwError(UserError.invalidArgumentError(message: "")))
 
         let expectedKeys = [
             "string", "true", "false", "int", "int32", "int64", "double", "decimal128",
@@ -722,7 +725,7 @@ final class DocumentTests: MongoSwiftTestCase {
         let badString: Document = ["uuid": "hello"]
         let deferredStruct = try decoder.decode(UUIDWrapper.self, from: stringDoc)
         expect(deferredStruct.uuid).to(equal(uuid))
-        expect(try decoder.decode(UUIDWrapper.self, from: badString)).to(throwError())
+        expect(try decoder.decode(UUIDWrapper.self, from: badString)).to(throwError(CodecTests.dataCorruptedErr))
 
         decoder.uuidDecodingStrategy = .binary
         let uuidt = uuid.uuid
@@ -737,7 +740,9 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(binaryStruct.uuid).to(equal(uuid))
 
         let badBinary: Document = ["uuid": try Binary(data: bytes, subtype: .generic)]
-        expect(try decoder.decode(UUIDWrapper.self, from: badBinary)).to(throwError())
+        expect(try decoder.decode(UUIDWrapper.self, from: badBinary)).to(throwError(CodecTests.dataCorruptedErr))
+
+        expect(try decoder.decode(UUIDWrapper.self, from: stringDoc)).to(throwError(CodecTests.typeMismatchErr))
     }
 
     struct DateWrapper: Codable {
@@ -842,6 +847,7 @@ final class DocumentTests: MongoSwiftTestCase {
         let msInt64: Document = ["date": date.msSinceEpoch]
         let msInt64Struct = try decoder.decode(DateWrapper.self, from: msInt64)
         expect(msInt64Struct.date).to(equal(date))
+        expect(try BSONDecoder().decode(DateWrapper.self, from: msInt64)).to(throwError(CodecTests.typeMismatchErr))
 
         let msDouble: Document = ["date": Double(date.msSinceEpoch)]
         let msDoubleStruct = try decoder.decode(DateWrapper.self, from: msDouble)
@@ -866,27 +872,29 @@ final class DocumentTests: MongoSwiftTestCase {
         let badlyFormatted: Document = ["date": "this is not a date"]
         let formattedStruct = try decoder.decode(DateWrapper.self, from: formatted)
         expect(formattedStruct.date).to(equal(date))
-        expect(try decoder.decode(DateWrapper.self, from: badlyFormatted)).to(throwError())
+        expect(try decoder.decode(DateWrapper.self, from: badlyFormatted)).to(throwError(CodecTests.dataCorruptedErr))
+        expect(try decoder.decode(DateWrapper.self, from: sDouble)).to(throwError(CodecTests.typeMismatchErr))
 
         if #available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) {
             decoder.dateDecodingStrategy = .iso8601
             let isoDoc: Document = ["date": BSONDecoder.iso8601Formatter.string(from: date)]
             let isoStruct = try decoder.decode(DateWrapper.self, from: isoDoc)
             expect(isoStruct.date).to(equal(date))
-            expect(try decoder.decode(DateWrapper.self, from: formatted)).to(throwError())
-            expect(try decoder.decode(DateWrapper.self, from: badlyFormatted)).to(throwError())
+            expect(try decoder.decode(DateWrapper.self, from: formatted)).to(throwError(CodecTests.dataCorruptedErr))
+            expect(try decoder.decode(DateWrapper.self, from: badlyFormatted))
+                    .to(throwError(CodecTests.dataCorruptedErr))
         }
 
         decoder.dateDecodingStrategy = .custom({ decode in try Date(from: decode) })
         let customDoc: Document = ["date": date.timeIntervalSinceReferenceDate]
         let customStruct = try decoder.decode(DateWrapper.self, from: customDoc)
         expect(customStruct.date).to(equal(date))
-        expect(try decoder.decode(DateWrapper.self, from: badlyFormatted)).to(throwError())
+        expect(try decoder.decode(DateWrapper.self, from: badlyFormatted)).to(throwError(CodecTests.typeMismatchErr))
 
         decoder.dateDecodingStrategy = .deferredToDate
         let deferredStruct = try decoder.decode(DateWrapper.self, from: customDoc)
         expect(deferredStruct.date).to(equal(date))
-        expect(try decoder.decode(DateWrapper.self, from: badlyFormatted)).to(throwError())
+        expect(try decoder.decode(DateWrapper.self, from: badlyFormatted)).to(throwError(CodecTests.typeMismatchErr))
     }
 
     func testDataCodingStrategies() throws {
@@ -920,7 +928,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(deferredDoc["data"]).to(bsonEqual(arrData))
         let roundTripDeferred = try decoder.decode(DataWrapper.self, from: deferredDoc)
         expect(roundTripDeferred.data).to(equal(data))
-        expect(try decoder.decode(DataWrapper.self, from: defaultDoc)).to(throwError())
+        expect(try decoder.decode(DataWrapper.self, from: defaultDoc)).to(throwError(CodecTests.typeMismatchErr))
 
         encoder.dataEncodingStrategy = .base64
         decoder.dataDecodingStrategy = .base64
@@ -928,7 +936,8 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(base64Doc["data"]).to(bsonEqual(data.base64EncodedString()))
         let roundTripBase64 = try decoder.decode(DataWrapper.self, from: base64Doc)
         expect(roundTripBase64.data).to(equal(data))
-        expect(try decoder.decode(DataWrapper.self, from: ["data": "this is not base64 encoded~"])).to(throwError())
+        expect(try decoder.decode(DataWrapper.self, from: ["data": "this is not base64 encoded~"]))
+                .to(throwError(CodecTests.dataCorruptedErr))
 
         let customEncodedDoc = ["d": data.base64EncodedString(), "hash": data.hashValue] as Document
         encoder.dataEncodingStrategy = .custom({ d, encoder in

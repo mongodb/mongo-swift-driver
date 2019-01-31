@@ -73,7 +73,8 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
         expect(try WriteConcern(w: .majority)).toNot(throwError())
 
         // verify that this combination is considered invalid
-        expect(try WriteConcern(journal: true, w: .number(0))).to(throwError())
+        expect(try WriteConcern(journal: true, w: .number(0)))
+                .to(throwError(UserError.invalidArgumentError(message: "")))
     }
 
     func testClientReadConcern() throws {
@@ -403,7 +404,8 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
                         }
                     }
                 } else {
-                    expect(try MongoClient(connectionString: uri)).to(throwError())
+                    expect(try MongoClient(connectionString: uri))
+                            .to(throwError(UserError.invalidArgumentError(message: "")))
                 }
             }
         }
@@ -451,7 +453,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
                             expect(try encoder.encode(wc)).to(equal(expected))
                         }
                     } else {
-                        expect(try WriteConcern(wcToUse)).to(throwError())
+                        expect(try WriteConcern(wcToUse)).to(throwError(UserError.invalidArgumentError(message: "")))
                     }
                 }
             }

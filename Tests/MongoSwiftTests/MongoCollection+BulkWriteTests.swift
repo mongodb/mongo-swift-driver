@@ -198,7 +198,10 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         expect(cursor.next()).to(equal(["_id": 2, "x": 24]))
         expect(cursor.next()).to(equal(["_id": 3, "x": 34]))
         expect(cursor.next()).to(equal(["_id": 4, "x": 44]))
-        expect(cursor.next()).to(beNil())
+        expect(cursor.next()).to(beNil()) // cursor ends
+        expect(cursor.error).to(beNil())
+        expect(cursor.next()).to(beNil()) // iterate after cursor ends
+        expect(cursor.error as? UserError).to(equal(UserError.logicError(message: "")))
     }
 
     func testUnacknowledgedWriteConcern() throws {
