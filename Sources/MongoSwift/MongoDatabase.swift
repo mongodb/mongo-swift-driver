@@ -194,7 +194,6 @@ public class MongoDatabase {
     /// Drops this database.
     /// - Throws:
     ///   - `ServerError.commandError` if an error occurs that prevents the command from executing.
-    ///   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
     public func drop() throws {
         var error = bson_error_t()
         guard mongoc_database_drop(self._database, &error) else {

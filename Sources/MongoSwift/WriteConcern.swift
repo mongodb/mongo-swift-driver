@@ -106,6 +106,8 @@ public class WriteConcern: Codable {
     }
 
     /// Initializes a new `WriteConcern`.
+    /// - Throws:
+    ///   - `UserError.invalidArgumentError` if the options form an invalid combination.
     public init(journal: Bool? = nil, w: W? = nil, wtimeoutMS: Int32? = nil) throws {
         self._writeConcern = mongoc_write_concern_new()
         if let journal = journal { mongoc_write_concern_set_journal(self._writeConcern, journal) }
@@ -127,7 +129,7 @@ public class WriteConcern: Codable {
             let journalStr = String(describing: journal)
             let wStr = String(describing: w)
             let timeoutStr = String(describing: wtimeoutMS)
-            throw MongoError.invalidArgument(message:
+            throw UserError.invalidArgumentError(message:
                 "Invalid combination of options: journal=\(journalStr), w=\(wStr), wtimeoutMS=\(timeoutStr)")
         }
     }

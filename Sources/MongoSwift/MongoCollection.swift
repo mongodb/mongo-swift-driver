@@ -57,7 +57,6 @@ public class MongoCollection<T: Codable> {
     /// Drops this collection from its parent database.
     /// - Throws:
     ///   - `ServerError.commandError` if an error occurs that prevents the command from executing.
-    ///   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
     public func drop() throws {
         var error = bson_error_t()
         guard mongoc_collection_drop(self._collection, &error) else {

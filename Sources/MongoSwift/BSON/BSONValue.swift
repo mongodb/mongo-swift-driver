@@ -184,6 +184,8 @@ public struct Binary: BSONValue, Equatable, Codable {
     }
 
     /// Initializes a `Binary` instance from a `UUID`.
+    /// - Throws:
+    ///   - `UserError.invalidArgumentError` if a `Binary` cannot be constructed from this UUID.
     public init(from uuid: UUID) throws {
         let uuidt = uuid.uuid
 
@@ -198,10 +200,11 @@ public struct Binary: BSONValue, Equatable, Codable {
     }
 
     /// Initializes a `Binary` instance from a `Data` object and a `UInt8` subtype.
-    /// Throws an error if the provided data is incompatible with the specified subtype.
+    /// - Throws:
+    ///   - `UserError.invalidArgumentError` if the provided data is incompatible with the specified subtype.
     public init(data: Data, subtype: UInt8) throws {
         if [Subtype.uuid.rawValue, Subtype.uuidDeprecated.rawValue].contains(subtype) && data.count != 16 {
-            throw MongoError.invalidArgument(message:
+            throw UserError.invalidArgumentError(message:
                 "Binary data with UUID subtype must be 16 bytes, but data has \(data.count) bytes")
         }
         self.subtype = subtype
@@ -209,25 +212,28 @@ public struct Binary: BSONValue, Equatable, Codable {
     }
 
     /// Initializes a `Binary` instance from a `Data` object and a `Subtype`.
-    /// Throws an error if the provided data is incompatible with the specified subtype.
+    /// - Throws:
+    ///   - `UserError.invalidArgumentError` if the provided data is incompatible with the specified subtype.
     public init(data: Data, subtype: Subtype) throws {
         try self.init(data: data, subtype: subtype.rawValue)
     }
 
     /// Initializes a `Binary` instance from a base64 `String` and a `UInt8` subtype.
-    /// Throws an error if the base64 `String` is invalid or if the provided data is
-    /// incompatible with the specified subtype.
+    /// - Throws:
+    ///   - `UserError.invalidArgumentError` if the base64 `String` is invalid or if the provided data is
+    ///     incompatible with the specified subtype.
     public init(base64: String, subtype: UInt8) throws {
         guard let dataObj = Data(base64Encoded: base64) else {
-            throw MongoError.invalidArgument(message:
+            throw UserError.invalidArgumentError(message:
                 "failed to create Data object from invalid base64 string \(base64)")
         }
         try self.init(data: dataObj, subtype: subtype)
     }
 
     /// Initializes a `Binary` instance from a base64 `String` and a `Subtype`.
-    /// Throws an error if the base64 `String` is invalid or if the provided data is
-    /// incompatible with the specified subtype.
+    /// - Throws:
+    ///   - `UserError.invalidArgumentError` if the base64 `String` is invalid or if the provided data is
+    ///     incompatible with the specified subtype.
     public init(base64: String, subtype: Subtype) throws {
         try self.init(base64: base64, subtype: subtype.rawValue)
     }
@@ -386,10 +392,12 @@ public struct Decimal128: BSONValue, Equatable, Codable {
 
     /// Returns the provided string as a `bson_decimal128_t`, or throws an error if initialization fails due an
     /// invalid string.
+    /// - Throws:
+    ///   - `UserError.invalidArgumentError` if the parameter string does not correspond to a valid `Decimal128`.
     internal static func toLibBSONType(_ str: String) throws -> bson_decimal128_t {
         var value = bson_decimal128_t()
         guard bson_decimal128_from_string(str, &value) else {
-            throw RuntimeError.internalError(message: "Invalid Decimal128 string \(str)")
+            throw UserError.invalidArgumentError(message: "Invalid Decimal128 string \(str)")
         }
         return value
     }
@@ -666,10 +674,12 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
     }
 
     /// Returns the provided string as a `bson_oid_t`.
+    /// - Throws:
+    ///   - `UserError.invalidArgumentError` if the parameter string does not correspond to a valid `ObjectId`.
     internal static func toLibBSONType(_ str: String) throws -> bson_oid_t {
         var value = bson_oid_t()
         if !bson_oid_is_valid(str, str.count) {
-            throw MongoError.invalidArgument(message: "ObjectId string is invalid")
+            throw UserError.invalidArgumentError(message: "ObjectId string is invalid")
         }
         bson_oid_init_from_string(&value, str)
         return value
@@ -703,6 +713,9 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
 /// Extension to allow a `UUID` to be initialized from a `Binary` `BSONValue`.
 extension UUID {
     /// Initializes a `UUID` instance from a `Binary` `BSONValue`.
+    /// - Throws:
+    ///   - `UserError.logicError` if a deprecated UUID subtype is set on the `Binary`.
+    ///   - `UserError.invalidArgumentError` if a non-UUID subtype is set on the `Binary`.
     public init(from binary: Binary) throws {
         guard binary.subtype != Binary.Subtype.uuidDeprecated.rawValue else {
             throw UserError.logicError(message: "Binary subtype \(binary.subtype) is deprecated, " +
