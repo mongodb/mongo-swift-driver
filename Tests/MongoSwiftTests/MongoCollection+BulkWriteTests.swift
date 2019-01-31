@@ -10,7 +10,8 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
             ("testUpdates", testUpdates),
             ("testDeletes", testDeletes),
             ("testMixedOrderedOperations", testMixedOrderedOperations),
-            ("testUnacknowledgedWriteConcern", testUnacknowledgedWriteConcern)
+            ("testUnacknowledgedWriteConcern", testUnacknowledgedWriteConcern),
+            ("testBulkWriteErrors", testBulkWriteErrors)
         ]
     }
 
@@ -43,11 +44,12 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
     override func tearDown() {
         do {
             try coll.drop()
+        } catch let ServerError.commandError(code, _, _) {
+            // Only ignore NamespaceNotFound errors.
+            expect(code).to(equal(26))
         } catch {
-            /* TODO: Only ignore "ns not found" error once we can differentiate
-             * MongoError.commandError by error code. */
+            fail("encountered error when tearing down: \(error)")
         }
-
         super.tearDown()
     }
 
