@@ -7,6 +7,10 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     private var swiftError: Error?
 
     /// Initializes a new `MongoCursor` instance, not meant to be instantiated directly.
+    ///
+    /// - Throws:
+    ///   - `UserError.invalidArgumentError` if the options passed to the command that generated this cursor formed an
+    ///     invalid combination.
     internal init(fromCursor: OpaquePointer, withClient: MongoClient) throws {
         self._cursor = fromCursor
         self._client = withClient
@@ -41,10 +45,15 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         self._cursor = nil
     }
 
-    /// Returns the next `Document` in this cursor or `nil`, or throws an error if one occurs -- compared to `next()`,
-    /// which returns `nil` and requires manually checking for an error afterward.
-    /// - returns: the next `Document` in this cursor, or `nil` if at the end of the cursor
-    /// - throws: an error if one occurs while iterating
+    /**
+     * Returns the next `Document` in this cursor or `nil`, or throws an error if one occurs -- compared to `next()`,
+     * which returns `nil` and requires manually checking for an error afterward.
+     * - Returns: the next `Document` in this cursor, or `nil` if at the end of the cursor
+     * - Throws:
+     *   - `ServerError.commandError` if an error occurs on the server while iterating the cursor.
+     *   - `UserError.logicError` if this function is called after the cursor has died.
+     *   - `DecodingError` if an error occurs decoding the server's response.
+     */
     public func nextOrError() throws -> T? {
         if let next = self.next() {
             return next

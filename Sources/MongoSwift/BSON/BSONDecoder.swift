@@ -113,10 +113,10 @@ public class BSONDecoder {
 
     /// Decodes a top-level value of the given type from the given BSON document.
     ///
-    /// - parameter type: The type of the value to decode.
-    /// - parameter document: The BSON document to decode from.
-    /// - returns: A value of the requested type.
-    /// - throws: An error if any value throws an error during decoding.
+    /// - Parameter type: The type of the value to decode.
+    /// - Parameter document: The BSON document to decode from.
+    /// - Returns: A value of the requested type.
+    /// - Throws: `DecodingError` if any value throws an error during decoding.
     public func decode<T: Decodable>(_ type: T.Type, from document: Document) throws -> T {
         /// if the requested type is `Document` we're done
         if let doc = document as? T {
@@ -128,20 +128,20 @@ public class BSONDecoder {
 
     /// Decodes a top-level value of the given type from the given BSON data.
     ///
-    /// - parameter type: The type of the value to decode.
-    /// - parameter data: The BSON data to decode from.
-    /// - returns: A value of the requested type.
-    /// - throws: An error if the BSON data is corrupt, or if any value throws an error during decoding.
+    /// - Parameter type: The type of the value to decode.
+    /// - Parameter data: The BSON data to decode from.
+    /// - Returns: A value of the requested type.
+    /// - Throws: `DecodingError` if the BSON data is corrupt or if any value throws an error during decoding.
     public func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
         return try self.decode(type, from: Document(fromBSON: data))
     }
 
     /// Decodes a top-level value of the given type from the given JSON/extended JSON string.
     ///
-    /// - parameter type: The type of the value to decode.
-    /// - parameter json: The JSON string to decode from.
-    /// - returns: A value of the requested type.
-    /// - throws: An error if the JSON data is corrupt, or if any value throws an error during decoding.
+    /// - Parameter type: The type of the value to decode.
+    /// - Parameter json: The JSON string to decode from.
+    /// - Returns: A value of the requested type.
+    /// - Throws: `DecodingError` if the JSON data is corrupt or if any value throws an error during decoding.
     public func decode<T: Decodable>(_ type: T.Type, from json: String) throws -> T {
         // we nest the input JSON in another object, and then decode to a `DecodableWrapper`
         // wrapping an object of the requested type. since our decoder only supports decoding
@@ -166,6 +166,9 @@ public class BSONDecoder {
 
     /// Internal version of decode that throws `.internalErrors` instead of `DecodingErrors`. Use this when using the
     /// decoder internally on non-user-modified types.
+    ///
+    /// - Throws:
+    ///   - `RuntimeError.internalError` if the BSON data is corrupt or if any value throws an error during decoding.
     internal func internalDecode<T: Decodable>(
             _ type: T.Type,
             from document: Document,

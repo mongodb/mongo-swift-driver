@@ -53,7 +53,7 @@ extension MongoCollection {
      * - Returns: an `InsertManyResult`, or `nil` if the write concern is unacknowledged.
      *
      * - Throws:
-     *   - `ServerError.writeError` if an error occurs while performing the write.
+     *   - `ServerError.bulkWriteError` if an error occurs while performing any of the writes.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
      *   - `EncodingError` if an error occurs while encoding the `CollectionType` or options to BSON.
@@ -417,6 +417,9 @@ public struct InsertManyResult {
      * - Parameters:
      *   - reply: A `Document` result from `mongoc_collection_insert_many()`
      *   - insertedIds: Map of inserted IDs
+     *
+     * - Throws:
+     *   - `RuntimeError.internalError` if an unexpected error occurs reading server reply.
      */
     fileprivate init(reply: Document, insertedIds: [Int: BSONValue]) throws {
         self.insertedCount = try reply.getValue(for: "insertedCount") as? Int ?? 0

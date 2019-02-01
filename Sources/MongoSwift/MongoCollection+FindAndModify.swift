@@ -75,7 +75,15 @@ extension MongoCollection {
         return try self.findAndModify(filter: filter, update: update, options: options)
     }
 
-    /// A private helper method for findAndModify operations to use
+    /**
+     * A private helper method for findAndModify operations to use.
+     *
+     * - Throws:
+     *   - `UserError.invalidArgumentError` if any of the provided options are invalid.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `ServerError.writeError` if an error occurs while executing the command.
+     *   - `DecodingError` if the updated document cannot be decoded to a `CollectionType` value.
+     */
     private func findAndModify(filter: Document,
                                update: Document? = nil,
                                options: FindAndModifyOptionsConvertible? = nil) throws -> CollectionType? {
@@ -107,15 +115,17 @@ extension MongoCollection {
 
 /// Indicates which document to return in a find and modify operation.
 public enum ReturnDocument {
-    /// Indicates to return the document before the update, replacement, or insert occured.
+    /// Indicates to return the document before the update, replacement, or insert occurred.
     case before
-    ///  Indicates to return the document after the update, replacement, or insert occured.
+    ///  Indicates to return the document after the update, replacement, or insert occurred.
     case after
 }
 
 /// Indicates that an options type can be represented as a `FindAndModifyOptions`
 private protocol FindAndModifyOptionsConvertible {
     /// Converts `self` to a `FindAndModifyOptions`
+    ///
+    /// - Throws: `UserError.invalidArgumentError` if any of the options are invalid.
     func asOpts() throws -> FindAndModifyOptions
 }
 
@@ -288,6 +298,9 @@ private class FindAndModifyOptions {
         self._options = mongoc_find_and_modify_opts_new()
     }
 
+    /// Initializes a new `FindAndModifyOptions` with the given settings.
+    ///
+    /// - Throws: `UserError.invalidArgumentError` if any of the options are invalid.
     // swiftlint:disable:next cyclomatic_complexity
     init(arrayFilters: [Document]? = nil,
          bypassDocumentValidation: Bool? = nil,

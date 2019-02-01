@@ -221,7 +221,9 @@ public class MongoClient {
      *
      * - Returns: A `MongoCursor` over `Document`s describing the databases matching provided criteria
      *
-     * - Throws: A `userError.invalidArgumentError` if the options passed are an invalid combination.
+     * - Throws:
+     *   - `UserError.invalidArgumentError` if the options passed are an invalid combination.
+     *   - `EncodingError` if an error is encountered while encoding the options to BSON.
      */
     public func listDatabases(options: ListDatabasesOptions? = nil) throws -> MongoCursor<Document> {
         let encoder = BSONEncoder()

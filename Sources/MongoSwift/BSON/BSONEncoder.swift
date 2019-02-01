@@ -106,9 +106,9 @@ public class BSONEncoder {
 
     /// Encodes the given top-level value and returns its BSON representation.
     ///
-    /// - parameter value: The value to encode.
-    /// - returns: A new `Document` containing the encoded BSON data.
-    /// - throws: An error if any value throws an error during encoding.
+    /// - Parameter value: The value to encode.
+    /// - Returns: A new `Document` containing the encoded BSON data.
+    /// - Throws: `EncodingError` if any value throws an error during encoding.
     public func encode<T: Encodable>(_ value: T) throws -> Document {
         // if the value being encoded is already a `Document` we're done
         switch value {
@@ -141,12 +141,14 @@ public class BSONEncoder {
         return dict.asDocument()
     }
 
-    /// Encodes the given top-level optional value and returns its BSON representation. Returns nil if the
-    /// value is nil or if it contains no data.
-    ///
-    /// - parameter value: The value to encode.
-    /// - returns: A new `Document` containing the encoded BSON data, or nil if there is no data to encode.
-    /// - throws: An error if any value throws an error during encoding.
+    /**
+     * Encodes the given top-level optional value and returns its BSON representation. Returns nil if the
+     * value is nil or if it contains no data.
+     *
+     * - Parameter value: The value to encode.
+     * - Returns: A new `Document` containing the encoded BSON data, or nil if there is no data to encode.
+     * - Throws: `EncodingError` if any value throws an error during encoding.
+     */
     public func encode<T: Encodable>(_ value: T?) throws -> Document? {
         guard let value = value else {
             return nil
@@ -157,9 +159,9 @@ public class BSONEncoder {
 
     /// Encodes the given array of top-level values and returns an array of their BSON representations.
     ///
-    /// - parameter values: The values to encode.
-    /// - returns: A new `[Document]` containing the encoded BSON data.
-    /// - throws: An error if any value throws an error during encoding.
+    /// - Parameter values: The values to encode.
+    /// - Returns: A new `[Document]` containing the encoded BSON data.
+    /// - Throws: `EncodingError` if any value throws an error during encoding.
     public func encode<T: Encodable>(_ values: [T]) throws -> [Document] {
         return try values.map { try self.encode($0) }
     }
@@ -167,10 +169,10 @@ public class BSONEncoder {
     /// Encodes the given array of top-level optional values and returns an array of their BSON representations.
     /// Any value that is nil or contains no data will be mapped to nil.
     ///
-    /// - parameter values: The values to encode.
-    /// - returns: A new `[Document?]` containing the encoded BSON data. Any value that is nil or
+    /// - Parameter values: The values to encode.
+    /// - Returns: A new `[Document?]` containing the encoded BSON data. Any value that is nil or
     ///            contains no data will be mapped to nil.
-    /// - throws: An error if any value throws an error during encoding.
+    /// - Throws: `EncodingError` if any value throws an error during encoding.
     public func encode<T: Encodable>(_ values: [T?]) throws -> [Document?] {
         return try values.map { try self.encode($0) }
     }
