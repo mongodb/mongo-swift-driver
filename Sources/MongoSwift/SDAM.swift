@@ -65,7 +65,7 @@ public struct ServerDescription {
     public let connectionId: ConnectionId
 
     /// The last error related to this server.
-    public let error: MongoSwiftError? = nil // currently we will never set this
+    public let error: MongoError? = nil // currently we will never set this
 
     /// The duration of the server's last ismaster call.
     public var roundTripTime: Int64?
@@ -222,7 +222,7 @@ public struct TopologyDescription {
     public let stale: Bool = false // currently, this will never be set
 
     /// Exists if any server's wire protocol version range is incompatible with the client's.
-    public let compatibilityError: MongoSwiftError? = nil // currently, this will never be set
+    public let compatibilityError: MongoError? = nil // currently, this will never be set
 
     /// The logicalSessionTimeoutMinutes value for this topology. This value is the minimum
     /// of the `logicalSessionTimeoutMinutes` values across all the servers in `servers`,

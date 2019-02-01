@@ -18,7 +18,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
             // Errors in creation of the cursor are limited to invalid argument errors, but some errors are reported
             // by libmongoc as invalid cursor errors. These would be parsed to .logicErrors, so we need to rethrow them
             // as the correct case.
-            if let mongoSwiftErr = err as? MongoSwiftError {
+            if let mongoSwiftErr = err as? MongoError {
                 throw UserError.invalidArgumentError(message: mongoSwiftErr.errorDescription ?? "")
             }
 
