@@ -70,7 +70,7 @@ See the official documentation for both [`EncodingErrors`](https://developer.app
 ```swift
 do {
     // something involving the driver
-} catch let error as MongoSwiftError {
+} catch let error as MongoError {
     print("Driver error!")
     switch error.self {
     case let runtimeError as RuntimeError:
