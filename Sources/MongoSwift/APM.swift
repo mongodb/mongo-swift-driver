@@ -113,8 +113,8 @@ public struct CommandFailedEvent: MongoEvent, InitializableFromOpaquePointer {
     /// The command name.
     public let commandName: String
 
-    /// The failure, represented as a MongoSwiftError.
-    public let failure: MongoSwiftError
+    /// The failure, represented as a MongoError.
+    public let failure: MongoError
 
     /// The client generated request id.
     public let requestId: Int64
@@ -337,7 +337,7 @@ public struct ServerHeartbeatFailedEvent: MongoEvent, InitializableFromOpaquePoi
     public let duration: Int64
 
     /// The failure.
-    public let failure: MongoSwiftError
+    public let failure: MongoError
 
     /// The connection ID (host/port pair) of the server.
     public let connectionId: ConnectionId

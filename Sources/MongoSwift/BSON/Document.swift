@@ -189,8 +189,9 @@ extension Document {
      *      - key: The key under which the value you are looking up is stored
      *      - `T`: Any type conforming to the `BSONValue` protocol
      *  - Returns: The value stored under key, as type `T`
-     *  - Throws: A `MongoError.typeError` if the value cannot be cast to type `T` or is not in the `Document`, or a
-     *            `MongoError.bsonDecodeError` if there is an issue decoding the `BSONValue`.
+     *  - Throws:
+     *    - `RuntimeError.internalError` if the value cannot be cast to type `T` or is not in the `Document`, or an
+     *      unexpected error occurs while decoding the `BSONValue`.
      *
      */
     internal func get<T: BSONValue>(_ key: String) throws -> T {
