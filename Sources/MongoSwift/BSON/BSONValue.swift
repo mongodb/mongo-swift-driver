@@ -716,7 +716,7 @@ extension UUID {
     /// - Throws:
     ///   - `UserError.invalidArgumentError` if a non-UUID subtype is set on the `Binary`.
     public init(from binary: Binary) throws {
-        guard binary.subtype == Binary.Subtype.uuid.rawValue else {
+        guard [Binary.Subtype.uuid.rawValue, Binary.Subtype.uuidDeprecated.rawValue].contains(binary.subtype) else {
             throw UserError.invalidArgumentError(message: "Expected a UUID binary type " +
                     "(\(Binary.Subtype.uuid)), got \(binary.subtype) instead.")
         }
