@@ -44,9 +44,8 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
     override func tearDown() {
         do {
             try coll.drop()
-        } catch let ServerError.commandError(code, _, _) {
-            // Only ignore NamespaceNotFound errors.
-            expect(code).to(equal(26))
+        } catch let ServerError.commandError(code, _, _) where code == 26 {
+            // ignore ns not found errors
         } catch {
             fail("encountered error when tearing down: \(error)")
         }
