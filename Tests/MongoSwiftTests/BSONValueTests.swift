@@ -26,8 +26,9 @@ final class BSONValueTests: MongoSwiftTestCase {
         let sixteenBytes = Data(base64Encoded: "c//SZESzTGmQ6OfR38A11A==")!
 
         // UUIDs must have 16 bytes
-        expect(try Binary(data: twoBytes, subtype: .uuidDeprecated)).to(throwError())
-        expect(try Binary(data: twoBytes, subtype: .uuid)).to(throwError())
+        expect(try Binary(data: twoBytes, subtype: .uuidDeprecated))
+                .to(throwError(UserError.invalidArgumentError(message: "")))
+        expect(try Binary(data: twoBytes, subtype: .uuid)).to(throwError(UserError.invalidArgumentError(message: "")))
         expect(try Binary(data: sixteenBytes, subtype: .uuidDeprecated)).toNot(throwError())
         expect(try Binary(data: sixteenBytes, subtype: .uuid)).toNot(throwError())
     }

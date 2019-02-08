@@ -10,7 +10,8 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
             ("testUpdates", testUpdates),
             ("testDeletes", testDeletes),
             ("testMixedOrderedOperations", testMixedOrderedOperations),
-            ("testUnacknowledgedWriteConcern", testUnacknowledgedWriteConcern)
+            ("testUnacknowledgedWriteConcern", testUnacknowledgedWriteConcern),
+            ("testBulkWriteErrors", testBulkWriteErrors)
         ]
     }
 
@@ -43,11 +44,11 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
     override func tearDown() {
         do {
             try coll.drop()
+        } catch let ServerError.commandError(code, _, _) where code == 26 {
+            // ignore ns not found errors
         } catch {
-            /* TODO: Only ignore "ns not found" error once we can differentiate
-             * MongoError.commandError by error code. */
+            fail("encountered error when tearing down: \(error)")
         }
-
         super.tearDown()
     }
 
@@ -198,7 +199,10 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         expect(cursor.next()).to(equal(["_id": 2, "x": 24]))
         expect(cursor.next()).to(equal(["_id": 3, "x": 34]))
         expect(cursor.next()).to(equal(["_id": 4, "x": 44]))
-        expect(cursor.next()).to(beNil())
+        expect(cursor.next()).to(beNil()) // cursor ends
+        expect(cursor.error).to(beNil())
+        expect(cursor.next()).to(beNil()) // iterate after cursor ends
+        expect(cursor.error as? UserError).to(equal(UserError.logicError(message: "")))
     }
 
     func testUnacknowledgedWriteConcern() throws {

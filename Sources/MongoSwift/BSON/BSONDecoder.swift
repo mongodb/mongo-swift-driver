@@ -316,12 +316,10 @@ extension _BSONDecoder {
             defer { self.storage.popContainer() }
             return try Data(from: self)
         case .binary:
-            let binary = try self.unbox(value, as: Binary.self)
+            let binary = try self.unboxBSONValue(value, as: Binary.self)
             return binary.data
         case.base64:
-            guard let base64Str = value as? String else {
-                throw DecodingError._typeMismatch(at: self.codingPath, expectation: String.self, reality: value)
-            }
+            let base64Str = try self.unboxBSONValue(value, as: String.self)
 
             guard let data = Data(base64Encoded: base64Str) else {
                 throw DecodingError.dataCorrupted(
@@ -339,13 +337,10 @@ extension _BSONDecoder {
     }
 
     /// Private helper function used specifically for decoding dates.
-    // swiftlint:disable cyclomatic_complexity
     fileprivate func unboxDate(_ value: BSONValue) throws -> Date {
         switch self.options.dateDecodingStrategy {
         case .bsonDateTime:
-            guard let date = value as? Date else {
-                throw DecodingError._typeMismatch(at: self.codingPath, expectation: Date.self, reality: value)
-            }
+            let date = try self.unboxBSONValue(value, as: Date.self)
             return date
         case .deferredToDate:
             self.storage.push(container: value)
@@ -361,7 +356,7 @@ extension _BSONDecoder {
             guard #available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) else {
                 fatalError("ISO8601DateFormatter is unavailable on this platform.")
             }
-            let isoString = try self.unbox(value, as: String.self)
+            let isoString = try self.unboxBSONValue(value, as: String.self)
             guard let date = BSONDecoder.iso8601Formatter.date(from: isoString) else {
                 throw DecodingError.dataCorrupted(
                         DecodingError.Context(
@@ -377,7 +372,7 @@ extension _BSONDecoder {
             defer { self.storage.popContainer() }
             return try f(self)
         case .formatted(let formatter):
-            let dateString = try self.unbox(value, as: String.self)
+            let dateString = try self.unboxBSONValue(value, as: String.self)
             guard let date = formatter.date(from: dateString) else {
                 throw DecodingError.dataCorrupted(
                         DecodingError.Context(
@@ -390,7 +385,6 @@ extension _BSONDecoder {
             return date
         }
     }
-    // swiftlint:enable cyclomatic_complexity
 
     /// Private helper used specifically for decoding UUIDs.
     fileprivate func unboxUUID(_ value: BSONValue) throws -> UUID {
@@ -400,8 +394,17 @@ extension _BSONDecoder {
             defer { self.storage.popContainer() }
             return try UUID(from: self)
         case .binary:
-            let binary = try self.unbox(value, as: Binary.self)
-            return try UUID(from: binary)
+            let binary = try self.unboxBSONValue(value, as: Binary.self)
+            do {
+                return try UUID(from: binary)
+            } catch {
+                throw DecodingError.dataCorrupted(
+                        DecodingError.Context(
+                                codingPath: self.codingPath,
+                                debugDescription: error.localizedDescription
+                        )
+                )
+            }
         }
     }
 

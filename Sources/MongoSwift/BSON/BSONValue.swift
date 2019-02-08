@@ -714,14 +714,9 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
 extension UUID {
     /// Initializes a `UUID` instance from a `Binary` `BSONValue`.
     /// - Throws:
-    ///   - `UserError.logicError` if a deprecated UUID subtype is set on the `Binary`.
     ///   - `UserError.invalidArgumentError` if a non-UUID subtype is set on the `Binary`.
     public init(from binary: Binary) throws {
-        guard binary.subtype != Binary.Subtype.uuidDeprecated.rawValue else {
-            throw UserError.logicError(message: "Binary subtype \(binary.subtype) is deprecated, " +
-                    "use \(Binary.Subtype.uuid) instead.")
-        }
-        guard binary.subtype == Binary.Subtype.uuid.rawValue else {
+        guard [Binary.Subtype.uuid.rawValue, Binary.Subtype.uuidDeprecated.rawValue].contains(binary.subtype) else {
             throw UserError.invalidArgumentError(message: "Expected a UUID binary type " +
                     "(\(Binary.Subtype.uuid)), got \(binary.subtype) instead.")
         }

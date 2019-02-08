@@ -21,6 +21,13 @@ final class CodecTests: MongoSwiftTestCase {
         ]
     }
 
+    // generic decoding/encoding errors for error matching. Only the case is considered.
+    static let typeMismatchErr = DecodingError._typeMismatch(at: [], expectation: Int.self, reality: 0)
+    static let invalidValueErr =
+            EncodingError.invalidValue(0, EncodingError.Context(codingPath: [], debugDescription: "dummy error"))
+    static let dataCorruptedErr = DecodingError.dataCorrupted(
+            DecodingError.Context(codingPath: [], debugDescription: "dummy error"))
+
     func testEncodeListDatabasesOptions() throws {
         let options = ListDatabasesOptions(filter: ["a": 10], nameOnly: true, session: ClientSession())
         let expected: Document = ["filter": ["a": 10] as Document, "nameOnly": true, "session": Document()]
@@ -216,8 +223,8 @@ final class CodecTests: MongoSwiftTestCase {
         // values from `Double(exactly:)`.
         // 4.1 fixes this -- see https://bugs.swift.org/browse/SR-7056.
         #if swift(>=4.1)
-        expect(try encoder.encode(Numbers(uint64: UInt64.max))).to(throwError())
-        expect(try encoder.encode(Numbers(uint: UInt.max))).to(throwError())
+        expect(try encoder.encode(Numbers(uint64: UInt64.max))).to(throwError(CodecTests.invalidValueErr))
+        expect(try encoder.encode(Numbers(uint: UInt.max))).to(throwError(CodecTests.invalidValueErr))
         #endif
     }
 
@@ -256,14 +263,17 @@ final class CodecTests: MongoSwiftTestCase {
         expect(res3).to(equal(s))
 
         // test for each type that we fail gracefully when values cannot be represented because they are out of bounds
-        expect(try decoder.decode(Numbers.self, from: ["int8": Int(Int8.max) + 1])).to(throwError())
-        expect(try decoder.decode(Numbers.self, from: ["int16": Int(Int16.max) + 1])).to(throwError())
-        expect(try decoder.decode(Numbers.self, from: ["uint8": -1])).to(throwError())
-        expect(try decoder.decode(Numbers.self, from: [ "uint16": -1])).to(throwError())
-        expect(try decoder.decode(Numbers.self, from: ["uint32": -1])).to(throwError())
-        expect(try decoder.decode(Numbers.self, from: ["uint64": -1])).to(throwError())
-        expect(try decoder.decode(Numbers.self, from: ["uint": -1])).to(throwError())
-        expect(try decoder.decode(Numbers.self, from: ["float": Double.greatestFiniteMagnitude])).to(throwError())
+        expect(try decoder.decode(Numbers.self, from: ["int8": Int(Int8.max) + 1]))
+                .to(throwError(CodecTests.typeMismatchErr))
+        expect(try decoder.decode(Numbers.self, from: ["int16": Int(Int16.max) + 1]))
+                .to(throwError(CodecTests.typeMismatchErr))
+        expect(try decoder.decode(Numbers.self, from: ["uint8": -1])).to(throwError(CodecTests.typeMismatchErr))
+        expect(try decoder.decode(Numbers.self, from: [ "uint16": -1])).to(throwError(CodecTests.typeMismatchErr))
+        expect(try decoder.decode(Numbers.self, from: ["uint32": -1])).to(throwError(CodecTests.typeMismatchErr))
+        expect(try decoder.decode(Numbers.self, from: ["uint64": -1])).to(throwError(CodecTests.typeMismatchErr))
+        expect(try decoder.decode(Numbers.self, from: ["uint": -1])).to(throwError(CodecTests.typeMismatchErr))
+        expect(try decoder.decode(Numbers.self, from: ["float": Double.greatestFiniteMagnitude]))
+                .to(throwError(CodecTests.typeMismatchErr))
     }
 
      struct BSONNumbers: Codable, Equatable {
@@ -571,7 +581,8 @@ final class CodecTests: MongoSwiftTestCase {
 
         // an array with a non-BSONValue
         let arrWithNonBSONValue: [Any?] = [1, "hi", BSONNull(), Int16(4)]
-        expect(try arrWithNonBSONValue.encode(to: DocumentStorage(), forKey: "arrWithNonBSONValue")).to(throwError())
+        expect(try arrWithNonBSONValue.encode(to: DocumentStorage(), forKey: "arrWithNonBSONValue"))
+                .to(throwError(UserError.logicError(message: "")))
 
         // binary
         let binary = try Binary(base64: "//8=", subtype: .generic)
@@ -630,7 +641,8 @@ final class CodecTests: MongoSwiftTestCase {
 
         let dateDecoder = BSONDecoder()
         dateDecoder.dateDecodingStrategy = .millisecondsSince1970
-        expect(try dateDecoder.decode(AnyBSONStruct.self, from: wrappedDate)).to(throwError())
+        expect(try dateDecoder.decode(AnyBSONStruct.self, from: wrappedDate))
+                .to(throwError(CodecTests.typeMismatchErr))
 
         // regex
         let regex = RegularExpression(pattern: "abc", options: "imx")
@@ -777,7 +789,7 @@ final class CodecTests: MongoSwiftTestCase {
 
         // A top-level `encode()` problem should throw an error, but any such issues deeper in the recursion should not.
         // These tests are to ensure that we handle incorrect encode() implementations in the same way as JSONEncoder.
-        expect(try encoder.encode(IncorrectTopLevelEncode(BSONNull()))).to(throwError())
+        expect(try encoder.encode(IncorrectTopLevelEncode(BSONNull()))).to(throwError(CodecTests.invalidValueErr))
         expect(try encoder.encode(CorrectTopLevelEncode(BSONNull()))).to(equal(["x": Document()]))
     }
 

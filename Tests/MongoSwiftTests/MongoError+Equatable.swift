@@ -100,3 +100,17 @@ private func sortAndCompareOptionalArrays<T: Equatable>(lhs: [T]?, rhs: [T]?, cm
     }
     return lhsArr.sorted(by: cmp) == rhsArr.sorted(by: cmp)
 }
+
+extension DecodingError: Equatable {
+    public static func == (lhs: DecodingError, rhs: DecodingError) -> Bool {
+        switch (lhs, rhs) {
+        case (.typeMismatch, .typeMismatch),
+             (.dataCorrupted, .dataCorrupted),
+             (.keyNotFound, .keyNotFound),
+             (.valueNotFound, .valueNotFound):
+            return true
+        default:
+            return false
+        }
+    }
+}
