@@ -326,8 +326,14 @@ public class BulkWriteOperation {
         self.opts = opts
     }
 
-    /// Executes the bulk write operation and returns a `BulkWriteResult` or
-    /// `nil` is the write concern is unacknowledged.
+    /**
+     * Executes the bulk write operation and returns a `BulkWriteResult` or
+     * `nil` if the write concern is unacknowledged.
+     *
+     * - Throws:
+     *   - `ServerError.commandError` if an error occurs that prevents the operation from executing.
+     *   - `ServerError.bulkWriteError` if an error occurs while performing the writes.
+     */
     fileprivate func execute() throws -> BulkWriteResult? {
         let reply = Document()
         var error = bson_error_t()
@@ -426,6 +432,9 @@ public struct BulkWriteResult {
      * - Parameters:
      *   - reply: A `Document` result from `mongoc_bulk_operation_execute()`
      *   - insertedIds: Map of inserted IDs
+     *
+     * - Throws:
+     *   - `RuntimeError.internalError` if an unexpected error occurs reading the reply from the server.
      */
     fileprivate init(reply: Document, insertedIds: [Int: BSONValue]) throws {
         self.deletedCount = try reply.getValue(for: "nRemoved") as? Int ?? 0

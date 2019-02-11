@@ -11,7 +11,9 @@ extension MongoCollection {
      *
      * - Returns: A `MongoCursor` over the resulting `Document`s
      *
-     * - Throws: A `userError.invalidArgumentError` if the options passed are an invalid combination.
+     * - Throws:
+     *   - `UserError.invalidArgumentError` if the options passed are an invalid combination.
+     *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func find(_ filter: Document = [:], options: FindOptions? = nil) throws -> MongoCursor<CollectionType> {
         let opts = try BSONEncoder().encode(options)
@@ -33,7 +35,9 @@ extension MongoCollection {
      *
      * - Returns: A `MongoCursor` over the resulting `Document`s
      *
-     * - Throws: A `userError.invalidArgumentError` if the options passed are an invalid combination.
+     * - Throws:
+     *   - `UserError.invalidArgumentError` if the options passed are an invalid combination.
+     *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func aggregate(_ pipeline: [Document], options: AggregateOptions? = nil) throws -> MongoCursor<Document> {
         let opts = try BSONEncoder().encode(options)

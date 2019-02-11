@@ -337,6 +337,9 @@ internal struct DBPointer: BSONValue {
     }
 
     /// Reads DBPointer data from `iter` and converts it to DBRef format
+    ///
+    /// - Throws:
+    ///   - `UserError.logicError` if the current type of the `DocumentIterator` does not correspond to `DBPointer`.
     internal static func asDocument(from iter: DocumentIterator) throws -> Document {
         var length: UInt32 = 0
         let collectionPP = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: 1)
@@ -872,6 +875,10 @@ internal struct Symbol: BSONValue {
         )
     }
 
+    /// Converts the current value of the `DocumentIterator` to a string if it is a `Symbol`. Throws an error otherwise.
+    ///
+    /// - Throws:
+    ///   - `UserError.logicError` if the current type of the `DocumentIterator` does not correspond to `Symbol`.
     internal static func asString(from iter: DocumentIterator) throws -> String {
         var length: UInt32 = 0
         guard iter.currentType == .symbol, let strValue = bson_iter_symbol(&iter.iter, &length) else {

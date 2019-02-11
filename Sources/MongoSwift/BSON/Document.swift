@@ -117,8 +117,17 @@ extension Document {
         }
     }
 
-    /// Sets key to newValue. if checkForKey=false, the key/value pair will be appended without checking for the key's
-    /// presence first.
+    /**
+     * Sets key to newValue. if checkForKey=false, the key/value pair will be appended without checking for the key's
+     * presence first.
+     *
+     * - Throws:
+     *   - `RuntimeError.internalError` if the new value is an `Int` and cannot be written to BSON.
+     *   - `UserError.logicError` if the new value is a `Decimal128` or `ObjectId` and is improperly formatted.
+     *   - `UserError.logicError` if the new value is an `Array` and it contains a non-`BSONValue` element.
+     *   - `RuntimeError.internalError` if the `DocumentStorage` would exceed the maximum size by encoding this
+     *     key-value pair.
+     */
     internal mutating func setValue(for key: String, to newValue: BSONValue, checkForKey: Bool = true) throws {
         // if the key already exists in the `Document`, we need to replace it
         if checkForKey, let existingType = DocumentIterator(forDocument: self, advancedTo: key)?.currentType {
