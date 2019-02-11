@@ -306,11 +306,13 @@ public class DocumentIterator: IteratorProtocol {
         return self.advance() ? (self.currentKey, self.currentValue) : nil
     }
 
-    /// Overwrites the current value of this `DocumentIterator` with the supplied value.
-    ///
-    /// - Throws:
-    ///   - `RuntimeError.internalError` if the new value is an `Int` and cannot be written to BSON.
-    ///   - `UserError.logicError` if the new value is a `Decimal128` or `ObjectId` and is improperly formatted.
+    /**
+     * Overwrites the current value of this `DocumentIterator` with the supplied value.
+     *
+     * - Throws:
+     *   - `RuntimeError.internalError` if the new value is an `Int` and cannot be written to BSON.
+     *   - `UserError.logicError` if the new value is a `Decimal128` or `ObjectId` and is improperly formatted.
+     */
     internal func overwriteCurrentValue(with newValue: Overwritable) throws {
         guard newValue.bsonType == self.currentType else {
             fatalError("Expected \(newValue) to have BSON type \(self.currentType), but has type \(newValue.bsonType)")

@@ -6,11 +6,13 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     private var _client: MongoClient?
     private var swiftError: Error?
 
-    /// Initializes a new `MongoCursor` instance, not meant to be instantiated directly.
-    ///
-    /// - Throws:
-    ///   - `UserError.invalidArgumentError` if the options passed to the command that generated this cursor formed an
-    ///     invalid combination.
+    /**
+     * Initializes a new `MongoCursor` instance, not meant to be instantiated directly.
+     *
+     * - Throws:
+     *   - `UserError.invalidArgumentError` if the options passed to the command that generated this cursor formed an
+     *     invalid combination.
+     */
     internal init(fromCursor: OpaquePointer, withClient: MongoClient) throws {
         self._cursor = fromCursor
         self._client = withClient

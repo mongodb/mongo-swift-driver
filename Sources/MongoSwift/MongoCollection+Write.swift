@@ -419,7 +419,7 @@ public struct InsertManyResult {
      *   - insertedIds: Map of inserted IDs
      *
      * - Throws:
-     *   - `RuntimeError.internalError` if an unexpected error occurs reading server reply.
+     *   - `RuntimeError.internalError` if an unexpected error occurs the reading server reply.
      */
     fileprivate init(reply: Document, insertedIds: [Int: BSONValue]) throws {
         self.insertedCount = try reply.getValue(for: "insertedCount") as? Int ?? 0
