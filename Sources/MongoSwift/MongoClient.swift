@@ -124,8 +124,10 @@ public class MongoClient {
     /// If command and/or server monitoring is enabled, indicates what event types notifications will be posted for.
     internal var monitoringEventTypes: [MongoEventType]?
 
+    /// Encoder whose options are inherited by databases derived from this client.
     internal var encoder = BSONEncoder()
 
+    /// Decoder whose options are inherited by databases derived from this client.
     internal var decoder = BSONDecoder()
 
     /// The read concern set on this client, or nil if one is not set.
@@ -147,6 +149,7 @@ public class MongoClient {
         return wc.isDefault ? nil : wc
     }
 
+    // swiftlint:disable cyclomatic_complexity
     /**
      * Create a new client connection to a MongoDB server.
      *
@@ -216,8 +219,8 @@ public class MongoClient {
             self.close()
             throw RuntimeError.internalError(message: "Could not configure error handling on client")
         }
-
     }
+    // swiftlint:enable cyclomatic_complexity
 
     /**
      * :nodoc:

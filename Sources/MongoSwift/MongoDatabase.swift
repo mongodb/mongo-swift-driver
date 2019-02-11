@@ -187,8 +187,12 @@ public class MongoDatabase {
     private var _database: OpaquePointer?
     private var _client: MongoClient
 
-    internal let encoder: BSONEncoder
-    internal let decoder: BSONDecoder
+    /// Encoder used by this database for BSON conversions.
+    /// This encoder's options are inherited by collections derived from this database.
+    public let encoder: BSONEncoder
+
+    /// Decoder whose options are inherited by collections derived from this database.
+    public let decoder: BSONDecoder
 
     /// The name of this database.
     public var name: String {

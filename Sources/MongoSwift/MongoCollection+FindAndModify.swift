@@ -109,7 +109,7 @@ extension MongoCollection {
             return nil
         }
 
-        return try BSONDecoder().decode(CollectionType.self, from: value)
+        return try self.decoder.decode(CollectionType.self, from: value)
     }
 }
 

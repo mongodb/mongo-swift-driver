@@ -1,13 +1,15 @@
 import Foundation
 import mongoc
 
-/// Enum representing the various encoding/decoding strategy pairs for `Date`s.
-/// Set these on a `MongoClient`, `MongoDatabase`, or `MongoCollection` so that the strategies will be applied when
-/// interacting with the database.
-///
-/// As per the BSON specification, the default strategy is to encode `Date`s as BSON datetime objects.
-///
-/// - SeeAlso: bsonspec.org
+/**
+ * Enum representing the various encoding/decoding strategy pairs for `Date`s.
+ * Set these on a `MongoClient`, `MongoDatabase`, or `MongoCollection` so that the strategies will be applied when
+ * interacting with the database.
+ *
+ * As per the BSON specification, the default strategy is to encode `Date`s as BSON datetime objects.
+ *
+ * - SeeAlso: bsonspec.org
+ */
 public enum DateCodingStrategy: RawRepresentable {
     public typealias RawValue = (BSONEncoder.DateEncodingStrategy, BSONDecoder.DateDecodingStrategy)
 
@@ -84,14 +86,16 @@ public enum DateCodingStrategy: RawRepresentable {
     }
 }
 
-/// Enum representing the various encoding/decoding strategy pairs for `UUID`s.
-/// Set these on a `MongoClient`, `MongoDatabase`, or `MongoCollection` so that the strategies will be applied when
-/// interacting with the database.
-///
-/// As per the BSON specification, the default strategy is to encode `UUID`s as BSON binary types with the UUID
-/// subtype.
-///
-/// - SeeAlso: bsonspec.org
+/**
+ * Enum representing the various encoding/decoding strategy pairs for `UUID`s.
+ * Set these on a `MongoClient`, `MongoDatabase`, or `MongoCollection` so that the strategies will be applied when
+ * interacting with the database.
+ *
+ * As per the BSON specification, the default strategy is to encode `UUID`s as BSON binary types with the UUID
+ * subtype.
+ *
+ * - SeeAlso: bsonspec.org
+ */
 public enum UUIDCodingStrategy: RawRepresentable {
     public typealias RawValue = (BSONEncoder.UUIDEncodingStrategy, BSONDecoder.UUIDDecodingStrategy)
 
@@ -122,22 +126,26 @@ public enum UUIDCodingStrategy: RawRepresentable {
     }
 }
 
-/// Enum representing the various encoding/decoding strategy pairs for `Data`s.
-/// Set these on a `MongoClient`, `MongoDatabase`, or `MongoCollection` so that the strategies will be applied when
-/// interacting with the database.
-///
-/// As per the BSON specification, the default strategy is to encode `Data`s as BSON binary types with the generic
-/// binary subtype.
-///
-/// - SeeAlso: bsonspec.org
+/**
+ * Enum representing the various encoding/decoding strategy pairs for `Data`s.
+ * Set these on a `MongoClient`, `MongoDatabase`, or `MongoCollection` so that the strategies will be applied when
+ * interacting with the database.
+ *
+ * As per the BSON specification, the default strategy is to encode `Data`s as BSON binary types with the generic
+ * binary subtype.
+ *
+ * - SeeAlso: bsonspec.org
+ */
 public enum DataCodingStrategy: RawRepresentable {
     public typealias RawValue = (BSONEncoder.DataEncodingStrategy, BSONDecoder.DataDecodingStrategy)
 
-    /// Encode/decode the `Data` by deferring to its default encoding implementations.
-    ///
-    /// Note: The default encoding implementation attempts to encode the `Data` as a `[UInt8]`, but because BSON
-    /// does not support integer types besides `Int32` or `Int64`, it actually gets encoded to BSON as an `[Int32]`.
-    /// This results in a space inefficient storage of the `Data` (using 4 bytes of BSON storage per byte of data).
+    /**
+     * Encode/decode the `Data` by deferring to its default encoding implementations.
+     *
+     * Note: The default encoding implementation attempts to encode the `Data` as a `[UInt8]`, but because BSON
+     * does not support integer types besides `Int32` or `Int64`, it actually gets encoded to BSON as an `[Int32]`.
+     * This results in a space inefficient storage of the `Data` (using 4 bytes of BSON storage per byte of data).
+     */
     case deferredToData
 
     /// Encode/decode the `Data` to/from a BSON binary type (default).
@@ -181,11 +189,13 @@ public enum DataCodingStrategy: RawRepresentable {
 
 /// `BSONEncoder` facilitates the encoding of `Encodable` values into BSON.
 public class BSONEncoder {
-    /// Enum representing the various strategies for encoding `Date`s.
-    ///
-    /// As per the BSON specification, the default strategy is to encode `Date`s as BSON datetime objects.
-    ///
-    /// - SeeAlso: bsonspec.org
+    /**
+     * Enum representing the various strategies for encoding `Date`s.
+     *
+     * As per the BSON specification, the default strategy is to encode `Date`s as BSON datetime objects.
+     *
+     * - SeeAlso: bsonspec.org
+     */
     public enum DateEncodingStrategy {
         /// Encode the `Date` by deferring to its default encoding implementation.
         case deferredToDate
@@ -211,12 +221,14 @@ public class BSONEncoder {
         case custom((Date, Encoder) throws -> Void)
     }
 
-    /// Enum representing the various strategies for encoding `UUID`s.
-    ///
-    /// As per the BSON specification, the default strategy is to encode `UUID`s as BSON binary types with the UUID
-    /// subtype.
-    ///
-    /// - SeeAlso: bsonspec.org
+    /**
+     * Enum representing the various strategies for encoding `UUID`s.
+     *
+     * As per the BSON specification, the default strategy is to encode `UUID`s as BSON binary types with the UUID
+     * subtype.
+     *
+     * - SeeAlso: bsonspec.org
+     */
     public enum UUIDEncodingStrategy {
         /// Encode the `UUID` by deferring to its default encoding implementation.
         case deferredToUUID
@@ -225,18 +237,22 @@ public class BSONEncoder {
         case binary
     }
 
-    /// Enum representing the various strategies for encoding `Data`s.
-    ///
-    /// As per the BSON specification, the default strategy is to encode `Data`s as BSON binary types with the generic
-    /// binary subtype.
-    ///
-    /// - SeeAlso: bsonspec.org
+    /**
+     * Enum representing the various strategies for encoding `Data`s.
+     *
+     * As per the BSON specification, the default strategy is to encode `Data`s as BSON binary types with the generic
+     * binary subtype.
+     *
+     * - SeeAlso: bsonspec.org
+     */
     public enum DataEncodingStrategy {
-        /// Encode the `Data` by deferring to its default encoding implementation.
-        ///
-        /// Note: The default encoding implementation attempts to encode the `Data` as a `[UInt8]`, but because BSON
-        /// does not support integer types besides `Int32` or `Int64`, it actually gets encoded to BSON as an `[Int32]`.
-        /// This results in a space inefficient storage of the `Data` (using 4 bytes of BSON storage per byte of data).
+        /**
+         * Encode the `Data` by deferring to its default encoding implementation.
+         *
+         * Note: The default encoding implementation attempts to encode the `Data` as a `[UInt8]`, but because BSON
+         * does not support integer types besides `Int32` or `Int64`, it actually gets encoded to BSON as an `[Int32]`.
+         * This results in a space inefficient storage of the `Data` (using 4 bytes of BSON storage per byte of data).
+         */
         case deferredToData
 
         /// Encode the `Data` as a BSON binary type (default).

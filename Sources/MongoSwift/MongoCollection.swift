@@ -5,8 +5,12 @@ public class MongoCollection<T: Codable> {
     internal var _collection: OpaquePointer?
     internal var _client: MongoClient
 
-    internal let encoder: BSONEncoder
-    internal let decoder: BSONDecoder
+    /// Encoder used by this collection for BSON conversions. (e.g. converting `CollectionType`s, indexes, and options
+    /// to documents).
+    public let encoder: BSONEncoder
+
+    /// Decoder used by this collection for BSON conversions (e.g. converting documents to `CollectionType`s).
+    public let decoder: BSONDecoder
 
     /// A `Codable` type associated with this `MongoCollection` instance.
     /// This allows `CollectionType` values to be directly inserted into and

@@ -119,7 +119,8 @@ extension MongoCollection {
             self.document = document
         }
 
-        /** Adds the `insertOne` operation to a bulk write.
+        /**
+         * Adds the `insertOne` operation to a bulk write.
          *
          * - Throws:
          *   - `EncodingError` if an error occurs while encoding the `CollectionType` to BSON.
@@ -167,7 +168,8 @@ extension MongoCollection {
             self.options = ReplaceOneModelOptions(collation: collation, upsert: upsert)
         }
 
-        /** Adds the `replaceOne` operation to a bulk write.
+        /**
+         * Adds the `replaceOne` operation to a bulk write.
          *
          * - Throws:
          *   - `EncodingError` if an error occurs while encoding the `CollectionType` or options to BSON.
@@ -220,7 +222,8 @@ extension MongoCollection {
             self.options = UpdateModelOptions(arrayFilters: arrayFilters, collation: collation, upsert: upsert)
         }
 
-        /** Adds the `updateOne` operation to a bulk write.
+        /**
+         * Adds the `updateOne` operation to a bulk write.
          *
          * - Throws:
          *   - `EncodingError` if an error occurs while encoding the options to BSON.
@@ -274,7 +277,7 @@ extension MongoCollection {
          *   - `UserError.invalidArgumentError` if the options form an invalid combination.
          */
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
-            let opts = try BSONEncoder().encode(self.options)
+            let opts = try bulk.encoder.encode(self.options)
             var error = bson_error_t()
 
             guard mongoc_bulk_operation_update_many_with_opts(bulk.bulk,

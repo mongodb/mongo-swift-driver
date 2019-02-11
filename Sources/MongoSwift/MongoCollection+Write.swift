@@ -101,7 +101,7 @@ extension MongoCollection {
             return nil
         }
 
-        return try BSONDecoder().internalDecode(
+        return try self.decoder.internalDecode(
                 UpdateResult.self,
                 from: reply,
                 withError: "Couldn't understand response from the server.")
@@ -138,7 +138,7 @@ extension MongoCollection {
             return nil
         }
 
-        return try BSONDecoder().internalDecode(
+        return try self.decoder.internalDecode(
                 UpdateResult.self,
                 from: reply,
                 withError: "Couldn't understand response from the server.")
@@ -175,7 +175,7 @@ extension MongoCollection {
             return nil
         }
 
-        return try BSONDecoder().internalDecode(
+        return try self.decoder.internalDecode(
                 UpdateResult.self,
                 from: reply,
                 withError: "Couldn't understand response from the server.")
@@ -211,7 +211,7 @@ extension MongoCollection {
             return nil
         }
 
-        return try BSONDecoder().internalDecode(
+        return try self.decoder.internalDecode(
                 DeleteResult.self,
                 from: reply,
                 withError: "Couldn't understand response from the server.")
@@ -246,7 +246,7 @@ extension MongoCollection {
             return nil
         }
 
-        return try BSONDecoder().internalDecode(
+        return try self.decoder.internalDecode(
                 DeleteResult.self,
                 from: reply,
                 withError: "Couldn't understand response from the server.")

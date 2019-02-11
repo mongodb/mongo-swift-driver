@@ -6,6 +6,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     private var _client: MongoClient?
     private var swiftError: Error?
 
+    /// Decoder from the `MongoCollection` or `MongoDatabase` that created this cursor.
     private let decoder: BSONDecoder
 
     /**
