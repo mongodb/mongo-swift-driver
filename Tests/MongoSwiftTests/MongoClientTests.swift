@@ -107,11 +107,11 @@ final class MongoClientTests: MongoSwiftTestCase {
         let wrapperWithId = { id in Wrapper(_id: id, date: date, uuid: uuid, data: data) }
 
         let defaultClient = try MongoClient()
-        let defaultDb = try defaultClient.db(type(of: self).testDatabase)
-        let collDoc = try defaultDb.collection(self.getCollectionName())
+        let defaultDb = defaultClient.db(type(of: self).testDatabase)
+        let collDoc = defaultDb.collection(self.getCollectionName())
 
         // default behavior is .bsonDate, .binary, .binary
-        let collDefault = try defaultDb.collection(self.getCollectionName(), withType: Wrapper.self)
+        let collDefault = defaultDb.collection(self.getCollectionName(), withType: Wrapper.self)
 
         let defaultId = "default"
         try collDefault.insertOne(wrapperWithId(defaultId))
@@ -131,7 +131,7 @@ final class MongoClientTests: MongoSwiftTestCase {
                 dataCodingStrategy: .base64
         )
         let clientCustom = try MongoClient(options: custom)
-        let collClient = try clientCustom.db(defaultDb.name).collection(collDoc.name, withType: Wrapper.self)
+        let collClient = clientCustom.db(defaultDb.name).collection(collDoc.name, withType: Wrapper.self)
 
         let collClientId = "customClient"
         try collClient.insertOne(wrapperWithId(collClientId))
@@ -150,8 +150,8 @@ final class MongoClientTests: MongoSwiftTestCase {
                 uuidCodingStrategy: .binary,
                 dataCodingStrategy: .binary
         )
-        let dbCustom = try clientCustom.db(defaultDb.name, options: dbOpts)
-        let collDb = try dbCustom.collection(collClient.name, withType: Wrapper.self)
+        let dbCustom = clientCustom.db(defaultDb.name, options: dbOpts)
+        let collDb = dbCustom.collection(collClient.name, withType: Wrapper.self)
 
         let customDbId = "customDb"
         try collDb.insertOne(wrapperWithId(customDbId))
@@ -170,7 +170,7 @@ final class MongoClientTests: MongoSwiftTestCase {
                 uuidCodingStrategy: .deferredToUUID,
                 dataCodingStrategy: .base64
         )
-        let collCustom = try dbCustom.collection(collClient.name, withType: Wrapper.self, options: dbCollOpts)
+        let collCustom = dbCustom.collection(collClient.name, withType: Wrapper.self, options: dbCollOpts)
 
         let customDbCollId = "customDbColl"
         try collCustom.insertOne(wrapperWithId(customDbCollId))
