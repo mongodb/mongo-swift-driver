@@ -748,7 +748,8 @@ private let regexOptsMap: [Character: NSRegularExpression.Options] = [
     "x": .allowCommentsAndWhitespace
 ]
 
-/// An extension of `NSRegularExpression` to support converting options to and from strings.
+/// An extension of `NSRegularExpression` to allow it to be initialized from a `RegularExpression` `BSONValue` and to
+/// support converting options to and from strings.
 extension NSRegularExpression {
     /// Convert a string of options flags into an equivalent `NSRegularExpression.Options`
     internal static func optionsFromString(_ stringOptions: String) -> NSRegularExpression.Options {
@@ -766,6 +767,14 @@ extension NSRegularExpression {
         var optsString = ""
         for (char, o) in regexOptsMap { if options.contains(o) { optsString += String(char) } }
         return String(optsString.sorted())
+    }
+
+    /// Initializes a new `NSRegularExpression` with the pattern and options of the provided `RegularExpression`.
+    /// Note: `NSRegularExpression` does not support the `l` locale dependence option, so it will
+    /// be omitted if set on the provided `RegularExpression`.
+    public convenience init(from regex: RegularExpression) throws {
+        let opts = NSRegularExpression.optionsFromString(regex.options)
+        try self.init(pattern: regex.pattern, options: opts)
     }
 }
 
@@ -820,17 +829,6 @@ public struct RegularExpression: BSONValue, Equatable, Codable {
     /// Returns `true` if the two `RegularExpression`s have matching patterns and options, and `false` otherwise.
     public static func == (lhs: RegularExpression, rhs: RegularExpression) -> Bool {
         return lhs.pattern == rhs.pattern && lhs.options == rhs.options
-    }
-}
-
-/// Extension of `NSRegularExpression` allowing it to be initialized from a `RegularExpression` `BSONValue`.
-extension NSRegularExpression {
-    /// Initializes a new `NSRegularExpression` with the pattern and options of the provided `RegularExpression`.
-    /// Note: `NSRegularExpression` does not support the `l` locale dependence option, so it will
-    /// be omitted if set on the provided `RegularExpression`.
-    public convenience init(from regex: RegularExpression) throws {
-        let opts = NSRegularExpression.optionsFromString(regex.options)
-        try self.init(pattern: regex.pattern, options: opts)
     }
 }
 
