@@ -817,22 +817,20 @@ public struct RegularExpression: BSONValue, Equatable, Codable {
         return self.init(pattern: patternString, options: optionsString)
     }
 
-    /// Creates an `NSRegularExpression` with the pattern and options of this `RegularExpression`.
-    /// Note: `NSRegularExpression` does not support the `l` locale dependence option, so it will
-    /// be omitted if set on this `RegularExpression`.
-    public var nsRegularExpression: NSRegularExpression {
-        let opts = NSRegularExpression.optionsFromString(self.options)
-        do {
-            return try NSRegularExpression(pattern: self.pattern, options: opts)
-        } catch {
-            fatalError("Failed to initialize NSRegularExpression with " +
-                "pattern '\(self.pattern)'' and options '\(self.options)'")
-        }
-    }
-
     /// Returns `true` if the two `RegularExpression`s have matching patterns and options, and `false` otherwise.
     public static func == (lhs: RegularExpression, rhs: RegularExpression) -> Bool {
         return lhs.pattern == rhs.pattern && lhs.options == rhs.options
+    }
+}
+
+/// Extension of `NSRegularExpression` allowing it to be initialized from a `RegularExpression` `BSONValue`.
+extension NSRegularExpression {
+    /// Initializes a new `NSRegularExpression` with the pattern and options of the provided `RegularExpression`.
+    /// Note: `NSRegularExpression` does not support the `l` locale dependence option, so it will
+    /// be omitted if set on the provided `RegularExpression`.
+    public convenience init(from regex: RegularExpression) throws {
+        let opts = NSRegularExpression.optionsFromString(regex.options)
+        try self.init(pattern: regex.pattern, options: opts)
     }
 }
 
