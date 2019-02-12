@@ -748,8 +748,7 @@ private let regexOptsMap: [Character: NSRegularExpression.Options] = [
     "x": .allowCommentsAndWhitespace
 ]
 
-/// An extension of `NSRegularExpression` to allow it to be initialized from a `RegularExpression` `BSONValue` and to
-/// support converting options to and from strings.
+/// An extension of `NSRegularExpression` to allow it to be initialized from a `RegularExpression` `BSONValue`.
 extension NSRegularExpression {
     /// Convert a string of options flags into an equivalent `NSRegularExpression.Options`
     internal static func optionsFromString(_ stringOptions: String) -> NSRegularExpression.Options {
