@@ -92,19 +92,24 @@ final class MongoClientTests: MongoSwiftTestCase {
         expect(try Version("3.x")).to(throwError())
     }
 
-    func testCodingStrategies() throws {
-        struct Wrapper: Codable, Equatable {
-            let _id: String
-            let date: Date
-            let uuid: UUID
-            let data: Data
-        }
+    struct Wrapper: Codable, Equatable {
+        let _id: String
+        let date: Date
+        let uuid: UUID
+        let data: Data
 
+        static func == (lhs: Wrapper, rhs: Wrapper) -> Bool {
+            return lhs.date == rhs.date && lhs.data == rhs.data && lhs.uuid == rhs.uuid
+        }
+    }
+
+    func testCodingStrategies() throws {
         let date = Date(timeIntervalSince1970: 100)
         let uuid = UUID()
         let data = Data(base64Encoded: "dGhlIHF1aWNrIGJyb3duIGZveCBqdW1wZWQgb3ZlciB0aGUgbGF6eSBzaGVlcCBkb2cu")!
 
         let wrapperWithId = { id in Wrapper(_id: id, date: date, uuid: uuid, data: data) }
+        let wrapper = wrapperWithId("baseline")
 
         let defaultClient = try MongoClient()
         let defaultDb = defaultClient.db(type(of: self).testDatabase)
@@ -122,7 +127,7 @@ final class MongoClientTests: MongoSwiftTestCase {
         expect(doc?["uuid"] as? Binary).to(equal(try Binary(from: uuid)))
         expect(doc?["data"] as? Binary).to(equal(try Binary(data: data, subtype: .generic)))
 
-        expect(try collDefault.find(["_id": defaultId]).nextOrError()).to(equal(wrapperWithId(defaultId)))
+        expect(try collDefault.find(["_id": defaultId]).nextOrError()).to(equal(wrapper))
 
         // Customize strategies on the client
         let custom = ClientOptions(
@@ -142,7 +147,7 @@ final class MongoClientTests: MongoSwiftTestCase {
         expect(doc?["uuid"] as? String).to(equal(uuid.uuidString))
         expect(doc?["data"] as? String).to(equal(data.base64EncodedString()))
 
-        expect(try collClient.find(["_id": collClientId]).nextOrError()).to(equal(wrapperWithId(collClientId)))
+        expect(try collClient.find(["_id": collClientId]).nextOrError()).to(equal(wrapper))
 
         // Construct db with differing strategies from client
         let dbOpts = DatabaseOptions(
@@ -162,7 +167,7 @@ final class MongoClientTests: MongoSwiftTestCase {
         expect(doc?["uuid"] as? Binary).to(equal(try Binary(from: uuid)))
         expect(doc?["data"] as? Binary).to(equal(try Binary(data: data, subtype: .generic)))
 
-        expect(try collDb.find(["_id": customDbId] as Document).nextOrError()).to(equal(wrapperWithId(customDbId)))
+        expect(try collDb.find(["_id": customDbId] as Document).nextOrError()).to(equal(wrapper))
 
         // Construct collection with differing strategies from database
         let dbCollOpts = CollectionOptions(
@@ -182,7 +187,7 @@ final class MongoClientTests: MongoSwiftTestCase {
         expect(doc?["data"] as? String).to(equal(data.base64EncodedString()))
 
         expect(try collCustom.find(["_id": customDbCollId] as Document).nextOrError())
-                .to(equal(wrapperWithId(customDbCollId)))
+                .to(equal(wrapper))
 
         try defaultDb.drop()
     }
