@@ -140,7 +140,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
         let regex = doc["regex"] as? RegularExpression
         expect(regex).to(equal(RegularExpression(pattern: "^abc", options: "imx")))
-        expect(regex?.nsRegularExpression).to(equal(try NSRegularExpression(
+        expect(try NSRegularExpression(from: regex!)).to(equal(try NSRegularExpression(
             pattern: "^abc",
             options: NSRegularExpression.optionsFromString("imx")
         )))
@@ -204,7 +204,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
         let regex = DocumentTests.testDoc.regex as? RegularExpression
         expect(regex).to(equal(RegularExpression(pattern: "^abc", options: "imx")))
-        expect(regex?.nsRegularExpression).to(equal(try NSRegularExpression(
+        expect(try NSRegularExpression(from: regex!)).to(equal(try NSRegularExpression(
                 pattern: "^abc",
                 options: NSRegularExpression.optionsFromString("imx")
         )))
