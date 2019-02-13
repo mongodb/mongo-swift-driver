@@ -51,7 +51,7 @@ public struct ListCollectionsOptions: Encodable {
 }
 
 /// Options to use when executing a `createCollection` command on a `MongoDatabase`.
-public struct CreateCollectionOptions: Encodable {
+public struct CreateCollectionOptions: Encodable, CodingStrategyOptions {
     /// Indicates whether this will be a capped collection
     public let capped: Bool?
 
@@ -93,13 +93,16 @@ public struct CreateCollectionOptions: Encodable {
     /// for the collection itself, retrieve the collection using `MongoDatabase.collection`.
     public let writeConcern: WriteConcern?
 
-    /// Specifies the strategy to use when coding `Date`s to/from BSON.
+    /// Specifies the strategy to use when converting `Date`s between their BSON representations and their
+    /// representations in (non `Document`) `Codable` types.
     public let dateCodingStrategy: DateCodingStrategy?
 
-    /// Specifies the strategy to use when coding `UUID`s to/from BSON.
+    /// Specifies the strategy to use when converting `UUID`s between their BSON representations and their
+    /// representations in (non `Document`) `Codable` types.
     public let uuidCodingStrategy: UUIDCodingStrategy?
 
-    /// Specifies the strategy to use when coding `Data`s to/from BSON.
+    /// Specifies the strategy to use when converting `Data`s between their BSON representations and their
+    /// representations in (non `Document`) `Codable` types.
     public let dataCodingStrategy: DataCodingStrategy?
 
     private enum CodingKeys: String, CodingKey {
@@ -144,7 +147,7 @@ public struct CreateCollectionOptions: Encodable {
 }
 
 /// Options to set on a retrieved `MongoCollection`.
-public struct CollectionOptions {
+public struct CollectionOptions: CodingStrategyOptions {
     /// A read concern to set on the returned collection. If one is not specified,
     /// the collection will inherit the database's read concern.
     public let readConcern: ReadConcern?
@@ -157,13 +160,16 @@ public struct CollectionOptions {
     /// the collection will inherit the database's write concern.
     public let writeConcern: WriteConcern?
 
-    /// Specifies the strategy to use when coding `Date`s to/from BSON.
+    /// Specifies the strategy to use when converting `Date`s between their BSON representations and their
+    /// representations in (non `Document`) `Codable` types.
     public let dateCodingStrategy: DateCodingStrategy?
 
-    /// Specifies the strategy to use when coding `UUID`s to/from BSON.
+    /// Specifies the strategy to use when converting `UUID`s between their BSON representations and their
+    /// representations in (non `Document`) `Codable` types.
     public let uuidCodingStrategy: UUIDCodingStrategy?
 
-    /// Specifies the strategy to use when coding `Data`s to/from BSON.
+    /// Specifies the strategy to use when converting `Data`s between their BSON representations and their
+    /// representations in (non `Document`) `Codable` types.
     public let dataCodingStrategy: DataCodingStrategy?
 
     /// Convenience initializer allowing any/all arguments to be omitted or optional
@@ -291,23 +297,8 @@ public class MongoDatabase {
             mongoc_collection_set_write_concern(collection, wc._writeConcern)
         }
 
-        let encoder = BSONEncoder(copies: self.encoder)
-        let decoder = BSONDecoder(copies: self.decoder)
-
-        if let (e, d) = options?.dateCodingStrategy?.rawValue {
-            encoder.dateEncodingStrategy = e
-            decoder.dateDecodingStrategy = d
-        }
-
-        if let (e, d) = options?.uuidCodingStrategy?.rawValue {
-            encoder.uuidEncodingStrategy = e
-            decoder.uuidDecodingStrategy = d
-        }
-
-        if let (e, d) = options?.dataCodingStrategy?.rawValue {
-            encoder.dataEncodingStrategy = e
-            decoder.dataDecodingStrategy = d
-        }
+        let encoder = BSONEncoder(copies: self.encoder, options: options)
+        let decoder = BSONDecoder(copies: self.decoder, options: options)
 
         return MongoCollection(
                 fromCollection: collection,
@@ -358,23 +349,8 @@ public class MongoDatabase {
             throw parseMongocError(error)
         }
 
-        let encoder = BSONEncoder(copies: self.encoder)
-        let decoder = BSONDecoder(copies: self.decoder)
-
-        if let (e, d) = options?.dateCodingStrategy?.rawValue {
-            encoder.dateEncodingStrategy = e
-            decoder.dateDecodingStrategy = d
-        }
-
-        if let (e, d) = options?.uuidCodingStrategy?.rawValue {
-            encoder.uuidEncodingStrategy = e
-            decoder.uuidDecodingStrategy = d
-        }
-
-        if let (e, d) = options?.dataCodingStrategy?.rawValue {
-            encoder.dataEncodingStrategy = e
-            decoder.dataDecodingStrategy = d
-        }
+        let encoder = BSONEncoder(copies: self.encoder, options: options)
+        let decoder = BSONDecoder(copies: self.decoder, options: options)
 
         return MongoCollection(
                 fromCollection: collection,

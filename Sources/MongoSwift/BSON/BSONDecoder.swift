@@ -109,14 +109,23 @@ public class BSONDecoder {
     }
 
     /// Initializes `self`.
-    public init() {}
+    public init(options: CodingStrategyOptions? = nil) {
+        self.applyOptions(options: options)
+    }
 
     /// Initializes `self` by copying the options of another `BSONDecoder`.
-    public init(copies other: BSONDecoder) {
+    internal init(copies other: BSONDecoder, options: CodingStrategyOptions?) {
         self.userInfo = other.userInfo
         self.dateDecodingStrategy = other.dateDecodingStrategy
         self.uuidDecodingStrategy = other.uuidDecodingStrategy
         self.dataDecodingStrategy = other.dataDecodingStrategy
+        self.applyOptions(options: options)
+    }
+
+    internal func applyOptions(options: CodingStrategyOptions?) {
+        self.dateDecodingStrategy = options?.dateCodingStrategy?.rawValue.decoding ?? self.dateDecodingStrategy
+        self.uuidDecodingStrategy = options?.uuidCodingStrategy?.rawValue.decoding ?? self.uuidDecodingStrategy
+        self.dataDecodingStrategy = options?.dataCodingStrategy?.rawValue.decoding ?? self.dataDecodingStrategy
     }
 
     /**

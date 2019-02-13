@@ -2,7 +2,7 @@ import Foundation
 import mongoc
 
 /// Options to use when creating a `MongoClient`.
-public struct ClientOptions {
+public struct ClientOptions: CodingStrategyOptions {
     /// Determines whether the client should retry supported write operations
     public let retryWrites: Bool?
 
@@ -21,15 +21,18 @@ public struct ClientOptions {
     /// the server's default write concern will be used.
     public let writeConcern: WriteConcern?
 
-    /// Specifies the strategy to use when coding `Date`s to/from BSON.
+    /// Specifies the strategy to use when converting `Date`s between their BSON representations and their
+    /// representations in (non `Document`) `Codable` types.
     /// This strategy will be inherited by `MongoDatabase`s and `MongoCollection`s that derive from this client.
     public let dateCodingStrategy: DateCodingStrategy?
 
-    /// Specifies the strategy to use when coding `UUID`s to/from BSON.
+    /// Specifies the strategy to use when converting `UUID`s between their BSON representations and their
+    /// representations in (non `Document`) `Codable` types.
     /// This strategy will be inherited by `MongoDatabase`s and `MongoCollection`s that derive from this client.
     public let uuidCodingStrategy: UUIDCodingStrategy?
 
-    /// Specifies the strategy to use when coding `Data`s to/from BSON.
+    /// Specifies the strategy to use when converting `Data`s between their BSON representations and their
+    /// representations in (non `Document`) `Codable` types.
     /// This strategy will be inherited by `MongoDatabase`s and `MongoCollection`s that derive from this client.
     public let dataCodingStrategy: DataCodingStrategy?
 
@@ -73,7 +76,7 @@ public struct ListDatabasesOptions: Encodable {
 }
 
 /// Options to use when retrieving a `MongoDatabase` from a `MongoClient`.
-public struct DatabaseOptions {
+public struct DatabaseOptions: CodingStrategyOptions {
     /// A read concern to set on the retrieved database. If one is not specified,
     /// the database will inherit the client's read concern.
     public let readConcern: ReadConcern?
@@ -86,16 +89,19 @@ public struct DatabaseOptions {
     /// the database will inherit the client's write concern.
     public let writeConcern: WriteConcern?
 
-    /// Specifies the strategy to use when coding `Date`s to/from BSON.
-    /// This strategy will be inherited by `MongoCollection`s that derive from the database using these options.
+    /// Specifies the strategy to use when converting `Date`s between their BSON representations and their
+    /// representations in (non `Document`) `Codable` types.
+    /// This strategy will be inherited by `MongoDatabase`s and `MongoCollection`s that derive from this client.
     public let dateCodingStrategy: DateCodingStrategy?
 
-    /// Specifies the strategy to use when coding `UUID`s to/from BSON.
-    /// This strategy will be inherited by `MongoCollection`s that derive from the database using these options.
+    /// Specifies the strategy to use when converting `UUID`s between their BSON representations and their
+    /// representations in (non `Document`) `Codable` types.
+    /// This strategy will be inherited by `MongoDatabase`s and `MongoCollection`s that derive from this client.
     public let uuidCodingStrategy: UUIDCodingStrategy?
 
-    /// Specifies the strategy to use when coding `Data`s to/from BSON.
-    /// This strategy will be inherited by `MongoCollection`s that derive from the database using these options.
+    /// Specifies the strategy to use when converting `Data`s between their BSON representations and their
+    /// representations in (non `Document`) `Codable` types.
+    /// This strategy will be inherited by `MongoDatabase`s and `MongoCollection`s that derive from this client.
     public let dataCodingStrategy: DataCodingStrategy?
 
     /// Convenience initializer allowing any/all arguments to be omitted or optional
@@ -125,10 +131,10 @@ public class MongoClient {
     internal var monitoringEventTypes: [MongoEventType]?
 
     /// Encoder whose options are inherited by databases derived from this client.
-    internal var encoder = BSONEncoder()
+    internal let encoder: BSONEncoder
 
     /// Decoder whose options are inherited by databases derived from this client.
-    internal var decoder = BSONDecoder()
+    internal let decoder: BSONDecoder
 
     /// The read concern set on this client, or nil if one is not set.
     public var readConcern: ReadConcern? {
@@ -149,7 +155,6 @@ public class MongoClient {
         return wc.isDefault ? nil : wc
     }
 
-    // swiftlint:disable cyclomatic_complexity
     /**
      * Create a new client connection to a MongoDB server.
      *
@@ -195,32 +200,16 @@ public class MongoClient {
             mongoc_client_set_write_concern(self._client, wc._writeConcern)
         }
 
+        self.encoder = BSONEncoder(options: options)
+        self.decoder = BSONDecoder(options: options)
+
         if options?.eventMonitoring == true { self.initializeMonitoring() }
-
-        // if a DateCodingStrategy is provided, set it on the encoder and decoder.
-        if let (e, d) = options?.dateCodingStrategy?.rawValue {
-            self.encoder.dateEncodingStrategy = e
-            self.decoder.dateDecodingStrategy = d
-        }
-
-        // if a UUIDCodingStrategy is provided, set it on the encoder and decoder.
-        if let (e, d) = options?.uuidCodingStrategy?.rawValue {
-            self.encoder.uuidEncodingStrategy = e
-            self.decoder.uuidDecodingStrategy = d
-        }
-
-        // if a DataCodingStrategy is procided, set it on the encoder and decoder.
-        if let (e, d) = options?.dataCodingStrategy?.rawValue {
-            self.encoder.dataEncodingStrategy = e
-            self.decoder.dataDecodingStrategy = d
-        }
 
         guard mongoc_client_set_error_api(self._client, MONGOC_ERROR_API_VERSION_2) else {
             self.close()
             throw RuntimeError.internalError(message: "Could not configure error handling on client")
         }
     }
-    // swiftlint:enable cyclomatic_complexity
 
     /**
      * :nodoc:
@@ -239,6 +228,9 @@ public class MongoClient {
         // from a pool. In either case, the error handling in MongoSwift will be incorrect unless the correct api
         // version was set by the caller.
         mongoc_client_set_error_api(self._client, MONGOC_ERROR_API_VERSION_2)
+
+        self.encoder = BSONEncoder()
+        self.decoder = BSONDecoder()
     }
 
     /**
@@ -321,23 +313,8 @@ public class MongoClient {
             mongoc_database_set_write_concern(db, wc._writeConcern)
         }
 
-        let encoder = BSONEncoder(copies: self.encoder)
-        let decoder = BSONDecoder(copies: self.decoder)
-
-        if let (e, d) = options?.dateCodingStrategy?.rawValue {
-            encoder.dateEncodingStrategy = e
-            decoder.dateDecodingStrategy = d
-        }
-
-        if let (e, d) = options?.uuidCodingStrategy?.rawValue {
-            encoder.uuidEncodingStrategy = e
-            decoder.uuidDecodingStrategy = d
-        }
-
-        if let (e, d) = options?.dataCodingStrategy?.rawValue {
-            encoder.dataEncodingStrategy = e
-            decoder.dataDecodingStrategy = d
-        }
+        let encoder = BSONEncoder(copies: self.encoder, options: options)
+        let decoder = BSONDecoder(copies: self.decoder, options: options)
 
         return MongoDatabase(fromDatabase: db, withClient: self, withEncoder: encoder, withDecoder: decoder)
     }
