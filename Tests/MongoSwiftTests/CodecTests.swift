@@ -323,6 +323,27 @@ final class CodecTests: MongoSwiftTestCase {
                     lhs.int64 == rhs.int64 && lhs.dec == rhs.dec && lhs.minkey == rhs.minkey &&
                     lhs.maxkey == rhs.maxkey && lhs.regex == rhs.regex && lhs.date == rhs.date
         }
+
+        public static func factory() throws -> AllBSONTypes {
+            return AllBSONTypes(
+                    double: Double(2),
+                    string: "hi",
+                    doc: ["x": 1],
+                    arr: [1, 2],
+                    binary: try Binary(base64: "//8=", subtype: .generic),
+                    oid: ObjectId(fromString: "507f1f77bcf86cd799439011"),
+                    bool: true,
+                    date: Date(timeIntervalSinceReferenceDate: 5000),
+                    code: CodeWithScope(code: "hi", scope: ["x": 1]),
+                    int: 1,
+                    ts: Timestamp(timestamp: 1, inc: 2),
+                    int32: 5,
+                    int64: 6,
+                    dec: Decimal128("1.2E+10"),
+                    minkey: MinKey(),
+                    maxkey: MaxKey(),
+                    regex: RegularExpression(pattern: "^abc", options: "imx"))
+        }
     }
 
     /// Test decoding/encoding to all possible BSON types
