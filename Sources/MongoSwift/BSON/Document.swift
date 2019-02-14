@@ -420,7 +420,7 @@ extension Document: BSONValue {
     public var bsonType: BSONType { return .document }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        guard bson_append_document(storage.pointer, key, Int32(key.count), self.data) else {
+        guard bson_append_document(storage.pointer, key, Int32(key.utf8.count), self.data) else {
             throw bsonTooLargeError(value: self, forKey: key)
         }
     }
