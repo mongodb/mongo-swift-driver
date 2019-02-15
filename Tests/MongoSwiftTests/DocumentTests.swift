@@ -28,33 +28,6 @@ extension Data {
 }
 
 final class DocumentTests: MongoSwiftTestCase {
-    static var allTests: [(String, (DocumentTests) -> () throws -> Void)] {
-        return [
-            ("testDocument", testDocument),
-            ("testDocumentDynamicMemberLookup", testDocumentDynamicMemberLookup),
-            ("testDocumentFromArray", testDocumentFromArray),
-            ("testEquatable", testEquatable),
-            ("testRawBSON", testRawBSON),
-            ("testValueBehavior", testValueBehavior),
-            ("testIntEncodesAsInt32OrInt64", testIntEncodesAsInt32OrInt64),
-            ("testBSONCorpus", testBSONCorpus),
-            ("testMerge", testMerge),
-            ("testNilInNestedArray", testNilInNestedArray),
-            ("testOverwritable", testOverwritable),
-            ("testNonOverwritable", testNonOverwritable),
-            ("testReplaceValueWithNewType", testReplaceValueWithNewType),
-            ("testReplaceValueWithNil", testReplaceValueWithNil),
-            ("testReplaceValueNoop", testReplaceValueNoop),
-            ("testDocumentDictionarySimilarity", testDocumentDictionarySimilarity),
-            ("testDefaultSubscript", testDefaultSubscript),
-            ("testUUIDEncodingStrategies", testUUIDEncodingStrategies),
-            ("testUUIDDecodingStrategies", testUUIDDecodingStrategies),
-            ("testDateEncodingStrategies", testDateEncodingStrategies),
-            ("testDateDecodingStrategies", testDateDecodingStrategies),
-            ("testDataCodingStrategies", testDataCodingStrategies)
-        ]
-    }
-
     // Set up test document values
     static let testDoc: Document = [
         "string": "test string",

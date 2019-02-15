@@ -1,0 +1,6 @@
+sources:
+  - Tests/
+templates:
+  - Tests/LinuxMain.stencil
+output:
+  Tests/LinuxMain.swift

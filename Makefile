@@ -19,6 +19,10 @@ project:
 	@$(call check_for_gem,xcodeproj)
 	ruby Tests/Scripts/add_json_files.rb
 
+sourcery:
+	brew list sourcery || brew install sourcery || { echo "ERROR: Failed to locate or install sourcery; please install yourself"; exit 1; }
+	sourcery
+	
 test:
 	swift test -v $(FILTERARG)
 

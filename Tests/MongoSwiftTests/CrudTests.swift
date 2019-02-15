@@ -11,13 +11,6 @@ internal extension Document {
 }
 
 final class CrudTests: MongoSwiftTestCase {
-    static var allTests: [(String, (CrudTests) -> () throws -> Void)] {
-        return [
-            ("testReads", testReads),
-            ("testWrites", testWrites)
-        ]
-    }
-
     // Teardown at the very end of the suite by dropping the db we tested on.
     override class func tearDown() {
         super.tearDown()

@@ -5,43 +5,6 @@ import XCTest
 var _client: MongoClient?
 
 final class MongoCollectionTests: MongoSwiftTestCase {
-    static var allTests: [(String, (MongoCollectionTests) -> () throws -> Void)] {
-        return [
-            ("testCount", testCount),
-            ("testInsertOne", testInsertOne),
-            ("testInsertOneWithUnacknowledgedWriteConcern", testInsertOneWithUnacknowledgedWriteConcern),
-            ("testAggregate", testAggregate),
-            ("testDrop", testDrop),
-            ("testInsertMany", testInsertMany),
-            ("testInsertManyWithEmptyValues", testInsertManyWithEmptyValues),
-            ("testInsertManyWithUnacknowledgedWriteConcern", testInsertManyWithUnacknowledgedWriteConcern),
-            ("testFind", testFind),
-            ("testDeleteOne", testDeleteOne),
-            ("testDeleteOneWithUnacknowledgedWriteConcern", testDeleteOneWithUnacknowledgedWriteConcern),
-            ("testDeleteMany", testDeleteMany),
-            ("testDeleteManyWithUnacknowledgedWriteConcern", testDeleteManyWithUnacknowledgedWriteConcern),
-            ("testReplaceOne", testReplaceOne),
-            ("testReplaceOneWithUnacknowledgedWriteConcern", testReplaceOneWithUnacknowledgedWriteConcern),
-            ("testUpdateOne", testUpdateOne),
-            ("testUpdateOneWithUnacknowledgedWriteConcern", testUpdateOneWithUnacknowledgedWriteConcern),
-            ("testUpdateMany", testUpdateMany),
-            ("testUpdateManyWithUnacknowledgedWriteConcern", testUpdateManyWithUnacknowledgedWriteConcern),
-            ("testDistinct", testDistinct),
-            ("testCreateIndexFromModel", testCreateIndexFromModel),
-            ("testCreateIndexesFromModels", testCreateIndexesFromModels),
-            ("testCreateIndexFromKeys", testCreateIndexFromKeys),
-            ("testDropIndexByName", testDropIndexByName),
-            ("testDropIndexByModel", testDropIndexByModel),
-            ("testDropIndexByKeys", testDropIndexByKeys),
-            ("testDropAllIndexes", testDropAllIndexes),
-            ("testListIndexes", testListIndexes),
-            ("testGetName", testGetName),
-            ("testFindOneAndDelete", testFindOneAndDelete),
-            ("testFindOneAndReplace", testFindOneAndReplace),
-            ("testFindOneAndUpdate", testFindOneAndUpdate)
-        ]
-    }
-
     var collName: String = ""
     var coll: MongoCollection<Document>!
     let doc1: Document = ["_id": 1, "cat": "dog"]

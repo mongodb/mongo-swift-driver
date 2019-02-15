@@ -4,45 +4,54 @@ dist: trusty
 
 jobs:
   include:
-    - stage: tests
-      os: osx
-      osx_image: xcode9.4
-      env: SWIFT_VERSION=4.0
+    # - stage: pre-tests
+    #   name: verify Linux tests are synced
+    #   os: osx
+    #   install: ./Tests/Scripts/install_dependencies.sh sourcery
+    #   before_script: skip
+    #   script: ${PWD}/sourcery/bin/sourcery; git diff --exit-code Tests/LinuxMain.swift
 
-    - stage: tests
-      os: osx
-      osx_image: xcode9.4
-      env: SWIFT_VERSION=4.1
+    # - stage: tests
+    #   os: osx
+    #   osx_image: xcode9.4
+    #   env: SWIFT_VERSION=4.0
 
-    - stage: tests
-      os: osx
-      osx_image: xcode10.1
-      env: SWIFT_VERSION=4.1
+    # - stage: tests
+    #   os: osx
+    #   osx_image: xcode9.4
+    #   env: SWIFT_VERSION=4.1
 
-    - stage: tests
-      os: osx
-      osx_image: xcode10.1
-      env: SWIFT_VERSION=4.2
+    # - stage: tests
+    #   os: osx
+    #   osx_image: xcode10.1
+    #   env: SWIFT_VERSION=4.1
 
-    - stage: tests
-      os: linux
-      env: SWIFT_VERSION=4.0
+    # - stage: tests
+    #   os: osx
+    #   osx_image: xcode10.1
+    #   env: SWIFT_VERSION=4.2
 
-    - stage: tests
-      os: linux
-      env: SWIFT_VERSION=4.1
+    # - stage: tests
+    #   os: linux
+    #   env: SWIFT_VERSION=4.0
 
-    - stage: tests
-      os: linux
-      env: SWIFT_VERSION=4.2
+    # - stage: tests
+    #   os: linux
+    #   env: SWIFT_VERSION=4.1
 
-    - stage: code coverage
+    # - stage: tests
+    #   os: linux
+    #   env: SWIFT_VERSION=4.2
+
+    - stage: post-tests
+      name: code coverage
       os: osx
       osx_image: xcode10.1
       script: make coverage
       after_success: bash <(curl -s https://codecov.io/bash)
 
-    - stage: lint
+    - stage: post-tests
+      name: lint
       os: osx
       install: ./Tests/Scripts/install_dependencies.sh swiftlint
       before_script: skip
@@ -55,7 +64,7 @@ install:
   - export MONGODB_VERSION=3.6.5
   - ./${INSTALLER} libmongoc
   - ./${INSTALLER} mongodb
-  - if [[ "$TRAVIS_STAGE_NAME" != "Code coverage" ]]; then eval "$(curl -sL https://swiftenv.fuller.li/install.sh)"; fi
+  - if [[ "$TRAVIS_JOB_NAME" != "code coverage" ]]; then eval "$(curl -sL https://swiftenv.fuller.li/install.sh)"; fi
 
 before_script:
   - MONGODIR=${PWD}/mongodb-${MONGODB_VERSION}

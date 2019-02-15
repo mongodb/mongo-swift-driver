@@ -4,14 +4,6 @@ import Nimble
 import XCTest
 
 final class Document_CollectionTests: MongoSwiftTestCase {
-    static var allTests: [(String, (Document_CollectionTests) -> () throws -> Void)] {
-        return [
-            ("testIndexLogic", testIndexLogic),
-            ("testMutators", testMutators),
-            ("testPrefixSuffix", testPrefixSuffix)
-        ]
-    }
-
     func testIndexLogic() {
         let emptyDoc: Document = [:]
 

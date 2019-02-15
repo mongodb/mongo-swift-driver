@@ -3,18 +3,6 @@ import Nimble
 import XCTest
 
 final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
-    static var allTests: [(String, (MongoCollection_BulkWriteTests) -> () throws -> Void)] {
-        return [
-            ("testEmptyRequests", testEmptyRequests),
-            ("testInserts", testInserts),
-            ("testUpdates", testUpdates),
-            ("testDeletes", testDeletes),
-            ("testMixedOrderedOperations", testMixedOrderedOperations),
-            ("testUnacknowledgedWriteConcern", testUnacknowledgedWriteConcern),
-            ("testBulkWriteErrors", testBulkWriteErrors)
-        ]
-    }
-
     static var client: MongoClient?
     var coll: MongoCollection<Document>!
 
