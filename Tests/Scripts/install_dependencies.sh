@@ -10,7 +10,6 @@ install_from_gh () {
 	mkdir ${PWD}/${NAME}
 	curl -L ${URL} -o ${PWD}/${NAME}/${NAME}.zip
 	unzip ${PWD}/${NAME}/${NAME}.zip -d ${PWD}/${NAME}
-
 }
 
 if [[ $1 == "libmongoc" ]]
