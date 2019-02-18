@@ -4,44 +4,44 @@ dist: trusty
 
 jobs:
   include:
-    # - stage: pre-tests
-    #   name: verify Linux tests are synced
-    #   os: osx
-    #   install: ./Tests/Scripts/install_dependencies.sh sourcery
-    #   before_script: skip
-    #   script: ${PWD}/sourcery/bin/sourcery; git diff --exit-code Tests/LinuxMain.swift
+    - stage: pre-tests
+      name: verify Linux tests are synced
+      os: osx
+      install: ./Tests/Scripts/install_dependencies.sh sourcery
+      before_script: skip
+      script: ${PWD}/sourcery/bin/sourcery; git diff --exit-code Tests/LinuxMain.swift
 
-    # - stage: tests
-    #   os: osx
-    #   osx_image: xcode9.4
-    #   env: SWIFT_VERSION=4.0
+    - stage: tests
+      os: osx
+      osx_image: xcode9.4
+      env: SWIFT_VERSION=4.0
 
-    # - stage: tests
-    #   os: osx
-    #   osx_image: xcode9.4
-    #   env: SWIFT_VERSION=4.1
+    - stage: tests
+      os: osx
+      osx_image: xcode9.4
+      env: SWIFT_VERSION=4.1
 
-    # - stage: tests
-    #   os: osx
-    #   osx_image: xcode10.1
-    #   env: SWIFT_VERSION=4.1
+    - stage: tests
+      os: osx
+      osx_image: xcode10.1
+      env: SWIFT_VERSION=4.1
 
-    # - stage: tests
-    #   os: osx
-    #   osx_image: xcode10.1
-    #   env: SWIFT_VERSION=4.2
+    - stage: tests
+      os: osx
+      osx_image: xcode10.1
+      env: SWIFT_VERSION=4.2
 
-    # - stage: tests
-    #   os: linux
-    #   env: SWIFT_VERSION=4.0
+    - stage: tests
+      os: linux
+      env: SWIFT_VERSION=4.0
 
-    # - stage: tests
-    #   os: linux
-    #   env: SWIFT_VERSION=4.1
+    - stage: tests
+      os: linux
+      env: SWIFT_VERSION=4.1
 
-    # - stage: tests
-    #   os: linux
-    #   env: SWIFT_VERSION=4.2
+    - stage: tests
+      os: linux
+      env: SWIFT_VERSION=4.2
 
     - stage: post-tests
       name: code coverage
