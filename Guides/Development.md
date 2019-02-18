@@ -87,16 +87,17 @@ If you use Vim or Neovim, then you can get linting support by using [`ale`](http
 1. Create a feature branch, named by the corresponding JIRA ticket if exists; for example, `SWIFT-30`. 
 2. Do your work on the branch.
 3. If you add, remove, or rename any tests, make sure to update `LinuxMain.swift` accordingly. If you are on MacOS, you can do that by running `make sourcery`. 
-4. Open a pull request on the repository. Make sure you have rebased your branch onto the latest commits on `master`.
+4. Make sure your code builds and passes all tests on [Travis](https://travis-ci.org/mongodb/mongo-swift-driver). Every time you push to GitHub or open a pull request, it will trigger a new build.
+5. Open a pull request on the repository. Make sure you have rebased your branch onto the latest commits on `master`.
 
 **Note**: GitHub allows marking comment threads on pull requests as "resolved", which hides them from view. Always allow the original commenter to resolve a conversation. This allows them to verify that your changes match what they requested before the conversation is hidden.
 
 Once you get the required approvals and your code passes all tests:
 
-4. Rebase on master again if needed.
-5. Build and rerun tests. 
-6. Squash all commits into a single, descriptive commit method, formatted as: `TICKET-NUMBER: Description of changes`. For example, `SWIFT-30: Implement WriteConcern type`. 
-7. Merge it, or if you don't have permissions, ask someone to merge it for you.
+6. Rebase on master again if needed.
+7. Build and rerun tests. 
+8. Squash all commits into a single, descriptive commit method, formatted as: `TICKET-NUMBER: Description of changes`. For example, `SWIFT-30: Implement WriteConcern type`. 
+9. Merge it, or if you don't have permissions, ask someone to merge it for you.
 
 ## Resources
 
