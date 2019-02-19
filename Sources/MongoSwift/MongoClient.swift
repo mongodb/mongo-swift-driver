@@ -121,7 +121,7 @@ public class MongoClient {
      *   - A `UserError.invalidArgumentError` if the connection string specifies the use of TLS but libmongoc was not
      *     built with TLS support.
      */
-    public init(connectionString: String = "mongodb://localhost:27017", options: ClientOptions? = nil) throws {
+    public init(_ connectionString: String = "mongodb://localhost:27017", options: ClientOptions? = nil) throws {
         var error = bson_error_t()
         guard let uri = mongoc_uri_new_with_error(connectionString, &error) else {
             throw parseMongocError(error)

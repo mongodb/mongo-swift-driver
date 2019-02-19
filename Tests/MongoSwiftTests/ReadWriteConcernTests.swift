@@ -387,7 +387,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
                 let uri: String = try test.get("uri")
                 let valid: Bool = try test.get("valid")
                 if valid {
-                    let client = try MongoClient(connectionString: uri)
+                    let client = try MongoClient(uri)
                     if let readConcern = test["readConcern"] as? Document {
                         let rc = ReadConcern(readConcern)
                         if rc.isDefault {
@@ -404,8 +404,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
                         }
                     }
                 } else {
-                    expect(try MongoClient(connectionString: uri))
-                            .to(throwError(UserError.invalidArgumentError(message: "")))
+                    expect(try MongoClient(uri)).to(throwError(UserError.invalidArgumentError(message: "")))
                 }
             }
         }
