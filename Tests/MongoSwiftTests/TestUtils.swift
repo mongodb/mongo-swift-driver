@@ -3,6 +3,7 @@ import MongoSwift
 import Nimble
 import XCTest
 
+// sourcery: disableTests
 class MongoSwiftTestCase: XCTestCase {
     /* Ensure libmongoc is initialized. This will be called multiple times, but that's ok
      * as repeated calls have no effect. There is no way to call final cleanup code just
