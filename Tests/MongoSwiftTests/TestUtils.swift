@@ -157,7 +157,7 @@ extension MongoClient {
     }
 
     internal convenience init(options: ClientOptions? = nil) throws {
-        try self.init(connectionString: MongoSwiftTestCase.connStr, options: options)
+        try self.init(MongoSwiftTestCase.connStr, options: options)
     }
 }
 

@@ -14,7 +14,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
     }
 
     func testMongoDatabase() throws {
-        let client = try MongoClient(connectionString: MongoSwiftTestCase.connStr)
+        let client = try MongoClient(MongoSwiftTestCase.connStr)
         let db = client.db(type(of: self).testDatabase)
 
         let command: Document = ["create": self.getCollectionName(suffix: "1")]
