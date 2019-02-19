@@ -3,24 +3,6 @@ import Nimble
 import XCTest
 
 final class CodecTests: MongoSwiftTestCase {
-    static var allTests: [(String, (CodecTests) -> () throws -> Void)] {
-        return [
-            ("testEncodeListDatabasesOptions", testEncodeListDatabasesOptions),
-            ("testStructs", testStructs),
-            ("testOptionals", testOptionals),
-            ("testEncodingNonBSONNumbers", testEncodingNonBSONNumbers),
-            ("testDecodingNonBSONNumbers", testEncodingNonBSONNumbers),
-            ("testBSONNumbers", testEncodingNonBSONNumbers),
-            ("testBSONValues", testBSONValues),
-            ("testDecodeScalars", testDecodeScalars),
-            ("testDocumentIsCodable", testDocumentIsCodable),
-            ("testEncodeArray", testEncodeArray),
-            ("testAnyBSONValueIsBSONCodable", testAnyBSONValueIsBSONCodable),
-            ("testIncorrectEncodeFunction", testIncorrectEncodeFunction),
-            ("testOptionsEncoding", testOptionsEncoding)
-        ]
-    }
-
     // generic decoding/encoding errors for error matching. Only the case is considered.
     static let typeMismatchErr = DecodingError._typeMismatch(at: [], expectation: Int.self, reality: 0)
     static let invalidValueErr =

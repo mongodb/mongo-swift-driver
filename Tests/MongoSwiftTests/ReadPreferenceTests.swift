@@ -3,16 +3,6 @@ import Nimble
 import XCTest
 
 final class ReadPreferenceTests: MongoSwiftTestCase {
-    static var allTests: [(String, (ReadPreferenceTests) -> () throws -> Void)] {
-        return [
-            ("testMode", testMode),
-            ("testTagSets", testTagSets),
-            ("testMaxStalenessSeconds", testMaxStalenessSeconds),
-            ("testInitFromPointer", testInitFromPointer),
-            ("testEquatable", testEquatable)
-        ]
-    }
-
     override func setUp() {
         self.continueAfterFailure = false
     }

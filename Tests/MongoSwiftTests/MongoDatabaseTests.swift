@@ -3,12 +3,6 @@ import Nimble
 import XCTest
 
 final class MongoDatabaseTests: MongoSwiftTestCase {
-    static var allTests: [(String, (MongoDatabaseTests) -> () throws -> Void)] {
-        return [
-            ("testMongoDatabase", testMongoDatabase)
-        ]
-    }
-
     override func setUp() {
         continueAfterFailure = false
     }

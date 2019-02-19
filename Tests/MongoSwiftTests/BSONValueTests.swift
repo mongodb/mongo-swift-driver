@@ -5,16 +5,6 @@ import Nimble
 import XCTest
 
 final class BSONValueTests: MongoSwiftTestCase {
-    static var allTests: [(String, (BSONValueTests) -> () throws -> Void)] {
-        return [
-            ("testInvalidDecimal128", testInvalidDecimal128),
-            ("testUUIDBytes", testUUIDBytes),
-            ("testBSONEquals", testBSONEquals),
-            ("testObjectIdRoundTrip", testObjectIdRoundTrip),
-            ("testHashable", testHashable)
-        ]
-    }
-
     func testInvalidDecimal128() throws {
         expect(Decimal128(ifValid: "hi")).to(beNil())
         expect(Decimal128(ifValid: "123.4.5")).to(beNil())

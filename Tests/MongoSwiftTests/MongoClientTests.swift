@@ -4,14 +4,6 @@ import Nimble
 import XCTest
 
 final class MongoClientTests: MongoSwiftTestCase {
-    static var allTests: [(String, (MongoClientTests) -> () throws -> Void)] {
-        return [
-            ("testListDatabases", testListDatabases),
-            ("testOpaqueInitialization", testOpaqueInitialization),
-            ("testFailedClientInitialization", testFailedClientInitialization)
-        ]
-    }
-
     func testListDatabases() throws {
         let client = try MongoClient()
         let databases = try client.listDatabases(options: ListDatabasesOptions(nameOnly: true))

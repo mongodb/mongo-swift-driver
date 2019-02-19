@@ -19,6 +19,9 @@ project:
 	@$(call check_for_gem,xcodeproj)
 	ruby Tests/Scripts/add_json_files.rb
 
+sourcery:
+	sourcery
+	
 test:
 	swift test -v $(FILTERARG)
 

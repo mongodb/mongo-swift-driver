@@ -5,13 +5,6 @@ import XCTest
 let center = NotificationCenter.default
 
 final class CommandMonitoringTests: MongoSwiftTestCase {
-    static var allTests: [(String, (CommandMonitoringTests) -> () throws -> Void)] {
-        return [
-            ("testCommandMonitoring", testCommandMonitoring),
-            ("testAlternateNotificationCenters", testAlternateNotificationCenters)
-        ]
-    }
-
     override func setUp() {
         self.continueAfterFailure = false
     }

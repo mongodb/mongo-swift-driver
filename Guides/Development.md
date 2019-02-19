@@ -12,9 +12,10 @@
 
 ## Things to install
 * [swiftenv](https://swiftenv.fuller.li/en/latest/installation.html): a command-line tool that allows easy installation of and switching between versions of Swift.
-	* Use this to install Swift 4.0 if you don't have it already.
-* [jazzy](https://github.com/realm/jazzy#installation): the tool we use to generate documentation.
-* [swiftlint](https://github.com/realm/SwiftLint#using-homebrew): the Swift linter we use. 
+	* Use this to install Swift 4.2 if you don't have it already.
+* [Jazzy](https://github.com/realm/jazzy#installation): the tool we use to generate documentation.
+* [SwiftLint](https://github.com/realm/SwiftLint#using-homebrew): the Swift linter we use. 
+* [Sourcery](https://github.com/krzysztofzablocki/Sourcery/#installation): the tool we use to generate lists of test names (required to run the tests on Linux).
 * [libmongoc](http://mongoc.org/libmongoc/current/api.html): the MongoDB C driver, which this library wraps. See the installation instructions provided in our [README](https://mongodb.github.io/mongo-swift-driver/#first-install-the-mongodb-c-driver) or on the [libmongoc docs](http://mongoc.org/libmongoc/current/installing.html).
 
 ### If you are using (Vim/Neovim)
@@ -45,7 +46,7 @@ Why is this necessary? The project requires a customized "copy resources" build 
 You can run tests from Xcode as usual. If you prefer to test from the command line, keep reading.
 
 ### From the Command Line 
-We recommend installing the ruby gem `xcpretty` and running tests by executing `make test-pretty`, as this provides output in a much more readable format. 
+We recommend installing the ruby gem `xcpretty` and running tests by executing `make test-pretty`, as this provides output in a much more readable format. (Works on MacOS only.)
 
 Alternatively, you can just run the tests with `swift test`, or `make test`.
 
@@ -68,11 +69,11 @@ This will require you to manually provide the path to the compiled test binary (
 We document new code as we write it. We use C-style documentation blocks (`/** ... */`) for documentation longer than 3 lines, and triple-slash (`///`) for shorter documentation. 
 Comments that are _not_ documentation should use two slashes (`//`).
 
-Our documentation site is automatically generated from the source code using [jazzy](https://github.com/realm/jazzy#installation). 
-To regenerate the files after making changes, run `make documentation` from the project's root directory. You can then inspect the changes to the site by opening the files in `/docs` in your web browser.
+Our documentation site is automatically generated from the source code using [Jazzy](https://github.com/realm/jazzy#installation). We regenerate it each time we release a new version of the driver.
+To regenerate the files, run `make documentation` from the project's root directory. You can then inspect the changes to the site by opening the files in `/docs` in your web browser.
 
 ## Linting and Style
-We use [swiftlint](https://github.com/realm/SwiftLint#using-homebrew) for linting. You can see our configuration in the `.swiftlint.yml` file in the project's root directory.  Run `swiftlint` in the `/Sources` directory to lint all of our files. Running `swiftlint autocorrect` will correct some types of violations.
+We use [SwiftLint](https://github.com/realm/SwiftLint#using-homebrew) for linting. You can see our configuration in the `.swiftlint.yml` file in the project's root directory.  Run `swiftlint` in the `/Sources` directory to lint all of our files. Running `swiftlint autocorrect` will correct some types of violations.
 
 For style guidance, look at Swift's [API design guidelines](https://swift.org/documentation/api-design-guidelines/) and Google's [Swift Style Guide](https://google.github.io/swift/).
 
@@ -85,16 +86,18 @@ If you use Vim or Neovim, then you can get linting support by using [`ale`](http
 ## Workflow
 1. Create a feature branch, named by the corresponding JIRA ticket if exists; for example, `SWIFT-30`. 
 2. Do your work on the branch.
-3. Open a pull request on the repository. Make sure you have rebased your branch onto the latest commits on `master`. 
+3. If you add, remove, or rename any tests, make sure to update `LinuxMain.swift` accordingly. If you are on MacOS, you can do that by running `make sourcery`. 
+4. Make sure your code builds and passes all tests on [Travis](https://travis-ci.org/mongodb/mongo-swift-driver). Every time you push to GitHub or open a pull request, it will trigger a new build.
+5. Open a pull request on the repository. Make sure you have rebased your branch onto the latest commits on `master`.
 
 **Note**: GitHub allows marking comment threads on pull requests as "resolved", which hides them from view. Always allow the original commenter to resolve a conversation. This allows them to verify that your changes match what they requested before the conversation is hidden.
 
 Once you get the required approvals and your code passes all tests:
 
-4. Rebase on master again if needed.
-5. Build and rerun tests. 
-6. Squash all commits into a single, descriptive commit method, formatted as: `TICKET-NUMBER: Description of changes`. For example, `SWIFT-30: Implement WriteConcern type`. 
-7. Merge it, or if you don't have permissions, ask someone to merge it for you.
+6. Rebase on master again if needed.
+7. Build and rerun tests. 
+8. Squash all commits into a single, descriptive commit method, formatted as: `TICKET-NUMBER: Description of changes`. For example, `SWIFT-30: Implement WriteConcern type`. 
+9. Merge it, or if you don't have permissions, ask someone to merge it for you.
 
 ## Resources
 

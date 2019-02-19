@@ -4,21 +4,6 @@ import Nimble
 import XCTest
 
 final class Document_SequenceTests: MongoSwiftTestCase {
-    static var allTests: [(String, (Document_SequenceTests) -> () throws -> Void)] {
-        return [
-            ("testIterator", testIterator),
-            ("testMapFilter", testMapFilter),
-            ("testDropFirst", testDropFirst),
-            ("testDropLast", testDropLast),
-            ("testDropPredicate", testDropPredicate),
-            ("testPrefixLength", testPrefixLength),
-            ("testPrefixPredicate", testPrefixPredicate),
-            ("testSuffix", testSuffix),
-            ("testSplit", testSplit),
-            ("testIsEmpty", testIsEmpty)
-        ]
-    }
-
     func testIterator() {
         let doc: Document = [
             "string": "test string",

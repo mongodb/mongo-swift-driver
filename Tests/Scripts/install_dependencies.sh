@@ -1,7 +1,16 @@
 #!/bin/bash
 
 # Script for installing various dependencies for Travis jobs.
-# Usage: ./travis_install.sh libmongoc|mongodb|swiftlint
+# Usage: ./travis_install.sh libmongoc|mongodb|sourcery|swiftlint
+
+# usage: install_from_gh [name] [url]
+install_from_gh () {
+	NAME=$1
+	URL=$2
+	mkdir ${PWD}/${NAME}
+	curl -L ${URL} -o ${PWD}/${NAME}/${NAME}.zip
+	unzip ${PWD}/${NAME}/${NAME}.zip -d ${PWD}/${NAME}
+}
 
 if [[ $1 == "libmongoc" ]]
 then
@@ -23,13 +32,15 @@ then
 	tar xzvf ${MONGODB_BASE}-${MONGODB_VERSION}.tgz -C mongodb-${MONGODB_VERSION} --strip-components 1
 	${PWD}/mongodb-${MONGODB_VERSION}/bin/mongod --version
 
+elif [[ $1 = "sourcery" ]]
+then
+	install_from_gh sourcery https://github.com/krzysztofzablocki/Sourcery/releases/download/0.15.0/Sourcery-0.15.0.zip
+
 elif [[ $1 = "swiftlint" ]]
 then
-	mkdir ${PWD}/swiftlint
-	curl -L https://github.com/realm/SwiftLint/releases/download/0.29.3/portable_swiftlint.zip -o ${PWD}/swiftlint/swiftlint.zip
-	unzip ${PWD}/swiftlint/swiftlint.zip -d ${PWD}/swiftlint
+	install_from_gh swiftlint https://github.com/realm/SwiftLint/releases/download/0.29.3/portable_swiftlint.zip
 
 else
 	echo Missing/unknown install option: "$1"
-	echo Usage: "./travis_install.sh libmongoc|mongodb|swiftlint"
+	echo Usage: "./travis_install.sh libmongoc|mongodb|sourcery|swiftlint"
 fi

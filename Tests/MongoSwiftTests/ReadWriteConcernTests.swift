@@ -26,21 +26,6 @@ extension WriteConcern {
 }
 
 final class ReadWriteConcernTests: MongoSwiftTestCase {
-    static var allTests: [(String, (ReadWriteConcernTests) -> () throws -> Void)] {
-        return [
-            ("testReadConcernType", testReadConcernType),
-            ("testWriteConcernType", testWriteConcernType),
-            ("testClientReadConcern", testClientReadConcern),
-            ("testClientWriteConcern", testClientWriteConcern),
-            ("testDatabaseReadConcern", testDatabaseReadConcern),
-            ("testDatabaseWriteConcern", testDatabaseWriteConcern),
-            ("testOperationReadConcerns", testOperationReadConcerns),
-            ("testOperationWriteConcerns", testOperationReadConcerns),
-            ("testConnectionStrings", testConnectionStrings),
-            ("testDocuments", testDocuments)
-        ]
-    }
-
     override func setUp() {
         self.continueAfterFailure = false
     }
