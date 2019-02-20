@@ -68,6 +68,7 @@ extension DocumentTests {
         ("testReplaceValueNoop", testReplaceValueNoop),
         ("testDocumentDictionarySimilarity", testDocumentDictionarySimilarity),
         ("testDefaultSubscript", testDefaultSubscript),
+        ("testMultibyteCharacterStrings", testMultibyteCharacterStrings),
         ("testUUIDEncodingStrategies", testUUIDEncodingStrategies),
         ("testUUIDDecodingStrategies", testUUIDDecodingStrategies),
         ("testDateEncodingStrategies", testDateEncodingStrategies),
