@@ -663,6 +663,28 @@ final class DocumentTests: MongoSwiftTestCase {
             .to(bsonEqual("\(stringVal) and \(floatVal)" + stringVal))
     }
 
+    func testMultibyteCharacterStrings() throws {
+        let str = String(repeating: "🇧🇷", count: 10)
+
+        var doc: Document = ["first": str]
+        expect(doc["first"] as? String).to(equal(str))
+
+        let doc1: Document = [str: "second"]
+        expect(doc1[str] as? String).to(equal("second"))
+
+        let abt = try CodecTests.AllBSONTypes.factory()
+        Mirror(reflecting: abt).children.forEach { child in
+            let value = child.value as! BSONValue
+            doc[str] = value
+
+            if value is Int32 { // TODO: handle this differently (SWIFT-221)
+                expect(Int32(doc[str] as! Int)).to(bsonEqual(value))
+            } else {
+                expect(doc[str]).to(bsonEqual(value))
+            }
+        }
+    }
+
     struct UUIDWrapper: Codable {
         let uuid: UUID
     }
