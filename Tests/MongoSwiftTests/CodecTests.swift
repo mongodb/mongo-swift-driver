@@ -198,15 +198,22 @@ final class CodecTests: MongoSwiftTestCase {
 
         // check that UInt, UInt64 too large for an Int64 gets converted to Double
         expect(try encoder.encode(Numbers(uint64: UInt64(Int64.max) + 1))).to(equal(["uint64": 9223372036854775808.0]))
-        expect(try encoder.encode(Numbers(uint: UInt(Int64.max) + 1))).to(equal(["uint": 9223372036854775808.0]))
-
+        // on a 32-bit platform, Int64.max + 1 will not fit in a UInt.
+        if !MongoSwiftTestCase.is32Bit {
+            expect(try encoder.encode(Numbers(uint: UInt(Int64.max) + 1))).to(equal(["uint": 9223372036854775808.0]))
+        }
         // check that we fail gracefully with a UInt, UInt64 that can't fit in any type.
         // Swift 4.0 is unable to properly handle these edge cases and returns incorrect
         // values from `Double(exactly:)`.
         // 4.1 fixes this -- see https://bugs.swift.org/browse/SR-7056.
         #if swift(>=4.1)
         expect(try encoder.encode(Numbers(uint64: UInt64.max))).to(throwError(CodecTests.invalidValueErr))
-        expect(try encoder.encode(Numbers(uint: UInt.max))).to(throwError(CodecTests.invalidValueErr))
+        // on a 32-bit platform, UInt.max = UInt32.max, which fits in an Int64.
+        if MongoSwiftTestCase.is32Bit {
+            expect(try encoder.encode(Numbers(uint: UInt.max))).to(equal(["uint": 4294967295]))
+        } else {
+            expect(try encoder.encode(Numbers(uint: UInt.max))).to(throwError(CodecTests.invalidValueErr))
+        }
         #endif
     }
 
