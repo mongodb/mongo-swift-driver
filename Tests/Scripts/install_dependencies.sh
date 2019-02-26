@@ -14,16 +14,18 @@ install_from_gh () {
 
 if [[ $1 == "libmongoc" ]]
 then
-	INSTALL_DIR=${HOME}/libmongoc
+	LIBMONGOC_CACHE_DIR=${HOME}/libmongoc
+	CMAKE_BUILD_DIR=/tmp/libmongoc
 
 	# populate cache
-	if [ ! -d ${INSTALL_DIR} ] || [ -z "$(ls -A $INSTALL_DIR)" ]; then
-		git clone -b ${LIBMONGOC_VERSION} https://github.com/mongodb/mongo-c-driver ${INSTALL_DIR}
+	if [ ! -d ${LIBMONGOC_CACHE_DIR} ] || [ -z "$(ls -A $LIBMONGOC_CACHE_DIR)" ]; then
+		git clone -b ${LIBMONGOC_VERSION} https://github.com/mongodb/mongo-c-driver ${LIBMONGOC_CACHE_DIR}
 	fi
 
-	pushd ${INSTALL_DIR}
-	if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr/local; fi
-	if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr; fi
+	mkdir ${CMAKE_BUILD_DIR}
+	pushd ${CMAKE_BUILD_DIR}
+	if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr/local ${LIBMONGOC_CACHE_DIR}; fi
+	if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr ${LIBMONGOC_CACHE_DIR}; fi
 	sudo make -j8 install
 	popd
 
