@@ -17,7 +17,7 @@ then
 	INSTALL_DIR=${HOME}/libmongoc
 
 	# populate cache
-	if [ ! -d ${INSTALL_DIR} ]; then
+	if [ ! -d ${INSTALL_DIR} ] || [ -z "$(ls -A $INSTALL_DIR)" ]; then
 		git clone -b ${LIBMONGOC_VERSION} https://github.com/mongodb/mongo-c-driver ${INSTALL_DIR}
 	fi
 
