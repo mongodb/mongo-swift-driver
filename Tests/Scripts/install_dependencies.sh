@@ -14,8 +14,14 @@ install_from_gh () {
 
 if [[ $1 == "libmongoc" ]]
 then
-	git clone -b ${LIBMONGOC_VERSION} https://github.com/mongodb/mongo-c-driver /tmp/libmongoc
-	pushd /tmp/libmongoc
+	INSTALL_DIR=${HOME}/libmongoc
+
+	# populate cache
+	if [ ! -d ${INSTALL_DIR} ]; then
+		git clone -b ${LIBMONGOC_VERSION} https://github.com/mongodb/mongo-c-driver ${INSTALL_DIR}
+	fi
+
+	pushd ${INSTALL_DIR}
 	if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr/local; fi
 	if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr; fi
 	sudo make -j8 install

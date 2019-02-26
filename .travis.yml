@@ -74,3 +74,7 @@ before_script:
 script:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then make test-pretty; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then make test; fi
+
+cache:
+  directories:
+    - $HOME/libmongoc
