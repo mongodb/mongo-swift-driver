@@ -21,19 +21,16 @@ public struct ClientOptions: CodingStrategyOptions {
     /// the server's default write concern will be used.
     public let writeConcern: WriteConcern?
 
-    /// Specifies the strategy to use when converting `Date`s between their BSON representations and their
-    /// representations in (non `Document`) `Codable` types.
-    /// This strategy will be inherited by `MongoDatabase`s and `MongoCollection`s that derive from this client.
+    /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this client and any
+    /// databases or collections that derive from it.
     public let dateCodingStrategy: DateCodingStrategy?
 
-    /// Specifies the strategy to use when converting `UUID`s between their BSON representations and their
-    /// representations in (non `Document`) `Codable` types.
-    /// This strategy will be inherited by `MongoDatabase`s and `MongoCollection`s that derive from this client.
+    /// Specifies the `UUIDCodingStrategy` to use for BSON encoding/decoding operations performed by this client and any
+    /// databases or collections that derive from it.
     public let uuidCodingStrategy: UUIDCodingStrategy?
 
-    /// Specifies the strategy to use when converting `Data`s between their BSON representations and their
-    /// representations in (non `Document`) `Codable` types.
-    /// This strategy will be inherited by `MongoDatabase`s and `MongoCollection`s that derive from this client.
+    /// Specifies the `DataCodingStrategy` to use for BSON encoding/decoding operations performed by this client and any
+    /// databases or collections that derive from it.
     public let dataCodingStrategy: DataCodingStrategy?
 
     /// Convenience initializer allowing any/all to be omitted or optional
@@ -89,19 +86,16 @@ public struct DatabaseOptions: CodingStrategyOptions {
     /// the database will inherit the client's write concern.
     public let writeConcern: WriteConcern?
 
-    /// Specifies the strategy to use when converting `Date`s between their BSON representations and their
-    /// representations in (non `Document`) `Codable` types.
-    /// This strategy will be inherited by `MongoDatabase`s and `MongoCollection`s that derive from this client.
+    /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this database and
+    /// any collections that derive from it.
     public let dateCodingStrategy: DateCodingStrategy?
 
-    /// Specifies the strategy to use when converting `UUID`s between their BSON representations and their
-    /// representations in (non `Document`) `Codable` types.
-    /// This strategy will be inherited by `MongoDatabase`s and `MongoCollection`s that derive from this client.
+    /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this database and
+    /// any collections that derive from it.
     public let uuidCodingStrategy: UUIDCodingStrategy?
 
-    /// Specifies the strategy to use when converting `Data`s between their BSON representations and their
-    /// representations in (non `Document`) `Codable` types.
-    /// This strategy will be inherited by `MongoDatabase`s and `MongoCollection`s that derive from this client.
+    /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this database and
+    /// any collections that derive from it.
     public let dataCodingStrategy: DataCodingStrategy?
 
     /// Convenience initializer allowing any/all arguments to be omitted or optional

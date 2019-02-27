@@ -93,16 +93,19 @@ public struct CreateCollectionOptions: Encodable, CodingStrategyOptions {
     /// for the collection itself, retrieve the collection using `MongoDatabase.collection`.
     public let writeConcern: WriteConcern?
 
-    /// Specifies the strategy to use when converting `Date`s between their BSON representations and their
-    /// representations in (non `Document`) `Codable` types.
+    /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
+    /// It is the responsibility of the user to ensure that any `Date`s already stored in this collection can be
+    /// decoded using this strategy.
     public let dateCodingStrategy: DateCodingStrategy?
 
-    /// Specifies the strategy to use when converting `UUID`s between their BSON representations and their
-    /// representations in (non `Document`) `Codable` types.
+    /// Specifies the `UUIDCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
+    /// It is the responsibility of the user to ensure that any `UUID`s already stored in this collection can be
+    /// decoded using this strategy.
     public let uuidCodingStrategy: UUIDCodingStrategy?
 
-    /// Specifies the strategy to use when converting `Data`s between their BSON representations and their
-    /// representations in (non `Document`) `Codable` types.
+    /// Specifies the `DataCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
+    /// It is the responsibility of the user to ensure that any `Data`s already stored in this collection can be
+    /// decoded using this strategy.
     public let dataCodingStrategy: DataCodingStrategy?
 
     private enum CodingKeys: String, CodingKey {
@@ -160,16 +163,19 @@ public struct CollectionOptions: CodingStrategyOptions {
     /// the collection will inherit the database's write concern.
     public let writeConcern: WriteConcern?
 
-    /// Specifies the strategy to use when converting `Date`s between their BSON representations and their
-    /// representations in (non `Document`) `Codable` types.
+    /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
+    /// It is the responsibility of the user to ensure that any `Date`s already stored in this collection can be
+    /// decoded using this strategy.
     public let dateCodingStrategy: DateCodingStrategy?
 
-    /// Specifies the strategy to use when converting `UUID`s between their BSON representations and their
-    /// representations in (non `Document`) `Codable` types.
+    /// Specifies the `UUIDCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
+    /// It is the responsibility of the user to ensure that any `UUID`s already stored in this collection can be
+    /// decoded using this strategy.
     public let uuidCodingStrategy: UUIDCodingStrategy?
 
-    /// Specifies the strategy to use when converting `Data`s between their BSON representations and their
-    /// representations in (non `Document`) `Codable` types.
+    /// Specifies the `DataCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
+    /// It is the responsibility of the user to ensure that any `Data`s already stored in this collection can be
+    /// decoded using this strategy.
     public let dataCodingStrategy: DataCodingStrategy?
 
     /// Convenience initializer allowing any/all arguments to be omitted or optional
