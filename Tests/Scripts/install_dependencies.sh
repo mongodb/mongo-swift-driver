@@ -16,9 +16,6 @@ if [[ $1 == "libmongoc" ]]
 then
 	LIBMONGOC_CACHE_DIR=${HOME}/libmongoc
 
-	if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then INSTALL_PREFIX=/usr/local; fi
-	if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then INSTALL_PREFIX=/usr; fi
-
 	# populate cache
 	if [ ! -d ${LIBMONGOC_CACHE_DIR} ] || [ -z "$(ls -A $LIBMONGOC_CACHE_DIR)" ]; then
 		git clone -b ${LIBMONGOC_VERSION} https://github.com/mongodb/mongo-c-driver /tmp/libmongoc
@@ -27,8 +24,6 @@ then
 		sudo make -j8 install
 		popd
 	fi
-
-	sudo cp -r ${LIBMONGOC_CACHE_DIR}/* ${INSTALL_PREFIX}
 
 elif [[ $1 == "mongodb" ]]
 then
