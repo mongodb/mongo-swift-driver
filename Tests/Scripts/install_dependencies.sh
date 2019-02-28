@@ -28,7 +28,7 @@ then
 		popd
 	fi
 
-	cp -r ${LIBMONGOC_CACHE_DIR}/ ${INSTALL_PREFIX}
+	sudo cp -r ${LIBMONGOC_CACHE_DIR}/ ${INSTALL_PREFIX}
 
 elif [[ $1 == "mongodb" ]]
 then
