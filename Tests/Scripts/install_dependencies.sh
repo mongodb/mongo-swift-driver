@@ -14,7 +14,7 @@ install_from_gh () {
 
 if [[ $1 == "libmongoc" ]]
 then
-	LIBMONGOC_CACHE_DIR=${HOME}/libmongoc
+	LIBMONGOC_CACHE_DIR=${HOME}/libmongoc${LIBMONGOC_VERSION}
 
 	if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then INSTALL_PREFIX=/usr/local; fi
 	if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then INSTALL_PREFIX=/usr; fi
