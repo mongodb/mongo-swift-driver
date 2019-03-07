@@ -43,8 +43,9 @@ extension Double: Overwritable {
 
 extension Decimal128: Overwritable {
     internal func writeToCurrentPosition(of iter: DocumentIterator) throws {
-        var encoded = try Decimal128.toLibBSONType(self.data)
-        bson_iter_overwrite_decimal128(&iter.iter, &encoded)
+        // TODO: avoid this copy via withUnsafePointer use once swift 4.1 support is dropped (SWIFT-284)
+        var copy = self.decimal128
+        bson_iter_overwrite_decimal128(&iter.iter, &copy)
     }
 }
 

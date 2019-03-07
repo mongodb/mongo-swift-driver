@@ -316,6 +316,9 @@ final class CodecTests: MongoSwiftTestCase {
         let minkey: MinKey
         let maxkey: MaxKey
         let regex: RegularExpression
+        let symbol: Symbol
+        let undefined: BSONUndefined
+        let dbpointer: DBPointer
 
         public static func == (lhs: AllBSONTypes, rhs: AllBSONTypes) -> Bool {
             return lhs.double == rhs.double && lhs.string == rhs.string &&
@@ -323,7 +326,8 @@ final class CodecTests: MongoSwiftTestCase {
                     lhs.oid == rhs.oid && lhs.bool == rhs.bool && lhs.code == rhs.code &&
                     lhs.int == rhs.int && lhs.ts == rhs.ts && lhs.int32 == rhs.int32 &&
                     lhs.int64 == rhs.int64 && lhs.dec == rhs.dec && lhs.minkey == rhs.minkey &&
-                    lhs.maxkey == rhs.maxkey && lhs.regex == rhs.regex && lhs.date == rhs.date
+                    lhs.maxkey == rhs.maxkey && lhs.regex == rhs.regex && lhs.date == rhs.date &&
+                    lhs.symbol == rhs.symbol && lhs.dbpointer == rhs.dbpointer
         }
 
         public static func factory() throws -> AllBSONTypes {
@@ -341,34 +345,19 @@ final class CodecTests: MongoSwiftTestCase {
                     ts: Timestamp(timestamp: 1, inc: 2),
                     int32: 5,
                     int64: 6,
-                    dec: Decimal128("1.2E+10"),
+                    dec: Decimal128("1.2E+10")!,
                     minkey: MinKey(),
                     maxkey: MaxKey(),
-                    regex: RegularExpression(pattern: "^abc", options: "imx"))
+                    regex: RegularExpression(pattern: "^abc", options: "imx"),
+                    symbol: Symbol("i am a symbol"),
+                    undefined: BSONUndefined(),
+                    dbpointer: DBPointer(ref: "some.namespace", id: ObjectId(fromString: "507f1f77bcf86cd799439011")))
         }
     }
 
     /// Test decoding/encoding to all possible BSON types
     func testBSONValues() throws {
-        let expected = AllBSONTypes(
-                            double: Double(2),
-                            string: "hi",
-                            doc: ["x": 1],
-                            arr: [1, 2],
-                            binary: try Binary(base64: "//8=", subtype: .generic),
-                            oid: ObjectId(fromString: "507f1f77bcf86cd799439011"),
-                            bool: true,
-                            date: Date(timeIntervalSinceReferenceDate: 5000),
-                            code: CodeWithScope(code: "hi", scope: ["x": 1]),
-                            int: 1,
-                            ts: Timestamp(timestamp: 1, inc: 2),
-                            int32: 5,
-                            int64: 6,
-                            dec: Decimal128("1.2E+10"),
-                            minkey: MinKey(),
-                            maxkey: MaxKey(),
-                            regex: RegularExpression(pattern: "^abc", options: "imx")
-                        )
+        let expected = try AllBSONTypes.factory()
 
         let decoder = BSONDecoder()
 
@@ -386,10 +375,13 @@ final class CodecTests: MongoSwiftTestCase {
             "ts": Timestamp(timestamp: 1, inc: 2),
             "int32": 5,
             "int64": Int64(6),
-            "dec": Decimal128("1.2E+10"),
+            "dec": Decimal128("1.2E+10")!,
             "minkey": MinKey(),
             "maxkey": MaxKey(),
-            "regex": RegularExpression(pattern: "^abc", options: "imx")
+            "regex": RegularExpression(pattern: "^abc", options: "imx"),
+            "symbol": expected.symbol,
+            "undefined": expected.undefined,
+            "dbpointer": expected.dbpointer
         ]
 
         let res = try decoder.decode(AllBSONTypes.self, from: doc)
@@ -397,6 +389,7 @@ final class CodecTests: MongoSwiftTestCase {
 
         expect(try BSONEncoder().encode(expected)).to(equal(doc))
 
+        //swiftlint:disable line_length
         let base64 = "//8="
         let extjson = """
         {
@@ -415,9 +408,13 @@ final class CodecTests: MongoSwiftTestCase {
             "dec" : { "$numberDecimal" : "1.2E+10" },
             "minkey" : { "$minKey" : 1 },
             "maxkey" : { "$maxKey" : 1 },
-            "regex" : { "$regularExpression" : { "pattern" : "^abc", "options" : "imx" } }
+            "regex" : { "$regularExpression" : { "pattern" : "^abc", "options" : "imx" } },
+            "symbol" : { "$symbol" : "i am a symbol" },
+            "undefined": { "$undefined" : true },
+            "dbpointer": { "$dbPointer" : { "$ref" : "some.namespace", "$id" : { "$oid" : "507f1f77bcf86cd799439011" } } }
         }
         """
+        //swiftlint:enable line_length
 
         let res2 = try decoder.decode(AllBSONTypes.self, from: extjson)
         expect(res2).to(equal(expected))
@@ -442,7 +439,7 @@ final class CodecTests: MongoSwiftTestCase {
         expect(try decoder.decode(Double.self, from: "{\"$numberDouble\": \"42.42\"}")).to(equal(42.42))
 
         expect(try decoder.decode(Decimal128.self,
-                                  from: "{\"$numberDecimal\": \"1.2E+10\"}")).to(equal(Decimal128("1.2E+10")))
+                                  from: "{\"$numberDecimal\": \"1.2E+10\"}")).to(equal(Decimal128("1.2E+10")!))
 
         let binary = try Binary(base64: "//8=", subtype: .generic)
         expect(
@@ -719,7 +716,7 @@ final class CodecTests: MongoSwiftTestCase {
                                   from: wrappedInt64.canonicalExtendedJSON).x.value).to(bsonEqual(int64))
 
         // decimal128
-        let decimal = Decimal128("1.2E+10")
+        let decimal = Decimal128("1.2E+10")!
 
         expect(
             try decoder.decode(AnyBSONValue.self, from: "{ \"$numberDecimal\" : \"1.2E+10\" }").value as? Decimal128

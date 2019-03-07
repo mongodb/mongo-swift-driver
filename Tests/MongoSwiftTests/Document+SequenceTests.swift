@@ -12,7 +12,7 @@ final class Document_SequenceTests: MongoSwiftTestCase {
             "int": 25,
             "int32": Int32(5),
             "double": Double(15),
-            "decimal128": Decimal128("1.2E+10"),
+            "decimal128": Decimal128("1.2E+10")!,
             "minkey": MinKey(),
             "maxkey": MaxKey(),
             "date": Date(timeIntervalSince1970: 5000),
@@ -48,7 +48,7 @@ final class Document_SequenceTests: MongoSwiftTestCase {
 
         let decimalTup = iter.next()!
         expect(decimalTup.key).to(equal("decimal128"))
-        expect(decimalTup.value).to(bsonEqual(Decimal128("1.2E+10")))
+        expect(decimalTup.value).to(bsonEqual(Decimal128("1.2E+10")!))
 
         let minTup = iter.next()!
         expect(minTup.key).to(equal("minkey"))
