@@ -99,8 +99,6 @@ Once you get the required approvals and your code passes all tests:
 8. Squash all commits into a single, descriptive commit method, formatted as: `TICKET-NUMBER: Description of changes`. For example, `SWIFT-30: Implement WriteConcern type`. 
 9. Merge it, or if you don't have permissions, ask someone to merge it for you.
 
-If your change involves a libmongoc version bump, be sure to delete the master branch cache on Travis before merging (Navigate to "More Options > Caches").
-
 ## Resources
 
 ### Swift
