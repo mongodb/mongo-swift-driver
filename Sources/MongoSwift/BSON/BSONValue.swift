@@ -344,25 +344,27 @@ extension Date: BSONValue {
     }
 }
 
-/// An internal struct to represent the deprecated DBPointer type. While DBPointers cannot
-/// be created, we may need to parse them into `Document`s, and this provides a place for that logic.
-internal struct DBPointer: BSONValue {
+/// An struct to represent the deprecated DBPointer type.
+/// DBPointers cannot be instantiated, but they can be read from existing documents that contain them.
+public struct DBPointer: BSONValue, Codable {
     public var bsonType: BSONType { return .dbPointer }
+
+    /// Destination namespace of the pointer.
+    public let ref: String
+
+    /// Destination _id (assumed to be an `ObjectId`) of the pointed-to document.
+    public let id: ObjectId
+
+    internal init(ref: String, id: ObjectId) {
+        self.ref = ref
+        self.id = id
+    }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         throw RuntimeError.internalError(message: "`DBPointer`s are deprecated; use a DBRef document instead")
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> DBPointer {
-        throw RuntimeError.internalError(message:
-            "`DBPointer`s are deprecated; use `DBPointer.asDocument` to create a DBRef document instead")
-    }
-
-    /// Reads DBPointer data from `iter` and converts it to DBRef format
-    ///
-    /// - Throws:
-    ///   - `UserError.logicError` if the current type of the `DocumentIterator` does not correspond to `DBPointer`.
-    internal static func asDocument(from iter: DocumentIterator) throws -> Document {
         var length: UInt32 = 0
         let collectionPP = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: 1)
         defer {
@@ -382,10 +384,7 @@ internal struct DBPointer: BSONValue {
             throw wrongIterTypeError(iter, expected: DBPointer.self)
         }
 
-        return [
-            "$ref": String(cString: collectionP),
-            "$id": ObjectId(fromPointer: oidP)
-        ]
+        return DBPointer(ref: String(cString: collectionP), id: ObjectId(fromPointer: oidP))
     }
 }
 
@@ -943,14 +942,17 @@ extension String: BSONValue {
     }
 }
 
-/// An internal struct to represent the deprecated Symbol type. While Symbols cannot be
-/// created, we may need to parse them into `String`s, and this provides a place for that logic.
-internal struct Symbol: BSONValue {
+/// A struct to represent the deprecated Symbol type.
+/// Symbols cannot be instantiated, but they can be read from existing documents that contain them.
+public struct Symbol: BSONValue, CustomStringConvertible, Codable {
     public var bsonType: BSONType { return .symbol }
 
-    public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        throw RuntimeError.internalError(message: "Symbols are deprecated; use a string instead")
+    public var description: String {
+        return stringValue
     }
+
+    /// String representation of this `Symbol`.
+    internal let stringValue: String
 
     public init(from decoder: Decoder) throws {
         if decoder is _BSONDecoder {
@@ -959,26 +961,31 @@ internal struct Symbol: BSONValue {
         throw bsonDecodingUnsupportedError(type: Symbol.self, at: decoder.codingPath)
     }
 
+    internal init(_ stringValue: String) {
+        self.stringValue = stringValue
+    }
+
     public func encode(to: Encoder) throws {
         throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
     }
 
-    public static func from(iterator iter: DocumentIterator) throws -> Symbol {
-        throw RuntimeError.internalError(
-                message: "`Symbol`s are deprecated; use `Symbol.asString` to parse as a string instead"
-        )
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
+        guard bson_append_symbol(
+                storage.pointer,
+                key,
+                Int32(key.utf8.count),
+                self.stringValue,
+                Int32(self.stringValue.utf8.count)) else {
+            throw bsonTooLargeError(value: self, forKey: key)
+        }
     }
 
-    /// Converts the current value of the `DocumentIterator` to a string if it is a `Symbol`. Throws an error otherwise.
-    ///
-    /// - Throws:
-    ///   - `UserError.logicError` if the current type of the `DocumentIterator` does not correspond to `Symbol`.
-    internal static func asString(from iter: DocumentIterator) throws -> String {
+    public static func from(iterator iter: DocumentIterator) throws -> Symbol {
         var length: UInt32 = 0
         guard iter.currentType == .symbol, let strValue = bson_iter_symbol(&iter.iter, &length) else {
             throw wrongIterTypeError(iter, expected: Symbol.self)
         }
-        return String(cString: strValue)
+        return Symbol(String(cString: strValue))
     }
 }
 
@@ -1035,6 +1042,27 @@ public struct Timestamp: BSONValue, Equatable, Codable {
 
     public static func == (lhs: Timestamp, rhs: Timestamp) -> Bool {
         return lhs.timestamp == rhs.timestamp && lhs.increment == rhs.increment
+    }
+}
+
+/// A struct to represent the deprecated Undefined type.
+/// Undefined instances cannot be created, but they can be read from existing documents that contain them.
+public struct BSONUndefined: BSONValue, Equatable, Codable {
+    public var bsonType: BSONType { return .undefined }
+
+    internal init() {}
+
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
+        guard bson_append_undefined(storage.pointer, key, Int32(key.utf8.count)) else {
+            throw bsonTooLargeError(value: self, forKey: key)
+        }
+    }
+
+    public static func from(iterator iter: DocumentIterator) throws -> BSONUndefined {
+        guard iter.currentType == .undefined else {
+            throw wrongIterTypeError(iter, expected: BSONUndefined.self)
+        }
+        return BSONUndefined()
     }
 }
 
