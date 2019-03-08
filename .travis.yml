@@ -62,6 +62,7 @@ install:
   - INSTALLER=Tests/Scripts/install_dependencies.sh
   - export LIBMONGOC_VERSION=r1.13
   - export MONGODB_VERSION=3.6.5
+  - export LIBMONGOC_CACHE_DIR=${HOME}/libmongoc-${LIBMONGOC_VERSION}
   - ./${INSTALLER} libmongoc
   - ./${INSTALLER} mongodb
   - if [[ "$TRAVIS_JOB_NAME" != "code coverage" ]]; then eval "$(curl -sL https://swiftenv.fuller.li/install.sh)"; fi
@@ -77,4 +78,4 @@ script:
 
 cache:
   directories:
-    - $HOME/libmongoc
+    - ${LIBMONGOC_CACHE_DIR}
