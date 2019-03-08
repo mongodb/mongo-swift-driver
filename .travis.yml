@@ -5,7 +5,7 @@ dist: trusty
 env:
   global:
     - MONGODB_VERSION=3.6.5
-    - LIBMONGOC_VERSION=r.1.13
+    - LIBMONGOC_VERSION=r1.13
     - LIBMONGOC_CACHE_DIR=${HOME}/libmongoc-${LIBMONGOC_VERSION}
 
 jobs:
