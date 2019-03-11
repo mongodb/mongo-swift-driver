@@ -344,7 +344,7 @@ extension Date: BSONValue {
     }
 }
 
-/// An struct to represent the deprecated DBPointer type.
+/// A struct to represent the deprecated DBPointer type.
 /// DBPointers cannot be instantiated, but they can be read from existing documents that contain them.
 public struct DBPointer: BSONValue, Codable, Equatable {
     public var bsonType: BSONType { return .dbPointer }
@@ -361,7 +361,7 @@ public struct DBPointer: BSONValue, Codable, Equatable {
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        var oid = try ObjectId.toLibBSONType(self.id.oid)
+        var oid = try ObjectId.toLibBSONType(self.id.oid) // TODO: use the stored bson_oid_t (SWIFT-268)
         guard bson_append_dbpointer(storage.pointer, key, Int32(key.utf8.count), self.ref, &oid) else {
             throw bsonTooLargeError(value: self, forKey: key)
         }
@@ -453,7 +453,7 @@ public struct Decimal128: BSONValue, Equatable, Codable {
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        // TODO: avoid this copy via withUnsafePointer use once swift 4.1 support is dropped (SWIFT-284)
+        // TODO: avoid this copy via withUnsafePointer once swift 4.1 support is dropped (SWIFT-284)
         var copy = self.decimal128
         guard bson_append_decimal128(storage.pointer, key, Int32(key.utf8.count), &copy) else {
             throw bsonTooLargeError(value: self, forKey: key)

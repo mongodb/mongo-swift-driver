@@ -43,7 +43,7 @@ extension Double: Overwritable {
 
 extension Decimal128: Overwritable {
     internal func writeToCurrentPosition(of iter: DocumentIterator) throws {
-        // TODO: avoid this copy via withUnsafePointer use once swift 4.1 support is dropped (SWIFT-284)
+        // TODO: avoid this copy via withUnsafePointer once swift 4.1 support is dropped (SWIFT-284)
         var copy = self.decimal128
         bson_iter_overwrite_decimal128(&iter.iter, &copy)
     }
