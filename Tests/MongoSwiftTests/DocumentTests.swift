@@ -361,9 +361,20 @@ final class DocumentTests: MongoSwiftTestCase {
                 let docFromCB = Document(fromBSON: cBData)
                 expect(docFromCB.rawBSON).to(equal(cBData))
 
-                let nativeFromDoc = docFromCB.toArray()
-                let docFromNative = Document(fromArray: nativeFromDoc)
-                expect(docFromNative.rawBSON).to(equal(cBData))
+                // test round tripping through documents
+                let testRoundTrip = {
+                    let nativeFromDoc = docFromCB.toArray()
+                    let docFromNative = Document(fromArray: nativeFromDoc)
+                    expect(docFromNative.rawBSON).to(equal(cBData))
+                }
+
+                #if swift(>=4.2.3) || !os(Linux)
+                testRoundTrip()
+                #else
+                if description != "Embedded Nulls" {
+                    testRoundTrip()
+                }
+                #endif
 
                 // native_to_canonical_extended_json( bson_to_native(cB) ) = cEJ
                 expect(docFromCB.canonicalExtendedJSON).to(cleanEqual(cEJ))
