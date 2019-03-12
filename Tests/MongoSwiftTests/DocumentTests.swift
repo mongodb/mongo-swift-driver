@@ -368,10 +368,12 @@ final class DocumentTests: MongoSwiftTestCase {
                     expect(docFromNative.rawBSON).to(equal(cBData))
                 }
 
+                // Linux swift terminates all strings when encountering null bytes in Swift < 4.2.3 (SR-7455).
+                // TODO: remove this conditional compile when the minimum supported version is >= 4.2.3
                 #if swift(>=4.2.3) || !os(Linux)
                 testRoundTrip()
                 #else
-                if description != "Embedded Nulls" {
+                if description != "Embedded nulls" {
                     testRoundTrip()
                 }
                 #endif
