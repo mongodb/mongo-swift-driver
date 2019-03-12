@@ -144,6 +144,17 @@ public struct BSONNull: BSONValue, Codable, Equatable {
     /// Initializes a new `BSONNull` instance.
     public init() { }
 
+    public init(from decoder: Decoder) throws {
+        if decoder is _BSONDecoder {
+            throw bsonDecodingDirectlyError(type: BSONNull.self, at: decoder.codingPath)
+        }
+        throw bsonDecodingUnsupportedError(type: BSONNull.self, at: decoder.codingPath)
+    }
+
+    public func encode(to: Encoder) throws {
+        throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
+    }
+
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         guard bson_append_null(storage.pointer, key, Int32(key.utf8.count)) else {
             throw bsonTooLargeError(value: self, forKey: key)
@@ -236,6 +247,17 @@ public struct Binary: BSONValue, Equatable, Codable {
     ///     incompatible with the specified subtype.
     public init(base64: String, subtype: Subtype) throws {
         try self.init(base64: base64, subtype: subtype.rawValue)
+    }
+
+    public init(from decoder: Decoder) throws {
+        if decoder is _BSONDecoder {
+            throw bsonDecodingDirectlyError(type: Binary.self, at: decoder.codingPath)
+        }
+        throw bsonDecodingUnsupportedError(type: Binary.self, at: decoder.codingPath)
+    }
+
+    public func encode(to: Encoder) throws {
+        throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
@@ -393,6 +415,17 @@ public struct Decimal128: BSONValue, Equatable, Codable {
         }
     }
 
+    public init(from decoder: Decoder) throws {
+        if decoder is _BSONDecoder {
+            throw bsonDecodingDirectlyError(type: Decimal128.self, at: decoder.codingPath)
+        }
+        throw bsonDecodingUnsupportedError(type: Decimal128.self, at: decoder.codingPath)
+    }
+
+    public func encode(to: Encoder) throws {
+        throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
+    }
+
     /// Returns the provided string as a `bson_decimal128_t`, or throws an error if initialization fails due an
     /// invalid string.
     /// - Throws:
@@ -533,6 +566,17 @@ public struct CodeWithScope: BSONValue, Equatable, Codable {
         self.scope = scope
     }
 
+    public init(from decoder: Decoder) throws {
+        if decoder is _BSONDecoder {
+            throw bsonDecodingDirectlyError(type: CodeWithScope.self, at: decoder.codingPath)
+        }
+        throw bsonDecodingUnsupportedError(type: CodeWithScope.self, at: decoder.codingPath)
+    }
+
+    public func encode(to: Encoder) throws {
+        throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
+    }
+
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         if let s = self.scope {
             guard bson_append_code_with_scope(storage.pointer, key, Int32(key.utf8.count), self.code, s.data) else {
@@ -593,6 +637,17 @@ public struct MaxKey: BSONValue, Equatable, Codable {
     /// Initializes a new `MaxKey` instance.
     public init() {}
 
+    public init(from decoder: Decoder) throws {
+        if decoder is _BSONDecoder {
+            throw bsonDecodingDirectlyError(type: MaxKey.self, at: decoder.codingPath)
+        }
+        throw bsonDecodingUnsupportedError(type: MaxKey.self, at: decoder.codingPath)
+    }
+
+    public func encode(to: Encoder) throws {
+        throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
+    }
+
     public static func from(iterator iter: DocumentIterator) throws -> MaxKey {
         guard iter.currentType == .maxKey else {
             throw wrongIterTypeError(iter, expected: MaxKey.self)
@@ -617,6 +672,17 @@ public struct MinKey: BSONValue, Equatable, Codable {
 
     /// Initializes a new `MinKey` instance.
     public init() {}
+
+    public init(from decoder: Decoder) throws {
+        if decoder is _BSONDecoder {
+            throw bsonDecodingDirectlyError(type: MinKey.self, at: decoder.codingPath)
+        }
+        throw bsonDecodingUnsupportedError(type: MinKey.self, at: decoder.codingPath)
+    }
+
+    public func encode(to: Encoder) throws {
+        throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
+    }
 
     public static func from(iterator iter: DocumentIterator) throws -> MinKey {
         guard iter.currentType == .minKey else {
@@ -663,6 +729,17 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
         } else {
             self.init(fromString: oid)
         }
+    }
+
+    public init(from decoder: Decoder) throws {
+        if decoder is _BSONDecoder {
+            throw bsonDecodingDirectlyError(type: ObjectId.self, at: decoder.codingPath)
+        }
+        throw bsonDecodingUnsupportedError(type: ObjectId.self, at: decoder.codingPath)
+    }
+
+    public func encode(to: Encoder) throws {
+        throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
     }
 
     /// Initializes an `ObjectId` from an `UnsafePointer<bson_oid_t>` by copying the data
@@ -799,6 +876,17 @@ public struct RegularExpression: BSONValue, Equatable, Codable {
         self.options = regex.stringOptions
     }
 
+    public init(from decoder: Decoder) throws {
+        if decoder is _BSONDecoder {
+            throw bsonDecodingDirectlyError(type: RegularExpression.self, at: decoder.codingPath)
+        }
+        throw bsonDecodingUnsupportedError(type: RegularExpression.self, at: decoder.codingPath)
+    }
+
+    public func encode(to: Encoder) throws {
+        throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
+    }
+
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         guard bson_append_regex(storage.pointer, key, Int32(key.utf8.count), self.pattern, self.options) else {
             throw bsonTooLargeError(value: self, forKey: key)
@@ -864,6 +952,17 @@ internal struct Symbol: BSONValue {
         throw RuntimeError.internalError(message: "Symbols are deprecated; use a string instead")
     }
 
+    public init(from decoder: Decoder) throws {
+        if decoder is _BSONDecoder {
+            throw bsonDecodingDirectlyError(type: Symbol.self, at: decoder.codingPath)
+        }
+        throw bsonDecodingUnsupportedError(type: Symbol.self, at: decoder.codingPath)
+    }
+
+    public func encode(to: Encoder) throws {
+        throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
+    }
+
     public static func from(iterator iter: DocumentIterator) throws -> Symbol {
         throw RuntimeError.internalError(
                 message: "`Symbol`s are deprecated; use `Symbol.asString` to parse as a string instead"
@@ -903,6 +1002,17 @@ public struct Timestamp: BSONValue, Equatable, Codable {
     public init(timestamp: Int, inc: Int) {
         self.timestamp = UInt32(timestamp)
         self.increment = UInt32(inc)
+    }
+
+    public init(from decoder: Decoder) throws {
+        if decoder is _BSONDecoder {
+            throw bsonDecodingDirectlyError(type: Timestamp.self, at: decoder.codingPath)
+        }
+        throw bsonDecodingUnsupportedError(type: Timestamp.self, at: decoder.codingPath)
+    }
+
+    public func encode(to: Encoder) throws {
+        throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
@@ -1002,4 +1112,44 @@ private func validateBSONTypes(_ lhs: BSONValue, _ rhs: BSONValue) {
     guard !invalidTypes.contains(rhs.bsonType) else {
         fatalError("\(rhs.bsonType) should not be used")
     }
+}
+
+/// Error thrown when a BSONValue type introduced by the driver (e.g. ObjectId) is encoded not using BSONEncoder
+private func bsonEncodingUnsupportedError<T: BSONValue>(value: T, at codingPath: [CodingKey]) -> EncodingError {
+    let description = "Encoding \(T.self) BSONValue type with a non-BSONEncoder is currently unsupported"
+
+    return EncodingError.invalidValue(
+            value,
+            EncodingError.Context(codingPath: codingPath, debugDescription: description)
+    )
+}
+
+/// Error thrown when a BSONValue type introduced by the driver (e.g. ObjectId) is decoded not using BSONDecoder
+private func bsonDecodingUnsupportedError<T: BSONValue>(type: T.Type, at codingPath: [CodingKey]) -> DecodingError {
+    let description = "Initializing a \(T.self) BSONValue type with a non-BSONDecoder is currently unsupported"
+
+    return DecodingError.typeMismatch(
+            T.self,
+            DecodingError.Context(codingPath: codingPath, debugDescription: description)
+    )
+}
+
+/**
+ * Error thrown when a `BSONValue` type introduced by the driver (e.g. ObjectId) is decoded via the decoder
+ * initializer when using `BSONDecoder`. These introduced types are BSON primitives that do not exist in Swift.
+ * Since they're BSON primitives, they should be read straight from the document via the underlying `bson_t`,
+ * and `BSONDecoder` should never be calling into init(from:Decoder) to initialize them.
+ *
+ * Example error causes:
+ * - Decoding directly from Document: decoder.decode(ObjectId.self, from: doc)
+ * - Attempting to decode by field names: decoder.decode(CodeWithScope.self, from: "{\"code": \"code\"}")
+ */
+private func bsonDecodingDirectlyError<T: BSONValue>(type: T.Type, at codingPath: [CodingKey]) -> DecodingError {
+    let description = "Cannot initialize a BSONValue type \(T.self) directly from BSONDecoder. It must be a member of" +
+            " a struct or a class."
+
+    return DecodingError.typeMismatch(
+            T.self,
+            DecodingError.Context(codingPath: codingPath, debugDescription: description)
+    )
 }
