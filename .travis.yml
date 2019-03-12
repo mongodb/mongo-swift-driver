@@ -2,6 +2,12 @@ language: generic
 sudo: required
 dist: trusty
 
+env:
+  global:
+    - MONGODB_VERSION=3.6.5
+    - LIBMONGOC_VERSION=r1.13
+    - LIBMONGOC_CACHE_DIR=${HOME}/libmongoc-${LIBMONGOC_VERSION}
+
 jobs:
   include:
     - stage: pre-tests
@@ -60,8 +66,6 @@ jobs:
 
 install:
   - INSTALLER=Tests/Scripts/install_dependencies.sh
-  - export LIBMONGOC_VERSION=r1.13
-  - export MONGODB_VERSION=3.6.5
   - ./${INSTALLER} libmongoc
   - ./${INSTALLER} mongodb
   - if [[ "$TRAVIS_JOB_NAME" != "code coverage" ]]; then eval "$(curl -sL https://swiftenv.fuller.li/install.sh)"; fi
@@ -74,3 +78,7 @@ before_script:
 script:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then make test-pretty; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then make test; fi
+
+cache:
+  directories:
+    - ${LIBMONGOC_CACHE_DIR}
