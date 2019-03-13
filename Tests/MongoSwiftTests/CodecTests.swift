@@ -455,10 +455,11 @@ final class CodecTests: MongoSwiftTestCase {
                                from: "{\"$binary\" : {\"base64\": \"//8=\", \"subType\" : \"00\"}}")
         ).to(equal(binary))
 
-        expect(try decoder.decode(CodeWithScope.self, from: "{\"code\": \"hi\" }")).to(equal(CodeWithScope(code: "hi")))
+        expect(try decoder.decode(CodeWithScope.self,
+                                  from: "{\"$code\": \"hi\" }")).to(equal(CodeWithScope(code: "hi")))
         let cws = CodeWithScope(code: "hi", scope: ["x": 1])
         expect(try decoder.decode(CodeWithScope.self,
-                                  from: "{\"code\": \"hi\", \"scope\": {\"x\" : 1} }")).to(equal(cws))
+                                  from: "{\"$code\": \"hi\", \"$scope\": {\"x\" : 1} }")).to(equal(cws))
         expect(try decoder.decode(Document.self, from: "{\"x\": 1}")).to(equal(["x": 1]))
 
         let ts = Timestamp(timestamp: 1, inc: 2)
