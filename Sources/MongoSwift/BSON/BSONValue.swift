@@ -360,6 +360,17 @@ public struct DBPointer: BSONValue, Codable, Equatable {
         self.id = id
     }
 
+    public init(from decoder: Decoder) throws {
+        if decoder is _BSONDecoder {
+            throw bsonDecodingDirectlyError(type: DBPointer.self, at: decoder.codingPath)
+        }
+        throw bsonDecodingUnsupportedError(type: DBPointer.self, at: decoder.codingPath)
+    }
+
+    public func encode(to: Encoder) throws {
+        throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
+    }
+
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         var oid = try ObjectId.toLibBSONType(self.id.oid) // TODO: use the stored bson_oid_t (SWIFT-268)
         guard bson_append_dbpointer(storage.pointer, key, Int32(key.utf8.count), self.ref, &oid) else {
@@ -405,14 +416,6 @@ public struct Decimal128: BSONValue, Equatable, Codable {
         self.decimal128 = bsonDecimal
     }
 
-    public init(from: Decoder) throws {
-        throw RuntimeError.internalError(message: "Decoding Decimal128 from non-BSON decoder is unsupported")
-    }
-
-    public func encode(to: Encoder) throws {
-        throw RuntimeError.internalError(message: "Encoding Decimal128 to a non-BSON encoder is unsupported")
-    }
-
     /// Initializes a `Decimal128` value from the provided `String`. Returns `nil` if the input is not a valid
     /// Decimal128 string.
     /// - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/bson-decimal128/decimal128.rst
@@ -436,6 +439,14 @@ public struct Decimal128: BSONValue, Equatable, Codable {
         throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
     }
 
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
+        // TODO: avoid this copy via withUnsafePointer once swift 4.1 support is dropped (SWIFT-284)
+        var copy = self.decimal128
+        guard bson_append_decimal128(storage.pointer, key, Int32(key.utf8.count), &copy) else {
+            throw bsonTooLargeError(value: self, forKey: key)
+        }
+    }
+
     /// Returns the provided string as a `bson_decimal128_t`, or throws an error if initialization fails due an
     /// invalid string.
     /// - Throws:
@@ -450,14 +461,6 @@ public struct Decimal128: BSONValue, Equatable, Codable {
 
     public static func == (lhs: Decimal128, rhs: Decimal128) -> Bool {
         return lhs.decimal128.low == rhs.decimal128.low && lhs.decimal128.high == rhs.decimal128.high
-    }
-
-    public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        // TODO: avoid this copy via withUnsafePointer once swift 4.1 support is dropped (SWIFT-284)
-        var copy = self.decimal128
-        guard bson_append_decimal128(storage.pointer, key, Int32(key.utf8.count), &copy) else {
-            throw bsonTooLargeError(value: self, forKey: key)
-        }
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> Decimal128 {
@@ -1076,6 +1079,17 @@ public final class BSONUndefined: BSONValue, Equatable, Codable {
     public var bsonType: BSONType { return .undefined }
 
     internal init() {}
+
+    public init(from decoder: Decoder) throws {
+        if decoder is _BSONDecoder {
+            throw bsonDecodingDirectlyError(type: BSONUndefined.self, at: decoder.codingPath)
+        }
+        throw bsonDecodingUnsupportedError(type: BSONUndefined.self, at: decoder.codingPath)
+    }
+
+    public func encode(to: Encoder) throws {
+        throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
+    }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         guard bson_append_undefined(storage.pointer, key, Int32(key.utf8.count)) else {
