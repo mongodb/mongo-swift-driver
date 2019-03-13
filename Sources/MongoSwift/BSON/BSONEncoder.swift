@@ -111,7 +111,7 @@ public class BSONEncoder {
 
     /// Initializes `self`.
     public init(options: CodingStrategyOptions? = nil) {
-        self.applyOptions(options: options)
+        self.configureWithOptions(options: options)
     }
 
     /// Initializes `self` by copying the options of another `BSONEncoder`.
@@ -121,10 +121,10 @@ public class BSONEncoder {
         self.uuidEncodingStrategy = other.uuidEncodingStrategy
         self.dataEncodingStrategy = other.dataEncodingStrategy
 
-        self.applyOptions(options: options)
+        self.configureWithOptions(options: options)
     }
 
-    internal func applyOptions(options: CodingStrategyOptions?) {
+    internal func configureWithOptions(options: CodingStrategyOptions?) {
         self.dateEncodingStrategy = options?.dateCodingStrategy?.rawValue.encoding ?? self.dateEncodingStrategy
         self.uuidEncodingStrategy = options?.uuidCodingStrategy?.rawValue.encoding ?? self.uuidEncodingStrategy
         self.dataEncodingStrategy = options?.dataCodingStrategy?.rawValue.encoding ?? self.dataEncodingStrategy

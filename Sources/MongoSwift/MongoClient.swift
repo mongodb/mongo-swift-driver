@@ -125,10 +125,10 @@ public class MongoClient {
     internal var monitoringEventTypes: [MongoEventType]?
 
     /// Encoder whose options are inherited by databases derived from this client.
-    internal let encoder: BSONEncoder
+    public let encoder: BSONEncoder
 
     /// Decoder whose options are inherited by databases derived from this client.
-    internal let decoder: BSONDecoder
+    public let decoder: BSONDecoder
 
     /// The read concern set on this client, or nil if one is not set.
     public var readConcern: ReadConcern? {
