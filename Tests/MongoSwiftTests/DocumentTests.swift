@@ -362,6 +362,11 @@ final class DocumentTests: MongoSwiftTestCase {
                 expect(docFromCB.rawBSON).to(equal(cBData))
 
                 // test round tripping through documents
+                // We create an array by reading every element out of the document (and therefore out of the bson_t)
+                // We then create a new document and append each element of the array to it. Once that is done, every
+                // element in the original document will have gone from bson_t -> Swift data type -> bson_t. At the end,
+                // the new bson_t should be identical to the original one. If not, our bson_t translation layer is
+                // lossy and/or buggy.
                 let testRoundTrip = {
                     let nativeFromDoc = docFromCB.toArray()
                     let docFromNative = Document(fromArray: nativeFromDoc)
