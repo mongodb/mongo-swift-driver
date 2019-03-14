@@ -256,11 +256,11 @@ public class DocumentIterator: IteratorProtocol {
     /// - Throws:
     ///   - `RuntimeError.internalError` if the current value of this `DocumentIterator` cannot be decoded to BSON.
     internal func safeCurrentValue() throws -> BSONValue {
-        guard let curVal = try DocumentIterator.bsonTypeMap[currentType]?.from(iterator: self) else {
+        guard let bsonType = DocumentIterator.bsonTypeMap[currentType] else {
             throw RuntimeError.internalError(message: "Unknown BSONType for iterator's current value.")
         }
 
-        return curVal
+        return try bsonType.from(iterator: self)
     }
 
     // uses an iterator to copy (key, value) pairs of the provided document from range [startIndex, endIndex) into a new
