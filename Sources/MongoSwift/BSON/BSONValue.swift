@@ -1128,8 +1128,6 @@ public struct BSONUndefined: BSONValue, Equatable, Codable {
  * - Returns: `true` if `lhs` is equal to `rhs`, `false` otherwise.
  */
 public func bsonEquals(_ lhs: BSONValue, _ rhs: BSONValue) -> Bool {
-    validateBSONTypes(lhs, rhs)
-
     switch (lhs, rhs) {
     case let (l as Int, r as Int): return l == r
     case let (l as Int32, r as Int32): return l == r
@@ -1174,18 +1172,6 @@ public func bsonEquals(_ lhs: BSONValue?, _ rhs: BSONValue?) -> Bool {
     }
 
     return bsonEquals(left, right)
-}
-
-/// A function for catching invalid BSONTypes that should not ever arise, and triggering a fatalError when it
-/// finds such types.
-private func validateBSONTypes(_ lhs: BSONValue, _ rhs: BSONValue) {
-    let invalidTypes: [BSONType] = [.invalid]
-    guard !invalidTypes.contains(lhs.bsonType) else {
-        fatalError("\(lhs.bsonType) should not be used")
-    }
-    guard !invalidTypes.contains(rhs.bsonType) else {
-        fatalError("\(rhs.bsonType) should not be used")
-    }
 }
 
 /// Error thrown when a BSONValue type introduced by the driver (e.g. ObjectId) is encoded not using BSONEncoder
