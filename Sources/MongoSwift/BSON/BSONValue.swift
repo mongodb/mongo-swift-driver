@@ -1075,7 +1075,7 @@ public struct Timestamp: BSONValue, Equatable, Codable {
 
 /// A struct to represent the deprecated Undefined type.
 /// Undefined instances cannot be created, but they can be read from existing documents that contain them.
-public final class BSONUndefined: BSONValue, Equatable, Codable {
+public struct BSONUndefined: BSONValue, Equatable, Codable {
     public var bsonType: BSONType { return .undefined }
 
     internal init() {}
