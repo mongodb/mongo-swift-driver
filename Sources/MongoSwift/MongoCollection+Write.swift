@@ -21,25 +21,8 @@ extension MongoCollection {
      */
     @discardableResult
     public func insertOne(_ value: CollectionType, options: InsertOneOptions? = nil) throws -> InsertOneResult? {
-        let encoder = BSONEncoder()
-        let document = try encoder.encode(value).withID()
-        let opts = try encoder.encode(options)
-        var error = bson_error_t()
-        let reply = Document()
-        guard mongoc_collection_insert_one(self._collection, document.data, opts?.data, reply.data, &error) else {
-            throw getErrorFromReply(bsonError: error, from: reply)
-        }
-
-        guard isAcknowledged(options?.writeConcern) else {
-            return nil
-        }
-
-        guard let insertedId = try document.getValue(for: "_id") else {
-            // we called `withID()`, so this should be present.
-            fatalError("Failed to get value for _id from document")
-        }
-
-        return InsertOneResult(insertedId: insertedId)
+        let operation = InsertOneOperation(self, value, options)
+        return try operation.execute()
     }
 
     /**
@@ -128,23 +111,8 @@ extension MongoCollection {
      */
     @discardableResult
     public func updateOne(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
-        let encoder = BSONEncoder()
-        let opts = try encoder.encode(options)
-        let reply = Document()
-        var error = bson_error_t()
-        guard mongoc_collection_update_one(
-            self._collection, filter.data, update.data, opts?.data, reply.data, &error) else {
-            throw getErrorFromReply(bsonError: error, from: reply)
-        }
-
-        guard isAcknowledged(options?.writeConcern) else {
-            return nil
-        }
-
-        return try BSONDecoder().internalDecode(
-                UpdateResult.self,
-                from: reply,
-                withError: "Couldn't understand response from the server.")
+        let operation = UpdateOneOperation(self, filter, update, options)
+        return try operation.execute()
     }
 
     /**
@@ -267,7 +235,7 @@ extension MongoCollection {
      *
      * - Returns: Whether the operation will use an acknowledged write concern
      */
-    fileprivate func isAcknowledged(_ writeConcern: WriteConcern?) -> Bool {
+    internal func isAcknowledged(_ writeConcern: WriteConcern?) -> Bool {
         /* If the collection's write concern is also `nil` it is the default. We
          * can safely assume it is acknowledged, since the server requires that
          * getLastErrorDefaults is acknowledged by at least one member. */
@@ -280,21 +248,6 @@ extension MongoCollection {
 }
 
 // Write command options structs
-
-/// Options to use when executing an `insertOne` command on a `MongoCollection`.
-public struct InsertOneOptions: Encodable {
-    /// If true, allows the write to opt-out of document level validation.
-    public let bypassDocumentValidation: Bool?
-
-    /// An optional WriteConcern to use for the command.
-    public let writeConcern: WriteConcern?
-
-    /// Convenience initializer allowing bypassDocumentValidation to be omitted or optional
-    public init(bypassDocumentValidation: Bool? = nil, writeConcern: WriteConcern? = nil) {
-        self.bypassDocumentValidation = bypassDocumentValidation
-        self.writeConcern = writeConcern
-    }
-}
 
 /// Options to use when executing a multi-document insert operation on a `MongoCollection`.
 public struct InsertManyOptions: Encodable {
@@ -392,13 +345,6 @@ public struct DeleteOptions: Encodable {
 }
 
 // Write command results structs
-
-/// The result of an `insertOne` command on a `MongoCollection`.
-public struct InsertOneResult {
-    /// The identifier that was inserted. If the document doesn't have an identifier, this value
-    /// will be generated and added to the document before insertion.
-    public let insertedId: BSONValue
-}
 
 /// The result of a multi-document insert operation on a `MongoCollection`.
 public struct InsertManyResult {
