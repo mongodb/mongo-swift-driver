@@ -24,25 +24,29 @@ public struct InsertOneResult {
 }
 
 internal struct InsertOneOperation<CollectionType: Codable>: Operation {
+    internal var ns: MongoNamespace
     internal var value: CollectionType
     internal var options: InsertOneOptions?
     internal var collection: MongoCollection<CollectionType>
 
-    public init(_ collection: MongoCollection<CollectionType>,
+    public init(ns: MongoNamespace,
+                _ collection: MongoCollection<CollectionType>,
                 _ value: CollectionType,
                 _ options: InsertOneOptions? = nil) {
+        self.ns = ns
         self.value = value
         self.options = options
         self.collection = collection
     }
 
-    public func execute() throws -> InsertOneResult? {
+    public func execute(client: OpaquePointer) throws -> InsertOneResult? {
         let encoder = BSONEncoder()
         let document = try encoder.encode(value).withID()
         let opts = try encoder.encode(options)
         var error = bson_error_t()
         let reply = Document()
-        let collection = self.collection._collection
+
+        let collection = mongoc_client_get_collection(client, self.ns.db, self.ns.collection!)
         guard mongoc_collection_insert_one(collection, document.data, opts?.data, reply.data, &error) else {
             throw getErrorFromReply(bsonError: error, from: reply)
         }

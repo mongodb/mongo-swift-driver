@@ -4,6 +4,7 @@ import mongoc
 public class MongoCollection<T: Codable> {
     internal var _collection: OpaquePointer?
     internal var _client: MongoClient
+    internal var _dbName: String
 
     /// A `Codable` type associated with this `MongoCollection` instance.
     /// This allows `CollectionType` values to be directly inserted into and
@@ -18,6 +19,11 @@ public class MongoCollection<T: Codable> {
     /// The name of this collection.
     public var name: String {
         return String(cString: mongoc_collection_get_name(self._collection))
+    }
+
+    /// The qualified namespace for this collection
+    internal var namespace: MongoNamespace {
+        return MongoNamespace(self._dbName, self.name)
     }
 
     /// The `ReadConcern` set on this collection, or `nil` if one is not set.
@@ -40,9 +46,10 @@ public class MongoCollection<T: Codable> {
     }
 
     /// Initializes a new `MongoCollection` instance, not meant to be instantiated directly
-    internal init(fromCollection: OpaquePointer, withClient: MongoClient) {
+    internal init(fromCollection: OpaquePointer, withClient: MongoClient, withDbName: String) {
         self._collection = fromCollection
         self._client = withClient
+        self._dbName = withDbName
     }
 
     /// Deinitializes a `MongoCollection`, cleaning up the internal `mongoc_collection_t`

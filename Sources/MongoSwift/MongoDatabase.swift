@@ -244,7 +244,7 @@ public class MongoDatabase {
             mongoc_collection_set_write_concern(collection, wc._writeConcern)
         }
 
-        return MongoCollection(fromCollection: collection, withClient: self._client)
+        return MongoCollection(fromCollection: collection, withClient: self._client, withDbName: self.name)
     }
 
     /**
@@ -289,7 +289,7 @@ public class MongoDatabase {
             throw parseMongocError(error)
         }
 
-        return MongoCollection(fromCollection: collection, withClient: self._client)
+        return MongoCollection(fromCollection: collection, withClient: self._client, withDbName: self.name)
     }
 
     /**
