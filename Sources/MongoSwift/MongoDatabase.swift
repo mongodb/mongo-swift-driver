@@ -151,10 +151,11 @@ public struct CollectionOptions {
 public class MongoDatabase {
     private var _database: OpaquePointer?
     private var _client: MongoClient
+    internal let namespace: MongoNamespace
 
     /// The name of this database.
     public var name: String {
-        return String(cString: mongoc_database_get_name(self._database))
+        return self.namespace.db
     }
 
     /// The `ReadConcern` set on this database, or `nil` if one is not set.
@@ -180,6 +181,7 @@ public class MongoDatabase {
     internal init(fromDatabase: OpaquePointer, withClient: MongoClient) {
         self._database = fromDatabase
         self._client = withClient
+        self.namespace = MongoNamespace(String(cString: mongoc_database_get_name(fromDatabase)))
     }
 
     /// Deinitializes a MongoDatabase, cleaning up the internal `mongoc_database_t`.

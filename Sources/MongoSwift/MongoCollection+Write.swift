@@ -22,7 +22,7 @@ extension MongoCollection {
     @discardableResult
     public func insertOne(_ value: CollectionType, options: InsertOneOptions? = nil) throws -> InsertOneResult? {
         let operation = InsertOneOperation(ns: self.namespace, self, value, options)
-        return try executeOperation(operation, withClient: self._client._client!)
+        return try executeOperation(operation, withClient: self._client)
     }
 
     /**
@@ -112,7 +112,7 @@ extension MongoCollection {
     @discardableResult
     public func updateOne(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
         let operation = UpdateOneOperation(ns: self.namespace, self, filter, update, options)
-        return try executeOperation(operation, withClient: self._client._client!)
+        return try executeOperation(operation, withClient: self._client)
     }
 
     /**

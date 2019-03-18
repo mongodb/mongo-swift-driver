@@ -504,7 +504,7 @@ public enum MongoEventType {
     case serverMonitoring
 }
 
-/// An extension of MongoClient to add monitoring capability for commands and server discovery and monitoring.
+/// An extension of MongoClient to add monitoring capability for commands and server discovery and moni toring.
 extension MongoClient {
     /// Internal function to install all monitoring callbacks for tbis client. This is used if the MongoClient
     /// is initialized with eventMonitoring = true
@@ -522,9 +522,17 @@ extension MongoClient {
         mongoc_apm_set_server_heartbeat_started_cb(callbacks, serverHeartbeatStarted)
         mongoc_apm_set_server_heartbeat_succeeded_cb(callbacks, serverHeartbeatSucceeded)
         mongoc_apm_set_server_heartbeat_failed_cb(callbacks, serverHeartbeatFailed)
-        // we can pass this as unretained because the callbacks are stored on the mongoc_client_t, so
-        // if the callback is being executed, the client must still be valid
-        mongoc_client_set_apm_callbacks(self._client, callbacks, Unmanaged.passUnretained(self).toOpaque())
+
+        if let pool = self._pool {
+            // we can pass this as unretained because the callbacks are stored on the mongoc_client_t, so
+            // if the callback is being executed, the client must still be valid
+            mongoc_client_pool_set_apm_callbacks(pool, callbacks, Unmanaged.passUnretained(self).toOpaque())
+        } else {
+            // we can pass this as unretained because the callbacks are stored on the mongoc_client_t, so
+            // if the callback is being executed, the client must still be valid
+            mongoc_client_set_apm_callbacks(self._client, callbacks, Unmanaged.passUnretained(self).toOpaque())
+        }
+
         mongoc_apm_callbacks_destroy(callbacks)
     }
 

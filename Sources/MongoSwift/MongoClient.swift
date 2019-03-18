@@ -81,6 +81,7 @@ public struct DatabaseOptions {
 /// A MongoDB Client.
 public class MongoClient {
     internal var _client: OpaquePointer?
+    internal var _pool: OpaquePointer?
 
     /// If command and/or server monitoring is enabled, stores the NotificationCenter events are posted to.
     internal var notificationCenter: NotificationCenter?
@@ -132,7 +133,18 @@ public class MongoClient {
             mongoc_uri_set_option_as_bool(uri, MONGOC_URI_RETRYWRITES, rw)
         }
 
-        self._client = mongoc_client_new_from_uri(uri)
+        self._pool = mongoc_client_pool_new(uri)
+        guard self._pool != nil else {
+            fatalError("Could not create a connection pool")
+        }
+
+        guard mongoc_client_pool_set_error_api(self._pool, MONGOC_ERROR_API_VERSION_2) else {
+            throw RuntimeError.internalError(message: "Could not configure error handling on client pool")
+        }
+
+        if options?.eventMonitoring == true { self.initializeMonitoring() }
+
+        self._client = mongoc_client_pool_pop(self._pool)
         guard self._client != nil else {
             throw UserError.invalidArgumentError(message: "libmongoc not built with TLS support")
         }
@@ -150,13 +162,6 @@ public class MongoClient {
         // if a writeConcern is provided, set it on the client
         if let wc = options?.writeConcern {
             mongoc_client_set_write_concern(self._client, wc._writeConcern)
-        }
-
-        if options?.eventMonitoring == true { self.initializeMonitoring() }
-
-        guard mongoc_client_set_error_api(self._client, MONGOC_ERROR_API_VERSION_2) else {
-            self.close()
-            throw RuntimeError.internalError(message: "Could not configure error handling on client")
         }
     }
 
@@ -209,8 +214,17 @@ public class MongoClient {
         // this is defined in the APM extension to Client
         self.disableMonitoring()
 
-        mongoc_client_destroy(client)
-        self._client = nil
+        // if we are in pooled mode, we have sightly different close semantics
+        if let pool = self._pool {
+            mongoc_client_pool_push(self._client, self._pool)
+            self._client = nil
+
+            mongoc_client_pool_destroy(pool)
+            self._pool = nil
+        } else {
+            mongoc_client_destroy(client)
+            self._client = nil
+        }
     }
 
     /**
