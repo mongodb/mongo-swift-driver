@@ -407,8 +407,18 @@ public struct DBPointer: BSONValue, Codable, Equatable {
 }
 
 /// A struct to represent the BSON Decimal128 type.
-public struct Decimal128: BSONValue, Equatable, Codable {
+public struct Decimal128: BSONValue, Equatable, Codable, CustomStringConvertible {
     public var bsonType: BSONType { return .decimal128 }
+
+    public var description: String {
+        // TODO: avoid this copy via withUnsafePointer once swift 4.1 support is dropped (SWIFT-284)
+        var copy = self.decimal128
+        var str = Data(count: Int(BSON_DECIMAL128_STRING))
+        return str.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<Int8>) in
+            bson_decimal128_to_string(&copy, bytes)
+            return String(cString: bytes)
+        }
+    }
 
     internal var decimal128: bson_decimal128_t
 
