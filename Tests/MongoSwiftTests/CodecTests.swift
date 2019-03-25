@@ -353,6 +353,32 @@ final class CodecTests: MongoSwiftTestCase {
                     undefined: BSONUndefined(),
                     dbpointer: DBPointer(ref: "some.namespace", id: ObjectId(fromString: "507f1f77bcf86cd799439011")))
         }
+
+        // Manually construct a document from this instance for comparision with encoder output.
+        public func toDocument() -> Document {
+            return [
+                "double": self.double,
+                "string": self.string,
+                "doc": self.doc,
+                "arr": self.arr,
+                "binary": self.binary,
+                "oid": self.oid,
+                "bool": self.bool,
+                "date": self.date,
+                "code": self.code,
+                "int": self.int,
+                "ts": self.ts,
+                "int32": self.int32,
+                "int64": self.int64,
+                "dec": self.dec,
+                "minkey": self.minkey,
+                "maxkey": self.maxkey,
+                "regex": self.regex,
+                "symbol": self.symbol,
+                "undefined": self.undefined,
+                "dbpointer": self.dbpointer,
+            ]
+        }
     }
 
     /// Test decoding/encoding to all possible BSON types
@@ -361,28 +387,7 @@ final class CodecTests: MongoSwiftTestCase {
 
         let decoder = BSONDecoder()
 
-        let doc: Document = [
-            "double": Double(2),
-            "string": "hi",
-            "doc": ["x": 1] as Document,
-            "arr": [1, 2],
-            "binary": try Binary(base64: "//8=", subtype: .generic),
-            "oid": ObjectId(fromString: "507f1f77bcf86cd799439011"),
-            "bool": true,
-            "date": Date(timeIntervalSinceReferenceDate: 5000),
-            "code": CodeWithScope(code: "hi", scope: ["x": 1]),
-            "int": 1,
-            "ts": Timestamp(timestamp: 1, inc: 2),
-            "int32": 5,
-            "int64": Int64(6),
-            "dec": Decimal128("1.2E+10")!,
-            "minkey": MinKey(),
-            "maxkey": MaxKey(),
-            "regex": RegularExpression(pattern: "^abc", options: "imx"),
-            "symbol": expected.symbol,
-            "undefined": expected.undefined,
-            "dbpointer": expected.dbpointer
-        ]
+        let doc = expected.toDocument()
 
         let res = try decoder.decode(AllBSONTypes.self, from: doc)
         expect(res).to(equal(expected))
