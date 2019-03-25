@@ -257,7 +257,9 @@ public class DocumentIterator: IteratorProtocol {
     ///   - `RuntimeError.internalError` if the current value of this `DocumentIterator` cannot be decoded to BSON.
     internal func safeCurrentValue() throws -> BSONValue {
         guard let bsonType = DocumentIterator.bsonTypeMap[currentType] else {
-            throw RuntimeError.internalError(message: "Unknown BSONType for iterator's current value.")
+            throw RuntimeError.internalError(
+                    message: "Unknown BSONType for iterator's current value with type: \(currentType)"
+            )
         }
 
         return try bsonType.from(iterator: self)
