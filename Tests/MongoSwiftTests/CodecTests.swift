@@ -376,7 +376,7 @@ final class CodecTests: MongoSwiftTestCase {
                 "regex": self.regex,
                 "symbol": self.symbol,
                 "undefined": self.undefined,
-                "dbpointer": self.dbpointer,
+                "dbpointer": self.dbpointer
             ]
         }
     }
