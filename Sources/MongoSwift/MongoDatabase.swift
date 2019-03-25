@@ -51,7 +51,7 @@ public struct ListCollectionsOptions: Encodable {
 }
 
 /// Options to use when executing a `createCollection` command on a `MongoDatabase`.
-public struct CreateCollectionOptions: Encodable, CodingStrategyOptions {
+public struct CreateCollectionOptions: Encodable, CodingStrategyProvider {
     /// Indicates whether this will be a capped collection
     public let capped: Bool?
 
@@ -150,7 +150,7 @@ public struct CreateCollectionOptions: Encodable, CodingStrategyOptions {
 }
 
 /// Options to set on a retrieved `MongoCollection`.
-public struct CollectionOptions: CodingStrategyOptions {
+public struct CollectionOptions: CodingStrategyProvider {
     /// A read concern to set on the returned collection. If one is not specified,
     /// the collection will inherit the database's read concern.
     public let readConcern: ReadConcern?
@@ -231,14 +231,14 @@ public class MongoDatabase {
     }
 
     /// Initializes a new `MongoDatabase` instance, not meant to be instantiated directly.
-    internal init(fromDatabase: OpaquePointer,
-                  withClient: MongoClient,
-                  withEncoder: BSONEncoder,
-                  withDecoder: BSONDecoder) {
-        self._database = fromDatabase
-        self._client = withClient
-        self.encoder = withEncoder
-        self.decoder = withDecoder
+    internal init(fromDatabase database: OpaquePointer,
+                  withClient client: MongoClient,
+                  withEncoder encoder: BSONEncoder,
+                  withDecoder decoder: BSONDecoder) {
+        self._database = database
+        self._client = client
+        self.encoder = encoder
+        self.decoder = decoder
     }
 
     /// Deinitializes a MongoDatabase, cleaning up the internal `mongoc_database_t`.

@@ -1,7 +1,7 @@
 import Foundation
 
 /// Protocol indicating a set of options can be used to configure `BSONEncoder` and `BSONDecoder`.
-public protocol CodingStrategyOptions {
+public protocol CodingStrategyProvider {
     /// Specifies the strategy to use when converting `Date`s between their BSON representations and their
     /// representations in (non `Document`) `Codable` types.
     var dateCodingStrategy: DateCodingStrategy? { get }
@@ -16,7 +16,7 @@ public protocol CodingStrategyOptions {
 }
 
 /// Options struct used for configuring the coding strategies on `BSONEncoder` and `BSONDecoder`.
-public struct BSONCoderOptions: CodingStrategyOptions {
+public struct BSONCoderOptions: CodingStrategyProvider {
     public var dateCodingStrategy: DateCodingStrategy?
 
     public var uuidCodingStrategy: UUIDCodingStrategy?

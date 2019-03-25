@@ -2,7 +2,7 @@ import Foundation
 import mongoc
 
 /// Options to use when creating a `MongoClient`.
-public struct ClientOptions: CodingStrategyOptions {
+public struct ClientOptions: CodingStrategyProvider {
     /// Determines whether the client should retry supported write operations
     public let retryWrites: Bool?
 
@@ -73,7 +73,7 @@ public struct ListDatabasesOptions: Encodable {
 }
 
 /// Options to use when retrieving a `MongoDatabase` from a `MongoClient`.
-public struct DatabaseOptions: CodingStrategyOptions {
+public struct DatabaseOptions: CodingStrategyProvider {
     /// A read concern to set on the retrieved database. If one is not specified,
     /// the database will inherit the client's read concern.
     public let readConcern: ReadConcern?
