@@ -7,10 +7,6 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         continueAfterFailure = false
     }
 
-    struct A: Decodable {
-        let a: ObjectId
-    }
-
     func testMongoDatabase() throws {
         let client = try MongoClient(MongoSwiftTestCase.connStr)
         let db = client.db(type(of: self).testDatabase)
