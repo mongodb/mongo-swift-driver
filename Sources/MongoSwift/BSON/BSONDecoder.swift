@@ -113,7 +113,8 @@ public class BSONDecoder {
         self.configureWithOptions(options: options)
     }
 
-    /// Initializes `self` by copying the options of another `BSONDecoder`.
+    /// Initializes `self` by using the options of another `BSONDecoder` and the provided options, with preference
+    /// going to the provided options in the case of conflicts.
     internal init(copies other: BSONDecoder, options: CodingStrategyProvider?) {
         self.userInfo = other.userInfo
         self.dateDecodingStrategy = other.dateDecodingStrategy

@@ -114,7 +114,8 @@ public class BSONEncoder {
         self.configureWithOptions(options: options)
     }
 
-    /// Initializes `self` by copying the options of another `BSONEncoder`.
+    /// Initializes `self` by using the options of another `BSONEncoder` and the provided options, with preference
+    /// going to the provided options in the case of conflicts.
     internal init(copies other: BSONEncoder, options: CodingStrategyProvider?) {
         self.userInfo = other.userInfo
         self.dateEncodingStrategy = other.dateEncodingStrategy
