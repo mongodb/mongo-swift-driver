@@ -29,10 +29,6 @@ public class DocumentStorage {
     }
 }
 
-// The attribute @dynamicMemberLookup must immediately precede the type declaration. Since Swift doesn't have a real
-// preprocessor, we can't just conditionally apply the attribute (the #endif between the attribute and the type
-// declaration is apparently a problem) and have to conditionally declare the entire struct.
-#if swift(>=4.2)
 /// A struct representing the BSON document type.
 @dynamicMemberLookup
 public struct Document {
@@ -42,16 +38,6 @@ public struct Document {
     /// Returns the number of (key, value) pairs stored at the top level of this `Document`.
     public var count: Int
 }
-#else
-/// A struct representing the BSON document type.
-public struct Document {
-    /// the storage backing this document
-    internal var storage: DocumentStorage
-
-    /// Returns the number of (key, value) pairs stored at the top level of this `Document`.
-    public var count: Int
-}
-#endif
 
 /// An extension of `Document` containing its private/internal functionality.
 extension Document {

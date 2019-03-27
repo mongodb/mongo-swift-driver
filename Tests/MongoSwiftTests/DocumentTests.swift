@@ -147,7 +147,6 @@ final class DocumentTests: MongoSwiftTestCase {
     }
 
     func testDocumentDynamicMemberLookup() throws {
-#if swift(>=4.2)
         // Test reading various types
         expect(DocumentTests.testDoc.string).to(bsonEqual("test string"))
         expect(DocumentTests.testDoc.true).to(bsonEqual(true))
@@ -206,7 +205,6 @@ final class DocumentTests: MongoSwiftTestCase {
 
         expect(doc.a).to(bsonEqual(2))
         expect(doc.b).to(bsonEqual("different"))
-#endif
     }
 
     func testDocumentFromArray() {
