@@ -267,7 +267,7 @@ internal func bsonEqual(_ expectedValue: BSONValue?) -> Predicate<BSONValue> {
         case (nil, nil), (_, nil):
             return PredicateResult(status: .fail, message: msg)
         case let (expected?, actual?):
-            let matches = bsonEquals(expected, actual)
+            let matches = expected.bsonEquals(actual)
             return PredicateResult(bool: matches, message: msg)
         }
     }

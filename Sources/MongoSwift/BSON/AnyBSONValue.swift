@@ -63,7 +63,7 @@ public struct AnyBSONValue: Codable, Equatable, Hashable {
     }
 
     public static func == (lhs: AnyBSONValue, rhs: AnyBSONValue) -> Bool {
-        return bsonEquals(lhs.value, rhs.value)
+        return lhs.value.bsonEquals(rhs.value)
     }
 
     /**
