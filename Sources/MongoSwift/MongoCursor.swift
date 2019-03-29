@@ -16,10 +16,12 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
      *   - `UserError.invalidArgumentError` if the options passed to the command that generated this cursor formed an
      *     invalid combination.
      */
-    internal init(fromCursor: OpaquePointer, withClient: MongoClient, withDecoder: BSONDecoder) throws {
-        self._cursor = fromCursor
-        self._client = withClient
-        self.decoder = withDecoder
+    internal init(fromCursor cursor: OpaquePointer,
+                  withClient client: MongoClient,
+                  withDecoder decoder: BSONDecoder) throws {
+        self._cursor = cursor
+        self._client = client
+        self.decoder = decoder
 
         if let err = self.error {
             // Need to explicitly close since deinit will not execute if we throw.
