@@ -159,7 +159,7 @@ public class WriteConcern: Codable {
         try container.encodeIfPresent(self.journal, forKey: .j)
     }
 
-    /// /// Cleans up the internal `mongoc_write_concern_t`.
+    /// Cleans up internal state.
     deinit {
         guard let writeConcern = self._writeConcern else {
             return

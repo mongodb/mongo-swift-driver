@@ -45,7 +45,7 @@ public class MongoCollection<T: Codable> {
         self._client = withClient
     }
 
-    /// Deinitializes a `MongoCollection`, cleaning up the internal `mongoc_collection_t`
+    /// Cleans up internal state.
     deinit {
         guard let collection = self._collection else {
             return

@@ -182,7 +182,7 @@ public class MongoDatabase {
         self._client = withClient
     }
 
-    /// Deinitializes a MongoDatabase, cleaning up the internal `mongoc_database_t`.
+    /// Cleans up internal state.
     deinit {
         guard let database = self._database else {
             return

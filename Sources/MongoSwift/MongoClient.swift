@@ -179,9 +179,7 @@ public class MongoClient {
         mongoc_client_set_error_api(self._client, MONGOC_ERROR_API_VERSION_2)
     }
 
-    /**
-     * Cleans up the internal `mongoc_client_t`.
-     */
+    /// Cleans up internal state.
     deinit {
         close()
     }

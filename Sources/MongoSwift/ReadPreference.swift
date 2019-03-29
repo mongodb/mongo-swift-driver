@@ -144,7 +144,7 @@ public final class ReadPreference {
         self._readPreference = mongoc_read_prefs_copy(readPreference)
     }
 
-    /// Cleans up the internal `mongoc_read_prefs_t`.
+    /// Cleans up internal state.
     deinit {
         guard let readPreference = self._readPreference else {
             return
