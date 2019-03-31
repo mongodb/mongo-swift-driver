@@ -154,7 +154,7 @@ extension Document: Sequence {
 }
 
 extension Document {
-    // this is an alternative to the built-in `Document.filter` that returns an `[KeyValuePair]`. 
+    // this is an alternative to the built-in `Document.filter` that returns an `[KeyValuePair]`.
     // this variant is called by default, but the other is still accessible by explicitly stating
     // return type: `let newDocPairs: [Document.KeyValuePair] = newDoc.filter { ... }`
     /**
@@ -177,20 +177,29 @@ extension Document {
     }
 }
 
+internal func asOpaquePointer(_ i: UnsafePointer<bson_iter_t>?) -> OpaquePointer? {
+    return OpaquePointer(i)
+}
+
+internal typealias BsonIterPointer = OpaquePointer?
+
 /// An iterator over the values in a `Document`.
 public class DocumentIterator: IteratorProtocol {
     /// the libbson iterator. it must be a `var` because we use it as
     /// an inout argument
-    internal var iter: bson_iter_t
+    internal var pointer: bson_iter_t
     /// a reference to the storage for the document we're iterating
     internal let storage: DocumentStorage
+    internal let iter: BsonIterPointer
 
     /// Initializes a new iterator over the contents of `doc`. Returns `nil` if the key is not
     /// found, or if an iterator cannot be created over `doc` due to an error from e.g. corrupt data.
     internal init?(forDocument doc: Document) {
-        self.iter = bson_iter_t()
+        self.pointer = bson_iter_t()
         self.storage = doc.storage
-        guard bson_iter_init(&self.iter, doc.data) else {
+        self.iter = asOpaquePointer(&self.pointer)
+
+        guard bson_iter_init(self.iter, doc.data) else {
             return nil
         }
     }
@@ -198,9 +207,11 @@ public class DocumentIterator: IteratorProtocol {
     /// Initializes a new iterator over the contents of `doc`. Returns `nil` if an iterator cannot
     /// be created over `doc` due to an error from e.g. corrupt data, or if the key is not found.
     internal init?(forDocument doc: Document, advancedTo key: String) {
-        self.iter = bson_iter_t()
+        self.pointer = bson_iter_t()
         self.storage = doc.storage
-        guard bson_iter_init_find(&iter, doc.data, key.cString(using: .utf8)) else {
+        self.iter = asOpaquePointer(&self.pointer)
+
+        guard bson_iter_init_find(self.iter, doc.data, key.cString(using: .utf8)) else {
             return nil
         }
     }
@@ -208,17 +219,17 @@ public class DocumentIterator: IteratorProtocol {
     /// Advances the iterator forward one value. Returns false if there is an error moving forward
     /// or if at the end of the document. Returns true otherwise.
     internal func advance() -> Bool {
-        return bson_iter_next(&self.iter)
+        return bson_iter_next(self.iter)
     }
 
     /// Moves the iterator to the specified key. Returns false if the key does not exist. Returns true otherwise.
     internal func move(to key: String) -> Bool {
-        return bson_iter_find(&self.iter, key.cString(using: .utf8))
+        return bson_iter_find(self.iter, key.cString(using: .utf8))
     }
 
     /// Returns the current key. Assumes the iterator is in a valid position.
     internal var currentKey: String {
-        return String(cString: bson_iter_key(&self.iter))
+        return String(cString: bson_iter_key(self.iter))
     }
 
     /// Returns the current value. Assumes the iterator is in a valid position.
@@ -232,7 +243,7 @@ public class DocumentIterator: IteratorProtocol {
 
     /// Returns the current value's type. Assumes the iterator is in a valid position.
     internal var currentType: BSONType {
-        return BSONType(rawValue: bson_iter_type(&self.iter).rawValue) ?? .invalid
+        return BSONType(rawValue: bson_iter_type(self.iter).rawValue) ?? .invalid
     }
 
     /// Returns the keys from the iterator's current position to the end. The iterator

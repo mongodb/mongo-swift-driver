@@ -94,7 +94,7 @@ extension Array: BSONValue {
             array.deinitialize(count: 1)
             array.deallocate()
         }
-        bson_iter_array(&iter.iter, &length, array)
+        bson_iter_array(iter.iter, &length, array)
 
         // since an array is a nested object with keys '0', '1', etc.,
         // create a new Document using the array data so we can recursively parse
@@ -282,7 +282,7 @@ public struct Binary: BSONValue, Equatable, Codable {
             throw wrongIterTypeError(iter, expected: Binary.self)
         }
 
-        bson_iter_binary(&iter.iter, &subtype, &length, dataPointer)
+        bson_iter_binary(iter.iter, &subtype, &length, dataPointer)
 
         guard let data = dataPointer.pointee else {
             throw RuntimeError.internalError(message: "failed to retrieve data stored for binary BSON value")
@@ -312,7 +312,7 @@ extension Bool: BSONValue {
             throw wrongIterTypeError(iter, expected: Bool.self)
         }
 
-        return self.init(bson_iter_bool(&iter.iter))
+        return self.init(bson_iter_bool(iter.iter))
     }
 }
 
@@ -340,7 +340,7 @@ extension Date: BSONValue {
             throw wrongIterTypeError(iter, expected: Date.self)
         }
 
-        return self.init(msSinceEpoch: bson_iter_date_time(&iter.iter))
+        return self.init(msSinceEpoch: bson_iter_date_time(iter.iter))
     }
 }
 
@@ -376,7 +376,7 @@ internal struct DBPointer: BSONValue {
             oidPP.deallocate()
         }
 
-        bson_iter_dbpointer(&iter.iter, &length, collectionPP, oidPP)
+        bson_iter_dbpointer(iter.iter, &length, collectionPP, oidPP)
 
         guard let oidP = oidPP.pointee, let collectionP = collectionPP.pointee else {
             throw wrongIterTypeError(iter, expected: DBPointer.self)
@@ -451,7 +451,7 @@ public struct Decimal128: BSONValue, Equatable, Codable {
 
     public static func from(iterator iter: DocumentIterator) throws -> Decimal128 {
         var value = bson_decimal128_t()
-        guard bson_iter_decimal128(&iter.iter, &value) else {
+        guard bson_iter_decimal128(iter.iter, &value) else {
             throw wrongIterTypeError(iter, expected: Decimal128.self)
         }
 
@@ -478,7 +478,7 @@ extension Double: BSONValue {
             throw wrongIterTypeError(iter, expected: Double.self)
         }
 
-        return self.init(bson_iter_double(&iter.iter))
+        return self.init(bson_iter_double(iter.iter))
     }
 }
 
@@ -505,7 +505,7 @@ extension Int: BSONValue {
         // TODO: handle this more gracefully (SWIFT-221)
         switch iter.currentType {
         case .int32, .int64:
-            return self.init(Int(bson_iter_int32(&iter.iter)))
+            return self.init(Int(bson_iter_int32(iter.iter)))
         default:
             throw wrongIterTypeError(iter, expected: Int.self)
         }
@@ -526,7 +526,7 @@ extension Int32: BSONValue {
         guard iter.currentType == .int32 else {
             throw wrongIterTypeError(iter, expected: Int32.self)
         }
-        return self.init(bson_iter_int32(&iter.iter))
+        return self.init(bson_iter_int32(iter.iter))
     }
 }
 
@@ -544,7 +544,7 @@ extension Int64: BSONValue {
         guard iter.currentType == .int64 else {
             throw wrongIterTypeError(iter, expected: Int64.self)
         }
-        return self.init(bson_iter_int64(&iter.iter))
+        return self.init(bson_iter_int64(iter.iter))
     }
 }
 
@@ -593,7 +593,7 @@ public struct CodeWithScope: BSONValue, Equatable, Codable {
         var length: UInt32 = 0
 
         if iter.currentType.rawValue == BSONType.javascript.rawValue {
-            let code = String(cString: bson_iter_code(&iter.iter, &length))
+            let code = String(cString: bson_iter_code(iter.iter, &length))
             return self.init(code: code)
         }
 
@@ -608,7 +608,7 @@ public struct CodeWithScope: BSONValue, Equatable, Codable {
             scopePointer.deallocate()
         }
 
-        let code = String(cString: bson_iter_codewscope(&iter.iter, &length, &scopeLength, scopePointer))
+        let code = String(cString: bson_iter_codewscope(iter.iter, &length, &scopeLength, scopePointer))
         guard let scopeData = bson_new_from_data(scopePointer.pointee, Int(scopeLength)) else {
             throw RuntimeError.internalError(message: "Failed to create a bson_t from scope data")
         }
@@ -775,7 +775,7 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> ObjectId {
-        guard let oid = bson_iter_oid(&iter.iter) else {
+        guard let oid = bson_iter_oid(iter.iter) else {
             throw wrongIterTypeError(iter, expected: ObjectId.self)
         }
         return self.init(fromPointer: oid)
@@ -900,7 +900,7 @@ public struct RegularExpression: BSONValue, Equatable, Codable {
             options.deallocate()
         }
 
-        guard let pattern = bson_iter_regex(&iter.iter, options) else {
+        guard let pattern = bson_iter_regex(iter.iter, options) else {
             throw wrongIterTypeError(iter, expected: RegularExpression.self)
         }
         let patternString = String(cString: pattern)
@@ -931,7 +931,7 @@ extension String: BSONValue {
 
     public static func from(iterator iter: DocumentIterator) throws -> String {
         var length: UInt32 = 0
-        guard iter.currentType == .string, let strValue = bson_iter_utf8(&iter.iter, &length) else {
+        guard iter.currentType == .string, let strValue = bson_iter_utf8(iter.iter, &length) else {
            throw wrongIterTypeError(iter, expected: String.self)
         }
 
@@ -975,7 +975,7 @@ internal struct Symbol: BSONValue {
     ///   - `UserError.logicError` if the current type of the `DocumentIterator` does not correspond to `Symbol`.
     internal static func asString(from iter: DocumentIterator) throws -> String {
         var length: UInt32 = 0
-        guard iter.currentType == .symbol, let strValue = bson_iter_symbol(&iter.iter, &length) else {
+        guard iter.currentType == .symbol, let strValue = bson_iter_symbol(iter.iter, &length) else {
             throw wrongIterTypeError(iter, expected: Symbol.self)
         }
         return String(cString: strValue)
@@ -1028,7 +1028,7 @@ public struct Timestamp: BSONValue, Equatable, Codable {
         var t: UInt32 = 0
         var i: UInt32 = 0
 
-        bson_iter_timestamp(&iter.iter, &t, &i)
+        bson_iter_timestamp(iter.iter, &t, &i)
 
         return self.init(timestamp: t, inc: i)
     }
