@@ -73,7 +73,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
             return err
         }
 
-        var replyPtr = UnsafeMutablePointer<UnsafePointer<bson_t>?>.allocate(capacity: 1)
+        var replyPtr = UnsafeMutablePointer<BsonPointer>.allocate(capacity: 1)
         defer { replyPtr.deallocate() }
 
         var error = bson_error_t()
@@ -101,14 +101,11 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
             return nil
         }
 
-        let out = UnsafeMutablePointer<UnsafePointer<bson_t>?>.allocate(capacity: 1)
-        defer {
-            out.deinitialize(count: 1)
-            out.deallocate()
-        }
+        let out = UnsafeMutablePointer<BsonPointer>.allocate(capacity: 1)
         guard mongoc_cursor_next(self._cursor, out) else {
             return nil
         }
+
         // swiftlint:disable:next force_unwrapping - if mongoc_cursor_next returned `true`, this is filled out.
         let doc = Document(fromPointer: out.pointee!)
 

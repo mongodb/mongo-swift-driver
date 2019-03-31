@@ -1,9 +1,11 @@
 import bson
 import Foundation
 
+internal typealias BsonPointer = OpaquePointer?
+
 /// The storage backing a MongoSwift `Document`.
 public class DocumentStorage {
-    internal var pointer: UnsafeMutablePointer<bson_t>!
+    internal var pointer: BsonPointer
 
     // Normally, this would go under Document, but computed properties cannot be used before all stored properties are
     // initialized. Putting this under DocumentStorage gives a correct count and use of it inside of an init() as long
@@ -16,7 +18,7 @@ public class DocumentStorage {
         self.pointer = bson_new()
     }
 
-    internal init(fromPointer pointer: UnsafePointer<bson_t>) {
+    internal init(fromPointer pointer: BsonPointer) {
         self.pointer = bson_copy(pointer)
     }
 
@@ -24,6 +26,7 @@ public class DocumentStorage {
         guard let pointer = self.pointer else {
             return
         }
+
         bson_destroy(pointer)
         self.pointer = nil
     }
@@ -56,7 +59,7 @@ public struct Document {
 /// An extension of `Document` containing its private/internal functionality.
 extension Document {
     /// direct access to the storage's pointer to a bson_t
-    internal var data: UnsafeMutablePointer<bson_t>! {
+    internal var data: BsonPointer {
         return storage.pointer
     }
 
@@ -66,11 +69,11 @@ extension Document {
      * memory.
      *
      * - Parameters:
-     *   - fromPointer: a UnsafePointer<bson_t>
+     *   - fromPointer: a BsonPointer
      *
      * - Returns: a new `Document`
      */
-    internal init(fromPointer pointer: UnsafePointer<bson_t>) {
+    internal init(fromPointer pointer: BsonPointer) {
         self.storage = DocumentStorage(fromPointer: pointer)
         self.count = self.storage.count
     }
@@ -289,7 +292,7 @@ extension Document {
     public var rawBSON: Data {
         // swiftlint:disable:next force_unwrapping - documented as always returning a value.
         let data = bson_get_data(self.data)!
-        let length = self.data.pointee.len
+        let length = bson_get_len(self.data)
         return Data(bytes: data, count: Int(length))
     }
 
@@ -320,7 +323,7 @@ extension Document {
                 throw RuntimeError.internalError(message: toErrorString(error))
             }
 
-            return UnsafePointer(bson)
+            return bson
         })
         self.count = self.storage.count
     }
@@ -437,7 +440,7 @@ extension Document: BSONValue {
             document.deallocate()
         }
 
-        bson_iter_document(&iter.iter, &length, document)
+        bson_iter_document(iter.iter, &length, document)
 
         guard let docData = bson_new_from_data(document.pointee, Int(length)) else {
             throw RuntimeError.internalError(message: "Failed to create a Document from iterator")
