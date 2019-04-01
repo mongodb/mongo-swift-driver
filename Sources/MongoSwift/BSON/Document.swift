@@ -258,6 +258,10 @@ extension Document {
             return ""
         }
 
+        defer {
+            bson_free(json)
+        }
+
         return String(cString: json)
     }
 
@@ -266,6 +270,10 @@ extension Document {
     public var canonicalExtendedJSON: String {
         guard let json = bson_as_canonical_extended_json(self.data, nil) else {
             return ""
+        }
+
+        defer {
+            bson_free(json)
         }
 
         return String(cString: json)
