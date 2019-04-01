@@ -232,13 +232,7 @@ public struct TopologyDescription {
         if timeoutValues.contains (where: { $0 == nil }) {
             return nil
         }
-
-        #if swift(>=4.1)
         return timeoutValues.compactMap { $0 }.min()
-        #else
-        // swiftlint:disable:next force_unwrapping - we filtered out nil values already.
-        return timeoutValues.map { $0! }.min()
-        #endif
     }
 
     /// Returns `true` if the topology has a readable server available, and `false` otherwise.

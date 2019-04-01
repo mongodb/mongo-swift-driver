@@ -470,11 +470,7 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
 
     /// All the keys the decoder has for this container.
     public var allKeys: [Key] {
-        #if swift(>=4.1)
         return self.container.keys.compactMap { Key(stringValue: $0) }
-        #else
-        return self.container.keys.flatMap { Key(stringValue: $0) }
-        #endif
     }
 
     /// Returns a Boolean value indicating whether the decoder contains a value associated with the given key.

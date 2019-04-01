@@ -203,10 +203,6 @@ final class CodecTests: MongoSwiftTestCase {
             expect(try encoder.encode(Numbers(uint: UInt(Int64.max) + 1))).to(equal(["uint": 9223372036854775808.0]))
         }
         // check that we fail gracefully with a UInt, UInt64 that can't fit in any type.
-        // Swift 4.0 is unable to properly handle these edge cases and returns incorrect
-        // values from `Double(exactly:)`.
-        // 4.1 fixes this -- see https://bugs.swift.org/browse/SR-7056.
-        #if swift(>=4.1)
         expect(try encoder.encode(Numbers(uint64: UInt64.max))).to(throwError(CodecTests.invalidValueErr))
         // on a 32-bit platform, UInt.max = UInt32.max, which fits in an Int64.
         if MongoSwiftTestCase.is32Bit {
@@ -214,7 +210,6 @@ final class CodecTests: MongoSwiftTestCase {
         } else {
             expect(try encoder.encode(Numbers(uint: UInt.max))).to(throwError(CodecTests.invalidValueErr))
         }
-        #endif
     }
 
     /// Test decoding where the requested numeric types are non-BSON
