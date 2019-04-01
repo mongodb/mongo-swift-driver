@@ -272,6 +272,8 @@ extension Document {
             return ""
         }
 
+        bson_free(json)
+
         return String(cString: json)
     }
 
@@ -281,6 +283,8 @@ extension Document {
         guard let json = bson_as_canonical_extended_json(self.data, nil) else {
             return ""
         }
+
+        bson_free(json)
 
         return String(cString: json)
     }
