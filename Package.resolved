@@ -15,7 +15,7 @@
         "repositoryURL": "https://github.com/mongodb/swift-bson",
         "state": {
           "branch": "SWIFT-276/swift-5-support",
-          "revision": "fb7945a79d0bc5ea0492cf1186de751554886b70",
+          "revision": "13f1ca5f8c780aa4457079e3ae6cb554b0d6e68a",
           "version": null
         }
       },
