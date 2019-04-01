@@ -271,7 +271,7 @@ extension Document {
         guard let json = bson_as_relaxed_extended_json(self.data, nil) else {
             return ""
         }
-        
+
         defer {
             bson_free(json)
         }
@@ -285,7 +285,7 @@ extension Document {
         guard let json = bson_as_canonical_extended_json(self.data, nil) else {
             return ""
         }
-        
+
         defer {
             bson_free(json)
         }
