@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/Quick/Nimble.git",
         "state": {
           "branch": null,
-          "revision": "cd6dfb86f496fcd96ce0bc6da962cd936bf41903",
-          "version": "7.3.1"
+          "revision": "e9d769113660769a4d9dd3afb855562c0b7ae7b0",
+          "version": "7.3.4"
         }
       },
       {
@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/mongodb/swift-bson",
         "state": {
           "branch": null,
-          "revision": "87b458f55ba66f20305341d9d138e47dbcc92da7",
-          "version": "2.0.0"
+          "revision": "40f770ed265bb9958edbcd0c809a3c2afe75a3ba",
+          "version": "2.1.0"
         }
       },
       {
