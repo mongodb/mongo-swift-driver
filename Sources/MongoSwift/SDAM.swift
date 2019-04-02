@@ -28,11 +28,6 @@ public struct ConnectionId: Equatable {
         // swiftlint:disable:next force_unwrapping - should be valid UInt16 unless server response malformed.
         self.port = UInt16(parts[1])!
     }
-
-    /// ConnectionIds are equal if their hosts and ports match.
-    public static func == (lhs: ConnectionId, rhs: ConnectionId) -> Bool {
-        return lhs.host == rhs.host && rhs.port == lhs.port
-    }
 }
 
 /// A struct describing a mongod or mongos process.

@@ -112,12 +112,6 @@ extension MongoClient {
             self.patch = patch ?? 0
         }
 
-        static func == (lhs: ServerVersion, rhs: ServerVersion) -> Bool {
-            return lhs.major == rhs.major &&
-                    lhs.minor == rhs.minor &&
-                    lhs.patch == rhs.patch
-        }
-
         func isLessThan(_ version: ServerVersion) -> Bool {
             if self.major == version.major {
                 if self.minor == version.minor {

@@ -36,19 +36,6 @@ public class WriteConcern: Codable {
                 try container.encode("majority")
             }
         }
-
-        public static func == (lhs: W, rhs: W) -> Bool {
-            switch (lhs, rhs) {
-            case let (.number(lNum), .number(rNum)):
-                return lNum == rNum
-            case let (.tag(lTag), .tag(rTag)):
-                return lTag == rTag
-            case (.majority, .majority):
-                return true
-            default:
-                return false
-            }
-        }
     }
 
     /// Indicates the `W` value for this `WriteConcern`.
