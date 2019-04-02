@@ -109,7 +109,25 @@ public class BSONDecoder {
     }
 
     /// Initializes `self`.
-    public init() {}
+    public init(options: CodingStrategyProvider? = nil) {
+        self.configureWithOptions(options: options)
+    }
+
+    /// Initializes `self` by using the options of another `BSONDecoder` and the provided options, with preference
+    /// going to the provided options in the case of conflicts.
+    internal init(copies other: BSONDecoder, options: CodingStrategyProvider?) {
+        self.userInfo = other.userInfo
+        self.dateDecodingStrategy = other.dateDecodingStrategy
+        self.uuidDecodingStrategy = other.uuidDecodingStrategy
+        self.dataDecodingStrategy = other.dataDecodingStrategy
+        self.configureWithOptions(options: options)
+    }
+
+    internal func configureWithOptions(options: CodingStrategyProvider?) {
+        self.dateDecodingStrategy = options?.dateCodingStrategy?.rawValue.decoding ?? self.dateDecodingStrategy
+        self.uuidDecodingStrategy = options?.uuidCodingStrategy?.rawValue.decoding ?? self.uuidDecodingStrategy
+        self.dataDecodingStrategy = options?.dataCodingStrategy?.rawValue.decoding ?? self.dataDecodingStrategy
+    }
 
     /**
      * Decodes a top-level value of the given type from the given BSON document.

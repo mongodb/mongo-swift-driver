@@ -51,7 +51,7 @@ public struct ListCollectionsOptions: Encodable {
 }
 
 /// Options to use when executing a `createCollection` command on a `MongoDatabase`.
-public struct CreateCollectionOptions: Encodable {
+public struct CreateCollectionOptions: Encodable, CodingStrategyProvider {
     /// Indicates whether this will be a capped collection
     public let capped: Bool?
 
@@ -93,6 +93,26 @@ public struct CreateCollectionOptions: Encodable {
     /// for the collection itself, retrieve the collection using `MongoDatabase.collection`.
     public let writeConcern: WriteConcern?
 
+    /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
+    /// It is the responsibility of the user to ensure that any `Date`s already stored in this collection can be
+    /// decoded using this strategy.
+    public let dateCodingStrategy: DateCodingStrategy?
+
+    /// Specifies the `UUIDCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
+    /// It is the responsibility of the user to ensure that any `UUID`s already stored in this collection can be
+    /// decoded using this strategy.
+    public let uuidCodingStrategy: UUIDCodingStrategy?
+
+    /// Specifies the `DataCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
+    /// It is the responsibility of the user to ensure that any `Data`s already stored in this collection can be
+    /// decoded using this strategy.
+    public let dataCodingStrategy: DataCodingStrategy?
+
+    private enum CodingKeys: String, CodingKey {
+        case capped, autoIndexId, size, max, storageEngine, validator, validationLevel, validationAction,
+             indexOptionDefaults, viewOn, collation, session, writeConcern
+    }
+
     /// Convenience initializer allowing any/all parameters to be omitted or optional
     public init(autoIndexId: Bool? = nil,
                 capped: Bool? = nil,
@@ -106,7 +126,10 @@ public struct CreateCollectionOptions: Encodable {
                 validationLevel: String? = nil,
                 validator: Document? = nil,
                 viewOn: String? = nil,
-                writeConcern: WriteConcern? = nil) {
+                writeConcern: WriteConcern? = nil,
+                dateCodingStrategy: DateCodingStrategy? = nil,
+                uuidCodingStrategy: UUIDCodingStrategy? = nil,
+                dataCodingStrategy: DataCodingStrategy? = nil) {
         self.autoIndexId = autoIndexId
         self.capped = capped
         self.collation = collation
@@ -120,11 +143,14 @@ public struct CreateCollectionOptions: Encodable {
         self.validator = validator
         self.viewOn = viewOn
         self.writeConcern = writeConcern
+        self.dateCodingStrategy = dateCodingStrategy
+        self.uuidCodingStrategy = uuidCodingStrategy
+        self.dataCodingStrategy = dataCodingStrategy
     }
 }
 
 /// Options to set on a retrieved `MongoCollection`.
-public struct CollectionOptions {
+public struct CollectionOptions: CodingStrategyProvider {
     /// A read concern to set on the returned collection. If one is not specified,
     /// the collection will inherit the database's read concern.
     public let readConcern: ReadConcern?
@@ -137,13 +163,34 @@ public struct CollectionOptions {
     /// the collection will inherit the database's write concern.
     public let writeConcern: WriteConcern?
 
+    /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
+    /// It is the responsibility of the user to ensure that any `Date`s already stored in this collection can be
+    /// decoded using this strategy.
+    public let dateCodingStrategy: DateCodingStrategy?
+
+    /// Specifies the `UUIDCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
+    /// It is the responsibility of the user to ensure that any `UUID`s already stored in this collection can be
+    /// decoded using this strategy.
+    public let uuidCodingStrategy: UUIDCodingStrategy?
+
+    /// Specifies the `DataCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
+    /// It is the responsibility of the user to ensure that any `Data`s already stored in this collection can be
+    /// decoded using this strategy.
+    public let dataCodingStrategy: DataCodingStrategy?
+
     /// Convenience initializer allowing any/all arguments to be omitted or optional
     public init(readConcern: ReadConcern? = nil,
                 readPreference: ReadPreference? = nil,
-                writeConcern: WriteConcern? = nil) {
+                writeConcern: WriteConcern? = nil,
+                dateCodingStrategy: DateCodingStrategy? = nil,
+                uuidCodingStrategy: UUIDCodingStrategy? = nil,
+                dataCodingStrategy: DataCodingStrategy? = nil) {
         self.readConcern = readConcern
         self.readPreference = readPreference
         self.writeConcern = writeConcern
+        self.dateCodingStrategy = dateCodingStrategy
+        self.uuidCodingStrategy = uuidCodingStrategy
+        self.dataCodingStrategy = dataCodingStrategy
     }
 }
 
@@ -151,6 +198,13 @@ public struct CollectionOptions {
 public class MongoDatabase {
     private var _database: OpaquePointer?
     private var _client: MongoClient
+
+    /// Encoder used by this database for BSON conversions.
+    /// This encoder's options are inherited by collections derived from this database.
+    public let encoder: BSONEncoder
+
+    /// Decoder whose options are inherited by collections derived from this database.
+    public let decoder: BSONDecoder
 
     /// The name of this database.
     public var name: String {
@@ -177,9 +231,14 @@ public class MongoDatabase {
     }
 
     /// Initializes a new `MongoDatabase` instance, not meant to be instantiated directly.
-    internal init(fromDatabase: OpaquePointer, withClient: MongoClient) {
-        self._database = fromDatabase
-        self._client = withClient
+    internal init(fromDatabase database: OpaquePointer,
+                  withClient client: MongoClient,
+                  withEncoder encoder: BSONEncoder,
+                  withDecoder decoder: BSONDecoder) {
+        self._database = database
+        self._client = client
+        self.encoder = encoder
+        self.decoder = decoder
     }
 
     /// Deinitializes a MongoDatabase, cleaning up the internal `mongoc_database_t`.
@@ -244,7 +303,15 @@ public class MongoDatabase {
             mongoc_collection_set_write_concern(collection, wc._writeConcern)
         }
 
-        return MongoCollection(fromCollection: collection, withClient: self._client)
+        let encoder = BSONEncoder(copies: self.encoder, options: options)
+        let decoder = BSONDecoder(copies: self.decoder, options: options)
+
+        return MongoCollection(
+                fromCollection: collection,
+                withClient: self._client,
+                withEncoder: encoder,
+                withDecoder: decoder
+        )
     }
 
     /**
@@ -281,15 +348,22 @@ public class MongoDatabase {
     public func createCollection<T: Codable>(_ name: String,
                                              withType: T.Type,
                                              options: CreateCollectionOptions? = nil) throws -> MongoCollection<T> {
-        let encoder = BSONEncoder()
-        let opts = try encoder.encode(options)
+        let opts = try self.encoder.encode(options)
         var error = bson_error_t()
 
         guard let collection = mongoc_database_create_collection(self._database, name, opts?.data, &error) else {
             throw parseMongocError(error)
         }
 
-        return MongoCollection(fromCollection: collection, withClient: self._client)
+        let encoder = BSONEncoder(copies: self.encoder, options: options)
+        let decoder = BSONDecoder(copies: self.decoder, options: options)
+
+        return MongoCollection(
+                fromCollection: collection,
+                withClient: self._client,
+                withEncoder: encoder,
+                withDecoder: decoder
+        )
     }
 
     /**
@@ -304,14 +378,12 @@ public class MongoDatabase {
      * - Throws: A `userError.invalidArgumentError` if the options passed are an invalid combination.
      */
     public func listCollections(options: ListCollectionsOptions? = nil) throws -> MongoCursor<Document> {
-        let encoder = BSONEncoder()
-        let opts = try encoder.encode(options)
-
+        let opts = try self.encoder.encode(options)
         guard let collections = mongoc_database_find_collections_with_opts(self._database, opts?.data) else {
             fatalError("Couldn't get cursor from the server")
         }
 
-        return try MongoCursor(fromCursor: collections, withClient: self._client)
+        return try MongoCursor(fromCursor: collections, withClient: self._client, withDecoder: self.decoder)
     }
 
     /**
@@ -332,7 +404,7 @@ public class MongoDatabase {
     @discardableResult
     public func runCommand(_ command: Document, options: RunCommandOptions? = nil) throws -> Document {
         let rp = options?.readPreference?._readPreference
-        let opts = try BSONEncoder().encode(options)
+        let opts = try self.encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
         guard mongoc_database_command_with_opts(self._database, command.data, rp, opts?.data, reply.data, &error) else {

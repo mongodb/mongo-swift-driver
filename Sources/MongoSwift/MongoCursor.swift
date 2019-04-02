@@ -6,6 +6,9 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     private var _client: MongoClient?
     private var swiftError: Error?
 
+    /// Decoder from the `MongoCollection` or `MongoDatabase` that created this cursor.
+    private let decoder: BSONDecoder
+
     /**
      * Initializes a new `MongoCursor` instance, not meant to be instantiated directly.
      *
@@ -13,9 +16,12 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
      *   - `UserError.invalidArgumentError` if the options passed to the command that generated this cursor formed an
      *     invalid combination.
      */
-    internal init(fromCursor: OpaquePointer, withClient: MongoClient) throws {
-        self._cursor = fromCursor
-        self._client = withClient
+    internal init(fromCursor cursor: OpaquePointer,
+                  withClient client: MongoClient,
+                  withDecoder decoder: BSONDecoder) throws {
+        self._cursor = cursor
+        self._client = client
+        self.decoder = decoder
 
         if let err = self.error {
             // Need to explicitly close since deinit will not execute if we throw.
@@ -113,7 +119,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         let doc = Document(fromPointer: out.pointee!)
 
         do {
-            let outDoc = try BSONDecoder().decode(T.self, from: doc)
+            let outDoc = try self.decoder.decode(T.self, from: doc)
             self.swiftError = nil
             return outDoc
         } catch {

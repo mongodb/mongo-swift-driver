@@ -16,14 +16,13 @@ extension MongoCollection {
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func find(_ filter: Document = [:], options: FindOptions? = nil) throws -> MongoCursor<CollectionType> {
-        let opts = try BSONEncoder().encode(options)
+        let opts = try self.encoder.encode(options)
         let rp = options?.readPreference?._readPreference
 
         guard let cursor = mongoc_collection_find_with_opts(self._collection, filter.data, opts?.data, rp) else {
             fatalError("Couldn't get cursor from the server")
         }
-
-        return try MongoCursor(fromCursor: cursor, withClient: self._client)
+        return try MongoCursor(fromCursor: cursor, withClient: self._client, withDecoder: self.decoder)
     }
 
     /**
@@ -40,7 +39,7 @@ extension MongoCollection {
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func aggregate(_ pipeline: [Document], options: AggregateOptions? = nil) throws -> MongoCursor<Document> {
-        let opts = try BSONEncoder().encode(options)
+        let opts = try self.encoder.encode(options)
         let rp = options?.readPreference?._readPreference
         let pipeline: Document = ["pipeline": pipeline]
 
@@ -48,8 +47,7 @@ extension MongoCollection {
             self._collection, MONGOC_QUERY_NONE, pipeline.data, opts?.data, rp) else {
             fatalError("Couldn't get cursor from the server")
         }
-
-        return try MongoCursor(fromCursor: cursor, withClient: self._client)
+        return try MongoCursor(fromCursor: cursor, withClient: self._client, withDecoder: self.decoder)
     }
 
     // TODO SWIFT-133: mark this method deprecated https://jira.mongodb.org/browse/SWIFT-133
@@ -68,7 +66,7 @@ extension MongoCollection {
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func count(_ filter: Document = [:], options: CountOptions? = nil) throws -> Int {
-        let opts = try BSONEncoder().encode(options)
+        let opts = try self.encoder.encode(options)
         let rp = options?.readPreference?._readPreference
         var error = bson_error_t()
         // because we already encode skip and limit in the options,
@@ -133,7 +131,7 @@ extension MongoCollection {
             "query": filter
         ]
 
-        let opts = try BSONEncoder().encode(options)
+        let opts = try self.encoder.encode(options)
         let rp = options?.readPreference?._readPreference
         let reply = Document()
         var error = bson_error_t()

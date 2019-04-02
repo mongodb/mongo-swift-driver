@@ -106,6 +106,7 @@ extension MongoClientTests {
         ("testOpaqueInitialization", testOpaqueInitialization),
         ("testFailedClientInitialization", testFailedClientInitialization),
         ("testServerVersion", testServerVersion),
+        ("testCodingStrategies", testCodingStrategies),
     ]
 }
 

@@ -21,9 +21,8 @@ extension MongoCollection {
      */
     @discardableResult
     public func insertOne(_ value: CollectionType, options: InsertOneOptions? = nil) throws -> InsertOneResult? {
-        let encoder = BSONEncoder()
-        let document = try encoder.encode(value).withID()
-        let opts = try encoder.encode(options)
+        let document = try self.encoder.encode(value).withID()
+        let opts = try self.encoder.encode(options)
         var error = bson_error_t()
         let reply = Document()
         guard mongoc_collection_insert_one(self._collection, document.data, opts?.data, reply.data, &error) else {
@@ -89,9 +88,8 @@ extension MongoCollection {
     public func replaceOne(filter: Document,
                            replacement: CollectionType,
                            options: ReplaceOptions? = nil) throws -> UpdateResult? {
-        let encoder = BSONEncoder()
-        let replacementDoc = try encoder.encode(replacement)
-        let opts = try encoder.encode(options)
+        let replacementDoc = try self.encoder.encode(replacement)
+        let opts = try self.encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
         guard mongoc_collection_replace_one(
@@ -103,7 +101,7 @@ extension MongoCollection {
             return nil
         }
 
-        return try BSONDecoder().internalDecode(
+        return try self.decoder.internalDecode(
                 UpdateResult.self,
                 from: reply,
                 withError: "Couldn't understand response from the server.")
@@ -128,8 +126,7 @@ extension MongoCollection {
      */
     @discardableResult
     public func updateOne(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
-        let encoder = BSONEncoder()
-        let opts = try encoder.encode(options)
+        let opts = try self.encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
         guard mongoc_collection_update_one(
@@ -141,7 +138,7 @@ extension MongoCollection {
             return nil
         }
 
-        return try BSONDecoder().internalDecode(
+        return try self.decoder.internalDecode(
                 UpdateResult.self,
                 from: reply,
                 withError: "Couldn't understand response from the server.")
@@ -166,8 +163,7 @@ extension MongoCollection {
      */
     @discardableResult
     public func updateMany(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
-        let encoder = BSONEncoder()
-        let opts = try encoder.encode(options)
+        let opts = try self.encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
         guard mongoc_collection_update_many(
@@ -179,7 +175,7 @@ extension MongoCollection {
             return nil
         }
 
-        return try BSONDecoder().internalDecode(
+        return try self.decoder.internalDecode(
                 UpdateResult.self,
                 from: reply,
                 withError: "Couldn't understand response from the server.")
@@ -203,8 +199,7 @@ extension MongoCollection {
      */
     @discardableResult
     public func deleteOne(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
-        let encoder = BSONEncoder()
-        let opts = try encoder.encode(options)
+        let opts = try self.encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
 
@@ -216,7 +211,7 @@ extension MongoCollection {
             return nil
         }
 
-        return try BSONDecoder().internalDecode(
+        return try self.decoder.internalDecode(
                 DeleteResult.self,
                 from: reply,
                 withError: "Couldn't understand response from the server.")
@@ -240,8 +235,7 @@ extension MongoCollection {
      */
     @discardableResult
     public func deleteMany(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
-        let encoder = BSONEncoder()
-        let opts = try encoder.encode(options)
+        let opts = try self.encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
         guard mongoc_collection_delete_many(self._collection, filter.data, opts?.data, reply.data, &error) else {
@@ -252,7 +246,7 @@ extension MongoCollection {
             return nil
         }
 
-        return try BSONDecoder().internalDecode(
+        return try self.decoder.internalDecode(
                 DeleteResult.self,
                 from: reply,
                 withError: "Couldn't understand response from the server.")

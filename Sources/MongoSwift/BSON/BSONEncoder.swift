@@ -3,11 +3,13 @@ import mongoc
 
 /// `BSONEncoder` facilitates the encoding of `Encodable` values into BSON.
 public class BSONEncoder {
-    /// Enum representing the various strategies for encoding `Date`s.
-    ///
-    /// As per the BSON specification, the default strategy is to encode `Date`s as BSON datetime objects.
-    ///
-    /// - SeeAlso: bsonspec.org
+    /**
+     * Enum representing the various strategies for encoding `Date`s.
+     *
+     * As per the BSON specification, the default strategy is to encode `Date`s as BSON datetime objects.
+     *
+     * - SeeAlso: bsonspec.org
+     */
     public enum DateEncodingStrategy {
         /// Encode the `Date` by deferring to its default encoding implementation.
         case deferredToDate
@@ -33,12 +35,14 @@ public class BSONEncoder {
         case custom((Date, Encoder) throws -> Void)
     }
 
-    /// Enum representing the various strategies for encoding `UUID`s.
-    ///
-    /// As per the BSON specification, the default strategy is to encode `UUID`s as BSON binary types with the UUID
-    /// subtype.
-    ///
-    /// - SeeAlso: bsonspec.org
+    /**
+     * Enum representing the various strategies for encoding `UUID`s.
+     *
+     * As per the BSON specification, the default strategy is to encode `UUID`s as BSON binary types with the UUID
+     * subtype.
+     *
+     * - SeeAlso: bsonspec.org
+     */
     public enum UUIDEncodingStrategy {
         /// Encode the `UUID` by deferring to its default encoding implementation.
         case deferredToUUID
@@ -47,18 +51,22 @@ public class BSONEncoder {
         case binary
     }
 
-    /// Enum representing the various strategies for encoding `Data`s.
-    ///
-    /// As per the BSON specification, the default strategy is to encode `Data`s as BSON binary types with the generic
-    /// binary subtype.
-    ///
-    /// - SeeAlso: bsonspec.org
+    /**
+     * Enum representing the various strategies for encoding `Data`s.
+     *
+     * As per the BSON specification, the default strategy is to encode `Data`s as BSON binary types with the generic
+     * binary subtype.
+     *
+     * - SeeAlso: bsonspec.org
+     */
     public enum DataEncodingStrategy {
-        /// Encode the `Data` by deferring to its default encoding implementation.
-        ///
-        /// Note: The default encoding implementation attempts to encode the `Data` as a `[UInt8]`, but because BSON
-        /// does not support integer types besides `Int32` or `Int64`, it actually gets encoded to BSON as an `[Int32]`.
-        /// This results in a space inefficient storage of the `Data` (using 4 bytes of BSON storage per byte of data).
+        /**
+         * Encode the `Data` by deferring to its default encoding implementation.
+         *
+         * Note: The default encoding implementation attempts to encode the `Data` as a `[UInt8]`, but because BSON
+         * does not support integer types besides `Int32` or `Int64`, it actually gets encoded to BSON as an `[Int32]`.
+         * This results in a space inefficient storage of the `Data` (using 4 bytes of BSON storage per byte of data).
+         */
         case deferredToData
 
         /// Encode the `Data` as a BSON binary type (default).
@@ -102,7 +110,26 @@ public class BSONEncoder {
     }
 
     /// Initializes `self`.
-    public init() {}
+    public init(options: CodingStrategyProvider? = nil) {
+        self.configureWithOptions(options: options)
+    }
+
+    /// Initializes `self` by using the options of another `BSONEncoder` and the provided options, with preference
+    /// going to the provided options in the case of conflicts.
+    internal init(copies other: BSONEncoder, options: CodingStrategyProvider?) {
+        self.userInfo = other.userInfo
+        self.dateEncodingStrategy = other.dateEncodingStrategy
+        self.uuidEncodingStrategy = other.uuidEncodingStrategy
+        self.dataEncodingStrategy = other.dataEncodingStrategy
+
+        self.configureWithOptions(options: options)
+    }
+
+    internal func configureWithOptions(options: CodingStrategyProvider?) {
+        self.dateEncodingStrategy = options?.dateCodingStrategy?.rawValue.encoding ?? self.dateEncodingStrategy
+        self.uuidEncodingStrategy = options?.uuidCodingStrategy?.rawValue.encoding ?? self.uuidEncodingStrategy
+        self.dataEncodingStrategy = options?.dataCodingStrategy?.rawValue.encoding ?? self.dataEncodingStrategy
+    }
 
     /**
      * Encodes the given top-level value and returns its BSON representation.
