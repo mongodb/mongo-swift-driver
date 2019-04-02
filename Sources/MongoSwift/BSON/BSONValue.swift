@@ -411,11 +411,11 @@ public struct Decimal128: BSONValue, Equatable, Codable, CustomStringConvertible
     public var bsonType: BSONType { return .decimal128 }
 
     public var description: String {
-        // TODO: avoid this copy via withUnsafePointer once swift 4.1 support is dropped (SWIFT-284)
-        var copy = self.decimal128
         var str = Data(count: Int(BSON_DECIMAL128_STRING))
         return str.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<Int8>) in
-            bson_decimal128_to_string(&copy, bytes)
+            withUnsafePointer(to: self.decimal128) { ptr in
+                bson_decimal128_to_string(ptr, bytes)
+            }
             return String(cString: bytes)
         }
     }
@@ -450,10 +450,10 @@ public struct Decimal128: BSONValue, Equatable, Codable, CustomStringConvertible
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        // TODO: avoid this copy via withUnsafePointer once swift 4.1 support is dropped (SWIFT-284)
-        var copy = self.decimal128
-        guard bson_append_decimal128(storage.pointer, key, Int32(key.utf8.count), &copy) else {
-            throw bsonTooLargeError(value: self, forKey: key)
+        try withUnsafePointer(to: self.decimal128) { ptr in
+            guard bson_append_decimal128(storage.pointer, key, Int32(key.utf8.count), ptr) else {
+                throw bsonTooLargeError(value: self, forKey: key)
+            }
         }
     }
 
