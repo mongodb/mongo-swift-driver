@@ -319,6 +319,7 @@ final class CodecTests: MongoSwiftTestCase {
         let symbol: Symbol
         let undefined: BSONUndefined
         let dbpointer: DBPointer
+        let null: BSONNull
 
         public static func == (lhs: AllBSONTypes, rhs: AllBSONTypes) -> Bool {
             return lhs.double == rhs.double && lhs.string == rhs.string &&
@@ -327,7 +328,7 @@ final class CodecTests: MongoSwiftTestCase {
                     lhs.int == rhs.int && lhs.ts == rhs.ts && lhs.int32 == rhs.int32 &&
                     lhs.int64 == rhs.int64 && lhs.dec == rhs.dec && lhs.minkey == rhs.minkey &&
                     lhs.maxkey == rhs.maxkey && lhs.regex == rhs.regex && lhs.date == rhs.date &&
-                    lhs.symbol == rhs.symbol && lhs.dbpointer == rhs.dbpointer
+                    lhs.symbol == rhs.symbol && lhs.dbpointer == rhs.dbpointer && lhs.null == rhs.null
         }
 
         public static func factory() throws -> AllBSONTypes {
@@ -351,7 +352,8 @@ final class CodecTests: MongoSwiftTestCase {
                     regex: RegularExpression(pattern: "^abc", options: "imx"),
                     symbol: Symbol("i am a symbol"),
                     undefined: BSONUndefined(),
-                    dbpointer: DBPointer(ref: "some.namespace", id: ObjectId(fromString: "507f1f77bcf86cd799439011")))
+                    dbpointer: DBPointer(ref: "some.namespace", id: ObjectId(fromString: "507f1f77bcf86cd799439011")),
+                    null: BSONNull())
         }
 
         // Manually construct a document from this instance for comparision with encoder output.
@@ -376,7 +378,8 @@ final class CodecTests: MongoSwiftTestCase {
                 "regex": self.regex,
                 "symbol": self.symbol,
                 "undefined": self.undefined,
-                "dbpointer": self.dbpointer
+                "dbpointer": self.dbpointer,
+                "null": self.null
             ]
         }
     }
@@ -416,7 +419,8 @@ final class CodecTests: MongoSwiftTestCase {
             "regex" : { "$regularExpression" : { "pattern" : "^abc", "options" : "imx" } },
             "symbol" : { "$symbol" : "i am a symbol" },
             "undefined": { "$undefined" : true },
-            "dbpointer": { "$dbPointer" : { "$ref" : "some.namespace", "$id" : { "$oid" : "507f1f77bcf86cd799439011" } } }
+            "dbpointer": { "$dbPointer" : { "$ref" : "some.namespace", "$id" : { "$oid" : "507f1f77bcf86cd799439011" } } },
+            "null": null
         }
         """
         //swiftlint:enable line_length
