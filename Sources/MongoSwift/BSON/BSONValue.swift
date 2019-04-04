@@ -355,10 +355,7 @@ public struct DBPointer: BSONValue, Codable, Equatable {
     }
 
     public init(from decoder: Decoder) throws {
-        if decoder is _BSONDecoder {
-            throw bsonDecodingDirectlyError(type: DBPointer.self, at: decoder.codingPath)
-        }
-        throw bsonDecodingUnsupportedError(type: DBPointer.self, at: decoder.codingPath)
+        throw getDecodingError(type: DBPointer.self, decoder: decoder)
     }
 
     public func encode(to: Encoder) throws {
@@ -1061,10 +1058,7 @@ public struct BSONUndefined: BSONValue, Equatable, Codable {
     internal init() {}
 
     public init(from decoder: Decoder) throws {
-        if decoder is _BSONDecoder {
-            throw bsonDecodingDirectlyError(type: BSONUndefined.self, at: decoder.codingPath)
-        }
-        throw bsonDecodingUnsupportedError(type: BSONUndefined.self, at: decoder.codingPath)
+        throw getDecodingError(type: BSONUndefined.self, decoder: decoder)
     }
 
     public func encode(to: Encoder) throws {
