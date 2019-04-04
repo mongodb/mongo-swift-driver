@@ -948,9 +948,9 @@ extension String: BSONValue {
         }
     }
 
-    /// Initializer that preserves null bytes embedded in C strings
-    internal init?(cStringWithEmbeddedNulls: UnsafePointer<CChar>, length: Int) {
-        let buffer = Data(bytes: cStringWithEmbeddedNulls, count: length)
+    /// Initializer that preserves null bytes embedded in C character buffers
+    internal init?(rawStringData: UnsafePointer<CChar>, length: Int) {
+        let buffer = Data(bytes: rawStringData, count: length)
         self.init(data: buffer, encoding: .utf8)
     }
 
@@ -964,7 +964,7 @@ extension String: BSONValue {
             throw RuntimeError.internalError(message: "String \(strValue) not valid UTF-8")
         }
 
-        guard let out = self.init(cStringWithEmbeddedNulls: strValue, length: Int(length)) else {
+        guard let out = self.init(rawStringData: strValue, length: Int(length)) else {
             throw RuntimeError.internalError(message: "Underlying string data could not be parsed to a Swift String")
         }
         return out
@@ -1015,7 +1015,7 @@ public struct Symbol: BSONValue, CustomStringConvertible, Codable, Equatable {
             throw wrongIterTypeError(iter, expected: Symbol.self)
         }
 
-        guard let strValue = String(cStringWithEmbeddedNulls: cStr, length: Int(length)) else {
+        guard let strValue = String(rawStringData: cStr, length: Int(length)) else {
             throw RuntimeError.internalError(message: "Cannot parse String from underlying data")
         }
 
