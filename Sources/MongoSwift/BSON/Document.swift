@@ -20,6 +20,7 @@ public class DocumentStorage {
         self.pointer = bson_copy(pointer)
     }
 
+    /// Cleans up internal state.
     deinit {
         guard let pointer = self.pointer else {
             return

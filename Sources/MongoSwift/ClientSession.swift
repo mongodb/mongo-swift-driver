@@ -10,7 +10,7 @@ public class ClientSession: Encodable {
     internal init() {
     }
 
-    /// Clean up the internal mongoc_session_t.
+    /// Cleans up internal state.
     deinit {
     }
 

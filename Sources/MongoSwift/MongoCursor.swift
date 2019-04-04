@@ -38,7 +38,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         }
     }
 
-    /// Deinitializes a `MongoCursor`, cleaning up the internal `mongoc_cursor_t`.
+    /// Cleans up internal state.
     deinit {
         self.close()
     }

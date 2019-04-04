@@ -357,6 +357,7 @@ public class BulkWriteOperation {
         return self.isAcknowledged ? result : nil
     }
 
+    /// Cleans up internal state.
     deinit {
         guard let bulk = self.bulk else {
             return

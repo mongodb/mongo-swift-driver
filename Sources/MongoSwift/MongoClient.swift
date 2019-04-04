@@ -227,9 +227,7 @@ public class MongoClient {
         self.decoder = BSONDecoder()
     }
 
-    /**
-     * Cleans up the internal `mongoc_client_t`.
-     */
+    /// Cleans up internal state.
     deinit {
         close()
     }

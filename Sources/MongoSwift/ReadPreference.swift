@@ -8,10 +8,18 @@ import mongoc
 public final class ReadPreference {
     /// An enumeration of possible ReadPreference modes.
     public enum Mode: String {
+        /// Default mode. All operations read from the current replica set primary.
         case primary
+        /// In most situations, operations read from the primary but if it is 
+        /// unavailable, operations read from secondary members.
         case primaryPreferred
+        /// All operations read from the secondary members of the replica set.
         case secondary
+        /// In most situations, operations read from secondary members but if no 
+        /// secondary members are available, operations read from the primary.
         case secondaryPreferred
+        /// Operations read from member of the replica set with the least network
+        /// latency, irrespective of the member’s type.
         case nearest
 
         internal var readMode: mongoc_read_mode_t {
@@ -135,7 +143,7 @@ public final class ReadPreference {
         self._readPreference = mongoc_read_prefs_copy(readPreference)
     }
 
-    /// Cleans up the internal `mongoc_read_prefs_t`.
+    /// Cleans up internal state.
     deinit {
         guard let readPreference = self._readPreference else {
             return

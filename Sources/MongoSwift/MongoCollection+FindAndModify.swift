@@ -383,6 +383,7 @@ private class FindAndModifyOptions {
         }
     }
 
+    /// Cleans up internal state.
     deinit {
         guard let options = self._options else {
             return

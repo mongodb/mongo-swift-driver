@@ -86,7 +86,7 @@ public class ReadConcern: Codable {
         try container.encodeIfPresent(self.level, forKey: .level)
     }
 
-    /// Cleans up the internal `mongoc_read_concern_t`.
+    /// Cleans up internal state.
     deinit {
         guard let readConcern = self._readConcern else {
             return
