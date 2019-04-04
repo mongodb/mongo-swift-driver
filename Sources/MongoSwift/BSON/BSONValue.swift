@@ -344,25 +344,41 @@ extension Date: BSONValue {
     }
 }
 
-/// An internal struct to represent the deprecated DBPointer type. While DBPointers cannot
-/// be created, we may need to parse them into `Document`s, and this provides a place for that logic.
-internal struct DBPointer: BSONValue {
+/// A struct to represent the deprecated DBPointer type.
+/// DBPointers cannot be instantiated, but they can be read from existing documents that contain them.
+public struct DBPointer: BSONValue, Codable, Equatable {
     public var bsonType: BSONType { return .dbPointer }
 
+    /// Destination namespace of the pointer.
+    public let ref: String
+
+    /// Destination _id (assumed to be an `ObjectId`) of the pointed-to document.
+    public let id: ObjectId
+
+    internal init(ref: String, id: ObjectId) {
+        self.ref = ref
+        self.id = id
+    }
+
+    public init(from decoder: Decoder) throws {
+        if decoder is _BSONDecoder {
+            throw bsonDecodingDirectlyError(type: DBPointer.self, at: decoder.codingPath)
+        }
+        throw bsonDecodingUnsupportedError(type: DBPointer.self, at: decoder.codingPath)
+    }
+
+    public func encode(to: Encoder) throws {
+        throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
+    }
+
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        throw RuntimeError.internalError(message: "`DBPointer`s are deprecated; use a DBRef document instead")
+        var oid = try ObjectId.toLibBSONType(self.id.oid) // TODO: use the stored bson_oid_t (SWIFT-268)
+        guard bson_append_dbpointer(storage.pointer, key, Int32(key.utf8.count), self.ref, &oid) else {
+            throw bsonTooLargeError(value: self, forKey: key)
+        }
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> DBPointer {
-        throw RuntimeError.internalError(message:
-            "`DBPointer`s are deprecated; use `DBPointer.asDocument` to create a DBRef document instead")
-    }
-
-    /// Reads DBPointer data from `iter` and converts it to DBRef format
-    ///
-    /// - Throws:
-    ///   - `UserError.logicError` if the current type of the `DocumentIterator` does not correspond to `DBPointer`.
-    internal static func asDocument(from iter: DocumentIterator) throws -> Document {
         var length: UInt32 = 0
         let collectionPP = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: 1)
         defer {
@@ -382,34 +398,41 @@ internal struct DBPointer: BSONValue {
             throw wrongIterTypeError(iter, expected: DBPointer.self)
         }
 
-        return [
-            "$ref": String(cString: collectionP),
-            "$id": ObjectId(fromPointer: oidP)
-        ]
+        return DBPointer(ref: String(cString: collectionP), id: ObjectId(fromPointer: oidP))
+    }
+
+    public static func == (lhs: DBPointer, rhs: DBPointer) -> Bool {
+        return lhs.ref == rhs.ref && lhs.id == rhs.id
     }
 }
 
 /// A struct to represent the BSON Decimal128 type.
-public struct Decimal128: BSONValue, Equatable, Codable {
-    /// This number, represented as a `String`.
-    public let data: String
-
+public struct Decimal128: BSONValue, Equatable, Codable, CustomStringConvertible {
     public var bsonType: BSONType { return .decimal128 }
 
-    /// Initializes a `Decimal128` value from the provided `String`. Assumes that the input string is correctly
-    /// formatted.
-    /// - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/bson-decimal128/decimal128.rst
-    public init(_ data: String) {
-        self.data = data
+    public var description: String {
+        var str = Data(count: Int(BSON_DECIMAL128_STRING))
+        return str.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<Int8>) in
+            withUnsafePointer(to: self.decimal128) { ptr in
+                bson_decimal128_to_string(ptr, bytes)
+            }
+            return String(cString: bytes)
+        }
+    }
+
+    internal var decimal128: bson_decimal128_t
+
+    internal init(bsonDecimal: bson_decimal128_t) {
+        self.decimal128 = bsonDecimal
     }
 
     /// Initializes a `Decimal128` value from the provided `String`. Returns `nil` if the input is not a valid
-    /// Decimal128 string. Note that this initializer is less performant than the non-failable initializer `init(_:)`.
+    /// Decimal128 string.
     /// - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/bson-decimal128/decimal128.rst
-    public init?(ifValid data: String) {
+    public init?(_ data: String) {
         do {
-            _ = try Decimal128.toLibBSONType(data)
-            self.init(data)
+            let bsonType = try Decimal128.toLibBSONType(data)
+            self.init(bsonDecimal: bsonType)
         } catch {
             return nil
         }
@@ -426,6 +449,14 @@ public struct Decimal128: BSONValue, Equatable, Codable {
         throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
     }
 
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
+        try withUnsafePointer(to: self.decimal128) { ptr in
+            guard bson_append_decimal128(storage.pointer, key, Int32(key.utf8.count), ptr) else {
+                throw bsonTooLargeError(value: self, forKey: key)
+            }
+        }
+    }
+
     /// Returns the provided string as a `bson_decimal128_t`, or throws an error if initialization fails due an
     /// invalid string.
     /// - Throws:
@@ -439,14 +470,7 @@ public struct Decimal128: BSONValue, Equatable, Codable {
     }
 
     public static func == (lhs: Decimal128, rhs: Decimal128) -> Bool {
-        return lhs.data == rhs.data
-    }
-
-    public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        var value = try Decimal128.toLibBSONType(self.data)
-        guard bson_append_decimal128(storage.pointer, key, Int32(key.utf8.count), &value) else {
-            throw bsonTooLargeError(value: self, forKey: key)
-        }
+        return lhs.decimal128.low == rhs.decimal128.low && lhs.decimal128.high == rhs.decimal128.high
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> Decimal128 {
@@ -454,12 +478,7 @@ public struct Decimal128: BSONValue, Equatable, Codable {
         guard bson_iter_decimal128(&iter.iter, &value) else {
             throw wrongIterTypeError(iter, expected: Decimal128.self)
         }
-
-        var str = Data(count: Int(BSON_DECIMAL128_STRING))
-        return self.init(str.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<Int8>) in
-            bson_decimal128_to_string(&value, bytes)
-            return String(cString: bytes)
-        })
+        return Decimal128(bsonDecimal: value)
      }
 }
 
@@ -929,28 +948,40 @@ extension String: BSONValue {
         }
     }
 
+    /// Initializer that preserves null bytes embedded in C character buffers
+    internal init?(rawStringData: UnsafePointer<CChar>, length: Int) {
+        let buffer = Data(bytes: rawStringData, count: length)
+        self.init(data: buffer, encoding: .utf8)
+    }
+
     public static func from(iterator iter: DocumentIterator) throws -> String {
         var length: UInt32 = 0
         guard iter.currentType == .string, let strValue = bson_iter_utf8(&iter.iter, &length) else {
            throw wrongIterTypeError(iter, expected: String.self)
         }
 
-        guard bson_utf8_validate(strValue, Int(length), false) else {
+        guard bson_utf8_validate(strValue, Int(length), true) else {
             throw RuntimeError.internalError(message: "String \(strValue) not valid UTF-8")
         }
 
-        return self.init(cString: strValue)
+        guard let out = self.init(rawStringData: strValue, length: Int(length)) else {
+            throw RuntimeError.internalError(message: "Underlying string data could not be parsed to a Swift String")
+        }
+        return out
     }
 }
 
-/// An internal struct to represent the deprecated Symbol type. While Symbols cannot be
-/// created, we may need to parse them into `String`s, and this provides a place for that logic.
-internal struct Symbol: BSONValue {
+/// A struct to represent the deprecated Symbol type.
+/// Symbols cannot be instantiated, but they can be read from existing documents that contain them.
+public struct Symbol: BSONValue, CustomStringConvertible, Codable, Equatable {
     public var bsonType: BSONType { return .symbol }
 
-    public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        throw RuntimeError.internalError(message: "Symbols are deprecated; use a string instead")
+    public var description: String {
+        return stringValue
     }
+
+    /// String representation of this `Symbol`.
+    public let stringValue: String
 
     public init(from decoder: Decoder) throws {
         if decoder is _BSONDecoder {
@@ -959,26 +990,40 @@ internal struct Symbol: BSONValue {
         throw bsonDecodingUnsupportedError(type: Symbol.self, at: decoder.codingPath)
     }
 
+    internal init(_ stringValue: String) {
+        self.stringValue = stringValue
+    }
+
     public func encode(to: Encoder) throws {
         throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
     }
 
-    public static func from(iterator iter: DocumentIterator) throws -> Symbol {
-        throw RuntimeError.internalError(
-                message: "`Symbol`s are deprecated; use `Symbol.asString` to parse as a string instead"
-        )
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
+        guard bson_append_symbol(
+                storage.pointer,
+                key,
+                Int32(key.utf8.count),
+                self.stringValue,
+                Int32(self.stringValue.utf8.count)) else {
+            throw bsonTooLargeError(value: self, forKey: key)
+        }
     }
 
-    /// Converts the current value of the `DocumentIterator` to a string if it is a `Symbol`. Throws an error otherwise.
-    ///
-    /// - Throws:
-    ///   - `UserError.logicError` if the current type of the `DocumentIterator` does not correspond to `Symbol`.
-    internal static func asString(from iter: DocumentIterator) throws -> String {
+    public static func from(iterator iter: DocumentIterator) throws -> Symbol {
         var length: UInt32 = 0
-        guard iter.currentType == .symbol, let strValue = bson_iter_symbol(&iter.iter, &length) else {
+        guard iter.currentType == .symbol, let cStr = bson_iter_symbol(&iter.iter, &length) else {
             throw wrongIterTypeError(iter, expected: Symbol.self)
         }
-        return String(cString: strValue)
+
+        guard let strValue = String(rawStringData: cStr, length: Int(length)) else {
+            throw RuntimeError.internalError(message: "Cannot parse String from underlying data")
+        }
+
+        return Symbol(strValue)
+    }
+
+    public static func == (lhs: Symbol, rhs: Symbol) -> Bool {
+        return lhs.stringValue == rhs.stringValue
     }
 }
 
@@ -1038,6 +1083,42 @@ public struct Timestamp: BSONValue, Equatable, Codable {
     }
 }
 
+/// A struct to represent the deprecated Undefined type.
+/// Undefined instances cannot be created, but they can be read from existing documents that contain them.
+public struct BSONUndefined: BSONValue, Equatable, Codable {
+    public var bsonType: BSONType { return .undefined }
+
+    internal init() {}
+
+    public init(from decoder: Decoder) throws {
+        if decoder is _BSONDecoder {
+            throw bsonDecodingDirectlyError(type: BSONUndefined.self, at: decoder.codingPath)
+        }
+        throw bsonDecodingUnsupportedError(type: BSONUndefined.self, at: decoder.codingPath)
+    }
+
+    public func encode(to: Encoder) throws {
+        throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
+    }
+
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
+        guard bson_append_undefined(storage.pointer, key, Int32(key.utf8.count)) else {
+            throw bsonTooLargeError(value: self, forKey: key)
+        }
+    }
+
+    public static func from(iterator iter: DocumentIterator) throws -> BSONUndefined {
+        guard iter.currentType == .undefined else {
+            throw wrongIterTypeError(iter, expected: BSONUndefined.self)
+        }
+        return BSONUndefined()
+    }
+
+    public static func == (lhs: BSONUndefined, rhs: BSONUndefined) -> Bool {
+        return true
+    }
+}
+
 // See https://github.com/realm/SwiftLint/issues/461
 // swiftlint:disable cyclomatic_complexity
 /**
@@ -1057,8 +1138,6 @@ public struct Timestamp: BSONValue, Equatable, Codable {
  * - Returns: `true` if `lhs` is equal to `rhs`, `false` otherwise.
  */
 public func bsonEquals(_ lhs: BSONValue, _ rhs: BSONValue) -> Bool {
-    validateBSONTypes(lhs, rhs)
-
     switch (lhs, rhs) {
     case let (l as Int, r as Int): return l == r
     case let (l as Int32, r as Int32): return l == r
@@ -1080,6 +1159,9 @@ public func bsonEquals(_ lhs: BSONValue, _ rhs: BSONValue) -> Bool {
     case let (l as [BSONValue], r as [BSONValue]): // TODO: SWIFT-242
         return l.count == r.count && zip(l, r).reduce(true, { prev, next in prev && bsonEquals(next.0, next.1) })
     case (_ as [Any], _ as [Any]): return false
+    case let (l as Symbol, r as Symbol): return l == r
+    case let (l as DBPointer, r as DBPointer): return l == r
+    case (_ as BSONUndefined, _ as BSONUndefined): return true
     default: return false
     }
 }
@@ -1100,18 +1182,6 @@ public func bsonEquals(_ lhs: BSONValue?, _ rhs: BSONValue?) -> Bool {
     }
 
     return bsonEquals(left, right)
-}
-
-/// A function for catching invalid BSONTypes that should not ever arise, and triggering a fatalError when it
-/// finds such types.
-private func validateBSONTypes(_ lhs: BSONValue, _ rhs: BSONValue) {
-    let invalidTypes: [BSONType] = [.symbol, .dbPointer, .invalid, .undefined]
-    guard !invalidTypes.contains(lhs.bsonType) else {
-        fatalError("\(lhs.bsonType) should not be used")
-    }
-    guard !invalidTypes.contains(rhs.bsonType) else {
-        fatalError("\(rhs.bsonType) should not be used")
-    }
 }
 
 /// Error thrown when a BSONValue type introduced by the driver (e.g. ObjectId) is encoded not using BSONEncoder

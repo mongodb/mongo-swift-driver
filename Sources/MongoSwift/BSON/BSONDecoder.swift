@@ -534,7 +534,7 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContaine
         let entry = try getValue(forKey: key)
         return try self.decoder.with(pushedKey: key) {
             let value = try decoder.unbox(entry, as: type)
-            guard !(value is BSONNull) else {
+            guard !(value is BSONNull) || type == BSONNull.self else {
                 throw DecodingError.valueNotFound(
                     type,
                     DecodingError.Context(codingPath: self.decoder.codingPath,

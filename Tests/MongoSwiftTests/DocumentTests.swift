@@ -27,6 +27,36 @@ extension Data {
     }
 }
 
+struct DocElem {
+    let key: String
+    let value: BSONValue
+    let type: BSONType
+}
+
+/// Extension of Document to allow conversion to and from arrays
+extension Document {
+    internal init(fromArray array: [DocElem]) {
+        self.init()
+
+        for elem in array {
+            if let subdoc = elem.value as? [DocElem], elem.type == .document {
+                self[elem.key] = Document(fromArray: subdoc)
+            } else {
+                self[elem.key] = elem.value
+            }
+        }
+    }
+
+    internal func toArray() -> [DocElem] {
+        return self.map { kvp in
+            if let subdoc = kvp.value as? Document {
+                return DocElem(key: kvp.key, value: subdoc.toArray(), type: .document)
+            }
+            return DocElem(key: kvp.key, value: kvp.value, type: kvp.value.bsonType)
+        }
+    }
+}
+
 final class DocumentTests: MongoSwiftTestCase {
     // Set up test document values
     static let testDoc: Document = [
@@ -37,7 +67,7 @@ final class DocumentTests: MongoSwiftTestCase {
         "int32": Int32(5),
         "int64": Int64(10),
         "double": Double(15),
-        "decimal128": Decimal128("1.2E+10"),
+        "decimal128": Decimal128("1.2E+10")!,
         "minkey": MinKey(),
         "maxkey": MaxKey(),
         "date": Date(timeIntervalSince1970: 500.004),
@@ -104,7 +134,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(doc["int32"]).to(bsonEqual(5))
         expect(doc["int64"]).to(bsonEqual(Int64(10)))
         expect(doc["double"]).to(bsonEqual(15.0))
-        expect(doc["decimal128"]).to(bsonEqual(Decimal128("1.2E+10")))
+        expect(doc["decimal128"]).to(bsonEqual(Decimal128("1.2E+10")!))
         expect(doc["minkey"]).to(bsonEqual(MinKey()))
         expect(doc["maxkey"]).to(bsonEqual(MaxKey()))
         expect(doc["date"]).to(bsonEqual(Date(timeIntervalSince1970: 500.004)))
@@ -155,7 +185,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(DocumentTests.testDoc.int32).to(bsonEqual(5))
         expect(DocumentTests.testDoc.int64).to(bsonEqual(Int64(10)))
         expect(DocumentTests.testDoc.double).to(bsonEqual(15.0))
-        expect(DocumentTests.testDoc.decimal128).to(bsonEqual(Decimal128("1.2E+10")))
+        expect(DocumentTests.testDoc.decimal128).to(bsonEqual(Decimal128("1.2E+10")!))
         expect(DocumentTests.testDoc.minkey).to(bsonEqual(MinKey()))
         expect(DocumentTests.testDoc.maxkey).to(bsonEqual(MaxKey()))
         expect(DocumentTests.testDoc.date).to(bsonEqual(Date(timeIntervalSince1970: 500.004)))
@@ -328,10 +358,33 @@ final class DocumentTests: MongoSwiftTestCase {
 
                 // for cB input:
                 // native_to_bson( bson_to_native(cB) ) = cB
-                expect(Document(fromBSON: cBData).rawBSON).to(equal(cBData))
+                let docFromCB = Document(fromBSON: cBData)
+                expect(docFromCB.rawBSON).to(equal(cBData))
+
+                // test round tripping through documents
+                // We create an array by reading every element out of the document (and therefore out of the bson_t)
+                // We then create a new document and append each element of the array to it. Once that is done, every
+                // element in the original document will have gone from bson_t -> Swift data type -> bson_t. At the end,
+                // the new bson_t should be identical to the original one. If not, our bson_t translation layer is
+                // lossy and/or buggy.
+                let testRoundTrip = {
+                    let nativeFromDoc = docFromCB.toArray()
+                    let docFromNative = Document(fromArray: nativeFromDoc)
+                    expect(docFromNative.rawBSON).to(equal(cBData))
+                }
+
+                // Linux swift terminates all strings when encountering null bytes in Swift < 4.2.3 (SR-7455).
+                // TODO: remove this conditional compile when the minimum supported version is >= 4.2.3
+                #if swift(>=4.2.3) || !os(Linux)
+                testRoundTrip()
+                #else
+                if description != "Embedded nulls" {
+                    testRoundTrip()
+                }
+                #endif
 
                 // native_to_canonical_extended_json( bson_to_native(cB) ) = cEJ
-                expect(Document(fromBSON: cBData).canonicalExtendedJSON).to(cleanEqual(cEJ))
+                expect(docFromCB.canonicalExtendedJSON).to(cleanEqual(cEJ))
 
                 // native_to_relaxed_extended_json( bson_to_native(cB) ) = rEJ (if rEJ exists)
                 if let rEJ = validCase["relaxed_extjson"] as? String {
@@ -412,7 +465,7 @@ final class DocumentTests: MongoSwiftTestCase {
         "int32": Int32(32),
         "int64": Int64.max,
         "bool": false,
-        "decimal": Decimal128("1.2E+10"),
+        "decimal": Decimal128("1.2E+10")!,
         "oid": ObjectId(),
         "timestamp": Timestamp(timestamp: 1, inc: 2),
         "datetime": Date(msSinceEpoch: 1000)
@@ -449,7 +502,7 @@ final class DocumentTests: MongoSwiftTestCase {
         doc["double"] = 3.0
         expect(doc.data).to(equal(pointer))
 
-        doc["decimal"] = Decimal128("100")
+        doc["decimal"] = Decimal128("100")!
         expect(doc.data).to(equal(pointer))
 
         // overwrite int64 with int64
@@ -471,7 +524,7 @@ final class DocumentTests: MongoSwiftTestCase {
             "int32": 20,
             "int64": Int64.min,
             "bool": true,
-            "decimal": Decimal128("100"),
+            "decimal": Decimal128("100")!,
             "oid": newOid,
             "timestamp": Timestamp(timestamp: 5, inc: 10),
             "datetime": Date(msSinceEpoch: 2000)
@@ -492,7 +545,7 @@ final class DocumentTests: MongoSwiftTestCase {
             "int32": 20,
             "int64": bigInt,
             "bool": true,
-            "decimal": Decimal128("100"),
+            "decimal": Decimal128("100")!,
             "oid": newOid,
             "timestamp": Timestamp(timestamp: 5, inc: 10),
             "datetime": Date(msSinceEpoch: 2000)
@@ -534,7 +587,7 @@ final class DocumentTests: MongoSwiftTestCase {
         let overwritablePairs: [(String, BSONValue)] = [
             ("double", Int(10)),
             ("int32", "hi"),
-            ("int64", Decimal128("1.0")),
+            ("int64", Decimal128("1.0")!),
             ("bool", [1, 2, 3]),
             ("decimal", 100),
             ("oid", 25.5),
@@ -551,7 +604,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(overwritableDoc).to(equal([
             "double": 10,
             "int32": "hi",
-            "int64": Decimal128("1.0"),
+            "int64": Decimal128("1.0")!,
             "bool": [1, 2, 3] as [Int],
             "decimal": 100,
             "oid": 25.5,

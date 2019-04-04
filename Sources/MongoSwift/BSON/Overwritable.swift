@@ -43,8 +43,11 @@ extension Double: Overwritable {
 
 extension Decimal128: Overwritable {
     internal func writeToCurrentPosition(of iter: DocumentIterator) throws {
-        var encoded = try Decimal128.toLibBSONType(self.data)
-        bson_iter_overwrite_decimal128(&iter.iter, &encoded)
+        withUnsafePointer(to: self.decimal128) { ptr in
+            // bson_iter_overwrite_decimal128 takes in a (non-const) *decimal_128_t, so we need to pass in a mutable
+            // pointer. no mutation of self.decimal128 should occur, however. (CDRIVER-3069)
+            bson_iter_overwrite_decimal128(&iter.iter, UnsafeMutablePointer<bson_decimal128_t>(mutating: ptr))
+        }
     }
 }
 

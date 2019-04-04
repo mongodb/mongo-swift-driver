@@ -6,9 +6,9 @@ import XCTest
 
 final class BSONValueTests: MongoSwiftTestCase {
     func testInvalidDecimal128() throws {
-        expect(Decimal128(ifValid: "hi")).to(beNil())
-        expect(Decimal128(ifValid: "123.4.5")).to(beNil())
-        expect(Decimal128(ifValid: "10")).toNot(beNil())
+        expect(Decimal128("hi")).to(beNil())
+        expect(Decimal128("123.4.5")).to(beNil())
+        expect(Decimal128("10")).toNot(beNil())
     }
 
     func testUUIDBytes() throws {
@@ -38,7 +38,7 @@ final class BSONValueTests: MongoSwiftTestCase {
         // Double
         checkTrueAndFalse(val: 1.618, alternate: 2.718)
         // Decimal128
-        checkTrueAndFalse(val: Decimal128("1.618"), alternate: Decimal128("2.718"))
+        checkTrueAndFalse(val: Decimal128("1.618")!, alternate: Decimal128("2.718")!)
         // Bool
         checkTrueAndFalse(val: true, alternate: false)
         // String
@@ -147,24 +147,7 @@ final class BSONValueTests: MongoSwiftTestCase {
 
     /// Test AnyBSONValue Hashable conformance
     func testHashable() throws {
-        let expected = CodecTests.AllBSONTypes(
-                double: Double(2),
-                string: "hi",
-                doc: ["x": 1],
-                arr: [1, 2],
-                binary: try Binary(base64: "//8=", subtype: .generic),
-                oid: ObjectId(fromString: "507f1f77bcf86cd799439011"),
-                bool: true,
-                date: Date(timeIntervalSinceReferenceDate: 5000),
-                code: CodeWithScope(code: "hi", scope: ["x": 1]),
-                int: 1,
-                ts: Timestamp(timestamp: 1, inc: 2),
-                int32: 5,
-                int64: 6,
-                dec: Decimal128("1.2E+10"),
-                minkey: MinKey(),
-                maxkey: MaxKey(),
-                regex: RegularExpression(pattern: "^abc", options: "imx"))
+        let expected = try CodecTests.AllBSONTypes.factory()
 
         let values = Mirror(reflecting: expected).children.map { child in AnyBSONValue(child.value as! BSONValue) }
         let valuesSet = Set<AnyBSONValue>(values)
