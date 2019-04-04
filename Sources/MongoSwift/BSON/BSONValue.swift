@@ -145,10 +145,7 @@ public struct BSONNull: BSONValue, Codable, Equatable {
     public init() { }
 
     public init(from decoder: Decoder) throws {
-        if decoder is _BSONDecoder {
-            throw bsonDecodingDirectlyError(type: BSONNull.self, at: decoder.codingPath)
-        }
-        throw bsonDecodingUnsupportedError(type: BSONNull.self, at: decoder.codingPath)
+        throw getDecodingError(type: BSONNull.self, decoder: decoder)
     }
 
     public func encode(to: Encoder) throws {
@@ -250,10 +247,7 @@ public struct Binary: BSONValue, Equatable, Codable {
     }
 
     public init(from decoder: Decoder) throws {
-        if decoder is _BSONDecoder {
-            throw bsonDecodingDirectlyError(type: Binary.self, at: decoder.codingPath)
-        }
-        throw bsonDecodingUnsupportedError(type: Binary.self, at: decoder.codingPath)
+        throw getDecodingError(type: Binary.self, decoder: decoder)
     }
 
     public func encode(to: Encoder) throws {
@@ -361,10 +355,7 @@ public struct DBPointer: BSONValue, Codable, Equatable {
     }
 
     public init(from decoder: Decoder) throws {
-        if decoder is _BSONDecoder {
-            throw bsonDecodingDirectlyError(type: DBPointer.self, at: decoder.codingPath)
-        }
-        throw bsonDecodingUnsupportedError(type: DBPointer.self, at: decoder.codingPath)
+        throw getDecodingError(type: DBPointer.self, decoder: decoder)
     }
 
     public func encode(to: Encoder) throws {
@@ -439,10 +430,7 @@ public struct Decimal128: BSONValue, Equatable, Codable, CustomStringConvertible
     }
 
     public init(from decoder: Decoder) throws {
-        if decoder is _BSONDecoder {
-            throw bsonDecodingDirectlyError(type: Decimal128.self, at: decoder.codingPath)
-        }
-        throw bsonDecodingUnsupportedError(type: Decimal128.self, at: decoder.codingPath)
+        throw getDecodingError(type: Decimal128.self, decoder: decoder)
     }
 
     public func encode(to: Encoder) throws {
@@ -586,10 +574,7 @@ public struct CodeWithScope: BSONValue, Equatable, Codable {
     }
 
     public init(from decoder: Decoder) throws {
-        if decoder is _BSONDecoder {
-            throw bsonDecodingDirectlyError(type: CodeWithScope.self, at: decoder.codingPath)
-        }
-        throw bsonDecodingUnsupportedError(type: CodeWithScope.self, at: decoder.codingPath)
+        throw getDecodingError(type: CodeWithScope.self, decoder: decoder)
     }
 
     public func encode(to: Encoder) throws {
@@ -657,10 +642,7 @@ public struct MaxKey: BSONValue, Equatable, Codable {
     public init() {}
 
     public init(from decoder: Decoder) throws {
-        if decoder is _BSONDecoder {
-            throw bsonDecodingDirectlyError(type: MaxKey.self, at: decoder.codingPath)
-        }
-        throw bsonDecodingUnsupportedError(type: MaxKey.self, at: decoder.codingPath)
+        throw getDecodingError(type: MaxKey.self, decoder: decoder)
     }
 
     public func encode(to: Encoder) throws {
@@ -693,10 +675,7 @@ public struct MinKey: BSONValue, Equatable, Codable {
     public init() {}
 
     public init(from decoder: Decoder) throws {
-        if decoder is _BSONDecoder {
-            throw bsonDecodingDirectlyError(type: MinKey.self, at: decoder.codingPath)
-        }
-        throw bsonDecodingUnsupportedError(type: MinKey.self, at: decoder.codingPath)
+        throw getDecodingError(type: MinKey.self, decoder: decoder)
     }
 
     public func encode(to: Encoder) throws {
@@ -751,10 +730,7 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
     }
 
     public init(from decoder: Decoder) throws {
-        if decoder is _BSONDecoder {
-            throw bsonDecodingDirectlyError(type: ObjectId.self, at: decoder.codingPath)
-        }
-        throw bsonDecodingUnsupportedError(type: ObjectId.self, at: decoder.codingPath)
+        throw getDecodingError(type: ObjectId.self, decoder: decoder)
     }
 
     public func encode(to: Encoder) throws {
@@ -896,10 +872,7 @@ public struct RegularExpression: BSONValue, Equatable, Codable {
     }
 
     public init(from decoder: Decoder) throws {
-        if decoder is _BSONDecoder {
-            throw bsonDecodingDirectlyError(type: RegularExpression.self, at: decoder.codingPath)
-        }
-        throw bsonDecodingUnsupportedError(type: RegularExpression.self, at: decoder.codingPath)
+        throw getDecodingError(type: RegularExpression.self, decoder: decoder)
     }
 
     public func encode(to: Encoder) throws {
@@ -984,10 +957,7 @@ public struct Symbol: BSONValue, CustomStringConvertible, Codable, Equatable {
     public let stringValue: String
 
     public init(from decoder: Decoder) throws {
-        if decoder is _BSONDecoder {
-            throw bsonDecodingDirectlyError(type: Symbol.self, at: decoder.codingPath)
-        }
-        throw bsonDecodingUnsupportedError(type: Symbol.self, at: decoder.codingPath)
+        throw getDecodingError(type: Symbol.self, decoder: decoder)
     }
 
     internal init(_ stringValue: String) {
@@ -1050,10 +1020,7 @@ public struct Timestamp: BSONValue, Equatable, Codable {
     }
 
     public init(from decoder: Decoder) throws {
-        if decoder is _BSONDecoder {
-            throw bsonDecodingDirectlyError(type: Timestamp.self, at: decoder.codingPath)
-        }
-        throw bsonDecodingUnsupportedError(type: Timestamp.self, at: decoder.codingPath)
+        throw getDecodingError(type: Timestamp.self, decoder: decoder)
     }
 
     public func encode(to: Encoder) throws {
@@ -1091,10 +1058,7 @@ public struct BSONUndefined: BSONValue, Equatable, Codable {
     internal init() {}
 
     public init(from decoder: Decoder) throws {
-        if decoder is _BSONDecoder {
-            throw bsonDecodingDirectlyError(type: BSONUndefined.self, at: decoder.codingPath)
-        }
-        throw bsonDecodingUnsupportedError(type: BSONUndefined.self, at: decoder.codingPath)
+        throw getDecodingError(type: BSONUndefined.self, decoder: decoder)
     }
 
     public func encode(to: Encoder) throws {
@@ -1205,21 +1169,45 @@ private func bsonDecodingUnsupportedError<T: BSONValue>(type: T.Type, at codingP
 }
 
 /**
- * Error thrown when a `BSONValue` type introduced by the driver (e.g. ObjectId) is decoded via the decoder
- * initializer when using `BSONDecoder`. These introduced types are BSON primitives that do not exist in Swift.
- * Since they're BSON primitives, they should be read straight from the document via the underlying `bson_t`,
- * and `BSONDecoder` should never be calling into init(from:Decoder) to initialize them.
- *
- * Example error causes:
- * - Decoding directly from Document: decoder.decode(ObjectId.self, from: doc)
- * - Attempting to decode by field names: decoder.decode(CodeWithScope.self, from: "{\"code": \"code\"}")
+ * Error thrown when a `BSONValue` type introduced by the driver (e.g. ObjectId) is decoded directly via the top-level
+ * `BSONDecoder`.
  */
 private func bsonDecodingDirectlyError<T: BSONValue>(type: T.Type, at codingPath: [CodingKey]) -> DecodingError {
-    let description = "Cannot initialize a BSONValue type \(T.self) directly from BSONDecoder. It must be a member of" +
-            " a struct or a class."
+    let description = "Cannot initialize BSONValue type \(T.self) directly from BSONDecoder. It must be decoded as " +
+            "a member of a struct or a class."
 
     return DecodingError.typeMismatch(
             T.self,
             DecodingError.Context(codingPath: codingPath, debugDescription: description)
     )
+}
+
+/**
+ * This function determines which error to throw when a driver-introduced BSON type is decoded via its init(decoder).
+ * The types that use this function are all BSON primitives, so they should be decoded directly in `_BSONDecoder`. If
+ * execution reaches their decoding initializer, it means something went wrong. This function determines an appropriate
+ * error to throw for each possible case.
+ *
+ * Some example cases:
+ *   - Decoding directly from the BSONDecoder top-level (e.g. BSONDecoder().decode(ObjectId.self, from: ...))
+ *   - Encountering the wrong type of BSONValue (e.g. expected "_id" to be an `ObjectId`, got a `Document` instead)
+ *   - Attempting to decode a driver-introduced BSONValue with a non-BSONDecoder
+ */
+internal func getDecodingError<T: BSONValue>(type: T.Type, decoder: Decoder) -> DecodingError {
+    if let bsonDecoder = decoder as? _BSONDecoder {
+        // Cannot decode driver-introduced BSONValues directly
+        if decoder.codingPath.isEmpty {
+            return bsonDecodingDirectlyError(type: T.self, at: decoder.codingPath)
+        }
+
+        // Got the wrong BSONValue type
+        return DecodingError._typeMismatch(
+                at: decoder.codingPath,
+                expectation: T.self,
+                reality: bsonDecoder.storage.topContainer
+        )
+    }
+
+    // Non-BSONDecoders are currently unsupported
+    return bsonDecodingUnsupportedError(type: T.self, at: decoder.codingPath)
 }
