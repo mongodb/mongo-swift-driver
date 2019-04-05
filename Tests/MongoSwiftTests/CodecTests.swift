@@ -32,35 +32,19 @@ final class CodecTests: MongoSwiftTestCase {
     struct BasicStruct: Codable, Equatable {
         let int: Int
         let string: String
-
-        public static func == (lhs: BasicStruct, rhs: BasicStruct) -> Bool {
-            return lhs.int == rhs.int && lhs.string == rhs.string
-        }
     }
 
     struct NestedStruct: Codable, Equatable {
         let s1: BasicStruct
         let s2: BasicStruct
-
-        public static func == (lhs: NestedStruct, rhs: NestedStruct) -> Bool {
-            return lhs.s1 == rhs.s1 && lhs.s2 == rhs.s2
-        }
     }
 
     struct NestedArray: Codable, Equatable {
         let array: [BasicStruct]
-
-        public static func == (lhs: NestedArray, rhs: NestedArray) -> Bool {
-            return lhs.array == rhs.array
-        }
     }
 
     struct NestedNestedStruct: Codable, Equatable {
         let s: NestedStruct
-
-        public static func == (lhs: NestedNestedStruct, rhs: NestedNestedStruct) -> Bool {
-            return lhs.s == rhs.s
-        }
     }
 
     /// Test encoding/decoding a variety of structs containing simple types that have 
@@ -111,10 +95,6 @@ final class CodecTests: MongoSwiftTestCase {
         let int: Int?
         let bool: Bool?
         let string: String
-
-        public static func == (lhs: OptionalsStruct, rhs: OptionalsStruct) -> Bool {
-            return lhs.int == rhs.int && lhs.bool == rhs.bool && lhs.string == rhs.string
-        }
     }
 
     /// Test encoding/decoding a struct containing optional values.
@@ -148,13 +128,6 @@ final class CodecTests: MongoSwiftTestCase {
         let float: Float?
 
         static let keys = ["int8", "int16", "uint8", "uint16", "uint32", "uint64", "uint", "float"]
-
-        public static func == (lhs: Numbers, rhs: Numbers) -> Bool {
-            return lhs.int8 == rhs.int8 && lhs.int16 == rhs.int16 &&
-                    lhs.uint8 == rhs.uint8 && lhs.uint16 == rhs.uint16 &&
-                    lhs.uint32 == rhs.uint32 && lhs.uint64 == rhs.uint64 &&
-                    lhs.uint == rhs.uint && lhs.float == rhs.float
-        }
 
         init(int8: Int8? = nil,
              int16: Int16? = nil,
@@ -265,11 +238,6 @@ final class CodecTests: MongoSwiftTestCase {
         let int32: Int32
         let int64: Int64
         let double: Double
-
-        public static func == (lhs: BSONNumbers, rhs: BSONNumbers) -> Bool {
-            return lhs.int == rhs.int && lhs.int32 == rhs.int32 &&
-                    lhs.int64 == rhs.int64 && lhs.double == rhs.double
-        }
     }
 
     /// Test that BSON number types are encoded properly, and can be decoded from any type they are stored as
@@ -320,16 +288,6 @@ final class CodecTests: MongoSwiftTestCase {
         let undefined: BSONUndefined
         let dbpointer: DBPointer
         let null: BSONNull
-
-        public static func == (lhs: AllBSONTypes, rhs: AllBSONTypes) -> Bool {
-            return lhs.double == rhs.double && lhs.string == rhs.string &&
-                    lhs.doc == rhs.doc && lhs.arr == rhs.arr && lhs.binary == rhs.binary &&
-                    lhs.oid == rhs.oid && lhs.bool == rhs.bool && lhs.code == rhs.code &&
-                    lhs.int == rhs.int && lhs.ts == rhs.ts && lhs.int32 == rhs.int32 &&
-                    lhs.int64 == rhs.int64 && lhs.dec == rhs.dec && lhs.minkey == rhs.minkey &&
-                    lhs.maxkey == rhs.maxkey && lhs.regex == rhs.regex && lhs.date == rhs.date &&
-                    lhs.symbol == rhs.symbol && lhs.dbpointer == rhs.dbpointer && lhs.null == rhs.null
-        }
 
         public static func factory() throws -> AllBSONTypes {
             return AllBSONTypes(

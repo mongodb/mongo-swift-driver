@@ -157,10 +157,6 @@ public struct BSONNull: BSONValue, Codable, Equatable {
             throw bsonTooLargeError(value: self, forKey: key)
         }
     }
-
-    public static func == (lhs: BSONNull, rhs: BSONNull) -> Bool {
-        return true
-    }
 }
 
 /// A struct to represent the BSON Binary type.
@@ -285,10 +281,6 @@ public struct Binary: BSONValue, Equatable, Codable {
         let dataObj = Data(bytes: data, count: Int(length))
         return try self.init(data: dataObj, subtype: UInt8(subtype.rawValue))
     }
-
-    public static func == (lhs: Binary, rhs: Binary) -> Bool {
-        return lhs.data == rhs.data && lhs.subtype == rhs.subtype
-    }
 }
 
 /// An extension of `Bool` to represent the BSON Boolean type.
@@ -390,10 +382,6 @@ public struct DBPointer: BSONValue, Codable, Equatable {
         }
 
         return DBPointer(ref: String(cString: collectionP), id: ObjectId(fromPointer: oidP))
-    }
-
-    public static func == (lhs: DBPointer, rhs: DBPointer) -> Bool {
-        return lhs.ref == rhs.ref && lhs.id == rhs.id
     }
 }
 
@@ -620,10 +608,6 @@ public struct CodeWithScope: BSONValue, Equatable, Codable {
 
         return self.init(code: code, scope: scopeDoc)
     }
-
-    public static func == (lhs: CodeWithScope, rhs: CodeWithScope) -> Bool {
-        return lhs.code == rhs.code && lhs.scope == rhs.scope
-    }
 }
 
 /// A struct to represent the BSON MaxKey type.
@@ -655,8 +639,6 @@ public struct MaxKey: BSONValue, Equatable, Codable {
         }
         return MaxKey()
     }
-
-    public static func == (lhs: MaxKey, rhs: MaxKey) -> Bool { return true }
 }
 
 /// A struct to represent the BSON MinKey type.
@@ -688,8 +670,6 @@ public struct MinKey: BSONValue, Equatable, Codable {
         }
         return MinKey()
     }
-
-    public static func == (lhs: MinKey, rhs: MinKey) -> Bool { return true }
 }
 
 /// A struct to represent the BSON ObjectId type.
@@ -904,11 +884,6 @@ public struct RegularExpression: BSONValue, Equatable, Codable {
 
         return self.init(pattern: patternString, options: optionsString)
     }
-
-    /// Returns `true` if the two `RegularExpression`s have matching patterns and options, and `false` otherwise.
-    public static func == (lhs: RegularExpression, rhs: RegularExpression) -> Bool {
-        return lhs.pattern == rhs.pattern && lhs.options == rhs.options
-    }
 }
 
 /// An extension of String to represent the BSON string type.
@@ -991,10 +966,6 @@ public struct Symbol: BSONValue, CustomStringConvertible, Codable, Equatable {
 
         return Symbol(strValue)
     }
-
-    public static func == (lhs: Symbol, rhs: Symbol) -> Bool {
-        return lhs.stringValue == rhs.stringValue
-    }
 }
 
 /// A struct to represent the BSON Timestamp type.
@@ -1044,10 +1015,6 @@ public struct Timestamp: BSONValue, Equatable, Codable {
 
         return self.init(timestamp: t, inc: i)
     }
-
-    public static func == (lhs: Timestamp, rhs: Timestamp) -> Bool {
-        return lhs.timestamp == rhs.timestamp && lhs.increment == rhs.increment
-    }
 }
 
 /// A struct to represent the deprecated Undefined type.
@@ -1076,10 +1043,6 @@ public struct BSONUndefined: BSONValue, Equatable, Codable {
             throw wrongIterTypeError(iter, expected: BSONUndefined.self)
         }
         return BSONUndefined()
-    }
-
-    public static func == (lhs: BSONUndefined, rhs: BSONUndefined) -> Bool {
-        return true
     }
 }
 

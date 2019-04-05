@@ -367,10 +367,6 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     struct Basic: Codable, Equatable {
         let x: Int
         let y: String
-
-        static func == (lhs: Basic, rhs: Basic) -> Bool {
-            return lhs.x == rhs.x && lhs.y == rhs.y
-        }
     }
 
     func testCodableCollection() throws {
