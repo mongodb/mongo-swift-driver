@@ -1,9 +1,12 @@
 import bson
 import Foundation
 
+internal typealias MutableBsonPointer = UnsafeMutablePointer<bson_t>
+internal typealias BsonPointer = UnsafePointer<bson_t>
+
 /// The storage backing a MongoSwift `Document`.
 public class DocumentStorage {
-    internal var pointer: UnsafeMutablePointer<bson_t>!
+    internal var pointer: MutableBsonPointer!
 
     // Normally, this would go under Document, but computed properties cannot be used before all stored properties are
     // initialized. Putting this under DocumentStorage gives a correct count and use of it inside of an init() as long
@@ -16,7 +19,7 @@ public class DocumentStorage {
         self.pointer = bson_new()
     }
 
-    internal init(fromPointer pointer: UnsafePointer<bson_t>) {
+    internal init(fromPointer pointer: BsonPointer) {
         self.pointer = bson_copy(pointer)
     }
 
@@ -43,7 +46,7 @@ public struct Document {
 /// An extension of `Document` containing its private/internal functionality.
 extension Document {
     /// direct access to the storage's pointer to a bson_t
-    internal var data: UnsafeMutablePointer<bson_t>! {
+    internal var data: MutableBsonPointer {
         return storage.pointer
     }
 
@@ -53,11 +56,11 @@ extension Document {
      * memory.
      *
      * - Parameters:
-     *   - fromPointer: a UnsafePointer<bson_t>
+     *   - fromPointer: a BsonPointer
      *
      * - Returns: a new `Document`
      */
-    internal init(fromPointer pointer: UnsafePointer<bson_t>) {
+    internal init(fromPointer pointer: BsonPointer) {
         self.storage = DocumentStorage(fromPointer: pointer)
         self.count = self.storage.count
     }

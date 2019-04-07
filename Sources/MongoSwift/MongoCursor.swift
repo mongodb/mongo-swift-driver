@@ -79,7 +79,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
             return err
         }
 
-        var replyPtr = UnsafeMutablePointer<UnsafePointer<bson_t>?>.allocate(capacity: 1)
+        var replyPtr = UnsafeMutablePointer<BsonPointer?>.allocate(capacity: 1)
         defer { replyPtr.deallocate() }
 
         var error = bson_error_t()
@@ -107,7 +107,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
             return nil
         }
 
-        let out = UnsafeMutablePointer<UnsafePointer<bson_t>?>.allocate(capacity: 1)
+        let out = UnsafeMutablePointer<BsonPointer?>.allocate(capacity: 1)
         defer {
             out.deinitialize(count: 1)
             out.deallocate()
