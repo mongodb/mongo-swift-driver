@@ -154,11 +154,10 @@ extension Array: BSONValue {
     }
 
     public func bsonEquals(_ other: BSONValue?) -> Bool {
-        guard let otherArr = other as? [BSONValue], let otherSelf = self as? [BSONValue] else {
+        guard let otherArr = other as? [BSONValue], let selfArr = self as? [BSONValue] else {
             return false
         }
-        return self.count == otherArr.count &&
-                zip(otherSelf, otherArr).reduce(true) { prev, next in prev && next.0.bsonEquals(next.1) }
+        return self.count == otherArr.count && zip(selfArr, otherArr).allSatisfy { lhs, rhs in lhs.bsonEquals(rhs) }
     }
 }
 
