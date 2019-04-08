@@ -1,8 +1,8 @@
 import bson
 import Foundation
 
-internal typealias MutableBsonPointer = UnsafeMutablePointer<bson_t>
 internal typealias BsonPointer = UnsafePointer<bson_t>
+internal typealias MutableBsonPointer = UnsafeMutablePointer<bson_t>
 
 /// The storage backing a MongoSwift `Document`.
 public class DocumentStorage {
@@ -432,20 +432,22 @@ extension Document: BSONValue {
             throw wrongIterTypeError(iter, expected: Document.self)
         }
 
-        var length: UInt32 = 0
-        let document = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
-        defer {
-            document.deinitialize(count: 1)
-            document.deallocate()
+        return try iter.withBsonIterPointer { iterPtr in
+            var length: UInt32 = 0
+            let document = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
+            defer {
+                document.deinitialize(count: 1)
+                document.deallocate()
+            }
+
+            bson_iter_document(iterPtr, &length, document)
+
+            guard let docData = bson_new_from_data(document.pointee, Int(length)) else {
+                throw RuntimeError.internalError(message: "Failed to create a Document from iterator")
+            }
+
+            return self.init(fromPointer: docData)
         }
-
-        bson_iter_document(&iter.iter, &length, document)
-
-        guard let docData = bson_new_from_data(document.pointee, Int(length)) else {
-            throw RuntimeError.internalError(message: "Failed to create a Document from iterator")
-        }
-
-        return self.init(fromPointer: docData)
     }
 }
 

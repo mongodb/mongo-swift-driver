@@ -1,6 +1,9 @@
 import Foundation
 import mongoc
 
+internal typealias BsonIterPointer = UnsafePointer<bson_iter_t>
+internal typealias MutableBsonIterPointer = UnsafeMutablePointer<bson_iter_t>
+
 /// An iterator over the values in a `Document`.
 public class DocumentIterator: IteratorProtocol {
     /// the libbson iterator. it must be a `var` because we use it as
@@ -32,17 +35,23 @@ public class DocumentIterator: IteratorProtocol {
     /// Advances the iterator forward one value. Returns false if there is an error moving forward
     /// or if at the end of the document. Returns true otherwise.
     internal func advance() -> Bool {
-        return bson_iter_next(&self.iter)
+        return self.withMutableBsonIterPointer { iterPtr in
+          bson_iter_next(iterPtr)
+        }
     }
 
     /// Moves the iterator to the specified key. Returns false if the key does not exist. Returns true otherwise.
     internal func move(to key: String) -> Bool {
-        return bson_iter_find(&self.iter, key.cString(using: .utf8))
+        return self.withMutableBsonIterPointer { iterPtr in
+          bson_iter_find(iterPtr, key.cString(using: .utf8))
+        }
     }
 
     /// Returns the current key. Assumes the iterator is in a valid position.
     internal var currentKey: String {
-        return String(cString: bson_iter_key(&self.iter))
+        return self.withBsonIterPointer { iterPtr in
+          String(cString: bson_iter_key(iterPtr))
+        }
     }
 
     /// Returns the current value. Assumes the iterator is in a valid position.
@@ -56,7 +65,9 @@ public class DocumentIterator: IteratorProtocol {
 
     /// Returns the current value's type. Assumes the iterator is in a valid position.
     internal var currentType: BSONType {
-        return BSONType(rawValue: bson_iter_type(&self.iter).rawValue) ?? .invalid
+        return self.withBsonIterPointer { iterPtr in
+          BSONType(rawValue: bson_iter_type(iterPtr).rawValue) ?? .invalid
+        }
     }
 
     /// Returns the keys from the iterator's current position to the end. The iterator
@@ -137,6 +148,18 @@ public class DocumentIterator: IteratorProtocol {
             fatalError("Expected \(newValue) to have BSON type \(self.currentType), but has type \(newValue.bsonType)")
         }
         try newValue.writeToCurrentPosition(of: self)
+    }
+
+    /// Internal helper function for explicitly accessing the `bson_iter_t` as an unsafe pointer
+    internal func withBsonIterPointer<Result>(_ body: (BsonIterPointer) throws -> Result) rethrows -> Result {
+      return try withUnsafePointer(to: self.iter, body)
+    }
+
+    /// Internal helper function for explicitly accessing the `bson_iter_t` as an unsafe mutable pointer
+    internal func withMutableBsonIterPointer<Result>(
+      _ body: (MutableBsonIterPointer) throws -> Result
+    ) rethrows -> Result {
+      return try withUnsafeMutablePointer(to: &self.iter, body)
     }
 
     private static let bsonTypeMap: [BSONType: BSONValue.Type] = [
