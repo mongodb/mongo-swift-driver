@@ -88,7 +88,7 @@ extension Array: BSONValue {
             throw wrongIterTypeError(iter, expected: Array.self)
         }
 
-        return try iter.withBsonIterPointer { iterPtr in
+        return try iter.withBSONIterPointer { iterPtr in
             var length: UInt32 = 0
             let array = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
             defer {
@@ -266,7 +266,7 @@ public struct Binary: BSONValue, Equatable, Codable {
             throw wrongIterTypeError(iter, expected: Binary.self)
         }
 
-        return try iter.withBsonIterPointer { iterPtr in
+        return try iter.withBSONIterPointer { iterPtr in
             var subtype = bson_subtype_t(rawValue: 0)
             var length: UInt32 = 0
             let dataPointer = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
@@ -302,7 +302,7 @@ extension Bool: BSONValue {
             throw wrongIterTypeError(iter, expected: Bool.self)
         }
 
-        return iter.withBsonIterPointer { iterPtr in
+        return iter.withBSONIterPointer { iterPtr in
             self.init(bson_iter_bool(iterPtr))
         }
     }
@@ -332,7 +332,7 @@ extension Date: BSONValue {
             throw wrongIterTypeError(iter, expected: Date.self)
         }
 
-        return iter.withBsonIterPointer { iterPtr in
+        return iter.withBSONIterPointer { iterPtr in
             self.init(msSinceEpoch: bson_iter_date_time(iterPtr))
         }
     }
@@ -370,7 +370,7 @@ public struct DBPointer: BSONValue, Codable, Equatable {
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> DBPointer {
-        return try iter.withBsonIterPointer { iterPtr in
+        return try iter.withBSONIterPointer { iterPtr in
             var length: UInt32 = 0
             let collectionPP = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: 1)
             defer {
@@ -460,7 +460,7 @@ public struct Decimal128: BSONValue, Equatable, Codable, CustomStringConvertible
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> Decimal128 {
-        return try iter.withBsonIterPointer { iterPtr in
+        return try iter.withBSONIterPointer { iterPtr in
             var value = bson_decimal128_t()
             guard bson_iter_decimal128(iterPtr, &value) else {
                 throw wrongIterTypeError(iter, expected: Decimal128.self)
@@ -486,7 +486,7 @@ extension Double: BSONValue {
             throw wrongIterTypeError(iter, expected: Double.self)
         }
 
-        return iter.withBsonIterPointer { iterPtr in
+        return iter.withBSONIterPointer { iterPtr in
             self.init(bson_iter_double(iterPtr))
         }
     }
@@ -512,7 +512,7 @@ extension Int: BSONValue {
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> Int {
-        return try iter.withBsonIterPointer { iterPtr in
+        return try iter.withBSONIterPointer { iterPtr in
             // TODO: handle this more gracefully (SWIFT-221)
             switch iter.currentType {
             case .int32, .int64:
@@ -539,7 +539,7 @@ extension Int32: BSONValue {
             throw wrongIterTypeError(iter, expected: Int32.self)
         }
 
-        return iter.withBsonIterPointer { iterPtr in
+        return iter.withBSONIterPointer { iterPtr in
             self.init(bson_iter_int32(iterPtr))
         }
     }
@@ -560,7 +560,7 @@ extension Int64: BSONValue {
             throw wrongIterTypeError(iter, expected: Int64.self)
         }
 
-        return iter.withBsonIterPointer { iterPtr in
+        return iter.withBSONIterPointer { iterPtr in
             self.init(bson_iter_int64(iterPtr))
         }
     }
@@ -605,7 +605,7 @@ public struct CodeWithScope: BSONValue, Equatable, Codable {
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> CodeWithScope {
-        return try iter.withBsonIterPointer { iterPtr in
+        return try iter.withBSONIterPointer { iterPtr in
             var length: UInt32 = 0
             if iter.currentType.rawValue == BSONType.javascript.rawValue {
                 let code = String(cString: bson_iter_code(iterPtr, &length))
@@ -774,7 +774,7 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> ObjectId {
-        return try iter.withBsonIterPointer { iterPtr in
+        return try iter.withBSONIterPointer { iterPtr in
             guard let oid = bson_iter_oid(iterPtr) else {
                 throw wrongIterTypeError(iter, expected: ObjectId.self)
             }
@@ -892,7 +892,7 @@ public struct RegularExpression: BSONValue, Equatable, Codable {
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> RegularExpression {
-        return try iter.withBsonIterPointer { iterPtr in
+        return try iter.withBSONIterPointer { iterPtr in
             let options = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: 1)
             defer {
                 options.deinitialize(count: 1)
@@ -931,7 +931,7 @@ extension String: BSONValue {
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> String {
-        return try iter.withBsonIterPointer { iterPtr in
+        return try iter.withBSONIterPointer { iterPtr in
             var length: UInt32 = 0
             guard iter.currentType == .string, let strValue = bson_iter_utf8(iterPtr, &length) else {
                 throw wrongIterTypeError(iter, expected: String.self)
@@ -987,7 +987,7 @@ public struct Symbol: BSONValue, CustomStringConvertible, Codable, Equatable {
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> Symbol {
-        return try iter.withBsonIterPointer { iterPtr in
+        return try iter.withBSONIterPointer { iterPtr in
             var length: UInt32 = 0
             guard iter.currentType == .symbol, let cStr = bson_iter_symbol(iterPtr, &length) else {
                 throw wrongIterTypeError(iter, expected: Symbol.self)
@@ -1043,7 +1043,7 @@ public struct Timestamp: BSONValue, Equatable, Codable {
             throw wrongIterTypeError(iter, expected: Timestamp.self)
         }
 
-        return iter.withBsonIterPointer { iterPtr in
+        return iter.withBSONIterPointer { iterPtr in
             var t: UInt32 = 0
             var i: UInt32 = 0
 

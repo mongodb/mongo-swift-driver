@@ -1,8 +1,8 @@
 import Foundation
 import mongoc
 
-internal typealias BsonIterPointer = UnsafePointer<bson_iter_t>
-internal typealias MutableBsonIterPointer = UnsafeMutablePointer<bson_iter_t>
+internal typealias BSONIterPointer = UnsafePointer<bson_iter_t>
+internal typealias MutableBSONIterPointer = UnsafeMutablePointer<bson_iter_t>
 
 /// An iterator over the values in a `Document`.
 public class DocumentIterator: IteratorProtocol {
@@ -35,21 +35,21 @@ public class DocumentIterator: IteratorProtocol {
     /// Advances the iterator forward one value. Returns false if there is an error moving forward
     /// or if at the end of the document. Returns true otherwise.
     internal func advance() -> Bool {
-        return self.withMutableBsonIterPointer { iterPtr in
+        return self.withMutableBSONIterPointer { iterPtr in
           bson_iter_next(iterPtr)
         }
     }
 
     /// Moves the iterator to the specified key. Returns false if the key does not exist. Returns true otherwise.
     internal func move(to key: String) -> Bool {
-        return self.withMutableBsonIterPointer { iterPtr in
+        return self.withMutableBSONIterPointer { iterPtr in
           bson_iter_find(iterPtr, key.cString(using: .utf8))
         }
     }
 
     /// Returns the current key. Assumes the iterator is in a valid position.
     internal var currentKey: String {
-        return self.withBsonIterPointer { iterPtr in
+        return self.withBSONIterPointer { iterPtr in
           String(cString: bson_iter_key(iterPtr))
         }
     }
@@ -65,7 +65,7 @@ public class DocumentIterator: IteratorProtocol {
 
     /// Returns the current value's type. Assumes the iterator is in a valid position.
     internal var currentType: BSONType {
-        return self.withBsonIterPointer { iterPtr in
+        return self.withBSONIterPointer { iterPtr in
           BSONType(rawValue: bson_iter_type(iterPtr).rawValue) ?? .invalid
         }
     }
@@ -151,13 +151,13 @@ public class DocumentIterator: IteratorProtocol {
     }
 
     /// Internal helper function for explicitly accessing the `bson_iter_t` as an unsafe pointer
-    internal func withBsonIterPointer<Result>(_ body: (BsonIterPointer) throws -> Result) rethrows -> Result {
+    internal func withBSONIterPointer<Result>(_ body: (BSONIterPointer) throws -> Result) rethrows -> Result {
       return try withUnsafePointer(to: self.iter, body)
     }
 
     /// Internal helper function for explicitly accessing the `bson_iter_t` as an unsafe mutable pointer
-    internal func withMutableBsonIterPointer<Result>(
-      _ body: (MutableBsonIterPointer) throws -> Result
+    internal func withMutableBSONIterPointer<Result>(
+      _ body: (MutableBSONIterPointer) throws -> Result
     ) rethrows -> Result {
       return try withUnsafeMutablePointer(to: &self.iter, body)
     }

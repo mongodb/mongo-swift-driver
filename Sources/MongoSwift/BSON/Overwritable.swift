@@ -15,7 +15,7 @@ internal protocol Overwritable: BSONValue {
 
 extension Bool: Overwritable {
     internal func writeToCurrentPosition(of iter: DocumentIterator) {
-        iter.withMutableBsonIterPointer { iterPtr in bson_iter_overwrite_bool(iterPtr, self) }
+        iter.withMutableBSONIterPointer { iterPtr in bson_iter_overwrite_bool(iterPtr, self) }
     }
 }
 
@@ -33,19 +33,19 @@ extension Int: Overwritable {
 
 extension Int32: Overwritable {
     internal func writeToCurrentPosition(of iter: DocumentIterator) {
-        iter.withMutableBsonIterPointer { iterPtr in bson_iter_overwrite_int32(iterPtr, self) }
+        iter.withMutableBSONIterPointer { iterPtr in bson_iter_overwrite_int32(iterPtr, self) }
     }
 }
 
 extension Int64: Overwritable {
     internal func writeToCurrentPosition(of iter: DocumentIterator) {
-        iter.withMutableBsonIterPointer { iterPtr in bson_iter_overwrite_int64(iterPtr, self) }
+        iter.withMutableBSONIterPointer { iterPtr in bson_iter_overwrite_int64(iterPtr, self) }
     }
 }
 
 extension Double: Overwritable {
     internal func writeToCurrentPosition(of iter: DocumentIterator) {
-        iter.withMutableBsonIterPointer { iterPtr in bson_iter_overwrite_double(iterPtr, self) }
+        iter.withMutableBSONIterPointer { iterPtr in bson_iter_overwrite_double(iterPtr, self) }
     }
 }
 
@@ -54,7 +54,7 @@ extension Decimal128: Overwritable {
         withUnsafePointer(to: self.decimal128) { ptr in
             // bson_iter_overwrite_decimal128 takes in a (non-const) *decimal_128_t, so we need to pass in a mutable
             // pointer. no mutation of self.decimal128 should occur, however. (CDRIVER-3069)
-            iter.withMutableBsonIterPointer { iterPtr in
+            iter.withMutableBSONIterPointer { iterPtr in
                 bson_iter_overwrite_decimal128(iterPtr, UnsafeMutablePointer<bson_decimal128_t>(mutating: ptr))
             }
         }
@@ -64,13 +64,13 @@ extension Decimal128: Overwritable {
 extension ObjectId: Overwritable {
     internal func writeToCurrentPosition(of iter: DocumentIterator) throws {
         var encoded = try ObjectId.toLibBSONType(self.oid)
-        iter.withMutableBsonIterPointer { iterPtr in bson_iter_overwrite_oid(iterPtr, &encoded) }
+        iter.withMutableBSONIterPointer { iterPtr in bson_iter_overwrite_oid(iterPtr, &encoded) }
     }
 }
 
 extension Timestamp: Overwritable {
     internal func writeToCurrentPosition(of iter: DocumentIterator) {
-        iter.withMutableBsonIterPointer { iterPtr in
+        iter.withMutableBSONIterPointer { iterPtr in
             bson_iter_overwrite_timestamp(iterPtr, self.timestamp, self.increment)
         }
     }
@@ -78,7 +78,7 @@ extension Timestamp: Overwritable {
 
 extension Date: Overwritable {
     internal func writeToCurrentPosition(of iter: DocumentIterator) {
-        iter.withMutableBsonIterPointer { iterPtr in
+        iter.withMutableBSONIterPointer { iterPtr in
             bson_iter_overwrite_date_time(iterPtr, self.msSinceEpoch)
         }
     }
