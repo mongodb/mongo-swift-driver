@@ -1,8 +1,13 @@
 import Foundation
 import mongoc
 
+#if compiler(>=5.0)
+internal typealias BSONIterPointer = OpaquePointer
+internal typealias MutableBSONIterPointer = OpaquePointer
+#else
 internal typealias BSONIterPointer = UnsafePointer<bson_iter_t>
 internal typealias MutableBSONIterPointer = UnsafeMutablePointer<bson_iter_t>
+#endif
 
 /// An iterator over the values in a `Document`.
 public class DocumentIterator: IteratorProtocol {
@@ -161,16 +166,34 @@ public class DocumentIterator: IteratorProtocol {
     }
 
     /// Internal helper function for explicitly accessing the `bson_iter_t` as an unsafe pointer
+#if compiler(>=5.0)
     internal func withBSONIterPointer<Result>(_ body: (BSONIterPointer) throws -> Result) rethrows -> Result {
-      return try withUnsafePointer(to: self.iter, body)
+        return try withUnsafePointer(to: self.iter) { iterPtr in
+            try body(OpaquePointer(iterPtr))
+        }
     }
+#else
+    internal func withBSONIterPointer<Result>(_ body: (BSONIterPointer) throws -> Result) rethrows -> Result {
+        return try withUnsafePointer(to: self.iter, body)
+    }
+#endif
 
     /// Internal helper function for explicitly accessing the `bson_iter_t` as an unsafe mutable pointer
+#if compiler(>=5.0)
     internal func withMutableBSONIterPointer<Result>(
       _ body: (MutableBSONIterPointer) throws -> Result
     ) rethrows -> Result {
-      return try withUnsafeMutablePointer(to: &self.iter, body)
+        return try withUnsafeMutablePointer(to: &self.iter) { iterPtr in
+            try body(OpaquePointer(iterPtr))
+        }
     }
+#else
+    internal func withMutableBSONIterPointer<Result>(
+      _ body: (MutableBSONIterPointer) throws -> Result
+    ) rethrows -> Result {
+        return try withUnsafeMutablePointer(to: &self.iter, body)
+    }
+#endif
 
     private static let bsonTypeMap: [BSONType: BSONValue.Type] = [
         .double: Double.self,

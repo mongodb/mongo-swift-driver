@@ -843,16 +843,16 @@ internal struct _BSONKey: CodingKey {
 }
 
 internal extension DecodingError {
-    internal static func _typeMismatch(at path: [CodingKey],
-                                       expectation: Any.Type,
-                                       reality: BSONValue) -> DecodingError {
+    static func _typeMismatch(at path: [CodingKey],
+                              expectation: Any.Type,
+                              reality: BSONValue) -> DecodingError {
         let description = "Expected to decode \(expectation) but found \(type(of: reality)) instead."
         return .typeMismatch(expectation, Context(codingPath: path, debugDescription: description))
     }
 
-    internal static func _numberMismatch(at path: [CodingKey],
-                                         expectation: Any.Type,
-                                         reality: BSONValue) -> DecodingError {
+    static func _numberMismatch(at path: [CodingKey],
+                                expectation: Any.Type,
+                                reality: BSONValue) -> DecodingError {
         let description = "Expected to find a value that can be represented as a \(expectation), " +
                          "but found value \(String(describing: reality)) of type \(type(of: reality)) instead."
         return .typeMismatch(expectation, Context(codingPath: path, debugDescription: description))

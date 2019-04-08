@@ -1,8 +1,13 @@
 import bson
 import Foundation
 
+#if compiler(>=5.0)
+internal typealias BSONPointer = OpaquePointer
+internal typealias MutableBSONPointer = OpaquePointer
+#else
 internal typealias BSONPointer = UnsafePointer<bson_t>
 internal typealias MutableBSONPointer = UnsafeMutablePointer<bson_t>
+#endif
 
 /// The storage backing a MongoSwift `Document`.
 public class DocumentStorage {
@@ -323,7 +328,11 @@ extension Document {
                 throw RuntimeError.internalError(message: toErrorString(error))
             }
 
+#if compiler(>=5.0)
+            return bson
+#else
             return UnsafePointer(bson)
+#endif
         })
         self.count = self.storage.count
     }
