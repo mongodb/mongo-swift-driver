@@ -17,7 +17,12 @@ public class DocumentIterator: IteratorProtocol {
     internal init?(forDocument doc: Document) {
         self.iter = bson_iter_t()
         self.storage = doc.storage
-        guard bson_iter_init(&self.iter, doc.data) else {
+
+        let initialized = self.withMutableBSONIterPointer { iterPtr in
+            bson_iter_init(iterPtr, doc.data)
+        }
+
+        guard initialized else {
             return nil
         }
     }
@@ -27,7 +32,12 @@ public class DocumentIterator: IteratorProtocol {
     internal init?(forDocument doc: Document, advancedTo key: String) {
         self.iter = bson_iter_t()
         self.storage = doc.storage
-        guard bson_iter_init_find(&iter, doc.data, key.cString(using: .utf8)) else {
+
+        let initialized = self.withMutableBSONIterPointer { iterPtr in
+            bson_iter_init_find(iterPtr, doc.data, key.cString(using: .utf8))
+        }
+
+        guard initialized else {
             return nil
         }
     }
