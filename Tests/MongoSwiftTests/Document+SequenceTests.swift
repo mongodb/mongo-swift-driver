@@ -77,7 +77,7 @@ final class Document_SequenceTests: MongoSwiftTestCase {
             expect(k).to(equal(expectedKeys.removeFirst()))
             // we can't compare `BSONValue`s for equality, nor can we cast v
             // to a dynamically determined equatable type, so just verify
-            // it's a `BSONValue` anyway 
+            // it's a `BSONValue` anyway
             expect(v).to(beAKindOf(BSONValue.self))
         }
     }

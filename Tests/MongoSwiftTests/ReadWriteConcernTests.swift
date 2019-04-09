@@ -71,7 +71,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
             // expect the readConcern property to exist with a nil level
             expect(client.readConcern).to(beNil())
 
-            // expect that a DB created from this client inherits its unset RC 
+            // expect that a DB created from this client inherits its unset RC
             let db1 = client.db(type(of: self).testDatabase)
             expect(db1.readConcern).to(beNil())
 
@@ -86,7 +86,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
             // although local is default, if it is explicitly provided it should be set
             expect(client.readConcern?.level).to(equal("local"))
 
-            // expect that a DB created from this client inherits its local RC 
+            // expect that a DB created from this client inherits its local RC
             let db1 = client.db(type(of: self).testDatabase)
             expect(db1.readConcern?.level).to(equal("local"))
 
@@ -245,7 +245,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
     }
 
     func testOperationReadConcerns() throws {
-        // setup a collection 
+        // setup a collection
         let client = try MongoClient()
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }

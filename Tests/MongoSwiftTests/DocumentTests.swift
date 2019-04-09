@@ -97,7 +97,7 @@ final class DocumentTests: MongoSwiftTestCase {
             return
         }
 
-        // splitting this out is necessary because the swift 4.0 compiler 
+        // splitting this out is necessary because the swift 4.0 compiler
         // can't handle all the keys being declared together
 
         let binaryData: Document = [
@@ -530,7 +530,7 @@ final class DocumentTests: MongoSwiftTestCase {
             "datetime": Date(msSinceEpoch: 2000)
         ]))
 
-        // return early as we will to use an Int requiring > 32 bits after this 
+        // return early as we will to use an Int requiring > 32 bits after this
         if MongoSwiftTestCase.is32Bit {
             return
         }
@@ -636,7 +636,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
         ["double", "int32", "int64", "bool", "decimal", "oid", "timestamp", "datetime"].forEach {
             overwritableDoc[$0] = BSONNull()
-            // the storage should change every time 
+            // the storage should change every time
             expect(overwritableDoc.data).toNot(equal(overwritablePointer))
             overwritablePointer = overwritableDoc.data
         }
@@ -646,7 +646,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
         ["string", "doc", "arr"].forEach {
             nonOverwritableDoc[$0] = BSONNull()
-            // the storage should change every time 
+            // the storage should change every time
             expect(nonOverwritableDoc.data).toNot(equal(nonOverwritablePointer))
             nonOverwritablePointer = nonOverwritableDoc.data
         }

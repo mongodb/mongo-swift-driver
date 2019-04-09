@@ -27,10 +27,10 @@ extension Document: Codable {
 
     /// This method will work with any `Decoder`, but for non-BSON
     /// decoders, we do not support decoding `Date`s, because of limitations
-    /// of decoding to `AnyBSONValue`s. See `AnyBSONValue.init(from:)` for 
+    /// of decoding to `AnyBSONValue`s. See `AnyBSONValue.init(from:)` for
     /// more information.
     public init(from decoder: Decoder) throws {
-        // if it's a `BSONDecoder` we should just short-circuit and 
+        // if it's a `BSONDecoder` we should just short-circuit and
         // return the container `Document`
         if let bsonDecoder = decoder as? _BSONDecoder {
             let topContainer = bsonDecoder.storage.topContainer

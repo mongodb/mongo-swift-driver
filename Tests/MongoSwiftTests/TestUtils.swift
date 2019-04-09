@@ -7,7 +7,7 @@ import XCTest
 class MongoSwiftTestCase: XCTestCase {
     /* Ensure libmongoc is initialized. This will be called multiple times, but that's ok
      * as repeated calls have no effect. There is no way to call final cleanup code just
-     * once at the very end, either explicitly or with a deinit. This may appear as a 
+     * once at the very end, either explicitly or with a deinit. This may appear as a
      * memory leak. */
     override class func setUp() {
         MongoSwift.initialize()
@@ -71,7 +71,7 @@ extension MongoClient {
         return try ServerVersion(versionString)
     }
 
-    /// A struct representing a server version. 
+    /// A struct representing a server version.
     internal struct ServerVersion: Equatable {
         let major: Int
         let minor: Int
@@ -93,8 +93,8 @@ extension MongoClient {
 
             var patch = 0
             if versionComponents.count == 3 {
-                // in case there is text at the end, for ex "3.6.0-rc1", stop first time 
-                /// we encounter a non-numeric character. 
+                // in case there is text at the end, for ex "3.6.0-rc1", stop first time
+                /// we encounter a non-numeric character.
                 let numbersOnly = versionComponents[2].prefix { "0123456789".contains($0) }
                 guard let patchValue = Int(numbersOnly) else {
                     throw TestError(message: "Error parsing patch version from \(str)")
@@ -199,7 +199,7 @@ internal func cleanEqual(_ expectedValue: String?) -> Predicate<String> {
 }
 
 // Adds a custom "sortedEqual" predicate that compares two `Document`s and returns true if they
-// have the same key/value pairs in them 
+// have the same key/value pairs in them
 internal func sortedEqual(_ expectedValue: Document?) -> Predicate<Document> {
     return Predicate.define("sortedEqual <\(stringify(expectedValue))>") { actualExpression, msg in
         let actualValue = try actualExpression.evaluate()

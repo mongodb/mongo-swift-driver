@@ -305,7 +305,7 @@ internal struct _BSONDecodingStorage {
         self.containers.append(container)
     }
 
-    /// Pops the top container from the stack. 
+    /// Pops the top container from the stack.
     fileprivate mutating func popContainer() {
         guard !self.containers.isEmpty else {
             fatalError("Empty container stack.")
@@ -657,7 +657,7 @@ private struct _BSONUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     // swiftlint:disable:previous force_unwrapping - `.count` always returns a value and is only an `Int?`
     // because it's required of the UnkeyedDecodingContainer protocol.
 
-    /// A private helper function to check if we're at the end of the container, and if so throw an error. 
+    /// A private helper function to check if we're at the end of the container, and if so throw an error.
     private func checkAtEnd() throws {
         guard !self.isAtEnd else {
             throw DecodingError.valueNotFound(

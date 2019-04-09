@@ -13,7 +13,7 @@ internal protocol CodableNumber {
     init?(exactly source: Double)
 
     /// Converts this number to a `BSONValue`. Returns `nil` if it cannot
-    /// be represented exactly. 
+    /// be represented exactly.
     var bsonValue: BSONValue? { get }
 }
 
@@ -129,7 +129,7 @@ extension UInt: CodableNumber {
         }
         // we could consider trying a Decimal128 here. However,
         // it's not clear how we could support decoding something
-        // stored as Decimal128 back to a UInt without access 
+        // stored as Decimal128 back to a UInt without access
         // to libbson internals.
         return nil
     }

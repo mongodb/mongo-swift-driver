@@ -53,3 +53,6 @@ excluded:
   - Package.swift
   - Package@swift-4.2.swift
   - Examples/*/Package.swift
+
+trailing_whitespace:
+  ignores_comments: false
