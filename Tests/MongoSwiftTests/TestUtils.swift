@@ -163,7 +163,7 @@ func clean(json: String?) -> String {
     }
     do {
         let doc = try Document(fromJSON: str.data(using: .utf8)!)
-        return doc.description
+        return doc.extendedJSON
     } catch {
         print("Failed to clean string: \(str)")
         return String()

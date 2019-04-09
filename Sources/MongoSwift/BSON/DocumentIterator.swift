@@ -166,34 +166,28 @@ public class DocumentIterator: IteratorProtocol {
     }
 
     /// Internal helper function for explicitly accessing the `bson_iter_t` as an unsafe pointer
+    internal func withBSONIterPointer<Result>(_ body: (BSONIterPointer) throws -> Result) rethrows -> Result {
 #if compiler(>=5.0)
-    internal func withBSONIterPointer<Result>(_ body: (BSONIterPointer) throws -> Result) rethrows -> Result {
         return try withUnsafePointer(to: self.iter) { iterPtr in
-            try body(OpaquePointer(iterPtr))
+            try body(BSONIterPointer(iterPtr))
         }
-    }
 #else
-    internal func withBSONIterPointer<Result>(_ body: (BSONIterPointer) throws -> Result) rethrows -> Result {
         return try withUnsafePointer(to: self.iter, body)
-    }
 #endif
+    }
 
     /// Internal helper function for explicitly accessing the `bson_iter_t` as an unsafe mutable pointer
+    internal func withMutableBSONIterPointer<Result>(
+      _ body: (MutableBSONIterPointer) throws -> Result
+    ) rethrows -> Result {
 #if compiler(>=5.0)
-    internal func withMutableBSONIterPointer<Result>(
-      _ body: (MutableBSONIterPointer) throws -> Result
-    ) rethrows -> Result {
         return try withUnsafeMutablePointer(to: &self.iter) { iterPtr in
-            try body(OpaquePointer(iterPtr))
+            try body(MutableBSONIterPointer(iterPtr))
         }
-    }
 #else
-    internal func withMutableBSONIterPointer<Result>(
-      _ body: (MutableBSONIterPointer) throws -> Result
-    ) rethrows -> Result {
         return try withUnsafeMutablePointer(to: &self.iter, body)
-    }
 #endif
+    }
 
     private static let bsonTypeMap: [BSONType: BSONValue.Type] = [
         .double: Double.self,

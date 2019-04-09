@@ -293,7 +293,11 @@ extension Document {
     public var rawBSON: Data {
         // swiftlint:disable:next force_unwrapping - documented as always returning a value.
         let data = bson_get_data(self.data)!
+
+        /// BSON encodes the length in the first four bytes, so we can read it in from the
+        /// raw data without needing to access the `len` field of the `bson_t`.
         let length = data.withMemoryRebound(to: Int32.self, capacity: 4) { $0.pointee }
+
         return Data(bytes: data, count: Int(length))
     }
 

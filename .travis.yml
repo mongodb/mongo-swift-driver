@@ -25,6 +25,11 @@ jobs:
     - stage: tests
       os: osx
       osx_image: xcode10.2
+      env: SWIFT_VERSION=4.2
+
+    - stage: tests
+      os: osx
+      osx_image: xcode10.2
       env: SWIFT_VERSION=5.0
 
     - stage: tests

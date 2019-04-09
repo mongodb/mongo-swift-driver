@@ -4,6 +4,9 @@ import Foundation
 /// This gives guarantees on non-destructive iteration, and offers an indexed
 /// ordering to the key-value pairs in the document.
 extension Document: Collection {
+    /// The index type of a document.
+    public typealias Index = Int
+
     /// Returns the start index of the Document.
     public var startIndex: Index {
         return 0
@@ -35,11 +38,17 @@ extension Document: Collection {
         // criticism also applies to key-based subscripting via `String`.
         // See SWIFT-250.
         failIndexCheck(position)
+        guard let iter = DocumentIterator(forDocument: self) else {
+            fatalError("Failed to initialize an iterator over document \(self)")
+        }
 
-        let subsequence = DocumentIterator.subsequence(of: self, startIndex: position, endIndex: position + 1)
+        for pos in 0...position {
+            guard iter.advance() else {
+                fatalError("Failed to advance iterator to position \(pos)")
+            }
+        }
 
-        // swiftlint:disable:next force_unwrapping - failIndexCheck precondition ensures non-nil result.
-        return subsequence.makeIterator().next()!
+        return (iter.currentKey, iter.currentValue)
     }
 
     /// Allows access to a `KeyValuePair` from the `Document`, given a range of indices of the desired `KeyValuePair`'s
