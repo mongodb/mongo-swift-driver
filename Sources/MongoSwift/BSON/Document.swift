@@ -293,11 +293,7 @@ extension Document {
     public var rawBSON: Data {
         // swiftlint:disable:next force_unwrapping - documented as always returning a value.
         let data = bson_get_data(self.data)!
-#if compiler(>=5.0)
-        let length = _bson_get_len(self.data)
-#else
-        let length = self.data.pointee.len
-#endif
+        let length = data.withMemoryRebound(to: Int32.self, capacity: 4) { $0.pointee }
         return Data(bytes: data, count: Int(length))
     }
 
