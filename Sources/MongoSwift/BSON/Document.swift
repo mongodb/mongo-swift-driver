@@ -1,9 +1,12 @@
 import bson
 import Foundation
 
+internal typealias BSONPointer = UnsafePointer<bson_t>
+internal typealias MutableBSONPointer = UnsafeMutablePointer<bson_t>
+
 /// The storage backing a MongoSwift `Document`.
 public class DocumentStorage {
-    internal var pointer: UnsafeMutablePointer<bson_t>!
+    internal var pointer: MutableBSONPointer!
 
     // Normally, this would go under Document, but computed properties cannot be used before all stored properties are
     // initialized. Putting this under DocumentStorage gives a correct count and use of it inside of an init() as long
@@ -16,7 +19,7 @@ public class DocumentStorage {
         self.pointer = bson_new()
     }
 
-    internal init(fromPointer pointer: UnsafePointer<bson_t>) {
+    internal init(fromPointer pointer: BSONPointer) {
         self.pointer = bson_copy(pointer)
     }
 
@@ -25,6 +28,7 @@ public class DocumentStorage {
         guard let pointer = self.pointer else {
             return
         }
+
         bson_destroy(pointer)
         self.pointer = nil
     }
@@ -43,7 +47,7 @@ public struct Document {
 /// An extension of `Document` containing its private/internal functionality.
 extension Document {
     /// direct access to the storage's pointer to a bson_t
-    internal var data: UnsafeMutablePointer<bson_t>! {
+    internal var data: MutableBSONPointer {
         return storage.pointer
     }
 
@@ -53,11 +57,11 @@ extension Document {
      * memory.
      *
      * - Parameters:
-     *   - fromPointer: a UnsafePointer<bson_t>
+     *   - fromPointer: a BSONPointer
      *
      * - Returns: a new `Document`
      */
-    internal init(fromPointer pointer: UnsafePointer<bson_t>) {
+    internal init(fromPointer pointer: BSONPointer) {
         self.storage = DocumentStorage(fromPointer: pointer)
         self.count = self.storage.count
     }
@@ -429,20 +433,22 @@ extension Document: BSONValue {
             throw wrongIterTypeError(iter, expected: Document.self)
         }
 
-        var length: UInt32 = 0
-        let document = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
-        defer {
-            document.deinitialize(count: 1)
-            document.deallocate()
+        return try iter.withBSONIterPointer { iterPtr in
+            var length: UInt32 = 0
+            let document = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
+            defer {
+                document.deinitialize(count: 1)
+                document.deallocate()
+            }
+
+            bson_iter_document(iterPtr, &length, document)
+
+            guard let docData = bson_new_from_data(document.pointee, Int(length)) else {
+                throw RuntimeError.internalError(message: "Failed to create a Document from iterator")
+            }
+
+            return self.init(fromPointer: docData)
         }
-
-        bson_iter_document(&iter.iter, &length, document)
-
-        guard let docData = bson_new_from_data(document.pointee, Int(length)) else {
-            throw RuntimeError.internalError(message: "Failed to create a Document from iterator")
-        }
-
-        return self.init(fromPointer: docData)
     }
 }
 
