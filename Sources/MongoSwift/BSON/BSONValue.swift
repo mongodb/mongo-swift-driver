@@ -56,27 +56,51 @@ public protocol BSONValue {
     var bsonType: BSONType { get }
 
     /**
-    * Given the `DocumentStorage` backing a `Document`, appends this `BSONValue` to the end.
-    *
-    * - Parameters:
-    *   - storage: A `DocumentStorage` to write to.
-    *   - key: A `String`, the key under which to store the value.
-    *
-    * - Throws:
-    *   - `RuntimeError.internalError` if the `DocumentStorage` would exceed the maximum size by encoding this
-    *     key-value pair.
-    *   - `UserError.logicError` if the value is an `Array` and it contains a non-`BSONValue` element.
-    */
+     * Given the `DocumentStorage` backing a `Document`, appends this `BSONValue` to the end.
+     *
+     * - Parameters:
+     *   - storage: A `DocumentStorage` to write to.
+     *   - key: A `String`, the key under which to store the value.
+     *
+     * - Throws:
+     *   - `RuntimeError.internalError` if the `DocumentStorage` would exceed the maximum size by encoding this
+     *     key-value pair.
+     *   - `UserError.logicError` if the value is an `Array` and it contains a non-`BSONValue` element.
+     */
     func encode(to storage: DocumentStorage, forKey key: String) throws
 
     /**
-    * Given a `DocumentIterator` known to have a next value of this type,
-    * initializes the value.
-    *
-    * - Throws: `UserError.logicError` if the current type of the `DocumentIterator` does not correspond to the
-    *           associated type of this `BSONValue`.
-    */
+     *  Function to test equality with another `BSONValue`. This function tests for exact BSON equality.
+     *  This means that differing types with equivalent value are not equivalent.
+     *
+     *  e.g.
+     *      4.0 (Double) != 4 (Int)
+     *
+     * - Parameters:
+     *   - other: The right-hand-side `BSONValue` to compare.
+     *
+     * - Returns: `true` if `self` is equal to `rhs`, `false` otherwise.
+     */
+    func bsonEquals(_ other: BSONValue?) -> Bool
+
+    /**
+     * Given a `DocumentIterator` known to have a next value of this type,
+     * initializes the value.
+     *
+     * - Throws: `UserError.logicError` if the current type of the `DocumentIterator` does not correspond to the
+     *           associated type of this `BSONValue`.
+     */
     static func from(iterator iter: DocumentIterator) throws -> Self
+}
+
+extension BSONValue where Self: Equatable {
+    /// Default implementation of `bsonEquals` for `BSONValue`s that conform to `Equatable`.
+    public func bsonEquals(_ other: BSONValue?) -> Bool {
+        guard let otherAsSelf = other as? Self else {
+            return false
+        }
+        return self == otherAsSelf
+    }
 }
 
 /// An extension of `Array` to represent the BSON array type.
@@ -129,6 +153,13 @@ extension Array: BSONValue {
         guard bson_append_array(storage.pointer, key, Int32(key.utf8.count), arr.data) else {
             throw bsonTooLargeError(value: self, forKey: key)
         }
+    }
+
+    public func bsonEquals(_ other: BSONValue?) -> Bool {
+        guard let otherArr = other as? [BSONValue], let selfArr = self as? [BSONValue] else {
+            return false
+        }
+        return self.count == otherArr.count && zip(selfArr, otherArr).allSatisfy { lhs, rhs in lhs.bsonEquals(rhs) }
     }
 }
 
@@ -1082,8 +1113,6 @@ public struct BSONUndefined: BSONValue, Equatable, Codable {
     }
 }
 
-// See https://github.com/realm/SwiftLint/issues/461
-// swiftlint:disable cyclomatic_complexity
 /**
  *  A helper function to test equality between two `BSONValue`s. This function tests for exact BSON equality.
  *  This means that differing types with equivalent value are not equivalent.
@@ -1100,33 +1129,9 @@ public struct BSONUndefined: BSONValue, Equatable, Codable {
  *
  * - Returns: `true` if `lhs` is equal to `rhs`, `false` otherwise.
  */
+@available(*, deprecated, message: "Use lhs.bsonEquals(rhs) instead")
 public func bsonEquals(_ lhs: BSONValue, _ rhs: BSONValue) -> Bool {
-    switch (lhs, rhs) {
-    case let (l as Int, r as Int): return l == r
-    case let (l as Int32, r as Int32): return l == r
-    case let (l as Int64, r as Int64): return l == r
-    case let (l as Double, r as Double): return l == r
-    case let (l as Decimal128, r as Decimal128): return l == r
-    case let (l as Bool, r as Bool): return l == r
-    case let (l as String, r as String): return l == r
-    case let (l as RegularExpression, r as RegularExpression): return l == r
-    case let (l as Timestamp, r as Timestamp): return l == r
-    case let (l as Date, r as Date): return l == r
-    case (_ as MinKey, _ as MinKey): return true
-    case (_ as MaxKey, _ as MaxKey): return true
-    case let (l as ObjectId, r as ObjectId): return l == r
-    case let (l as CodeWithScope, r as CodeWithScope): return l == r
-    case let (l as Binary, r as Binary): return l == r
-    case (_ as BSONNull, _ as BSONNull): return true
-    case let (l as Document, r as Document): return l == r
-    case let (l as [BSONValue], r as [BSONValue]): // TODO: SWIFT-242
-        return l.count == r.count && zip(l, r).reduce(true, { prev, next in prev && bsonEquals(next.0, next.1) })
-    case (_ as [Any], _ as [Any]): return false
-    case let (l as Symbol, r as Symbol): return l == r
-    case let (l as DBPointer, r as DBPointer): return l == r
-    case (_ as BSONUndefined, _ as BSONUndefined): return true
-    default: return false
-    }
+    return lhs.bsonEquals(rhs)
 }
 
 /**
@@ -1139,6 +1144,7 @@ public func bsonEquals(_ lhs: BSONValue, _ rhs: BSONValue) -> Bool {
  *
  * - Returns: True if lhs is equal to rhs, false otherwise.
  */
+@available(*, deprecated, message: "use lhs?.bsonEquals(rhs) instead")
 public func bsonEquals(_ lhs: BSONValue?, _ rhs: BSONValue?) -> Bool {
     guard let left = lhs, let right = rhs else {
         return lhs == nil && rhs == nil

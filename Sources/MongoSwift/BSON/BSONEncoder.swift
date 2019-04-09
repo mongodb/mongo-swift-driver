@@ -751,6 +751,10 @@ private class MutableArray: BSONValue {
     required convenience init(from decoder: Decoder) throws {
         fatalError("`MutableArray` is not meant to be initialized from a `Decoder`")
     }
+
+    func bsonEquals(_ other: BSONValue?) -> Bool {
+        return self.array.bsonEquals(other)
+    }
 }
 
 /// A private class wrapping a Swift dictionary so we can pass it by reference
@@ -798,6 +802,13 @@ private class MutableDictionary: BSONValue {
     }
 
     init() {}
+
+    func bsonEquals(_ other: BSONValue?) -> Bool {
+        guard let otherDict = other as? MutableDictionary else {
+            return false
+        }
+        return otherDict.keys == self.keys && otherDict.values.bsonEquals(self.values)
+    }
 
     /// methods required by the BSONValue protocol that we don't actually need/use. MutableDictionary
     /// is just a BSONValue to simplify usage alongside true BSONValues within the encoder.

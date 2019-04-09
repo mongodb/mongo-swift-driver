@@ -85,7 +85,7 @@ final class BSONValueTests: MongoSwiftTestCase {
         )
         // Check that when an array contains non-BSONValues, we return false
         let arr = [[String: Int]()]
-        expect(bsonEquals(arr, arr)).to(beFalse())
+        expect(arr.bsonEquals(arr)).to(beFalse())
 
         // Different types
         expect(4).toNot(bsonEqual("swift"))
@@ -93,7 +93,7 @@ final class BSONValueTests: MongoSwiftTestCase {
         // Arrays of different sizes should not be equal
         let b0: [BSONValue] = [1, 2]
         let b1: [BSONValue] = [1, 2, 3]
-        expect(bsonEquals(b0, b1)).to(beFalse())
+        expect(b0.bsonEquals(b1)).to(beFalse())
     }
 
     /// Test object for ObjectIdRoundTrip
