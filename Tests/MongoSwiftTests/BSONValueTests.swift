@@ -187,4 +187,37 @@ final class BSONValueTests: MongoSwiftTestCase {
 
         expect(Set([str.hashValue, doc.hashValue, json.hashValue]).count).to(equal(3))
     }
+
+    func testBSONNumber() throws {
+        let decimal128 = Decimal128("5.5")!
+        let double = 5.5
+
+        expect(double.toDouble()).to(equal(double))
+        expect(double.toDecimal128()).to(equal(decimal128))
+
+        let int = 5
+        let doubleInt = 5.0
+        let int32 = Int32(5)
+        let int64 = Int64(5)
+        let decimalInt = Decimal128("5")!
+
+        let conversionTest = { (l: BSONNumber) in
+            // Skip the Decimal128 conversions until they're implemented
+            // TODO: don't skip these (SWIFT-367)
+            if l is Decimal128 {
+                return
+            }
+            expect(l.toInt()).to(equal(int))
+            expect(l.toInt32()).to(equal(int32))
+            expect(l.toInt64()).to(equal(int64))
+            expect(l.toDouble()).to(equal(doubleInt))
+
+            // Skip double for this conversion since it generates a Decimal128(5.0) =/= Decimal128(5)
+            if !(l is Double) {
+                expect(l.toDecimal128()).to(equal(decimalInt))
+            }
+        }
+
+        ([int, doubleInt, int32, int64, decimalInt]).forEach(conversionTest)
+    }
 }

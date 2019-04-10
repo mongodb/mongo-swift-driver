@@ -1001,4 +1001,24 @@ final class DocumentTests: MongoSwiftTestCase {
         encoder.dataEncodingStrategy = .custom({ _, _ in })
         expect(try encoder.encode(dataStruct)).to(bsonEqual(["data": [:] as Document] as Document))
     }
+
+    func testIntegerRetrieval() {
+        let doc: Document = ["int": 12, "int32": Int32(12), "int64": Int64(12)]
+
+        // Int always goes in and comes out as int
+        expect(doc["int"]).to(bsonEqual(12))
+        expect(doc["int"] as? Int).to(equal(12))
+
+        if MongoSwiftTestCase.is32Bit {
+            expect(doc["int32"] as? Int).to(equal(12))
+            expect(doc["int32"] as? Int32).to(beNil())
+            expect(doc["int64"] as? Int).to(beNil())
+            expect(doc["int64"] as? Int64).to(equal(Int64(12)))
+        } else {
+            expect(doc["int32"] as? Int).to(beNil())
+            expect(doc["int32"] as? Int32).to(equal(Int32(12)))
+            expect(doc["int64"] as? Int).to(equal(12))
+            expect(doc["int64"] as? Int64).to(beNil())
+        }
+    }
 }
