@@ -47,7 +47,7 @@ final class CodecTests: MongoSwiftTestCase {
         let s: NestedStruct
     }
 
-    /// Test encoding/decoding a variety of structs containing simple types that have 
+    /// Test encoding/decoding a variety of structs containing simple types that have
     /// built in Codable support (strings, arrays, ints, and structs composed of them.)
     func testStructs() throws {
         let encoder = BSONEncoder()
@@ -63,7 +63,7 @@ final class CodecTests: MongoSwiftTestCase {
 
         expect(try encoder.encode(TestClass())).to(equal(expected))
 
-        // a basic struct 
+        // a basic struct
         let basic1 = BasicStruct(int: 1, string: "hello")
         let basic1Doc: Document = ["int": 1, "string": "hello"]
         expect(try encoder.encode(basic1)).to(equal(basic1Doc))
@@ -444,7 +444,7 @@ final class CodecTests: MongoSwiftTestCase {
     func testDocumentIsCodable() throws {
 #if os(macOS) // presently skipped on linux due to nondeterministic key ordering
         // note: instead of doing this, one can and should just initialize a Document with the `init(fromJSON:)`
-        // constructor, and conver to JSON using the .extendedJSON property. this test is just to demonstrate 
+        // constructor, and conver to JSON using the .extendedJSON property. this test is just to demonstrate
         // that a Document can theoretically work with any encoder/decoder.
         let encoder = JSONEncoder()
         let decoder = JSONDecoder()

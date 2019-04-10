@@ -39,7 +39,7 @@ final class CrudTests: MongoSwiftTestCase {
 
                 // for each test case:
                 // 1) create a unique collection to use
-                // 2) insert the data specified by this test file 
+                // 2) insert the data specified by this test file
                 // 3) execute the test according to the type's execute method
                 // 4) verify that expected data is present
                 // 5) drop the collection to clean up
@@ -82,7 +82,7 @@ final class CrudTests: MongoSwiftTestCase {
     }
 }
 
-/// A container for the data from a single .json file. 
+/// A container for the data from a single .json file.
 private struct CrudTestFile: Decodable {
     let data: [Document]
     let testDocs: [Document]
@@ -95,7 +95,7 @@ private struct CrudTestFile: Decodable {
     }
 }
 
-/// Initializes a new `CrudTest` of the appropriate subclass from a `Document` 
+/// Initializes a new `CrudTest` of the appropriate subclass from a `Document`
 private func makeCrudTest(_ doc: Document) throws -> CrudTest {
     let operation: Document = try doc.get("operation")
     let opName: String = try operation.get("name")
@@ -105,7 +105,7 @@ private func makeCrudTest(_ doc: Document) throws -> CrudTest {
     return try type.init(doc)
 }
 
-// Maps operation names to the appropriate test class to use for them. 
+// Maps operation names to the appropriate test class to use for them.
 private var testTypeMap: [String: CrudTest.Type] = [
     "aggregate": AggregateTest.self,
     "bulkWrite": BulkWriteTest.self,
@@ -125,7 +125,7 @@ private var testTypeMap: [String: CrudTest.Type] = [
 ]
 
 /// An abstract class to represent a single test within a CrudTestFile. Subclasses must
-/// implement the `execute` method themselves. 
+/// implement the `execute` method themselves.
 private class CrudTest {
     let description: String
     let operationName: String
@@ -164,7 +164,7 @@ private class CrudTest {
     }
     var upsert: Bool? { return self.args["upsert"] as? Bool }
 
-    /// Initializes a new `CrudTest` from a `Document`. 
+    /// Initializes a new `CrudTest` from a `Document`.
     required init(_ test: Document) throws {
         self.description = try test.get("description")
         let operation: Document = try test.get("operation")
@@ -176,11 +176,11 @@ private class CrudTest {
         self.collection = outcome["collection"] as? Document
     }
 
-    // Subclasses should implement `execute` according to the particular operation(s) they are for. 
+    // Subclasses should implement `execute` according to the particular operation(s) they are for.
     func execute(usingCollection coll: MongoCollection<Document>) throws { XCTFail("Unimplemented") }
 
     // If the test has a `collection` field in its `outcome`, verify that the expected
-    // data is present. If there is no `collection` field, do nothing. 
+    // data is present. If there is no `collection` field, do nothing.
     func verifyData(testCollection coll: MongoCollection<Document>, db: MongoDatabase) throws {
         // only  some tests have data to verify
         guard let collection = self.collection else {
@@ -194,9 +194,9 @@ private class CrudTest {
         expect(Array(try collToCheck.find([:]))).to(equal(try collection.get("data")))
     }
 
-    // Given an `UpdateResult`, verify that it matches the expected results in this `CrudTest`. 
-    // Meant for use by subclasses whose operations return `UpdateResult`s, such as `UpdateTest` 
-    // and `ReplaceOneTest`. 
+    // Given an `UpdateResult`, verify that it matches the expected results in this `CrudTest`.
+    // Meant for use by subclasses whose operations return `UpdateResult`s, such as `UpdateTest`
+    // and `ReplaceOneTest`.
     func verifyUpdateResult(_ result: UpdateResult?) throws {
         let expected = try BSONDecoder().decode(UpdateResult.self, from: self.result as! Document)
         expect(result?.matchedCount).to(equal(expected.matchedCount))
@@ -211,7 +211,7 @@ private class CrudTest {
     }
 
     /// Given the response to a findAndModify command, verify that it matches the expected
-    /// results for this `CrudTest`. Meant for use by findAndModify subclasses, i.e. findOneAndX. 
+    /// results for this `CrudTest`. Meant for use by findAndModify subclasses, i.e. findOneAndX.
     func verifyFindAndModifyResult(_ result: Document?) {
         guard self.result != nil else {
             return
@@ -232,13 +232,13 @@ private class AggregateTest: CrudTest {
         let options = AggregateOptions(batchSize: self.batchSize, collation: self.collation)
         let cursor = try coll.aggregate(pipeline, options: options)
         if self.collection != nil {
-            // this is $out case - we need to iterate the cursor once in 
+            // this is $out case - we need to iterate the cursor once in
             // order to make the aggregation happen. there is nothing in
             // the cursor to verify, but verifyData() will check that the
             // $out collection has the new data.
             expect(cursor.next()).to(beNil())
         } else {
-            // if not $out, verify that the cursor contains the expected documents. 
+            // if not $out, verify that the cursor contains the expected documents.
             expect(Array(cursor)).to(equal(self.result as? [Document]))
         }
     }

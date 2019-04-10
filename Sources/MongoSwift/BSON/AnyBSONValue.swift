@@ -1,7 +1,7 @@
 import Foundation
 
 /// A struct wrapping a `BSONValue` type that allows for encoding/
-/// decoding `BSONValue`s of unknown type.  
+/// decoding `BSONValue`s of unknown type.
 public struct AnyBSONValue: Codable, Equatable, Hashable {
     // TODO: conform all `BSONValue` types to `Hashable` (SWIFT-320).
     // swiftlint:disable:next legacy_hashing
@@ -45,7 +45,7 @@ public struct AnyBSONValue: Codable, Equatable, Hashable {
         }
 
         // in this case, we need to wrap each value in an
-        // `AnyBSONValue`, before we encode, because `[BSONValue]` 
+        // `AnyBSONValue`, before we encode, because `[BSONValue]`
         // is not considered `Encodable`
         if let arr = self.value as? [BSONValue] {
             let mapped = arr.map { AnyBSONValue($0) }

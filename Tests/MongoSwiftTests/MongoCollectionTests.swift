@@ -346,7 +346,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
     func testListIndexes() throws {
         let indexes = try coll.listIndexes()
-        // New collection, so expect just the _id_ index to exist. 
+        // New collection, so expect just the _id_ index to exist.
         expect(indexes.next()?["name"]).to(bsonEqual("_id_"))
         expect(indexes.next()).to(beNil())
     }
