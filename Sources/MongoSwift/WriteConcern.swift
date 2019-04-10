@@ -67,9 +67,9 @@ public class WriteConcern: Codable {
 
     /// If the write concern is not satisfied within this timeout (in milliseconds),
     /// the operation will return an error. The value MUST be greater than or equal to 0.
-    public var wtimeoutMS: Int32? {
+    public var wtimeoutMS: Int64? {
         let timeout = mongoc_write_concern_get_wtimeout(self._writeConcern)
-        return timeout == 0 ? nil : timeout
+        return timeout == 0 ? nil : Int64(timeout)
     }
 
     /// Indicates whether this is an acknowledged write concern.
@@ -95,10 +95,13 @@ public class WriteConcern: Codable {
     /// Initializes a new `WriteConcern`.
     /// - Throws:
     ///   - `UserError.invalidArgumentError` if the options form an invalid combination.
-    public init(journal: Bool? = nil, w: W? = nil, wtimeoutMS: Int32? = nil) throws {
+    public init(journal: Bool? = nil, w: W? = nil, wtimeoutMS: Int64? = nil) throws {
         self._writeConcern = mongoc_write_concern_new()
         if let journal = journal { mongoc_write_concern_set_journal(self._writeConcern, journal) }
-        if let wtimeoutMS = wtimeoutMS { mongoc_write_concern_set_wtimeout(self._writeConcern, wtimeoutMS) }
+        if let wtimeoutMS = wtimeoutMS {
+            // libmongoc takes in a 32-bit integer for wtimeoutMS, but the specification states it should be an int64
+            mongoc_write_concern_set_wtimeout(self._writeConcern, Int32(truncatingIfNeeded: wtimeoutMS))
+        }
 
         if let w = w {
             switch w {
@@ -135,7 +138,7 @@ public class WriteConcern: Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let w = try container.decodeIfPresent(W.self, forKey: .w)
         let journal = try container.decodeIfPresent(Bool.self, forKey: .j)
-        let wtimeoutMS = try container.decodeIfPresent(Int32.self, forKey: .wtimeout)
+        let wtimeoutMS = try container.decodeIfPresent(Int64.self, forKey: .wtimeout)
         try self.init(journal: journal, w: w, wtimeoutMS: wtimeoutMS)
     }
 

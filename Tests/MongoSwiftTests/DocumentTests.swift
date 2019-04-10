@@ -131,7 +131,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(doc["true"]).to(bsonEqual(true))
         expect(doc["false"]).to(bsonEqual(false))
         expect(doc["int"]).to(bsonEqual(25))
-        expect(doc["int32"]).to(bsonEqual(5))
+        expect(doc["int32"]).to(bsonEqual(Int32(5)))
         expect(doc["int64"]).to(bsonEqual(Int64(10)))
         expect(doc["double"]).to(bsonEqual(15.0))
         expect(doc["decimal128"]).to(bsonEqual(Decimal128("1.2E+10")!))
@@ -169,7 +169,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(doc["binary6"]).to(bsonEqual(try Binary(data: testData, subtype: .userDefined)))
         expect(doc["binary7"]).to(bsonEqual(try Binary(data: testData, subtype: 200)))
 
-        let nestedArray = doc["nestedarray"] as? [[Int]]
+        let nestedArray = doc["nestedarray"] as? [[Int32]]
         expect(nestedArray?[0]).to(equal([1, 2]))
         expect(nestedArray?[1]).to(equal([3, 4]))
 
@@ -182,7 +182,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(DocumentTests.testDoc.true).to(bsonEqual(true))
         expect(DocumentTests.testDoc.false).to(bsonEqual(false))
         expect(DocumentTests.testDoc.int).to(bsonEqual(25))
-        expect(DocumentTests.testDoc.int32).to(bsonEqual(5))
+        expect(DocumentTests.testDoc.int32).to(bsonEqual(Int32(5)))
         expect(DocumentTests.testDoc.int64).to(bsonEqual(Int64(10)))
         expect(DocumentTests.testDoc.double).to(bsonEqual(15.0))
         expect(DocumentTests.testDoc.decimal128).to(bsonEqual(Decimal128("1.2E+10")!))
@@ -211,9 +211,9 @@ final class DocumentTests: MongoSwiftTestCase {
                 options: NSRegularExpression.optionsFromString("imx")
         )))
 
-        let nestedArray = DocumentTests.testDoc.nestedarray as? [[Int]]
-        expect(nestedArray?[0]).to(equal([1, 2]))
-        expect(nestedArray?[1]).to(equal([3, 4]))
+        let nestedArray = DocumentTests.testDoc.nestedarray as? [[Int32]]
+        expect(nestedArray?[0]).to(bsonEqual([Int32(1), Int32(2)]))
+        expect(nestedArray?[1]).to(bsonEqual([Int32(3), Int32(4)]))
 
         expect(DocumentTests.testDoc.nesteddoc).to(bsonEqual(["a": 1, "b": 2, "c": false, "d": [3, 4]] as Document))
         expect((DocumentTests.testDoc.nesteddoc as? Document)?.a).to(bsonEqual(1))
@@ -488,12 +488,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
         // overwrite int32 with int32
         doc["int32"] = Int32(15)
-        expect(doc["int32"]).to(bsonEqual(15))
-        expect(doc.data).to(equal(pointer))
-
-        // overwrite int32 with an int that fits into int32s
-        doc["int32"] = 20
-        expect(doc["int32"]).to(bsonEqual(20))
+        expect(doc["int32"]).to(bsonEqual(Int32(15)))
         expect(doc.data).to(equal(pointer))
 
         doc["bool"] = true
@@ -521,7 +516,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
         expect(doc).to(equal([
             "double": 3.0,
-            "int32": 20,
+            "int32": Int32(15),
             "int64": Int64.min,
             "bool": true,
             "decimal": Decimal128("100")!,
@@ -542,7 +537,7 @@ final class DocumentTests: MongoSwiftTestCase {
         // final values
         expect(doc).to(equal([
             "double": 3.0,
-            "int32": 20,
+            "int32": Int32(15),
             "int64": bigInt,
             "bool": true,
             "decimal": Decimal128("100")!,
@@ -550,6 +545,11 @@ final class DocumentTests: MongoSwiftTestCase {
             "timestamp": Timestamp(timestamp: 5, inc: 10),
             "datetime": Date(msSinceEpoch: 2000)
         ]))
+
+        // should not be able to overwrite an int32 with an int on a 64-bit system
+        doc["int32"] = 20
+        expect(doc["int32"]).to(bsonEqual(20))
+        expect(doc.data).toNot(equal(pointer))
     }
 
     // test replacing some of the non-Overwritable types with values of their own types
@@ -727,12 +727,7 @@ final class DocumentTests: MongoSwiftTestCase {
         Mirror(reflecting: abt).children.forEach { child in
             let value = child.value as! BSONValue
             doc[str] = value
-
-            if value is Int32 { // TODO: handle this differently (SWIFT-221)
-                expect(Int32(doc[str] as! Int)).to(bsonEqual(value))
-            } else {
-                expect(doc[str]).to(bsonEqual(value))
-            }
+            expect(doc[str]).to(bsonEqual(value))
         }
     }
 
@@ -814,7 +809,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
         encoder.dateEncodingStrategy = .millisecondsSince1970
         let millisecondsSince1970 = try encoder.encode(dateStruct)
-        expect(millisecondsSince1970["date"] as? Int64).to(equal(date.msSinceEpoch))
+        expect(millisecondsSince1970["date"]).to(bsonEqual(date.msSinceEpoch))
 
         if #available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) {
             encoder.dateEncodingStrategy = .iso8601
@@ -839,7 +834,7 @@ final class DocumentTests: MongoSwiftTestCase {
             try container.encode(Int64(d.timeIntervalSince1970 + 12))
         })
         let custom = try encoder.encode(dateStruct)
-        expect(custom["date"] as? Int64).to(equal(Int64(date.timeIntervalSince1970 + 12)))
+        expect(custom["date"]).to(bsonEqual(Int64(date.timeIntervalSince1970 + 12)))
 
         let dateFormatter = DateFormatter()
         dateFormatter.dateStyle = .short
@@ -953,7 +948,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
         let data = Data(base64Encoded: "dGhlIHF1aWNrIGJyb3duIGZveCBqdW1wZWQgb3ZlciB0aGUgbGF6eSBzaGVlcCBkb2cu")!
         let binaryData = try Binary(data: data, subtype: .generic)
-        let arrData = data.map { byte in Int(byte) }
+        let arrData = data.map { byte in Int32(byte) }
         let dataStruct = DataWrapper(data: data)
 
         let defaultDoc = try encoder.encode(dataStruct)

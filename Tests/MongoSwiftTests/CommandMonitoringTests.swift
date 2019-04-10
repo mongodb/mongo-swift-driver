@@ -157,28 +157,20 @@ private struct CMTest: Decodable {
 
         case "find":
             let modifiers = self.op.args["modifiers"] as? Document
-            var batchSize: Int32?
-            if let size = self.op.args["batchSize"] as? Int64 {
-                batchSize = Int32(size)
-            }
-            var maxTime: Int64?
-            if let max = modifiers?["$maxTimeMS"] as? Int {
-                maxTime = Int64(max)
-            }
             var hint: Hint?
             if let hintDoc = modifiers?["$hint"] as? Document {
                 hint = .indexSpec(hintDoc)
             }
-            let options = FindOptions(batchSize: batchSize,
+            let options = FindOptions(batchSize: (self.op.args["batchSize"] as? BSONNumber)?.toInt32(),
                                       comment: modifiers?["$comment"] as? String,
                                       hint: hint,
-                                      limit: self.op.args["limit"] as? Int64,
+                                      limit: (self.op.args["limit"] as? BSONNumber)?.toInt64(),
                                       max: modifiers?["$max"] as? Document,
-                                      maxTimeMS: maxTime,
+                                      maxTimeMS: (modifiers?["$maxTimeMS"] as? BSONNumber)?.toInt64(),
                                       min: modifiers?["$min"] as? Document,
                                       returnKey: modifiers?["$returnKey"] as? Bool,
                                       showRecordId: modifiers?["$showDiskLoc"] as? Bool,
-                                      skip: self.op.args["skip"] as? Int64,
+                                      skip: (self.op.args["skip"] as? BSONNumber)?.toInt64(),
                                       sort: self.op.args["sort"] as? Document)
 
             // we have to iterate the cursor to make the command execute
@@ -260,7 +252,7 @@ private struct CommandStartedExpectation: ExpectationType, Decodable {
         // if it's a getMore, we can't directly compare the results
         if commandName == "getMore" {
             // verify that the getMore ID matches the stored cursor ID for this test
-            expect(event.command["getMore"]).to(bsonEqual(testContext["cursorId"] as? Int64))
+            expect(event.command["getMore"]).to(bsonEqual(testContext["cursorId"] as? BSONNumber))
             // compare collection and batchSize fields
             expect(event.command["collection"]).to(bsonEqual(self.command["collection"]))
             expect(event.command["batchSize"]).to(bsonEqual(self.command["batchSize"]))
@@ -288,14 +280,14 @@ private func normalizeCommand(_ input: Document) -> Document {
         // parses it as an Int32 which we convert to Int. convert to Int64 here because we
         /// (as per the crud spec) use an Int64 for maxTimeMS and send that to
         // the server in our actual commands.
-        } else if k == "maxTimeMS", let iV = v as? Int {
-            output[k] = Int64(iV)
+        } else if k == "maxTimeMS", let iV = (v as? BSONNumber)?.toInt64() {
+            output[k] = iV
 
         // The expected batch sizes are always Int64s, however, find command
         // events actually have Int32 batch sizes... (as the spec says...)
         // but getMores have Int64s. so only convert if it's a find command...
-        } else if k == "batchSize", let iV = v as? Int64 {
-            if input["find"] != nil { output[k] = Int(iV) } else { output[k] = v }
+        } else if k == "batchSize", let iV = v as? BSONNumber {
+            if input["find"] != nil { output[k] = iV.toInt32()! } else { output[k] = v }
 
         // recursively normalize if it's a document
         } else if let docVal = v as? Document {
@@ -365,14 +357,14 @@ private struct CommandSucceededExpectation: ExpectationType, Decodable {
         let receivedCursor = event.reply["cursor"] as? Document
         if let expectedCursor = self.cursor {
             // if the received cursor has an ID, and the expected ID is not 0, compare cursor IDs
-            if let id = receivedCursor!["id"] as? Int64, expectedCursor["id"] as? Int64 != 0 {
-                let storedId = testContext["cursorId"] as? Int64
+            if let id = receivedCursor!["id"] as? BSONNumber, (expectedCursor["id"] as? BSONNumber)?.toInt() != 0 {
+                let storedId = testContext["cursorId"] as? BSONNumber
                 // if we aren't already storing a cursor ID for this test, add one
                 if storedId == nil {
                     testContext["cursorId"] = id
                 // otherwise, verify that this ID matches the stored one
                 } else {
-                    expect(storedId).to(equal(id))
+                    expect(storedId).to(bsonEqual(id))
                 }
             }
             compareCursors(expected: expectedCursor, actual: receivedCursor!)
@@ -388,7 +380,7 @@ private struct CommandSucceededExpectation: ExpectationType, Decodable {
         expect(expected.count).to(equal(actual.count))
         for err in actual {
             // check each error code exists and is > 0
-            expect(err["code"] as? Int).to(beGreaterThan(0))
+            expect((err["code"] as? BSONNumber)?.toInt()).to(beGreaterThan(0))
             // check each error msg exists and has length > 0
             expect(err["errmsg"] as? String).toNot(beEmpty())
         }
@@ -419,8 +411,8 @@ private func normalizeExpectedReply(_ input: Document) -> Document {
             continue
         // The server sends back doubles, but the JSON test files
         // contain integer statuses (see SPEC-1050.)
-        } else if k == "ok", let dV = v as? Int {
-            output[k] = Double(dV)
+        } else if k == "ok", let dV = (v as? BSONNumber)?.toDouble() {
+            output[k] = dV
         // just copy the value over as is
         } else {
             output[k] = v

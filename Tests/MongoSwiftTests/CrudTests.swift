@@ -135,26 +135,11 @@ private class CrudTest {
     let collection: Document?
 
     var arrayFilters: [Document]? { return self.args["arrayFilters"] as? [Document] }
-    var batchSize: Int32? {
-        if let b = self.args["batchSize"] as? Int {
-            return Int32(b)
-        }
-        return nil
-    }
+    var batchSize: Int32? { return (self.args["batchSize"] as? BSONNumber)?.toInt32() }
     var collation: Document? { return self.args["collation"] as? Document }
     var sort: Document? { return self.args["sort"] as? Document }
-    var skip: Int64? {
-        if let s = self.args["skip"] as? Int {
-            return Int64(s)
-            }
-            return nil
-        }
-    var limit: Int64? {
-        if let l = self.args["limit"] as? Int {
-            return Int64(l)
-        }
-        return nil
-    }
+    var skip: Int64? { return (self.args["skip"] as? BSONNumber)?.toInt64() }
+    var limit: Int64? { return (self.args["limit"] as? BSONNumber)?.toInt64() }
     var projection: Document? { return self.args["projection"] as? Document }
     var returnDoc: ReturnDocument? {
         if let ret = self.args["returnDocument"] as? String {
@@ -203,8 +188,8 @@ private class CrudTest {
         expect(result?.modifiedCount).to(equal(expected.modifiedCount))
         expect(result?.upsertedCount).to(equal(expected.upsertedCount))
 
-        if let upsertedId = result?.upsertedId?.value as? Int {
-            expect(upsertedId).to(equal(expected.upsertedId?.value as? Int))
+        if let upsertedId = result?.upsertedId?.value as? BSONNumber {
+            expect(upsertedId).to(bsonEqual(expected.upsertedId?.value))
         } else {
             expect(expected.upsertedId).to(beNil())
         }
@@ -352,23 +337,23 @@ private class BulkWriteTest: CrudTest {
             return
         }
 
-        if let expectedDeletedCount = expected["deletedCount"] as? Int {
-            expect(result.deletedCount).to(equal(expectedDeletedCount))
+        if let expectedDeletedCount = expected["deletedCount"] as? BSONNumber {
+            expect(result.deletedCount).to(equal(expectedDeletedCount.toInt()))
         }
-        if let expectedInsertedCount = expected["insertedCount"] as? Int {
-            expect(result.insertedCount).to(equal(expectedInsertedCount))
+        if let expectedInsertedCount = expected["insertedCount"] as? BSONNumber {
+            expect(result.insertedCount).to(equal(expectedInsertedCount.toInt()))
         }
         if let expectedInsertedIds = expected["insertedIds"] as? Document {
             expect(BulkWriteTest.prepareIds(result.insertedIds)).to(equal(expectedInsertedIds))
         }
-        if let expectedMatchedCount = expected["matchedCount"] as? Int {
-            expect(result.matchedCount).to(equal(expectedMatchedCount))
+        if let expectedMatchedCount = expected["matchedCount"] as? BSONNumber {
+            expect(result.matchedCount).to(equal(expectedMatchedCount.toInt()))
         }
-        if let expectedModifiedCount = expected["modifiedCount"] as? Int {
-            expect(result.modifiedCount).to(equal(expectedModifiedCount))
+        if let expectedModifiedCount = expected["modifiedCount"] as? BSONNumber {
+            expect(result.modifiedCount).to(equal(expectedModifiedCount.toInt()))
         }
-        if let expectedUpsertedCount = expected["upsertedCount"] as? Int {
-            expect(result.upsertedCount).to(equal(expectedUpsertedCount))
+        if let expectedUpsertedCount = expected["upsertedCount"] as? BSONNumber {
+            expect(result.upsertedCount).to(equal(expectedUpsertedCount.toInt()))
         }
         if let expectedUpsertedIds = expected["upsertedIds"] as? Document {
             expect(BulkWriteTest.prepareIds(result.upsertedIds)).to(equal(expectedUpsertedIds))
@@ -382,7 +367,7 @@ private class CountTest: CrudTest {
         let filter: Document = try self.args.get("filter")
         let options = CountOptions(collation: self.collation, limit: self.limit, skip: self.skip)
         let result = try coll.count(filter, options: options)
-        expect(result).to(equal(self.result as? Int))
+        expect(result).to(equal((self.result as? BSONNumber)?.toInt()))
     }
 }
 
@@ -399,7 +384,7 @@ private class DeleteTest: CrudTest {
         }
         let expected = self.result as? Document
         // the only value in a DeleteResult is `deletedCount`
-        expect(result?.deletedCount).to(equal(expected?["deletedCount"] as? Int))
+        expect(result?.deletedCount).to(equal((expected?["deletedCount"] as? BSONNumber)?.toInt()))
     }
 }
 
@@ -526,8 +511,8 @@ private class InsertManyTest: CrudTest {
             return
         }
 
-        if let expectedInsertedCount = expected["insertedCount"] as? Int {
-            expect(result.insertedCount).to(equal(expectedInsertedCount))
+        if let expectedInsertedCount = expected["insertedCount"] as? BSONNumber {
+            expect(result.insertedCount).to(equal(expectedInsertedCount.toInt()))
         }
         if let expectedInsertedIds = expected["insertedIds"] as? Document {
             expect(InsertManyTest.prepareIds(result.insertedIds)).to(equal(expectedInsertedIds))

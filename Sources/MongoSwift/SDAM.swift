@@ -125,11 +125,11 @@ public struct ServerDescription {
             self.opTime = lastWrite["opTime"] as? ObjectId
         }
 
-        if let minVersion = isMaster["minWireVersion"] as? Int32 {
+        if let minVersion = (isMaster["minWireVersion"] as? BSONNumber)?.toInt32() {
             self.minWireVersion = minVersion
         }
 
-        if let maxVersion = isMaster["maxWireVersion"] as? Int32 {
+        if let maxVersion = (isMaster["maxWireVersion"] as? BSONNumber)?.toInt32() {
             self.maxWireVersion = maxVersion
         }
 
@@ -156,14 +156,14 @@ public struct ServerDescription {
         }
 
         self.setName = isMaster["setName"] as? String
-        self.setVersion = isMaster["setVersion"] as? Int64
+        self.setVersion = (isMaster["setVersion"] as? BSONNumber)?.toInt64()
         self.electionId = isMaster["electionId"] as? ObjectId
 
         if let primary = isMaster["primary"] as? String {
             self.primary = ConnectionId(primary)
         }
 
-        self.logicalSessionTimeoutMinutes = isMaster["logicalSessionTimeoutMinutes"] as? Int64
+        self.logicalSessionTimeoutMinutes = (isMaster["logicalSessionTimeoutMinutes"] as? BSONNumber)?.toInt64()
     }
 
     /// An internal initializer to create a `ServerDescription` from an OpaquePointer to a

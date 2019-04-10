@@ -182,7 +182,7 @@ final class MongoClientTests: MongoSwiftTestCase {
         doc = try collDoc.find(["_id": customDbCollId]).nextOrError()
 
         expect(doc).toNot(beNil())
-        expect(doc?["date"] as? Int64).to(equal(date.msSinceEpoch))
+        expect(doc?["date"]).to(bsonEqual(date.msSinceEpoch))
         expect(doc?["uuid"] as? String).to(equal(uuid.uuidString))
         expect(doc?["data"] as? String).to(equal(data.base64EncodedString()))
 
