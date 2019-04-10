@@ -1,8 +1,13 @@
 import bson
 import Foundation
 
+#if compiler(>=5.0)
+internal typealias BSONPointer = OpaquePointer
+internal typealias MutableBSONPointer = OpaquePointer
+#else
 internal typealias BSONPointer = UnsafePointer<bson_t>
 internal typealias MutableBSONPointer = UnsafeMutablePointer<bson_t>
+#endif
 
 /// The storage backing a MongoSwift `Document`.
 public class DocumentStorage {
@@ -288,11 +293,11 @@ extension Document {
     public var rawBSON: Data {
         // swiftlint:disable:next force_unwrapping - documented as always returning a value.
         let data = bson_get_data(self.data)!
-#if compiler(>=5.0)
-        let length = _bson_get_len(self.data)
-#else
-        let length = self.data.pointee.len
-#endif
+
+        /// BSON encodes the length in the first four bytes, so we can read it in from the
+        /// raw data without needing to access the `len` field of the `bson_t`.
+        let length = data.withMemoryRebound(to: Int32.self, capacity: 4) { $0.pointee }
+
         return Data(bytes: data, count: Int(length))
     }
 
@@ -323,7 +328,11 @@ extension Document {
                 throw RuntimeError.internalError(message: toErrorString(error))
             }
 
+#if compiler(>=5.0)
+            return bson
+#else
             return UnsafePointer(bson)
+#endif
         })
         self.count = self.storage.count
     }

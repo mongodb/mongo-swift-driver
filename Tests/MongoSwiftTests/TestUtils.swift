@@ -162,17 +162,8 @@ func clean(json: String?) -> String {
         return ""
     }
     do {
-        // parse as [String: Any] so we get consistent key ordering
-        guard let object = try JSONSerialization.jsonObject(with: str.data(using: .utf8)!,
-                                                            options: []) as? [String: Any] else {
-            return String()
-        }
-        let data = try JSONSerialization.data(withJSONObject: object, options: [])
-        guard let string = String(data: data, encoding: .utf8) else {
-            print("Unable to convert JSON data to Data: \(str)")
-            return String()
-        }
-        return string
+        let doc = try Document(fromJSON: str.data(using: .utf8)!)
+        return doc.extendedJSON
     } catch {
         print("Failed to clean string: \(str)")
         return String()

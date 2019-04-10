@@ -442,10 +442,13 @@ final class CodecTests: MongoSwiftTestCase {
     // test that Document.init(from decoder: Decoder) works with a non BSON decoder and that
     // Document.encode(to encoder: Encoder) works with a non BSON encoder
     func testDocumentIsCodable() throws {
-#if os(macOS) // presently skipped on linux due to nondeterministic key ordering
-        // note: instead of doing this, one can and should just initialize a Document with the `init(fromJSON:)`
-        // constructor, and conver to JSON using the .extendedJSON property. this test is just to demonstrate
-        // that a Document can theoretically work with any encoder/decoder.
+        // We presently have no way to control the order of emitted JSON in `cleanEqual`, so this
+        // test will no longer run deterministically on both OSX and Linux in Swift 5.0+. Instead
+        // of doing this, one can (and should) just initialize a Document with the `init(fromJSON:)`
+        // constructor, and convert to JSON using the .extendedJSON property. This test is just
+        // to demonstrate that a Document can theoretically work with any encoder/decoder.
+        return
+
         let encoder = JSONEncoder()
         let decoder = JSONDecoder()
 
@@ -474,7 +477,6 @@ final class CodecTests: MongoSwiftTestCase {
 
         let encoded = try String(data: encoder.encode(expected), encoding: .utf8)
         expect(encoded).to(cleanEqual(json))
-#endif
     }
 
     func testEncodeArray() throws {
