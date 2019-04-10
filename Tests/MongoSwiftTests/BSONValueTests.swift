@@ -208,13 +208,18 @@ final class BSONValueTests: MongoSwiftTestCase {
                 return
             }
             expect(l.toInt()).to(equal(int))
+            expect(Int(fromNumber: l)).to(equal(int))
             expect(l.toInt32()).to(equal(int32))
+            expect(Int32(fromNumber: l)).to(equal(int32))
             expect(l.toInt64()).to(equal(int64))
+            expect(Int64(fromNumber: l)).to(equal(int64))
             expect(l.toDouble()).to(equal(doubleInt))
+            expect(Double(fromNumber: l)).to(equal(doubleInt))
 
             // Skip double for this conversion since it generates a Decimal128(5.0) =/= Decimal128(5)
             if !(l is Double) {
                 expect(l.toDecimal128()).to(equal(decimalInt))
+                expect(Decimal128(fromNumber: l)).to(equal(decimalInt))
             }
         }
 
