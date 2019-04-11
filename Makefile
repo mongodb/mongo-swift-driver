@@ -5,6 +5,12 @@ else
 	FILTERARG =
 endif
 
+ifdef DOCSVERSION
+	DOCSARG = --module-version $(DOCSVERSION)
+else
+	DOCSARG =
+endif
+
 define check_for_gem
 	gem list $(1) -i > /dev/null || gem install $(1) || { echo "ERROR: Failed to locate or install the ruby gem $(1); please install yourself with 'gem install $(1)' (you may need to use sudo)"; exit 1; }
 endef
@@ -19,9 +25,9 @@ project:
 	@$(call check_for_gem,xcodeproj)
 	ruby Tests/Scripts/add_json_files.rb
 
-sourcery:
-	sourcery
-	
+linuxmain:
+	sourcery --sources Tests/ --templates Tests/LinuxMain.stencil --output Tests/LinuxMain.swift
+
 test:
 	swift test -v $(FILTERARG)
 
@@ -46,4 +52,4 @@ clean:
 documentation:
 	make project
 	@$(call check_for_gem,jazzy)
-	jazzy --module MongoSwift --module-version 0.1.0 --root-url https://mongodb.github.io/mongo-swift-driver/ --documentation=Guides/*.md
+	jazzy $(DOCSARG)

@@ -1,0 +1,5 @@
+module: MongoSwift
+root_url: https://mongodb.github.io/mongo-swift-driver
+github_url: https://github.com/mongodb/mongo-swift-driver
+documentation: Guides/*.md
+author: Matt Broadstone, Kaitlin Mahar, and Patrick Freed
