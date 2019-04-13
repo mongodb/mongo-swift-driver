@@ -28,7 +28,7 @@ public class DocumentStorage {
         self.pointer = bson_copy(pointer)
     }
 
-    internal init(stealing pointer: BSONPointer) {
+    internal init(stealing pointer: MutableBSONPointer) {
         self.pointer = pointer
     }
 
@@ -83,7 +83,7 @@ extension Document {
      *
      * - Returns: a new `Document`
      */
-    internal init(stealing pointer: BSONPointer) {
+    internal init(stealing pointer: MutableBSONPointer) {
         self.storage = DocumentStorage(stealing: pointer)
         self.count = self.storage.count
     }
@@ -345,11 +345,7 @@ extension Document {
                 throw RuntimeError.internalError(message: toErrorString(error))
             }
 
-#if compiler(>=5.0)
             return bson
-#else
-            return UnsafePointer(bson)
-#endif
         })
         self.count = self.storage.count
     }
