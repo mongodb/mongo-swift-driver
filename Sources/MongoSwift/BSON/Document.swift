@@ -63,7 +63,7 @@ extension Document {
     /**
      * Initializes a `Document` from a pointer to a `bson_t` by making a copy of the
      * data. The caller is responsible for freeing the original `bson_t`.
-     * 
+     *
      * - Parameters:
      *   - pointer: a BSONPointer
      *

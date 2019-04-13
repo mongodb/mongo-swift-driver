@@ -251,7 +251,7 @@ public struct TopologyDescription {
         var size = size_t()
         let serverData = mongoc_topology_description_get_servers(description, &size)
         defer { mongoc_server_descriptions_destroy_all(serverData, size) }
-        
+
         let buffer = UnsafeBufferPointer(start: serverData, count: size)
         if size > 0 {
             // swiftlint:disable:next force_unwrapping - documented as always returning a value.
