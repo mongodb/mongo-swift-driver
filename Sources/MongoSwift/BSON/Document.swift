@@ -79,7 +79,7 @@ extension Document {
      * underlying storage. The caller must not modify or free the `bson_t` themselves.
      *
      * - Parameters:
-     *   - pointer: a BSONPointer
+     *   - pointer: a MutableBSONPointer
      *
      * - Returns: a new `Document`
      */
