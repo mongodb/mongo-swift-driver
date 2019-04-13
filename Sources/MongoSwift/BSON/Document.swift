@@ -24,8 +24,12 @@ public class DocumentStorage {
         self.pointer = bson_new()
     }
 
-    internal init(fromPointer pointer: BSONPointer) {
+    internal init(copying pointer: BSONPointer) {
         self.pointer = bson_copy(pointer)
+    }
+
+    internal init(stealing pointer: BSONPointer) {
+        self.pointer = pointer
     }
 
     /// Cleans up internal state.
@@ -57,17 +61,30 @@ extension Document {
     }
 
     /**
-     * Initializes a `Document` from a pointer to a bson_t. Uses a copy
-     * of `bsonData`, so the caller is responsible for freeing the original
-     * memory.
-     *
+     * Initializes a `Document` from a pointer to a `bson_t` by making a copy of the
+     * data. The caller is responsible for freeing the original `bson_t`.
+     * 
      * - Parameters:
-     *   - fromPointer: a BSONPointer
+     *   - pointer: a BSONPointer
      *
      * - Returns: a new `Document`
      */
-    internal init(fromPointer pointer: BSONPointer) {
-        self.storage = DocumentStorage(fromPointer: pointer)
+    internal init(copying pointer: BSONPointer) {
+        self.storage = DocumentStorage(copying: pointer)
+        self.count = self.storage.count
+    }
+
+    /**
+     * Initializes a `Document` from a pointer to a `bson_t`, using the `bson_t` as its
+     * underlying storage. The caller must not modify or free the `bson_t` themselves.
+     *
+     * - Parameters:
+     *   - pointer: a BSONPointer
+     *
+     * - Returns: a new `Document`
+     */
+    internal init(stealing pointer: BSONPointer) {
+        self.storage = DocumentStorage(stealing: pointer)
         self.count = self.storage.count
     }
 
@@ -232,7 +249,7 @@ extension Document {
      */
     private mutating func copyStorageIfRequired() {
         if !isKnownUniquelyReferenced(&self.storage) {
-            self.storage = DocumentStorage(fromPointer: self.data)
+            self.storage = DocumentStorage(copying: self.data)
         }
     }
 
@@ -319,7 +336,7 @@ extension Document {
      *   - A `UserError.invalidArgumentError` if the data passed in is invalid JSON.
      */
     public init(fromJSON: Data) throws {
-        self.storage = DocumentStorage(fromPointer: try fromJSON.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) in
+        self.storage = DocumentStorage(stealing: try fromJSON.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) in
             var error = bson_error_t()
             guard let bson = bson_new_from_json(bytes, fromJSON.count, &error) else {
                 if error.domain == BSON_ERROR_JSON {
@@ -348,7 +365,7 @@ extension Document {
 
     /// Constructs a `Document` from raw BSON `Data`.
     public init(fromBSON: Data) {
-        self.storage = DocumentStorage(fromPointer: fromBSON.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) in
+        self.storage = DocumentStorage(stealing: fromBSON.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) in
             bson_new_from_data(bytes, fromBSON.count)
         })
         self.count = self.storage.count
@@ -456,7 +473,7 @@ extension Document: BSONValue {
                 throw RuntimeError.internalError(message: "Failed to create a Document from iterator")
             }
 
-            return self.init(fromPointer: docData)
+            return self.init(stealing: docData)
         }
     }
 }

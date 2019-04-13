@@ -127,7 +127,7 @@ extension Array: BSONValue {
                 throw RuntimeError.internalError(message: "Failed to create an Array from iterator")
             }
 
-            let arrDoc = Document(fromPointer: arrayData)
+            let arrDoc = Document(stealing: arrayData)
 
             guard let arr = arrDoc.values as? Array else {
                 fatalError("Failed to cast values for document \(arrDoc) to array")
@@ -658,7 +658,7 @@ public struct CodeWithScope: BSONValue, Equatable, Codable {
             guard let scopeData = bson_new_from_data(scopePointer.pointee, Int(scopeLength)) else {
                 throw RuntimeError.internalError(message: "Failed to create a bson_t from scope data")
             }
-            let scopeDoc = Document(fromPointer: scopeData)
+            let scopeDoc = Document(stealing: scopeData)
 
             return self.init(code: code, scope: scopeDoc)
         }

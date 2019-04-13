@@ -80,7 +80,10 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         }
 
         var replyPtr = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
-        defer { replyPtr.deallocate() }
+        defer {
+            replyPtr.deinitialize(count: 1)
+            replyPtr.deallocate() 
+        }
 
         var error = bson_error_t()
         guard mongoc_cursor_error_document(self._cursor, &error, replyPtr) else {
@@ -90,7 +93,8 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         // If a reply is present, it implies the error occurred on the server. This *should* always be a commandError,
         // but we will still parse the mongoc error to cover all cases.
         if let docPtr = replyPtr.pointee {
-            let reply = Document(fromPointer: docPtr)
+            // we have to copy because libmongoc owns the pointer.
+            let reply = Document(copying: docPtr)
             return parseMongocError(error, errorLabels: reply["errorLabels"] as? [String])
         }
 
@@ -115,9 +119,13 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         guard mongoc_cursor_next(self._cursor, out) else {
             return nil
         }
-        // swiftlint:disable:next force_unwrapping - if mongoc_cursor_next returned `true`, this is filled out.
-        let doc = Document(fromPointer: out.pointee!)
 
+        guard let pointee = out.pointee else {
+            fatalError("mongoc_cursor_next returned true, but document is nil")
+        }
+
+        // we have to copy because libmongoc owns the pointer.
+        let doc = Document(copying: pointee)
         do {
             let outDoc = try self.decoder.decode(T.self, from: doc)
             self.swiftError = nil

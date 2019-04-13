@@ -168,6 +168,7 @@ public class MongoClient {
         guard let uri = mongoc_uri_new_with_error(connectionString, &error) else {
             throw parseMongocError(error)
         }
+        defer { mongoc_uri_destroy(uri) }
 
         // if retryWrites is specified, set it on the uri (libmongoc does not provide api for setting it on the client).
         if let rw = options?.retryWrites {
