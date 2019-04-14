@@ -124,7 +124,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
             fatalError("mongoc_cursor_next returned true, but document is nil")
         }
 
-    // we have to copy because libmongoc owns the pointer.
+        // we have to copy because libmongoc owns the pointer.
         let doc = Document(copying: pointee)
         do {
             let outDoc = try self.decoder.decode(T.self, from: doc)

@@ -20,14 +20,18 @@ public class DocumentStorage {
         return Int(bson_count_keys(self.pointer))
     }
 
+    /// Initializes a new, empty `DocumentStorage`.
     internal init() {
         self.pointer = bson_new()
     }
 
+    /// Initializes a new `DocumentStorage` by copying over the data from the provided `bson_t`.
     internal init(copying pointer: BSONPointer) {
         self.pointer = bson_copy(pointer)
     }
 
+    /// Initializes a new `DocumentStorage` that uses the provided `bson_t` as its backing storage.
+    /// The newly created instance will handle cleaning up the pointer upon deinitialization.
     internal init(stealing pointer: MutableBSONPointer) {
         self.pointer = pointer
     }
@@ -61,8 +65,8 @@ extension Document {
     }
 
     /**
-     * Initializes a `Document` from a pointer to a `bson_t` by making a copy of the
-     * data. The caller is responsible for freeing the original `bson_t`.
+     * Initializes a `Document` from a pointer to a `bson_t` by making a copy of the data. The `bson_t`'s owner is
+     * responsible for freeing the original.
      *
      * - Parameters:
      *   - pointer: a BSONPointer
@@ -75,8 +79,8 @@ extension Document {
     }
 
     /**
-     * Initializes a `Document` from a pointer to a `bson_t`, using the `bson_t` as its
-     * underlying storage. The caller must not modify or free the `bson_t` themselves.
+     * Initializes a `Document` from a pointer to a `bson_t`, "stealing" the `bson_t` to use for underlying storage/
+     * The `bson_t` must not be modified or freed by others after it is used here/
      *
      * - Parameters:
      *   - pointer: a MutableBSONPointer
