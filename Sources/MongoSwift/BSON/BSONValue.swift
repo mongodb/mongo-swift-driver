@@ -132,27 +132,18 @@ extension BSONNumber where Self: BinaryInteger {
     /// Create an `Int` from this `BinaryInteger`.
     /// This will return nil if the conversion cannot result in an exact representation.
     public func toInt() -> Int? {
-        if let selfAsInt = self as? Int {
-            return selfAsInt
-        }
         return Int(exactly: self)
     }
 
     /// Create an `Int32` from this `BinaryInteger`.
     /// This will return nil if the conversion cannot result in an exact representation.
     public func toInt32() -> Int32? {
-        if let selfAsInt32 = self as? Int32 {
-            return selfAsInt32
-        }
         return Int32(exactly: self)
     }
 
     /// Create an `Int64` from this `BinaryInteger`.
     /// This will return nil if the conversion cannot result in an exact representation.
     public func toInt64() -> Int64? {
-        if let selfAsInt64 = self as? Int64 {
-            return selfAsInt64
-        }
         return Int64(exactly: self)
     }
 
@@ -186,9 +177,6 @@ extension BSONNumber where Self: BinaryFloatingPoint {
     /// Create a `Double` from this `BinaryFloatingPoint`.
     /// This will return nil if the conversion cannot result in an exact representation.
     public func toDouble() -> Double? {
-        if let selfAsDouble = self as? Double {
-            return selfAsDouble
-        }
         return Double(self)
     }
 }

@@ -660,7 +660,6 @@ final class CodecTests: MongoSwiftTestCase {
 
         let wrappedInt32: Document = ["x": int32]
         expect(try encoder.encode(AnyBSONStruct(int32))).to(equal(wrappedInt32))
-        // as int because we convert Int32 -> Int when decoding
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedInt32).x.value).to(bsonEqual(int32))
         expect(try decoder.decode(
                 AnyBSONStruct.self,

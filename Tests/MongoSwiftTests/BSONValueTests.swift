@@ -188,6 +188,46 @@ final class BSONValueTests: MongoSwiftTestCase {
         expect(Set([str.hashValue, doc.hashValue, json.hashValue]).count).to(equal(3))
     }
 
+    struct BSONNumberTestCase {
+        let int: Int?
+        let double: Double?
+        let int32: Int32?
+        let int64: Int64?
+        let decimal: Decimal128?
+
+        func run() {
+            let candidates = ([self.int, self.double, self.int32, self.int64, self.decimal] as [BSONNumber?])
+                    .compactMap { return $0 }
+
+            candidates.forEach { l in
+                // Skip the Decimal128 conversions until they're implemented
+                // TODO: don't skip these (SWIFT-367)
+                if l is Decimal128 {
+                    return
+                }
+
+                let compare = { (computed: BSONNumber?, expected: BSONNumber?) in
+                    guard computed != nil else {
+                        expect(expected).to(beNil())
+                        return
+                    }
+                    expect(computed).to(bsonEqual(expected))
+                }
+
+                compare(l.toInt(), self.int)
+                compare(l.toInt(), self.int)
+                compare(l.toInt32(), self.int32)
+                compare(l.toInt64(), self.int64)
+                compare(l.toDouble(), self.double)
+
+                // Skip double for this conversion since it generates a Decimal128(5.0) =/= Decimal128(5)
+                if !(l is Double) {
+                    compare(l.toDecimal128(), self.decimal)
+                }
+            }
+        }
+    }
+
     func testBSONNumber() throws {
         let decimal128 = Decimal128("5.5")!
         let double = 5.5
@@ -195,34 +235,14 @@ final class BSONValueTests: MongoSwiftTestCase {
         expect(double.toDouble()).to(equal(double))
         expect(double.toDecimal128()).to(equal(decimal128))
 
-        let int = 5
-        let doubleInt = 5.0
-        let int32 = Int32(5)
-        let int64 = Int64(5)
-        let decimalInt = Decimal128("5")!
+        let cases = [
+            BSONNumberTestCase(int: 5, double: 5.0, int32: Int32(5), int64: Int64(5), decimal: Decimal128("5")!),
+            BSONNumberTestCase(int: -5, double: -5.0, int32: Int32(-5), int64: Int64(-5), decimal: Decimal128("-5")!),
+            BSONNumberTestCase(int: 0, double: 0.0, int32: Int32(0), int64: Int64(0), decimal: Decimal128("0")!),
+            BSONNumberTestCase(int: nil, double: 1.234, int32: nil, int64: nil, decimal: Decimal128("1.234")!),
+            BSONNumberTestCase(int: nil, double: -31.234, int32: nil, int64: nil, decimal: Decimal128("-31.234")!)
+        ]
 
-        let conversionTest = { (l: BSONNumber) in
-            // Skip the Decimal128 conversions until they're implemented
-            // TODO: don't skip these (SWIFT-367)
-            if l is Decimal128 {
-                return
-            }
-            expect(l.toInt()).to(equal(int))
-            expect(Int(fromNumber: l)).to(equal(int))
-            expect(l.toInt32()).to(equal(int32))
-            expect(Int32(fromNumber: l)).to(equal(int32))
-            expect(l.toInt64()).to(equal(int64))
-            expect(Int64(fromNumber: l)).to(equal(int64))
-            expect(l.toDouble()).to(equal(doubleInt))
-            expect(Double(fromNumber: l)).to(equal(doubleInt))
-
-            // Skip double for this conversion since it generates a Decimal128(5.0) =/= Decimal128(5)
-            if !(l is Double) {
-                expect(l.toDecimal128()).to(equal(decimalInt))
-                expect(Decimal128(fromNumber: l)).to(equal(decimalInt))
-            }
-        }
-
-        ([int, doubleInt, int32, int64, decimalInt]).forEach(conversionTest)
+        cases.forEach { $0.run() }
     }
 }
