@@ -122,7 +122,7 @@ final class BSONValueTests: MongoSwiftTestCase {
         // initialize a new oid with the oid_t ptr
         // expect the values to be equal
         let objectId = ObjectId(fromPointer: &oid_t)
-        expect(objectId.oid).to(equal(oid))
+        expect(objectId.hex).to(equal(oid))
         expect(objectId.timestamp).to(equal(timestamp))
 
         // round trip the objectId.
@@ -135,13 +135,13 @@ final class BSONValueTests: MongoSwiftTestCase {
             return
         }
 
-        expect(_id.oid).to(equal(objectId.oid))
+        expect(_id.hex).to(equal(objectId.hex))
         expect(_id.timestamp).to(equal(objectId.timestamp))
 
         // expect that we can pull the correct timestamp if
         // initialized from the original string
         let objectIdFromString = ObjectId(fromString: oid)
-        expect(objectIdFromString.oid).to(equal(oid))
+        expect(objectIdFromString.hex).to(equal(oid))
         expect(objectIdFromString.timestamp).to(equal(timestamp))
     }
 

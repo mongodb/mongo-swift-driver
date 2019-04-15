@@ -394,9 +394,10 @@ public struct DBPointer: BSONValue, Codable, Equatable {
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        var oid = try ObjectId.toLibBSONType(self.id.oid) // TODO: use the stored bson_oid_t (SWIFT-268)
-        guard bson_append_dbpointer(storage.pointer, key, Int32(key.utf8.count), self.ref, &oid) else {
-            throw bsonTooLargeError(value: self, forKey: key)
+        try withUnsafePointer(to: id.oid) { oidPtr in
+            guard bson_append_dbpointer(storage.pointer, key, Int32(key.utf8.count), self.ref, oidPtr) else {
+                throw bsonTooLargeError(value: self, forKey: key)
+            }
         }
     }
 
@@ -732,25 +733,36 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
     public var bsonType: BSONType { return .objectId }
 
     /// This `ObjectId`'s data represented as a `String`.
-    public let oid: String
+    public var hex: String {
+        var str = Data(count: 25)
+        return str.withUnsafeMutableBytes { (rawBuffer: UnsafeMutablePointer<Int8>) in
+            withUnsafePointer(to: self.oid) { oidPtr in
+                bson_oid_to_string(oidPtr, rawBuffer)
+            }
+            return String(cString: rawBuffer)
+        }
+    }
 
     /// The timestamp used to create this `ObjectId`
-    public let timestamp: UInt32
+    public var timestamp: UInt32 {
+        return withUnsafePointer(to: self.oid) { oidPtr in UInt32(bson_oid_get_time_t(oidPtr)) }
+    }
+
+    internal let oid: bson_oid_t
 
     /// Initializes a new `ObjectId`.
     public init() {
-        var oid_t = bson_oid_t()
-        bson_oid_init(&oid_t, nil)
-        self.init(fromPointer: &oid_t)
+        var oid = bson_oid_t()
+        bson_oid_init(&oid, nil)
+        self.oid = oid
     }
 
     /// Initializes an `ObjectId` from the provided `String`. Assumes that the given string is a valid ObjectId.
     /// - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/objectid.rst
     public init(fromString oid: String) {
-        self.oid = oid
         var oid_t = bson_oid_t()
         bson_oid_init_from_string(&oid_t, oid)
-        self.timestamp = UInt32(bson_oid_get_time_t(&oid_t))
+        self.oid = oid_t
     }
 
     /// Initializes an `ObjectId` from the provided `String`. Returns `nil` if the string is not a valid
@@ -775,12 +787,7 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
     /// Initializes an `ObjectId` from an `UnsafePointer<bson_oid_t>` by copying the data
     /// from it to a `String`
     internal init(fromPointer oid_t: UnsafePointer<bson_oid_t>) {
-        var str = Data(count: 25)
-        self.oid = str.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<Int8>) in
-            bson_oid_to_string(oid_t, bytes)
-            return String(cString: bytes)
-        }
-        self.timestamp = UInt32(bson_oid_get_time_t(oid_t))
+        self.oid = oid_t.pointee
     }
 
     /// Returns the provided string as a `bson_oid_t`.
@@ -796,11 +803,11 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        // create a new bson_oid_t with self.oid
-        var oid = try ObjectId.toLibBSONType(self.oid)
         // encode the bson_oid_t to the bson_t
-        guard bson_append_oid(storage.pointer, key, Int32(key.utf8.count), &oid) else {
-            throw bsonTooLargeError(value: self, forKey: key)
+        try withUnsafePointer(to: self.oid) { oidPtr in
+            guard bson_append_oid(storage.pointer, key, Int32(key.utf8.count), oidPtr) else {
+                throw bsonTooLargeError(value: self, forKey: key)
+            }
         }
     }
 
@@ -814,11 +821,15 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
     }
 
     public var description: String {
-        return self.oid
+        return self.hex
     }
 
     public static func == (lhs: ObjectId, rhs: ObjectId) -> Bool {
-        return lhs.oid == rhs.oid
+        return withUnsafePointer(to: lhs.oid) { lhsOidPtr in
+            withUnsafePointer(to: rhs.oid) { rhsOidPtr in
+                bson_oid_equal(lhsOidPtr, rhsOidPtr)
+            }
+        }
     }
 }
 

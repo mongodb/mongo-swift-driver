@@ -574,7 +574,7 @@ final class CodecTests: MongoSwiftTestCase {
         let oid = ObjectId()
 
         expect(try decoder.decode(AnyBSONValue.self,
-                                  from: "{\"$oid\": \"\(oid.oid)\"}").value).to(bsonEqual(oid))
+                                  from: "{\"$oid\": \"\(oid.hex)\"}").value).to(bsonEqual(oid))
 
         let wrappedOid: Document = ["x": oid]
         expect(try encoder.encode(AnyBSONStruct(oid))).to(equal(wrappedOid))
