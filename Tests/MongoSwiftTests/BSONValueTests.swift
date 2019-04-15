@@ -121,7 +121,7 @@ final class BSONValueTests: MongoSwiftTestCase {
 
         // initialize a new oid with the oid_t ptr
         // expect the values to be equal
-        let objectId = ObjectId(fromPointer: &oid_t)
+        let objectId = ObjectId(copying: &oid_t)
         expect(objectId.hex).to(equal(oid))
         expect(objectId.timestamp).to(equal(timestamp))
 

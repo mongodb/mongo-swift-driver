@@ -422,7 +422,7 @@ public struct DBPointer: BSONValue, Codable, Equatable {
                 throw wrongIterTypeError(iter, expected: DBPointer.self)
             }
 
-            return DBPointer(ref: String(cString: collectionP), id: ObjectId(fromPointer: oidP))
+            return DBPointer(ref: String(cString: collectionP), id: ObjectId(copying: oidP))
         }
     }
 }
@@ -784,9 +784,8 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
         throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
     }
 
-    /// Initializes an `ObjectId` from an `UnsafePointer<bson_oid_t>` by copying the data
-    /// from it to a `String`
-    internal init(fromPointer oid_t: UnsafePointer<bson_oid_t>) {
+    /// Initializes an `ObjectId` from an `UnsafePointer<bson_oid_t>` by copying the underlying `bson_oid_t`.
+    internal init(copying oid_t: UnsafePointer<bson_oid_t>) {
         self.oid = oid_t.pointee
     }
 
@@ -794,12 +793,10 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
     /// - Throws:
     ///   - `UserError.invalidArgumentError` if the parameter string does not correspond to a valid `ObjectId`.
     internal static func toLibBSONType(_ str: String) throws -> bson_oid_t {
-        var value = bson_oid_t()
-        if !bson_oid_is_valid(str, str.utf8.count) {
+        guard let oid = ObjectId(ifValid: str) else {
             throw UserError.invalidArgumentError(message: "ObjectId string is invalid")
         }
-        bson_oid_init_from_string(&value, str)
-        return value
+        return oid.oid
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
@@ -816,7 +813,7 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
             guard let oid = bson_iter_oid(iterPtr) else {
                 throw wrongIterTypeError(iter, expected: ObjectId.self)
             }
-            return self.init(fromPointer: oid)
+            return self.init(copying: oid)
         }
     }
 
