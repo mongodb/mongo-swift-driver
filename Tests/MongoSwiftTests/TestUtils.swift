@@ -1,4 +1,5 @@
 import Foundation
+import mongoc
 @testable import MongoSwift
 import Nimble
 import XCTest
@@ -37,10 +38,31 @@ class MongoSwiftTestCase: XCTestCase {
     /// If the environment variable does not exist, this will use a default of "mongodb://127.0.0.1/".
     static var connStr: String {
         if let connStr = ProcessInfo.processInfo.environment["MONGODB_URI"] {
+            if self.topologyType == .sharded {
+                guard let uri = mongoc_uri_new(connStr) else {
+                    return connStr
+                }
+
+                defer {
+                    mongoc_uri_destroy(uri)
+                }
+
+                guard let hosts = mongoc_uri_get_hosts(uri) else {
+                    return connStr
+                }
+
+                let hostAndPort = withUnsafeBytes(of: hosts.pointee.host_and_port) { rawPtr -> String in
+                    let ptr = rawPtr.baseAddress!.assumingMemoryBound(to: CChar.self)
+                    return String(cString: ptr)
+                }
+
+                return "mongodb://\(hostAndPort)/"
+            }
+
             return connStr
-        } else {
-            return "mongodb://127.0.0.1/"
         }
+
+        return "mongodb://127.0.0.1/"
     }
 
     // indicates whether we are running on a 32-bit platform
@@ -54,6 +76,21 @@ class MongoSwiftTestCase: XCTestCase {
             name += "_" + suf
         }
         return name.replacingOccurrences(of: "[ \\+\\$]", with: "_", options: [.regularExpression])
+    }
+
+    static var topologyType: TopologyDescription.TopologyType {
+        guard let topology = ProcessInfo.processInfo.environment["MONGODB_TOPOLOGY"] else {
+            return .single
+        }
+
+        switch topology {
+        case "sharded_cluster":
+            return .sharded
+        case "replica_set":
+            return .replicaSetWithPrimary
+        default:
+            return .single
+        }
     }
 }
 
