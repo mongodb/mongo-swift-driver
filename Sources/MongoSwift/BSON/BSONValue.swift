@@ -748,6 +748,10 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
         return withUnsafePointer(to: self.oid) { oidPtr in UInt32(bson_oid_get_time_t(oidPtr)) }
     }
 
+    public var description: String {
+        return self.hex
+    }
+
     internal let oid: bson_oid_t
 
     /// Initializes a new `ObjectId`.
@@ -815,10 +819,6 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
             }
             return self.init(copying: oid)
         }
-    }
-
-    public var description: String {
-        return self.hex
     }
 
     public static func == (lhs: ObjectId, rhs: ObjectId) -> Bool {
