@@ -171,8 +171,8 @@ public struct ServerDescription {
     internal init(_ description: OpaquePointer) {
         self.connectionId = ConnectionId(mongoc_server_description_host(description))
         self.roundTripTime = mongoc_server_description_round_trip_time(description)
-        // swiftlint:disable:next force_unwrapping - documented as always returning a value.
-        let isMaster = Document(fromPointer: mongoc_server_description_ismaster(description)!)
+        // we have to copy because libmongoc owns the pointer.
+        let isMaster = Document(copying: mongoc_server_description_ismaster(description))
         self.parseIsMaster(isMaster)
 
         let serverType = String(cString: mongoc_server_description_type(description))
@@ -250,6 +250,8 @@ public struct TopologyDescription {
 
         var size = size_t()
         let serverData = mongoc_topology_description_get_servers(description, &size)
+        defer { mongoc_server_descriptions_destroy_all(serverData, size) }
+
         let buffer = UnsafeBufferPointer(start: serverData, count: size)
         if size > 0 {
             // swiftlint:disable:next force_unwrapping - documented as always returning a value.

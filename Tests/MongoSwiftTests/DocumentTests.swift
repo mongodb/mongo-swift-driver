@@ -481,7 +481,7 @@ final class DocumentTests: MongoSwiftTestCase {
     // test replacing `Overwritable` types with values of their own type
     func testOverwritable() throws {
         // make a deep copy so we start off with uniquely referenced storage
-        var doc = Document(fromPointer: DocumentTests.overwritables.data)
+        var doc = Document(copying: DocumentTests.overwritables.data)
 
         // save a reference to original bson_t so we can verify it doesn't change
         let pointer = doc.data
@@ -555,7 +555,7 @@ final class DocumentTests: MongoSwiftTestCase {
     // test replacing some of the non-Overwritable types with values of their own types
     func testNonOverwritable() throws {
         // make a deep copy so we start off with uniquely referenced storage
-        var doc = Document(fromPointer: DocumentTests.nonOverwritables.data)
+        var doc = Document(copying: DocumentTests.nonOverwritables.data)
 
         // save a reference to original bson_t so we can verify it changes
         var pointer = doc.data
@@ -578,7 +578,7 @@ final class DocumentTests: MongoSwiftTestCase {
     // test replacing both overwritable and nonoverwritable values with values of different types
     func testReplaceValueWithNewType() throws {
         // make a deep copy so we start off with uniquely referenced storage
-        var overwritableDoc = Document(fromPointer: DocumentTests.overwritables.data)
+        var overwritableDoc = Document(copying: DocumentTests.overwritables.data)
 
         // save a reference to original bson_t so we can verify it changes
         var overwritablePointer = overwritableDoc.data
@@ -613,7 +613,7 @@ final class DocumentTests: MongoSwiftTestCase {
         ]))
 
         // make a deep copy so we start off with uniquely referenced storage
-        var nonOverwritableDoc = Document(fromPointer: DocumentTests.nonOverwritables.data)
+        var nonOverwritableDoc = Document(copying: DocumentTests.nonOverwritables.data)
 
         // save a reference to original bson_t so we can verify it changes
         var nonOverwritablePointer = nonOverwritableDoc.data
@@ -631,7 +631,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
     // test setting both overwritable and nonoverwritable values to nil
     func testReplaceValueWithNil() throws {
-        var overwritableDoc = Document(fromPointer: DocumentTests.overwritables.data)
+        var overwritableDoc = Document(copying: DocumentTests.overwritables.data)
         var overwritablePointer = overwritableDoc.data
 
         ["double", "int32", "int64", "bool", "decimal", "oid", "timestamp", "datetime"].forEach {
@@ -641,7 +641,7 @@ final class DocumentTests: MongoSwiftTestCase {
             overwritablePointer = overwritableDoc.data
         }
 
-        var nonOverwritableDoc = Document(fromPointer: DocumentTests.nonOverwritables.data)
+        var nonOverwritableDoc = Document(copying: DocumentTests.nonOverwritables.data)
         var nonOverwritablePointer = nonOverwritableDoc.data
 
         ["string", "doc", "arr"].forEach {

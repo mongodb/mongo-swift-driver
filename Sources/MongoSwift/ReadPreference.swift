@@ -70,8 +70,8 @@ public final class ReadPreference {
         guard let bson = mongoc_read_prefs_get_tags(self._readPreference) else {
             fatalError("Failed to retrieve read preference tags")
         }
-
-        let wrapped = Document(fromPointer: bson)
+        // we have to copy because libmongoc owns the pointer.
+        let wrapped = Document(copying: bson)
 
         // swiftlint:disable:next force_cast
         return wrapped.values as! [Document]
