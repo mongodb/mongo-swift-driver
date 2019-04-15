@@ -443,6 +443,10 @@ public struct BulkWriteResult {
      *   - `RuntimeError.internalError` if an unexpected error occurs reading the reply from the server.
      */
     fileprivate init(reply: Document, insertedIds: [Int: BSONValue]) throws {
+        // These values are converted to Int via BSONNumber because they're returned from libmongoc as BSON int32s,
+        // which are retrieved from documents as Ints on 32-bit systems and Int32s on 64-bit ones. To retrieve them in a
+        // cross-platform manner, we must convert them this way. Also, regardless of how they are stored in the
+        // we want to use them as Ints.
         self.deletedCount = (try reply.getValue(for: "nRemoved") as? BSONNumber)?.toInt() ?? 0
         self.insertedCount = (try reply.getValue(for: "nInserted") as? BSONNumber)?.toInt() ?? 0
         self.insertedIds = insertedIds

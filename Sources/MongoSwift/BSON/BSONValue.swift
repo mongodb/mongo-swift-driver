@@ -678,6 +678,8 @@ extension Double: BSONNumber {
 /// On 64-bit systems, `Int` corresponds to a BSON Int64. On 32-bit systems, it corresponds to a BSON Int32.
 extension Int: BSONNumber {
     /// `Int` corresponds to a BSON int32 or int64 depending upon whether the compilation system is 32 or 64 bit.
+    /// Use MemoryLayout instead of Int.bitWidth to avoid a compiler warning.
+    /// See: https://forums.swift.org/t/how-can-i-condition-on-the-size-of-int/9080/4
     internal static var bsonType: BSONType {
         return MemoryLayout<Int>.size == 4 ? .int32 : .int64
     }
