@@ -197,7 +197,7 @@ final class BSONValueTests: MongoSwiftTestCase {
 
         func run() {
             let candidates = ([self.int, self.double, self.int32, self.int64, self.decimal] as [BSONNumber?])
-                    .compactMap { return $0 }
+                    .compactMap { $0 }
 
             candidates.forEach { l in
                 // Skip the Decimal128 conversions until they're implemented
