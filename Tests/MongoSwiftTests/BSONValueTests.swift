@@ -214,15 +214,14 @@ final class BSONValueTests: MongoSwiftTestCase {
                     expect(computed).to(bsonEqual(expected))
                 }
 
-                compare(l.toInt(), self.int)
-                compare(l.toInt(), self.int)
-                compare(l.toInt32(), self.int32)
-                compare(l.toInt64(), self.int64)
-                compare(l.toDouble(), self.double)
+                compare(l.intValue, self.int)
+                compare(l.int32Value, self.int32)
+                compare(l.int64Value, self.int64)
+                compare(l.doubleValue, self.double)
 
                 // Skip double for this conversion since it generates a Decimal128(5.0) =/= Decimal128(5)
                 if !(l is Double) {
-                    compare(l.toDecimal128(), self.decimal)
+                    compare(l.decimal128Value, self.decimal)
                 }
             }
         }
@@ -232,8 +231,8 @@ final class BSONValueTests: MongoSwiftTestCase {
         let decimal128 = Decimal128("5.5")!
         let double = 5.5
 
-        expect(double.toDouble()).to(equal(double))
-        expect(double.toDecimal128()).to(equal(decimal128))
+        expect(double.doubleValue).to(equal(double))
+        expect(double.decimal128Value).to(equal(decimal128))
 
         let cases = [
             BSONNumberTestCase(int: 5, double: 5.0, int32: Int32(5), int64: Int64(5), decimal: Decimal128("5")!),

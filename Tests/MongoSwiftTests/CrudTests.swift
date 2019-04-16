@@ -338,22 +338,22 @@ private class BulkWriteTest: CrudTest {
         }
 
         if let expectedDeletedCount = expected["deletedCount"] as? BSONNumber {
-            expect(result.deletedCount).to(equal(expectedDeletedCount.toInt()))
+            expect(result.deletedCount).to(equal(expectedDeletedCount.intValue))
         }
         if let expectedInsertedCount = expected["insertedCount"] as? BSONNumber {
-            expect(result.insertedCount).to(equal(expectedInsertedCount.toInt()))
+            expect(result.insertedCount).to(equal(expectedInsertedCount.intValue))
         }
         if let expectedInsertedIds = expected["insertedIds"] as? Document {
             expect(BulkWriteTest.prepareIds(result.insertedIds)).to(equal(expectedInsertedIds))
         }
         if let expectedMatchedCount = expected["matchedCount"] as? BSONNumber {
-            expect(result.matchedCount).to(equal(expectedMatchedCount.toInt()))
+            expect(result.matchedCount).to(equal(expectedMatchedCount.intValue))
         }
         if let expectedModifiedCount = expected["modifiedCount"] as? BSONNumber {
-            expect(result.modifiedCount).to(equal(expectedModifiedCount.toInt()))
+            expect(result.modifiedCount).to(equal(expectedModifiedCount.intValue))
         }
         if let expectedUpsertedCount = expected["upsertedCount"] as? BSONNumber {
-            expect(result.upsertedCount).to(equal(expectedUpsertedCount.toInt()))
+            expect(result.upsertedCount).to(equal(expectedUpsertedCount.intValue))
         }
         if let expectedUpsertedIds = expected["upsertedIds"] as? Document {
             expect(BulkWriteTest.prepareIds(result.upsertedIds)).to(equal(expectedUpsertedIds))
@@ -512,7 +512,7 @@ private class InsertManyTest: CrudTest {
         }
 
         if let expectedInsertedCount = expected["insertedCount"] as? BSONNumber {
-            expect(result.insertedCount).to(equal(expectedInsertedCount.toInt()))
+            expect(result.insertedCount).to(equal(expectedInsertedCount.intValue))
         }
         if let expectedInsertedIds = expected["insertedIds"] as? Document {
             expect(InsertManyTest.prepareIds(result.insertedIds)).to(equal(expectedInsertedIds))

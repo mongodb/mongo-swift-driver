@@ -287,7 +287,7 @@ private func normalizeCommand(_ input: Document) -> Document {
         // events actually have Int32 batch sizes... (as the spec says...)
         // but getMores have Int64s. so only convert if it's a find command...
         } else if k == "batchSize", let iV = v as? BSONNumber {
-            if input["find"] != nil { output[k] = iV.toInt32()! } else { output[k] = v }
+            if input["find"] != nil { output[k] = iV.int32Value! } else { output[k] = v }
 
         // recursively normalize if it's a document
         } else if let docVal = v as? Document {
@@ -411,7 +411,7 @@ private func normalizeExpectedReply(_ input: Document) -> Document {
             continue
         // The server sends back doubles, but the JSON test files
         // contain integer statuses (see SPEC-1050.)
-        } else if k == "ok", let dV = (v as? BSONNumber)?.DoubleValue {
+        } else if k == "ok", let dV = (v as? BSONNumber)?.doubleValue {
             output[k] = dV
         // just copy the value over as is
         } else {

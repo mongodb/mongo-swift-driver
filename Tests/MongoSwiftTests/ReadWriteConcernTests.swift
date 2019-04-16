@@ -432,7 +432,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
                             expect(try encoder.encode(wc)).to(beNil())
                         } else {
                             if let wtimeoutMS = expected["wtimeout"] as? BSONNumber {
-                                expected["wtimeout"] = wtimeoutMS.toInt64()!
+                                expected["wtimeout"] = wtimeoutMS.int64Value!
                             }
                             expect(try encoder.encode(wc)).to(equal(expected))
                         }
