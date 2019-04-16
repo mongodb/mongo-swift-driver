@@ -117,6 +117,7 @@ public struct DatabaseOptions: CodingStrategyProvider {
 /// A MongoDB Client.
 public class MongoClient {
     internal var _client: OpaquePointer?
+    internal var fromPool: Bool
 
     /// If command and/or server monitoring is enabled, stores the NotificationCenter events are posted to.
     internal var notificationCenter: NotificationCenter?
@@ -197,6 +198,7 @@ public class MongoClient {
 
         self.encoder = BSONEncoder(options: options)
         self.decoder = BSONDecoder(options: options)
+        self.fromPool = false
 
         if options?.eventMonitoring == true { self.initializeMonitoring() }
 
@@ -226,6 +228,24 @@ public class MongoClient {
 
         self.encoder = BSONEncoder()
         self.decoder = BSONDecoder()
+        self.fromPool = false
+    }
+    
+    /**
+     * :nodoc:
+     * Create a new client from an existing `mongoc_client_t`.
+     * Do not use this initializer unless you know what you are doing.
+     *
+     * If this client was derived from a pool, ensure that the error api version was set to 2 on the pool.
+     *
+     * - Parameters:
+     *   - fromPointer: the `mongoc_client_t` to store and use internally
+     */
+    public init(fromPool pool: MongoClientPool) {
+        self._client = pool._pool
+        self.encoder = BSONEncoder()
+        self.decoder = BSONDecoder()
+        self.fromPool = true
     }
 
     /// Cleans up internal state.
@@ -249,6 +269,10 @@ public class MongoClient {
      * Closes the client.
      */
     public func close() {
+        if self.fromPool {
+            return
+        }
+
         guard let client = self._client else {
             return
         }
