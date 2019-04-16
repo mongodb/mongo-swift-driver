@@ -241,8 +241,8 @@ public class MongoClient {
      * - Parameters:
      *   - fromPointer: the `mongoc_client_t` to store and use internally
      */
-    public init(fromPool pool: MongoClientPool) {
-        self._client = pool._pool
+    public init(fromPoolPointer ptr: OpaquePointer) {
+        self._client = ptr
         self.encoder = BSONEncoder()
         self.decoder = BSONDecoder()
         self.fromPool = true

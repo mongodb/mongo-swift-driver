@@ -67,7 +67,7 @@ public class MongoClientPool {
             self.push(ptr)
         }
 
-        let client = MongoClient(fromPool: self)
+        let client = MongoClient(fromPoolPointer: ptr)
         return client
     }
 
