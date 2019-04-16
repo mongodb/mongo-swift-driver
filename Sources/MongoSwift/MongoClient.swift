@@ -234,7 +234,7 @@ public class MongoClient {
     /**
      * :nodoc:
      * Create a new client from a pointer released from `mongoc_client_pool_pop`.
-     * Do not use this initializer unless you know what you are doing, see descriptions in MongoClientPool.
+     * Do not use this initializer unless you know what you are doing, see descriptions in `MongoClientPool`.
      * `mongoc_client_set_error_api` must not be set on a client pool pointer, and it must not be destroyed.
      *
      * - Parameters:
