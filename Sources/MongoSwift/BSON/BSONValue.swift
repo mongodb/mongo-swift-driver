@@ -761,23 +761,16 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
         self.oid = oid
     }
 
-    /// Initializes an `ObjectId` from the provided `String`. Assumes that the given string is a valid ObjectId.
-    /// - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/objectid.rst
-    public init(from hex: String) {
-        var oid_t = bson_oid_t()
-        bson_oid_init_from_string(&oid_t, hex)
-        self.oid = oid_t
-    }
-
     /// Initializes an `ObjectId` from the provided `String`. Returns `nil` if the string is not a valid
     /// ObjectId.
     /// - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/objectid.rst
-    public init?(ifValid oid: String) {
-        if !bson_oid_is_valid(oid, oid.utf8.count) {
+    public init?(_ hex: String) {
+        guard bson_oid_is_valid(hex, hex.utf8.count) else {
             return nil
-        } else {
-            self.init(from: oid)
         }
+        var oid_t = bson_oid_t()
+        bson_oid_init_from_string(&oid_t, hex)
+        self.oid = oid_t
     }
 
     public init(from decoder: Decoder) throws {
