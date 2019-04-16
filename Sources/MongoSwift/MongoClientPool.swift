@@ -93,45 +93,4 @@ public class MongoClientPool {
         mongoc_client_pool_destroy(pool)
         self._pool = nil
     }
-
-    /// Internal helper function used to get an appropriate error from a libmongoc error. This should NOT be used to get
-    /// `.writeError`s or `.bulkWriteError`s. Instead, construct those using `getErrorFromReply`.
-    internal func parseMongocError(_ error: bson_error_t, errorLabels: [String]? = nil) -> MongoError {
-        let domain = mongoc_error_domain_t(rawValue: error.domain)
-        let code = mongoc_error_code_t(rawValue: error.code)
-        let message = toErrorString(error)
-
-        switch (domain, code) {
-        case (MONGOC_ERROR_CLIENT, MONGOC_ERROR_CLIENT_AUTHENTICATE):
-            return RuntimeError.authenticationError(message: message)
-        case (MONGOC_ERROR_COMMAND, MONGOC_ERROR_COMMAND_INVALID_ARG):
-            return UserError.invalidArgumentError(message: message)
-        case (MONGOC_ERROR_SERVER, _):
-            return ServerError.commandError(
-                code: ServerErrorCode(code.rawValue),
-                message: message,
-                errorLabels: errorLabels)
-        case (MONGOC_ERROR_STREAM, _),
-             (MONGOC_ERROR_SERVER_SELECTION, MONGOC_ERROR_SERVER_SELECTION_FAILURE),
-             (MONGOC_ERROR_PROTOCOL, MONGOC_ERROR_PROTOCOL_BAD_WIRE_VERSION):
-            return RuntimeError.connectionError(message: message, errorLabels: errorLabels)
-        case (MONGOC_ERROR_CURSOR, MONGOC_ERROR_CURSOR_INVALID_CURSOR):
-            return UserError.logicError(message: message)
-        default:
-            assert(errorLabels == nil, "errorLabels set on error, but were not thrown as a MongoError. " +
-                "Labels: \(errorLabels ?? [])")
-            return RuntimeError.internalError(message: message)
-        }
-    }
-
-    internal func toErrorString(_ error: bson_error_t) -> String {
-        var e = error
-        return withUnsafeBytes(of: &e.message) { rawPtr -> String in
-            // if baseAddress is nil, the buffer is empty.
-            guard let baseAddress = rawPtr.baseAddress else {
-                return ""
-            }
-            return String(cString: baseAddress.assumingMemoryBound(to: CChar.self))
-        }
-    }
 }
