@@ -6,7 +6,7 @@ public class MongoClientPool {
     internal var _pool: OpaquePointer?
 
     /**
-     * Create a new client pool connection to a MongoDB server.
+     * Create a new client pool of connections to a MongoDB server, for multi-threaded programs.
      *
      * - Parameters:
      *   - connectionString: the connection string to connect to.
@@ -27,7 +27,7 @@ public class MongoClientPool {
         }
 
         defer { mongoc_uri_destroy(uri) }
-        self._pool = mongoc_client_pool_new (uri)
+        self._pool = mongoc_client_pool_new(uri)
 
         if let maxPoolSize = maxPoolSize {
             mongoc_client_pool_max_size(self._pool, maxPoolSize)
