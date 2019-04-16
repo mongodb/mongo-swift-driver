@@ -447,18 +447,18 @@ public struct BulkWriteResult {
         // which are retrieved from documents as Ints on 32-bit systems and Int32s on 64-bit ones. To retrieve them in a
         // cross-platform manner, we must convert them this way. Also, regardless of how they are stored in the
         // we want to use them as Ints.
-        self.deletedCount = (try reply.getValue(for: "nRemoved") as? BSONNumber)?.toInt() ?? 0
-        self.insertedCount = (try reply.getValue(for: "nInserted") as? BSONNumber)?.toInt() ?? 0
+        self.deletedCount = (try reply.getValue(for: "nRemoved") as? BSONNumber)?.intValue ?? 0
+        self.insertedCount = (try reply.getValue(for: "nInserted") as? BSONNumber)?.intValue ?? 0
         self.insertedIds = insertedIds
-        self.matchedCount = (try reply.getValue(for: "nMatched") as? BSONNumber)?.toInt() ?? 0
-        self.modifiedCount = (try reply.getValue(for: "nModified") as? BSONNumber)?.toInt() ?? 0
-        self.upsertedCount = (try reply.getValue(for: "nUpserted") as? BSONNumber)?.toInt() ?? 0
+        self.matchedCount = (try reply.getValue(for: "nMatched") as? BSONNumber)?.intValue ?? 0
+        self.modifiedCount = (try reply.getValue(for: "nModified") as? BSONNumber)?.intValue ?? 0
+        self.upsertedCount = (try reply.getValue(for: "nUpserted") as? BSONNumber)?.intValue ?? 0
 
         var upsertedIds = [Int: BSONValue]()
 
         if let upserted = try reply.getValue(for: "upserted") as? [Document] {
             for upsert in upserted {
-                guard let index = (try upsert.getValue(for: "index") as? BSONNumber)?.toInt() else {
+                guard let index = (try upsert.getValue(for: "index") as? BSONNumber)?.intValue else {
                     throw RuntimeError.internalError(message: "Could not cast upserted index to `Int`")
                 }
                 upsertedIds[index] = upsert["_id"]

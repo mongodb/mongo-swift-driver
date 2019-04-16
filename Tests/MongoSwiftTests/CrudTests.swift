@@ -135,11 +135,11 @@ private class CrudTest {
     let collection: Document?
 
     var arrayFilters: [Document]? { return self.args["arrayFilters"] as? [Document] }
-    var batchSize: Int32? { return (self.args["batchSize"] as? BSONNumber)?.toInt32() }
+    var batchSize: Int32? { return (self.args["batchSize"] as? BSONNumber)?.int32Value }
     var collation: Document? { return self.args["collation"] as? Document }
     var sort: Document? { return self.args["sort"] as? Document }
-    var skip: Int64? { return (self.args["skip"] as? BSONNumber)?.toInt64() }
-    var limit: Int64? { return (self.args["limit"] as? BSONNumber)?.toInt64() }
+    var skip: Int64? { return (self.args["skip"] as? BSONNumber)?.int64Value }
+    var limit: Int64? { return (self.args["limit"] as? BSONNumber)?.int64Value }
     var projection: Document? { return self.args["projection"] as? Document }
     var returnDoc: ReturnDocument? {
         if let ret = self.args["returnDocument"] as? String {
@@ -367,7 +367,7 @@ private class CountTest: CrudTest {
         let filter: Document = try self.args.get("filter")
         let options = CountOptions(collation: self.collation, limit: self.limit, skip: self.skip)
         let result = try coll.count(filter, options: options)
-        expect(result).to(equal((self.result as? BSONNumber)?.toInt()))
+        expect(result).to(equal((self.result as? BSONNumber)?.intValue))
     }
 }
 
@@ -384,7 +384,7 @@ private class DeleteTest: CrudTest {
         }
         let expected = self.result as? Document
         // the only value in a DeleteResult is `deletedCount`
-        expect(result?.deletedCount).to(equal((expected?["deletedCount"] as? BSONNumber)?.toInt()))
+        expect(result?.deletedCount).to(equal((expected?["deletedCount"] as? BSONNumber)?.intValue))
     }
 }
 

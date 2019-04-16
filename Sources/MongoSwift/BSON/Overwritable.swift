@@ -21,9 +21,9 @@ extension Bool: Overwritable {
 
 extension Int: Overwritable {
     internal func writeToCurrentPosition(of iter: DocumentIterator) throws {
-        if let int32 = self.int32Value {
+        if let int32 = self.int32 {
             return int32.writeToCurrentPosition(of: iter)
-        } else if let int64 = self.int64Value {
+        } else if let int64 = self.int64 {
             return int64.writeToCurrentPosition(of: iter)
         }
 

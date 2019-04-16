@@ -108,75 +108,67 @@ extension BSONValue where Self: Equatable {
 public protocol BSONNumber: BSONValue {
     /// Create an `Int` from this `BSONNumber`.
     /// This will return nil if the conversion cannot result in an exact representation.
-    func toInt() -> Int?
+    var intValue: Int? { get }
 
     /// Create an `Int32` from this `BSONNumber`.
     /// This will return nil if the conversion cannot result in an exact representation.
-    func toInt32() -> Int32?
+    var int32Value: Int32? { get }
 
     /// Create an `Int64` from this `BSONNumber`.
     /// This will return nil if the conversion cannot result in an exact representation.
-    func toInt64() -> Int64?
+    var int64Value: Int64? { get }
 
     /// Create a `Double` from this `BSONNumber`.
     /// This will return nil if the conversion cannot result in an exact representation.
-    func toDouble() -> Double?
+    var doubleValue: Double? { get }
 
     /// Create a `Decimal128` from this `BSONNumber`.
     /// This will return nil if the conversion cannot result in an exact representation.
-    func toDecimal128() -> Decimal128?
+    var decimal128Value: Decimal128? { get }
 }
 
 /// Default conformance to `BSONNumber` for `BinaryInteger`s.
 extension BSONNumber where Self: BinaryInteger {
     /// Create an `Int` from this `BinaryInteger`.
     /// This will return nil if the conversion cannot result in an exact representation.
-    public func toInt() -> Int? {
-        return Int(exactly: self)
-    }
+    public var intValue: Int? { return Int(exactly: self) }
 
     /// Create an `Int32` from this `BinaryInteger`.
     /// This will return nil if the conversion cannot result in an exact representation.
-    public func toInt32() -> Int32? {
-        return Int32(exactly: self)
-    }
+    public var int32Value: Int32? { return Int32(exactly: self) }
 
     /// Create an `Int64` from this `BinaryInteger`.
     /// This will return nil if the conversion cannot result in an exact representation.
-    public func toInt64() -> Int64? {
-        return Int64(exactly: self)
-    }
+    public var int64Value: Int64? { return Int64(exactly: self) }
 
     /// Create a `Double` from this `BinaryInteger`.
     /// This will return nil if the conversion cannot result in an exact representation.
-    public func toDouble() -> Double? {
-        return Double(exactly: self)
-    }
+    public var doubleValue: Double? { return Double(exactly: self) }
 }
 
 /// Default conformance to `BSONNumber` for `BinaryFloatingPoint`s.
 extension BSONNumber where Self: BinaryFloatingPoint {
     /// Create an `Int` from this `BinaryFloatingPoint`.
     /// This will return nil if the conversion cannot result in an exact representation.
-    public func toInt() -> Int? {
+    public var intValue: Int? {
         return Int(exactly: self)
     }
 
     /// Create an `Int32` from this `BinaryFloatingPoint`.
     /// This will return nil if the conversion cannot result in an exact representation.
-    public func toInt32() -> Int32? {
+    public var int32Value: Int32? {
         return Int32(exactly: self)
     }
 
     /// Create an `Int64` from this `BinaryFloatingPoint`.
     /// This will return nil if the conversion cannot result in an exact representation.
-    public func toInt64() -> Int64? {
+    public var int64Value: Int64? {
         return Int64(exactly: self)
     }
 
     /// Create a `Double` from this `BinaryFloatingPoint`.
     /// This will return nil if the conversion cannot result in an exact representation.
-    public func toDouble() -> Double? {
+    public var doubleValue: Double? {
         return Double(self)
     }
 }
@@ -185,9 +177,7 @@ extension BSONNumber where Self: BinaryFloatingPoint {
 extension BSONNumber where Self: Numeric {
     /// Create a `Decimal128` from this `Numeric`.
     /// This will return nil if the conversion cannot result in an exact representation.
-    public func toDecimal128() -> Decimal128? {
-        return Decimal128(String(describing: self))
-    }
+    public var decimal128Value: Decimal128? { return Decimal128(String(describing: self)) }
 }
 
 /// An extension of `Array` to represent the BSON array type.
@@ -594,33 +584,23 @@ public struct Decimal128: BSONNumber, Equatable, Codable, CustomStringConvertibl
 extension Decimal128 {
     /// Create an `Int` from this `Decimal128`.
     /// Note: this function is not implemented yet and will always return nil.
-    public func toInt() -> Int? {
-        return nil
-    }
+    public var intValue: Int? { return nil }
 
     /// Create an `Int32` from this `Decimal128`.
     /// Note: this function is not implemented yet and will always return nil.
-    public func toInt32() -> Int32? {
-        return nil
-    }
+    public var int32Value: Int32? { return nil }
 
     /// Create an `Int64` from this `Decimal128`.
     /// Note: this function is not implemented yet and will always return nil.
-    public func toInt64() -> Int64? {
-        return nil
-    }
+    public var int64Value: Int64? { return nil }
 
     /// Create a `Double` from this `Decimal128`.
     /// Note: this function is not implemented yet and will always return nil.
-    public func toDouble() -> Double? {
-        return nil
-    }
+    public var doubleValue: Double? { return nil }
 
     /// Returns this `Decimal128`.
     /// This is implemented as part of `BSONNumber` conformance.
-    public func toDecimal128() -> Decimal128? {
-        return self
-    }
+    public var decimal128Value: Decimal128? { return self }
 }
 
 /// An extension of `Double` to represent the BSON Double type.
@@ -656,14 +636,14 @@ extension Int: BSONNumber {
 
     public var bsonType: BSONType { return Int.bsonType }
 
-    internal var int32Value: Int32? {
+    internal var int32: Int32? {
         guard self.bsonType == .int32 else {
             return nil
         }
         return Int32(exactly: self)
     }
 
-    internal var int64Value: Int64? {
+    internal var int64: Int64? {
         guard self.bsonType == .int64 else {
             return nil
         }
@@ -671,10 +651,10 @@ extension Int: BSONNumber {
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        if let int32 = self.int32Value {
+        if let int32 = self.int32 {
             return try int32.encode(to: storage, forKey: key)
         }
-        if let int64 = self.int64Value {
+        if let int64 = self.int64 {
             return try int64.encode(to: storage, forKey: key)
         }
 
@@ -688,9 +668,9 @@ extension Int: BSONNumber {
 
         if let otherInt = other as? Int {
             return self == otherInt
-        } else if let self32 = self.int32Value, let other32 = other as? Int32 {
+        } else if let self32 = self.int32, let other32 = other as? Int32 {
             return self32 == other32
-        } else if let self64 = self.int64Value, let other64 = other as? Int64 {
+        } else if let self64 = self.int64, let other64 = other as? Int64 {
             return self64 == other64
         }
         return false
@@ -736,7 +716,7 @@ extension Int32: BSONNumber {
         if let other32 = other as? Int32 {
             return self == other32
         } else if let otherInt = other as? Int {
-            return self == otherInt.int32Value
+            return self == otherInt.int32
         }
         return false
     }
@@ -766,7 +746,7 @@ extension Int64: BSONNumber {
         if let other64 = other as? Int64 {
             return self == other64
         } else if let otherInt = other as? Int {
-            return self == otherInt.int64Value
+            return self == otherInt.int64
         }
         return false
     }

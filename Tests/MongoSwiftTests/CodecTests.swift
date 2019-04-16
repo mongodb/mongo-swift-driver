@@ -680,8 +680,7 @@ final class CodecTests: MongoSwiftTestCase {
         // int64
         let int64 = Int64(5)
 
-        expect((try decoder.decode(AnyBSONValue.self, from: "{\"$numberLong\":\"5\"}").value as? BSONNumber)?.toInt64())
-                .to(equal(int64))
+        expect(try decoder.decode(AnyBSONValue.self, from: "{\"$numberLong\":\"5\"}").value).to(bsonEqual(int64))
 
         let wrappedInt64: Document = ["x": int64]
         expect(try encoder.encode(AnyBSONStruct(Int64(5)))).to(equal(wrappedInt64))

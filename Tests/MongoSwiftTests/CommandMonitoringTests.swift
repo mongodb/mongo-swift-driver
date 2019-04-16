@@ -161,16 +161,16 @@ private struct CMTest: Decodable {
             if let hintDoc = modifiers?["$hint"] as? Document {
                 hint = .indexSpec(hintDoc)
             }
-            let options = FindOptions(batchSize: (self.op.args["batchSize"] as? BSONNumber)?.toInt32(),
+            let options = FindOptions(batchSize: (self.op.args["batchSize"] as? BSONNumber)?.int32Value,
                                       comment: modifiers?["$comment"] as? String,
                                       hint: hint,
-                                      limit: (self.op.args["limit"] as? BSONNumber)?.toInt64(),
+                                      limit: (self.op.args["limit"] as? BSONNumber)?.int64Value,
                                       max: modifiers?["$max"] as? Document,
-                                      maxTimeMS: (modifiers?["$maxTimeMS"] as? BSONNumber)?.toInt64(),
+                                      maxTimeMS: (modifiers?["$maxTimeMS"] as? BSONNumber)?.int64Value,
                                       min: modifiers?["$min"] as? Document,
                                       returnKey: modifiers?["$returnKey"] as? Bool,
                                       showRecordId: modifiers?["$showDiskLoc"] as? Bool,
-                                      skip: (self.op.args["skip"] as? BSONNumber)?.toInt64(),
+                                      skip: (self.op.args["skip"] as? BSONNumber)?.int64Value,
                                       sort: self.op.args["sort"] as? Document)
 
             // we have to iterate the cursor to make the command execute
@@ -280,7 +280,7 @@ private func normalizeCommand(_ input: Document) -> Document {
         // parses it as an Int32 which we convert to Int. convert to Int64 here because we
         /// (as per the crud spec) use an Int64 for maxTimeMS and send that to
         // the server in our actual commands.
-        } else if k == "maxTimeMS", let iV = (v as? BSONNumber)?.toInt64() {
+        } else if k == "maxTimeMS", let iV = (v as? BSONNumber)?.int64Value {
             output[k] = iV
 
         // The expected batch sizes are always Int64s, however, find command
@@ -357,7 +357,7 @@ private struct CommandSucceededExpectation: ExpectationType, Decodable {
         let receivedCursor = event.reply["cursor"] as? Document
         if let expectedCursor = self.cursor {
             // if the received cursor has an ID, and the expected ID is not 0, compare cursor IDs
-            if let id = receivedCursor!["id"] as? BSONNumber, (expectedCursor["id"] as? BSONNumber)?.toInt() != 0 {
+            if let id = receivedCursor!["id"] as? BSONNumber, (expectedCursor["id"] as? BSONNumber)?.intValue != 0 {
                 let storedId = testContext["cursorId"] as? BSONNumber
                 // if we aren't already storing a cursor ID for this test, add one
                 if storedId == nil {
@@ -380,7 +380,7 @@ private struct CommandSucceededExpectation: ExpectationType, Decodable {
         expect(expected.count).to(equal(actual.count))
         for err in actual {
             // check each error code exists and is > 0
-            expect((err["code"] as? BSONNumber)?.toInt()).to(beGreaterThan(0))
+            expect((err["code"] as? BSONNumber)?.intValue).to(beGreaterThan(0))
             // check each error msg exists and has length > 0
             expect(err["errmsg"] as? String).toNot(beEmpty())
         }
@@ -411,7 +411,7 @@ private func normalizeExpectedReply(_ input: Document) -> Document {
             continue
         // The server sends back doubles, but the JSON test files
         // contain integer statuses (see SPEC-1050.)
-        } else if k == "ok", let dV = (v as? BSONNumber)?.toDouble() {
+        } else if k == "ok", let dV = (v as? BSONNumber)?.DoubleValue {
             output[k] = dV
         // just copy the value over as is
         } else {

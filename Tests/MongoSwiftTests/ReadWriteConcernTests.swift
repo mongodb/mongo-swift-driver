@@ -12,11 +12,11 @@ extension WriteConcern {
         var w: W?
         if let wtag = doc["w"] as? String {
             w = wtag == "majority" ? .majority : .tag(wtag)
-        } else if let wInt = (doc["w"] as? BSONNumber)?.toInt32() {
+        } else if let wInt = (doc["w"] as? BSONNumber)?.int32Value {
             w = .number(wInt)
         }
 
-        let wt = (doc["wtimeoutMS"] as? BSONNumber)?.toInt64()
+        let wt = (doc["wtimeoutMS"] as? BSONNumber)?.int64Value
 
         try self.init(journal: j, w: w, wtimeoutMS: wt)
     }
