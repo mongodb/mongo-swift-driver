@@ -25,16 +25,15 @@ public class MongoClientPool {
         guard let uri = mongoc_uri_new_with_error(connectionString, &error) else {
             throw parseMongocError(error)
         }
-
         defer { mongoc_uri_destroy(uri) }
+
         self._pool = mongoc_client_pool_new(uri)
+        guard self._pool != nil  else {
+            throw RuntimeError.internalError(message: "Could not create a pool")
+        }
 
         if let maxPoolSize = maxPoolSize {
             mongoc_client_pool_max_size(self._pool, maxPoolSize)
-        }
-
-        guard self._pool != nil  else {
-            throw RuntimeError.internalError(message: "Could not create a pool")
         }
 
         guard mongoc_client_pool_set_error_api(self._pool, MONGOC_ERROR_API_VERSION_2) else {
@@ -44,8 +43,10 @@ public class MongoClientPool {
     }
 
     /**
-     * Pop a client pointer from the client pool. Use `MongoClient(fromPoolPointer: OpaquePointer)` to initialize a MongoClient.
-     * When all is done the pointer must be pushed back into the pool. This function blocks and waits for an available pointer.
+     * Pop a client pointer from the client pool.
+     * Use `MongoClient(fromPoolPointer: OpaquePointer)` to initialize a MongoClient.
+     * When all is done the pointer must be pushed back into the pool.
+     * This function blocks and waits for an available pointer.
      */
     public func pop() -> OpaquePointer {
         guard let pool = _pool else {
@@ -60,19 +61,26 @@ public class MongoClientPool {
     }
 
     /**
-     * Pop a client pointer from the client pool. Use `MongoClient(fromPoolPointer: OpaquePointer)` to initialize a MongoClient.
-     * When all is done the pointer must be pushed back into the pool. If there are no available connections this function returns nil directly.
+     * Pop a client pointer from the client pool.
+     * Use `MongoClient(fromPoolPointer: OpaquePointer)` to initialize a MongoClient.
+     * When all is done the pointer must be pushed back into the pool.
+     * If there are no available connections this function returns nil directly.
      */
     public func tryPop() -> OpaquePointer? {
         guard let pool = _pool else {
             fatalError("No client pool configured")
         }
 
-        return mongoc_client_pool_try_pop(pool)
+        guard let client = mongoc_client_pool_try_pop(pool) else {
+            fatalError("Could not pop a client from pool")
+        }
+
+        return client
     }
 
     /**
-     * Push a client pointer back into the pool. Call this in a syncronous manner when all database handling is done,
+     * Push a client pointer back into the pool.
+     * Call this in a syncronous manner when all database handling is done,
      * don't call it inside `defer`.
      */
     public func push(_ client: OpaquePointer) {
