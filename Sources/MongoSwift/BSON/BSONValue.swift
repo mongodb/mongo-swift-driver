@@ -150,27 +150,19 @@ extension BSONNumber where Self: BinaryInteger {
 extension BSONNumber where Self: BinaryFloatingPoint {
     /// Create an `Int` from this `BinaryFloatingPoint`.
     /// This will return nil if the conversion cannot result in an exact representation.
-    public var intValue: Int? {
-        return Int(exactly: self)
-    }
+    public var intValue: Int? { return Int(exactly: self) }
 
     /// Create an `Int32` from this `BinaryFloatingPoint`.
     /// This will return nil if the conversion cannot result in an exact representation.
-    public var int32Value: Int32? {
-        return Int32(exactly: self)
-    }
+    public var int32Value: Int32? { return Int32(exactly: self) }
 
     /// Create an `Int64` from this `BinaryFloatingPoint`.
     /// This will return nil if the conversion cannot result in an exact representation.
-    public var int64Value: Int64? {
-        return Int64(exactly: self)
-    }
+    public var int64Value: Int64? { return Int64(exactly: self) }
 
     /// Create a `Double` from this `BinaryFloatingPoint`.
     /// This will return nil if the conversion cannot result in an exact representation.
-    public var doubleValue: Double? {
-        return Double(self)
-    }
+    public var doubleValue: Double? { return Double(self) }
 }
 
 /// Default implementation of `Decimal128` conversions for all `Numeric`s.
