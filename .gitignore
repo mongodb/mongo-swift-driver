@@ -5,6 +5,8 @@
 ## Build generated
 build/
 DerivedData/
+/*.xcodeproj
+/.swift-version
 
 ## Various settings
 *.pbxuser
