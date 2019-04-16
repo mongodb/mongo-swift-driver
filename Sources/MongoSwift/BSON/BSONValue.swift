@@ -103,6 +103,75 @@ extension BSONValue where Self: Equatable {
     }
 }
 
+/// A protocol that numeric `BSONValue`s should conform to. It provides functionality for converting to BSON's native
+/// number types.
+public protocol BSONNumber: BSONValue {
+    /// Create an `Int` from this `BSONNumber`.
+    /// This will return nil if the conversion cannot result in an exact representation.
+    var intValue: Int? { get }
+
+    /// Create an `Int32` from this `BSONNumber`.
+    /// This will return nil if the conversion cannot result in an exact representation.
+    var int32Value: Int32? { get }
+
+    /// Create an `Int64` from this `BSONNumber`.
+    /// This will return nil if the conversion cannot result in an exact representation.
+    var int64Value: Int64? { get }
+
+    /// Create a `Double` from this `BSONNumber`.
+    /// This will return nil if the conversion cannot result in an exact representation.
+    var doubleValue: Double? { get }
+
+    /// Create a `Decimal128` from this `BSONNumber`.
+    /// This will return nil if the conversion cannot result in an exact representation.
+    var decimal128Value: Decimal128? { get }
+}
+
+/// Default conformance to `BSONNumber` for `BinaryInteger`s.
+extension BSONNumber where Self: BinaryInteger {
+    /// Create an `Int` from this `BinaryInteger`.
+    /// This will return nil if the conversion cannot result in an exact representation.
+    public var intValue: Int? { return Int(exactly: self) }
+
+    /// Create an `Int32` from this `BinaryInteger`.
+    /// This will return nil if the conversion cannot result in an exact representation.
+    public var int32Value: Int32? { return Int32(exactly: self) }
+
+    /// Create an `Int64` from this `BinaryInteger`.
+    /// This will return nil if the conversion cannot result in an exact representation.
+    public var int64Value: Int64? { return Int64(exactly: self) }
+
+    /// Create a `Double` from this `BinaryInteger`.
+    /// This will return nil if the conversion cannot result in an exact representation.
+    public var doubleValue: Double? { return Double(exactly: self) }
+}
+
+/// Default conformance to `BSONNumber` for `BinaryFloatingPoint`s.
+extension BSONNumber where Self: BinaryFloatingPoint {
+    /// Create an `Int` from this `BinaryFloatingPoint`.
+    /// This will return nil if the conversion cannot result in an exact representation.
+    public var intValue: Int? { return Int(exactly: self) }
+
+    /// Create an `Int32` from this `BinaryFloatingPoint`.
+    /// This will return nil if the conversion cannot result in an exact representation.
+    public var int32Value: Int32? { return Int32(exactly: self) }
+
+    /// Create an `Int64` from this `BinaryFloatingPoint`.
+    /// This will return nil if the conversion cannot result in an exact representation.
+    public var int64Value: Int64? { return Int64(exactly: self) }
+
+    /// Create a `Double` from this `BinaryFloatingPoint`.
+    /// This will return nil if the conversion cannot result in an exact representation.
+    public var doubleValue: Double? { return Double(self) }
+}
+
+/// Default implementation of `Decimal128` conversions for all `Numeric`s.
+extension BSONNumber where Self: Numeric {
+    /// Create a `Decimal128` from this `Numeric`.
+    /// This will return nil if the conversion cannot result in an exact representation.
+    public var decimal128Value: Decimal128? { return Decimal128(String(describing: self)) }
+}
+
 /// An extension of `Array` to represent the BSON array type.
 extension Array: BSONValue {
     public var bsonType: BSONType { return .array }
@@ -427,7 +496,7 @@ public struct DBPointer: BSONValue, Codable, Equatable {
 }
 
 /// A struct to represent the BSON Decimal128 type.
-public struct Decimal128: BSONValue, Equatable, Codable, CustomStringConvertible {
+public struct Decimal128: BSONNumber, Equatable, Codable, CustomStringConvertible {
     public var bsonType: BSONType { return .decimal128 }
 
     public var description: String {
@@ -502,8 +571,32 @@ public struct Decimal128: BSONValue, Equatable, Codable, CustomStringConvertible
      }
 }
 
+/// Extension of `Decimal128` to add `BSONNumber` conformance.
+/// TODO: implement the missing converters (SWIFT-367)
+extension Decimal128 {
+    /// Create an `Int` from this `Decimal128`.
+    /// Note: this function is not implemented yet and will always return nil.
+    public var intValue: Int? { return nil }
+
+    /// Create an `Int32` from this `Decimal128`.
+    /// Note: this function is not implemented yet and will always return nil.
+    public var int32Value: Int32? { return nil }
+
+    /// Create an `Int64` from this `Decimal128`.
+    /// Note: this function is not implemented yet and will always return nil.
+    public var int64Value: Int64? { return nil }
+
+    /// Create a `Double` from this `Decimal128`.
+    /// Note: this function is not implemented yet and will always return nil.
+    public var doubleValue: Double? { return nil }
+
+    /// Returns this `Decimal128`.
+    /// This is implemented as part of `BSONNumber` conformance.
+    public var decimal128Value: Decimal128? { return self }
+}
+
 /// An extension of `Double` to represent the BSON Double type.
-extension Double: BSONValue {
+extension Double: BSONNumber {
     public var bsonType: BSONType { return .double }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
@@ -524,39 +617,66 @@ extension Double: BSONValue {
 }
 
 /// An extension of `Int` to represent the BSON Int32 or Int64 type.
-/// The `Int` will be encoded as an Int32 if possible, or an Int64 if necessary.
-extension Int: BSONValue {
-    public var bsonType: BSONType { return self.int32Value != nil ? .int32 : .int64 }
+/// On 64-bit systems, `Int` corresponds to a BSON Int64. On 32-bit systems, it corresponds to a BSON Int32.
+extension Int: BSONNumber {
+    /// `Int` corresponds to a BSON int32 or int64 depending upon whether the compilation system is 32 or 64 bit.
+    /// Use MemoryLayout instead of Int.bitWidth to avoid a compiler warning.
+    /// See: https://forums.swift.org/t/how-can-i-condition-on-the-size-of-int/9080/4
+    internal static var bsonType: BSONType {
+        return MemoryLayout<Int>.size == 4 ? .int32 : .int64
+    }
 
-    internal var int32Value: Int32? { return Int32(exactly: self) }
-    internal var int64Value: Int64? { return Int64(exactly: self) }
+    public var bsonType: BSONType { return Int.bsonType }
+
+    // Return this `Int` as an `Int32` on 32-bit systems or an `Int64` on 64-bit systems
+    internal var typedValue: BSONNumber {
+        if self.bsonType == .int64 {
+            return Int64(self)
+        }
+        return Int32(self)
+    }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        if let int32 = self.int32Value {
-            return try int32.encode(to: storage, forKey: key)
-        }
-        if let int64 = self.int64Value {
-            return try int64.encode(to: storage, forKey: key)
+        try self.typedValue.encode(to: storage, forKey: key)
+    }
+
+    public func bsonEquals(_ other: BSONValue?) -> Bool {
+        guard let other = other, other.bsonType == self.bsonType else {
+            return false
         }
 
-        throw RuntimeError.internalError(message: "`Int` value \(self) could not be encoded as `Int32` or `Int64`")
+        if let otherInt = other as? Int {
+            return self == otherInt
+        }
+
+        switch (self.typedValue, other) {
+        case let (self32 as Int32, other32 as Int32):
+            return self32 == other32
+        case let (self64 as Int64, other64 as Int64):
+            return self64 == other64
+        default:
+            return false
+        }
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> Int {
-        return try iter.withBSONIterPointer { iterPtr in
-            // TODO: handle this more gracefully (SWIFT-221)
-            switch iter.currentType {
-            case .int32, .int64:
-                return self.init(Int(bson_iter_int32(iterPtr)))
-            default:
-                throw wrongIterTypeError(iter, expected: Int.self)
-            }
+        var val: Int?
+        if Int.bsonType == .int64 {
+            val = Int(exactly: try Int64.from(iterator: iter))
+        } else {
+            val = Int(exactly: try Int32.from(iterator: iter))
         }
+
+        guard let out = val else {
+            // This should not occur
+            throw RuntimeError.internalError(message: "Couldn't read `Int` from Document")
+        }
+        return out
     }
 }
 
 /// An extension of `Int32` to represent the BSON Int32 type.
-extension Int32: BSONValue {
+extension Int32: BSONNumber {
     public var bsonType: BSONType { return .int32 }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
@@ -574,10 +694,19 @@ extension Int32: BSONValue {
             self.init(bson_iter_int32(iterPtr))
         }
     }
+
+    public func bsonEquals(_ other: BSONValue?) -> Bool {
+        if let other32 = other as? Int32 {
+            return self == other32
+        } else if let otherInt = other as? Int {
+            return self == otherInt.typedValue as? Int32
+        }
+        return false
+    }
 }
 
 /// An extension of `Int64` to represent the BSON Int64 type.
-extension Int64: BSONValue {
+extension Int64: BSONNumber {
     public var bsonType: BSONType { return .int64 }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
@@ -594,6 +723,15 @@ extension Int64: BSONValue {
         return iter.withBSONIterPointer { iterPtr in
             self.init(bson_iter_int64(iterPtr))
         }
+    }
+
+    public func bsonEquals(_ other: BSONValue?) -> Bool {
+        if let other64 = other as? Int64 {
+            return self == other64
+        } else if let otherInt = other as? Int {
+            return self == otherInt.typedValue as? Int64
+        }
+        return false
     }
 }
 

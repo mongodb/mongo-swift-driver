@@ -443,18 +443,22 @@ public struct BulkWriteResult {
      *   - `RuntimeError.internalError` if an unexpected error occurs reading the reply from the server.
      */
     fileprivate init(reply: Document, insertedIds: [Int: BSONValue]) throws {
-        self.deletedCount = try reply.getValue(for: "nRemoved") as? Int ?? 0
-        self.insertedCount = try reply.getValue(for: "nInserted") as? Int ?? 0
+        // These values are converted to Int via BSONNumber because they're returned from libmongoc as BSON int32s,
+        // which are retrieved from documents as Ints on 32-bit systems and Int32s on 64-bit ones. To retrieve them in a
+        // cross-platform manner, we must convert them this way. Also, regardless of how they are stored in the
+        // we want to use them as Ints.
+        self.deletedCount = (try reply.getValue(for: "nRemoved") as? BSONNumber)?.intValue ?? 0
+        self.insertedCount = (try reply.getValue(for: "nInserted") as? BSONNumber)?.intValue ?? 0
         self.insertedIds = insertedIds
-        self.matchedCount = try reply.getValue(for: "nMatched") as? Int ?? 0
-        self.modifiedCount = try reply.getValue(for: "nModified") as? Int ?? 0
-        self.upsertedCount = try reply.getValue(for: "nUpserted") as? Int ?? 0
+        self.matchedCount = (try reply.getValue(for: "nMatched") as? BSONNumber)?.intValue ?? 0
+        self.modifiedCount = (try reply.getValue(for: "nModified") as? BSONNumber)?.intValue ?? 0
+        self.upsertedCount = (try reply.getValue(for: "nUpserted") as? BSONNumber)?.intValue ?? 0
 
         var upsertedIds = [Int: BSONValue]()
 
         if let upserted = try reply.getValue(for: "upserted") as? [Document] {
             for upsert in upserted {
-                guard let index = try upsert.getValue(for: "index") as? Int else {
+                guard let index = (try upsert.getValue(for: "index") as? BSONNumber)?.intValue else {
                     throw RuntimeError.internalError(message: "Could not cast upserted index to `Int`")
                 }
                 upsertedIds[index] = upsert["_id"]

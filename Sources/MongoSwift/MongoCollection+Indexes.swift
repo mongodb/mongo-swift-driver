@@ -16,7 +16,7 @@ public struct IndexModel: Encodable {
 
     /// Gets the default name for this index.
     internal var defaultName: String {
-        return String(cString: mongoc_collection_keys_to_index_string(self.keys.data))
+        return self.keys.map { k, v in "\(k)_\(v)" }.joined(separator: "_")
     }
 
     // Encode own data as well as nested options data

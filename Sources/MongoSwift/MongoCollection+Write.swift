@@ -402,24 +402,6 @@ public struct InsertManyResult {
     /// Map of the index of the document in `values` to the value of its ID
     public let insertedIds: [Int: BSONValue]
 
-    /**
-     * Create an `InsertManyResult` from a reply and map of inserted IDs.
-     *
-     * Note: we forgo using a Decodable initializer because we still need to
-     * explicitly add `insertedIds`.
-     *
-     * - Parameters:
-     *   - reply: A `Document` result from `mongoc_collection_insert_many()`
-     *   - insertedIds: Map of inserted IDs
-     *
-     * - Throws:
-     *   - `RuntimeError.internalError` if an unexpected error occurs the reading server reply.
-     */
-    fileprivate init(reply: Document, insertedIds: [Int: BSONValue]) throws {
-        self.insertedCount = try reply.getValue(for: "insertedCount") as? Int ?? 0
-        self.insertedIds = insertedIds
-    }
-
     /// Internal initializer used for converting from a `BulkWriteResult` optional to an `InsertManyResult` optional.
     internal init?(from result: BulkWriteResult?) {
         guard let result = result else {

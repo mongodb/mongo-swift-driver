@@ -40,7 +40,7 @@ final class Document_SequenceTests: MongoSwiftTestCase {
 
         let int32Tup = iter.next()!
         expect(int32Tup.key).to(equal("int32"))
-        expect(int32Tup.value).to(bsonEqual(5))
+        expect(int32Tup.value).to(bsonEqual(Int32(5)))
 
         let doubleTup = iter.next()!
         expect(doubleTup.key).to(equal("double"))

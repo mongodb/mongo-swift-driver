@@ -82,7 +82,7 @@ extension UInt8: CodableNumber {
 extension UInt16: CodableNumber {
     internal var bsonValue: BSONValue? {
         // UInt16 always fits in an Int32
-        return Int(exactly: self)
+        return Int32(exactly: self)
     }
 }
 

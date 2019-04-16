@@ -14,6 +14,7 @@ extension BSONValueTests {
         ("testBSONEquals", testBSONEquals),
         ("testObjectIdRoundTrip", testObjectIdRoundTrip),
         ("testHashable", testHashable),
+        ("testBSONNumber", testBSONNumber),
     ]
 }
 
@@ -74,6 +75,7 @@ extension DocumentTests {
         ("testDateEncodingStrategies", testDateEncodingStrategies),
         ("testDateDecodingStrategies", testDateDecodingStrategies),
         ("testDataCodingStrategies", testDataCodingStrategies),
+        ("testIntegerRetrieval", testIntegerRetrieval),
     ]
 }
 
