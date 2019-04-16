@@ -44,7 +44,8 @@ public class MongoClientPool {
     }
 
     /**
-     * Pop a client pointer from the client pool. Use `MongoClient(fromPoolPointer: OpaquePointer)` to initialize a MongoClient. When all is done the pointer must be pushed back into the pool. This function blocks and waits for an available pointer.
+     * Pop a client pointer from the client pool. Use `MongoClient(fromPoolPointer: OpaquePointer)` to initialize a MongoClient.
+     * When all is done the pointer must be pushed back into the pool. This function blocks and waits for an available pointer.
      */
     public func pop() -> OpaquePointer {
         guard let pool = _pool else {
@@ -59,7 +60,8 @@ public class MongoClientPool {
     }
 
     /**
-     * Pop a client pointer from the client pool. Use `MongoClient(fromPoolPointer: OpaquePointer)` to initialize a MongoClient. When all is done the pointer must be pushed back into the pool. If there are no available connections this function returns nil directly.
+     * Pop a client pointer from the client pool. Use `MongoClient(fromPoolPointer: OpaquePointer)` to initialize a MongoClient.
+     * When all is done the pointer must be pushed back into the pool. If there are no available connections this function returns nil directly.
      */
     public func tryPop() -> OpaquePointer? {
         guard let pool = _pool else {
@@ -70,7 +72,8 @@ public class MongoClientPool {
     }
 
     /**
-     * Push a client pointer back into the pool. Call this in a syncronous manner when all database handling is done, don't call it inside `defer`.
+     * Push a client pointer back into the pool. Call this in a syncronous manner when all database handling is done,
+     * don't call it inside `defer`.
      */
     public func push(_ client: OpaquePointer) {
         guard let pool = _pool else {
