@@ -21,13 +21,14 @@ extension Bool: Overwritable {
 
 extension Int: Overwritable {
     internal func writeToCurrentPosition(of iter: DocumentIterator) throws {
-        if let int32 = self.int32 {
+        switch self.typedValue {
+        case let int32 as Int32:
             return int32.writeToCurrentPosition(of: iter)
-        } else if let int64 = self.int64 {
+        case let int64 as Int64:
             return int64.writeToCurrentPosition(of: iter)
+        default:
+            throw RuntimeError.internalError(message: "`Int` value \(self) could not be encoded as `Int32` or `Int64`")
         }
-
-        throw RuntimeError.internalError(message: "`Int` value \(self) could not be encoded as `Int32` or `Int64`")
     }
 }
 

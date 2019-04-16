@@ -628,29 +628,16 @@ extension Int: BSONNumber {
 
     public var bsonType: BSONType { return Int.bsonType }
 
-    internal var int32: Int32? {
-        guard self.bsonType == .int32 else {
-            return nil
+    // Return this `Int` as an `Int32` on 32-bit systems or an `Int64` on 64-bit systems
+    internal var typedValue: BSONNumber {
+        if self.bsonType == .int64 {
+            return Int64(self)
         }
-        return Int32(exactly: self)
-    }
-
-    internal var int64: Int64? {
-        guard self.bsonType == .int64 else {
-            return nil
-        }
-        return Int64(exactly: self)
+        return Int32(self)
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        if let int32 = self.int32 {
-            return try int32.encode(to: storage, forKey: key)
-        }
-        if let int64 = self.int64 {
-            return try int64.encode(to: storage, forKey: key)
-        }
-
-        throw RuntimeError.internalError(message: "`Int` value \(self) could not be encoded as `Int32` or `Int64`")
+        try self.typedValue.encode(to: storage, forKey: key)
     }
 
     public func bsonEquals(_ other: BSONValue?) -> Bool {
@@ -660,12 +647,16 @@ extension Int: BSONNumber {
 
         if let otherInt = other as? Int {
             return self == otherInt
-        } else if let self32 = self.int32, let other32 = other as? Int32 {
-            return self32 == other32
-        } else if let self64 = self.int64, let other64 = other as? Int64 {
-            return self64 == other64
         }
-        return false
+
+        switch (self.typedValue, other) {
+        case let (self32 as Int32, other32 as Int32):
+            return self32 == other32
+        case let (self64 as Int64, other64 as Int64):
+            return self64 == other64
+        default:
+            return false
+        }
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> Int {
@@ -708,7 +699,7 @@ extension Int32: BSONNumber {
         if let other32 = other as? Int32 {
             return self == other32
         } else if let otherInt = other as? Int {
-            return self == otherInt.int32
+            return self == otherInt.typedValue as? Int32
         }
         return false
     }
@@ -738,7 +729,7 @@ extension Int64: BSONNumber {
         if let other64 = other as? Int64 {
             return self == other64
         } else if let otherInt = other as? Int {
-            return self == otherInt.int64
+            return self == otherInt.typedValue as? Int64
         }
         return false
     }
