@@ -545,15 +545,6 @@ public struct Decimal128: BSONNumber, Equatable, Codable, CustomStringConvertibl
         }
     }
 
-    /// Initialize this `Decimal128` from another `BSONNumber`.
-    /// If the passed in number cannot be represented exactly as a `Decimal128`, this initializer will return nil.
-    public init?(fromNumber num: BSONNumber) {
-        guard let decimal = num.toDecimal128() else {
-            return nil
-        }
-        self = decimal
-    }
-
     public init(from decoder: Decoder) throws {
         throw getDecodingError(type: Decimal128.self, decoder: decoder)
     }
@@ -642,15 +633,6 @@ extension Double: BSONNumber {
         }
     }
 
-    /// Initialize this `Double` from another `BSONNumber`.
-    /// If the passed in number cannot be represented exactly as an `Double`, this initializer will return nil.
-    public init?(fromNumber num: BSONNumber) {
-        guard let double = num.toDouble() else {
-            return nil
-        }
-        self = double
-    }
-
     public static func from(iterator iter: DocumentIterator) throws -> Double {
         guard iter.currentType == .double else {
             throw wrongIterTypeError(iter, expected: Double.self)
@@ -686,15 +668,6 @@ extension Int: BSONNumber {
             return nil
         }
         return Int64(exactly: self)
-    }
-
-    /// Initialize this `Int` from another `BSONNumber`.
-    /// If the passed in number cannot be represented exactly as an `Int`, this initializer will return nil.
-    public init?(fromNumber num: BSONNumber) {
-        guard let int = num.toInt() else {
-            return nil
-        }
-        self = int
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
@@ -749,15 +722,6 @@ extension Int32: BSONNumber {
         }
     }
 
-    /// Initialize this `Int32` from another `BSONNumber`.
-    /// If the passed in number cannot be represented exactly as an `Int32`, this initializer will return nil.
-    public init?(fromNumber num: BSONNumber) {
-        guard let int = num.toInt32() else {
-            return nil
-        }
-        self = int
-    }
-
     public static func from(iterator iter: DocumentIterator) throws -> Int32 {
         guard iter.currentType == .int32 else {
             throw wrongIterTypeError(iter, expected: Int32.self)
@@ -786,15 +750,6 @@ extension Int64: BSONNumber {
         guard bson_append_int64(storage.pointer, key, Int32(key.utf8.count), self) else {
             throw bsonTooLargeError(value: self, forKey: key)
         }
-    }
-
-    /// Initialize this `Int64` from another `BSONNumber`.
-    /// If the passed in number cannot be represented exactly as an `Int64`, this initializer will return nil.
-    public init?(fromNumber num: BSONNumber) {
-        guard let int = num.toInt64() else {
-            return nil
-        }
-        self = int
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> Int64 {
