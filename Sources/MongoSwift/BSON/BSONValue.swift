@@ -763,9 +763,9 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
 
     /// Initializes an `ObjectId` from the provided `String`. Assumes that the given string is a valid ObjectId.
     /// - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/objectid.rst
-    public init(fromString oid: String) {
+    public init(from hex: String) {
         var oid_t = bson_oid_t()
-        bson_oid_init_from_string(&oid_t, oid)
+        bson_oid_init_from_string(&oid_t, hex)
         self.oid = oid_t
     }
 
@@ -776,7 +776,7 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
         if !bson_oid_is_valid(oid, oid.utf8.count) {
             return nil
         } else {
-            self.init(fromString: oid)
+            self.init(from: oid)
         }
     }
 
@@ -791,16 +791,6 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
     /// Initializes an `ObjectId` from an `UnsafePointer<bson_oid_t>` by copying the underlying `bson_oid_t`.
     internal init(copying oid_t: UnsafePointer<bson_oid_t>) {
         self.oid = oid_t.pointee
-    }
-
-    /// Returns the provided string as a `bson_oid_t`.
-    /// - Throws:
-    ///   - `UserError.invalidArgumentError` if the parameter string does not correspond to a valid `ObjectId`.
-    internal static func toLibBSONType(_ str: String) throws -> bson_oid_t {
-        guard let oid = ObjectId(ifValid: str) else {
-            throw UserError.invalidArgumentError(message: "ObjectId string is invalid")
-        }
-        return oid.oid
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
