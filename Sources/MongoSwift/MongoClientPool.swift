@@ -1,9 +1,24 @@
 import Foundation
 import mongoc
 
+/// A MongoDB client pool.
 public class MongoClientPool {
     internal var _pool: OpaquePointer?
 
+    /**
+     * Create a new client pool connection to a MongoDB server.
+     *
+     * - Parameters:
+     *   - connectionString: the connection string to connect to.
+     *   - maxPoolSize: optional, sets the maximum number of pooled connections available, default is 100.
+     *
+     * - SeeAlso: https://docs.mongodb.com/manual/reference/connection-string/
+     *
+     * - Throws:
+     *   - A `UserError.invalidArgumentError` if the connection string passed in is improperly formatted.
+     *   - A `UserError.invalidArgumentError` if the connection string specifies the use of TLS but libmongoc was not
+     *     built with TLS support.
+     */
     public init(_ connectionString: String = "mongodb://localhost:27017", maxPoolSize: UInt32? = 100) throws {
         var error = bson_error_t()
 
@@ -28,6 +43,9 @@ public class MongoClientPool {
         }
     }
 
+    /**
+     * Pop a client pointer from the client pool. Use `MongoClient(fromPoolPointer: OpaquePointer)` to initialize a MongoClient. When all is done the pointer must be pushed back into the pool. This function blocks and waits for an available pointer.
+     */
     public func pop() -> OpaquePointer {
         guard let pool = _pool else {
             fatalError("No client pool configured")
@@ -40,6 +58,9 @@ public class MongoClientPool {
         return client
     }
 
+    /**
+     * Pop a client pointer from the client pool. Use `MongoClient(fromPoolPointer: OpaquePointer)` to initialize a MongoClient. When all is done the pointer must be pushed back into the pool. If there are no available connections this function returns nil directly.
+     */
     public func tryPop() -> OpaquePointer? {
         guard let pool = _pool else {
             fatalError("No client pool configured")
@@ -48,6 +69,9 @@ public class MongoClientPool {
         return mongoc_client_pool_try_pop(pool)
     }
 
+    /**
+     * Push a client pointer back into the pool. Call this in a syncronous manner when all database handling is done, don't call it inside `defer`.
+     */
     public func push(_ client: OpaquePointer) {
         guard let pool = _pool else {
             return
@@ -56,35 +80,14 @@ public class MongoClientPool {
         mongoc_client_pool_push(pool, client)
     }
 
-    public func client() -> MongoClient {
-        guard let pool = self._pool else {
-            fatalError("No client pool configured")
-        }
-
-        let ptr = pop()
-
-        defer {
-            self.push(ptr)
-        }
-
-        let client = MongoClient(fromPoolPointer: ptr)
-        return client
-    }
-
-    public func db(_ name: String) -> MongoDatabase {
-        let client = self.client()
-        return client.db(name)
-    }
-
-    public func collection(_ db: String, name: String) -> MongoCollection<Document> {
-        let db = self.db(db)
-        return db.collection(name)
-    }
-
+    /// Cleans up internal state.
     deinit {
         self.close()
     }
 
+    /**
+     * Closes the client pool.
+     */
     public func close() {
         guard let pool = self._pool else {
             return

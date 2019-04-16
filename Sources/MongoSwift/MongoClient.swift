@@ -230,16 +230,15 @@ public class MongoClient {
         self.decoder = BSONDecoder()
         self.fromPool = false
     }
-    
+
     /**
      * :nodoc:
-     * Create a new client from an existing `mongoc_client_t`.
-     * Do not use this initializer unless you know what you are doing.
-     *
-     * If this client was derived from a pool, ensure that the error api version was set to 2 on the pool.
+     * Create a new client from a pointer released from `mongoc_client_pool_pop`.
+     * Do not use this initializer unless you know what you are doing, see descriptions in MongoClientPool.
+     * `mongoc_client_set_error_api` must not be set on a client pool pointer, and it must not be destroyed.
      *
      * - Parameters:
-     *   - fromPointer: the `mongoc_client_t` to store and use internally
+     *   - fromPoolPointer: the `OpaquePointer` released from a MongoClientPool to store and use internally.
      */
     public init(fromPoolPointer ptr: OpaquePointer) {
         self._client = ptr
