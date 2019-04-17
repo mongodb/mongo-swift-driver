@@ -422,7 +422,7 @@ public struct DBPointer: BSONValue, Codable, Equatable {
                 throw wrongIterTypeError(iter, expected: DBPointer.self)
             }
 
-            return DBPointer(ref: String(cString: collectionP), id: ObjectId(copying: oidP))
+            return DBPointer(ref: String(cString: collectionP), id: ObjectId(bsonOid: oidP.pointee))
         }
     }
 }
@@ -772,17 +772,16 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
         self.oid = oid_t
     }
 
+    internal init(bsonOid oid_t: bson_oid_t) {
+        self.oid = oid_t
+    }
+
     public init(from decoder: Decoder) throws {
         throw getDecodingError(type: ObjectId.self, decoder: decoder)
     }
 
     public func encode(to: Encoder) throws {
         throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
-    }
-
-    /// Initializes an `ObjectId` from an `UnsafePointer<bson_oid_t>` by copying the underlying `bson_oid_t`.
-    internal init(copying oid_t: UnsafePointer<bson_oid_t>) {
-        self.oid = oid_t.pointee
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
@@ -799,7 +798,7 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
             guard let oid = bson_iter_oid(iterPtr) else {
                 throw wrongIterTypeError(iter, expected: ObjectId.self)
             }
-            return self.init(copying: oid)
+            return self.init(bsonOid: oid.pointee)
         }
     }
 

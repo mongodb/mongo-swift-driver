@@ -163,8 +163,10 @@ public struct ServerDescriptionChangedEvent: MongoEvent, InitializableFromOpaque
     fileprivate init(_ event: OpaquePointer) {
         self.connectionId = ConnectionId(mongoc_apm_server_changed_get_host(event))
         var oid = bson_oid_t()
-        mongoc_apm_server_changed_get_topology_id(event, &oid)
-        self.topologyId = ObjectId(copying: &oid)
+        withUnsafeMutablePointer(to: &oid) { oidPtr in
+            mongoc_apm_server_changed_get_topology_id(event, oidPtr)
+        }
+        self.topologyId = ObjectId(bsonOid: oid)
         self.previousDescription = ServerDescription(mongoc_apm_server_changed_get_previous_description(event))
         self.newDescription = ServerDescription(mongoc_apm_server_changed_get_new_description(event))
     }
@@ -188,8 +190,10 @@ public struct ServerOpeningEvent: MongoEvent, InitializableFromOpaquePointer {
     fileprivate init(_ event: OpaquePointer) {
         self.connectionId = ConnectionId(mongoc_apm_server_opening_get_host(event))
         var oid = bson_oid_t()
-        mongoc_apm_server_opening_get_topology_id(event, &oid)
-        self.topologyId = ObjectId(copying: &oid)
+        withUnsafeMutablePointer(to: &oid) { oidPtr in
+            mongoc_apm_server_opening_get_topology_id(event, oidPtr)
+        }
+        self.topologyId = ObjectId(bsonOid: oid)
     }
 }
 
@@ -211,8 +215,10 @@ public struct ServerClosedEvent: MongoEvent, InitializableFromOpaquePointer {
     fileprivate init(_ event: OpaquePointer) {
         self.connectionId = ConnectionId(mongoc_apm_server_closed_get_host(event))
         var oid = bson_oid_t()
-        mongoc_apm_server_closed_get_topology_id(event, &oid)
-        self.topologyId = ObjectId(copying: &oid)
+        withUnsafeMutablePointer(to: &oid) { oidPtr in
+            mongoc_apm_server_closed_get_topology_id(event, oidPtr)
+        }
+        self.topologyId = ObjectId(bsonOid: oid)
     }
 }
 
@@ -236,8 +242,10 @@ public struct TopologyDescriptionChangedEvent: MongoEvent, InitializableFromOpaq
     /// Initializes a TopologyDescriptionChangedEvent from an OpaquePointer to a mongoc_apm_topology_changed_t
     fileprivate init(_ event: OpaquePointer) {
         var oid = bson_oid_t()
-        mongoc_apm_topology_changed_get_topology_id(event, &oid)
-        self.topologyId = ObjectId(copying: &oid)
+        withUnsafeMutablePointer(to: &oid) { oidPtr in
+            mongoc_apm_topology_changed_get_topology_id(event, oidPtr)
+        }
+        self.topologyId = ObjectId(bsonOid: oid)
         self.previousDescription = TopologyDescription(mongoc_apm_topology_changed_get_previous_description(event))
         self.newDescription = TopologyDescription(mongoc_apm_topology_changed_get_new_description(event))
     }
@@ -257,8 +265,10 @@ public struct TopologyOpeningEvent: MongoEvent, InitializableFromOpaquePointer {
     /// Initializes a TopologyOpeningEvent from an OpaquePointer to a mongoc_apm_topology_opening_t
     fileprivate init(_ event: OpaquePointer) {
         var oid = bson_oid_t()
-        mongoc_apm_topology_opening_get_topology_id(event, &oid)
-        self.topologyId = ObjectId(copying: &oid)
+        withUnsafeMutablePointer(to: &oid) { oidPtr in
+            mongoc_apm_topology_opening_get_topology_id(event, oidPtr)
+        }
+        self.topologyId = ObjectId(bsonOid: oid)
     }
 }
 
@@ -276,8 +286,10 @@ public struct TopologyClosedEvent: MongoEvent, InitializableFromOpaquePointer {
     /// Initializes a TopologyClosedEvent from an OpaquePointer to a mongoc_apm_topology_closed_t
     fileprivate init(_ event: OpaquePointer) {
         var oid = bson_oid_t()
-        mongoc_apm_topology_closed_get_topology_id(event, &oid)
-        self.topologyId = ObjectId(copying: &oid)
+        withUnsafeMutablePointer(to: &oid) { oidPtr in
+            mongoc_apm_topology_closed_get_topology_id(event, oidPtr)
+        }
+        self.topologyId = ObjectId(bsonOid: oid)
     }
 }
 
