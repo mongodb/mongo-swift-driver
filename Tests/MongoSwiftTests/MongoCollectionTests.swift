@@ -312,7 +312,9 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     func testDropIndexByModel() throws {
         let model = IndexModel(keys: ["cat": 1])
         expect(try self.coll.createIndex(model)).to(equal("cat_1"))
-        expect(try self.coll.dropIndex(model)["ok"]).to(bsonEqual(1.0))
+
+        let res = try self.coll.dropIndex(model)
+        expect((res["ok"] as? BSONNumber)?.doubleValue).to(bsonEqual(1.0))
 
         // now there should only be _id_ left
         let indexes = try coll.listIndexes()
@@ -324,7 +326,9 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     func testDropIndexByKeys() throws {
         let model = IndexModel(keys: ["cat": 1])
         expect(try self.coll.createIndex(model)).to(equal("cat_1"))
-        expect(try self.coll.dropIndex(["cat": 1])["ok"]).to(bsonEqual(1.0))
+
+        let res = try self.coll.dropIndex(["cat": 1])
+        expect((res["ok"] as? BSONNumber)?.doubleValue).to(bsonEqual(1.0))
 
         // now there should only be _id_ left
         let indexes = try coll.listIndexes()
@@ -336,7 +340,9 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     func testDropAllIndexes() throws {
         let model = IndexModel(keys: ["cat": 1])
         expect(try self.coll.createIndex(model)).to(equal("cat_1"))
-        expect(try self.coll.dropIndexes()["ok"]).to(bsonEqual(1.0))
+
+        let res = try self.coll.dropIndexes()
+        expect((res["ok"] as? BSONNumber)?.doubleValue).to(bsonEqual(1.0))
 
         // now there should only be _id_ left
         let indexes = try coll.listIndexes()

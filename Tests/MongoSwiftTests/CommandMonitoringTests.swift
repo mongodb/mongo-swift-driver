@@ -10,6 +10,11 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
     }
 
     func testCommandMonitoring() throws {
+        guard MongoSwiftTestCase.topologyType != .sharded else {
+            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            return
+        }
+
         let decoder = BSONDecoder()
         let client = try MongoClient(options: ClientOptions(eventMonitoring: true))
         client.enableMonitoring(forEvents: .commandMonitoring)

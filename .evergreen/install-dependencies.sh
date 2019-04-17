@@ -2,38 +2,33 @@
 set -o xtrace   # Write all commands first to stderr
 set -o errexit  # Exit the script with error if any of the commands fail
 
-DIR=$(dirname $0)
-# Functions to fetch MongoDB binaries
-. $DIR/download-mongodb.sh
-OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+# variables
+PROJECT_DIRECTORY=${PROJECT_DIRECTORY:-$PWD}
+SWIFT_VERSION=${SWIFT_VERSION:-4.2}
+INSTALL_DIR="${PROJECT_DIRECTORY}/opt"
+BUILD_DIR="${PROJECT_DIRECTORY}/libmongoc-build"
+EVG_DIR=$(dirname $0)
 
-get_distro
+export SWIFTENV_ROOT="${INSTALL_DIR}/swiftenv"
+export PATH=/opt/cmake/bin:${SWIFTENV_ROOT}/bin:$PATH
 
-# See .evergreen/download-mongodb.sh for most possible values
-case "$DISTRO" in
-   cygwin*)
-      echo "Install Windows dependencies"
-      ;;
+# should be set by EVG eventuallty
+LIBMONGOC_VERSION="r1.13"
 
-   darwin*)
-      echo "Install macOS dependencies"
-      ;;
+# find cmake and set the path to it in $CMAKE
+. $EVG_DIR/find-cmake.sh
 
-   linux-rhel*)
-      echo "Install RHEL dependencies"
-      ;;
+# install libmongoc
+git clone --depth 1 -b "${LIBMONGOC_VERSION}" https://github.com/mongodb/mongo-c-driver "${BUILD_DIR}"
+cd "${BUILD_DIR}"
+$CMAKE -DCMAKE_INSTALL_PREFIX:PATH="${INSTALL_DIR}"
+make -j8 install
+cd "${PROJECT_DIRECTORY}"
 
-   linux-ubuntu*)
-      echo "Install Ubuntu dependencies"
-      # sudo apt-get install -y awscli || true
-      ;;
+# install swiftenv
+git clone --depth 1 https://github.com/kylef/swiftenv.git "${SWIFTENV_ROOT}"
 
-   sunos*)
-      echo "Install Solaris dependencies"
-      # sudo /opt/csw/bin/pkgutil -y -i sasl_dev || true
-      ;;
+# install swift
 
-   *)
-      echo "All other platforms..."
-      ;;
-esac
+eval "$(swiftenv init -)"
+swiftenv install $SWIFT_VERSION
