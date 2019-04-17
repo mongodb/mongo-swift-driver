@@ -35,7 +35,7 @@ Bug reports in JIRA for all driver projects (i.e. NODE, PYTHON, CSHARP, JAVA) an
 Core Server (i.e. SERVER) project are **public**.
 
 ## Installation
-`MongoSwift` works with Swift 4.0+.
+`MongoSwift` works with Swift 4.2+.
 
 ### macOS and Linux
 
@@ -57,7 +57,7 @@ See example installation from source on Ubuntu in [Docker](https://github.com/mo
 Add MongoSwift to your dependencies in `Package.swift`:
 
 ```swift
-// swift-tools-version:4.0
+// swift-tools-version:4.2
 import PackageDescription
 
 let package = Package(
