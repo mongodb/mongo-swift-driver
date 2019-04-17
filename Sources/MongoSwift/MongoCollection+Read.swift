@@ -66,17 +66,8 @@ extension MongoCollection {
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func count(_ filter: Document = [:], options: CountOptions? = nil) throws -> Int {
-        let opts = try self.encoder.encode(options)
-        let rp = options?.readPreference?._readPreference
-        var error = bson_error_t()
-        // because we already encode skip and limit in the options,
-        // pass in 0s so we don't get duplicate parameter errors.
-        let count = mongoc_collection_count_with_opts(
-            self._collection, MONGOC_QUERY_NONE, filter.data, 0, 0, opts?.data, rp, &error)
-
-        if count == -1 { throw parseMongocError(error) }
-
-        return Int(count)
+        let operation = CountOperation(collection: self, filter: filter, options: options)
+        return try operation.execute()
     }
 
     /**
@@ -124,28 +115,8 @@ extension MongoCollection {
     public func distinct(fieldName: String,
                          filter: Document = [:],
                          options: DistinctOptions? = nil) throws -> [BSONValue] {
-        let collName = String(cString: mongoc_collection_get_name(self._collection))
-        let command: Document = [
-            "distinct": collName,
-            "key": fieldName,
-            "query": filter
-        ]
-
-        let opts = try self.encoder.encode(options)
-        let rp = options?.readPreference?._readPreference
-        let reply = Document()
-        var error = bson_error_t()
-        guard mongoc_collection_read_command_with_opts(
-            self._collection, command.data, rp, opts?.data, reply.data, &error) else {
-            throw parseMongocError(error, errorLabels: reply["errorLabels"] as? [String])
-        }
-
-        guard let values = try reply.getValue(for: "values") as? [BSONValue] else {
-            throw RuntimeError.internalError(message:
-                "expected server reply \(reply) to contain an array of distinct values")
-        }
-
-        return values
+        let operation = DistinctOperation(collection: self, fieldName: fieldName, filter: filter, options: options)
+        return try operation.execute()
     }
 }
 
@@ -231,51 +202,6 @@ public struct AggregateOptions: Encodable {
     }
 }
 
-/// Options to use when executing a `count` command on a `MongoCollection`.
-public struct CountOptions: Encodable {
-    /// Specifies a collation.
-    public let collation: Document?
-
-    /// A hint for the index to use.
-    public let hint: Hint?
-
-    /// The maximum number of documents to count.
-    public let limit: Int64?
-
-    /// The maximum amount of time to allow the query to run.
-    public let maxTimeMS: Int64?
-
-    /// The number of documents to skip before counting.
-    public let skip: Int64?
-
-    /// A ReadConcern to use for this operation.
-    public let readConcern: ReadConcern?
-
-    /// A ReadPreference to use for this operation.
-    public let readPreference: ReadPreference?
-
-    /// Convenience initializer allowing any/all parameters to be optional
-    public init(collation: Document? = nil,
-                hint: Hint? = nil,
-                limit: Int64? = nil,
-                maxTimeMS: Int64? = nil,
-                readConcern: ReadConcern? = nil,
-                readPreference: ReadPreference? = nil,
-                skip: Int64? = nil) {
-        self.collation = collation
-        self.hint = hint
-        self.limit = limit
-        self.maxTimeMS = maxTimeMS
-        self.readConcern = readConcern
-        self.readPreference = readPreference
-        self.skip = skip
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case collation, hint, limit, maxTimeMS, readConcern, skip
-    }
-}
-
 /// The `countDocuments` command takes the same options as the deprecated `count`.
 private typealias CountDocumentsOptions = CountOptions
 
@@ -287,36 +213,6 @@ private struct EstimatedDocumentCountOptions {
     /// Initializer allowing any/all parameters to be omitted.
     public init(maxTimeMS: Int64? = nil) {
         self.maxTimeMS = maxTimeMS
-    }
-}
-
-/// Options to use when executing a `distinct` command on a `MongoCollection`.
-public struct DistinctOptions: Encodable {
-    /// Specifies a collation.
-    public let collation: Document?
-
-    /// The maximum amount of time to allow the query to run.
-    public let maxTimeMS: Int64?
-
-    /// A ReadConcern to use for this operation.
-    public let readConcern: ReadConcern?
-
-    /// A ReadPreference to use for this operation.
-    public let readPreference: ReadPreference?
-
-    /// Convenience initializer allowing any/all parameters to be optional
-    public init(collation: Document? = nil,
-                maxTimeMS: Int64? = nil,
-                readConcern: ReadConcern? = nil,
-                readPreference: ReadPreference? = nil) {
-        self.collation = collation
-        self.maxTimeMS = maxTimeMS
-        self.readConcern = readConcern
-        self.readPreference = readPreference
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case collation, maxTimeMS, readConcern
     }
 }
 

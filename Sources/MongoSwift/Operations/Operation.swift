@@ -1,5 +1,5 @@
-/// A protocol for operation types to conform to. An operation corresponds to any single operation a user can perform
-/// with the driver's API that requires I/O.
+/// A protocol for operation types to conform to. An `Operation` instance corresponds to any single operation a user
+/// can perform with the driver's API that requires I/O.
 internal protocol Operation {
     /// The result type this operation returns.
     associatedtype OperationResult
