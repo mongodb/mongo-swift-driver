@@ -135,12 +135,14 @@ final class BSONValueTests: MongoSwiftTestCase {
             return
         }
 
+        expect(_id).to(equal(objectId))
         expect(_id.hex).to(equal(objectId.hex))
         expect(_id.timestamp).to(equal(objectId.timestamp))
 
         // expect that we can pull the correct timestamp if
         // initialized from the original string
         let objectIdFromString = ObjectId(oid)!
+        expect(objectIdFromString).to(equal(objectId))
         expect(objectIdFromString.hex).to(equal(oid))
         expect(objectIdFromString.timestamp).to(equal(timestamp))
     }
