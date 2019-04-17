@@ -21,24 +21,8 @@ extension MongoCollection {
      */
     @discardableResult
     public func insertOne(_ value: CollectionType, options: InsertOneOptions? = nil) throws -> InsertOneResult? {
-        let document = try self.encoder.encode(value).withID()
-        let opts = try self.encoder.encode(options)
-        var error = bson_error_t()
-        let reply = Document()
-        guard mongoc_collection_insert_one(self._collection, document.data, opts?.data, reply.data, &error) else {
-            throw getErrorFromReply(bsonError: error, from: reply)
-        }
-
-        guard isAcknowledged(options?.writeConcern) else {
-            return nil
-        }
-
-        guard let insertedId = try document.getValue(for: "_id") else {
-            // we called `withID()`, so this should be present.
-            fatalError("Failed to get value for _id from document")
-        }
-
-        return InsertOneResult(insertedId: insertedId)
+        let operation = InsertOneOperation(collection: self, value: value, options: options)
+        return try operation.execute()
     }
 
     /**
@@ -88,23 +72,12 @@ extension MongoCollection {
     public func replaceOne(filter: Document,
                            replacement: CollectionType,
                            options: ReplaceOptions? = nil) throws -> UpdateResult? {
-        let replacementDoc = try self.encoder.encode(replacement)
-        let opts = try self.encoder.encode(options)
-        let reply = Document()
-        var error = bson_error_t()
-        guard mongoc_collection_replace_one(
-            self._collection, filter.data, replacementDoc.data, opts?.data, reply.data, &error) else {
-            throw getErrorFromReply(bsonError: error, from: reply)
-        }
-
-        guard isAcknowledged(options?.writeConcern) else {
-            return nil
-        }
-
-        return try self.decoder.internalDecode(
-                UpdateResult.self,
-                from: reply,
-                withError: "Couldn't understand response from the server.")
+        let operation = UpdateOperation(collection: self,
+                                        filter: filter,
+                                        update: try self.encoder.encode(replacement),
+                                        options: options,
+                                        type: .replaceOne)
+        return try operation.execute()
     }
 
     /**
@@ -126,22 +99,12 @@ extension MongoCollection {
      */
     @discardableResult
     public func updateOne(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
-        let opts = try self.encoder.encode(options)
-        let reply = Document()
-        var error = bson_error_t()
-        guard mongoc_collection_update_one(
-            self._collection, filter.data, update.data, opts?.data, reply.data, &error) else {
-            throw getErrorFromReply(bsonError: error, from: reply)
-        }
-
-        guard isAcknowledged(options?.writeConcern) else {
-            return nil
-        }
-
-        return try self.decoder.internalDecode(
-                UpdateResult.self,
-                from: reply,
-                withError: "Couldn't understand response from the server.")
+        let operation = UpdateOperation(collection: self,
+                                        filter: filter,
+                                        update: update,
+                                        options: options,
+                                        type: .updateOne)
+        return try operation.execute()
     }
 
     /**
@@ -163,22 +126,12 @@ extension MongoCollection {
      */
     @discardableResult
     public func updateMany(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
-        let opts = try self.encoder.encode(options)
-        let reply = Document()
-        var error = bson_error_t()
-        guard mongoc_collection_update_many(
-            self._collection, filter.data, update.data, opts?.data, reply.data, &error) else {
-            throw getErrorFromReply(bsonError: error, from: reply)
-        }
-
-        guard isAcknowledged(options?.writeConcern) else {
-            return nil
-        }
-
-        return try self.decoder.internalDecode(
-                UpdateResult.self,
-                from: reply,
-                withError: "Couldn't understand response from the server.")
+        let operation = UpdateOperation(collection: self,
+                                        filter: filter,
+                                        update: update,
+                                        options: options,
+                                        type: .updateMany)
+        return try operation.execute()
     }
 
     /**
@@ -199,22 +152,8 @@ extension MongoCollection {
      */
     @discardableResult
     public func deleteOne(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
-        let opts = try self.encoder.encode(options)
-        let reply = Document()
-        var error = bson_error_t()
-
-        guard mongoc_collection_delete_one(self._collection, filter.data, opts?.data, reply.data, &error) else {
-            throw getErrorFromReply(bsonError: error, from: reply)
-        }
-
-        guard isAcknowledged(options?.writeConcern) else {
-            return nil
-        }
-
-        return try self.decoder.internalDecode(
-                DeleteResult.self,
-                from: reply,
-                withError: "Couldn't understand response from the server.")
+        let operation = DeleteOperation(collection: self, filter: filter, options: options, type: .deleteOne)
+        return try operation.execute()
     }
 
     /**
@@ -235,21 +174,8 @@ extension MongoCollection {
      */
     @discardableResult
     public func deleteMany(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
-        let opts = try self.encoder.encode(options)
-        let reply = Document()
-        var error = bson_error_t()
-        guard mongoc_collection_delete_many(self._collection, filter.data, opts?.data, reply.data, &error) else {
-            throw getErrorFromReply(bsonError: error, from: reply)
-        }
-
-        guard isAcknowledged(options?.writeConcern) else {
-            return nil
-        }
-
-        return try self.decoder.internalDecode(
-                DeleteResult.self,
-                from: reply,
-                withError: "Couldn't understand response from the server.")
+        let operation = DeleteOperation(collection: self, filter: filter, options: options, type: .deleteMany)
+        return try operation.execute()
     }
 
     /**
@@ -261,7 +187,7 @@ extension MongoCollection {
      *
      * - Returns: Whether the operation will use an acknowledged write concern
      */
-    fileprivate func isAcknowledged(_ writeConcern: WriteConcern?) -> Bool {
+    internal func isAcknowledged(_ writeConcern: WriteConcern?) -> Bool {
         /* If the collection's write concern is also `nil` it is the default. We
          * can safely assume it is acknowledged, since the server requires that
          * getLastErrorDefaults is acknowledged by at least one member. */
@@ -274,21 +200,6 @@ extension MongoCollection {
 }
 
 // Write command options structs
-
-/// Options to use when executing an `insertOne` command on a `MongoCollection`.
-public struct InsertOneOptions: Encodable {
-    /// If true, allows the write to opt-out of document level validation.
-    public let bypassDocumentValidation: Bool?
-
-    /// An optional WriteConcern to use for the command.
-    public let writeConcern: WriteConcern?
-
-    /// Convenience initializer allowing bypassDocumentValidation to be omitted or optional
-    public init(bypassDocumentValidation: Bool? = nil, writeConcern: WriteConcern? = nil) {
-        self.bypassDocumentValidation = bypassDocumentValidation
-        self.writeConcern = writeConcern
-    }
-}
 
 /// Options to use when executing a multi-document insert operation on a `MongoCollection`.
 public struct InsertManyOptions: Encodable {
@@ -313,86 +224,7 @@ public struct InsertManyOptions: Encodable {
     }
 }
 
-/// Options to use when executing an `update` command on a `MongoCollection`.
-public struct UpdateOptions: Encodable {
-    /// A set of filters specifying to which array elements an update should apply.
-    public let arrayFilters: [Document]?
-
-    /// If true, allows the write to opt-out of document level validation.
-    public let bypassDocumentValidation: Bool?
-
-    /// Specifies a collation.
-    public let collation: Document?
-
-    /// When true, creates a new document if no document matches the query.
-    public let upsert: Bool?
-
-    /// An optional WriteConcern to use for the command.
-    public let writeConcern: WriteConcern?
-
-    /// Convenience initializer allowing any/all parameters to be optional
-    public init(arrayFilters: [Document]? = nil,
-                bypassDocumentValidation: Bool? = nil,
-                collation: Document? = nil,
-                upsert: Bool? = nil,
-                writeConcern: WriteConcern? = nil) {
-        self.arrayFilters = arrayFilters
-        self.bypassDocumentValidation = bypassDocumentValidation
-        self.collation = collation
-        self.upsert = upsert
-        self.writeConcern = writeConcern
-    }
-}
-
-/// Options to use when executing a `replace` command on a `MongoCollection`.
-public struct ReplaceOptions: Encodable {
-    /// If true, allows the write to opt-out of document level validation.
-    public let bypassDocumentValidation: Bool?
-
-    /// Specifies a collation.
-    public let collation: Document?
-
-    /// When true, creates a new document if no document matches the query.
-    public let upsert: Bool?
-
-    /// An optional `WriteConcern` to use for the command.
-    public let writeConcern: WriteConcern?
-
-    /// Convenience initializer allowing any/all parameters to be optional
-    public init(bypassDocumentValidation: Bool? = nil,
-                collation: Document? = nil,
-                upsert: Bool? = nil,
-                writeConcern: WriteConcern? = nil) {
-        self.bypassDocumentValidation = bypassDocumentValidation
-        self.collation = collation
-        self.upsert = upsert
-        self.writeConcern = writeConcern
-    }
-}
-
-/// Options to use when executing a `delete` command on a `MongoCollection`.
-public struct DeleteOptions: Encodable {
-    /// Specifies a collation.
-    public let collation: Document?
-
-    /// An optional `WriteConcern` to use for the command.
-    public let writeConcern: WriteConcern?
-
-     /// Convenience initializer allowing collation to be omitted or optional
-    public init(collation: Document? = nil, writeConcern: WriteConcern? = nil) {
-        self.collation = collation
-        self.writeConcern = writeConcern
-    }
-}
-
 // Write command results structs
-
-/// The result of an `insertOne` command on a `MongoCollection`.
-public struct InsertOneResult {
-    /// The identifier that was inserted. If the document doesn't have an identifier, this value
-    /// will be generated and added to the document before insertion.
-    public let insertedId: BSONValue
-}
 
 /// The result of a multi-document insert operation on a `MongoCollection`.
 public struct InsertManyResult {
@@ -411,25 +243,4 @@ public struct InsertManyResult {
         self.insertedCount = result.insertedCount
         self.insertedIds = result.insertedIds
     }
-}
-
-/// The result of a `delete` command on a `MongoCollection`.
-public struct DeleteResult: Decodable {
-    /// The number of documents that were deleted.
-    public let deletedCount: Int
-}
-
-/// The result of an `update` operation a `MongoCollection`.
-public struct UpdateResult: Decodable {
-    /// The number of documents that matched the filter.
-    public let matchedCount: Int
-
-    /// The number of documents that were modified.
-    public let modifiedCount: Int
-
-    /// The identifier of the inserted document if an upsert took place.
-    public let upsertedId: AnyBSONValue?
-
-    /// The number of documents that were upserted.
-    public let upsertedCount: Int
 }
