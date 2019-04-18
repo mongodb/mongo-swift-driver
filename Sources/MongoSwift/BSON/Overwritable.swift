@@ -64,8 +64,9 @@ extension Decimal128: Overwritable {
 
 extension ObjectId: Overwritable {
     internal func writeToCurrentPosition(of iter: DocumentIterator) throws {
-        var encoded = try ObjectId.toLibBSONType(self.oid)
-        iter.withMutableBSONIterPointer { iterPtr in bson_iter_overwrite_oid(iterPtr, &encoded) }
+        withUnsafePointer(to: self.oid) { oidPtr in
+            iter.withMutableBSONIterPointer { iterPtr in bson_iter_overwrite_oid(iterPtr, oidPtr) }
+        }
     }
 }
 

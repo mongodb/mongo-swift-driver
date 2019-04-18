@@ -74,7 +74,7 @@ final class DocumentTests: MongoSwiftTestCase {
         "timestamp": Timestamp(timestamp: 5, inc: 10),
         "nestedarray": [[1, 2], [Int32(3), Int32(4)]] as [[Int32]],
         "nesteddoc": ["a": 1, "b": 2, "c": false, "d": [3, 4]] as Document,
-        "oid": ObjectId(fromString: "507f1f77bcf86cd799439011"),
+        "oid": ObjectId("507f1f77bcf86cd799439011")!,
         "regex": RegularExpression(pattern: "^abc", options: "imx"),
         "array1": [1, 2],
         "array2": ["string1", "string2"],
@@ -139,7 +139,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(doc["maxkey"]).to(bsonEqual(MaxKey()))
         expect(doc["date"]).to(bsonEqual(Date(timeIntervalSince1970: 500.004)))
         expect(doc["timestamp"]).to(bsonEqual(Timestamp(timestamp: 5, inc: 10)))
-        expect(doc["oid"]).to(bsonEqual(ObjectId(fromString: "507f1f77bcf86cd799439011")))
+        expect(doc["oid"]).to(bsonEqual(ObjectId("507f1f77bcf86cd799439011")!))
 
         let regex = doc["regex"] as? RegularExpression
         expect(regex).to(equal(RegularExpression(pattern: "^abc", options: "imx")))
@@ -190,7 +190,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(DocumentTests.testDoc.maxkey).to(bsonEqual(MaxKey()))
         expect(DocumentTests.testDoc.date).to(bsonEqual(Date(timeIntervalSince1970: 500.004)))
         expect(DocumentTests.testDoc.timestamp).to(bsonEqual(Timestamp(timestamp: 5, inc: 10)))
-        expect(DocumentTests.testDoc.oid).to(bsonEqual(ObjectId(fromString: "507f1f77bcf86cd799439011")))
+        expect(DocumentTests.testDoc.oid).to(bsonEqual(ObjectId("507f1f77bcf86cd799439011")!))
 
         let codewscope = DocumentTests.testDoc.codewscope as? CodeWithScope
         expect(codewscope?.code).to(equal("console.log(x);"))
