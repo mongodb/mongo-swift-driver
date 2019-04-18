@@ -292,9 +292,9 @@ axes:
         run_on: ubuntu1804-test
         batchtime: 10080  # 7 days
 
-      # - id: macos-1012
-      #   display_name: "macOS 10.12"
-      #   run_on: macos-1012
+      - id: macos-1014
+        display_name: "macOS 10.14"
+        run_on: macos-1014
 
   - id: topology
     display_name: Topology
