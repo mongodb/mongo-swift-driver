@@ -4,7 +4,6 @@ import Foundation
 /// decoding `BSONValue`s of unknown type.
 public struct AnyBSONValue: Codable, Equatable, Hashable {
     // TODO: conform all `BSONValue` types to `Hashable` (SWIFT-320).
-    // swiftlint:disable:next legacy_hashing
     public func hash(into hasher: inout Hasher) {
         hasher.combine(self.value.bsonType)
         // A few types need to be handled specifically because their string representations aren't sufficient or
