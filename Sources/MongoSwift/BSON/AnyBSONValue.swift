@@ -4,22 +4,23 @@ import Foundation
 /// decoding `BSONValue`s of unknown type.
 public struct AnyBSONValue: Codable, Equatable, Hashable {
     // TODO: conform all `BSONValue` types to `Hashable` (SWIFT-320).
-    // swiftlint:disable:next legacy_hashing
-    public var hashValue: Int {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.value.bsonType)
         // A few types need to be handled specifically because their string representations aren't sufficient or
         // performant.
         if let date = self.value as? Date {
             // `Date`'s string conversion omits milliseconds and smaller time units, and using a string formatter is
             // expensive. Instead, we just include the time interval itself.
-            return "\(self.value.bsonType)-\(date.timeIntervalSince1970)".hashValue
+            hasher.combine(date.timeIntervalSince1970)
         } else if let binary = self.value as? Binary {
             // `Binary`'s string representation omits the data itself, so we include its hashValue.
-            return "\(self.value.bsonType)-\(binary.data.hashValue)-\(binary.subtype)".hashValue
+            hasher.combine(binary.data)
+            hasher.combine(binary.subtype)
         } else if let arr = self.value as? [BSONValue] {
             // To factor in every item in the array, we include the arrays extended JSON representation.
-            return "\(self.value.bsonType)-\((["value": arr] as Document).extendedJSON)".hashValue
+            hasher.combine((["value": arr] as Document).extendedJSON)
         }
-        return "\(self.value.bsonType)-\(self.value)".hashValue
+        hasher.combine("\(self.value)")
     }
 
     /// The `BSONValue` wrapped by this struct.

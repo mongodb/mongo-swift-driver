@@ -842,7 +842,7 @@ internal struct _BSONKey: CodingKey {
     internal static let `super` = _BSONKey(stringValue: "super")!
 }
 
-internal extension DecodingError {
+extension DecodingError {
     internal static func _typeMismatch(at path: [CodingKey],
                                        expectation: Any.Type,
                                        reality: BSONValue) -> DecodingError {
