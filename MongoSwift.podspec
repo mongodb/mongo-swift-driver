@@ -1,18 +1,18 @@
 Pod::Spec.new do |spec|
   spec.name       = "MongoSwift"
-  spec.version    = "0.0.9"
+  spec.version    = "0.1.0"
   spec.summary    = "The Swift driver for MongoDB"
   spec.homepage   = "https://github.com/mongodb/mongo-swift-driver"
   spec.license    = 'Apache License, Version 2.0'
   spec.authors    = {
     "Matt Broadstone" => "mbroadst@mongodb.com",
     "Kaitlin Mahar" => "kaitlin.mahar@mongodb.com",
-    "Jeremy Mikola" => "jmikola@mongodb.com"
+    "Patrick Freed" => "patrick.freed@mongodb.com"
   }
 
   spec.source     = {
     :git => "https://github.com/mongodb/mongo-swift-driver.git",
-    :tag => 'v0.0.9'
+    :tag => 'v0.1.0'
   }
 
   spec.ios.deployment_target = "11.0"
