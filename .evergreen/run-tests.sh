@@ -9,6 +9,7 @@ SWIFT_VERSION=${SWIFT_VERSION:-4.2}
 INSTALL_DIR="${PROJECT_DIRECTORY}/opt"
 TOPOLOGY=${TOPOLOGY:-single}
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+EXTRA_FLAGS="-Xlinker -rpath -Xlinker ${INSTALL_DIR}/lib"
 
 # enable swiftenv
 export SWIFTENV_ROOT="${INSTALL_DIR}/swiftenv"
@@ -21,6 +22,12 @@ export PKG_CONFIG_PATH="${INSTALL_DIR}/lib/pkgconfig"
 # override where we look for libmongoc
 export LD_LIBRARY_PATH="${INSTALL_DIR}/lib"
 export DYLD_LIBRARY_PATH="${INSTALL_DIR}/lib"
+export DEVELOPER_DIR=/Applications/Xcode10.1.app
 
 swiftenv local $SWIFT_VERSION
-MONGODB_TOPOLOGY=${TOPOLOGY} MONGODB_URI=$MONGODB_URI make test
+
+# build the driver
+swift build $EXTRA_FLAGS
+
+# test the driver
+MONGODB_TOPOLOGY=${TOPOLOGY} MONGODB_URI=$MONGODB_URI swift test $EXTRA_FLAGS
