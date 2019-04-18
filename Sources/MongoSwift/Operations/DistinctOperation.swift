@@ -10,7 +10,7 @@ internal struct DistinctOperation<T: Codable> {
     internal init(collection: MongoCollection<T>,
                   fieldName: String,
                   filter: Document,
-                  options: DistinctOptions? = nil) {
+                  options: DistinctOptions?) {
         self.collection = collection
         self.fieldName = fieldName
         self.filter = filter

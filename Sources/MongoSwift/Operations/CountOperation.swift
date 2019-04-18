@@ -8,7 +8,7 @@ internal struct CountOperation<T: Codable>: Operation {
 
     internal init(collection: MongoCollection<T>,
                   filter: Document,
-                  options: CountOptions? = nil) {
+                  options: CountOptions?) {
         self.collection = collection
         self.filter = filter
         self.options = options
