@@ -111,7 +111,7 @@ import MongoSwift
 MongoSwift.initialize()
 
 let client = try MongoClient(connectionString: "mongodb://localhost:27017")
-let db = try client.db("myDB")
+let db = client.db("myDB")
 let collection = try db.createCollection("myCollection")
 
 // free all resources

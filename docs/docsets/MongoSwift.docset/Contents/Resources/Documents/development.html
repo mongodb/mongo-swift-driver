@@ -13,7 +13,7 @@
     <a title="Development  Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="index.html">MongoSwift Docs</a> (99% documented)</p>
+        <p><a href="index.html">MongoSwift Docs</a> (100% documented)</p>
         <p class="header-right"><a href="dash-feed://https%3A%2F%2Fmongodb%2Egithub%2Eio%2Fmongo%2Dswift%2Ddriver%2Fdocsets%2FMongoSwift%2Exml"><img src="img/dash.png"/>Install in Dash</a></p>
       </div>
     </header>
@@ -32,6 +32,9 @@
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
                 <a href="development.html">Development</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="error-handling.html">Error-Handling</a>
               </li>
             </ul>
           </li>
@@ -63,13 +66,13 @@
                 <a href="Classes/BSONEncoder/DataEncodingStrategy.html">– DataEncodingStrategy</a>
               </li>
               <li class="nav-group-task">
-                <a href="Classes.html#/s:10MongoSwift18BulkWriteOperationC">BulkWriteOperation</a>
+                <a href="Classes/BulkWriteOperation.html">BulkWriteOperation</a>
               </li>
               <li class="nav-group-task">
                 <a href="Classes/DocumentIterator.html">DocumentIterator</a>
               </li>
               <li class="nav-group-task">
-                <a href="Classes.html#/s:10MongoSwift15DocumentStorageC">DocumentStorage</a>
+                <a href="Classes/DocumentStorage.html">DocumentStorage</a>
               </li>
               <li class="nav-group-task">
                 <a href="Classes/MongoClient.html">MongoClient</a>
@@ -134,16 +137,31 @@
                 <a href="Enums/CursorType.html">CursorType</a>
               </li>
               <li class="nav-group-task">
-                <a href="Enums/Hint.html">Hint</a>
+                <a href="Enums/DataCodingStrategy.html">DataCodingStrategy</a>
               </li>
               <li class="nav-group-task">
-                <a href="Enums/MongoError.html">MongoError</a>
+                <a href="Enums/DateCodingStrategy.html">DateCodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Enums/Hint.html">Hint</a>
               </li>
               <li class="nav-group-task">
                 <a href="Enums/MongoEventType.html">MongoEventType</a>
               </li>
               <li class="nav-group-task">
                 <a href="Enums/ReturnDocument.html">ReturnDocument</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Enums/RuntimeError.html">RuntimeError</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Enums/ServerError.html">ServerError</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Enums/UUIDCodingStrategy.html">UUIDCodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Enums/UserError.html">UserError</a>
               </li>
             </ul>
           </li>
@@ -170,6 +188,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="Extensions/Int64.html">Int64</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Extensions/NSRegularExpression.html">NSRegularExpression</a>
               </li>
               <li class="nav-group-task">
                 <a href="Extensions/Notification.html">Notification</a>
@@ -200,7 +221,16 @@
             <a href="Protocols.html">Protocols</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
+                <a href="Protocols/BSONNumber.html">BSONNumber</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="Protocols/BSONValue.html">BSONValue</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Protocols/CodingStrategyProvider.html">CodingStrategyProvider</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Protocols.html#/s:10MongoSwift0A5ErrorP">MongoError</a>
               </li>
               <li class="nav-group-task">
                 <a href="Protocols/MongoEvent.html">MongoEvent</a>
@@ -220,13 +250,22 @@
                 <a href="Structs/AnyBSONValue.html">AnyBSONValue</a>
               </li>
               <li class="nav-group-task">
+                <a href="Structs/BSONCoderOptions.html">BSONCoderOptions</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="Structs/BSONNull.html">BSONNull</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/BSONUndefined.html">BSONUndefined</a>
               </li>
               <li class="nav-group-task">
                 <a href="Structs/Binary.html">Binary</a>
               </li>
               <li class="nav-group-task">
                 <a href="Structs/Binary/Subtype.html">– Subtype</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/BulkWriteError.html">BulkWriteError</a>
               </li>
               <li class="nav-group-task">
                 <a href="Structs/BulkWriteOptions.html">BulkWriteOptions</a>
@@ -263,6 +302,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="Structs/CreateIndexOptions.html">CreateIndexOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/DBPointer.html">DBPointer</a>
               </li>
               <li class="nav-group-task">
                 <a href="Structs/DatabaseOptions.html">DatabaseOptions</a>
@@ -364,6 +406,9 @@
                 <a href="Structs/ServerOpeningEvent.html">ServerOpeningEvent</a>
               </li>
               <li class="nav-group-task">
+                <a href="Structs/Symbol.html">Symbol</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="Structs/Timestamp.html">Timestamp</a>
               </li>
               <li class="nav-group-task">
@@ -395,6 +440,14 @@
               </li>
             </ul>
           </li>
+          <li class="nav-group-name">
+            <a href="Typealiases.html">Type Aliases</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="Typealiases.html#/s:10MongoSwift15ServerErrorCodea">ServerErrorCode</a>
+              </li>
+            </ul>
+          </li>
         </ul>
       </nav>
       <article class="main-content">
@@ -420,10 +473,11 @@
 <li><a href="https://swiftenv.fuller.li/en/latest/installation.html">swiftenv</a>: a command-line tool that allows easy installation of and switching between versions of Swift.
 
 <ul>
-<li>Use this to install Swift 4.0 if you don&rsquo;t have it already.</li>
+<li>Use this to install Swift 4.2 if you don&rsquo;t have it already.</li>
 </ul></li>
-<li><a href="https://github.com/realm/jazzy#installation">jazzy</a>: the tool we use to generate documentation.</li>
-<li><a href="https://github.com/realm/SwiftLint#using-homebrew">swiftlint</a>: the Swift linter we use.</li>
+<li><a href="https://github.com/realm/jazzy#installation">Jazzy</a>: the tool we use to generate documentation.</li>
+<li><a href="https://github.com/realm/SwiftLint#using-homebrew">SwiftLint</a>: the Swift linter we use.</li>
+<li><a href="https://github.com/krzysztofzablocki/Sourcery/#installation">Sourcery</a>: the tool we use to generate lists of test names (required to run the tests on Linux).</li>
 <li><a href="http://mongoc.org/libmongoc/current/api.html">libmongoc</a>: the MongoDB C driver, which this library wraps. See the installation instructions provided in our <a href="https://mongodb.github.io/mongo-swift-driver/#first-install-the-mongodb-c-driver">README</a> or on the <a href="http://mongoc.org/libmongoc/current/installing.html">libmongoc docs</a>.</li>
 </ul>
 <h3 id='if-you-are-using-vim-neovim' class='heading'>If you are using (Vim/Neovim)</h3>
@@ -463,7 +517,7 @@ Since this library wraps the MongoDB C Driver, we also recommend cloning <a href
 <p>You can run tests from Xcode as usual. If you prefer to test from the command line, keep reading.</p>
 <h3 id='from-the-command-line' class='heading'>From the Command Line</h3>
 
-<p>We recommend installing the ruby gem <code>xcpretty</code> and running tests by executing <code>make test-pretty</code>, as this provides output in a much more readable format. </p>
+<p>We recommend installing the ruby gem <code>xcpretty</code> and running tests by executing <code>make test-pretty</code>, as this provides output in a much more readable format. (Works on MacOS only.)</p>
 
 <p>Alternatively, you can just run the tests with <code>swift test</code>, or <code>make test</code>.</p>
 
@@ -486,11 +540,11 @@ $ symbolicate-linux-fatal /path/to/MongoSwiftPackageTests.xctest crash.log
 <p>We document new code as we write it. We use C-style documentation blocks (<code>/** ... */</code>) for documentation longer than 3 lines, and triple-slash (<code>///</code>) for shorter documentation. 
 Comments that are <em>not</em> documentation should use two slashes (<code>//</code>).</p>
 
-<p>Our documentation site is automatically generated from the source code using <a href="https://github.com/realm/jazzy#installation">jazzy</a>. 
-To regenerate the files after making changes, run <code>make documentation</code> from the project&rsquo;s root directory. You can then inspect the changes to the site by opening the files in <code>/docs</code> in your web browser.</p>
+<p>Our documentation site is automatically generated from the source code using <a href="https://github.com/realm/jazzy#installation">Jazzy</a>. We regenerate it each time we release a new version of the driver.
+To regenerate the files, run <code>make documentation</code> from the project&rsquo;s root directory. You can then inspect the changes to the site by opening the files in <code>/docs</code> in your web browser.</p>
 <h2 id='linting-and-style' class='heading'>Linting and Style</h2>
 
-<p>We use <a href="https://github.com/realm/SwiftLint#using-homebrew">swiftlint</a> for linting. You can see our configuration in the <code>.swiftlint.yml</code> file in the project&rsquo;s root directory.  Run <code>swiftlint</code> in the <code>/Sources</code> directory to lint all of our files. Running <code>swiftlint autocorrect</code> will correct some types of violations.</p>
+<p>We use <a href="https://github.com/realm/SwiftLint#using-homebrew">SwiftLint</a> for linting. You can see our configuration in the <code>.swiftlint.yml</code> file in the project&rsquo;s root directory.  Run <code>swiftlint</code> in the <code>/Sources</code> directory to lint all of our files. Running <code>swiftlint autocorrect</code> will correct some types of violations.</p>
 
 <p>For style guidance, look at Swift&rsquo;s <a href="https://swift.org/documentation/api-design-guidelines/">API design guidelines</a> and Google&rsquo;s <a href="https://google.github.io/swift/">Swift Style Guide</a>.</p>
 <h3 id='sublime-text-setup' class='heading'>Sublime Text Setup</h3>
@@ -504,6 +558,8 @@ To regenerate the files after making changes, run <code>make documentation</code
 <ol>
 <li>Create a feature branch, named by the corresponding JIRA ticket if exists; for example, <code>SWIFT-30</code>.</li>
 <li>Do your work on the branch.</li>
+<li>If you add, remove, or rename any tests, make sure to update <code>LinuxMain.swift</code> accordingly. If you are on MacOS, you can do that by running <code>make sourcery</code>.</li>
+<li>Make sure your code builds and passes all tests on <a href="https://travis-ci.org/mongodb/mongo-swift-driver">Travis</a>. Every time you push to GitHub or open a pull request, it will trigger a new build.</li>
 <li>Open a pull request on the repository. Make sure you have rebased your branch onto the latest commits on <code>master</code>.</li>
 </ol>
 
@@ -537,7 +593,7 @@ To regenerate the files after making changes, run <code>make documentation</code
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2019 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Jeremy Mikola</a>. All rights reserved. (Last updated: 2019-01-23)</p>
+          <p>&copy; 2019 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Jeremy Mikola</a>. All rights reserved. (Last updated: 2019-04-18)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>

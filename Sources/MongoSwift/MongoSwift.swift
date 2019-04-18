@@ -3,7 +3,7 @@ import mongoc
 /// A utility class for libmongoc initialization and cleanup.
 public final class MongoSwift {
     /// The version of `MongoSwift`.
-    public static let versionString = "0.0.2"
+    public static let versionString = "0.1.0"
 
     private final class MongocInitializer {
         static let shared = MongocInitializer()
