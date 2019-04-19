@@ -290,7 +290,6 @@ axes:
       - id: ubuntu-18.04
         display_name: "Ubuntu 18.04"
         run_on: ubuntu1804-test
-        batchtime: 10080  # 7 days
 
       - id: macos-1014
         display_name: "macOS 10.14"
