@@ -274,6 +274,10 @@ extension MongoCollection {
      */
     @discardableResult
     public func dropIndex(_ name: String, options: DropIndexOptions? = nil) throws -> Document {
+        guard name != "*" else {
+            throw UserError.invalidArgumentError(message:
+                "Invalid index name '*'; use dropIndexes() to drop all indexes")
+        }
         return try _dropIndexes(index: name, options: options)
     }
 
