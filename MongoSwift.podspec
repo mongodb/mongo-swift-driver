@@ -15,6 +15,7 @@ Pod::Spec.new do |spec|
     :tag => 'v0.1.0'
   }
 
+  spec.osx.deployment_target = "10.12"
   spec.ios.deployment_target = "11.0"
   spec.tvos.deployment_target = "10.2"
   spec.watchos.deployment_target = "4.3"
