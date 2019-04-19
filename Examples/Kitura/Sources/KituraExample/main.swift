@@ -6,13 +6,12 @@ private struct Kitten: Codable {
     var color: String
 }
 
-private let client = try MongoClient()
-private let collection = client.db("home").collection("kittens", withType: Kitten.self)
-
 private let router: Router = {
     let router = Router()
 
     router.get("kittens") { _, response, _ in
+        let client = try MongoClient()
+        let collection = client.db("home").collection("kittens", withType: Kitten.self)
         let docs = try collection.find()
         response.send(Array(docs))
     }

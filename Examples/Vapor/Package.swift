@@ -1,11 +1,11 @@
-// swift-tools-version:4.0
+// swift-tools-version:5.0
 import PackageDescription
 
 let package = Package(
     name: "VaporExample",
     dependencies: [
-        .package(url: "https://github.com/vapor/vapor.git", from: "3.0.0"),
-        .package(url: "https://github.com/mongodb/mongo-swift-driver", from: "0.0.3")
+        .package(url: "https://github.com/vapor/vapor", .upToNextMajor(from: "3.3.0")),
+        .package(url: "https://github.com/mongodb/mongo-swift-driver", .upToNextMajor(from: "0.1.0"))
     ],
     targets: [
         .target(name: "VaporExample", dependencies: ["Vapor", "MongoSwift"])
