@@ -1,5 +1,35 @@
 import mongoc
 
+/// Options to use when executing a `distinct` command on a `MongoCollection`.
+public struct DistinctOptions: Encodable {
+    /// Specifies a collation.
+    public let collation: Document?
+
+    /// The maximum amount of time to allow the query to run.
+    public let maxTimeMS: Int64?
+
+    /// A ReadConcern to use for this operation.
+    public let readConcern: ReadConcern?
+
+    /// A ReadPreference to use for this operation.
+    public let readPreference: ReadPreference?
+
+    /// Convenience initializer allowing any/all parameters to be optional
+    public init(collation: Document? = nil,
+                maxTimeMS: Int64? = nil,
+                readConcern: ReadConcern? = nil,
+                readPreference: ReadPreference? = nil) {
+        self.collation = collation
+        self.maxTimeMS = maxTimeMS
+        self.readConcern = readConcern
+        self.readPreference = readPreference
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case collation, maxTimeMS, readConcern
+    }
+}
+
 /// An operation corresponding to a "distinct" command on a collection.
 internal struct DistinctOperation<T: Codable> {
     private let collection: MongoCollection<T>
@@ -40,35 +70,5 @@ internal struct DistinctOperation<T: Codable> {
         }
 
         return values
-    }
-}
-
-/// Options to use when executing a `distinct` command on a `MongoCollection`.
-public struct DistinctOptions: Encodable {
-    /// Specifies a collation.
-    public let collation: Document?
-
-    /// The maximum amount of time to allow the query to run.
-    public let maxTimeMS: Int64?
-
-    /// A ReadConcern to use for this operation.
-    public let readConcern: ReadConcern?
-
-    /// A ReadPreference to use for this operation.
-    public let readPreference: ReadPreference?
-
-    /// Convenience initializer allowing any/all parameters to be optional
-    public init(collation: Document? = nil,
-                maxTimeMS: Int64? = nil,
-                readConcern: ReadConcern? = nil,
-                readPreference: ReadPreference? = nil) {
-        self.collation = collation
-        self.maxTimeMS = maxTimeMS
-        self.readConcern = readConcern
-        self.readPreference = readPreference
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case collation, maxTimeMS, readConcern
     }
 }

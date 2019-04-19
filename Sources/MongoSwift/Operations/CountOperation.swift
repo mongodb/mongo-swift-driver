@@ -1,34 +1,5 @@
 import mongoc
 
-/// An operation corresponding to a "count" command on a collection.
-internal struct CountOperation<T: Codable>: Operation {
-    private let collection: MongoCollection<T>
-    private let filter: Document
-    private let options: CountOptions?
-
-    internal init(collection: MongoCollection<T>,
-                  filter: Document,
-                  options: CountOptions?) {
-        self.collection = collection
-        self.filter = filter
-        self.options = options
-    }
-
-    internal func execute() throws -> Int {
-        let opts = try collection.encoder.encode(self.options)
-        let rp = self.options?.readPreference?._readPreference
-        var error = bson_error_t()
-        // because we already encode skip and limit in the options,
-        // pass in 0s so we don't get duplicate parameter errors.
-        let count = mongoc_collection_count_with_opts(
-            self.collection._collection, MONGOC_QUERY_NONE, self.filter.data, 0, 0, opts?.data, rp, &error)
-
-        if count == -1 { throw parseMongocError(error) }
-
-        return Int(count)
-    }
-}
-
 /// Options to use when executing a `count` command on a `MongoCollection`.
 public struct CountOptions: Encodable {
     /// Specifies a collation.
@@ -71,5 +42,34 @@ public struct CountOptions: Encodable {
 
     private enum CodingKeys: String, CodingKey {
         case collation, hint, limit, maxTimeMS, readConcern, skip
+    }
+}
+
+/// An operation corresponding to a "count" command on a collection.
+internal struct CountOperation<T: Codable>: Operation {
+    private let collection: MongoCollection<T>
+    private let filter: Document
+    private let options: CountOptions?
+
+    internal init(collection: MongoCollection<T>,
+                  filter: Document,
+                  options: CountOptions?) {
+        self.collection = collection
+        self.filter = filter
+        self.options = options
+    }
+
+    internal func execute() throws -> Int {
+        let opts = try collection.encoder.encode(self.options)
+        let rp = self.options?.readPreference?._readPreference
+        var error = bson_error_t()
+        // because we already encode skip and limit in the options,
+        // pass in 0s so we don't get duplicate parameter errors.
+        let count = mongoc_collection_count_with_opts(
+            self.collection._collection, MONGOC_QUERY_NONE, self.filter.data, 0, 0, opts?.data, rp, &error)
+
+        if count == -1 { throw parseMongocError(error) }
+
+        return Int(count)
     }
 }
