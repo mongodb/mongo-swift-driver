@@ -34,7 +34,8 @@ internal struct InsertOneOperation<T: Codable>: Operation {
         let opts = try self.collection.encoder.encode(self.options)
         var error = bson_error_t()
         let reply = Document()
-        guard mongoc_collection_insert_one(self.collection._collection, document.data, opts?.data, reply.data, &error) else {
+        guard mongoc_collection_insert_one(
+            self.collection._collection, document.data, opts?.data, reply.data, &error) else {
             throw getErrorFromReply(bsonError: error, from: reply)
         }
 
