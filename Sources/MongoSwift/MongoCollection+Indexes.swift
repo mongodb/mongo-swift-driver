@@ -39,7 +39,7 @@ public struct IndexOptions: Encodable {
 
     /// Optionally specifies the length in time, in seconds, for documents to remain in
     /// a collection.
-    public let expireAfter: Int32?
+    public let expireAfterSeconds: Int32?
 
     /**
      * Optionally specify a specific name for the index outside of the default generated
@@ -104,7 +104,7 @@ public struct IndexOptions: Encodable {
 
     /// Convenience initializer allowing any/all parameters to be omitted.
     public init(background: Bool? = nil,
-                expireAfter: Int32? = nil,
+                expireAfterSeconds: Int32? = nil,
                 name: String? = nil,
                 sparse: Bool? = nil,
                 storageEngine: String? = nil,
@@ -122,7 +122,7 @@ public struct IndexOptions: Encodable {
                 partialFilterExpression: Document? = nil,
                 collation: Document? = nil) {
         self.background = background
-        self.expireAfter = expireAfter
+        self.expireAfterSeconds = expireAfterSeconds
         self.name = name
         self.sparse = sparse
         self.storageEngine = storageEngine
@@ -143,7 +143,7 @@ public struct IndexOptions: Encodable {
 
     // Encode everything besides the name, as we will handle that when encoding the `IndexModel`
     private enum CodingKeys: String, CodingKey {
-        case background, expireAfter, sparse, storageEngine, unique, version, defaultLanguage,
+        case background, expireAfterSeconds, sparse, storageEngine, unique, version, defaultLanguage,
             languageOverride, textVersion, weights, sphereVersion, bits, max, min, bucketSize,
             partialFilterExpression, collation
     }

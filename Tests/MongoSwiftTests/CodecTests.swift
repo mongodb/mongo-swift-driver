@@ -879,7 +879,7 @@ final class CodecTests: MongoSwiftTestCase {
 
         let index = IndexOptions(
                 background: false,
-                expireAfter: 123,
+                expireAfterSeconds: 123,
                 name: "sadf",
                 sparse: false,
                 storageEngine: "sdaf",
@@ -898,7 +898,7 @@ final class CodecTests: MongoSwiftTestCase {
                 collation: Document())
         expect(try encoder.encode(index).keys.sorted()).to(equal([
             "background",
-            "expireAfter",
+            "expireAfterSeconds",
             "sparse",
             "storageEngine",
             "unique",
