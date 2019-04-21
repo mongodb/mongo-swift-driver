@@ -269,9 +269,29 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(indexes.next()).to(beNil())
     }
 
-    func testExpireAfterSeconds() throws {
-        let model = IndexModel(keys: ["cat": 1], options: IndexOptions(expireAfterSeconds: 30))
-        expect(try self.coll.createIndex(model)).to(equal("cat_1"))
+    func testIndexOptions() throws {
+        let options = IndexOptions(
+            background: true,
+            expireAfterSeconds: 100,
+            name: "testOptions",
+            sparse: false,
+            storageEngine: ["wiredTiger": ["configString": "access_pattern_hint=random"] as Document],
+            unique: true,
+            indexVersion: 2,
+            defaultLanguage: "english",
+            languageOverride: "cat",
+            textIndexVersion: 2,
+            weights: ["cat": 0.5, "_id": 0.5],
+            sphereIndexVersion: 2,
+            bits: 32,
+            max: 30,
+            min: 0,
+            bucketSize: 10,
+            collation: ["locale": "fr"]
+        )
+
+        let model = IndexModel(keys: ["cat": 1, "_id": -1], options: options)
+        expect(try self.coll.createIndex(model)).to(equal("testOptions"))
     }
 
     func testCreateIndexesFromModels() throws {
