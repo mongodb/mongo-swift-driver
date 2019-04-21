@@ -269,6 +269,11 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(indexes.next()).to(beNil())
     }
 
+    func testExpireAfterSeconds() throws {
+        let model = IndexModel(keys: ["cat": 1], options: IndexOptions(expireAfterSeconds: 30))
+        expect(try self.coll.createIndex(model)).to(equal("cat_1"))
+    }
+
     func testCreateIndexesFromModels() throws {
         let model1 = IndexModel(keys: ["cat": 1])
         let model2 = IndexModel(keys: ["cat": -1])
