@@ -135,6 +135,7 @@ extension MongoCollectionTests {
         ("testUpdateManyWithUnacknowledgedWriteConcern", testUpdateManyWithUnacknowledgedWriteConcern),
         ("testDistinct", testDistinct),
         ("testCreateIndexFromModel", testCreateIndexFromModel),
+        ("testIndexOptions", testIndexOptions),
         ("testCreateIndexesFromModels", testCreateIndexesFromModels),
         ("testCreateIndexFromKeys", testCreateIndexFromKeys),
         ("testDropIndexByName", testDropIndexByName),
