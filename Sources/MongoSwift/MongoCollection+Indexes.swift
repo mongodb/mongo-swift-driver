@@ -175,31 +175,11 @@ extension MongoCollection {
      * Creates an index over the collection for the provided keys with the provided options.
      *
      * - Parameters:
-     *   - model: An `IndexModel` representing the keys and options for the index
-     *   - writeConcern: Optional WriteConcern to use for the command
-     *
-     * - Returns: The name of the created index.
-     *
-     * - Throws:
-     *   - `ServerError.writeError` if an error occurs while performing the write.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
-     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
-     *   - `EncodingError` if an error occurs while encoding the index specification or options.
-     */
-    @discardableResult
-    public func createIndex(_ forModel: IndexModel, options: CreateIndexOptions? = nil) throws -> String {
-        return try createIndexes([forModel], options: options)[0]
-    }
-
-    /**
-     * Creates an index over the collection for the provided keys with the provided options.
-     *
-     * - Parameters:
      *   - keys: a `Document` specifing the keys for the index
      *   - options: Optional `IndexOptions` to use for the index
-     *   - writeConcern: Optional `WriteConcern` to use for the command
+     *   - commandOptions: Optional `CreateIndexOptions` to use for the command
      *
-     * - Returns: The name of the created index
+     * - Returns: The name of the created index.
      *
      * - Throws:
      *   - `ServerError.writeError` if an error occurs while performing the write.
@@ -211,7 +191,27 @@ extension MongoCollection {
     public func createIndex(_ keys: Document,
                             options: IndexOptions? = nil,
                             commandOptions: CreateIndexOptions? = nil) throws -> String {
-        return try createIndex(IndexModel(keys: keys, options: options), options: commandOptions)
+        return try createIndexes([IndexModel(keys: keys, options: options)], options: commandOptions)[0]
+    }
+
+    /**
+     * Creates an index over the collection for the provided keys with the provided options.
+     *
+     * - Parameters:
+     *   - model: An `IndexModel` representing the keys and options for the index
+     *   - options: Optional `CreateIndexOptions` to use for the command
+     *
+     * - Returns: The name of the created index.
+     *
+     * - Throws:
+     *   - `ServerError.writeError` if an error occurs while performing the write.
+     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `EncodingError` if an error occurs while encoding the index specification or options.
+     */
+    @discardableResult
+    public func createIndex(_ model: IndexModel, options: CreateIndexOptions? = nil) throws -> String {
+        return try createIndexes([model], options: options)[0]
     }
 
     /**
@@ -219,7 +219,7 @@ extension MongoCollection {
      *
      * - Parameters:
      *   - models: An `[IndexModel]` specifying the indexes to create
-     *   - writeConcern: Optional `WriteConcern` to use for the command
+     *   - options: Optional `CreateIndexOptions` to use for the command
      *
      * - Returns: An `[String]` containing the names of all the indexes that were created.
      *
@@ -230,11 +230,11 @@ extension MongoCollection {
      *   - `EncodingError` if an error occurs while encoding the index specifications or options.
      */
     @discardableResult
-    public func createIndexes(_ forModels: [IndexModel], options: CreateIndexOptions? = nil) throws -> [String] {
+    public func createIndexes(_ models: [IndexModel], options: CreateIndexOptions? = nil) throws -> [String] {
         let collName = String(cString: mongoc_collection_get_name(self._collection))
 
         var indexData = [Document]()
-        for index in forModels {
+        for index in models {
             var indexDoc = try self.encoder.encode(index)
             if let opts = try self.encoder.encode(index.options) {
                 try indexDoc.merge(opts)
@@ -256,7 +256,7 @@ extension MongoCollection {
             throw getErrorFromReply(bsonError: error, from: reply)
         }
 
-        return forModels.map { $0.options?.name ?? $0.defaultName }
+        return models.map { $0.options?.name ?? $0.defaultName }
     }
 
     /**
@@ -264,27 +264,29 @@ extension MongoCollection {
      *
      * - Parameters:
      *   - name: The name of the index to drop
-     *   - writeConcern: An optional WriteConcern to use for the command
+     *   - options: Optional `DropIndexOptions` to use for the command
      *
      * - Throws:
+     *   - `ServerError.writeError` if an error occurs while performing the command.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `EncodingError` if an error occurs while encoding the options.
      */
-    public func dropIndex(_ name: String, options: DropIndexOptions? = nil) throws {
-        let opts = try self.encoder.encode(options)
-        var error = bson_error_t()
-        guard mongoc_collection_drop_index_with_opts(self._collection, name, opts?.data, &error) else {
-            throw parseMongocError(error)
+    @discardableResult
+    public func dropIndex(_ name: String, options: DropIndexOptions? = nil) throws -> Document {
+        guard name != "*" else {
+            throw UserError.invalidArgumentError(message:
+                "Invalid index name '*'; use dropIndexes() to drop all indexes")
         }
+        return try _dropIndexes(index: name, options: options)
     }
 
     /**
-     * Attempts to drop a single index from the collection given the keys and options describing it.
+     * Attempts to drop a single index from the collection given the keys describing it.
      *
      * - Parameters:
      *   - keys: a `Document` containing the keys for the index to drop
-     *   - options: Optional `IndexOptions` the dropped index should match
-     *   - writeConcern: An optional `WriteConcern` to use for the command
+     *   - options: Optional `DropIndexOptions` to use for the command
      *
      * - Returns: a `Document` containing the server's response to the command.
      *
@@ -295,10 +297,8 @@ extension MongoCollection {
      *   - `EncodingError` if an error occurs while encoding the options.
      */
     @discardableResult
-    public func dropIndex(_ keys: Document,
-                          options: IndexOptions? = nil,
-                          commandOptions: DropIndexOptions? = nil) throws -> Document {
-        return try dropIndex(IndexModel(keys: keys, options: options), options: commandOptions)
+    public func dropIndex(_ keys: Document, commandOptions: DropIndexOptions? = nil) throws -> Document {
+        return try _dropIndexes(index: keys, options: commandOptions)
     }
 
     /**
@@ -306,7 +306,7 @@ extension MongoCollection {
      *
      * - Parameters:
      *   - model: An `IndexModel` describing the index to drop
-     *   - writeConcern: An optional `WriteConcern` to use for the command
+     *   - options: Optional `DropIndexOptions` to use for the command
      *
      * - Returns: a `Document` containing the server's response to the command.
      *
@@ -318,14 +318,14 @@ extension MongoCollection {
      */
     @discardableResult
     public func dropIndex(_ model: IndexModel, options: DropIndexOptions? = nil) throws -> Document {
-        return try _dropIndexes(keys: model.keys, options: options)
+        return try _dropIndexes(index: model.keys, options: options)
     }
 
     /**
      * Drops all indexes in the collection.
      *
      * - Parameters:
-     *    - writeConcern: An optional `WriteConcern` to use for the command
+     *   - options: Optional `DropIndexOptions` to use for the command
      *
      * - Returns: a `Document` containing the server's response to the command.
      *
@@ -337,12 +337,14 @@ extension MongoCollection {
      */
     @discardableResult
     public func dropIndexes(options: DropIndexOptions? = nil) throws -> Document {
-        return try _dropIndexes(options: options)
+        return try _dropIndexes(index: "*", options: options)
     }
 
-    private func _dropIndexes(keys: Document? = nil, options: DropIndexOptions? = nil) throws -> Document {
+    /// Internal helper to drop an index. `index` must either be an index specification document or a
+    /// string index name.
+    private func _dropIndexes(index: BSONValue, options: DropIndexOptions? = nil) throws -> Document {
         let collName = String(cString: mongoc_collection_get_name(self._collection))
-        let command: Document = ["dropIndexes": collName, "index": keys ?? "*"]
+        let command: Document = ["dropIndexes": collName, "index": index]
         let opts = try self.encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
