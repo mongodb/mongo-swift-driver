@@ -33,53 +33,52 @@ public struct IndexModel: Encodable {
 
 /// Options to use when creating an index for a collection.
 public struct IndexOptions: Encodable {
-    /// Optionally tells the server to build the index in the background and not block
-    /// other tasks.
+    /// Optionally tells the server to build the index in the background and not block other tasks.
     public let background: Bool?
 
-    /// Optionally specifies the length in time, in seconds, for documents to remain in
-    /// a collection.
-    public let expireAfter: Int32?
+    /// Optionally specifies the length in time, in seconds, for documents to remain in a collection.
+    public let expireAfterSeconds: Int32?
 
     /**
-     * Optionally specify a specific name for the index outside of the default generated
-     * name. If none is provided then the name is generated in the format "[field]_[direction]".
+     * Optionally specify a specific name for the index outside of the default generated name. If none is provided then
+     * the name is generated in the format "[field]_[direction]".
      *
-     * Note that if an index is created for the same key pattern with different collations,
-     * a name must be provided by the user to avoid ambiguity.
+     * Note that if an index is created for the same key pattern with different collations,  a name must be provided by
+     * the user to avoid ambiguity.
      *
      * - Example: For an index of name: 1, age: -1, the generated name would be "name_1_age_-1".
      */
     public let name: String?
 
-    /// Optionally tells the index to only reference documents with the specified field in
-    /// the index.
+    /// Optionally tells the index to only reference documents with the specified field in the index.
     public let sparse: Bool?
 
-    /// Optionally used only in MongoDB 3.0.0 and higher. Specifies the storage engine
-    /// to store the index in.
-    public let storageEngine: String?
+    /// Optionally used only in MongoDB 3.0.0 and higher. Allows users to configure the storage engine on a per-index
+    /// basis when creating an index.
+    public let storageEngine: Document?
 
     /// Optionally forces the index to be unique.
     public let unique: Bool?
 
     /// Optionally specifies the index version number, either 0 or 1.
-    public let version: Int32?
+    public let indexVersion: Int32?
 
-    /// Optionally specifies the default language for text indexes. Is english if none is provided.
+    /// Optionally specifies the default language for text indexes. Is 'english' if none is provided.
     public let defaultLanguage: String?
 
-    /// Optionally Specifies the field in the document to override the language.
+    /// Optionally specifies the field in the document to override the language.
     public let languageOverride: String?
 
-    /// Optionally provides the text index version number.
-    public let textVersion: Int32?
+    /// Optionally provides the text index version number. MongoDB 2.4 can only support version 1. MongoDB 2.6 and
+    /// higher may support version 1 or 2.
+    public let textIndexVersion: Int32?
 
     /// Optionally specifies fields in the index and their corresponding weight values.
     public let weights: Document?
 
-    /// Optionally specifies the 2dsphere index version number.
-    public let sphereVersion: Int32?
+    /// Optionally specifies the 2dsphere index version number. MongoDB 2.4 can only support version 1. MongoDB 2.6 and
+    /// higher may support version 1 or 2.
+    public let sphereIndexVersion: Int32?
 
     /// Optionally specifies the precision of the stored geo hash in the 2d index, from 1 to 32.
     public let bits: Int32?
@@ -93,28 +92,27 @@ public struct IndexOptions: Encodable {
     /// Optionally specifies the number of units within which to group the location values in a geo haystack index.
     public let bucketSize: Int32?
 
-    /// Optionally specifies a filter for use in a partial index. Only documents that match the
-    /// filter expression are included in the index.
+    /// Optionally specifies a filter for use in a partial index. Only documents that match the filter expression are
+    /// included in the index. New in MongoDB 3.2.
     public let partialFilterExpression: Document?
 
-    /// Optionally specifies a collation to use for the index in MongoDB 3.4 and higher.
-    /// If not specified, no collation is sent and the default collation of the collection
-    /// server-side is used.
+    /// Optionally specifies a collation to use for the index in MongoDB 3.4 and higher. If not specified, no collation
+    /// is sent and the default collation of the collection server-side is used.
     public let collation: Document?
 
     /// Convenience initializer allowing any/all parameters to be omitted.
     public init(background: Bool? = nil,
-                expireAfter: Int32? = nil,
+                expireAfterSeconds: Int32? = nil,
                 name: String? = nil,
                 sparse: Bool? = nil,
-                storageEngine: String? = nil,
+                storageEngine: Document? = nil,
                 unique: Bool? = nil,
-                version: Int32? = nil,
+                indexVersion: Int32? = nil,
                 defaultLanguage: String? = nil,
                 languageOverride: String? = nil,
-                textVersion: Int32? = nil,
+                textIndexVersion: Int32? = nil,
                 weights: Document? = nil,
-                sphereVersion: Int32? = nil,
+                sphereIndexVersion: Int32? = nil,
                 bits: Int32? = nil,
                 max: Double? = nil,
                 min: Double? = nil,
@@ -122,17 +120,17 @@ public struct IndexOptions: Encodable {
                 partialFilterExpression: Document? = nil,
                 collation: Document? = nil) {
         self.background = background
-        self.expireAfter = expireAfter
+        self.expireAfterSeconds = expireAfterSeconds
         self.name = name
         self.sparse = sparse
         self.storageEngine = storageEngine
         self.unique = unique
-        self.version = version
+        self.indexVersion = indexVersion
         self.defaultLanguage = defaultLanguage
         self.languageOverride = languageOverride
-        self.textVersion = textVersion
+        self.textIndexVersion = textIndexVersion
         self.weights = weights
-        self.sphereVersion = sphereVersion
+        self.sphereIndexVersion = sphereIndexVersion
         self.bits = bits
         self.max = max
         self.min = min
@@ -143,9 +141,9 @@ public struct IndexOptions: Encodable {
 
     // Encode everything besides the name, as we will handle that when encoding the `IndexModel`
     private enum CodingKeys: String, CodingKey {
-        case background, expireAfter, sparse, storageEngine, unique, version, defaultLanguage,
-            languageOverride, textVersion, weights, sphereVersion, bits, max, min, bucketSize,
-            partialFilterExpression, collation
+        case background, expireAfterSeconds, sparse, storageEngine, unique, indexVersion = "v",
+            defaultLanguage = "default_language", languageOverride = "language_override", textIndexVersion, weights,
+            sphereIndexVersion = "2dsphereIndexVersion", bits, max, min, bucketSize, partialFilterExpression, collation
     }
 }
 
