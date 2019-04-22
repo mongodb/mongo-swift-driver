@@ -42,7 +42,7 @@ We do not provide or maintain an already-generated `.xcodeproj` in our repositor
 Why is this necessary? The project requires a customized "copy resources" build phase to include various test `.json` files. By default, this phase is not included when you run `swift package generate-xcodeproj`. So `make project` first generates the project, and then uses `xcodeproj` to manually add the files to the appropriate targets (see `add_json_files.rb`). 
 
 ## Running Tests
-**NOTE**: Several of the tests require a mongod instance to be running on the default host/port, `localhost:27017`.
+**NOTE**: Several of the tests require a mongod instance to be running on the default host/port, `localhost:27017`. (You can start this by simply running `mongod`.)
 
 You can run tests from Xcode as usual. If you prefer to test from the command line, keep reading.
 
@@ -113,8 +113,10 @@ You can use the same batching approach as above to respond to review comments. O
 ## Resources
 
 ### Swift
+* [A Swift Introduction to Swift](https://www.youtube.com/watch?v=CcCTM1PN1N4) - talk by Kaitlin
 * [Swift Language Guide](https://docs.swift.org/swift-book/LanguageGuide/TheBasics.html)
 * [Swift Standard Library docs](https://developer.apple.com/documentation/swift)
+* [Swift's Encoder and Decoder Protocols](https://www.youtube.com/watch?v=yL5Ff5p1hyc) - talk by Kaitlin
 
 ### MongoDB and Drivers
 * [MongoSwift docs](https://mongodb.github.io/mongo-swift-driver/)
