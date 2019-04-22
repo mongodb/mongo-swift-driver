@@ -177,7 +177,7 @@ extension MongoCollection {
      * - Parameters:
      *   - keys: a `Document` specifing the keys for the index
      *   - options: Optional `IndexOptions` to use for the index
-     *   - options: Optional `CreateIndexOptions` to use for the command
+     *   - commandOptions: Optional `CreateIndexOptions` to use for the command
      *
      * - Returns: The name of the created index.
      *
