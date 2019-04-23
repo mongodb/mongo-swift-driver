@@ -1,6 +1,5 @@
 import mongoc
 
-
 /// Options to use when dropping an index from a `MongoCollection`.
 public struct DropIndexOptions: Encodable {
     /// An optional `WriteConcern` to use for the command
