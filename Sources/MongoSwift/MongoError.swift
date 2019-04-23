@@ -278,6 +278,19 @@ private func getBulkWriteErrorFromReply(
     )
 }
 
+internal func convertBulkWriteError(_ error: Error) -> Error {
+    if case let ServerError.bulkWriteError(bulkWriteErrors, writeConcernError, _, errorLabels) = error {
+        var writeError: WriteError?
+        if let bwe = bulkWriteErrors?[0] {
+            writeError = WriteError(code: bwe.code, message: bwe.message)
+        }
+        return ServerError.writeError(writeError: writeError,
+                                      writeConcernError: writeConcernError,
+                                      errorLabels: errorLabels)
+    }
+    return error
+}
+
 internal func toErrorString(_ error: bson_error_t) -> String {
     var e = error
     return withUnsafeBytes(of: &e.message) { rawPtr -> String in
