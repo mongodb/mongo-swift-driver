@@ -278,6 +278,8 @@ private func getBulkWriteErrorFromReply(
     )
 }
 
+/// Internal function used by write methods that are implemented via the bulk API. Converts a
+/// ServerError.bulkWriteError that resulted from a single write into a ServerError.writeError.
 internal func convertBulkWriteError(_ error: Error) -> Error {
     if case let ServerError.bulkWriteError(bulkWriteErrors, writeConcernError, _, errorLabels) = error {
         var writeError: WriteError?
