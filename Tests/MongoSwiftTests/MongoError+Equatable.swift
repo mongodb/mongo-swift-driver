@@ -5,7 +5,8 @@ extension RuntimeError: Equatable {
     public static func == (lhs: RuntimeError, rhs: RuntimeError) -> Bool {
         switch (lhs, rhs) {
         case (.internalError(message: _), .internalError(message: _)),
-             (.authenticationError(message: _), .authenticationError(message: _)):
+             (.authenticationError(message: _), .authenticationError(message: _)),
+             (.compatibilityError(message: _), .compatibilityError(message: _)):
             return true
         case let (.connectionError(message: _, errorLabels: lhsLabels),
                   .connectionError(message: _, errorLabels: rhsLabels)):

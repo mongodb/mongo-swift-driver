@@ -16,13 +16,16 @@ internal struct CreateIndexesOperation<T: Codable>: Operation {
     private let collection: MongoCollection<T>
     private let models: [IndexModel]
     private let options: CreateIndexOptions?
+    private let session: ClientSession?
 
     internal init(collection: MongoCollection<T>,
                   models: [IndexModel],
-                  options: CreateIndexOptions?) {
+                  options: CreateIndexOptions?,
+                  session: ClientSession?) {
         self.collection = collection
         self.models = models
         self.options = options
+        self.session = session
     }
 
     internal func execute() throws -> [String] {
@@ -37,12 +40,14 @@ internal struct CreateIndexesOperation<T: Codable>: Operation {
 
         let command: Document = ["createIndexes": self.collection.name, "indexes": indexData]
 
-        let opts = try self.collection.encoder.encode(self.options)
+        var opts = try self.collection.encoder.encode(self.options) ?? Document()
+        try self.session?.append(to: &opts)
+
         var error = bson_error_t()
         let reply = Document()
 
         guard mongoc_collection_write_command_with_opts(
-            self.collection._collection, command.data, opts?.data, reply.data, &error) else {
+            self.collection._collection, command.data, opts.data, reply.data, &error) else {
             throw getErrorFromReply(bsonError: error, from: reply)
         }
 

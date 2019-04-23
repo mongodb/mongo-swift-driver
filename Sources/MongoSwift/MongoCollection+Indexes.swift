@@ -163,13 +163,17 @@ extension MongoCollection {
      *   - `ServerError.writeError` if an error occurs while performing the write.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `UserError.logicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the index specification or options.
      */
     @discardableResult
     public func createIndex(_ keys: Document,
                             options: IndexOptions? = nil,
-                            commandOptions: CreateIndexOptions? = nil) throws -> String {
-        return try createIndexes([IndexModel(keys: keys, options: options)], options: commandOptions)[0]
+                            commandOptions: CreateIndexOptions? = nil,
+                            session: ClientSession? = nil) throws -> String {
+        return try createIndexes([IndexModel(keys: keys, options: options)],
+                                 options: commandOptions,
+                                 session: session)[0]
     }
 
     /**
@@ -185,11 +189,14 @@ extension MongoCollection {
      *   - `ServerError.writeError` if an error occurs while performing the write.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `UserError.logicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the index specification or options.
      */
     @discardableResult
-    public func createIndex(_ model: IndexModel, options: CreateIndexOptions? = nil) throws -> String {
-        return try createIndexes([model], options: options)[0]
+    public func createIndex(_ model: IndexModel,
+                            options: CreateIndexOptions? = nil,
+                            session: ClientSession? = nil) throws -> String {
+        return try createIndexes([model], options: options, session: session)[0]
     }
 
     /**
@@ -205,11 +212,14 @@ extension MongoCollection {
      *   - `ServerError.writeError` if an error occurs while performing the write.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `UserError.logicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the index specifications or options.
      */
     @discardableResult
-    public func createIndexes(_ models: [IndexModel], options: CreateIndexOptions? = nil) throws -> [String] {
-        let operation = CreateIndexesOperation(collection: self, models: models, options: options)
+    public func createIndexes(_ models: [IndexModel],
+                              options: CreateIndexOptions? = nil,
+                              session: ClientSession? = nil) throws -> [String] {
+        let operation = CreateIndexesOperation(collection: self, models: models, options: options, session: session)
         return try operation.execute()
     }
 
@@ -227,12 +237,14 @@ extension MongoCollection {
      *   - `EncodingError` if an error occurs while encoding the options.
      */
     @discardableResult
-    public func dropIndex(_ name: String, options: DropIndexOptions? = nil) throws -> Document {
+    public func dropIndex(_ name: String,
+                          options: DropIndexOptions? = nil,
+                          session: ClientSession? = nil) throws -> Document {
         guard name != "*" else {
             throw UserError.invalidArgumentError(message:
                 "Invalid index name '*'; use dropIndexes() to drop all indexes")
         }
-        return try _dropIndexes(index: name, options: options)
+        return try _dropIndexes(index: name, options: options, session: session)
     }
 
     /**
@@ -248,11 +260,14 @@ extension MongoCollection {
      *   - `ServerError.writeError` if an error occurs while performing the command.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `UserError.logicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options.
      */
     @discardableResult
-    public func dropIndex(_ keys: Document, commandOptions: DropIndexOptions? = nil) throws -> Document {
-        return try _dropIndexes(index: keys, options: commandOptions)
+    public func dropIndex(_ keys: Document,
+                          commandOptions: DropIndexOptions? = nil,
+                          session: ClientSession? = nil) throws -> Document {
+        return try _dropIndexes(index: keys, options: commandOptions, session: session)
     }
 
     /**
@@ -268,11 +283,14 @@ extension MongoCollection {
      *   - `ServerError.writeError` if an error occurs while performing the command.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `UserError.logicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options.
      */
     @discardableResult
-    public func dropIndex(_ model: IndexModel, options: DropIndexOptions? = nil) throws -> Document {
-        return try _dropIndexes(index: model.keys, options: options)
+    public func dropIndex(_ model: IndexModel,
+                          options: DropIndexOptions? = nil,
+                          session: ClientSession? = nil) throws -> Document {
+        return try _dropIndexes(index: model.keys, options: options, session: session)
     }
 
     /**
@@ -287,17 +305,20 @@ extension MongoCollection {
      *   - `ServerError.writeError` if an error occurs while performing the command.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `UserError.logicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options.
      */
     @discardableResult
-    public func dropIndexes(options: DropIndexOptions? = nil) throws -> Document {
-        return try _dropIndexes(index: "*", options: options)
+    public func dropIndexes(options: DropIndexOptions? = nil, session: ClientSession? = nil) throws -> Document {
+        return try _dropIndexes(index: "*", options: options, session: session)
     }
 
     /// Internal helper to drop an index. `index` must either be an index specification document or a
     /// string index name.
-    private func _dropIndexes(index: BSONValue, options: DropIndexOptions? = nil) throws -> Document {
-        let operation = DropIndexesOperation(collection: self, index: index, options: options)
+    private func _dropIndexes(index: BSONValue,
+                              options: DropIndexOptions?,
+                              session: ClientSession?) throws -> Document {
+        let operation = DropIndexesOperation(collection: self, index: index, options: options, session: session)
         return try operation.execute()
     }
 
@@ -306,13 +327,20 @@ extension MongoCollection {
      *
      * - Returns: A `MongoCursor` over the index names.
      *
-     * - Throws: A `userError.invalidArgumentError` if the options passed are an invalid combination.
+     * - Throws: `UserError.logicError` if the provided session is inactive.
      */
-    public func listIndexes() throws -> MongoCursor<Document> {
-        guard let cursor = mongoc_collection_find_indexes_with_opts(self._collection, nil) else {
+    public func listIndexes(session: ClientSession? = nil) throws -> MongoCursor<Document> {
+        var opts: Document?
+        if let session = session {
+            var sessionOpts = Document()
+            try session.append(to: &sessionOpts)
+            opts = sessionOpts
+        }
+
+        guard let cursor = mongoc_collection_find_indexes_with_opts(self._collection, opts?.data) else {
             fatalError("Couldn't get cursor from the server")
         }
 
-        return try MongoCursor(fromCursor: cursor, withClient: self._client, withDecoder: self.decoder)
+        return try MongoCursor(from: cursor, client: self._client, decoder: self.decoder, session: session)
     }
 }

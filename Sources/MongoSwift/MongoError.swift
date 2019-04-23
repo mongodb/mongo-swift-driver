@@ -78,11 +78,15 @@ public enum RuntimeError: MongoError {
     /// Thrown when encountering an authentication related error (e.g. invalid credentials).
     case authenticationError(message: String)
 
+    /// Thrown when trying to use a feature that the deployment does not support.
+    case compatibilityError(message: String)
+
     public var errorDescription: String? {
         switch self {
         case let .internalError(message: msg),
              let .connectionError(message: msg, errorLabels: _),
-             let .authenticationError(message: msg):
+             let .authenticationError(message: msg),
+             let .compatibilityError(message: msg):
             return msg
         }
     }
@@ -148,6 +152,13 @@ internal func parseMongocError(_ error: bson_error_t, errorLabels: [String]? = n
     switch (domain, code) {
     case (MONGOC_ERROR_CLIENT, MONGOC_ERROR_CLIENT_AUTHENTICATE):
         return RuntimeError.authenticationError(message: message)
+    case (MONGOC_ERROR_CLIENT, MONGOC_ERROR_CLIENT_SESSION_FAILURE):
+        // If user attempts to start a session against a server that doesn't support it, we throw a compat error.
+        if message.lowercased().contains("support sessions") {
+            return RuntimeError.compatibilityError(message: "Deployment does not support sessions")
+        }
+        // Otherwise, a generic internal error.
+        return RuntimeError.internalError(message: message)
     case (MONGOC_ERROR_COMMAND, MONGOC_ERROR_COMMAND_INVALID_ARG):
         return UserError.invalidArgumentError(message: message)
     case (MONGOC_ERROR_SERVER, _):
@@ -155,12 +166,12 @@ internal func parseMongocError(_ error: bson_error_t, errorLabels: [String]? = n
                 code: ServerErrorCode(code.rawValue),
                 message: message,
                 errorLabels: errorLabels)
-    case (MONGOC_ERROR_STREAM, _),
-         (MONGOC_ERROR_SERVER_SELECTION, MONGOC_ERROR_SERVER_SELECTION_FAILURE),
-         (MONGOC_ERROR_PROTOCOL, MONGOC_ERROR_PROTOCOL_BAD_WIRE_VERSION):
+    case (MONGOC_ERROR_STREAM, _), (MONGOC_ERROR_SERVER_SELECTION, MONGOC_ERROR_SERVER_SELECTION_FAILURE):
         return RuntimeError.connectionError(message: message, errorLabels: errorLabels)
     case (MONGOC_ERROR_CURSOR, MONGOC_ERROR_CURSOR_INVALID_CURSOR):
         return UserError.logicError(message: message)
+    case (MONGOC_ERROR_PROTOCOL, MONGOC_ERROR_PROTOCOL_BAD_WIRE_VERSION):
+        return RuntimeError.compatibilityError(message: message)
     default:
         assert(errorLabels == nil, "errorLabels set on error, but were not thrown as a MongoError. " +
                 "Labels: \(errorLabels ?? [])")

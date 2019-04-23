@@ -13,16 +13,18 @@ extension MongoCollection {
      *
      * - Throws:
      *   - `UserError.invalidArgumentError` if any of the provided options are invalid.
+     *   - `UserError.logicError` if the provided session is inactive.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `ServerError.writeError` if an error occurs while executing the command.
      *   - `DecodingError` if the deleted document cannot be decoded to a `CollectionType` value.
      */
     @discardableResult
     public func findOneAndDelete(_ filter: Document,
-                                 options: FindOneAndDeleteOptions? = nil) throws -> CollectionType? {
+                                 options: FindOneAndDeleteOptions? = nil,
+                                 session: ClientSession? = nil) throws -> CollectionType? {
         // we need to always send options here in order to ensure the `remove` flag is set
         let opts = options ?? FindOneAndDeleteOptions()
-        return try self.findAndModify(filter: filter, options: opts)
+        return try self.findAndModify(filter: filter, options: opts, session: session)
     }
 
     /**
@@ -38,6 +40,7 @@ extension MongoCollection {
      *
      * - Throws:
      *   - `UserError.invalidArgumentError` if any of the provided options are invalid.
+     *   - `UserError.logicError` if the provided session is inactive.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `ServerError.writeError` if an error occurs while executing the command.
      *   - `DecodingError` if the replaced document cannot be decoded to a `CollectionType` value.
@@ -46,9 +49,10 @@ extension MongoCollection {
     @discardableResult
     public func findOneAndReplace(filter: Document,
                                   replacement: CollectionType,
-                                  options: FindOneAndReplaceOptions? = nil) throws -> CollectionType? {
+                                  options: FindOneAndReplaceOptions? = nil,
+                                  session: ClientSession? = nil) throws -> CollectionType? {
         let update = try self.encoder.encode(replacement)
-        return try self.findAndModify(filter: filter, update: update, options: options)
+        return try self.findAndModify(filter: filter, update: update, options: options, session: session)
     }
 
     /**
@@ -64,6 +68,7 @@ extension MongoCollection {
      *
      * - Throws:
      *   - `UserError.invalidArgumentError` if any of the provided options are invalid.
+     *   - `UserError.logicError` if the provided session is inactive.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `ServerError.writeError` if an error occurs while executing the command.
      *   - `DecodingError` if the updated document cannot be decoded to a `CollectionType` value.
@@ -71,8 +76,9 @@ extension MongoCollection {
     @discardableResult
     public func findOneAndUpdate(filter: Document,
                                  update: Document,
-                                 options: FindOneAndUpdateOptions? = nil) throws -> CollectionType? {
-        return try self.findAndModify(filter: filter, update: update, options: options)
+                                 options: FindOneAndUpdateOptions? = nil,
+                                 session: ClientSession? = nil) throws -> CollectionType? {
+        return try self.findAndModify(filter: filter, update: update, options: options, session: session)
     }
 
     /**
@@ -80,18 +86,20 @@ extension MongoCollection {
      *
      * - Throws:
      *   - `UserError.invalidArgumentError` if any of the provided options are invalid.
+     *   - `UserError.logicError` if the provided session is inactive.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `ServerError.writeError` if an error occurs while executing the command.
      *   - `DecodingError` if the updated document cannot be decoded to a `CollectionType` value.
      */
     private func findAndModify(filter: Document,
                                update: Document? = nil,
-                               options: FindAndModifyOptionsConvertible? = nil) throws -> CollectionType? {
+                               options: FindAndModifyOptionsConvertible? = nil,
+                               session: ClientSession?) throws -> CollectionType? {
         // encode provided options, or create empty ones. we always need
         // to send *something*, as findAndModify requires one of "remove"
         // or "update" to be set.
         let opts = try options?.asOpts() ?? FindAndModifyOptions()
-
+        if let session = session { try opts.setSession(session) }
         if let update = update { try opts.setUpdate(update) }
 
         let reply = Document()
@@ -380,6 +388,18 @@ private class FindAndModifyOptions {
     fileprivate func setUpdate(_ update: Document) throws {
         guard mongoc_find_and_modify_opts_set_update(self._options, update.data) else {
             throw UserError.invalidArgumentError(message: "Error setting update to \(update)")
+        }
+    }
+
+    fileprivate func setSession(_ session: ClientSession?) throws {
+        guard let session = session else {
+            return
+        }
+        var doc = Document()
+        try session.append(to: &doc)
+
+        guard mongoc_find_and_modify_opts_append(self._options, doc.data) else {
+            throw RuntimeError.internalError(message: "Couldn't read session information")
         }
     }
 

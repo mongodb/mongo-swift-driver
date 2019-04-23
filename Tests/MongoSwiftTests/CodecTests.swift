@@ -11,8 +11,8 @@ final class CodecTests: MongoSwiftTestCase {
             DecodingError.Context(codingPath: [], debugDescription: "dummy error"))
 
     func testEncodeListDatabasesOptions() throws {
-        let options = ListDatabasesOptions(filter: ["a": 10], nameOnly: true, session: ClientSession())
-        let expected: Document = ["filter": ["a": 10] as Document, "nameOnly": true, "session": Document()]
+        let options = ListDatabasesOptions(filter: ["a": 10], nameOnly: true)
+        let expected: Document = ["filter": ["a": 10] as Document, "nameOnly": true]
         expect(try BSONEncoder().encode(options)).to(equal(expected))
     }
 
@@ -919,7 +919,6 @@ final class CodecTests: MongoSwiftTestCase {
         let runCommand = RunCommandOptions(
                 readConcern: rc,
                 readPreference: rp,
-                session: ClientSession(),
                 writeConcern: wc
         )
 

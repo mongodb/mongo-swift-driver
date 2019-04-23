@@ -61,14 +61,10 @@ public struct ListDatabasesOptions: Encodable {
     /// Optionally indicate whether only names should be returned.
     public let nameOnly: Bool?
 
-    /// An optional session to use for this operation.
-    public let session: ClientSession?
-
-    /// Convenience initializer allowing any/all to be omitted or optional.
-    public init(filter: Document? = nil, nameOnly: Bool? = nil, session: ClientSession? = nil) {
+    /// Convenience constructor for basic construction
+    public init(filter: Document? = nil, nameOnly: Bool? = nil) {
         self.filter = filter
         self.nameOnly = nameOnly
-        self.session = session
     }
 }
 
@@ -234,15 +230,27 @@ public class MongoClient {
     }
 
     /**
-     * Creates a client session.
+     * Starts a new `ClientSession` with the provided options.
      *
-     * - Parameters:
-     *   - options: The options to use to create the client session
-     *
-     * - Returns: A `ClientSession` instance
+     * - Throws:
+     *   - `RuntimeError.compatibilityError` if the deployment does not support sessions.
      */
-    private func startSession(options: SessionOptions) throws -> ClientSession {
-        return ClientSession()
+    public func startSession(options: ClientSessionOptions? = nil) throws -> ClientSession {
+        return try ClientSession(client: self, options: options)
+    }
+
+    /**
+     * Starts a new `ClientSession` with the provided options and passes it to the provided closure.
+     * The session is only valid within the body of the closure and will be ended after the body completes.
+     *
+     * - Throws:
+     *   - `RuntimeError.compatibilityError` if the deployment does not support sessions.
+     */
+    public func withSession<T>(options: ClientSessionOptions? = nil,
+                               _ sessionBody: (ClientSession) throws -> T) throws -> T {
+        let session = try ClientSession(client: self, options: options)
+        defer { session.end() }
+        return try sessionBody(session)
     }
 
     /**
@@ -270,14 +278,17 @@ public class MongoClient {
      *
      * - Throws:
      *   - `UserError.invalidArgumentError` if the options passed are an invalid combination.
+     *   - `UserError.logicError` if the provided session is inactive.
      *   - `EncodingError` if an error is encountered while encoding the options to BSON.
      */
-    public func listDatabases(options: ListDatabasesOptions? = nil) throws -> MongoCursor<Document> {
-        let opts = try self.encoder.encode(options)
-        guard let cursor = mongoc_client_find_databases_with_opts(self._client, opts?.data) else {
+    public func listDatabases(options: ListDatabasesOptions? = nil,
+                              session: ClientSession? = nil) throws -> MongoCursor<Document> {
+        var opts = try self.encoder.encode(options) ?? Document()
+        try session?.append(to: &opts)
+        guard let cursor = mongoc_client_find_databases_with_opts(self._client, opts.data) else {
             fatalError("Couldn't get cursor from the server")
         }
-        return try MongoCursor(fromCursor: cursor, withClient: self, withDecoder: self.decoder)
+        return try MongoCursor(from: cursor, client: self, decoder: self.decoder, session: session)
     }
 
     /**
