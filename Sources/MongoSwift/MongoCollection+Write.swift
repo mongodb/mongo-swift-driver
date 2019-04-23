@@ -211,7 +211,7 @@ private protocol BulkWriteOptionsConvertible {
 }
 
 /// Default implementation of the protocol.
-extension BulkWriteOptionsConvertible {
+private extension BulkWriteOptionsConvertible {
     func asBulkWriteOpts() -> BulkWriteOptions {
         return BulkWriteOptions(bypassDocumentValidation: self.bypassDocumentValidation,
                                 writeConcern: self.writeConcern)
