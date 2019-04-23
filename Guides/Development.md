@@ -8,11 +8,12 @@
 * [Writing and Generating Documentation](#writing-and-generating-documentation)
 * [Linting and Style](#linting-and-style)
 * [Workflow](#workflow)
+* [Code Review](#code-review)
 * [Resources](#resources)
 
 ## Things to install
 * [swiftenv](https://swiftenv.fuller.li/en/latest/installation.html): a command-line tool that allows easy installation of and switching between versions of Swift.
-	* Use this to install Swift 4.2 if you don't have it already.
+    * Use this to install Swift 4.2 and Swift 5.0.
 * [Jazzy](https://github.com/realm/jazzy#installation): the tool we use to generate documentation.
 * [SwiftLint](https://github.com/realm/SwiftLint#using-homebrew): the Swift linter we use. 
 * [Sourcery](https://github.com/krzysztofzablocki/Sourcery/#installation): the tool we use to generate lists of test names (required to run the tests on Linux).
@@ -41,7 +42,7 @@ We do not provide or maintain an already-generated `.xcodeproj` in our repositor
 Why is this necessary? The project requires a customized "copy resources" build phase to include various test `.json` files. By default, this phase is not included when you run `swift package generate-xcodeproj`. So `make project` first generates the project, and then uses `xcodeproj` to manually add the files to the appropriate targets (see `add_json_files.rb`). 
 
 ## Running Tests
-**NOTE**: Several of the tests require a mongod instance to be running on the default host/port, `localhost:27017`.
+**NOTE**: Several of the tests require a mongod instance to be running on the default host/port, `localhost:27017`. (You can start this by simply running `mongod`.)
 
 You can run tests from Xcode as usual. If you prefer to test from the command line, keep reading.
 
@@ -84,26 +85,38 @@ If you use Sublime Text, you can get linting violations shown in the editor by i
 If you use Vim or Neovim, then you can get linting support by using [`ale`](https://github.com/w0rp/ale) by `w0rp`. This will show symbols in the gutter for warnings/errors and show linter messages in the status.
 
 ## Workflow
-1. Create a feature branch, named by the corresponding JIRA ticket if exists; for example, `SWIFT-30`. 
+1. Create a feature branch, named by the corresponding JIRA ticket if exists, along with a short descriptor of the work: for example, `SWIFT-30/writeconcern`. 
 2. Do your work on the branch.
 3. If you add, remove, or rename any tests, make sure to update `LinuxMain.swift` accordingly. If you are on MacOS, you can do that by running `make sourcery`. 
 4. Make sure your code builds and passes all tests on [Travis](https://travis-ci.org/mongodb/mongo-swift-driver). Every time you push to GitHub or open a pull request, it will trigger a new build.
 5. Open a pull request on the repository. Make sure you have rebased your branch onto the latest commits on `master`.
-
-**Note**: GitHub allows marking comment threads on pull requests as "resolved", which hides them from view. Always allow the original commenter to resolve a conversation. This allows them to verify that your changes match what they requested before the conversation is hidden.
+6. Go through code review to get the team's approval on your changes. (See the next section on [Code Review](#code-review) for more details on this process.)
 
 Once you get the required approvals and your code passes all tests:
 
-6. Rebase on master again if needed.
-7. Build and rerun tests. 
-8. Squash all commits into a single, descriptive commit method, formatted as: `TICKET-NUMBER: Description of changes`. For example, `SWIFT-30: Implement WriteConcern type`. 
-9. Merge it, or if you don't have permissions, ask someone to merge it for you.
+7. Rebase on master again if needed.
+8. Build and rerun tests. 
+9. Squash all commits into a single, descriptive commit method, formatted as: `TICKET-NUMBER: Description of changes`. For example, `SWIFT-30: Implement WriteConcern type`. 
+10. Merge it, or if you don't have permissions, ask someone to merge it for you.
+
+## Code Review
+
+### Giving a review
+When giving a review, please batch your comments together to cut down on the number of emails sent to others involved in the pull request. You can do this by going to the "Files Changed" tab. When you post your first comment, press "Start a review". When you're done commenting, click "Finish your review" (top right).
+Please feel free to leave reviews on your own code when you open a pull request in order add additional context, point out an aspect of the design you're unsure of, etc.
+
+### Responding to a review
+You can use the same batching approach as above to respond to review comments. Once you've posted your responses and pushed new commits addressing the comments, re-request reviews from your reviewers by clicking the arrow circle icons next to their names on the list of reviewers.
+
+**Note**: GitHub allows marking comment threads on pull requests as "resolved", which hides them from view. Always allow the original commenter to resolve a conversation. This allows them to verify that your changes match what they requested before the conversation is hidden.
 
 ## Resources
 
 ### Swift
+* [A Swift Introduction to Swift](https://www.youtube.com/watch?v=CcCTM1PN1N4) - talk by Kaitlin
 * [Swift Language Guide](https://docs.swift.org/swift-book/LanguageGuide/TheBasics.html)
 * [Swift Standard Library docs](https://developer.apple.com/documentation/swift)
+* [Swift's Encoder and Decoder Protocols](https://www.youtube.com/watch?v=yL5Ff5p1hyc) - talk by Kaitlin
 
 ### MongoDB and Drivers
 * [MongoSwift docs](https://mongodb.github.io/mongo-swift-driver/)
