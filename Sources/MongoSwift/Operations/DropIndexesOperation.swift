@@ -26,8 +26,7 @@ internal struct DropIndexesOperation<T: Codable>: Operation {
     }
 
     internal func execute() throws -> Document {
-        let collName = String(cString: mongoc_collection_get_name(self.collection._collection))
-        let command: Document = ["dropIndexes": collName, "index": self.index]
+        let command: Document = ["dropIndexes": self.collection.name, "index": self.index]
         let opts = try self.collection.encoder.encode(self.options)
         let reply = Document()
         var error = bson_error_t()

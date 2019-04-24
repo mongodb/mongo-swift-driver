@@ -26,8 +26,6 @@ internal struct CreateIndexesOperation<T: Codable>: Operation {
     }
 
     internal func execute() throws -> [String] {
-        let collName = String(cString: mongoc_collection_get_name(self.collection._collection))
-
         var indexData = [Document]()
         for index in self.models {
             var indexDoc = try self.collection.encoder.encode(index)
@@ -37,10 +35,7 @@ internal struct CreateIndexesOperation<T: Codable>: Operation {
             indexData.append(indexDoc)
         }
 
-        let command: Document = [
-            "createIndexes": collName,
-            "indexes": indexData
-        ]
+        let command: Document = ["createIndexes": self.collection.name, "indexes": indexData]
 
         let opts = try self.collection.encoder.encode(self.options)
         var error = bson_error_t()
