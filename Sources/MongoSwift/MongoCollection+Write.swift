@@ -22,7 +22,8 @@ extension MongoCollection {
     @discardableResult
     public func insertOne(_ value: CollectionType, options: InsertOneOptions? = nil) throws -> InsertOneResult? {
         do {
-            let result = try self.bulkWrite([InsertOneModel(value)], options: options?.asBulkWriteOpts())
+            let model = InsertOneModel(value)
+            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions())
             return try InsertOneResult(from: result)
         } catch {
             throw convertBulkWriteError(error)
@@ -47,7 +48,8 @@ extension MongoCollection {
      */
     @discardableResult
     public func insertMany(_ values: [CollectionType], options: InsertManyOptions? = nil) throws -> InsertManyResult? {
-        let result = try self.bulkWrite(values.map { InsertOneModel($0) }, options: options)
+        let models = values.map { InsertOneModel($0) }
+        let result = try self.bulkWrite(models, options: options)
         return InsertManyResult(from: result)
     }
 
@@ -77,7 +79,7 @@ extension MongoCollection {
                                         replacement: replacement,
                                         collation: options?.collation,
                                         upsert: options?.upsert)
-            let result = try self.bulkWrite([model], options: options?.asBulkWriteOpts())
+            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions())
             return try UpdateResult(from: result)
         } catch {
             throw convertBulkWriteError(error)
@@ -109,7 +111,7 @@ extension MongoCollection {
                                        arrayFilters: options?.arrayFilters,
                                        collation: options?.collation,
                                        upsert: options?.upsert)
-            let result = try self.bulkWrite([model], options: options?.asBulkWriteOpts())
+            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions())
             return try UpdateResult(from: result)
         } catch {
             throw convertBulkWriteError(error)
@@ -141,7 +143,7 @@ extension MongoCollection {
                                         arrayFilters: options?.arrayFilters,
                                         collation: options?.collation,
                                         upsert: options?.upsert)
-            let result = try self.bulkWrite([model], options: options?.asBulkWriteOpts())
+            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions())
             return try UpdateResult(from: result)
         } catch {
             throw convertBulkWriteError(error)
@@ -168,7 +170,7 @@ extension MongoCollection {
     public func deleteOne(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
         do {
             let model = DeleteOneModel(filter, collation: options?.collation)
-            let result = try self.bulkWrite([model], options: options?.asBulkWriteOpts())
+            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions())
             return try DeleteResult(from: result)
         } catch {
             throw convertBulkWriteError(error)
@@ -195,7 +197,7 @@ extension MongoCollection {
     public func deleteMany(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
         do {
             let model = DeleteManyModel(filter, collation: options?.collation)
-            let result = try self.bulkWrite([model], options: options?.asBulkWriteOpts())
+            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions())
             return try DeleteResult(from: result)
         } catch {
             throw convertBulkWriteError(error)
@@ -207,12 +209,12 @@ extension MongoCollection {
 private protocol BulkWriteOptionsConvertible {
     var bypassDocumentValidation: Bool? { get }
     var writeConcern: WriteConcern? { get }
-    func asBulkWriteOpts() -> BulkWriteOptions
+    func asBulkWriteOptions() -> BulkWriteOptions
 }
 
 /// Default implementation of the protocol.
 private extension BulkWriteOptionsConvertible {
-    func asBulkWriteOpts() -> BulkWriteOptions {
+    func asBulkWriteOptions() -> BulkWriteOptions {
         return BulkWriteOptions(bypassDocumentValidation: self.bypassDocumentValidation,
                                 writeConcern: self.writeConcern)
     }
