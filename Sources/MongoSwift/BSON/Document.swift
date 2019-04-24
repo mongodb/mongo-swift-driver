@@ -54,7 +54,7 @@ public struct Document {
     internal var storage: DocumentStorage
 
     /// Returns the number of (key, value) pairs stored at the top level of this `Document`.
-    public var count: Int
+    public fileprivate(set) var count: Int
 }
 
 /// An extension of `Document` containing its private/internal functionality.
