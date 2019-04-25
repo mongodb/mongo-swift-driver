@@ -40,12 +40,15 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
 
+        let indexOpts: Document =
+            ["storageEngine": ["wiredTiger": ["configString": "access_pattern_hint=random"] as Document] as Document]
+
         // test non-view options
         let options = CreateCollectionOptions(
             autoIndexId: true,
             capped: true,
             collation: ["locale": "fr"],
-            indexOptionDefaults: ["storageEngine": ["wiredTiger": ["configString": "access_pattern_hint=random"] as Document] as Document],
+            indexOptionDefaults: indexOpts,
             max: 1000,
             size: 10000,
             storageEngine: ["wiredTiger": ["configString": "access_pattern_hint=random"] as Document],
