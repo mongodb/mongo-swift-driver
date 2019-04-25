@@ -73,8 +73,10 @@ extension MongoCollection {
      *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
-    public func count(_ filter: Document = [:], options: CountOptions? = nil) throws -> Int {
-        let operation = CountOperation(collection: self, filter: filter, options: options)
+    public func count(_ filter: Document = [:],
+                      options: CountOptions? = nil,
+                      session: ClientSession? = nil) throws -> Int {
+        let operation = CountOperation(collection: self, filter: filter, options: options, session: session)
         return try operation.execute()
     }
 

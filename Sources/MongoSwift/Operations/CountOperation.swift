@@ -50,23 +50,27 @@ internal struct CountOperation<T: Codable>: Operation {
     private let collection: MongoCollection<T>
     private let filter: Document
     private let options: CountOptions?
+    private let session: ClientSession?
 
     internal init(collection: MongoCollection<T>,
                   filter: Document,
-                  options: CountOptions?) {
+                  options: CountOptions?,
+                  session: ClientSession?) {
         self.collection = collection
         self.filter = filter
         self.options = options
+        self.session = session
     }
 
     internal func execute() throws -> Int {
-        let opts = try collection.encoder.encode(self.options)
+        var opts = try collection.encoder.encode(self.options) ?? Document()
+        try session?.append(to: &opts)
         let rp = self.options?.readPreference?._readPreference
         var error = bson_error_t()
         // because we already encode skip and limit in the options,
         // pass in 0s so we don't get duplicate parameter errors.
         let count = mongoc_collection_count_with_opts(
-            self.collection._collection, MONGOC_QUERY_NONE, self.filter.data, 0, 0, opts?.data, rp, &error)
+            self.collection._collection, MONGOC_QUERY_NONE, self.filter.data, 0, 0, opts.data, rp, &error)
 
         if count == -1 { throw parseMongocError(error) }
 

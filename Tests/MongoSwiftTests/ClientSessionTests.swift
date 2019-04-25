@@ -144,7 +144,8 @@ final class ClientSessionTests: MongoSwiftTestCase {
             },
             SessionsArgTest(name: "dropIndex2") { try collection.dropIndex("x_7", session: $0) },
             SessionsArgTest(name: "dropIndexes") { try collection.dropIndexes(session: $0) },
-            SessionsArgTest(name: "listIndexes") { _ = try collection.listIndexes(session: $0).next() }
+            SessionsArgTest(name: "listIndexes") { _ = try collection.listIndexes(session: $0).next() },
+            SessionsArgTest(name: "count") { _ = try collection.count(session: $0) }
         ]
         try collectionCases.forEach { try $0.execute(session: session) }
 

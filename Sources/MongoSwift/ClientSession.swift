@@ -29,7 +29,7 @@ private class SessionOptWrapper {
 /// A MongoDB client session.
 public final class ClientSession {
     /// Error thrown when an inactive session is used.
-    internal static var SessionInactiveError: Error = UserError.logicError(message: "Tried to use an inactive session")
+    internal static var SessionInactiveError = UserError.logicError(message: "Tried to use an inactive session")
 
     /// Pointer to the underlying `mongoc_client_session_t`.
     internal fileprivate(set) var _session: MutableClientSessionPointer?
