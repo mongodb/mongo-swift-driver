@@ -34,4 +34,34 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         expect(try db.runCommand(["asdfsadf": ObjectId()]))
                 .to(throwError(ServerError.commandError(code: 59, message: "", errorLabels: nil)))
     }
+
+    func testCreateCollection() throws {
+        let client = try MongoClient(MongoSwiftTestCase.connStr)
+        let db = client.db(type(of: self).testDatabase)
+        defer { try? db.drop() }
+
+        // test non-view options
+        let options = CreateCollectionOptions(
+            autoIndexId: true,
+            capped: true,
+            collation: ["locale": "fr"],
+            indexOptionDefaults: ["storageEngine": ["wiredTiger": ["configString": "access_pattern_hint=random"] as Document] as Document],
+            max: 1000,
+            size: 10000,
+            storageEngine: ["wiredTiger": ["configString": "access_pattern_hint=random"] as Document],
+            validationAction: "warn",
+            validationLevel: "moderate",
+            validator: ["phone": ["$type": "string"] as Document],
+            writeConcern: try WriteConcern(w: .majority)
+        )
+        expect(try db.createCollection("foo", options: options)).toNot(throwError())
+
+        // test view options
+        let viewOptions = CreateCollectionOptions(
+            pipeline: [["$project": ["a": 1] as Document]],
+            viewOn: "foo"
+        )
+
+        expect(try db.createCollection("fooView", options: viewOptions)).toNot(throwError())
+    }
 }
