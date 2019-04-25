@@ -325,7 +325,8 @@ public class BulkWriteOperation {
 
     /// Initializes the object from a `mongoc_collection_t` and `bson_t`.
     fileprivate init(collection: OpaquePointer?, opts: Document?, withEncoder: BSONEncoder) {
-        // swiftlint:disable:next force_unwrapping - documented as always returning a value.
+        // documented as always returning a value.
+        // swiftlint:disable:next force_unwrapping
         self.bulk = mongoc_collection_create_bulk_operation_with_opts(collection, opts?.data)!
         self.opts = opts
         self.encoder = withEncoder

@@ -2,7 +2,8 @@ import Foundation
 
 /// `BSONDecoder` facilitates the decoding of BSON into semantic `Decodable` types.
 public class BSONDecoder {
-    // swiftlint:disable explicit_acl - seems to be a Swiftlint bug.
+    // swiftlint:disable explicit_acl
+    // some kind of swiftlint bug here.
     @available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *)
     internal static var iso8601Formatter: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
@@ -296,8 +297,8 @@ internal struct _BSONDecodingStorage {
         guard !self.containers.isEmpty else {
             fatalError("Empty container stack.")
         }
-        // swiftlint:disable:next force_unwrapping - guaranteed safe because of precondition.
-        return self.containers.last!
+        // swiftlint:disable:next force_unwrapping
+        return self.containers.last! // guaranteed safe because of precondition.
     }
 
     /// Adds a new container to the stack.
@@ -654,8 +655,9 @@ private struct _BSONUnkeyedDecodingContainer: UnkeyedDecodingContainer {
 
     /// A Boolean value indicating whether there are no more elements left to be decoded in the container.
     public var isAtEnd: Bool { return self.currentIndex >= self.count! }
-    // swiftlint:disable:previous force_unwrapping - `.count` always returns a value and is only an `Int?`
-    // because it's required of the UnkeyedDecodingContainer protocol.
+    // swiftlint:disable:previous force_unwrapping
+    // `.count` always returns a value and is only an `Int?` because it's required of the
+    // UnkeyedDecodingContainer protocol.
 
     /// A private helper function to check if we're at the end of the container, and if so throw an error.
     private func checkAtEnd() throws {
@@ -838,8 +840,8 @@ internal struct _BSONKey: CodingKey {
         self.intValue = index
     }
 
-    // swiftlint:disable:next force_unwrapping - this initializer never actually returns nil.
-    internal static let `super` = _BSONKey(stringValue: "super")!
+    // swiftlint:disable:next force_unwrapping
+    internal static let `super` = _BSONKey(stringValue: "super")! // this initializer never actually returns nil.
 }
 
 extension DecodingError {

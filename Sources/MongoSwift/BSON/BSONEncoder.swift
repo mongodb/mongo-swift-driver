@@ -313,8 +313,8 @@ internal struct _BSONEncodingStorage {
         guard !self.containers.isEmpty else {
             fatalError("Empty container stack.")
         }
-        // swiftlint:disable:next force_unwrapping - guaranteed safe because of precondition.
-        return self.containers.popLast()!
+        // swiftlint:disable:next force_unwrapping
+        return self.containers.popLast()! // guaranteed safe because of precondition.
     }
 }
 
