@@ -25,8 +25,8 @@ public struct ConnectionId: Equatable {
     internal init(_ hostAndPort: String = "localhost:27017") {
         let parts = hostAndPort.split(separator: ":")
         self.host = String(parts[0])
-        // swiftlint:disable:next force_unwrapping - should be valid UInt16 unless server response malformed.
-        self.port = UInt16(parts[1])!
+        // swiftlint:disable:next force_unwrapping
+        self.port = UInt16(parts[1])! // should be valid UInt16 unless server response malformed.
     }
 }
 
@@ -176,8 +176,8 @@ public struct ServerDescription {
         self.parseIsMaster(isMaster)
 
         let serverType = String(cString: mongoc_server_description_type(description))
-        // swiftlint:disable:next force_unwrapping - libmongoc will always give us a valid raw value.
-        self.type = ServerType(rawValue: serverType)!
+        // swiftlint:disable:next force_unwrapping
+        self.type = ServerType(rawValue: serverType)! // libmongoc will always give us a valid raw value.
     }
 }
 
@@ -245,8 +245,8 @@ public struct TopologyDescription {
     /// to a `mongoc_server_description_t`
     internal init(_ description: OpaquePointer) {
         let topologyType = String(cString: mongoc_topology_description_type(description))
-        // swiftlint:disable:next force_unwrapping - libmongoc will only give us back valid raw values.
-        self.type = TopologyType(rawValue: topologyType)!
+        // swiftlint:disable:next force_unwrapping
+        self.type = TopologyType(rawValue: topologyType)! // libmongoc will only give us back valid raw values.
 
         var size = size_t()
         let serverData = mongoc_topology_description_get_servers(description, &size)
@@ -254,8 +254,8 @@ public struct TopologyDescription {
 
         let buffer = UnsafeBufferPointer(start: serverData, count: size)
         if size > 0 {
-            // swiftlint:disable:next force_unwrapping - documented as always returning a value.
-            self.servers = Array(buffer).map { ServerDescription($0!) }
+            // swiftlint:disable:next force_unwrapping
+            self.servers = Array(buffer).map { ServerDescription($0!) } // documented as always returning a value.
         }
     }
 }

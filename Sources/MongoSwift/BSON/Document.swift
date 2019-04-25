@@ -159,7 +159,8 @@ extension Document {
             // if the new type is the same and it's a fixed length type, we can overwrite
             if let ov = newValue as? Overwritable, ov.bsonType == existingType {
                 self.copyStorageIfRequired()
-                // swiftlint:disable:next force_unwrapping - key is guaranteed present so initialization will succeed.
+                // key is guaranteed present so initialization will succeed.
+                // swiftlint:disable:next force_unwrapping
                 try DocumentIterator(forDocument: self, advancedTo: key)!.overwriteCurrentValue(with: ov)
 
             // otherwise, we just create a new document and replace this key
@@ -312,8 +313,8 @@ extension Document {
 
     /// Returns a copy of the raw BSON data for this `Document`, represented as `Data`.
     public var rawBSON: Data {
-        // swiftlint:disable:next force_unwrapping - documented as always returning a value.
-        let data = bson_get_data(self.data)!
+        // swiftlint:disable:next force_unwrapping
+        let data = bson_get_data(self.data)! // documented as always returning a value.
 
         /// BSON encodes the length in the first four bytes, so we can read it in from the
         /// raw data without needing to access the `len` field of the `bson_t`.

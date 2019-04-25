@@ -14,8 +14,8 @@ extension Document: Codable {
         // and then wrap the values in `AnyBSONValue`s and encode them
         var container = encoder.container(keyedBy: _BSONKey.self)
         for (k, v) in self {
-            // swiftlint:disable:next force_unwrapping - the initializer never actually returns nil.
-            let key = _BSONKey(stringValue: k)!
+            // swiftlint:disable:next force_unwrapping
+            let key = _BSONKey(stringValue: k)! // the initializer never actually returns nil.
             if v is BSONNull {
                 try container.encodeNil(forKey: key)
             } else {
