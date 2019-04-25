@@ -1,13 +1,7 @@
 import Foundation
 import mongoc
 
-#if compiler(>=5.0)
-internal typealias ClientSessionPointer = OpaquePointer
 internal typealias MutableClientSessionPointer = OpaquePointer
-#else
-internal typealias ClientSessionPointer = UnsafePointer<mongoc_client_session_t>
-internal typealias MutableClientSessionPointer = UnsafeMutablePointer<mongoc_client_session_t>
-#endif
 
 /// Options to use when creating a ClientSession.
 public struct ClientSessionOptions {}
@@ -38,7 +32,7 @@ public final class ClientSession {
     internal static var SessionInactiveError: Error = UserError.logicError(message: "Tried to use an inactive session")
 
     /// Pointer to the underlying `mongoc_client_session_t`.
-    internal fileprivate(set) var _session: ClientSessionPointer?
+    internal fileprivate(set) var _session: MutableClientSessionPointer?
 
     /// Returns whether this session has been ended or not.
     internal var active: Bool { return self._session != nil }
