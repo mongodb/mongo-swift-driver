@@ -42,6 +42,9 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
 
         let indexOpts: Document =
             ["storageEngine": ["wiredTiger": ["configString": "access_pattern_hint=random"] as Document] as Document]
+        let doc1: Document = ["_id": 1, "a": "aaa", "b": "bbb"]
+        let doc2: Document = ["_id": 2, "a": "abc", "b": "def"]
+        let doc3: Document = ["_id": 3, "a": "ghi", "b": "jkl"]
 
         // test non-view options
         let options = CreateCollectionOptions(
@@ -49,15 +52,26 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
             capped: true,
             collation: ["locale": "fr"],
             indexOptionDefaults: indexOpts,
-            max: 1000,
-            size: 10000,
+            max: 2,
+            size: doc1.rawBSON.count + doc2.rawBSON.count,
             storageEngine: ["wiredTiger": ["configString": "access_pattern_hint=random"] as Document],
-            validationAction: "warn",
+            validationAction: "error",
             validationLevel: "moderate",
-            validator: ["phone": ["$type": "string"] as Document],
+            validator: ["a": ["$type": "string"] as Document],
             writeConcern: try WriteConcern(w: .majority)
         )
-        expect(try db.createCollection("foo", options: options)).toNot(throwError())
+
+        let collection = try db.createCollection("foo", options: options)
+        try collection.insertOne(doc1)
+
+        // should error with a as integer due to validator
+        expect(try collection.insertOne(["a": 1])).to(throwError())
+
+        try collection.insertOne(doc2)
+
+        // should overwrite first doc as we've reached max size
+        try collection.insertOne(doc3)
+        expect(try coll.count()).to(equal(2))
 
         // test view options
         let viewOptions = CreateCollectionOptions(
@@ -65,6 +79,10 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
             viewOn: "foo"
         )
 
-        expect(try db.createCollection("fooView", options: viewOptions)).toNot(throwError())
+        let view = try db.createCollection("fooView", options: viewOptions)
+        let docs = Array(try view.find(options: FindOptions(sort: ["_id": 1])))
+        expect(docs).to(haveCount(2))
+        expect(docs[0]).to(equal(["_id": 1, "a": "aaa"]))
+        expect(docs[1]).to(equal(["_id": 2, "a": "abc"]))
     }
 }
