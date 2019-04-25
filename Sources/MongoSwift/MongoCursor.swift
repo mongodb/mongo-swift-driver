@@ -10,7 +10,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     private let decoder: BSONDecoder
 
     /**
-     * Initializes a new `MongoCursor` instance, not meant to be instantiated directly.
+     * Initializes a new `MongoCursor` instance. Not meant to be instantiated directly by a user.
      *
      * - Throws:
      *   - `UserError.invalidArgumentError` if the options passed to the command that generated this cursor formed an

@@ -2,7 +2,7 @@ import mongoc
 
 /// Options to use when creating a new index on a `MongoCollection`.
 public struct CreateIndexOptions: Encodable {
-    /// An optional `WriteConcern` to use for the command
+    /// An optional `WriteConcern` to use for the command.
     public let writeConcern: WriteConcern?
 
     /// Initializer allowing any/all parameters to be omitted.

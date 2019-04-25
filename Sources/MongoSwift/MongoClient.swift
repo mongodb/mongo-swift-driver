@@ -3,22 +3,22 @@ import mongoc
 
 /// Options to use when creating a `MongoClient`.
 public struct ClientOptions: CodingStrategyProvider {
-    /// Determines whether the client should retry supported write operations
+    /// Determines whether the client should retry supported write operations.
     public let retryWrites: Bool?
 
-    /// Indicates whether this client should be set up to enable monitoring
-    /// command and server discovery and monitoring events.
+    /// Indicates whether this client should be set up to enable monitoring command and server discovery and monitoring
+    /// events.
     public let eventMonitoring: Bool
 
-    /// Specifies a ReadConcern to use for the client. If one is not specified,
-    /// the server's default read concern will be used.
+    /// Specifies a ReadConcern to use for the client. If one is not specified, the server's default read concern will
+    /// be used.
     public let readConcern: ReadConcern?
 
     /// Specifies a ReadPreference to use for the client.
     public let readPreference: ReadPreference?
 
-    /// Specifies a WriteConcern to use for the client. If one is not specified,
-    /// the server's default write concern will be used.
+    /// Specifies a WriteConcern to use for the client. If one is not specified, the server's default write concern
+    /// will be used.
     public let writeConcern: WriteConcern?
 
     /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this client and any
@@ -33,7 +33,7 @@ public struct ClientOptions: CodingStrategyProvider {
     /// databases or collections that derive from it.
     public let dataCodingStrategy: DataCodingStrategy?
 
-    /// Convenience initializer allowing any/all to be omitted or optional
+    /// Convenience initializer allowing any/all to be omitted or optional.
     public init(eventMonitoring: Bool = false,
                 readConcern: ReadConcern? = nil,
                 readPreference: ReadPreference? = nil,
@@ -55,16 +55,16 @@ public struct ClientOptions: CodingStrategyProvider {
 
 /// Options to use when listing available databases.
 public struct ListDatabasesOptions: Encodable {
-    /// An optional filter for the returned databases
+    /// An optional filter for the returned databases.
     public let filter: Document?
 
-    /// Optionally indicate whether only names should be returned
+    /// Optionally indicate whether only names should be returned.
     public let nameOnly: Bool?
 
-    /// An optional session to use for this operation
+    /// An optional session to use for this operation.
     public let session: ClientSession?
 
-    /// Convenience constructor for basic construction
+    /// Convenience initializer allowing any/all to be omitted or optional.
     public init(filter: Document? = nil, nameOnly: Bool? = nil, session: ClientSession? = nil) {
         self.filter = filter
         self.nameOnly = nameOnly
@@ -74,16 +74,16 @@ public struct ListDatabasesOptions: Encodable {
 
 /// Options to use when retrieving a `MongoDatabase` from a `MongoClient`.
 public struct DatabaseOptions: CodingStrategyProvider {
-    /// A read concern to set on the retrieved database. If one is not specified,
-    /// the database will inherit the client's read concern.
+    /// A read concern to set on the retrieved database. If one is not specified, the database will inherit the
+    /// client's read concern.
     public let readConcern: ReadConcern?
 
-    /// A read preference to set on the retrieved database. If one is not
-    /// specified, the database will inherit the client's read preference.
+    /// A read preference to set on the retrieved database. If one is not specified, the database will inherit the
+    /// client's read preference.
     public let readPreference: ReadPreference?
 
-    /// A write concern to set on the retrieved database. If one is not specified,
-    /// the database will inherit the client's write concern.
+    /// A write concern to set on the retrieved database. If one is not specified, the database will inherit the
+    /// client's write concern.
     public let writeConcern: WriteConcern?
 
     /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this database and
@@ -98,7 +98,7 @@ public struct DatabaseOptions: CodingStrategyProvider {
     /// any collections that derive from it.
     public let dataCodingStrategy: DataCodingStrategy?
 
-    /// Convenience initializer allowing any/all arguments to be omitted or optional
+    /// Convenience initializer allowing any/all arguments to be omitted or optional.
     public init(readConcern: ReadConcern? = nil,
                 readPreference: ReadPreference? = nil,
                 writeConcern: WriteConcern? = nil,

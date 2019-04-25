@@ -38,7 +38,7 @@ public class MongoCollection<T: Codable> {
         return rc.isDefault ? nil : rc
     }
 
-    /// The `ReadPreference` set on this collection
+    /// The `ReadPreference` set on this collection.
     public var readPreference: ReadPreference? {
         return ReadPreference(from: mongoc_collection_get_read_prefs(self._collection))
     }
@@ -50,7 +50,7 @@ public class MongoCollection<T: Codable> {
         return wc.isDefault ? nil : wc
     }
 
-    /// Initializes a new `MongoCollection` instance, not meant to be instantiated directly
+    /// Initializes a new `MongoCollection` instance. Not meant to be instantiated directly by a user.
     internal init(fromCollection: OpaquePointer,
                   withClient: MongoClient,
                   withEncoder: BSONEncoder,

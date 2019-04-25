@@ -173,7 +173,7 @@ public struct AggregateOptions: Encodable {
     /// A `WriteConcern` to use in `$out` stages of this operation.
     public let writeConcern: WriteConcern?
 
-    /// Convenience initializer allowing any/all parameters to be optional
+    /// Convenience initializer allowing any/all parameters to be omitted or optional.
     public init(allowDiskUse: Bool? = nil,
                 batchSize: Int32? = nil,
                 bypassDocumentValidation: Bool? = nil,
@@ -210,7 +210,7 @@ private struct EstimatedDocumentCountOptions {
     /// The maximum amount of time to allow the query to run.
     public let maxTimeMS: Int64?
 
-    /// Initializer allowing any/all parameters to be omitted.
+    /// Initializer allowing any/all parameters to be omitted or optional.
     public init(maxTimeMS: Int64? = nil) {
         self.maxTimeMS = maxTimeMS
     }
@@ -318,7 +318,7 @@ public struct FindOptions: Encodable {
     /// A ReadPreference to use for this operation.
     public let readPreference: ReadPreference?
 
-    /// Convenience initializer allowing any/all parameters to be optional
+    /// Convenience initializer allowing any/all parameters to be omitted or optional.
     public init(allowPartialResults: Bool? = nil,
                 batchSize: Int32? = nil,
                 collation: Document? = nil,

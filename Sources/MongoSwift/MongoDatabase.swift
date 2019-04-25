@@ -2,19 +2,19 @@ import mongoc
 
 /// Options to use when running a command against a `MongoDatabase`.
 public struct RunCommandOptions: Encodable {
-    /// A session to associate with this operation
+    /// A session to associate with this operation.
     public let session: ClientSession?
 
-    /// An optional `ReadConcern` to use for this operation
+    /// An optional `ReadConcern` to use for this operation.
     public let readConcern: ReadConcern?
 
-    /// An optional `ReadPreference` to use for this operation
+    /// An optional `ReadPreference` to use for this operation.
     public let readPreference: ReadPreference?
 
-    /// An optional WriteConcern to use for this operation
+    /// An optional WriteConcern to use for this operation.
     public let writeConcern: WriteConcern?
 
-    /// Convenience initializer allowing session to be omitted or optional
+    /// Convenience initializer allowing session to be omitted or optional.
     public init(readConcern: ReadConcern? = nil,
                 readPreference: ReadPreference? = nil,
                 session: ClientSession? = nil,
@@ -33,16 +33,16 @@ public struct RunCommandOptions: Encodable {
 
 /// Options to use when executing a `listCollections` command on a `MongoDatabase`.
 public struct ListCollectionsOptions: Encodable {
-    /// A filter to match collections against
+    /// A filter to match collections against.
     public let filter: Document?
 
-    /// The batchSize for the returned cursor
+    /// The batchSize for the returned cursor.
     public let batchSize: Int?
 
-    /// A session to associate with this operation
+    /// A session to associate with this operation.
     public let session: ClientSession?
 
-    /// Convenience initializer allowing any/all parameters to be omitted or optional
+    /// Convenience initializer allowing any/all parameters to be omitted or optional.
     public init(batchSize: Int? = nil, filter: Document? = nil, session: ClientSession? = nil) {
         self.batchSize = batchSize
         self.filter = filter
@@ -52,45 +52,45 @@ public struct ListCollectionsOptions: Encodable {
 
 /// Options to use when executing a `createCollection` command on a `MongoDatabase`.
 public struct CreateCollectionOptions: Encodable, CodingStrategyProvider {
-    /// Indicates whether this will be a capped collection
+    /// Indicates whether this will be a capped collection.
     public let capped: Bool?
 
-    /// Whether or not this collection will automatically generate an index on _id
+    /// Whether or not this collection will automatically generate an index on _id.
     public let autoIndexId: Bool?
 
-    /// Maximum size, in bytes, of this collection (if capped)
+    /// Maximum size, in bytes, of this collection (if capped).
     public let size: Int64?
 
-    /// Maximum number of documents allowed in the collection (if capped)
+    /// Maximum number of documents allowed in the collection (if capped).
     public let max: Int64?
 
-    /// Determine which storage engine to use
+    /// Determine which storage engine to use.
     public let storageEngine: Document?
 
-    /// What validator should be used for the collection
+    /// What validator should be used for the collection.
     public let validator: Document?
 
-    /// Determines how strictly MongoDB applies the validation rules to existing documents during an update
+    /// Determines how strictly MongoDB applies the validation rules to existing documents during an update.
     public let validationLevel: String?
 
-    /// Determines whether to error on invalid documents or just warn about the violations
-    /// but allow invalid documents to be inserted
+    /// Determines whether to error on invalid documents or just warn about the violations but allow invalid documents
+    /// to be inserted.
     public let validationAction: String?
 
-    /// Allows users to specify a default configuration for indexes when creating a collection
+    /// Allows users to specify a default configuration for indexes when creating a collection.
     public let indexOptionDefaults: Document?
 
-    /// The name of the source collection or view from which to create the view
+    /// The name of the source collection or view from which to create the view.
     public let viewOn: String?
 
-    /// Specifies the default collation for the collection
+    /// Specifies the default collation for the collection.
     public let collation: Document?
 
-    /// A session to associate with this operation
+    /// A session to associate with this operation.
     public let session: ClientSession?
 
-    /// A write concern to use when executing this command. To set a read or write concern
-    /// for the collection itself, retrieve the collection using `MongoDatabase.collection`.
+    /// A write concern to use when executing this command. To set a read or write concern for the collection itself,
+    /// retrieve the collection using `MongoDatabase.collection`.
     public let writeConcern: WriteConcern?
 
     /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
@@ -113,7 +113,7 @@ public struct CreateCollectionOptions: Encodable, CodingStrategyProvider {
              indexOptionDefaults, viewOn, collation, session, writeConcern
     }
 
-    /// Convenience initializer allowing any/all parameters to be omitted or optional
+    /// Convenience initializer allowing any/all parameters to be omitted or optional.
     public init(autoIndexId: Bool? = nil,
                 capped: Bool? = nil,
                 collation: Document? = nil,
@@ -151,16 +151,16 @@ public struct CreateCollectionOptions: Encodable, CodingStrategyProvider {
 
 /// Options to set on a retrieved `MongoCollection`.
 public struct CollectionOptions: CodingStrategyProvider {
-    /// A read concern to set on the returned collection. If one is not specified,
-    /// the collection will inherit the database's read concern.
+    /// A read concern to set on the returned collection. If one is not specified, the collection will inherit the
+    /// database's read concern.
     public let readConcern: ReadConcern?
 
-    /// A read preference to set on the returned collection. If one is not
-    /// specified, the collection will inherit the database's read preference.
+    /// A read preference to set on the returned collection. If one is not specified, the collection will inherit the
+    /// database's read preference.
     public let readPreference: ReadPreference?
 
-    /// A write concern to set on the returned collection. If one is not specified,
-    /// the collection will inherit the database's write concern.
+    /// A write concern to set on the returned collection. If one is not specified, the collection will inherit the
+    /// database's write concern.
     public let writeConcern: WriteConcern?
 
     /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
@@ -178,7 +178,7 @@ public struct CollectionOptions: CodingStrategyProvider {
     /// decoded using this strategy.
     public let dataCodingStrategy: DataCodingStrategy?
 
-    /// Convenience initializer allowing any/all arguments to be omitted or optional
+    /// Convenience initializer allowing any/all arguments to be omitted or optional.
     public init(readConcern: ReadConcern? = nil,
                 readPreference: ReadPreference? = nil,
                 writeConcern: WriteConcern? = nil,
@@ -194,13 +194,13 @@ public struct CollectionOptions: CodingStrategyProvider {
     }
 }
 
-/// A MongoDB Database
+/// A MongoDB Database.
 public class MongoDatabase {
     private var _database: OpaquePointer?
     private var _client: MongoClient
 
-    /// Encoder used by this database for BSON conversions.
-    /// This encoder's options are inherited by collections derived from this database.
+    /// Encoder used by this database for BSON conversions. This encoder's options are inherited by collections derived
+    /// from this database.
     public let encoder: BSONEncoder
 
     /// Decoder whose options are inherited by collections derived from this database.

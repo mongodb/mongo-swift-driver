@@ -206,7 +206,7 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible {
                                         writeConcern: writeConcern)
     }
 
-    /// Convenience initializer allowing any/all parameters to be omitted/optional
+    /// Convenience initializer allowing any/all parameters to be omitted/optional.
     public init(bypassDocumentValidation: Bool? = nil,
                 collation: Document? = nil,
                 maxTimeMS: Int64? = nil,
@@ -267,7 +267,7 @@ public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible {
                                         writeConcern: writeConcern)
     }
 
-    /// Convenience initializer allowing any/all parameters to be omitted/optional
+    /// Convenience initializer allowing any/all parameters to be omitted/optional.
     public init(arrayFilters: [Document]? = nil,
                 bypassDocumentValidation: Bool? = nil,
                 collation: Document? = nil,
