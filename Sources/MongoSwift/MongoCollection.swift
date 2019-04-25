@@ -74,9 +74,7 @@ public class MongoCollection<T: Codable> {
     /// - Throws:
     ///   - `ServerError.commandError` if an error occurs that prevents the command from executing.
     public func drop() throws {
-        var error = bson_error_t()
-        guard mongoc_collection_drop(self._collection, &error) else {
-            throw parseMongocError(error)
-        }
+        let operation = DropCollectionOperation(collection: self)
+        try operation.execute()
     }
 }

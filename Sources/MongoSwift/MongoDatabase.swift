@@ -1,30 +1,5 @@
 import mongoc
 
-/// Options to use when running a command against a `MongoDatabase`.
-public struct RunCommandOptions: Encodable {
-    /// An optional `ReadConcern` to use for this operation.
-    public let readConcern: ReadConcern?
-
-    /// An optional `ReadPreference` to use for this operation.
-    public let readPreference: ReadPreference?
-
-    /// An optional WriteConcern to use for this operation.
-    public let writeConcern: WriteConcern?
-
-    /// Convenience initializer allowing session to be omitted or optional.
-    public init(readConcern: ReadConcern? = nil,
-                readPreference: ReadPreference? = nil,
-                writeConcern: WriteConcern? = nil) {
-        self.readConcern = readConcern
-        self.readPreference = readPreference
-        self.writeConcern = writeConcern
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case readConcern, writeConcern
-    }
-}
-
 /// Options to use when executing a `listCollections` command on a `MongoDatabase`.
 public struct ListCollectionsOptions: Encodable {
     /// A filter to match collections against.
@@ -37,110 +12,6 @@ public struct ListCollectionsOptions: Encodable {
     public init(batchSize: Int? = nil, filter: Document? = nil) {
         self.batchSize = batchSize
         self.filter = filter
-    }
-}
-
-/// Options to use when executing a `createCollection` command on a `MongoDatabase`.
-public struct CreateCollectionOptions: Codable, CodingStrategyProvider {
-    /// Indicates whether this will be a capped collection.
-    public let capped: Bool?
-
-    /// Whether or not this collection will automatically generate an index on _id.
-    public let autoIndexId: Bool?
-
-    /// Maximum size, in bytes, of this collection (if capped).
-    public let size: Int64?
-
-    /// Maximum number of documents allowed in the collection (if capped).
-    public let max: Int64?
-
-    /// Specifies storage engine configuration for this collection.
-    public let storageEngine: Document?
-
-    /// What validator should be used for the collection.
-    public let validator: Document?
-
-    /// Determines how strictly MongoDB applies the validation rules to existing documents during an update.
-    public let validationLevel: String?
-
-    /// Determines whether to error on invalid documents or just warn about the violations but allow invalid documents
-    /// to be inserted.
-    public let validationAction: String?
-
-    /// Specify a default configuration for indexes created on this collection.
-    public let indexOptionDefaults: Document?
-
-    /// The name of the source collection or view from which to create the view.
-    public let viewOn: String?
-
-    /// An array consisting of aggregation pipeline stages. When used with `viewOn`, will create the view by applying
-    /// this pipeline to the source collection or view.
-    public let pipeline: [Document]?
-
-    /// Specifies the default collation for the collection.
-    public let collation: Document?
-
-    /// A write concern to use when executing this command. To set a read or write concern for the collection itself,
-    /// retrieve the collection using `MongoDatabase.collection`.
-    public let writeConcern: WriteConcern?
-
-    // swiftlint:disable redundant_optional_initialization
-    // to get synthesized decodable conformance for the struct, these strategies need default values.
-
-    /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
-    /// It is the responsibility of the user to ensure that any `Date`s already stored in this collection can be
-    /// decoded using this strategy.
-    public var dateCodingStrategy: DateCodingStrategy? = nil
-
-    /// Specifies the `UUIDCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
-    /// It is the responsibility of the user to ensure that any `UUID`s already stored in this collection can be
-    /// decoded using this strategy.
-    public var uuidCodingStrategy: UUIDCodingStrategy? = nil
-
-    /// Specifies the `DataCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
-    /// It is the responsibility of the user to ensure that any `Data`s already stored in this collection can be
-    /// decoded using this strategy.
-    public var dataCodingStrategy: DataCodingStrategy? = nil
-    // swiftlint:enable redundant_optional_initialization
-
-    private enum CodingKeys: String, CodingKey {
-        case capped, autoIndexId, size, max, storageEngine, validator, validationLevel, validationAction,
-             indexOptionDefaults, viewOn, pipeline, collation, writeConcern
-    }
-
-    /// Convenience initializer allowing any/all parameters to be omitted or optional.
-    public init(autoIndexId: Bool? = nil,
-                capped: Bool? = nil,
-                collation: Document? = nil,
-                indexOptionDefaults: Document? = nil,
-                max: Int64? = nil,
-                pipeline: [Document]? = nil,
-                size: Int64? = nil,
-                storageEngine: Document? = nil,
-                validationAction: String? = nil,
-                validationLevel: String? = nil,
-                validator: Document? = nil,
-                viewOn: String? = nil,
-                writeConcern: WriteConcern? = nil,
-                dateCodingStrategy: DateCodingStrategy? = nil,
-                uuidCodingStrategy: UUIDCodingStrategy? = nil,
-                dataCodingStrategy: DataCodingStrategy? = nil) {
-        self.autoIndexId = autoIndexId
-        self.capped = capped
-        self.collation = collation
-        self.indexOptionDefaults = indexOptionDefaults
-        self.max = max
-        self.pipeline = pipeline
-        self.size = size
-        self.storageEngine = storageEngine
-        self.validationAction = validationAction
-        self.validationLevel = validationLevel
-        self.validator = validator
-        self.viewOn = viewOn
-        self.writeConcern = writeConcern
-        self.dateCodingStrategy = dateCodingStrategy
-        self.uuidCodingStrategy = uuidCodingStrategy
-        self.dataCodingStrategy = dataCodingStrategy
     }
 }
 
@@ -191,8 +62,8 @@ public struct CollectionOptions: CodingStrategyProvider {
 
 /// A MongoDB Database.
 public class MongoDatabase {
-    private var _database: OpaquePointer?
-    private var _client: MongoClient
+    internal var _database: OpaquePointer?
+    internal var _client: MongoClient
 
     /// Encoder used by this database for BSON conversions. This encoder's options are inherited by collections derived
     /// from this database.
@@ -249,10 +120,8 @@ public class MongoDatabase {
     /// - Throws:
     ///   - `ServerError.commandError` if an error occurs that prevents the command from executing.
     public func drop() throws {
-        var error = bson_error_t()
-        guard mongoc_database_drop(self._database, &error) else {
-            throw parseMongocError(error)
-        }
+        let operation = DropDatabaseOperation(database: self)
+        try operation.execute()
     }
 
     /**
@@ -349,25 +218,15 @@ public class MongoDatabase {
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func createCollection<T: Codable>(_ name: String,
-                                             withType: T.Type,
+                                             withType type: T.Type,
                                              options: CreateCollectionOptions? = nil,
                                              session: ClientSession? = nil) throws -> MongoCollection<T> {
-        let opts = try encodeOptions(options: options, session: session)
-        var error = bson_error_t()
-
-        guard let collection = mongoc_database_create_collection(self._database, name, opts?.data, &error) else {
-            throw parseMongocError(error)
-        }
-
-        let encoder = BSONEncoder(copies: self.encoder, options: options)
-        let decoder = BSONDecoder(copies: self.decoder, options: options)
-
-        return MongoCollection(
-                fromCollection: collection,
-                withClient: self._client,
-                withEncoder: encoder,
-                withDecoder: decoder
-        )
+        let operation = CreateCollectionOperation(database: self,
+                                                  name: name,
+                                                  type: type,
+                                                  options: options,
+                                                  session: session)
+        return try operation.execute()
     }
 
     /**
@@ -414,14 +273,7 @@ public class MongoDatabase {
     public func runCommand(_ command: Document,
                            options: RunCommandOptions? = nil,
                            session: ClientSession? = nil) throws -> Document {
-        let rp = options?.readPreference ?? self.readPreference
-        let opts = try encodeOptions(options: options, session: session)
-        let reply = Document()
-        var error = bson_error_t()
-        guard mongoc_database_command_with_opts(
-            self._database, command.data, rp?._readPreference, opts?.data, reply.data, &error) else {
-            throw getErrorFromReply(bsonError: error, from: reply)
-        }
-        return reply
+        let operation = RunCommandOperation(database: self, command: command, options: options, session: session)
+        return try operation.execute()
     }
 }
