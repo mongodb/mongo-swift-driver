@@ -2,9 +2,6 @@ import mongoc
 
 /// Options to use when running a command against a `MongoDatabase`.
 public struct RunCommandOptions: Encodable {
-    /// A session to associate with this operation.
-    public let session: ClientSession?
-
     /// An optional `ReadConcern` to use for this operation.
     public let readConcern: ReadConcern?
 
@@ -17,16 +14,13 @@ public struct RunCommandOptions: Encodable {
     /// Convenience initializer allowing session to be omitted or optional.
     public init(readConcern: ReadConcern? = nil,
                 readPreference: ReadPreference? = nil,
-                session: ClientSession? = nil,
                 writeConcern: WriteConcern? = nil) {
         self.readConcern = readConcern
         self.readPreference = readPreference
-        self.session = session
         self.writeConcern = writeConcern
     }
 
     private enum CodingKeys: String, CodingKey {
-        // TODO: Encode ClientSession as "sessionId" (see: SWIFT-28)
         case readConcern, writeConcern
     }
 }
