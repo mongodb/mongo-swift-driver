@@ -188,8 +188,8 @@ private class CrudTest {
         expect(result?.modifiedCount).to(equal(expected.modifiedCount))
         expect(result?.upsertedCount).to(equal(expected.upsertedCount))
 
-        if let upsertedId = result?.upsertedId?.value as? BSONNumber {
-            expect(upsertedId).to(bsonEqual(expected.upsertedId?.value))
+        if let upsertedId = result?.upsertedId as? BSONNumber {
+            expect(upsertedId).to(bsonEqual(expected.upsertedId))
         } else {
             expect(expected.upsertedId).to(beNil())
         }

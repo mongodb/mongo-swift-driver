@@ -308,7 +308,7 @@ public protocol WriteModel {
 }
 
 /// A class encapsulating a `mongoc_bulk_operation_t`.
-public class BulkWriteOperation {
+public class BulkWriteOperation: Operation {
     fileprivate var bulk: OpaquePointer?
     fileprivate var insertedIds: [Int: BSONValue] = [:]
 
@@ -340,7 +340,7 @@ public class BulkWriteOperation {
      *   - `ServerError.commandError` if an error occurs that prevents the operation from executing.
      *   - `ServerError.bulkWriteError` if an error occurs while performing the writes.
      */
-    fileprivate func execute() throws -> BulkWriteResult? {
+    internal func execute() throws -> BulkWriteResult? {
         let reply = Document()
         var error = bson_error_t()
 

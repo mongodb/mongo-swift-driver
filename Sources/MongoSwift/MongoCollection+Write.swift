@@ -21,24 +21,11 @@ extension MongoCollection {
      */
     @discardableResult
     public func insertOne(_ value: CollectionType, options: InsertOneOptions? = nil) throws -> InsertOneResult? {
-        let document = try self.encoder.encode(value).withID()
-        let opts = try self.encoder.encode(options)
-        var error = bson_error_t()
-        let reply = Document()
-        guard mongoc_collection_insert_one(self._collection, document.data, opts?.data, reply.data, &error) else {
-            throw getErrorFromReply(bsonError: error, from: reply)
+        return try convertingBulkWriteErrors {
+            let model = InsertOneModel(value)
+            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions())
+            return try InsertOneResult(from: result)
         }
-
-        guard isAcknowledged(options?.writeConcern) else {
-            return nil
-        }
-
-        guard let insertedId = try document.getValue(for: "_id") else {
-            // we called `withID()`, so this should be present.
-            fatalError("Failed to get value for _id from document")
-        }
-
-        return InsertOneResult(insertedId: insertedId)
     }
 
     /**
@@ -59,11 +46,8 @@ extension MongoCollection {
      */
     @discardableResult
     public func insertMany(_ values: [CollectionType], options: InsertManyOptions? = nil) throws -> InsertManyResult? {
-        guard !values.isEmpty else {
-            throw UserError.invalidArgumentError(message: "values cannot be empty")
-        }
-
-        let result = try self.bulkWrite(values.map { InsertOneModel($0) }, options: BulkWriteOptions(from: options))
+        let models = values.map { InsertOneModel($0) }
+        let result = try self.bulkWrite(models, options: options)
         return InsertManyResult(from: result)
     }
 
@@ -88,23 +72,14 @@ extension MongoCollection {
     public func replaceOne(filter: Document,
                            replacement: CollectionType,
                            options: ReplaceOptions? = nil) throws -> UpdateResult? {
-        let replacementDoc = try self.encoder.encode(replacement)
-        let opts = try self.encoder.encode(options)
-        let reply = Document()
-        var error = bson_error_t()
-        guard mongoc_collection_replace_one(
-            self._collection, filter.data, replacementDoc.data, opts?.data, reply.data, &error) else {
-            throw getErrorFromReply(bsonError: error, from: reply)
+        return try convertingBulkWriteErrors {
+            let model = ReplaceOneModel(filter: filter,
+                                        replacement: replacement,
+                                        collation: options?.collation,
+                                        upsert: options?.upsert)
+            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions())
+            return try UpdateResult(from: result)
         }
-
-        guard isAcknowledged(options?.writeConcern) else {
-            return nil
-        }
-
-        return try self.decoder.internalDecode(
-                UpdateResult.self,
-                from: reply,
-                withError: "Couldn't understand response from the server.")
     }
 
     /**
@@ -126,22 +101,15 @@ extension MongoCollection {
      */
     @discardableResult
     public func updateOne(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
-        let opts = try self.encoder.encode(options)
-        let reply = Document()
-        var error = bson_error_t()
-        guard mongoc_collection_update_one(
-            self._collection, filter.data, update.data, opts?.data, reply.data, &error) else {
-            throw getErrorFromReply(bsonError: error, from: reply)
+        return try convertingBulkWriteErrors {
+            let model = UpdateOneModel(filter: filter,
+                                       update: update,
+                                       arrayFilters: options?.arrayFilters,
+                                       collation: options?.collation,
+                                       upsert: options?.upsert)
+            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions())
+            return try UpdateResult(from: result)
         }
-
-        guard isAcknowledged(options?.writeConcern) else {
-            return nil
-        }
-
-        return try self.decoder.internalDecode(
-                UpdateResult.self,
-                from: reply,
-                withError: "Couldn't understand response from the server.")
     }
 
     /**
@@ -163,22 +131,15 @@ extension MongoCollection {
      */
     @discardableResult
     public func updateMany(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
-        let opts = try self.encoder.encode(options)
-        let reply = Document()
-        var error = bson_error_t()
-        guard mongoc_collection_update_many(
-            self._collection, filter.data, update.data, opts?.data, reply.data, &error) else {
-            throw getErrorFromReply(bsonError: error, from: reply)
+        return try convertingBulkWriteErrors {
+            let model = UpdateManyModel(filter: filter,
+                                        update: update,
+                                        arrayFilters: options?.arrayFilters,
+                                        collation: options?.collation,
+                                        upsert: options?.upsert)
+            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions())
+            return try UpdateResult(from: result)
         }
-
-        guard isAcknowledged(options?.writeConcern) else {
-            return nil
-        }
-
-        return try self.decoder.internalDecode(
-                UpdateResult.self,
-                from: reply,
-                withError: "Couldn't understand response from the server.")
     }
 
     /**
@@ -199,22 +160,11 @@ extension MongoCollection {
      */
     @discardableResult
     public func deleteOne(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
-        let opts = try self.encoder.encode(options)
-        let reply = Document()
-        var error = bson_error_t()
-
-        guard mongoc_collection_delete_one(self._collection, filter.data, opts?.data, reply.data, &error) else {
-            throw getErrorFromReply(bsonError: error, from: reply)
+        return try convertingBulkWriteErrors {
+            let model = DeleteOneModel(filter, collation: options?.collation)
+            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions())
+            return try DeleteResult(from: result)
         }
-
-        guard isAcknowledged(options?.writeConcern) else {
-            return nil
-        }
-
-        return try self.decoder.internalDecode(
-                DeleteResult.self,
-                from: reply,
-                withError: "Couldn't understand response from the server.")
     }
 
     /**
@@ -235,48 +185,33 @@ extension MongoCollection {
      */
     @discardableResult
     public func deleteMany(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
-        let opts = try self.encoder.encode(options)
-        let reply = Document()
-        var error = bson_error_t()
-        guard mongoc_collection_delete_many(self._collection, filter.data, opts?.data, reply.data, &error) else {
-            throw getErrorFromReply(bsonError: error, from: reply)
+        return try convertingBulkWriteErrors {
+            let model = DeleteManyModel(filter, collation: options?.collation)
+            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions())
+            return try DeleteResult(from: result)
         }
-
-        guard isAcknowledged(options?.writeConcern) else {
-            return nil
-        }
-
-        return try self.decoder.internalDecode(
-                DeleteResult.self,
-                from: reply,
-                withError: "Couldn't understand response from the server.")
     }
+}
 
-    /**
-     * Returns whether the operation's write concern is acknowledged. If `nil`,
-     * the collection's write concern will be considered.
-     *
-     * - Parameters:
-     *   - writeConcern: `WriteConcern` from the operation's options struct
-     *
-     * - Returns: Whether the operation will use an acknowledged write concern
-     */
-    fileprivate func isAcknowledged(_ writeConcern: WriteConcern?) -> Bool {
-        /* If the collection's write concern is also `nil` it is the default. We
-         * can safely assume it is acknowledged, since the server requires that
-         * getLastErrorDefaults is acknowledged by at least one member. */
-        guard let wc = writeConcern ?? self.writeConcern else {
-            return true
-        }
+/// Protocol indicating that an options type can be converted to a BulkWriteOptions.
+private protocol BulkWriteOptionsConvertible {
+    var bypassDocumentValidation: Bool? { get }
+    var writeConcern: WriteConcern? { get }
+    func asBulkWriteOptions() -> BulkWriteOptions
+}
 
-        return wc.isAcknowledged
+/// Default implementation of the protocol.
+private extension BulkWriteOptionsConvertible {
+    func asBulkWriteOptions() -> BulkWriteOptions {
+        return BulkWriteOptions(bypassDocumentValidation: self.bypassDocumentValidation,
+                                writeConcern: self.writeConcern)
     }
 }
 
 // Write command options structs
 
 /// Options to use when executing an `insertOne` command on a `MongoCollection`.
-public struct InsertOneOptions: Encodable {
+public struct InsertOneOptions: Encodable, BulkWriteOptionsConvertible {
     /// If true, allows the write to opt-out of document level validation.
     public let bypassDocumentValidation: Bool?
 
@@ -291,30 +226,10 @@ public struct InsertOneOptions: Encodable {
 }
 
 /// Options to use when executing a multi-document insert operation on a `MongoCollection`.
-public struct InsertManyOptions: Encodable {
-    /// If true, allows the write to opt-out of document level validation.
-    public let bypassDocumentValidation: Bool?
-
-    /**
-     * If true, when an insert fails, return without performing the remaining
-     * writes. If false, when a write fails, continue with the remaining writes,
-     * if any. Defaults to true.
-     */
-    public let ordered: Bool
-
-    /// An optional WriteConcern to use for the command.
-    public let writeConcern: WriteConcern?
-
-    /// Convenience initializer allowing any/all parameters to be omitted or optional
-    public init(bypassDocumentValidation: Bool? = nil, ordered: Bool? = nil, writeConcern: WriteConcern? = nil) {
-        self.bypassDocumentValidation = bypassDocumentValidation
-        self.ordered = ordered ?? true
-        self.writeConcern = writeConcern
-    }
-}
+public typealias InsertManyOptions = BulkWriteOptions
 
 /// Options to use when executing an `update` command on a `MongoCollection`.
-public struct UpdateOptions: Encodable {
+public struct UpdateOptions: Encodable, BulkWriteOptionsConvertible {
     /// A set of filters specifying to which array elements an update should apply.
     public let arrayFilters: [Document]?
 
@@ -345,7 +260,7 @@ public struct UpdateOptions: Encodable {
 }
 
 /// Options to use when executing a `replace` command on a `MongoCollection`.
-public struct ReplaceOptions: Encodable {
+public struct ReplaceOptions: Encodable, BulkWriteOptionsConvertible {
     /// If true, allows the write to opt-out of document level validation.
     public let bypassDocumentValidation: Bool?
 
@@ -371,7 +286,7 @@ public struct ReplaceOptions: Encodable {
 }
 
 /// Options to use when executing a `delete` command on a `MongoCollection`.
-public struct DeleteOptions: Encodable {
+public struct DeleteOptions: Encodable, BulkWriteOptionsConvertible {
     /// Specifies a collation.
     public let collation: Document?
 
@@ -383,6 +298,9 @@ public struct DeleteOptions: Encodable {
         self.collation = collation
         self.writeConcern = writeConcern
     }
+    /// This is a requirement of the BulkWriteOptionsConvertible protocol.
+    /// Since it does not apply to deletions, we just set it to nil.
+    internal var bypassDocumentValidation: Bool? { return nil }
 }
 
 // Write command results structs
@@ -392,6 +310,16 @@ public struct InsertOneResult {
     /// The identifier that was inserted. If the document doesn't have an identifier, this value
     /// will be generated and added to the document before insertion.
     public let insertedId: BSONValue
+
+    internal init?(from result: BulkWriteResult?) throws {
+        guard let result = result else {
+            return nil
+        }
+        guard let id = result.insertedIds[0] else {
+            throw RuntimeError.internalError(message: "BulkWriteResult missing _id for inserted document")
+        }
+        self.insertedId = id
+    }
 }
 
 /// The result of a multi-document insert operation on a `MongoCollection`.
@@ -407,7 +335,6 @@ public struct InsertManyResult {
         guard let result = result else {
             return nil
         }
-
         self.insertedCount = result.insertedCount
         self.insertedIds = result.insertedIds
     }
@@ -417,6 +344,13 @@ public struct InsertManyResult {
 public struct DeleteResult: Decodable {
     /// The number of documents that were deleted.
     public let deletedCount: Int
+
+    internal init?(from result: BulkWriteResult?) throws {
+        guard let result = result else {
+            return nil
+        }
+        self.deletedCount = result.deletedCount
+    }
 }
 
 /// The result of an `update` operation a `MongoCollection`.
@@ -428,8 +362,38 @@ public struct UpdateResult: Decodable {
     public let modifiedCount: Int
 
     /// The identifier of the inserted document if an upsert took place.
-    public let upsertedId: AnyBSONValue?
+    public let upsertedId: BSONValue?
 
     /// The number of documents that were upserted.
     public let upsertedCount: Int
+
+    internal init?(from result: BulkWriteResult?) throws {
+        guard let result = result else {
+            return nil
+        }
+        self.matchedCount = result.matchedCount
+        self.modifiedCount = result.modifiedCount
+        self.upsertedCount = result.upsertedCount
+        if result.upsertedCount == 1 {
+            guard let id = result.upsertedIds[0] else {
+                throw RuntimeError.internalError(message: "BulkWriteResult missing _id for upserted document")
+            }
+            self.upsertedId = id
+        } else {
+            self.upsertedId = nil
+        }
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case matchedCount, modifiedCount, upsertedId, upsertedCount
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.matchedCount = try container.decode(Int.self, forKey: .matchedCount)
+        self.modifiedCount = try container.decode(Int.self, forKey: .modifiedCount)
+        let id = try container.decodeIfPresent(AnyBSONValue.self, forKey: .upsertedId)
+        self.upsertedId = id?.value
+        self.upsertedCount = try container.decode(Int.self, forKey: .upsertedCount)
+    }
 }

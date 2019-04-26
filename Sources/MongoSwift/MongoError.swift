@@ -278,6 +278,23 @@ private func getBulkWriteErrorFromReply(
     )
 }
 
+/// Internal function used by write methods performing single writes that are implemented via the bulk API. Catches any
+/// ServerError.bulkWriteErrors thrown by the given closure and converts them to ServerError.writeErrors. All other
+/// errors will be propagated as-is.
+internal func convertingBulkWriteErrors<T>(_ body: () throws -> T) throws -> T {
+    do {
+        return try body()
+    } catch let ServerError.bulkWriteError(bulkWriteErrors, writeConcernError, _, errorLabels) {
+        var writeError: WriteError?
+        if let bwe = bulkWriteErrors?[0] {
+            writeError = WriteError(code: bwe.code, message: bwe.message)
+        }
+        throw ServerError.writeError(writeError: writeError,
+                                     writeConcernError: writeConcernError,
+                                     errorLabels: errorLabels)
+    }
+}
+
 internal func toErrorString(_ error: bson_error_t) -> String {
     var e = error
     return withUnsafeBytes(of: &e.message) { rawPtr -> String in
