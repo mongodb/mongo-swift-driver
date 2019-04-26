@@ -7,6 +7,13 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         continueAfterFailure = false
     }
 
+    override func tearDown() {
+        guard let client = try? MongoClient(MongoSwiftTestCase.connStr) else {
+            return
+        }
+        try? client.db(type(of: self).testDatabase).drop()
+    }
+
     func testMongoDatabase() throws {
         let client = try MongoClient(MongoSwiftTestCase.connStr)
         let db = client.db(type(of: self).testDatabase)
@@ -38,26 +45,25 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
     func testCreateCollection() throws {
         let client = try MongoClient(MongoSwiftTestCase.connStr)
         let db = client.db(type(of: self).testDatabase)
-        defer { try? db.drop() }
 
         let indexOpts: Document =
             ["storageEngine": ["wiredTiger": ["configString": "access_pattern_hint=random"] as Document] as Document]
 
         // test non-view options
-        let options = CreateCollectionOptions(
+        let fooOptions = CreateCollectionOptions(
             autoIndexId: true,
             capped: true,
             collation: ["locale": "fr"],
             indexOptionDefaults: indexOpts,
             max: 1000,
-            size: 10000,
+            size: 10240,
             storageEngine: ["wiredTiger": ["configString": "access_pattern_hint=random"] as Document],
             validationAction: "warn",
             validationLevel: "moderate",
             validator: ["phone": ["$type": "string"] as Document],
             writeConcern: try WriteConcern(w: .majority)
         )
-        expect(try db.createCollection("foo", options: options)).toNot(throwError())
+        expect(try db.createCollection("foo", options: fooOptions)).toNot(throwError())
 
         // test view options
         let viewOptions = CreateCollectionOptions(
@@ -66,5 +72,48 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         )
 
         expect(try db.createCollection("fooView", options: viewOptions)).toNot(throwError())
+
+        let decoder = BSONDecoder()
+        var collectionInfo = try db.listCollections().map { try decoder.decode(CollectionInfo.self, from: $0) }
+        collectionInfo.sort { $0.name < $1.name }
+
+        expect(collectionInfo).to(haveCount(3))
+
+        let expectedFoo = CollectionInfo(name: "foo", type: "collection", options: fooOptions)
+        expect(collectionInfo[0]).to(equal(expectedFoo))
+
+        let expectedView = CollectionInfo(name: "fooView", type: "view", options: viewOptions)
+        expect(collectionInfo[1]).to(equal(expectedView))
+
+        expect(collectionInfo[2].name).to(equal("system.views"))
+    }
+}
+
+struct CollectionInfo: Decodable, Equatable {
+    let name: String
+    let type: String
+    let options: CreateCollectionOptions
+}
+
+extension CreateCollectionOptions: Equatable {
+    // This omits the coding strategy properties (they're not sent to/stored on the server so would not be
+    // round-tripped), along with `writeConcern`, since that is used only for the "create" command itself
+    // and is not a property of the collection.
+    public static func == (lhs: CreateCollectionOptions, rhs: CreateCollectionOptions) -> Bool {
+        return rhs.capped == lhs.capped &&
+               rhs.autoIndexId == lhs.autoIndexId &&
+               lhs.size == rhs.size &&
+               lhs.max == rhs.max &&
+               lhs.storageEngine == rhs.storageEngine &&
+               lhs.validator == rhs.validator &&
+               lhs.validationLevel == rhs.validationLevel &&
+               lhs.validationAction == rhs.validationAction &&
+               lhs.indexOptionDefaults == rhs.indexOptionDefaults &&
+               lhs.viewOn == rhs.viewOn &&
+               lhs.pipeline == rhs.pipeline &&
+               lhs.collation?["locale"] as? String == rhs.collation?["locale"] as? String
+               // ^ server adds a bunch of extra fields and a version number
+               // to collations. rather than deal with those, just verify the
+               // locale matches.
     }
 }

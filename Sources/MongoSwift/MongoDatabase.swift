@@ -51,7 +51,7 @@ public struct ListCollectionsOptions: Encodable {
 }
 
 /// Options to use when executing a `createCollection` command on a `MongoDatabase`.
-public struct CreateCollectionOptions: Encodable, CodingStrategyProvider {
+public struct CreateCollectionOptions: Codable, CodingStrategyProvider {
     /// Indicates whether this will be a capped collection.
     public let capped: Bool?
 
@@ -94,20 +94,24 @@ public struct CreateCollectionOptions: Encodable, CodingStrategyProvider {
     /// retrieve the collection using `MongoDatabase.collection`.
     public let writeConcern: WriteConcern?
 
+    // swiftlint:disable redundant_optional_initialization
+    // to get synthesized decodable conformance for the struct, these strategies need default values.
+
     /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
     /// It is the responsibility of the user to ensure that any `Date`s already stored in this collection can be
     /// decoded using this strategy.
-    public let dateCodingStrategy: DateCodingStrategy?
+    public var dateCodingStrategy: DateCodingStrategy? = nil
 
     /// Specifies the `UUIDCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
     /// It is the responsibility of the user to ensure that any `UUID`s already stored in this collection can be
     /// decoded using this strategy.
-    public let uuidCodingStrategy: UUIDCodingStrategy?
+    public var uuidCodingStrategy: UUIDCodingStrategy? = nil
 
     /// Specifies the `DataCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
     /// It is the responsibility of the user to ensure that any `Data`s already stored in this collection can be
     /// decoded using this strategy.
-    public let dataCodingStrategy: DataCodingStrategy?
+    public var dataCodingStrategy: DataCodingStrategy? = nil
+    // swiftlint:enable redundant_optional_initialization
 
     private enum CodingKeys: String, CodingKey {
         case capped, autoIndexId, size, max, storageEngine, validator, validationLevel, validationAction,
