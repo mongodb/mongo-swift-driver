@@ -6,24 +6,14 @@ internal typealias MutableClientSessionPointer = OpaquePointer
 /// Options to use when creating a ClientSession.
 public struct ClientSessionOptions {}
 
-/// Private wrapper of a mongoc_session_opt_t.
-private class SessionOptWrapper {
-    /// Opaque pointer to a `mongoc_session_opt_t`
-    fileprivate var _opts: OpaquePointer?
-
-    fileprivate init(from options: ClientSessionOptions?) {
-        guard options != nil else {
-            return
-        }
-        self._opts = mongoc_session_opts_new()
-    }
-
-    deinit {
-        guard let opts = self._opts else {
-            return
-        }
-        mongoc_session_opts_destroy(opts)
-    }
+/// Private helper for providing a `mongoc_session_opt_t` that is only valid within the body of the provided
+/// closure.
+private func withSessionOpts<T>(wrapping options: ClientSessionOptions?,
+                                _ body: (OpaquePointer) throws -> T) rethrows -> T {
+    // swiftlint:disable:next force_unwrapping
+    var opts = mongoc_session_opts_new()! // always returns a value
+    defer { mongoc_session_opts_destroy(opts) }
+    return try body(opts)
 }
 
 /// A MongoDB client session.
@@ -61,14 +51,15 @@ public final class ClientSession {
         self.options = options
         self.client = client
 
-        let opts = SessionOptWrapper(from: options)
-        var error = bson_error_t()
-        guard let session = mongoc_client_start_session(client._client, opts._opts, &error) else {
-            throw parseMongocError(error)
+        self._session = try withSessionOpts(wrapping: options) { opts in
+            var error = bson_error_t()
+            guard let session = mongoc_client_start_session(client._client, opts, &error) else {
+                throw parseMongocError(error)
+            }
+            return session
         }
         // swiftlint:disable:next force_unwrapping
-        self.id = Document(copying: mongoc_client_session_get_lsid(session)!) // always returns a value
-        self._session = session
+        self.id = Document(copying: mongoc_client_session_get_lsid(self._session)!) // always returns a value
     }
 
     /// Destroy the underlying `mongoc_client_session_t` and set this session to inactive.

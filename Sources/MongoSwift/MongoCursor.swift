@@ -1,8 +1,10 @@
 import mongoc
 
+internal typealias MutableCursorPointer = OpaquePointer
+
 /// A MongoDB cursor.
 public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
-    private var _cursor: OpaquePointer?
+    private var _cursor: MutableCursorPointer?
     private var _client: MongoClient?
     private var _session: ClientSession?
 
@@ -18,7 +20,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
      *   - `UserError.invalidArgumentError` if the options passed to the command that generated this cursor formed an
      *     invalid combination.
      */
-    internal init(from cursor: OpaquePointer,
+    internal init(from cursor: MutableCursorPointer,
                   client: MongoClient,
                   decoder: BSONDecoder,
                   session: ClientSession?) throws {
