@@ -170,6 +170,7 @@ extension MongoCollection_BulkWriteTests {
 extension MongoDatabaseTests {
     static var allTests = [
         ("testMongoDatabase", testMongoDatabase),
+        ("testCreateCollection", testCreateCollection),
     ]
 }
 

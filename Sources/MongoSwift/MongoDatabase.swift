@@ -51,7 +51,7 @@ public struct ListCollectionsOptions: Encodable {
 }
 
 /// Options to use when executing a `createCollection` command on a `MongoDatabase`.
-public struct CreateCollectionOptions: Encodable, CodingStrategyProvider {
+public struct CreateCollectionOptions: Codable, CodingStrategyProvider {
     /// Indicates whether this will be a capped collection.
     public let capped: Bool?
 
@@ -64,7 +64,7 @@ public struct CreateCollectionOptions: Encodable, CodingStrategyProvider {
     /// Maximum number of documents allowed in the collection (if capped).
     public let max: Int64?
 
-    /// Determine which storage engine to use.
+    /// Specifies storage engine configuration for this collection.
     public let storageEngine: Document?
 
     /// What validator should be used for the collection.
@@ -77,40 +77,45 @@ public struct CreateCollectionOptions: Encodable, CodingStrategyProvider {
     /// to be inserted.
     public let validationAction: String?
 
-    /// Allows users to specify a default configuration for indexes when creating a collection.
+    /// Specify a default configuration for indexes created on this collection.
     public let indexOptionDefaults: Document?
 
     /// The name of the source collection or view from which to create the view.
     public let viewOn: String?
 
+    /// An array consisting of aggregation pipeline stages. When used with `viewOn`, will create the view by applying
+    /// this pipeline to the source collection or view.
+    public let pipeline: [Document]?
+
     /// Specifies the default collation for the collection.
     public let collation: Document?
-
-    /// A session to associate with this operation.
-    public let session: ClientSession?
 
     /// A write concern to use when executing this command. To set a read or write concern for the collection itself,
     /// retrieve the collection using `MongoDatabase.collection`.
     public let writeConcern: WriteConcern?
 
+    // swiftlint:disable redundant_optional_initialization
+    // to get synthesized decodable conformance for the struct, these strategies need default values.
+
     /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
     /// It is the responsibility of the user to ensure that any `Date`s already stored in this collection can be
     /// decoded using this strategy.
-    public let dateCodingStrategy: DateCodingStrategy?
+    public var dateCodingStrategy: DateCodingStrategy? = nil
 
     /// Specifies the `UUIDCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
     /// It is the responsibility of the user to ensure that any `UUID`s already stored in this collection can be
     /// decoded using this strategy.
-    public let uuidCodingStrategy: UUIDCodingStrategy?
+    public var uuidCodingStrategy: UUIDCodingStrategy? = nil
 
     /// Specifies the `DataCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
     /// It is the responsibility of the user to ensure that any `Data`s already stored in this collection can be
     /// decoded using this strategy.
-    public let dataCodingStrategy: DataCodingStrategy?
+    public var dataCodingStrategy: DataCodingStrategy? = nil
+    // swiftlint:enable redundant_optional_initialization
 
     private enum CodingKeys: String, CodingKey {
         case capped, autoIndexId, size, max, storageEngine, validator, validationLevel, validationAction,
-             indexOptionDefaults, viewOn, collation, session, writeConcern
+             indexOptionDefaults, viewOn, pipeline, collation, writeConcern
     }
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional.
@@ -119,7 +124,7 @@ public struct CreateCollectionOptions: Encodable, CodingStrategyProvider {
                 collation: Document? = nil,
                 indexOptionDefaults: Document? = nil,
                 max: Int64? = nil,
-                session: ClientSession? = nil,
+                pipeline: [Document]? = nil,
                 size: Int64? = nil,
                 storageEngine: Document? = nil,
                 validationAction: String? = nil,
@@ -135,7 +140,7 @@ public struct CreateCollectionOptions: Encodable, CodingStrategyProvider {
         self.collation = collation
         self.indexOptionDefaults = indexOptionDefaults
         self.max = max
-        self.session = session
+        self.pipeline = pipeline
         self.size = size
         self.storageEngine = storageEngine
         self.validationAction = validationAction
