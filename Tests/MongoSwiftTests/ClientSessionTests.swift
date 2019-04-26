@@ -66,6 +66,8 @@ final class ClientSessionTests: MongoSwiftTestCase {
         let name: String
         let body: (ClientSession?) throws -> Void
 
+        // Executes the body twice, once with the supplied session and once without, verifying that a correct lsid is
+        // seen both times.
         func execute(session: ClientSession) throws {
             let center = NotificationCenter.default
 
