@@ -468,7 +468,7 @@ extension _BSONDecoder {
 }
 
 /// A keyed decoding container, backed by a `Document`.
-private struct _BSONKeyedDecodingContainer<K: CodingKey> : KeyedDecodingContainerProtocol {
+private struct _BSONKeyedDecodingContainer<K: CodingKey>: KeyedDecodingContainerProtocol {
     typealias Key = K
 
     /// A reference to the decoder we're reading from.
