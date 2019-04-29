@@ -412,7 +412,8 @@ public class MongoDatabase {
         let opts = try self.encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
-        guard mongoc_database_command_with_opts(self._database, command.data, rp?._readPreference, opts?.data, reply.data, &error) else {
+        guard mongoc_database_command_with_opts(
+            self._database, command.data, rp?._readPreference, opts?.data, reply.data, &error) else {
             throw getErrorFromReply(bsonError: error, from: reply)
         }
         return reply
