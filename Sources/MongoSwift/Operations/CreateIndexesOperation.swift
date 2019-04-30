@@ -40,14 +40,13 @@ internal struct CreateIndexesOperation<T: Codable>: Operation {
 
         let command: Document = ["createIndexes": self.collection.name, "indexes": indexData]
 
-        var opts = try self.collection.encoder.encode(self.options) ?? Document()
-        try self.session?.append(to: &opts)
+        let opts = try combine(options: options, session: session, using: self.collection.encoder)
 
         var error = bson_error_t()
         let reply = Document()
 
         guard mongoc_collection_write_command_with_opts(
-            self.collection._collection, command.data, opts.data, reply.data, &error) else {
+            self.collection._collection, command.data, opts?.data, reply.data, &error) else {
             throw getErrorFromReply(bsonError: error, from: reply)
         }
 

@@ -26,8 +26,7 @@ extension MongoCollection {
             throw UserError.invalidArgumentError(message: "requests cannot be empty")
         }
 
-        var opts = try self.encoder.encode(options) ?? Document()
-        try session?.append(to: &opts)
+        let opts = try combine(options: options, session: session, using: self.encoder)
         let bulk = BulkWriteOperation(collection: self._collection, opts: opts, withEncoder: self.encoder)
 
         try requests.enumerated().forEach { index, model in

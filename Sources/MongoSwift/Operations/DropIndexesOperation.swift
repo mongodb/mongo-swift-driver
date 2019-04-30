@@ -30,13 +30,12 @@ internal struct DropIndexesOperation<T: Codable>: Operation {
 
     internal func execute() throws -> Document {
         let command: Document = ["dropIndexes": self.collection.name, "index": self.index]
-        var opts = try self.collection.encoder.encode(self.options) ?? Document()
-        try self.session?.append(to: &opts)
+        let opts = try combine(options: self.options, session: self.session, using: self.collection.encoder)
 
         let reply = Document()
         var error = bson_error_t()
         guard mongoc_collection_write_command_with_opts(
-            self.collection._collection, command.data, opts.data, reply.data, &error) else {
+            self.collection._collection, command.data, opts?.data, reply.data, &error) else {
             throw getErrorFromReply(bsonError: error, from: reply)
         }
         return reply

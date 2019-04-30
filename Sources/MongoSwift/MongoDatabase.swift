@@ -352,11 +352,10 @@ public class MongoDatabase {
                                              withType: T.Type,
                                              options: CreateCollectionOptions? = nil,
                                              session: ClientSession? = nil) throws -> MongoCollection<T> {
-        var opts = try self.encoder.encode(options) ?? Document()
-        try session?.append(to: &opts)
+        let opts = try combine(options: options, session: session, using: self.encoder)
         var error = bson_error_t()
 
-        guard let collection = mongoc_database_create_collection(self._database, name, opts.data, &error) else {
+        guard let collection = mongoc_database_create_collection(self._database, name, opts?.data, &error) else {
             throw parseMongocError(error)
         }
 
@@ -386,10 +385,9 @@ public class MongoDatabase {
      */
     public func listCollections(options: ListCollectionsOptions? = nil,
                                 session: ClientSession? = nil) throws -> MongoCursor<Document> {
-        var opts = try self.encoder.encode(options) ?? Document()
-        try session?.append(to: &opts)
+        let opts = try combine(options: options, session: session, using: self.encoder)
 
-        guard let collections = mongoc_database_find_collections_with_opts(self._database, opts.data) else {
+        guard let collections = mongoc_database_find_collections_with_opts(self._database, opts?.data) else {
             fatalError("Couldn't get cursor from the server")
         }
 
@@ -417,12 +415,11 @@ public class MongoDatabase {
                            options: RunCommandOptions? = nil,
                            session: ClientSession? = nil) throws -> Document {
         let rp = options?.readPreference ?? self.readPreference
-        var opts = try self.encoder.encode(options) ?? Document()
-        try session?.append(to: &opts)
+        let opts = try combine(options: options, session: session, using: self.encoder)
         let reply = Document()
         var error = bson_error_t()
         guard mongoc_database_command_with_opts(
-            self._database, command.data, rp?._readPreference, opts.data, reply.data, &error) else {
+            self._database, command.data, rp?._readPreference, opts?.data, reply.data, &error) else {
             throw getErrorFromReply(bsonError: error, from: reply)
         }
         return reply

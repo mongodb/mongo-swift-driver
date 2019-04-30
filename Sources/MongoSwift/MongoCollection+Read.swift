@@ -19,11 +19,10 @@ extension MongoCollection {
     public func find(_ filter: Document = [:],
                      options: FindOptions? = nil,
                      session: ClientSession? = nil) throws -> MongoCursor<CollectionType> {
-        var opts = try self.encoder.encode(options) ?? Document()
-        try session?.append(to: &opts)
+        let opts = try combine(options: options, session: session, using: self.encoder)
         let rp = options?.readPreference?._readPreference
 
-        guard let cursor = mongoc_collection_find_with_opts(self._collection, filter.data, opts.data, rp) else {
+        guard let cursor = mongoc_collection_find_with_opts(self._collection, filter.data, opts?.data, rp) else {
             fatalError("Couldn't get cursor from the server")
         }
         return try MongoCursor(from: cursor, client: self._client, decoder: self.decoder, session: session)
@@ -46,13 +45,12 @@ extension MongoCollection {
     public func aggregate(_ pipeline: [Document],
                           options: AggregateOptions? = nil,
                           session: ClientSession? = nil) throws -> MongoCursor<Document> {
-        var opts = try self.encoder.encode(options) ?? Document()
-        try session?.append(to: &opts)
+        let opts = try combine(options: options, session: session, using: self.encoder)
         let rp = options?.readPreference?._readPreference
         let pipeline: Document = ["pipeline": pipeline]
 
         guard let cursor = mongoc_collection_aggregate(
-            self._collection, MONGOC_QUERY_NONE, pipeline.data, opts.data, rp) else {
+            self._collection, MONGOC_QUERY_NONE, pipeline.data, opts?.data, rp) else {
             fatalError("Couldn't get cursor from the server")
         }
         return try MongoCursor(from: cursor, client: self._client, decoder: self.decoder, session: session)

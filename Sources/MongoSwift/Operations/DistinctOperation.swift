@@ -58,13 +58,12 @@ internal struct DistinctOperation<T: Codable> {
             "query": self.filter
         ]
 
-        var opts = try collection.encoder.encode(self.options) ?? Document()
-        try session?.append(to: &opts)
+        let opts = try combine(options: self.options, session: self.session, using: self.collection.encoder)
         let rp = self.options?.readPreference?._readPreference
         let reply = Document()
         var error = bson_error_t()
         guard mongoc_collection_read_command_with_opts(
-            self.collection._collection, command.data, rp, opts.data, reply.data, &error) else {
+            self.collection._collection, command.data, rp, opts?.data, reply.data, &error) else {
             throw parseMongocError(error, errorLabels: reply["errorLabels"] as? [String])
         }
 

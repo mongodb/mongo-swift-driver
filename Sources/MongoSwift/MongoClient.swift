@@ -283,9 +283,8 @@ public class MongoClient {
      */
     public func listDatabases(options: ListDatabasesOptions? = nil,
                               session: ClientSession? = nil) throws -> MongoCursor<Document> {
-        var opts = try self.encoder.encode(options) ?? Document()
-        try session?.append(to: &opts)
-        guard let cursor = mongoc_client_find_databases_with_opts(self._client, opts.data) else {
+        let opts = try combine(options: options, session: session, using: self.encoder)
+        guard let cursor = mongoc_client_find_databases_with_opts(self._client, opts?.data) else {
             fatalError("Couldn't get cursor from the server")
         }
         return try MongoCursor(from: cursor, client: self, decoder: self.decoder, session: session)

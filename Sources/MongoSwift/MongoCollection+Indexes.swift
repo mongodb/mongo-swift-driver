@@ -330,12 +330,8 @@ extension MongoCollection {
      * - Throws: `UserError.logicError` if the provided session is inactive.
      */
     public func listIndexes(session: ClientSession? = nil) throws -> MongoCursor<Document> {
-        var opts: Document?
-        if let session = session {
-            var sessionOpts = Document()
-            try session.append(to: &sessionOpts)
-            opts = sessionOpts
-        }
+        // need this cast to infer a generic type
+        let opts = try combine(options: nil as DropIndexOptions?, session: session, using: self.encoder)
 
         guard let cursor = mongoc_collection_find_indexes_with_opts(self._collection, opts?.data) else {
             fatalError("Couldn't get cursor from the server")
