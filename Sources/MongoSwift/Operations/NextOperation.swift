@@ -13,6 +13,10 @@ internal struct NextOperation<T: Codable>: Operation {
             throw UserError.logicError(message: "Tried to iterate a closed cursor.")
         }
 
+        if let session = self.cursor._session, !session.active {
+            throw ClientSession.SessionInactiveError
+        }
+
         let out = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
         defer {
             out.deinitialize(count: 1)

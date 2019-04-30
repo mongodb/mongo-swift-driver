@@ -4,7 +4,7 @@ import mongoc
 public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     internal var _cursor: OpaquePointer?
     private var _client: MongoClient?
-    private var _session: ClientSession?
+    internal var _session: ClientSession?
 
     private var swiftError: Error?
 
