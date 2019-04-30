@@ -2,9 +2,6 @@ import mongoc
 
 /// Options to use when running a command against a `MongoDatabase`.
 public struct RunCommandOptions: Encodable {
-    /// A session to associate with this operation.
-    public let session: ClientSession?
-
     /// An optional `ReadConcern` to use for this operation.
     public let readConcern: ReadConcern?
 
@@ -17,16 +14,13 @@ public struct RunCommandOptions: Encodable {
     /// Convenience initializer allowing session to be omitted or optional.
     public init(readConcern: ReadConcern? = nil,
                 readPreference: ReadPreference? = nil,
-                session: ClientSession? = nil,
                 writeConcern: WriteConcern? = nil) {
         self.readConcern = readConcern
         self.readPreference = readPreference
-        self.session = session
         self.writeConcern = writeConcern
     }
 
     private enum CodingKeys: String, CodingKey {
-        // TODO: Encode ClientSession as "sessionId" (see: SWIFT-28)
         case readConcern, writeConcern
     }
 }
@@ -39,14 +33,10 @@ public struct ListCollectionsOptions: Encodable {
     /// The batchSize for the returned cursor.
     public let batchSize: Int?
 
-    /// A session to associate with this operation.
-    public let session: ClientSession?
-
-    /// Convenience initializer allowing any/all parameters to be omitted or optional.
-    public init(batchSize: Int? = nil, filter: Document? = nil, session: ClientSession? = nil) {
+    /// Convenience initializer allowing any/all parameters to be omitted or optional
+    public init(batchSize: Int? = nil, filter: Document? = nil) {
         self.batchSize = batchSize
         self.filter = filter
-        self.session = session
     }
 }
 
@@ -327,10 +317,17 @@ public class MongoDatabase {
      *   - options: Optional `CreateCollectionOptions` to use for the collection
      *
      * - Returns: the newly created `MongoCollection<Document>`
+     *
+     * - Throws:
+     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `UserError.logicError` if the provided session is inactive.
+     *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func createCollection(_ name: String,
-                                 options: CreateCollectionOptions? = nil) throws -> MongoCollection<Document> {
-        return try self.createCollection(name, withType: Document.self, options: options)
+                                 options: CreateCollectionOptions? = nil,
+                                 session: ClientSession? = nil) throws -> MongoCollection<Document> {
+        return try self.createCollection(name, withType: Document.self, options: options, session: session)
     }
 
     /**
@@ -348,12 +345,14 @@ public class MongoDatabase {
      * - Throws:
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `UserError.logicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func createCollection<T: Codable>(_ name: String,
                                              withType: T.Type,
-                                             options: CreateCollectionOptions? = nil) throws -> MongoCollection<T> {
-        let opts = try self.encoder.encode(options)
+                                             options: CreateCollectionOptions? = nil,
+                                             session: ClientSession? = nil) throws -> MongoCollection<T> {
+        let opts = try encodeOptions(options: options, session: session)
         var error = bson_error_t()
 
         guard let collection = mongoc_database_create_collection(self._database, name, opts?.data, &error) else {
@@ -380,15 +379,19 @@ public class MongoDatabase {
      *
      * - Returns: a `MongoCursor` over an array of collections
      *
-     * - Throws: A `userError.invalidArgumentError` if the options passed are an invalid combination.
+     * - Throws:
+     *   - `userError.invalidArgumentError` if the options passed are an invalid combination.
+     *   - `UserError.logicError` if the provided session is inactive.
      */
-    public func listCollections(options: ListCollectionsOptions? = nil) throws -> MongoCursor<Document> {
-        let opts = try self.encoder.encode(options)
+    public func listCollections(options: ListCollectionsOptions? = nil,
+                                session: ClientSession? = nil) throws -> MongoCursor<Document> {
+        let opts = try encodeOptions(options: options, session: session)
+
         guard let collections = mongoc_database_find_collections_with_opts(self._database, opts?.data) else {
             fatalError("Couldn't get cursor from the server")
         }
 
-        return try MongoCursor(fromCursor: collections, withClient: self._client, withDecoder: self.decoder)
+        return try MongoCursor(from: collections, client: self._client, decoder: self.decoder, session: session)
     }
 
     /**
@@ -402,14 +405,17 @@ public class MongoDatabase {
      *
      * - Throws:
      *   - `UserError.invalidArgumentError` if `requests` is empty.
+     *   - `UserError.logicError` if the provided session is inactive.
      *   - `ServerError.writeError` if any error occurs while the command was performing a write.
      *   - `ServerError.commandError` if an error occurs that prevents the command from being performed.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     @discardableResult
-    public func runCommand(_ command: Document, options: RunCommandOptions? = nil) throws -> Document {
+    public func runCommand(_ command: Document,
+                           options: RunCommandOptions? = nil,
+                           session: ClientSession? = nil) throws -> Document {
         let rp = options?.readPreference ?? self.readPreference
-        let opts = try self.encoder.encode(options)
+        let opts = try encodeOptions(options: options, session: session)
         let reply = Document()
         var error = bson_error_t()
         guard mongoc_database_command_with_opts(

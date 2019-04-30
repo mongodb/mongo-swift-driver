@@ -18,6 +18,17 @@ extension BSONValueTests {
     ]
 }
 
+extension ClientSessionTests {
+    static var allTests = [
+        ("testSessionCleanup", testSessionCleanup),
+        ("testSessionArguments", testSessionArguments),
+        ("testSessionClientValidation", testSessionClientValidation),
+        ("testInactiveSession", testInactiveSession),
+        ("testSessionCursor", testSessionCursor),
+        ("testClusterTime", testClusterTime),
+    ]
+}
+
 extension CodecTests {
     static var allTests = [
         ("testEncodeListDatabasesOptions", testEncodeListDatabasesOptions),
@@ -207,6 +218,7 @@ extension SDAMTests {
 
 XCTMain([
     testCase(BSONValueTests.allTests),
+    testCase(ClientSessionTests.allTests),
     testCase(CodecTests.allTests),
     testCase(CommandMonitoringTests.allTests),
     testCase(CrudTests.allTests),

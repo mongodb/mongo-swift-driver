@@ -4,6 +4,8 @@ import mongoc
 public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     private var _cursor: OpaquePointer?
     private var _client: MongoClient?
+    private var _session: ClientSession?
+
     private var swiftError: Error?
 
     /// Decoder from the `MongoCollection` or `MongoDatabase` that created this cursor.
@@ -16,12 +18,18 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
      *   - `UserError.invalidArgumentError` if the options passed to the command that generated this cursor formed an
      *     invalid combination.
      */
-    internal init(fromCursor cursor: OpaquePointer,
-                  withClient client: MongoClient,
-                  withDecoder decoder: BSONDecoder) throws {
+    internal init(from cursor: OpaquePointer,
+                  client: MongoClient,
+                  decoder: BSONDecoder,
+                  session: ClientSession?) throws {
         self._cursor = cursor
         self._client = client
+        self._session = session
         self.decoder = decoder
+
+        if let session = session, !session.active {
+            throw ClientSession.SessionInactiveError
+        }
 
         if let err = self.error {
             // Need to explicitly close since deinit will not execute if we throw.
@@ -45,12 +53,13 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
 
     /// Closes the cursor.
     public func close() {
-        self._client = nil
         guard let cursor = self._cursor else {
             return
         }
         mongoc_cursor_destroy(cursor)
         self._cursor = nil
+        self._client = nil
+        self._session = nil
     }
 
     /**
@@ -60,6 +69,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
      * - Throws:
      *   - `ServerError.commandError` if an error occurs on the server while iterating the cursor.
      *   - `UserError.logicError` if this function is called after the cursor has died.
+     *   - `UserError.logicError` if this function is called and the session associated with this cursor is inactive.
      *   - `DecodingError` if an error occurs decoding the server's response.
      */
     public func nextOrError() throws -> T? {
@@ -108,6 +118,11 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     public func next() -> T? {
         guard self._cursor != nil else {
             self.swiftError = UserError.logicError(message: "Tried to iterate a closed cursor.")
+            return nil
+        }
+
+        if let session = self._session, !session.active {
+            self.swiftError = ClientSession.SessionInactiveError
             return nil
         }
 

@@ -13,16 +13,19 @@ extension MongoCollection {
      *
      * - Throws:
      *   - `UserError.invalidArgumentError` if the options passed are an invalid combination.
+     *   - `UserError.logicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
-    public func find(_ filter: Document = [:], options: FindOptions? = nil) throws -> MongoCursor<CollectionType> {
-        let opts = try self.encoder.encode(options)
+    public func find(_ filter: Document = [:],
+                     options: FindOptions? = nil,
+                     session: ClientSession? = nil) throws -> MongoCursor<CollectionType> {
+        let opts = try encodeOptions(options: options, session: session)
         let rp = options?.readPreference?._readPreference
 
         guard let cursor = mongoc_collection_find_with_opts(self._collection, filter.data, opts?.data, rp) else {
             fatalError("Couldn't get cursor from the server")
         }
-        return try MongoCursor(fromCursor: cursor, withClient: self._client, withDecoder: self.decoder)
+        return try MongoCursor(from: cursor, client: self._client, decoder: self.decoder, session: session)
     }
 
     /**
@@ -36,10 +39,13 @@ extension MongoCollection {
      *
      * - Throws:
      *   - `UserError.invalidArgumentError` if the options passed are an invalid combination.
+     *   - `UserError.logicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
-    public func aggregate(_ pipeline: [Document], options: AggregateOptions? = nil) throws -> MongoCursor<Document> {
-        let opts = try self.encoder.encode(options)
+    public func aggregate(_ pipeline: [Document],
+                          options: AggregateOptions? = nil,
+                          session: ClientSession? = nil) throws -> MongoCursor<Document> {
+        let opts = try encodeOptions(options: options, session: session)
         let rp = options?.readPreference?._readPreference
         let pipeline: Document = ["pipeline": pipeline]
 
@@ -47,7 +53,7 @@ extension MongoCollection {
             self._collection, MONGOC_QUERY_NONE, pipeline.data, opts?.data, rp) else {
             fatalError("Couldn't get cursor from the server")
         }
-        return try MongoCursor(fromCursor: cursor, withClient: self._client, withDecoder: self.decoder)
+        return try MongoCursor(from: cursor, client: self._client, decoder: self.decoder, session: session)
     }
 
     // TODO SWIFT-133: mark this method deprecated https://jira.mongodb.org/browse/SWIFT-133
@@ -65,8 +71,10 @@ extension MongoCollection {
      *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
-    public func count(_ filter: Document = [:], options: CountOptions? = nil) throws -> Int {
-        let operation = CountOperation(collection: self, filter: filter, options: options)
+    public func count(_ filter: Document = [:],
+                      options: CountOptions? = nil,
+                      session: ClientSession? = nil) throws -> Int {
+        let operation = CountOperation(collection: self, filter: filter, options: options, session: session)
         return try operation.execute()
     }
 
@@ -79,7 +87,9 @@ extension MongoCollection {
      *
      * - Returns: The count of the documents that matched the filter
      */
-    private func countDocuments(_ filter: Document = [:], options: CountDocumentsOptions? = nil) throws -> Int {
+    private func countDocuments(_ filter: Document = [:],
+                                options: CountDocumentsOptions? = nil,
+                                session: ClientSession? = nil) throws -> Int {
         // TODO SWIFT-133: implement this https://jira.mongodb.org/browse/SWIFT-133
         throw UserError.logicError(message: "Unimplemented command")
     }
@@ -92,7 +102,8 @@ extension MongoCollection {
      *
      * - Returns: an estimate of the count of documents in this collection
      */
-    private func estimatedDocumentCount(options: EstimatedDocumentCountOptions? = nil) throws -> Int {
+    private func estimatedDocumentCount(options: EstimatedDocumentCountOptions? = nil,
+                                        session: ClientSession? = nil) throws -> Int {
         // TODO SWIFT-133: implement this https://jira.mongodb.org/browse/SWIFT-133
         throw UserError.logicError(message: "Unimplemented command")
     }
@@ -110,12 +121,18 @@ extension MongoCollection {
      * - Throws:
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `UserError.logicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func distinct(fieldName: String,
                          filter: Document = [:],
-                         options: DistinctOptions? = nil) throws -> [BSONValue] {
-        let operation = DistinctOperation(collection: self, fieldName: fieldName, filter: filter, options: options)
+                         options: DistinctOptions? = nil,
+                         session: ClientSession? = nil) throws -> [BSONValue] {
+        let operation = DistinctOperation(collection: self,
+                                          fieldName: fieldName,
+                                          filter: filter,
+                                          options: options,
+                                          session: session)
         return try operation.execute()
     }
 }

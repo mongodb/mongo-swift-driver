@@ -54,7 +54,7 @@ public struct Document {
     internal var storage: DocumentStorage
 
     /// Returns the number of (key, value) pairs stored at the top level of this `Document`.
-    public fileprivate(set) var count: Int
+    public internal(set) var count: Int
 }
 
 /// An extension of `Document` containing its private/internal functionality.
@@ -252,7 +252,7 @@ extension Document {
      * Therefore, this function should be called just before we are about to modify a document - either by
      * setting a value or merging in another doc.
      */
-    private mutating func copyStorageIfRequired() {
+    internal mutating func copyStorageIfRequired() {
         if !isKnownUniquelyReferenced(&self.storage) {
             self.storage = DocumentStorage(copying: self.data)
         }

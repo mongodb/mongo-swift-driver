@@ -13,17 +13,20 @@ extension MongoCollection {
      *
      * - Throws:
      *   - `UserError.invalidArgumentError` if `requests` is empty.
+     *   - `UserError.logicError` if the provided session is inactive.
      *   - `ServerError.bulkWriteError` if any error occurs while performing the writes.
      *   - `ServerError.commandError` if an error occurs that prevents the operation from being performed.
      *   - `EncodingError` if an error occurs while encoding the `CollectionType` or the options to BSON.
      */
     @discardableResult
-    public func bulkWrite(_ requests: [WriteModel], options: BulkWriteOptions? = nil) throws -> BulkWriteResult? {
+    public func bulkWrite(_ requests: [WriteModel],
+                          options: BulkWriteOptions? = nil,
+                          session: ClientSession? = nil) throws -> BulkWriteResult? {
         guard !requests.isEmpty else {
             throw UserError.invalidArgumentError(message: "requests cannot be empty")
         }
 
-        let opts = try self.encoder.encode(options)
+        let opts = try encodeOptions(options: options, session: session)
         let bulk = BulkWriteOperation(collection: self._collection, opts: opts, withEncoder: self.encoder)
 
         try requests.enumerated().forEach { index, model in

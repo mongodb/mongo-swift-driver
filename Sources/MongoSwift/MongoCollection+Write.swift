@@ -17,13 +17,16 @@ extension MongoCollection {
      *   - `ServerError.writeError` if an error occurs while performing the command.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `UserError.logicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the `CollectionType` to BSON.
      */
     @discardableResult
-    public func insertOne(_ value: CollectionType, options: InsertOneOptions? = nil) throws -> InsertOneResult? {
+    public func insertOne(_ value: CollectionType,
+                          options: InsertOneOptions? = nil,
+                          session: ClientSession? = nil) throws -> InsertOneResult? {
         return try convertingBulkWriteErrors {
             let model = InsertOneModel(value)
-            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions())
+            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
             return try InsertOneResult(from: result)
         }
     }
@@ -42,12 +45,15 @@ extension MongoCollection {
      *   - `ServerError.bulkWriteError` if an error occurs while performing any of the writes.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `UserError.logicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the `CollectionType` or options to BSON.
      */
     @discardableResult
-    public func insertMany(_ values: [CollectionType], options: InsertManyOptions? = nil) throws -> InsertManyResult? {
+    public func insertMany(_ values: [CollectionType],
+                           options: InsertManyOptions? = nil,
+                           session: ClientSession? = nil) throws -> InsertManyResult? {
         let models = values.map { InsertOneModel($0) }
-        let result = try self.bulkWrite(models, options: options)
+        let result = try self.bulkWrite(models, options: options, session: session)
         return InsertManyResult(from: result)
     }
 
@@ -66,18 +72,20 @@ extension MongoCollection {
      *   - `ServerError.writeError` if an error occurs while performing the command.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `UserError.logicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the `CollectionType` or options to BSON.
      */
     @discardableResult
     public func replaceOne(filter: Document,
                            replacement: CollectionType,
-                           options: ReplaceOptions? = nil) throws -> UpdateResult? {
+                           options: ReplaceOptions? = nil,
+                           session: ClientSession? = nil) throws -> UpdateResult? {
         return try convertingBulkWriteErrors {
             let model = ReplaceOneModel(filter: filter,
                                         replacement: replacement,
                                         collation: options?.collation,
                                         upsert: options?.upsert)
-            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions())
+            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
             return try UpdateResult(from: result)
         }
     }
@@ -97,17 +105,21 @@ extension MongoCollection {
      *   - `ServerError.writeError` if an error occurs while performing the command.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `UserError.logicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     @discardableResult
-    public func updateOne(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
+    public func updateOne(filter: Document,
+                          update: Document,
+                          options: UpdateOptions? = nil,
+                          session: ClientSession? = nil) throws -> UpdateResult? {
         return try convertingBulkWriteErrors {
             let model = UpdateOneModel(filter: filter,
                                        update: update,
                                        arrayFilters: options?.arrayFilters,
                                        collation: options?.collation,
                                        upsert: options?.upsert)
-            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions())
+            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
             return try UpdateResult(from: result)
         }
     }
@@ -127,17 +139,21 @@ extension MongoCollection {
      *   - `ServerError.writeError` if an error occurs while performing the command.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `UserError.logicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     @discardableResult
-    public func updateMany(filter: Document, update: Document, options: UpdateOptions? = nil) throws -> UpdateResult? {
+    public func updateMany(filter: Document,
+                           update: Document,
+                           options: UpdateOptions? = nil,
+                           session: ClientSession? = nil) throws -> UpdateResult? {
         return try convertingBulkWriteErrors {
             let model = UpdateManyModel(filter: filter,
                                         update: update,
                                         arrayFilters: options?.arrayFilters,
                                         collation: options?.collation,
                                         upsert: options?.upsert)
-            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions())
+            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
             return try UpdateResult(from: result)
         }
     }
@@ -156,13 +172,16 @@ extension MongoCollection {
      *   - `ServerError.writeError` if an error occurs while performing the command.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `UserError.logicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     @discardableResult
-    public func deleteOne(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
+    public func deleteOne(_ filter: Document,
+                          options: DeleteOptions? = nil,
+                          session: ClientSession? = nil) throws -> DeleteResult? {
         return try convertingBulkWriteErrors {
             let model = DeleteOneModel(filter, collation: options?.collation)
-            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions())
+            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
             return try DeleteResult(from: result)
         }
     }
@@ -181,13 +200,16 @@ extension MongoCollection {
      *   - `ServerError.writeError` if an error occurs while performing the command.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `UserError.logicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     @discardableResult
-    public func deleteMany(_ filter: Document, options: DeleteOptions? = nil) throws -> DeleteResult? {
+    public func deleteMany(_ filter: Document,
+                           options: DeleteOptions? = nil,
+                           session: ClientSession? = nil) throws -> DeleteResult? {
         return try convertingBulkWriteErrors {
             let model = DeleteManyModel(filter, collation: options?.collation)
-            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions())
+            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
             return try DeleteResult(from: result)
         }
     }

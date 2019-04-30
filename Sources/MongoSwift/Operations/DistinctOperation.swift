@@ -36,15 +36,18 @@ internal struct DistinctOperation<T: Codable> {
     private let fieldName: String
     private let filter: Document
     private let options: DistinctOptions?
+    private let session: ClientSession?
 
     internal init(collection: MongoCollection<T>,
                   fieldName: String,
                   filter: Document,
-                  options: DistinctOptions?) {
+                  options: DistinctOptions?,
+                  session: ClientSession?) {
         self.collection = collection
         self.fieldName = fieldName
         self.filter = filter
         self.options = options
+        self.session = session
     }
 
     internal func execute() throws -> [BSONValue] {
@@ -55,7 +58,7 @@ internal struct DistinctOperation<T: Codable> {
             "query": self.filter
         ]
 
-        let opts = try collection.encoder.encode(self.options)
+        let opts = try encodeOptions(options: self.options, session: self.session)
         let rp = self.options?.readPreference?._readPreference
         let reply = Document()
         var error = bson_error_t()
