@@ -1,8 +1,6 @@
 import Foundation
 import mongoc
 
-internal typealias MutableClientSessionPointer = OpaquePointer
-
 /// Options to use when creating a ClientSession.
 public struct ClientSessionOptions {}
 
@@ -17,12 +15,13 @@ private func withSessionOpts<T>(wrapping options: ClientSessionOptions?,
 }
 
 /// A MongoDB client session.
+/// This class represents a logical session used for ordering sequential operations.
 public final class ClientSession {
     /// Error thrown when an inactive session is used.
     internal static var SessionInactiveError = UserError.logicError(message: "Tried to use an inactive session")
 
     /// Pointer to the underlying `mongoc_client_session_t`.
-    internal fileprivate(set) var _session: MutableClientSessionPointer?
+    internal fileprivate(set) var _session: OpaquePointer?
 
     /// Returns whether this session has been ended or not.
     internal var active: Bool { return self._session != nil }
