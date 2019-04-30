@@ -225,7 +225,7 @@ public class MongoDatabase {
 
     /// The `ReadPreference` set on this database
     public var readPreference: ReadPreference? {
-        return ReadPreference(from: mongoc_collection_get_read_prefs(self._database))
+        return ReadPreference(from: mongoc_database_get_read_prefs(self._database))
     }
 
     /// The `WriteConcern` set on this database, or `nil` if one is not set.
@@ -408,11 +408,12 @@ public class MongoDatabase {
      */
     @discardableResult
     public func runCommand(_ command: Document, options: RunCommandOptions? = nil) throws -> Document {
-        let rp = options?.readPreference?._readPreference
+        let rp = options?.readPreference ?? self.readPreference
         let opts = try self.encoder.encode(options)
         let reply = Document()
         var error = bson_error_t()
-        guard mongoc_database_command_with_opts(self._database, command.data, rp, opts?.data, reply.data, &error) else {
+        guard mongoc_database_command_with_opts(
+            self._database, command.data, rp?._readPreference, opts?.data, reply.data, &error) else {
             throw getErrorFromReply(bsonError: error, from: reply)
         }
         return reply
