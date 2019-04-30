@@ -63,7 +63,7 @@ internal struct CountOperation<T: Codable>: Operation {
     }
 
     internal func execute() throws -> Int {
-        let opts = try combine(options: options, session: session, using: self.collection.encoder)
+        let opts = try encodeOptions(options: options, session: session, using: self.collection.encoder)
         let rp = self.options?.readPreference?._readPreference
         var error = bson_error_t()
         // because we already encode skip and limit in the options,

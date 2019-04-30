@@ -19,7 +19,7 @@ extension MongoCollection {
     public func find(_ filter: Document = [:],
                      options: FindOptions? = nil,
                      session: ClientSession? = nil) throws -> MongoCursor<CollectionType> {
-        let opts = try combine(options: options, session: session, using: self.encoder)
+        let opts = try encodeOptions(options: options, session: session, using: self.encoder)
         let rp = options?.readPreference?._readPreference
 
         guard let cursor = mongoc_collection_find_with_opts(self._collection, filter.data, opts?.data, rp) else {
@@ -45,7 +45,7 @@ extension MongoCollection {
     public func aggregate(_ pipeline: [Document],
                           options: AggregateOptions? = nil,
                           session: ClientSession? = nil) throws -> MongoCursor<Document> {
-        let opts = try combine(options: options, session: session, using: self.encoder)
+        let opts = try encodeOptions(options: options, session: session, using: self.encoder)
         let rp = options?.readPreference?._readPreference
         let pipeline: Document = ["pipeline": pipeline]
 

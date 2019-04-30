@@ -8,7 +8,9 @@ internal protocol Operation {
 }
 
 /// Internal function for generating an options `Document` for passing to libmongoc.
-internal func combine<T: Encodable>(options: T?, session: ClientSession?, using encoder: BSONEncoder) throws -> Document? {
+internal func encodeOptions<T: Encodable>(options: T?,
+                                          session: ClientSession?,
+                                          using encoder: BSONEncoder) throws -> Document? {
     guard options != nil || session != nil else {
         return nil
     }
