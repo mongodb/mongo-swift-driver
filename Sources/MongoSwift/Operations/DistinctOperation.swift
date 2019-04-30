@@ -58,7 +58,7 @@ internal struct DistinctOperation<T: Codable> {
             "query": self.filter
         ]
 
-        let opts = try encodeOptions(options: self.options, session: self.session, using: self.collection.encoder)
+        let opts = try encodeOptions(options: self.options, session: self.session)
         let rp = self.options?.readPreference?._readPreference
         let reply = Document()
         var error = bson_error_t()

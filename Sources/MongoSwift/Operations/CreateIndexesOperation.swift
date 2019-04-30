@@ -40,7 +40,7 @@ internal struct CreateIndexesOperation<T: Codable>: Operation {
 
         let command: Document = ["createIndexes": self.collection.name, "indexes": indexData]
 
-        let opts = try encodeOptions(options: options, session: session, using: self.collection.encoder)
+        let opts = try encodeOptions(options: options, session: session)
 
         var error = bson_error_t()
         let reply = Document()

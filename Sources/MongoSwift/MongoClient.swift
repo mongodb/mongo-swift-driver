@@ -283,7 +283,7 @@ public class MongoClient {
      */
     public func listDatabases(options: ListDatabasesOptions? = nil,
                               session: ClientSession? = nil) throws -> MongoCursor<Document> {
-        let opts = try encodeOptions(options: options, session: session, using: self.encoder)
+        let opts = try encodeOptions(options: options, session: session)
         guard let cursor = mongoc_client_find_databases_with_opts(self._client, opts?.data) else {
             fatalError("Couldn't get cursor from the server")
         }

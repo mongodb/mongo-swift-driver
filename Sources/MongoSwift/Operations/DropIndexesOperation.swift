@@ -30,7 +30,7 @@ internal struct DropIndexesOperation<T: Codable>: Operation {
 
     internal func execute() throws -> Document {
         let command: Document = ["dropIndexes": self.collection.name, "index": self.index]
-        let opts = try encodeOptions(options: self.options, session: self.session, using: self.collection.encoder)
+        let opts = try encodeOptions(options: self.options, session: self.session)
 
         let reply = Document()
         var error = bson_error_t()
