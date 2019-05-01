@@ -2,14 +2,14 @@ import mongoc
 
 /// A MongoDB cursor.
 public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
-    private var _cursor: OpaquePointer?
+    internal var _cursor: OpaquePointer?
     private var _client: MongoClient?
-    private var _session: ClientSession?
+    internal var _session: ClientSession?
 
     private var swiftError: Error?
 
     /// Decoder from the `MongoCollection` or `MongoDatabase` that created this cursor.
-    private let decoder: BSONDecoder
+    internal let decoder: BSONDecoder
 
     /**
      * Initializes a new `MongoCursor` instance. Not meant to be instantiated directly by a user.
@@ -116,35 +116,11 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     /// Returns the next `Document` in this cursor, or nil. Once this function returns `nil`, the caller should use
     /// the `.error` property to check for errors.
     public func next() -> T? {
-        guard self._cursor != nil else {
-            self.swiftError = UserError.logicError(message: "Tried to iterate a closed cursor.")
-            return nil
-        }
-
-        if let session = self._session, !session.active {
-            self.swiftError = ClientSession.SessionInactiveError
-            return nil
-        }
-
-        let out = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
-        defer {
-            out.deinitialize(count: 1)
-            out.deallocate()
-        }
-        guard mongoc_cursor_next(self._cursor, out) else {
-            return nil
-        }
-
-        guard let pointee = out.pointee else {
-            fatalError("mongoc_cursor_next returned true, but document is nil")
-        }
-
-        // we have to copy because libmongoc owns the pointer.
-        let doc = Document(copying: pointee)
         do {
-            let outDoc = try self.decoder.decode(T.self, from: doc)
+            let operation = NextOperation(cursor: self)
+            let out = try operation.execute()
             self.swiftError = nil
-            return outDoc
+            return out
         } catch {
             self.swiftError = error
             return nil
