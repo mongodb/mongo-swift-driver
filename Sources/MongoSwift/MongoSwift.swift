@@ -16,12 +16,12 @@ internal func initializeMongoc() {
 }
 
 /**
- * Release all memory and other resources allocated by libmongoc.
+ * Release all internal memory and other resources allocated by MongoSwift.
  *
  * This function should be called once at the end of the application. Users
  * should not interact with the driver after calling this function.
  */
-public func cleanupMongoc() {
+public func cleanupMongoSwift() {
     /* Note: ideally, this would be called from MongocInitializer's deinit,
      * but Swift does not currently handle deinitialization of singletons.
      * See: https://bugs.swift.org/browse/SR-2500 */

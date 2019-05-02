@@ -213,7 +213,8 @@ public class MongoClient {
      * :nodoc:
      * Create a new client from an existing `mongoc_client_t`. The new client will destroy the `mongoc_client_t` upon
      * deinitialization.
-     * Do not use this initializer unless you know what you are doing.
+     * Do not use this initializer unless you know what you are doing. You *must* call libmongoc_init *before* using
+     * this initializer for the first time.
      *
      * If this client was derived from a pool, ensure that the error api version was set to 2 on the pool.
      *
@@ -221,9 +222,6 @@ public class MongoClient {
      *   - pointer: the `mongoc_client_t` to store and use internally
      */
     public init(stealing pointer: OpaquePointer) {
-        // Initialize mongoc. Repeated calls have no effect so this is safe to do every time.
-        initializeMongoc()
-
         self._client = pointer
 
         // This call may fail, and if it does, either the error api version was already set or the client was derived
