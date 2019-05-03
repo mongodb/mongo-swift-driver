@@ -184,7 +184,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
         let client2 = try MongoClient(MongoSwiftTestCase.connStr)
 
         let database = client1.db(type(of: self).testDatabase)
-        defer { try database.drop() }
+        defer { try? database.drop() }
         let collection = database.collection(self.getCollectionName())
 
         let session = try client2.startSession()
@@ -198,7 +198,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
     func testInactiveSession() throws {
         let client = try MongoClient(MongoSwiftTestCase.connStr)
         let db = client.db(type(of: self).testDatabase)
-        defer { try db.drop() }
+        defer { try? db.drop() }
         let collection = db.collection(self.getCollectionName())
         let session1 = try client.startSession()
 
@@ -320,7 +320,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
         let client = try MongoClient(MongoSwiftTestCase.connStr, options: ClientOptions(eventMonitoring: true))
         client.enableMonitoring()
         let db = client.db(type(of: self).testDatabase)
-        defer { try db.drop() }
+        defer { try? db.drop() }
         let collection = db.collection(self.getCollectionName())
 
         // spec test 1
@@ -478,7 +478,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
         let client = try MongoClient(MongoSwiftTestCase.connStr, options: ClientOptions(eventMonitoring: true))
         client.enableMonitoring()
         let db = client.db(type(of: self).testDatabase)
-        defer { try db.drop() }
+        defer { try? db.drop() }
         let collection = db.collection(self.getCollectionName())
 
         // spec test 7
