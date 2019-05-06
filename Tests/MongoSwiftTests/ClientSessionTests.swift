@@ -309,7 +309,8 @@ final class ClientSessionTests: MongoSwiftTestCase {
         }
     }
 
-    /// Test that causal consistency guarantees are met.
+    /// Test that causal consistency guarantees are met on deployments that support cluster time.
+    // swiftlint:disable:next cyclomatic_complexity
     func testCausalConsistency() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
             print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
@@ -323,40 +324,56 @@ final class ClientSessionTests: MongoSwiftTestCase {
         defer { try? db.drop() }
         let collection = db.collection(self.getCollectionName())
 
-        // spec test 1
-        let session1 = try client.startSession()
-        expect(session1.operationTime).to(beNil())
-        session1.end()
-
-        // spec test 2 + 3
+        // Causal consistency spec test 3: the first read/write on a session should update the operationTime of a
+        // session, even if there is an error.
         try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
-            var seenCommand = false
+            var seenCommands = 0
             let startObserver = center.addObserver(forName: .commandStarted, object: nil, queue: nil) { notif in
                 guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
                     return
                 }
-                expect((event.command["readConcern"] as? Document)?["afterClusterTime"]).to(beNil())
-                seenCommand = true
+                seenCommands += 1
             }
             defer { center.removeObserver(startObserver) }
 
-            var replyOpTime: Timestamp?
-            let succeedObserver = center.addObserver(forName: .commandSucceeded, object: nil, queue: nil) { notif in
-                guard let event = notif.userInfo?["event"] as? CommandSucceededEvent else {
+            var successReplyOpTime: Timestamp?
+            let replyObserver = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
+                switch notif.userInfo?["event"] {
+                case let event as CommandSucceededEvent:
+                    if seenCommands == 0 {
+                        successReplyOpTime = event.reply["operationTime"] as? Timestamp
+                    }
+                case let event as CommandFailedEvent:
+                    expect(seenCommands).to(equal(3))
+                default:
                     return
                 }
-                expect(seenCommand).to(beTrue())
-                replyOpTime = event.reply["operationTime"] as? Timestamp
             }
-            defer { center.removeObserver(succeedObserver) }
+            defer { center.removeObserver(replyObserver) }
 
             _ = try collection.find(session: session).next()
-            expect(seenCommand).to(beTrue())
-            expect(replyOpTime).toNot(beNil())
-            expect(replyOpTime).to(bsonEqual(session.operationTime))
+            expect(seenCommands).to(equal(1))
+            expect(successReplyOpTime).toNot(beNil())
+            expect(successReplyOpTime).to(bsonEqual(session.operationTime))
+
+            let oid = ObjectId()
+            _ = try collection.insertOne(["_id": oid])
+            expect(seenCommands).to(equal(2))
+            let insertOpTime = session.operationTime
+
+            // duplicate key error
+            _ = try? collection.insertOne(["_id": oid])
+            expect(seenCommands).to(equal(3))
+            expect(session.operationTime).toNot(bsonEqual(successReplyOpTime))
+            expect(session.operationTime).toNot(bsonEqual(insertOpTime))
         }
 
-        // spec test 4 + 8
+        // Causal consistency spec test 4: A find followed by any other read operation should
+        // include the operationTime returned by the server for the first operation in the afterClusterTime parameter of
+        // the second operation
+        //
+        // Causal consistency spec test 8: When using the default server ReadConcern the readConcern parameter in the
+        // command sent to the server should not include a level field
         try collectionSessionReadOps.forEach { op in
             try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
                 _ = try collection.find(session: session).next()
@@ -378,7 +395,9 @@ final class ClientSessionTests: MongoSwiftTestCase {
             }
         }
 
-        // spec test 5
+        // Causal consistency spec test 5: Any write operation followed by a find operation should include the
+        // operationTime of the first operation in the afterClusterTime parameter of the second operation, including the
+        // case where the first operation returned an error
         try collectionSessionWriteOps.forEach { op in
             try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
                 try? op.body(collection, session)
@@ -399,7 +418,8 @@ final class ClientSessionTests: MongoSwiftTestCase {
             }
         }
 
-        // spec test 6
+        // Causal consistency spec test 6: A read operation in a ClientSession that is not causally consistent should
+        // not include the afterClusterTime parameter in the command sent to the server
         try client.withSession(options: ClientSessionOptions(causalConsistency: false)) { session in
             var seenCommand = false
             _ = try collection.find(session: session).next()
@@ -415,7 +435,8 @@ final class ClientSessionTests: MongoSwiftTestCase {
             expect(seenCommand).to(beTrue())
         }
 
-        // spec test 9
+        // Causal consistency spec test 9: When using a custom ReadConcern the readConcern field in the command sent to
+        // the server should be a merger of the ReadConcern value and the afterClusterTime field
         try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
             let collection1 = db.collection(self.getCollectionName(),
                                             options: CollectionOptions(readConcern: ReadConcern(.snapshot)))
@@ -438,15 +459,8 @@ final class ClientSessionTests: MongoSwiftTestCase {
             expect(seenCommand).to(beTrue())
         }
 
-        // spec test 10
-        try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
-            let collection1 = db.collection(self.getCollectionName(),
-                                            options: CollectionOptions(writeConcern: try WriteConcern(w: .number(0))))
-            try collection1.insertOne(["x": 3])
-            expect(session.operationTime).to(beNil())
-        }
-
-        // spec test 12
+        // Causal consistency spec test 12: When connected to a deployment that does support cluster times messages sent
+        // to the server should include $clusterTime
         try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
             var seenCommand = false
             let observer = center.addObserver(forName: .commandStarted, object: nil, queue: nil) { notif in
@@ -476,7 +490,9 @@ final class ClientSessionTests: MongoSwiftTestCase {
         defer { try? db.drop() }
         let collection = db.collection(self.getCollectionName())
 
-        // spec test 7
+        // Causal consistency spec test 7: A read operation in a causally consistent session against a deployment that
+        // does not support cluster times does not include the afterClusterTime parameter in the command sent to the
+        // server
         try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
             _ = try collection.find(session: session).next()
 
@@ -493,7 +509,8 @@ final class ClientSessionTests: MongoSwiftTestCase {
             expect(seenCommand).to(beTrue())
         }
 
-        // spec test 11
+        // Causal consistency spec test 11: When connected to a deployment that does not support cluster times messages
+        // sent to the server should not include $clusterTime
         try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
             _ = try collection.insertOne([:], session: session)
             let opTime = session.operationTime
@@ -509,6 +526,47 @@ final class ClientSessionTests: MongoSwiftTestCase {
             defer { center.removeObserver(observer) }
             _ = try collection.listIndexes(session: session).next()
             expect(seenCommand).to(beTrue())
+        }
+    }
+
+    /// Test causal consistent behavior that is expected on any topology, regardless of whether it supports cluster time
+    func testCausalConsistencyAnyTopology() throws {
+        let center = NotificationCenter.default
+        let client = try MongoClient(MongoSwiftTestCase.connStr, options: ClientOptions(eventMonitoring: true))
+        client.enableMonitoring()
+        let db = client.db(type(of: self).testDatabase)
+        defer { try? db.drop() }
+        let collection = db.collection(self.getCollectionName())
+
+        // Causal consistency spec test 1: When a ClientSession is first created the operationTime has no value
+        let session1 = try client.startSession()
+        expect(session1.operationTime).to(beNil())
+        session1.end()
+
+        // Causal consistency spec test 2: The first read in a causally consistent session must not send
+        // afterClusterTime to the server (because the operationTime has not yet been determined)
+        try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
+            var seenCommand = false
+            let startObserver = center.addObserver(forName: .commandStarted, object: nil, queue: nil) { notif in
+                guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
+                    return
+                }
+                expect((event.command["readConcern"] as? Document)?["afterClusterTime"]).to(beNil())
+                seenCommand = true
+            }
+            defer { center.removeObserver(startObserver) }
+
+            _ = try collection.find(session: session).next()
+            expect(seenCommand).to(beTrue())
+        }
+
+        // Causal consistency spec test 10: When an unacknowledged write is executed in a causally consistent
+        // ClientSession the operationTime property of the ClientSession is not updated
+        try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
+            let collection1 = db.collection(self.getCollectionName(),
+                                            options: CollectionOptions(writeConcern: try WriteConcern(w: .number(0))))
+            try collection1.insertOne(["x": 3])
+            expect(session.operationTime).to(beNil())
         }
     }
 }

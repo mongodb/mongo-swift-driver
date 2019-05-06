@@ -18,10 +18,10 @@ private func withSessionOpts<T>(wrapping options: ClientSessionOptions?,
                                 _ body: (OpaquePointer) throws -> T) rethrows -> T {
     // swiftlint:disable:next force_unwrapping
     var opts = mongoc_session_opts_new()! // always returns a value
+    defer { mongoc_session_opts_destroy(opts) }
     if let causalConsistency = options?.causalConsistency {
         mongoc_session_opts_set_causal_consistency(opts, causalConsistency)
     }
-    defer { mongoc_session_opts_destroy(opts) }
     return try body(opts)
 }
 
