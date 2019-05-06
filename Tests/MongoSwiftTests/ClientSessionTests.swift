@@ -393,9 +393,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
                             .to(bsonEqual(opTime), description: op.name)
                     seenCommand = true
                 }
-                defer {
-                    center.removeObserver(observer)
-                }
+                defer { center.removeObserver(observer) }
                 _ = try collection.find(session: session).next()
                 expect(seenCommand).to(beTrue(), description: op.name)
             }
@@ -450,9 +448,6 @@ final class ClientSessionTests: MongoSwiftTestCase {
 
         // spec test 12
         try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
-            let collection1 = db.collection(self.getCollectionName(),
-                                            options: CollectionOptions(readConcern: ReadConcern(.snapshot)))
-
             var seenCommand = false
             let observer = center.addObserver(forName: .commandStarted, object: nil, queue: nil) { notif in
                 guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
@@ -462,7 +457,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
                 seenCommand = true
             }
             defer { center.removeObserver(observer) }
-            _ = try collection1.find(session: session).next()
+            _ = try collection.find(session: session).next()
             expect(seenCommand).to(beTrue())
         }
     }
