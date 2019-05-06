@@ -4,6 +4,85 @@ import mongoc
 import Nimble
 import XCTest
 
+typealias DeleteOneModel = MongoCollection<Document>.DeleteOneModel
+typealias DeleteManyModel = MongoCollection<Document>.DeleteManyModel
+typealias InsertOneModel = MongoCollection<Document>.InsertOneModel
+typealias ReplaceOneModel = MongoCollection<Document>.ReplaceOneModel
+typealias UpdateOneModel = MongoCollection<Document>.UpdateOneModel
+typealias UpdateManyModel = MongoCollection<Document>.UpdateManyModel
+
+/// A struct representing a server version.
+internal struct ServerVersion: Equatable, Decodable {
+    let major: Int
+    let minor: Int
+    let patch: Int
+
+    /// initialize a server version from a string
+    init(_ str: String) throws {
+        let versionComponents = str.split(separator: ".").prefix(3)
+        guard versionComponents.count >= 2 else {
+            throw TestError(message: "Expected version string \(str) to have at least two .-separated components")
+        }
+
+        guard let major = Int(versionComponents[0]) else {
+            throw TestError(message: "Error parsing major version from \(str)")
+        }
+        guard let minor = Int(versionComponents[1]) else {
+            throw TestError(message: "Error parsing minor version from \(str)")
+        }
+
+        var patch = 0
+        if versionComponents.count == 3 {
+            // in case there is text at the end, for ex "3.6.0-rc1", stop first time
+            /// we encounter a non-numeric character.
+            let numbersOnly = versionComponents[2].prefix { "0123456789".contains($0) }
+            guard let patchValue = Int(numbersOnly) else {
+                throw TestError(message: "Error parsing patch version from \(str)")
+            }
+            patch = patchValue
+        }
+
+        self.init(major: major, minor: minor, patch: patch)
+    }
+
+    init(from decoder: Decoder) throws {
+        let str = try decoder.singleValueContainer().decode(String.self)
+        try self.init(str)
+    }
+
+    // initialize given major, minor, and optional patch
+    init(major: Int, minor: Int, patch: Int? = nil) {
+        self.major = major
+        self.minor = minor
+        self.patch = patch ?? 0
+    }
+
+    func isLessThan(_ version: ServerVersion) -> Bool {
+        if self.major == version.major {
+            if self.minor == version.minor {
+                // if major & minor equal, just compare patches
+                return self.patch < version.patch
+            }
+            // major equal but minor isn't, so compare minor
+            return self.minor < version.minor
+        }
+        // just compare major versions
+        return self.major < version.major
+    }
+
+    func isLessThanOrEqualTo(_ version: ServerVersion) -> Bool {
+        return self == version || self.isLessThan(version)
+    }
+
+    func isGreaterThan(_ version: ServerVersion) -> Bool {
+        return !self.isLessThanOrEqualTo(version)
+    }
+
+    func isGreaterThanOrEqualTo(_ version: ServerVersion) -> Bool {
+        return !self.isLessThan(version)
+    }
+}
+
 // sourcery: disableTests
 class MongoSwiftTestCase: XCTestCase {
     /// Gets the name of the database the test case is running against.
@@ -70,6 +149,17 @@ class MongoSwiftTestCase: XCTestCase {
         return name.replacingOccurrences(of: "[ \\+\\$]", with: "_", options: [.regularExpression])
     }
 
+    static var serverVersion: ServerVersion? {
+        guard let versionStr = ProcessInfo.processInfo.environment["MONGODB_VERSION"] else {
+            fatalError("MONGODB_VERSION not set")
+        }
+        do {
+            return try ServerVersion(versionStr)
+        } catch {
+            fatalError("malformatted MONGODB_VERSION: \(error)")
+        }
+    }
+
     static var topologyType: TopologyDescription.TopologyType {
         guard let topology = ProcessInfo.processInfo.environment["MONGODB_TOPOLOGY"] else {
             return .single
@@ -96,73 +186,6 @@ extension MongoClient {
             throw TestError(message: "buildInfo reply missing version string: \(buildInfo)")
         }
         return try ServerVersion(versionString)
-    }
-
-    /// A struct representing a server version.
-    internal struct ServerVersion: Equatable {
-        let major: Int
-        let minor: Int
-        let patch: Int
-
-        /// initialize a server version from a string
-        init(_ str: String) throws {
-            let versionComponents = str.split(separator: ".").prefix(3)
-            guard versionComponents.count >= 2 else {
-                throw TestError(message: "Expected version string \(str) to have at least two .-separated components")
-            }
-
-            guard let major = Int(versionComponents[0]) else {
-                throw TestError(message: "Error parsing major version from \(str)")
-            }
-            guard let minor = Int(versionComponents[1]) else {
-                throw TestError(message: "Error parsing minor version from \(str)")
-            }
-
-            var patch = 0
-            if versionComponents.count == 3 {
-                // in case there is text at the end, for ex "3.6.0-rc1", stop first time
-                /// we encounter a non-numeric character.
-                let numbersOnly = versionComponents[2].prefix { "0123456789".contains($0) }
-                guard let patchValue = Int(numbersOnly) else {
-                    throw TestError(message: "Error parsing patch version from \(str)")
-                }
-                patch = patchValue
-            }
-
-            self.init(major: major, minor: minor, patch: patch)
-        }
-
-        // initialize given major, minor, and optional patch
-        init(major: Int, minor: Int, patch: Int? = nil) {
-            self.major = major
-            self.minor = minor
-            self.patch = patch ?? 0
-        }
-
-        func isLessThan(_ version: ServerVersion) -> Bool {
-            if self.major == version.major {
-                if self.minor == version.minor {
-                    // if major & minor equal, just compare patches
-                    return self.patch < version.patch
-                }
-                // major equal but minor isn't, so compare minor
-                return self.minor < version.minor
-            }
-            // just compare major versions
-            return self.major < version.major
-        }
-
-        func isLessThanOrEqualTo(_ version: ServerVersion) -> Bool {
-            return self == version || self.isLessThan(version)
-        }
-
-        func isGreaterThan(_ version: ServerVersion) -> Bool {
-            return !self.isLessThanOrEqualTo(version)
-        }
-
-        func isGreaterThanOrEqualTo(_ version: ServerVersion) -> Bool {
-            return !self.isLessThan(version)
-        }
     }
 
     internal func serverVersionIsInRange(_ min: String?, _ max: String?) throws -> Bool {

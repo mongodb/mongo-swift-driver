@@ -418,7 +418,7 @@ public class BulkWriteOperation: Operation {
 }
 
 /// Options to use when performing a bulk write operation on a `MongoCollection`.
-public struct BulkWriteOptions: Encodable {
+public struct BulkWriteOptions: Codable {
     /// If `true`, allows the write to opt-out of document level validation.
     public let bypassDocumentValidation: Bool?
 
