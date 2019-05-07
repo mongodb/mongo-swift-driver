@@ -160,6 +160,9 @@ public class MongoClient {
      *     built with TLS support.
      */
     public init(_ connectionString: String = "mongodb://localhost:27017", options: ClientOptions? = nil) throws {
+        // Initialize mongoc. Repeated calls have no effect so this is safe to do every time.
+        initializeMongoc()
+
         var error = bson_error_t()
         guard let uri = mongoc_uri_new_with_error(connectionString, &error) else {
             throw parseMongocError(error)
@@ -204,16 +207,18 @@ public class MongoClient {
 
     /**
      * :nodoc:
-     * Create a new client from an existing `mongoc_client_t`.
-     * Do not use this initializer unless you know what you are doing.
+     * Create a new client from an existing `mongoc_client_t`. The new client will destroy the `mongoc_client_t` upon
+     * deinitialization.
+     * Do not use this initializer unless you know what you are doing. You *must* call libmongoc_init *before* using
+     * this initializer for the first time.
      *
      * If this client was derived from a pool, ensure that the error api version was set to 2 on the pool.
      *
      * - Parameters:
-     *   - fromPointer: the `mongoc_client_t` to store and use internally
+     *   - pointer: the `mongoc_client_t` to store and use internally
      */
-    public init(fromPointer: OpaquePointer) {
-        self._client = fromPointer
+    public init(stealing pointer: OpaquePointer) {
+        self._client = pointer
 
         // This call may fail, and if it does, either the error api version was already set or the client was derived
         // from a pool. In either case, the error handling in MongoSwift will be incorrect unless the correct api

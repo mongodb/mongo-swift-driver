@@ -22,7 +22,7 @@ final class MongoClientTests: MongoSwiftTestCase {
             throw UserError.invalidArgumentError(message: "libmongoc not built with TLS support.")
         }
 
-        let client = MongoClient(fromPointer: client_t)
+        let client = MongoClient(stealing: client_t)
         let db = client.db(type(of: self).testDatabase)
         let coll = db.collection(self.getCollectionName())
         let insertResult = try coll.insertOne([ "test": 42 ])
