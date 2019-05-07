@@ -310,7 +310,6 @@ final class ClientSessionTests: MongoSwiftTestCase {
     }
 
     /// Test that causal consistency guarantees are met on deployments that support cluster time.
-    // swiftlint:disable:next cyclomatic_complexity
     func testCausalConsistency() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
             print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
@@ -325,47 +324,37 @@ final class ClientSessionTests: MongoSwiftTestCase {
         let collection = db.collection(self.getCollectionName())
 
         // Causal consistency spec test 3: the first read/write on a session should update the operationTime of a
-        // session, even if there is an error.
+        // session.
         try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
-            var seenCommands = 0
+            var seenCommands = false
             let startObserver = center.addObserver(forName: .commandStarted, object: nil, queue: nil) { notif in
                 guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
                     return
                 }
-                seenCommands += 1
+                seenCommands = true
             }
             defer { center.removeObserver(startObserver) }
 
-            var successReplyOpTime: Timestamp?
-            let replyObserver = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
-                switch notif.userInfo?["event"] {
-                case let event as CommandSucceededEvent:
-                    if seenCommands == 0 {
-                        successReplyOpTime = event.reply["operationTime"] as? Timestamp
-                    }
-                case let event as CommandFailedEvent:
-                    expect(seenCommands).to(equal(3))
-                default:
+            var replyOpTime: Timestamp?
+            let replyObserver = center.addObserver(forName: .commandSucceeded, object: nil, queue: nil) { notif in
+                guard let event = notif.userInfo?["event"] as? CommandSucceededEvent else {
                     return
                 }
+                replyOpTime = event.reply["operationTime"] as? Timestamp
             }
             defer { center.removeObserver(replyObserver) }
 
             _ = try collection.find(session: session).next()
-            expect(seenCommands).to(equal(1))
-            expect(successReplyOpTime).toNot(beNil())
-            expect(successReplyOpTime).to(bsonEqual(session.operationTime))
+            expect(seenCommands).to(beTrue())
+            expect(replyOpTime).toNot(beNil())
+            expect(replyOpTime).to(bsonEqual(session.operationTime))
+        }
 
-            let oid = ObjectId()
-            _ = try collection.insertOne(["_id": oid])
-            expect(seenCommands).to(equal(2))
-            let insertOpTime = session.operationTime
-
-            // duplicate key error
-            _ = try? collection.insertOne(["_id": oid])
-            expect(seenCommands).to(equal(3))
-            expect(session.operationTime).toNot(bsonEqual(successReplyOpTime))
-            expect(session.operationTime).toNot(bsonEqual(insertOpTime))
+        // Causal consistency spec test 3: the first read/write on a session should update the operationTime of a
+        // session, even when there is an error.
+        try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
+            _ = try? db.runCommand(["axasdfasdf": 1], session: session)
+            expect(session.operationTime).toNot(beNil())
         }
 
         // Causal consistency spec test 4: A find followed by any other read operation should
