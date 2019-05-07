@@ -2,13 +2,16 @@ import mongoc
 
 /// Options to use when running a command against a `MongoDatabase`.
 public struct RunCommandOptions: Encodable {
-    /// An optional `ReadConcern` to use for this operation.
+    /// An optional `ReadConcern` to use for this operation. This option should only be used when executing a command
+    /// that reads.
     public let readConcern: ReadConcern?
 
-    /// An optional `ReadPreference` to use for this operation.
+    /// An optional `ReadPreference` to use for this operation. This option should only be used when executing a
+    /// command that reads.
     public let readPreference: ReadPreference?
 
-    /// An optional `WriteConcern` to use for this operation.
+    /// An optional `WriteConcern` to use for this operation. This option should only be used when executing a command
+    /// that writes.
     public let writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional.
@@ -40,7 +43,7 @@ internal struct RunCommandOperation: Operation {
     }
 
     internal func execute() throws -> Document {
-        let rp = self.options?.readPreference ?? self.database.readPreference
+        let rp = self.options?.readPreference
         let opts = try encodeOptions(options: self.options, session: self.session)
         let reply = Document()
         var error = bson_error_t()
