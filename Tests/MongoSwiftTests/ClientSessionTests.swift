@@ -8,6 +8,8 @@ final class ClientSessionTests: MongoSwiftTestCase {
         do {
             let client = try MongoClient(MongoSwiftTestCase.connStr)
             try client.db(type(of: self).testDatabase).drop()
+        } catch let ServerError.commandError(code, _, _) where code == 26 {
+            // skip database not found errors
         } catch {
             fail("encountered error when tearing down: \(error)")
         }
@@ -167,14 +169,12 @@ final class ClientSessionTests: MongoSwiftTestCase {
         client1.enableMonitoring(forEvents: .commandMonitoring)
 
         let database = client1.db(type(of: self).testDatabase)
-        let collection = database.collection(self.getCollectionName())
+        let collection = try database.createCollection(self.getCollectionName())
         let session = try client1.startSession()
 
         try forEachSessionOp(client: client1, database: database, collection: collection) { op in
             try runArgTest(session: session, op: op)
         }
-
-        try database.drop()
     }
 
     /// Sessions spec test 4: test that a session can only be used with db's and collections that were derived from the
@@ -184,8 +184,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
         let client2 = try MongoClient(MongoSwiftTestCase.connStr)
 
         let database = client1.db(type(of: self).testDatabase)
-        defer { try? database.drop() }
-        let collection = database.collection(self.getCollectionName())
+        let collection = try database.createCollection(self.getCollectionName())
 
         let session = try client2.startSession()
         try forEachSessionOp(client: client1, database: database, collection: collection) { op in
@@ -198,8 +197,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
     func testInactiveSession() throws {
         let client = try MongoClient(MongoSwiftTestCase.connStr)
         let db = client.db(type(of: self).testDatabase)
-        defer { try? db.drop() }
-        let collection = db.collection(self.getCollectionName())
+        let collection = try db.createCollection(self.getCollectionName())
         let session1 = try client.startSession()
 
         session1.end()
@@ -227,7 +225,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
         client.enableMonitoring(forEvents: .commandMonitoring)
 
         let database = client.db(type(of: self).testDatabase)
-        let collection = database.collection(self.getCollectionName())
+        let collection = try database.createCollection(self.getCollectionName())
         let session = try client.startSession()
 
         for x in 1...3 {
@@ -320,8 +318,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
         let client = try MongoClient(MongoSwiftTestCase.connStr, options: ClientOptions(eventMonitoring: true))
         client.enableMonitoring()
         let db = client.db(type(of: self).testDatabase)
-        defer { try? db.drop() }
-        let collection = db.collection(self.getCollectionName())
+        let collection = try db.createCollection(self.getCollectionName())
 
         // Causal consistency spec test 3: the first read/write on a session should update the operationTime of a
         // session.
@@ -476,7 +473,6 @@ final class ClientSessionTests: MongoSwiftTestCase {
         let client = try MongoClient(MongoSwiftTestCase.connStr, options: ClientOptions(eventMonitoring: true))
         client.enableMonitoring()
         let db = client.db(type(of: self).testDatabase)
-        defer { try? db.drop() }
         let collection = db.collection(self.getCollectionName())
 
         // Causal consistency spec test 7: A read operation in a causally consistent session against a deployment that
@@ -524,7 +520,6 @@ final class ClientSessionTests: MongoSwiftTestCase {
         let client = try MongoClient(MongoSwiftTestCase.connStr, options: ClientOptions(eventMonitoring: true))
         client.enableMonitoring()
         let db = client.db(type(of: self).testDatabase)
-        defer { try? db.drop() }
         let collection = db.collection(self.getCollectionName())
 
         // Causal consistency spec test 1: When a ClientSession is first created the operationTime has no value
