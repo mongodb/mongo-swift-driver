@@ -14,40 +14,40 @@ let modelMap = [
     "insertOne": InsertOneModel.self
 ]
 
-private struct TestOperation: Decodable {
-    let name: String
-    let arguments: Document?
-
-    func execute(client: MongoClient, db: MongoDatabase, collection: MongoCollection<Document>)
-    throws -> TestOperationResult {
-        switch self.name {
-        case "bulkWrite":
-            guard let requests = self.arguments?["requests"] else {
-                throw UserError.logicError(message: "missing requests field")
-            }
-            let models = try requests.map {
-                guard let requestType = $0["name"], let arguments = $0["arguments"] as? Document else {
-                    throw RuntimeError.internalError(message: "missing request type")
-                }
-                switch requestType {
-                case "insertOne":
-                    return try BSONDecoder().decode(InsertOne.self, from: arguments)
-                default:
-                    throw RuntimeError.internalError(message: "missing stuff")
-                }
-            }
-
-            var options: BulkWriteOptions?
-            if let optionsDoc = self.arguments?["options"] {
-                options = try BSONDecoder().decode(BulkWriteOptions, from: optionsDoc)
-            }
-
-            try collection.bulkWrite(models, options: options)
-        default:
-            throw RuntimeError.internalError(message: "not implemented operation \(self.name) yet")
-        }
-    }
-}
+//private struct TestOperation: Decodable {
+//    let name: String
+//    let arguments: Document?
+//
+//    func execute(client: MongoClient, db: MongoDatabase, collection: MongoCollection<Document>)
+//    throws -> TestOperationResult {
+//        switch self.name {
+//        case "bulkWrite":
+//            guard let requests = self.arguments?["requests"] else {
+//                throw UserError.logicError(message: "missing requests field")
+//            }
+//            let models = try requests.map {
+//                guard let requestType = $0["name"], let arguments = $0["arguments"] as? Document else {
+//                    throw RuntimeError.internalError(message: "missing request type")
+//                }
+//                switch requestType {
+//                case "insertOne":
+//                    return try BSONDecoder().decode(InsertOne.self, from: arguments)
+//                default:
+//                    throw RuntimeError.internalError(message: "missing stuff")
+//                }
+//            }
+//
+//            var options: BulkWriteOptions?
+//            if let optionsDoc = self.arguments?["options"] {
+//                options = try BSONDecoder().decode(BulkWriteOptions, from: optionsDoc)
+//            }
+//
+//            try collection.bulkWrite(models, options: options)
+//        default:
+//            throw RuntimeError.internalError(message: "not implemented operation \(self.name) yet")
+//        }
+//    }
+//}
 
 private struct CollectionTestInfo: Decodable {
     let name: String?
@@ -88,7 +88,7 @@ private struct TestRequirement: Decodable {
 private struct RetryableWritesTest: Decodable {
     let description: String
     let outcome: Document
-    let operation: TestOperation
+    let operation: AnyCRUDOp
 
     let clientOptions: Document?
     let useMultipleMongoses: Bool?

@@ -122,11 +122,11 @@ extension MongoCollection {
 }
 
 /// Indicates which document to return in a find and modify operation.
-public enum ReturnDocument {
+public enum ReturnDocument: String, Decodable {
     /// Indicates to return the document before the update, replacement, or insert occurred.
-    case before
+    case before = "Before"
     ///  Indicates to return the document after the update, replacement, or insert occurred.
-    case after
+    case after = "After"
 }
 
 /// Indicates that an options type can be represented as a `FindAndModifyOptions`
@@ -138,7 +138,7 @@ private protocol FindAndModifyOptionsConvertible {
 }
 
 /// Options to use when executing a `findOneAndDelete` command on a `MongoCollection`.
-public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible {
+public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible, Decodable {
     /// Specifies a collation to use.
     public let collation: Document?
 
@@ -178,7 +178,7 @@ public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible {
 }
 
 /// Options to use when executing a `findOneAndReplace` command on a `MongoCollection`.
-public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible {
+public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible, Decodable {
     /// If `true`, allows the write to opt-out of document level validation.
     public let bypassDocumentValidation: Bool?
 
@@ -235,7 +235,7 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible {
 }
 
 /// Options to use when executing a `findOneAndUpdate` command on a `MongoCollection`.
-public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible {
+public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible, Decodable {
     /// A set of filters specifying to which array elements an update should apply.
     public let arrayFilters: [Document]?
 

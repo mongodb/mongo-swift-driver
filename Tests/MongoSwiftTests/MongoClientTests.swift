@@ -38,7 +38,7 @@ final class MongoClientTests: MongoSwiftTestCase {
     }
 
     func testServerVersion() throws {
-        typealias Version = MongoClient.ServerVersion
+        typealias Version = ServerVersion
 
         expect(try MongoClient().serverVersion()).toNot(throwError())
 

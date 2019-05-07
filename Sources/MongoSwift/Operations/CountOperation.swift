@@ -1,7 +1,7 @@
 import mongoc
 
 /// Options to use when executing a `count` command on a `MongoCollection`.
-public struct CountOptions: Encodable {
+public struct CountOptions: Codable {
     /// Specifies a collation.
     public let collation: Document?
 
@@ -21,7 +21,7 @@ public struct CountOptions: Encodable {
     public let readConcern: ReadConcern?
 
     /// A ReadPreference to use for this operation.
-    public let readPreference: ReadPreference?
+    public var readPreference: ReadPreference? = nil
 
     /// Convenience initializer allowing any/all parameters to be optional
     public init(collation: Document? = nil,

@@ -149,7 +149,7 @@ class MongoSwiftTestCase: XCTestCase {
         return name.replacingOccurrences(of: "[ \\+\\$]", with: "_", options: [.regularExpression])
     }
 
-    static var serverVersion: ServerVersion? {
+    static var serverVersion: ServerVersion {
         guard let versionStr = ProcessInfo.processInfo.environment["MONGODB_VERSION"] else {
             fatalError("MONGODB_VERSION not set")
         }
