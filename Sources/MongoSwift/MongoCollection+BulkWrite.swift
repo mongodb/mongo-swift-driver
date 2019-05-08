@@ -152,7 +152,7 @@ extension MongoCollection {
         }
     }
 
-    private struct ReplaceOneModelOptions: Encodable {
+    private struct ReplaceOneModelOptions: Codable {
         public let collation: Document?
         public let upsert: Bool?
     }
@@ -209,7 +209,7 @@ extension MongoCollection {
         }
     }
 
-    private struct UpdateModelOptions: Encodable {
+    private struct UpdateModelOptions: Codable {
         public let arrayFilters: [Document]?
         public let collation: Document?
         public let upsert: Bool?
@@ -454,7 +454,7 @@ public struct BulkWriteOptions: Codable {
 }
 
 /// The result of a bulk write operation on a `MongoCollection`.
-public struct BulkWriteResult {
+public struct BulkWriteResult: Decodable {
     /// Number of documents deleted.
     public let deletedCount: Int
 
@@ -475,6 +475,25 @@ public struct BulkWriteResult {
 
     /// Map of the index of the operation to the id of the upserted document.
     public let upsertedIds: [Int: BSONValue]
+
+    private enum CodingKeys: CodingKey {
+        case deletedCount, insertedCount, insertedIds, matchedCount, modifiedCount, upsertedCount, upsertedIds
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.deletedCount = try container.decode(Int.self, forKey: .deletedCount)
+        self.insertedCount = try container.decode(Int.self, forKey: .insertedCount)
+        self.matchedCount = try container.decode(Int.self, forKey: .matchedCount)
+        self.modifiedCount = try container.decode(Int.self, forKey: .modifiedCount)
+        self.upsertedCount = try container.decode(Int.self, forKey: .upsertedCount)
+
+        let insertedIds = try container.decode(Dictionary<Int, AnyBSONValue>.self, forKey: .insertedIds)
+        self.insertedIds = insertedIds.mapValues { $0.value }
+
+        let upsertedIds = try container.decode(Dictionary<Int, AnyBSONValue>.self, forKey: .insertedIds)
+        self.upsertedIds = upsertedIds.mapValues { $0.value }
+    }
 
     /**
      * Create a `BulkWriteResult` from a reply and map of inserted IDs.

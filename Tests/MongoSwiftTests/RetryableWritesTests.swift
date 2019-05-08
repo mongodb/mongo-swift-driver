@@ -3,13 +3,6 @@ import MongoSwift
 import Nimble
 import XCTest
 
-enum TestOperationResult {
-    case cursor(MongoCursor<Document>)
-    case document(Document)
-    case insertOne(InsertOneResult)
-    case insertMany(InsertManyResult)
-}
-
 let modelMap = [
     "insertOne": InsertOneModel.self
 ]
@@ -56,7 +49,7 @@ private struct CollectionTestInfo: Decodable {
 
 private struct TestOutcome: Decodable {
     var error: Bool = false
-    let result: Document?
+    let result: TestOperationResult?
     let collection: CollectionTestInfo
 }
 
@@ -87,8 +80,8 @@ private struct TestRequirement: Decodable {
 
 private struct RetryableWritesTest: Decodable {
     let description: String
-    let outcome: Document
-    let operation: AnyCRUDOp
+    let outcome: TestOutcome
+    let operation: AnyTestOperation
 
     let clientOptions: Document?
     let useMultipleMongoses: Bool?
@@ -143,7 +136,19 @@ final class RetryableWritesTests: MongoSwiftTestCase {
                     try collection.insertMany(testFile.data)
                 }
 
-
+                do {
+                    let result = try test.operation.op.run(
+                            client: client,
+                            database: db,
+                            collection: collection, session: nil)
+                } catch let ServerError.bulkWriteError(_, _, bulkResult, _) {
+                    expect(test.outcome.error).to(beTrue())
+                    if let result = test.outcome.result {
+                        expect(result).to(equal(TestOperationResult(from: bulkResult)))
+                    }
+                } catch {
+                    expect(test.outcome.error).to(beTrue())
+                }
             }
         }
     }

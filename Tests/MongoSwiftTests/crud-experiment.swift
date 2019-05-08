@@ -1,5 +1,5 @@
 import Foundation
-import MongoSwift
+@testable import MongoSwift
 
 //final class CRUDTests: MongoSwiftTestCase {
 //    func testReadOperations() throws {
@@ -78,22 +78,115 @@ import MongoSwift
 //    }
 //}
 
-protocol CRUDOp: Decodable {
+protocol BulkWriteResultConvertible {
+    var bulkResultValue: BulkWriteResult { get }
+}
+
+extension BulkWriteResult: BulkWriteResultConvertible {
+    internal var bulkResultValue: BulkWriteResult { return self }
+}
+
+extension InsertManyResult: BulkWriteResultConvertible {
+    internal var bulkResultValue: BulkWriteResult {
+        return BulkWriteResult(insertedCount: self.insertedCount, insertedIds: self.insertedIds)
+    }
+}
+
+extension InsertOneResult: BulkWriteResultConvertible {
+    internal var bulkResultValue: BulkWriteResult {
+        return BulkWriteResult(insertedCount: 1, insertedIds: [0: self.insertedId])
+    }
+}
+
+extension UpdateResult: BulkWriteResultConvertible {
+    internal var bulkResultValue: BulkWriteResult {
+        var upsertedIds: [Int: BSONValue]?
+        if let upsertedId = self.upsertedId {
+            upsertedIds = [0: upsertedId]
+        }
+
+        return BulkWriteResult(matchedCount: self.matchedCount,
+                               modifiedCount: self.modifiedCount,
+                               upsertedCount: self.upsertedCount,
+                               upsertedIds: upsertedIds)
+    }
+}
+
+extension DeleteResult: BulkWriteResultConvertible {
+    internal var bulkResultValue: BulkWriteResult {
+        return BulkWriteResult(deletedCount: self.deletedCount)
+    }
+}
+
+enum TestOperationResult: Decodable, Equatable {
+    case int(Int)
+    case array([BSONValue])
+    case document(Document)
+    case bulkWrite(BulkWriteResult)
+
+    public init?(from doc: Document?) {
+        guard let doc = doc else {
+            return nil
+        }
+        self = .document(doc)
+    }
+
+    public init?(from result: BulkWriteResultConvertible?) {
+        guard let result = result else {
+            return nil
+        }
+        self = .bulkWrite(result.bulkResultValue)
+    }
+
+    public init(from cursor: MongoCursor<Document>) {
+        self = .array(cursor.map { $0 })
+    }
+
+    public init(from decoder: Decoder) throws {
+        if let bulkWriteResult = try? BulkWriteResult(from: decoder) {
+            self = .bulkWrite(bulkWriteResult)
+        } else if let int = try? Int(from: decoder) {
+            self = .int(int)
+        } else if let array = try? Array<AnyBSONValue>(from: decoder) {
+            self = .array(array.map { $0.value })
+        } else if let doc = try? Document(from: decoder) {
+            self = .document(doc)
+        }
+        throw DecodingError.valueNotFound(TestOperationResult.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "couldn't decode outcome"))
+    }
+
+    internal static func ==(lhs: TestOperationResult, rhs: TestOperationResult) -> Bool {
+        switch (lhs, rhs) {
+        case let (.bulkWrite(lhsBw), .bulkWrite(rhsBw)):
+            return lhsBw == rhsBw
+        case let (.int(lhsInt), .int(rhsInt)):
+            return lhsInt == rhsInt
+        case let (.array(lhsArray), .array(rhsArray)):
+            return zip(lhsArray, rhsArray).allSatisfy { $0.bsonEquals($1) }
+        case let(.document(lhsDoc), .document(rhsDoc)):
+            return lhsDoc.bsonEquals(rhsDoc)
+        default:
+            return false
+        }
+    }
+}
+
+protocol TestOperation: Decodable {
     func run(client: MongoClient,
              database: MongoDatabase,
              collection: MongoCollection<Document>,
-             session: ClientSession?) throws
+             session: ClientSession?) throws -> TestOperationResult?
 }
 
-struct AnyCRUDOp: Decodable {
+struct AnyTestOperation: Decodable {
     private enum CodingKeys: String, CodingKey {
         case name
     }
 
-    let op: CRUDOp
+    let op: TestOperation
 
     public init(from decoder: Decoder) throws {
-        var container = try decoder.container(keyedBy: CodingKeys.self)
+        let container = try decoder.container(keyedBy: CodingKeys.self)
         let opName = try container.decode(String.self, forKey: .name)
         switch opName {
         case "aggregate":
@@ -130,7 +223,7 @@ struct AnyCRUDOp: Decodable {
 
 enum TestCaseKeys: String, CodingKey { case arguments, name }
 
-struct AggregateOp: CRUDOp {
+struct AggregateOp: TestOperation {
     let pipeline: [Document]
     let options: AggregateOptions
 
@@ -143,13 +236,15 @@ struct AggregateOp: CRUDOp {
         self.pipeline = try argumentContainer.decode([Document].self, forKey: .pipeline)
     }
 
-    func run(client: MongoClient, database: MongoDatabase, collection: MongoCollection<Document>, session: ClientSession? = nil) throws {
-        let result = try collection.aggregate(pipeline, options: self.options)
-        _ = result.next()
+    func run(client: MongoClient,
+             database: MongoDatabase,
+             collection: MongoCollection<Document>,
+             session: ClientSession? = nil) throws -> TestOperationResult? {
+        return TestOperationResult(from: try collection.aggregate(pipeline, options: self.options))
     }
 }
 
-struct CountTestCase: CRUDOp {
+struct CountTestCase: TestOperation {
     let filter: Document
     let options: CountOptions
 
@@ -162,12 +257,15 @@ struct CountTestCase: CRUDOp {
         self.filter = try argumentContainer.decode(Document.self, forKey: .filter)
     }
 
-    func run(client: MongoClient, database: MongoDatabase, collection: MongoCollection<Document>, session: ClientSession? = nil) throws {
-        let result = try collection.count(filter, options: self.options)
+    func run(client: MongoClient,
+             database: MongoDatabase,
+             collection: MongoCollection<Document>,
+             session: ClientSession? = nil) throws -> TestOperationResult? {
+        return .int(try collection.count(filter, options: self.options))
     }
 }
 
-struct DistinctTestCase: CRUDOp {
+struct DistinctTestCase: TestOperation {
     let fieldName: String
     let options: DistinctOptions
 
@@ -180,12 +278,15 @@ struct DistinctTestCase: CRUDOp {
         self.fieldName = try argumentContainer.decode(String.self, forKey: .fieldName)
     }
 
-    func run(client: MongoClient, database: MongoDatabase, collection: MongoCollection<Document>, session: ClientSession? = nil) throws {
-        let result = try collection.distinct(fieldName: self.fieldName, options: self.options)
+    func run(client: MongoClient,
+             database: MongoDatabase,
+             collection: MongoCollection<Document>,
+             session: ClientSession? = nil) throws -> TestOperationResult? {
+        return .array(try collection.distinct(fieldName: self.fieldName, options: self.options))
     }
 }
 
-struct FindTestCase: CRUDOp {
+struct FindTestCase: TestOperation {
     let filter: Document
     let options: FindOptions
 
@@ -198,12 +299,12 @@ struct FindTestCase: CRUDOp {
         self.filter = try argumentContainer.decode(Document.self, forKey: .filter)
     }
 
-    func run(client: MongoClient, database: MongoDatabase, collection: MongoCollection<Document>, session: ClientSession? = nil) throws {
-        let result = try collection.find(self.filter, options: self.options)
+    func run(client: MongoClient, database: MongoDatabase, collection: MongoCollection<Document>, session: ClientSession? = nil) throws -> TestOperationResult? {
+        return TestOperationResult(from: try collection.find(self.filter, options: self.options))
     }
 }
 
-struct UpdateTestCase: CRUDOp {
+struct UpdateTestCase: TestOperation {
     let filter: Document
     let update: Document
     let options: UpdateOptions
@@ -224,17 +325,19 @@ struct UpdateTestCase: CRUDOp {
         self.update = try argumentContainer.decode(Document.self, forKey: .update)
     }
 
-    func run(client: MongoClient, database: MongoDatabase, collection: MongoCollection<Document>, session: ClientSession? = nil) throws {
+    func run(client: MongoClient, database: MongoDatabase, collection: MongoCollection<Document>, session: ClientSession? = nil) throws -> TestOperationResult? {
+        var result: UpdateResult?
         switch self.type {
         case .updateOne:
-            let result = try collection.updateOne(filter: self.filter, update: self.update, options: self.options)
+            result = try collection.updateOne(filter: self.filter, update: self.update, options: self.options)
         case .updateMany:
-            let result = try collection.updateMany(filter: self.filter, update: self.update, options: self.options)
+            result = try collection.updateMany(filter: self.filter, update: self.update, options: self.options)
         }
+        return TestOperationResult(from: result)
     }
 }
 
-struct DeleteTestCase: CRUDOp {
+struct DeleteTestCase: TestOperation {
     let filter: Document
     let options: DeleteOptions
     let type: DeleteType
@@ -253,17 +356,19 @@ struct DeleteTestCase: CRUDOp {
         self.filter = try argumentContainer.decode(Document.self, forKey: .filter)
     }
 
-    func run(client: MongoClient, database: MongoDatabase, collection: MongoCollection<Document>, session: ClientSession? = nil) throws {
+    func run(client: MongoClient, database: MongoDatabase, collection: MongoCollection<Document>, session: ClientSession? = nil) throws -> TestOperationResult? {
+        var result: DeleteResult?
         switch self.type {
         case .deleteOne:
-            let result = try collection.deleteOne(self.filter, options: self.options)
+            result = try collection.deleteOne(self.filter, options: self.options)
         case .deleteMany:
-            let result = try collection.deleteMany(self.filter, options: self.options)
+            result = try collection.deleteMany(self.filter, options: self.options)
         }
+        return TestOperationResult(from: result)
     }
 }
 
-struct InsertOneTestCase: CRUDOp {
+struct InsertOneTestCase: TestOperation {
     let document: Document
 
     private enum CodingKeys: String, CodingKey { case document }
@@ -274,12 +379,12 @@ struct InsertOneTestCase: CRUDOp {
         self.document = try argumentContainer.decode(Document.self, forKey: .document)
     }
 
-    func run(client: MongoClient, database: MongoDatabase, collection: MongoCollection<Document>, session: ClientSession? = nil) throws {
-        try collection.insertOne(self.document)
+    func run(client: MongoClient, database: MongoDatabase, collection: MongoCollection<Document>, session: ClientSession? = nil) throws -> TestOperationResult? {
+        return TestOperationResult(from: try collection.insertOne(self.document))
     }
 }
 
-struct InsertManyTestCase: CRUDOp {
+struct InsertManyTestCase: TestOperation {
     let documents: [Document]
     let options: InsertManyOptions
 
@@ -293,12 +398,12 @@ struct InsertManyTestCase: CRUDOp {
         self.options = try argumentContainer.decode(InsertManyOptions.self, forKey: .options)
     }
 
-    func run(client: MongoClient, database: MongoDatabase, collection: MongoCollection<Document>, session: ClientSession? = nil) throws {
-        try collection.insertMany(self.documents, options: self.options)
+    func run(client: MongoClient, database: MongoDatabase, collection: MongoCollection<Document>, session: ClientSession? = nil) throws -> TestOperationResult? {
+        return TestOperationResult(from: try collection.insertMany(self.documents, options: self.options))
     }
 }
 
-struct BulkWriteTestCase: CRUDOp {
+struct BulkWriteTestCase: TestOperation {
     let requests: [Document]
     let options: BulkWriteOptions
 
@@ -312,10 +417,15 @@ struct BulkWriteTestCase: CRUDOp {
         self.options = try argumentContainer.decode(BulkWriteOptions.self, forKey: .options)
     }
 
-    func run(client: MongoClient, database: MongoDatabase, collection: MongoCollection<Document>, session: ClientSession? = nil) throws {}
+    func run(client: MongoClient,
+             database: MongoDatabase,
+             collection: MongoCollection<Document>,
+             session: ClientSession? = nil) throws -> TestOperationResult? {
+        throw RuntimeError.internalError(message: "asdf")
+    }
 }
 
-struct FindOneAndUpdateTestCase: CRUDOp {
+struct FindOneAndUpdateTestCase: TestOperation {
     let filter: Document
     let update: Document
     let options: FindOneAndUpdateOptions
@@ -330,12 +440,16 @@ struct FindOneAndUpdateTestCase: CRUDOp {
         self.update = try argumentContainer.decode(Document.self, forKey: .update)
     }
 
-    func run(client: MongoClient, database: MongoDatabase, collection: MongoCollection<Document>, session: ClientSession? = nil) throws {
-        try collection.findOneAndUpdate(filter: self.filter, update: self.update, options: self.options)
+    func run(client: MongoClient,
+             database: MongoDatabase,
+             collection: MongoCollection<Document>,
+             session: ClientSession? = nil) throws -> TestOperationResult? {
+        return TestOperationResult(
+                from: try collection.findOneAndUpdate(filter: self.filter, update: self.update, options: self.options))
     }
 }
 
-struct FindOneAndDeleteTestCase: CRUDOp {
+struct FindOneAndDeleteTestCase: TestOperation {
     let filter: Document
     let options: FindOneAndDeleteOptions
 
@@ -348,12 +462,12 @@ struct FindOneAndDeleteTestCase: CRUDOp {
         self.filter = try argumentContainer.decode(Document.self, forKey: .filter)
     }
 
-    func run(client: MongoClient, database: MongoDatabase, collection: MongoCollection<Document>, session: ClientSession? = nil) throws {
-        try collection.findOneAndDelete(self.filter, options: self.options)
+    func run(client: MongoClient, database: MongoDatabase, collection: MongoCollection<Document>, session: ClientSession? = nil) throws -> TestOperationResult? {
+        return TestOperationResult(from: try collection.findOneAndDelete(self.filter, options: self.options))
     }
 }
 
-struct FindOneAndReplaceTestCase: CRUDOp {
+struct FindOneAndReplaceTestCase: TestOperation {
     let filter: Document
     let replacement: Document
     let options: FindOneAndReplaceOptions
@@ -368,12 +482,14 @@ struct FindOneAndReplaceTestCase: CRUDOp {
         self.replacement = try argumentContainer.decode(Document.self, forKey: .replacement)
     }
 
-    func run(client: MongoClient, database: MongoDatabase, collection: MongoCollection<Document>, session: ClientSession? = nil) throws {
-        try collection.findOneAndReplace(filter: self.filter, replacement: self.replacement, options: self.options)
+    func run(client: MongoClient, database: MongoDatabase, collection: MongoCollection<Document>, session: ClientSession? = nil) throws -> TestOperationResult? {
+        return TestOperationResult(from: try collection.findOneAndReplace(filter: self.filter,
+                                                                          replacement: self.replacement,
+                                                                          options: self.options))
     }
 }
 
-struct ReplaceOneTestCase: CRUDOp {
+struct ReplaceOneTestCase: TestOperation {
     let filter: Document
     let replacement: Document
     let options: ReplaceOptions
@@ -388,7 +504,9 @@ struct ReplaceOneTestCase: CRUDOp {
         self.replacement = try argumentContainer.decode(Document.self, forKey: .replacement)
     }
 
-    func run(client: MongoClient, database: MongoDatabase, collection: MongoCollection<Document>, session: ClientSession? = nil) throws {
-        try collection.replaceOne(filter: self.filter, replacement: self.replacement, options: self.options)
+    func run(client: MongoClient, database: MongoDatabase, collection: MongoCollection<Document>, session: ClientSession? = nil) throws -> TestOperationResult? {
+        return TestOperationResult(from: try collection.replaceOne(filter: self.filter,
+                                                                   replacement: self.replacement,
+                                                                   options: self.options))
     }
 }
