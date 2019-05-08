@@ -97,14 +97,27 @@ public class MongoDatabase {
     }
 
     /// Initializes a new `MongoDatabase` instance, not meant to be instantiated directly.
-    internal init(fromDatabase database: OpaquePointer,
-                  withClient client: MongoClient,
-                  withEncoder encoder: BSONEncoder,
-                  withDecoder decoder: BSONDecoder) {
-        self._database = database
+    internal init(name: String, client: MongoClient, options: DatabaseOptions?) {
+        guard let db = mongoc_client_get_database(client._client, name) else {
+            fatalError("Couldn't get database '\(name)'")
+        }
+
+        if let rc = options?.readConcern {
+            mongoc_database_set_read_concern(db, rc._readConcern)
+        }
+
+        if let rp = options?.readPreference {
+            mongoc_database_set_read_prefs(db, rp._readPreference)
+        }
+
+        if let wc = options?.writeConcern {
+            mongoc_database_set_write_concern(db, wc._writeConcern)
+        }
+
+        self._database = db
         self._client = client
-        self.encoder = encoder
-        self.decoder = decoder
+        self.encoder = BSONEncoder(copies: client.encoder, options: options)
+        self.decoder = BSONDecoder(copies: client.decoder, options: options)
     }
 
     /// Cleans up internal state.
@@ -151,31 +164,7 @@ public class MongoDatabase {
     public func collection<T: Codable>(_ name: String,
                                        withType: T.Type,
                                        options: CollectionOptions? = nil) -> MongoCollection<T> {
-        guard let collection = mongoc_database_get_collection(self._database, name) else {
-            fatalError("Could not get collection '\(name)'")
-        }
-
-        if let rc = options?.readConcern {
-            mongoc_collection_set_read_concern(collection, rc._readConcern)
-        }
-
-        if let rp = options?.readPreference {
-            mongoc_collection_set_read_prefs(collection, rp._readPreference)
-        }
-
-        if let wc = options?.writeConcern {
-            mongoc_collection_set_write_concern(collection, wc._writeConcern)
-        }
-
-        let encoder = BSONEncoder(copies: self.encoder, options: options)
-        let decoder = BSONDecoder(copies: self.decoder, options: options)
-
-        return MongoCollection(
-                fromCollection: collection,
-                withClient: self._client,
-                withEncoder: encoder,
-                withDecoder: decoder
-        )
+        return MongoCollection(name: name, database: self, options: options)
     }
 
     /**

@@ -305,25 +305,6 @@ public class MongoClient {
      * - Returns: a `MongoDatabase` corresponding to the provided database name
      */
     public func db(_ name: String, options: DatabaseOptions? = nil) -> MongoDatabase {
-        guard let db = mongoc_client_get_database(self._client, name) else {
-            fatalError("Couldn't get database '\(name)'")
-        }
-
-        if let rc = options?.readConcern {
-            mongoc_database_set_read_concern(db, rc._readConcern)
-        }
-
-        if let rp = options?.readPreference {
-            mongoc_database_set_read_prefs(db, rp._readPreference)
-        }
-
-        if let wc = options?.writeConcern {
-            mongoc_database_set_write_concern(db, wc._writeConcern)
-        }
-
-        let encoder = BSONEncoder(copies: self.encoder, options: options)
-        let decoder = BSONDecoder(copies: self.decoder, options: options)
-
-        return MongoDatabase(fromDatabase: db, withClient: self, withEncoder: encoder, withDecoder: decoder)
+        return MongoDatabase(name: name, client: self, options: options)
     }
 }
