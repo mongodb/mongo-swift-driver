@@ -26,6 +26,9 @@ extension ClientSessionTests {
         ("testInactiveSession", testInactiveSession),
         ("testSessionCursor", testSessionCursor),
         ("testClusterTime", testClusterTime),
+        ("testCausalConsistency", testCausalConsistency),
+        ("testCausalConsistencyStandalone", testCausalConsistencyStandalone),
+        ("testCausalConsistencyAnyTopology", testCausalConsistencyAnyTopology),
     ]
 }
 

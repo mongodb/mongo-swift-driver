@@ -2,7 +2,15 @@ import Foundation
 import mongoc
 
 /// Options to use when creating a ClientSession.
-public struct ClientSessionOptions {}
+public struct ClientSessionOptions {
+    /// Whether to enable causal consistency for this session. By default, causal consistency is enabled.
+    public let causalConsistency: Bool?
+
+    /// Convenience initializer allowing any/all parameters to be omitted.
+    public init(causalConsistency: Bool? = nil) {
+        self.causalConsistency = causalConsistency
+    }
+}
 
 /// Private helper for providing a `mongoc_session_opt_t` that is only valid within the body of the provided
 /// closure.
@@ -11,11 +19,40 @@ private func withSessionOpts<T>(wrapping options: ClientSessionOptions?,
     // swiftlint:disable:next force_unwrapping
     var opts = mongoc_session_opts_new()! // always returns a value
     defer { mongoc_session_opts_destroy(opts) }
+    if let causalConsistency = options?.causalConsistency {
+        mongoc_session_opts_set_causal_consistency(opts, causalConsistency)
+    }
     return try body(opts)
 }
 
-/// A MongoDB client session.
-/// This class represents a logical session used for ordering sequential operations.
+/**
+ * A MongoDB client session.
+ * This class represents a logical session used for ordering sequential operations.
+ *
+ * To create a client session, use `startSession` or `withSession` on a `MongoClient`.
+ *
+ * If `causalConsistency` is not set to `false` when starting a session, read and write operations that use the session
+ * will be provided causal consistency guarantees depending on the read and write concerns used. Using "majority"
+ * read and write preferences will provide the full set of guarantees. See
+ * https://docs.mongodb.com/manual/core/read-isolation-consistency-recency/#sessions for more details.
+ *
+ * e.g.
+ *   ```
+ *   let opts = CollectionOptions(readConcern: ReadConcern(.majority), writeConcern: try WriteConcern(w: .majority))
+ *   let collection = database.collection("mycoll", options: opts)
+ *   try client.withSession { session in
+ *       try collection.insertOne(["x": 1], session: session)
+ *       try collection.find(["x": 1], session: session)
+ *   }
+ *   ```
+ *
+ * To disable causal consistency, set `causalConsistency` to `false` in the `ClientSessionOptions` passed in to either
+ * `withSession` or `startSession`.
+ *
+ * - SeeAlso:
+ *   - https://docs.mongodb.com/manual/core/read-isolation-consistency-recency/#sessions
+ *   - https://docs.mongodb.com/manual/core/causal-consistency-read-write-concerns/
+ */
 public final class ClientSession {
     /// Error thrown when an inactive session is used.
     internal static var SessionInactiveError = UserError.logicError(message: "Tried to use an inactive session")
@@ -40,6 +77,18 @@ public final class ClientSession {
             return nil
         }
         return Document(copying: time)
+    }
+
+    /// The operation time of the most recent operation performed using this session.
+    public var operationTime: Timestamp? {
+        var timestamp: UInt32 = 0
+        var increment: UInt32 = 0
+        mongoc_client_session_get_operation_time(self._session, &timestamp, &increment)
+
+        guard timestamp != 0 && increment != 0 else {
+            return nil
+        }
+        return Timestamp(timestamp: timestamp, inc: increment)
     }
 
     /// The options used to start this session.
@@ -85,6 +134,17 @@ public final class ClientSession {
      */
     public func advanceClusterTime(to clusterTime: Document) {
         mongoc_client_session_advance_cluster_time(self._session, clusterTime.storage.pointer)
+    }
+
+    /**
+     * Advances the operationTime for this session to the given time if it is greater than the current operationTime.
+     * If the provided operationTime is less than the current operationTime, this method has no effect.
+     *
+     * - Parameters:
+     *   - operationTime: The session's new operationTime
+     */
+    public func advanceOperationTime(to operationTime: Timestamp) {
+        mongoc_client_session_advance_operation_time(self._session, operationTime.timestamp, operationTime.increment)
     }
 
     /// Appends this provided session to an options document for libmongoc interoperability.
