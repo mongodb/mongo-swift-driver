@@ -132,15 +132,12 @@ internal struct CreateCollectionOperation<T: Codable>: Operation {
             self.database._database, self.name, opts?.data, &error) else {
             throw parseMongocError(error)
         }
+        mongoc_collection_destroy(collection)
 
         let collectionOptions = CollectionOptions(dateCodingStrategy: self.options?.dateCodingStrategy,
                                                   uuidCodingStrategy: self.options?.uuidCodingStrategy,
                                                   dataCodingStrategy: self.options?.dataCodingStrategy)
 
-        return MongoCollection(
-                collection: collection,
-                database: self.database,
-                options: collectionOptions
-        )
+        return MongoCollection(name: self.name, database: self.database, options: collectionOptions)
     }
 }

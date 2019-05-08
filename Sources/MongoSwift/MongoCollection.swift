@@ -50,15 +50,13 @@ public class MongoCollection<T: Codable> {
         return wc.isDefault ? nil : wc
     }
 
-    /// Initializes a new `MongoCollection` instance. Not meant to be instantiated directly by a user.
-    internal convenience init(name: String, database: MongoDatabase, options: CollectionOptions?) {
+    /// Initializes a new `MongoCollection` instance corresponding to a collection with name `name` in database with
+    /// the provided options.
+    internal init(name: String, database: MongoDatabase, options: CollectionOptions?) {
         guard let collection = mongoc_database_get_collection(database._database, name) else {
             fatalError("Could not get collection '\(name)'")
         }
-        self.init(collection: collection, database: database, options: options)
-    }
 
-    internal init(collection: OpaquePointer, database: MongoDatabase, options: CollectionOptions?) {
         if let rc = options?.readConcern {
             mongoc_collection_set_read_concern(collection, rc._readConcern)
         }
