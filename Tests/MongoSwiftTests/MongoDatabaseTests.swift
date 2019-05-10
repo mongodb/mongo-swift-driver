@@ -42,6 +42,15 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
                 .to(throwError(ServerError.commandError(code: 59, message: "", errorLabels: nil)))
     }
 
+    func testBlah() throws {
+        let json = "{\n          \"deletedCount\": 1,\n          \"insertedCount\": 1,\n          \"insertedIds\": {\n            \"0\": 2\n          },\n          \"matchedCount\": 1,\n          \"modifiedCount\": 1,\n          \"upsertedCount\": 0,\n          \"upsertedIds\": {}\n        }".data(using: .utf8)!
+        do {
+            print(try JSONDecoder().decode(BulkWriteResult.self, from: json))
+        } catch {
+            print(error)
+        }
+    }
+
     func testCreateCollection() throws {
         let client = try MongoClient(MongoSwiftTestCase.connStr)
         let db = client.db(type(of: self).testDatabase)

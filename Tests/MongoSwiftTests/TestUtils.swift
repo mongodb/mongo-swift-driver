@@ -164,15 +164,7 @@ class MongoSwiftTestCase: XCTestCase {
         guard let topology = ProcessInfo.processInfo.environment["MONGODB_TOPOLOGY"] else {
             return .single
         }
-
-        switch topology {
-        case "sharded_cluster":
-            return .sharded
-        case "replica_set":
-            return .replicaSetWithPrimary
-        default:
-            return .single
-        }
+        return TopologyDescription.TopologyType(from: topology)
     }
 }
 
@@ -203,6 +195,19 @@ extension MongoClient {
 
     internal convenience init(options: ClientOptions? = nil) throws {
         try self.init(MongoSwiftTestCase.connStr, options: options)
+    }
+}
+
+extension Document {
+    internal func sortedEquals(_ other: Document) -> Bool {
+        let keys = self.keys.sorted()
+        let otherKeys = other.keys.sorted()
+
+        // first compare keys, because rearrangeDoc will discard any that don't exist in `expected`
+        expect(keys).to(equal(otherKeys))
+
+        let rearranged = rearrangeDoc(other, toLookLike: self)
+        return self == rearranged
     }
 }
 
@@ -245,7 +250,7 @@ internal func sortedEqual(_ expectedValue: Document?) -> Predicate<Document> {
     return Predicate.define("sortedEqual <\(stringify(expectedValue))>") { actualExpression, msg in
         let actualValue = try actualExpression.evaluate()
 
-        if expectedValue == nil || actualValue == nil {
+        guard let expected = expectedValue, let actual = actualValue else {
             if expectedValue == nil && actualValue != nil {
                 return PredicateResult(
                     status: .fail,
@@ -255,14 +260,7 @@ internal func sortedEqual(_ expectedValue: Document?) -> Predicate<Document> {
             return PredicateResult(status: .fail, message: msg)
         }
 
-        let expectedKeys = expectedValue?.keys.sorted()
-        let actualKeys = actualValue?.keys.sorted()
-
-        // first compare keys, because rearrangeDoc will discard any that don't exist in `expected`
-        expect(expectedKeys).to(equal(actualKeys))
-
-        let rearranged = rearrangeDoc(actualValue!, toLookLike: expectedValue!)
-        let matches = expectedValue == rearranged
+        let matches = expected.sortedEquals(actual)
         return PredicateResult(status: PredicateStatus(bool: matches), message: msg)
     }
 }

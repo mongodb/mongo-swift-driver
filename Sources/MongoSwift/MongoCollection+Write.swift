@@ -422,6 +422,15 @@ public struct UpdateResult: Decodable {
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        guard container.allKeys.count <= 4 else {
+            print("wrong keys, got \(container.allKeys)")
+            throw DecodingError.typeMismatch(UpdateResult.self,
+                                             DecodingError.Context(codingPath: decoder.codingPath,
+                                                                   debugDescription: "Too many keys for UpdateResult")
+            )
+        }
+
         self.matchedCount = try container.decode(Int.self, forKey: .matchedCount)
         self.modifiedCount = try container.decode(Int.self, forKey: .modifiedCount)
         let id = try container.decodeIfPresent(AnyBSONValue.self, forKey: .upsertedId)
