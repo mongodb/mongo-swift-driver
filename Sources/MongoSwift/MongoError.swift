@@ -211,7 +211,6 @@ internal func getErrorFromReply(
 
         return try getWriteErrorFromReply(from: reply, withWriteConcernError: writeConcernError) ?? fallback
     } catch {
-        print("error making error \(error)")
         return fallback
     }
 }

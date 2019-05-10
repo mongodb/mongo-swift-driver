@@ -21,6 +21,7 @@ public struct CountOptions: Codable {
     public let readConcern: ReadConcern?
 
     /// A ReadPreference to use for this operation.
+    // swiftlint:disable:next redundant_optional_initialization
     public var readPreference: ReadPreference? = nil
 
     /// Convenience initializer allowing any/all parameters to be optional

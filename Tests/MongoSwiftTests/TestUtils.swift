@@ -12,7 +12,7 @@ typealias UpdateOneModel = MongoCollection<Document>.UpdateOneModel
 typealias UpdateManyModel = MongoCollection<Document>.UpdateManyModel
 
 /// A struct representing a server version.
-internal struct ServerVersion: Equatable, Decodable {
+internal struct ServerVersion: Comparable, Decodable {
     let major: Int
     let minor: Int
     let patch: Int
@@ -57,29 +57,14 @@ internal struct ServerVersion: Equatable, Decodable {
         self.patch = patch ?? 0
     }
 
-    func isLessThan(_ version: ServerVersion) -> Bool {
-        if self.major == version.major {
-            if self.minor == version.minor {
-                // if major & minor equal, just compare patches
-                return self.patch < version.patch
-            }
-            // major equal but minor isn't, so compare minor
-            return self.minor < version.minor
+    static func < (lhs: ServerVersion, rhs: ServerVersion) -> Bool {
+        if lhs.major != rhs.major {
+            return lhs.major < rhs.major
+        } else if lhs.minor != rhs.minor {
+            return lhs.minor < rhs.minor
+        } else {
+            return lhs.patch < rhs.patch
         }
-        // just compare major versions
-        return self.major < version.major
-    }
-
-    func isLessThanOrEqualTo(_ version: ServerVersion) -> Bool {
-        return self == version || self.isLessThan(version)
-    }
-
-    func isGreaterThan(_ version: ServerVersion) -> Bool {
-        return !self.isLessThanOrEqualTo(version)
-    }
-
-    func isGreaterThanOrEqualTo(_ version: ServerVersion) -> Bool {
-        return !self.isLessThan(version)
     }
 }
 
@@ -149,17 +134,6 @@ class MongoSwiftTestCase: XCTestCase {
         return name.replacingOccurrences(of: "[ \\+\\$]", with: "_", options: [.regularExpression])
     }
 
-    static var serverVersion: ServerVersion {
-        guard let versionStr = ProcessInfo.processInfo.environment["MONGODB_VERSION"] else {
-            fatalError("MONGODB_VERSION not set")
-        }
-        do {
-            return try ServerVersion(versionStr)
-        } catch {
-            fatalError("malformatted MONGODB_VERSION: \(error)")
-        }
-    }
-
     static var topologyType: TopologyDescription.TopologyType {
         guard let topology = ProcessInfo.processInfo.environment["MONGODB_TOPOLOGY"] else {
             return .single
@@ -183,10 +157,10 @@ extension MongoClient {
     internal func serverVersionIsInRange(_ min: String?, _ max: String?) throws -> Bool {
         let version = try self.serverVersion()
 
-        if let min = min, version.isLessThan(try ServerVersion(min)) {
+        if let min = min, version < (try ServerVersion(min)) {
             return false
         }
-        if let max = max, version.isGreaterThan(try ServerVersion(max)) {
+        if let max = max, version > (try ServerVersion(max)) {
             return false
         }
 

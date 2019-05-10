@@ -194,6 +194,7 @@ public struct AggregateOptions: Codable {
     public let readConcern: ReadConcern?
 
     /// A ReadPreference to use for this operation.
+    // swiftlint:disable:next redundant_optional_initialization
     public var readPreference: ReadPreference? = nil
 
     /// A `WriteConcern` to use in `$out` stages of this operation.
@@ -288,7 +289,8 @@ public struct FindOptions: Codable {
     public let comment: String?
 
     /// Indicates the type of cursor to use. This value includes both the tailable and awaitData options.
-   // public let cursorType: CursorType?
+    // swiftlint:disable:next redundant_optional_initialization
+    public var cursorType: CursorType? = nil
 
     /// If a `CursorType` is provided, indicates whether it is `.tailable` or .`tailableAwait`.
     private let tailable: Bool?
@@ -342,6 +344,7 @@ public struct FindOptions: Codable {
     public let readConcern: ReadConcern?
 
     /// A ReadPreference to use for this operation.
+    // swiftlint:disable:next redundant_optional_initialization
     public var readPreference: ReadPreference? = nil
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional.
@@ -370,7 +373,7 @@ public struct FindOptions: Codable {
         self.collation = collation
         self.comment = comment
         // although this does not get encoded, we store it for debugging purposes
-        // self.cursorType = cursorType
+        self.cursorType = cursorType
         self.tailable = cursorType == .tailable || cursorType == .tailableAwait
         self.awaitData = cursorType == .tailableAwait
         self.hint = hint

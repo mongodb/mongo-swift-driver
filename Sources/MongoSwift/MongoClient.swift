@@ -2,7 +2,7 @@ import Foundation
 import mongoc
 
 /// Options to use when creating a `MongoClient`.
-public struct ClientOptions: CodingStrategyProvider {
+public struct ClientOptions: CodingStrategyProvider, Decodable {
     /// Determines whether the client should retry supported write operations.
     public let retryWrites: Bool?
 
@@ -14,24 +14,32 @@ public struct ClientOptions: CodingStrategyProvider {
     /// be used.
     public let readConcern: ReadConcern?
 
-    /// Specifies a ReadPreference to use for the client.
-    public let readPreference: ReadPreference?
-
     /// Specifies a WriteConcern to use for the client. If one is not specified, the server's default write concern
     /// will be used.
     public let writeConcern: WriteConcern?
 
+    // swiftlint:disable redundant_optional_initialization
+
+    /// Specifies a ReadPreference to use for the client.
+    public var readPreference: ReadPreference? = nil
+
     /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this client and any
     /// databases or collections that derive from it.
-    public let dateCodingStrategy: DateCodingStrategy?
+    public var dateCodingStrategy: DateCodingStrategy? = nil
 
     /// Specifies the `UUIDCodingStrategy` to use for BSON encoding/decoding operations performed by this client and any
     /// databases or collections that derive from it.
-    public let uuidCodingStrategy: UUIDCodingStrategy?
+    public var uuidCodingStrategy: UUIDCodingStrategy? = nil
 
     /// Specifies the `DataCodingStrategy` to use for BSON encoding/decoding operations performed by this client and any
     /// databases or collections that derive from it.
-    public let dataCodingStrategy: DataCodingStrategy?
+    public var dataCodingStrategy: DataCodingStrategy? = nil
+
+    // swiftlint:enable redundant_optional_initialization
+
+    private enum CodingKeys: CodingKey {
+        case retryWrites, eventMonitoring, readConcern, writeConcern
+    }
 
     /// Convenience initializer allowing any/all to be omitted or optional.
     public init(eventMonitoring: Bool = false,

@@ -152,7 +152,7 @@ extension MongoCollection {
         }
     }
 
-    private struct ReplaceOneModelOptions: Codable {
+    private struct ReplaceOneModelOptions: Encodable {
         public let collation: Document?
         public let upsert: Bool?
     }
@@ -209,7 +209,7 @@ extension MongoCollection {
         }
     }
 
-    private struct UpdateModelOptions: Codable {
+    private struct UpdateModelOptions: Encodable {
         public let arrayFilters: [Document]?
         public let collation: Document?
         public let upsert: Bool?
@@ -483,11 +483,11 @@ public struct BulkWriteResult: Decodable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
+        // None of the results must be present themselves, but at least one must.
         guard !container.allKeys.isEmpty else {
             throw DecodingError.valueNotFound(BulkWriteResult.self,
                                               DecodingError.Context(codingPath: decoder.codingPath,
-                                                                    debugDescription: "No BulkWriteResult found")
-            )
+                                                                    debugDescription: "No results found"))
         }
 
         self.deletedCount = try container.decodeIfPresent(Int.self, forKey: .deletedCount) ?? 0
@@ -495,13 +495,13 @@ public struct BulkWriteResult: Decodable {
         self.modifiedCount = try container.decodeIfPresent(Int.self, forKey: .modifiedCount) ?? 0
 
         let insertedIds =
-                (try container.decodeIfPresent(Dictionary<Int, AnyBSONValue>.self, forKey: .insertedIds) ?? [:])
+                (try container.decodeIfPresent([Int: AnyBSONValue].self, forKey: .insertedIds) ?? [:])
                         .mapValues { $0.value }
         self.insertedIds = insertedIds
         self.insertedCount = try container.decodeIfPresent(Int.self, forKey: .insertedCount) ?? insertedIds.count
 
         let upsertedIds =
-                (try container.decodeIfPresent(Dictionary<Int, AnyBSONValue>.self, forKey: .upsertedIds) ?? [:])
+                (try container.decodeIfPresent([Int: AnyBSONValue].self, forKey: .upsertedIds) ?? [:])
                         .mapValues { $0.value }
         self.upsertedIds = upsertedIds
         self.upsertedCount = try container.decodeIfPresent(Int.self, forKey: .upsertedCount) ?? upsertedIds.count

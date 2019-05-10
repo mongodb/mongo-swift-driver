@@ -3,17 +3,6 @@ import Foundation
 import Nimble
 import XCTest
 
-internal struct CollectionTestInfo: Decodable {
-    let name: String?
-    let data: [Document]
-}
-
-internal struct TestOutcome: Decodable {
-    var error: Bool? = false
-    let result: TestOperationResult?
-    let collection: CollectionTestInfo
-}
-
 private struct TestRequirement: Decodable {
     let minServerVersion: ServerVersion?
     let maxServerVersion: ServerVersion?
@@ -21,12 +10,13 @@ private struct TestRequirement: Decodable {
 
     func isMet(by version: ServerVersion) -> Bool {
         if let minVersion = self.minServerVersion {
-            guard minVersion.isLessThanOrEqualTo(version) else {
+            guard minVersion <= version else {
+                print("minVersion \(minVersion) > \(version)")
                 return false
             }
         }
         if let maxVersion = self.maxServerVersion {
-            guard maxVersion.isGreaterThanOrEqualTo(version) else {
+            guard maxVersion >= version else {
                 return false
             }
         }
@@ -39,37 +29,53 @@ private struct TestRequirement: Decodable {
     }
 }
 
-private struct RetryableWritesTest: Decodable {
+/// Struct representing a single test within a spec test JSON file.
+private struct RetryableWritesTest: Decodable, SpecTest {
     let description: String
     let outcome: TestOutcome
     let operation: AnyTestOperation
 
-    let clientOptions: Document?
+    /// Options used to configure the `MongoClient` used for this test.
+    let clientOptions: ClientOptions?
+
+    /// If true, the `MongoClient` for this test should be initialized with multiple mongos seed addresses.
+    /// If false or omitted, only a single mongos address should be specified.
+    /// This field has no effect for non-sharded topologies.
     let useMultipleMongoses: Bool?
+
+    /// The optional configureFailPoint command document to run to configure a fail point on the primary server.
+    /// This option and useMultipleMongoses: true are mutually exclusive.
     let failPoint: Document?
 }
 
+/// Struct representing a single retryable-writes spec test JSON file.
 private struct RetryableWritesTestFile: Decodable {
     private enum CodingKeys: CodingKey {
         case runOn, data, tests
     }
 
+    /// Name of this test case
     var name: String = ""
+
+    /// Server version and topology requirements in order for tests from this file to be run.
     let runOn: [TestRequirement]?
+
+    /// Data that should exist in the collection before running any of the tests.
     let data: [Document]
+
+    /// List of tests to run in this file.
     let tests: [RetryableWritesTest]
 }
 
 final class RetryableWritesTests: MongoSwiftTestCase {
-    var failPoint: Document?
+    /// If a failpoint was set on the current test being run, the command in this document will disable it.
+    var disableFailPointCommand: Document?
 
     override func tearDown() {
-        if let failPoint = self.failPoint {
+        if let cmd = self.disableFailPointCommand {
             do {
                 let client = try MongoClient(MongoSwiftTestCase.connStr)
-                let adminDb = client.db("admin")
-                let cmd = ["configureFailPoint": failPoint["configureFailPoint"]!, "mode": "off"] as Document
-                try adminDb.runCommand(cmd)
+                try client.db("admin").runCommand(cmd)
             } catch {
                 print("couldn't disable failpoints after failure: \(error)")
             }
@@ -116,7 +122,9 @@ final class RetryableWritesTests: MongoSwiftTestCase {
             print("\n------------\nExecuting tests from file \(testFilesPath)/\(testFile.name)...\n")
             for test in testFile.tests {
                 print("Executing test: \(test.description)")
-                let client = try MongoClient(MongoSwiftTestCase.connStr, options: ClientOptions(retryWrites: true))
+
+                let clientOptions = test.clientOptions ?? ClientOptions(retryWrites: true)
+                let client = try MongoClient(MongoSwiftTestCase.connStr, options: clientOptions)
                 let db = client.db(type(of: self).testDatabase)
                 let collection = db.collection(self.getCollectionName(suffix: test.description))
 
@@ -143,42 +151,15 @@ final class RetryableWritesTests: MongoSwiftTestCase {
                             commandDoc[k] = v
                         }
                     }
-                    try client.db("admin").runCommand(commandDoc)
-                    self.failPoint = ["configureFailPoint": failPoint["configureFailPoint"]!, "mode": "off"] as Document
+                    try setupClient.db("admin").runCommand(commandDoc)
+                    self.disableFailPointCommand =
+                            ["configureFailPoint": failPoint["configureFailPoint"]!, "mode": "off"] as Document
                 }
 
-                var result: TestOperationResult?
-                var seenError: Error?
-                do {
-                    result = try test.operation.op.run(
-                            client: client,
-                            database: db,
-                            collection: collection,
-                            session: nil)
-                } catch {
-                    if case let ServerError.bulkWriteError(_, _, bulkResult, _) = error {
-                        result = TestOperationResult(from: bulkResult)
-                    }
-                    seenError = error
-                }
+                try test.run(client: client, db: db, collection: collection)
 
-                if test.outcome.error ?? false {
-                    expect(seenError).toNot(beNil(), description: test.description)
-                } else {
-                    expect(seenError).to(beNil(), description: test.description)
-                }
-
-                if let expectedResult = test.outcome.result {
-                    expect(result).toNot(beNil(), description: test.description)
-                    expect(result).to(equal(expectedResult), description: test.description)
-                }
-                let verifyColl = db.collection(test.outcome.collection.name ?? collection.name)
-                zip(try Array(verifyColl.find()), test.outcome.collection.data).forEach {
-                    expect($0).to(sortedEqual($1), description: test.description)
-                }
-
-                if let failPoint = self.failPoint {
-                    try client.db("admin").runCommand(failPoint)
+                if let cmd = self.disableFailPointCommand {
+                    try client.db("admin").runCommand(cmd)
                 }
             }
         }
