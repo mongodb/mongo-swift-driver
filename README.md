@@ -110,7 +110,7 @@ import MongoSwift
 // initialize global state
 MongoSwift.initialize()
 
-let client = try MongoClient(connectionString: "mongodb://localhost:27017")
+let client = try MongoClient("mongodb://localhost:27017")
 let db = client.db("myDB")
 let collection = try db.createCollection("myCollection")
 
@@ -118,7 +118,7 @@ let collection = try db.createCollection("myCollection")
 MongoSwift.cleanup()
 ```
 
-Note: we have included the client `connectionString` for clarity, but if connecting to the default `"mongodb://localhost:27017"`it may be omitted: `let client = try MongoClient()`.
+Note: we have included the client `connectionString` parameter for clarity, but if connecting to the default `"mongodb://localhost:27017"`it may be omitted: `let client = try MongoClient()`.
 
 ### Create and Insert a Document
 ```swift
