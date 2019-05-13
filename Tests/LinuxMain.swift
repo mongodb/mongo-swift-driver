@@ -213,6 +213,12 @@ extension ReadWriteConcernTests {
     ]
 }
 
+extension RetryableWritesTests {
+    static var allTests = [
+        ("testRetryableWrites", testRetryableWrites),
+    ]
+}
+
 extension SDAMTests {
     static var allTests = [
         ("testMonitoring", testMonitoring),
@@ -234,5 +240,6 @@ XCTMain([
     testCase(MongoDatabaseTests.allTests),
     testCase(ReadPreferenceTests.allTests),
     testCase(ReadWriteConcernTests.allTests),
+    testCase(RetryableWritesTests.allTests),
     testCase(SDAMTests.allTests),
 ])
