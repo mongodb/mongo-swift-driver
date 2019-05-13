@@ -2,10 +2,10 @@ import mongoc
 
 /// A class wrapping a `mongoc_find_and_modify_opts_t`, for use with `MongoCollection.findAndModify`
 internal class FindAndModifyOptions {
-    // an `OpaquePointer` to a `mongoc_find_and_modify_opts_t`
-    var _options: OpaquePointer?
+    /// an `OpaquePointer` to a `mongoc_find_and_modify_opts_t`
+    fileprivate var _options: OpaquePointer?
 
-    init() {
+    fileprivate init() {
         self._options = mongoc_find_and_modify_opts_new()
     }
 
@@ -13,16 +13,16 @@ internal class FindAndModifyOptions {
     ///
     /// - Throws: `UserError.invalidArgumentError` if any of the options are invalid.
     // swiftlint:disable:next cyclomatic_complexity
-    init(arrayFilters: [Document]? = nil,
-         bypassDocumentValidation: Bool? = nil,
-         collation: Document?,
-         maxTimeMS: Int64?,
-         projection: Document?,
-         remove: Bool? = nil,
-         returnDocument: ReturnDocument? = nil,
-         sort: Document?,
-         upsert: Bool? = nil,
-         writeConcern: WriteConcern?) throws {
+    internal init(arrayFilters: [Document]? = nil,
+                  bypassDocumentValidation: Bool? = nil,
+                  collation: Document?,
+                  maxTimeMS: Int64?,
+                  projection: Document?,
+                  remove: Bool? = nil,
+                  returnDocument: ReturnDocument? = nil,
+                  sort: Document?,
+                  upsert: Bool? = nil,
+                  writeConcern: WriteConcern?) throws {
         self._options = mongoc_find_and_modify_opts_new()
 
         if let bypass = bypassDocumentValidation,
