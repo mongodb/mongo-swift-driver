@@ -116,6 +116,7 @@ internal class FindAndModifyOptions {
     }
 }
 
+/// An operation corresponding to a "findAndModify" command.
 internal struct FindAndModifyOperation<T: Codable>: Operation {
     private let collection: MongoCollection<T>
     private let filter: Document
