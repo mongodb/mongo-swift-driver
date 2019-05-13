@@ -95,11 +95,10 @@ extension MongoCollection {
                                update: Document? = nil,
                                options: FindAndModifyOptionsConvertible? = nil,
                                session: ClientSession?) throws -> CollectionType? {
-        let opts = try options?.asFindAndModifyOptions()
         let operation = FindAndModifyOperation(collection: self,
                                                filter: filter,
                                                update: update,
-                                               options: opts,
+                                               options: options,
                                                session: session)
         return try operation.execute()
     }
