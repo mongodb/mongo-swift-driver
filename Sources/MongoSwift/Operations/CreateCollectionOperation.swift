@@ -132,15 +132,12 @@ internal struct CreateCollectionOperation<T: Codable>: Operation {
             self.database._database, self.name, opts?.data, &error) else {
             throw parseMongocError(error)
         }
+        mongoc_collection_destroy(collection)
 
-        let encoder = BSONEncoder(copies: self.database.encoder, options: self.options)
-        let decoder = BSONDecoder(copies: self.database.decoder, options: self.options)
+        let collectionOptions = CollectionOptions(dateCodingStrategy: self.options?.dateCodingStrategy,
+                                                  uuidCodingStrategy: self.options?.uuidCodingStrategy,
+                                                  dataCodingStrategy: self.options?.dataCodingStrategy)
 
-        return MongoCollection(
-                fromCollection: collection,
-                withClient: self.database._client,
-                withEncoder: encoder,
-                withDecoder: decoder
-        )
+        return MongoCollection(name: self.name, database: self.database, options: collectionOptions)
     }
 }

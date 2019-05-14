@@ -50,15 +50,29 @@ public class MongoCollection<T: Codable> {
         return wc.isDefault ? nil : wc
     }
 
-    /// Initializes a new `MongoCollection` instance. Not meant to be instantiated directly by a user.
-    internal init(fromCollection: OpaquePointer,
-                  withClient: MongoClient,
-                  withEncoder: BSONEncoder,
-                  withDecoder: BSONDecoder) {
-        self._collection = fromCollection
-        self._client = withClient
-        self.encoder = withEncoder
-        self.decoder = withDecoder
+    /// Initializes a new `MongoCollection` instance corresponding to a collection with name `name` in database with
+    /// the provided options.
+    internal init(name: String, database: MongoDatabase, options: CollectionOptions?) {
+        guard let collection = mongoc_database_get_collection(database._database, name) else {
+            fatalError("Could not get collection '\(name)'")
+        }
+
+        if let rc = options?.readConcern {
+            mongoc_collection_set_read_concern(collection, rc._readConcern)
+        }
+
+        if let rp = options?.readPreference {
+            mongoc_collection_set_read_prefs(collection, rp._readPreference)
+        }
+
+        if let wc = options?.writeConcern {
+            mongoc_collection_set_write_concern(collection, wc._writeConcern)
+        }
+
+        self._collection = collection
+        self._client = database._client
+        self.encoder = BSONEncoder(copies: database.encoder, options: options)
+        self.decoder = BSONDecoder(copies: database.decoder, options: options)
     }
 
     /// Cleans up internal state.
