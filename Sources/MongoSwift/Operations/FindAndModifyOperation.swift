@@ -5,6 +5,15 @@ internal class FindAndModifyOptions {
     /// an `OpaquePointer` to a `mongoc_find_and_modify_opts_t`
     fileprivate var _options: OpaquePointer?
 
+    /// Cleans up internal state.
+    deinit {
+        guard let options = self._options else {
+            return
+        }
+        mongoc_find_and_modify_opts_destroy(options)
+        self._options = nil
+    }
+
     fileprivate init() {
         self._options = mongoc_find_and_modify_opts_new()
     }
@@ -104,15 +113,6 @@ internal class FindAndModifyOptions {
         guard mongoc_find_and_modify_opts_append(self._options, doc.data) else {
             throw RuntimeError.internalError(message: "Couldn't read session information")
         }
-    }
-
-    /// Cleans up internal state.
-    deinit {
-        guard let options = self._options else {
-            return
-        }
-        mongoc_find_and_modify_opts_destroy(options)
-        self._options = nil
     }
 }
 
