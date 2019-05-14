@@ -141,7 +141,8 @@ final class RetryableWritesTests: MongoSwiftTestCase {
                         }
 
                         // Need to convert error codes to int32's due to c driver bug (CDRIVER-3121)
-                        if k == "data", var data = v as? Document,
+                        if k == "data",
+                           var data = v as? Document,
                            var wcErr = data["writeConcernError"] as? Document,
                            let code = wcErr["code"] as? BSONNumber {
                             wcErr["code"] = code.int32Value

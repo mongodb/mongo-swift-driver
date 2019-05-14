@@ -559,11 +559,11 @@ public struct BulkWriteResult: Decodable {
             upsertedCount: Int? = nil,
             upsertedIds: [Int: BSONValue]? = nil) {
         self.deletedCount = deletedCount ?? 0
-         self.insertedCount = insertedCount ?? 0
+        self.insertedCount = insertedCount ?? 0
         self.insertedIds = insertedIds ?? [:]
         self.matchedCount = matchedCount ?? 0
         self.modifiedCount = modifiedCount ?? 0
-         self.upsertedCount = upsertedCount ?? 0
+        self.upsertedCount = upsertedCount ?? 0
         self.upsertedIds = upsertedIds ?? [:]
     }
 }
