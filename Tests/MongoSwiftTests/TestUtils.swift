@@ -4,6 +4,70 @@ import mongoc
 import Nimble
 import XCTest
 
+typealias DeleteOneModel = MongoCollection<Document>.DeleteOneModel
+typealias DeleteManyModel = MongoCollection<Document>.DeleteManyModel
+typealias InsertOneModel = MongoCollection<Document>.InsertOneModel
+typealias ReplaceOneModel = MongoCollection<Document>.ReplaceOneModel
+typealias UpdateOneModel = MongoCollection<Document>.UpdateOneModel
+typealias UpdateManyModel = MongoCollection<Document>.UpdateManyModel
+
+/// A struct representing a server version.
+internal struct ServerVersion: Comparable, Decodable {
+    let major: Int
+    let minor: Int
+    let patch: Int
+
+    /// initialize a server version from a string
+    init(_ str: String) throws {
+        let versionComponents = str.split(separator: ".").prefix(3)
+        guard versionComponents.count >= 2 else {
+            throw TestError(message: "Expected version string \(str) to have at least two .-separated components")
+        }
+
+        guard let major = Int(versionComponents[0]) else {
+            throw TestError(message: "Error parsing major version from \(str)")
+        }
+        guard let minor = Int(versionComponents[1]) else {
+            throw TestError(message: "Error parsing minor version from \(str)")
+        }
+
+        var patch = 0
+        if versionComponents.count == 3 {
+            // in case there is text at the end, for ex "3.6.0-rc1", stop first time
+            /// we encounter a non-numeric character.
+            let numbersOnly = versionComponents[2].prefix { "0123456789".contains($0) }
+            guard let patchValue = Int(numbersOnly) else {
+                throw TestError(message: "Error parsing patch version from \(str)")
+            }
+            patch = patchValue
+        }
+
+        self.init(major: major, minor: minor, patch: patch)
+    }
+
+    init(from decoder: Decoder) throws {
+        let str = try decoder.singleValueContainer().decode(String.self)
+        try self.init(str)
+    }
+
+    // initialize given major, minor, and optional patch
+    init(major: Int, minor: Int, patch: Int? = nil) {
+        self.major = major
+        self.minor = minor
+        self.patch = patch ?? 0
+    }
+
+    static func < (lhs: ServerVersion, rhs: ServerVersion) -> Bool {
+        if lhs.major != rhs.major {
+            return lhs.major < rhs.major
+        } else if lhs.minor != rhs.minor {
+            return lhs.minor < rhs.minor
+        } else {
+            return lhs.patch < rhs.patch
+        }
+    }
+}
+
 // sourcery: disableTests
 class MongoSwiftTestCase: XCTestCase {
     /// Gets the name of the database the test case is running against.
@@ -74,15 +138,7 @@ class MongoSwiftTestCase: XCTestCase {
         guard let topology = ProcessInfo.processInfo.environment["MONGODB_TOPOLOGY"] else {
             return .single
         }
-
-        switch topology {
-        case "sharded_cluster":
-            return .sharded
-        case "replica_set":
-            return .replicaSetWithPrimary
-        default:
-            return .single
-        }
+        return TopologyDescription.TopologyType(from: topology)
     }
 }
 
@@ -98,80 +154,13 @@ extension MongoClient {
         return try ServerVersion(versionString)
     }
 
-    /// A struct representing a server version.
-    internal struct ServerVersion: Equatable {
-        let major: Int
-        let minor: Int
-        let patch: Int
-
-        /// initialize a server version from a string
-        init(_ str: String) throws {
-            let versionComponents = str.split(separator: ".").prefix(3)
-            guard versionComponents.count >= 2 else {
-                throw TestError(message: "Expected version string \(str) to have at least two .-separated components")
-            }
-
-            guard let major = Int(versionComponents[0]) else {
-                throw TestError(message: "Error parsing major version from \(str)")
-            }
-            guard let minor = Int(versionComponents[1]) else {
-                throw TestError(message: "Error parsing minor version from \(str)")
-            }
-
-            var patch = 0
-            if versionComponents.count == 3 {
-                // in case there is text at the end, for ex "3.6.0-rc1", stop first time
-                /// we encounter a non-numeric character.
-                let numbersOnly = versionComponents[2].prefix { "0123456789".contains($0) }
-                guard let patchValue = Int(numbersOnly) else {
-                    throw TestError(message: "Error parsing patch version from \(str)")
-                }
-                patch = patchValue
-            }
-
-            self.init(major: major, minor: minor, patch: patch)
-        }
-
-        // initialize given major, minor, and optional patch
-        init(major: Int, minor: Int, patch: Int? = nil) {
-            self.major = major
-            self.minor = minor
-            self.patch = patch ?? 0
-        }
-
-        func isLessThan(_ version: ServerVersion) -> Bool {
-            if self.major == version.major {
-                if self.minor == version.minor {
-                    // if major & minor equal, just compare patches
-                    return self.patch < version.patch
-                }
-                // major equal but minor isn't, so compare minor
-                return self.minor < version.minor
-            }
-            // just compare major versions
-            return self.major < version.major
-        }
-
-        func isLessThanOrEqualTo(_ version: ServerVersion) -> Bool {
-            return self == version || self.isLessThan(version)
-        }
-
-        func isGreaterThan(_ version: ServerVersion) -> Bool {
-            return !self.isLessThanOrEqualTo(version)
-        }
-
-        func isGreaterThanOrEqualTo(_ version: ServerVersion) -> Bool {
-            return !self.isLessThan(version)
-        }
-    }
-
     internal func serverVersionIsInRange(_ min: String?, _ max: String?) throws -> Bool {
         let version = try self.serverVersion()
 
-        if let min = min, version.isLessThan(try ServerVersion(min)) {
+        if let min = min, version < (try ServerVersion(min)) {
             return false
         }
-        if let max = max, version.isGreaterThan(try ServerVersion(max)) {
+        if let max = max, version > (try ServerVersion(max)) {
             return false
         }
 
@@ -180,6 +169,19 @@ extension MongoClient {
 
     internal convenience init(options: ClientOptions? = nil) throws {
         try self.init(MongoSwiftTestCase.connStr, options: options)
+    }
+}
+
+extension Document {
+    internal func sortedEquals(_ other: Document) -> Bool {
+        let keys = self.keys.sorted()
+        let otherKeys = other.keys.sorted()
+
+        // first compare keys, because rearrangeDoc will discard any that don't exist in `expected`
+        expect(keys).to(equal(otherKeys))
+
+        let rearranged = rearrangeDoc(other, toLookLike: self)
+        return self == rearranged
     }
 }
 
@@ -222,7 +224,7 @@ internal func sortedEqual(_ expectedValue: Document?) -> Predicate<Document> {
     return Predicate.define("sortedEqual <\(stringify(expectedValue))>") { actualExpression, msg in
         let actualValue = try actualExpression.evaluate()
 
-        if expectedValue == nil || actualValue == nil {
+        guard let expected = expectedValue, let actual = actualValue else {
             if expectedValue == nil && actualValue != nil {
                 return PredicateResult(
                     status: .fail,
@@ -232,14 +234,7 @@ internal func sortedEqual(_ expectedValue: Document?) -> Predicate<Document> {
             return PredicateResult(status: .fail, message: msg)
         }
 
-        let expectedKeys = expectedValue?.keys.sorted()
-        let actualKeys = actualValue?.keys.sorted()
-
-        // first compare keys, because rearrangeDoc will discard any that don't exist in `expected`
-        expect(expectedKeys).to(equal(actualKeys))
-
-        let rearranged = rearrangeDoc(actualValue!, toLookLike: expectedValue!)
-        let matches = expectedValue == rearranged
+        let matches = expected.sortedEquals(actual)
         return PredicateResult(status: PredicateStatus(bool: matches), message: msg)
     }
 }
