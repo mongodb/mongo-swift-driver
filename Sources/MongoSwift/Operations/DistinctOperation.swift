@@ -1,7 +1,7 @@
 import mongoc
 
 /// Options to use when executing a `distinct` command on a `MongoCollection`.
-public struct DistinctOptions: Encodable {
+public struct DistinctOptions: Codable {
     /// Specifies a collation.
     public let collation: Document?
 
@@ -12,7 +12,8 @@ public struct DistinctOptions: Encodable {
     public let readConcern: ReadConcern?
 
     /// A ReadPreference to use for this operation.
-    public let readPreference: ReadPreference?
+    // swiftlint:disable:next redundant_optional_initialization
+    public var readPreference: ReadPreference? = nil
 
     /// Convenience initializer allowing any/all parameters to be optional
     public init(collation: Document? = nil,

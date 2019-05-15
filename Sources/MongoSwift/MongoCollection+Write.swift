@@ -233,7 +233,7 @@ private extension BulkWriteOptionsConvertible {
 // Write command options structs
 
 /// Options to use when executing an `insertOne` command on a `MongoCollection`.
-public struct InsertOneOptions: Encodable, BulkWriteOptionsConvertible {
+public struct InsertOneOptions: Codable, BulkWriteOptionsConvertible {
     /// If true, allows the write to opt-out of document level validation.
     public let bypassDocumentValidation: Bool?
 
@@ -251,7 +251,7 @@ public struct InsertOneOptions: Encodable, BulkWriteOptionsConvertible {
 public typealias InsertManyOptions = BulkWriteOptions
 
 /// Options to use when executing an `update` command on a `MongoCollection`.
-public struct UpdateOptions: Encodable, BulkWriteOptionsConvertible {
+public struct UpdateOptions: Codable, BulkWriteOptionsConvertible {
     /// A set of filters specifying to which array elements an update should apply.
     public let arrayFilters: [Document]?
 
@@ -282,7 +282,7 @@ public struct UpdateOptions: Encodable, BulkWriteOptionsConvertible {
 }
 
 /// Options to use when executing a `replace` command on a `MongoCollection`.
-public struct ReplaceOptions: Encodable, BulkWriteOptionsConvertible {
+public struct ReplaceOptions: Codable, BulkWriteOptionsConvertible {
     /// If true, allows the write to opt-out of document level validation.
     public let bypassDocumentValidation: Bool?
 
@@ -308,7 +308,7 @@ public struct ReplaceOptions: Encodable, BulkWriteOptionsConvertible {
 }
 
 /// Options to use when executing a `delete` command on a `MongoCollection`.
-public struct DeleteOptions: Encodable, BulkWriteOptionsConvertible {
+public struct DeleteOptions: Codable, BulkWriteOptionsConvertible {
     /// Specifies a collation.
     public let collation: Document?
 
@@ -328,7 +328,11 @@ public struct DeleteOptions: Encodable, BulkWriteOptionsConvertible {
 // Write command results structs
 
 /// The result of an `insertOne` command on a `MongoCollection`.
-public struct InsertOneResult {
+public struct InsertOneResult: Decodable {
+    private enum CodingKeys: String, CodingKey {
+        case insertedId
+    }
+
     /// The identifier that was inserted. If the document doesn't have an identifier, this value
     /// will be generated and added to the document before insertion.
     public let insertedId: BSONValue
@@ -341,6 +345,12 @@ public struct InsertOneResult {
             throw RuntimeError.internalError(message: "BulkWriteResult missing _id for inserted document")
         }
         self.insertedId = id
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let abv = try container.decode(AnyBSONValue.self, forKey: .insertedId)
+        self.insertedId = abv.value
     }
 }
 

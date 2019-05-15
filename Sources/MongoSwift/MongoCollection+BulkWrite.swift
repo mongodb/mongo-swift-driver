@@ -41,7 +41,7 @@ extension MongoCollection {
     }
 
     /// A model for a `deleteOne` operation within a bulk write.
-    public struct DeleteOneModel: WriteModel {
+    public struct DeleteOneModel: WriteModel, Decodable {
         /// A `Document` representing the match criteria.
         public let filter: Document
 
@@ -78,7 +78,7 @@ extension MongoCollection {
     }
 
     /// A model for a `deleteMany` operation within a bulk write.
-    public struct DeleteManyModel: WriteModel {
+    public struct DeleteManyModel: WriteModel, Decodable {
         /// A `Document` representing the match criteria.
         public let filter: Document
 
@@ -115,7 +115,7 @@ extension MongoCollection {
     }
 
     /// A model for an `insertOne` operation within a bulk write.
-    public struct InsertOneModel: WriteModel {
+    public struct InsertOneModel: WriteModel, Decodable {
         /// The `CollectionType` to insert.
         public let document: CollectionType
 
@@ -158,7 +158,7 @@ extension MongoCollection {
     }
 
     /// A model for a `replaceOne` operation within a bulk write.
-    public struct ReplaceOneModel: WriteModel {
+    public struct ReplaceOneModel: WriteModel, Decodable {
         /// A `Document` representing the match criteria.
         public let filter: Document
 
@@ -216,7 +216,7 @@ extension MongoCollection {
     }
 
     /// A model for an `updateOne` operation within a bulk write.
-    public struct UpdateOneModel: WriteModel {
+    public struct UpdateOneModel: WriteModel, Decodable {
         /// A `Document` representing the match criteria.
         public let filter: Document
 
@@ -278,7 +278,7 @@ extension MongoCollection {
     }
 
     /// A model for an `updateMany` operation within a bulk write.
-    public struct UpdateManyModel: WriteModel {
+    public struct UpdateManyModel: WriteModel, Decodable {
         /// A `Document` representing the match criteria.
         public let filter: Document
 
@@ -418,7 +418,7 @@ public class BulkWriteOperation: Operation {
 }
 
 /// Options to use when performing a bulk write operation on a `MongoCollection`.
-public struct BulkWriteOptions: Encodable {
+public struct BulkWriteOptions: Codable {
     /// If `true`, allows the write to opt-out of document level validation.
     public let bypassDocumentValidation: Bool?
 
@@ -454,7 +454,7 @@ public struct BulkWriteOptions: Encodable {
 }
 
 /// The result of a bulk write operation on a `MongoCollection`.
-public struct BulkWriteResult {
+public struct BulkWriteResult: Decodable {
     /// Number of documents deleted.
     public let deletedCount: Int
 
@@ -475,6 +475,37 @@ public struct BulkWriteResult {
 
     /// Map of the index of the operation to the id of the upserted document.
     public let upsertedIds: [Int: BSONValue]
+
+    private enum CodingKeys: CodingKey {
+        case deletedCount, insertedCount, insertedIds, matchedCount, modifiedCount, upsertedCount, upsertedIds
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        // None of the results must be present themselves, but at least one must.
+        guard !container.allKeys.isEmpty else {
+            throw DecodingError.valueNotFound(BulkWriteResult.self,
+                                              DecodingError.Context(codingPath: decoder.codingPath,
+                                                                    debugDescription: "No results found"))
+        }
+
+        self.deletedCount = try container.decodeIfPresent(Int.self, forKey: .deletedCount) ?? 0
+        self.matchedCount = try container.decodeIfPresent(Int.self, forKey: .matchedCount) ?? 0
+        self.modifiedCount = try container.decodeIfPresent(Int.self, forKey: .modifiedCount) ?? 0
+
+        let insertedIds =
+                (try container.decodeIfPresent([Int: AnyBSONValue].self, forKey: .insertedIds) ?? [:])
+                        .mapValues { $0.value }
+        self.insertedIds = insertedIds
+        self.insertedCount = try container.decodeIfPresent(Int.self, forKey: .insertedCount) ?? insertedIds.count
+
+        let upsertedIds =
+                (try container.decodeIfPresent([Int: AnyBSONValue].self, forKey: .upsertedIds) ?? [:])
+                        .mapValues { $0.value }
+        self.upsertedIds = upsertedIds
+        self.upsertedCount = try container.decodeIfPresent(Int.self, forKey: .upsertedCount) ?? upsertedIds.count
+    }
 
     /**
      * Create a `BulkWriteResult` from a reply and map of inserted IDs.
