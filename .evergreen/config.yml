@@ -316,7 +316,7 @@ axes:
       - id: "4.2"
         display_name: "Swift 4.2"
         variables:
-           SWIFT_VERSION: "4.2"
+           SWIFT_VERSION: "4.2.4"
       - id: "5.0"
         display_name: "Swift 5.0"
         variables:

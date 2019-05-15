@@ -20,12 +20,12 @@ jobs:
     - stage: tests
       os: osx
       osx_image: xcode10.1
-      env: SWIFT_VERSION=4.2
+      env: SWIFT_VERSION=4.2.4
 
     - stage: tests
       os: osx
       osx_image: xcode10.2
-      env: SWIFT_VERSION=4.2
+      env: SWIFT_VERSION=4.2.4
 
     - stage: tests
       os: osx
@@ -34,7 +34,7 @@ jobs:
 
     - stage: tests
       os: linux
-      env: SWIFT_VERSION=4.2
+      env: SWIFT_VERSION=4.2.4
 
     - stage: tests
       os: linux

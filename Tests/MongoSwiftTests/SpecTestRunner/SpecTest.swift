@@ -35,7 +35,7 @@ protocol SpecTest {
     func run(client: MongoClient,
              db: MongoDatabase,
              collection: MongoCollection<Document>,
-             session: ClientSession) throws
+             session: ClientSession?) throws
 }
 
 /// Default implementation of a test execution.
@@ -65,9 +65,8 @@ extension SpecTest {
             expect(seenError).to(beNil(), description: self.description)
         }
 
-        if let expectedResult = self.outcome.result {
-            expect(result).toNot(beNil(), description: self.description)
-            expect(result).to(equal(expectedResult), description: self.description)
+        if let expectedResult = self.outcome.result, let receivedResult = result {
+            expect(receivedResult).to(equal(expectedResult), description: self.description)
         }
         let verifyColl = db.collection(self.outcome.collection.name ?? collection.name)
         let foundDocs = try Array(verifyColl.find())
