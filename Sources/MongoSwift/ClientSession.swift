@@ -133,7 +133,7 @@ public final class ClientSession {
      *   - clusterTime: The session's new cluster time, as a `Document` like `["cluster time": Timestamp(...)]`
      */
     public func advanceClusterTime(to clusterTime: Document) {
-        mongoc_client_session_advance_cluster_time(self._session, clusterTime.storage.pointer)
+        mongoc_client_session_advance_cluster_time(self._session, clusterTime._storage._bson)
     }
 
     /**
@@ -155,11 +155,11 @@ public final class ClientSession {
             throw ClientSession.SessionInactiveError
         }
 
-        doc.copyStorageIfRequired()
         var error = bson_error_t()
-        guard mongoc_client_session_append(self._session, doc.storage.pointer, &error) else {
-            throw parseMongocError(error)
+        try withMutableBSONPointer(to: &doc) { docPtr in
+            guard mongoc_client_session_append(self._session, docPtr, &error) else {
+                throw parseMongocError(error)
+            }
         }
-        doc.count = Int(bson_count_keys(doc.storage.pointer))
     }
 }

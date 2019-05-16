@@ -42,11 +42,13 @@ internal struct CreateIndexesOperation<T: Codable>: Operation {
 
         let opts = try encodeOptions(options: options, session: session)
 
+        var reply = Document()
         var error = bson_error_t()
-        let reply = Document()
-
-        guard mongoc_collection_write_command_with_opts(
-            self.collection._collection, command.data, opts?.data, reply.data, &error) else {
+        let success = withMutableBSONPointer(to: &reply) { replyPtr in
+            mongoc_collection_write_command_with_opts(
+                self.collection._collection, command._bson, opts?._bson, replyPtr, &error)
+        }
+        guard success else {
             throw getErrorFromReply(bsonError: error, from: reply)
         }
 

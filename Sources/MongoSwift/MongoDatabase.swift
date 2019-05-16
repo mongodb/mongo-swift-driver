@@ -235,7 +235,7 @@ public class MongoDatabase {
                                 session: ClientSession? = nil) throws -> MongoCursor<Document> {
         let opts = try encodeOptions(options: options, session: session)
 
-        guard let collections = mongoc_database_find_collections_with_opts(self._database, opts?.data) else {
+        guard let collections = mongoc_database_find_collections_with_opts(self._database, opts?._bson) else {
             fatalError("Couldn't get cursor from the server")
         }
 

@@ -13,18 +13,18 @@ internal typealias MutableBSONIterPointer = UnsafeMutablePointer<bson_iter_t>
 public class DocumentIterator: IteratorProtocol {
     /// the libbson iterator. it must be a `var` because we use it as
     /// an inout argument
-    internal var iter: bson_iter_t
+    internal var _iter: bson_iter_t
     /// a reference to the storage for the document we're iterating
-    internal let storage: DocumentStorage
+    internal let _storage: DocumentStorage
 
     /// Initializes a new iterator over the contents of `doc`. Returns `nil` if the key is not
     /// found, or if an iterator cannot be created over `doc` due to an error from e.g. corrupt data.
     internal init?(forDocument doc: Document) {
-        self.iter = bson_iter_t()
-        self.storage = doc.storage
+        self._iter = bson_iter_t()
+        self._storage = doc._storage
 
         let initialized = self.withMutableBSONIterPointer { iterPtr in
-            bson_iter_init(iterPtr, doc.data)
+            bson_iter_init(iterPtr, doc._bson)
         }
 
         guard initialized else {
@@ -35,11 +35,11 @@ public class DocumentIterator: IteratorProtocol {
     /// Initializes a new iterator over the contents of `doc`. Returns `nil` if an iterator cannot
     /// be created over `doc` due to an error from e.g. corrupt data, or if the key is not found.
     internal init?(forDocument doc: Document, advancedTo key: String) {
-        self.iter = bson_iter_t()
-        self.storage = doc.storage
+        self._iter = bson_iter_t()
+        self._storage = doc._storage
 
         let initialized = self.withMutableBSONIterPointer { iterPtr in
-            bson_iter_init_find(iterPtr, doc.data, key.cString(using: .utf8))
+            bson_iter_init_find(iterPtr, doc._bson, key.cString(using: .utf8))
         }
 
         guard initialized else {
@@ -168,11 +168,11 @@ public class DocumentIterator: IteratorProtocol {
     /// Internal helper function for explicitly accessing the `bson_iter_t` as an unsafe pointer
     internal func withBSONIterPointer<Result>(_ body: (BSONIterPointer) throws -> Result) rethrows -> Result {
 #if compiler(>=5.0)
-        return try withUnsafePointer(to: self.iter) { iterPtr in
+        return try withUnsafePointer(to: self._iter) { iterPtr in
             try body(BSONIterPointer(iterPtr))
         }
 #else
-        return try withUnsafePointer(to: self.iter, body)
+        return try withUnsafePointer(to: self._iter, body)
 #endif
     }
 
@@ -181,11 +181,11 @@ public class DocumentIterator: IteratorProtocol {
       _ body: (MutableBSONIterPointer) throws -> Result
     ) rethrows -> Result {
 #if compiler(>=5.0)
-        return try withUnsafeMutablePointer(to: &self.iter) { iterPtr in
+        return try withUnsafeMutablePointer(to: &self._iter) { iterPtr in
             try body(MutableBSONIterPointer(iterPtr))
         }
 #else
-        return try withUnsafeMutablePointer(to: &self.iter, body)
+        return try withUnsafeMutablePointer(to: &self._iter, body)
 #endif
     }
 
