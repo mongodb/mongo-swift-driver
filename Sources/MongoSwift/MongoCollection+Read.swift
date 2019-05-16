@@ -193,9 +193,10 @@ public struct AggregateOptions: Codable {
     /// A `ReadConcern` to use in read stages of this operation.
     public let readConcern: ReadConcern?
 
+    // swiftlint:disable redundant_optional_initialization
     /// A ReadPreference to use for this operation.
-    // swiftlint:disable:next redundant_optional_initialization
     public var readPreference: ReadPreference? = nil
+    // swiftlint:enable redundant_optional_initialization
 
     /// A `WriteConcern` to use in `$out` stages of this operation.
     public let writeConcern: WriteConcern?
@@ -288,10 +289,6 @@ public struct FindOptions: Codable {
     /// Attaches a comment to the query.
     public let comment: String?
 
-    /// Indicates the type of cursor to use. This value includes both the tailable and awaitData options.
-    // swiftlint:disable:next redundant_optional_initialization
-    public var cursorType: CursorType? = nil
-
     /// If a `CursorType` is provided, indicates whether it is `.tailable` or .`tailableAwait`.
     private let tailable: Bool?
 
@@ -343,9 +340,15 @@ public struct FindOptions: Codable {
     /// A ReadConcern to use for this operation.
     public let readConcern: ReadConcern?
 
+    // swiftlint:disable redundant_optional_initialization
+
     /// A ReadPreference to use for this operation.
-    // swiftlint:disable:next redundant_optional_initialization
     public var readPreference: ReadPreference? = nil
+
+    /// Indicates the type of cursor to use. This value includes both the tailable and awaitData options.
+    public var cursorType: CursorType? = nil
+
+    // swiftlint:enable redundant_optional_initialization
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional.
     public init(allowPartialResults: Bool? = nil,

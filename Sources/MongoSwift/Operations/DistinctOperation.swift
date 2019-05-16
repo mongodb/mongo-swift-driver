@@ -11,9 +11,10 @@ public struct DistinctOptions: Codable {
     /// A ReadConcern to use for this operation.
     public let readConcern: ReadConcern?
 
+    // swiftlint:disable redundant_optional_initialization
     /// A ReadPreference to use for this operation.
-    // swiftlint:disable:next redundant_optional_initialization
     public var readPreference: ReadPreference? = nil
+    // swiftlint:enable redundant_optional_initialization
 
     /// Convenience initializer allowing any/all parameters to be optional
     public init(collation: Document? = nil,
