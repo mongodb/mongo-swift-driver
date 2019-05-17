@@ -307,8 +307,7 @@ internal func convertingBulkWriteErrors<T>(_ body: () throws -> T) throws -> T {
 }
 
 internal func toErrorString(_ error: bson_error_t) -> String {
-    var e = error
-    return withUnsafeBytes(of: &e.message) { rawPtr -> String in
+    return withUnsafeBytes(of: error.message) { rawPtr -> String in
         // if baseAddress is nil, the buffer is empty.
         guard let baseAddress = rawPtr.baseAddress else {
             return ""
