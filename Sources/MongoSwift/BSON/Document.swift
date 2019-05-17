@@ -516,6 +516,7 @@ extension Document: ExpressibleByDictionaryLiteral {
     }
 }
 
+/// Executes the provided closure using a mutable pointer to the document's underlying storage.
 internal func withMutableBSONPointer<T>(to document: inout Document,
                                         body: (MutableBSONPointer) throws -> T) rethrows -> T {
     document.copyStorageIfRequired()

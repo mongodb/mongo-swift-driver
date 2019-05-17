@@ -109,8 +109,7 @@ extension MongoCollection {
             var error = bson_error_t()
             let opts = try bulk.encoder.encode(DeleteModelOptions(collation: self.collation))
 
-            guard mongoc_bulk_operation_remove_many_with_opts(
-                bulk.bulk, self.filter._bson, opts._bson, &error) else {
+            guard mongoc_bulk_operation_remove_many_with_opts(bulk.bulk, self.filter._bson, opts._bson, &error) else {
                 throw parseMongocError(error) // should be invalidArgumentError
             }
         }
