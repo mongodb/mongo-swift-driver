@@ -10,6 +10,10 @@ private final class MongocInitializer {
     }
 }
 
+/// :nodoc:
+@available(*, deprecated, message: "Calling this method no longer has any effect.")
+public func initialize() {}
+
 /// Initializes libmongoc. Repeated calls to this method have no effect.
 internal func initializeMongoc() {
     _ = MongocInitializer.shared
