@@ -71,7 +71,7 @@ internal struct CountOperation<T: Codable>: Operation {
         // because we already encode skip and limit in the options,
         // pass in 0s so we don't get duplicate parameter errors.
         let count = mongoc_collection_count_with_opts(
-            self.collection._collection, MONGOC_QUERY_NONE, self.filter.data, 0, 0, opts?.data, rp, &error)
+            self.collection._collection, MONGOC_QUERY_NONE, self.filter._bson, 0, 0, opts?._bson, rp, &error)
 
         if count == -1 { throw parseMongocError(error) }
 

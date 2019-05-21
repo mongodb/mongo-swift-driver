@@ -20,7 +20,7 @@ final class Document_CollectionTests: MongoSwiftTestCase {
         expect(doc[1].value).to(bsonEqual(4))
 
         // doc.indices
-        expect(doc.indices.count).to(equal(doc.storage.count))
+        expect(doc.indices.count).to(equal(doc.count))
         expect(doc.indices.startIndex).to(equal(doc.startIndex))
         expect(doc.indices[1]).to(equal(doc.index(after: doc.startIndex)))
         expect(doc.indices.endIndex).to(equal(doc.endIndex))
@@ -56,24 +56,20 @@ final class Document_CollectionTests: MongoSwiftTestCase {
         expect(firstElem.key).to(equal("a"))
         expect(firstElem.value).to(bsonEqual(3))
         expect(doc).to(equal(["b": 2, "c": 5, "d": 4]))
-        expect(doc).to(haveCorrectCount())
 
         // doc.removeFirst(k:)
         doc.removeFirst(2)
         expect(doc).to(equal(["d": 4]))
-        expect(doc).to(haveCorrectCount())
 
         // doc.popFirst
         let lastElem = doc.popFirst()
         expect(lastElem?.key).to(equal("d"))
         expect(lastElem?.value).to(bsonEqual(4))
         expect(doc).to(equal([:]))
-        expect(doc).to(haveCorrectCount())
 
         // doc.merge
         let newDoc: Document = ["e": 4, "f": 2]
         try doc.merge(newDoc)
-        expect(doc).to(haveCorrectCount())
     }
 
     func testPrefixSuffix() {
@@ -85,33 +81,11 @@ final class Document_CollectionTests: MongoSwiftTestCase {
 
         // doc.prefix(upTo:)
         expect(upToPrefixDoc).to(equal(["a": 3, "b": 2]))
-        expect(upToPrefixDoc).to(haveCorrectCount())
 
         // doc.prefix(through:)
         expect(throughPrefixDoc).to(equal(["a": 3, "b": 2]))
-        expect(throughPrefixDoc).to(haveCorrectCount())
 
         // doc.suffix
         expect(suffixDoc).to(equal(["b": 2, "c": 5, "d": 4, "e": 3]))
-        expect(suffixDoc).to(haveCorrectCount())
-    }
-}
-
-/// A Nimble matcher for testing that the count of a Document is what it should be. This Nimble matcher is used in only
-/// this file for verifying that Document.count (a bookkeeping number in Document) matches the count that is reported by
-/// libbson.
-private func haveCorrectCount() -> Predicate<Document> {
-    return Predicate.define("have the correct count") { actualExpression, msg in
-        let actualValue = try actualExpression.evaluate()
-        switch actualValue {
-        case nil:
-            return PredicateResult(status: .fail, message: msg)
-        case let actual?:
-            let expectedCount = actual.storage.count
-            let failMsg = ExpectationMessage.expectedCustomValueTo("equal a count of \(expectedCount)",
-                                                                   "\(actual.count)")
-            let matches = (actual.count == expectedCount)
-            return PredicateResult(bool: matches, message: matches ? msg : failMsg)
-        }
     }
 }

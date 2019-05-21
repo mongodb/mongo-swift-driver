@@ -481,38 +481,38 @@ final class DocumentTests: MongoSwiftTestCase {
     // test replacing `Overwritable` types with values of their own type
     func testOverwritable() throws {
         // make a deep copy so we start off with uniquely referenced storage
-        var doc = Document(copying: DocumentTests.overwritables.data)
+        var doc = Document(copying: DocumentTests.overwritables._bson)
 
         // save a reference to original bson_t so we can verify it doesn't change
-        let pointer = doc.data
+        let pointer = doc._bson
 
         // overwrite int32 with int32
         doc["int32"] = Int32(15)
         expect(doc["int32"]).to(bsonEqual(Int32(15)))
-        expect(doc.data).to(equal(pointer))
+        expect(doc._bson).to(equal(pointer))
 
         doc["bool"] = true
-        expect(doc.data).to(equal(pointer))
+        expect(doc._bson).to(equal(pointer))
 
         doc["double"] = 3.0
-        expect(doc.data).to(equal(pointer))
+        expect(doc._bson).to(equal(pointer))
 
         doc["decimal"] = Decimal128("100")!
-        expect(doc.data).to(equal(pointer))
+        expect(doc._bson).to(equal(pointer))
 
         // overwrite int64 with int64
         doc["int64"] = Int64.min
-        expect(doc.data).to(equal(pointer))
+        expect(doc._bson).to(equal(pointer))
 
         let newOid = ObjectId()
         doc["oid"] = newOid
-        expect(doc.data).to(equal(pointer))
+        expect(doc._bson).to(equal(pointer))
 
         doc["timestamp"] = Timestamp(timestamp: 5, inc: 10)
-        expect(doc.data).to(equal(pointer))
+        expect(doc._bson).to(equal(pointer))
 
         doc["datetime"] = Date(msSinceEpoch: 2000)
-        expect(doc.data).to(equal(pointer))
+        expect(doc._bson).to(equal(pointer))
 
         expect(doc).to(equal([
             "double": 3.0,
@@ -532,7 +532,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
         let bigInt = Int(Int32.max) + 1
         doc["int64"] = bigInt
-        expect(doc.data).to(equal(pointer))
+        expect(doc._bson).to(equal(pointer))
 
         // final values
         expect(doc).to(equal([
@@ -549,16 +549,16 @@ final class DocumentTests: MongoSwiftTestCase {
         // should not be able to overwrite an int32 with an int on a 64-bit system
         doc["int32"] = 20
         expect(doc["int32"]).to(bsonEqual(20))
-        expect(doc.data).toNot(equal(pointer))
+        expect(doc._bson).toNot(equal(pointer))
     }
 
     // test replacing some of the non-Overwritable types with values of their own types
     func testNonOverwritable() throws {
         // make a deep copy so we start off with uniquely referenced storage
-        var doc = Document(copying: DocumentTests.nonOverwritables.data)
+        var doc = Document(copying: DocumentTests.nonOverwritables._bson)
 
         // save a reference to original bson_t so we can verify it changes
-        var pointer = doc.data
+        var pointer = doc._bson
 
         // save these to compare to at the end
         let newDoc: Document = ["y": 1]
@@ -568,8 +568,8 @@ final class DocumentTests: MongoSwiftTestCase {
         newPairs.forEach { k, v in
             doc[k] = v
             // the storage should change every time
-            expect(doc.data).toNot(equal(pointer))
-            pointer = doc.data
+            expect(doc._bson).toNot(equal(pointer))
+            pointer = doc._bson
         }
 
         expect(doc).to(equal(["string": "hi", "nil": BSONNull(), "doc": newDoc, "arr": [3, 4] as [Int]]))
@@ -578,10 +578,10 @@ final class DocumentTests: MongoSwiftTestCase {
     // test replacing both overwritable and nonoverwritable values with values of different types
     func testReplaceValueWithNewType() throws {
         // make a deep copy so we start off with uniquely referenced storage
-        var overwritableDoc = Document(copying: DocumentTests.overwritables.data)
+        var overwritableDoc = Document(copying: DocumentTests.overwritables._bson)
 
         // save a reference to original bson_t so we can verify it changes
-        var overwritablePointer = overwritableDoc.data
+        var overwritablePointer = overwritableDoc._bson
 
         let newOid = ObjectId()
         let overwritablePairs: [(String, BSONValue)] = [
@@ -597,8 +597,8 @@ final class DocumentTests: MongoSwiftTestCase {
 
         overwritablePairs.forEach { k, v in
             overwritableDoc[k] = v
-            expect(overwritableDoc.data).toNot(equal(overwritablePointer))
-            overwritablePointer = overwritableDoc.data
+            expect(overwritableDoc._bson).toNot(equal(overwritablePointer))
+            overwritablePointer = overwritableDoc._bson
         }
 
         expect(overwritableDoc).to(equal([
@@ -613,17 +613,17 @@ final class DocumentTests: MongoSwiftTestCase {
         ]))
 
         // make a deep copy so we start off with uniquely referenced storage
-        var nonOverwritableDoc = Document(copying: DocumentTests.nonOverwritables.data)
+        var nonOverwritableDoc = Document(copying: DocumentTests.nonOverwritables._bson)
 
         // save a reference to original bson_t so we can verify it changes
-        var nonOverwritablePointer = nonOverwritableDoc.data
+        var nonOverwritablePointer = nonOverwritableDoc._bson
 
         let nonOverwritablePairs: [(String, BSONValue)] = [("string", 1), ("nil", "hello"), ("doc", "hi"), ("arr", 5)]
 
         nonOverwritablePairs.forEach { k, v in
             nonOverwritableDoc[k] = v
-            expect(nonOverwritableDoc.data).toNot(equal(nonOverwritablePointer))
-            nonOverwritablePointer = nonOverwritableDoc.data
+            expect(nonOverwritableDoc._bson).toNot(equal(nonOverwritablePointer))
+            nonOverwritablePointer = nonOverwritableDoc._bson
         }
 
         expect(nonOverwritableDoc).to(equal(["string": 1, "nil": "hello", "doc": "hi", "arr": 5]))
@@ -631,24 +631,24 @@ final class DocumentTests: MongoSwiftTestCase {
 
     // test setting both overwritable and nonoverwritable values to nil
     func testReplaceValueWithNil() throws {
-        var overwritableDoc = Document(copying: DocumentTests.overwritables.data)
-        var overwritablePointer = overwritableDoc.data
+        var overwritableDoc = Document(copying: DocumentTests.overwritables._bson)
+        var overwritablePointer = overwritableDoc._bson
 
         ["double", "int32", "int64", "bool", "decimal", "oid", "timestamp", "datetime"].forEach {
             overwritableDoc[$0] = BSONNull()
             // the storage should change every time
-            expect(overwritableDoc.data).toNot(equal(overwritablePointer))
-            overwritablePointer = overwritableDoc.data
+            expect(overwritableDoc._bson).toNot(equal(overwritablePointer))
+            overwritablePointer = overwritableDoc._bson
         }
 
-        var nonOverwritableDoc = Document(copying: DocumentTests.nonOverwritables.data)
-        var nonOverwritablePointer = nonOverwritableDoc.data
+        var nonOverwritableDoc = Document(copying: DocumentTests.nonOverwritables._bson)
+        var nonOverwritablePointer = nonOverwritableDoc._bson
 
         ["string", "doc", "arr"].forEach {
             nonOverwritableDoc[$0] = BSONNull()
             // the storage should change every time
-            expect(nonOverwritableDoc.data).toNot(equal(nonOverwritablePointer))
-            nonOverwritablePointer = nonOverwritableDoc.data
+            expect(nonOverwritableDoc._bson).toNot(equal(nonOverwritablePointer))
+            nonOverwritablePointer = nonOverwritableDoc._bson
         }
 
         expect(nonOverwritableDoc).to(
@@ -659,7 +659,7 @@ final class DocumentTests: MongoSwiftTestCase {
     func testReplaceValueNoop() throws {
         var noops: Document = ["null": BSONNull(), "maxkey": MaxKey(), "minkey": MinKey()]
 
-        var pointer = noops.data
+        var pointer = noops._bson
 
         // replace values with own types. these should all be no-ops
         let newPairs1: [(String, BSONValue)] = [("null", BSONNull()), ("maxkey", MaxKey()), ("minkey", MinKey())]
@@ -667,7 +667,7 @@ final class DocumentTests: MongoSwiftTestCase {
         newPairs1.forEach { k, v in
             noops[k] = v
             // the storage should never change
-            expect(noops.data).to(equal(pointer))
+            expect(noops._bson).to(equal(pointer))
         }
 
         // we should still have exactly the same document we started with
@@ -679,8 +679,8 @@ final class DocumentTests: MongoSwiftTestCase {
         newPairs2.forEach { k, v in
             noops[k] = v
             // the storage should change every time
-            expect(noops.data).toNot(equal(pointer))
-            pointer = noops.data
+            expect(noops._bson).toNot(equal(pointer))
+            pointer = noops._bson
         }
 
         expect(noops).to(equal(["null": 5, "maxkey": "hi", "minkey": false]))

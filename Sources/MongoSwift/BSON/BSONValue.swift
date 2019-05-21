@@ -219,7 +219,7 @@ extension Array: BSONValue {
             try arr.setValue(for: String(i), to: val)
         }
 
-        guard bson_append_array(storage.pointer, key, Int32(key.utf8.count), arr.data) else {
+        guard bson_append_array(storage._bson, key, Int32(key.utf8.count), arr._bson) else {
             throw bsonTooLargeError(value: self, forKey: key)
         }
     }
@@ -255,7 +255,7 @@ public struct BSONNull: BSONValue, Codable, Equatable {
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        guard bson_append_null(storage.pointer, key, Int32(key.utf8.count)) else {
+        guard bson_append_null(storage._bson, key, Int32(key.utf8.count)) else {
             throw bsonTooLargeError(value: self, forKey: key)
         }
     }
@@ -356,7 +356,7 @@ public struct Binary: BSONValue, Equatable, Codable {
         let subtype = bson_subtype_t(UInt32(self.subtype))
         let length = self.data.count
         let byteArray = [UInt8](self.data)
-        guard bson_append_binary(storage.pointer, key, Int32(key.utf8.count), subtype, byteArray, UInt32(length)) else {
+        guard bson_append_binary(storage._bson, key, Int32(key.utf8.count), subtype, byteArray, UInt32(length)) else {
             throw bsonTooLargeError(value: self, forKey: key)
         }
     }
@@ -392,7 +392,7 @@ extension Bool: BSONValue {
     public var bsonType: BSONType { return .boolean }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        guard bson_append_bool(storage.pointer, key, Int32(key.utf8.count), self) else {
+        guard bson_append_bool(storage._bson, key, Int32(key.utf8.count), self) else {
             throw bsonTooLargeError(value: self, forKey: key)
         }
     }
@@ -422,7 +422,7 @@ extension Date: BSONValue {
     public var msSinceEpoch: Int64 { return Int64((self.timeIntervalSince1970 * 1000.0).rounded()) }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        guard bson_append_date_time(storage.pointer, key, Int32(key.utf8.count), self.msSinceEpoch) else {
+        guard bson_append_date_time(storage._bson, key, Int32(key.utf8.count), self.msSinceEpoch) else {
             throw bsonTooLargeError(value: self, forKey: key)
         }
     }
@@ -464,7 +464,7 @@ public struct DBPointer: BSONValue, Codable, Equatable {
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         try withUnsafePointer(to: id.oid) { oidPtr in
-            guard bson_append_dbpointer(storage.pointer, key, Int32(key.utf8.count), self.ref, oidPtr) else {
+            guard bson_append_dbpointer(storage._bson, key, Int32(key.utf8.count), self.ref, oidPtr) else {
                 throw bsonTooLargeError(value: self, forKey: key)
             }
         }
@@ -538,7 +538,7 @@ public struct Decimal128: BSONNumber, Equatable, Codable, CustomStringConvertibl
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         try withUnsafePointer(to: self.decimal128) { ptr in
-            guard bson_append_decimal128(storage.pointer, key, Int32(key.utf8.count), ptr) else {
+            guard bson_append_decimal128(storage._bson, key, Int32(key.utf8.count), ptr) else {
                 throw bsonTooLargeError(value: self, forKey: key)
             }
         }
@@ -601,7 +601,7 @@ extension Double: BSONNumber {
     public var bsonType: BSONType { return .double }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        guard bson_append_double(storage.pointer, key, Int32(key.utf8.count), self) else {
+        guard bson_append_double(storage._bson, key, Int32(key.utf8.count), self) else {
             throw bsonTooLargeError(value: self, forKey: key)
         }
     }
@@ -681,7 +681,7 @@ extension Int32: BSONNumber {
     public var bsonType: BSONType { return .int32 }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        guard bson_append_int32(storage.pointer, key, Int32(key.utf8.count), self) else {
+        guard bson_append_int32(storage._bson, key, Int32(key.utf8.count), self) else {
             throw bsonTooLargeError(value: self, forKey: key)
         }
     }
@@ -711,7 +711,7 @@ extension Int64: BSONNumber {
     public var bsonType: BSONType { return .int64 }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        guard bson_append_int64(storage.pointer, key, Int32(key.utf8.count), self) else {
+        guard bson_append_int64(storage._bson, key, Int32(key.utf8.count), self) else {
             throw bsonTooLargeError(value: self, forKey: key)
         }
     }
@@ -764,11 +764,11 @@ public struct CodeWithScope: BSONValue, Equatable, Codable {
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         if let s = self.scope {
-            guard bson_append_code_with_scope(storage.pointer, key, Int32(key.utf8.count), self.code, s.data) else {
+            guard bson_append_code_with_scope(storage._bson, key, Int32(key.utf8.count), self.code, s._bson) else {
                 throw bsonTooLargeError(value: self, forKey: key)
             }
         } else {
-            guard bson_append_code(storage.pointer, key, Int32(key.utf8.count), self.code) else {
+            guard bson_append_code(storage._bson, key, Int32(key.utf8.count), self.code) else {
                 throw bsonTooLargeError(value: self, forKey: key)
             }
         }
@@ -811,7 +811,7 @@ public struct MaxKey: BSONValue, Equatable, Codable {
     public var bsonType: BSONType { return .maxKey }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        guard bson_append_maxkey(storage.pointer, key, Int32(key.utf8.count)) else {
+        guard bson_append_maxkey(storage._bson, key, Int32(key.utf8.count)) else {
             throw bsonTooLargeError(value: self, forKey: key)
         }
     }
@@ -842,7 +842,7 @@ public struct MinKey: BSONValue, Equatable, Codable {
     public var bsonType: BSONType { return .minKey }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        guard bson_append_minkey(storage.pointer, key, Int32(key.utf8.count)) else {
+        guard bson_append_minkey(storage._bson, key, Int32(key.utf8.count)) else {
             throw bsonTooLargeError(value: self, forKey: key)
         }
     }
@@ -925,7 +925,7 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         // encode the bson_oid_t to the bson_t
         try withUnsafePointer(to: self.oid) { oidPtr in
-            guard bson_append_oid(storage.pointer, key, Int32(key.utf8.count), oidPtr) else {
+            guard bson_append_oid(storage._bson, key, Int32(key.utf8.count), oidPtr) else {
                 throw bsonTooLargeError(value: self, forKey: key)
             }
         }
@@ -1044,7 +1044,7 @@ public struct RegularExpression: BSONValue, Equatable, Codable {
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        guard bson_append_regex(storage.pointer, key, Int32(key.utf8.count), self.pattern, self.options) else {
+        guard bson_append_regex(storage._bson, key, Int32(key.utf8.count), self.pattern, self.options) else {
             throw bsonTooLargeError(value: self, forKey: key)
         }
     }
@@ -1077,7 +1077,7 @@ extension String: BSONValue {
     public var bsonType: BSONType { return .string }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        guard bson_append_utf8(storage.pointer, key, Int32(key.utf8.count), self, Int32(self.utf8.count)) else {
+        guard bson_append_utf8(storage._bson, key, Int32(key.utf8.count), self, Int32(self.utf8.count)) else {
             throw bsonTooLargeError(value: self, forKey: key)
         }
     }
@@ -1135,7 +1135,7 @@ public struct Symbol: BSONValue, CustomStringConvertible, Codable, Equatable {
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         guard bson_append_symbol(
-                storage.pointer,
+                storage._bson,
                 key,
                 Int32(key.utf8.count),
                 self.stringValue,
@@ -1191,7 +1191,7 @@ public struct Timestamp: BSONValue, Equatable, Codable {
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        guard bson_append_timestamp(storage.pointer, key, Int32(key.utf8.count), self.timestamp, self.increment) else {
+        guard bson_append_timestamp(storage._bson, key, Int32(key.utf8.count), self.timestamp, self.increment) else {
             throw bsonTooLargeError(value: self, forKey: key)
         }
     }
@@ -1227,7 +1227,7 @@ public struct BSONUndefined: BSONValue, Equatable, Codable {
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        guard bson_append_undefined(storage.pointer, key, Int32(key.utf8.count)) else {
+        guard bson_append_undefined(storage._bson, key, Int32(key.utf8.count)) else {
             throw bsonTooLargeError(value: self, forKey: key)
         }
     }

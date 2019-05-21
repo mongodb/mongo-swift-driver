@@ -22,7 +22,7 @@ extension MongoCollection {
         let opts = try encodeOptions(options: options, session: session)
         let rp = options?.readPreference?._readPreference
 
-        guard let cursor = mongoc_collection_find_with_opts(self._collection, filter.data, opts?.data, rp) else {
+        guard let cursor = mongoc_collection_find_with_opts(self._collection, filter._bson, opts?._bson, rp) else {
             fatalError("Couldn't get cursor from the server")
         }
         return try MongoCursor(from: cursor, client: self._client, decoder: self.decoder, session: session)
@@ -50,7 +50,7 @@ extension MongoCollection {
         let pipeline: Document = ["pipeline": pipeline]
 
         guard let cursor = mongoc_collection_aggregate(
-            self._collection, MONGOC_QUERY_NONE, pipeline.data, opts?.data, rp) else {
+            self._collection, MONGOC_QUERY_NONE, pipeline._bson, opts?._bson, rp) else {
             fatalError("Couldn't get cursor from the server")
         }
         return try MongoCursor(from: cursor, client: self._client, decoder: self.decoder, session: session)

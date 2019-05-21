@@ -71,7 +71,8 @@ extension MongoCollection {
             let opts = try bulk.encoder.encode(DeleteModelOptions(collation: self.collation))
             var error = bson_error_t()
 
-            guard mongoc_bulk_operation_remove_one_with_opts(bulk.bulk, self.filter.data, opts.data, &error) else {
+            guard mongoc_bulk_operation_remove_one_with_opts(
+                bulk.bulk, self.filter._bson, opts._bson, &error) else {
                 throw parseMongocError(error) // Should be invalidArgumentError
             }
         }
@@ -108,7 +109,7 @@ extension MongoCollection {
             var error = bson_error_t()
             let opts = try bulk.encoder.encode(DeleteModelOptions(collation: self.collation))
 
-            guard mongoc_bulk_operation_remove_many_with_opts(bulk.bulk, self.filter.data, opts.data, &error) else {
+            guard mongoc_bulk_operation_remove_many_with_opts(bulk.bulk, self.filter._bson, opts._bson, &error) else {
                 throw parseMongocError(error) // should be invalidArgumentError
             }
         }
@@ -139,7 +140,7 @@ extension MongoCollection {
         public func addToBulkWrite(bulk: BulkWriteOperation, index: Int) throws {
             let document = try bulk.encoder.encode(self.document).withID()
             var error = bson_error_t()
-            guard mongoc_bulk_operation_insert_with_opts(bulk.bulk, document.data, nil, &error) else {
+            guard mongoc_bulk_operation_insert_with_opts(bulk.bulk, document._bson, nil, &error) else {
                 throw parseMongocError(error) // should be invalidArgumentError
             }
 
@@ -200,9 +201,9 @@ extension MongoCollection {
             var error = bson_error_t()
 
             guard mongoc_bulk_operation_replace_one_with_opts(bulk.bulk,
-                                                              self.filter.data,
-                                                              replacement.data,
-                                                              opts.data,
+                                                              self.filter._bson,
+                                                              replacement._bson,
+                                                              opts._bson,
                                                               &error) else {
                 throw parseMongocError(error) // should be invalidArgumentError
             }
@@ -268,9 +269,9 @@ extension MongoCollection {
             var error = bson_error_t()
 
             guard mongoc_bulk_operation_update_one_with_opts(bulk.bulk,
-                                                             self.filter.data,
-                                                             self.update.data,
-                                                             opts.data,
+                                                             self.filter._bson,
+                                                             self.update._bson,
+                                                             opts._bson,
                                                              &error) else {
                 throw parseMongocError(error) // should be invalidArgumentError
             }
@@ -330,9 +331,9 @@ extension MongoCollection {
             var error = bson_error_t()
 
             guard mongoc_bulk_operation_update_many_with_opts(bulk.bulk,
-                                                              self.filter.data,
-                                                              self.update.data,
-                                                              opts.data,
+                                                              self.filter._bson,
+                                                              self.update._bson,
+                                                              opts._bson,
                                                               &error) else {
                 throw parseMongocError(error) // should be invalidArgumentError
             }
@@ -376,7 +377,7 @@ public class BulkWriteOperation: Operation {
     fileprivate init(collection: OpaquePointer?, opts: Document?, withEncoder: BSONEncoder) {
         // documented as always returning a value.
         // swiftlint:disable:next force_unwrapping
-        self.bulk = mongoc_collection_create_bulk_operation_with_opts(collection, opts?.data)!
+        self.bulk = mongoc_collection_create_bulk_operation_with_opts(collection, opts?._bson)!
         self.opts = opts
         self.encoder = withEncoder
     }
@@ -390,10 +391,12 @@ public class BulkWriteOperation: Operation {
      *   - `ServerError.bulkWriteError` if an error occurs while performing the writes.
      */
     internal func execute() throws -> BulkWriteResult? {
-        let reply = Document()
+        var reply = Document()
         var error = bson_error_t()
+        let serverId = withMutableBSONPointer(to: &reply) { replyPtr in
+            mongoc_bulk_operation_execute(self.bulk, replyPtr, &error)
+        }
 
-        let serverId = mongoc_bulk_operation_execute(self.bulk, reply.data, &error)
         let result = try BulkWriteResult(reply: reply, insertedIds: self.insertedIds)
 
         guard serverId != 0 else {

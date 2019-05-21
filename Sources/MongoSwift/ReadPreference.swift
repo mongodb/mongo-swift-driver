@@ -119,7 +119,7 @@ public final class ReadPreference {
             }
 
             let tags = try BSONEncoder().encode(Document(tagSets))
-            mongoc_read_prefs_set_tags(self._readPreference, tags.data)
+            mongoc_read_prefs_set_tags(self._readPreference, tags._bson)
         }
 
         if let maxStalenessSeconds = maxStalenessSeconds {
