@@ -48,7 +48,7 @@ public struct IndexOptions: Codable {
      *
      * - Example: For an index of name: 1, age: -1, the generated name would be "name_1_age_-1".
      */
-    public var name: String? = nil
+    public var name: String?
 
     /// Optionally tells the index to only reference documents with the specified field in the index.
     public let sparse: Bool?

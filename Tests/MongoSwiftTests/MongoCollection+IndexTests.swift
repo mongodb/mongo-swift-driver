@@ -60,7 +60,6 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         }
     }
 
-
     func testCreateIndexFromModel() throws {
         let model = IndexModel(keys: ["cat": 1])
         expect(try self.coll.createIndex(model)).to(equal("cat_1"))
