@@ -138,7 +138,7 @@ extension MongoCollection {
 }
 
 /// An index to "hint" or force MongoDB to use when performing a query.
-public enum Hint: Encodable {
+public enum Hint: Codable {
     /// Specifies an index to use by its name.
     case indexName(String)
     /// Specifies an index to use by a specification `Document` containing the index key(s).
@@ -153,10 +153,19 @@ public enum Hint: Encodable {
             try container.encode(doc)
         }
     }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let str = try? container.decode(String.self) {
+            self = .indexName(str)
+        } else {
+            self = .indexSpec(try container.decode(Document.self))
+        }
+    }
 }
 
 /// Options to use when executing an `aggregate` command on a `MongoCollection`.
-public struct AggregateOptions: Encodable {
+public struct AggregateOptions: Codable {
     /// Enables writing to temporary files. When set to true, aggregation stages
     /// can write data to the _tmp subdirectory in the dbPath directory.
     public let allowDiskUse: Bool?
@@ -184,8 +193,10 @@ public struct AggregateOptions: Encodable {
     /// A `ReadConcern` to use in read stages of this operation.
     public let readConcern: ReadConcern?
 
+    // swiftlint:disable redundant_optional_initialization
     /// A ReadPreference to use for this operation.
-    public let readPreference: ReadPreference?
+    public var readPreference: ReadPreference? = nil
+    // swiftlint:enable redundant_optional_initialization
 
     /// A `WriteConcern` to use in `$out` stages of this operation.
     public let writeConcern: WriteConcern?
@@ -265,7 +276,7 @@ public enum CursorType {
 }
 
 /// Options to use when executing a `find` command on a `MongoCollection`.
-public struct FindOptions: Encodable {
+public struct FindOptions: Codable {
     /// Get partial results from a mongos if some shards are down (instead of throwing an error).
     public let allowPartialResults: Bool?
 
@@ -277,9 +288,6 @@ public struct FindOptions: Encodable {
 
     /// Attaches a comment to the query.
     public let comment: String?
-
-    /// Indicates the type of cursor to use. This value includes both the tailable and awaitData options.
-    public let cursorType: CursorType?
 
     /// If a `CursorType` is provided, indicates whether it is `.tailable` or .`tailableAwait`.
     private let tailable: Bool?
@@ -332,8 +340,15 @@ public struct FindOptions: Encodable {
     /// A ReadConcern to use for this operation.
     public let readConcern: ReadConcern?
 
+    // swiftlint:disable redundant_optional_initialization
+
     /// A ReadPreference to use for this operation.
-    public let readPreference: ReadPreference?
+    public var readPreference: ReadPreference? = nil
+
+    /// Indicates the type of cursor to use. This value includes both the tailable and awaitData options.
+    public var cursorType: CursorType? = nil
+
+    // swiftlint:enable redundant_optional_initialization
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional.
     public init(allowPartialResults: Bool? = nil,

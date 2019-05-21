@@ -112,7 +112,7 @@ public struct WriteConcernError: Codable {
     public let code: ServerErrorCode
 
     /// A document identifying the write concern setting related to the error.
-    public let details: Document
+    public let details: Document?
 
     /// A description of the error.
     public let message: String
@@ -243,41 +243,40 @@ private func getBulkWriteErrorFromReply(
         withResult result: BulkWriteResult? = nil,
         withWriteConcernError wcErr: WriteConcernError? = nil) throws -> MongoError? {
     let decoder = BSONDecoder()
-    var insertedIds = result?.insertedIds
 
-    var bulkWriteErrors: [BulkWriteError]?
-    if let writeErrors = reply["writeErrors"] as? [Document], !writeErrors.isEmpty {
-        bulkWriteErrors = try writeErrors.map {
-            let err = try decoder.decode(BulkWriteError.self, from: $0)
-            insertedIds?[err.index] = nil
-            return err
-        }
-
-        let ordered = try bulkWrite.opts?.getValue(for: "ordered") as? Bool ?? true
-
-        // If ordered, remove all inserted ids after the one that errored.
-        if ordered {
-            // we know bulkWriteErrors is non-nil because we initialize it above
-            // swiftlint:disable:next force_unwrapping
-            insertedIds = insertedIds?.filter { $0.key < bulkWriteErrors![0].index }
-        }
-    }
-
-    guard wcErr != nil || bulkWriteErrors != nil else {
-        return nil
+    var bulkWriteErrors: [BulkWriteError] = []
+    if let writeErrors = reply["writeErrors"] as? [Document] {
+        bulkWriteErrors = try writeErrors.map { try decoder.decode(BulkWriteError.self, from: $0) }
     }
 
     // Need to create new result that omits the ids that failed in insertedIds.
     var errResult: BulkWriteResult?
     if let result = result {
+        let ordered = try bulkWrite.opts?.getValue(for: "ordered") as? Bool ?? true
+
+        // remove the unsuccessful inserts/upserts from the insertedIds/upsertedIds maps
+        let filterFailures = { (map: [Int: BSONValue], nSucceeded: Int) -> [Int: BSONValue] in
+            guard nSucceeded > 0 else {
+                return [:]
+            }
+
+            if ordered { // remove all after the last index that succeeded
+                let maxIndex = map.keys.sorted()[nSucceeded - 1]
+                return map.filter { $0.key <= maxIndex }
+            } else { // if unordered, just remove those that have write errors associated with them
+                let errs = bulkWriteErrors.map { $0.index }
+                return map.filter { !errs.contains($0.key) }
+            }
+        }
+
         errResult = BulkWriteResult(
                 deletedCount: result.deletedCount,
                 insertedCount: result.insertedCount,
-                insertedIds: insertedIds,
+                insertedIds: filterFailures(result.insertedIds, result.insertedCount),
                 matchedCount: result.matchedCount,
                 modifiedCount: result.modifiedCount,
                 upsertedCount: result.upsertedCount,
-                upsertedIds: result.upsertedIds
+                upsertedIds: filterFailures(result.upsertedIds, result.upsertedCount)
         )
     }
 
@@ -297,8 +296,8 @@ internal func convertingBulkWriteErrors<T>(_ body: () throws -> T) throws -> T {
         return try body()
     } catch let ServerError.bulkWriteError(bulkWriteErrors, writeConcernError, _, errorLabels) {
         var writeError: WriteError?
-        if let bwe = bulkWriteErrors?[0] {
-            writeError = WriteError(code: bwe.code, message: bwe.message)
+        if let bwes = bulkWriteErrors, !bwes.isEmpty {
+            writeError = WriteError(code: bwes[0].code, message: bwes[0].message)
         }
         throw ServerError.writeError(writeError: writeError,
                                      writeConcernError: writeConcernError,
