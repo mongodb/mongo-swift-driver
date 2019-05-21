@@ -32,7 +32,7 @@ public struct IndexModel: Encodable {
 }
 
 /// Options to use when creating an index for a collection.
-public struct IndexOptions: Encodable {
+public struct IndexOptions: Codable {
     /// Optionally tells the server to build the index in the background and not block other tasks.
     public let background: Bool?
 
@@ -48,7 +48,7 @@ public struct IndexOptions: Encodable {
      *
      * - Example: For an index of name: 1, age: -1, the generated name would be "name_1_age_-1".
      */
-    public let name: String?
+    public var name: String? = nil
 
     /// Optionally tells the index to only reference documents with the specified field in the index.
     public let sparse: Bool?
@@ -61,7 +61,7 @@ public struct IndexOptions: Encodable {
     public let unique: Bool?
 
     /// Optionally specifies the index version number, either 0 or 1.
-    public let indexVersion: Int32?
+    public var indexVersion: Int32?
 
     /// Optionally specifies the default language for text indexes. Is 'english' if none is provided.
     public let defaultLanguage: String?
