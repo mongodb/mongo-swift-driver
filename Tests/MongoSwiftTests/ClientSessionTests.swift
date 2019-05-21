@@ -51,14 +51,16 @@ final class ClientSessionTests: MongoSwiftTestCase {
         (name: "listIndexes", body: { _ = try $0.listIndexes(session: $1).next() }),
         (name: "findOneAndDelete", body: { _ = try $0.findOneAndDelete([:], session: $1) }),
         (name: "findOneAndReplace", body: { _ = try $0.findOneAndReplace(filter: [:], replacement: [:], session: $1) }),
-        (name: "findOneAndUpdate", body: { _ = try $0.findOneAndUpdate(filter: [:], update: [:], session: $1) })
+        (name: "findOneAndUpdate", body: { _ = try $0.findOneAndUpdate(filter: [:], update: [:], session: $1) }),
+        (name: "drop", body: { _ = try $0.drop(session: $1) })
     ]
 
     // list of operations on MongoDatabase that take in a session
     let databaseSessionOps: [DatabaseSessionOp] = [
         (name: "runCommand", { try $0.runCommand(["isMaster": 0], session: $1) }),
         (name: "createCollection", body: { _ = try $0.createCollection("asdf", session: $1) }),
-        (name: "createCollection1", body: { _ = try $0.createCollection("asdf", withType: Document.self, session: $1) })
+        (name: "createCollection1", body: { _ = try $0.createCollection("asf", withType: Document.self, session: $1) }),
+        (name: "drop", body: { _ = try $0.drop(session: $1) })
     ]
 
     // list of operatoins on MongoClient that take in a session
