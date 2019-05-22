@@ -106,7 +106,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
 
         // Expect a duplicate key error (11000)
         let expectedError = ServerError.bulkWriteError(
-                writeErrors: [BulkWriteError(code: 11000, message: "", index: 1)],
+                writeErrors: [BulkWriteError(code: 11000, codeName: "DuplicateKey", message: "", index: 1)],
                 writeConcernError: nil,
                 result: expectedResult,
                 errorLabels: nil)

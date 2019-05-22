@@ -97,12 +97,33 @@ public struct WriteError: Codable {
     /// An integer value identifying the error.
     public let code: ServerErrorCode
 
+    /// A human-readable string identifying the error.
+    /// Note: due to a bug in the server, this field will be empty except in sharded clusters.
+    /// - SeeAlso: https://jira.mongodb.org/browse/SERVER-36755
+    public let codeName: String
+
     /// A description of the error.
     public let message: String
 
     private enum CodingKeys: String, CodingKey {
         case code
+        case codeName
         case message = "errmsg"
+    }
+
+    // TODO: can remove this once SERVER-36755 is resolved
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.code = try container.decode(ServerErrorCode.self, forKey: .code)
+        self.message = try container.decode(String.self, forKey: .message)
+        self.codeName = try container.decodeIfPresent(String.self, forKey: .codeName) ?? ""
+    }
+
+    // TODO: can remove this once SERVER-36755 is resolved
+    public init(code: ServerErrorCode, codeName: String, message: String) {
+        self.code = code
+        self.codeName = codeName
+        self.message = message
     }
 }
 
@@ -133,6 +154,11 @@ public struct BulkWriteError: Codable {
     /// An integer value identifying the error.
     public let code: ServerErrorCode
 
+    /// A human-readable string identifying the error.
+    /// Note: due to a bug in the server, this field will be empty except in sharded clusters.
+    /// - SeeAlso: https://jira.mongodb.org/browse/SERVER-36755
+    public let codeName: String
+
     /// A description of the error.
     public let message: String
 
@@ -141,8 +167,26 @@ public struct BulkWriteError: Codable {
 
     private enum CodingKeys: String, CodingKey {
         case code
+        case codeName
         case message = "errmsg"
         case index
+    }
+
+    // TODO: can remove this once SERVER-36755 is resolved
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.code = try container.decode(ServerErrorCode.self, forKey: .code)
+        self.message = try container.decode(String.self, forKey: .message)
+        self.index = try container.decode(Int.self, forKey: .index)
+        self.codeName = try container.decodeIfPresent(String.self, forKey: .codeName) ?? ""
+    }
+
+    // TODO: can remove this once SERVER-36755 is resolved
+    public init(code: ServerErrorCode, codeName: String, message: String, index: Int) {
+        self.code = code
+        self.codeName = codeName
+        self.message = message
+        self.index = index
     }
 }
 
@@ -300,7 +344,7 @@ internal func convertingBulkWriteErrors<T>(_ body: () throws -> T) throws -> T {
     } catch let ServerError.bulkWriteError(bulkWriteErrors, writeConcernError, _, errorLabels) {
         var writeError: WriteError?
         if let bwes = bulkWriteErrors, !bwes.isEmpty {
-            writeError = WriteError(code: bwes[0].code, message: bwes[0].message)
+            writeError = WriteError(code: bwes[0].code, codeName: bwes[0].codeName, message: bwes[0].message)
         }
         throw ServerError.writeError(writeError: writeError,
                                      writeConcernError: writeConcernError,

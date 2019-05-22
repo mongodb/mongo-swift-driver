@@ -23,7 +23,7 @@ internal struct DropDatabaseOperation: Operation {
                     self.database._database, command._bson, opts?._bson, replyPtr, &error)
         }
         guard success else {
-            throw getMongoError(error: error)
+            throw getMongoError(error: error, reply: reply)
         }
     }
 }

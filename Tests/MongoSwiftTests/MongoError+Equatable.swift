@@ -76,12 +76,14 @@ extension UserError: Equatable {
     }
 }
 
+// TODO: start comparing codeName once it is returned more consistently (SERVER-36755)
 extension WriteError: Equatable {
     public static func == (lhs: WriteError, rhs: WriteError) -> Bool {
         return lhs.code == rhs.code
     }
 }
 
+// TODO: start comparing codeName once it is returned more consistently (SERVER-36755)
 extension BulkWriteError: Equatable {
     public static func == (lhs: BulkWriteError, rhs: BulkWriteError) -> Bool {
         return lhs.code == rhs.code && lhs.index == rhs.index
@@ -90,7 +92,7 @@ extension BulkWriteError: Equatable {
 
 extension WriteConcernError: Equatable {
     public static func == (lhs: WriteConcernError, rhs: WriteConcernError) -> Bool {
-        return lhs.code == rhs.code && lhs.details == rhs.details
+        return lhs.code == rhs.code && lhs.codeName == rhs.codeName && lhs.details == rhs.details
     }
 }
 

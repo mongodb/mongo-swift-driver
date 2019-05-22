@@ -83,7 +83,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
         // error code 11000: DuplicateKey
         let expectedError = ServerError.writeError(
-                writeError: WriteError(code: 11000, message: ""),
+                writeError: WriteError(code: 11000, codeName: "DuplicateKey", message: ""),
                 writeConcernError: nil,
                 errorLabels: nil
         )
@@ -170,7 +170,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
         let expectedResultOrdered = BulkWriteResult(insertedCount: 1, insertedIds: [0: newDoc1["_id"]!])
         let expectedErrorsOrdered = [
-            BulkWriteError(code: 11000, message: "", index: 1)
+            BulkWriteError(code: 11000, codeName: "DuplicateKey", message: "", index: 1)
         ]
 
         let expectedErrorOrdered = ServerError.bulkWriteError(
@@ -182,8 +182,8 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(try self.coll.insertMany([newDoc1, docId1, newDoc2, docId2])).to(throwError(expectedErrorOrdered))
 
         let expectedErrors = [
-            BulkWriteError(code: 11000, message: "", index: 1),
-            BulkWriteError(code: 11000, message: "", index: 3)
+            BulkWriteError(code: 11000, codeName: "DuplicateKey", message: "", index: 1),
+            BulkWriteError(code: 11000, codeName: "DuplicateKey", message: "", index: 3)
         ]
         let expectedResult = BulkWriteResult(insertedCount: 2, insertedIds: [0: newDoc3["_id"]!, 2: newDoc4["_id"]!])
         let expectedError = ServerError.bulkWriteError(
