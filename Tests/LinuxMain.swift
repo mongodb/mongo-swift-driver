@@ -211,6 +211,7 @@ extension ReadWriteConcernTests {
         ("testDatabaseReadConcern", testDatabaseReadConcern),
         ("testDatabaseWriteConcern", testDatabaseWriteConcern),
         ("testOperationReadConcerns", testOperationReadConcerns),
+        ("testWriteConcernErrors", testWriteConcernErrors),
         ("testOperationWriteConcerns", testOperationWriteConcerns),
         ("testConnectionStrings", testConnectionStrings),
         ("testDocuments", testDocuments),

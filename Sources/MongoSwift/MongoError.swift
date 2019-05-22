@@ -14,7 +14,7 @@ public typealias ServerErrorCode = Int
 /// - SeeAlso: https://github.com/mongodb/mongo/blob/master/src/mongo/base/error_codes.err
 public enum ServerError: MongoError {
     /// Thrown when commands experience errors on the server that prevent execution.
-    case commandError(code: ServerErrorCode, message: String, errorLabels: [String]?)
+    case commandError(code: ServerErrorCode, codeName: String, message: String, errorLabels: [String]?)
 
     /// Thrown when a single write command fails on the server.
     /// Note: Only one of `writeConcernError` or `writeError` will be populated at a time.
@@ -29,7 +29,7 @@ public enum ServerError: MongoError {
 
     public var errorDescription: String? {
         switch self {
-        case let .commandError(code: _, message: msg, errorLabels: _):
+        case let .commandError(code: _, codeName: _, message: msg, errorLabels: _):
             return msg
         case let .writeError(writeError: writeErr, writeConcernError: wcErr, errorLabels: _):
             if let writeErr = writeErr {
@@ -111,6 +111,9 @@ public struct WriteConcernError: Codable {
     /// An integer value identifying the write concern error.
     public let code: ServerErrorCode
 
+    /// A human-readable string identifying write concern error.
+    public let codeName: String
+
     /// A document identifying the write concern setting related to the error.
     public let details: Document?
 
@@ -119,6 +122,7 @@ public struct WriteConcernError: Codable {
 
     private enum CodingKeys: String, CodingKey {
         case code
+        case codeName
         case details = "errInfo"
         case message = "errmsg"
     }
@@ -142,12 +146,15 @@ public struct BulkWriteError: Codable {
     }
 }
 
-/// Internal helper function used to get an appropriate error from a libmongoc error. This should NOT be used to get
-/// `.writeError`s or `.bulkWriteError`s. Instead, construct those using `getErrorFromReply`.
-internal func parseMongocError(_ error: bson_error_t, errorLabels: [String]? = nil) -> MongoError {
+/// Gets an appropriate error from a libmongoc error. Additional details may be provided in the form of a server reply
+/// document.
+private func parseMongocError(_ error: bson_error_t, reply: Document?) -> MongoError {
     let domain = mongoc_error_domain_t(rawValue: error.domain)
     let code = mongoc_error_code_t(rawValue: error.code)
     let message = toErrorString(error)
+
+    let errorLabels = reply?["errorLabels"] as? [String]
+    let codeName = reply?["codeName"] as? String ?? ""
 
     switch (domain, code) {
     case (MONGOC_ERROR_CLIENT, MONGOC_ERROR_CLIENT_AUTHENTICATE):
@@ -164,6 +171,7 @@ internal func parseMongocError(_ error: bson_error_t, errorLabels: [String]? = n
     case (MONGOC_ERROR_SERVER, _):
         return ServerError.commandError(
                 code: ServerErrorCode(code.rawValue),
+                codeName: codeName,
                 message: message,
                 errorLabels: errorLabels)
     case (MONGOC_ERROR_STREAM, _), (MONGOC_ERROR_SERVER_SELECTION, MONGOC_ERROR_SERVER_SELECTION_FAILURE):
@@ -179,69 +187,64 @@ internal func parseMongocError(_ error: bson_error_t, errorLabels: [String]? = n
     }
 }
 
-/// Internal function used to get an appropriate error from a server reply to a command.
-internal func getErrorFromReply(
-        bsonError: bson_error_t,
-        from reply: Document,
-        forBulkWrite bulkWrite: BulkWriteOperation? = nil,
-        withResult result: BulkWriteResult? = nil) -> MongoError {
-    // if writeErrors or writeConcernErrors aren't present, then this is likely a commandError.
-    guard reply["writeErrors"] != nil || reply["writeConcernErrors"] != nil else {
-        return parseMongocError(bsonError, errorLabels: reply["errorLabels"] as? [String])
+/// Internal function used to get an appropriate error from a libmongoc error and/or a server reply to a command.
+internal func getMongoError(error bsonError: bson_error_t,
+                            reply: Document? = nil,
+                            bulkOp bulkWrite: BulkWriteOperation? = nil,
+                            result: BulkWriteResult? = nil) -> MongoError {
+    // if the reply is nil or writeErrors or writeConcernErrors aren't present, then this is likely a commandError.
+    guard let serverReply = reply,
+          !(serverReply["writeErrors"] as? [BSONValue] ?? []).isEmpty ||
+          !(serverReply["writeConcernErrors"] as? [BSONValue] ?? []).isEmpty else {
+        return parseMongocError(bsonError, reply: reply)
     }
 
     let fallback = RuntimeError.internalError(message: "Got error from the server but couldn't parse it. " +
             "Message: \(toErrorString(bsonError))")
 
     do {
-        let decoder = BSONDecoder()
-
-        var writeConcernError: WriteConcernError?
-        if let writeConcernErrors = reply["writeConcernErrors"] as? [Document], !writeConcernErrors.isEmpty {
-            writeConcernError = try decoder.decode(WriteConcernError.self, from: writeConcernErrors[0])
-        }
-
         if let bulkWrite = bulkWrite {
-            return try getBulkWriteErrorFromReply(
-                    from: reply,
-                    forBulkWrite: bulkWrite,
-                    withResult: result,
-                    withWriteConcernError: writeConcernError) ?? fallback
+            return try getBulkWriteError(from: serverReply, for: bulkWrite, partialResult: result) ?? fallback
         }
-
-        return try getWriteErrorFromReply(from: reply, withWriteConcernError: writeConcernError) ?? fallback
+        return try getWriteError(from: serverReply) ?? fallback
     } catch {
         return fallback
     }
 }
 
-/// Function used to extract a write error from a server reply.
-private func getWriteErrorFromReply(
-        from reply: Document,
-        withWriteConcernError wcErr: WriteConcernError? = nil) throws -> MongoError? {
-    let decoder = BSONDecoder()
+/// Extracts a `WriteConcernError` from a server reply.
+private func getWriteConcernError(from reply: Document) throws -> WriteConcernError? {
+    guard let writeConcernErrors = reply["writeConcernErrors"] as? [Document], !writeConcernErrors.isEmpty else {
+        return nil
+    }
+    return try BSONDecoder().decode(WriteConcernError.self, from: writeConcernErrors[0])
+}
+
+/// Extracts a `ServerError.writeError` from a server reply.
+private func getWriteError(from reply: Document) throws -> MongoError? {
     var writeError: WriteError?
     if let writeErrors = reply["writeErrors"] as? [Document], !writeErrors.isEmpty {
-        writeError = try decoder.decode(WriteError.self, from: writeErrors[0])
+        writeError = try BSONDecoder().decode(WriteError.self, from: writeErrors[0])
     }
+    let wcError = try getWriteConcernError(from: reply)
 
-    guard writeError != nil || wcErr != nil else {
+    guard writeError != nil || wcError != nil else {
         return nil
     }
 
     return ServerError.writeError(
             writeError: writeError,
-            writeConcernError: wcErr,
+            writeConcernError: wcError,
             errorLabels: reply["errorLabels"] as? [String]
     )
 }
 
-/// Function used to extract bulk write errors from a server reply.
-private func getBulkWriteErrorFromReply(
-        from reply: Document,
-        forBulkWrite bulkWrite: BulkWriteOperation,
-        withResult result: BulkWriteResult? = nil,
-        withWriteConcernError wcErr: WriteConcernError? = nil) throws -> MongoError? {
+/// Extracts a `ServerError.bulkWriteError` from a server reply.
+/// If a partial result is provided, an updated one with the failed results filtered out will be returned as part of the
+/// error.
+private func getBulkWriteError(from reply: Document,
+                               for bulkWrite: BulkWriteOperation,
+                               partialResult: BulkWriteResult?) throws -> MongoError? {
     let decoder = BSONDecoder()
 
     var bulkWriteErrors: [BulkWriteError] = []
@@ -251,7 +254,7 @@ private func getBulkWriteErrorFromReply(
 
     // Need to create new result that omits the ids that failed in insertedIds.
     var errResult: BulkWriteResult?
-    if let result = result {
+    if let result = partialResult {
         let ordered = try bulkWrite.opts?.getValue(for: "ordered") as? Bool ?? true
 
         // remove the unsuccessful inserts/upserts from the insertedIds/upsertedIds maps
@@ -282,7 +285,7 @@ private func getBulkWriteErrorFromReply(
 
     return ServerError.bulkWriteError(
             writeErrors: bulkWriteErrors,
-            writeConcernError: wcErr,
+            writeConcernError: try getWriteConcernError(from: reply),
             result: errResult,
             errorLabels: reply["errorLabels"] as? [String]
     )

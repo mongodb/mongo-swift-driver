@@ -8,7 +8,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
         do {
             let client = try MongoClient(MongoSwiftTestCase.connStr)
             try client.db(type(of: self).testDatabase).drop()
-        } catch let ServerError.commandError(code, _, _) where code == 26 {
+        } catch let ServerError.commandError(code, _, _, _) where code == 26 {
             // skip database not found errors
         } catch {
             fail("encountered error when tearing down: \(error)")

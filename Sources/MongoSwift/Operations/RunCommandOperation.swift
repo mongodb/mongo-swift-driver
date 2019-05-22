@@ -52,7 +52,7 @@ internal struct RunCommandOperation: Operation {
                 self.database._database, self.command._bson, rp, opts?._bson, replyPtr, &error)
         }
         guard success else {
-            throw getErrorFromReply(bsonError: error, from: reply)
+            throw getMongoError(error: error, reply: reply)
         }
         return reply
     }

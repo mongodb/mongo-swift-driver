@@ -20,9 +20,10 @@ extension RuntimeError: Equatable {
 extension ServerError: Equatable {
     public static func == (lhs: ServerError, rhs: ServerError) -> Bool {
         switch (lhs, rhs) {
-        case let (.commandError(code: lhsCode, message: _, errorLabels: lhsErrorLabels),
-                  .commandError(code: rhsCode, message: _, errorLabels: rhsErrorLabels)):
+        case let (.commandError(code: lhsCode, codeName: lhsCodeName, message: _, errorLabels: lhsErrorLabels),
+                  .commandError(code: rhsCode, codeName: rhsCodeName, message: _, errorLabels: rhsErrorLabels)):
             return lhsCode == rhsCode
+                    && lhsCodeName == rhsCodeName
                     && sortAndCompareOptionalArrays(lhs: lhsErrorLabels, rhs: rhsErrorLabels, cmp: { $0 < $1 })
         case let (.writeError(writeError: lhsWriteError, writeConcernError: lhsWCError, errorLabels: lhsErrorLabels),
                   .writeError(writeError: rhsWriteError, writeConcernError: rhsWCError, errorLabels: rhsErrorLabels)):

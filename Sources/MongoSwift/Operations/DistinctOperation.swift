@@ -69,7 +69,7 @@ internal struct DistinctOperation<T: Codable> {
             self.collection._collection, command._bson, rp, opts?._bson, replyPtr, &error)
         }
         guard success else {
-            throw parseMongocError(error, errorLabels: reply["errorLabels"] as? [String])
+            throw getMongoError(error: error, reply: reply)
         }
 
         guard let values = try reply.getValue(for: "values") as? [BSONValue] else {

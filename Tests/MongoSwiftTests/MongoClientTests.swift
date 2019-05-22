@@ -15,7 +15,7 @@ final class MongoClientTests: MongoSwiftTestCase {
         let connectionString = MongoSwiftTestCase.connStr
         var error = bson_error_t()
         guard let uri = mongoc_uri_new_with_error(connectionString, &error) else {
-            throw parseMongocError(error)
+            throw getMongoError(error: error)
         }
 
         guard let client_t = mongoc_client_new_from_uri(uri) else {
