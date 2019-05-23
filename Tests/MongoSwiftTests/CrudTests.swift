@@ -259,13 +259,6 @@ private class BulkWriteTest: CrudTest {
         return BulkWriteOptions(ordered: ordered)
     }
 
-    private typealias DeleteOneModel = MongoCollection<Document>.DeleteOneModel
-    private typealias DeleteManyModel = MongoCollection<Document>.DeleteManyModel
-    private typealias InsertOneModel = MongoCollection<Document>.InsertOneModel
-    private typealias ReplaceOneModel = MongoCollection<Document>.ReplaceOneModel
-    private typealias UpdateOneModel = MongoCollection<Document>.UpdateOneModel
-    private typealias UpdateManyModel = MongoCollection<Document>.UpdateManyModel
-
     private static func parseWriteModel(_ request: Document) throws -> WriteModel {
         let name: String = try request.get("name")
         let args: Document = try request.get("arguments")
