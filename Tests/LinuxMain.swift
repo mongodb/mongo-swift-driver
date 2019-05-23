@@ -148,15 +148,6 @@ extension MongoCollectionTests {
         ("testUpdateMany", testUpdateMany),
         ("testUpdateManyWithUnacknowledgedWriteConcern", testUpdateManyWithUnacknowledgedWriteConcern),
         ("testDistinct", testDistinct),
-        ("testCreateIndexFromModel", testCreateIndexFromModel),
-        ("testIndexOptions", testIndexOptions),
-        ("testCreateIndexesFromModels", testCreateIndexesFromModels),
-        ("testCreateIndexFromKeys", testCreateIndexFromKeys),
-        ("testDropIndexByName", testDropIndexByName),
-        ("testDropIndexByModel", testDropIndexByModel),
-        ("testDropIndexByKeys", testDropIndexByKeys),
-        ("testDropAllIndexes", testDropAllIndexes),
-        ("testListIndexes", testListIndexes),
         ("testGetName", testGetName),
         ("testCursorIteration", testCursorIteration),
         ("testCodableCollection", testCodableCollection),
@@ -178,6 +169,20 @@ extension MongoCollection_BulkWriteTests {
         ("testDeletes", testDeletes),
         ("testMixedOrderedOperations", testMixedOrderedOperations),
         ("testUnacknowledgedWriteConcern", testUnacknowledgedWriteConcern),
+    ]
+}
+
+extension MongoCollection_IndexTests {
+    static var allTests = [
+        ("testCreateIndexFromModel", testCreateIndexFromModel),
+        ("testIndexOptions", testIndexOptions),
+        ("testCreateIndexesFromModels", testCreateIndexesFromModels),
+        ("testCreateIndexFromKeys", testCreateIndexFromKeys),
+        ("testDropIndexByName", testDropIndexByName),
+        ("testDropIndexByModel", testDropIndexByModel),
+        ("testDropIndexByKeys", testDropIndexByKeys),
+        ("testDropAllIndexes", testDropAllIndexes),
+        ("testListIndexes", testListIndexes),
     ]
 }
 
@@ -231,6 +236,7 @@ XCTMain([
     testCase(MongoClientTests.allTests),
     testCase(MongoCollectionTests.allTests),
     testCase(MongoCollection_BulkWriteTests.allTests),
+    testCase(MongoCollection_IndexTests.allTests),
     testCase(MongoDatabaseTests.allTests),
     testCase(ReadPreferenceTests.allTests),
     testCase(ReadWriteConcernTests.allTests),
