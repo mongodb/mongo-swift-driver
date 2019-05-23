@@ -57,4 +57,3 @@ rm ${PWD}/MongoSwift.podspec
 
 # go to GitHub to publish release notes
 open "https://github.com/mongodb/mongo-swift-driver/releases/tag/v${1}"
-
