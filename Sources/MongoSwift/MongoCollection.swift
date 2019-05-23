@@ -87,8 +87,8 @@ public class MongoCollection<T: Codable> {
     /// Drops this collection from its parent database.
     /// - Throws:
     ///   - `ServerError.commandError` if an error occurs that prevents the command from executing.
-    public func drop() throws {
-        let operation = DropCollectionOperation(collection: self)
+    public func drop(session: ClientSession? = nil) throws {
+        let operation = DropCollectionOperation(collection: self, session: session)
         try operation.execute()
     }
 }
