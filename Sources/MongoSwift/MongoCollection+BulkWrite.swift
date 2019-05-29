@@ -37,7 +37,7 @@ extension MongoCollection {
     }
 
     private struct DeleteModelOptions: Encodable {
-        public let collation: Document?
+        public var collation: Document?
     }
 
     /// A model for a `deleteOne` operation within a bulk write.
@@ -154,8 +154,8 @@ extension MongoCollection {
     }
 
     private struct ReplaceOneModelOptions: Encodable {
-        public let collation: Document?
-        public let upsert: Bool?
+        public var collation: Document?
+        public var upsert: Bool?
     }
 
     /// A model for a `replaceOne` operation within a bulk write.
