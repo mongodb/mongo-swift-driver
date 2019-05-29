@@ -168,30 +168,30 @@ public enum Hint: Codable {
 public struct AggregateOptions: Codable {
     /// Enables writing to temporary files. When set to true, aggregation stages
     /// can write data to the _tmp subdirectory in the dbPath directory.
-    public let allowDiskUse: Bool?
+    public var allowDiskUse: Bool?
 
     /// The number of `Document`s to return per batch.
-    public let batchSize: Int32?
+    public var batchSize: Int32?
 
     /// If true, allows the write to opt-out of document level validation. This only applies
     /// when the $out stage is specified.
-    public let bypassDocumentValidation: Bool?
+    public var bypassDocumentValidation: Bool?
 
     /// Specifies a collation.
-    public let collation: Document?
+    public var collation: Document?
 
     /// The maximum amount of time to allow the query to run.
-    public let maxTimeMS: Int64?
+    public var maxTimeMS: Int64?
 
     /// Enables users to specify an arbitrary string to help trace the operation through
     /// the database profiler, currentOp and logs. The default is to not send a value.
-    public let comment: String?
+    public var comment: String?
 
     /// The index hint to use for the aggregation. The hint does not apply to $lookup and $graphLookup stages.
-    public let hint: Hint?
+    public var hint: Hint?
 
     /// A `ReadConcern` to use in read stages of this operation.
-    public let readConcern: ReadConcern?
+    public var readConcern: ReadConcern?
 
     // swiftlint:disable redundant_optional_initialization
     /// A ReadPreference to use for this operation.
@@ -199,7 +199,7 @@ public struct AggregateOptions: Codable {
     // swiftlint:enable redundant_optional_initialization
 
     /// A `WriteConcern` to use in `$out` stages of this operation.
-    public let writeConcern: WriteConcern?
+    public var writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional.
     public init(allowDiskUse: Bool? = nil,
@@ -278,67 +278,67 @@ public enum CursorType {
 /// Options to use when executing a `find` command on a `MongoCollection`.
 public struct FindOptions: Codable {
     /// Get partial results from a mongos if some shards are down (instead of throwing an error).
-    public let allowPartialResults: Bool?
+    public var allowPartialResults: Bool?
 
     /// The number of documents to return per batch.
-    public let batchSize: Int32?
+    public var batchSize: Int32?
 
     /// Specifies a collation.
-    public let collation: Document?
+    public var collation: Document?
 
     /// Attaches a comment to the query.
-    public let comment: String?
+    public var comment: String?
 
     /// If a `CursorType` is provided, indicates whether it is `.tailable` or .`tailableAwait`.
-    private let tailable: Bool?
+    private var tailable: Bool?
 
     /// If a `CursorType` is provided, indicates whether it is `.tailableAwait`.
-    private let awaitData: Bool?
+    private var awaitData: Bool?
 
     /// A hint for the index to use.
-    public let hint: Hint?
+    public var hint: Hint?
 
     /// The maximum number of documents to return.
-    public let limit: Int64?
+    public var limit: Int64?
 
     /// The exclusive upper bound for a specific index.
-    public let max: Document?
+    public var max: Document?
 
     /// The maximum amount of time for the server to wait on new documents to satisfy a tailable cursor
     /// query. This only applies when used with `CursorType.tailableAwait`. Otherwise, this option is ignored.
-    public let maxAwaitTimeMS: Int64?
+    public var maxAwaitTimeMS: Int64?
 
     /// Maximum number of documents or index keys to scan when executing the query.
-    public let maxScan: Int64?
+    public var maxScan: Int64?
 
     /// The maximum amount of time to allow the query to run.
-    public let maxTimeMS: Int64?
+    public var maxTimeMS: Int64?
 
     /// The inclusive lower bound for a specific index.
-    public let min: Document?
+    public var min: Document?
 
     /// The server normally times out idle cursors after an inactivity period (10 minutes)
     /// to prevent excess memory use. Set this option to prevent that.
-    public let noCursorTimeout: Bool?
+    public var noCursorTimeout: Bool?
 
     /// Limits the fields to return for all matching documents.
-    public let projection: Document?
+    public var projection: Document?
 
     /// If true, returns only the index keys in the resulting documents.
-    public let returnKey: Bool?
+    public var returnKey: Bool?
 
     /// Determines whether to return the record identifier for each document. If true, adds a field $recordId
     /// to the returned documents.
-    public let showRecordId: Bool?
+    public var showRecordId: Bool?
 
     /// The number of documents to skip before returning.
-    public let skip: Int64?
+    public var skip: Int64?
 
     /// The order in which to return matching documents.
-    public let sort: Document?
+    public var sort: Document?
 
     /// A ReadConcern to use for this operation.
-    public let readConcern: ReadConcern?
+    public var readConcern: ReadConcern?
 
     // swiftlint:disable redundant_optional_initialization
 

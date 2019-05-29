@@ -235,10 +235,10 @@ private extension BulkWriteOptionsConvertible {
 /// Options to use when executing an `insertOne` command on a `MongoCollection`.
 public struct InsertOneOptions: Codable, BulkWriteOptionsConvertible {
     /// If true, allows the write to opt-out of document level validation.
-    public let bypassDocumentValidation: Bool?
+    public var bypassDocumentValidation: Bool?
 
     /// An optional WriteConcern to use for the command.
-    public let writeConcern: WriteConcern?
+    public var writeConcern: WriteConcern?
 
     /// Convenience initializer allowing bypassDocumentValidation to be omitted or optional
     public init(bypassDocumentValidation: Bool? = nil, writeConcern: WriteConcern? = nil) {
@@ -253,19 +253,19 @@ public typealias InsertManyOptions = BulkWriteOptions
 /// Options to use when executing an `update` command on a `MongoCollection`.
 public struct UpdateOptions: Codable, BulkWriteOptionsConvertible {
     /// A set of filters specifying to which array elements an update should apply.
-    public let arrayFilters: [Document]?
+    public var arrayFilters: [Document]?
 
     /// If true, allows the write to opt-out of document level validation.
-    public let bypassDocumentValidation: Bool?
+    public var bypassDocumentValidation: Bool?
 
     /// Specifies a collation.
-    public let collation: Document?
+    public var collation: Document?
 
     /// When true, creates a new document if no document matches the query.
-    public let upsert: Bool?
+    public var upsert: Bool?
 
     /// An optional WriteConcern to use for the command.
-    public let writeConcern: WriteConcern?
+    public var writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all parameters to be optional
     public init(arrayFilters: [Document]? = nil,
@@ -284,16 +284,16 @@ public struct UpdateOptions: Codable, BulkWriteOptionsConvertible {
 /// Options to use when executing a `replace` command on a `MongoCollection`.
 public struct ReplaceOptions: Codable, BulkWriteOptionsConvertible {
     /// If true, allows the write to opt-out of document level validation.
-    public let bypassDocumentValidation: Bool?
+    public var bypassDocumentValidation: Bool?
 
     /// Specifies a collation.
-    public let collation: Document?
+    public var collation: Document?
 
     /// When true, creates a new document if no document matches the query.
-    public let upsert: Bool?
+    public var upsert: Bool?
 
     /// An optional `WriteConcern` to use for the command.
-    public let writeConcern: WriteConcern?
+    public var writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all parameters to be optional
     public init(bypassDocumentValidation: Bool? = nil,
@@ -310,10 +310,10 @@ public struct ReplaceOptions: Codable, BulkWriteOptionsConvertible {
 /// Options to use when executing a `delete` command on a `MongoCollection`.
 public struct DeleteOptions: Codable, BulkWriteOptionsConvertible {
     /// Specifies a collation.
-    public let collation: Document?
+    public var collation: Document?
 
     /// An optional `WriteConcern` to use for the command.
-    public let writeConcern: WriteConcern?
+    public var writeConcern: WriteConcern?
 
      /// Convenience initializer allowing collation to be omitted or optional
     public init(collation: Document? = nil, writeConcern: WriteConcern? = nil) {

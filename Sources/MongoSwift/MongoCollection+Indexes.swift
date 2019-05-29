@@ -34,10 +34,10 @@ public struct IndexModel: Encodable {
 /// Options to use when creating an index for a collection.
 public struct IndexOptions: Codable {
     /// Optionally tells the server to build the index in the background and not block other tasks.
-    public let background: Bool?
+    public var background: Bool?
 
     /// Optionally specifies the length in time, in seconds, for documents to remain in a collection.
-    public let expireAfterSeconds: Int32?
+    public var expireAfterSeconds: Int32?
 
     /**
      * Optionally specify a specific name for the index outside of the default generated name. If none is provided then
@@ -51,54 +51,54 @@ public struct IndexOptions: Codable {
     public var name: String?
 
     /// Optionally tells the index to only reference documents with the specified field in the index.
-    public let sparse: Bool?
+    public var sparse: Bool?
 
     /// Optionally used only in MongoDB 3.0.0 and higher. Allows users to configure the storage engine on a per-index
     /// basis when creating an index.
-    public let storageEngine: Document?
+    public var storageEngine: Document?
 
     /// Optionally forces the index to be unique.
-    public let unique: Bool?
+    public var unique: Bool?
 
     /// Optionally specifies the index version number, either 0 or 1.
     public var indexVersion: Int32?
 
     /// Optionally specifies the default language for text indexes. Is 'english' if none is provided.
-    public let defaultLanguage: String?
+    public var defaultLanguage: String?
 
     /// Optionally specifies the field in the document to override the language.
-    public let languageOverride: String?
+    public var languageOverride: String?
 
     /// Optionally provides the text index version number. MongoDB 2.4 can only support version 1. MongoDB 2.6 and
     /// higher may support version 1 or 2.
-    public let textIndexVersion: Int32?
+    public var textIndexVersion: Int32?
 
     /// Optionally specifies fields in the index and their corresponding weight values.
-    public let weights: Document?
+    public var weights: Document?
 
     /// Optionally specifies the 2dsphere index version number. MongoDB 2.4 can only support version 1. MongoDB 2.6 and
     /// higher may support version 1 or 2.
-    public let sphereIndexVersion: Int32?
+    public var sphereIndexVersion: Int32?
 
     /// Optionally specifies the precision of the stored geo hash in the 2d index, from 1 to 32.
-    public let bits: Int32?
+    public var bits: Int32?
 
     /// Optionally sets the maximum boundary for latitude and longitude in the 2d index.
-    public let max: Double?
+    public var max: Double?
 
     /// Optionally sets the minimum boundary for latitude and longitude in the index in a 2d index.
-    public let min: Double?
+    public var min: Double?
 
     /// Optionally specifies the number of units within which to group the location values in a geo haystack index.
-    public let bucketSize: Int32?
+    public var bucketSize: Int32?
 
     /// Optionally specifies a filter for use in a partial index. Only documents that match the filter expression are
     /// included in the index. New in MongoDB 3.2.
-    public let partialFilterExpression: Document?
+    public var partialFilterExpression: Document?
 
     /// Optionally specifies a collation to use for the index in MongoDB 3.4 and higher. If not specified, no collation
     /// is sent and the default collation of the collection server-side is used.
-    public let collation: Document?
+    public var collation: Document?
 
     /// Convenience initializer allowing any/all parameters to be omitted.
     public init(background: Bool? = nil,

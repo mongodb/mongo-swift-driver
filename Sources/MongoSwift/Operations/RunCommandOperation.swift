@@ -4,15 +4,15 @@ import mongoc
 public struct RunCommandOptions: Encodable {
     /// An optional `ReadConcern` to use for this operation. This option should only be used when executing a command
     /// that reads.
-    public let readConcern: ReadConcern?
+    public var readConcern: ReadConcern?
 
     /// An optional `ReadPreference` to use for this operation. This option should only be used when executing a
     /// command that reads.
-    public let readPreference: ReadPreference?
+    public var readPreference: ReadPreference?
 
     /// An optional `WriteConcern` to use for this operation. This option should only be used when executing a command
     /// that writes.
-    public let writeConcern: WriteConcern?
+    public var writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional.
     public init(readConcern: ReadConcern? = nil,
