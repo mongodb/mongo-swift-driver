@@ -2,7 +2,7 @@
 # for example: ./release/release.sh 1.0.0
 
 # update version string for libmongoc handshake
-sourcery --sources Sources/MongoSwift --templates Sources/MongoSwift/MongoSwift.stencil --output Sources/MongoSwift/MongoSwift.swift --args versionString=${1}
+sourcery --sources Sources/MongoSwift --templates Sources/MongoSwift/MongoSwiftVersion.stencil --output Sources/MongoSwift/MongoSwiftVersion.swift --args versionString=${1}
 
 # regenerate documentation with new version string
 export DOCSVERSION=${1}

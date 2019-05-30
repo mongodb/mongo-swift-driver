@@ -1,0 +1,2 @@
+// swiftlint:disable:previous vertical_whitespace
+internal let MongoSwiftVersionString = "{{ argument.versionString }}"
