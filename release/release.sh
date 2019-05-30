@@ -10,7 +10,7 @@ make documentation
 
 # commit changes
 git add docs/
-git add Sources/MongoSwift/MongoSwift.swift
+git add Sources/MongoSwift/MongoSwiftVersion.swift
 git commit -m "${1}"
 
 # tag release 
