@@ -41,7 +41,7 @@ then
 
 elif [[ $1 = "sourcery" ]]
 then
-	install_from_gh sourcery https://github.com/krzysztofzablocki/Sourcery/releases/download/0.16.0/Sourcery-0.16.0.zip
+	install_from_gh sourcery https://github.com/krzysztofzablocki/Sourcery/releases/download/0.16.1/Sourcery-0.16.1.zip
 
 elif [[ $1 = "swiftlint" ]]
 then
