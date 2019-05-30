@@ -348,27 +348,23 @@ public struct FindOptions: Codable {
     /// Indicates the type of cursor to use. This value includes both the tailable and awaitData options.
     public var cursorType: CursorType? {
         get {
-            if(self.tailable == nil && self.awaitData == nil) {
+            if self.tailable == nil && self.awaitData == nil {
                 return nil
             }
 
-            if(self.tailable == true && self.awaitData == true) {
+            if self.tailable == true && self.awaitData == true  {
                 return .tailableAwait
             }
             
-            if(self.tailable == true) {
+            if self.tailable == true {
                 return .tailable
-            }
-
-            if(self.awaitData == true) {
-                return .tailableAwait
             }
 
             return .nonTailable
         }
 
         set(newCursorType) {
-            if(newCursorType == nil) {
+            if newCursorType == nil {
                 self.tailable = nil
                 self.awaitData = nil
             } else {
