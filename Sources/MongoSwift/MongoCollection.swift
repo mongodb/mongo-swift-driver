@@ -39,7 +39,7 @@ public class MongoCollection<T: Codable> {
     }
 
     /// The `ReadPreference` set on this collection.
-    public var readPreference: ReadPreference? {
+    public var readPreference: ReadPreference {
         return ReadPreference(from: mongoc_collection_get_read_prefs(self._collection))
     }
 
