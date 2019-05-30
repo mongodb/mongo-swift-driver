@@ -330,7 +330,6 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(try encoder.encode(tailableAwait)).to(equal(["awaitData": false, "tailable": true ]))
 
         // test nill cursorType
-
         tailableAwait.cursorType = nil
         expect(try encoder.encode(tailableAwait)).to(beNil())
 
@@ -345,7 +344,6 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
         nilTailable.cursorType = .tailableAwait
         expect(try encoder.encode(nilTailable)).to(equal(["awaitData": true, "tailable": true ]))
-
     }
 
     func testEncodeHint() throws {
