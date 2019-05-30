@@ -70,13 +70,16 @@ extension SpecTest {
             expect(result).to(equal(expectedResult), description: self.description)
         }
         let verifyColl = db.collection(self.outcome.collection.name ?? collection.name)
-        zip(try Array(verifyColl.find()), self.outcome.collection.data).forEach {
+        let foundDocs = try Array(verifyColl.find())
+        expect(foundDocs.count).to(equal(self.outcome.collection.data.count))
+        zip(foundDocs, self.outcome.collection.data).forEach {
             expect($0).to(sortedEqual($1), description: self.description)
         }
     }
 }
 
 /// Protocol for allowing conversion from different result types to `BulkWriteResult`.
+/// This behavior is used to funnel the various CRUD results into the `.bulkWrite` `TestOperationResult` case.
 protocol BulkWriteResultConvertible {
     var bulkResultValue: BulkWriteResult { get }
 }
@@ -177,7 +180,7 @@ enum TestOperationResult: Decodable, Equatable {
         case let (.int(lhsInt), .int(rhsInt)):
             return lhsInt == rhsInt
         case let (.array(lhsArray), .array(rhsArray)):
-            return zip(lhsArray, rhsArray).allSatisfy { $0.bsonEquals($1) }
+            return lhsArray.bsonEquals(rhsArray)
         case let(.document(lhsDoc), .document(rhsDoc)):
             return lhsDoc.sortedEquals(rhsDoc)
         default:
