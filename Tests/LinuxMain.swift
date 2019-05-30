@@ -151,7 +151,7 @@ extension MongoCollectionTests {
         ("testGetName", testGetName),
         ("testCursorIteration", testCursorIteration),
         ("testCodableCollection", testCodableCollection),
-        ("testEncodeCursorType", testEncodeCursorType),
+        ("testCursorType", testCursorType),
         ("testEncodeHint", testEncodeHint),
         ("testFindOneAndDelete", testFindOneAndDelete),
         ("testFindOneAndReplace", testFindOneAndReplace),
