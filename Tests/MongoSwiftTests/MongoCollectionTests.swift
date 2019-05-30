@@ -307,17 +307,43 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(try coll1.findOneAndDelete(["x": 4])).to(equal(b4))
     }
 
-    func testEncodeCursorType() throws {
+    func testCursorType() throws {
         let encoder = BSONEncoder()
 
-        let nonTailable = FindOptions(cursorType: .nonTailable)
+        var nonTailable = FindOptions(cursorType: .nonTailable)
         expect(try encoder.encode(nonTailable)).to(equal(["awaitData": false, "tailable": false]))
 
-        let tailable = FindOptions(cursorType: .tailable)
+        // test mutated cursorType
+        nonTailable.cursorType = .tailable
+        expect(try encoder.encode(nonTailable)).to(equal(["awaitData": false, "tailable": true ]))
+
+        var tailable = FindOptions(cursorType: .tailable)
         expect(try encoder.encode(tailable)).to(equal(["awaitData": false, "tailable": true ]))
 
-        let tailableAwait = FindOptions(cursorType: .tailableAwait)
+        tailable.cursorType = .nonTailable
+        expect(try encoder.encode(tailable)).to(equal(["awaitData": false, "tailable": false ]))
+
+        var tailableAwait = FindOptions(cursorType: .tailableAwait)
         expect(try encoder.encode(tailableAwait)).to(equal(["awaitData": true, "tailable": true ]))
+
+        tailableAwait.cursorType = .tailable
+        expect(try encoder.encode(tailableAwait)).to(equal(["awaitData": false, "tailable": true ]))
+
+        // test nill cursorType
+        tailableAwait.cursorType = nil
+        expect(try encoder.encode(tailableAwait)).to(beNil())
+
+        var nilTailable = FindOptions(cursorType: nil)
+        expect(try encoder.encode(nilTailable)).to(beNil())
+
+        nilTailable.cursorType = .tailable
+        expect(try encoder.encode(nilTailable)).to(equal(["awaitData": false, "tailable": true ]))
+
+        nilTailable.cursorType = nil
+        expect(try encoder.encode(nilTailable)).to(beNil())
+
+        nilTailable.cursorType = .tailableAwait
+        expect(try encoder.encode(nilTailable)).to(equal(["awaitData": true, "tailable": true ]))
     }
 
     func testEncodeHint() throws {

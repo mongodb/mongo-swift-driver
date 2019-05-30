@@ -3,10 +3,10 @@ import mongoc
 /// Options to use when executing a `listCollections` command on a `MongoDatabase`.
 public struct ListCollectionsOptions: Encodable {
     /// A filter to match collections against.
-    public let filter: Document?
+    public var filter: Document?
 
     /// The batchSize for the returned cursor.
-    public let batchSize: Int?
+    public var batchSize: Int?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional
     public init(batchSize: Int? = nil, filter: Document? = nil) {
@@ -19,30 +19,30 @@ public struct ListCollectionsOptions: Encodable {
 public struct CollectionOptions: CodingStrategyProvider {
     /// A read concern to set on the returned collection. If one is not specified, the collection will inherit the
     /// database's read concern.
-    public let readConcern: ReadConcern?
+    public var readConcern: ReadConcern?
 
     /// A read preference to set on the returned collection. If one is not specified, the collection will inherit the
     /// database's read preference.
-    public let readPreference: ReadPreference?
+    public var readPreference: ReadPreference?
 
     /// A write concern to set on the returned collection. If one is not specified, the collection will inherit the
     /// database's write concern.
-    public let writeConcern: WriteConcern?
+    public var writeConcern: WriteConcern?
 
     /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
     /// It is the responsibility of the user to ensure that any `Date`s already stored in this collection can be
     /// decoded using this strategy.
-    public let dateCodingStrategy: DateCodingStrategy?
+    public var dateCodingStrategy: DateCodingStrategy?
 
     /// Specifies the `UUIDCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
     /// It is the responsibility of the user to ensure that any `UUID`s already stored in this collection can be
     /// decoded using this strategy.
-    public let uuidCodingStrategy: UUIDCodingStrategy?
+    public var uuidCodingStrategy: UUIDCodingStrategy?
 
     /// Specifies the `DataCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
     /// It is the responsibility of the user to ensure that any `Data`s already stored in this collection can be
     /// decoded using this strategy.
-    public let dataCodingStrategy: DataCodingStrategy?
+    public var dataCodingStrategy: DataCodingStrategy?
 
     /// Convenience initializer allowing any/all arguments to be omitted or optional.
     public init(readConcern: ReadConcern? = nil,

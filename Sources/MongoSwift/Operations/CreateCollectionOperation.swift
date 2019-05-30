@@ -3,46 +3,46 @@ import mongoc
 /// Options to use when executing a `createCollection` command on a `MongoDatabase`.
 public struct CreateCollectionOptions: Codable, CodingStrategyProvider {
     /// Indicates whether this will be a capped collection.
-    public let capped: Bool?
+    public var capped: Bool?
 
     /// Whether or not this collection will automatically generate an index on _id.
-    public let autoIndexId: Bool?
+    public var autoIndexId: Bool?
 
     /// Maximum size, in bytes, of this collection (if capped).
-    public let size: Int64?
+    public var size: Int64?
 
     /// Maximum number of documents allowed in the collection (if capped).
-    public let max: Int64?
+    public var max: Int64?
 
     /// Specifies storage engine configuration for this collection.
-    public let storageEngine: Document?
+    public var storageEngine: Document?
 
     /// What validator should be used for the collection.
-    public let validator: Document?
+    public var validator: Document?
 
     /// Determines how strictly MongoDB applies the validation rules to existing documents during an update.
-    public let validationLevel: String?
+    public var validationLevel: String?
 
     /// Determines whether to error on invalid documents or just warn about the violations but allow invalid documents
     /// to be inserted.
-    public let validationAction: String?
+    public var validationAction: String?
 
     /// Specify a default configuration for indexes created on this collection.
-    public let indexOptionDefaults: Document?
+    public var indexOptionDefaults: Document?
 
     /// The name of the source collection or view from which to create the view.
-    public let viewOn: String?
+    public var viewOn: String?
 
     /// An array consisting of aggregation pipeline stages. When used with `viewOn`, will create the view by applying
     /// this pipeline to the source collection or view.
-    public let pipeline: [Document]?
+    public var pipeline: [Document]?
 
     /// Specifies the default collation for the collection.
-    public let collation: Document?
+    public var collation: Document?
 
     /// A write concern to use when executing this command. To set a read or write concern for the collection itself,
     /// retrieve the collection using `MongoDatabase.collection`.
-    public let writeConcern: WriteConcern?
+    public var writeConcern: WriteConcern?
 
     // swiftlint:disable redundant_optional_initialization
     // to get synthesized decodable conformance for the struct, these strategies need default values.

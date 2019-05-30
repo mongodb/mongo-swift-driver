@@ -123,19 +123,19 @@ internal protocol FindAndModifyOptionsConvertible {
 /// Options to use when executing a `findOneAndDelete` command on a `MongoCollection`.
 public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible, Decodable {
     /// Specifies a collation to use.
-    public let collation: Document?
+    public var collation: Document?
 
     /// The maximum amount of time to allow the query to run.
-    public let maxTimeMS: Int64?
+    public var maxTimeMS: Int64?
 
     /// Limits the fields to return for the matching document.
-    public let projection: Document?
+    public var projection: Document?
 
     /// Determines which document the operation modifies if the query selects multiple documents.
-    public let sort: Document?
+    public var sort: Document?
 
     /// An optional `WriteConcern` to use for the command.
-    public let writeConcern: WriteConcern?
+    public var writeConcern: WriteConcern?
 
     internal func asFindAndModifyOptions() throws -> FindAndModifyOptions {
         return try FindAndModifyOptions(collation: collation,
@@ -163,28 +163,28 @@ public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible, Decodabl
 /// Options to use when executing a `findOneAndReplace` command on a `MongoCollection`.
 public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible, Decodable {
     /// If `true`, allows the write to opt-out of document level validation.
-    public let bypassDocumentValidation: Bool?
+    public var bypassDocumentValidation: Bool?
 
     /// Specifies a collation to use.
-    public let collation: Document?
+    public var collation: Document?
 
     /// The maximum amount of time to allow the query to run.
-    public let maxTimeMS: Int64?
+    public var maxTimeMS: Int64?
 
     /// Limits the fields to return for the matching document.
-    public let projection: Document?
+    public var projection: Document?
 
     /// When `ReturnDocument.After`, returns the replaced or inserted document rather than the original.
-    public let returnDocument: ReturnDocument?
+    public var returnDocument: ReturnDocument?
 
     /// Determines which document the operation modifies if the query selects multiple documents.
-    public let sort: Document?
+    public var sort: Document?
 
     /// When `true`, creates a new document if no document matches the query.
-    public let upsert: Bool?
+    public var upsert: Bool?
 
     /// An optional `WriteConcern` to use for the command.
-    public let writeConcern: WriteConcern?
+    public var writeConcern: WriteConcern?
 
     internal func asFindAndModifyOptions() throws -> FindAndModifyOptions {
         return try FindAndModifyOptions(bypassDocumentValidation: bypassDocumentValidation,
@@ -220,31 +220,31 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible, Decodab
 /// Options to use when executing a `findOneAndUpdate` command on a `MongoCollection`.
 public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible, Decodable {
     /// A set of filters specifying to which array elements an update should apply.
-    public let arrayFilters: [Document]?
+    public var arrayFilters: [Document]?
 
     /// If `true`, allows the write to opt-out of document level validation.
-    public let bypassDocumentValidation: Bool?
+    public var bypassDocumentValidation: Bool?
 
     /// Specifies a collation to use.
-    public let collation: Document?
+    public var collation: Document?
 
     /// The maximum amount of time to allow the query to run.
-    public let maxTimeMS: Int64?
+    public var maxTimeMS: Int64?
 
     /// Limits the fields to return for the matching document.
-    public let projection: Document?
+    public var projection: Document?
 
     /// When`ReturnDocument.After`, returns the updated or inserted document rather than the original.
-    public let returnDocument: ReturnDocument?
+    public var returnDocument: ReturnDocument?
 
     /// Determines which document the operation modifies if the query selects multiple documents.
-    public let sort: Document?
+    public var sort: Document?
 
     /// When `true`, creates a new document if no document matches the query.
-    public let upsert: Bool?
+    public var upsert: Bool?
 
     /// An optional `WriteConcern` to use for the command.
-    public let writeConcern: WriteConcern?
+    public var writeConcern: WriteConcern?
 
     internal func asFindAndModifyOptions() throws -> FindAndModifyOptions {
         return try FindAndModifyOptions(arrayFilters: arrayFilters,

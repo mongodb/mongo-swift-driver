@@ -423,7 +423,7 @@ public class BulkWriteOperation: Operation {
 /// Options to use when performing a bulk write operation on a `MongoCollection`.
 public struct BulkWriteOptions: Codable {
     /// If `true`, allows the write to opt-out of document level validation.
-    public let bypassDocumentValidation: Bool?
+    public var bypassDocumentValidation: Bool?
 
     /**
      * If `true` (the default), operations will be executed serially in order
@@ -432,10 +432,10 @@ public struct BulkWriteOptions: Codable {
      * not stop after encountering a write error (i.e. multiple errors may be
      * reported after all operations have been attempted).
      */
-    public let ordered: Bool
+    public var ordered: Bool
 
     /// An optional WriteConcern to use for the bulk write.
-    public let writeConcern: WriteConcern?
+    public var writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional
     public init(bypassDocumentValidation: Bool? = nil, ordered: Bool? = nil, writeConcern: WriteConcern? = nil) {

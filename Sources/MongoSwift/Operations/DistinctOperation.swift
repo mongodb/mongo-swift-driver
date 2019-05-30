@@ -3,13 +3,13 @@ import mongoc
 /// Options to use when executing a `distinct` command on a `MongoCollection`.
 public struct DistinctOptions: Codable {
     /// Specifies a collation.
-    public let collation: Document?
+    public var collation: Document?
 
     /// The maximum amount of time to allow the query to run.
-    public let maxTimeMS: Int64?
+    public var maxTimeMS: Int64?
 
     /// A ReadConcern to use for this operation.
-    public let readConcern: ReadConcern?
+    public var readConcern: ReadConcern?
 
     // swiftlint:disable redundant_optional_initialization
     /// A ReadPreference to use for this operation.

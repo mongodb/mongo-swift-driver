@@ -4,19 +4,19 @@ import mongoc
 /// Options to use when creating a `MongoClient`.
 public struct ClientOptions: CodingStrategyProvider, Decodable {
     /// Determines whether the client should retry supported write operations.
-    public let retryWrites: Bool?
+    public var retryWrites: Bool?
 
     /// Indicates whether this client should be set up to enable monitoring command and server discovery and monitoring
     /// events.
-    public let eventMonitoring: Bool
+    public var eventMonitoring: Bool
 
     /// Specifies a ReadConcern to use for the client. If one is not specified, the server's default read concern will
     /// be used.
-    public let readConcern: ReadConcern?
+    public var readConcern: ReadConcern?
 
     /// Specifies a WriteConcern to use for the client. If one is not specified, the server's default write concern
     /// will be used.
-    public let writeConcern: WriteConcern?
+    public var writeConcern: WriteConcern?
 
     // swiftlint:disable redundant_optional_initialization
 
@@ -64,10 +64,10 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
 /// Options to use when listing available databases.
 public struct ListDatabasesOptions: Encodable {
     /// An optional filter for the returned databases.
-    public let filter: Document?
+    public var filter: Document?
 
     /// Optionally indicate whether only names should be returned.
-    public let nameOnly: Bool?
+    public var nameOnly: Bool?
 
     /// Convenience constructor for basic construction
     public init(filter: Document? = nil, nameOnly: Bool? = nil) {
@@ -80,27 +80,27 @@ public struct ListDatabasesOptions: Encodable {
 public struct DatabaseOptions: CodingStrategyProvider {
     /// A read concern to set on the retrieved database. If one is not specified, the database will inherit the
     /// client's read concern.
-    public let readConcern: ReadConcern?
+    public var readConcern: ReadConcern?
 
     /// A read preference to set on the retrieved database. If one is not specified, the database will inherit the
     /// client's read preference.
-    public let readPreference: ReadPreference?
+    public var readPreference: ReadPreference?
 
     /// A write concern to set on the retrieved database. If one is not specified, the database will inherit the
     /// client's write concern.
-    public let writeConcern: WriteConcern?
+    public var writeConcern: WriteConcern?
 
     /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this database and
     /// any collections that derive from it.
-    public let dateCodingStrategy: DateCodingStrategy?
+    public var dateCodingStrategy: DateCodingStrategy?
 
     /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this database and
     /// any collections that derive from it.
-    public let uuidCodingStrategy: UUIDCodingStrategy?
+    public var uuidCodingStrategy: UUIDCodingStrategy?
 
     /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this database and
     /// any collections that derive from it.
-    public let dataCodingStrategy: DataCodingStrategy?
+    public var dataCodingStrategy: DataCodingStrategy?
 
     /// Convenience initializer allowing any/all arguments to be omitted or optional.
     public init(readConcern: ReadConcern? = nil,

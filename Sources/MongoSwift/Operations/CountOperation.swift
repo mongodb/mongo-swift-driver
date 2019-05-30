@@ -3,22 +3,22 @@ import mongoc
 /// Options to use when executing a `count` command on a `MongoCollection`.
 public struct CountOptions: Codable {
     /// Specifies a collation.
-    public let collation: Document?
+    public var collation: Document?
 
     /// A hint for the index to use.
-    public let hint: Hint?
+    public var hint: Hint?
 
     /// The maximum number of documents to count.
-    public let limit: Int64?
+    public var limit: Int64?
 
     /// The maximum amount of time to allow the query to run.
-    public let maxTimeMS: Int64?
+    public var maxTimeMS: Int64?
 
     /// The number of documents to skip before counting.
-    public let skip: Int64?
+    public var skip: Int64?
 
     /// A ReadConcern to use for this operation.
-    public let readConcern: ReadConcern?
+    public var readConcern: ReadConcern?
 
     // swiftlint:disable redundant_optional_initialization
     /// A ReadPreference to use for this operation.
