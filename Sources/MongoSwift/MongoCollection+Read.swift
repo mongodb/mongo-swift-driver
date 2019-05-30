@@ -421,7 +421,7 @@ public struct FindOptions: Codable {
         self.sort = sort
     }
 
-    // Encode everything except `self.cursorType`, as we only store it for debugging purposes
+    // Encode everything except `self.readPreference`, because this is sent to libmongoc separately
     private enum CodingKeys: String, CodingKey {
         case allowPartialResults, awaitData, batchSize, collation, comment, hint, limit, max, maxAwaitTimeMS,
             maxScan, maxTimeMS, min, noCursorTimeout, projection, readConcern, returnKey, showRecordId, tailable, skip,
