@@ -352,10 +352,10 @@ public struct FindOptions: Codable {
                 return nil
             }
 
-            if self.tailable == true && self.awaitData == true  {
+            if self.tailable == true && self.awaitData == true {
                 return .tailableAwait
             }
-            
+
             if self.tailable == true {
                 return .tailable
             }
@@ -373,7 +373,6 @@ public struct FindOptions: Codable {
             }
         }
     }
-    
 
     // swiftlint:enable redundant_optional_initialization
 
