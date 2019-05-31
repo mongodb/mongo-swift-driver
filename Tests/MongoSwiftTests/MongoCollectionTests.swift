@@ -110,6 +110,25 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(try self.coll.insertOne(self.doc1)).toNot(throwError())
     }
 
+    func testDropWithWriteConcerns() throws {
+        let encoder = BSONEncoder()
+
+        let center = NotificationCenter.default
+
+        let writeConcern = try WriteConcern(journal: true, w: .number(1))
+        let opts = DropCollectionOptions(writeConcern: writeConcern)
+
+        let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
+            print(notif)
+        }
+        
+        expect(try self.coll.drop(options: opts)).toNot(throwError())
+        // insert something so we don't error when trying to drop again in teardown
+        expect(try self.coll.insertOne(self.doc1)).toNot(throwError())
+
+        center.removeObserver(observer)
+    }
+
     private typealias InsertOne = MongoCollection<Document>.InsertOneModel
     func testInsertMany() throws {
         expect(try self.coll.count()).to(equal(2))
