@@ -52,7 +52,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
 
         var db = client.db(type(of: self).testDatabase)
         var writeConcern = try WriteConcern(journal: true, w: .number(1))
-    
+
         let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
             print(notif)
         }

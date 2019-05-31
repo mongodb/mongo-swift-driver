@@ -121,7 +121,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
             print(notif)
         }
-        
+
         expect(try self.coll.drop(options: opts)).toNot(throwError())
         // insert something so we don't error when trying to drop again in teardown
         expect(try self.coll.insertOne(self.doc1)).toNot(throwError())
