@@ -4,15 +4,17 @@ import mongoc
 internal struct DropCollectionOperation<T: Codable>: Operation {
     private let collection: MongoCollection<T>
     private let session: ClientSession?
+    private let options: DropCollectionOptions?
 
-    internal init(collection: MongoCollection<T>, session: ClientSession?) {
+    internal init(collection: MongoCollection<T>, session: ClientSession?, options: DropCollectionOptions?) {
         self.collection = collection
         self.session = session
+        self.options = options
     }
 
     internal func execute() throws {
         let command: Document = ["drop": self.collection.name]
-        let opts = try encodeOptions(options: Document(), session: self.session)
+        let opts = try encodeOptions(options: options, session: self.session)
 
         var reply = Document()
         var error = bson_error_t()

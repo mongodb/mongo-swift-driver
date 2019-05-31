@@ -1,5 +1,13 @@
 import mongoc
 
+public struct DropCollectionOptions: Codable {
+    public var writeConcern: WriteConcern?
+
+    public init(writeConcern: WriteConcern? = nil) {
+        self.writeConcern = writeConcern
+    }
+}
+
 /// A MongoDB collection.
 public class MongoCollection<T: Codable> {
     internal var _collection: OpaquePointer?
@@ -87,8 +95,8 @@ public class MongoCollection<T: Codable> {
     /// Drops this collection from its parent database.
     /// - Throws:
     ///   - `ServerError.commandError` if an error occurs that prevents the command from executing.
-    public func drop(session: ClientSession? = nil) throws {
-        let operation = DropCollectionOperation(collection: self, session: session)
+    public func drop(session: ClientSession? = nil, options: DropCollectionOptions? = nil) throws {
+        let operation = DropCollectionOperation(collection: self, session: session, options: options)
         try operation.execute()
     }
 }
