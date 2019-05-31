@@ -4,15 +4,17 @@ import mongoc
 internal struct DropDatabaseOperation: Operation {
     private let database: MongoDatabase
     private let session: ClientSession?
+    private let options: DropDatabaseOptions?
 
-    internal init(database: MongoDatabase, session: ClientSession?) {
+    internal init(database: MongoDatabase, session: ClientSession?, options: DropDatabaseOptions?) {
         self.database = database
         self.session = session
+        self.options = options
     }
 
     internal func execute() throws {
         let command: Document = ["dropDatabase": 1]
-        let opts = try encodeOptions(options: Document(), session: self.session)
+        let opts = try encodeOptions(options: self.options, session: self.session)
 
         var reply = Document()
         var error = bson_error_t()
