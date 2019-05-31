@@ -133,7 +133,7 @@ extension MongoCollectionTests {
         ("testInsertOneWithUnacknowledgedWriteConcern", testInsertOneWithUnacknowledgedWriteConcern),
         ("testAggregate", testAggregate),
         ("testDrop", testDrop),
-        ("testDropWithWriteConcerns",testDropWithWriteConcerns),
+        ("testDropWithWriteConcerns", testDropWithWriteConcerns),
         ("testInsertMany", testInsertMany),
         ("testInsertManyWithEmptyValues", testInsertManyWithEmptyValues),
         ("testInsertManyWithUnacknowledgedWriteConcern", testInsertManyWithUnacknowledgedWriteConcern),
@@ -190,8 +190,8 @@ extension MongoCollection_IndexTests {
 extension MongoDatabaseTests {
     static var allTests = [
         ("testMongoDatabase", testMongoDatabase),
+        ("testDropDatabase", testDropDatabase),
         ("testCreateCollection", testCreateCollection),
-        ("testDropDatabase", testDropDatabase)
     ]
 }
 
