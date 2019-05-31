@@ -145,7 +145,10 @@ public class WriteConcern: Codable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encodeIfPresent(self.w, forKey: .w)
-        try container.encodeIfPresent(self.wtimeoutMS, forKey: .wtimeout)
+        if let wtimeout = self.wtimeoutMS {
+            // TODO: change wtimeout to Int64 once tix SWIFT-395 gets fixed
+            try container.encode(Int32(wtimeout), forKey: .wtimeout)
+        }
         try container.encodeIfPresent(self.journal, forKey: .j)
     }
 
