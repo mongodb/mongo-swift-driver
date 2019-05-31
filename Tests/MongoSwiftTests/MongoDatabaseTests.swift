@@ -42,6 +42,35 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
                 .to(throwError(ServerError.commandError(code: 59, message: "", errorLabels: nil)))
     }
 
+    func testDropDatabase() throws {
+        let encoder = BSONEncoder()
+
+        let center = NotificationCenter.default
+
+        let client = try MongoClient(options: ClientOptions(eventMonitoring: true))
+        client.enableMonitoring(forEvents: .commandMonitoring)
+
+        var db = client.db(type(of: self).testDatabase)
+        var writeConcern = try WriteConcern(journal: true, w: .number(1))
+
+        let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
+            print(notif)
+        }
+
+        let collection = db.collection("collection")
+        try collection.insertOne(["test": "blahblah"])
+
+        var opts = DropDatabaseOptions(writeConcern: writeConcern)
+        expect(try db.drop(options: opts)).toNot(throwError())
+
+        db = client.db(type(of: self).testDatabase)
+        writeConcern = try WriteConcern(journal: true, w: .number(1), wtimeoutMS: 123)
+        opts = DropDatabaseOptions(writeConcern: writeConcern)
+        expect(try db.drop(options: opts)).toNot(throwError())
+
+        center.removeObserver(observer)
+    }
+
     func testCreateCollection() throws {
         let client = try MongoClient(MongoSwiftTestCase.connStr)
         let db = client.db(type(of: self).testDatabase)
