@@ -142,7 +142,7 @@ public class MongoClient {
     }
 
     /// The `ReadPreference` set on this client
-    public var readPreference: ReadPreference? {
+    public var readPreference: ReadPreference {
         return ReadPreference(from: mongoc_client_get_read_prefs(self._client))
     }
 

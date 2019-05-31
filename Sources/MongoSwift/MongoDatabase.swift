@@ -85,7 +85,7 @@ public class MongoDatabase {
     }
 
     /// The `ReadPreference` set on this database
-    public var readPreference: ReadPreference? {
+    public var readPreference: ReadPreference {
         return ReadPreference(from: mongoc_database_get_read_prefs(self._database))
     }
 
