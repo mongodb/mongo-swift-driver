@@ -8,7 +8,7 @@ The official [MongoDB](https://www.mongodb.com/) driver for Swift.
 - [Documentation](#documentation)
 - [Bugs/Feature Requests](#bugs--feature-requests)
 - [Installation](#installation)
-    - [macOS and Linux](#os-x-and-linux)
+    - [macOS and Linux](#macos-and-linux)
       - [Step 1: Install the MongoDB C Driver](#step-1-install-the-mongodb-c-driver)
       - [Step 2: Install MongoSwift](#step-2-install-mongoswift)
     - [iOS, tvOS, and watchOS](#ios-tvos-and-watchos)
@@ -96,26 +96,18 @@ Then run `pod install` to install your project's dependencies.
 
 ## Example Usage
 
-### Initialization
-You *must* call `MongoSwift.initialize()` once at the start of your application to
-initialize `libmongoc`. This initializes global state, such as process counters. Subsequent calls will have no effect.
-
-You should call `MongoSwift.cleanup()` exactly once at the end of your application to release all memory and other resources allocated by `libmongoc`. `MongoSwift.initialize()`
-will *not* reinitialize the driver after `MongoSwift.cleanup()`.
+Note: You should call `cleanupMongoSwift()` exactly once at the end of your application to release all memory and other resources allocated by `libmongoc`.
 
 ### Connect to MongoDB and Create a Collection
 ```swift
 import MongoSwift
-
-// initialize global state
-MongoSwift.initialize()
 
 let client = try MongoClient("mongodb://localhost:27017")
 let db = client.db("myDB")
 let collection = try db.createCollection("myCollection")
 
 // free all resources
-MongoSwift.cleanup()
+cleanupMongoSwift()
 ```
 
 Note: we have included the client `connectionString` parameter for clarity, but if connecting to the default `"mongodb://localhost:27017"`it may be omitted: `let client = try MongoClient()`.
