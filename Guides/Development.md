@@ -70,6 +70,8 @@ This will require you to manually provide the path to the compiled test binary (
 We document new code as we write it. We use C-style documentation blocks (`/** ... */`) for documentation longer than 3 lines, and triple-slash (`///`) for shorter documentation. 
 Comments that are _not_ documentation should use two slashes (`//`).
 
+Documentation comments should generally be complete sentences and should end with periods. 
+
 Our documentation site is automatically generated from the source code using [Jazzy](https://github.com/realm/jazzy#installation). We regenerate it each time we release a new version of the driver.
 To regenerate the files, run `make documentation` from the project's root directory. You can then inspect the changes to the site by opening the files in `/docs` in your web browser.
 
