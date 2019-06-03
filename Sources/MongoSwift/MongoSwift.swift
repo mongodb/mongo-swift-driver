@@ -1,12 +1,11 @@
 import mongoc
 
 private final class MongocInitializer {
-    private static let versionString = "0.1.0"
     internal static let shared = MongocInitializer()
 
     private init() {
         mongoc_init()
-        mongoc_handshake_data_append("MongoSwift", MongocInitializer.versionString, nil)
+        mongoc_handshake_data_append("MongoSwift", MongoSwiftVersionString, nil)
     }
 }
 
