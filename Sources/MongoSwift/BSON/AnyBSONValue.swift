@@ -3,24 +3,48 @@ import Foundation
 /// A struct wrapping a `BSONValue` type that allows for encoding/
 /// decoding `BSONValue`s of unknown type.
 public struct AnyBSONValue: Codable, Equatable, Hashable {
-    // TODO: conform all `BSONValue` types to `Hashable` (SWIFT-320).
     public func hash(into hasher: inout Hasher) {
         hasher.combine(self.value.bsonType)
-        // A few types need to be handled specifically because their string representations aren't sufficient or
-        // performant.
-        if let date = self.value as? Date {
+
+        switch self.value {
+        case let v as Date:
             // `Date`'s string conversion omits milliseconds and smaller time units, and using a string formatter is
             // expensive. Instead, we just include the time interval itself.
-            hasher.combine(date.timeIntervalSince1970)
-        } else if let binary = self.value as? Binary {
-            // `Binary`'s string representation omits the data itself, so we include its hashValue.
-            hasher.combine(binary.data)
-            hasher.combine(binary.subtype)
-        } else if let arr = self.value as? [BSONValue] {
-            // To factor in every item in the array, we include the arrays extended JSON representation.
-            hasher.combine((["value": arr] as Document).extendedJSON)
-        }
+            hasher.combine(v.timeIntervalSince1970)
+        case let v as Binary:
+            hasher.combine(v)
+        case let arr as [BSONValue]:
+             let mapped = arr.map { AnyBSONValue($0) }
+             hasher.combine(mapped)
+        case let v as String:
+            hasher.combine(v)
+        case let v as ObjectId:
+            hasher.combine(v)
+        case let v as Bool:
+            hasher.combine(v)
+        case let v as RegularExpression:
+            hasher.combine(v)
+        case let v as CodeWithScope:
+            hasher.combine(v)
+        case let v as Int:
+            hasher.combine(v)
+        case let v as Int32:
+            hasher.combine(v)
+        case let v as Int64:
+            hasher.combine(v)
+        case let v as Double:
+            hasher.combine(v)
+        case let v as Decimal128:
+            hasher.combine(v)
+        case let v as MinKey:
+            hasher.combine(v)
+        case let v as MaxKey:
+            hasher.combine(v)
+        case let v as Document:
+            hasher.combine(v)
+        default:
         hasher.combine("\(self.value)")
+        }
     }
 
     /// The `BSONValue` wrapped by this struct.

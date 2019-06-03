@@ -261,6 +261,13 @@ public struct BSONNull: BSONValue, Codable, Equatable {
     }
 }
 
+// An extension of `BSONNull` to add capability to be hashed
+extension BSONNull: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(0)
+    }
+}
+
 /// A struct to represent the BSON Binary type.
 public struct Binary: BSONValue, Equatable, Codable {
     public var bsonType: BSONType { return .binary }
@@ -387,6 +394,14 @@ public struct Binary: BSONValue, Equatable, Codable {
     }
 }
 
+// An extension of `BSONUndefined` to add capability to be hashed
+extension Binary: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(data)
+        hasher.combine(subtype)
+    }
+}
+
 /// An extension of `Bool` to represent the BSON Boolean type.
 extension Bool: BSONValue {
     public var bsonType: BSONType { return .boolean }
@@ -496,6 +511,14 @@ public struct DBPointer: BSONValue, Codable, Equatable {
     }
 }
 
+// An extension of `DBPointer` to add capability to be hashed
+extension DBPointer: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(ref)
+        hasher.combine(id)
+    }
+}
+
 /// A struct to represent the BSON Decimal128 type.
 public struct Decimal128: BSONNumber, Equatable, Codable, CustomStringConvertible {
     public var bsonType: BSONType { return .decimal128 }
@@ -570,6 +593,13 @@ public struct Decimal128: BSONNumber, Equatable, Codable, CustomStringConvertibl
             return Decimal128(bsonDecimal: value)
         }
      }
+}
+
+// An extension of `Decimal128` to add capability to be hashed
+extension Decimal128: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(description)
+    }
 }
 
 /// Extension of `Decimal128` to add `BSONNumber` conformance.
@@ -804,6 +834,14 @@ public struct CodeWithScope: BSONValue, Equatable, Codable {
     }
 }
 
+// An extension of `CodeWithScope` to add capability to be hashed
+extension CodeWithScope: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(code)
+        hasher.combine(scope)
+    }
+}
+
 /// A struct to represent the BSON MaxKey type.
 public struct MaxKey: BSONValue, Equatable, Codable {
     private var maxKey = 1
@@ -835,6 +873,13 @@ public struct MaxKey: BSONValue, Equatable, Codable {
     }
 }
 
+// An extension of `MaxKey` to add capability to be hashed
+extension MaxKey: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(maxKey)
+    }
+}
+
 /// A struct to represent the BSON MinKey type.
 public struct MinKey: BSONValue, Equatable, Codable {
     private var minKey = 1
@@ -863,6 +908,13 @@ public struct MinKey: BSONValue, Equatable, Codable {
             throw wrongIterTypeError(iter, expected: MinKey.self)
         }
         return MinKey()
+    }
+}
+
+// An extension of `MinKey` to add capability to be hashed
+extension MinKey: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(minKey)
     }
 }
 
@@ -946,6 +998,15 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
                 bson_oid_equal(lhsOidPtr, rhsOidPtr)
             }
         }
+    }
+}
+
+// An extension of `ObjectId` to add the capability to be hashed
+extension ObjectId: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(hex)
+        hasher.combine(timestamp)
+        hasher.combine(description)
     }
 }
 
@@ -1072,6 +1133,14 @@ public struct RegularExpression: BSONValue, Equatable, Codable {
     }
 }
 
+// An extension of RegularExpression to add the capability to be hashed
+extension RegularExpression: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(pattern)
+        hasher.combine(options)
+    }
+}
+
 /// An extension of String to represent the BSON string type.
 extension String: BSONValue {
     public var bsonType: BSONType { return .string }
@@ -1160,6 +1229,13 @@ public struct Symbol: BSONValue, CustomStringConvertible, Codable, Equatable {
     }
 }
 
+// An extension of `Symbol` to add capability to be hashed
+extension Symbol: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(description)
+    }
+}
+
 /// A struct to represent the BSON Timestamp type.
 public struct Timestamp: BSONValue, Equatable, Codable {
     public var bsonType: BSONType { return .timestamp }
@@ -1211,6 +1287,14 @@ public struct Timestamp: BSONValue, Equatable, Codable {
     }
 }
 
+// An extension of `Timestamp` to add capability to be hashed
+extension Timestamp: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(timestamp)
+        hasher.combine(increment)
+    }
+}
+
 /// A struct to represent the deprecated Undefined type.
 /// Undefined instances cannot be created, but they can be read from existing documents that contain them.
 public struct BSONUndefined: BSONValue, Equatable, Codable {
@@ -1239,6 +1323,14 @@ public struct BSONUndefined: BSONValue, Equatable, Codable {
         return BSONUndefined()
     }
 }
+
+// An extension of `BSONUndefined` to add capability to be hashed
+extension BSONUndefined: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(0)
+    }
+}
+
 
 /**
  *  A helper function to test equality between two `BSONValue`s. This function tests for exact BSON equality.
