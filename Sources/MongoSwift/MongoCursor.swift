@@ -105,12 +105,12 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         if let docPtr = replyPtr.pointee {
             // we have to copy because libmongoc owns the pointer.
             let reply = Document(copying: docPtr)
-            return getMongoError(error: error, reply: reply)
+            return extractMongoError(error: error, reply: reply)
         }
 
         // Otherwise, the only feasible error is that the user tried to advance a dead cursor, which is a logic error.
         // We will still parse the mongoc error to cover all cases.
-        return getMongoError(error: error)
+        return extractMongoError(error: error)
     }
 
     /// Returns the next `Document` in this cursor, or nil. Once this function returns `nil`, the caller should use

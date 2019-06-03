@@ -23,7 +23,7 @@ internal struct DropCollectionOperation<T: Codable>: Operation {
                     self.collection._collection, command._bson, opts?._bson, replyPtr, &error)
         }
         guard success else {
-            throw getMongoError(error: error, reply: reply)
+            throw extractMongoError(error: error, reply: reply)
         }
     }
 }

@@ -321,19 +321,21 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
 
     typealias InsertOneModel = MongoCollection<Document>.InsertOneModel
     func testWriteConcernErrors() throws {
-        guard MongoSwiftTestCase.topologyType == .replicaSetWithPrimary else {
+        guard MongoSwiftTestCase.topologyType != .single else {
             print("Skipping \(self.name) because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
             return
         }
 
         let wc = try WriteConcern(w: .number(100))
-        let wcError = WriteConcernError(code: 100, codeName: "CannotSatisfyWriteConcern", details: nil, message: "")
-        let writeError = ServerError.writeError(writeError: nil, writeConcernError: wcError, errorLabels: nil)
-        let bulkResult = BulkWriteResult(insertedCount: 1, insertedIds: [0: 1])
-        let bulkError = ServerError.bulkWriteError(writeErrors: [],
-                                                   writeConcernError: wcError,
-                                                   result: bulkResult,
-                                                   errorLabels: nil)
+        let expectedWCError =
+                WriteConcernError(code: 100, codeName: "CannotSatisfyWriteConcern", details: nil, message: "")
+        let expectedWriteError =
+                ServerError.writeError(writeError: nil, writeConcernError: expectedWCError, errorLabels: nil)
+        let expectedBulkResult = BulkWriteResult(insertedCount: 1, insertedIds: [0: 1])
+        let expectedBulkError = ServerError.bulkWriteError(writeErrors: [],
+                                                           writeConcernError: expectedWCError,
+                                                           result: expectedBulkResult,
+                                                           errorLabels: nil)
 
         let client = try MongoClient(MongoSwiftTestCase.connStr)
         let database = client.db(type(of: self).testDatabase)
@@ -341,10 +343,10 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
         defer { try? collection.drop() }
 
         expect(try collection.insertOne(["x": 1], options: InsertOneOptions(writeConcern: wc)))
-                .to(throwError(writeError))
+                .to(throwError(expectedWriteError))
 
         expect(try collection.bulkWrite([InsertOneModel(["_id": 1])], options: BulkWriteOptions(writeConcern: wc)))
-                .to(throwError(bulkError))
+                .to(throwError(expectedBulkError))
     }
 
     func testOperationWriteConcerns() throws {

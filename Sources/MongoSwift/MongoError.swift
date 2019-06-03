@@ -98,8 +98,6 @@ public struct WriteError: Codable {
     public let code: ServerErrorCode
 
     /// A human-readable string identifying the error.
-    /// Note: due to a bug in the server, this field will be empty except in sharded clusters.
-    /// - SeeAlso: https://jira.mongodb.org/browse/SERVER-36755
     public let codeName: String
 
     /// A description of the error.
@@ -232,10 +230,10 @@ private func parseMongocError(_ error: bson_error_t, reply: Document?) -> MongoE
 }
 
 /// Internal function used to get an appropriate error from a libmongoc error and/or a server reply to a command.
-internal func getMongoError(error bsonError: bson_error_t,
-                            reply: Document? = nil,
-                            bulkOp bulkWrite: BulkWriteOperation? = nil,
-                            result: BulkWriteResult? = nil) -> MongoError {
+internal func extractMongoError(error bsonError: bson_error_t,
+                                reply: Document? = nil,
+                                bulkOp bulkWrite: BulkWriteOperation? = nil,
+                                result: BulkWriteResult? = nil) -> MongoError {
     // if the reply is nil or writeErrors or writeConcernErrors aren't present, then this is likely a commandError.
     guard let serverReply = reply,
           !(serverReply["writeErrors"] as? [BSONValue] ?? []).isEmpty ||

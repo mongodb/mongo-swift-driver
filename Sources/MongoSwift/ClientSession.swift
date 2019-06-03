@@ -102,7 +102,7 @@ public final class ClientSession {
         self._session = try withSessionOpts(wrapping: options) { opts in
             var error = bson_error_t()
             guard let session = mongoc_client_start_session(client._client, opts, &error) else {
-                throw getMongoError(error: error)
+                throw extractMongoError(error: error)
             }
             return session
         }
@@ -158,7 +158,7 @@ public final class ClientSession {
         var error = bson_error_t()
         try withMutableBSONPointer(to: &doc) { docPtr in
             guard mongoc_client_session_append(self._session, docPtr, &error) else {
-                throw getMongoError(error: error)
+                throw extractMongoError(error: error)
             }
         }
     }

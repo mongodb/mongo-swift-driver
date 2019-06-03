@@ -38,7 +38,7 @@ internal struct DropIndexesOperation<T: Codable>: Operation {
                 self.collection._collection, command._bson, opts?._bson, replyPtr, &error)
         }
         guard success else {
-            throw getMongoError(error: error, reply: reply)
+            throw extractMongoError(error: error, reply: reply)
         }
 
         return reply
