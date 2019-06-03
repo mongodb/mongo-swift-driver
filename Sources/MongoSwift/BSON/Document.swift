@@ -540,3 +540,10 @@ extension Document: ExpressibleByArrayLiteral {
         self.init(elements)
     }
 }
+
+// An extension of `Document` to add the capability to be hashed
+extension Document: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.rawBSON)
+    }
+}
