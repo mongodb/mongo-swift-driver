@@ -215,6 +215,14 @@ public class MongoClient {
 
     /**
      * :nodoc:
+     */
+     @available(*, deprecated, message: "Use MongoClient(stealing:) instead.")
+     public convenience init(fromPointer pointer: OpaquePointer) {
+        self.init(stealing: pointer)
+     }
+
+    /**
+     * :nodoc:
      * Create a new client from an existing `mongoc_client_t`. The new client will destroy the `mongoc_client_t` upon
      * deinitialization.
      * Do not use this initializer unless you know what you are doing. You *must* call libmongoc_init *before* using
