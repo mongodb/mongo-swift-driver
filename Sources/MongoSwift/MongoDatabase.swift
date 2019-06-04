@@ -144,10 +144,10 @@ public class MongoDatabase {
     *   Drops this database.
     * - Parameters:
     *   - session: An optional `ClientSession` to use for this command
-    *   - options: Optional `DropDatabaseOptions` to use when executing this command
+    *   - options: An optional `DropDatabaseOptions` to use when executing this command
     *
     * - Throws:
-    * - `ServerError.commandError` if an error occurs that prevents the command from executing.
+    *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
     */
     public func drop(session: ClientSession? = nil, options: DropDatabaseOptions? = nil) throws {
         let operation = DropDatabaseOperation(database: self, session: session, options: options)

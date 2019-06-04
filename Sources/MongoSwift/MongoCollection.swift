@@ -99,10 +99,10 @@ public class MongoCollection<T: Codable> {
     *   Drops this collection from its parent database.
     * - Parameters:
     *   - session: An optional `ClientSession` to use when executing this command
-    *   - options:  Optional `DropCollectionOptions` to use when executing this command
+    *   - options: An optional `DropCollectionOptions` to use when executing this command
     *
     * - Throws:
-    * - `ServerError.commandError` if an error occurs that prevents the command from executing.
+    *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
     */
     public func drop(session: ClientSession? = nil, options: DropCollectionOptions? = nil) throws {
         let operation = DropCollectionOperation(collection: self, session: session, options: options)
