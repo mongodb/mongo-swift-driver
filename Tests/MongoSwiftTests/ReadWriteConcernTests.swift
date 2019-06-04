@@ -57,6 +57,11 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
         // verify that this combination is considered invalid
         expect(try WriteConcern(journal: true, w: .number(0)))
                 .to(throwError(UserError.invalidArgumentError(message: "")))
+        // verify that a negative value for w or for wtimeoutMS is considered invalid
+        expect(try WriteConcern(w: .number(-1)))
+                .to(throwError(UserError.invalidArgumentError(message: "")))
+        expect(try WriteConcern(wtimeoutMS: -1))
+                .to(throwError(UserError.invalidArgumentError(message: "")))
     }
 
     func testClientReadConcern() throws {
