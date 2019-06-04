@@ -15,7 +15,8 @@
     <header>
       <div class="content-wrapper">
         <p><a href="../../index.html">MongoSwift Docs</a> (100% documented)</p>
-        <p class="header-right"><a href="dash-feed://https%3A%2F%2Fmongodb%2Egithub%2Eio%2Fmongo%2Dswift%2Ddriver%2Fdocsets%2FMongoSwift%2Exml"><img src="../../img/dash.png"/>Install in Dash</a></p>
+        <p class="header-right"><a href="https://github.com/mongodb/mongo-swift-driver"><img src="../../img/gh.png"/>View on GitHub</a></p>
+        <p class="header-right"><a href="dash-feed://https%3A%2F%2Fmongodb%2Egithub%2Eio%2Fdocsets%2FMongoSwift%2Exml"><img src="../../img/dash.png"/>Install in Dash</a></p>
       </div>
     </header>
     <div class="content-wrapper">
@@ -67,13 +68,16 @@
                 <a href="../../Classes/BSONEncoder/DataEncodingStrategy.html">– DataEncodingStrategy</a>
               </li>
               <li class="nav-group-task">
-                <a href="../../Classes/BulkWriteOperation.html">BulkWriteOperation</a>
+                <a href="../../Classes.html#/s:10MongoSwift18BulkWriteOperationC">BulkWriteOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Classes/ClientSession.html">ClientSession</a>
               </li>
               <li class="nav-group-task">
                 <a href="../../Classes/DocumentIterator.html">DocumentIterator</a>
               </li>
               <li class="nav-group-task">
-                <a href="../../Classes/DocumentStorage.html">DocumentStorage</a>
+                <a href="../../Classes.html#/s:10MongoSwift15DocumentStorageC">DocumentStorage</a>
               </li>
               <li class="nav-group-task">
                 <a href="../../Classes/MongoClient.html">MongoClient</a>
@@ -104,9 +108,6 @@
               </li>
               <li class="nav-group-task">
                 <a href="../../Classes/MongoDatabase.html">MongoDatabase</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../../Classes/MongoSwift.html">MongoSwift</a>
               </li>
               <li class="nav-group-task">
                 <a href="../../Classes/ReadConcern.html">ReadConcern</a>
@@ -216,6 +217,9 @@
               <li class="nav-group-task">
                 <a href="../../Functions.html#/s:10MongoSwift10bsonEqualsySbAA9BSONValue_p_AaC_ptF">bsonEquals(_:_:)</a>
               </li>
+              <li class="nav-group-task">
+                <a href="../../Functions.html#/s:10MongoSwift07cleanupaB0yyF">cleanupMongoSwift()</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -276,6 +280,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="../../Structs/ClientOptions.html">ClientOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../../Structs/ClientSessionOptions.html">ClientSessionOptions</a>
               </li>
               <li class="nav-group-task">
                 <a href="../../Structs/CodeWithScope.html">CodeWithScope</a>
@@ -345,9 +352,6 @@
               </li>
               <li class="nav-group-task">
                 <a href="../../Structs/IndexOptions.html">IndexOptions</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../../Structs/InsertManyOptions.html">InsertManyOptions</a>
               </li>
               <li class="nav-group-task">
                 <a href="../../Structs/InsertManyResult.html">InsertManyResult</a>
@@ -445,6 +449,9 @@
             <a href="../../Typealiases.html">Type Aliases</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
+                <a href="../../Typealiases.html#/s:10MongoSwift17InsertManyOptionsa">InsertManyOptions</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../../Typealiases.html#/s:10MongoSwift15ServerErrorCodea">ServerErrorCode</a>
               </li>
             </ul>
@@ -457,7 +464,7 @@
             <h1>DeleteManyModel</h1>
               <div class="declaration">
                 <div class="language">
-                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">DeleteManyModel</span> <span class="p">:</span> <span class="kt"><a href="../../Protocols/WriteModel.html">WriteModel</a></span></code></pre>
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">DeleteManyModel</span> <span class="p">:</span> <span class="kt"><a href="../../Protocols/WriteModel.html">WriteModel</a></span><span class="p">,</span> <span class="kt">Decodable</span></code></pre>
 
                 </div>
               </div>
@@ -467,6 +474,60 @@
           <section class="section task-group-section">
             <div class="task-group">
               <ul>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A10CollectionC15DeleteManyModelV6filterAA8DocumentVvp"></a>
+                    <a name="//apple_ref/swift/Property/filter" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC15DeleteManyModelV6filterAA8DocumentVvp">filter</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A <code><a href="../../Structs/Document.html">Document</a></code> representing the match criteria.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../../Structs/Document.html">Document</a></span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A10CollectionC15DeleteManyModelV9collationAA8DocumentVSgvp"></a>
+                    <a name="//apple_ref/swift/Property/collation" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC15DeleteManyModelV9collationAA8DocumentVSgvp">collation</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The collation to use.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">collation</span><span class="p">:</span> <span class="kt"><a href="../../Structs/Document.html">Document</a></span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
                 <li class="item">
                   <div>
                     <code>
@@ -553,7 +614,7 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">addToBulkWrite</span><span class="p">(</span><span class="nv">bulk</span><span class="p">:</span> <span class="kt"><a href="../../Classes/BulkWriteOperation.html">BulkWriteOperation</a></span><span class="p">,</span> <span class="nv">index</span><span class="p">:</span> <span class="kt">Int</span><span class="p">)</span> <span class="k">throws</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">addToBulkWrite</span><span class="p">(</span><span class="nv">bulk</span><span class="p">:</span> <span class="kt"><a href="../../Classes.html#/s:10MongoSwift18BulkWriteOperationC">BulkWriteOperation</a></span><span class="p">,</span> <span class="nv">index</span><span class="p">:</span> <span class="kt">Int</span><span class="p">)</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -565,8 +626,8 @@
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2019 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Jeremy Mikola</a>. All rights reserved. (Last updated: 2019-04-18)</p>
-          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+          <p>&copy; 2019 <a class="link" href="" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2019-06-04)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.6</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>
     </div>

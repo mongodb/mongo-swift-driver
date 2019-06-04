@@ -15,7 +15,8 @@
     <header>
       <div class="content-wrapper">
         <p><a href="../index.html">MongoSwift Docs</a> (100% documented)</p>
-        <p class="header-right"><a href="dash-feed://https%3A%2F%2Fmongodb%2Egithub%2Eio%2Fmongo%2Dswift%2Ddriver%2Fdocsets%2FMongoSwift%2Exml"><img src="../img/dash.png"/>Install in Dash</a></p>
+        <p class="header-right"><a href="https://github.com/mongodb/mongo-swift-driver"><img src="../img/gh.png"/>View on GitHub</a></p>
+        <p class="header-right"><a href="dash-feed://https%3A%2F%2Fmongodb%2Egithub%2Eio%2Fdocsets%2FMongoSwift%2Exml"><img src="../img/dash.png"/>Install in Dash</a></p>
       </div>
     </header>
     <div class="content-wrapper">
@@ -67,13 +68,16 @@
                 <a href="../Classes/BSONEncoder/DataEncodingStrategy.html">– DataEncodingStrategy</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Classes/BulkWriteOperation.html">BulkWriteOperation</a>
+                <a href="../Classes.html#/s:10MongoSwift18BulkWriteOperationC">BulkWriteOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/ClientSession.html">ClientSession</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Classes/DocumentIterator.html">DocumentIterator</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Classes/DocumentStorage.html">DocumentStorage</a>
+                <a href="../Classes.html#/s:10MongoSwift15DocumentStorageC">DocumentStorage</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Classes/MongoClient.html">MongoClient</a>
@@ -104,9 +108,6 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Classes/MongoDatabase.html">MongoDatabase</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Classes/MongoSwift.html">MongoSwift</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Classes/ReadConcern.html">ReadConcern</a>
@@ -216,6 +217,9 @@
               <li class="nav-group-task">
                 <a href="../Functions.html#/s:10MongoSwift10bsonEqualsySbAA9BSONValue_p_AaC_ptF">bsonEquals(_:_:)</a>
               </li>
+              <li class="nav-group-task">
+                <a href="../Functions.html#/s:10MongoSwift07cleanupaB0yyF">cleanupMongoSwift()</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -276,6 +280,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/ClientOptions.html">ClientOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/ClientSessionOptions.html">ClientSessionOptions</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/CodeWithScope.html">CodeWithScope</a>
@@ -345,9 +352,6 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/IndexOptions.html">IndexOptions</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Structs/InsertManyOptions.html">InsertManyOptions</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/InsertManyResult.html">InsertManyResult</a>
@@ -444,6 +448,9 @@
           <li class="nav-group-name">
             <a href="../Typealiases.html">Type Aliases</a>
             <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Typealiases.html#/s:10MongoSwift17InsertManyOptionsa">InsertManyOptions</a>
+              </li>
               <li class="nav-group-task">
                 <a href="../Typealiases.html#/s:10MongoSwift15ServerErrorCodea">ServerErrorCode</a>
               </li>
@@ -615,9 +622,9 @@ to documents).</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC14readPreferenceAA04ReadE0CSgvp"></a>
+                    <a name="/s:10MongoSwift0A10CollectionC14readPreferenceAA04ReadE0Cvp"></a>
                     <a name="//apple_ref/swift/Property/readPreference" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC14readPreferenceAA04ReadE0CSgvp">readPreference</a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC14readPreferenceAA04ReadE0Cvp">readPreference</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -625,14 +632,14 @@ to documents).</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>The <code><a href="../Classes/ReadPreference.html">ReadPreference</a></code> set on this collection</p>
+                        <p>The <code><a href="../Classes/ReadPreference.html">ReadPreference</a></code> set on this collection.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">readPreference</span><span class="p">:</span> <span class="kt"><a href="../Classes/ReadPreference.html">ReadPreference</a></span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">readPreference</span><span class="p">:</span> <span class="kt"><a href="../Classes/ReadPreference.html">ReadPreference</a></span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
 
                         </div>
                       </div>
@@ -669,36 +676,9 @@ to documents).</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionCfd"></a>
-                    <a name="//apple_ref/swift/Method/deinit" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionCfd">deinit</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Cleans up internal state.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">deinit</span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift0A10CollectionC4dropyyKF"></a>
-                    <a name="//apple_ref/swift/Method/drop()" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC4dropyyKF">drop()</a>
+                    <a name="/s:10MongoSwift0A10CollectionC4drop7sessionyAA13ClientSessionCSg_tKF"></a>
+                    <a name="//apple_ref/swift/Method/drop(session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC4drop7sessionyAA13ClientSessionCSg_tKF">drop(session:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -720,7 +700,7 @@ to documents).</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">drop</span><span class="p">()</span> <span class="k">throws</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">drop</span><span class="p">(</span><span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -734,9 +714,9 @@ to documents).</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC9bulkWrite_7optionsAA04BulkE6ResultVSgSayAA0E5Model_pG_AA0gE7OptionsVSgtKF"></a>
-                    <a name="//apple_ref/swift/Method/bulkWrite(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9bulkWrite_7optionsAA04BulkE6ResultVSgSayAA0E5Model_pG_AA0gE7OptionsVSgtKF">bulkWrite(_:options:)</a>
+                    <a name="/s:10MongoSwift0A10CollectionC9bulkWrite_7options7sessionAA04BulkE6ResultVSgSayAA0E5Model_pG_AA0hE7OptionsVSgAA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/bulkWrite(_:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9bulkWrite_7options7sessionAA04BulkE6ResultVSgSayAA0E5Model_pG_AA0hE7OptionsVSgAA13ClientSessionCSgtKF">bulkWrite(_:options:session:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -751,6 +731,7 @@ to documents).</p>
 
 <ul>
 <li><code>UserError.invalidArgumentError</code> if <code>requests</code> is empty.</li>
+<li><code>UserError.logicError</code> if the provided session is inactive.</li>
 <li><code>ServerError.bulkWriteError</code> if any error occurs while performing the writes.</li>
 <li><code>ServerError.commandError</code> if an error occurs that prevents the operation from being performed.</li>
 <li><code>EncodingError</code> if an error occurs while encoding the <code><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></code> or the options to BSON.</li>
@@ -764,7 +745,9 @@ to documents).</p>
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
-<span class="kd">public</span> <span class="kd">func</span> <span class="nf">bulkWrite</span><span class="p">(</span><span class="n">_</span> <span class="nv">requests</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Protocols/WriteModel.html">WriteModel</a></span><span class="p">],</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/BulkWriteOptions.html">BulkWriteOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/BulkWriteResult.html">BulkWriteResult</a></span><span class="p">?</span></code></pre>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">bulkWrite</span><span class="p">(</span><span class="n">_</span> <span class="nv">requests</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Protocols/WriteModel.html">WriteModel</a></span><span class="p">],</span>
+                      <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/BulkWriteOptions.html">BulkWriteOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+                      <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/BulkWriteResult.html">BulkWriteResult</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
@@ -827,7 +810,7 @@ to documents).</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">DeleteOneModel</span> <span class="p">:</span> <span class="kt"><a href="../Protocols/WriteModel.html">WriteModel</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">DeleteOneModel</span> <span class="p">:</span> <span class="kt"><a href="../Protocols/WriteModel.html">WriteModel</a></span><span class="p">,</span> <span class="kt">Decodable</span></code></pre>
 
                         </div>
                       </div>
@@ -855,7 +838,7 @@ to documents).</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">DeleteManyModel</span> <span class="p">:</span> <span class="kt"><a href="../Protocols/WriteModel.html">WriteModel</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">DeleteManyModel</span> <span class="p">:</span> <span class="kt"><a href="../Protocols/WriteModel.html">WriteModel</a></span><span class="p">,</span> <span class="kt">Decodable</span></code></pre>
 
                         </div>
                       </div>
@@ -883,7 +866,7 @@ to documents).</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">InsertOneModel</span> <span class="p">:</span> <span class="kt"><a href="../Protocols/WriteModel.html">WriteModel</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">InsertOneModel</span> <span class="p">:</span> <span class="kt"><a href="../Protocols/WriteModel.html">WriteModel</a></span><span class="p">,</span> <span class="kt">Decodable</span></code></pre>
 
                         </div>
                       </div>
@@ -911,7 +894,7 @@ to documents).</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">ReplaceOneModel</span> <span class="p">:</span> <span class="kt"><a href="../Protocols/WriteModel.html">WriteModel</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">ReplaceOneModel</span> <span class="p">:</span> <span class="kt"><a href="../Protocols/WriteModel.html">WriteModel</a></span><span class="p">,</span> <span class="kt">Decodable</span></code></pre>
 
                         </div>
                       </div>
@@ -939,7 +922,7 @@ to documents).</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">UpdateOneModel</span> <span class="p">:</span> <span class="kt"><a href="../Protocols/WriteModel.html">WriteModel</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">UpdateOneModel</span> <span class="p">:</span> <span class="kt"><a href="../Protocols/WriteModel.html">WriteModel</a></span><span class="p">,</span> <span class="kt">Decodable</span></code></pre>
 
                         </div>
                       </div>
@@ -967,7 +950,7 @@ to documents).</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">UpdateManyModel</span> <span class="p">:</span> <span class="kt"><a href="../Protocols/WriteModel.html">WriteModel</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">UpdateManyModel</span> <span class="p">:</span> <span class="kt"><a href="../Protocols/WriteModel.html">WriteModel</a></span><span class="p">,</span> <span class="kt">Decodable</span></code></pre>
 
                         </div>
                       </div>
@@ -981,9 +964,9 @@ to documents).</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC16findOneAndDelete_7optionsxSgAA8DocumentV_AA04FindefG7OptionsVSgtKF"></a>
-                    <a name="//apple_ref/swift/Method/findOneAndDelete(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC16findOneAndDelete_7optionsxSgAA8DocumentV_AA04FindefG7OptionsVSgtKF">findOneAndDelete(_:options:)</a>
+                    <a name="/s:10MongoSwift0A10CollectionC16findOneAndDelete_7options7sessionxSgAA8DocumentV_AA04FindefG7OptionsVSgAA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/findOneAndDelete(_:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC16findOneAndDelete_7options7sessionxSgAA8DocumentV_AA04FindefG7OptionsVSgAA13ClientSessionCSgtKF">findOneAndDelete(_:options:session:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -998,6 +981,7 @@ to documents).</p>
 
 <ul>
 <li><code>UserError.invalidArgumentError</code> if any of the provided options are invalid.</li>
+<li><code>UserError.logicError</code> if the provided session is inactive.</li>
 <li><code>ServerError.commandError</code> if an error occurs that prevents the command from executing.</li>
 <li><code>ServerError.writeError</code> if an error occurs while executing the command.</li>
 <li><code>DecodingError</code> if the deleted document cannot be decoded to a <code><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></code> value.</li>
@@ -1012,7 +996,8 @@ to documents).</p>
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
 <span class="kd">public</span> <span class="kd">func</span> <span class="nf">findOneAndDelete</span><span class="p">(</span><span class="n">_</span> <span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span>
-                             <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/FindOneAndDeleteOptions.html">FindOneAndDeleteOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></span><span class="p">?</span></code></pre>
+                             <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/FindOneAndDeleteOptions.html">FindOneAndDeleteOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+                             <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
@@ -1057,9 +1042,9 @@ to documents).</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC17findOneAndReplace6filter11replacement7optionsxSgAA8DocumentV_xAA04FindefG7OptionsVSgtKF"></a>
-                    <a name="//apple_ref/swift/Method/findOneAndReplace(filter:replacement:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC17findOneAndReplace6filter11replacement7optionsxSgAA8DocumentV_xAA04FindefG7OptionsVSgtKF">findOneAndReplace(filter:replacement:options:)</a>
+                    <a name="/s:10MongoSwift0A10CollectionC17findOneAndReplace6filter11replacement7options7sessionxSgAA8DocumentV_xAA04FindefG7OptionsVSgAA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/findOneAndReplace(filter:replacement:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC17findOneAndReplace6filter11replacement7options7sessionxSgAA8DocumentV_xAA04FindefG7OptionsVSgAA13ClientSessionCSgtKF">findOneAndReplace(filter:replacement:options:session:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1074,6 +1059,7 @@ to documents).</p>
 
 <ul>
 <li><code>UserError.invalidArgumentError</code> if any of the provided options are invalid.</li>
+<li><code>UserError.logicError</code> if the provided session is inactive.</li>
 <li><code>ServerError.commandError</code> if an error occurs that prevents the command from executing.</li>
 <li><code>ServerError.writeError</code> if an error occurs while executing the command.</li>
 <li><code>DecodingError</code> if the replaced document cannot be decoded to a <code><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></code> value.</li>
@@ -1090,7 +1076,8 @@ to documents).</p>
                           <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
 <span class="kd">public</span> <span class="kd">func</span> <span class="nf">findOneAndReplace</span><span class="p">(</span><span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span>
                               <span class="nv">replacement</span><span class="p">:</span> <span class="kt"><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></span><span class="p">,</span>
-                              <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/FindOneAndReplaceOptions.html">FindOneAndReplaceOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></span><span class="p">?</span></code></pre>
+                              <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/FindOneAndReplaceOptions.html">FindOneAndReplaceOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+                              <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
@@ -1148,9 +1135,9 @@ to documents).</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC16findOneAndUpdate6filter6update7optionsxSgAA8DocumentV_AjA04FindefG7OptionsVSgtKF"></a>
-                    <a name="//apple_ref/swift/Method/findOneAndUpdate(filter:update:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC16findOneAndUpdate6filter6update7optionsxSgAA8DocumentV_AjA04FindefG7OptionsVSgtKF">findOneAndUpdate(filter:update:options:)</a>
+                    <a name="/s:10MongoSwift0A10CollectionC16findOneAndUpdate6filter6update7options7sessionxSgAA8DocumentV_AkA04FindefG7OptionsVSgAA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/findOneAndUpdate(filter:update:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC16findOneAndUpdate6filter6update7options7sessionxSgAA8DocumentV_AkA04FindefG7OptionsVSgAA13ClientSessionCSgtKF">findOneAndUpdate(filter:update:options:session:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1165,6 +1152,7 @@ to documents).</p>
 
 <ul>
 <li><code>UserError.invalidArgumentError</code> if any of the provided options are invalid.</li>
+<li><code>UserError.logicError</code> if the provided session is inactive.</li>
 <li><code>ServerError.commandError</code> if an error occurs that prevents the command from executing.</li>
 <li><code>ServerError.writeError</code> if an error occurs while executing the command.</li>
 <li><code>DecodingError</code> if the updated document cannot be decoded to a <code><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></code> value.</li>
@@ -1180,7 +1168,8 @@ to documents).</p>
                           <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
 <span class="kd">public</span> <span class="kd">func</span> <span class="nf">findOneAndUpdate</span><span class="p">(</span><span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span>
                              <span class="nv">update</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span>
-                             <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/FindOneAndUpdateOptions.html">FindOneAndUpdateOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></span><span class="p">?</span></code></pre>
+                             <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/FindOneAndUpdateOptions.html">FindOneAndUpdateOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+                             <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
@@ -1242,9 +1231,9 @@ to documents).</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC11createIndex_7optionsSSAA0E5ModelV_AA06CreateE7OptionsVSgtKF"></a>
-                    <a name="//apple_ref/swift/Method/createIndex(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC11createIndex_7optionsSSAA0E5ModelV_AA06CreateE7OptionsVSgtKF">createIndex(_:options:)</a>
+                    <a name="/s:10MongoSwift0A10CollectionC11createIndex_7options14commandOptions7sessionSSAA8DocumentV_AA0eH0VSgAA06CreateeH0VSgAA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/createIndex(_:options:commandOptions:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC11createIndex_7options14commandOptions7sessionSSAA8DocumentV_AA0eH0VSgAA06CreateeH0VSgAA13ClientSessionCSgtKF">createIndex(_:options:commandOptions:session:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1261,81 +1250,7 @@ to documents).</p>
 <li><code>ServerError.writeError</code> if an error occurs while performing the write.</li>
 <li><code>ServerError.commandError</code> if an error occurs that prevents the command from executing.</li>
 <li><code>UserError.invalidArgumentError</code> if the options passed in form an invalid combination.</li>
-<li><code>EncodingError</code> if an error occurs while encoding the index specification or options.</li>
-</ul>
-
-</div>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
-<span class="kd">public</span> <span class="kd">func</span> <span class="nf">createIndex</span><span class="p">(</span><span class="n">_</span> <span class="nv">forModel</span><span class="p">:</span> <span class="kt"><a href="../Structs/IndexModel.html">IndexModel</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/CreateIndexOptions.html">CreateIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">String</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div>
-                        <h4>Parameters</h4>
-                        <table class="graybox">
-                          <tbody>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>model</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>An <code><a href="../Structs/IndexModel.html">IndexModel</a></code> representing the keys and options for the index</p>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>writeConcern</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>Optional WriteConcern to use for the command</p>
-                                </div>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>The name of the created index.</p>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift0A10CollectionC11createIndex_7options14commandOptionsSSAA8DocumentV_AA0eH0VSgAA06CreateeH0VSgtKF"></a>
-                    <a name="//apple_ref/swift/Method/createIndex(_:options:commandOptions:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC11createIndex_7options14commandOptionsSSAA8DocumentV_AA0eH0VSgAA06CreateeH0VSgtKF">createIndex(_:options:commandOptions:)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Creates an index over the collection for the provided keys with the provided options.</p>
-<div class="aside aside-throws">
-    <p class="aside-title">Throws</p>
-    <p>Throws:</p>
-
-<ul>
-<li><code>ServerError.writeError</code> if an error occurs while performing the write.</li>
-<li><code>ServerError.commandError</code> if an error occurs that prevents the command from executing.</li>
-<li><code>UserError.invalidArgumentError</code> if the options passed in form an invalid combination.</li>
+<li><code>UserError.logicError</code> if the provided session is inactive.</li>
 <li><code>EncodingError</code> if an error occurs while encoding the index specification or options.</li>
 </ul>
 
@@ -1349,7 +1264,8 @@ to documents).</p>
                           <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
 <span class="kd">public</span> <span class="kd">func</span> <span class="nf">createIndex</span><span class="p">(</span><span class="n">_</span> <span class="nv">keys</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span>
                         <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/IndexOptions.html">IndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-                        <span class="nv">commandOptions</span><span class="p">:</span> <span class="kt"><a href="../Structs/CreateIndexOptions.html">CreateIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">String</span></code></pre>
+                        <span class="nv">commandOptions</span><span class="p">:</span> <span class="kt"><a href="../Structs/CreateIndexOptions.html">CreateIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+                        <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">String</span></code></pre>
 
                         </div>
                       </div>
@@ -1384,12 +1300,12 @@ to documents).</p>
                             <tr>
                               <td>
                                 <code>
-                                <em>writeConcern</em>
+                                <em>commandOptions</em>
                                 </code>
                               </td>
                               <td>
                                 <div>
-                                  <p>Optional <code><a href="../Classes/WriteConcern.html">WriteConcern</a></code> to use for the command</p>
+                                  <p>Optional <code><a href="../Structs/CreateIndexOptions.html">CreateIndexOptions</a></code> to use for the command</p>
                                 </div>
                               </td>
                             </tr>
@@ -1398,7 +1314,7 @@ to documents).</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>The name of the created index</p>
+                        <p>The name of the created index.</p>
                       </div>
                     </section>
                   </div>
@@ -1406,9 +1322,87 @@ to documents).</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC13createIndexes_7optionsSaySSGSayAA10IndexModelVG_AA06CreateG7OptionsVSgtKF"></a>
-                    <a name="//apple_ref/swift/Method/createIndexes(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC13createIndexes_7optionsSaySSGSayAA10IndexModelVG_AA06CreateG7OptionsVSgtKF">createIndexes(_:options:)</a>
+                    <a name="/s:10MongoSwift0A10CollectionC11createIndex_7options7sessionSSAA0E5ModelV_AA06CreateE7OptionsVSgAA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/createIndex(_:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC11createIndex_7options7sessionSSAA0E5ModelV_AA06CreateE7OptionsVSgAA13ClientSessionCSgtKF">createIndex(_:options:session:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Creates an index over the collection for the provided keys with the provided options.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p>Throws:</p>
+
+<ul>
+<li><code>ServerError.writeError</code> if an error occurs while performing the write.</li>
+<li><code>ServerError.commandError</code> if an error occurs that prevents the command from executing.</li>
+<li><code>UserError.invalidArgumentError</code> if the options passed in form an invalid combination.</li>
+<li><code>UserError.logicError</code> if the provided session is inactive.</li>
+<li><code>EncodingError</code> if an error occurs while encoding the index specification or options.</li>
+</ul>
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">createIndex</span><span class="p">(</span><span class="n">_</span> <span class="nv">model</span><span class="p">:</span> <span class="kt"><a href="../Structs/IndexModel.html">IndexModel</a></span><span class="p">,</span>
+                        <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/CreateIndexOptions.html">CreateIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+                        <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">String</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>model</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An <code><a href="../Structs/IndexModel.html">IndexModel</a></code> representing the keys and options for the index</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>options</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional <code><a href="../Structs/CreateIndexOptions.html">CreateIndexOptions</a></code> to use for the command</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The name of the created index.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A10CollectionC13createIndexes_7options7sessionSaySSGSayAA10IndexModelVG_AA06CreateH7OptionsVSgAA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/createIndexes(_:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC13createIndexes_7options7sessionSaySSGSayAA10IndexModelVG_AA06CreateH7OptionsVSgAA13ClientSessionCSgtKF">createIndexes(_:options:session:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1425,6 +1419,7 @@ to documents).</p>
 <li><code>ServerError.writeError</code> if an error occurs while performing the write.</li>
 <li><code>ServerError.commandError</code> if an error occurs that prevents the command from executing.</li>
 <li><code>UserError.invalidArgumentError</code> if the options passed in form an invalid combination.</li>
+<li><code>UserError.logicError</code> if the provided session is inactive.</li>
 <li><code>EncodingError</code> if an error occurs while encoding the index specifications or options.</li>
 </ul>
 
@@ -1436,7 +1431,9 @@ to documents).</p>
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
-<span class="kd">public</span> <span class="kd">func</span> <span class="nf">createIndexes</span><span class="p">(</span><span class="n">_</span> <span class="nv">forModels</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/IndexModel.html">IndexModel</a></span><span class="p">],</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/CreateIndexOptions.html">CreateIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="kt">String</span><span class="p">]</span></code></pre>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">createIndexes</span><span class="p">(</span><span class="n">_</span> <span class="nv">models</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/IndexModel.html">IndexModel</a></span><span class="p">],</span>
+                          <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/CreateIndexOptions.html">CreateIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+                          <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="kt">String</span><span class="p">]</span></code></pre>
 
                         </div>
                       </div>
@@ -1459,12 +1456,12 @@ to documents).</p>
                             <tr>
                               <td>
                                 <code>
-                                <em>writeConcern</em>
+                                <em>options</em>
                                 </code>
                               </td>
                               <td>
                                 <div>
-                                  <p>Optional <code><a href="../Classes/WriteConcern.html">WriteConcern</a></code> to use for the command</p>
+                                  <p>Optional <code><a href="../Structs/CreateIndexOptions.html">CreateIndexOptions</a></code> to use for the command</p>
                                 </div>
                               </td>
                             </tr>
@@ -1481,9 +1478,9 @@ to documents).</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC9dropIndex_7optionsySS_AA04DropE7OptionsVSgtKF"></a>
-                    <a name="//apple_ref/swift/Method/dropIndex(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9dropIndex_7optionsySS_AA04DropE7OptionsVSgtKF">dropIndex(_:options:)</a>
+                    <a name="/s:10MongoSwift0A10CollectionC9dropIndex_7options7sessionAA8DocumentVSS_AA04DropE7OptionsVSgAA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/dropIndex(_:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9dropIndex_7options7sessionAA8DocumentVSS_AA04DropE7OptionsVSgAA13ClientSessionCSgtKF">dropIndex(_:options:session:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1497,8 +1494,10 @@ to documents).</p>
     <p>Throws:</p>
 
 <ul>
+<li><code>ServerError.writeError</code> if an error occurs while performing the command.</li>
 <li><code>ServerError.commandError</code> if an error occurs that prevents the command from executing.</li>
 <li><code>UserError.invalidArgumentError</code> if the options passed in form an invalid combination.</li>
+<li><code>EncodingError</code> if an error occurs while encoding the options.</li>
 </ul>
 
 </div>
@@ -1508,7 +1507,10 @@ to documents).</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">dropIndex</span><span class="p">(</span><span class="n">_</span> <span class="nv">name</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/DropIndexOptions.html">DropIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">dropIndex</span><span class="p">(</span><span class="n">_</span> <span class="nv">name</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span>
+                      <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/DropIndexOptions.html">DropIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+                      <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span></code></pre>
 
                         </div>
                       </div>
@@ -1531,12 +1533,12 @@ to documents).</p>
                             <tr>
                               <td>
                                 <code>
-                                <em>writeConcern</em>
+                                <em>options</em>
                                 </code>
                               </td>
                               <td>
                                 <div>
-                                  <p>An optional WriteConcern to use for the command</p>
+                                  <p>Optional <code><a href="../Structs/DropIndexOptions.html">DropIndexOptions</a></code> to use for the command</p>
                                 </div>
                               </td>
                             </tr>
@@ -1549,9 +1551,9 @@ to documents).</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC9dropIndex_7options14commandOptionsAA8DocumentVAH_AA0eH0VSgAA04DropeH0VSgtKF"></a>
-                    <a name="//apple_ref/swift/Method/dropIndex(_:options:commandOptions:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9dropIndex_7options14commandOptionsAA8DocumentVAH_AA0eH0VSgAA04DropeH0VSgtKF">dropIndex(_:options:commandOptions:)</a>
+                    <a name="/s:10MongoSwift0A10CollectionC9dropIndex_14commandOptions7sessionAA8DocumentVAH_AA04DropeG0VSgAA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/dropIndex(_:commandOptions:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9dropIndex_14commandOptions7sessionAA8DocumentVAH_AA04DropeG0VSgAA13ClientSessionCSgtKF">dropIndex(_:commandOptions:session:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1559,7 +1561,7 @@ to documents).</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Attempts to drop a single index from the collection given the keys and options describing it.</p>
+                        <p>Attempts to drop a single index from the collection given the keys describing it.</p>
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
     <p>Throws:</p>
@@ -1568,6 +1570,7 @@ to documents).</p>
 <li><code>ServerError.writeError</code> if an error occurs while performing the command.</li>
 <li><code>ServerError.commandError</code> if an error occurs that prevents the command from executing.</li>
 <li><code>UserError.invalidArgumentError</code> if the options passed in form an invalid combination.</li>
+<li><code>UserError.logicError</code> if the provided session is inactive.</li>
 <li><code>EncodingError</code> if an error occurs while encoding the options.</li>
 </ul>
 
@@ -1580,8 +1583,8 @@ to documents).</p>
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
 <span class="kd">public</span> <span class="kd">func</span> <span class="nf">dropIndex</span><span class="p">(</span><span class="n">_</span> <span class="nv">keys</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span>
-                      <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/IndexOptions.html">IndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-                      <span class="nv">commandOptions</span><span class="p">:</span> <span class="kt"><a href="../Structs/DropIndexOptions.html">DropIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span></code></pre>
+                      <span class="nv">commandOptions</span><span class="p">:</span> <span class="kt"><a href="../Structs/DropIndexOptions.html">DropIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+                      <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span></code></pre>
 
                         </div>
                       </div>
@@ -1609,19 +1612,7 @@ to documents).</p>
                               </td>
                               <td>
                                 <div>
-                                  <p>Optional <code><a href="../Structs/IndexOptions.html">IndexOptions</a></code> the dropped index should match</p>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>writeConcern</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>An optional <code><a href="../Classes/WriteConcern.html">WriteConcern</a></code> to use for the command</p>
+                                  <p>Optional <code><a href="../Structs/DropIndexOptions.html">DropIndexOptions</a></code> to use for the command</p>
                                 </div>
                               </td>
                             </tr>
@@ -1638,9 +1629,9 @@ to documents).</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC9dropIndex_7optionsAA8DocumentVAA0E5ModelV_AA04DropE7OptionsVSgtKF"></a>
-                    <a name="//apple_ref/swift/Method/dropIndex(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9dropIndex_7optionsAA8DocumentVAA0E5ModelV_AA04DropE7OptionsVSgtKF">dropIndex(_:options:)</a>
+                    <a name="/s:10MongoSwift0A10CollectionC9dropIndex_7options7sessionAA8DocumentVAA0E5ModelV_AA04DropE7OptionsVSgAA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/dropIndex(_:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9dropIndex_7options7sessionAA8DocumentVAA0E5ModelV_AA04DropE7OptionsVSgAA13ClientSessionCSgtKF">dropIndex(_:options:session:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1657,6 +1648,7 @@ to documents).</p>
 <li><code>ServerError.writeError</code> if an error occurs while performing the command.</li>
 <li><code>ServerError.commandError</code> if an error occurs that prevents the command from executing.</li>
 <li><code>UserError.invalidArgumentError</code> if the options passed in form an invalid combination.</li>
+<li><code>UserError.logicError</code> if the provided session is inactive.</li>
 <li><code>EncodingError</code> if an error occurs while encoding the options.</li>
 </ul>
 
@@ -1668,7 +1660,9 @@ to documents).</p>
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
-<span class="kd">public</span> <span class="kd">func</span> <span class="nf">dropIndex</span><span class="p">(</span><span class="n">_</span> <span class="nv">model</span><span class="p">:</span> <span class="kt"><a href="../Structs/IndexModel.html">IndexModel</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/DropIndexOptions.html">DropIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span></code></pre>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">dropIndex</span><span class="p">(</span><span class="n">_</span> <span class="nv">model</span><span class="p">:</span> <span class="kt"><a href="../Structs/IndexModel.html">IndexModel</a></span><span class="p">,</span>
+                      <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/DropIndexOptions.html">DropIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+                      <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span></code></pre>
 
                         </div>
                       </div>
@@ -1691,12 +1685,12 @@ to documents).</p>
                             <tr>
                               <td>
                                 <code>
-                                <em>writeConcern</em>
+                                <em>options</em>
                                 </code>
                               </td>
                               <td>
                                 <div>
-                                  <p>An optional <code><a href="../Classes/WriteConcern.html">WriteConcern</a></code> to use for the command</p>
+                                  <p>Optional <code><a href="../Structs/DropIndexOptions.html">DropIndexOptions</a></code> to use for the command</p>
                                 </div>
                               </td>
                             </tr>
@@ -1713,9 +1707,9 @@ to documents).</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC11dropIndexes7optionsAA8DocumentVAA16DropIndexOptionsVSg_tKF"></a>
-                    <a name="//apple_ref/swift/Method/dropIndexes(options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC11dropIndexes7optionsAA8DocumentVAA16DropIndexOptionsVSg_tKF">dropIndexes(options:)</a>
+                    <a name="/s:10MongoSwift0A10CollectionC11dropIndexes7options7sessionAA8DocumentVAA16DropIndexOptionsVSg_AA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/dropIndexes(options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC11dropIndexes7options7sessionAA8DocumentVAA16DropIndexOptionsVSg_AA13ClientSessionCSgtKF">dropIndexes(options:session:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1732,6 +1726,7 @@ to documents).</p>
 <li><code>ServerError.writeError</code> if an error occurs while performing the command.</li>
 <li><code>ServerError.commandError</code> if an error occurs that prevents the command from executing.</li>
 <li><code>UserError.invalidArgumentError</code> if the options passed in form an invalid combination.</li>
+<li><code>UserError.logicError</code> if the provided session is inactive.</li>
 <li><code>EncodingError</code> if an error occurs while encoding the options.</li>
 </ul>
 
@@ -1743,7 +1738,7 @@ to documents).</p>
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
-<span class="kd">public</span> <span class="kd">func</span> <span class="nf">dropIndexes</span><span class="p">(</span><span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/DropIndexOptions.html">DropIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span></code></pre>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">dropIndexes</span><span class="p">(</span><span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/DropIndexOptions.html">DropIndexOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span></code></pre>
 
                         </div>
                       </div>
@@ -1754,12 +1749,12 @@ to documents).</p>
                             <tr>
                               <td>
                                 <code>
-                                <em>writeConcern</em>
+                                <em>options</em>
                                 </code>
                               </td>
                               <td>
                                 <div>
-                                  <p>An optional <code><a href="../Classes/WriteConcern.html">WriteConcern</a></code> to use for the command</p>
+                                  <p>Optional <code><a href="../Structs/DropIndexOptions.html">DropIndexOptions</a></code> to use for the command</p>
                                 </div>
                               </td>
                             </tr>
@@ -1776,9 +1771,9 @@ to documents).</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC11listIndexesAA0A6CursorCyAA8DocumentVGyKF"></a>
-                    <a name="//apple_ref/swift/Method/listIndexes()" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC11listIndexesAA0A6CursorCyAA8DocumentVGyKF">listIndexes()</a>
+                    <a name="/s:10MongoSwift0A10CollectionC11listIndexes7sessionAA0A6CursorCyAA8DocumentVGAA13ClientSessionCSg_tKF"></a>
+                    <a name="//apple_ref/swift/Method/listIndexes(session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC11listIndexes7sessionAA0A6CursorCyAA8DocumentVGAA13ClientSessionCSg_tKF">listIndexes(session:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1789,7 +1784,7 @@ to documents).</p>
                         <p>Retrieves a list of the indexes currently on this collection.</p>
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
-    <p>A <code>userError.invalidArgumentError</code> if the options passed are an invalid combination.</p>
+    <p><code>UserError.logicError</code> if the provided session is inactive.</p>
 
 </div>
 
@@ -1798,7 +1793,7 @@ to documents).</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">listIndexes</span><span class="p">()</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Classes/MongoCursor.html">MongoCursor</a></span><span class="o">&lt;</span><span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">listIndexes</span><span class="p">(</span><span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Classes/MongoCursor.html">MongoCursor</a></span><span class="o">&lt;</span><span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -1816,9 +1811,9 @@ to documents).</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC4find_7optionsAA0A6CursorCyxGAA8DocumentV_AA11FindOptionsVSgtKF"></a>
-                    <a name="//apple_ref/swift/Method/find(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC4find_7optionsAA0A6CursorCyxGAA8DocumentV_AA11FindOptionsVSgtKF">find(_:options:)</a>
+                    <a name="/s:10MongoSwift0A10CollectionC4find_7options7sessionAA0A6CursorCyxGAA8DocumentV_AA11FindOptionsVSgAA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/find(_:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC4find_7options7sessionAA0A6CursorCyxGAA8DocumentV_AA11FindOptionsVSgAA13ClientSessionCSgtKF">find(_:options:session:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1833,6 +1828,7 @@ to documents).</p>
 
 <ul>
 <li><code>UserError.invalidArgumentError</code> if the options passed are an invalid combination.</li>
+<li><code>UserError.logicError</code> if the provided session is inactive.</li>
 <li><code>EncodingError</code> if an error occurs while encoding the options to BSON.</li>
 </ul>
 
@@ -1843,7 +1839,9 @@ to documents).</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">find</span><span class="p">(</span><span class="n">_</span> <span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span> <span class="o">=</span> <span class="p">[:],</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/FindOptions.html">FindOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Classes/MongoCursor.html">MongoCursor</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">find</span><span class="p">(</span><span class="n">_</span> <span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span> <span class="o">=</span> <span class="p">[:],</span>
+                 <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/FindOptions.html">FindOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+                 <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Classes/MongoCursor.html">MongoCursor</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -1888,9 +1886,9 @@ to documents).</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC9aggregate_7optionsAA0A6CursorCyAA8DocumentVGSayAIG_AA16AggregateOptionsVSgtKF"></a>
-                    <a name="//apple_ref/swift/Method/aggregate(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9aggregate_7optionsAA0A6CursorCyAA8DocumentVGSayAIG_AA16AggregateOptionsVSgtKF">aggregate(_:options:)</a>
+                    <a name="/s:10MongoSwift0A10CollectionC9aggregate_7options7sessionAA0A6CursorCyAA8DocumentVGSayAJG_AA16AggregateOptionsVSgAA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/aggregate(_:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9aggregate_7options7sessionAA0A6CursorCyAA8DocumentVGSayAJG_AA16AggregateOptionsVSgAA13ClientSessionCSgtKF">aggregate(_:options:session:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1905,6 +1903,7 @@ to documents).</p>
 
 <ul>
 <li><code>UserError.invalidArgumentError</code> if the options passed are an invalid combination.</li>
+<li><code>UserError.logicError</code> if the provided session is inactive.</li>
 <li><code>EncodingError</code> if an error occurs while encoding the options to BSON.</li>
 </ul>
 
@@ -1915,7 +1914,9 @@ to documents).</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">aggregate</span><span class="p">(</span><span class="n">_</span> <span class="nv">pipeline</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">],</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/AggregateOptions.html">AggregateOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Classes/MongoCursor.html">MongoCursor</a></span><span class="o">&lt;</span><span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">aggregate</span><span class="p">(</span><span class="n">_</span> <span class="nv">pipeline</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">],</span>
+                      <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/AggregateOptions.html">AggregateOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+                      <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Classes/MongoCursor.html">MongoCursor</a></span><span class="o">&lt;</span><span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -1960,9 +1961,9 @@ to documents).</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC5count_7optionsSiAA8DocumentV_AA12CountOptionsVSgtKF"></a>
-                    <a name="//apple_ref/swift/Method/count(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC5count_7optionsSiAA8DocumentV_AA12CountOptionsVSgtKF">count(_:options:)</a>
+                    <a name="/s:10MongoSwift0A10CollectionC5count_7options7sessionSiAA8DocumentV_AA12CountOptionsVSgAA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/count(_:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC5count_7options7sessionSiAA8DocumentV_AA12CountOptionsVSgAA13ClientSessionCSgtKF">count(_:options:session:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1988,7 +1989,9 @@ to documents).</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">count</span><span class="p">(</span><span class="n">_</span> <span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span> <span class="o">=</span> <span class="p">[:],</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/CountOptions.html">CountOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Int</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">count</span><span class="p">(</span><span class="n">_</span> <span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span> <span class="o">=</span> <span class="p">[:],</span>
+                  <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/CountOptions.html">CountOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+                  <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Int</span></code></pre>
 
                         </div>
                       </div>
@@ -2033,9 +2036,9 @@ to documents).</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC8distinct9fieldName6filter7optionsSayAA9BSONValue_pGSS_AA8DocumentVAA15DistinctOptionsVSgtKF"></a>
-                    <a name="//apple_ref/swift/Method/distinct(fieldName:filter:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC8distinct9fieldName6filter7optionsSayAA9BSONValue_pGSS_AA8DocumentVAA15DistinctOptionsVSgtKF">distinct(fieldName:filter:options:)</a>
+                    <a name="/s:10MongoSwift0A10CollectionC8distinct9fieldName6filter7options7sessionSayAA9BSONValue_pGSS_AA8DocumentVAA15DistinctOptionsVSgAA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/distinct(fieldName:filter:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC8distinct9fieldName6filter7options7sessionSayAA9BSONValue_pGSS_AA8DocumentVAA15DistinctOptionsVSgAA13ClientSessionCSgtKF">distinct(fieldName:filter:options:session:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -2051,6 +2054,7 @@ to documents).</p>
 <ul>
 <li><code>ServerError.commandError</code> if an error occurs that prevents the command from executing.</li>
 <li><code>UserError.invalidArgumentError</code> if the options passed in form an invalid combination.</li>
+<li><code>UserError.logicError</code> if the provided session is inactive.</li>
 <li><code>EncodingError</code> if an error occurs while encoding the options to BSON.</li>
 </ul>
 
@@ -2063,7 +2067,8 @@ to documents).</p>
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">distinct</span><span class="p">(</span><span class="nv">fieldName</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span>
                      <span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span> <span class="o">=</span> <span class="p">[:],</span>
-                     <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/DistinctOptions.html">DistinctOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="kt"><a href="../Protocols/BSONValue.html">BSONValue</a></span><span class="p">]</span></code></pre>
+                     <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/DistinctOptions.html">DistinctOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+                     <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="kt"><a href="../Protocols/BSONValue.html">BSONValue</a></span><span class="p">]</span></code></pre>
 
                         </div>
                       </div>
@@ -2124,9 +2129,9 @@ to documents).</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC9insertOne_7optionsAA06InsertE6ResultVSgx_AA0gE7OptionsVSgtKF"></a>
-                    <a name="//apple_ref/swift/Method/insertOne(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9insertOne_7optionsAA06InsertE6ResultVSgx_AA0gE7OptionsVSgtKF">insertOne(_:options:)</a>
+                    <a name="/s:10MongoSwift0A10CollectionC9insertOne_7options7sessionAA06InsertE6ResultVSgx_AA0hE7OptionsVSgAA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/insertOne(_:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9insertOne_7options7sessionAA06InsertE6ResultVSgx_AA0hE7OptionsVSgAA13ClientSessionCSgtKF">insertOne(_:options:session:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -2144,6 +2149,7 @@ to documents).</p>
 <li><code>ServerError.writeError</code> if an error occurs while performing the command.</li>
 <li><code>ServerError.commandError</code> if an error occurs that prevents the command from executing.</li>
 <li><code>UserError.invalidArgumentError</code> if the options passed in form an invalid combination.</li>
+<li><code>UserError.logicError</code> if the provided session is inactive.</li>
 <li><code>EncodingError</code> if an error occurs while encoding the <code><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></code> to BSON.</li>
 </ul>
 
@@ -2155,7 +2161,9 @@ to documents).</p>
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
-<span class="kd">public</span> <span class="kd">func</span> <span class="nf">insertOne</span><span class="p">(</span><span class="n">_</span> <span class="nv">value</span><span class="p">:</span> <span class="kt"><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/InsertOneOptions.html">InsertOneOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/InsertOneResult.html">InsertOneResult</a></span><span class="p">?</span></code></pre>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">insertOne</span><span class="p">(</span><span class="n">_</span> <span class="nv">value</span><span class="p">:</span> <span class="kt"><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></span><span class="p">,</span>
+                      <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/InsertOneOptions.html">InsertOneOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+                      <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/InsertOneResult.html">InsertOneResult</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
@@ -2201,9 +2209,9 @@ to documents).</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC10insertMany_7optionsAA06InsertE6ResultVSgSayxG_AA0gE7OptionsVSgtKF"></a>
-                    <a name="//apple_ref/swift/Method/insertMany(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC10insertMany_7optionsAA06InsertE6ResultVSgSayxG_AA0gE7OptionsVSgtKF">insertMany(_:options:)</a>
+                    <a name="/s:10MongoSwift0A10CollectionC10insertMany_7options7sessionAA06InsertE6ResultVSgSayxG_AA16BulkWriteOptionsVSgAA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/insertMany(_:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC10insertMany_7options7sessionAA06InsertE6ResultVSgSayxG_AA16BulkWriteOptionsVSgAA13ClientSessionCSgtKF">insertMany(_:options:session:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -2221,6 +2229,7 @@ to documents).</p>
 <li><code>ServerError.bulkWriteError</code> if an error occurs while performing any of the writes.</li>
 <li><code>ServerError.commandError</code> if an error occurs that prevents the command from executing.</li>
 <li><code>UserError.invalidArgumentError</code> if the options passed in form an invalid combination.</li>
+<li><code>UserError.logicError</code> if the provided session is inactive.</li>
 <li><code>EncodingError</code> if an error occurs while encoding the <code><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></code> or options to BSON.</li>
 </ul>
 
@@ -2232,7 +2241,9 @@ to documents).</p>
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
-<span class="kd">public</span> <span class="kd">func</span> <span class="nf">insertMany</span><span class="p">(</span><span class="n">_</span> <span class="nv">values</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></span><span class="p">],</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/InsertManyOptions.html">InsertManyOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/InsertManyResult.html">InsertManyResult</a></span><span class="p">?</span></code></pre>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">insertMany</span><span class="p">(</span><span class="n">_</span> <span class="nv">values</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></span><span class="p">],</span>
+                       <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Typealiases.html#/s:10MongoSwift17InsertManyOptionsa">InsertManyOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+                       <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/InsertManyResult.html">InsertManyResult</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
@@ -2260,7 +2271,7 @@ to documents).</p>
                               </td>
                               <td>
                                 <div>
-                                  <p>optional <code><a href="../Structs/InsertManyOptions.html">InsertManyOptions</a></code> to use while executing the operation</p>
+                                  <p>optional <code><a href="../Typealiases.html#/s:10MongoSwift17InsertManyOptionsa">InsertManyOptions</a></code> to use while executing the operation</p>
                                 </div>
                               </td>
                             </tr>
@@ -2277,9 +2288,9 @@ to documents).</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC10replaceOne6filter11replacement7optionsAA12UpdateResultVSgAA8DocumentV_xAA14ReplaceOptionsVSgtKF"></a>
-                    <a name="//apple_ref/swift/Method/replaceOne(filter:replacement:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC10replaceOne6filter11replacement7optionsAA12UpdateResultVSgAA8DocumentV_xAA14ReplaceOptionsVSgtKF">replaceOne(filter:replacement:options:)</a>
+                    <a name="/s:10MongoSwift0A10CollectionC10replaceOne6filter11replacement7options7sessionAA12UpdateResultVSgAA8DocumentV_xAA14ReplaceOptionsVSgAA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/replaceOne(filter:replacement:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC10replaceOne6filter11replacement7options7sessionAA12UpdateResultVSgAA8DocumentV_xAA14ReplaceOptionsVSgAA13ClientSessionCSgtKF">replaceOne(filter:replacement:options:session:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -2296,6 +2307,7 @@ to documents).</p>
 <li><code>ServerError.writeError</code> if an error occurs while performing the command.</li>
 <li><code>ServerError.commandError</code> if an error occurs that prevents the command from executing.</li>
 <li><code>UserError.invalidArgumentError</code> if the options passed in form an invalid combination.</li>
+<li><code>UserError.logicError</code> if the provided session is inactive.</li>
 <li><code>EncodingError</code> if an error occurs while encoding the <code><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></code> or options to BSON.</li>
 </ul>
 
@@ -2309,7 +2321,8 @@ to documents).</p>
                           <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
 <span class="kd">public</span> <span class="kd">func</span> <span class="nf">replaceOne</span><span class="p">(</span><span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span>
                        <span class="nv">replacement</span><span class="p">:</span> <span class="kt"><a href="../Classes/MongoCollection.html#/s:10MongoSwift0A10CollectionC0C4Typea">CollectionType</a></span><span class="p">,</span>
-                       <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/ReplaceOptions.html">ReplaceOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/UpdateResult.html">UpdateResult</a></span><span class="p">?</span></code></pre>
+                       <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/ReplaceOptions.html">ReplaceOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+                       <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/UpdateResult.html">UpdateResult</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
@@ -2367,9 +2380,9 @@ to documents).</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC9updateOne6filter0D07optionsAA12UpdateResultVSgAA8DocumentV_AlA0H7OptionsVSgtKF"></a>
-                    <a name="//apple_ref/swift/Method/updateOne(filter:update:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9updateOne6filter0D07optionsAA12UpdateResultVSgAA8DocumentV_AlA0H7OptionsVSgtKF">updateOne(filter:update:options:)</a>
+                    <a name="/s:10MongoSwift0A10CollectionC9updateOne6filter0D07options7sessionAA12UpdateResultVSgAA8DocumentV_AmA0I7OptionsVSgAA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/updateOne(filter:update:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9updateOne6filter0D07options7sessionAA12UpdateResultVSgAA8DocumentV_AmA0I7OptionsVSgAA13ClientSessionCSgtKF">updateOne(filter:update:options:session:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -2386,6 +2399,7 @@ to documents).</p>
 <li><code>ServerError.writeError</code> if an error occurs while performing the command.</li>
 <li><code>ServerError.commandError</code> if an error occurs that prevents the command from executing.</li>
 <li><code>UserError.invalidArgumentError</code> if the options passed in form an invalid combination.</li>
+<li><code>UserError.logicError</code> if the provided session is inactive.</li>
 <li><code>EncodingError</code> if an error occurs while encoding the options to BSON.</li>
 </ul>
 
@@ -2397,7 +2411,10 @@ to documents).</p>
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
-<span class="kd">public</span> <span class="kd">func</span> <span class="nf">updateOne</span><span class="p">(</span><span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span> <span class="nv">update</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/UpdateOptions.html">UpdateOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/UpdateResult.html">UpdateResult</a></span><span class="p">?</span></code></pre>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">updateOne</span><span class="p">(</span><span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span>
+                      <span class="nv">update</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span>
+                      <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/UpdateOptions.html">UpdateOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+                      <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/UpdateResult.html">UpdateResult</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
@@ -2455,9 +2472,9 @@ to documents).</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC10updateMany6filter0D07optionsAA12UpdateResultVSgAA8DocumentV_AlA0H7OptionsVSgtKF"></a>
-                    <a name="//apple_ref/swift/Method/updateMany(filter:update:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC10updateMany6filter0D07optionsAA12UpdateResultVSgAA8DocumentV_AlA0H7OptionsVSgtKF">updateMany(filter:update:options:)</a>
+                    <a name="/s:10MongoSwift0A10CollectionC10updateMany6filter0D07options7sessionAA12UpdateResultVSgAA8DocumentV_AmA0I7OptionsVSgAA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/updateMany(filter:update:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC10updateMany6filter0D07options7sessionAA12UpdateResultVSgAA8DocumentV_AmA0I7OptionsVSgAA13ClientSessionCSgtKF">updateMany(filter:update:options:session:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -2474,6 +2491,7 @@ to documents).</p>
 <li><code>ServerError.writeError</code> if an error occurs while performing the command.</li>
 <li><code>ServerError.commandError</code> if an error occurs that prevents the command from executing.</li>
 <li><code>UserError.invalidArgumentError</code> if the options passed in form an invalid combination.</li>
+<li><code>UserError.logicError</code> if the provided session is inactive.</li>
 <li><code>EncodingError</code> if an error occurs while encoding the options to BSON.</li>
 </ul>
 
@@ -2485,7 +2503,10 @@ to documents).</p>
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
-<span class="kd">public</span> <span class="kd">func</span> <span class="nf">updateMany</span><span class="p">(</span><span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span> <span class="nv">update</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/UpdateOptions.html">UpdateOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/UpdateResult.html">UpdateResult</a></span><span class="p">?</span></code></pre>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">updateMany</span><span class="p">(</span><span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span>
+                       <span class="nv">update</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span>
+                       <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/UpdateOptions.html">UpdateOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+                       <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/UpdateResult.html">UpdateResult</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
@@ -2543,9 +2564,9 @@ to documents).</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC9deleteOne_7optionsAA12DeleteResultVSgAA8DocumentV_AA0G7OptionsVSgtKF"></a>
-                    <a name="//apple_ref/swift/Method/deleteOne(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9deleteOne_7optionsAA12DeleteResultVSgAA8DocumentV_AA0G7OptionsVSgtKF">deleteOne(_:options:)</a>
+                    <a name="/s:10MongoSwift0A10CollectionC9deleteOne_7options7sessionAA12DeleteResultVSgAA8DocumentV_AA0H7OptionsVSgAA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/deleteOne(_:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC9deleteOne_7options7sessionAA12DeleteResultVSgAA8DocumentV_AA0H7OptionsVSgAA13ClientSessionCSgtKF">deleteOne(_:options:session:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -2562,6 +2583,7 @@ to documents).</p>
 <li><code>ServerError.writeError</code> if an error occurs while performing the command.</li>
 <li><code>ServerError.commandError</code> if an error occurs that prevents the command from executing.</li>
 <li><code>UserError.invalidArgumentError</code> if the options passed in form an invalid combination.</li>
+<li><code>UserError.logicError</code> if the provided session is inactive.</li>
 <li><code>EncodingError</code> if an error occurs while encoding the options to BSON.</li>
 </ul>
 
@@ -2573,7 +2595,9 @@ to documents).</p>
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
-<span class="kd">public</span> <span class="kd">func</span> <span class="nf">deleteOne</span><span class="p">(</span><span class="n">_</span> <span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/DeleteOptions.html">DeleteOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/DeleteResult.html">DeleteResult</a></span><span class="p">?</span></code></pre>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">deleteOne</span><span class="p">(</span><span class="n">_</span> <span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span>
+                      <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/DeleteOptions.html">DeleteOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+                      <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/DeleteResult.html">DeleteResult</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
@@ -2619,9 +2643,9 @@ to documents).</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A10CollectionC10deleteMany_7optionsAA12DeleteResultVSgAA8DocumentV_AA0G7OptionsVSgtKF"></a>
-                    <a name="//apple_ref/swift/Method/deleteMany(_:options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A10CollectionC10deleteMany_7optionsAA12DeleteResultVSgAA8DocumentV_AA0G7OptionsVSgtKF">deleteMany(_:options:)</a>
+                    <a name="/s:10MongoSwift0A10CollectionC10deleteMany_7options7sessionAA12DeleteResultVSgAA8DocumentV_AA0H7OptionsVSgAA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/deleteMany(_:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CollectionC10deleteMany_7options7sessionAA12DeleteResultVSgAA8DocumentV_AA0H7OptionsVSgAA13ClientSessionCSgtKF">deleteMany(_:options:session:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -2638,6 +2662,7 @@ to documents).</p>
 <li><code>ServerError.writeError</code> if an error occurs while performing the command.</li>
 <li><code>ServerError.commandError</code> if an error occurs that prevents the command from executing.</li>
 <li><code>UserError.invalidArgumentError</code> if the options passed in form an invalid combination.</li>
+<li><code>UserError.logicError</code> if the provided session is inactive.</li>
 <li><code>EncodingError</code> if an error occurs while encoding the options to BSON.</li>
 </ul>
 
@@ -2649,7 +2674,9 @@ to documents).</p>
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
-<span class="kd">public</span> <span class="kd">func</span> <span class="nf">deleteMany</span><span class="p">(</span><span class="n">_</span> <span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/DeleteOptions.html">DeleteOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/DeleteResult.html">DeleteResult</a></span><span class="p">?</span></code></pre>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">deleteMany</span><span class="p">(</span><span class="n">_</span> <span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">,</span>
+                       <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/DeleteOptions.html">DeleteOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+                       <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/DeleteResult.html">DeleteResult</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
@@ -2697,8 +2724,8 @@ to documents).</p>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2019 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Jeremy Mikola</a>. All rights reserved. (Last updated: 2019-04-18)</p>
-          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+          <p>&copy; 2019 <a class="link" href="" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2019-06-04)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.6</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>
     </div>

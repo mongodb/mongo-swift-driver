@@ -15,7 +15,8 @@
     <header>
       <div class="content-wrapper">
         <p><a href="index.html">MongoSwift Docs</a> (100% documented)</p>
-        <p class="header-right"><a href="dash-feed://https%3A%2F%2Fmongodb%2Egithub%2Eio%2Fmongo%2Dswift%2Ddriver%2Fdocsets%2FMongoSwift%2Exml"><img src="img/dash.png"/>Install in Dash</a></p>
+        <p class="header-right"><a href="https://github.com/mongodb/mongo-swift-driver"><img src="img/gh.png"/>View on GitHub</a></p>
+        <p class="header-right"><a href="dash-feed://https%3A%2F%2Fmongodb%2Egithub%2Eio%2Fdocsets%2FMongoSwift%2Exml"><img src="img/dash.png"/>Install in Dash</a></p>
       </div>
     </header>
     <div class="content-wrapper">
@@ -67,13 +68,16 @@
                 <a href="Classes/BSONEncoder/DataEncodingStrategy.html">– DataEncodingStrategy</a>
               </li>
               <li class="nav-group-task">
-                <a href="Classes/BulkWriteOperation.html">BulkWriteOperation</a>
+                <a href="Classes.html#/s:10MongoSwift18BulkWriteOperationC">BulkWriteOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes/ClientSession.html">ClientSession</a>
               </li>
               <li class="nav-group-task">
                 <a href="Classes/DocumentIterator.html">DocumentIterator</a>
               </li>
               <li class="nav-group-task">
-                <a href="Classes/DocumentStorage.html">DocumentStorage</a>
+                <a href="Classes.html#/s:10MongoSwift15DocumentStorageC">DocumentStorage</a>
               </li>
               <li class="nav-group-task">
                 <a href="Classes/MongoClient.html">MongoClient</a>
@@ -104,9 +108,6 @@
               </li>
               <li class="nav-group-task">
                 <a href="Classes/MongoDatabase.html">MongoDatabase</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="Classes/MongoSwift.html">MongoSwift</a>
               </li>
               <li class="nav-group-task">
                 <a href="Classes/ReadConcern.html">ReadConcern</a>
@@ -216,6 +217,9 @@
               <li class="nav-group-task">
                 <a href="Functions.html#/s:10MongoSwift10bsonEqualsySbAA9BSONValue_p_AaC_ptF">bsonEquals(_:_:)</a>
               </li>
+              <li class="nav-group-task">
+                <a href="Functions.html#/s:10MongoSwift07cleanupaB0yyF">cleanupMongoSwift()</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -276,6 +280,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="Structs/ClientOptions.html">ClientOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/ClientSessionOptions.html">ClientSessionOptions</a>
               </li>
               <li class="nav-group-task">
                 <a href="Structs/CodeWithScope.html">CodeWithScope</a>
@@ -345,9 +352,6 @@
               </li>
               <li class="nav-group-task">
                 <a href="Structs/IndexOptions.html">IndexOptions</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="Structs/InsertManyOptions.html">InsertManyOptions</a>
               </li>
               <li class="nav-group-task">
                 <a href="Structs/InsertManyResult.html">InsertManyResult</a>
@@ -444,6 +448,9 @@
           <li class="nav-group-name">
             <a href="Typealiases.html">Type Aliases</a>
             <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="Typealiases.html#/s:10MongoSwift17InsertManyOptionsa">InsertManyOptions</a>
+              </li>
               <li class="nav-group-task">
                 <a href="Typealiases.html#/s:10MongoSwift15ServerErrorCodea">ServerErrorCode</a>
               </li>
@@ -1249,6 +1256,38 @@ Undefined instances cannot be created, but they can be read from existing docume
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:10MongoSwift20ClientSessionOptionsV"></a>
+                    <a name="//apple_ref/swift/Struct/ClientSessionOptions" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift20ClientSessionOptionsV">ClientSessionOptions</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Options to use when creating a ClientSession.</p>
+
+                        <a href="Structs/ClientSessionOptions.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">ClientSessionOptions</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:10MongoSwift13ClientOptionsV"></a>
                     <a name="//apple_ref/swift/Struct/ClientOptions" class="dashAnchor"></a>
                     <a class="token" href="#/s:10MongoSwift13ClientOptionsV">ClientOptions</a>
@@ -1267,7 +1306,7 @@ Undefined instances cannot be created, but they can be read from existing docume
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">ClientOptions</span> <span class="p">:</span> <span class="kt"><a href="Protocols/CodingStrategyProvider.html">CodingStrategyProvider</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">ClientOptions</span> <span class="p">:</span> <span class="kt"><a href="Protocols/CodingStrategyProvider.html">CodingStrategyProvider</a></span><span class="p">,</span> <span class="kt">Decodable</span></code></pre>
 
                         </div>
                       </div>
@@ -1355,7 +1394,7 @@ Undefined instances cannot be created, but they can be read from existing docume
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BulkWriteOptions</span> <span class="p">:</span> <span class="kt">Encodable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BulkWriteOptions</span> <span class="p">:</span> <span class="kt">Codable</span></code></pre>
 
                         </div>
                       </div>
@@ -1383,7 +1422,7 @@ Undefined instances cannot be created, but they can be read from existing docume
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BulkWriteResult</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BulkWriteResult</span> <span class="p">:</span> <span class="kt">Decodable</span></code></pre>
 
                         </div>
                       </div>
@@ -1415,7 +1454,7 @@ Undefined instances cannot be created, but they can be read from existing docume
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">FindOneAndDeleteOptions</span> <span class="p">:</span> <span class="kt">FindAndModifyOptionsConvertible</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">FindOneAndDeleteOptions</span> <span class="p">:</span> <span class="kt">FindAndModifyOptionsConvertible</span><span class="p">,</span> <span class="kt">Decodable</span></code></pre>
 
                         </div>
                       </div>
@@ -1443,7 +1482,7 @@ Undefined instances cannot be created, but they can be read from existing docume
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">FindOneAndReplaceOptions</span> <span class="p">:</span> <span class="kt">FindAndModifyOptionsConvertible</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">FindOneAndReplaceOptions</span> <span class="p">:</span> <span class="kt">FindAndModifyOptionsConvertible</span><span class="p">,</span> <span class="kt">Decodable</span></code></pre>
 
                         </div>
                       </div>
@@ -1471,7 +1510,7 @@ Undefined instances cannot be created, but they can be read from existing docume
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">FindOneAndUpdateOptions</span> <span class="p">:</span> <span class="kt">FindAndModifyOptionsConvertible</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">FindOneAndUpdateOptions</span> <span class="p">:</span> <span class="kt">FindAndModifyOptionsConvertible</span><span class="p">,</span> <span class="kt">Decodable</span></code></pre>
 
                         </div>
                       </div>
@@ -1531,63 +1570,7 @@ Undefined instances cannot be created, but they can be read from existing docume
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">IndexOptions</span> <span class="p">:</span> <span class="kt">Encodable</span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift18CreateIndexOptionsV"></a>
-                    <a name="//apple_ref/swift/Struct/CreateIndexOptions" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift18CreateIndexOptionsV">CreateIndexOptions</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Options to use when creating a new index on a <code><a href="Classes/MongoCollection.html">MongoCollection</a></code>.</p>
-
-                        <a href="Structs/CreateIndexOptions.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">CreateIndexOptions</span> <span class="p">:</span> <span class="kt">Encodable</span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift16DropIndexOptionsV"></a>
-                    <a name="//apple_ref/swift/Struct/DropIndexOptions" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift16DropIndexOptionsV">DropIndexOptions</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Options to use when dropping an index from a <code><a href="Classes/MongoCollection.html">MongoCollection</a></code>.</p>
-
-                        <a href="Structs/DropIndexOptions.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">DropIndexOptions</span> <span class="p">:</span> <span class="kt">Encodable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">IndexOptions</span> <span class="p">:</span> <span class="kt">Codable</span></code></pre>
 
                         </div>
                       </div>
@@ -1619,63 +1602,7 @@ Undefined instances cannot be created, but they can be read from existing docume
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">AggregateOptions</span> <span class="p">:</span> <span class="kt">Encodable</span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift12CountOptionsV"></a>
-                    <a name="//apple_ref/swift/Struct/CountOptions" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift12CountOptionsV">CountOptions</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Options to use when executing a <code>count</code> command on a <code><a href="Classes/MongoCollection.html">MongoCollection</a></code>.</p>
-
-                        <a href="Structs/CountOptions.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">CountOptions</span> <span class="p">:</span> <span class="kt">Encodable</span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift15DistinctOptionsV"></a>
-                    <a name="//apple_ref/swift/Struct/DistinctOptions" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift15DistinctOptionsV">DistinctOptions</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Options to use when executing a <code>distinct</code> command on a <code><a href="Classes/MongoCollection.html">MongoCollection</a></code>.</p>
-
-                        <a href="Structs/DistinctOptions.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">DistinctOptions</span> <span class="p">:</span> <span class="kt">Encodable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">AggregateOptions</span> <span class="p">:</span> <span class="kt">Codable</span></code></pre>
 
                         </div>
                       </div>
@@ -1703,7 +1630,7 @@ Undefined instances cannot be created, but they can be read from existing docume
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">FindOptions</span> <span class="p">:</span> <span class="kt">Encodable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">FindOptions</span> <span class="p">:</span> <span class="kt">Codable</span></code></pre>
 
                         </div>
                       </div>
@@ -1735,35 +1662,7 @@ Undefined instances cannot be created, but they can be read from existing docume
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">InsertOneOptions</span> <span class="p">:</span> <span class="kt">Encodable</span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift17InsertManyOptionsV"></a>
-                    <a name="//apple_ref/swift/Struct/InsertManyOptions" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift17InsertManyOptionsV">InsertManyOptions</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Options to use when executing a multi-document insert operation on a <code><a href="Classes/MongoCollection.html">MongoCollection</a></code>.</p>
-
-                        <a href="Structs/InsertManyOptions.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">InsertManyOptions</span> <span class="p">:</span> <span class="kt">Encodable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">InsertOneOptions</span> <span class="p">:</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">BulkWriteOptionsConvertible</span></code></pre>
 
                         </div>
                       </div>
@@ -1791,7 +1690,7 @@ Undefined instances cannot be created, but they can be read from existing docume
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">UpdateOptions</span> <span class="p">:</span> <span class="kt">Encodable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">UpdateOptions</span> <span class="p">:</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">BulkWriteOptionsConvertible</span></code></pre>
 
                         </div>
                       </div>
@@ -1819,7 +1718,7 @@ Undefined instances cannot be created, but they can be read from existing docume
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">ReplaceOptions</span> <span class="p">:</span> <span class="kt">Encodable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">ReplaceOptions</span> <span class="p">:</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">BulkWriteOptionsConvertible</span></code></pre>
 
                         </div>
                       </div>
@@ -1847,7 +1746,7 @@ Undefined instances cannot be created, but they can be read from existing docume
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">DeleteOptions</span> <span class="p">:</span> <span class="kt">Encodable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">DeleteOptions</span> <span class="p">:</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">BulkWriteOptionsConvertible</span></code></pre>
 
                         </div>
                       </div>
@@ -1875,7 +1774,7 @@ Undefined instances cannot be created, but they can be read from existing docume
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">InsertOneResult</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">InsertOneResult</span> <span class="p">:</span> <span class="kt">Decodable</span></code></pre>
 
                         </div>
                       </div>
@@ -1973,34 +1872,6 @@ Undefined instances cannot be created, but they can be read from existing docume
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift17RunCommandOptionsV"></a>
-                    <a name="//apple_ref/swift/Struct/RunCommandOptions" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift17RunCommandOptionsV">RunCommandOptions</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Options to use when running a command against a <code><a href="Classes/MongoDatabase.html">MongoDatabase</a></code>.</p>
-
-                        <a href="Structs/RunCommandOptions.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">RunCommandOptions</span> <span class="p">:</span> <span class="kt">Encodable</span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
                     <a name="/s:10MongoSwift22ListCollectionsOptionsV"></a>
                     <a name="//apple_ref/swift/Struct/ListCollectionsOptions" class="dashAnchor"></a>
                     <a class="token" href="#/s:10MongoSwift22ListCollectionsOptionsV">ListCollectionsOptions</a>
@@ -2020,34 +1891,6 @@ Undefined instances cannot be created, but they can be read from existing docume
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">ListCollectionsOptions</span> <span class="p">:</span> <span class="kt">Encodable</span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift23CreateCollectionOptionsV"></a>
-                    <a name="//apple_ref/swift/Struct/CreateCollectionOptions" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift23CreateCollectionOptionsV">CreateCollectionOptions</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Options to use when executing a <code>createCollection</code> command on a <code><a href="Classes/MongoDatabase.html">MongoDatabase</a></code>.</p>
-
-                        <a href="Structs/CreateCollectionOptions.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">CreateCollectionOptions</span> <span class="p">:</span> <span class="kt">Encodable</span><span class="p">,</span> <span class="kt"><a href="Protocols/CodingStrategyProvider.html">CodingStrategyProvider</a></span></code></pre>
 
                         </div>
                       </div>
@@ -2177,6 +2020,198 @@ Undefined instances cannot be created, but they can be read from existing docume
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:10MongoSwift12CountOptionsV"></a>
+                    <a name="//apple_ref/swift/Struct/CountOptions" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift12CountOptionsV">CountOptions</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Options to use when executing a <code>count</code> command on a <code><a href="Classes/MongoCollection.html">MongoCollection</a></code>.</p>
+
+                        <a href="Structs/CountOptions.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">CountOptions</span> <span class="p">:</span> <span class="kt">Codable</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift23CreateCollectionOptionsV"></a>
+                    <a name="//apple_ref/swift/Struct/CreateCollectionOptions" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift23CreateCollectionOptionsV">CreateCollectionOptions</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Options to use when executing a <code>createCollection</code> command on a <code><a href="Classes/MongoDatabase.html">MongoDatabase</a></code>.</p>
+
+                        <a href="Structs/CreateCollectionOptions.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">CreateCollectionOptions</span> <span class="p">:</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt"><a href="Protocols/CodingStrategyProvider.html">CodingStrategyProvider</a></span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift18CreateIndexOptionsV"></a>
+                    <a name="//apple_ref/swift/Struct/CreateIndexOptions" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift18CreateIndexOptionsV">CreateIndexOptions</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Options to use when creating a new index on a <code><a href="Classes/MongoCollection.html">MongoCollection</a></code>.</p>
+
+                        <a href="Structs/CreateIndexOptions.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">CreateIndexOptions</span> <span class="p">:</span> <span class="kt">Encodable</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift15DistinctOptionsV"></a>
+                    <a name="//apple_ref/swift/Struct/DistinctOptions" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift15DistinctOptionsV">DistinctOptions</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Options to use when executing a <code>distinct</code> command on a <code><a href="Classes/MongoCollection.html">MongoCollection</a></code>.</p>
+
+                        <a href="Structs/DistinctOptions.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">DistinctOptions</span> <span class="p">:</span> <span class="kt">Codable</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift16DropIndexOptionsV"></a>
+                    <a name="//apple_ref/swift/Struct/DropIndexOptions" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift16DropIndexOptionsV">DropIndexOptions</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Options to use when dropping an index from a <code><a href="Classes/MongoCollection.html">MongoCollection</a></code>.</p>
+
+                        <a href="Structs/DropIndexOptions.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">DropIndexOptions</span> <span class="p">:</span> <span class="kt">Encodable</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift17RunCommandOptionsV"></a>
+                    <a name="//apple_ref/swift/Struct/RunCommandOptions" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift17RunCommandOptionsV">RunCommandOptions</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Options to use when running a command against a <code><a href="Classes/MongoDatabase.html">MongoDatabase</a></code>.</p>
+
+                        <a href="Structs/RunCommandOptions.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">RunCommandOptions</span> <span class="p">:</span> <span class="kt">Encodable</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:10MongoSwift12ConnectionIdV"></a>
                     <a name="//apple_ref/swift/Struct/ConnectionId" class="dashAnchor"></a>
                     <a class="token" href="#/s:10MongoSwift12ConnectionIdV">ConnectionId</a>
@@ -2264,8 +2299,8 @@ which servers are up, what type of servers they are, which is primary, and so on
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2019 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Jeremy Mikola</a>. All rights reserved. (Last updated: 2019-04-18)</p>
-          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+          <p>&copy; 2019 <a class="link" href="" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2019-06-04)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.6</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>
     </div>
