@@ -111,22 +111,32 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     }
 
     func testDropWithWriteConcerns() throws {
-        let encoder = BSONEncoder()
-
         let center = NotificationCenter.default
 
-        let writeConcern = try WriteConcern(journal: true, w: .number(1))
-        let opts = DropCollectionOptions(writeConcern: writeConcern)
+        let client = try MongoClient(options: ClientOptions(eventMonitoring: true))
+        client.enableMonitoring(forEvents: .commandMonitoring)
 
+        var db = client.db(type(of: self).testDatabase)
+        let writeConcern = try WriteConcern(journal: true, w: .number(1))
+
+        let collection = db.collection("collection")
+        try collection.insertOne(["test": "blahblah"])
+
+        var expectedWriteConcern: Document = ["w": Int32(1), "j": true]
         let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
             print(notif)
+            guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
+                return
+            }
+            expect(event.command["drop"]).toNot(beNil())
+            expect(event.command["writeConcern"]).toNot(beNil())
+            expect(event.command["writeConcern"] as? Document).to(equal(expectedWriteConcern))
         }
 
-        expect(try self.coll.drop(options: opts)).toNot(throwError())
-        // insert something so we don't error when trying to drop again in teardown
-        expect(try self.coll.insertOne(self.doc1)).toNot(throwError())
+        defer { center.removeObserver(observer) }
 
-        center.removeObserver(observer)
+        let opts = DropCollectionOptions(writeConcern: writeConcern)
+        expect(try collection.drop(options: opts)).toNot(throwError())
     }
 
     private typealias InsertOne = MongoCollection<Document>.InsertOneModel

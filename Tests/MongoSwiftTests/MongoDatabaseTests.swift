@@ -43,8 +43,6 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
     }
 
     func testDropDatabase() throws {
-        let encoder = BSONEncoder()
-
         let center = NotificationCenter.default
 
         let client = try MongoClient(options: ClientOptions(eventMonitoring: true))
@@ -53,12 +51,21 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         var db = client.db(type(of: self).testDatabase)
         var writeConcern = try WriteConcern(journal: true, w: .number(1))
 
-        let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
-            print(notif)
-        }
-
         let collection = db.collection("collection")
         try collection.insertOne(["test": "blahblah"])
+
+        var expectedWriteConcerns: [Document] = [["w": Int32(1), "j": true], ["w": Int32(1), "j": true, "wtimeout": Int32(123)]]
+        let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
+            guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
+                return
+            }
+
+            expect(event.command["dropDatabase"]).toNot(beNil())
+            expect(event.command["writeConcern"]).toNot(beNil())
+            expect(event.command["writeConcern"] as? Document).to(equal(expectedWriteConcerns.removeFirst()))
+        }
+
+        defer { center.removeObserver(observer) }
 
         var opts = DropDatabaseOptions(writeConcern: writeConcern)
         expect(try db.drop(options: opts)).toNot(throwError())
@@ -67,8 +74,6 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         writeConcern = try WriteConcern(journal: true, w: .number(1), wtimeoutMS: 123)
         opts = DropDatabaseOptions(writeConcern: writeConcern)
         expect(try db.drop(options: opts)).toNot(throwError())
-
-        center.removeObserver(observer)
     }
 
     func testCreateCollection() throws {
