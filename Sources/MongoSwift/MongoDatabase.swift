@@ -60,7 +60,7 @@ public struct CollectionOptions: CodingStrategyProvider {
     }
 }
 
-/// Options to set when executing dropDatabase command
+/// Options to use when executing dropDatabase command.
 public struct DropDatabaseOptions: Codable {
     /// An optional `WriteConcern` to use for the command.
     public var writeConcern: WriteConcern?
@@ -140,9 +140,15 @@ public class MongoDatabase {
         self._database = nil
     }
 
-    /// Drops this database.
-    /// - Throws:
-    ///   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+    /**
+    *   Drops this database.
+    * - Parameters:
+    *   - session: An optional `ClientSession` to use for this command
+    *   - options: Optional `DropDatabaseOptions` to use when executing this command
+    *
+    * - Throws:
+    * - `ServerError.commandError` if an error occurs that prevents the command from executing.
+    */
     public func drop(session: ClientSession? = nil, options: DropDatabaseOptions? = nil) throws {
         let operation = DropDatabaseOperation(database: self, session: session, options: options)
         try operation.execute()
