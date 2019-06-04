@@ -11,7 +11,9 @@ private final class MongocInitializer {
 
 /// :nodoc:
 @available(*, deprecated, message: "Calling this method no longer has any effect.")
-public func initialize() {}
+public func initialize() {
+    initializeMongoc()
+}
 
 /// :nodoc:
 @available(*, deprecated, message: "Use cleanupMongoSwift() instead.")
