@@ -1,6 +1,9 @@
 # usage: ./release/release.sh [new version string]
 # for example: ./release/release.sh 1.0.0
 
+# exit if any command fails
+set -e
+
 # update version string for libmongoc handshake
 sourcery --sources Sources/MongoSwift --templates Sources/MongoSwift/MongoSwiftVersion.stencil --output Sources/MongoSwift/MongoSwiftVersion.swift --args versionString=${1}
 
@@ -17,6 +20,7 @@ git commit -m "${1}"
 git tag "v${1}"
 
 # push changes
+git push
 git push --tags
 
 # update podspec
@@ -50,7 +54,7 @@ end
 EOF
 
 # publish new podspec
-pod trunk push ${PWD}/MongoSwift.podspec
+pod trunk push ${PWD}/MongoSwift.podspec --allow-warnings
 
 # cleanup podspec
 rm ${PWD}/MongoSwift.podspec
