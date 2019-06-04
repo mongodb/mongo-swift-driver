@@ -140,7 +140,7 @@ public class MongoDatabase {
         self._database = nil
     }
 
-    /**
+   /**
     *   Drops this database.
     * - Parameters:
     *   - session: An optional `ClientSession` to use for this command
