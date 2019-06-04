@@ -997,7 +997,7 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
 extension ObjectId: Hashable {
     public func hash(into hasher: inout Hasher) {
         let hashedOid = withUnsafePointer(to: self.oid) { oid in
-            return bson_oid_hash(oid)
+            bson_oid_hash(oid)
         }
         hasher.combine(hashedOid)
     }
@@ -1323,7 +1323,6 @@ extension BSONUndefined: Hashable {
         hasher.combine(0)
     }
 }
-
 
 /**
  *  A helper function to test equality between two `BSONValue`s. This function tests for exact BSON equality.
