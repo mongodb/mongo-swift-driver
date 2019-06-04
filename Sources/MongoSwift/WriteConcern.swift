@@ -100,7 +100,8 @@ public class WriteConcern: Codable {
         if let journal = journal { mongoc_write_concern_set_journal(self._writeConcern, journal) }
         if let wtimeoutMS = wtimeoutMS {
             if wtimeoutMS < 0 {
-                throw UserError.invalidArgumentError(message: "Invalid value: wtimeoutMS cannot be negative.")
+                throw UserError
+                .invalidArgumentError(message: "Invalid value: wtimeoutMS=\(wtimeoutMS) cannot be negative.")
             }
             // libmongoc takes in a 32-bit integer for wtimeoutMS, but the specification states it should be an int64
             mongoc_write_concern_set_wtimeout(self._writeConcern, Int32(truncatingIfNeeded: wtimeoutMS))
@@ -110,7 +111,7 @@ public class WriteConcern: Codable {
             switch w {
             case let .number(wNumber):
                 if wNumber < 0 {
-                    throw UserError.invalidArgumentError(message: "Invalid value: w cannot be negative.")
+                    throw UserError.invalidArgumentError(message: "Invalid value: w=\(w) cannot be negative.")
                 }
                 mongoc_write_concern_set_w(self._writeConcern, wNumber)
             case let .tag(wTag):
