@@ -269,7 +269,7 @@ extension BSONNull: Hashable {
 }
 
 /// A struct to represent the BSON Binary type.
-public struct Binary: BSONValue, Equatable, Codable {
+public struct Binary: BSONValue, Equatable, Codable, Hashable {
     public var bsonType: BSONType { return .binary }
 
     /// The binary data.
@@ -391,14 +391,6 @@ public struct Binary: BSONValue, Equatable, Codable {
             let dataObj = Data(bytes: data, count: Int(length))
             return try self.init(data: dataObj, subtype: UInt8(subtype.rawValue))
         }
-    }
-}
-
-// An extension of `BSONUndefined` to add capability to be hashed
-extension Binary: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(data)
-        hasher.combine(subtype)
     }
 }
 
@@ -1004,9 +996,10 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
 // An extension of `ObjectId` to add the capability to be hashed
 extension ObjectId: Hashable {
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(hex)
-        hasher.combine(timestamp)
-        hasher.combine(description)
+        let hashedOid = withUnsafePointer(to: self.oid) { oid in
+            return bson_oid_hash(oid)
+        }
+        hasher.combine(hashedOid)
     }
 }
 

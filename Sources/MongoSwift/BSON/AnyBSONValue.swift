@@ -8,9 +8,7 @@ public struct AnyBSONValue: Codable, Equatable, Hashable {
 
         switch self.value {
         case let v as Date:
-            // `Date`'s string conversion omits milliseconds and smaller time units, and using a string formatter is
-            // expensive. Instead, we just include the time interval itself.
-            hasher.combine(v.timeIntervalSince1970)
+            hasher.combine(v)
         case let v as Binary:
             hasher.combine(v)
         case let arr as [BSONValue]:
