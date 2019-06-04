@@ -1,8 +1,11 @@
 import mongoc
 
+/// Options to use when dropping a collection.
 public struct DropCollectionOptions: Codable {
+    /// An optional `WriteConcern` to use for the command.
     public var writeConcern: WriteConcern?
 
+    /// Initializer allowing any/all parameters to be omitted.
     public init(writeConcern: WriteConcern? = nil) {
         self.writeConcern = writeConcern
     }
