@@ -64,8 +64,11 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
             }
 
             expect(event.command["dropDatabase"]).toNot(beNil())
-            expect(event.command["writeConcern"]).toNot(beNil())
-            expect(event.command["writeConcern"] as? Document).to(equal(expectedWriteConcerns.removeFirst()))
+            if expectedWriteConcerns.isEmpty {
+                 XCTFail("expectedWriteConcerns is empty")
+            } else {
+                expect(event.command["writeConcern"] as? Document).to(equal(expectedWriteConcerns.removeFirst()))
+            }
         }
 
         defer { center.removeObserver(observer) }
@@ -77,6 +80,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         writeConcern = try WriteConcern(journal: true, w: .number(1), wtimeoutMS: 123)
         opts = DropDatabaseOptions(writeConcern: writeConcern)
         expect(try db.drop(options: opts)).toNot(throwError())
+        expect(expectedWriteConcerns).to(beEmpty())
     }
 
     func testCreateCollection() throws {

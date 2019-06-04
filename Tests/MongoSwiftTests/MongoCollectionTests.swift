@@ -123,11 +123,14 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         try collection.insertOne(["test": "blahblah"])
 
         var expectedWriteConcern: Document = ["w": Int32(1), "j": true]
+        var commandStarted = false
         let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
-            print(notif)
             guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
                 return
             }
+
+            commandStarted = true
+
             expect(event.command["drop"]).toNot(beNil())
             expect(event.command["writeConcern"]).toNot(beNil())
             expect(event.command["writeConcern"] as? Document).to(equal(expectedWriteConcern))
@@ -137,6 +140,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
         let opts = DropCollectionOptions(writeConcern: writeConcern)
         expect(try collection.drop(options: opts)).toNot(throwError())
+        expect(commandStarted).to(beTrue())
     }
 
     private typealias InsertOne = MongoCollection<Document>.InsertOneModel
