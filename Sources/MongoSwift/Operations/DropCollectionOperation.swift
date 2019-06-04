@@ -6,10 +6,10 @@ internal struct DropCollectionOperation<T: Codable>: Operation {
     private let session: ClientSession?
     private let options: DropCollectionOptions?
 
-    internal init(collection: MongoCollection<T>, session: ClientSession?, options: DropCollectionOptions?) {
+    internal init(collection: MongoCollection<T>, options: DropCollectionOptions?, session: ClientSession?) {
         self.collection = collection
-        self.session = session
         self.options = options
+        self.session = session
     }
 
     internal func execute() throws {

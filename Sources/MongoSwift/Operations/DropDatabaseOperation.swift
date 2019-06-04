@@ -6,10 +6,10 @@ internal struct DropDatabaseOperation: Operation {
     private let session: ClientSession?
     private let options: DropDatabaseOptions?
 
-    internal init(database: MongoDatabase, session: ClientSession?, options: DropDatabaseOptions?) {
+    internal init(database: MongoDatabase, options: DropDatabaseOptions?, session: ClientSession?) {
         self.database = database
-        self.session = session
         self.options = options
+        self.session = session
     }
 
     internal func execute() throws {

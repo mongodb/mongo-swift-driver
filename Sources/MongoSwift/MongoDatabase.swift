@@ -149,8 +149,8 @@ public class MongoDatabase {
     * - Throws:
     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
     */
-    public func drop(session: ClientSession? = nil, options: DropDatabaseOptions? = nil) throws {
-        let operation = DropDatabaseOperation(database: self, session: session, options: options)
+    public func drop(options: DropDatabaseOptions? = nil, session: ClientSession? = nil) throws {
+        let operation = DropDatabaseOperation(database: self, options: options, session: session)
         try operation.execute()
     }
 
