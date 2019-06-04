@@ -54,7 +54,10 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         let collection = db.collection("collection")
         try collection.insertOne(["test": "blahblah"])
 
-        var expectedWriteConcerns: [Document] = [["w": Int32(1), "j": true], ["w": Int32(1), "j": true, "wtimeout": Int32(123)]]
+        var expectedWriteConcerns: [Document] = [
+                                                    ["w": Int32(1), "j": true],
+                                                    ["w": Int32(1), "j": true, "wtimeout": Int32(123)]
+                                                ]
         let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
             guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
                 return
