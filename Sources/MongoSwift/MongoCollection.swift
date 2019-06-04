@@ -95,7 +95,7 @@ public class MongoCollection<T: Codable> {
         self._collection = nil
     }
 
-    /**
+   /**
     *   Drops this collection from its parent database.
     * - Parameters:
     *   - session: An optional `ClientSession` to use when executing this command
