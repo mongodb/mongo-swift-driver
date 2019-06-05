@@ -819,7 +819,7 @@ public struct CodeWithScope: BSONValue, Equatable, Codable, Hashable {
 }
 
 /// A struct to represent the BSON MaxKey type.
-public struct MaxKey: BSONValue, Equatable, Codable {
+public struct MaxKey: BSONValue, Equatable, Codable, Hashable {
     private var maxKey = 1
 
     public var bsonType: BSONType { return .maxKey }
@@ -849,15 +849,8 @@ public struct MaxKey: BSONValue, Equatable, Codable {
     }
 }
 
-// An extension of `MaxKey` to add capability to be hashed
-extension MaxKey: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(maxKey)
-    }
-}
-
 /// A struct to represent the BSON MinKey type.
-public struct MinKey: BSONValue, Equatable, Codable {
+public struct MinKey: BSONValue, Equatable, Codable, Hashable {
     private var minKey = 1
 
     public var bsonType: BSONType { return .minKey }
@@ -884,13 +877,6 @@ public struct MinKey: BSONValue, Equatable, Codable {
             throw wrongIterTypeError(iter, expected: MinKey.self)
         }
         return MinKey()
-    }
-}
-
-// An extension of `MinKey` to add capability to be hashed
-extension MinKey: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(minKey)
     }
 }
 
