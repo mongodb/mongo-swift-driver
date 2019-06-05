@@ -2,7 +2,9 @@ import Foundation
 
 /// A struct wrapping a `BSONValue` type that allows for encoding/
 /// decoding `BSONValue`s of unknown type.
+
 public struct AnyBSONValue: Codable, Equatable, Hashable {
+    // swiftlint:disable:next cyclomatic_complexity
     public func hash(into hasher: inout Hasher) {
         hasher.combine(self.value.bsonType)
 
@@ -41,7 +43,7 @@ public struct AnyBSONValue: Codable, Equatable, Hashable {
         case let v as Document:
             hasher.combine(v)
         default:
-        hasher.combine("\(self.value)")
+            hasher.combine("\(self.value)")
         }
     }
 

@@ -447,7 +447,7 @@ extension Date: BSONValue {
 
 /// A struct to represent the deprecated DBPointer type.
 /// DBPointers cannot be instantiated, but they can be read from existing documents that contain them.
-public struct DBPointer: BSONValue, Codable, Equatable {
+public struct DBPointer: BSONValue, Codable, Equatable, Hashable {
     public var bsonType: BSONType { return .dbPointer }
 
     /// Destination namespace of the pointer.
@@ -500,14 +500,6 @@ public struct DBPointer: BSONValue, Codable, Equatable {
 
             return DBPointer(ref: String(cString: collectionP), id: ObjectId(bsonOid: oidP.pointee))
         }
-    }
-}
-
-// An extension of `DBPointer` to add capability to be hashed
-extension DBPointer: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(ref)
-        hasher.combine(id)
     }
 }
 
@@ -590,7 +582,7 @@ public struct Decimal128: BSONNumber, Equatable, Codable, CustomStringConvertibl
 // An extension of `Decimal128` to add capability to be hashed
 extension Decimal128: Hashable {
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(description)
+        hasher.combine(self.description)
     }
 }
 
@@ -759,7 +751,7 @@ extension Int64: BSONNumber {
 }
 
 /// A struct to represent the BSON Code and CodeWithScope types.
-public struct CodeWithScope: BSONValue, Equatable, Codable {
+public struct CodeWithScope: BSONValue, Equatable, Codable, Hashable {
     /// A string containing Javascript code.
     public let code: String
     /// An optional scope `Document` containing a mapping of identifiers to values,
@@ -823,14 +815,6 @@ public struct CodeWithScope: BSONValue, Equatable, Codable {
 
             return self.init(code: code, scope: scopeDoc)
         }
-    }
-}
-
-// An extension of `CodeWithScope` to add capability to be hashed
-extension CodeWithScope: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(code)
-        hasher.combine(scope)
     }
 }
 
@@ -1068,7 +1052,7 @@ extension NSRegularExpression {
 }
 
 /// A struct to represent a BSON regular expression.
-public struct RegularExpression: BSONValue, Equatable, Codable {
+public struct RegularExpression: BSONValue, Equatable, Codable, Hashable {
     public var bsonType: BSONType { return .regularExpression }
 
     /// The pattern for this regular expression.
@@ -1126,14 +1110,6 @@ public struct RegularExpression: BSONValue, Equatable, Codable {
     }
 }
 
-// An extension of RegularExpression to add the capability to be hashed
-extension RegularExpression: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(pattern)
-        hasher.combine(options)
-    }
-}
-
 /// An extension of String to represent the BSON string type.
 extension String: BSONValue {
     public var bsonType: BSONType { return .string }
@@ -1173,7 +1149,7 @@ extension String: BSONValue {
 
 /// A struct to represent the deprecated Symbol type.
 /// Symbols cannot be instantiated, but they can be read from existing documents that contain them.
-public struct Symbol: BSONValue, CustomStringConvertible, Codable, Equatable {
+public struct Symbol: BSONValue, CustomStringConvertible, Codable, Equatable, Hashable {
     public var bsonType: BSONType { return .symbol }
 
     public var description: String {
@@ -1222,15 +1198,8 @@ public struct Symbol: BSONValue, CustomStringConvertible, Codable, Equatable {
     }
 }
 
-// An extension of `Symbol` to add capability to be hashed
-extension Symbol: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(description)
-    }
-}
-
 /// A struct to represent the BSON Timestamp type.
-public struct Timestamp: BSONValue, Equatable, Codable {
+public struct Timestamp: BSONValue, Equatable, Codable, Hashable {
     public var bsonType: BSONType { return .timestamp }
 
     /// A timestamp representing seconds since the Unix epoch.
@@ -1277,14 +1246,6 @@ public struct Timestamp: BSONValue, Equatable, Codable {
             bson_iter_timestamp(iterPtr, &t, &i)
             return self.init(timestamp: t, inc: i)
         }
-    }
-}
-
-// An extension of `Timestamp` to add capability to be hashed
-extension Timestamp: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(timestamp)
-        hasher.combine(increment)
     }
 }
 
