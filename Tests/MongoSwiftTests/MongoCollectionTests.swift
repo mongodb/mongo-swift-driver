@@ -112,7 +112,6 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         client.enableMonitoring(forEvents: .commandMonitoring)
 
         var db = client.db(type(of: self).testDatabase)
-        let writeConcern = try WriteConcern(journal: true, w: .number(1))
 
         let collection = db.collection("collection")
         try collection.insertOne(["test": "blahblah"])
@@ -134,7 +133,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
         defer { center.removeObserver(observer) }
 
-        let opts = DropCollectionOptions(writeConcern: writeConcern)
+        let opts = DropCollectionOptions(writeConcern: expectedWriteConcern)
         expect(try collection.drop(options: opts)).toNot(throwError())
         expect(commandStarted).to(beTrue())
     }

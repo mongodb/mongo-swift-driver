@@ -50,7 +50,6 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         client.enableMonitoring(forEvents: .commandMonitoring)
 
         var db = client.db(type(of: self).testDatabase)
-        var writeConcern = try WriteConcern(journal: true, w: .number(1))
 
         let collection = db.collection("collection")
         try collection.insertOne(["test": "blahblah"])
@@ -59,30 +58,24 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
                                                     try WriteConcern(journal: true, w: .number(1)),
                                                     try WriteConcern(journal: true, w: .number(1), wtimeoutMS: 123)
                                                 ]
+        var eventsSeen = 0
         let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
             guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
                 return
             }
 
             expect(event.command["dropDatabase"]).toNot(beNil())
-            if expectedWriteConcerns.isEmpty {
-                 XCTFail("expectedWriteConcerns is empty")
-            } else {
-                let expectedWriteConcern = try? encoder.encode(expectedWriteConcerns.removeFirst())
-                expect(event.command["writeConcern"] as? Document).to(sortedEqual(expectedWriteConcern))
-            }
+            let expectedWriteConcern = try? encoder.encode(expectedWriteConcerns[eventsSeen])
+            expect(event.command["writeConcern"] as? Document).to(sortedEqual(expectedWriteConcern))
+            eventsSeen += 1
         }
 
         defer { center.removeObserver(observer) }
 
-        var opts = DropDatabaseOptions(writeConcern: writeConcern)
-        expect(try db.drop(options: opts)).toNot(throwError())
-
-        db = client.db(type(of: self).testDatabase)
-        writeConcern = try WriteConcern(journal: true, w: .number(1), wtimeoutMS: 123)
-        opts = DropDatabaseOptions(writeConcern: writeConcern)
-        expect(try db.drop(options: opts)).toNot(throwError())
-        expect(expectedWriteConcerns).to(beEmpty())
+        for wc in expectedWriteConcerns {
+            expect(try db.drop(options: DropDatabaseOptions(writeConcern: wc))).toNot(throwError())
+        }
+        expect(eventsSeen).to(equal(expectedWriteConcerns.count))
     }
 
     func testCreateCollection() throws {
