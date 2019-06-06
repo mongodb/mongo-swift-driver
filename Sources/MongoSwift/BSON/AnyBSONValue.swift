@@ -42,6 +42,14 @@ public struct AnyBSONValue: Codable, Equatable, Hashable {
             hasher.combine(v)
         case let v as Document:
             hasher.combine(v)
+        case let v as BSONNull:
+            hasher.combine(v)
+        case let v as Timestamp:
+            hasher.combine(v)
+        case let v as BSONUndefined:
+            hasher.combine(v)
+        case let v as DBPointer:
+            hasher.combine(v)
         default:
             hasher.combine("\(self.value)")
         }
