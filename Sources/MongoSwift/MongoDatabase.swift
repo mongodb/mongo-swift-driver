@@ -143,8 +143,8 @@ public class MongoDatabase {
     /**
     *   Drops this database.
     * - Parameters:
-    *   - session: An optional `ClientSession` to use for this command
     *   - options: An optional `DropDatabaseOptions` to use when executing this command
+    *   - session: An optional `ClientSession` to use for this command
     *
     * - Throws:
     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.

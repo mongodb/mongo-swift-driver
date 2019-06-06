@@ -98,8 +98,8 @@ public class MongoCollection<T: Codable> {
     /**
     *   Drops this collection from its parent database.
     * - Parameters:
-    *   - session: An optional `ClientSession` to use when executing this command
     *   - options: An optional `DropCollectionOptions` to use when executing this command
+    *   - session: An optional `ClientSession` to use when executing this command
     *
     * - Throws:
     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
