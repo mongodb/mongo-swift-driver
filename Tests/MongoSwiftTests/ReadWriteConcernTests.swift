@@ -57,6 +57,12 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
         // verify that this combination is considered invalid
         expect(try WriteConcern(journal: true, w: .number(0)))
                 .to(throwError(UserError.invalidArgumentError(message: "")))
+
+        // verify that a negative value for w or for wtimeoutMS is considered invalid
+        expect(try WriteConcern(w: .number(-1)))
+                .to(throwError(UserError.invalidArgumentError(message: "")))
+        expect(try WriteConcern(wtimeoutMS: -1))
+                .to(throwError(UserError.invalidArgumentError(message: "")))
     }
 
     func testClientReadConcern() throws {
@@ -402,8 +408,6 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
             let tests: [Document] = try asDocument.get("tests")
             for test in tests {
                 let description: String = try test.get("description")
-                // skipping because C driver does not comply with these; see CDRIVER-2621
-                if ["WTimeoutMS as an invalid number", "W as an invalid number"].contains(description) { continue }
                 let valid: Bool = try test.get("valid")
                 if let rcToUse = test["readConcern"] as? Document {
                     let rc = ReadConcern(rcToUse)
