@@ -133,7 +133,6 @@ extension MongoCollectionTests {
         ("testInsertOneWithUnacknowledgedWriteConcern", testInsertOneWithUnacknowledgedWriteConcern),
         ("testAggregate", testAggregate),
         ("testDrop", testDrop),
-        ("testDropWithWriteConcerns", testDropWithWriteConcerns),
         ("testInsertMany", testInsertMany),
         ("testInsertManyWithEmptyValues", testInsertManyWithEmptyValues),
         ("testInsertManyWithUnacknowledgedWriteConcern", testInsertManyWithUnacknowledgedWriteConcern),
