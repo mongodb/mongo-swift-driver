@@ -153,8 +153,6 @@ public struct BulkWriteError: Codable {
     public let code: ServerErrorCode
 
     /// A human-readable string identifying the error.
-    /// Note: due to a bug in the server, this field will be empty except in sharded clusters.
-    /// - SeeAlso: https://jira.mongodb.org/browse/SERVER-36755
     public let codeName: String
 
     /// A description of the error.
