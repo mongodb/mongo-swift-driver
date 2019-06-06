@@ -128,7 +128,8 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
             expect(event.command["drop"]).toNot(beNil())
             expect(event.command["writeConcern"]).toNot(beNil())
-            expect(event.command["writeConcern"] as? Document).to(equal(try encoder.encode(expectedWriteConcern)))
+            expect(event.command["writeConcern"] as? Document)
+                .to(sortedEqual(try? encoder.encode(expectedWriteConcern)))
         }
 
         defer { center.removeObserver(observer) }

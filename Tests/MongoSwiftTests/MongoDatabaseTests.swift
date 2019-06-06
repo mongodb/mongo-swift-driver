@@ -43,6 +43,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
     }
 
     func testDropDatabase() throws {
+        let encoder = BSONEncoder()
         let center = NotificationCenter.default
 
         let client = try MongoClient(options: ClientOptions(eventMonitoring: true))
@@ -54,9 +55,9 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         let collection = db.collection("collection")
         try collection.insertOne(["test": "blahblah"])
 
-        var expectedWriteConcerns: [Document] = [
-                                                    ["w": Int32(1), "j": true],
-                                                    ["w": Int32(1), "j": true, "wtimeout": Int32(123)]
+        var expectedWriteConcerns: [WriteConcern] = [
+                                                    try WriteConcern(journal: true, w: .number(1)),
+                                                    try WriteConcern(journal: true, w: .number(1), wtimeoutMS: 123)
                                                 ]
         let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
             guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
@@ -67,7 +68,8 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
             if expectedWriteConcerns.isEmpty {
                  XCTFail("expectedWriteConcerns is empty")
             } else {
-                expect(event.command["writeConcern"] as? Document).to(equal(expectedWriteConcerns.removeFirst()))
+                let expectedWriteConcern = try? encoder.encode(expectedWriteConcerns.removeFirst())
+                expect(event.command["writeConcern"] as? Document).to(sortedEqual(expectedWriteConcern))
             }
         }
 
