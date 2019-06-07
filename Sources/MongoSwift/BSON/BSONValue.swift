@@ -261,8 +261,15 @@ public struct BSONNull: BSONValue, Codable, Equatable {
     }
 }
 
+// An extension of `BSONNull` to add capability to be hashed
+extension BSONNull: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(0)
+    }
+}
+
 /// A struct to represent the BSON Binary type.
-public struct Binary: BSONValue, Equatable, Codable {
+public struct Binary: BSONValue, Equatable, Codable, Hashable {
     public var bsonType: BSONType { return .binary }
 
     /// The binary data.
@@ -440,7 +447,7 @@ extension Date: BSONValue {
 
 /// A struct to represent the deprecated DBPointer type.
 /// DBPointers cannot be instantiated, but they can be read from existing documents that contain them.
-public struct DBPointer: BSONValue, Codable, Equatable {
+public struct DBPointer: BSONValue, Codable, Equatable, Hashable {
     public var bsonType: BSONType { return .dbPointer }
 
     /// Destination namespace of the pointer.
@@ -570,6 +577,13 @@ public struct Decimal128: BSONNumber, Equatable, Codable, CustomStringConvertibl
             return Decimal128(bsonDecimal: value)
         }
      }
+}
+
+// An extension of `Decimal128` to add capability to be hashed
+extension Decimal128: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.description)
+    }
 }
 
 /// Extension of `Decimal128` to add `BSONNumber` conformance.
@@ -737,7 +751,7 @@ extension Int64: BSONNumber {
 }
 
 /// A struct to represent the BSON Code and CodeWithScope types.
-public struct CodeWithScope: BSONValue, Equatable, Codable {
+public struct CodeWithScope: BSONValue, Equatable, Codable, Hashable {
     /// A string containing Javascript code.
     public let code: String
     /// An optional scope `Document` containing a mapping of identifiers to values,
@@ -805,7 +819,7 @@ public struct CodeWithScope: BSONValue, Equatable, Codable {
 }
 
 /// A struct to represent the BSON MaxKey type.
-public struct MaxKey: BSONValue, Equatable, Codable {
+public struct MaxKey: BSONValue, Equatable, Codable, Hashable {
     private var maxKey = 1
 
     public var bsonType: BSONType { return .maxKey }
@@ -836,7 +850,7 @@ public struct MaxKey: BSONValue, Equatable, Codable {
 }
 
 /// A struct to represent the BSON MinKey type.
-public struct MinKey: BSONValue, Equatable, Codable {
+public struct MinKey: BSONValue, Equatable, Codable, Hashable {
     private var minKey = 1
 
     public var bsonType: BSONType { return .minKey }
@@ -949,6 +963,16 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
     }
 }
 
+// An extension of `ObjectId` to add the capability to be hashed
+extension ObjectId: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        let hashedOid = withUnsafePointer(to: self.oid) { oid in
+            bson_oid_hash(oid)
+        }
+        hasher.combine(hashedOid)
+    }
+}
+
 /// Extension to allow a `UUID` to be initialized from a `Binary` `BSONValue`.
 extension UUID {
     /// Initializes a `UUID` instance from a `Binary` `BSONValue`.
@@ -1014,7 +1038,7 @@ extension NSRegularExpression {
 }
 
 /// A struct to represent a BSON regular expression.
-public struct RegularExpression: BSONValue, Equatable, Codable {
+public struct RegularExpression: BSONValue, Equatable, Codable, Hashable {
     public var bsonType: BSONType { return .regularExpression }
 
     /// The pattern for this regular expression.
@@ -1111,7 +1135,7 @@ extension String: BSONValue {
 
 /// A struct to represent the deprecated Symbol type.
 /// Symbols cannot be instantiated, but they can be read from existing documents that contain them.
-public struct Symbol: BSONValue, CustomStringConvertible, Codable, Equatable {
+public struct Symbol: BSONValue, CustomStringConvertible, Codable, Equatable, Hashable {
     public var bsonType: BSONType { return .symbol }
 
     public var description: String {
@@ -1161,7 +1185,7 @@ public struct Symbol: BSONValue, CustomStringConvertible, Codable, Equatable {
 }
 
 /// A struct to represent the BSON Timestamp type.
-public struct Timestamp: BSONValue, Equatable, Codable {
+public struct Timestamp: BSONValue, Equatable, Codable, Hashable {
     public var bsonType: BSONType { return .timestamp }
 
     /// A timestamp representing seconds since the Unix epoch.
@@ -1237,6 +1261,13 @@ public struct BSONUndefined: BSONValue, Equatable, Codable {
             throw wrongIterTypeError(iter, expected: BSONUndefined.self)
         }
         return BSONUndefined()
+    }
+}
+
+// An extension of `BSONUndefined` to add capability to be hashed
+extension BSONUndefined: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(0)
     }
 }
 
