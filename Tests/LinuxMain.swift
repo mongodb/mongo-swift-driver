@@ -189,6 +189,7 @@ extension MongoCollection_IndexTests {
 extension MongoDatabaseTests {
     static var allTests = [
         ("testMongoDatabase", testMongoDatabase),
+        ("testDropDatabase", testDropDatabase),
         ("testCreateCollection", testCreateCollection),
     ]
 }

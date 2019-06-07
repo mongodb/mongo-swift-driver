@@ -42,6 +42,42 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
                 .to(throwError(ServerError.commandError(code: 59, message: "", errorLabels: nil)))
     }
 
+    func testDropDatabase() throws {
+        let encoder = BSONEncoder()
+        let center = NotificationCenter.default
+
+        let client = try MongoClient(options: ClientOptions(eventMonitoring: true))
+        client.enableMonitoring(forEvents: .commandMonitoring)
+
+        var db = client.db(type(of: self).testDatabase)
+
+        let collection = db.collection("collection")
+        try collection.insertOne(["test": "blahblah"])
+
+        var expectedWriteConcerns: [WriteConcern] = [
+                                                    try WriteConcern(journal: true, w: .number(1)),
+                                                    try WriteConcern(journal: true, w: .number(1), wtimeoutMS: 123)
+                                                ]
+        var eventsSeen = 0
+        let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
+            guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
+                return
+            }
+
+            expect(event.command["dropDatabase"]).toNot(beNil())
+            let expectedWriteConcern = try? encoder.encode(expectedWriteConcerns[eventsSeen])
+            expect(event.command["writeConcern"] as? Document).to(sortedEqual(expectedWriteConcern))
+            eventsSeen += 1
+        }
+
+        defer { center.removeObserver(observer) }
+
+        for wc in expectedWriteConcerns {
+            expect(try db.drop(options: DropDatabaseOptions(writeConcern: wc))).toNot(throwError())
+        }
+        expect(eventsSeen).to(equal(expectedWriteConcerns.count))
+    }
+
     func testCreateCollection() throws {
         let client = try MongoClient(MongoSwiftTestCase.connStr)
         let db = client.db(type(of: self).testDatabase)
