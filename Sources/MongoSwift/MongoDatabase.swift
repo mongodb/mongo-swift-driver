@@ -102,10 +102,8 @@ public class MongoDatabase {
             fatalError("Couldn't get database '\(name)'")
         }
 
-        if let rc = options?.readConcern {
-            try? rc.withMongocReadConcern { tmpReadConcernPtr in
-                mongoc_database_set_read_concern(db, tmpReadConcernPtr)
-            }
+        options?.readConcern?.withMongocReadConcern { tmpReadConcernPtr in
+            mongoc_database_set_read_concern(db, tmpReadConcernPtr)
         }
 
         if let rp = options?.readPreference {
