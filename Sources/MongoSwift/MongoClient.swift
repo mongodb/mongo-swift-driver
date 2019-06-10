@@ -191,10 +191,8 @@ public class MongoClient {
         self.decoder = BSONDecoder(options: options)
 
         // if a readConcern is provided, set it on the client
-        if let rc = options?.readConcern {
-            try? rc.withMongocReadConcern { tmpReadConcernPtr in
-                mongoc_client_set_read_concern(self._client, tmpReadConcernPtr)
-            }
+        options?.readConcern?.withMongocReadConcern { tmpReadConcernPtr in
+            mongoc_client_set_read_concern(self._client, tmpReadConcernPtr)
         }
 
         // if a readPreference is provided, set it on the client

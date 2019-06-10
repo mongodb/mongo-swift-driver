@@ -30,19 +30,28 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
     func testReadConcernType() throws {
         // check level var works as expected
         let rc = ReadConcern(.majority)
-        expect(rc.level).to(equal(ReadConcern.Level.majority))
+        expect(rc.level).to(equal(.majority))
 
         // test copy init
         let rc2 = ReadConcern(from: rc)
-        expect(rc2.level).to(equal(ReadConcern.Level.majority))
+        expect(rc2.level).to(equal(.majority))
 
         // test empty init
         let rc3 = ReadConcern()
         expect(rc3.level).to(beNil())
+        expect(rc3.isDefault).to(beTrue())
 
         // test init from doc
         let rc4 = ReadConcern(["level": "majority"])
-        expect(rc4.level).to(equal(ReadConcern.Level.majority))
+        expect(rc4.level).to(equal(.majority))
+
+        // test string init
+        let rc5 = ReadConcern("majority")
+        expect(rc5.level).to(equal(.majority))
+
+        // test init with unknown level
+        let rc6 = ReadConcern("blah")
+        expect(rc6.level).to(equal(.other(level: "blah")))
     }
 
     func testWriteConcernType() throws {
@@ -74,28 +83,41 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
 
             // expect that a DB created from this client can override the client's unset RC
             let db2 = client.db(type(of: self).testDatabase, options: DatabaseOptions(readConcern: majority))
-            expect(db2.readConcern?.level).to(equal(ReadConcern.Level.majority))
+            expect(db2.readConcern?.level).to(equal(.majority))
         }
 
         // test behavior of a client initialized with local RC
         do {
             let client = try MongoClient(options: ClientOptions(readConcern: ReadConcern(.local)))
             // although local is default, if it is explicitly provided it should be set
-            expect(client.readConcern?.level).to(equal(ReadConcern.Level.local))
+            expect(client.readConcern?.level).to(equal(.local))
 
             // expect that a DB created from this client inherits its local RC
             let db1 = client.db(type(of: self).testDatabase)
-            expect(db1.readConcern?.level).to(equal(ReadConcern.Level.local))
+            expect(db1.readConcern?.level).to(equal(.local))
 
             // expect that a DB created from this client can override the client's local RC
             let db2 = client.db(type(of: self).testDatabase, options: DatabaseOptions(readConcern: majority))
-            expect(db2.readConcern?.level).to(equal(ReadConcern.Level.majority))
+            expect(db2.readConcern?.level).to(equal(.majority))
+
+            // test with string init
+            let majorityString = ReadConcern("majority")
+            let db3 = client.db(type(of: self).testDatabase, options: DatabaseOptions(readConcern: majorityString))
+            expect(db3.readConcern?.level).to(equal(.majority))
+
+            // test with unknown level
+            let db4 = client.db(type(of: self).testDatabase, options: DatabaseOptions(readConcern: ReadConcern("blah")))
+            expect(db4.readConcern?.level).to(equal(.other(level: "blah")))
         }
 
         // test behavior of a client initialized with majority RC
         do {
-            let client = try MongoClient(options: ClientOptions(readConcern: majority))
-            expect(client.readConcern?.level).to(equal(ReadConcern.Level.majority))
+            var client = try MongoClient(options: ClientOptions(readConcern: majority))
+            expect(client.readConcern?.level).to(equal(.majority))
+
+            // test with string init
+            client = try MongoClient(options: ClientOptions(readConcern: ReadConcern("majority")))
+            expect(client.readConcern?.level).to(equal(.majority))
 
             // expect that a DB created from this client can override the client's majority RC with an unset one
             let db = client.db(type(of: self).testDatabase, options: DatabaseOptions(readConcern: ReadConcern()))
@@ -171,7 +193,21 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
                 self.getCollectionName(suffix: "2"),
                 options: CollectionOptions(readConcern: ReadConcern(.local))
         )
-        expect(coll2.readConcern?.level).to(equal(ReadConcern.Level.local))
+        expect(coll2.readConcern?.level).to(equal(.local))
+
+        // test with string init
+        var coll3 = db1.collection(
+                self.getCollectionName(suffix: "3"),
+                options: CollectionOptions(readConcern: ReadConcern("local"))
+        )
+        expect(coll3.readConcern?.level).to(equal(.local))
+
+        // test with unknown level
+        coll3 = db1.collection(
+                self.getCollectionName(suffix: "3"),
+                options: CollectionOptions(readConcern: ReadConcern("blah"))
+        )
+        expect(coll3.readConcern?.level).to(equal(.other(level: "blah")))
 
         try db1.drop()
 
@@ -180,21 +216,21 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
                 options: DatabaseOptions(readConcern: ReadConcern(.local)))
         defer { try? db2.drop() }
 
-        let coll3Name = self.getCollectionName(suffix: "3")
+        let coll4Name = self.getCollectionName(suffix: "4")
         // expect that a collection created from a DB with local RC also has local RC
-        var coll3 = try db2.createCollection(coll3Name)
-        expect(coll3.readConcern?.level).to(equal(ReadConcern.Level.local))
+        var coll4 = try db2.createCollection(coll4Name)
+        expect(coll4.readConcern?.level).to(equal(.local))
 
         // expect that a collection retrieved from a DB with local RC also has local RC
-        coll3 = db2.collection(coll3Name)
-        expect(coll3.readConcern?.level).to(equal(ReadConcern.Level.local))
+        coll4 = db2.collection(coll4Name)
+        expect(coll4.readConcern?.level).to(equal(.local))
 
         // expect that a collection retrieved from a DB with local RC can override the DB's RC
-        let coll4 = db2.collection(
-                self.getCollectionName(suffix: "4"),
+        let coll5 = db2.collection(
+                self.getCollectionName(suffix: "5"),
                 options: CollectionOptions(readConcern: ReadConcern(.majority))
         )
-        expect(coll4.readConcern?.level).to(equal(ReadConcern.Level.majority))
+        expect(coll5.readConcern?.level).to(equal(.majority))
     }
 
     func testDatabaseWriteConcern() throws {

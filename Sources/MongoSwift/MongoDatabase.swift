@@ -264,7 +264,6 @@ public class MongoDatabase {
     public func runCommand(_ command: Document,
                            options: RunCommandOptions? = nil,
                            session: ClientSession? = nil) throws -> Document {
-        print("level: \(options?.readConcern?.level)")
         let operation = RunCommandOperation(database: self, command: command, options: options, session: session)
         return try operation.execute()
     }

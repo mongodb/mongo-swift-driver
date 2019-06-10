@@ -57,10 +57,8 @@ public class MongoCollection<T: Codable> {
             fatalError("Could not get collection '\(name)'")
         }
 
-        if let rc = options?.readConcern {
-            try? rc.withMongocReadConcern { tmpReadConcernPtr in
-                mongoc_collection_set_read_concern(collection, tmpReadConcernPtr)
-            }
+        options?.readConcern?.withMongocReadConcern { tmpReadConcernPtr in
+            mongoc_collection_set_read_concern(collection, tmpReadConcernPtr)
         }
 
         if let rp = options?.readPreference {

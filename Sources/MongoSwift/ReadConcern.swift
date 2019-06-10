@@ -3,7 +3,7 @@ import mongoc
 /// A struct to represent a MongoDB read concern.
 public struct ReadConcern: Codable {
     /// An enumeration of possible ReadConcern levels.
-    public enum Level: RawRepresentable, Encodable, Equatable {
+    public enum Level: RawRepresentable, Codable, Equatable {
         /// See https://docs.mongodb.com/manual/reference/read-concern-local/
         case local
         /// See https://docs.mongodb.com/manual/reference/read-concern-available/
@@ -14,7 +14,8 @@ public struct ReadConcern: Codable {
         case linearizable
         /// See https://docs.mongodb.com/master/reference/read-concern-snapshot/
         case snapshot
-        case custom(level: String)
+        /// Unknown level
+        case other(level: String)
 
         public var rawValue: String {
             switch self {
@@ -28,7 +29,7 @@ public struct ReadConcern: Codable {
                 return "linearizable"
             case .snapshot:
                 return "snapshot"
-            case .custom(let l):
+            case .other(let l):
                 return l
             }
         }
@@ -44,7 +45,7 @@ public struct ReadConcern: Codable {
             case "linearizable":
                 self = .linearizable
             default:
-                self = .custom(level: rawValue)
+                self = .other(level: rawValue)
             }
         }
     }
@@ -54,15 +55,12 @@ public struct ReadConcern: Codable {
 
     /// Indicates whether this `ReadConcern` is the server default.
     public var isDefault: Bool {
-       if level == nil {
-           return true
-       }
-       return false
+       return level == nil
     }
 
-    /// Initializes a new `ReadConcern` by copying a `mongoc_read_concern_t`.
-    /// The caller is responsible for freeing the original `mongoc_read_concern_t`.
-    public init(from readConcern: OpaquePointer) {
+    // Initializes a new `ReadConcern` with the same level as the provided `mongoc_read_concern_t`.
+    // The caller is responsible for freeing the original `mongoc_read_concern_t`.
+    internal init(from readConcern: OpaquePointer) {
         if let level = mongoc_read_concern_get_level(readConcern) {
             self.level = Level(rawValue: String(cString: level))
         }
@@ -101,26 +99,12 @@ public struct ReadConcern: Codable {
         case level
     }
 
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        if let level = try container.decodeIfPresent(String.self, forKey: .level) {
-            self.init(level)
-        } else {
-            self.init()
-        }
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encodeIfPresent(self.level, forKey: .level)
-    }
-
     /**
      * Creates a new `ReadConcern` with the provided options and passes it to the provided closure.
      * The read concern is only valid within the body of the closure and will be ended after the body completes.
      */
-    public func withMongocReadConcern<T>(_ body: (OpaquePointer) throws -> T) throws -> T {
-        var readConcern: OpaquePointer = mongoc_read_concern_new()
+    internal func withMongocReadConcern<T>(_ body: (OpaquePointer) throws -> T) rethrows -> T {
+        let readConcern: OpaquePointer = mongoc_read_concern_new()
         if let level = self.level {
             mongoc_read_concern_set_level(readConcern, level.rawValue)
         }
