@@ -115,6 +115,10 @@ public struct ReadConcern: Codable {
         try container.encodeIfPresent(self.level, forKey: .level)
     }
 
+    /**
+     * Creates a new `ReadConcern` with the provided options and passes it to the provided closure.
+     * The read concern is only valid within the body of the closure and will be ended after the body completes.
+     */
     public func withMongocReadConcern<T>(_ body: (OpaquePointer) throws -> T) throws -> T {
         var readConcern: OpaquePointer = mongoc_read_concern_new()
         if let level = self.level {
