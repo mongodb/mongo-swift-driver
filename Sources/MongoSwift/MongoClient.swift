@@ -120,7 +120,9 @@ public struct DatabaseOptions: CodingStrategyProvider {
 
 /// A MongoDB Client.
 public class MongoClient {
-    internal var _client: OpaquePointer?
+    internal let _client: OpaquePointer
+
+    internal let connectionPool: ConnectionPool
 
     /// If command and/or server monitoring is enabled, stores the NotificationCenter events are posted to.
     internal var notificationCenter: NotificationCenter?
@@ -176,20 +178,15 @@ public class MongoClient {
         var options = options ?? ClientOptions()
         let connString = try ConnectionString(connectionString, options: &options)
 
-        self._client = mongoc_client_new_from_uri(connString._uri)
-        guard self._client != nil else {
-            throw UserError.invalidArgumentError(message: "libmongoc not built with TLS support")
-        }
+        self.connectionPool = try ConnectionPool(from: connString)
+
+        // temporarily retrieve the single client from the pool.
+        self._client = try self.connectionPool.checkOut().clientHandle
 
         self.encoder = BSONEncoder(options: options)
         self.decoder = BSONDecoder(options: options)
 
         if options.eventMonitoring { self.initializeMonitoring() }
-
-        guard mongoc_client_set_error_api(self._client, MONGOC_ERROR_API_VERSION_2) else {
-            self.close()
-            throw RuntimeError.internalError(message: "Could not configure error handling on client")
-        }
     }
 
     /**
@@ -213,20 +210,11 @@ public class MongoClient {
      *   - pointer: the `mongoc_client_t` to store and use internally
      */
     public init(stealing pointer: OpaquePointer) {
+        // TODO SWIFT-374: stop storing _client.
         self._client = pointer
-
-        // This call may fail, and if it does, either the error api version was already set or the client was derived
-        // from a pool. In either case, the error handling in MongoSwift will be incorrect unless the correct api
-        // version was set by the caller.
-        mongoc_client_set_error_api(self._client, MONGOC_ERROR_API_VERSION_2)
-
+        self.connectionPool = ConnectionPool(stealing: pointer)
         self.encoder = BSONEncoder()
         self.decoder = BSONDecoder()
-    }
-
-    /// Cleans up internal state.
-    deinit {
-        close()
     }
 
     /**
@@ -251,21 +239,6 @@ public class MongoClient {
         let session = try ClientSession(client: self, options: options)
         defer { session.end() }
         return try sessionBody(session)
-    }
-
-    /**
-     * Closes the client.
-     */
-    public func close() {
-        guard let client = self._client else {
-            return
-        }
-
-        // this is defined in the APM extension to Client
-        self.disableMonitoring()
-
-        mongoc_client_destroy(client)
-        self._client = nil
     }
 
     /**

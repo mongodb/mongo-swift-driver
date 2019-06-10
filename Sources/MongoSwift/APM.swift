@@ -521,7 +521,11 @@ extension MongoClient {
     /// Internal function to install all monitoring callbacks for tbis client. This is used if the MongoClient
     /// is initialized with eventMonitoring = true
     internal func initializeMonitoring() {
-        let callbacks = mongoc_apm_callbacks_new()
+        guard let callbacks = mongoc_apm_callbacks_new() else {
+            fatalError("failed to initialize new mongoc_apm_callbacks_t")
+        }
+        defer { mongoc_apm_callbacks_destroy(callbacks) }
+
         mongoc_apm_set_command_started_cb(callbacks, commandStarted)
         mongoc_apm_set_command_succeeded_cb(callbacks, commandSucceeded)
         mongoc_apm_set_command_failed_cb(callbacks, commandFailed)
@@ -534,10 +538,8 @@ extension MongoClient {
         mongoc_apm_set_server_heartbeat_started_cb(callbacks, serverHeartbeatStarted)
         mongoc_apm_set_server_heartbeat_succeeded_cb(callbacks, serverHeartbeatSucceeded)
         mongoc_apm_set_server_heartbeat_failed_cb(callbacks, serverHeartbeatFailed)
-        // we can pass this as unretained because the callbacks are stored on the mongoc_client_t, so
-        // if the callback is being executed, the client must still be valid
-        mongoc_client_set_apm_callbacks(self._client, callbacks, Unmanaged.passUnretained(self).toOpaque())
-        mongoc_apm_callbacks_destroy(callbacks)
+
+        self.connectionPool.setAPMCallbacks(client: self, callbacks: callbacks)
     }
 
     /// Disables monitoring for this `MongoClient`. Notifications can be reenabled using `enableMonitoring`.
