@@ -58,7 +58,9 @@ public class MongoCollection<T: Codable> {
         }
 
         if let rc = options?.readConcern {
-            mongoc_collection_set_read_concern(collection, rc._readConcern)
+            try? rc.withMongocReadConcern { tmpReadConcernPtr in
+                mongoc_collection_set_read_concern(collection, tmpReadConcernPtr)
+            }
         }
 
         if let rp = options?.readPreference {

@@ -103,7 +103,9 @@ public class MongoDatabase {
         }
 
         if let rc = options?.readConcern {
-            mongoc_database_set_read_concern(db, rc._readConcern)
+            try? rc.withMongocReadConcern { tmpReadConcernPtr in
+                mongoc_database_set_read_concern(db, tmpReadConcernPtr)
+            }
         }
 
         if let rp = options?.readPreference {
@@ -262,6 +264,7 @@ public class MongoDatabase {
     public func runCommand(_ command: Document,
                            options: RunCommandOptions? = nil,
                            session: ClientSession? = nil) throws -> Document {
+        print("level: \(options?.readConcern?.level)")
         let operation = RunCommandOperation(database: self, command: command, options: options, session: session)
         return try operation.execute()
     }
