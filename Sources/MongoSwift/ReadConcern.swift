@@ -90,12 +90,8 @@ public struct ReadConcern: Codable {
         }
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case level
-    }
-
     /**
-     * Creates a new `ReadConcern` with the provided options and passes it to the provided closure.
+     * Creates a new `mongoc_rad_concern_t` based on this `ReadConcern` and passes it to the provided closure.
      * The read concern is only valid within the body of the closure and will be ended after the body completes.
      */
     internal func withMongocReadConcern<T>(_ body: (OpaquePointer) throws -> T) rethrows -> T {
