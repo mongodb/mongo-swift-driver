@@ -14,7 +14,9 @@ public struct ReadConcern: Codable {
         case linearizable
         /// See https://docs.mongodb.com/master/reference/read-concern-snapshot/
         case snapshot
-        /// Any other read concern level not covered by the other cases
+        /// Any other read concern level not covered by the other cases.
+        /// This case is present to provide forwards compatibility with any
+        /// future read concerns which may be added to new versions of MongoDB.
         case other(level: String)
 
         public var rawValue: String {
@@ -96,10 +98,10 @@ public struct ReadConcern: Codable {
      */
     internal func withMongocReadConcern<T>(_ body: (OpaquePointer) throws -> T) rethrows -> T {
         let readConcern: OpaquePointer = mongoc_read_concern_new()
+        defer { mongoc_read_concern_destroy(readConcern) }
         if let level = self.level {
             mongoc_read_concern_set_level(readConcern, level.rawValue)
         }
-        defer { mongoc_read_concern_destroy(readConcern) }
         return try body(readConcern)
     }
 }

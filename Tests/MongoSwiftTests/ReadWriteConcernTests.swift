@@ -32,26 +32,22 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
         let rc = ReadConcern(.majority)
         expect(rc.level).to(equal(.majority))
 
-        // test copy
-        let rc2 = rc
-        expect(rc2.level).to(equal(.majority))
-
         // test empty init
-        let rc3 = ReadConcern()
-        expect(rc3.level).to(beNil())
-        expect(rc3.isDefault).to(beTrue())
+        let rc2 = ReadConcern()
+        expect(rc2.level).to(beNil())
+        expect(rc2.isDefault).to(beTrue())
 
         // test init from doc
-        let rc4 = ReadConcern(["level": "majority"])
-        expect(rc4.level).to(equal(.majority))
+        let rc3 = ReadConcern(["level": "majority"])
+        expect(rc3.level).to(equal(.majority))
 
         // test string init
-        let rc5 = ReadConcern("majority")
-        expect(rc5.level).to(equal(.majority))
+        let rc4 = ReadConcern("majority")
+        expect(rc4.level).to(equal(.majority))
 
         // test init with unknown level
-        let rc6 = ReadConcern("blah")
-        expect(rc6.level).to(equal(.other(level: "blah")))
+        let rc5 = ReadConcern("blah")
+        expect(rc5.level).to(equal(.other(level: "blah")))
     }
 
     func testWriteConcernType() throws {
