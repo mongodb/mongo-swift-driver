@@ -66,11 +66,6 @@ public struct ReadConcern: Codable {
         }
     }
 
-    /// Initializes a new `ReadConcern` by copying an existing `ReadConcern`.
-    public init(from readConcern: ReadConcern) {
-        self.level = readConcern.level
-    }
-
     /// Initialize a new `ReadConcern` with a `Level`.
     public init(_ level: Level) {
         self.level = level
@@ -108,9 +103,7 @@ public struct ReadConcern: Codable {
         if let level = self.level {
             mongoc_read_concern_set_level(readConcern, level.rawValue)
         }
-        defer {
-            mongoc_read_concern_destroy(readConcern)
-         }
+        defer { mongoc_read_concern_destroy(readConcern) }
         return try body(readConcern)
     }
 }

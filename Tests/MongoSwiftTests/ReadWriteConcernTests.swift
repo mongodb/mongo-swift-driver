@@ -32,8 +32,8 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
         let rc = ReadConcern(.majority)
         expect(rc.level).to(equal(.majority))
 
-        // test copy init
-        let rc2 = ReadConcern(from: rc)
+        // test copy
+        let rc2 = rc
         expect(rc2.level).to(equal(.majority))
 
         // test empty init
