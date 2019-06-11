@@ -14,7 +14,7 @@ public struct ReadConcern: Codable {
         case linearizable
         /// See https://docs.mongodb.com/master/reference/read-concern-snapshot/
         case snapshot
-        /// Unknown level
+        /// Any other read concern level not covered by the other cases
         case other(level: String)
 
         public var rawValue: String {
