@@ -94,7 +94,7 @@ public struct ReadConcern: Codable {
 
     /**
      * Creates a new `mongoc_rad_concern_t` based on this `ReadConcern` and passes it to the provided closure.
-     * The read concern is only valid within the body of the closure and will be ended after the body completes.
+     * The pointer is only valid within the body of the closure and will be freed after the body completes.
      */
     internal func withMongocReadConcern<T>(_ body: (OpaquePointer) throws -> T) rethrows -> T {
         let readConcern: OpaquePointer = mongoc_read_concern_new()
