@@ -2,10 +2,7 @@ import Foundation
 import mongoc
 
 /// A class to represent a MongoDB write concern.
-public class WriteConcern: Codable {
-    /// A pointer to a mongoc_write_concern_t
-    internal var _writeConcern: OpaquePointer?
-
+public struct WriteConcern: Codable {
     /// An option to request acknowledgement that the write operation has propagated to specified mongod instances.
     public enum W: Codable, Equatable {
         /// Specifies the number of nodes that should acknowledge the write. MUST be greater than or equal to 0.
@@ -39,72 +36,67 @@ public class WriteConcern: Codable {
     }
 
     /// Indicates the `W` value for this `WriteConcern`.
-    public var w: W? {
-        let number = mongoc_write_concern_get_w(self._writeConcern)
-        switch number {
-        case MONGOC_WRITE_CONCERN_W_DEFAULT:
-            return nil
-        case MONGOC_WRITE_CONCERN_W_MAJORITY:
-            return .majority
-        case MONGOC_WRITE_CONCERN_W_TAG:
-            if let wTag = mongoc_write_concern_get_wtag(self._writeConcern) {
-                return .tag(String(cString: wTag))
-            }
-        default:
-            break
-        }
-
-        return .number(number)
-    }
+    public var w: W?
 
     /// Indicates whether to wait for the write operation to get committed to the journal.
-    public var journal: Bool? {
-        if mongoc_write_concern_journal_is_set(self._writeConcern) {
-            return mongoc_write_concern_get_journal(self._writeConcern)
-        }
-        return nil
-    }
+    public var journal: Bool?
 
     /// If the write concern is not satisfied within this timeout (in milliseconds),
     /// the operation will return an error. The value MUST be greater than or equal to 0.
-    public var wtimeoutMS: Int64? {
-        let timeout = mongoc_write_concern_get_wtimeout(self._writeConcern)
-        return timeout == 0 ? nil : Int64(timeout)
-    }
+    public var wtimeoutMS: Int64?
 
     /// Indicates whether this is an acknowledged write concern.
     public var isAcknowledged: Bool {
-        return mongoc_write_concern_is_acknowledged(self._writeConcern)
+        if let w = self.w {
+            switch w {
+            case let .number(wNumber):
+                return !((journal == nil || journal == false ) && wNumber == 0)
+            default:
+                return true
+            }
+        }
+        return true
     }
 
     /// Indicates whether this is the default write concern.
     public var isDefault: Bool {
-        return mongoc_write_concern_is_default(self._writeConcern)
+        return self.w == nil && self.journal == nil && self.wtimeoutMS == nil
     }
 
     /// Indicates whether the combination of values set on this `WriteConcern` is valid.
     private var isValid: Bool {
-        return mongoc_write_concern_is_valid(self._writeConcern)
+        if let w = self.w {
+            switch w {
+            case let .number(wNumber):
+                return journal == nil || journal == false || wNumber != 0
+            default:
+                return true
+            }
+        }
+        return true
     }
 
     /// Initializes a new, empty `WriteConcern`.
     public init() {
-        self._writeConcern = mongoc_write_concern_new()
+        self.journal = nil
+        self.w = nil
+        self.wtimeoutMS = nil
     }
 
     /// Initializes a new `WriteConcern`.
     /// - Throws:
     ///   - `UserError.invalidArgumentError` if the options form an invalid combination.
     public init(journal: Bool? = nil, w: W? = nil, wtimeoutMS: Int64? = nil) throws {
-        self._writeConcern = mongoc_write_concern_new()
-        if let journal = journal { mongoc_write_concern_set_journal(self._writeConcern, journal) }
+        if let journal = journal {
+            self.journal = journal
+        }
+
         if let wtimeoutMS = wtimeoutMS {
             if wtimeoutMS < 0 {
                 throw UserError
                 .invalidArgumentError(message: "Invalid value: wtimeoutMS=\(wtimeoutMS) cannot be negative.")
             }
-            // libmongoc takes in a 32-bit integer for wtimeoutMS, but the specification states it should be an int64
-            mongoc_write_concern_set_wtimeout(self._writeConcern, Int32(truncatingIfNeeded: wtimeoutMS))
+            self.wtimeoutMS = wtimeoutMS
         }
 
         if let w = w {
@@ -113,15 +105,14 @@ public class WriteConcern: Codable {
                 if wNumber < 0 {
                     throw UserError.invalidArgumentError(message: "Invalid value: w=\(w) cannot be negative.")
                 }
-                mongoc_write_concern_set_w(self._writeConcern, wNumber)
+                self.w = .number(wNumber)
             case let .tag(wTag):
-                mongoc_write_concern_set_wtag(self._writeConcern, wTag)
+                self.w = .tag(wTag)
             case .majority:
-                mongoc_write_concern_set_w(self._writeConcern, MONGOC_WRITE_CONCERN_W_MAJORITY)
+                self.w = .majority
             }
         }
 
-        // we don't need to destroy the `mongoc_write_concern_t` here - `deinit` will be called anyway
         guard self.isValid else {
             let journalStr = String(describing: journal)
             let wStr = String(describing: w)
@@ -131,17 +122,42 @@ public class WriteConcern: Codable {
         }
     }
 
-    /// Initializes a new `WriteConcern` by copying a `mongoc_write_concern_t`.
+    /// Initializes a new `WriteConcern` with the same values as the provided `mongoc_write_concern_t`.
     /// The caller is responsible for freeing the original `mongoc_write_concern_t`.
     internal init(from writeConcern: OpaquePointer?) {
-        self._writeConcern = mongoc_write_concern_copy(writeConcern)
+        if mongoc_write_concern_journal_is_set(writeConcern) {
+            self.journal = mongoc_write_concern_get_journal(writeConcern)
+        } else {
+            self.journal = nil
+        }
+
+       let number = mongoc_write_concern_get_w(writeConcern)
+        switch number {
+        case MONGOC_WRITE_CONCERN_W_DEFAULT:
+            self.w = nil
+        case MONGOC_WRITE_CONCERN_W_MAJORITY:
+            self.w = .majority
+        case MONGOC_WRITE_CONCERN_W_TAG:
+            if let wTag = mongoc_write_concern_get_wtag(writeConcern) {
+                self.w = .tag(String(cString: wTag))
+            }
+        default:
+            self.w = .number(number)
+        }
+
+       let wtimeout = Int64(mongoc_write_concern_get_wtimeout(writeConcern))
+       if wtimeout == 0 {
+           self.wtimeoutMS = nil
+       } else {
+           self.wtimeoutMS = wtimeout
+       }
     }
 
     private enum CodingKeys: String, CodingKey {
         case w, j, wtimeout
     }
 
-    public required convenience init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let w = try container.decodeIfPresent(W.self, forKey: .w)
         let journal = try container.decodeIfPresent(Bool.self, forKey: .j)
@@ -158,14 +174,30 @@ public class WriteConcern: Codable {
         }
         try container.encodeIfPresent(self.journal, forKey: .j)
     }
-
-    /// Cleans up internal state.
-    deinit {
-        guard let writeConcern = self._writeConcern else {
-            return
+    /**
+    *  Creates a new `mongoc_write_concern_t` based on this `WriteConcern` and passes it to the provided closure.
+    *  The pointer is only valid within the body of the closure and will be freed after the body completes.
+    **/
+    internal func withMongocWriteConcern<T>(_ body: (OpaquePointer) throws -> T) rethrows -> T {
+        let writeConcern: OpaquePointer = mongoc_write_concern_new()
+        defer { mongoc_write_concern_destroy(writeConcern) }
+        if let journal = self.journal {
+            mongoc_write_concern_set_journal(writeConcern, journal)
         }
-        mongoc_write_concern_destroy(writeConcern)
-        self._writeConcern = nil
+        if let w = self.w {
+            switch w {
+            case let .number(wNumber):
+                mongoc_write_concern_set_w(writeConcern, wNumber)
+            case let .tag(wTag):
+                mongoc_write_concern_set_wtag(writeConcern, wTag)
+            case .majority:
+                mongoc_write_concern_set_w(writeConcern, MONGOC_WRITE_CONCERN_W_MAJORITY)
+            }
+        }
+        if let wtimeoutMS = self.wtimeoutMS {
+            mongoc_write_concern_set_wtimeout(writeConcern, Int32(truncatingIfNeeded: wtimeoutMS))
+        }
+        return try body(writeConcern)
     }
 }
 

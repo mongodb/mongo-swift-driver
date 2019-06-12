@@ -76,7 +76,7 @@ public class MongoCollection<T: Codable> {
             mongoc_collection_set_read_prefs(collection, rp._readPreference)
         }
 
-        try options?.writeConcern?.withMongocWriteConcern { tmpWriteConcern in
+        options?.writeConcern?.withMongocWriteConcern { tmpWriteConcern in
             mongoc_collection_set_write_concern(collection, tmpWriteConcern)
         }
 
