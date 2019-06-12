@@ -201,11 +201,7 @@ public class MongoClient {
         }
 
         // if a writeConcern is provided, set it on the client
-<<<<<<< HEAD
         options?.writeConcern?.withMongocWriteConcern { tmpWriteConcern in
-=======
-        try options?.writeConcern?.withMongocWriteConcern { tmpWriteConcern in
->>>>>>> Use withMongocWriteConcern to set write concern values
             mongoc_client_set_write_concern(self._client, tmpWriteConcern)
         }
 
