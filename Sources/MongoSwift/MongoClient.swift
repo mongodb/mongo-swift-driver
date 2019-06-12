@@ -187,6 +187,9 @@ public class MongoClient {
             throw UserError.invalidArgumentError(message: "libmongoc not built with TLS support")
         }
 
+        self.encoder = BSONEncoder(options: options)
+        self.decoder = BSONDecoder(options: options)
+
         // if a readConcern is provided, set it on the client
         if let rc = options?.readConcern {
             mongoc_client_set_read_concern(self._client, rc._readConcern)
@@ -198,12 +201,9 @@ public class MongoClient {
         }
 
         // if a writeConcern is provided, set it on the client
-        if let wc = options?.writeConcern {
-            mongoc_client_set_write_concern(self._client, wc._writeConcern)
+        try options?.writeConcern?.withMongocWriteConcern { tmpWriteConcern in
+            mongoc_client_set_write_concern(self._client, tmpWriteConcern)
         }
-
-        self.encoder = BSONEncoder(options: options)
-        self.decoder = BSONDecoder(options: options)
 
         if options?.eventMonitoring == true { self.initializeMonitoring() }
 
