@@ -47,13 +47,8 @@ public struct WriteConcern: Codable {
 
     /// Indicates whether this is an acknowledged write concern.
     public var isAcknowledged: Bool {
-        if let w = self.w {
-            switch w {
-            case let .number(wNumber):
-                return !((journal == nil || journal == false ) && wNumber == 0)
-            default:
-                return true
-            }
+        if let w = self.w, case let .number(wNumber) = w {
+            return !((journal == nil || journal == false ) && wNumber == 0)
         }
         return true
     }
@@ -65,13 +60,8 @@ public struct WriteConcern: Codable {
 
     /// Indicates whether the combination of values set on this `WriteConcern` is valid.
     private var isValid: Bool {
-        if let w = self.w {
-            switch w {
-            case let .number(wNumber):
-                return journal == nil || journal == false || wNumber != 0
-            default:
-                return true
-            }
+        if let w = self.w, case let .number(wNumber) = w {
+            return journal == nil || journal == false || wNumber != 0
         }
         return true
     }
@@ -87,31 +77,22 @@ public struct WriteConcern: Codable {
     /// - Throws:
     ///   - `UserError.invalidArgumentError` if the options form an invalid combination.
     public init(journal: Bool? = nil, w: W? = nil, wtimeoutMS: Int64? = nil) throws {
-        if let journal = journal {
-            self.journal = journal
-        }
+        self.journal = journal
 
         if let wtimeoutMS = wtimeoutMS {
             if wtimeoutMS < 0 {
                 throw UserError
                 .invalidArgumentError(message: "Invalid value: wtimeoutMS=\(wtimeoutMS) cannot be negative.")
             }
-            self.wtimeoutMS = wtimeoutMS
         }
+        self.wtimeoutMS = wtimeoutMS
 
-        if let w = w {
-            switch w {
-            case let .number(wNumber):
-                if wNumber < 0 {
-                    throw UserError.invalidArgumentError(message: "Invalid value: w=\(w) cannot be negative.")
-                }
-                self.w = .number(wNumber)
-            case let .tag(wTag):
-                self.w = .tag(wTag)
-            case .majority:
-                self.w = .majority
+        if let w = w, case let .number(wNumber) = w {
+            if wNumber < 0 {
+                throw UserError.invalidArgumentError(message: "Invalid value: w=\(w) cannot be negative.")
             }
         }
+        self.w = w
 
         guard self.isValid else {
             let journalStr = String(describing: journal)
@@ -127,10 +108,7 @@ public struct WriteConcern: Codable {
     internal init(from writeConcern: OpaquePointer?) {
         if mongoc_write_concern_journal_is_set(writeConcern) {
             self.journal = mongoc_write_concern_get_journal(writeConcern)
-        } else {
-            self.journal = nil
         }
-
        let number = mongoc_write_concern_get_w(writeConcern)
         switch number {
         case MONGOC_WRITE_CONCERN_W_DEFAULT:
@@ -146,23 +124,13 @@ public struct WriteConcern: Codable {
         }
 
        let wtimeout = Int64(mongoc_write_concern_get_wtimeout(writeConcern))
-       if wtimeout == 0 {
-           self.wtimeoutMS = nil
-       } else {
+       if wtimeout != 0 {
            self.wtimeoutMS = wtimeout
        }
     }
 
     private enum CodingKeys: String, CodingKey {
-        case w, j, wtimeout
-    }
-
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        let w = try container.decodeIfPresent(W.self, forKey: .w)
-        let journal = try container.decodeIfPresent(Bool.self, forKey: .j)
-        let wtimeoutMS = try container.decodeIfPresent(Int64.self, forKey: .wtimeout)
-        try self.init(journal: journal, w: w, wtimeoutMS: wtimeoutMS)
+        case w, journal = "j", wtimeoutMS = "wtimeout"
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -170,14 +138,14 @@ public struct WriteConcern: Codable {
         try container.encodeIfPresent(self.w, forKey: .w)
         if let wtimeout = self.wtimeoutMS {
             // TODO: change wtimeout to Int64 once tix SWIFT-395 gets fixed
-            try container.encode(Int32(truncatingIfNeeded: wtimeout), forKey: .wtimeout)
+            try container.encode(Int32(truncatingIfNeeded: wtimeout), forKey: .wtimeoutMS)
         }
-        try container.encodeIfPresent(self.journal, forKey: .j)
+        try container.encodeIfPresent(self.journal, forKey: .journal)
     }
     /**
-    *  Creates a new `mongoc_write_concern_t` based on this `WriteConcern` and passes it to the provided closure.
-    *  The pointer is only valid within the body of the closure and will be freed after the body completes.
-    **/
+     *  Creates a new `mongoc_write_concern_t` based on this `WriteConcern` and passes it to the provided closure.
+     *  The pointer is only valid within the body of the closure and will be freed after the body completes.
+     */
     internal func withMongocWriteConcern<T>(_ body: (OpaquePointer) throws -> T) rethrows -> T {
         let writeConcern: OpaquePointer = mongoc_write_concern_new()
         defer { mongoc_write_concern_destroy(writeConcern) }
