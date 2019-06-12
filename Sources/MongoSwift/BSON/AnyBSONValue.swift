@@ -176,6 +176,12 @@ public struct AnyBSONValue: Codable, Equatable, Hashable {
             self.value = value.map { $0.value }
         } else if let value = try? container.decode(Document.self) {
             self.value = value
+        } else if let value = try? container.decode(Timestamp.self) {
+            self.value = value
+        } else if let value = try? container.decode(BSONUndefined.self) {
+            self.value = value
+        } else if let value = try? container.decode(DBPointer.self) {
+            self.value = value
         } else {
             throw DecodingError.typeMismatch(
                     AnyBSONValue.self,
