@@ -121,11 +121,7 @@ public class MongoDatabase {
             mongoc_database_set_read_prefs(db, rp._readPreference)
         }
 
-<<<<<<< HEAD
         options?.writeConcern?.withMongocWriteConcern { tmpWriteConcern in
-=======
-        try options?.writeConcern?.withMongocWriteConcern { tmpWriteConcern in
->>>>>>> Use withMongocWriteConcern to set write concern values
             mongoc_database_set_write_concern(db, tmpWriteConcern)
         }
 
