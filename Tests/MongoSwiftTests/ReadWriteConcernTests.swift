@@ -6,7 +6,7 @@ extension WriteConcern {
     /// Initialize a new `WriteConcern` from a `Document`. We can't
     /// use `decode` because the format is different in spec tests
     /// ("journal" instead of "j", etc.)
-    fileprivate convenience init(_ doc: Document) throws {
+    fileprivate init(_ doc: Document) throws {
         let j = doc["journal"] as? Bool
 
         var w: W?

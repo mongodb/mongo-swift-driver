@@ -121,7 +121,7 @@ public class MongoDatabase {
             mongoc_database_set_read_prefs(db, rp._readPreference)
         }
 
-        try options?.writeConcern?.withMongocWriteConcern { tmpWriteConcern in
+        options?.writeConcern?.withMongocWriteConcern { tmpWriteConcern in
             mongoc_database_set_write_concern(db, tmpWriteConcern)
         }
 
