@@ -113,7 +113,6 @@ public struct WriteConcern: Codable {
         } else {
             self.journal = nil
         }
-
        let number = mongoc_write_concern_get_w(writeConcern)
         switch number {
         case MONGOC_WRITE_CONCERN_W_DEFAULT:
