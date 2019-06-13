@@ -113,7 +113,8 @@ public struct WriteConcern: Codable {
         } else {
             self.journal = nil
         }
-       let number = mongoc_write_concern_get_w(writeConcern)
+
+        let number = mongoc_write_concern_get_w(writeConcern)
         switch number {
         case MONGOC_WRITE_CONCERN_W_DEFAULT:
             self.w = nil
@@ -129,12 +130,12 @@ public struct WriteConcern: Codable {
             self.w = .number(number)
         }
 
-       let wtimeout = Int64(mongoc_write_concern_get_wtimeout(writeConcern))
-       if wtimeout != 0 {
-           self.wtimeoutMS = wtimeout
-       } else {
-           self.wtimeoutMS = nil
-       }
+        let wtimeout = Int64(mongoc_write_concern_get_wtimeout(writeConcern))
+        if wtimeout != 0 {
+            self.wtimeoutMS = wtimeout
+        } else {
+            self.wtimeoutMS = nil
+        }
     }
 
     private enum CodingKeys: String, CodingKey {
