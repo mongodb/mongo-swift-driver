@@ -36,17 +36,18 @@ public struct WriteConcern: Codable {
     }
 
     /// Indicates the `W` value for this `WriteConcern`.
-    public var w: W?
+    public let w: W?
 
     /// Indicates whether to wait for the write operation to get committed to the journal.
-    public var journal: Bool?
+    public let journal: Bool?
 
     /// If the write concern is not satisfied within this timeout (in milliseconds),
     /// the operation will return an error. The value MUST be greater than or equal to 0.
-    public var wtimeoutMS: Int64?
+    public let wtimeoutMS: Int64?
 
     /// Indicates whether this is an acknowledged write concern.
     public var isAcknowledged: Bool {
+        // An Unacknowledged WriteConcern is when (w equals 0) AND (journal is not set or is false).
         if let w = self.w, case let .number(wNumber) = w {
             return !((journal == nil || journal == false ) && wNumber == 0)
         }
@@ -61,6 +62,7 @@ public struct WriteConcern: Codable {
     /// Indicates whether the combination of values set on this `WriteConcern` is valid.
     private var isValid: Bool {
         if let w = self.w, case let .number(wNumber) = w {
+            // A WriteConcern is invalid if journal is set to true and w is equal to zero.
             return journal == nil || journal == false || wNumber != 0
         }
         return true
@@ -108,7 +110,10 @@ public struct WriteConcern: Codable {
     internal init(from writeConcern: OpaquePointer?) {
         if mongoc_write_concern_journal_is_set(writeConcern) {
             self.journal = mongoc_write_concern_get_journal(writeConcern)
+        } else {
+            self.journal = nil
         }
+
        let number = mongoc_write_concern_get_w(writeConcern)
         switch number {
         case MONGOC_WRITE_CONCERN_W_DEFAULT:
@@ -118,6 +123,8 @@ public struct WriteConcern: Codable {
         case MONGOC_WRITE_CONCERN_W_TAG:
             if let wTag = mongoc_write_concern_get_wtag(writeConcern) {
                 self.w = .tag(String(cString: wTag))
+            } else {
+                self.w = nil
             }
         default:
             self.w = .number(number)
@@ -126,6 +133,8 @@ public struct WriteConcern: Codable {
        let wtimeout = Int64(mongoc_write_concern_get_wtimeout(writeConcern))
        if wtimeout != 0 {
            self.wtimeoutMS = wtimeout
+       } else {
+           self.wtimeoutMS = nil
        }
     }
 
@@ -137,7 +146,8 @@ public struct WriteConcern: Codable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encodeIfPresent(self.w, forKey: .w)
         if let wtimeout = self.wtimeoutMS {
-            // TODO: change wtimeout to Int64 once tix SWIFT-395 gets fixed
+            // TODO: Casting wtimeout to Int32 is the only reason this encode method is needed.
+            // Remove this encode method once SWIFT-395 gets fixed.
             try container.encode(Int32(truncatingIfNeeded: wtimeout), forKey: .wtimeoutMS)
         }
         try container.encodeIfPresent(self.journal, forKey: .journal)
