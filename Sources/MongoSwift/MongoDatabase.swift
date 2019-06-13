@@ -121,8 +121,8 @@ public class MongoDatabase {
             mongoc_database_set_read_prefs(db, rp._readPreference)
         }
 
-        if let wc = options?.writeConcern {
-            mongoc_database_set_write_concern(db, wc._writeConcern)
+        options?.writeConcern?.withMongocWriteConcern { tmpWriteConcernPtr in
+            mongoc_database_set_write_concern(db, tmpWriteConcernPtr)
         }
 
         self._database = db

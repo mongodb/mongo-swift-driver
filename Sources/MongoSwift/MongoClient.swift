@@ -201,8 +201,8 @@ public class MongoClient {
         }
 
         // if a writeConcern is provided, set it on the client
-        if let wc = options?.writeConcern {
-            mongoc_client_set_write_concern(self._client, wc._writeConcern)
+        options?.writeConcern?.withMongocWriteConcern { tmpWriteConcernPtr in
+            mongoc_client_set_write_concern(self._client, tmpWriteConcernPtr)
         }
 
         if options?.eventMonitoring == true { self.initializeMonitoring() }
