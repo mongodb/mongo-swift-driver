@@ -2,8 +2,6 @@
 // DO NOT EDIT
 
 
-// swiftlint:disable:previous vertical_whitespace
-// swiftlint:disable trailing_comma
 @testable import MongoSwiftTests
 import XCTest
 

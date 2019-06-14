@@ -52,6 +52,7 @@ excluded:
   - Sources/libmongoc
   - Package.swift
   - Examples/*/Package.swift
+  - Tests/LinuxMain.swift
 
 trailing_whitespace:
   ignores_comments: false
