@@ -439,7 +439,6 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
             let asDocument = try Document(fromJSONFile: testFilePath)
             let tests: [Document] = try asDocument.get("tests")
             for test in tests {
-                let description: String = try test.get("description")
                 let valid: Bool = try test.get("valid")
                 if let rcToUse = test["readConcern"] as? Document {
                     let rc = ReadConcern(rcToUse)

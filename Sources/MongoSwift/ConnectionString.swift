@@ -47,7 +47,7 @@ internal class ConnectionString {
         }
         set(rc) {
             rc.withMongocReadConcern { rcPtr in
-                mongoc_client_set_read_concern(self._uri, rcPtr)
+                mongoc_uri_set_read_concern(self._uri, rcPtr)
             }
         }
     }
