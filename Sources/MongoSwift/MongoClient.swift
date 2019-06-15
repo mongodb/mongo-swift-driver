@@ -174,8 +174,8 @@ public class MongoClient {
         // Initialize mongoc. Repeated calls have no effect so this is safe to do every time.
         initializeMongoc()
 
-        // TODO SWIFT-374: when we stop storing _client, we will store these options and use them to determine the
-        // return values for MongoClient.readConcern, etc.
+        // TODO: when we stop storing _client, we will store these options and use them to determine the return values
+        // for MongoClient.readConcern, etc.
         var options = options ?? ClientOptions()
         let connString = try ConnectionString(connectionString, options: &options)
         self.connectionPool = try ConnectionPool(from: connString)
