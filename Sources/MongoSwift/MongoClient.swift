@@ -120,6 +120,7 @@ public struct DatabaseOptions: CodingStrategyProvider {
 
 /// A MongoDB Client.
 public class MongoClient {
+    // TODO SWIFT-374: remove this property.
     internal let _client: OpaquePointer
 
     internal let connectionPool: ConnectionPool
@@ -173,11 +174,10 @@ public class MongoClient {
         // Initialize mongoc. Repeated calls have no effect so this is safe to do every time.
         initializeMongoc()
 
-        // TODO: when we stop storing _client, we will store these options and use them to determine the return values
-        // for MongoClient.readConcern, etc.
+        // TODO SWIFT-374: when we stop storing _client, we will store these options and use them to determine the
+        // return values for MongoClient.readConcern, etc.
         var options = options ?? ClientOptions()
         let connString = try ConnectionString(connectionString, options: &options)
-
         self.connectionPool = try ConnectionPool(from: connString)
 
         // temporarily retrieve the single client from the pool.
@@ -210,7 +210,6 @@ public class MongoClient {
      *   - pointer: the `mongoc_client_t` to store and use internally
      */
     public init(stealing pointer: OpaquePointer) {
-        // TODO SWIFT-374: stop storing _client.
         self._client = pointer
         self.connectionPool = ConnectionPool(stealing: pointer)
         self.encoder = BSONEncoder()

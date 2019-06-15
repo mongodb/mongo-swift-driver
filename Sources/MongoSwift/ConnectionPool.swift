@@ -47,7 +47,6 @@ internal class ConnectionPool {
             throw RuntimeError.internalError(message: "Could not configure error handling on client")
         }
 
-        // TODO: mode should be pooled.
         self.mode = .single(client: clientHandle)
     }
 
