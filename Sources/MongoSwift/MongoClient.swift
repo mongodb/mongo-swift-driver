@@ -171,18 +171,12 @@ public class MongoClient {
         // Initialize mongoc. Repeated calls have no effect so this is safe to do every time.
         initializeMongoc()
 
-        var error = bson_error_t()
-        guard let uri = mongoc_uri_new_with_error(connectionString, &error) else {
-            throw parseMongocError(error)
-        }
-        defer { mongoc_uri_destroy(uri) }
+        // TODO: when we stop storing _client, we will store these options and use them to determine the return values
+        // for MongoClient.readConcern, etc.
+        var options = options ?? ClientOptions()
+        let connString = try ConnectionString(connectionString, options: &options)
 
-        // if retryWrites is specified, set it on the uri (libmongoc does not provide api for setting it on the client).
-        if let rw = options?.retryWrites {
-            mongoc_uri_set_option_as_bool(uri, MONGOC_URI_RETRYWRITES, rw)
-        }
-
-        self._client = mongoc_client_new_from_uri(uri)
+        self._client = mongoc_client_new_from_uri(connString._uri)
         guard self._client != nil else {
             throw UserError.invalidArgumentError(message: "libmongoc not built with TLS support")
         }
@@ -190,22 +184,7 @@ public class MongoClient {
         self.encoder = BSONEncoder(options: options)
         self.decoder = BSONDecoder(options: options)
 
-        // if a readConcern is provided, set it on the client
-        options?.readConcern?.withMongocReadConcern { tmpReadConcernPtr in
-            mongoc_client_set_read_concern(self._client, tmpReadConcernPtr)
-        }
-
-        // if a readPreference is provided, set it on the client
-        if let rp = options?.readPreference {
-            mongoc_client_set_read_prefs(self._client, rp._readPreference)
-        }
-
-        // if a writeConcern is provided, set it on the client
-        options?.writeConcern?.withMongocWriteConcern { tmpWriteConcernPtr in
-            mongoc_client_set_write_concern(self._client, tmpWriteConcernPtr)
-        }
-
-        if options?.eventMonitoring == true { self.initializeMonitoring() }
+        if options.eventMonitoring { self.initializeMonitoring() }
 
         guard mongoc_client_set_error_api(self._client, MONGOC_ERROR_API_VERSION_2) else {
             self.close()
