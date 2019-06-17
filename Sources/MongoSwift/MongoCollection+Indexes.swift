@@ -220,7 +220,7 @@ extension MongoCollection {
                               options: CreateIndexOptions? = nil,
                               session: ClientSession? = nil) throws -> [String] {
         let operation = CreateIndexesOperation(collection: self, models: models, options: options, session: session)
-        return try operation.execute()
+        return try self._client.executeOperation(operation, session: session)
     }
 
     /**
@@ -319,7 +319,7 @@ extension MongoCollection {
                               options: DropIndexOptions?,
                               session: ClientSession?) throws -> Document {
         let operation = DropIndexesOperation(collection: self, index: index, options: options, session: session)
-        return try operation.execute()
+        return try self._client.executeOperation(operation, session: session)
     }
 
     /**

@@ -4,7 +4,7 @@ import mongoc
 public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     internal var _cursor: OpaquePointer?
     private var _client: MongoClient?
-    internal var _session: ClientSession?
+    private var _session: ClientSession?
 
     private var swiftError: Error?
 
@@ -118,7 +118,13 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     public func next() -> T? {
         do {
             let operation = NextOperation(cursor: self)
-            let out = try operation.execute()
+            // TODO SWIFT-374: we temporarily use a fake connection here. eventually MongoCursor will store its source
+            // connection and we can pass that in here instead (though the execute method still won't use it.) 
+            // we want to pass in a specific connection and call execute() ourselves rather than using an operation
+            // executor as that would require checking out a separate, unused connection for every single next() call.
+            // the force unwrap is safe as this bitPattern is always valid.
+            // swiftlint:disable:next force_unwrapping
+            let out = try operation.execute(using: Connection(OpaquePointer(bitPattern: 1)!), session: self._session)
             self.swiftError = nil
             return out
         } catch {

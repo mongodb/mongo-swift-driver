@@ -12,7 +12,7 @@ internal struct DropDatabaseOperation: Operation {
         self.session = session
     }
 
-    internal func execute() throws {
+    internal func execute(using connection: Connection, session: ClientSession?) throws {
         let command: Document = ["dropDatabase": 1]
         let opts = try encodeOptions(options: self.options, session: self.session)
 

@@ -125,6 +125,8 @@ public class MongoClient {
 
     internal let connectionPool: ConnectionPool
 
+    private let executor = DefaultOperationExecutor()
+
     /// If command and/or server monitoring is enabled, stores the NotificationCenter events are posted to.
     internal var notificationCenter: NotificationCenter?
 
@@ -273,5 +275,11 @@ public class MongoClient {
      */
     public func db(_ name: String, options: DatabaseOptions? = nil) -> MongoDatabase {
         return MongoDatabase(name: name, client: self, options: options)
+    }
+
+    /// Executes an `Operation` using this `MongoClient` and an optionally provided session.
+    internal func executeOperation<T: Operation>(_ operation: T,
+                                                 session: ClientSession? = nil) throws -> T.OperationResult {
+        return try self.executor.execute(operation, client: self, session: session)
     }
 }

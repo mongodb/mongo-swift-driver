@@ -100,7 +100,7 @@ extension MongoCollection {
                                                update: update,
                                                options: options,
                                                session: session)
-        return try operation.execute()
+        return try self._client.executeOperation(operation, session: session)
     }
 }
 

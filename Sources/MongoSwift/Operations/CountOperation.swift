@@ -64,8 +64,8 @@ internal struct CountOperation<T: Codable>: Operation {
         self.session = session
     }
 
-    internal func execute() throws -> Int {
-        let opts = try encodeOptions(options: options, session: session)
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> Int {
+        let opts = try encodeOptions(options: options, session: self.session)
         let rp = self.options?.readPreference?._readPreference
         var error = bson_error_t()
         // because we already encode skip and limit in the options,

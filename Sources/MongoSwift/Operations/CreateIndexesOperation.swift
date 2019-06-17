@@ -28,7 +28,7 @@ internal struct CreateIndexesOperation<T: Codable>: Operation {
         self.session = session
     }
 
-    internal func execute() throws -> [String] {
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> [String] {
         var indexData = [Document]()
         for index in self.models {
             var indexDoc = try self.collection.encoder.encode(index)
@@ -40,7 +40,7 @@ internal struct CreateIndexesOperation<T: Codable>: Operation {
 
         let command: Document = ["createIndexes": self.collection.name, "indexes": indexData]
 
-        let opts = try encodeOptions(options: options, session: session)
+        let opts = try encodeOptions(options: options, session: self.session)
 
         var reply = Document()
         var error = bson_error_t()

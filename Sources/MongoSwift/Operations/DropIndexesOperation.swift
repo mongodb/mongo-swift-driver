@@ -28,7 +28,7 @@ internal struct DropIndexesOperation<T: Codable>: Operation {
         self.session = session
     }
 
-    internal func execute() throws -> Document {
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> Document {
         let command: Document = ["dropIndexes": self.collection.name, "index": self.index]
         let opts = try encodeOptions(options: self.options, session: self.session)
         var reply = Document()

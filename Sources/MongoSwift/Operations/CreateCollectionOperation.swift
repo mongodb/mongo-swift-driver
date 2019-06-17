@@ -124,7 +124,7 @@ internal struct CreateCollectionOperation<T: Codable>: Operation {
         self.session = session
     }
 
-    internal func execute() throws -> MongoCollection<T> {
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> MongoCollection<T> {
         let opts = try encodeOptions(options: self.options, session: self.session)
         var error = bson_error_t()
 

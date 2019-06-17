@@ -106,6 +106,6 @@ public class MongoCollection<T: Codable> {
     */
     public func drop(options: DropCollectionOptions? = nil, session: ClientSession? = nil) throws {
         let operation = DropCollectionOperation(collection: self, options: options, session: session)
-        try operation.execute()
+        return try self._client.executeOperation(operation, session: session)
     }
 }

@@ -151,7 +151,7 @@ public class MongoDatabase {
     */
     public func drop(options: DropDatabaseOptions? = nil, session: ClientSession? = nil) throws {
         let operation = DropDatabaseOperation(database: self, options: options, session: session)
-        try operation.execute()
+        return try self._client.executeOperation(operation, session: session)
     }
 
     /**
@@ -232,7 +232,7 @@ public class MongoDatabase {
                                                   type: type,
                                                   options: options,
                                                   session: session)
-        return try operation.execute()
+        return try self._client.executeOperation(operation, session: session)
     }
 
     /**
@@ -280,6 +280,6 @@ public class MongoDatabase {
                            options: RunCommandOptions? = nil,
                            session: ClientSession? = nil) throws -> Document {
         let operation = RunCommandOperation(database: self, command: command, options: options, session: session)
-        return try operation.execute()
+        return try self._client.executeOperation(operation, session: session)
     }
 }

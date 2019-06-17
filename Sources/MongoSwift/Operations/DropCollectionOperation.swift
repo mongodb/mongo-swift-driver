@@ -12,7 +12,7 @@ internal struct DropCollectionOperation<T: Codable>: Operation {
         self.session = session
     }
 
-    internal func execute() throws {
+    internal func execute(using connection: Connection, session: ClientSession?) throws {
         let command: Document = ["drop": self.collection.name]
         let opts = try encodeOptions(options: options, session: self.session)
 

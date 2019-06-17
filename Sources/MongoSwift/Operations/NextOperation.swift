@@ -8,12 +8,15 @@ internal struct NextOperation<T: Codable>: Operation {
         self.cursor = cursor
     }
 
-    internal func execute() throws -> T? {
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> T? {
+        // NOTE: this method does not actually use the `connection` parameter passed in. for the moment, it is only
+        // here so that `NextOperation` conforms to `Operation`. if we eventually rewrite MongoCursor to no longer
+        // wrap a mongoc cursor then we will use the connection here.
         guard let cursor = self.cursor._cursor else {
             throw UserError.logicError(message: "Tried to iterate a closed cursor.")
         }
 
-        if let session = self.cursor._session, !session.active {
+        if let session = session, !session.active {
             throw ClientSession.SessionInactiveError
         }
 

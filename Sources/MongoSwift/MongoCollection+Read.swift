@@ -75,7 +75,7 @@ extension MongoCollection {
                       options: CountOptions? = nil,
                       session: ClientSession? = nil) throws -> Int {
         let operation = CountOperation(collection: self, filter: filter, options: options, session: session)
-        return try operation.execute()
+        return try self._client.executeOperation(operation, session: session)
     }
 
     /**
@@ -133,7 +133,7 @@ extension MongoCollection {
                                           filter: filter,
                                           options: options,
                                           session: session)
-        return try operation.execute()
+        return try self._client.executeOperation(operation, session: session)
     }
 }
 

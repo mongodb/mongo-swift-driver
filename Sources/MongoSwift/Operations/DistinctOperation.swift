@@ -33,7 +33,7 @@ public struct DistinctOptions: Codable {
 }
 
 /// An operation corresponding to a "distinct" command on a collection.
-internal struct DistinctOperation<T: Codable> {
+internal struct DistinctOperation<T: Codable>: Operation {
     private let collection: MongoCollection<T>
     private let fieldName: String
     private let filter: Document
@@ -52,7 +52,7 @@ internal struct DistinctOperation<T: Codable> {
         self.session = session
     }
 
-    internal func execute() throws -> [BSONValue] {
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> [BSONValue] {
         let collName = String(cString: mongoc_collection_get_name(self.collection._collection))
         let command: Document = [
             "distinct": collName,
