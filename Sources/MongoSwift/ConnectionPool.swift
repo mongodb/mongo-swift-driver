@@ -18,8 +18,8 @@ internal class ConnectionPool {
         case single(client: OpaquePointer)
         /// Indicates that we are in pooled mode using the associated pointer to a `mongoc_client_pool_t`.
         case pooled(pool: OpaquePointer)
-        /// Indicates that the `ConnectionPool` has been closed.
-        case closed
+        /// Indicates that the `ConnectionPool` has been closed and contains no connections.
+        case none
     }
 
     /// The mode of this `ConnectionPool`.
@@ -62,10 +62,10 @@ internal class ConnectionPool {
             mongoc_client_destroy(clientHandle)
         case .pooled:
             fatalError("Pooled mode is not yet implemented")
-        case .closed:
+        case .none:
             return
         }
-        self.mode = .closed
+        self.mode = .none
     }
 
     /// Checks out a connection. This connection must be returned to the pool via `checkIn`.
@@ -75,7 +75,7 @@ internal class ConnectionPool {
             return Connection(clientHandle)
         case .pooled:
             fatalError("Pooled mode is not yet implemented")
-        case .closed:
+        case .none:
             throw RuntimeError.internalError(message: "ConnectionPool was already closed")
         }
     }
@@ -87,7 +87,7 @@ internal class ConnectionPool {
             return
         case .pooled:
             fatalError("Pooled mode is not yet implemented")
-        case .closed:
+        case .none:
             fatalError("ConnectionPool was already closed")
         }
     }
@@ -108,7 +108,7 @@ internal class ConnectionPool {
             mongoc_client_set_apm_callbacks(clientHandle, callbacks, Unmanaged.passUnretained(client).toOpaque())
         case .pooled:
             fatalError("Pooled mode is not yet implemented")
-        case .closed:
+        case .none:
             fatalError("ConnectionPool was already closed")
         }
     }
