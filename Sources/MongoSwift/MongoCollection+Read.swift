@@ -74,7 +74,7 @@ extension MongoCollection {
     public func count(_ filter: Document = [:],
                       options: CountOptions? = nil,
                       session: ClientSession? = nil) throws -> Int {
-        let operation = CountOperation(collection: self, filter: filter, options: options, session: session)
+        let operation = CountOperation(collection: self, filter: filter, options: options)
         return try self._client.executeOperation(operation, session: session)
     }
 
@@ -128,11 +128,7 @@ extension MongoCollection {
                          filter: Document = [:],
                          options: DistinctOptions? = nil,
                          session: ClientSession? = nil) throws -> [BSONValue] {
-        let operation = DistinctOperation(collection: self,
-                                          fieldName: fieldName,
-                                          filter: filter,
-                                          options: options,
-                                          session: session)
+        let operation = DistinctOperation(collection: self, fieldName: fieldName, filter: filter, options: options)
         return try self._client.executeOperation(operation, session: session)
     }
 }

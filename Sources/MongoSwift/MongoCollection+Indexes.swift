@@ -219,7 +219,7 @@ extension MongoCollection {
     public func createIndexes(_ models: [IndexModel],
                               options: CreateIndexOptions? = nil,
                               session: ClientSession? = nil) throws -> [String] {
-        let operation = CreateIndexesOperation(collection: self, models: models, options: options, session: session)
+        let operation = CreateIndexesOperation(collection: self, models: models, options: options)
         return try self._client.executeOperation(operation, session: session)
     }
 
@@ -318,7 +318,7 @@ extension MongoCollection {
     private func _dropIndexes(index: BSONValue,
                               options: DropIndexOptions?,
                               session: ClientSession?) throws -> Document {
-        let operation = DropIndexesOperation(collection: self, index: index, options: options, session: session)
+        let operation = DropIndexesOperation(collection: self, index: index, options: options)
         return try self._client.executeOperation(operation, session: session)
     }
 

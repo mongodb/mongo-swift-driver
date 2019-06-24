@@ -150,7 +150,7 @@ public class MongoDatabase {
     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
     */
     public func drop(options: DropDatabaseOptions? = nil, session: ClientSession? = nil) throws {
-        let operation = DropDatabaseOperation(database: self, options: options, session: session)
+        let operation = DropDatabaseOperation(database: self, options: options)
         return try self._client.executeOperation(operation, session: session)
     }
 
@@ -227,11 +227,7 @@ public class MongoDatabase {
                                              withType type: T.Type,
                                              options: CreateCollectionOptions? = nil,
                                              session: ClientSession? = nil) throws -> MongoCollection<T> {
-        let operation = CreateCollectionOperation(database: self,
-                                                  name: name,
-                                                  type: type,
-                                                  options: options,
-                                                  session: session)
+        let operation = CreateCollectionOperation(database: self, name: name, type: type, options: options)
         return try self._client.executeOperation(operation, session: session)
     }
 
@@ -279,7 +275,7 @@ public class MongoDatabase {
     public func runCommand(_ command: Document,
                            options: RunCommandOptions? = nil,
                            session: ClientSession? = nil) throws -> Document {
-        let operation = RunCommandOperation(database: self, command: command, options: options, session: session)
+        let operation = RunCommandOperation(database: self, command: command, options: options)
         return try self._client.executeOperation(operation, session: session)
     }
 }

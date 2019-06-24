@@ -23,7 +23,7 @@ internal struct DefaultOperationExecutor: OperationExecutor {
                                         session: ClientSession?) throws -> T.OperationResult {
         // TODO SWIFT-374: if session is non-nil, use its underlying Connection
         return try client.connectionPool.withConnection { conn in
-            try operation.execute(using: conn, session: nil)
+            try operation.execute(using: conn, session: session)
         }
     }
 }

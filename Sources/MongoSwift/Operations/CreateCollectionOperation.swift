@@ -110,22 +110,16 @@ internal struct CreateCollectionOperation<T: Codable>: Operation {
     private let name: String
     private let type: T.Type
     private let options: CreateCollectionOptions?
-    private let session: ClientSession?
 
-    internal init(database: MongoDatabase,
-                  name: String,
-                  type: T.Type,
-                  options: CreateCollectionOptions?,
-                  session: ClientSession?) {
+    internal init(database: MongoDatabase, name: String, type: T.Type, options: CreateCollectionOptions?) {
         self.database = database
         self.name = name
         self.type = type
         self.options = options
-        self.session = session
     }
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> MongoCollection<T> {
-        let opts = try encodeOptions(options: self.options, session: self.session)
+        let opts = try encodeOptions(options: self.options, session: session)
         var error = bson_error_t()
 
         guard let collection = mongoc_database_create_collection(

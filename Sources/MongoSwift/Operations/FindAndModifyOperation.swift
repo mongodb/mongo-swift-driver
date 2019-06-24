@@ -122,25 +122,22 @@ internal struct FindAndModifyOperation<T: Codable>: Operation {
     private let filter: Document
     private let update: Document?
     private let options: FindAndModifyOptionsConvertible?
-    private let session: ClientSession?
 
     internal init(collection: MongoCollection<T>,
                   filter: Document,
                   update: Document?,
-                  options: FindAndModifyOptionsConvertible?,
-                  session: ClientSession?) {
+                  options: FindAndModifyOptionsConvertible?) {
         self.collection = collection
         self.filter = filter
         self.update = update
         self.options = options
-        self.session = session
     }
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> T? {
         // we always need to send *something*, as findAndModify requires one of "remove"
         // or "update" to be set.
         let opts = try self.options?.asFindAndModifyOptions() ?? FindAndModifyOptions()
-        if let session = self.session { try opts.setSession(session) }
+        if let session = session { try opts.setSession(session) }
         if let update = self.update { try opts.setUpdate(update) }
 
         var reply = Document()

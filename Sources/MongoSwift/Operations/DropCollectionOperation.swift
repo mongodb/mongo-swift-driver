@@ -3,18 +3,16 @@ import mongoc
 /// An operation corresponding to a "drop" command on a MongoCollection.
 internal struct DropCollectionOperation<T: Codable>: Operation {
     private let collection: MongoCollection<T>
-    private let session: ClientSession?
     private let options: DropCollectionOptions?
 
-    internal init(collection: MongoCollection<T>, options: DropCollectionOptions?, session: ClientSession?) {
+    internal init(collection: MongoCollection<T>, options: DropCollectionOptions?) {
         self.collection = collection
         self.options = options
-        self.session = session
     }
 
     internal func execute(using connection: Connection, session: ClientSession?) throws {
         let command: Document = ["drop": self.collection.name]
-        let opts = try encodeOptions(options: options, session: self.session)
+        let opts = try encodeOptions(options: options, session: session)
 
         var reply = Document()
         var error = bson_error_t()

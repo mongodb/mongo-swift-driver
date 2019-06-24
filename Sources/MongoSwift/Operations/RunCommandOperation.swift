@@ -33,18 +33,16 @@ internal struct RunCommandOperation: Operation {
     private let database: MongoDatabase
     private let command: Document
     private let options: RunCommandOptions?
-    private let session: ClientSession?
 
-    internal init(database: MongoDatabase, command: Document, options: RunCommandOptions?, session: ClientSession?) {
+    internal init(database: MongoDatabase, command: Document, options: RunCommandOptions?) {
         self.database = database
         self.command = command
         self.options = options
-        self.session = session
     }
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> Document {
         let rp = self.options?.readPreference?._readPreference
-        let opts = try encodeOptions(options: self.options, session: self.session)
+        let opts = try encodeOptions(options: self.options, session: session)
         var reply = Document()
         var error = bson_error_t()
         let success = withMutableBSONPointer(to: &reply) { replyPtr in
