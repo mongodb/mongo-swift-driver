@@ -400,10 +400,10 @@ public class BulkWriteOperation: Operation {
         let result = try BulkWriteResult(reply: reply, insertedIds: self.insertedIds)
 
         guard serverId != 0 else {
-            throw extractMongoError(error: error,
+            throw extractMongoError(bulkOp: self,
+                                    error: error,
                                     reply: reply,
-                                    bulkOp: self,
-                                    result: self.isAcknowledged ? result : nil)
+                                    partialResult: self.isAcknowledged ? result : nil)
         }
 
         return self.isAcknowledged ? result : nil

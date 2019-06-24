@@ -228,14 +228,11 @@ private func parseMongocError(_ error: bson_error_t, reply: Document?) -> MongoE
 }
 
 /// Internal function used to get an appropriate error from a libmongoc error and/or a server reply to a command.
-internal func extractMongoError(error bsonError: bson_error_t,
-                                reply: Document? = nil,
-                                bulkOp bulkWrite: BulkWriteOperation? = nil,
-                                result: BulkWriteResult? = nil) -> MongoError {
+internal func extractMongoError(error bsonError: bson_error_t, reply: Document? = nil) -> MongoError {
     // if the reply is nil or writeErrors or writeConcernErrors aren't present, then this is likely a commandError.
     guard let serverReply = reply,
           !(serverReply["writeErrors"] as? [BSONValue] ?? []).isEmpty ||
-          !(serverReply["writeConcernErrors"] as? [BSONValue] ?? []).isEmpty else {
+                  !(serverReply["writeConcernErrors"] as? [BSONValue] ?? []).isEmpty else {
         return parseMongocError(bsonError, reply: reply)
     }
 
@@ -243,92 +240,97 @@ internal func extractMongoError(error bsonError: bson_error_t,
             "Message: \(toErrorString(bsonError))")
 
     do {
-        if let bulkWrite = bulkWrite {
-            return try getBulkWriteError(from: serverReply, for: bulkWrite, partialResult: result) ?? fallback
+        var writeError: WriteError?
+        if let writeErrors = serverReply["writeErrors"] as? [Document], !writeErrors.isEmpty {
+            writeError = try BSONDecoder().decode(WriteError.self, from: writeErrors[0])
         }
-        return try getWriteError(from: serverReply) ?? fallback
+        let wcError = try extractWriteConcernError(from: serverReply)
+
+        guard writeError != nil || wcError != nil else {
+            return fallback
+        }
+
+        return ServerError.writeError(
+                writeError: writeError,
+                writeConcernError: wcError,
+                errorLabels: serverReply["errorLabels"] as? [String]
+        )
+    } catch {
+        return fallback
+    }
+}
+
+/// Internal function used to get an appropriate error from a libmongoc error and/or a server reply to a
+/// `BulkWriteOperation`. If a `ServerError.bulkWriteError` is extracted and a partial result is provided, an updated
+/// result with the failed results filtered out will be returned as part of the error.
+internal func extractMongoError(bulkOp: BulkWriteOperation,
+                                error: bson_error_t,
+                                reply: Document? = nil,
+                                partialResult: BulkWriteResult? = nil) -> Error {
+    // if the reply is nil or writeErrors or writeConcernErrors aren't present, then this is likely a commandError.
+    guard let serverReply = reply,
+          !(serverReply["writeErrors"] as? [BSONValue] ?? []).isEmpty ||
+          !(serverReply["writeConcernErrors"] as? [BSONValue] ?? []).isEmpty else {
+        return parseMongocError(error, reply: reply)
+    }
+
+    let fallback = RuntimeError.internalError(message: "Got error from the server but couldn't parse it. " +
+            "Message: \(toErrorString(error))")
+
+    do {
+        var bulkWriteErrors: [BulkWriteError] = []
+        if let writeErrors = serverReply["writeErrors"] as? [Document] {
+            bulkWriteErrors = try writeErrors.map { try BSONDecoder().decode(BulkWriteError.self, from: $0) }
+        }
+
+        // Need to create new result that omits the ids that failed in insertedIds.
+        var errResult: BulkWriteResult?
+        if let result = partialResult {
+            let ordered = try bulkOp.opts?.getValue(for: "ordered") as? Bool ?? true
+
+            // remove the unsuccessful inserts/upserts from the insertedIds/upsertedIds maps
+            let filterFailures = { (map: [Int: BSONValue], nSucceeded: Int) -> [Int: BSONValue] in
+                guard nSucceeded > 0 else {
+                    return [:]
+                }
+
+                if ordered { // remove all after the last index that succeeded
+                    let maxIndex = map.keys.sorted()[nSucceeded - 1]
+                    return map.filter { $0.key <= maxIndex }
+                } else { // if unordered, just remove those that have write errors associated with them
+                    let errs = bulkWriteErrors.map { $0.index }
+                    return map.filter { !errs.contains($0.key) }
+                }
+            }
+
+            errResult = BulkWriteResult(
+                    deletedCount: result.deletedCount,
+                    insertedCount: result.insertedCount,
+                    insertedIds: filterFailures(result.insertedIds, result.insertedCount),
+                    matchedCount: result.matchedCount,
+                    modifiedCount: result.modifiedCount,
+                    upsertedCount: result.upsertedCount,
+                    upsertedIds: filterFailures(result.upsertedIds, result.upsertedCount)
+            )
+        }
+
+        return ServerError.bulkWriteError(
+                writeErrors: bulkWriteErrors,
+                writeConcernError: try extractWriteConcernError(from: serverReply),
+                result: errResult,
+                errorLabels: serverReply["errorLabels"] as? [String]
+        )
     } catch {
         return fallback
     }
 }
 
 /// Extracts a `WriteConcernError` from a server reply.
-private func getWriteConcernError(from reply: Document) throws -> WriteConcernError? {
+private func extractWriteConcernError(from reply: Document) throws -> WriteConcernError? {
     guard let writeConcernErrors = reply["writeConcernErrors"] as? [Document], !writeConcernErrors.isEmpty else {
         return nil
     }
     return try BSONDecoder().decode(WriteConcernError.self, from: writeConcernErrors[0])
-}
-
-/// Extracts a `ServerError.writeError` from a server reply.
-private func getWriteError(from reply: Document) throws -> MongoError? {
-    var writeError: WriteError?
-    if let writeErrors = reply["writeErrors"] as? [Document], !writeErrors.isEmpty {
-        writeError = try BSONDecoder().decode(WriteError.self, from: writeErrors[0])
-    }
-    let wcError = try getWriteConcernError(from: reply)
-
-    guard writeError != nil || wcError != nil else {
-        return nil
-    }
-
-    return ServerError.writeError(
-            writeError: writeError,
-            writeConcernError: wcError,
-            errorLabels: reply["errorLabels"] as? [String]
-    )
-}
-
-/// Extracts a `ServerError.bulkWriteError` from a server reply.
-/// If a partial result is provided, an updated one with the failed results filtered out will be returned as part of the
-/// error.
-private func getBulkWriteError(from reply: Document,
-                               for bulkWrite: BulkWriteOperation,
-                               partialResult: BulkWriteResult?) throws -> MongoError? {
-    let decoder = BSONDecoder()
-
-    var bulkWriteErrors: [BulkWriteError] = []
-    if let writeErrors = reply["writeErrors"] as? [Document] {
-        bulkWriteErrors = try writeErrors.map { try decoder.decode(BulkWriteError.self, from: $0) }
-    }
-
-    // Need to create new result that omits the ids that failed in insertedIds.
-    var errResult: BulkWriteResult?
-    if let result = partialResult {
-        let ordered = try bulkWrite.opts?.getValue(for: "ordered") as? Bool ?? true
-
-        // remove the unsuccessful inserts/upserts from the insertedIds/upsertedIds maps
-        let filterFailures = { (map: [Int: BSONValue], nSucceeded: Int) -> [Int: BSONValue] in
-            guard nSucceeded > 0 else {
-                return [:]
-            }
-
-            if ordered { // remove all after the last index that succeeded
-                let maxIndex = map.keys.sorted()[nSucceeded - 1]
-                return map.filter { $0.key <= maxIndex }
-            } else { // if unordered, just remove those that have write errors associated with them
-                let errs = bulkWriteErrors.map { $0.index }
-                return map.filter { !errs.contains($0.key) }
-            }
-        }
-
-        errResult = BulkWriteResult(
-                deletedCount: result.deletedCount,
-                insertedCount: result.insertedCount,
-                insertedIds: filterFailures(result.insertedIds, result.insertedCount),
-                matchedCount: result.matchedCount,
-                modifiedCount: result.modifiedCount,
-                upsertedCount: result.upsertedCount,
-                upsertedIds: filterFailures(result.upsertedIds, result.upsertedCount)
-        )
-    }
-
-    return ServerError.bulkWriteError(
-            writeErrors: bulkWriteErrors,
-            writeConcernError: try getWriteConcernError(from: reply),
-            result: errResult,
-            errorLabels: reply["errorLabels"] as? [String]
-    )
 }
 
 /// Internal function used by write methods performing single writes that are implemented via the bulk API. Catches any
