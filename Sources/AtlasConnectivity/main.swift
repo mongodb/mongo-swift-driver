@@ -1,7 +1,7 @@
 import Foundation
 import MongoSwift
 
-let configs = ["ATLAS_REPL", "ATLAS_SHRD", "ATLAS_FREE", "ATLAS_TLS11", "ATLAS_TLS12"]
+private let configs = ["ATLAS_REPL", "ATLAS_SHRD", "ATLAS_FREE", "ATLAS_TLS11", "ATLAS_TLS12"]
 
 for config in configs {
     print("Testing config \(config)... ", terminator: "")
