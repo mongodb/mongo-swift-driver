@@ -118,7 +118,7 @@ public struct WriteError: Codable {
     }
 
     // TODO: can remove this once SERVER-36755 is resolved
-    public init(code: ServerErrorCode, codeName: String, message: String) {
+    internal init(code: ServerErrorCode, codeName: String, message: String) {
         self.code = code
         self.codeName = codeName
         self.message = message
