@@ -321,14 +321,17 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
 
     typealias InsertOneModel = MongoCollection<Document>.InsertOneModel
     func testWriteConcernErrors() throws {
-        guard MongoSwiftTestCase.topologyType != .single else {
+        // Because the error codes differ between sharded clusters and replica sets for the same command (and the
+        // sharded error is pretty gross), we just skip the sharded clusters. Also, a WriteConcernError isn't
+        // encountered on standalones, so we skip those as well.
+        guard MongoSwiftTestCase.topologyType == .replicaSetWithPrimary else {
             print("Skipping \(self.name) because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
             return
         }
 
         let wc = try WriteConcern(w: .number(100))
         let expectedWCError =
-                WriteConcernError(code: 100, codeName: "CannotSatisfyWriteConcern", details: nil, message: "")
+                WriteConcernError(code: 100, codeName: "", details: nil, message: "")
         let expectedWriteError =
                 ServerError.writeError(writeError: nil, writeConcernError: expectedWCError, errorLabels: nil)
         let expectedBulkResult = BulkWriteResult(insertedCount: 1, insertedIds: [0: 1])
