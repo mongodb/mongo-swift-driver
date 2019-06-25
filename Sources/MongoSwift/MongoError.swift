@@ -178,7 +178,7 @@ public struct BulkWriteError: Codable {
     }
 
     // TODO: can remove this once SERVER-36755 is resolved
-    public init(code: ServerErrorCode, codeName: String, message: String, index: Int) {
+    internal init(code: ServerErrorCode, codeName: String, message: String, index: Int) {
         self.code = code
         self.codeName = codeName
         self.message = message
