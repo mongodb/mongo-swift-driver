@@ -132,7 +132,7 @@ public struct CommandFailedEvent: MongoEvent, InitializableFromOpaquePointer {
         self.commandName = String(cString: mongoc_apm_command_failed_get_command_name(event))
         var error = bson_error_t()
         mongoc_apm_command_failed_get_error(event, &error)
-        self.failure = parseMongocError(error) // should always return a ServerError.commandError
+        self.failure = extractMongoError(error: error) // should always return a ServerError.commandError
         self.requestId = mongoc_apm_command_failed_get_request_id(event)
         self.operationId = mongoc_apm_command_failed_get_operation_id(event)
         self.connectionId = ConnectionId(mongoc_apm_command_failed_get_host(event))
@@ -359,7 +359,7 @@ public struct ServerHeartbeatFailedEvent: MongoEvent, InitializableFromOpaquePoi
         self.duration = mongoc_apm_server_heartbeat_failed_get_duration(event)
         var error = bson_error_t()
         mongoc_apm_server_heartbeat_failed_get_error(event, &error)
-        self.failure = parseMongocError(error)
+        self.failure = extractMongoError(error: error)
         self.connectionId = ConnectionId(mongoc_apm_server_heartbeat_failed_get_host(event))
     }
 }

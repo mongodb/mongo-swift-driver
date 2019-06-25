@@ -153,7 +153,7 @@ internal struct FindAndModifyOperation<T: Codable>: Operation {
                                                         &error)
         }
         guard success else {
-            throw getErrorFromReply(bsonError: error, from: reply)
+            throw extractMongoError(error: error, reply: reply)
         }
 
         guard let value = try reply.getValue(for: "value") as? Document else {

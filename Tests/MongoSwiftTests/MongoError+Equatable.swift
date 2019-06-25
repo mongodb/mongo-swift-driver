@@ -20,9 +20,10 @@ extension RuntimeError: Equatable {
 extension ServerError: Equatable {
     public static func == (lhs: ServerError, rhs: ServerError) -> Bool {
         switch (lhs, rhs) {
-        case let (.commandError(code: lhsCode, message: _, errorLabels: lhsErrorLabels),
-                  .commandError(code: rhsCode, message: _, errorLabels: rhsErrorLabels)):
+        case let (.commandError(code: lhsCode, codeName: lhsCodeName, message: _, errorLabels: lhsErrorLabels),
+                  .commandError(code: rhsCode, codeName: rhsCodeName, message: _, errorLabels: rhsErrorLabels)):
             return lhsCode == rhsCode
+                    && lhsCodeName == rhsCodeName
                     && sortAndCompareOptionalArrays(lhs: lhsErrorLabels, rhs: rhsErrorLabels, cmp: { $0 < $1 })
         case let (.writeError(writeError: lhsWriteError, writeConcernError: lhsWCError, errorLabels: lhsErrorLabels),
                   .writeError(writeError: rhsWriteError, writeConcernError: rhsWCError, errorLabels: rhsErrorLabels)):
@@ -75,12 +76,14 @@ extension UserError: Equatable {
     }
 }
 
+// TODO: start comparing codeName once it is returned more consistently (SERVER-36755)
 extension WriteError: Equatable {
     public static func == (lhs: WriteError, rhs: WriteError) -> Bool {
         return lhs.code == rhs.code
     }
 }
 
+// TODO: start comparing codeName once it is returned more consistently (SERVER-36755)
 extension BulkWriteError: Equatable {
     public static func == (lhs: BulkWriteError, rhs: BulkWriteError) -> Bool {
         return lhs.code == rhs.code && lhs.index == rhs.index
@@ -89,7 +92,7 @@ extension BulkWriteError: Equatable {
 
 extension WriteConcernError: Equatable {
     public static func == (lhs: WriteConcernError, rhs: WriteConcernError) -> Bool {
-        return lhs.code == rhs.code && lhs.details == rhs.details
+        return lhs.code == rhs.code && lhs.codeName == rhs.codeName && lhs.details == rhs.details
     }
 }
 

@@ -32,7 +32,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
     override func tearDown() {
         do {
             try coll.drop()
-        } catch let ServerError.commandError(code, _, _) where code == 26 {
+        } catch let ServerError.commandError(code, _, _, _) where code == 26 {
             // ignore ns not found errors
         } catch {
             fail("encountered error when tearing down: \(error)")
@@ -106,7 +106,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
 
         // Expect a duplicate key error (11000)
         let expectedError = ServerError.bulkWriteError(
-                writeErrors: [BulkWriteError(code: 11000, message: "", index: 1)],
+                writeErrors: [BulkWriteError(code: 11000, codeName: "DuplicateKey", message: "", index: 1)],
                 writeConcernError: nil,
                 result: expectedResult,
                 errorLabels: nil)

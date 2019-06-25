@@ -73,7 +73,7 @@ extension MongoCollection {
 
             guard mongoc_bulk_operation_remove_one_with_opts(
                 bulk.bulk, self.filter._bson, opts._bson, &error) else {
-                throw parseMongocError(error) // Should be invalidArgumentError
+                throw extractMongoError(error: error) // Should be invalidArgumentError
             }
         }
     }
@@ -110,7 +110,7 @@ extension MongoCollection {
             let opts = try bulk.encoder.encode(DeleteModelOptions(collation: self.collation))
 
             guard mongoc_bulk_operation_remove_many_with_opts(bulk.bulk, self.filter._bson, opts._bson, &error) else {
-                throw parseMongocError(error) // should be invalidArgumentError
+                throw extractMongoError(error: error) // should be invalidArgumentError
             }
         }
     }
@@ -141,7 +141,7 @@ extension MongoCollection {
             let document = try bulk.encoder.encode(self.document).withID()
             var error = bson_error_t()
             guard mongoc_bulk_operation_insert_with_opts(bulk.bulk, document._bson, nil, &error) else {
-                throw parseMongocError(error) // should be invalidArgumentError
+                throw extractMongoError(error: error) // should be invalidArgumentError
             }
 
             guard let insertedId = try document.getValue(for: "_id") else {
@@ -205,7 +205,7 @@ extension MongoCollection {
                                                               replacement._bson,
                                                               opts._bson,
                                                               &error) else {
-                throw parseMongocError(error) // should be invalidArgumentError
+                throw extractMongoError(error: error) // should be invalidArgumentError
             }
         }
     }
@@ -273,7 +273,7 @@ extension MongoCollection {
                                                              self.update._bson,
                                                              opts._bson,
                                                              &error) else {
-                throw parseMongocError(error) // should be invalidArgumentError
+                throw extractMongoError(error: error) // should be invalidArgumentError
             }
         }
     }
@@ -335,7 +335,7 @@ extension MongoCollection {
                                                               self.update._bson,
                                                               opts._bson,
                                                               &error) else {
-                throw parseMongocError(error) // should be invalidArgumentError
+                throw extractMongoError(error: error) // should be invalidArgumentError
             }
         }
     }
@@ -400,11 +400,10 @@ public class BulkWriteOperation: Operation {
         let result = try BulkWriteResult(reply: reply, insertedIds: self.insertedIds)
 
         guard serverId != 0 else {
-            throw getErrorFromReply(
-                    bsonError: error,
-                    from: reply,
-                    forBulkWrite: self,
-                    withResult: self.isAcknowledged ? result : nil)
+            throw extractMongoError(bulkOp: self,
+                                    error: error,
+                                    reply: reply,
+                                    partialResult: self.isAcknowledged ? result : nil)
         }
 
         return self.isAcknowledged ? result : nil

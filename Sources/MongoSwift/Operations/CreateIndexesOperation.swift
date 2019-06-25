@@ -49,7 +49,7 @@ internal struct CreateIndexesOperation<T: Codable>: Operation {
                 self.collection._collection, command._bson, opts?._bson, replyPtr, &error)
         }
         guard success else {
-            throw getErrorFromReply(bsonError: error, from: reply)
+            throw extractMongoError(error: error, reply: reply)
         }
 
         return self.models.map { $0.options?.name ?? $0.defaultName }

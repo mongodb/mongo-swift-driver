@@ -73,7 +73,7 @@ internal struct CountOperation<T: Codable>: Operation {
         let count = mongoc_collection_count_with_opts(
             self.collection._collection, MONGOC_QUERY_NONE, self.filter._bson, 0, 0, opts?._bson, rp, &error)
 
-        if count == -1 { throw parseMongocError(error) }
+        guard count != -1 else { throw extractMongoError(error: error) }
 
         return Int(count)
     }

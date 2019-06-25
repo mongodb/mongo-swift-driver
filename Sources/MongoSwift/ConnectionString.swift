@@ -10,7 +10,7 @@ internal class ConnectionString {
     internal init(_ connectionString: String, options: inout ClientOptions) throws {
         var error = bson_error_t()
         guard let uri = mongoc_uri_new_with_error(connectionString, &error) else {
-            throw parseMongocError(error)
+            throw extractMongoError(error: error)
         }
         self._uri = uri
 

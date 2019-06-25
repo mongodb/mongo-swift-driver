@@ -130,7 +130,7 @@ internal struct CreateCollectionOperation<T: Codable>: Operation {
 
         guard let collection = mongoc_database_create_collection(
             self.database._database, self.name, opts?._bson, &error) else {
-            throw parseMongocError(error)
+            throw extractMongoError(error: error)
         }
         mongoc_collection_destroy(collection)
 

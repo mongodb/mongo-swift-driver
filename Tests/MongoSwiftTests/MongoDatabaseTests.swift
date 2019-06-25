@@ -39,7 +39,10 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
 
         // error code 59: CommandNotFound
         expect(try db.runCommand(["asdfsadf": ObjectId()]))
-                .to(throwError(ServerError.commandError(code: 59, message: "", errorLabels: nil)))
+                .to(throwError(ServerError.commandError(code: 59,
+                                                        codeName: "CommandNotFound",
+                                                        message: "",
+                                                        errorLabels: nil)))
     }
 
     func testDropDatabase() throws {
