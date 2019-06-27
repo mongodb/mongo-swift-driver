@@ -65,7 +65,8 @@ final class ClientSessionTests: MongoSwiftTestCase {
 
     // list of operatoins on MongoClient that take in a session
     let clientSessionOps: [ClientSessionOp] = [
-        (name: "listDatabases", { _ = try $0.listDatabases(session: $1).nextOrError() })
+        (name: "listDatabases", { _ = try $0.listDatabases(session: $1) }),
+        (name: "listMongoDatabases", { _ = try $0.listMongoDatabases(session: $1) })
     ]
 
     // iterate over all the different session op types, passing in the provided client/db/collection as needed.
@@ -296,7 +297,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
 
         try client.withSession { session in
             expect(session.clusterTime).to(beNil())
-            _ = try client.listDatabases(session: session).next()
+            _ = try client.listDatabases(session: session)
             expect(session.clusterTime).toNot(beNil())
         }
 

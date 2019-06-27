@@ -8,7 +8,7 @@ final class MongoClientTests: MongoSwiftTestCase {
     func testListDatabases() throws {
         let client = try MongoClient()
         let databases = try client.listDatabases(options: ListDatabasesOptions(nameOnly: true))
-        expect((Array(databases) as [Document]).count).to(beGreaterThan(0))
+        expect(databases.count).to(beGreaterThan(0))
     }
 
     func testOpaqueInitialization() throws {
