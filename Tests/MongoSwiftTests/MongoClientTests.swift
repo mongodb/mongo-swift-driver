@@ -22,8 +22,8 @@ final class MongoClientTests: MongoSwiftTestCase {
         try client.db("db3").collection("c").insertOne(["a": 1])
 
         let dbInfo = try client.listDatabases()
-        expect(dbInfo.databases.map { $0.name }).to(contain(databases))
-        expect(Set(dbInfo.databases.map { $0.name }).count).to(equal(dbInfo.databases.count))
+        expect(dbInfo.map { $0.name }).to(contain(databases))
+        expect(Set(dbInfo.map { $0.name }).count).to(equal(dbInfo.count))
 
         let dbNames = try client.listDatabaseNames()
         expect(dbNames).to(contain(databases))

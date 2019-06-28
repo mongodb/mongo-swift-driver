@@ -242,9 +242,9 @@ public class MongoClient {
      * - SeeAlso: https://docs.mongodb.com/manual/reference/command/listDatabases/
      */
     public func listDatabases(_ filter: Document? = nil,
-                              session: ClientSession? = nil) throws -> ListDatabasesResult {
+                              session: ClientSession? = nil) throws -> [DatabaseSpecification] {
         let operation = ListDatabasesOperation(client: self, filter: filter, options: nil, session: session)
-        guard case let .full(result) = try operation.execute() else {
+        guard case let .specs(result) = try operation.execute() else {
             throw RuntimeError.internalError(message: "Invalid result")
         }
         return result

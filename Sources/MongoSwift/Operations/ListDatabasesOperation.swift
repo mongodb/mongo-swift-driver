@@ -13,15 +13,6 @@ public struct ListDatabasesOptions: Encodable {
     }
 }
 
-/// A struct modeling a response to the `listDatabases` command.
-public struct ListDatabasesResult: Codable {
-    /// The list of database information returned.
-    public let databases: [DatabaseSpecification]
-
-    /// The total size in bytes of all the matching databases.
-    public let totalSize: Int64
-}
-
 /// A struct modeling the information returned from the `listDatabases` command about a single database.
 public struct DatabaseSpecification: Codable {
     /// The name of the database.
@@ -37,7 +28,7 @@ public struct DatabaseSpecification: Codable {
 /// Internal intermediate result of a ListDatabases command.
 internal enum ListDatabasesResults {
     /// Includes the names and sizes.
-    case full(ListDatabasesResult)
+    case specs([DatabaseSpecification])
 
     /// Only includes the names.
     case names([String])
@@ -87,12 +78,14 @@ internal struct ListDatabasesOperation {
             throw extractMongoError(error: error, reply: reply)
         }
 
+        guard let databases = reply["databases"] as? [Document] else {
+            throw RuntimeError.internalError(message: "Invalid server response: \(reply)")
+        }
+
         if self.options?.nameOnly ?? false {
-            guard let databases = reply["databases"] as? [Document] else {
-                throw RuntimeError.internalError(message: "Invalid server response: \(reply)")
-            }
             return .names(databases.map { $0["name"] as? String ?? "" })
         }
-        return .full(try self.client.decoder.decode(ListDatabasesResult.self, from: reply))
+
+        return try .specs(databases.map { try self.client.decoder.decode(DatabaseSpecification.self, from: $0) })
     }
 }
