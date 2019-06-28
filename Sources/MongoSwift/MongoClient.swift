@@ -236,9 +236,10 @@ public class MongoClient {
      * - Returns: A `MongoCursor` over `Document`s describing the databases matching provided criteria
      *
      * - Throws:
-     *   - `UserError.invalidArgumentError` if the options passed are an invalid combination.
      *   - `UserError.logicError` if the provided session is inactive.
      *   - `EncodingError` if an error is encountered while encoding the options to BSON.
+     *
+     * - SeeAlso: https://docs.mongodb.com/manual/reference/command/listDatabases/
      */
     public func listDatabases(_ filter: Document? = nil,
                               session: ClientSession? = nil) throws -> ListDatabasesResult {

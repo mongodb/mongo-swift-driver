@@ -43,7 +43,7 @@ internal enum ListDatabasesResults {
     case names([String])
 }
 
-/// An operation corresponding to a "distinct" command on a collection.
+/// An operation corresponding to a "listDatabases" command on a collection.
 internal struct ListDatabasesOperation {
     private let filter: Document?
     private let session: ClientSession?
