@@ -61,17 +61,6 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
     }
 }
 
-/// Options to use when listing available databases.
-public struct ListDatabasesOptions: Encodable {
-    /// Optionally indicate whether only names should be returned.
-    public var nameOnly: Bool?
-
-    /// Convenience constructor for basic construction
-    public init(nameOnly: Bool? = nil) {
-        self.nameOnly = nameOnly
-    }
-}
-
 /// Options to use when retrieving a `MongoDatabase` from a `MongoClient`.
 public struct DatabaseOptions: CodingStrategyProvider {
     /// A read concern to set on the retrieved database. If one is not specified, the database will inherit the
@@ -253,20 +242,11 @@ public class MongoClient {
      */
     public func listDatabases(_ filter: Document? = nil,
                               session: ClientSession? = nil) throws -> ListDatabasesResult {
-        var opts = try encodeOptions(options: Document(), session: session)
-        if let filter = filter {
-            if opts != nil {
-                opts?["filter"] = filter
-            } else {
-                opts = ["filter": filter]
-            }
+        let operation = ListDatabasesOperation(client: self, filter: filter, options: nil, session: session)
+        guard case let .full(result) = try operation.execute() else {
+            throw RuntimeError.internalError(message: "Invalid result")
         }
-
-        guard let cursor = mongoc_client_find_databases_with_opts(self._client, opts?._bson) else {
-            fatalError("Couldn't get cursor from the server")
-        }
-
-        return Array(try MongoCursor(from: cursor, client: self, decoder: self.decoder, session: session))
+        return result
     }
 
     /**
@@ -296,20 +276,14 @@ public class MongoClient {
      *   - `UserError.logicError` if the provided session is inactive.
      */
     public func listDatabaseNames(_ filter: Document? = nil, session: ClientSession? = nil) throws -> [String] {
-        var opts: Document = ["nameOnly": true]
-        if let filter = filter {
-            opts["filter"] = filter
+        let operation = ListDatabasesOperation(client: self,
+                                               filter: filter,
+                                               options: ListDatabasesOptions(nameOnly: true),
+                                               session: session)
+        guard case let .names(result) = try operation.execute() else {
+            throw RuntimeError.internalError(message: "Invalid result")
         }
-
-        guard let cursor = mongoc_client_find_databases_with_opts(self._client, opts._bson) else {
-            fatalError("Couldn't get cursor from the server")
-        }
-        return try MongoCursor<Document>(from: cursor, client: self, decoder: self.decoder, session: session).map {
-            guard let name = $0["name"] as? String else {
-                throw RuntimeError.internalError(message: "Server response didn't contain a database name: \($0)")
-            }
-            return name
-        }
+        return result
     }
 
     /**

@@ -7,8 +7,34 @@ import XCTest
 final class MongoClientTests: MongoSwiftTestCase {
     func testListDatabases() throws {
         let client = try MongoClient()
-        let databases = try client.listDatabases(options: ListDatabasesOptions(nameOnly: true))
-        expect(databases.count).to(beGreaterThan(0))
+
+        let databases = [
+            "db1",
+            "empty",
+            "db3"
+        ]
+
+        databases.forEach {
+            try? client.db($0).drop()
+            _ = try? client.db($0).createCollection("c")
+        }
+        try client.db("db1").collection("c").insertOne(["a": 1])
+        try client.db("db3").collection("c").insertOne(["a": 1])
+
+        let dbInfo = try client.listDatabases()
+        expect(dbInfo.databases.map { $0.name }).to(contain(databases))
+        expect(Set(dbInfo.databases.map { $0.name }).count).to(equal(dbInfo.databases.count))
+
+        let dbNames = try client.listDatabaseNames()
+        expect(dbNames).to(contain(databases))
+        expect(Set(dbNames).count).to(equal(dbNames.count))
+
+        let dbObjects = try client.listMongoDatabases()
+        expect(dbObjects.map { $0.name }).to(contain(databases))
+        expect(Set(dbObjects.map { $0.name }).count).to(equal(dbObjects.count))
+
+        expect(try client.listDatabaseNames(["name": "db1"])).to(equal(["db1"]))
+        expect(try client.listDatabaseNames(["empty": false])).to(contain(["db1", "db3"]))
     }
 
     func testOpaqueInitialization() throws {

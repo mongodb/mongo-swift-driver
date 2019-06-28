@@ -31,7 +31,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         expect(try db.listCollections(options: opts)).to(beEmpty())
 
         expect(try db.drop()).toNot(throwError())
-        let names = try client.listDatabases(options: ListDatabasesOptions(nameOnly: true)).map { $0.name }
+        let names = try client.listDatabaseNames()
         expect(names).toNot(contain([type(of: self).testDatabase]))
 
         expect(db.name).to(equal(type(of: self).testDatabase))
