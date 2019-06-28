@@ -176,6 +176,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         let expectedErrorOrdered = ServerError.bulkWriteError(
                 writeErrors: expectedErrorsOrdered,
                 writeConcernError: nil,
+                otherError: nil,
                 result: expectedResultOrdered,
                 errorLabels: nil)
 
@@ -189,6 +190,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         let expectedError = ServerError.bulkWriteError(
                 writeErrors: expectedErrors,
                 writeConcernError: nil,
+                otherError: nil,
                 result: expectedResult,
                 errorLabels: nil)
 

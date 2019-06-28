@@ -3,31 +3,6 @@ import Foundation
 import Nimble
 import XCTest
 
-private struct TestRequirement: Decodable {
-    let minServerVersion: ServerVersion?
-    let maxServerVersion: ServerVersion?
-    let topology: [String]?
-
-    func isMet(by version: ServerVersion) -> Bool {
-        if let minVersion = self.minServerVersion {
-            guard minVersion <= version else {
-                return false
-            }
-        }
-        if let maxVersion = self.maxServerVersion {
-            guard maxVersion >= version else {
-                return false
-            }
-        }
-        if let topologies = self.topology?.map({ TopologyDescription.TopologyType(from: $0) }) {
-            guard topologies.contains(MongoSwiftTestCase.topologyType) else {
-                return false
-            }
-        }
-        return true
-    }
-}
-
 /// Struct representing a single test within a spec test JSON file.
 private struct RetryableWritesTest: Decodable, SpecTest {
     let description: String
@@ -42,9 +17,9 @@ private struct RetryableWritesTest: Decodable, SpecTest {
     /// This field has no effect for non-sharded topologies.
     let useMultipleMongoses: Bool?
 
-    /// The optional configureFailPoint command document to run to configure a fail point on the primary server.
+    /// The optional fail point to configure before running this test.
     /// This option and useMultipleMongoses: true are mutually exclusive.
-    let failPoint: Document?
+    let failPoint: FailPoint?
 }
 
 /// Struct representing a single retryable-writes spec test JSON file.
@@ -66,19 +41,11 @@ private struct RetryableWritesTestFile: Decodable {
     let tests: [RetryableWritesTest]
 }
 
-final class RetryableWritesTests: MongoSwiftTestCase {
-    /// If a failpoint was set on the current test being run, the command in this document will disable it.
-    var disableFailPointCommand: Document?
+final class RetryableWritesTests: MongoSwiftTestCase, FailPointConfigured {
+    var activeFailPoint: FailPoint?
 
     override func tearDown() {
-        if let cmd = self.disableFailPointCommand {
-            do {
-                let client = try MongoClient(MongoSwiftTestCase.connStr)
-                try client.db("admin").runCommand(cmd)
-            } catch {
-                print("couldn't disable failpoints after failure: \(error)")
-            }
-        }
+        self.disableActiveFailPoint()
     }
 
     override func setUp() {
@@ -102,7 +69,7 @@ final class RetryableWritesTests: MongoSwiftTestCase {
         let tests: [RetryableWritesTestFile] = try testFiles.map { fileName in
             let url = URL(fileURLWithPath: "\(testFilesPath)/\(fileName)")
             let data = try String(contentsOf: url).data(using: .utf8)!
-            var testFile = try JSONDecoder().decode(RetryableWritesTestFile.self, from: data)
+            var testFile = try BSONDecoder().decode(RetryableWritesTestFile.self, from: Document(fromJSON: data))
             testFile.name = fileName
             return testFile
         }
@@ -112,8 +79,8 @@ final class RetryableWritesTests: MongoSwiftTestCase {
             let version = try setupClient.serverVersion()
 
             if let requirements = testFile.runOn {
-                guard requirements.contains(where: { $0.isMet(by: version) }) else {
-                    print("Skipping tests from file \(testFile.name) for server version \(version)")
+                guard requirements.contains(where: { $0.isMet(by: version, MongoSwiftTestCase.topologyType) }) else {
+                    print("Skipping tests from file \(testFile.name), deployment requirements not met.")
                     continue
                 }
             }
@@ -132,35 +99,11 @@ final class RetryableWritesTests: MongoSwiftTestCase {
                 }
 
                 if let failPoint = test.failPoint {
-                    // Need to re-order so command is first key
-                    var commandDoc = ["configureFailPoint": failPoint["configureFailPoint"]!] as Document
-                    for (k, v) in failPoint {
-                        guard k != "configureFailPoint" else {
-                            continue
-                        }
-
-                        // Need to convert error codes to int32's due to c driver bug (CDRIVER-3121)
-                        if k == "data",
-                           var data = v as? Document,
-                           var wcErr = data["writeConcernError"] as? Document,
-                           let code = wcErr["code"] as? BSONNumber {
-                            wcErr["code"] = code.int32Value
-                            data["writeConcernError"] = wcErr
-                            commandDoc["data"] = data
-                        } else {
-                            commandDoc[k] = v
-                        }
-                    }
-                    try setupClient.db("admin").runCommand(commandDoc)
-                    self.disableFailPointCommand =
-                            ["configureFailPoint": failPoint["configureFailPoint"]!, "mode": "off"] as Document
+                    try self.activateFailPoint(failPoint)
                 }
+                defer { self.disableActiveFailPoint() }
 
                 try test.run(client: client, db: db, collection: collection, session: nil)
-
-                if let cmd = self.disableFailPointCommand {
-                    try client.db("admin").runCommand(cmd)
-                }
             }
         }
     }

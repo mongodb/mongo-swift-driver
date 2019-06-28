@@ -337,6 +337,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
         let expectedBulkResult = BulkWriteResult(insertedCount: 1, insertedIds: [0: 1])
         let expectedBulkError = ServerError.bulkWriteError(writeErrors: [],
                                                            writeConcernError: expectedWCError,
+                                                           otherError: nil,
                                                            result: expectedBulkResult,
                                                            errorLabels: nil)
 

@@ -14,8 +14,8 @@ extension MongoCollection {
      * - Throws:
      *   - `UserError.invalidArgumentError` if `requests` is empty.
      *   - `UserError.logicError` if the provided session is inactive.
-     *   - `ServerError.bulkWriteError` if any error occurs while performing the writes.
-     *   - `ServerError.commandError` if an error occurs that prevents the operation from being performed.
+     *   - `ServerError.bulkWriteError` if any error occurs while performing the writes. This includes errors that would
+     *     typically be thrown as `RuntimeError`s or `ServerError.commandError`s elsewhere.
      *   - `EncodingError` if an error occurs while encoding the `CollectionType` or the options to BSON.
      */
     @discardableResult
@@ -400,10 +400,10 @@ public class BulkWriteOperation: Operation {
         let result = try BulkWriteResult(reply: reply, insertedIds: self.insertedIds)
 
         guard serverId != 0 else {
-            throw extractMongoError(bulkOp: self,
-                                    error: error,
-                                    reply: reply,
-                                    partialResult: self.isAcknowledged ? result : nil)
+            throw extractBulkWriteError(for: self,
+                                        error: error,
+                                        reply: reply,
+                                        partialResult: self.isAcknowledged ? result : nil)
         }
 
         return self.isAcknowledged ? result : nil
