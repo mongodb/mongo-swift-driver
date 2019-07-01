@@ -4,7 +4,7 @@ import Nimble
 import XCTest
 
 /// Protocol that test cases which configure fail points during their execution conform to.
-internal protocol FailPointConfigured: MongoSwiftTestCase {
+internal protocol FailPointConfigured: class {
     /// The fail point currently set, if one exists.
     var activeFailPoint: FailPoint? { get set }
 }
