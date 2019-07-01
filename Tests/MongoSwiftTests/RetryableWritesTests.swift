@@ -68,8 +68,7 @@ final class RetryableWritesTests: MongoSwiftTestCase, FailPointConfigured {
 
         let tests: [RetryableWritesTestFile] = try testFiles.map { fileName in
             let url = URL(fileURLWithPath: "\(testFilesPath)/\(fileName)")
-            let data = try String(contentsOf: url).data(using: .utf8)!
-            var testFile = try BSONDecoder().decode(RetryableWritesTestFile.self, from: Document(fromJSON: data))
+            var testFile = try BSONDecoder().decode(RetryableWritesTestFile.self, from: Document(fromJSONFile: url))
             testFile.name = fileName
             return testFile
         }

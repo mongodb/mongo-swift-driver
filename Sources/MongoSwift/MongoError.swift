@@ -45,7 +45,7 @@ public enum ServerError: MongoError {
             var messages: [String] = []
 
             if let writeErrs = writeErrs {
-                messages += writeErrs.map({ bwe in bwe.message })
+                messages += writeErrs.map { bwe in bwe.message }
             }
             if let wcErr = wcErr {
                 messages.append(wcErr.message)
@@ -272,7 +272,7 @@ internal func extractMongoError(error bsonError: bson_error_t, reply: Document? 
 /// Internal function used to get a `ServerError.bulkWriteError` from a libmongoc error and a server reply to a
 /// `BulkWriteOperation`. If a partial result is provided, an updated result with the failed results filtered out will
 /// be returned as part of the error.
-internal func extractBulkWriteError(for: BulkWriteOperation,
+internal func extractBulkWriteError(for op: BulkWriteOperation,
                                     error: bson_error_t,
                                     reply: Document,
                                     partialResult: BulkWriteResult? = nil) -> Error {
@@ -288,7 +288,7 @@ internal func extractBulkWriteError(for: BulkWriteOperation,
         // Need to create new result that omits the ids that failed in insertedIds.
         var errResult: BulkWriteResult?
         if let result = partialResult {
-            let ordered = try `for`.opts?.getValue(for: "ordered") as? Bool ?? true
+            let ordered = try op.opts?.getValue(for: "ordered") as? Bool ?? true
 
             // remove the unsuccessful inserts/upserts from the insertedIds/upsertedIds maps
             let filterFailures = { (map: [Int: BSONValue], nSucceeded: Int) -> [Int: BSONValue] in

@@ -3,13 +3,6 @@ import Foundation
 import Nimble
 import XCTest
 
-internal extension Document {
-    init(fromJSONFile file: URL) throws {
-        let jsonString = try String(contentsOf: file, encoding: .utf8)
-        try self.init(fromJSON: jsonString)
-    }
-}
-
 final class CrudTests: MongoSwiftTestCase {
     // Teardown at the very end of the suite by dropping the db we tested on.
     override class func tearDown() {
