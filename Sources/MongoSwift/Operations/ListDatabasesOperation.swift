@@ -1,14 +1,18 @@
 import mongoc
 
 /// Options to use when listing available databases.
-public struct ListDatabasesOptions: Encodable {
+internal struct ListDatabasesOptions: Encodable {
+    /// Optional `Document` specifying a filter that the listed databases must pass.
+    internal var filter: Document?
+
     /// Optionally indicate whether only names should be returned.
     /// This is internal and only used for implementation purposes. Users should use `listDatabaseNames` if they want
     /// only names.
     internal var nameOnly: Bool?
 
     /// Convenience constructor for basic construction
-    public init(nameOnly: Bool? = nil) {
+    internal init(filter: Document?, nameOnly: Bool?) {
+        self.filter = filter
         self.nameOnly = nameOnly
     }
 }
@@ -23,6 +27,10 @@ public struct DatabaseSpecification: Codable {
 
     /// Whether or not this database is empty.
     public let empty: Bool
+
+    /// For sharded clusters, this field includes a document which maps each shard to the size in bytes of the database
+    /// on disk on that shard. For non sharded environments, this field is nil.
+    public let shards: Document?
 }
 
 /// Internal intermediate result of a ListDatabases command.
@@ -36,31 +44,23 @@ internal enum ListDatabasesResults {
 
 /// An operation corresponding to a "listDatabases" command on a collection.
 internal struct ListDatabasesOperation {
-    private let filter: Document?
     private let session: ClientSession?
     private let client: MongoClient
     private let options: ListDatabasesOptions?
 
     internal init(client: MongoClient,
-                  filter: Document?,
                   options: ListDatabasesOptions?,
                   session: ClientSession?) {
         self.client = client
-        self.filter = filter
         self.options = options
         self.session = session
     }
 
     internal func execute() throws -> ListDatabasesResults {
+        // spec requires that this command be run against the primary.
+        let readPref = ReadPreference(.primary)
         let cmd: Document = ["listDatabases": 1]
-        var opts = try self.client.encoder.encode(self.options)
-        if let filter = self.filter {
-            if opts == nil {
-                opts = Document()
-            }
-            opts = ["filter": filter] as Document
-        }
-        opts = try encodeOptions(options: opts, session: self.session)
+        let opts = try encodeOptions(options: self.options, session: self.session)
         var reply = Document()
         var error = bson_error_t()
 
@@ -68,7 +68,7 @@ internal struct ListDatabasesOperation {
             mongoc_client_read_command_with_opts(self.client._client,
                                                  "admin",
                                                  cmd._bson,
-                                                 nil,
+                                                 readPref._readPreference,
                                                  opts?._bson,
                                                  replyPtr,
                                                  &error)

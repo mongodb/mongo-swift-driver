@@ -14,10 +14,11 @@ final class MongoClientTests: MongoSwiftTestCase {
             "db3"
         ]
 
-        databases.forEach {
-            try? client.db($0).drop()
-            _ = try? client.db($0).createCollection("c")
+        try databases.forEach {
+            try client.db($0).drop()
+            _ = try client.db($0).createCollection("c")
         }
+
         try client.db("db1").collection("c").insertOne(["a": 1])
         try client.db("db3").collection("c").insertOne(["a": 1])
 
@@ -34,7 +35,13 @@ final class MongoClientTests: MongoSwiftTestCase {
         expect(Set(dbObjects.map { $0.name }).count).to(equal(dbObjects.count))
 
         expect(try client.listDatabaseNames(["name": "db1"])).to(equal(["db1"]))
-        expect(try client.listDatabaseNames(["empty": false])).to(contain(["db1", "db3"]))
+
+        let topSize = dbInfo.map { $0.sizeOnDisk }.max()!
+        expect(try client.listDatabases(["sizeOnDisk": ["$gt": topSize] as Document])).to(beEmpty())
+
+        if MongoSwiftTestCase.topologyType == .sharded {
+            expect(dbInfo.first?.shards).toNot(beNil())
+        }
     }
 
     func testOpaqueInitialization() throws {

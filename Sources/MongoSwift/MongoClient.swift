@@ -231,7 +231,8 @@ public class MongoClient {
      * Run the `listDatabases` command.
      *
      * - Parameters:
-     *   - filter: Optional `Document` specifying a filter that the listed databases must pass.
+     *   - filter: Optional `Document` specifying a filter that the listed databases must pass. This filter can be based
+     *     on the "name", "sizeOnDisk", "empty", or "shards" fields of the output.
      *
      * - Returns: A `MongoCursor` over `Document`s describing the databases matching provided criteria
      *
@@ -243,7 +244,9 @@ public class MongoClient {
      */
     public func listDatabases(_ filter: Document? = nil,
                               session: ClientSession? = nil) throws -> [DatabaseSpecification] {
-        let operation = ListDatabasesOperation(client: self, filter: filter, options: nil, session: session)
+        let operation = ListDatabasesOperation(client: self,
+                                               options: ListDatabasesOptions(filter: filter, nameOnly: nil),
+                                               session: session)
         guard case let .specs(result) = try operation.execute() else {
             throw RuntimeError.internalError(message: "Invalid result")
         }
@@ -254,7 +257,7 @@ public class MongoClient {
      * Get a list of `MongoDatabase`s.
      *
      * - Parameters:
-     *   - filter: Optional `Document` specifying a filter that the listed databases must pass.
+     *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
      *
      * - Returns: An Array of `MongoDatabase`s that match the provided filter.
      *
@@ -269,7 +272,7 @@ public class MongoClient {
      * Get a list of names of databases.
      *
      * - Parameters:
-     *   - filter: Optional `Document` specifying a filter that the listed databases must pass.
+     *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
      *
      * - Returns: An Array of `MongoDatabase`s that match the provided filter.
      *
@@ -278,8 +281,7 @@ public class MongoClient {
      */
     public func listDatabaseNames(_ filter: Document? = nil, session: ClientSession? = nil) throws -> [String] {
         let operation = ListDatabasesOperation(client: self,
-                                               filter: filter,
-                                               options: ListDatabasesOptions(nameOnly: true),
+                                               options: ListDatabasesOptions(filter: filter, nameOnly: true),
                                                session: session)
         guard case let .names(result) = try operation.execute() else {
             throw RuntimeError.internalError(message: "Invalid result")
