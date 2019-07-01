@@ -174,6 +174,9 @@ pre:
   - func: "fetch source"
   - func: "install dependencies"
 
+post:
+  - func: "cleanup"
+
 tasks:
     - name: "test-3.6-standalone"
       tags: ["3.6", "standalone"]
@@ -185,7 +188,6 @@ tasks:
             TOPOLOGY: "server"
         - func: "run tests"
         - func: "stop mongo-orchestration"
-        - func: "cleanup"
 
     - name: "test-3.6-replica_set"
       tags: ["3.6", "replica_set"]
@@ -196,8 +198,7 @@ tasks:
             MONGODB_VERSION: "3.6"
             TOPOLOGY: "replica_set"
         - func: "run tests"
-        - func: "stop mongo-orchestration"
-        - func: "cleanup"        
+        - func: "stop mongo-orchestration"       
 
     - name: "test-3.6-sharded_cluster"
       tags: ["3.6", "sharded_cluster"]
@@ -208,8 +209,7 @@ tasks:
             MONGODB_VERSION: "3.6"
             TOPOLOGY: "sharded_cluster"
         - func: "run tests"
-        - func: "stop mongo-orchestration"
-        - func: "cleanup"        
+        - func: "stop mongo-orchestration"      
 
     - name: "test-4.0-standalone"
       tags: ["4.0", "standalone"]
@@ -221,7 +221,6 @@ tasks:
             TOPOLOGY: "server"
         - func: "run tests"
         - func: "stop mongo-orchestration"
-        - func: "cleanup"
 
     - name: "test-4.0-replica_set"
       tags: ["4.0", "replica_set"]
@@ -233,7 +232,6 @@ tasks:
             TOPOLOGY: "replica_set"
         - func: "run tests"
         - func: "stop mongo-orchestration"
-        - func: "cleanup"
 
     - name: "test-4.0-sharded_cluster"
       tags: ["4.0", "sharded_cluster"]
@@ -245,7 +243,6 @@ tasks:
             TOPOLOGY: "sharded_cluster"
         - func: "run tests"
         - func: "stop mongo-orchestration"
-        - func: "cleanup"
 
     - name: "test-latest-standalone"
       tags: ["latest", "standalone"]
@@ -257,7 +254,6 @@ tasks:
             TOPOLOGY: "server"
         - func: "run tests"
         - func: "stop mongo-orchestration"
-        - func: "cleanup"
 
     - name: "test-latest-replica_set"
       tags: ["latest", "replica_set"]
@@ -269,7 +265,6 @@ tasks:
             TOPOLOGY: "replica_set"
         - func: "run tests"
         - func: "stop mongo-orchestration"
-        - func: "cleanup"
 
     - name: "test-latest-sharded_cluster"
       tags: ["latest", "sharded_cluster"]
@@ -281,7 +276,6 @@ tasks:
             TOPOLOGY: "sharded_cluster"
         - func: "run tests"
         - func: "stop mongo-orchestration"
-        - func: "cleanup"
 
     - name: "test-atlas-connectivity"
       tags: ["atlas-connect"]
@@ -347,44 +341,19 @@ axes:
 
 buildvariants:
 
-- name: "swift42-macOS"
-  display_name: "Swift 4.2 MacOS 10.14"
-  run_on: macos-1014
-  variables:
-    SWIFT_VERSION: "4.2"
+- matrix_name: "tests-all"
+  matrix_spec: {"os-fully-featured": "*", "swift-version": "*"}
+  display_name: "${swift-version} ${os-fully-featured}"
   tasks:
      - ".latest"
      - ".4.0"
      - ".3.6"
 
-- name: "swift50-macOS"
-  display_name: "Swift 5.0 MacOS 10.14"
-  run_on: macos-1014
-  variables:
-    SWIFT_VERSION: "5.0"
+- matrix_name: "atlas-connect"
+  matrix_spec: 
+    os-fully-featured: ubuntu-18.04
+    swift-version: "*"
+  display_name: "Atlas Connectivity ${swift-version} ${os-fully-featured}"
   tasks:
-     - ".latest"
-     - ".4.0"
-     - ".3.6"
-
-- name: "swift42-ubuntu"
-  display_name: "Swift 4.2 Ubuntu 18.04"
-  run_on: ubuntu1804-test
-  variables:
-    SWIFT_VERSION: "4.2"
-  tasks:
-     - ".latest"
-     - ".4.0"
-     - ".3.6"
-     - ".atlas-connect"
-
-- name: "swift50-ubuntu"
-  display_name: "Swift 5.0 Ubuntu 18.04"
-  run_on: ubuntu1804-test
-  variables:
-    SWIFT_VERSION: "5.0"
-  tasks:
-     - ".latest"
-     - ".4.0"
-     - ".3.6"
-     - ".atlas-connect"
+    - ".atlas-connect"
+  
