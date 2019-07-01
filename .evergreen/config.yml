@@ -356,4 +356,3 @@ buildvariants:
   display_name: "Atlas Connectivity ${swift-version} ${os-fully-featured}"
   tasks:
     - ".atlas-connect"
-  
