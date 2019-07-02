@@ -33,7 +33,7 @@ extension MongoCollection {
             try model.addToBulkWrite(bulk: bulk, index: index)
         }
 
-        return try bulk.execute()
+        return try self._client.executeOperation(bulk, session: session)
     }
 
     private struct DeleteModelOptions: Encodable {
@@ -390,7 +390,9 @@ public class BulkWriteOperation: Operation {
      *   - `ServerError.commandError` if an error occurs that prevents the operation from executing.
      *   - `ServerError.bulkWriteError` if an error occurs while performing the writes.
      */
-    internal func execute() throws -> BulkWriteResult? {
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> BulkWriteResult? {
+        // TODO SWIFT-374: this method does not actually use either of the parameters passed in here. they will be
+        // utilized once we fix up BulkWriteOperation to look like the rest of the operations.
         var reply = Document()
         var error = bson_error_t()
         let serverId = withMutableBSONPointer(to: &reply) { replyPtr in

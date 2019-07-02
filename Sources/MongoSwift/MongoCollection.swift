@@ -105,7 +105,7 @@ public class MongoCollection<T: Codable> {
     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
     */
     public func drop(options: DropCollectionOptions? = nil, session: ClientSession? = nil) throws {
-        let operation = DropCollectionOperation(collection: self, options: options, session: session)
-        try operation.execute()
+        let operation = DropCollectionOperation(collection: self, options: options)
+        return try self._client.executeOperation(operation, session: session)
     }
 }

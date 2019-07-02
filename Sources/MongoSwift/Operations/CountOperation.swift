@@ -52,19 +52,14 @@ internal struct CountOperation<T: Codable>: Operation {
     private let collection: MongoCollection<T>
     private let filter: Document
     private let options: CountOptions?
-    private let session: ClientSession?
 
-    internal init(collection: MongoCollection<T>,
-                  filter: Document,
-                  options: CountOptions?,
-                  session: ClientSession?) {
+    internal init(collection: MongoCollection<T>, filter: Document, options: CountOptions?) {
         self.collection = collection
         self.filter = filter
         self.options = options
-        self.session = session
     }
 
-    internal func execute() throws -> Int {
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> Int {
         let opts = try encodeOptions(options: options, session: session)
         let rp = self.options?.readPreference?._readPreference
         var error = bson_error_t()

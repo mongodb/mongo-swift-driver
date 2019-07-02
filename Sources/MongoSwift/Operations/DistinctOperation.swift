@@ -33,26 +33,20 @@ public struct DistinctOptions: Codable {
 }
 
 /// An operation corresponding to a "distinct" command on a collection.
-internal struct DistinctOperation<T: Codable> {
+internal struct DistinctOperation<T: Codable>: Operation {
     private let collection: MongoCollection<T>
     private let fieldName: String
     private let filter: Document
     private let options: DistinctOptions?
-    private let session: ClientSession?
 
-    internal init(collection: MongoCollection<T>,
-                  fieldName: String,
-                  filter: Document,
-                  options: DistinctOptions?,
-                  session: ClientSession?) {
+    internal init(collection: MongoCollection<T>, fieldName: String, filter: Document, options: DistinctOptions?) {
         self.collection = collection
         self.fieldName = fieldName
         self.filter = filter
         self.options = options
-        self.session = session
     }
 
-    internal func execute() throws -> [BSONValue] {
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> [BSONValue] {
         let collName = String(cString: mongoc_collection_get_name(self.collection._collection))
         let command: Document = [
             "distinct": collName,
@@ -60,7 +54,7 @@ internal struct DistinctOperation<T: Codable> {
             "query": self.filter
         ]
 
-        let opts = try encodeOptions(options: self.options, session: self.session)
+        let opts = try encodeOptions(options: self.options, session: session)
         let rp = self.options?.readPreference?._readPreference
         var reply = Document()
         var error = bson_error_t()

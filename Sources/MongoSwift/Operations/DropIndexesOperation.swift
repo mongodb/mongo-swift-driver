@@ -14,23 +14,18 @@ public struct DropIndexOptions: Encodable {
 /// An operation corresponding to a "dropIndexes" command.
 internal struct DropIndexesOperation<T: Codable>: Operation {
     private let collection: MongoCollection<T>
-    private let session: ClientSession?
     private let index: BSONValue
     private let options: DropIndexOptions?
 
-    internal init(collection: MongoCollection<T>,
-                  index: BSONValue,
-                  options: DropIndexOptions?,
-                  session: ClientSession?) {
+    internal init(collection: MongoCollection<T>, index: BSONValue, options: DropIndexOptions?) {
         self.collection = collection
         self.index = index
         self.options = options
-        self.session = session
     }
 
-    internal func execute() throws -> Document {
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> Document {
         let command: Document = ["dropIndexes": self.collection.name, "index": self.index]
-        let opts = try encodeOptions(options: self.options, session: self.session)
+        let opts = try encodeOptions(options: self.options, session: session)
         var reply = Document()
         var error = bson_error_t()
         let success = withMutableBSONPointer(to: &reply) { replyPtr in
