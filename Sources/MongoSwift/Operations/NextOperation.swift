@@ -12,9 +12,6 @@ internal struct NextOperation<T: Codable>: Operation {
         // NOTE: this method does not actually use the `connection` parameter passed in. for the moment, it is only
         // here so that `NextOperation` conforms to `Operation`. if we eventually rewrite MongoCursor to no longer
         // wrap a mongoc cursor then we will use the connection here.
-        guard let cursor = self.cursor._cursor else {
-            throw UserError.logicError(message: "Tried to iterate a closed cursor.")
-        }
 
         if let session = session, !session.active {
             throw ClientSession.SessionInactiveError
@@ -25,7 +22,7 @@ internal struct NextOperation<T: Codable>: Operation {
             out.deinitialize(count: 1)
             out.deallocate()
         }
-        guard mongoc_cursor_next(cursor, out) else {
+        guard mongoc_cursor_next(cursor._cursor, out) else {
             return nil
         }
 

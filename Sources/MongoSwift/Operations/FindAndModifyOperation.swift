@@ -143,11 +143,13 @@ internal struct FindAndModifyOperation<T: Codable>: Operation {
         var reply = Document()
         var error = bson_error_t()
         let success = withMutableBSONPointer(to: &reply) { replyPtr in
-            mongoc_collection_find_and_modify_with_opts(self.collection._collection,
-                                                        self.filter._bson,
-                                                        opts._options,
-                                                        replyPtr,
-                                                        &error)
+            self.collection.withMongocCollection(from: connection) { collPtr in
+                mongoc_collection_find_and_modify_with_opts(collPtr,
+                                                            self.filter._bson,
+                                                            opts._options,
+                                                            replyPtr,
+                                                            &error)
+            }
         }
         guard success else {
             throw extractMongoError(error: error, reply: reply)

@@ -47,9 +47,8 @@ internal struct DistinctOperation<T: Codable>: Operation {
     }
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> [BSONValue] {
-        let collName = String(cString: mongoc_collection_get_name(self.collection._collection))
         let command: Document = [
-            "distinct": collName,
+            "distinct": self.collection.name,
             "key": self.fieldName,
             "query": self.filter
         ]
@@ -59,8 +58,9 @@ internal struct DistinctOperation<T: Codable>: Operation {
         var reply = Document()
         var error = bson_error_t()
         let success = withMutableBSONPointer(to: &reply) { replyPtr in
-            mongoc_collection_read_command_with_opts(
-            self.collection._collection, command._bson, rp, opts?._bson, replyPtr, &error)
+            self.collection.withMongocCollection(from: connection) { collPtr in
+                mongoc_collection_read_command_with_opts(collPtr, command._bson, rp, opts?._bson, replyPtr, &error)
+            }
         }
         guard success else {
             throw extractMongoError(error: error, reply: reply)

@@ -122,11 +122,12 @@ internal struct CreateCollectionOperation<T: Codable>: Operation {
         let opts = try encodeOptions(options: self.options, session: session)
         var error = bson_error_t()
 
-        guard let collection = mongoc_database_create_collection(
-            self.database._database, self.name, opts?._bson, &error) else {
-            throw extractMongoError(error: error)
+        try self.database.withMongocDatabase(from: connection) { dbPtr in
+            guard let collection = mongoc_database_create_collection(dbPtr, self.name, opts?._bson, &error) else {
+                throw extractMongoError(error: error)
+            }
+            mongoc_collection_destroy(collection)
         }
-        mongoc_collection_destroy(collection)
 
         let collectionOptions = CollectionOptions(dateCodingStrategy: self.options?.dateCodingStrategy,
                                                   uuidCodingStrategy: self.options?.uuidCodingStrategy,

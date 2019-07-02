@@ -332,10 +332,18 @@ extension MongoCollection {
     public func listIndexes(session: ClientSession? = nil) throws -> MongoCursor<Document> {
         let opts = try encodeOptions(options: Document(), session: session)
 
-        guard let cursor = mongoc_collection_find_indexes_with_opts(self._collection, opts?._bson) else {
-            fatalError("Couldn't get cursor from the server")
+        let conn = try self._client.connectionPool.checkOut()
+        let cursor: OpaquePointer = self.withMongocCollection(from: conn) { collPtr in
+            guard let cursor = mongoc_collection_find_indexes_with_opts(collPtr, opts?._bson) else {
+                fatalError("Couldn't get cursor from the server")
+            }
+            return cursor
         }
 
-        return try MongoCursor(from: cursor, client: self._client, decoder: self.decoder, session: session)
+        return try MongoCursor(from: cursor,
+                               client: self._client,
+                               connection: conn,
+                               decoder: self.decoder,
+                               session: session)
     }
 }

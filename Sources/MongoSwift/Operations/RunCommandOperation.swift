@@ -46,8 +46,9 @@ internal struct RunCommandOperation: Operation {
         var reply = Document()
         var error = bson_error_t()
         let success = withMutableBSONPointer(to: &reply) { replyPtr in
-            mongoc_database_command_with_opts(
-                self.database._database, self.command._bson, rp, opts?._bson, replyPtr, &error)
+            self.database.withMongocDatabase(from: connection) { dbPtr in
+                mongoc_database_command_with_opts(dbPtr, self.command._bson, rp, opts?._bson, replyPtr, &error)
+            }
         }
         guard success else {
             throw extractMongoError(error: error, reply: reply)

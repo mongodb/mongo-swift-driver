@@ -72,9 +72,12 @@ public struct DropDatabaseOptions: Codable {
 }
 
 /// A MongoDB Database.
-public class MongoDatabase {
-    internal var _database: OpaquePointer?
-    internal var _client: MongoClient
+public struct MongoDatabase {
+    /// The client which this database was derived from.
+    internal let _client: MongoClient
+
+    /// The namespace for this database.
+    private let namespace: MongoNamespace
 
     /// Encoder used by this database for BSON conversions. This encoder's options are inherited by collections derived
     /// from this database.
@@ -84,60 +87,26 @@ public class MongoDatabase {
     public let decoder: BSONDecoder
 
     /// The name of this database.
-    public var name: String {
-        return String(cString: mongoc_database_get_name(self._database))
-    }
+    public var name: String { return namespace.db }
 
     /// The `ReadConcern` set on this database, or `nil` if one is not set.
-    public var readConcern: ReadConcern? {
-        // per libmongoc docs, we don't need to handle freeing this ourselves
-        let rc = ReadConcern(from: mongoc_database_get_read_concern(self._database))
-        return rc.isDefault ? nil : rc
-    }
+    public let readConcern: ReadConcern?
 
     /// The `ReadPreference` set on this database
-    public var readPreference: ReadPreference {
-        return ReadPreference(from: mongoc_database_get_read_prefs(self._database))
-    }
+    public let readPreference: ReadPreference
 
     /// The `WriteConcern` set on this database, or `nil` if one is not set.
-    public var writeConcern: WriteConcern? {
-        // per libmongoc docs, we don't need to handle freeing this ourselves
-        let wc = WriteConcern(from: mongoc_database_get_write_concern(self._database))
-        return wc.isDefault ? nil : wc
-    }
+    public let writeConcern: WriteConcern?
 
     /// Initializes a new `MongoDatabase` instance, not meant to be instantiated directly.
     internal init(name: String, client: MongoClient, options: DatabaseOptions?) {
-        guard let db = mongoc_client_get_database(client._client, name) else {
-            fatalError("Couldn't get database '\(name)'")
-        }
-
-        options?.readConcern?.withMongocReadConcern { tmpReadConcernPtr in
-            mongoc_database_set_read_concern(db, tmpReadConcernPtr)
-        }
-
-        if let rp = options?.readPreference {
-            mongoc_database_set_read_prefs(db, rp._readPreference)
-        }
-
-        options?.writeConcern?.withMongocWriteConcern { tmpWriteConcernPtr in
-            mongoc_database_set_write_concern(db, tmpWriteConcernPtr)
-        }
-
-        self._database = db
+        self.namespace = MongoNamespace(db: name, collection: nil)
         self._client = client
+        self.readConcern = options?.readConcern ?? client.readConcern
+        self.writeConcern = options?.writeConcern ?? client.writeConcern
+        self.readPreference = options?.readPreference ?? client.readPreference
         self.encoder = BSONEncoder(copies: client.encoder, options: options)
         self.decoder = BSONDecoder(copies: client.decoder, options: options)
-    }
-
-    /// Cleans up internal state.
-    deinit {
-        guard let database = self._database else {
-            return
-        }
-        mongoc_database_destroy(database)
-        self._database = nil
     }
 
     /**
@@ -247,12 +216,19 @@ public class MongoDatabase {
     public func listCollections(options: ListCollectionsOptions? = nil,
                                 session: ClientSession? = nil) throws -> MongoCursor<Document> {
         let opts = try encodeOptions(options: options, session: session)
-
-        guard let collections = mongoc_database_find_collections_with_opts(self._database, opts?._bson) else {
-            fatalError("Couldn't get cursor from the server")
+        let conn = try self._client.connectionPool.checkOut()
+        let collections: OpaquePointer = self.withMongocDatabase(from: conn) { dbPtr in
+            guard let collections = mongoc_database_find_collections_with_opts(dbPtr, opts?._bson) else {
+                fatalError("Couldn't get cursor from the server")
+            }
+            return collections
         }
 
-        return try MongoCursor(from: collections, client: self._client, decoder: self.decoder, session: session)
+        return try MongoCursor(from: collections,
+                               client: self._client,
+                               connection: conn,
+                               decoder: self.decoder,
+                               session: session)
     }
 
     /**
@@ -277,5 +253,27 @@ public class MongoDatabase {
                            session: ClientSession? = nil) throws -> Document {
         let operation = RunCommandOperation(database: self, command: command, options: options)
         return try self._client.executeOperation(operation, session: session)
+    }
+
+    /// Uses the provided `Connection` to get a pointer to a `mongoc_database_t` corresponding to this `MongoDatabase`,
+    /// and uses it to execute the given closure. The `mongoc_database_t` is only valid for the body of the closure.
+    /// The caller is *not responsible* for cleaning up the `mongoc_database_t`.
+    internal func withMongocDatabase<T>(from connection: Connection, body: (OpaquePointer) throws -> T) rethrows -> T {
+        guard let db = mongoc_client_get_database(connection.clientHandle, self.name) else {
+            fatalError("Couldn't get database '\(self.name)'")
+        }
+        defer { mongoc_database_destroy(db) }
+
+        self.readConcern?.withMongocReadConcern { rcPtr in
+            mongoc_database_set_read_concern(db, rcPtr)
+        }
+        self.writeConcern?.withMongocWriteConcern { wcPtr in
+            mongoc_database_set_write_concern(db, wcPtr)
+        }
+        if self.readPreference != self._client.readPreference {
+            mongoc_database_set_read_prefs(db, self.readPreference._readPreference)
+        }
+
+        return try body(db)
     }
 }

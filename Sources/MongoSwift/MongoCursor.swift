@@ -2,9 +2,12 @@ import mongoc
 
 /// A MongoDB cursor.
 public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
-    internal var _cursor: OpaquePointer?
-    private var _client: MongoClient?
-    private var _session: ClientSession?
+    /// Pointer to underlying `mongoc_cursor_t`.
+    internal let _cursor: OpaquePointer
+    /// We store these three objects to ensure that they remain in scope for as long as this cursor does.
+    private let _client: MongoClient
+    private let _connection: Connection
+    private let _session: ClientSession?
 
     private var swiftError: Error?
 
@@ -20,21 +23,21 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
      */
     internal init(from cursor: OpaquePointer,
                   client: MongoClient,
+                  connection: Connection,
                   decoder: BSONDecoder,
                   session: ClientSession?) throws {
         self._cursor = cursor
         self._client = client
+        self._connection = connection
         self._session = session
         self.decoder = decoder
+        self.swiftError = nil
 
         if let session = session, !session.active {
             throw ClientSession.SessionInactiveError
         }
 
         if let err = self.error {
-            // Need to explicitly close since deinit will not execute if we throw.
-            self.close()
-
             // Errors in creation of the cursor are limited to invalid argument errors, but some errors are reported
             // by libmongoc as invalid cursor errors. These would be parsed to .logicErrors, so we need to rethrow them
             // as the correct case.
@@ -48,18 +51,8 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
 
     /// Cleans up internal state.
     deinit {
-        self.close()
-    }
-
-    /// Closes the cursor.
-    public func close() {
-        guard let cursor = self._cursor else {
-            return
-        }
-        mongoc_cursor_destroy(cursor)
-        self._cursor = nil
-        self._client = nil
-        self._session = nil
+        self._client.connectionPool.checkIn(self._connection)
+        mongoc_cursor_destroy(self._cursor)
     }
 
     /**
@@ -124,7 +117,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
             // executor as that would require checking out a separate, unused connection for every single next() call.
             // the force unwrap is safe as this bitPattern is always valid.
             // swiftlint:disable:next force_unwrapping
-            let out = try operation.execute(using: Connection(OpaquePointer(bitPattern: 1)!), session: self._session)
+            let out = try operation.execute(using: self._connection, session: self._session)
             self.swiftError = nil
             return out
         } catch {
