@@ -208,6 +208,52 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         expect(indexes.next()?["name"]).to(bsonEqual("_id_"))
         expect(indexes.next()).to(beNil())
     }
+
+    func testCreateDropIndexByModelWithMaxTimeMS() throws {
+        let center = NotificationCenter.default
+
+        let client = try MongoClient(options: ClientOptions(eventMonitoring: true))
+        client.enableMonitoring(forEvents: .commandMonitoring)
+
+        let db = client.db(type(of: self).testDatabase)
+
+        let collection = db.collection("collection")
+        try collection.insertOne(["test": "blahblah"])
+
+        var receivedEvents = [CommandStartedEvent]()
+        let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
+            guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
+                return
+            }
+            receivedEvents.append(event)
+        }
+
+        defer { center.removeObserver(observer) }
+
+        let model = IndexModel(keys: ["cat": 1])
+        let wc = try WriteConcern(w: .number(1))
+        let createIndexOpts = CreateIndexOptions(writeConcern: wc, maxTimeMS: 100)
+        expect( try collection.createIndex(model, options: createIndexOpts)).to(equal("cat_1"))
+
+        let dropIndexOpts = DropIndexOptions(writeConcern: wc, maxTimeMS: 100)
+        let res = try collection.dropIndex(model, options: dropIndexOpts)
+        expect((res["ok"] as? BSONNumber)?.doubleValue).to(bsonEqual(1.0))
+
+        // now there should only be _id_ left
+        let indexes = try coll.listIndexes()
+        expect(indexes).toNot(beNil())
+        expect(indexes.next()?["name"]).to(bsonEqual("_id_"))
+        expect(indexes.next()).to(beNil())
+
+        // test that maxTimeMS is an accepted option for createIndex and dropIndex
+        expect(receivedEvents.count).to(equal(2))
+        expect(receivedEvents[0].command["createIndexes"]).toNot(beNil())
+        expect(receivedEvents[0].command["maxTimeMS"]).toNot(beNil())
+        expect(100).to(bsonEqual(receivedEvents[0].command["maxTimeMS"]))
+        expect(receivedEvents[1].command["dropIndexes"]).toNot(beNil())
+        expect(receivedEvents[1].command["maxTimeMS"]).toNot(beNil())
+        expect(100).to(bsonEqual(receivedEvents[1].command["maxTimeMS"]))
+    }
 }
 
 extension IndexOptions: Equatable {
