@@ -89,4 +89,103 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
         expect(try ReadPreference(.secondaryPreferred, maxStalenessSeconds: 90))
             .to(equal(try ReadPreference(.secondaryPreferred, maxStalenessSeconds: 90)))
     }
+
+    func testOperationReadPreference() throws {
+        // setup a collection
+        let client = try MongoClient()
+        let db = client.db("myDb")
+        defer { try? db.drop() }
+        let coll = try db.createCollection("myCollection")
+
+        let command: Document = ["count": coll.name]
+
+        // run the command with a valid read preference
+        let opts1 = RunCommandOptions(readPreference: ReadPreference(.primary))
+        let res1 = try db.runCommand(command, options: opts1)
+        expect((res1["ok"] as? BSONNumber)?.doubleValue).to(bsonEqual(1.0))
+
+        // run the command with an empty read preference
+        let opts2 = RunCommandOptions()
+        let res2 = try db.runCommand(command, options: opts2)
+        expect((res2["ok"] as? BSONNumber)?.doubleValue).to(bsonEqual(1.0))
+
+        expect(try coll.find(options: FindOptions(readPreference: ReadPreference(.primary)))).toNot(throwError())
+
+        expect(try coll.aggregate([["$project": ["a": 1] as Document]],
+                                  options: AggregateOptions(readPreference: ReadPreference(.secondary))))
+                                  .toNot(throwError())
+
+        expect(try coll.count(options: CountOptions(readPreference: ReadPreference(.primary)))).toNot(throwError())
+
+        expect(try coll.distinct(fieldName: "a",
+                                 options: DistinctOptions(readPreference: ReadPreference(.primary))))
+                                 .toNot(throwError())
+    }
+
+    func testClientReadPreference() throws {
+        let primary = ReadPreference(.primary)
+        let primaryPreferred = ReadPreference(.primaryPreferred)
+        let secondary = ReadPreference(.secondary)
+
+        do {
+            // expect that a client with an unset read preferences has it default to primary
+            let client1 = try MongoClient()
+            expect(client1.readPreference.mode).to(equal(.primary))
+
+            // expect that a database created from this client inherits its read preferences
+            let db1 = client1.db("myDB")
+            expect(db1.readPreference.mode).to(equal(.primary))
+
+            // expect that a database can override the readPreference it inherited from a client
+            let opts = DatabaseOptions(readPreference: secondary)
+            let db2 = client1.db("myDB", options: opts)
+            expect(db2.readPreference.mode).to(equal(.secondary))
+        }
+
+        do {
+            let client2 = try MongoClient(options: ClientOptions(readPreference: primaryPreferred))
+            expect(client2.readPreference.mode).to(equal(.primaryPreferred))
+
+            // expect that a database created from this client inherits its read preferences
+            let db1 = client2.db("myDB")
+            expect(db1.readPreference.mode).to(equal(.primaryPreferred))
+
+            // expect that a database can override the readPreference it inherited from a client
+            let opts = DatabaseOptions(readPreference: secondary)
+            let db2 = client2.db("myDB", options: opts)
+            expect(db2.readPreference.mode).to(equal(.secondary))
+        }
+    }
+
+    func testDatabaseReadPreference() throws {
+        let primary = ReadPreference(.primary)
+        let primaryPreferred = ReadPreference(.primaryPreferred)
+        let secondary = ReadPreference(.secondary)
+        let client = try MongoClient()
+
+        do {
+            // expect that a database with an unset read preferences defaults to primary
+            let db1 = client.db("myDb")
+            expect(db1.readPreference.mode).to(equal(.primary))
+
+             // expect that a collection inherits its database default read preferences
+            let coll1 = db1.collection("coll1")
+            expect(coll1.readPreference.mode).to(equal(.primary))
+
+            // expect that a collection can override its inherited read preferences
+            let coll2 = db1.collection("coll2", options: CollectionOptions(readPreference: secondary))
+            expect(coll2.readPreference.mode).to(equal(.secondary))
+        }
+
+        do {
+            // expect that a collection inherits its database read preferences
+            let db2 = client.db("myDB", options: DatabaseOptions(readPreference: secondary))
+            let coll1 = db2.collection("coll1")
+            expect(coll1.readPreference.mode).to(equal(.secondary))
+
+            // expect that a collection can override its database read preferences
+            let coll2 = db2.collection("coll2", options: CollectionOptions(readPreference: primary))
+            expect(coll2.readPreference.mode).to(equal(.primary))
+        }
+    }
 }
