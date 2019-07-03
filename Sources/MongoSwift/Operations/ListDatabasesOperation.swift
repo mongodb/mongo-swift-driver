@@ -43,7 +43,7 @@ internal enum ListDatabasesResults {
 }
 
 /// An operation corresponding to a "listDatabases" command on a collection.
-internal struct ListDatabasesOperation {
+internal struct ListDatabasesOperation: Operation {
     private let session: ClientSession?
     private let client: MongoClient
     private let options: ListDatabasesOptions?
@@ -56,7 +56,7 @@ internal struct ListDatabasesOperation {
         self.session = session
     }
 
-    internal func execute() throws -> ListDatabasesResults {
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> ListDatabasesResults {
         // spec requires that this command be run against the primary.
         let readPref = ReadPreference(.primary)
         let cmd: Document = ["listDatabases": 1]

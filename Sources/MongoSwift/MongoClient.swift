@@ -247,7 +247,7 @@ public class MongoClient {
         let operation = ListDatabasesOperation(client: self,
                                                options: ListDatabasesOptions(filter: filter, nameOnly: nil),
                                                session: session)
-        guard case let .specs(result) = try operation.execute() else {
+        guard case let .specs(result) = try self.executeOperation(operation) else {
             throw RuntimeError.internalError(message: "Invalid result")
         }
         return result
@@ -283,7 +283,7 @@ public class MongoClient {
         let operation = ListDatabasesOperation(client: self,
                                                options: ListDatabasesOptions(filter: filter, nameOnly: true),
                                                session: session)
-        guard case let .names(result) = try operation.execute() else {
+        guard case let .names(result) = try self.executeOperation(operation) else {
             throw RuntimeError.internalError(message: "Invalid result")
         }
         return result
