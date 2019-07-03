@@ -5,7 +5,7 @@ public struct CreateIndexOptions: Encodable {
     /// An optional `WriteConcern` to use for the command.
     public var writeConcern: WriteConcern?
 
-    /// The maximum amount of time to allow the query to run.
+    /// The maximum amount of time to allow the query to run - enforced server-side.
     public var maxTimeMS: Int64?
 
     /// Initializer allowing any/all parameters to be omitted.
