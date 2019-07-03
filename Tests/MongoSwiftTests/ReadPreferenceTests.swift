@@ -100,14 +100,9 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
         let command: Document = ["count": coll.name]
 
         // run the command with a valid read preference
-        let opts1 = RunCommandOptions(readPreference: ReadPreference(.primary))
+        let opts1 = RunCommandOptions(readPreference: ReadPreference(.secondary))
         let res1 = try db.runCommand(command, options: opts1)
         expect((res1["ok"] as? BSONNumber)?.doubleValue).to(bsonEqual(1.0))
-
-        // run the command with an empty read preference
-        let opts2 = RunCommandOptions()
-        let res2 = try db.runCommand(command, options: opts2)
-        expect((res2["ok"] as? BSONNumber)?.doubleValue).to(bsonEqual(1.0))
 
         expect(try coll.find(options: FindOptions(readPreference: ReadPreference(.primary)))).toNot(throwError())
 
@@ -115,10 +110,10 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
                                   options: AggregateOptions(readPreference: ReadPreference(.secondary))))
                                   .toNot(throwError())
 
-        expect(try coll.count(options: CountOptions(readPreference: ReadPreference(.primary)))).toNot(throwError())
+        expect(try coll.count(options: CountOptions(readPreference: ReadPreference(.secondary)))).toNot(throwError())
 
         expect(try coll.distinct(fieldName: "a",
-                                 options: DistinctOptions(readPreference: ReadPreference(.primary))))
+                                 options: DistinctOptions(readPreference: ReadPreference(.secondary))))
                                  .toNot(throwError())
     }
 
