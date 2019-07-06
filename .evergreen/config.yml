@@ -142,7 +142,7 @@ functions:
         working_dir: "src"
         script: |
           # DO NOT ECHO WITH XTRACE (which PREPARE_SHELL does)
-          PYTHON_BINARY=${PYTHON_BINARY} ATLAS_REPL='${atlas_repl}' ATLAS_SHRD='${atlas_shrd}' ATLAS_FREE='${atlas_free}' ATLAS_TLS11='${atlas_tls11}' ATLAS_TLS12='${atlas_tls12}'  sh ${PROJECT_DIRECTORY}/.evergreen/run-atlas-tests.sh
+          SWIFT_VERSION=${SWIFT_VERSION} ATLAS_REPL='${ATLAS_REPL}' ATLAS_SHRD='${ATLAS_SHRD}' ATLAS_FREE='${ATLAS_FREE}' ATLAS_TLS11='${ATLAS_TLS11}' ATLAS_TLS12='${ATLAS_TLS12}'  sh ${PROJECT_DIRECTORY}/.evergreen/run-atlas-tests.sh
 
   "cleanup":
     - command: shell.exec
@@ -172,100 +172,115 @@ functions:
 
 pre:
   - func: "fetch source"
-  - func: "prepare resources"
   - func: "install dependencies"
 
 post:
-  - func: "stop mongo-orchestration"
   - func: "cleanup"
 
 tasks:
     - name: "test-3.6-standalone"
       tags: ["3.6", "standalone"]
       commands:
+        - func: "prepare resources"
         - func: "bootstrap mongo-orchestration"
           vars:
             MONGODB_VERSION: "3.6"
             TOPOLOGY: "server"
         - func: "run tests"
+        - func: "stop mongo-orchestration"
 
     - name: "test-3.6-replica_set"
       tags: ["3.6", "replica_set"]
       commands:
+        - func: "prepare resources"
         - func: "bootstrap mongo-orchestration"
           vars:
             MONGODB_VERSION: "3.6"
             TOPOLOGY: "replica_set"
         - func: "run tests"
+        - func: "stop mongo-orchestration"       
 
     - name: "test-3.6-sharded_cluster"
       tags: ["3.6", "sharded_cluster"]
       commands:
+        - func: "prepare resources"
         - func: "bootstrap mongo-orchestration"
           vars:
             MONGODB_VERSION: "3.6"
             TOPOLOGY: "sharded_cluster"
         - func: "run tests"
+        - func: "stop mongo-orchestration"      
 
     - name: "test-4.0-standalone"
       tags: ["4.0", "standalone"]
       commands:
+        - func: "prepare resources"
         - func: "bootstrap mongo-orchestration"
           vars:
             MONGODB_VERSION: "4.0"
             TOPOLOGY: "server"
         - func: "run tests"
+        - func: "stop mongo-orchestration"
 
     - name: "test-4.0-replica_set"
       tags: ["4.0", "replica_set"]
       commands:
+        - func: "prepare resources"
         - func: "bootstrap mongo-orchestration"
           vars:
             MONGODB_VERSION: "4.0"
             TOPOLOGY: "replica_set"
         - func: "run tests"
+        - func: "stop mongo-orchestration"
 
     - name: "test-4.0-sharded_cluster"
       tags: ["4.0", "sharded_cluster"]
       commands:
+        - func: "prepare resources"
         - func: "bootstrap mongo-orchestration"
           vars:
             MONGODB_VERSION: "4.0"
             TOPOLOGY: "sharded_cluster"
         - func: "run tests"
+        - func: "stop mongo-orchestration"
 
     - name: "test-latest-standalone"
       tags: ["latest", "standalone"]
       commands:
+        - func: "prepare resources"
         - func: "bootstrap mongo-orchestration"
           vars:
             MONGODB_VERSION: "latest"
             TOPOLOGY: "server"
         - func: "run tests"
+        - func: "stop mongo-orchestration"
 
     - name: "test-latest-replica_set"
       tags: ["latest", "replica_set"]
       commands:
+        - func: "prepare resources"
         - func: "bootstrap mongo-orchestration"
           vars:
             MONGODB_VERSION: "latest"
             TOPOLOGY: "replica_set"
         - func: "run tests"
+        - func: "stop mongo-orchestration"
 
     - name: "test-latest-sharded_cluster"
       tags: ["latest", "sharded_cluster"]
       commands:
+        - func: "prepare resources"
         - func: "bootstrap mongo-orchestration"
           vars:
             MONGODB_VERSION: "latest"
             TOPOLOGY: "sharded_cluster"
         - func: "run tests"
+        - func: "stop mongo-orchestration"
 
-    - name: "atlas-connect"
+    - name: "test-atlas-connectivity"
       tags: ["atlas-connect"]
       commands:
         - func: "run atlas tests"
-
 
 axes:
   - id: versions
@@ -334,3 +349,10 @@ buildvariants:
      - ".4.0"
      - ".3.6"
 
+- matrix_name: "atlas-connect"
+  matrix_spec: 
+    os-fully-featured: ubuntu-18.04
+    swift-version: "*"
+  display_name: "Atlas Connectivity ${swift-version} ${os-fully-featured}"
+  tasks:
+    - ".atlas-connect"
