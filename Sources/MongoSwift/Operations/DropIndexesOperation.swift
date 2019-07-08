@@ -5,9 +5,13 @@ public struct DropIndexOptions: Encodable {
     /// An optional `WriteConcern` to use for the command.
     public var writeConcern: WriteConcern?
 
+    /// The maximum amount of time to allow the query to run - enforced server-side.
+    public var maxTimeMS: Int64?
+
     /// Initializer allowing any/all parameters to be omitted.
-    public init(writeConcern: WriteConcern? = nil) {
+    public init(writeConcern: WriteConcern? = nil, maxTimeMS: Int64? = nil) {
         self.writeConcern = writeConcern
+        self.maxTimeMS = maxTimeMS
     }
 }
 
