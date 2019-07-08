@@ -16,6 +16,12 @@ extension BSONValueTests {
     ]
 }
 
+extension ChangeStream {
+    static var allTests = [
+        ("testChangeStream", testChangeStream),
+    ]
+}
+
 extension ClientSessionTests {
     static var allTests = [
         ("testSessionCleanup", testSessionCleanup),
@@ -236,6 +242,7 @@ extension SDAMTests {
 
 XCTMain([
     testCase(BSONValueTests.allTests),
+    testCase(ChangeStream.allTests),
     testCase(ClientSessionTests.allTests),
     testCase(CodecTests.allTests),
     testCase(CommandMonitoringTests.allTests),

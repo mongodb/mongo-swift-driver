@@ -1,11 +1,11 @@
 /// Represents a MongoDB namespace for a database or collection.
-internal struct MongoNamespace {
-    internal let db: String
-    internal let collection: String?
+public struct MongoNamespace: Codable {
+    public let db: String
+    public let collection: String?
 }
 
 extension MongoNamespace: CustomStringConvertible {
-    internal var description: String {
+    public var description: String {
         guard let collection = self.collection else {
             return self.db
         }
