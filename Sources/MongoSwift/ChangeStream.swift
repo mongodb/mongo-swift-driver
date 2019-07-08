@@ -61,8 +61,8 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
         return extractMongoError(error: error, reply: reply)
     }
 
-    // Otherwise, the only feasible error is that the user tried to advance a dead change stream cursor,
-    // which is a logic error. We will still parse the mongoc error to cover all cases.
+    // Otherwise, the only feasible error is that the user tried to advance a dead cursor, which is a logic error.
+    // We will still parse the mongoc error to cover all cases.
     return extractMongoError(error: error)
   }
 
@@ -159,7 +159,7 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     guard let cursor = self.changeStream else {
         return
     }
-    mongoc_change_stream_destroy(changeStream)
+    mongoc_cursor_destroy(changeStream)
     self.changeStream = nil
     self.session = nil
     self.client = nil
