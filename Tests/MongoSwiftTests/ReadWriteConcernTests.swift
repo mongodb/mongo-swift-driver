@@ -1,3 +1,4 @@
+import mongoc
 @testable import MongoSwift
 import Nimble
 import XCTest
@@ -70,213 +71,330 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
                 .to(throwError(UserError.invalidArgumentError(message: "")))
     }
 
+    /// Checks that a `MongoClient` as well as the underlying mongoc clients have the expected read concern.
+    func checkClientReadConcern(_ client: MongoClient,
+                                _ expected: ReadConcern,
+                                _ description: String) throws {
+        if expected.isDefault {
+            expect(client.readConcern).to(beNil(), description: description)
+        } else {
+            expect(client.readConcern).to(equal(expected), description: description)
+        }
+
+        try client.connectionPool.withConnection { conn in
+            let connRC = ReadConcern(from: mongoc_client_get_read_concern(conn.clientHandle))
+            expect(connRC).to(equal(expected), description: description)
+        }
+    }
+
+    /// Checks that a `MongoClient` as well as the underlying mongoc clients have the expected write concern.
+    func checkClientWriteConcern(_ client: MongoClient,
+                                 _ expected: WriteConcern,
+                                 _ description: String) throws {
+        if expected.isDefault {
+            expect(client.writeConcern).to(beNil(), description: description)
+        } else {
+            expect(client.writeConcern).to(equal(expected), description: description)
+        }
+
+        try client.connectionPool.withConnection { conn in
+            let connWC = WriteConcern(from: mongoc_client_get_write_concern(conn.clientHandle))
+            expect(connWC).to(equal(expected), description: description)
+        }
+    }
+
+    /// Checks that a `MongoDatabase`, as well as the temporarily constructed pointers to equivalent mongoc databases,
+    /// have the expected read concern.
+    func checkDatabaseReadConcern(_ db: MongoDatabase,
+                                  _ expected: ReadConcern,
+                                  _ description: String) throws {
+        if expected.isDefault {
+            expect(db.readConcern).to(beNil(), description: description)
+        } else {
+            expect(db.readConcern).to(equal(expected), description: description)
+        }
+
+        try db._client.connectionPool.withConnection { conn in
+            db.withMongocDatabase(from: conn) { dbPtr in
+                let dbRC = ReadConcern(from: mongoc_database_get_read_concern(dbPtr))
+                expect(dbRC).to(equal(expected), description: description)
+            }
+        }
+    }
+
+    /// Checks that a `MongoDatabase`, as well as the temporarily constructed pointers to equivalent mongoc databases,
+    /// have the expected write concern.
+    func checkDatabaseWriteConcern(_ db: MongoDatabase,
+                                   _ expected: WriteConcern,
+                                   _ description: String) throws {
+        if expected.isDefault {
+            expect(db.writeConcern).to(beNil(), description: description)
+        } else {
+            expect(db.writeConcern).to(equal(expected), description: description)
+        }
+
+        try db._client.connectionPool.withConnection { conn in
+            db.withMongocDatabase(from: conn) { dbPtr in
+                let dbWC = WriteConcern(from: mongoc_database_get_write_concern(dbPtr))
+                expect(dbWC).to(equal(expected), description: description)
+            }
+        }
+    }
+
+    /// Checks that a `MongoCollection`, as well as the temporarily constructed pointers to equivalent mongoc
+    /// collections, have the expected read concern.
+    func checkCollectionReadConcern<T: Codable>(_ coll: MongoCollection<T>,
+                                                _ expected: ReadConcern,
+                                                _ description: String) throws {
+        if expected.isDefault {
+            expect(coll.readConcern).to(beNil(), description: description)
+        } else {
+            expect(coll.readConcern).to(equal(expected), description: description)
+        }
+
+        try coll._client.connectionPool.withConnection { conn in
+            coll.withMongocCollection(from: conn) { collPtr in
+                let collRC = ReadConcern(from: mongoc_collection_get_read_concern(collPtr))
+                expect(collRC).to(equal(expected), description: description)
+            }
+        }
+    }
+
+    /// Checks that a `MongoCollection`, as well as the temporarily constructed pointers to equivalent mongoc
+    /// collections, have the expected write concern.
+    func checkCollectionWriteConcern<T: Codable>(_ coll: MongoCollection<T>,
+                                                 _ expected: WriteConcern,
+                                                 _ description: String) throws {
+        if expected.isDefault {
+            expect(coll.writeConcern).to(beNil(), description: description)
+        } else {
+            expect(coll.writeConcern).to(equal(expected), description: description)
+        }
+
+        try coll._client.connectionPool.withConnection { conn in
+            coll.withMongocCollection(from: conn) { collPtr in
+                let collWC = WriteConcern(from: mongoc_collection_get_write_concern(collPtr))
+                expect(collWC).to(equal(expected), description: description)
+            }
+        }
+    }
+
     func testClientReadConcern() throws {
+        let empty = ReadConcern()
         let majority = ReadConcern(.majority)
+        let majorityString = ReadConcern("majority")
+        let local = ReadConcern(.local)
 
         // test behavior of a client with initialized with no RC
         do {
             let client = try MongoClient()
-            // expect the readConcern property to exist with a nil level
-            expect(client.readConcern).to(beNil())
+            let clientDesc = "client created with no RC provided"
+            // expect the client to have empty/server default read concern
+            try checkClientReadConcern(client, empty, clientDesc)
 
             // expect that a DB created from this client inherits its unset RC
             let db1 = client.db(type(of: self).testDatabase)
-            expect(db1.readConcern).to(beNil())
+            try checkDatabaseReadConcern(db1, empty, "db created with no RC provided from \(clientDesc)")
 
             // expect that a DB created from this client can override the client's unset RC
             let db2 = client.db(type(of: self).testDatabase, options: DatabaseOptions(readConcern: majority))
-            expect(db2.readConcern?.level).to(equal(.majority))
+            try checkDatabaseReadConcern(db2, majority, "db created with majority RC from \(clientDesc)")
         }
 
         // test behavior of a client initialized with local RC
         do {
-            let client = try MongoClient(options: ClientOptions(readConcern: ReadConcern(.local)))
+            let client = try MongoClient(options: ClientOptions(readConcern: local))
+            let clientDesc = "client created with local RC"
             // although local is default, if it is explicitly provided it should be set
-            expect(client.readConcern?.level).to(equal(.local))
+            try checkClientReadConcern(client, local, clientDesc)
 
             // expect that a DB created from this client inherits its local RC
             let db1 = client.db(type(of: self).testDatabase)
-            expect(db1.readConcern?.level).to(equal(.local))
+            try checkDatabaseReadConcern(db1, local, "db created with no RC provided from \(clientDesc)")
 
             // expect that a DB created from this client can override the client's local RC
             let db2 = client.db(type(of: self).testDatabase, options: DatabaseOptions(readConcern: majority))
-            expect(db2.readConcern?.level).to(equal(.majority))
+            try checkDatabaseReadConcern(db2, majority, "db created with majority RC from \(clientDesc)")
 
             // test with string init
-            let majorityString = ReadConcern("majority")
             let db3 = client.db(type(of: self).testDatabase, options: DatabaseOptions(readConcern: majorityString))
-            expect(db3.readConcern?.level).to(equal(.majority))
+            try checkDatabaseReadConcern(db3, majority, "db created with majority string RC from \(clientDesc)")
 
             // test with unknown level
-            let db4 = client.db(type(of: self).testDatabase, options: DatabaseOptions(readConcern: ReadConcern("blah")))
-            expect(db4.readConcern?.level).to(equal(.other(level: "blah")))
+            let unknown = ReadConcern("blah")
+            let db4 = client.db(type(of: self).testDatabase, options: DatabaseOptions(readConcern: unknown))
+            try checkDatabaseReadConcern(db4, unknown, "db created with unknown RC from \(clientDesc)")
         }
 
         // test behavior of a client initialized with majority RC
         do {
             var client = try MongoClient(options: ClientOptions(readConcern: majority))
-            expect(client.readConcern?.level).to(equal(.majority))
+            let clientDesc = "client created with majority RC"
+            try checkClientReadConcern(client, majority, clientDesc)
 
             // test with string init
-            client = try MongoClient(options: ClientOptions(readConcern: ReadConcern("majority")))
-            expect(client.readConcern?.level).to(equal(.majority))
+            client = try MongoClient(options: ClientOptions(readConcern: majorityString))
+            try checkClientReadConcern(client, majority, "\(clientDesc) string")
 
             // expect that a DB created from this client can override the client's majority RC with an unset one
-            let db = client.db(type(of: self).testDatabase, options: DatabaseOptions(readConcern: ReadConcern()))
-            expect(db.readConcern).to(beNil())
+            let db = client.db(type(of: self).testDatabase, options: DatabaseOptions(readConcern: empty))
+            try checkDatabaseReadConcern(db, empty, "db created with empty RC from \(clientDesc) string")
         }
     }
 
     func testClientWriteConcern() throws {
-        let w1 = WriteConcern.W.number(1)
-        let w2 = WriteConcern.W.number(2)
-        let wc2 = try WriteConcern(w: w2)
+        let w1 = try WriteConcern(w: .number(1))
+        let w2 = try WriteConcern(w: .number(2))
+        let empty = WriteConcern()
 
         // test behavior of a client with initialized with no WC
         do {
-            let client1 = try MongoClient()
+            let client = try MongoClient()
+            let clientDesc = "client created with no WC provided"
             // expect the readConcern property to exist and be default
-            expect(client1.writeConcern).to(beNil())
+            try checkClientWriteConcern(client, empty, clientDesc)
 
             // expect that a DB created from this client inherits its default WC
-            let db1 = client1.db(type(of: self).testDatabase)
-            expect(db1.writeConcern).to(beNil())
+            let db1 = client.db(type(of: self).testDatabase)
+            try checkDatabaseWriteConcern(db1, empty, "db created with no WC provided from \(clientDesc)")
 
             // expect that a DB created from this client can override the client's default WC
-            let db2 = client1.db(type(of: self).testDatabase, options: DatabaseOptions(writeConcern: wc2))
-            expect(db2.writeConcern?.w).to(equal(w2))
+            let db2 = client.db(type(of: self).testDatabase, options: DatabaseOptions(writeConcern: w2))
+            try checkDatabaseWriteConcern(db2, w2, "db created with w:2 from \(clientDesc)")
         }
 
         // test behavior of a client with w: 1
         do {
-            let client2 = try MongoClient(options: ClientOptions(writeConcern: WriteConcern(w: .number(1))))
+            let client = try MongoClient(options: ClientOptions(writeConcern: w1))
+            let clientDesc = "client created with w:1"
             // although w:1 is default, if it is explicitly provided it should be set
-            expect(client2.writeConcern?.w).to(equal(w1))
+            try checkClientWriteConcern(client, w1, clientDesc)
 
             // expect that a DB created from this client inherits its WC
-            let db3 = client2.db(type(of: self).testDatabase)
-            expect(db3.writeConcern?.w).to(equal(w1))
+            let db1 = client.db(type(of: self).testDatabase)
+            try checkDatabaseWriteConcern(db1, w1, "db created with no WC provided from \(clientDesc)")
 
             // expect that a DB created from this client can override the client's WC
-            let db4 = client2.db(type(of: self).testDatabase, options: DatabaseOptions(writeConcern: wc2))
-            expect(db4.writeConcern?.w).to(equal(w2))
+            let db2 = client.db(type(of: self).testDatabase, options: DatabaseOptions(writeConcern: w2))
+            try checkDatabaseWriteConcern(db2, w2, "db created with w:2 from \(clientDesc)")
         }
 
         // test behavior of a client with w: 2
         do {
-            let client3 = try MongoClient(options: ClientOptions(writeConcern: wc2))
-            expect(client3.writeConcern?.w).to(equal(w2))
+            let client = try MongoClient(options: ClientOptions(writeConcern: w2))
+            let clientDesc = "client created with w:2"
+            try checkClientWriteConcern(client, w2, clientDesc)
 
             // expect that a DB created from this client can override the client's WC with an unset one
-            let db5 = client3.db(
+            let db = client.db(
                     type(of: self).testDatabase,
-                    options: DatabaseOptions(writeConcern: WriteConcern()))
-            expect(db5.writeConcern).to(beNil())
+                    options: DatabaseOptions(writeConcern: empty))
+            try checkDatabaseWriteConcern(db, empty, "db created with empty WC from \(clientDesc)")
         }
     }
 
     func testDatabaseReadConcern() throws {
         let client = try MongoClient()
+        let empty = ReadConcern()
+        let local = ReadConcern(.local)
+        let localString = ReadConcern("local")
+        let unknown = ReadConcern("blah")
+        let majority = ReadConcern(.majority)
 
         let db1 = client.db(type(of: self).testDatabase)
         defer { try? db1.drop() }
 
+        let dbDesc = "db created with no RC provided"
+
         let coll1Name = self.getCollectionName(suffix: "1")
         // expect that a collection created from a DB with unset RC also has unset RC
         var coll1 = try db1.createCollection(coll1Name)
-        expect(coll1.readConcern).to(beNil())
+        try checkCollectionReadConcern(coll1, empty, "collection created with no RC provided from \(dbDesc)")
 
         // expect that a collection retrieved from a DB with unset RC also has unset RC
         coll1 = db1.collection(coll1Name)
-        expect(coll1.readConcern).to(beNil())
+        try checkCollectionReadConcern(coll1, empty, "collection retrieved with no RC provided from \(dbDesc)")
 
         // expect that a collection retrieved from a DB with unset RC can override the DB's RC
-        var coll2 = db1.collection(
-                self.getCollectionName(suffix: "2"),
-                options: CollectionOptions(readConcern: ReadConcern(.local))
-        )
-        expect(coll2.readConcern?.level).to(equal(.local))
+        let coll2 = db1.collection(self.getCollectionName(suffix: "2"), options: CollectionOptions(readConcern: local))
+        try checkCollectionReadConcern(coll2, local, "collection retrieved with local RC from \(dbDesc)")
 
         // test with string init
         var coll3 = db1.collection(
                 self.getCollectionName(suffix: "3"),
-                options: CollectionOptions(readConcern: ReadConcern("local"))
+                options: CollectionOptions(readConcern: localString)
         )
-        expect(coll3.readConcern?.level).to(equal(.local))
+        try checkCollectionReadConcern(coll3, local, "collection created with local RC string from \(dbDesc)")
 
         // test with unknown level
-        coll3 = db1.collection(
-                self.getCollectionName(suffix: "3"),
-                options: CollectionOptions(readConcern: ReadConcern("blah"))
-        )
-        expect(coll3.readConcern?.level).to(equal(.other(level: "blah")))
+        coll3 = db1.collection(self.getCollectionName(suffix: "3"), options: CollectionOptions(readConcern: unknown))
+        try checkCollectionReadConcern(coll3, unknown, "collection retrieved with unknown RC level from \(dbDesc)")
 
         try db1.drop()
 
         let db2 = client.db(
                 type(of: self).testDatabase,
-                options: DatabaseOptions(readConcern: ReadConcern(.local)))
+                options: DatabaseOptions(readConcern: local))
         defer { try? db2.drop() }
 
         let coll4Name = self.getCollectionName(suffix: "4")
         // expect that a collection created from a DB with local RC also has local RC
         var coll4 = try db2.createCollection(coll4Name)
-        expect(coll4.readConcern?.level).to(equal(.local))
+        try checkCollectionReadConcern(coll4, local, "collection created with no RC provided from \(dbDesc)")
 
         // expect that a collection retrieved from a DB with local RC also has local RC
         coll4 = db2.collection(coll4Name)
-        expect(coll4.readConcern?.level).to(equal(.local))
+        try checkCollectionReadConcern(coll4, local, "collection retrieved with no RC provided from \(dbDesc)")
 
         // expect that a collection retrieved from a DB with local RC can override the DB's RC
         let coll5 = db2.collection(
                 self.getCollectionName(suffix: "5"),
-                options: CollectionOptions(readConcern: ReadConcern(.majority))
+                options: CollectionOptions(readConcern: majority)
         )
-        expect(coll5.readConcern?.level).to(equal(.majority))
+        try checkCollectionReadConcern(coll5, majority, "collection retrieved with majority RC from \(dbDesc)")
     }
 
     func testDatabaseWriteConcern() throws {
         let client = try MongoClient()
 
+        let empty = WriteConcern()
+        let w1 = try WriteConcern(w: .number(1))
+        let w2 = try WriteConcern(w: .number(2))
+
         let db1 = client.db(type(of: self).testDatabase)
         defer { try? db1.drop() }
 
+        var dbDesc = "db created with no WC provided"
+
         // expect that a collection created from a DB with default WC also has default WC
         var coll1 = try db1.createCollection(self.getCollectionName(suffix: "1"))
-        expect(coll1.writeConcern).to(beNil())
+        try checkCollectionWriteConcern(coll1, empty, "collection created with no WC provided from \(dbDesc)")
 
         // expect that a collection retrieved from a DB with default WC also has default WC
         coll1 = db1.collection(coll1.name)
-        expect(coll1.writeConcern).to(beNil())
-
-        let wc1 = try WriteConcern(w: .number(1))
-        let wc2 = try WriteConcern(w: .number(2))
+        try checkCollectionWriteConcern(coll1, empty, "collection retrieved with no WC provided from \(dbDesc)")
 
         // expect that a collection retrieved from a DB with default WC can override the DB's WC
-        var coll2 = db1.collection(
-                self.getCollectionName(suffix: "2"),
-                options: CollectionOptions(writeConcern: wc1)
-        )
-        expect(coll2.writeConcern?.w).to(equal(wc1.w))
+        var coll2 = db1.collection(self.getCollectionName(suffix: "2"), options: CollectionOptions(writeConcern: w1))
+        try checkCollectionWriteConcern(coll2, w1, "collection retrieved with w:1 from \(dbDesc)")
 
         try db1.drop()
 
-        let db2 = client.db(type(of: self).testDatabase, options: DatabaseOptions(writeConcern: wc1))
+        let db2 = client.db(type(of: self).testDatabase, options: DatabaseOptions(writeConcern: w1))
         defer { try? db2.drop() }
+        dbDesc = "db created with w:1"
 
         // expect that a collection created from a DB with w:1 also has w:1
         var coll3 = try db2.createCollection(self.getCollectionName(suffix: "3"))
-        expect(coll3.writeConcern?.w).to(equal(wc1.w))
+        try checkCollectionWriteConcern(coll3, w1, "collection created with no WC provided from \(dbDesc)")
 
         // expect that a collection retrieved from a DB with w:1 also has w:1
         coll3 = db2.collection(coll3.name)
-        expect(coll3.writeConcern?.w).to(equal(wc1.w))
+        try checkCollectionWriteConcern(coll3, w1, "collection retrieved with no WC provided from \(dbDesc)")
 
         // expect that a collection retrieved from a DB with w:1 can override the DB's WC
-        let coll4 = db2.collection(
-                self.getCollectionName(suffix: "4"),
-                options: CollectionOptions(writeConcern: wc2))
-        expect(coll4.writeConcern?.w).to(equal(wc2.w))
+        let coll4 = db2.collection(self.getCollectionName(suffix: "4"), options: CollectionOptions(writeConcern: w2))
+        try checkCollectionWriteConcern(coll4, w2, "collection retrieved with w:2 from \(dbDesc)")
     }
 
     func testOperationReadConcerns() throws {

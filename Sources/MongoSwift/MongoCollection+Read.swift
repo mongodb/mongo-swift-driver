@@ -63,7 +63,7 @@ extension MongoCollection {
             guard let cursor = mongoc_collection_aggregate(collPtr,
                                                            MONGOC_QUERY_NONE,
                                                            pipeline._bson,
-                                                           opts?._bson, 
+                                                           opts?._bson,
                                                            rp) else {
                 fatalError("Couldn't get cursor from the server")
             }

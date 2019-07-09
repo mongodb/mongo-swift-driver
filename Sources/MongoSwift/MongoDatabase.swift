@@ -72,7 +72,7 @@ public struct DropDatabaseOptions: Codable {
 }
 
 /// A MongoDB Database.
-public struct MongoDatabase {
+public class MongoDatabase {
     /// The client which this database was derived from.
     internal let _client: MongoClient
 
@@ -102,8 +102,25 @@ public struct MongoDatabase {
     internal init(name: String, client: MongoClient, options: DatabaseOptions?) {
         self.namespace = MongoNamespace(db: name, collection: nil)
         self._client = client
-        self.readConcern = options?.readConcern ?? client.readConcern
-        self.writeConcern = options?.writeConcern ?? client.writeConcern
+
+        // for both read concern and write concern, we look for a read concern in the following order:
+        // 1. options provided for this collection
+        // 2. value for this `MongoDatabase`'s parent `MongoClient`
+        // if we found a non-nil value, we check if it's the empty/server default or not, and store it if not.
+        if let rc = options?.readConcern ?? client.readConcern, !rc.isDefault {
+            self.readConcern = rc
+        } else {
+            self.readConcern = nil
+        }
+
+        if let wc = options?.writeConcern ?? client.writeConcern, !wc.isDefault {
+            self.writeConcern = wc
+        } else {
+            self.writeConcern = nil
+        }
+
+        // read preference has similar inheritance logic to read concern and write concern, but there is no empty read
+        // preference so we don't need to check for that as we did above.
         self.readPreference = options?.readPreference ?? client.readPreference
         self.encoder = BSONEncoder(copies: client.encoder, options: options)
         self.decoder = BSONDecoder(copies: client.decoder, options: options)
@@ -264,13 +281,26 @@ public struct MongoDatabase {
         }
         defer { mongoc_database_destroy(db) }
 
-        self.readConcern?.withMongocReadConcern { rcPtr in
-            mongoc_database_set_read_concern(db, rcPtr)
+        // `db` will automatically inherit read concern, write concern, and read preference from the parent client. If
+        // this `MongoDatabase`'s value for any of those settings is different than the parent, we need to explicitly
+        // set it here.
+
+        if self.readConcern != self._client.readConcern {
+            // a nil value for self.readConcern corresponds to the empty read concern.
+            (self.readConcern ?? ReadConcern()).withMongocReadConcern { rcPtr in
+                mongoc_database_set_read_concern(db, rcPtr)
+            }
         }
-        self.writeConcern?.withMongocWriteConcern { wcPtr in
-            mongoc_database_set_write_concern(db, wcPtr)
+
+        if self.writeConcern != self._client.writeConcern {
+            // a nil value for self.writeConcern corresponds to the empty write concern.
+            (self.writeConcern ?? WriteConcern()).withMongocWriteConcern { wcPtr in
+                mongoc_database_set_write_concern(db, wcPtr)
+            }
         }
+
         if self.readPreference != self._client.readPreference {
+            // there is no concept of an empty read preference so we will always have a value here.
             mongoc_database_set_read_prefs(db, self.readPreference._readPreference)
         }
 
