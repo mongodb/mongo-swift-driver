@@ -130,7 +130,7 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     *   - `UserError.invalidArgumentError` if the `mongoc_change_stream_t`
     *      was created with invalid options.
     */
-  internal init<K: Codable>(stealing changeStream: OpaquePointer, client: MongoClient, session: ClientSession?, decoder: BSONDecoder, withType: K.Type) throws {
+  internal init(stealing changeStream: OpaquePointer, client: MongoClient, session: ClientSession?, decoder: BSONDecoder) throws {
     self.changeStream = changeStream
     self.session = session
     self.client = client
