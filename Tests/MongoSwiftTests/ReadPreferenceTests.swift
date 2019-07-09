@@ -125,30 +125,30 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
         do {
             // expect that a client with an unset read preference has it default to primary
             let client = try MongoClient()
-            expect(client.readPreference.mode).to(equal(.primary))
+            expect(client.readPreference).to(equal(ReadPreference(.primary)))
 
             // expect that a database created from this client inherits its read preference
             let db1 = client.db(type(of: self).testDatabase)
-            expect(db1.readPreference.mode).to(equal(.primary))
+            expect(db1.readPreference).to(equal(ReadPreference(.primary)))
 
             // expect that a database can override the readPreference it inherited from a client
             let opts = DatabaseOptions(readPreference: secondary)
             let db2 = client.db(type(of: self).testDatabase, options: opts)
-            expect(db2.readPreference.mode).to(equal(.secondary))
+            expect(db2.readPreference).to(equal(ReadPreference(.secondary)))
         }
 
         do {
             let client = try MongoClient(options: ClientOptions(readPreference: primaryPreferred))
-            expect(client.readPreference.mode).to(equal(.primaryPreferred))
+            expect(client.readPreference).to(equal(ReadPreference(.primaryPreferred)))
 
             // expect that a database created from this client inherits its read preference
             let db1 = client.db(type(of: self).testDatabase)
-            expect(db1.readPreference.mode).to(equal(.primaryPreferred))
+            expect(db1.readPreference).to(equal(ReadPreference(.primaryPreferred)))
 
             // expect that a database can override the readPreference it inherited from a client
             let opts = DatabaseOptions(readPreference: secondary)
             let db2 = client.db(type(of: self).testDatabase, options: opts)
-            expect(db2.readPreference.mode).to(equal(.secondary))
+            expect(db2.readPreference).to(equal(ReadPreference(.secondary)))
         }
     }
 
@@ -160,28 +160,28 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
         do {
             // expect that a database with an unset read preference defaults to primary
             let db = client.db(type(of: self).testDatabase)
-            expect(db.readPreference.mode).to(equal(.primary))
+            expect(db.readPreference).to(equal(ReadPreference(.primary)))
 
              // expect that a collection inherits its database default read preference
             let coll1 = db.collection(self.getCollectionName(suffix: "1"))
-            expect(coll1.readPreference.mode).to(equal(.primary))
+            expect(coll1.readPreference).to(equal(ReadPreference(.primary)))
 
             // expect that a collection can override its inherited read preference
             let coll2 = db.collection(self.getCollectionName(suffix: "2"),
                                       options: CollectionOptions(readPreference: secondary))
-            expect(coll2.readPreference.mode).to(equal(.secondary))
+            expect(coll2.readPreference).to(equal(ReadPreference(.secondary)))
         }
 
         do {
             // expect that a collection inherits its database read preference
             let db = client.db(type(of: self).testDatabase, options: DatabaseOptions(readPreference: secondary))
             let coll1 = db.collection(self.getCollectionName(suffix: "1"))
-            expect(coll1.readPreference.mode).to(equal(.secondary))
+            expect(coll1.readPreference).to(equal(ReadPreference(.secondary)))
 
             // expect that a collection can override its database read preference
             let coll2 = db.collection(self.getCollectionName(suffix: "2"),
                                       options: CollectionOptions(readPreference: primary))
-            expect(coll2.readPreference.mode).to(equal(.primary))
+            expect(coll2.readPreference).to(equal(ReadPreference(.primary)))
         }
     }
 }
