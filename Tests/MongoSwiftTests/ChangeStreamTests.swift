@@ -4,6 +4,13 @@ import Nimble
 import XCTest
 
 final class ChangeStreamTest: MongoSwiftTestCase {
+    override func setUp() {
+        super.setUp()
+        guard MongoSwiftTestCase.topologyType != .single else {
+            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            return
+        }
+    }
     func testChangeStream() throws {
         let decoder = BSONDecoder()
         let client = try MongoClient()
