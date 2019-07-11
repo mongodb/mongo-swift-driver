@@ -1,9 +1,14 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /// An `UpdateDescription` containing fields that will be present in the change stream document
 /// for operations of type `update`.
 =======
 >>>>>>> Add tests for ChangeStream and ChangeStream.next
+=======
+/// An `UpdateDescription` containing fields that will be present in
+/// the change stream document for operations of type `update`.
+>>>>>>> update docstrings
 public struct UpdateDescription: Codable {
    /// A document containing key:value pairs of names of the fields
    /// that were changed, and the new value for those fields.
