@@ -1,6 +1,6 @@
 import mongoc
 
-/// A `ChangeStreamToken` that wraps `resumeToken`.
+/// A `ChangeStreamToken` used for wrapping the resume token.
 public struct ChangeStreamToken: Codable {
     private let resumeToken: Document
 

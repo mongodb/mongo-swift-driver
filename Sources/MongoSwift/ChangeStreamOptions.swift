@@ -30,18 +30,20 @@ public enum FullDocument: RawRepresentable, Codable {
 
 /// Options to use when creating a `ChangeStream`.
 public struct ChangeStreamOptions: Codable {
-    /// Indicates the value of the mode on the `fullDocument` field of a
-    /// `ChangeStreamDocument`.
+    /** Indicates how the `fullDocument` field of a `ChangeStreamDocument` should
+     * be filled out by the server.
+     * By default (indicated by a nil value for this option), the fullDocument field
+     * in the change stream document will always be present in the case of 'insert'
+     * and 'replace' operations (containing the document being inserted) and will be
+     * nil for all other operations.
+     */
     public let fullDocument: FullDocument?
 
     /// Specifies the logical starting point for the new change stream.
     public let resumeAfter: Document?
 
-    /**
-     * The maximum amount of time in milliseconds for the server to wait on new
-     * documents to satisfy a change stream query. Uses the server default timeout
-     * when omitted.
-     */
+    /// The maximum amount of time in milliseconds for the server to wait on new documents
+    // to satisfy a change stream query. Uses the server default timeout when omitted.
     public let maxAwaitTimeMS: Int64?
 
     /**
