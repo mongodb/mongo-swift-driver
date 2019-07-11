@@ -1,10 +1,14 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 /// An `UpdateDescription` containing fields that will be present in the change stream document
 /// for operations of type `update`.
+=======
+>>>>>>> Add tests for ChangeStream and ChangeStream.next
 public struct UpdateDescription: Codable {
    /// A document containing key:value pairs of names of the fields
    /// that were changed, and the new value for those fields.
    public let updatedFields: Document
+<<<<<<< HEAD
 
    /// An array of field names that were removed from the document.
    public let removedFields: [String]
@@ -52,23 +56,27 @@ public struct ChangeStreamDocument<T: Codable>: Codable {
         /// A document containing key:value pairs of names of the fields
         /// that were changed, and the new value for those fields.
         public let updatedFields: Document
+=======
+>>>>>>> Add tests for ChangeStream and ChangeStream.next
 
-        /// An array of field names that were removed from the document.
-        public let removedFields: [String]
-    }
+   /// An array of field names that were removed from the document.
+   public let removedFields: [String]
+}
 
-    /// An enum representing the type of operation for this change.
-     public enum OperationType: String, Codable {
-        case insert
-        case update
-        case replace
-        case delete
-        case invalidate
-        case drop
-        case dropDatabase
-        case rename
-     }
+/// An enum representing the type of operation for this change.
+public enum OperationType: String, Codable {
+   case insert
+   case update
+   case replace
+   case delete
+   case invalidate
+   case drop
+   case dropDatabase
+   case rename
+}
 
+/// The response document type from a `ChangeStream`.
+public struct ChangeStreamDocument<T: Codable>: Codable {
     /// Describes the type of operation for this change.
     public let operationType: OperationType
 
@@ -106,13 +114,13 @@ public struct ChangeStreamDocument<T: Codable>: Codable {
     * after the update occurred. If the document was deleted since the updated happened, it will be null.
 =======
     /** Only present for options of type ‘insert’, ‘update’,
-      * ‘replace’ and ‘delete’.
-      *
-      * For unsharded collections this contains a single field, _id, with the
-      * value of the _id of the document updated. For sharded collections,
-      * this will contain all the components of the shard key in order,
-      * followed by the _id if the _id isn’t part of the shard key.
-      */
+     * ‘replace’ and ‘delete’.
+     *
+     * For unsharded collections this contains a single field, _id, with the
+     * value of the _id of the document updated. For sharded collections,
+     * this will contain all the components of the shard key in order,
+     * followed by the _id if the _id isn’t part of the shard key.
+     */
     public let documentKey: Document?
 
     /// An `UpdateDescription` containing updated and removed fields in
