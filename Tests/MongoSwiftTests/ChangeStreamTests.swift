@@ -4,8 +4,7 @@ import Nimble
 import XCTest
 
 final class ChangeStreamTest: MongoSwiftTestCase {
-    override func setUp() {
-        super.setUp()
+    func testChangeStream() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
             print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
             return
@@ -47,7 +46,10 @@ final class ChangeStreamTest: MongoSwiftTestCase {
             print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
             return
         }
+<<<<<<< HEAD
 
+=======
+>>>>>>> Add topology check for change streams when not single
         let client = try MongoClient()
 
         if try client.serverVersion() < ServerVersion(major: 4, minor: 0) {
