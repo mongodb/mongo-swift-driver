@@ -38,53 +38,49 @@ public struct ChangeStreamOptions: Codable {
     public let resumeAfter: Document?
 
     /**
-    * The maximum amount of time for the server to wait on new documents to
-    * satisfy a change stream query.
-    * This is the same field described in FindOptions in the CRUD spec.
-    * - SeeAlso:
-    https://github.com/mongodb/specifications/blob/master/source/crud/crud.rst#read
-    */
+     * The maximum amount of time in milliseconds for the server to wait on new
+     * documents to satisfy a change stream query. Uses the server default timeout
+     * when omitted.
+     */
     public let maxAwaitTimeMS: Int64?
 
     /**
-    * The number of documents to return per batch.
-    * This option is sent only if the caller explicitly provides a value. The
-    * default is to not send a value.
-    * - SeeAlso: https://docs.mongodb.com/manual/reference/command/aggregate
-    */
+     * The number of documents to return per batch.
+     * This option is sent only if the caller explicitly provides a value. The
+     * default is to not send a value.
+     * - SeeAlso: https://docs.mongodb.com/manual/reference/command/aggregate
+     */
     public let batchSize: Int32?
 
     /**
-    * Specifies a collation.
-    * This option is sent only if the caller explicitly provides a value. The
-    * default is to not send a value.
-    * - SeeAlso: https://docs.mongodb.com/manual/reference/command/aggregate
-    */
+     * Specifies a collation.
+     * This option is sent only if the caller explicitly provides a value. The
+     * default is to not send a value.
+     * - SeeAlso: https://docs.mongodb.com/manual/reference/command/aggregate
+     */
     public let collation: Document?
 
     /**
-    * The change stream will only provide changes that occurred at or after
-    * the specified timestamp. Any command run against the server will return
-    * an operation time that can be used here.
-    * - SeeAlso: https://docs.mongodb.com/manual/reference/method/db.runCommand/
-    */
+     * The change stream will only provide changes that occurred at or after
+     * the specified timestamp. Any command run against the server will return
+     * an operation time that can be used here.
+     * - SeeAlso: https://docs.mongodb.com/manual/reference/method/db.runCommand/
+     */
     public let startAtOperationTime: Timestamp?
 
     /**
-    * Similar to `resumeAfter`, this option takes a resume token and starts a
-    * new change stream returning the first notification after the token.
-    * This will allow users to watch collections that have been dropped and
-    * recreated or newly renamed collections without missing any
-    * notifications.
-    * The server will report an error if `startAfter` and `resumeAfter` are
-    * both specified.
-    * - SeeAlso: https://docs.mongodb.com/master/changeStreams/#change-stream-start-after
-    */
+     * Similar to `resumeAfter`, this option takes a resume token and starts a
+     * new change stream returning the first notification after the token.
+     * This will allow users to watch collections that have been dropped and
+     * recreated or newly renamed collections without missing any
+     * notifications.
+     * The server will report an error if `startAfter` and `resumeAfter` are
+     * both specified.
+     * - SeeAlso: https://docs.mongodb.com/master/changeStreams/#change-stream-start-after
+     */
     public let startAfter: Document?
 
-    /**
-    * Initializes a `ChangeStreamOption`.
-    */
+    /// Initializes a `ChangeStreamOption`.
     public init(fullDocument: FullDocument? = nil,
                 resumeAfter: Document? = nil,
                 maxAwaitTimeMS: Int64? = nil,
