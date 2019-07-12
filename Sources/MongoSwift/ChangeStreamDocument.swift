@@ -70,13 +70,29 @@ public struct ChangeStreamDocument<T: Codable>: Codable {
 
 /// An enum representing the type of operation for this change.
 public enum OperationType: String, Codable {
+   /// Specifies an operation of type `insert`.
+   /// SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#insert-event
    case insert
+   /// Specifies an operation of type `update`.
+   /// SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#update-event
    case update
+   /// Specifies an operation of type `replace`.
+   /// SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#replace-event
    case replace
+   /// Specifies an operation of type `delete`.
+   /// SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#delete-event
    case delete
+   /// Specifies an operation of type `invalidate`.
+   /// SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#change-event-invalidate
    case invalidate
+   /// Specifies an operation of type `drop`.
+   /// SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#drop-event
    case drop
+   /// Specifies an operation of type `dropDatabase`.
+   /// SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#dropdatabase-event
    case dropDatabase
+   /// Specifies an operation of type `rename`.
+   /// SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#rename-event
    case rename
 }
 
@@ -85,9 +101,14 @@ public struct ChangeStreamDocument<T: Codable>: Codable {
     /// Describes the type of operation for this change.
     public let operationType: OperationType
 
+<<<<<<< HEAD
     /// An opaque token for use when resuming an interrupted change
     /// stream.
 >>>>>>> first commit - Add ChangeStream, ChangeStreamOptions, ChangeStreamDocument
+=======
+    /// An opaque token for use when resuming an interrupted change stream.
+    /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/#resume-a-change-stream
+>>>>>>> Update docstrings
     public let _id: ChangeStreamToken
 
     /// A document containing the database and collection names in
@@ -95,11 +116,15 @@ public struct ChangeStreamDocument<T: Codable>: Codable {
     public let ns: MongoNamespace
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Update docstrings
     /**
      * Only present for options of type `insert’, `update’, `replace’ and `delete’. For unsharded collections this
      * contains a single field, _id, with the value of the _id of the document updated. For sharded collections, this
      * will contain all the components of the shard key in order, followed by the _id if the _id isn’t part of the shard
      * key.
+<<<<<<< HEAD
      */
     public let documentKey: Document?
 
@@ -125,6 +150,8 @@ public struct ChangeStreamDocument<T: Codable>: Codable {
      * value of the _id of the document updated. For sharded collections,
      * this will contain all the components of the shard key in order,
      * followed by the _id if the _id isn’t part of the shard key.
+=======
+>>>>>>> Update docstrings
      */
     public let documentKey: Document?
 
@@ -133,20 +160,23 @@ public struct ChangeStreamDocument<T: Codable>: Codable {
     public let updateDescription: UpdateDescription?
 
    /**
-    * Always present for operations of type ‘insert’ and ‘replace’. Also
-    * present for operations of type ‘update’ if the user has specified
-    * ‘updateLookup’ in the ‘fullDocument’ arguments to the ‘$changeStream’
-    *  stage.
+    * Always present for operations of type `insert` and `replace`. Also present for operations of type `update` if the
+    * user has specified `updateLookup` in the `fullDocument.updateLookup` in the `ChangeStreamOptions` used to create
+    * the `ChangeStream` that emitted this document.
     *
-    * For operations of type ‘insert’ and ‘replace’, this key will contain
-    * the document being inserted, or the new version of the document that is
-    * replacing the existing document, respectively.
+    * For operations of type `insert’ and `replace’, this key will contain the document being inserted, or the new
+    * version of the document that is replacing the existing document, respectively.
     *
+<<<<<<< HEAD
     * For operations of type ‘update’, this key will contain a copy of the
     * full version of the document from some point after the update occurred.
     * If the document was deleted since the updated happened, it will be
     * null.
 >>>>>>> first commit - Add ChangeStream, ChangeStreamOptions, ChangeStreamDocument
+=======
+    * For operations of type `update’, this key will contain a copy of the full version of the document from some point
+    * after the update occurred. If the document was deleted since the updated happened, it will be null.
+>>>>>>> Update docstrings
     */
     public let fullDocument: T?
  }
