@@ -110,7 +110,7 @@ final class ChangeStreamTest: MongoSwiftTestCase {
             replyPtr.deallocate()
         }
 
-        let decoder = BSONDecoder()
+       let decoder = BSONDecoder()
        let changeStream = try ChangeStream<ChangeStreamDocument<Document>>(stealing: changeStreamPtr,
                                                                            client: client,
                                                                            session: session,
@@ -129,6 +129,7 @@ final class ChangeStreamTest: MongoSwiftTestCase {
         // test that the change stream contains a change document for the `update` operation.
         expect(res2).toNot(beNil())
         expect(res2?.operationType).to(equal(.update))
+        print("res: ", res2)
 
         // test that the change stream contains a change document for the `find` operation.
         try coll.findOneAndDelete(["x": 2], session: session)
