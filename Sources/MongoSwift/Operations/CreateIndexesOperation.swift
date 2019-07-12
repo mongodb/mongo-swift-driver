@@ -44,8 +44,9 @@ internal struct CreateIndexesOperation<T: Codable>: Operation {
         var reply = Document()
         var error = bson_error_t()
         let success = withMutableBSONPointer(to: &reply) { replyPtr in
-            mongoc_collection_write_command_with_opts(
-                self.collection._collection, command._bson, opts?._bson, replyPtr, &error)
+            self.collection.withMongocCollection(from: connection) { collPtr in
+                mongoc_collection_write_command_with_opts(collPtr, command._bson, opts?._bson, replyPtr, &error)
+            }
         }
         guard success else {
             throw extractMongoError(error: error, reply: reply)

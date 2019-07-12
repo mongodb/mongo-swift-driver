@@ -63,10 +63,18 @@ internal struct CountOperation<T: Codable>: Operation {
         let opts = try encodeOptions(options: options, session: session)
         let rp = self.options?.readPreference?._readPreference
         var error = bson_error_t()
-        // because we already encode skip and limit in the options,
-        // pass in 0s so we don't get duplicate parameter errors.
-        let count = mongoc_collection_count_with_opts(
-            self.collection._collection, MONGOC_QUERY_NONE, self.filter._bson, 0, 0, opts?._bson, rp, &error)
+        let count = self.collection.withMongocCollection(from: connection) { collPtr in
+            // because we already encode skip and limit in the options,
+            // pass in 0s so we don't get duplicate parameter errors.
+            mongoc_collection_count_with_opts(collPtr,
+                                              MONGOC_QUERY_NONE,
+                                              self.filter._bson,
+                                              0, // skip
+                                              0, // limit
+                                              opts?._bson,
+                                              rp,
+                                              &error)
+        }
 
         guard count != -1 else { throw extractMongoError(error: error) }
 

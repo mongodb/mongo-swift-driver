@@ -27,13 +27,16 @@ extension MongoCollection {
         }
 
         let opts = try encodeOptions(options: options, session: session)
-        let bulk = BulkWriteOperation(collection: self._collection, opts: opts, withEncoder: self.encoder)
 
-        try requests.enumerated().forEach { index, model in
-            try model.addToBulkWrite(bulk: bulk, index: index)
+        return try self._client.connectionPool.withConnection { conn in
+            try self.withMongocCollection(from: conn) { collPtr in
+                let bulk = BulkWriteOperation(collection: collPtr, opts: opts, withEncoder: self.encoder)
+                try requests.enumerated().forEach { index, model in
+                    try model.addToBulkWrite(bulk: bulk, index: index)
+                }
+                return try self._client.executeOperation(bulk, session: session)
+            }
         }
-
-        return try self._client.executeOperation(bulk, session: session)
     }
 
     private struct DeleteModelOptions: Encodable {
