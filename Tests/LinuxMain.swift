@@ -181,6 +181,7 @@ extension MongoCollection_IndexTests {
         ("testDropIndexByKeys", testDropIndexByKeys),
         ("testDropAllIndexes", testDropAllIndexes),
         ("testListIndexes", testListIndexes),
+        ("testCreateDropIndexByModelWithMaxTimeMS", testCreateDropIndexByModelWithMaxTimeMS),
     ]
 }
 
@@ -199,6 +200,9 @@ extension ReadPreferenceTests {
         ("testMaxStalenessSeconds", testMaxStalenessSeconds),
         ("testInitFromPointer", testInitFromPointer),
         ("testEquatable", testEquatable),
+        ("testOperationReadPreference", testOperationReadPreference),
+        ("testClientReadPreference", testClientReadPreference),
+        ("testDatabaseReadPreference", testDatabaseReadPreference),
     ]
 }
 
