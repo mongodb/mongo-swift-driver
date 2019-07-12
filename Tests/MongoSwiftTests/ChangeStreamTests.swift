@@ -46,14 +46,6 @@ final class ChangeStreamTest: MongoSwiftTestCase {
             print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
             return
         }
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-=======
->>>>>>> Add topology check for change streams when not single
-=======
-
->>>>>>> Skip tests for database.watch  when server is < 4.0
         let client = try MongoClient()
 
         if try client.serverVersion() < ServerVersion(major: 4, minor: 0) {
@@ -145,7 +137,11 @@ final class ChangeStreamTest: MongoSwiftTestCase {
         // test that the change stream contains a change document for the `update` operation.
         expect(res2).toNot(beNil())
         expect(res2?.operationType).to(equal(.update))
+<<<<<<< HEAD
         expect(res2?.fullDocument?["x"]).to(bsonEqual(2))
+=======
+        print("res: ", res2)
+>>>>>>> Update docstrings and use ChangeStreamToken for resumeAfter and startAfter
 
         // test that the change stream contains a change document for the `find` operation.
         try coll.findOneAndDelete(["x": 2], session: session)
