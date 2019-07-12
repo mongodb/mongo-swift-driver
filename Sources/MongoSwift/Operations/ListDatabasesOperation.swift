@@ -1,22 +1,5 @@
 import mongoc
 
-/// Options to use when listing available databases.
-internal struct ListDatabasesOptions: Encodable {
-    /// Optional `Document` specifying a filter that the listed databases must pass.
-    internal var filter: Document?
-
-    /// Optionally indicate whether only names should be returned.
-    /// This is internal and only used for implementation purposes. Users should use `listDatabaseNames` if they want
-    /// only names.
-    internal var nameOnly: Bool?
-
-    /// Convenience constructor for basic construction
-    internal init(filter: Document?, nameOnly: Bool?) {
-        self.filter = filter
-        self.nameOnly = nameOnly
-    }
-}
-
 /// A struct modeling the information returned from the `listDatabases` command about a single database.
 public struct DatabaseSpecification: Codable {
     /// The name of the database.
@@ -46,21 +29,31 @@ internal enum ListDatabasesResults {
 internal struct ListDatabasesOperation: Operation {
     private let session: ClientSession?
     private let client: MongoClient
-    private let options: ListDatabasesOptions?
+    private let filter: Document?
+    private let nameOnly: Bool?
 
     internal init(client: MongoClient,
-                  options: ListDatabasesOptions?,
+                  filter: Document?,
+                  nameOnly: Bool?,
                   session: ClientSession?) {
         self.client = client
-        self.options = options
+        self.filter = filter
+        self.nameOnly = nameOnly
         self.session = session
     }
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> ListDatabasesResults {
         // spec requires that this command be run against the primary.
         let readPref = ReadPreference(.primary)
-        let cmd: Document = ["listDatabases": 1]
-        let opts = try encodeOptions(options: self.options, session: self.session)
+        var cmd: Document = ["listDatabases": 1]
+        if let filter = self.filter {
+            cmd["filter"] = filter
+        }
+        if let nameOnly = self.nameOnly {
+            cmd["nameOnly"] = nameOnly
+        }
+
+        let opts = try encodeOptions(options: nil as Document?, session: self.session)
         var reply = Document()
         var error = bson_error_t()
 
@@ -82,7 +75,7 @@ internal struct ListDatabasesOperation: Operation {
             throw RuntimeError.internalError(message: "Invalid server response: \(reply)")
         }
 
-        if self.options?.nameOnly ?? false {
+        if self.nameOnly ?? false {
             return .names(databases.map { $0["name"] as? String ?? "" })
         }
 

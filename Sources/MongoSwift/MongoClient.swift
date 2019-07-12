@@ -245,7 +245,8 @@ public class MongoClient {
     public func listDatabases(_ filter: Document? = nil,
                               session: ClientSession? = nil) throws -> [DatabaseSpecification] {
         let operation = ListDatabasesOperation(client: self,
-                                               options: ListDatabasesOptions(filter: filter, nameOnly: nil),
+                                               filter: filter,
+                                               nameOnly: nil,
                                                session: session)
         guard case let .specs(result) = try self.executeOperation(operation) else {
             throw RuntimeError.internalError(message: "Invalid result")
@@ -281,7 +282,8 @@ public class MongoClient {
      */
     public func listDatabaseNames(_ filter: Document? = nil, session: ClientSession? = nil) throws -> [String] {
         let operation = ListDatabasesOperation(client: self,
-                                               options: ListDatabasesOptions(filter: filter, nameOnly: true),
+                                               filter: filter,
+                                               nameOnly: true,
                                                session: session)
         guard case let .names(result) = try self.executeOperation(operation) else {
             throw RuntimeError.internalError(message: "Invalid result")
