@@ -211,6 +211,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
 
     func testCreateDropIndexByModelWithMaxTimeMS() throws {
         let center = NotificationCenter.default
+        let maxTimeMS: Int64 = 1000
 
         let client = try MongoClient(options: ClientOptions(eventMonitoring: true))
         client.enableMonitoring(forEvents: .commandMonitoring)
@@ -232,10 +233,10 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
 
         let model = IndexModel(keys: ["cat": 1])
         let wc = try WriteConcern(w: .number(1))
-        let createIndexOpts = CreateIndexOptions(writeConcern: wc, maxTimeMS: 100)
+        let createIndexOpts = CreateIndexOptions(writeConcern: wc, maxTimeMS: maxTimeMS)
         expect( try collection.createIndex(model, options: createIndexOpts)).to(equal("cat_1"))
 
-        let dropIndexOpts = DropIndexOptions(writeConcern: wc, maxTimeMS: 100)
+        let dropIndexOpts = DropIndexOptions(writeConcern: wc, maxTimeMS: maxTimeMS)
         let res = try collection.dropIndex(model, options: dropIndexOpts)
         expect((res["ok"] as? BSONNumber)?.doubleValue).to(bsonEqual(1.0))
 
@@ -249,10 +250,10 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         expect(receivedEvents.count).to(equal(2))
         expect(receivedEvents[0].command["createIndexes"]).toNot(beNil())
         expect(receivedEvents[0].command["maxTimeMS"]).toNot(beNil())
-        expect(receivedEvents[0].command["maxTimeMS"]).to(bsonEqual(100))
+        expect(receivedEvents[0].command["maxTimeMS"]).to(bsonEqual(maxTimeMS))
         expect(receivedEvents[1].command["dropIndexes"]).toNot(beNil())
         expect(receivedEvents[1].command["maxTimeMS"]).toNot(beNil())
-        expect(receivedEvents[1].command["maxTimeMS"]).to(bsonEqual(100))
+        expect(receivedEvents[1].command["maxTimeMS"]).to(bsonEqual(maxTimeMS))
     }
 }
 
