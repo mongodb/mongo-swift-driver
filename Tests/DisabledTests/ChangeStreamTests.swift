@@ -1,4 +1,4 @@
-import MongoSwift
+@testable import MongoSwift
 import Nimble
 import TestsCommon
 import XCTest

@@ -1,4 +1,4 @@
-import mongoc
+import CLibMongoC
 
 private final class MongocInitializer {
     internal static let shared = MongocInitializer()

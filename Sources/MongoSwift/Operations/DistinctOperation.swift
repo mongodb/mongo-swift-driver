@@ -1,4 +1,4 @@
-import mongoc
+import CLibMongoC
 
 /// Options to use when executing a `distinct` command on a `MongoCollection`.
 public struct DistinctOptions: Codable {

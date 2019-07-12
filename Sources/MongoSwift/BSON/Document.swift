@@ -1,4 +1,4 @@
-import bson
+import CLibMongoC
 import Foundation
 
 #if compiler(>=5.0)

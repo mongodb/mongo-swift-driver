@@ -35,10 +35,13 @@
 #include "mongoc-trace-private.h"
 #include "CLibMongoC_mongoc-error.h"
 
+<<<<<<< HEAD
 #if !defined(_MSC_VER) || (_MSC_VER >= 1800)
 #include <inttypes.h>
 #endif
 
+=======
+>>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
 static bool
 _mongoc_gridfs_file_refresh_page (mongoc_gridfs_file_t *file);
 

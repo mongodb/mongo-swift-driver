@@ -26,10 +26,13 @@
 #include "mongoc-topology-private.h"
 #include "mongoc-trace-private.h"
 
+<<<<<<< HEAD
 #if !defined(_MSC_VER) || (_MSC_VER >= 1800)
 #include <inttypes.h>
 #endif
 
+=======
+>>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
 #ifdef MONGOC_ENABLE_SSL
 #include "mongoc-ssl-private.h"
 #endif

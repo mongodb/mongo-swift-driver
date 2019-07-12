@@ -1,4 +1,4 @@
-import mongoc
+import CLibMongoC
 
 /// Options to use when executing a `countDocuments` command on a `MongoCollection`.
 public struct CountDocumentsOptions: Codable {

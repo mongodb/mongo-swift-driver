@@ -1,7 +1,11 @@
 #include "CLibMongoC_bson-compat.h"
 
 #include "CLibMongoC_bson-md5.h"
+<<<<<<< HEAD
 #include "CLibMongoC_common-md5-private.h"
+=======
+#include "common-md5-private.h"
+>>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
 
 
 void

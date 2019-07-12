@@ -1,4 +1,4 @@
-import mongoc
+import CLibMongoC
 
 /// The entity on which to start a change stream.
 internal enum ChangeStreamTarget<CollectionType: Codable> {

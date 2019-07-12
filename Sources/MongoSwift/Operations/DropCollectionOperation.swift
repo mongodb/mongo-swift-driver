@@ -1,4 +1,4 @@
-import mongoc
+import CLibMongoC
 
 /// An operation corresponding to a "drop" command on a collection.
 internal struct DropCollectionOperation<T: Codable>: Operation {

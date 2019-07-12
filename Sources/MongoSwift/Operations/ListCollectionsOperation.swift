@@ -1,5 +1,5 @@
+import CLibMongoC
 import Foundation
-import mongoc
 
 /// Describes the type of data store returned when executing `listCollections`.
 public enum CollectionType: RawRepresentable, Codable {

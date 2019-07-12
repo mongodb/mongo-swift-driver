@@ -27,10 +27,13 @@
 #include "mongoc-stream-private.h"
 #include "mongoc-write-concern-private.h"
 
+<<<<<<< HEAD
 #if !defined(_MSC_VER) || (_MSC_VER >= 1800)
 #include <inttypes.h>
 #endif
 
+=======
+>>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
 /*--------------------------------------------------------------------------
  *
  * _mongoc_gridfs_find_file_with_id --

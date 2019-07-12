@@ -1,5 +1,5 @@
+import CLibMongoC
 import Foundation
-import mongoc
 
 /// A class to represent a MongoDB write concern.
 public struct WriteConcern: Codable {

@@ -1,3 +1,4 @@
+import CLibMongoC
 import Foundation
 import NIO
 

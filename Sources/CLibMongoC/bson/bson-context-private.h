@@ -22,7 +22,11 @@
 
 
 #include "CLibMongoC_bson-context.h"
+<<<<<<< HEAD
 #include "CLibMongoC_common-thread-private.h"
+=======
+#include "common-thread-private.h"
+>>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
 
 
 BSON_BEGIN_DECLS

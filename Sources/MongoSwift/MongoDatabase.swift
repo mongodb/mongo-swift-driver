@@ -1,4 +1,4 @@
-import mongoc
+import CLibMongoC
 import NIO
 
 /// Options to set on a retrieved `MongoCollection`.

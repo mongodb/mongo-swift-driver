@@ -1,4 +1,4 @@
-import mongoc
+import CLibMongoC
 
 /// Class representing a connection string for connecting to MongoDB.
 internal class ConnectionString {

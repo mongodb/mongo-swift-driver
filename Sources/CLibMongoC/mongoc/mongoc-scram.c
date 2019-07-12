@@ -26,7 +26,11 @@
 #include "mongoc-trace-private.h"
 
 #include "mongoc-crypto-private.h"
+<<<<<<< HEAD
 #include "CLibMongoC_common-b64-private.h"
+=======
+#include "common-b64-private.h"
+>>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
 
 #include "mongoc-memcmp-private.h"
 

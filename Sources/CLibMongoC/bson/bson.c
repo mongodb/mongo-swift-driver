@@ -21,14 +21,21 @@
 #include "CLibMongoC_bson-string.h"
 #include "bson-iso8601-private.h"
 
+<<<<<<< HEAD
 #include "CLibMongoC_common-b64-private.h"
+=======
+#include "common-b64-private.h"
+>>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
 
 #include <string.h>
 #include <math.h>
 
+<<<<<<< HEAD
 #if !defined(_MSC_VER) || (_MSC_VER >= 1800)
 #include <inttypes.h>
 #endif
+=======
+>>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
 
 #ifndef BSON_MAX_RECURSION
 #define BSON_MAX_RECURSION 200

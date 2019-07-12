@@ -1,5 +1,5 @@
+import CLibMongoC
 import Foundation
-import mongoc
 
 /// The possible types of `MongoCursor` or `MongoCursor` an operation can return.
 public enum CursorType {

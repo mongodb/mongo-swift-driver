@@ -9,16 +9,10 @@ OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 EXTRA_FLAGS="-Xlinker -rpath -Xlinker ${INSTALL_DIR}/lib"
 
 # enable swiftenv
+export DEVELOPER_DIR=/Applications/Xcode10.1.app
 export SWIFTENV_ROOT="${INSTALL_DIR}/swiftenv"
 export PATH="${SWIFTENV_ROOT}/bin:$PATH"
 eval "$(swiftenv init -)"
-
-export PKG_CONFIG_PATH="${INSTALL_DIR}/lib/pkgconfig"
-
-# override where we look for libmongoc
-export LD_LIBRARY_PATH="${INSTALL_DIR}/lib"
-export DYLD_LIBRARY_PATH="${INSTALL_DIR}/lib"
-export DEVELOPER_DIR=/Applications/Xcode10.1.app
 
 swiftenv local $SWIFT_VERSION
 

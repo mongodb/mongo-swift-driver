@@ -20,7 +20,11 @@
 
 #include <string.h>
 
+<<<<<<< HEAD
 #include "CLibMongoC_common-md5-private.h"
+=======
+#include "common-md5-private.h"
+>>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
 #include "mongoc-util-private.h"
 #include "CLibMongoC_mongoc-client.h"
 #include "mongoc-client-session-private.h"

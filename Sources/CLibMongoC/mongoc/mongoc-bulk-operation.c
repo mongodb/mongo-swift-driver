@@ -24,9 +24,12 @@
 #include "mongoc-opts-private.h"
 #include "mongoc-write-command-private.h"
 
+<<<<<<< HEAD
 #if !defined(_MSC_VER) || (_MSC_VER >= 1800)
 #include <inttypes.h>
 #endif
+=======
+>>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
 
 /*
  * This is the implementation of both write commands and bulk write commands.

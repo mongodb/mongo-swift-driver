@@ -38,23 +38,13 @@
 #  define MONGOC_ENABLE_CRYPTO_LIBCRYPTO 0
 #  define MONGOC_ENABLE_SSL_OPENSSL 0
 #  define MONGOC_HAVE_ASN1_STRING_GET0_DATA 0
-<<<<<<< HEAD
-#  define MONGOC_HAVE_RES_NDESTROY 1
-=======
->>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
 #else
 #  define MONGOC_ENABLE_CRYPTO_COMMON_CRYPTO 0
 #  define MONGOC_ENABLE_SSL_SECURE_TRANSPORT 0
 #  define MONGOC_ENABLE_CRYPTO_LIBCRYPTO 1
 #  define MONGOC_ENABLE_SSL_OPENSSL 1
-<<<<<<< HEAD
-#  define MONGOC_HAVE_ASN1_STRING_GET0_DATA 1
-#endif
-=======
 #  define MONGOC_HAVE_ASN1_STRING_GET0_DATA 0
 #endif
-
->>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
 /*
  * MONGOC_ENABLE_SSL_SECURE_CHANNEL is set from configure to determine if we are
  * compiled with Native SSL support on Windows
@@ -212,11 +202,7 @@
  * Disable automatic calls to mongoc_init() and mongoc_cleanup()
  * before main() is called, and after exit() (respectively).
  */
-<<<<<<< HEAD
-#define MONGOC_NO_AUTOMATIC_GLOBALS 1
-=======
 #define MONGOC_NO_AUTOMATIC_GLOBALS 0
->>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
 
 #if MONGOC_NO_AUTOMATIC_GLOBALS != 1
 #  undef MONGOC_NO_AUTOMATIC_GLOBALS
@@ -259,11 +245,8 @@
  * MONGOC_HAVE_RES_NDESTROY is set from configure to determine if we
  * have BSD / Darwin's res_ndestroy().
  */
-<<<<<<< HEAD
-=======
 #define MONGOC_HAVE_RES_NDESTROY 0
 
->>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
 #if MONGOC_HAVE_RES_NDESTROY != 1
 #  undef MONGOC_HAVE_RES_NDESTROY
 #endif

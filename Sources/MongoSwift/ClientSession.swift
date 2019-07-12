@@ -1,5 +1,5 @@
+import CLibMongoC
 import Foundation
-import mongoc
 
 /**
  * A MongoDB client session.

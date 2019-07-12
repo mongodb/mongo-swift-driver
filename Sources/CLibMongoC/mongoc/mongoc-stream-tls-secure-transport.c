@@ -298,9 +298,12 @@ _mongoc_stream_tls_secure_transport_readv (mongoc_stream_t *stream,
    size_t iov_pos = 0;
    int64_t now;
    int64_t expire = 0;
+<<<<<<< HEAD
    size_t to_read;
    size_t remaining_buf_size;
    size_t remaining_to_read;
+=======
+>>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
 
    BSON_ASSERT (iov);
    BSON_ASSERT (iovcnt);
@@ -317,6 +320,7 @@ _mongoc_stream_tls_secure_transport_readv (mongoc_stream_t *stream,
       iov_pos = 0;
 
       while (iov_pos < iov[i].iov_len) {
+<<<<<<< HEAD
 
 	 remaining_buf_size = iov[i].iov_len - iov_pos;
 	 remaining_to_read = min_bytes - ret;
@@ -334,6 +338,11 @@ _mongoc_stream_tls_secure_transport_readv (mongoc_stream_t *stream,
          OSStatus status = SSLRead (secure_transport->ssl_ctx_ref,
                                     (char *) iov[i].iov_base + iov_pos,
 				    to_read,
+=======
+         OSStatus status = SSLRead (secure_transport->ssl_ctx_ref,
+                                    (char *) iov[i].iov_base + iov_pos,
+                                    (int) (iov[i].iov_len - iov_pos),
+>>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
                                     &read_ret);
 
          if (status != noErr) {

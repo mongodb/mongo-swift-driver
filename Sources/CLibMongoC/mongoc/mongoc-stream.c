@@ -30,9 +30,12 @@
 #include "mongoc-trace-private.h"
 #include "mongoc-util-private.h"
 
+<<<<<<< HEAD
 #if !defined(_MSC_VER) || (_MSC_VER >= 1800)
 #include <inttypes.h>
 #endif
+=======
+>>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
 
 #undef MONGOC_LOG_DOMAIN
 #define MONGOC_LOG_DOMAIN "stream"

@@ -21,7 +21,11 @@
 
 #include <CLibMongoC_bson.h>
 
+<<<<<<< HEAD
 #include "CLibMongoC_common-thread-private.h"
+=======
+#include "common-thread-private.h"
+>>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
 #include "CLibMongoC_mongoc-config.h"
 #include "CLibMongoC_mongoc-log.h"
 

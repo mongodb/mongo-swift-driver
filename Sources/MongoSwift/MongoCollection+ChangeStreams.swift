@@ -1,4 +1,4 @@
-import mongoc
+import CLibMongoC
 
 extension MongoCollection {
     /**

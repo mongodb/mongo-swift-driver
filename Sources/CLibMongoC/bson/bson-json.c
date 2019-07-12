@@ -25,6 +25,7 @@
 #include "CLibMongoC_bson-json.h"
 #include "bson-iso8601-private.h"
 
+<<<<<<< HEAD
 #include "CLibMongoC_common-b64-private.h"
 #include "jsonsl.h"
 
@@ -32,6 +33,11 @@
 #include <inttypes.h>
 #endif
 
+=======
+#include "common-b64-private.h"
+#include "jsonsl.h"
+
+>>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
 #ifdef _WIN32
 #include <io.h>
 #include <share.h>

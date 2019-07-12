@@ -21,10 +21,13 @@
 #include "mongoc-stream-gridfs-download-private.h"
 #include "mongoc-stream-gridfs-upload-private.h"
 
+<<<<<<< HEAD
 #if !defined(_MSC_VER) || (_MSC_VER >= 1800)
 #include <inttypes.h>
 #endif
 
+=======
+>>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
 /* Returns the minimum of two numbers */
 static size_t
 _mongoc_min (const size_t a, const size_t b)

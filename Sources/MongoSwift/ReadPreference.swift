@@ -1,4 +1,4 @@
-import mongoc
+import CLibMongoC
 
 /**
  * A class to represent a MongoDB read preference.
