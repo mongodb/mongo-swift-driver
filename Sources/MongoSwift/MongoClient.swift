@@ -260,7 +260,7 @@ public class MongoClient {
         let opts = try encodeOptions(options: options, session: session)
         let conn = try self.connectionPool.checkOut()
         guard let cursor = mongoc_client_find_databases_with_opts(conn.clientHandle, opts?._bson) else {
-            fatalError("Couldn't get cursor from the server")
+            fatalError(failedToRetrieveCursorMessage)
         }
         return try MongoCursor(from: cursor, client: self, connection: conn, decoder: self.decoder, session: session)
     }

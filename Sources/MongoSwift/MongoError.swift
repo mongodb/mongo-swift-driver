@@ -369,3 +369,5 @@ internal func wrongIterTypeError(_ iter: DocumentIterator, expected type: BSONVa
     return UserError.logicError(message: "Tried to retreive a \(type) from an iterator whose next type " +
             "is \(iter.currentType) for key \(iter.currentKey)")
 }
+
+internal let failedToRetrieveCursorMessage = "Couldn't get cursor from the server"

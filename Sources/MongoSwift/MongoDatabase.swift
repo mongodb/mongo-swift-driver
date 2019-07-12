@@ -236,7 +236,7 @@ public class MongoDatabase {
         let conn = try self._client.connectionPool.checkOut()
         let collections: OpaquePointer = self.withMongocDatabase(from: conn) { dbPtr in
             guard let collections = mongoc_database_find_collections_with_opts(dbPtr, opts?._bson) else {
-                fatalError("Couldn't get cursor from the server")
+                fatalError(failedToRetrieveCursorMessage)
             }
             return collections
         }

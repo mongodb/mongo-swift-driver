@@ -25,7 +25,7 @@ extension MongoCollection {
         let conn = try self._client.connectionPool.checkOut()
         let cursor: OpaquePointer = self.withMongocCollection(from: conn) { collPtr in
             guard let cursor = mongoc_collection_find_with_opts(collPtr, filter._bson, opts?._bson, rp) else {
-                fatalError("Couldn't get cursor from the server")
+                fatalError(failedToRetrieveCursorMessage)
             }
             return cursor
         }
@@ -65,7 +65,7 @@ extension MongoCollection {
                                                            pipeline._bson,
                                                            opts?._bson,
                                                            rp) else {
-                fatalError("Couldn't get cursor from the server")
+                fatalError(failedToRetrieveCursorMessage)
             }
             return cursor
         }
