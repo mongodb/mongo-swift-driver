@@ -70,7 +70,7 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
 
   /// Returns the next `T` in the change stream or nil if there is no next value.
   /// Will block for a maximum of `maxAwaitTimeMS` milliseconds as specified in the
-  /// `ChangeStreamOptions`, or the server default timeout if omitted.
+  /// `ChangeStreamOptions`, or for the server default timeout if omitted.
   public func next() -> T? {
     let cursor = self.changeStream
     // Allocate space for a reference to a BSON pointer.
@@ -116,16 +116,16 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
    * which returns `nil` and requires manually checking for an error
    * afterward.
    * Will block for a maximum of `maxAwaitTimeMS` milliseconds as specified in the
-   * `ChangeStreamOptions`, or the server default timeout if omitted.
+   * `ChangeStreamOptions`, or for the server default timeout if omitted.
    * - Returns: the next `T` in this change stream,
    *            or `nil` if at the end of the change stream cursor.
    * - Throws:
    *   - `ServerError.commandError` if an error occurs on the
-   * 	   server while iterating the change stream cursor.
+   *     server while iterating the change stream cursor.
    *   - `UserError.logicError` if this function is called and the
    *     session associated with this change stream is inactive.
    *   - `DecodingError` if an error occurs decoding the server's
-   * 	   response.
+   *     response.
    */
   public func nextOrError() throws -> T? {
     if let next = self.next() {

@@ -9,6 +9,7 @@ final class ChangeStreamTest: MongoSwiftTestCase {
             print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
             return
         }
+
         let decoder = BSONDecoder()
         let client = try MongoClient()
 
@@ -20,6 +21,7 @@ final class ChangeStreamTest: MongoSwiftTestCase {
         let opts = try encodeOptions(options: options, session: session)
         let pipeline: Document = []
 
+        // TODO: Use MongoDatabase.watch() instead `mongoc_database_watch` of once it gets added
         let changeStreamPtr: OpaquePointer = mongoc_database_watch(db._database, pipeline._bson, opts?._bson)
         var replyPtr = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
         defer {
@@ -38,7 +40,13 @@ final class ChangeStreamTest: MongoSwiftTestCase {
             print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
             return
         }
+
         let client = try MongoClient()
+
+        if try client.serverVersion() < ServerVersion(major: 4, minor: 0) {
+            print("Skipping test case for server version \(try client.serverVersion())")
+            return
+        }
 
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
@@ -48,6 +56,7 @@ final class ChangeStreamTest: MongoSwiftTestCase {
         let opts = try encodeOptions(options: options, session: session)
         let pipeline: Document = []
 
+        // TODO: Use MongoDatabase.watch() instead `mongoc_database_watch` of once it gets added
         let changeStreamPtr: OpaquePointer = mongoc_database_watch(db._database, pipeline._bson, opts?._bson)
         var replyPtr = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
         defer {
@@ -87,6 +96,7 @@ final class ChangeStreamTest: MongoSwiftTestCase {
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
 
+        // TODO: Use MongoCollection.watch() instead `mongoc_collection_watch` of once it gets added
         let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
         let session = try client.startSession()
         let options = ChangeStreamOptions()
