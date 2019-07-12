@@ -47,9 +47,13 @@ final class ChangeStreamTest: MongoSwiftTestCase {
             return
         }
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 >>>>>>> Add topology check for change streams when not single
+=======
+
+>>>>>>> Skip tests for database.watch  when server is < 4.0
         let client = try MongoClient()
 
         if try client.serverVersion() < ServerVersion(major: 4, minor: 0) {
