@@ -15,7 +15,9 @@ jobs:
       os: osx
       install: ./Tests/Scripts/install_dependencies.sh sourcery
       before_script: skip
-      script: export sourcery=${PWD}/sourcery/bin/sourcery; make linuxmain; git diff --exit-code Tests/LinuxMain.swift
+      script: 
+        - make linuxmain SOURCERY=${PWD}/sourcery/bin/sourcery
+        - git diff --exit-code Tests/LinuxMain.swift
 
     - stage: tests
       os: osx

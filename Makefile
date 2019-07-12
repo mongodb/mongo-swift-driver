@@ -11,6 +11,9 @@ else
 	DOCSARG =
 endif
 
+# if no value provided assume sourcery is in the user's PATH
+SOURCERY ?= sourcery
+
 define check_for_gem
 	gem list $(1) -i > /dev/null || gem install $(1) || { echo "ERROR: Failed to locate or install the ruby gem $(1); please install yourself with 'gem install $(1)' (you may need to use sudo)"; exit 1; }
 endef
@@ -26,7 +29,7 @@ project:
 	ruby Tests/Scripts/add_json_files.rb
 
 linuxmain:
-	sourcery --sources Tests/ --templates Tests/LinuxMain.stencil --output Tests/LinuxMain.swift
+	$(SOURCERY) --sources Tests/ --templates Tests/LinuxMain.stencil --output Tests/LinuxMain.swift
 
 test:
 	swift test -v $(FILTERARG)
