@@ -1,5 +1,5 @@
-/// An `UpdateDescription` containing fields that will be present in
-/// the change stream document for operations of type `update`.
+/// An `UpdateDescription` containing fields that will be present in the change stream document
+/// for operations of type `update`.
 public struct UpdateDescription: Codable {
    /// A document containing key:value pairs of names of the fields
    /// that were changed, and the new value for those fields.
@@ -9,7 +9,7 @@ public struct UpdateDescription: Codable {
    public let removedFields: [String]
 }
 
-/// An enum representing the type of operation for this change.
+/// An enum representing the type of operation for this change event.
 public enum OperationType: String, Codable {
    /// Specifies an operation of type `insert`.
    /// SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#insert-event
@@ -58,8 +58,8 @@ public struct ChangeStreamDocument<T: Codable>: Codable {
      */
     public let documentKey: Document?
 
-    /// An `UpdateDescription` containing updated and removed fields in
-    /// this operation. Only present for operations of type `update`.
+    /// An `UpdateDescription` containing updated and removed fields in this operation.
+    /// Only present for operations of type `update`.
     public let updateDescription: UpdateDescription?
 
    /**
