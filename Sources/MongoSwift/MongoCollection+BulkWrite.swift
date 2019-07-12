@@ -26,10 +26,9 @@ extension MongoCollection {
         guard !requests.isEmpty else {
             throw UserError.invalidArgumentError(message: "requests cannot be empty")
         }
-
         let opts = try encodeOptions(options: options, session: session)
 
-        return try self._client.connectionPool.withConnection { conn in
+        let doBulkWrite = { (conn: Connection) -> BulkWriteResult? in
             try self.withMongocCollection(from: conn) { collPtr in
                 let bulk = BulkWriteOperation(collection: collPtr, opts: opts, withEncoder: self.encoder)
                 try requests.enumerated().forEach { index, model in
@@ -37,6 +36,16 @@ extension MongoCollection {
                 }
                 return try self._client.executeOperation(bulk, session: session)
             }
+        }
+
+        // if a session was provided, use its underlying connection
+        if let session = session {
+            let conn = try session.getConnection(forUseWith: self._client)
+            return try doBulkWrite(conn)
+        }
+        // otherwise use a new connection from the pool
+        return try self._client.connectionPool.withConnection { conn in
+            try doBulkWrite(conn)
         }
     }
 
@@ -395,7 +404,7 @@ public class BulkWriteOperation: Operation {
      *   - `ServerError.bulkWriteError` if an error occurs while performing the writes.
      */
     internal func execute(using connection: Connection, session: ClientSession?) throws -> BulkWriteResult? {
-        // TODO SWIFT-374: this method does not actually use either of the parameters passed in here. they will be
+        // TODO SWIFT-516: this method does not actually use either of the parameters passed in here. they will be
         // utilized once we fix up BulkWriteOperation to look like the rest of the operations.
         var reply = Document()
         var error = bson_error_t()

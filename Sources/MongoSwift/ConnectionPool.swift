@@ -37,17 +37,15 @@ internal class ConnectionPool {
 
     /// Initializes the pool in pooled mode using the provided `ConnectionString`.
     internal init(from connString: ConnectionString) throws {
-        // TODO SWIFT-374: this initializer should actually create a `mongoc_client_pool_t` and do appropriate setup
-        // on that.
-        guard let clientHandle = mongoc_client_new_from_uri(connString._uri) else {
+        guard let pool = mongoc_client_pool_new(connString._uri) else {
             throw UserError.invalidArgumentError(message: "libmongoc not built with TLS support")
         }
 
-        guard mongoc_client_set_error_api(clientHandle, MONGOC_ERROR_API_VERSION_2) else {
-            throw RuntimeError.internalError(message: "Could not configure error handling on client")
+        guard mongoc_client_pool_set_error_api(pool, MONGOC_ERROR_API_VERSION_2) else {
+            throw RuntimeError.internalError(message: "Could not configure error handling on client pool")
         }
 
-        self.mode = .single(client: clientHandle)
+        self.mode = .pooled(pool: pool)
     }
 
     /// Closes the pool if it has not been manually closed already.
@@ -60,8 +58,8 @@ internal class ConnectionPool {
         switch self.mode {
         case let .single(clientHandle):
             mongoc_client_destroy(clientHandle)
-        case .pooled:
-            fatalError("Pooled mode is not yet implemented")
+        case let .pooled(pool):
+            mongoc_client_pool_destroy(pool)
         case .none:
             return
         }
@@ -73,8 +71,8 @@ internal class ConnectionPool {
         switch self.mode {
         case let .single(clientHandle):
             return Connection(clientHandle)
-        case .pooled:
-            fatalError("Pooled mode is not yet implemented")
+        case let .pooled(pool):
+            return Connection(mongoc_client_pool_pop(pool))
         case .none:
             throw RuntimeError.internalError(message: "ConnectionPool was already closed")
         }
@@ -85,8 +83,8 @@ internal class ConnectionPool {
         switch self.mode {
         case .single:
             return
-        case .pooled:
-            fatalError("Pooled mode is not yet implemented")
+        case let .pooled(pool):
+            mongoc_client_pool_push(pool, connection.clientHandle)
         case .none:
             fatalError("ConnectionPool was already closed")
         }
@@ -101,13 +99,13 @@ internal class ConnectionPool {
 
     /// Sets APM callbacks to be used for all connections in the pool.
     internal func setAPMCallbacks(client: MongoClient, callbacks: OpaquePointer) {
+        // we can pass the MongoClient as unretained because the callbacks are stored on clientHandle, so if the
+        // callback is being executed, this pool and therefore its parent `MongoClient` must still be valid.
         switch self.mode {
         case let .single(clientHandle):
-            // we can pass the MongoClient as unretained because the callbacks are stored on clientHandle, so if the
-            // callback is being executed, this pool and therefore its parent `MongoClient` must still be valid.
             mongoc_client_set_apm_callbacks(clientHandle, callbacks, Unmanaged.passUnretained(client).toOpaque())
-        case .pooled:
-            fatalError("Pooled mode is not yet implemented")
+        case let .pooled(pool):
+            mongoc_client_pool_set_apm_callbacks(pool, callbacks, Unmanaged.passUnretained(client).toOpaque())
         case .none:
             fatalError("ConnectionPool was already closed")
         }

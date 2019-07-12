@@ -236,19 +236,15 @@ public class MongoDatabase {
     public func listCollections(options: ListCollectionsOptions? = nil,
                                 session: ClientSession? = nil) throws -> MongoCursor<Document> {
         let opts = try encodeOptions(options: options, session: session)
-        let conn = try self._client.connectionPool.checkOut()
-        let collections: OpaquePointer = self.withMongocDatabase(from: conn) { dbPtr in
-            guard let collections = mongoc_database_find_collections_with_opts(dbPtr, opts?._bson) else {
-                fatalError(failedToRetrieveCursorMessage)
-            }
-            return collections
-        }
 
-        return try MongoCursor(from: collections,
-                               client: self._client,
-                               connection: conn,
-                               decoder: self.decoder,
-                               session: session)
+        return try MongoCursor(client: self._client, decoder: self.decoder, session: session) { conn in
+            self.withMongocDatabase(from: conn) { dbPtr in
+                guard let collections = mongoc_database_find_collections_with_opts(dbPtr, opts?._bson) else {
+                    fatalError(failedToRetrieveCursorMessage)
+                }
+                return collections
+            }
+        }
     }
 
     /**
