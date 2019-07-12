@@ -15,7 +15,8 @@ crud = make_reference(project, "./Tests/Specs/crud")
 cm = make_reference(project, "./Tests/Specs/command-monitoring")
 corpus = make_reference(project, "./Tests/Specs/bson-corpus")
 read_write_concern = make_reference(project, "./Tests/Specs/read-write-concern")
+retryable_writes = make_reference(project, "./Tests/Specs/retryable-writes")
 
-tests_target.add_resources([crud, cm, corpus, read_write_concern])
+tests_target.add_resources([crud, cm, corpus, read_write_concern, retryable_writes])
 
 project.save

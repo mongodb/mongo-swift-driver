@@ -31,10 +31,12 @@ extension ServerError: Equatable {
                     && sortAndCompareOptionalArrays(lhs: lhsErrorLabels, rhs: rhsErrorLabels, cmp: { $0 < $1 })
         case let (.bulkWriteError(writeErrors: lhsWriteErrors,
                                   writeConcernError: lhsWCError,
+                                  otherError: lhsOther,
                                   result: lhsResult,
                                   errorLabels: lhsErrorLabels),
                   .bulkWriteError(writeErrors: rhsWriteErrors,
                                   writeConcernError: rhsWCError,
+                                  otherError: rhsOther,
                                   result: rhsResult,
                                   errorLabels: rhsErrorLabels)):
             let cmp = { (l: BulkWriteError, r: BulkWriteError) in l.index < r.index }
@@ -43,6 +45,7 @@ extension ServerError: Equatable {
                     && lhsWCError == rhsWCError
                     && sortAndCompareOptionalArrays(lhs: lhsErrorLabels, rhs: rhsErrorLabels, cmp: { $0 < $1 })
                     && lhsResult == rhsResult
+                    && lhsOther?.localizedDescription == rhsOther?.localizedDescription
         default:
             return false
         }
