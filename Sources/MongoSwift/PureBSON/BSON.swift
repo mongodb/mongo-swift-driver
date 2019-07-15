@@ -3,13 +3,42 @@ import Foundation
 public enum BSON {
     case double(Double)
     case string(String)
+
+    case binary(PureBSONBinary)
+    case undefined
     case bool(Bool)
-    case objectId(PureBSONObjectId)
+    case objectId(PureSwiftObjectId)
+    case date(Date)
+    case null
+    case regex(PureBSONRegularExpression)
+    case dbPointer(PureBSONDBPointer)
+    case int32(Int32)
+    case timestamp(PureBSONTimestamp)
+    case int64(Int64)
+
+    case minKey
+    case maxKey
 }
 
 internal protocol PureBSONValue {
     init(from data: Data) throws
     func toBSON() -> Data
+}
+
+extension PureBSONValue where Self: ExpressibleByIntegerLiteral {
+    init(from data: Data) throws {
+        var value: Self = 0
+        _ = withUnsafeMutableBytes(of: &value) {
+            data.copyBytes(to: $0)
+        }
+        self = value
+    }
+}
+
+extension PureBSONValue {
+    func toBSON() -> Data {
+        return withUnsafeBytes(of: self) { Data($0) }
+    }
 }
 
 extension String: PureBSONValue {
@@ -56,5 +85,42 @@ internal struct InvalidBSONError: LocalizedError {
 
     public var errorDescription: String? {
         return self.message
+    }
+}
+
+extension Double: PureBSONValue {
+    public init(from data: Data) throws {
+        var value = 0.0
+        _ = withUnsafeMutableBytes(of: &value) {
+            data.copyBytes(to: $0)
+        }
+        self = value
+    }
+}
+
+extension Int32: PureBSONValue {}
+
+extension Int64: PureBSONValue {}
+
+extension Date: PureBSONValue {
+    internal init(from data: Data) throws {
+        self.init(msSinceEpoch: try Int64(from: data))
+    }
+
+    internal func toBSON() -> Data {
+        return self.msSinceEpoch.toBSON()
+    }
+}
+
+/// Reads a `String` according to the "string" non-terminal of the BSON spec.
+internal func readString(from data: Data) throws -> String {
+    let length = try Int32(from: data[0..<4])
+
+    guard data.count >= length + 4 && data[3 + Int(length)] == 0 else {
+        throw RuntimeError.internalError(message: "invalid buffer")
+    }
+
+    return data.withUnsafeBytes { (ptr: UnsafePointer<UInt8>) -> String in
+        String(cString: ptr)
     }
 }
