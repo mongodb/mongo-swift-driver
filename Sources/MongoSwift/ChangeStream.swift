@@ -92,6 +92,7 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
 
     // we have to copy because libmongoc owns the pointer.
     let doc = Document(copying: pointee)
+    print(doc)
 
     // Update the resumeToken with the `_id` field from the document.
     if let resumeToken = doc["_id"] as? Document {
@@ -159,7 +160,7 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     guard let cursor = self.changeStream else {
         return
     }
-    mongoc_cursor_destroy(changeStream)
+    mongoc_change_stream_destroy(changeStream)
     self.changeStream = nil
     self.session = nil
     self.client = nil
