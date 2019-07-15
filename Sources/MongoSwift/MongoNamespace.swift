@@ -2,6 +2,10 @@
 public struct MongoNamespace: Codable {
     public let db: String
     public let collection: String?
+
+    public enum CodingKeys: String, CodingKey {
+        case db, collection = "coll"
+    }
 }
 
 extension MongoNamespace: CustomStringConvertible {
