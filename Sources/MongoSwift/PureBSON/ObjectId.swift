@@ -12,19 +12,23 @@ public struct PureBSONObjectId {
     private static let counter = ObjectIdCounter()
     internal let data: Data
 
-    init() {
+    public init() {
         var data = Data(capacity: 12)
-
-        let timestamp = UInt32(truncatingIfNeeded: Int64(Date().timeIntervalSince1970))
+        // append most significant 4 bytes
+        let secondsSinceEpoch = Date().timeIntervalSince1970
+        let timestamp = UInt32(secondsSinceEpoch).bigEndian
         withUnsafeBytes(of: timestamp) { bytes in
             data.append(Data(bytes))
         }
 
-        withUnsafeBytes(of: UInt64.random(in: 0...UInt64(pow(2, 40.0))).bigEndian) { bytes in
+        // generate a unique number that uses at most 5 bytes
+        let processUnique = UInt64.random(in: 0...UInt64(pow(2, 40.0))).bigEndian
+        // append the least significant 5 bytes
+        withUnsafeBytes(of: processUnique) { bytes in
             data.append(Data(bytes[3...7]))
         }
-
-        withUnsafeBytes(of: PureBSONObjectId.counter.next()) { bytes in
+        // get the next number from the counter and append the least significant 3 bytes
+        withUnsafeBytes(of: PureBSONObjectId.counter.next().bigEndian) { bytes in
             data.append(Data(bytes[1...3]))
         }
         self.data = data
@@ -42,10 +46,11 @@ extension PureBSONObjectId: CustomStringConvertible {
 }
 
 extension PureBSONObjectId: PureBSONValue {
-    init(from data: Data) throws {
+    internal init(from data: Data) throws {
         self.data = data
     }
-    func toBSON() -> Data {
+
+    internal func toBSON() -> Data {
         return self.data
     }
 }
@@ -58,7 +63,7 @@ internal class ObjectIdCounter {
 
     private static var max = UInt32(pow(2, 24.0))
 
-    /// Returns the next value in the counter, in big-endian representation.
+    /// Returns the next value in the counter.
     func next() -> UInt32 {
         return queue.sync {
             self.count += 1
@@ -66,7 +71,7 @@ internal class ObjectIdCounter {
             if self.count > ObjectIdCounter.max {
                 self.count = 0
             }
-            return self.count.bigEndian
+            return self.count
         }
     }
 }
