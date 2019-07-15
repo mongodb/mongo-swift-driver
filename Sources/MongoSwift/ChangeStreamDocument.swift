@@ -1,8 +1,8 @@
 /// An `UpdateDescription` containing fields that will be present in the change stream document
 /// for operations of type `update`.
 public struct UpdateDescription: Codable {
-   /// A document containing key:value pairs of names of the fields
-   /// that were changed, and the new value for those fields.
+   /// A document containing key:value pairs of names of the fields that were changed, and the new
+   /// value for those fields.
    public let updatedFields: Document
 
    /// An array of field names that were removed from the document.
@@ -46,8 +46,7 @@ public struct ChangeStreamDocument<T: Codable>: Codable {
     /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/#resume-a-change-stream
     public let _id: ChangeStreamToken
 
-    /// A document containing the database and collection names in
-    /// which this change happened.
+    /// A document containing the database and collection names in which this change happened.
     public let ns: MongoNamespace
 
     /**

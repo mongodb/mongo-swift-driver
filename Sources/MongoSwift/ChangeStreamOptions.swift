@@ -58,7 +58,7 @@ public struct ChangeStreamOptions: Codable {
     public let startAtOperationTime: Timestamp?
 
     /// A `ChangeStreamToken` similar to `resumeAfter` except `startAfter` will allow users to watch collections
-    /// have been dropped and recreated or newly renamed collections without missing any notifications.
+    /// that have been dropped and recreated or newly renamed collections without missing any notifications.
     /// The server will report an error if `startAfter` and `resumeAfter` are both specified.
     /// - SeeAlso: https://docs.mongodb.com/master/changeStreams/#change-stream-start-after
     public let startAfter: ChangeStreamToken?
