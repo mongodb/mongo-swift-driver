@@ -93,8 +93,6 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     // we have to copy because libmongoc owns the pointer.
     let doc = Document(copying: pointee)
 
-    print(doc)
-
     // Update the resumeToken with the `_id` field from the document.
     if let resumeToken = doc["_id"] as? Document {
         self.resumeToken = ChangeStreamToken(resumeToken: resumeToken)
