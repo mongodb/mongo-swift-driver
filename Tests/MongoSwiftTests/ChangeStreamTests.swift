@@ -128,7 +128,6 @@ final class ChangeStreamTest: MongoSwiftTestCase {
 
         try coll.updateOne(filter: ["x": 1], update: ["$set": ["x": 2] as Document], session: session)
         let res2 = changeStream.next()
-        //print("res: ", res2)
 
         // test that the change stream contains a change document for the `update` operation.
         expect(res2).toNot(beNil())
