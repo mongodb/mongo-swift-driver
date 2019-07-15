@@ -51,7 +51,7 @@ final class ChangeStreamTest: MongoSwiftTestCase {
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
 
-        let options = ChangeStreamOptions()
+        let options = ChangeStreamOptions(fullDocument: .updateLookup)
         let session = try client.startSession()
         let opts = try encodeOptions(options: options, session: session)
         let pipeline: Document = []
@@ -78,6 +78,7 @@ final class ChangeStreamTest: MongoSwiftTestCase {
         let res1 = changeStream.next()
         expect(res1).toNot(beNil())
         expect(res1?.operationType).to(equal(.insert))
+        expect(res1?.fullDocument?["a"]).to(bsonEqual(1))
 
         // test that the change stream contains a change document for the `drop` operation.
         try db.drop()
@@ -99,7 +100,7 @@ final class ChangeStreamTest: MongoSwiftTestCase {
         // TODO: Use MongoCollection.watch() instead `mongoc_collection_watch` of once it gets added
         let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
         let session = try client.startSession()
-        let options = ChangeStreamOptions()
+        let options = ChangeStreamOptions(fullDocument: .updateLookup)
         let opts = try encodeOptions(options: options, session: session)
         let pipeline: Document = []
 
@@ -123,13 +124,16 @@ final class ChangeStreamTest: MongoSwiftTestCase {
         let res1 = changeStream.next()
         expect(res1).toNot(beNil())
         expect(res1?.operationType).to(equal(.insert))
+        expect(res1?.fullDocument?["x"]).to(bsonEqual(1))
 
         try coll.updateOne(filter: ["x": 1], update: ["$set": ["x": 2] as Document], session: session)
         let res2 = changeStream.next()
+        //print("res: ", res2)
+
         // test that the change stream contains a change document for the `update` operation.
         expect(res2).toNot(beNil())
         expect(res2?.operationType).to(equal(.update))
-        print("res: ", res2)
+        expect(res2?.fullDocument?["x"]).to(bsonEqual(2))
 
         // test that the change stream contains a change document for the `find` operation.
         try coll.findOneAndDelete(["x": 2], session: session)
