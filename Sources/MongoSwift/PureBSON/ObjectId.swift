@@ -8,7 +8,7 @@ import Foundation
 // [----|----|----|----|----|----|----|----|----|----|----|----]
 // 0                   4                   8                   12
 
-public struct PureSwiftObjectId {
+public struct PureBSONObjectId {
     private static let counter = ObjectIdCounter()
     internal let data: Data
 
@@ -24,7 +24,7 @@ public struct PureSwiftObjectId {
             data.append(Data(bytes[3...7]))
         }
 
-        withUnsafeBytes(of: PureSwiftObjectId.counter.next()) { bytes in
+        withUnsafeBytes(of: PureBSONObjectId.counter.next()) { bytes in
             data.append(Data(bytes[1...3]))
         }
         self.data = data
@@ -35,13 +35,13 @@ public struct PureSwiftObjectId {
     }
 }
 
-extension PureSwiftObjectId: CustomStringConvertible {
+extension PureBSONObjectId: CustomStringConvertible {
     public var description: String {
         return self.hexDescription
     }
 }
 
-extension PureSwiftObjectId: PureBSONValue {
+extension PureBSONObjectId: PureBSONValue {
     init(from data: Data) throws {
         self.data = data
     }

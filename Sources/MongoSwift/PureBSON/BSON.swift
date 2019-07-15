@@ -7,7 +7,7 @@ public enum BSON {
     case binary(PureBSONBinary)
     case undefined
     case bool(Bool)
-    case objectId(PureSwiftObjectId)
+    case objectId(PureBSONObjectId)
     case date(Date)
     case null
     case regex(PureBSONRegularExpression)
@@ -43,10 +43,13 @@ extension PureBSONValue {
 
 extension String: PureBSONValue {
     internal init(from data: Data) throws {
-        guard let str = String(data: data, encoding: .utf8) else {
-            throw InvalidBSONError("Unable to initialize String from BSON data")
+        let s = try readString(from: data)
+
+        guard data.count == s.utf8.count + 4 else {
+            throw RuntimeError.internalError(message: "extra data in String buffer")
         }
-        self = str
+
+        self = s
     }
 
     internal func toBSON() -> Data {
