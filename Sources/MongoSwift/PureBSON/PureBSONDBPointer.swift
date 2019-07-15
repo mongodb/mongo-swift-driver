@@ -7,16 +7,16 @@ public struct PureBSONDBPointer: PureBSONValue {
     public let ref: String
 
     /// Destination _id (assumed to be an `ObjectId`) of the pointed-to document.
-    public let id: ObjectId
+    public let id: PureBSONObjectId
 
-    internal init(ref: String, id: ObjectId) {
+    internal init(ref: String, id: PureBSONObjectId) {
         self.ref = ref
         self.id = id
     }
 
     internal init(from data: Data) throws {
         let ref = try readString(from: data)
-        // TODO: ObjectId reading here
-        self.init(ref: ref, id: ObjectId())
+        let id = try PureBSONObjectId(from: data[(ref.utf8.count + 4)...])
+        self.init(ref: ref, id: id)
     }
 }

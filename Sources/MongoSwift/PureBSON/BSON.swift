@@ -6,12 +6,15 @@ public enum BSON {
 
     case binary(PureBSONBinary)
     case undefined
-    case bool(Bool)
     case objectId(PureBSONObjectId)
+    case bool(Bool)
     case date(Date)
     case null
     case regex(PureBSONRegularExpression)
     case dbPointer(PureBSONDBPointer)
+
+    case symbol(PureBSONSymbol)
+
     case int32(Int32)
     case timestamp(PureBSONTimestamp)
     case int64(Int64)
