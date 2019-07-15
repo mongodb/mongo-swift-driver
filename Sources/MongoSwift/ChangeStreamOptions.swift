@@ -3,8 +3,7 @@ public enum FullDocument: RawRepresentable, Codable {
     /// The change stream document will include both a delta describing the changes to the document,
     /// as well as a copy of the entire document that was changed from some time after the change occurred.
     case updateLookup
-    /// For an unknown value. For forwards compatibility, no error will be
-    /// thrown when an unknown value is provided.
+    /// For an unknown value. For forwards compatibility, no error will be thrown when an unknown value is provided.
     case other(String)
 
     public var rawValue: String {
