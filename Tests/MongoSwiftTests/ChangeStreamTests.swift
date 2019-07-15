@@ -137,11 +137,7 @@ final class ChangeStreamTest: MongoSwiftTestCase {
         // test that the change stream contains a change document for the `update` operation.
         expect(res2).toNot(beNil())
         expect(res2?.operationType).to(equal(.update))
-<<<<<<< HEAD
         expect(res2?.fullDocument?["x"]).to(bsonEqual(2))
-=======
-        print("res: ", res2)
->>>>>>> Update docstrings and use ChangeStreamToken for resumeAfter and startAfter
 
         // test that the change stream contains a change document for the `find` operation.
         try coll.findOneAndDelete(["x": 2], session: session)
