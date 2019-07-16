@@ -82,6 +82,10 @@ public struct PureBSONBinary: PureBSONValue {
     }
 }
 
+extension PureBSONBinary: Equatable {}
+
+extension PureBSONBinary: Hashable {}
+
 /// Extension to allow a `UUID` to be initialized from a `Binary` `BSONValue`.
 extension UUID {
     /// Initializes a `UUID` instance from a `Binary` `BSONValue`.

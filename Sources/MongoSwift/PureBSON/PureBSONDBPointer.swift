@@ -20,3 +20,7 @@ public struct PureBSONDBPointer: PureBSONValue {
         self.init(ref: ref, id: id)
     }
 }
+
+extension PureBSONDBPointer: Equatable {}
+
+extension PureBSONDBPointer: Hashable {}

@@ -41,3 +41,7 @@ public struct PureBSONRegularExpression: PureBSONValue {
         self.init(pattern: pattern, options: options)
     }
 }
+
+extension PureBSONRegularExpression: Equatable {}
+
+extension PureBSONRegularExpression: Hashable {}

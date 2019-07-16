@@ -22,3 +22,7 @@ public struct PureBSONSymbol: PureBSONValue, CustomStringConvertible {
         return self.stringValue.toBSON()
     }
 }
+
+extension PureBSONSymbol: Equatable {}
+
+extension PureBSONSymbol: Hashable {}
