@@ -138,9 +138,18 @@ extension BSON: ExpressibleByDictionaryLiteral {
 extension BSON: Equatable {}
 extension BSON: Hashable {}
 
+extension BSON: Codable {
+    public init(from decoder: Decoder) throws {
+        self = .null
+    }
+
+    public func encode(to encoder: Encoder) throws {}
+}
+
 internal protocol PureBSONValue {
     init(from data: Data) throws
     func toBSON() -> Data
+    var bson: BSON { get }
 }
 
 extension PureBSONValue where Self: ExpressibleByIntegerLiteral {
@@ -152,13 +161,15 @@ extension PureBSONValue where Self: ExpressibleByIntegerLiteral {
     }
 }
 
-extension PureBSONValue {
+extension PureBSONValue where Self: Numeric {
     func toBSON() -> Data {
         return withUnsafeBytes(of: self) { Data($0) }
     }
 }
 
 extension String: PureBSONValue {
+    internal var bson: BSON { return .string(self) }
+
     internal init(from data: Data) throws {
         let s = try readString(from: data)
 
@@ -186,6 +197,8 @@ extension String: PureBSONValue {
 }
 
 extension Bool: PureBSONValue {
+    internal var bson: BSON { return .bool(self) }
+
     internal init(from data: Data) throws {
         guard data.count == 1 else {
             throw RuntimeError.internalError(message: "Expected to get 1 byte, got \(data.count)")
@@ -218,6 +231,8 @@ internal struct InvalidBSONError: LocalizedError {
 }
 
 extension Double: PureBSONValue {
+    internal var bson: BSON { return .double(self) }
+
     public init(from data: Data) throws {
         var value = 0.0
         _ = withUnsafeMutableBytes(of: &value) {
@@ -227,11 +242,17 @@ extension Double: PureBSONValue {
     }
 }
 
-extension Int32: PureBSONValue {}
+extension Int32: PureBSONValue {
+    internal var bson: BSON { return .int32(self) }
+}
 
-extension Int64: PureBSONValue {}
+extension Int64: PureBSONValue {
+    internal var bson: BSON { return .int64(self) }
+}
 
 extension Date: PureBSONValue {
+    internal var bson: BSON { return .date(self) }
+
     internal init(from data: Data) throws {
         self.init(msSinceEpoch: try Int64(from: data))
     }

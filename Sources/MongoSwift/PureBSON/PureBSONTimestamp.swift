@@ -1,7 +1,7 @@
 import Foundation
 
 /// A struct to represent the BSON Timestamp type.
-public struct PureBSONTimestamp: PureBSONValue, Equatable, Hashable {
+public struct PureBSONTimestamp: Equatable, Hashable, Codable {
     /// A timestamp representing seconds since the Unix epoch.
     public let timestamp: UInt32
     /// An incrementing ordinal for operations within a given second.
@@ -19,6 +19,10 @@ public struct PureBSONTimestamp: PureBSONValue, Equatable, Hashable {
         self.timestamp = UInt32(timestamp)
         self.increment = UInt32(inc)
     }
+}
+
+extension PureBSONTimestamp: PureBSONValue {
+    internal var bson: BSON { return .timestamp(self) }
 
     internal init(from data: Data) throws {
         guard data.count == 8 else {
@@ -38,7 +42,7 @@ public struct PureBSONTimestamp: PureBSONValue, Equatable, Hashable {
         self.init(timestamp: timestamp, inc: increment)
     }
 
-    public func toBSON() -> Data {
+    internal func toBSON() -> Data {
         var data = withUnsafeBytes(of: self.increment) { Data($0) }
 
         withUnsafePointer(to: self.increment) {

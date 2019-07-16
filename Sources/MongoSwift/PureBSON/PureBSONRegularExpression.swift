@@ -1,7 +1,7 @@
 import Foundation
 
 /// A struct to represent a BSON regular expression.
-public struct PureBSONRegularExpression: PureBSONValue {
+public struct PureBSONRegularExpression: Codable {
     /// The pattern for this regular expression.
     public let pattern: String
     /// A string containing options for this regular expression.
@@ -19,8 +19,16 @@ public struct PureBSONRegularExpression: PureBSONValue {
         self.pattern = regex.pattern
         self.options = regex.stringOptions
     }
+}
 
-    public init(from data: Data) throws {
+extension PureBSONRegularExpression: Equatable {}
+
+extension PureBSONRegularExpression: Hashable {}
+
+extension PureBSONRegularExpression: PureBSONValue {
+    internal var bson: BSON { return .regex(self) }
+
+    internal init(from data: Data) throws {
         guard !data.isEmpty else {
             throw RuntimeError.internalError(message: "empty buffer provided to regex initializer")
         }
@@ -40,8 +48,10 @@ public struct PureBSONRegularExpression: PureBSONValue {
 
         self.init(pattern: pattern, options: options)
     }
+
+    internal func toBSON() -> Data {
+        var data = self.pattern.toCStringData()
+        data.append(self.options.toCStringData())
+        return data
+    }
 }
-
-extension PureBSONRegularExpression: Equatable {}
-
-extension PureBSONRegularExpression: Hashable {}

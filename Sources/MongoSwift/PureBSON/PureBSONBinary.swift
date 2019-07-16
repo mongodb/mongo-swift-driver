@@ -1,7 +1,7 @@
 import Foundation
 
 /// A struct to represent the BSON Binary type.
-public struct PureBSONBinary: PureBSONValue {
+public struct PureBSONBinary {
     /// The binary data.
     public let data: Data
 
@@ -9,7 +9,7 @@ public struct PureBSONBinary: PureBSONValue {
     public let subtype: Subtype
 
     /// Subtypes for BSON Binary values.
-    public enum Subtype: UInt8 {
+    public enum Subtype: UInt8, Codable {
         /// Generic binary subtype
         case generic,
              /// A function
@@ -53,6 +53,16 @@ public struct PureBSONBinary: PureBSONValue {
         self.subtype = subtype
         self.data = data
     }
+}
+
+extension PureBSONBinary: Codable {}
+
+extension PureBSONBinary: Equatable {}
+
+extension PureBSONBinary: Hashable {}
+
+extension PureBSONBinary: PureBSONValue {
+    internal var bson: BSON { return .binary(self) }
 
     internal init(from data: Data) throws {
         guard data.count >= 5 else {
@@ -81,10 +91,6 @@ public struct PureBSONBinary: PureBSONValue {
         return data
     }
 }
-
-extension PureBSONBinary: Equatable {}
-
-extension PureBSONBinary: Hashable {}
 
 /// Extension to allow a `UUID` to be initialized from a `Binary` `BSONValue`.
 extension UUID {

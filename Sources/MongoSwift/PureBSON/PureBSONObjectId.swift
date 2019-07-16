@@ -71,8 +71,11 @@ extension PureBSONObjectId: CustomStringConvertible {
 
 extension PureBSONObjectId: Equatable {}
 extension PureBSONObjectId: Hashable {}
+extension PureBSONObjectId: Codable {}
 
 extension PureBSONObjectId: PureBSONValue {
+    internal var bson: BSON { return .objectId(self) }
+
     internal init(from data: Data) throws {
         self.data = data
         // first four bytes are the timestamp.

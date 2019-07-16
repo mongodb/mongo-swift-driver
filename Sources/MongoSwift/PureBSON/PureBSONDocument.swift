@@ -52,11 +52,13 @@ extension PureBSONDocument: ExpressibleByDictionaryLiteral {
 }
 
 extension PureBSONDocument: PureBSONValue {
+    internal var bson: BSON { return .document(self) }
+
     internal init(from data: Data) throws {
         // should we do any validation here?
         self.data = data
     }
-    
+
     internal func toBSON() -> Data {
         return self.data
     }
@@ -71,3 +73,4 @@ extension PureBSONDocument: CustomStringConvertible {
         return equivalentDoc.description
     }
 }
+extension PureBSONDocument: Codable {}
