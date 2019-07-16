@@ -19,7 +19,7 @@ public struct PureBSONObjectId {
 
     /// This ObjectId as a hexadecimal string.
     public var hex: String {
-        return self.data.reduce("") { $0 + String(format: "%02x", $1) }
+        return self.data.hex
     }
 
     /// Initializes a new `ObjectId`.
@@ -31,20 +31,20 @@ public struct PureBSONObjectId {
         self.timestamp = timestamp
         // 4-byte big endian field represents the seconds since the Unix epoch
         withUnsafeBytes(of: timestamp.bigEndian) { bytes in
-            data.append(Data(bytes))
+            data.append(contentsOf: bytes)
         }
 
         // generate a random number that uses at most 5 bytes
         let processUnique = UInt64.random(in: 0...UInt64(pow(2, 40.0)))
         // append the least significant 5 bytes
         withUnsafeBytes(of: processUnique.bigEndian) { bytes in
-            data.append(Data(bytes[3...7]))
+            data.append(contentsOf: bytes[3...7])
         }
 
         let counterValue = PureBSONObjectId.counter.next()
         // get the next number from the counter and append the least significant 3 bytes
         withUnsafeBytes(of: counterValue.bigEndian) { bytes in
-            data.append(Data(bytes[1...3]))
+            data.append(contentsOf: bytes[1...3])
         }
         self.data = data
     }
@@ -85,6 +85,12 @@ extension PureBSONObjectId: PureBSONValue {
 
     internal func toBSON() -> Data {
         return self.data
+    }
+}
+
+extension Data {
+    internal var hex: String {
+        return self.reduce("") { $0 + String(format: "%02x", $1) }
     }
 }
 

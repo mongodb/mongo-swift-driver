@@ -48,10 +48,10 @@ public enum BSON {
             return 0x0B
         case .dbPointer:
             return 0x0C
-        // case code
+        case let .codeWithScope(cws):
+            return cws.scope == nil ? 0x0D : 0x0F 
         case .symbol:
             return 0x0E
-        // code with scope
         case .int32:
             return 0x10
         case .timestamp:
@@ -63,6 +63,44 @@ public enum BSON {
             return 0xFF
         case .maxKey:
             return 0x7F
+        }
+    }
+}
+
+extension BSON {
+    //init(from data: Data) throws
+    func toBSON() -> Data {
+        switch self {
+        case .undefined, .null, .minKey, .maxKey:
+            return Data()
+        case let .double(v):
+            return v.toBSON()
+        case let .string(v):
+            return v.toBSON()
+        case let .document(v):
+            return v.toBSON()
+        case let .binary(v):
+            return v.toBSON()
+        case let .objectId(v):
+            return v.toBSON()
+        case let .bool(v):
+            return v.toBSON()
+        case let .date(v):
+            return v.toBSON()
+        case let .regex(v):
+            return v.toBSON()
+        case let .dbPointer(v):
+            return v.toBSON()
+        case let .codeWithScope(v):
+            return v.toBSON()
+        case let .symbol(v):
+            return v.toBSON()
+        case let .int32(v):
+            return v.toBSON()
+        case let .timestamp(v):
+            return v.toBSON()
+        case let .int64(v):
+            return v.toBSON()
         }
     }
 }
@@ -132,9 +170,18 @@ extension String: PureBSONValue {
     }
 
     internal func toBSON() -> Data {
-        // `String`s are Unicode under the hood so force unwrap always succeeds.
-        // see https://www.objc.io/blog/2018/02/13/string-to-data-and-back/
-        return self.data(using: .utf8)! // swiftlint:disable:this force_unwrapping
+        var data = Data()
+        let cStringData = self.toCStringData()
+        data.append(Int32(cStringData.count).toBSON())
+        data.append(cStringData)
+        return data
+    }
+
+    internal func toCStringData() -> Data {
+        var data = Data()
+        data.append(contentsOf: self.utf8)
+        data.append(0)
+        return data
     }
 }
 
