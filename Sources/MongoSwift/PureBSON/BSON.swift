@@ -23,6 +23,9 @@ public enum BSON {
     case maxKey
 }
 
+extension BSON: Equatable {}
+extension BSON: Hashable {}
+
 internal protocol PureBSONValue {
     init(from data: Data) throws
     func toBSON() -> Data

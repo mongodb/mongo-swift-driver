@@ -76,10 +76,11 @@ extension PureBSONObjectId: PureBSONValue {
     internal init(from data: Data) throws {
         self.data = data
         // first four bytes are the timestamp.
-        self.timestamp = UInt32(data[0]) << 24
-                       + UInt32(data[1]) << 16
-                       + UInt32(data[2]) << 8
-                       + UInt32(data[3])
+        var timestamp: UInt32 = 0
+        _ = withUnsafeMutableBytes(of: &timestamp) {
+            data[0..<4].copyBytes(to: $0)
+        }
+        self.timestamp = timestamp
     }
 
     internal func toBSON() -> Data {
