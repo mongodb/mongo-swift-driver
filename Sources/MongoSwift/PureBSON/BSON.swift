@@ -15,7 +15,7 @@ public enum BSON {
     case dbPointer(PureBSONDBPointer)
     // code
     case symbol(PureBSONSymbol)
-    // code with scope
+    case codeWithScope(PureBSONCodeWithScope)
     case int32(Int32)
     case timestamp(PureBSONTimestamp)
     case int64(Int64)
@@ -64,11 +64,10 @@ internal protocol PureBSONValue {
 
 extension PureBSONValue where Self: ExpressibleByIntegerLiteral {
     init(from data: Data) throws {
-        var value: Self = 0
-        _ = withUnsafeMutableBytes(of: &value) {
-            data.copyBytes(to: $0)
+        guard data.count == MemoryLayout<Self>.size else {
+            throw RuntimeError.internalError(message: "wrong buffer size")
         }
-        self = value
+        self = try readInteger(from: data)
     }
 }
 
@@ -163,4 +162,16 @@ internal func readString(from data: Data) throws -> String {
     return data.withUnsafeBytes { (ptr: UnsafePointer<UInt8>) -> String in
         String(cString: ptr)
     }
+}
+
+/// Reads an integer type from the data. Throws if buffer is too small.
+internal func readInteger<T: ExpressibleByIntegerLiteral>(from data: Data) throws -> T {
+    guard data.count >= MemoryLayout<T>.size else {
+        throw RuntimeError.internalError(message: "Buffer not large enough to read \(T.self) from")
+    }
+    var value: T = 0
+    _ = withUnsafeMutableBytes(of: &value) {
+        data.copyBytes(to: $0)
+    }
+    return value
 }
