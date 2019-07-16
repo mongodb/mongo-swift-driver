@@ -3,7 +3,8 @@ import Foundation
 public enum BSON {
     case double(Double)
     case string(String)
-
+    case document(PureBSONDocument)
+    // array
     case binary(PureBSONBinary)
     case undefined
     case objectId(PureBSONObjectId)
@@ -12,13 +13,13 @@ public enum BSON {
     case null
     case regex(PureBSONRegularExpression)
     case dbPointer(PureBSONDBPointer)
-
+    // code
     case symbol(PureBSONSymbol)
-
+    // code with scope
     case int32(Int32)
     case timestamp(PureBSONTimestamp)
     case int64(Int64)
-
+    // decimal128
     case minKey
     case maxKey
 }
