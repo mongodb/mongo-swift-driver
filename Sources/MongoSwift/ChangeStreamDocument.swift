@@ -57,8 +57,8 @@ public struct ChangeStreamDocument<T: Codable>: Codable {
      */
     public let documentKey: Document?
 
-    /// An `UpdateDescription` containing updated and removed fields in this operation.
-    /// Only present for operations of type `update`.
+    /// An `UpdateDescription` containing updated and removed fields in this operation. Only present for operations of
+    /// type`update`.
     public let updateDescription: UpdateDescription?
 
    /**
