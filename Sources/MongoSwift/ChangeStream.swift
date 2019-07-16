@@ -18,15 +18,13 @@ public struct ChangeStreamToken: Codable {
 /// A MongoDB ChangeStream.
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/
 public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
-  /// A `ChangeStreamToken` used to manually resume a change stream.
+  /// A `ChangeStreamToken` used for manually resuming a change stream.
   public private(set) var resumeToken: ChangeStreamToken
 
-  /// A `MongoClient` stored to make sure the source client stays valid
-  /// until the change stream is destroyed.
+  /// A `MongoClient` stored to make sure the source client stays valid until the change stream is destroyed.
   private var client: MongoClient?
 
-  /// A `ClientSession` stored to make sure the session stays valid
-  /// until the change stream is destroyed.
+  /// A `ClientSession` stored to make sure the session stays valid until the change stream is destroyed.
   private var session: ClientSession?
 
   /// A reference to the `mongoc_change_stream_t` pointer.
@@ -35,8 +33,8 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
   /// Used for storing Swift errors.
   private var swiftError: Error?
 
-  /// The error that occurred while iterating the ChangeStream cursor, if one exists.
-  /// This should be used to check for errors after `next()` returns `nil`.
+  /// The error that occurred while iterating the ChangeStream cursor, if one exists. This should be used to check
+  /// for errors after `next()` returns `nil`.
   public var error: Error? {
     if let err = self.swiftError {
         return err
