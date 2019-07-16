@@ -62,7 +62,7 @@ public struct ChangeStreamOptions: Codable {
     /// - SeeAlso: https://docs.mongodb.com/master/changeStreams/#change-stream-start-after
     public let startAfter: ChangeStreamToken?
 
-    /// Initializes a `ChangeStreamOption`.
+    /// Initializes a `ChangeStreamOptions`.
     public init(fullDocument: FullDocument? = nil,
                 resumeAfter: ChangeStreamToken? = nil,
                 maxAwaitTimeMS: Int64? = nil,
