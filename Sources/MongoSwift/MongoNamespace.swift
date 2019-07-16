@@ -1,9 +1,11 @@
 /// Represents a MongoDB namespace for a database or collection.
 public struct MongoNamespace: Codable {
+    /// The database name.
     public let db: String
+    /// The collection name if this is a collection's namespace, or nil otherwise.
     public let collection: String?
 
-    public enum CodingKeys: String, CodingKey {
+    private enum CodingKeys: String, CodingKey {
         case db, collection = "coll"
     }
 }

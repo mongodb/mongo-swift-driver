@@ -1,7 +1,7 @@
 /// Describes the modes for configuring the fullDocument field of a `ChangeStreamDocument`.
 public enum FullDocument: RawRepresentable, Codable {
-    /// The change stream document will include both a delta describing the changes to the document,
-    /// as well as a copy of the entire document that was changed from some time after the change occurred.
+    /// The `fullDocument` field will contain a copy of the entire document that was changed from some time
+    /// after the change occurred. If the document was deleted since the updated happened, it will be null.
     case updateLookup
     /// For an unknown value. For forwards compatibility, no error will be thrown when an unknown value is provided.
     case other(String)
@@ -35,8 +35,14 @@ public struct ChangeStreamOptions: Codable {
      */
     public let fullDocument: FullDocument?
 
-    /// A `ChangeStreamToken` to manually specify the resumeToken which will be used to start a new change stream that
-    /// will return the first notification after this token.
+    /**
+     * A `ChangeStreamToken` that manually specifies the logical starting point for the new change stream.
+     * The change stream will attempt to resume notifications starting after the operation associated with
+     * the provided token.
+     * - Note: A change stream cannot be resumed after an invalidate event (e.g. a collection drop or rename).
+     *         Use the `startAfter` option in those cases instead.
+     * - SeeAlso: https://docs.mongodb.com/manual/changeStreams/#resume-a-change-stream
+     */
     public let resumeAfter: ChangeStreamToken?
 
     /// The maximum amount of time in milliseconds for the server to wait on new documents to satisfy a
@@ -56,10 +62,14 @@ public struct ChangeStreamOptions: Codable {
     /// - SeeAlso: https://docs.mongodb.com/manual/reference/method/db.runCommand/
     public let startAtOperationTime: Timestamp?
 
-    /// A `ChangeStreamToken` similar to `resumeAfter` except `startAfter` will allow users to watch collections
-    /// that have been dropped and recreated or newly renamed collections without missing any notifications.
-    /// The server will report an error if `startAfter` and `resumeAfter` are both specified.
-    /// - SeeAlso: https://docs.mongodb.com/master/changeStreams/#change-stream-start-after
+    /**
+     * Similar to `resumeAfter`, this option takes a `ChangeStreamToken` which will serve as the logical starting
+     * point for the new change stream. This option differs from `resumeAfter` in that it will allow a change stream
+     * to receive notifications even after an invalidate event (e.g. it will allow watching a collection that has
+     * been dropped and recreated).
+     * - Note: The server will report an error if `startAfter` and `resumeAfter` are both specified.
+     * - SeeAlso: https://docs.mongodb.com/master/changeStreams/#change-stream-start-after
+     */
     public let startAfter: ChangeStreamToken?
 
     /// Initializes a `ChangeStreamOptions`.
