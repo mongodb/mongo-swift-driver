@@ -24,6 +24,36 @@ public enum BSON {
     case maxKey
 }
 
+extension BSON: ExpressibleByStringLiteral {
+    public init(stringLiteral value: String) {
+        self = .string(value)
+    }
+}
+
+extension BSON: ExpressibleByBooleanLiteral {
+    public init(booleanLiteral value: Bool) {
+        self = .bool(value)
+    }
+}
+
+extension BSON: ExpressibleByFloatLiteral {
+    public init(floatLiteral value: Double) {
+        self = .double(value)
+    }
+}
+
+extension BSON: ExpressibleByIntegerLiteral {
+    public init(integerLiteral value: Int) {
+        self = .int64(Int64(value))
+    }
+}
+
+extension BSON: ExpressibleByDictionaryLiteral {
+    public init(dictionaryLiteral elements: (String, BSON)...) {
+        self = .document(PureBSONDocument(elements: elements))
+    }
+}
+
 extension BSON: Equatable {}
 extension BSON: Hashable {}
 

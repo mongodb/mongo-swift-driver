@@ -2,6 +2,16 @@ import Foundation
 
 public struct PureBSONDocument {
     private var data: Data
+
+    internal init(elements: [(String, BSON)]) {
+        self.data = Data()
+    }
+}
+
+extension PureBSONDocument: ExpressibleByDictionaryLiteral {
+    public init(dictionaryLiteral elements: (String, BSON)...) {
+        self.init(elements: elements)
+    }
 }
 
 extension PureBSONDocument: PureBSONValue {
