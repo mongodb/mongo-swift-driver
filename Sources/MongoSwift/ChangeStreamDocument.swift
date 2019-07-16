@@ -15,25 +15,25 @@ public enum OperationType: String, Codable {
    /// - SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#insert-event
    case insert
    /// Specifies an operation of type `update`.
-   /// SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#update-event
+   /// - SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#update-event
    case update
    /// Specifies an operation of type `replace`.
-   /// SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#replace-event
+   /// - SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#replace-event
    case replace
    /// Specifies an operation of type `delete`.
-   /// SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#delete-event
+   /// - SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#delete-event
    case delete
    /// Specifies an operation of type `invalidate`.
-   /// SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#change-event-invalidate
+   /// - SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#change-event-invalidate
    case invalidate
    /// Specifies an operation of type `drop`.
-   /// SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#drop-event
+   /// - SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#drop-event
    case drop
    /// Specifies an operation of type `dropDatabase`.
-   /// SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#dropdatabase-event
+   /// - SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#dropdatabase-event
    case dropDatabase
    /// Specifies an operation of type `rename`.
-   /// SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#rename-event
+   /// - SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#rename-event
    case rename
 }
 
@@ -63,7 +63,7 @@ public struct ChangeStreamDocument<T: Codable>: Codable {
 
    /**
     * Always present for operations of type `insert` and `replace`. Also present for operations of type `update` if the
-    * user has specified `updateLookup` in the `fullDocument.updateLookup` in the `ChangeStreamOptions` used to create
+    * user has specified `.updateLookup` for the `fullDocument` option in the `ChangeStreamOptions` used to create
     * the `ChangeStream` that emitted this document.
     *
     * For operations of type `insert’ and `replace’, this key will contain the document being inserted, or the new

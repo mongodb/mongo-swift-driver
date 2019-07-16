@@ -6,7 +6,7 @@ import mongoc
 public struct ChangeStreamToken: Codable {
     private let resumeToken: Document
 
-    public init(resumeToken: Document) {
+    internal init(resumeToken: Document) {
         self.resumeToken = resumeToken
     }
 
@@ -22,13 +22,13 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
   public private(set) var resumeToken: ChangeStreamToken
 
   /// A `MongoClient` stored to make sure the source client stays valid until the change stream is destroyed.
-  private var client: MongoClient?
+  private let client: MongoClient
 
   /// A `ClientSession` stored to make sure the session stays valid until the change stream is destroyed.
-  private var session: ClientSession?
+  private let session: ClientSession?
 
   /// A reference to the `mongoc_change_stream_t` pointer.
-  private var changeStream: OpaquePointer?
+  private let changeStream: OpaquePointer
 
   /// Used for storing Swift errors.
   private var swiftError: Error?
@@ -47,7 +47,7 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     }
 
     var error = bson_error_t()
-    guard mongoc_cursor_error_document(self.changeStream, &error, replyPtr) else {
+    guard mongoc_change_stream_error_document(self.changeStream, &error, replyPtr) else {
         return nil
     }
 
@@ -71,7 +71,6 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
   /// `maxAwaitTimeMS` milliseconds as specified in the `ChangeStreamOptions`, or for the server default timeout
   /// if omitted.
   public func next() -> T? {
-    let cursor = self.changeStream
     // Allocate space for a reference to a BSON pointer.
     let out = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
     defer {
@@ -80,7 +79,7 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     }
 
     // Check that there’s another document in the stream.
-    guard mongoc_change_stream_next(cursor, out) else {
+    guard mongoc_change_stream_next(self.changeStream, out) else {
       return nil
     }
 
@@ -92,12 +91,11 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     let doc = Document(copying: pointee)
 
     // Update the resumeToken with the `_id` field from the document.
-    if let resumeToken = doc["_id"] as? Document {
-        self.resumeToken = ChangeStreamToken(resumeToken: resumeToken)
-    } else {
-        self.swiftError = RuntimeError.internalError(message: "_id field is missing from the change stream document.")
+    guard let resumeToken = doc["_id"] as? Document else {
+      self.swiftError = RuntimeError.internalError(message: "_id field is missing from the change stream document.")
         return nil
     }
+    self.resumeToken = ChangeStreamToken(resumeToken: resumeToken)
 
     do {
         return try decoder.decode(T.self, from: doc)
@@ -110,7 +108,7 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
 
   /**
    * Returns the next `T` in this change stream or `nil`, or throws an error if one occurs -- compared to `next()`,
-   * which returns `nil` and requires manually checking for an error afterward. Will block for a maximum of
+   * whichreturns `nil` and requires manually checking for an error afterward. Will block for a maximum of
    * `maxAwaitTimeMS` milliseconds as specified in the `ChangeStreamOptions`, or for the server default timeout if
    * omitted.
    * - Returns: the next `T` in this change stream, or `nil` if at the end of the change stream cursor.
@@ -141,25 +139,19 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
                 client: MongoClient,
                 session: ClientSession? = nil,
                 decoder: BSONDecoder) throws {
-    self.changeStream = changeStream
-    self.session = session
-    self.client = client
-    self.decoder = decoder
-    self.resumeToken = ChangeStreamToken(resumeToken: [])
+      self.changeStream = changeStream
+      self.session = session
+      self.client = client
+      self.decoder = decoder
+      self.resumeToken = ChangeStreamToken(resumeToken: [])
 
-    if let err = self.error {
-      throw err
-    }
+      if let err = self.error {
+        throw err
+      }
   }
 
   /// Cleans up internal state.
   deinit {
-    guard let cursor = self.changeStream else {
-        return
-    }
     mongoc_change_stream_destroy(changeStream)
-    self.changeStream = nil
-    self.session = nil
-    self.client = nil
   }
 }
