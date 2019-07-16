@@ -110,7 +110,7 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
 
   /**
    * Returns the next `T` in this change stream or `nil`, or throws an error if one occurs -- compared to `next()`,
-   * whichreturns `nil` and requires manually checking for an error afterward. Will block for a maximum of
+   * which returns `nil` and requires manually checking for an error afterward. Will block for a maximum of
    * `maxAwaitTimeMS` milliseconds as specified in the `ChangeStreamOptions`, or for the server default timeout if
    * omitted.
    * - Returns: the next `T` in this change stream, or `nil` if at the end of the change stream cursor.
