@@ -22,6 +22,8 @@ public struct PureBSONTimestamp: Equatable, Hashable, Codable {
 }
 
 extension PureBSONTimestamp: PureBSONValue {
+    internal static var bsonType: BSONType { return .timestamp }
+
     internal var bson: BSON { return .timestamp(self) }
 
     internal init(from data: Data) throws {

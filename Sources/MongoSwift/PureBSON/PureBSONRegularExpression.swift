@@ -26,6 +26,8 @@ extension PureBSONRegularExpression: Equatable {}
 extension PureBSONRegularExpression: Hashable {}
 
 extension PureBSONRegularExpression: PureBSONValue {
+    internal static var bsonType: BSONType { return .regularExpression }
+
     internal var bson: BSON { return .regex(self) }
 
     internal init(from data: Data) throws {

@@ -52,6 +52,8 @@ extension PureBSONDocument: ExpressibleByDictionaryLiteral {
 }
 
 extension PureBSONDocument: PureBSONValue {
+    internal static var bsonType: BSONType { return .document }
+
     internal var bson: BSON { return .document(self) }
 
     internal init(from data: Data) throws {

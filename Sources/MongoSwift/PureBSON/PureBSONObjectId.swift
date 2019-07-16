@@ -74,6 +74,8 @@ extension PureBSONObjectId: Hashable {}
 extension PureBSONObjectId: Codable {}
 
 extension PureBSONObjectId: PureBSONValue {
+    internal static var bsonType: BSONType { return .objectId }
+
     internal var bson: BSON { return .objectId(self) }
 
     internal init(from data: Data) throws {

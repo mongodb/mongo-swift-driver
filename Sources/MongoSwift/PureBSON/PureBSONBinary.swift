@@ -62,6 +62,8 @@ extension PureBSONBinary: Equatable {}
 extension PureBSONBinary: Hashable {}
 
 extension PureBSONBinary: PureBSONValue {
+    internal static var bsonType: BSONType { return .binary }
+
     internal var bson: BSON { return .binary(self) }
 
     internal init(from data: Data) throws {

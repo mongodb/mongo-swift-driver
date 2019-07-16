@@ -20,6 +20,8 @@ extension PureBSONSymbol: Equatable {}
 extension PureBSONSymbol: Hashable {}
 
 extension PureBSONSymbol: PureBSONValue {
+    internal static var bsonType: BSONType { return .symbol }
+
     internal var bson: BSON { return .symbol(self) }
 
     internal init(from data: Data) throws {

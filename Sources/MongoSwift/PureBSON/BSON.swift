@@ -23,86 +23,59 @@ public enum BSON {
     case minKey
     case maxKey
 
-    internal var bsonType: UInt8 {
+    internal var bsonValue: PureBSONValue {
         switch self {
-        case .double:
-            return 0x01
-        case .string:
-            return 0x02
-        case .document:
-            return 0x03
-        // array
-        case .binary:
-            return 0x05
-        case .undefined:
-            return 0x06
-        case .objectId:
-            return 0x07
-        case .bool:
-            return 0x08
-        case .date:
-            return 0x09
         case .null:
-            return 0x0A
-        case .regex:
-            return 0x0B
-        case .dbPointer:
-            return 0x0C
-        case let .codeWithScope(cws):
-            return cws.scope == nil ? 0x0D : 0x0F 
-        case .symbol:
-            return 0x0E
-        case .int32:
-            return 0x10
-        case .timestamp:
-            return 0x11
-        case .int64:
-            return 0x12
-        // decimal128
+            return PureBSONNull()
+        case .undefined:
+            return PureBSONUndefined()
         case .minKey:
-            return 0xFF
+            return PureBSONMinKey()
         case .maxKey:
-            return 0x7F
+            return PureBSONMaxKey()
+        case let .double(v):
+            return v
+        case let .string(v):
+            return v
+        case let .document(v):
+            return v
+        case let .binary(v):
+            return v
+        case let .objectId(v):
+            return v
+        case let .bool(v):
+            return v
+        case let .date(v):
+            return v
+        case let .regex(v):
+            return v
+        case let .dbPointer(v):
+            return v
+        case let .codeWithScope(v):
+            return v
+        case let .symbol(v):
+            return v
+        case let .int32(v):
+            return v
+        case let .timestamp(v):
+            return v
+        case let .int64(v):
+            return v
         }
+    }
+
+    internal func toBSON() -> Data {
+        return self.bsonValue.toBSON()
+    }
+
+    internal var bsonType: UInt8 {
+        return UInt8(type(of: self.bsonValue).bsonType.rawValue)
     }
 }
 
 extension BSON {
     //init(from data: Data) throws
-    func toBSON() -> Data {
-        switch self {
-        case .undefined, .null, .minKey, .maxKey:
-            return Data()
-        case let .double(v):
-            return v.toBSON()
-        case let .string(v):
-            return v.toBSON()
-        case let .document(v):
-            return v.toBSON()
-        case let .binary(v):
-            return v.toBSON()
-        case let .objectId(v):
-            return v.toBSON()
-        case let .bool(v):
-            return v.toBSON()
-        case let .date(v):
-            return v.toBSON()
-        case let .regex(v):
-            return v.toBSON()
-        case let .dbPointer(v):
-            return v.toBSON()
-        case let .codeWithScope(v):
-            return v.toBSON()
-        case let .symbol(v):
-            return v.toBSON()
-        case let .int32(v):
-            return v.toBSON()
-        case let .timestamp(v):
-            return v.toBSON()
-        case let .int64(v):
-            return v.toBSON()
-        }
-    }
+
 }
 
 extension BSON: ExpressibleByStringLiteral {
@@ -143,13 +116,17 @@ extension BSON: Codable {
         self = .null
     }
 
-    public func encode(to encoder: Encoder) throws {}
+    public func encode(to encoder: Encoder) throws {
+        print("encoding \(self.bsonValue)")
+        try self.bsonValue.encode(to: encoder)
+    }
 }
 
-internal protocol PureBSONValue {
+internal protocol PureBSONValue: Codable {
     init(from data: Data) throws
     func toBSON() -> Data
     var bson: BSON { get }
+    static var bsonType: BSONType { get }
 }
 
 extension PureBSONValue where Self: ExpressibleByIntegerLiteral {
@@ -168,6 +145,8 @@ extension PureBSONValue where Self: Numeric {
 }
 
 extension String: PureBSONValue {
+    internal static var bsonType: BSONType { return .string }
+
     internal var bson: BSON { return .string(self) }
 
     internal init(from data: Data) throws {
@@ -197,6 +176,8 @@ extension String: PureBSONValue {
 }
 
 extension Bool: PureBSONValue {
+    internal static var bsonType: BSONType { return .boolean }
+
     internal var bson: BSON { return .bool(self) }
 
     internal init(from data: Data) throws {
@@ -218,19 +199,9 @@ extension Bool: PureBSONValue {
     }
 }
 
-internal struct InvalidBSONError: LocalizedError {
-    internal let message: String
-
-    internal init(_ message: String) {
-        self.message = message
-    }
-
-    public var errorDescription: String? {
-        return self.message
-    }
-}
-
 extension Double: PureBSONValue {
+    internal static var bsonType: BSONType { return .double }
+
     internal var bson: BSON { return .double(self) }
 
     public init(from data: Data) throws {
@@ -243,14 +214,20 @@ extension Double: PureBSONValue {
 }
 
 extension Int32: PureBSONValue {
+    internal static var bsonType: BSONType { return .int32 }
+
     internal var bson: BSON { return .int32(self) }
 }
 
 extension Int64: PureBSONValue {
+    internal static var bsonType: BSONType { return .int64 }
+
     internal var bson: BSON { return .int64(self) }
 }
 
 extension Date: PureBSONValue {
+    internal static var bsonType: BSONType { return .dateTime }
+
     internal var bson: BSON { return .date(self) }
 
     internal init(from data: Data) throws {
@@ -285,4 +262,16 @@ internal func readInteger<T: ExpressibleByIntegerLiteral>(from data: Data) throw
         data.copyBytes(to: $0)
     }
     return value
+}
+
+internal struct InvalidBSONError: LocalizedError {
+    internal let message: String
+
+    internal init(_ message: String) {
+        self.message = message
+    }
+
+    public var errorDescription: String? {
+        return self.message
+    }
 }

@@ -20,6 +20,8 @@ extension PureBSONDBPointer: Equatable {}
 extension PureBSONDBPointer: Hashable {}
 
 extension PureBSONDBPointer: PureBSONValue {
+    internal static var bsonType: BSONType { return .dbPointer }
+
     internal var bson: BSON { return .dbPointer(self) }
 
     internal init(from data: Data) throws {

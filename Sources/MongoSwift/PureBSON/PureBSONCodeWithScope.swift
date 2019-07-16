@@ -15,6 +15,8 @@ public struct PureBSONCodeWithScope: Equatable, Hashable, Codable {
 }
 
 extension PureBSONCodeWithScope: PureBSONValue {
+    internal static var bsonType: BSONType { return .javascriptWithScope }
+
     internal var bson: BSON { return .codeWithScope(self) }
 
     internal init(from data: Data) throws {
