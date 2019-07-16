@@ -91,12 +91,6 @@ extension PureBSONObjectId: PureBSONValue {
     }
 }
 
-extension Data {
-    internal var hex: String {
-        return self.reduce("") { $0 + String(format: "%02x", $1) }
-    }
-}
-
 /// Threadsafe counter that generates an increasing sequence of values for ObjectIds.
 internal class ObjectIdCounter {
     private let queue = DispatchQueue(label: "ObjectId counter queue")
