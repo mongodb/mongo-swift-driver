@@ -22,6 +22,49 @@ public enum BSON {
     // decimal128
     case minKey
     case maxKey
+
+    internal var bsonType: UInt8 {
+        switch self {
+        case .double:
+            return 0x01
+        case .string:
+            return 0x02
+        case .document:
+            return 0x03
+        // array
+        case .binary:
+            return 0x05
+        case .undefined:
+            return 0x06
+        case .objectId:
+            return 0x07
+        case .bool:
+            return 0x08
+        case .date:
+            return 0x09
+        case .null:
+            return 0x0A
+        case .regex:
+            return 0x0B
+        case .dbPointer:
+            return 0x0C
+        // case code
+        case .symbol:
+            return 0x0E
+        // code with scope
+        case .int32:
+            return 0x10
+        case .timestamp:
+            return 0x11
+        case .int64:
+            return 0x12
+        // decimal128
+        case .minKey:
+            return 0xFF
+        case .maxKey:
+            return 0x7F
+        }
+    }
 }
 
 extension BSON: ExpressibleByStringLiteral {
