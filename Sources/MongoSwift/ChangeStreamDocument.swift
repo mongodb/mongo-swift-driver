@@ -12,7 +12,7 @@ public struct UpdateDescription: Codable {
 /// An enum representing the type of operation for this change event.
 public enum OperationType: String, Codable {
    /// Specifies an operation of type `insert`.
-   /// SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#insert-event
+   /// - SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#insert-event
    case insert
    /// Specifies an operation of type `update`.
    /// SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#update-event
