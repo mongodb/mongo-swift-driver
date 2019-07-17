@@ -1,5 +1,4 @@
 import mongoc
-
 /// A token used for manually resuming a change stream. Pass this to the `resumeAfter` or `startAfter` fields of
 /// `ChangeStreamOptions` to resume or start a change stream where a previous one left off.
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/#resume-a-change-stream
