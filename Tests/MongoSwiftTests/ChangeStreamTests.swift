@@ -10,21 +10,19 @@ final class ChangeStreamTest: MongoSwiftTestCase {
             return
         }
 
-        let decoder = BSONDecoder()
         let client = try MongoClient()
-
         let db = client.db(type(of: self).testDatabase)
-        let coll = db.collection(self.getCollectionName(suffix: "1"))
         defer { try? db.drop() }
-
+        let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
         let session = try client.startSession()
-        let options = ChangeStreamOptions()
+        let options = ChangeStreamOptions(fullDocument: .updateLookup)
         let opts = try encodeOptions(options: options, session: session)
         let pipeline: Document = []
+        let decoder = BSONDecoder()
 
         try client.connectionPool.withConnection { conn in
             try coll.withMongocCollection(from: conn) { collPtr in
-                // TODO: Use MongoDatabase.watch() instead `mongoc_database_watch` of once it gets added
+                // TODO: Use MongoCollection.watch() instead `mongoc_collection_watch` of once it gets added
                 let changeStreamPtr: OpaquePointer = mongoc_collection_watch(collPtr, pipeline._bson, opts?._bson)
                 var replyPtr = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
                 defer {
@@ -45,18 +43,18 @@ final class ChangeStreamTest: MongoSwiftTestCase {
             print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
             return
         }
+
         let client = try MongoClient()
 
-        if try client.serverVersion() < ServerVersion(major: 4, minor: 0) {
+        guard try client.serverVersion() >= ServerVersion(major: 4, minor: 0) else {
             print("Skipping test case for server version \(try client.serverVersion())")
             return
         }
 
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
-
-        let options = ChangeStreamOptions(fullDocument: .updateLookup)
         let session = try client.startSession()
+        let options = ChangeStreamOptions(fullDocument: .updateLookup)
         let opts = try encodeOptions(options: options, session: session)
         let pipeline: Document = []
 
@@ -101,11 +99,8 @@ final class ChangeStreamTest: MongoSwiftTestCase {
             return
         }
         let client = try MongoClient()
-
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
-
-        // TODO: Use MongoCollection.watch() instead `mongoc_collection_watch` of once it gets added
         let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
         let session = try client.startSession()
         let options = ChangeStreamOptions(fullDocument: .updateLookup)
@@ -114,6 +109,7 @@ final class ChangeStreamTest: MongoSwiftTestCase {
 
         try client.connectionPool.withConnection { conn in
             try coll.withMongocCollection(from: conn) { collPtr in
+                // TODO: Use MongoCollection.watch() instead `mongoc_collection_watch` of once it gets added
                 let changeStreamPtr: OpaquePointer = mongoc_collection_watch(collPtr, pipeline._bson, opts?._bson)
                 var replyPtr = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
                 defer {

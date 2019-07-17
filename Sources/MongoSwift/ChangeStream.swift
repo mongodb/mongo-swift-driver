@@ -78,7 +78,6 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
         out.deallocate()
     }
 
-    // Check that there’s another document in the stream.
     guard mongoc_change_stream_next(self.changeStream, out) else {
       return nil
     }
