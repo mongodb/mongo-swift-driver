@@ -137,19 +137,15 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
                 client: MongoClient,
                 session: ClientSession? = nil,
                 decoder: BSONDecoder) throws {
-      self.changeStream = changeStream
-      self.session = session
-      self.client = client
-      self.decoder = decoder
-      self.resumeToken = ChangeStreamToken(resumeToken: [])
+    self.changeStream = changeStream
+    self.session = session
+    self.client = client
+    self.decoder = decoder
+    self.resumeToken = ChangeStreamToken(resumeToken: [])
 
     if let err = self.error {
       throw err
     }
-  }
-
-  func foobar() {
-    fgdf
   }
 
   /// Cleans up internal state.
