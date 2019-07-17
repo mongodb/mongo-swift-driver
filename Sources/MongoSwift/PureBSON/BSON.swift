@@ -73,11 +73,6 @@ public enum BSON {
     }
 }
 
-extension BSON {
-    //init(from data: Data) throws
-
-}
-
 extension BSON: ExpressibleByStringLiteral {
     public init(stringLiteral value: String) {
         self = .string(value)
@@ -157,6 +152,12 @@ extension String: PureBSONValue {
         }
 
         self = s
+    }
+
+    /// Given utf8-encoded `Data`, reads from the start up to the first null byte and constructs a String from it
+    internal init?(cStringData: Data) {
+        let bytes = cStringData.prefix { $0 != 0 }
+        self.init(bytes: bytes, encoding: .utf8)
     }
 
     internal func toBSON() -> Data {

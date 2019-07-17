@@ -1,15 +1,12 @@
 import Foundation
 
+/// Internals
 public struct PureBSONDocument {
     internal var data: Data
 
     private var byteLength: Int32 {
         get {
-            var length: Int32 = 0
-            _ = withUnsafeMutableBytes(of: &length) { ptr in
-                self.data[0..<4].copyBytes(to: ptr)
-            }
-            return length
+            return Int32(self.data.count)
         }
         set(newLength) {
             withUnsafeBytes(of: newLength) { bytes in
@@ -18,6 +15,22 @@ public struct PureBSONDocument {
         }
     }
 
+    private mutating func updateLength() {
+        self.byteLength = Int32(self.data.count)
+    }
+
+    internal init(elements: [(String, BSON)]) {
+        // length of an empty document is 5 bytes:
+        // [ 4 bytes for Int32 length ] [ null byte ]
+        self.data = Data(count: 5)
+        for (key, value) in elements {
+            self[key] = value
+        }
+    }
+}
+
+/// Public API
+extension PureBSONDocument {
     /// Initializes a new empty document.
     public init() {
         // length of an empty document is 5 bytes:
@@ -26,22 +39,72 @@ public struct PureBSONDocument {
         self.updateLength()
     }
 
-    internal init(elements: [(String, BSON)]) {
-        // start off with 4 empty bytes to hold the length. we will come back and fill in later.
-        self.data = Data(count: 4)
-        defer { self.updateLength() }
+    public subscript(key: String) -> BSON? {
+        get {
+            let libbsonDoc = Document(fromBSON: self.data)
+            guard let value = libbsonDoc[key] else { return nil }
+            guard let asPureBSON = value as? PureBSONValue else {
+                fatalError("couldn't cast value to PureBSONValue")
+            }
+            return asPureBSON.bson
 
-        for (key, value) in elements {
-            data.append(value.bsonType)
-            data.append(key.toCStringData())
-            data.append(value.toBSON())
+
+            // guard self.byteLength > 5 else {
+            //     return nil
+            // }
+
+            // // first byte of the first ename.
+            // var idx = 5
+            // while true {
+            //     // we've reached the end of the doc.
+            //     if idx >= self.byteLength - 1 {
+            //         return nil
+            //     }
+
+            //     // read the next key.
+            //     let keyName = String(cStringData: self.data[idx...])
+            //     guard keyName == key else {
+            //         let bsonType = self.data[idx - 1]
+            //         idx += keyName.utf.count + 1
+            //         switch bsonType {
+            //         // undefined, null, minkey, maxkey are 0 bytes
+            //         case 0x06, 0x0A, 0xFF, 0x7F:
+            //             idx += 0
+            //         // boolean
+            //         case 0x08:
+            //             idx += 1
+            //         // int32
+            //         case 0x10:
+            //             idx += 4
+            //         // double, int64, uint64 are 8 bytes
+            //         case 0x01, 0x09, 0x11:
+            //             idx += 8
+            //         // string, document, array
+            //         case 0x02, 0x03, 0x04:
+            //             idx += 0 // todo get len
+            //         // binary
+            //         case 0x05:
+            //             idx += 0 // get binsry len
+
+            //         }
+            //     }
+
+            //     // read value out here
+            //     return nil
+            // }
         }
+        set(newValue) {
+            guard let value = newValue else {
+                // TODO: remove value from doc
+                return
+            }
 
-        data.append(0)
-    }
-
-    internal mutating func updateLength() {
-        self.byteLength = Int32(self.data.count)
+            self.data[self.data.count - 1] = value.bsonType
+            self.data.append(key.toCStringData())
+            self.data.append(value.toBSON())
+            self.data.append(0)
+            self.updateLength()
+        }
     }
 }
 
