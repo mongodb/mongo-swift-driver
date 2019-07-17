@@ -43,6 +43,10 @@ extension PureBSONDocument {
         get {
             let libbsonDoc = Document(fromBSON: self.data)
             guard let value = libbsonDoc[key] else { return nil }
+            // Int doesn't conform to PureBSONValue
+            if let intVal = value as? Int {
+                return .int64(Int64(intVal))
+            }
             guard let asPureBSON = value as? PureBSONValue else {
                 fatalError("couldn't cast value to PureBSONValue")
             }
