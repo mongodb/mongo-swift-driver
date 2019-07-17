@@ -7,7 +7,7 @@ public struct ChangeStreamToken: Codable {
     private let resumeToken: Document
 
     internal init(resumeToken: Document) {
-        self.resumeToken = resumeToken
+      self.resumeToken = resumeToken
     }
 
     public init(from decoder: Decoder) throws {
@@ -33,7 +33,7 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
   /// Used for storing Swift errors.
   private var swiftError: Error?
 
-  /// The error that occurred while iterating the ChangeStream cursor, if one exists. This should be used to check
+  /// The error that occurred while iterating the change stream, if one exists. This should be used to check
   /// for errors after `next()` returns `nil`.
   public var error: Error? {
     if let err = self.swiftError {
@@ -84,7 +84,7 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     }
 
     guard let pointee = out.pointee else {
-        fatalError("Could not advance the change stream.")
+        fatalError("The change stream was advanced, but the document is nil.")
     }
 
     // we have to copy because libmongoc owns the pointer.

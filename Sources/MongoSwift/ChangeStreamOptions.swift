@@ -1,7 +1,7 @@
 /// Describes the modes for configuring the fullDocument field of a `ChangeStreamDocument`.
 public enum FullDocument: RawRepresentable, Codable {
-    /// The `fullDocument` field will contain a copy of the entire document that was changed from some time
-    /// after the change occurred. If the document was deleted since the updated happened, it will be null.
+    /// Specifies that the `fullDocument` field will contain a copy of the entire document that was changed from
+    /// some time after the change occurred. If the document was deleted since the updated happened, it will be null.
     case updateLookup
     /// For an unknown value. For forwards compatibility, no error will be thrown when an unknown value is provided.
     case other(String)
@@ -29,7 +29,7 @@ public enum FullDocument: RawRepresentable, Codable {
 public struct ChangeStreamOptions: Codable {
     /**
      * Indicates how the `fullDocument` field of a `ChangeStreamDocument` should be filled out by the server.
-     * By default (indicated by a nil value for this option), the fullDocument field in the change stream document
+     * By default (indicated by a nil value for this option), the `fullDocument` field in the change stream document
      * will always be present in the case of 'insert' and 'replace' operations (containing the document being inserted)
      * and will be nil for all other operations.
      */
@@ -46,7 +46,7 @@ public struct ChangeStreamOptions: Codable {
     public let resumeAfter: ChangeStreamToken?
 
     /// The maximum amount of time in milliseconds for the server to wait on new documents to satisfy a
-    // change stream query. Uses the server default timeout when omitted.
+    /// change stream query. Uses the server default timeout when omitted.
     public let maxAwaitTimeMS: Int64?
 
     /// The number of documents to return per batch. The default is to not send a value.
