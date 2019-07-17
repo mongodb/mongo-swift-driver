@@ -14,6 +14,7 @@ final class ChangeStreamTest: MongoSwiftTestCase {
         let client = try MongoClient()
 
         let db = client.db(type(of: self).testDatabase)
+        let coll = db.collection(self.getCollectionName(suffix: "1"))
         defer { try? db.drop() }
 
         let session = try client.startSession()
@@ -22,9 +23,9 @@ final class ChangeStreamTest: MongoSwiftTestCase {
         let pipeline: Document = []
 
         try client.connectionPool.withConnection { conn in
-            try db.withMongocDatabase(from: conn) { dbPtr in
+            try coll.withMongocCollection(from: conn) { collPtr in
                 // TODO: Use MongoDatabase.watch() instead `mongoc_database_watch` of once it gets added
-                let changeStreamPtr: OpaquePointer = mongoc_database_watch(dbPtr, pipeline._bson, opts?._bson)
+                let changeStreamPtr: OpaquePointer = mongoc_collection_watch(collPtr, pipeline._bson, opts?._bson)
                 var replyPtr = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
                 defer {
                     replyPtr.deinitialize(count: 1)
@@ -76,7 +77,7 @@ final class ChangeStreamTest: MongoSwiftTestCase {
                 // expect the first iteration to be nil since no changes have been made to the database.
                 expect(changeStream.next()).to(beNil())
 
-                let coll = try db.collection(self.getCollectionName(suffix: "1"))
+                let coll = db.collection(self.getCollectionName(suffix: "1"))
                 try coll.insertOne(["a": 1], session: session)
 
                 // test that the change stream contains a change document for the `insert` operation.

@@ -1,5 +1,5 @@
-/// An `UpdateDescription` containing fields that will be present in the change stream document
-/// for operations of type `update`.
+/// An `UpdateDescription` containing fields that will be present in the change stream document for
+/// operations of type `update`.
 public struct UpdateDescription: Codable {
    /// A document containing key:value pairs of names of the fields that were changed, and the new
    /// value for those fields.
@@ -50,7 +50,7 @@ public struct ChangeStreamDocument<T: Codable>: Codable {
     public let ns: MongoNamespace
 
     /**
-     * Only present for options of type `insert’, `update’, `replace’ and `delete’. For unsharded collections this
+     * Only present for options of type `insert`, `update`, `replace` and `delete`. For unsharded collections this
      * contains a single field, _id, with the value of the _id of the document updated. For sharded collections, this
      * will contain all the components of the shard key in order, followed by the _id if the _id isn’t part of the shard
      * key.
