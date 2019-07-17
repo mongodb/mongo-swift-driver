@@ -73,7 +73,7 @@ extension PureBSONBinary: PureBSONValue {
 
         let length = try Int32(from: data[0...4])
 
-        guard let sub = Subtype(rawValue: data[0]) else {
+        guard let sub = Subtype(rawValue: data[4]) else {
             throw RuntimeError.internalError(message: "invalid subtype: \(data[0])")
         }
 
@@ -87,9 +87,9 @@ extension PureBSONBinary: PureBSONValue {
 
     internal func toBSON() -> Data {
         var data = Data()
-        data.append(contentsOf: [self.subtype.rawValue])
         data.append(Int32(self.data.count).toBSON())
-        data.append(data)
+        data.append(contentsOf: [self.subtype.rawValue])
+        data.append(self.data)
         return data
     }
 }

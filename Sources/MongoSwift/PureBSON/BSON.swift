@@ -108,7 +108,58 @@ extension BSON: Hashable {}
 
 extension BSON: Codable {
     public init(from decoder: Decoder) throws {
-        self = .null
+        // short-circuit when using `BSONDecoder`
+        if let bsonDecoder = decoder as? _PureBSONDecoder {
+            self = bsonDecoder.storage.topContainer.bson
+            return
+        }
+
+        let container = try decoder.singleValueContainer()
+
+        // since we aren't sure which BSON type this is, just try decoding
+        // to each of them and go with the first one that succeeds
+        if container.decodeNil() {
+            self = .null
+        } else if let value = try? container.decode(String.self) {
+            self = value.bson
+        } else if let value = try? container.decode(PureBSONBinary.self) {
+            self = value.bson
+        } else if let value = try? container.decode(PureBSONObjectId.self) {
+            self = value.bson
+        } else if let value = try? container.decode(Bool.self) {
+            self = value.bson
+        } else if let value = try? container.decode(PureBSONRegularExpression.self) {
+            self = value.bson
+        } else if let value = try? container.decode(PureBSONCodeWithScope.self) {
+            self = value.bson
+        } else if let value = try? container.decode(Int.self) {
+            self = value.bson
+        } else if let value = try? container.decode(Int32.self) {
+            self = value.bson
+        } else if let value = try? container.decode(Int64.self) {
+            self = value.bson
+        } else if let value = try? container.decode(Double.self) {
+            self = value.bson
+        } else if let value = try? container.decode(PureBSONMinKey.self) {
+            self = value.bson
+        } else if let value = try? container.decode(PureBSONMaxKey.self) {
+            self = value.bson
+        } else if let value = try? container.decode(PureBSONDocument.self) {
+            self = value.bson
+        } else if let value = try? container.decode(PureBSONTimestamp.self) {
+            self = value.bson
+        } else if let value = try? container.decode(PureBSONUndefined.self) {
+            self = value.bson
+        } else if let value = try? container.decode(PureBSONDBPointer.self) {
+            self = value.bson
+        } else {
+            throw DecodingError.typeMismatch(
+                    BSON.self,
+                    DecodingError.Context(
+                            codingPath: decoder.codingPath,
+                            debugDescription: "Encountered a value that could not be decoded to any BSON type")
+            )
+        }
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -212,6 +263,15 @@ extension Double: PureBSONValue {
         }
         self = value
     }
+}
+
+extension Int: PureBSONValue {
+    /// `Int` corresponds to a BSON int32 or int64 depending upon whether the compilation system is 32 or 64 bit.
+    /// Use MemoryLayout instead of Int.bitWidth to avoid a compiler warning.
+    /// See: https://forums.swift.org/t/how-can-i-condition-on-the-size-of-int/9080/4
+    internal static var bsonType: BSONType { return MemoryLayout<Int>.size == 4 ? .int32 : .int64 }
+
+    internal var bson: BSON { return Int.bsonType == .int32 ? .int32(Int32(self)) : .int64(Int64(self)) }
 }
 
 extension Int32: PureBSONValue {

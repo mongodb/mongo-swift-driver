@@ -27,6 +27,16 @@ public struct PureBSONDocument {
             self[key] = value
         }
     }
+
+    public var keys: [String] {
+        // TODO: fill this in for real
+        let libbsonDocument = Document(fromBSON: self.data)
+        return libbsonDocument.keys
+    }
+
+    public func hasKey(_ key: String) -> Bool {
+        return self.keys.contains(key)
+    }
 }
 
 /// Public API
