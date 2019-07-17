@@ -143,9 +143,13 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
       self.decoder = decoder
       self.resumeToken = ChangeStreamToken(resumeToken: [])
 
-      if let err = self.error {
-        throw err
-      }
+    if let err = self.error {
+      throw err
+    }
+  }
+
+  func foobar() {
+    fgdf
   }
 
   /// Cleans up internal state.
