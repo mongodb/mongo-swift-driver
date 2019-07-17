@@ -72,7 +72,7 @@ public struct ChangeStreamOptions: Codable {
      */
     public let startAfter: ChangeStreamToken?
 
-    /// Initializes a `ChangeStreamOption`.
+    /// Initializes a `ChangeStreamOptions`.
     public init(fullDocument: FullDocument? = nil,
                 resumeAfter: ChangeStreamToken? = nil,
                 maxAwaitTimeMS: Int64? = nil,
