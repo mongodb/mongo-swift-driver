@@ -4,7 +4,7 @@ public enum BSON {
     case double(Double)
     case string(String)
     case document(PureBSONDocument)
-    // array
+    indirect case array([BSON])
     case binary(PureBSONBinary)
     case undefined
     case objectId(PureBSONObjectId)
@@ -61,6 +61,8 @@ public enum BSON {
             return v
         case let .int64(v):
             return v
+        case let .array(v):
+            return v
         }
     }
 
@@ -100,6 +102,12 @@ extension BSON: ExpressibleByIntegerLiteral {
 extension BSON: ExpressibleByDictionaryLiteral {
     public init(dictionaryLiteral elements: (String, BSON)...) {
         self = .document(PureBSONDocument(elements: elements))
+    }
+}
+
+extension BSON: ExpressibleByArrayLiteral {
+    public init(arrayLiteral elements: BSON...) {
+        self = .array(elements)
     }
 }
 
@@ -297,6 +305,37 @@ extension Date: PureBSONValue {
 
     internal func toBSON() -> Data {
         return self.msSinceEpoch.toBSON()
+    }
+}
+
+extension Array: PureBSONValue where Element == BSON {
+    internal static var bsonType: BSONType { return .array }
+
+    internal var bson: BSON { return .array(self) }
+
+    internal init(from data: Data) throws {
+        let doc = try PureBSONDocument(from: data)
+
+        var arr: [BSON] = []
+        for (i, key) in doc.keys.enumerated() {
+            guard String(i) == key else {
+                throw RuntimeError.internalError(message: "invalid array document: \(doc)")
+            }
+            arr.append(doc[key]!)
+        }
+
+        self = arr
+    }
+
+    internal func toBSON() -> Data {
+        if case let .array(arr) = self.bson {
+            var doc = PureBSONDocument()
+            for (i, element) in arr.enumerated() {
+                doc[String(i)] = element
+            }
+            return doc.toBSON()
+        }
+        fatalError("can't reach here")
     }
 }
 

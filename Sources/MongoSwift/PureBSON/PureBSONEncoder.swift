@@ -492,10 +492,9 @@ extension _PureBSONEncoder {
             return bson.bsonValue
         }
 
-        // TODO: arrays
-//        if let bsonArray = value as? [PureBSONValue] {
-//            return bsonArray
-//        }
+        if let bsonArray = value as? [PureBSONValue] {
+            return bsonArray.map { $0.bson }
+        }
 
         // The value should request a container from the _BSONEncoder.
         let depth = self.storage.count
@@ -724,9 +723,8 @@ extension _PureBSONEncoder: SingleValueEncodingContainer {
 /// encoder storage purposes. We use this rather than NSMutableArray because
 /// it allows us to preserve Swift type information.
 private class PureBSONMutableArray: PureBSONValue {
-    // TODO: arrays
-    internal static var bsonType: BSONType { return .undefined }
-    internal var bson: BSON { return .undefined }
+    internal static var bsonType: BSONType { return .array }
+    internal var bson: BSON { return .array(self.array.map { $0.bson }) }
 
     var array = [PureBSONValue]()
 

@@ -272,7 +272,7 @@ internal class _PureBSONDecoder: Decoder {
 
     // Returns the data stored in this decoder in a container appropriate for holding values with no keys.
     public func unkeyedContainer() throws -> UnkeyedDecodingContainer {
-        guard let arr = self.storage.topContainer as? [PureBSONValue] else {
+        guard let arr = self.storage.topContainer as? [BSON] else {
             throw DecodingError._PuretypeMismatch(at: self.codingPath,
                                               expectation: [PureBSONValue].self,
                                               reality: self.storage.topContainer)
@@ -596,7 +596,7 @@ private struct _PureBSONKeyedDecodingContainer<K: CodingKey>: KeyedDecodingConta
         return try self.decoder.with(pushedKey: key) {
             let value = try getValue(forKey: key)
 
-            guard let array = value as? [PureBSONValue] else {
+            guard let array = value as? [BSON] else {
                 throw DecodingError._PuretypeMismatch(at: self.codingPath, expectation: [PureBSONValue].self, reality: value)
             }
 
@@ -644,9 +644,9 @@ private struct _PureBSONUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     public private(set) var currentIndex: Int
 
     /// Initializes `self` by referencing the given decoder and container.
-    fileprivate init(referencing decoder: _PureBSONDecoder, wrapping container: [PureBSONValue]) {
+    fileprivate init(referencing decoder: _PureBSONDecoder, wrapping container: [BSON]) {
         self.decoder = decoder
-        self.container = container
+        self.container = container.map { $0.bsonValue }
         self.codingPath = decoder.codingPath
         self.currentIndex = 0
     }
@@ -748,13 +748,12 @@ private struct _PureBSONUnkeyedDecodingContainer: UnkeyedDecodingContainer {
 
     /// Decodes an unkeyed nested container.
     public mutating func nestedUnkeyedContainer() throws -> UnkeyedDecodingContainer {
-        // TODO: arrays
-//        return try self.decoder.with(pushedKey: _BSONKey(index: self.currentIndex)) {
-//            try self.checkAtEnd()
-//            let array = try self.decodeBSONType([PureBSONValue].self)
-//            self.currentIndex += 1
-//            return _PureBSONUnkeyedDecodingContainer(referencing: self.decoder, wrapping: array)
-//        }
+        return try self.decoder.with(pushedKey: _PureBSONKey(index: self.currentIndex)) {
+            try self.checkAtEnd()
+            let array = try self.decodeBSONType([BSON].self)
+            self.currentIndex += 1
+            return _PureBSONUnkeyedDecodingContainer(referencing: self.decoder, wrapping: array)
+        }
         throw RuntimeError.internalError(message: "not implemented")
     }
 
