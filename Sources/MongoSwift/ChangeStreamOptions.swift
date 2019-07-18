@@ -1,7 +1,8 @@
 /// Describes the modes for configuring the fullDocument field of a change stream document.
 public enum FullDocument: RawRepresentable, Codable {
-    /// Specifies that the `fullDocument` field will contain a copy of the entire document that was changed from
-    /// some time after the change occurred. If the document was deleted since the updated happened, it will be nil.
+    /// Specifies that the `fullDocument` field of an update event will contain a copy of the entire document that
+    /// was changed from some time after the change occurred. If the document was deleted since the updated happened,
+    /// it will be nil.
     case updateLookup
     /// For an unknown value. For forwards compatibility, no error will be thrown when an unknown value is provided.
     case other(String)
@@ -69,7 +70,7 @@ public struct ChangeStreamOptions: Codable {
      * - Note: The server will report an error if `startAfter` and `resumeAfter` are both specified.
      * - SeeAlso: https://docs.mongodb.com/master/changeStreams/#change-stream-start-after
      */
-     // TODO: Make this public when support is added for 4.2 change stream features.
+     // TODO: SWIFT-519 - Make this public when support is added for 4.2 change stream features.
     internal let startAfter: ChangeStreamToken?
 
     /// Initializes a `ChangeStreamOptions`.
