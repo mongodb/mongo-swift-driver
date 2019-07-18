@@ -1,40 +1,40 @@
 /// An `UpdateDescription` containing fields that will be present in the change stream document for
 /// operations of type `update`.
 public struct UpdateDescription: Codable {
-   /// A document containing key:value pairs of names of the fields that were changed, and the new
-   /// value for those fields.
-   public let updatedFields: Document
+    /// A document containing key:value pairs of names of the fields that were changed, and the new
+    /// value for those fields.
+    public let updatedFields: Document
 
-   /// An array of field names that were removed from the document.
-   public let removedFields: [String]
+    /// An array of field names that were removed from the document.
+    public let removedFields: [String]
 }
 
 /// An enum representing the type of operation for this change event.
 public enum OperationType: String, Codable {
-   /// Specifies an operation of type `insert`.
-   /// - SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#insert-event
-   case insert
-   /// Specifies an operation of type `update`.
-   /// - SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#update-event
-   case update
-   /// Specifies an operation of type `replace`.
-   /// - SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#replace-event
-   case replace
-   /// Specifies an operation of type `delete`.
-   /// - SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#delete-event
-   case delete
-   /// Specifies an operation of type `invalidate`.
-   /// - SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#change-event-invalidate
-   case invalidate
-   /// Specifies an operation of type `drop`.
-   /// - SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#drop-event
-   case drop
-   /// Specifies an operation of type `dropDatabase`.
-   /// - SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#dropdatabase-event
-   case dropDatabase
-   /// Specifies an operation of type `rename`.
-   /// - SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#rename-event
-   case rename
+    /// Specifies an operation of type `insert`.
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#insert-event
+    case insert
+    /// Specifies an operation of type `update`.
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#update-event
+    case update
+    /// Specifies an operation of type `replace`.
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#replace-event
+    case replace
+    /// Specifies an operation of type `delete`.
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#delete-event
+    case delete
+    /// Specifies an operation of type `invalidate`.
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#change-event-invalidate
+    case invalidate
+    /// Specifies an operation of type `drop`.
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#drop-event
+    case drop
+    /// Specifies an operation of type `dropDatabase`.
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#dropdatabase-event
+    case dropDatabase
+    /// Specifies an operation of type `rename`.
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/change-events/index.html#rename-event
+    case rename
 }
 
 /// The response document type from a `ChangeStream`.
@@ -50,27 +50,27 @@ public struct ChangeStreamDocument<T: Codable>: Codable {
     public let ns: MongoNamespace
 
     /**
-     * Only present for options of type `insert`, `update`, `replace` and `delete`. For unsharded collections this
-     * contains a single field, _id, with the value of the _id of the document updated. For sharded collections, this
-     * will contain all the components of the shard key in order, followed by the _id if the _id isn’t part of the shard
-     * key.
-     */
+    * Only present for options of type `insert`, `update`, `replace` and `delete`. For unsharded collections this
+    * contains a single field, _id, with the value of the _id of the document updated. For sharded collections, this
+    * will contain all the components of the shard key in order, followed by the _id if the _id isn’t part of the
+    * shard key.
+    */
     public let documentKey: Document?
 
     /// An `UpdateDescription` containing updated and removed fields in this operation. Only present for operations of
     /// type`update`.
     public let updateDescription: UpdateDescription?
 
-   /**
-    * Always present for operations of type `insert` and `replace`. Also present for operations of type `update` if the
-    * user has specified `.updateLookup` for the `fullDocument` option in the `ChangeStreamOptions` used to create
+    /**
+    * Always present for operations of type `insert` and `replace`. Also present for operations of type `update` if
+    * the user has specified `.updateLookup` for the `fullDocument` option in the `ChangeStreamOptions` used to create
     * the `ChangeStream` that emitted this document.
     *
     * For operations of type `insert’ and `replace’, this key will contain the document being inserted, or the new
     * version of the document that is replacing the existing document, respectively.
     *
-    * For operations of type `update’, this key will contain a copy of the full version of the document from some point
-    * after the update occurred. If the document was deleted since the updated happened, it will be null.
+    * For operations of type `update’, this key will contain a copy of the full version of the document from some
+    * point after the update occurred. If the document was deleted since the updated happened, it will be nil.
     */
     public let fullDocument: T?
- }
+}
