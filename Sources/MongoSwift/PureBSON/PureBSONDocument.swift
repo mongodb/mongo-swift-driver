@@ -27,16 +27,6 @@ public struct PureBSONDocument {
             self[key] = value
         }
     }
-
-    public var keys: [String] {
-        // TODO: fill this in for real
-        let libbsonDocument = Document(fromBSON: self.data)
-        return libbsonDocument.keys
-    }
-
-    public func hasKey(_ key: String) -> Bool {
-        return self.keys.contains(key)
-    }
 }
 
 /// Public API
@@ -49,6 +39,17 @@ extension PureBSONDocument {
         self.updateLength()
     }
 
+    /**
+     * Allows setting values and retrieving values using subscript syntax.
+     * For example:
+     *  ```
+     *  let d = Document()
+     *  d["a"] = 1
+     *  print(d["a"]) // prints 1
+     *  ```
+     * A nil return suggests that the subscripted key does not exist in the `Document`. A true BSON null is returned as
+     * a `.null`.
+     */
     public subscript(key: String) -> BSON? {
         get {
             let libbsonDoc = Document(fromBSON: self.data)
@@ -74,6 +75,57 @@ extension PureBSONDocument {
             self.data.append(0)
             self.updateLength()
         }
+    }
+
+    /**
+     * An implementation identical to subscript(key: String), but offers the ability to choose a default value if the
+     * key is missing.
+     * For example:
+     *  ```
+     *  let d: Document = ["hello": "world"]
+     *  print(d["hello", default: "foo"]) // prints "world"
+     *  print(d["a", default: "foo"]) // prints "foo"
+     *  ```
+     */
+    public subscript(key: String, default defaultValue: @autoclosure () -> BSON) -> BSON {
+        return self[key] ?? defaultValue()
+    }
+
+    /**
+     * Allows setting values and retrieving values using dot-notation syntax.
+     * For example:
+     *  ```
+     *  let d = Document()
+     *  d.a = 1
+     *  print(d.a) // prints 1
+     *  ```
+     * A nil return suggests that the key does not exist in the `Document`. A true BSON null is returned as
+     * a `.null`.
+     *
+     * Only available in Swift 4.2+.
+     */
+    @available(swift 4.2)
+    public subscript(dynamicMember member: String) -> BSON? {
+        get {
+            return self[member]
+        }
+        set(newValue) {
+            self[member] = newValue
+        }
+    }
+
+    public var keys: [String] {
+        // TODO: fill this in for real
+        let libbsonDocument = Document(fromBSON: self.data)
+        return libbsonDocument.keys
+    }
+
+    public func hasKey(_ key: String) -> Bool {
+        return self.keys.contains(key)
+    }
+
+    public var rawBSON: Data {
+        return self.data
     }
 }
 
