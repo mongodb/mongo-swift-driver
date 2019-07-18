@@ -21,6 +21,7 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     public private(set) var resumeToken: ChangeStreamToken
 
     /// A `MongoClient` stored to make sure the source client stays valid until the change stream is destroyed.
+    // TODO: SWIFT-374: remove this property.
     private let client: MongoClient
 
     /// A `Connection` stored to make sure the client connection stays valid until the change stream is destroyed.
