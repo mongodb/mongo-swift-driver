@@ -14,6 +14,12 @@ public struct ChangeStreamToken: Codable {
     }
 }
 
+extension ChangeStreamToken: Equatable {
+    public static func == (lhs: ChangeStreamToken, rhs: ChangeStreamToken) -> Bool {
+        return lhs.resumeToken == rhs.resumeToken
+    }
+}
+
 /// A MongoDB ChangeStream.
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/
 public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
