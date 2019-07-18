@@ -85,11 +85,17 @@ final class ChangeStreamTest: MongoSwiftTestCase {
             expect(res1?.operationType).to(equal(.insert))
             expect(res1?.fullDocument?["a"]).to(bsonEqual(1))
 
+            // test that the resumeToken is updated
+            expect(changeStream.resumeToken).to(equal(res1?._id))
+
             // test that the change stream contains a change document for the `drop` operation.
             try db.drop()
             let res2 = changeStream.next()
             expect(res2).toNot(beNil())
             expect(res2?.operationType).to(equal(.drop))
+
+            // test that the resumeToken is updated
+            expect(changeStream.resumeToken).to(equal(res2?._id))
         }
     }
 
@@ -133,6 +139,9 @@ final class ChangeStreamTest: MongoSwiftTestCase {
             expect(res1?.operationType).to(equal(.insert))
             expect(res1?.fullDocument?["x"]).to(bsonEqual(1))
 
+            // test that the resumeToken is updated
+            expect(changeStream.resumeToken).to(equal(res1?._id))
+
             try coll.updateOne(filter: ["x": 1], update: ["$set": ["x": 2] as Document], session: session)
             let res2 = changeStream.next()
 
@@ -141,11 +150,17 @@ final class ChangeStreamTest: MongoSwiftTestCase {
             expect(res2?.operationType).to(equal(.update))
             expect(res2?.fullDocument?["x"]).to(bsonEqual(2))
 
+            // test that the resumeToken is updated
+            expect(changeStream.resumeToken).to(equal(res2?._id))
+
             // test that the change stream contains a change document for the `find` operation.
             try coll.findOneAndDelete(["x": 2], session: session)
             let res3 = changeStream.next()
             expect(res3).toNot(beNil())
             expect(res3?.operationType).to(equal(.delete))
+
+            // test that the resumeToken is updated
+            expect(changeStream.resumeToken).to(equal(res3?._id))
         }
     }
 }
