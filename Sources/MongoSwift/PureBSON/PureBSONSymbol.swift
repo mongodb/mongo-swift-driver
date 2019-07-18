@@ -24,8 +24,8 @@ extension PureBSONSymbol: PureBSONValue {
 
     internal var bson: BSON { return .symbol(self) }
 
-    internal init(from data: Data) throws {
-        self.stringValue = try String(from: data)
+    internal init(from data: inout Data) throws {
+        self.stringValue = try String(from: &data)
     }
 
     internal func toBSON() -> Data {

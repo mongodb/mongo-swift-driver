@@ -740,7 +740,7 @@ private class PureBSONMutableArray: PureBSONValue {
 
     init() {}
 
-    internal required init(from data: Data) throws {
+    internal required init(from data: inout Data) throws {
         fatalError("This method should not be called")
     }
 
@@ -800,7 +800,7 @@ private class PureBSONMutableDictionary: PureBSONValue {
 
     init() {}
 
-    internal required init(from data: Data) throws {
+    internal required init(from data: inout Data) throws {
         throw RuntimeError.internalError(message: "mutable dict init")
     }
 

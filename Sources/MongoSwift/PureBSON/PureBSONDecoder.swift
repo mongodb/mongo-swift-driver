@@ -156,7 +156,8 @@ public class PureBSONDecoder {
      * - Throws: `DecodingError` if the BSON data is corrupt or if any value throws an error during decoding.
      */
     public func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
-        return try self.decode(type, from: try PureBSONDocument(from: data))
+        var data = data
+        return try self.decode(type, from: try PureBSONDocument(from: &data))
     }
 
     /**

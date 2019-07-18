@@ -177,18 +177,15 @@ extension BSON: Codable {
 }
 
 internal protocol PureBSONValue: Codable {
-    init(from data: Data) throws
+    init(from data: inout Data) throws
     func toBSON() -> Data
     var bson: BSON { get }
     static var bsonType: BSONType { get }
 }
 
 extension PureBSONValue where Self: ExpressibleByIntegerLiteral {
-    init(from data: Data) throws {
-        guard data.count == MemoryLayout<Self>.size else {
-            throw RuntimeError.internalError(message: "wrong buffer size")
-        }
-        self = try readInteger(from: data)
+    init(from data: inout Data) throws {
+        self = try readInteger(from: &data)
     }
 }
 
@@ -203,20 +200,25 @@ extension String: PureBSONValue {
 
     internal var bson: BSON { return .string(self) }
 
-    internal init(from data: Data) throws {
-        let s = try readString(from: data)
-
-        guard data.count == s.utf8.count + 4 else {
-            throw RuntimeError.internalError(message: "extra data in String buffer")
-        }
-
-        self = s
+    internal init(from data: inout Data) throws {
+        self = try readString(from: &data)
     }
 
-    /// Given utf8-encoded `Data`, reads from the start up to the first null byte and constructs a String from it
-    internal init?(cStringData: Data) {
+    /// Given utf8-encoded `Data`, reads from the start up to the first null byte and constructs a String from it.
+    /// Mutates `cStringData` to remove the parsed data from the start.
+    internal init(cStringData: inout Data) throws {
+        guard cStringData.count >= 1 else {
+            throw RuntimeError.internalError(message: "Expected to get at least 1 byte, got \(cStringData.count)")
+        }
         let bytes = cStringData.prefix { $0 != 0 }
-        self.init(bytes: bytes, encoding: .utf8)
+        guard bytes.count < cStringData.count else {
+            throw RuntimeError.internalError(message: "cstring buffer missing null byte")
+        }
+        cStringData = cStringData[(cStringData.startIndex + bytes.count + 1)...]
+        guard let str = String(bytes: bytes, encoding: .utf8) else {
+            throw RuntimeError.internalError(message: "invalid UTF-8 data")
+        }
+        self = str
     }
 
     internal func toBSON() -> Data {
@@ -240,9 +242,9 @@ extension Bool: PureBSONValue {
 
     internal var bson: BSON { return .bool(self) }
 
-    internal init(from data: Data) throws {
-        guard data.count == 1 else {
-            throw RuntimeError.internalError(message: "Expected to get 1 byte, got \(data.count)")
+    internal init(from data: inout Data) throws {
+        guard data.count >= 1 else {
+            throw RuntimeError.internalError(message: "Expected to get at least 1 byte, got \(data.count)")
         }
         switch data[0] {
         case 0:
@@ -252,6 +254,8 @@ extension Bool: PureBSONValue {
         default:
             throw InvalidBSONError("Unable to initialize Bool from byte \(data[0])")
         }
+
+        data.removeFirst()
     }
 
     internal func toBSON() -> Data {
@@ -264,12 +268,16 @@ extension Double: PureBSONValue {
 
     internal var bson: BSON { return .double(self) }
 
-    public init(from data: Data) throws {
+    public init(from data: inout Data) throws {
+        guard data.count >= 8 else {
+            throw RuntimeError.internalError(message: "Expected to get at least 8 bytes, got \(data.count)")
+        }
         var value = 0.0
         _ = withUnsafeMutableBytes(of: &value) {
             data.copyBytes(to: $0)
         }
         self = value
+        data.removeFirst(8)
     }
 }
 
@@ -299,8 +307,8 @@ extension Date: PureBSONValue {
 
     internal var bson: BSON { return .date(self) }
 
-    internal init(from data: Data) throws {
-        self.init(msSinceEpoch: try Int64(from: data))
+    internal init(from data: inout Data) throws {
+        self.init(msSinceEpoch: try Int64(from: &data))
     }
 
     internal func toBSON() -> Data {
@@ -313,8 +321,8 @@ extension Array: PureBSONValue where Element == BSON {
 
     internal var bson: BSON { return .array(self) }
 
-    internal init(from data: Data) throws {
-        let doc = try PureBSONDocument(from: data)
+    internal init(from data: inout Data) throws {
+        let doc = try PureBSONDocument(from: &data)
 
         var arr: [BSON] = []
         for (i, key) in doc.keys.enumerated() {
@@ -340,27 +348,31 @@ extension Array: PureBSONValue where Element == BSON {
 }
 
 /// Reads a `String` according to the "string" non-terminal of the BSON spec.
-internal func readString(from data: Data) throws -> String {
-    let length = try Int32(from: data[0..<4])
-
-    guard data.count >= length + 4 && data[3 + Int(length)] == 0 else {
+internal func readString(from data: inout Data) throws -> String {
+    let length = Int(try Int32(from: &data))
+    guard data.count >= length && data[data.startIndex + length - 1] == 0 else {
         throw RuntimeError.internalError(message: "invalid buffer")
     }
 
-    return data.withUnsafeBytes { (ptr: UnsafePointer<UInt8>) -> String in
+    let str = data.withUnsafeBytes { (ptr: UnsafePointer<UInt8>) -> String in
         String(cString: ptr)
     }
+
+    data.removeFirst(str.utf8.count + 1)
+    return str
 }
 
 /// Reads an integer type from the data. Throws if buffer is too small.
-internal func readInteger<T: ExpressibleByIntegerLiteral>(from data: Data) throws -> T {
-    guard data.count >= MemoryLayout<T>.size else {
+internal func readInteger<T: ExpressibleByIntegerLiteral>(from data: inout Data) throws -> T {
+    let size = MemoryLayout<T>.size
+    guard data.count >= size else {
         throw RuntimeError.internalError(message: "Buffer not large enough to read \(T.self) from")
     }
     var value: T = 0
     _ = withUnsafeMutableBytes(of: &value) {
         data.copyBytes(to: $0)
     }
+    data.removeFirst(size)
     return value
 }
 

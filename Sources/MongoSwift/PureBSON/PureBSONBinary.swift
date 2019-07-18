@@ -66,23 +66,22 @@ extension PureBSONBinary: PureBSONValue {
 
     internal var bson: BSON { return .binary(self) }
 
-    internal init(from data: Data) throws {
+    internal init(from data: inout Data) throws {
         guard data.count >= 5 else {
-            throw RuntimeError.internalError(message: "binary data must be at least 5 bytes for length and subtype")
+            throw RuntimeError.internalError(message: "expected to get at least 5 bytes, got \(data.count)")
         }
 
-        let length = try Int32(from: data[0...4])
+        let length = Int(try Int32(from: &data))
 
         guard let sub = Subtype(rawValue: data[4]) else {
             throw RuntimeError.internalError(message: "invalid subtype: \(data[0])")
         }
 
-        guard length + 1 + 4 == data.count else {
-            throw RuntimeError.internalError(message: "buffer not sized correctly")
-        }
+        data.removeFirst()
 
         self.subtype = sub
-        self.data = data.subdata(in: 5..<(5 + Int(length)))
+        self.data = data.subdata(in: data.startIndex..<(data.startIndex + length))
+        data.removeFirst(length)
     }
 
     internal func toBSON() -> Data {

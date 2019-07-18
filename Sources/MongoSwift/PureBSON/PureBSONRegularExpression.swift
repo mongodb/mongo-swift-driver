@@ -30,25 +30,13 @@ extension PureBSONRegularExpression: PureBSONValue {
 
     internal var bson: BSON { return .regex(self) }
 
-    internal init(from data: Data) throws {
-        guard !data.isEmpty else {
-            throw RuntimeError.internalError(message: "empty buffer provided to regex initializer")
+    internal init(from data: inout Data) throws {
+        guard data.count >= 2 else {
+            throw RuntimeError.internalError(message: "expected to get at least 2 bytes, got \(data.count)")
         }
 
-        // Check that 2 null bytes are in the buffer and that the buffer is null terminated.
-        guard data.filter({ $0 == 0 }).count == 2 && data.last ?? 1 == 0 else {
-            throw RuntimeError.internalError(message: "improperly formatted regex BSON")
-        }
-
-        let pattern = data.withUnsafeBytes { (ptr: UnsafePointer<UInt8>) -> String in
-            String(cString: ptr)
-        }
-
-        let options = data[(pattern.utf8.count + 1)...].withUnsafeBytes { (ptr: UnsafePointer<UInt8>) -> String in
-            String(cString: ptr)
-        }
-
-        self.init(pattern: pattern, options: options)
+        self.pattern = try String(cStringData: &data)
+        self.options = try String(cStringData: &data)
     }
 
     internal func toBSON() -> Data {

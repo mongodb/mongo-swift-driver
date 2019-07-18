@@ -11,9 +11,5 @@ extension PureBSONMinKey: PureBSONValue {
         return Data()
     }
 
-    internal init(from data: Data) throws {
-        guard data.isEmpty else {
-            throw RuntimeError.internalError(message: "minKey buffer must be empty")
-        }
-    }
+    internal init(from data: inout Data) throws {}
 }

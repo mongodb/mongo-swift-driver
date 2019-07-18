@@ -4,7 +4,7 @@ import Foundation
 public struct PureBSONDocument {
     internal var data: Data
 
-    private var byteLength: Int32 {
+    internal var byteCount: Int32 {
         get {
             return Int32(self.data.count)
         }
@@ -16,7 +16,7 @@ public struct PureBSONDocument {
     }
 
     private mutating func updateLength() {
-        self.byteLength = Int32(self.data.count)
+        self.byteCount = Int32(self.data.count)
     }
 
     internal init(elements: [(String, BSON)]) {
@@ -61,51 +61,6 @@ extension PureBSONDocument {
                 fatalError("couldn't cast value to PureBSONValue")
             }
             return asPureBSON.bson
-
-
-            // guard self.byteLength > 5 else {
-            //     return nil
-            // }
-
-            // // first byte of the first ename.
-            // var idx = 5
-            // while true {
-            //     // we've reached the end of the doc.
-            //     if idx >= self.byteLength - 1 {
-            //         return nil
-            //     }
-
-            //     // read the next key.
-            //     let keyName = String(cStringData: self.data[idx...])
-            //     guard keyName == key else {
-            //         let bsonType = self.data[idx - 1]
-            //         idx += keyName.utf.count + 1
-            //         switch bsonType {
-            //         // undefined, null, minkey, maxkey are 0 bytes
-            //         case 0x06, 0x0A, 0xFF, 0x7F:
-            //             idx += 0
-            //         // boolean
-            //         case 0x08:
-            //             idx += 1
-            //         // int32
-            //         case 0x10:
-            //             idx += 4
-            //         // double, int64, uint64 are 8 bytes
-            //         case 0x01, 0x09, 0x11:
-            //             idx += 8
-            //         // string, document, array
-            //         case 0x02, 0x03, 0x04:
-            //             idx += 0 // todo get len
-            //         // binary
-            //         case 0x05:
-            //             idx += 0 // get binsry len
-
-            //         }
-            //     }
-
-            //     // read value out here
-            //     return nil
-            // }
         }
         set(newValue) {
             guard let value = newValue else {
@@ -133,9 +88,15 @@ extension PureBSONDocument: PureBSONValue {
 
     internal var bson: BSON { return .document(self) }
 
-    internal init(from data: Data) throws {
+    internal init(from data: inout Data) throws {
+        guard data.count >= 5 else {
+            throw RuntimeError.internalError(message: "expected to get at least 5 bytes, got \(data.count)")
+        }
         // should we do any validation here?
-        self.data = data
+        let copy = data
+        let length = Int(try Int32(from: &data))
+        self.data = copy.subdata(in: copy.startIndex..<(copy.startIndex + length))
+        data.removeFirst(length - 4)
     }
 
     internal func toBSON() -> Data {

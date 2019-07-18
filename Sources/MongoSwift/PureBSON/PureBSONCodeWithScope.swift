@@ -19,16 +19,16 @@ extension PureBSONCodeWithScope: PureBSONValue {
 
     internal var bson: BSON { return .codeWithScope(self) }
 
-    internal init(from data: Data) throws {
-        let length: Int = try readInteger(from: data)
-        guard data.count == 4 + length else {
-            throw RuntimeError.internalError(message: "buffer not sized correctly for CodeWithScope")
+    internal init(from data: inout Data) throws {
+        let length: Int = try readInteger(from: &data)
+        guard data.count >= 4 else {
+            throw RuntimeError.internalError(message: "Expected to get at least \(4 + length) bytes, gpt \(data.count)")
         }
-        let code = try readString(from: data)
+        let code = try readString(from: &data)
 
         var scope: PureBSONDocument?
         if length > code.utf8.count + 4 {
-            scope = try PureBSONDocument(from: data[(code.utf8.count + 4)...])
+            scope = try PureBSONDocument(from: &data)
         }
 
         self.init(code: code, scope: scope)

@@ -78,14 +78,13 @@ extension PureBSONObjectId: PureBSONValue {
 
     internal var bson: BSON { return .objectId(self) }
 
-    internal init(from data: Data) throws {
-        self.data = data
-        // first four bytes are the timestamp.
-        var timestamp: UInt32 = 0
-        _ = withUnsafeMutableBytes(of: &timestamp) {
-            data[0..<4].copyBytes(to: $0)
+    internal init(from data: inout Data) throws {
+        guard data.count >= 12 else {
+            throw RuntimeError.internalError(message: "expected to get at least 12 bytes, got \(data.count)")
         }
-        self.timestamp = timestamp
+        self.data = data.subdata(in: 0..<12)
+        self.timestamp = try readInteger(from: &data)
+        data.removeFirst(8)
     }
 
     internal func toBSON() -> Data {

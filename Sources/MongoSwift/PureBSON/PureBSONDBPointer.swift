@@ -24,9 +24,12 @@ extension PureBSONDBPointer: PureBSONValue {
 
     internal var bson: BSON { return .dbPointer(self) }
 
-    internal init(from data: Data) throws {
-        let ref = try readString(from: data)
-        let id = try PureBSONObjectId(from: data[(ref.utf8.count + 4)...])
+    internal init(from data: inout Data) throws {
+        guard data.count >= 5 + 12 else {
+            throw RuntimeError.internalError(message: "expected to get at least 17 bytes, got \(data.count)")
+        }
+        let ref = try readString(from: &data)
+        let id = try PureBSONObjectId(from: &data)
         self.init(ref: ref, id: id)
     }
 

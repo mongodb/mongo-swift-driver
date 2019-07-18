@@ -26,22 +26,13 @@ extension PureBSONTimestamp: PureBSONValue {
 
     internal var bson: BSON { return .timestamp(self) }
 
-    internal init(from data: Data) throws {
-        guard data.count == 8 else {
-            throw RuntimeError.internalError(message: "Timestamp buffer not 8 bytes")
+    internal init(from data: inout Data) throws {
+        guard data.count >= 8 else {
+            throw RuntimeError.internalError(message: "expected to get at least 8 bytes, got \(data.count)")
         }
 
-        var timestamp: UInt32 = 0
-        _ = withUnsafeMutableBytes(of: &timestamp) {
-            data[0..<4].copyBytes(to: $0)
-        }
-
-        var increment: UInt32 = 0
-        _ = withUnsafeMutableBytes(of: &increment) {
-            data[4...].copyBytes(to: $0)
-        }
-
-        self.init(timestamp: timestamp, inc: increment)
+        self.timestamp = try readInteger(from: &data)
+        self.increment = try readInteger(from: &data)
     }
 
     internal func toBSON() -> Data {
