@@ -17,22 +17,25 @@ public struct ChangeStreamToken: Codable {
 /// A MongoDB ChangeStream.
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/
 public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
-    /// A `ChangeStreamToken` used for manually resuming a change stream.
+    // A `ChangeStreamToken` used for manually resuming a change stream.
     public private(set) var resumeToken: ChangeStreamToken
 
-    /// A `MongoClient` stored to make sure the source client stays valid until the change stream is destroyed.
+    // A `MongoClient` stored to make sure the source client stays valid until the change stream is destroyed.
     private let client: MongoClient
 
-    /// A `ClientSession` stored to make sure the session stays valid until the change stream is destroyed.
+    // A `Connection` stored to make sure the client connection stays valid until the change stream is destroyed.
+    private let connection: Connection
+
+    // A `ClientSession` stored to make sure the session stays valid until the change stream is destroyed.
     private let session: ClientSession?
 
-    /// A reference to the `mongoc_change_stream_t` pointer.
+    // A reference to the `mongoc_change_stream_t` pointer.
     private let changeStream: OpaquePointer
 
-    /// Decoder for decoding documents into type `T`.
+    // Decoder for decoding documents into type `T`.
     private let decoder: BSONDecoder
 
-    /// Used for storing Swift errors.
+    // Used for storing Swift errors.
     private var swiftError: Error?
 
     /// The error that occurred while iterating the change stream, if one exists. This should be used to check
@@ -135,21 +138,24 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
      */
     internal init(stealing changeStream: OpaquePointer,
                   client: MongoClient,
+                  connection: Connection,
                   session: ClientSession? = nil,
                   decoder: BSONDecoder) throws {
-        self.changeStream = changeStream
-        self.session = session
-        self.client = client
-        self.decoder = decoder
         self.resumeToken = ChangeStreamToken(resumeToken: [])
+        self.client = client
+        self.connection = connection
+        self.session = session
+        self.changeStream = changeStream
+        self.decoder = decoder
 
         if let err = self.error {
             throw err
         }
     }
 
-    /// Cleans up internal state.
-    deinit {
-        mongoc_change_stream_destroy(self.changeStream)
-    }
+     /// Cleans up internal state.
+     deinit {
+         mongoc_change_stream_destroy(self.changeStream)
+         self.client.connectionPool.checkIn(self.connection)
+     }
 }
