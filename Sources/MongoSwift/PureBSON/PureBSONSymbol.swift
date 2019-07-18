@@ -2,7 +2,7 @@ import Foundation
 
 /// A struct to represent the deprecated Symbol type.
 /// Symbols cannot be instantiated, but they can be read from existing documents that contain them.
-public struct PureBSONSymbol: CustomStringConvertible, Codable {
+internal struct PureBSONSymbol: CustomStringConvertible, Codable {
     public var description: String {
         return stringValue
     }
@@ -22,7 +22,7 @@ extension PureBSONSymbol: Hashable {}
 extension PureBSONSymbol: PureBSONValue {
     internal static var bsonType: BSONType { return .symbol }
 
-    internal var bson: BSON { return .symbol(self) }
+    internal var bson: BSON { return .symbol(self.stringValue) }
 
     internal init(from data: inout Data) throws {
         self.stringValue = try String(from: &data)

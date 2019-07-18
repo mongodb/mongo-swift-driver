@@ -45,3 +45,44 @@ extension PureBSONRegularExpression: PureBSONValue {
         return data
     }
 }
+
+// A mapping of regex option characters to their equivalent `NSRegularExpression` option.
+// note that there is a BSON regexp option 'l' that `NSRegularExpression`
+// doesn't support. The flag will be dropped if BSON containing it is parsed,
+// and it will be ignored if passed into `optionsFromString`.
+private let regexOptsMap: [Character: NSRegularExpression.Options] = [
+    "i": .caseInsensitive,
+    "m": .anchorsMatchLines,
+    "s": .dotMatchesLineSeparators,
+    "u": .useUnicodeWordBoundaries,
+    "x": .allowCommentsAndWhitespace
+]
+
+/// An extension of `NSRegularExpression` to allow it to be initialized from a `RegularExpression` `BSONValue`.
+extension NSRegularExpression {
+    /// Convert a string of options flags into an equivalent `NSRegularExpression.Options`
+    internal static func optionsFromString(_ stringOptions: String) -> NSRegularExpression.Options {
+        var optsObj: NSRegularExpression.Options = []
+        for o in stringOptions {
+            if let value = regexOptsMap[o] {
+                optsObj.update(with: value)
+            }
+        }
+        return optsObj
+    }
+
+    /// Convert this instance's options object into an alphabetically-sorted string of characters
+    internal var stringOptions: String {
+        var optsString = ""
+        for (char, o) in regexOptsMap { if options.contains(o) { optsString += String(char) } }
+        return String(optsString.sorted())
+    }
+
+    /// Initializes a new `NSRegularExpression` with the pattern and options of the provided `RegularExpression`.
+    /// Note: `NSRegularExpression` does not support the `l` locale dependence option, so it will
+    /// be omitted if set on the provided `RegularExpression`.
+    public convenience init(fromPure regex: PureBSONRegularExpression) throws {
+        let opts = NSRegularExpression.optionsFromString(regex.options)
+        try self.init(pattern: regex.pattern, options: opts)
+    }
+}
