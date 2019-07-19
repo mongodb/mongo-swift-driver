@@ -47,7 +47,7 @@ extension PureBSONDocument {
 
         var lenBytes = data.subdata(in: 0..<4)
         let length = try Int32(from: &lenBytes)
-        
+
         guard length == data.count else {
             throw InvalidBSONError("Document length is encoded as \(length) bytes, but provided data is \(data.count) bytes")
         }
@@ -73,16 +73,10 @@ extension PureBSONDocument {
      */
     public subscript(key: String) -> BSON? {
         get {
-            let libbsonDoc = Document(fromBSON: self.data)
-            guard let value = libbsonDoc[key] else { return nil }
-            // Int doesn't conform to PureBSONValue
-            if let intVal = value as? Int {
-                return .int64(Int64(intVal))
+            for (k, v) in self where k == key {
+                return v
             }
-            guard let asPureBSON = value as? PureBSONValue else {
-                fatalError("couldn't cast value to PureBSONValue")
-            }
-            return asPureBSON.bson
+            return nil
         }
         set(newValue) {
             guard let value = newValue else {
@@ -136,9 +130,7 @@ extension PureBSONDocument {
     }
 
     public var keys: [String] {
-        // TODO: fill this in for real
-        let libbsonDocument = Document(fromBSON: self.data)
-        return libbsonDocument.keys
+        return self.map { $0.0 }
     }
 
     public func hasKey(_ key: String) -> Bool {
