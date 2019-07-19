@@ -50,11 +50,11 @@ public struct ChangeStreamDocument<T: Codable>: Codable {
     public let ns: MongoNamespace
 
     /**
-    * Only present for options of type `insert`, `update`, `replace` and `delete`. For unsharded collections this
-    * contains a single field, _id, with the value of the _id of the document updated. For sharded collections, this
-    * will contain all the components of the shard key in order, followed by the _id if the _id isn’t part of the
-    * shard key.
-    */
+     * Only present for options of type `insert`, `update`, `replace` and `delete`. For unsharded collections this
+     * contains a single field, _id, with the value of the _id of the document updated. For sharded collections, this
+     * will contain all the components of the shard key in order, followed by the _id if the _id isn’t part of the
+     * shard key.
+     */
     public let documentKey: Document?
 
     /// An `UpdateDescription` containing updated and removed fields in this operation. Only present for operations of
@@ -62,15 +62,15 @@ public struct ChangeStreamDocument<T: Codable>: Codable {
     public let updateDescription: UpdateDescription?
 
     /**
-    * Always present for operations of type `insert` and `replace`. Also present for operations of type `update` if
-    * the user has specified `.updateLookup` for the `fullDocument` option in the `ChangeStreamOptions` used to create
-    * the `ChangeStream` that emitted this document.
-    *
-    * For operations of type `insert’ and `replace’, this key will contain the document being inserted, or the new
-    * version of the document that is replacing the existing document, respectively.
-    *
-    * For operations of type `update’, this key will contain a copy of the full version of the document from some
-    * point after the update occurred. If the document was deleted since the updated happened, it will be nil.
-    */
+     * Always present for operations of type `insert` and `replace`. Also present for operations of type `update` if
+     * the user has specified `.updateLookup` for the `fullDocument` option in the `ChangeStreamOptions` used to create
+     * the `ChangeStream` that emitted this document.
+     *
+     * For operations of type `insert’ and `replace’, this key will contain the document being inserted, or the new
+     * version of the document that is replacing the existing document, respectively.
+     *
+     * For operations of type `update’, this key will contain a copy of the full version of the document from some
+     * point after the update occurred. If the document was deleted since the updated happened, it will be nil.
+     */
     public let fullDocument: T?
 }
