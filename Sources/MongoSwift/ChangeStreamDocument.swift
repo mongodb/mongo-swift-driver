@@ -44,7 +44,7 @@ public struct ChangeStreamDocument<T: Codable>: Codable {
 
     /// An opaque token for use when resuming an interrupted change stream.
     /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/#resume-a-change-stream
-    public let _id: ChangeStreamToken
+    public let _id: ResumeToken
 
     /// A document containing the database and collection names in which this change happened.
     public let ns: MongoNamespace
