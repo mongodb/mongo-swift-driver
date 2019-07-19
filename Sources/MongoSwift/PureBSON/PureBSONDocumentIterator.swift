@@ -18,6 +18,16 @@ public struct PureBSONDocumentIterator: IteratorProtocol {
     }
 
     public mutating func next() -> (String, BSON)? {
+        do {
+            return try self.nextOrError()
+        } catch {
+            fatalError("error reading next value from iterator: \(error)")
+        }
+    }
+
+    /// Attempts to get the next value in the iterator, or throws an error if
+    /// the BSON is invalid/unparseable.
+    internal mutating func nextOrError() throws -> (String, BSON)? {
         let first = self.data.removeFirst()
 
         // We hit the null byte at the end of the document.
@@ -25,21 +35,16 @@ public struct PureBSONDocumentIterator: IteratorProtocol {
             return nil
         }
 
-
         guard let bsonType = BSONType(rawValue: UInt32(first)) else {
-            fatalError("unrecognized BSON type \(first)")
+            throw InvalidBSONError("unrecognized BSON type \(first)")
         }
         guard let swiftType = typeMap[bsonType] else {
-            fatalError("unsupported BSON type \(bsonType)")
+            throw InvalidBSONError("unsupported BSON type \(bsonType)")
         }
 
-        do {
-            let key = try String(cStringData: &self.data)
-            let value = try swiftType.init(from: &self.data)
-            return (key, value.bson)
-        } catch {
-            fatalError("error initializing BSON type \(bsonType): \(error)")
-        }
+        let key = try String(cStringData: &self.data)
+        let value = try swiftType.init(from: &self.data)
+        return (key, value.bson)
     }
 }
 

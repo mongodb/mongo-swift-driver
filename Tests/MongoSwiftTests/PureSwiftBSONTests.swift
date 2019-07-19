@@ -27,6 +27,121 @@ final class PureSwiftBSONTests: MongoSwiftTestCase {
                                         "minkey": .minKey,
                                         "maxkey": .maxKey,
                                     ]
-        let values = Array(doc)
+        // test we can convert to an array successfully
+        _ = Array(doc)
     }
+
+    func testBSONCorpus() throws {
+        let testFilesPath = MongoSwiftTestCase.specsPath + "/bson-corpus/tests"
+        var testFiles = try FileManager.default.contentsOfDirectory(atPath: testFilesPath)
+        testFiles = testFiles.filter { $0.hasSuffix(".json") }
+
+        for fileName in testFiles {
+            if fileName.contains("decimal128") { continue }
+            if fileName != "code.json" { continue }
+            print("\n\n\nfilename: \(fileName)")
+
+            let testFilePath = URL(fileURLWithPath: "\(testFilesPath)/\(fileName)")
+            let testFileData = try Data(contentsOf: testFilePath)
+            let testCase = try JSONDecoder().decode(BSONCorpusTestFile.self, from: testFileData)
+
+            if let valid = testCase.valid {
+                for v in valid {
+                    print(v.description)
+                    let canonicalData = Data(hex: v.canonicalBSON)!
+
+                    // native_to_bson( bson_to_native(cB) ) = cB
+                    let canonicalDoc = PureBSONDocument(canonicalData)
+                    let canonicalDocAsArray = try canonicalDoc.asArray()
+                    let roundTrippedCanonicalDoc = PureBSONDocument(fromArray: canonicalDocAsArray)
+                    expect(roundTrippedCanonicalDoc).to(equal(canonicalDoc))
+
+                    if let db = v.degenerateBSON {
+                        let degenerateData = Data(hex: db)!
+                        let degenerateDoc = PureBSONDocument(degenerateData)
+                        let degenerateDocAsArray = try degenerateDoc.asArray()
+                        let roundTrippedDegenerateDoc = PureBSONDocument(fromArray: degenerateDocAsArray)
+                        expect(roundTrippedDegenerateDoc).to(equal(canonicalDoc))
+                    }
+                }
+            }
+
+            if let decodeErrors = testCase.decodeErrors {
+                for error in decodeErrors {
+                    let badData = Data(hex: error.bson)!
+                    let badDoc = PureBSONDocument(badData)
+                    expect(try badDoc.asArray()).to(throwError())
+                }
+            }
+
+            // todo: test parse errors once decimal128 is supported
+
+            // todo: test parse errors from top.json once extJSON is supported
+        }
+    }
+}
+
+extension PureBSONDocument {
+    func asArray() throws -> [(String, BSON)] {
+        var out = [(String, BSON)]()
+        var iter = self.makeIterator()
+        while let next = try iter.nextOrError() {
+            out.append(next)
+        }
+        return out
+    }
+
+    init(fromArray array: [(String, BSON)]) {
+        var out = PureBSONDocument()
+        for (key, value) in array {
+            out[key] = value
+        }
+        self = out
+    }
+}
+
+struct BSONCorpusTestFile: Codable {
+    let description: String
+    let bsonType: String
+    let testKey: String?
+    let valid: [BSONCorpusTestCase]?
+    let decodeErrors: [BSONCorpusDecodeError]?
+    let parseErrors: [BSONCorpusParseError]?
+
+    private enum CodingKeys: String, CodingKey {
+        case description,
+            bsonType = "bson_type",
+            testKey = "test_key",
+            valid,
+            decodeErrors,
+            parseErrors
+    }
+}
+
+struct BSONCorpusTestCase: Codable {
+    let description: String
+    let canonicalBSON: String
+    let degenerateBSON: String?
+    let relaxedExtJSON: String?
+    let canonicalExtJSON: String
+    let convertedExtJSON: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case description,
+            canonicalBSON = "canonical_bson",
+            degenerateBSON = "degenerate_bson",
+            relaxedExtJSON = "relaxed_extjson",
+            canonicalExtJSON = "canonical_extjson",
+            convertedExtJSON = "converted_extjson"
+    }
+}
+
+struct BSONCorpusDecodeError: Codable {
+    let description: String
+    let bson: String
+}
+
+struct BSONCorpusParseError: Codable {
+    let description: String
+    let string: String
 }

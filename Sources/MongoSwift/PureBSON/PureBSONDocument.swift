@@ -27,6 +27,11 @@ public struct PureBSONDocument {
             self[key] = value
         }
     }
+
+    internal init(_ data: Data) {
+        // todo: should we do any validation here?
+        self.data = data
+    }
 }
 
 /// Public API
