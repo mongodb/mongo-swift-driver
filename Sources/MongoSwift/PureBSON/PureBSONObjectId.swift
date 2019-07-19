@@ -82,7 +82,7 @@ extension PureBSONObjectId: PureBSONValue {
         guard data.count >= 12 else {
             throw RuntimeError.internalError(message: "expected to get at least 12 bytes, got \(data.count)")
         }
-        self.data = data.subdata(in: 0..<12)
+        self.data = data.subdata(in: data.startIndex..<(data.startIndex + 12))
         self.timestamp = try readInteger(from: &data)
         data.removeFirst(8)
     }

@@ -36,14 +36,9 @@ extension PureBSONTimestamp: PureBSONValue {
     }
 
     internal func toBSON() -> Data {
-        var data = withUnsafeBytes(of: self.increment) { Data($0) }
-
-        withUnsafePointer(to: self.increment) {
-            $0.withMemoryRebound(to: UInt8.self, capacity: 4) { (ptr: UnsafePointer<UInt8>) in
-                data.append(ptr, count: 4)
-            }
-        }
-
+        var data = Data()
+        withUnsafeBytes(of: self.increment) { data += Data($0) }
+        withUnsafeBytes(of: self.timestamp) { data += Data($0) }
         return data
     }
 }

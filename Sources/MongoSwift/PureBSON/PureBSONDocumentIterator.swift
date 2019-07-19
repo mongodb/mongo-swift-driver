@@ -47,6 +47,7 @@ let typeMap: [BSONType: PureBSONValue.Type] = [
     .double: Double.self,
     .string: String.self,
     .document: PureBSONDocument.self,
+    .array: [BSON].self,
     .binary: PureBSONBinary.self,
     .undefined: PureBSONUndefined.self,
     .objectId: PureBSONObjectId.self,
@@ -55,7 +56,7 @@ let typeMap: [BSONType: PureBSONValue.Type] = [
     .null: PureBSONNull.self,
     .regularExpression: PureBSONRegularExpression.self,
     .dbPointer: PureBSONDBPointer.self,
-    .javascript: PureBSONCodeWithScope.self,
+    .javascript: PureBSONCode.self,
     .javascriptWithScope: PureBSONCodeWithScope.self,
     .symbol: PureBSONSymbol.self,
     .int32: Int32.self,
@@ -64,10 +65,6 @@ let typeMap: [BSONType: PureBSONValue.Type] = [
     .minKey: PureBSONMinKey.self,
     .maxKey: PureBSONMaxKey.self
 ]
-
-// guard self.byteLength > 5 else {
-//     return nil
-// }
 
 // // first byte of the first ename.
 // var idx = 5

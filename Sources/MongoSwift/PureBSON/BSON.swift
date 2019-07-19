@@ -15,6 +15,7 @@ public enum BSON {
     case dbPointer(PureBSONDBPointer)
     // code
     case symbol(PureBSONSymbol)
+    case code(PureBSONCode)
     case codeWithScope(PureBSONCodeWithScope)
     case int32(Int32)
     case timestamp(PureBSONTimestamp)
@@ -50,6 +51,8 @@ public enum BSON {
         case let .regex(v):
             return v
         case let .dbPointer(v):
+            return v
+        case let .code(v):
             return v
         case let .codeWithScope(v):
             return v
@@ -246,16 +249,15 @@ extension Bool: PureBSONValue {
         guard data.count >= 1 else {
             throw RuntimeError.internalError(message: "Expected to get at least 1 byte, got \(data.count)")
         }
-        switch data[0] {
+        let byte = data.removeFirst()
+        switch byte {
         case 0:
             self = false
         case 1:
             self = true
         default:
-            throw InvalidBSONError("Unable to initialize Bool from byte \(data[0])")
+            throw InvalidBSONError("Unable to initialize Bool from byte \(byte)")
         }
-
-        data.removeFirst()
     }
 
     internal func toBSON() -> Data {

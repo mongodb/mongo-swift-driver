@@ -8,18 +8,24 @@ final class PureSwiftBSONTests: MongoSwiftTestCase {
                                         "double": 1.0,
                                         "string": "hi",
                                         "doc": ["a": 1],
-                                        //"binary": .binary(try PureBSONBinary(data: Data([0, 0, 0, 0]), subtype: .generic))
+                                        "array": [1, 2],
+                                        "binary": .binary(try PureBSONBinary(data: Data([0, 0, 0, 0]), subtype: .generic)),
+                                        "undefined": .undefined,
+                                        "objectid": .objectId(PureBSONObjectId()),
+                                        "false": false,
+                                        "true": true,
+                                        "date": .date(Date()),
+                                        "null": .null,
+                                        "regex": .regex(PureBSONRegularExpression(pattern: "abc", options: "ix")),
+                                        "dbPointer": .dbPointer(PureBSONDBPointer(ref: "foo", id: PureBSONObjectId())),
+                                        "code": .code(PureBSONCode(code: "xyz")),
+                                        "codewscope": .codeWithScope(PureBSONCodeWithScope(code: "xyz", scope: ["a": 1])),
+                                        "int32": .int32(32),
+                                        "timestamp": .timestamp(PureBSONTimestamp(timestamp: UInt32(2), inc: UInt32(3))),
+                                        "int64": 64,
+                                        "minkey": .minKey,
+                                        "maxkey": .maxKey,
                                     ]
-        print(doc.data.hex)
-        print(doc.byteCount)
-        // print(doc["a"])
-        // print(doc["b"])
-
-        for (k, v) in doc {
-            print("key: \(k), value: \(v)")
-        }
+        let values = Array(doc)
     }
 }
-//     length     subtype    key        length      value  subtype    key      length        value  null
-//  [17 00 00 00]   [02]    [61 00] [02 00 00 00]  [61 00]   [02]   [62 00]  [02 00 00 00] [62 00] 00
-//   0  1   2  3      4      5   6    7  8  9 10    11 12     13     14 15    16 17 18 19   20 21  22

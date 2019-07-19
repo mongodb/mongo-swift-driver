@@ -1,14 +1,38 @@
 import Foundation
 
+public struct PureBSONCode: Equatable, Hashable, Codable {
+    /// A string containing Javascript code.
+    public let code: String
+
+    /// Initializes a `CodeWithScope`.
+    public init(code: String) {
+        self.code = code
+    }
+}
+
+extension PureBSONCode: PureBSONValue {
+    internal static var bsonType: BSONType { return .javascript }
+
+    internal var bson: BSON { return .code(self) }
+
+    internal init(from data: inout Data) throws {
+        self.code = try readString(from: &data)
+    }
+
+    internal func toBSON() -> Data {
+        return self.code.toBSON()
+    }
+}
+
 public struct PureBSONCodeWithScope: Equatable, Hashable, Codable {
     /// A string containing Javascript code.
     public let code: String
     /// An optional scope `Document` containing a mapping of identifiers to values,
     /// representing the context in which `code` should be evaluated.
-    public let scope: PureBSONDocument?
+    public let scope: PureBSONDocument
 
-    /// Initializes a `CodeWithScope` with an optional scope value.
-    public init(code: String, scope: PureBSONDocument? = nil) {
+    /// Initializes a `CodeWithScope`.
+    public init(code: String, scope: PureBSONDocument) {
         self.code = code
         self.scope = scope
     }
@@ -20,28 +44,20 @@ extension PureBSONCodeWithScope: PureBSONValue {
     internal var bson: BSON { return .codeWithScope(self) }
 
     internal init(from data: inout Data) throws {
-        let length: Int = try readInteger(from: &data)
-        guard data.count >= 4 else {
-            throw RuntimeError.internalError(message: "Expected to get at least \(4 + length) bytes, gpt \(data.count)")
-        }
-        let code = try readString(from: &data)
+        _ = try Int32(from: &data)
+        // guard data.count >= length - 4 else {
+        //     throw RuntimeError.internalError(message: "Expected to get at least \(length - 4) bytes, got \(data.count)")
+        // }
 
-        var scope: PureBSONDocument?
-        if length > code.utf8.count + 4 {
-            scope = try PureBSONDocument(from: &data)
-        }
+        self.code = try readString(from: &data)
+        self.scope = try PureBSONDocument(from: &data)
 
-        self.init(code: code, scope: scope)
     }
 
     internal func toBSON() -> Data {
-        let encodedScope = self.scope?.toBSON()
-        var length = Int32(4 + self.code.utf8.count + 1 + (encodedScope?.count ?? 0)).toBSON()
         let encodedCode = self.code.toBSON()
-        length.append(encodedCode)
-        if let encodedScope = encodedScope {
-            length.append(encodedScope)
-        }
-        return length
+        let encodedScope = scope.toBSON()
+        let byteLength = Int32(4 + encodedCode.count + encodedScope.count).toBSON()
+        return byteLength + encodedCode + encodedScope
     }
 }

@@ -73,11 +73,10 @@ extension PureBSONBinary: PureBSONValue {
 
         let length = Int(try Int32(from: &data))
 
-        guard let sub = Subtype(rawValue: data[4]) else {
-            throw RuntimeError.internalError(message: "invalid subtype: \(data[0])")
+        let subtypeByte = data.removeFirst()
+        guard let sub = Subtype(rawValue: subtypeByte) else {
+            throw RuntimeError.internalError(message: "invalid subtype: \(subtypeByte)")
         }
-
-        data.removeFirst()
 
         self.subtype = sub
         self.data = data.subdata(in: data.startIndex..<(data.startIndex + length))
