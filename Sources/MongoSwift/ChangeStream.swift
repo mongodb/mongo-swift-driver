@@ -2,7 +2,7 @@ import mongoc
 /// A token used for manually resuming a change stream. Pass this to the `resumeAfter` field of
 /// `ChangeStreamOptions` to resume or start a change stream where a previous one left off.
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/#resume-a-change-stream
-public struct ChangeStreamToken: Codable {
+public struct ChangeStreamToken: Codable, Equatable {
     private let resumeToken: Document
 
     internal init(resumeToken: Document) {
@@ -11,12 +11,6 @@ public struct ChangeStreamToken: Codable {
 
     public init(from decoder: Decoder) throws {
         self.resumeToken = try Document(from: decoder)
-    }
-}
-
-extension ChangeStreamToken: Equatable {
-    public static func == (lhs: ChangeStreamToken, rhs: ChangeStreamToken) -> Bool {
-        return lhs.resumeToken == rhs.resumeToken
     }
 }
 
