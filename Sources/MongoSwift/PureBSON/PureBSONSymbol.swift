@@ -24,6 +24,10 @@ extension PureBSONSymbol: PureBSONValue {
 
     internal var bson: BSON { return .symbol(self.stringValue) }
 
+    internal var canonicalExtJSON: String {
+        return "{ \"$symbol\": \(self.stringValue.canonicalExtJSON) }"
+    }
+
     internal init(from data: inout Data) throws {
         self.stringValue = try String(from: &data)
     }

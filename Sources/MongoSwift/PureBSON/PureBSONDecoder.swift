@@ -178,7 +178,7 @@ public class PureBSONDecoder {
         // {"$numberInt": "42"} is a JSON object and looks like an object type but is actually
         // a primitive type, Int32. so for simplicity, we just always assume wrapping is needed,
         // and pay a small performance penalty of decoding a few extra bytes.
-//        let wrapped = "{\"value\": \(json)}"
+//        let wrapped = "{ \"value\": \(json)}"
 //
 //        if let doc = try? Document(fromJSON: wrapped) {
 //            let s = try self.decode(DecodableWrapper<T>.self, from: doc)

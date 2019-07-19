@@ -7,6 +7,10 @@ extension PureBSONMaxKey: PureBSONValue {
 
     internal var bson: BSON { return .maxKey }
 
+    internal var canonicalExtJSON: String {
+        return "{ \"$maxKey\": 1 }"
+    }
+
     internal func toBSON() -> Data {
         return Data()
     }

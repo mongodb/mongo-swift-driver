@@ -725,7 +725,7 @@ extension _PureBSONEncoder: SingleValueEncodingContainer {
 private class PureBSONMutableArray: PureBSONValue {
     internal static var bsonType: BSONType { return .array }
     internal var bson: BSON { return .array(self.array.map { $0.bson }) }
-
+    internal let canonicalExtJSON: String = "unused"
     var array = [PureBSONValue]()
 
     fileprivate func add(_ value: PureBSONValue) {
@@ -762,8 +762,8 @@ private class PureBSONMutableArray: PureBSONValue {
 /// because it allows us to preserve Swift type information.
 private class PureBSONMutableDictionary: PureBSONValue {
     static var bsonType: BSONType { return .document }
-    var bson: BSON { return .document(self.asDocument()) }
-
+    internal var bson: BSON { return .document(self.asDocument()) }
+    internal let canonicalExtJSON: String = "unused"
     // rather than using a dictionary, do this so we preserve key orders
     var keys = [String]()
     var values = [PureBSONValue]()

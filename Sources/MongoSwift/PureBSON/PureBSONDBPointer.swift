@@ -3,6 +3,7 @@ import Foundation
 /// A struct to represent the deprecated DBPointer type.
 /// DBPointers cannot be instantiated, but they can be read from existing documents that contain them.
 public struct PureBSONDBPointer: Codable {
+    // TODO: update this to MongoNamespace
     /// Destination namespace of the pointer.
     public let ref: String
 
@@ -23,6 +24,9 @@ extension PureBSONDBPointer: PureBSONValue {
     internal static var bsonType: BSONType { return .dbPointer }
 
     internal var bson: BSON { return .dbPointer(self) }
+    internal var canonicalExtJSON: String {
+        return "{ \"$dbPointer\": { \"$ref\": \(self.ref.canonicalExtJSON), \"$id\": \(self.id.canonicalExtJSON) } }"
+    }
 
     internal init(from data: inout Data) throws {
         guard data.count >= 5 + 12 else {

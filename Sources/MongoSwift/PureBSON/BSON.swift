@@ -157,6 +157,14 @@ public enum BSON {
         }
     }
 
+    public var extJSON: String {
+        return self.bsonValue.extJSON
+    }
+
+    public var canonicalExtJSON: String {
+        return self.bsonValue.canonicalExtJSON
+    }
+
     internal var bsonValue: PureBSONValue {
         switch self {
         case .null:
@@ -315,11 +323,19 @@ internal protocol PureBSONValue: Codable {
     init(from data: inout Data) throws
     func toBSON() -> Data
     var bson: BSON { get }
+    var extJSON: String { get }
+    var canonicalExtJSON: String { get }
     static var bsonType: BSONType { get }
 }
 
+extension PureBSONValue {
+    internal var extJSON: String {
+        return self.canonicalExtJSON
+    }
+}
+
 extension PureBSONValue where Self: ExpressibleByIntegerLiteral {
-    init(from data: inout Data) throws {
+    internal init(from data: inout Data) throws {
         self = try readInteger(from: &data)
     }
 }
@@ -328,12 +344,18 @@ extension PureBSONValue where Self: Numeric {
     func toBSON() -> Data {
         return withUnsafeBytes(of: self) { Data($0) }
     }
+
+    internal var extJSON: String {
+        return String(describing: self)
+    }
 }
 
 extension String: PureBSONValue {
     internal static var bsonType: BSONType { return .string }
 
     internal var bson: BSON { return .string(self) }
+
+    internal var canonicalExtJSON: String { return "\"\(self)\"" }
 
     internal init(from data: inout Data) throws {
         self = try readString(from: &data)
@@ -377,6 +399,8 @@ extension Bool: PureBSONValue {
 
     internal var bson: BSON { return .bool(self) }
 
+    internal var canonicalExtJSON: String { return String(self) }
+
     internal init(from data: inout Data) throws {
         guard data.count >= 1 else {
             throw RuntimeError.internalError(message: "Expected to get at least 1 byte, got \(data.count)")
@@ -402,6 +426,10 @@ extension Double: PureBSONValue {
 
     internal var bson: BSON { return .double(self) }
 
+    internal var canonicalExtJSON: String {
+        return "{ \"$numberDouble\": \(String(self).canonicalExtJSON) }"
+    }
+
     public init(from data: inout Data) throws {
         guard data.count >= 8 else {
             throw RuntimeError.internalError(message: "Expected to get at least 8 bytes, got \(data.count)")
@@ -422,24 +450,52 @@ extension Int: PureBSONValue {
     internal static var bsonType: BSONType { return MemoryLayout<Int>.size == 4 ? .int32 : .int64 }
 
     internal var bson: BSON { return Int.bsonType == .int32 ? .int32(Int32(self)) : .int64(Int64(self)) }
+
+    internal var canonicalExtJSON: String {
+        return self.bson.bsonValue.canonicalExtJSON
+    }
 }
 
 extension Int32: PureBSONValue {
     internal static var bsonType: BSONType { return .int32 }
 
     internal var bson: BSON { return .int32(self) }
+
+    internal var canonicalExtJSON: String {
+        return "{ \"$numberInt\": \(String(self).canonicalExtJSON) }"
+    }
 }
 
 extension Int64: PureBSONValue {
     internal static var bsonType: BSONType { return .int64 }
 
+    internal var canonicalExtJSON: String {
+        return "{ \"$numberLong\": \(String(self).canonicalExtJSON) }"
+    }
+
     internal var bson: BSON { return .int64(self) }
 }
 
 extension Date: PureBSONValue {
+    // the maximum date that extJSON will format using iso8601 format
+    internal static let MAX_ISO_DATE = Date(msSinceEpoch: 253370782800) // January 1, 9999
+
     internal static var bsonType: BSONType { return .dateTime }
 
     internal var bson: BSON { return .date(self) }
+
+    internal var canonicalExtJSON: String {
+        return "{ \"$date\": \(self.msSinceEpoch.canonicalExtJSON) }"
+    }
+
+    internal var extJSON: String {
+        if #available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) {
+            if self < Date.MAX_ISO_DATE && self.timeIntervalSince1970 >= 0 {
+                return "{ \"$date\": \(PureBSONDecoder.iso8601Formatter.string(from: self).canonicalExtJSON) }"
+            }
+        }
+        return self.canonicalExtJSON
+    }
 
     internal init(from data: inout Data) throws {
         self.init(msSinceEpoch: try Int64(from: &data))
@@ -454,6 +510,14 @@ extension Array: PureBSONValue where Element == BSON {
     internal static var bsonType: BSONType { return .array }
 
     internal var bson: BSON { return .array(self) }
+
+    internal var canonicalExtJSON: String {
+        return "[\(self.map { $0.canonicalExtJSON }.joined(separator: ", "))]"
+    }
+
+    internal var extJSON: String {
+        return "[\(self.map { $0.extJSON }.joined(separator: ", "))]"
+    }
 
     internal init(from data: inout Data) throws {
         let doc = try PureBSONDocument(from: &data)

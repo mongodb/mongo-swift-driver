@@ -73,10 +73,7 @@ extension PureBSONDocument {
      */
     public subscript(key: String) -> BSON? {
         get {
-            for (k, v) in self where k == key {
-                return v
-            }
-            return nil
+            return self.first { k, _ in k == key }.map { _, v in v }
         }
         set(newValue) {
             guard let value = newValue else {
@@ -152,6 +149,14 @@ extension PureBSONDocument: PureBSONValue {
     internal static var bsonType: BSONType { return .document }
 
     internal var bson: BSON { return .document(self) }
+
+    internal var canonicalExtJSON: String {
+        return "{ " + self.map { k, v in "\(k.canonicalExtJSON): \(v.canonicalExtJSON)" }.joined(separator: ", ") + " }"
+    }
+
+    internal var extJSON: String {
+        return "{ " + self.map { k, v in "\(k.canonicalExtJSON): \(v.extJSON)" }.joined(separator: ", ") + " }"
+    }
 
     internal init(from data: inout Data) throws {
         guard data.count >= 5 else {

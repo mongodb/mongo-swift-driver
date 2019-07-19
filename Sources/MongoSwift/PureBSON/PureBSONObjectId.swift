@@ -78,6 +78,10 @@ extension PureBSONObjectId: PureBSONValue {
 
     internal var bson: BSON { return .objectId(self) }
 
+    internal var canonicalExtJSON: String {
+        return "{ \"$oid\": \(self.hex.canonicalExtJSON) }"
+    }
+
     internal init(from data: inout Data) throws {
         guard data.count >= 12 else {
             throw RuntimeError.internalError(message: "expected to get at least 12 bytes, got \(data.count)")

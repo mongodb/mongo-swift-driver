@@ -66,6 +66,13 @@ extension PureBSONBinary: PureBSONValue {
 
     internal var bson: BSON { return .binary(self) }
 
+    internal var canonicalExtJSON: String {
+        let base64 = "\"base64\": \(self.data.base64EncodedString().canonicalExtJSON)"
+        let subType = "\"subType\": \(String(format: "%02X", self.subtype.rawValue).canonicalExtJSON)"
+
+        return "{ \"$binary\": { \(base64), \(subType) }"
+    }
+
     internal init(from data: inout Data) throws {
         guard data.count >= 5 else {
             throw RuntimeError.internalError(message: "expected to get at least 5 bytes, got \(data.count)")

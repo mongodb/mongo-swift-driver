@@ -15,6 +15,10 @@ extension PureBSONCode: PureBSONValue {
 
     internal var bson: BSON { return .code(self) }
 
+    internal var canonicalExtJSON: String {
+        return "{ \"$code\": \(self.code.canonicalExtJSON) }"
+    }
+
     internal init(from data: inout Data) throws {
         self.code = try readString(from: &data)
     }
@@ -42,6 +46,14 @@ extension PureBSONCodeWithScope: PureBSONValue {
     internal static var bsonType: BSONType { return .javascriptWithScope }
 
     internal var bson: BSON { return .codeWithScope(self) }
+
+    internal var canonicalExtJSON: String {
+        return "{ \"$code\": \(self.code.canonicalExtJSON), \"$scope\": \(self.scope.canonicalExtJSON) }"
+    }
+
+    internal var extJSON: String {
+        return "{ \"$code\": \(self.code.canonicalExtJSON), \"$scope\": \(self.scope.extJSON) }"
+    }
 
     internal init(from data: inout Data) throws {
         _ = try Int32(from: &data)

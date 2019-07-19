@@ -25,6 +25,9 @@ extension PureBSONTimestamp: PureBSONValue {
     internal static var bsonType: BSONType { return .timestamp }
 
     internal var bson: BSON { return .timestamp(self) }
+    internal var canonicalExtJSON: String {
+        return "{ \"$timestamp\": { \"t\": \(self.timestamp), \"i\": \(self.increment) } }"
+    }
 
     internal init(from data: inout Data) throws {
         guard data.count >= 8 else {

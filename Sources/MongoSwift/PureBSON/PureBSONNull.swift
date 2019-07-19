@@ -6,6 +6,9 @@ extension PureBSONNull: PureBSONValue {
     internal static var bsonType: BSONType { return .null }
 
     internal var bson: BSON { return .null }
+    internal var canonicalExtJSON: String {
+        return "null"
+    }
 
     internal func toBSON() -> Data {
         return Data()

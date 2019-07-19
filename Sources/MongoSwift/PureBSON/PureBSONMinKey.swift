@@ -7,6 +7,10 @@ extension PureBSONMinKey: PureBSONValue {
 
     internal var bson: BSON { return .minKey }
 
+    internal var canonicalExtJSON: String {
+        return "{ \"$minKey\": 1 }"
+    }
+
     internal func toBSON() -> Data {
         return Data()
     }

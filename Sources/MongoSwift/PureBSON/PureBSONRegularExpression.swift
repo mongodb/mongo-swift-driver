@@ -30,6 +30,11 @@ extension PureBSONRegularExpression: PureBSONValue {
 
     internal var bson: BSON { return .regex(self) }
 
+    internal var canonicalExtJSON: String {
+        let opts = "\"options\": \(String(self.options.sorted()).canonicalExtJSON)"
+        return "{ \"$regularExpression\": { \"pattern\": \(self.pattern.canonicalExtJSON), \(opts) }"
+    }
+
     internal init(from data: inout Data) throws {
         guard data.count >= 2 else {
             throw RuntimeError.internalError(message: "expected to get at least 2 bytes, got \(data.count)")
