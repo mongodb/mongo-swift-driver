@@ -18,6 +18,7 @@ final class PureSwiftBSONTests: MongoSwiftTestCase {
                                         "null": .null,
                                         "regex": .regex(PureBSONRegularExpression(pattern: "abc", options: "ix")),
                                         "dbPointer": .dbPointer(PureBSONDBPointer(ref: "foo", id: PureBSONObjectId())),
+                                        "symbol": .symbol("hi"),
                                         "code": .code(PureBSONCode(code: "xyz")),
                                         "codewscope": .codeWithScope(PureBSONCodeWithScope(code: "xyz", scope: ["a": 1])),
                                         "int32": .int32(32),

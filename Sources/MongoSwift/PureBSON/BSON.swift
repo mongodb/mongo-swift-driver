@@ -13,8 +13,7 @@ public enum BSON {
     case null
     case regex(PureBSONRegularExpression)
     case dbPointer(PureBSONDBPointer)
-    // code
-    case symbol(PureBSONSymbol)
+    case symbol(String)
     case code(PureBSONCode)
     case codeWithScope(PureBSONCodeWithScope)
     case int32(Int32)
@@ -23,6 +22,140 @@ public enum BSON {
     // decimal128
     case minKey
     case maxKey
+
+    public var doubleValue: Double? {
+        guard case let .double(double) = self else {
+            return nil
+        }
+        return double
+    }
+
+    public var stringValue: String? {
+        guard case let .string(value) = self else {
+            return nil
+        }
+        return value
+    }
+
+    public var documentValue: PureBSONDocument? {
+        guard case let .document(value) = self else {
+            return nil
+        }
+        return value
+    }
+
+    public var arrayValue: [BSON]? {
+        guard case let .array(value) = self else {
+            return nil
+        }
+        return value
+    }
+
+    public var binaryValue: PureBSONBinary? {
+        guard case let .binary(value) = self else {
+            return nil
+        }
+        return value
+    }
+
+    public var isUndefined: Bool {
+        return self == .undefined
+    }
+
+    public var objectIdValue: PureBSONObjectId? {
+        guard case let .objectId(value) = self else {
+            return nil
+        }
+        return value
+    }
+
+    public var boolValue: Bool? {
+        guard case let .bool(value) = self else {
+            return nil
+        }
+        return value
+    }
+
+    public var dateValue: Date? {
+        guard case let .date(value) = self else {
+            return nil
+        }
+        return value
+    }
+
+    public var isNull: Bool {
+        return self == .null
+    }
+
+    public var regexValue: PureBSONRegularExpression? {
+        guard case let .regex(value) = self else {
+            return nil
+        }
+        return value
+    }
+
+    public var dbPointerValue: PureBSONDBPointer? {
+        guard case let .dbPointer(value) = self else {
+            return nil
+        }
+        return value
+    }
+
+    public var symbolValue: String? {
+        guard case let .symbol(value) = self else {
+            return nil
+        }
+        return value
+    }
+
+    public var codeWithScopeValue: PureBSONCodeWithScope? {
+        guard case let .codeWithScope(value) = self else {
+            return nil
+        }
+        return value
+    }
+
+    public var int32Value: Int32? {
+        guard case let .int32(value) = self else {
+            return nil
+        }
+        return value
+    }
+
+    public var timestampValue: PureBSONTimestamp? {
+        guard case let .timestamp(value) = self else {
+            return nil
+        }
+        return value
+    }
+
+    public var int64Value: Int64? {
+        guard case let .int64(value) = self else {
+            return nil
+        }
+        return value
+    }
+
+    public var isMinKey: Bool {
+        return self == .minKey
+    }
+
+    public var isMaxKey: Bool {
+        return self == .maxKey
+    }
+
+    public var intValue: Int? {
+        switch self {
+        case let .int32(value):
+            return Int(value)
+        case let .int64(value):
+            return Int(exactly: value)
+        case let .double(value):
+            return Int(exactly: value)
+        default:
+            return nil
+        }
+    }
 
     internal var bsonValue: PureBSONValue {
         switch self {
@@ -34,6 +167,8 @@ public enum BSON {
             return PureBSONMinKey()
         case .maxKey:
             return PureBSONMaxKey()
+        case let .symbol(v):
+            return PureBSONSymbol(v)
         case let .double(v):
             return v
         case let .string(v):
@@ -55,8 +190,6 @@ public enum BSON {
         case let .code(v):
             return v
         case let .codeWithScope(v):
-            return v
-        case let .symbol(v):
             return v
         case let .int32(v):
             return v
@@ -174,7 +307,6 @@ extension BSON: Codable {
     }
 
     public func encode(to encoder: Encoder) throws {
-        print("encoding \(self.bsonValue)")
         try self.bsonValue.encode(to: encoder)
     }
 }
