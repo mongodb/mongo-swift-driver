@@ -37,13 +37,13 @@ public struct ChangeStreamOptions: Codable {
     public let fullDocument: FullDocument?
 
     /**
-     * A `ChangeStreamToken` that manually specifies the logical starting point for the new change stream.
+     * A `ResumeToken` that manually specifies the logical starting point for the new change stream.
      * The change stream will attempt to resume notifications starting after the operation associated with
      * the provided token.
      * - Note: A change stream cannot be resumed after an invalidate event (e.g. a collection drop or rename).
      * - SeeAlso: https://docs.mongodb.com/manual/changeStreams/#resume-a-change-stream
      */
-    public let resumeAfter: ChangeStreamToken?
+    public let resumeAfter: ResumeToken?
 
     /// The maximum amount of time in milliseconds for the server to wait on new documents to satisfy a
     /// change stream query. If omitted, the server will use its default timeout.
@@ -63,7 +63,7 @@ public struct ChangeStreamOptions: Codable {
     public let startAtOperationTime: Timestamp?
 
     /**
-     * Similar to `resumeAfter`, this option takes a `ChangeStreamToken` which will serve as the logical starting
+     * Similar to `resumeAfter`, this option takes a `ResumeToken` which will serve as the logical starting
      * point for the new change stream. This option differs from `resumeAfter` in that it will allow a change stream
      * to receive notifications even after an invalidate event (e.g. it will allow watching a collection that has
      * been dropped and recreated).
@@ -71,11 +71,11 @@ public struct ChangeStreamOptions: Codable {
      * - SeeAlso: https://docs.mongodb.com/master/changeStreams/#change-stream-start-after
      */
      // TODO: SWIFT-519 - Make this public when support is added for 4.2 change stream features.
-    internal let startAfter: ChangeStreamToken?
+    internal let startAfter: ResumeToken?
 
     /// Initializes a `ChangeStreamOptions`.
     public init(fullDocument: FullDocument? = nil,
-                resumeAfter: ChangeStreamToken? = nil,
+                resumeAfter: ResumeToken? = nil,
                 maxAwaitTimeMS: Int64? = nil,
                 batchSize: Int32? = nil,
                 collation: Document? = nil,

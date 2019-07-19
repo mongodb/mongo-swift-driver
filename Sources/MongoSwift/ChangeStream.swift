@@ -2,7 +2,7 @@ import mongoc
 /// A token used for manually resuming a change stream. Pass this to the `resumeAfter` field of
 /// `ChangeStreamOptions` to resume or start a change stream where a previous one left off.
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/#resume-a-change-stream
-public struct ChangeStreamToken: Codable, Equatable {
+public struct ResumeToken: Codable, Equatable {
     private let resumeToken: Document
 
     internal init(resumeToken: Document) {
@@ -17,8 +17,8 @@ public struct ChangeStreamToken: Codable, Equatable {
 /// A MongoDB ChangeStream.
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/
 public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
-    /// A `ChangeStreamToken` used for manually resuming a change stream.
-    public private(set) var resumeToken: ChangeStreamToken
+    /// A `ResumeToken` used for manually resuming a change stream.
+    public private(set) var resumeToken: ResumeToken
 
     /// A `MongoClient` stored to make sure the source client stays valid until the change stream is destroyed.
     private let client: MongoClient
@@ -97,7 +97,7 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
                             .internalError(message: "_id field is missing from the change stream document.")
                 return nil
         }
-        self.resumeToken = ChangeStreamToken(resumeToken: resumeToken)
+        self.resumeToken = ResumeToken(resumeToken: resumeToken)
 
         do {
             return try decoder.decode(T.self, from: doc)
@@ -141,7 +141,7 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
                   connection: Connection,
                   session: ClientSession? = nil,
                   decoder: BSONDecoder) throws {
-        self.resumeToken = ChangeStreamToken(resumeToken: [])
+        self.resumeToken = ResumeToken(resumeToken: [])
         self.client = client
         self.connection = connection
         self.session = session
