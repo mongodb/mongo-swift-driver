@@ -52,14 +52,14 @@ final class PureSwiftBSONTests: MongoSwiftTestCase {
 
                     // native_to_bson( bson_to_native(cB) ) = cB
                     let canonicalDoc = PureBSONDocument(canonicalData)
-                    let canonicalDocAsArray = try canonicalDoc.asArray()
+                    let canonicalDocAsArray = try canonicalDoc.toArray()
                     let roundTrippedCanonicalDoc = PureBSONDocument(fromArray: canonicalDocAsArray)
                     expect(roundTrippedCanonicalDoc).to(equal(canonicalDoc))
 
                     if let db = v.degenerateBSON {
                         let degenerateData = Data(hex: db)!
                         let degenerateDoc = PureBSONDocument(degenerateData)
-                        let degenerateDocAsArray = try degenerateDoc.asArray()
+                        let degenerateDocAsArray = try degenerateDoc.toArray()
                         let roundTrippedDegenerateDoc = PureBSONDocument(fromArray: degenerateDocAsArray)
                         expect(roundTrippedDegenerateDoc).to(equal(canonicalDoc))
                     }
@@ -70,7 +70,7 @@ final class PureSwiftBSONTests: MongoSwiftTestCase {
                 for error in decodeErrors {
                     let badData = Data(hex: error.bson)!
                     let badDoc = PureBSONDocument(badData)
-                    expect(try badDoc.asArray()).to(throwError())
+                    expect(try badDoc.toArray()).to(throwError())
                 }
             }
 
@@ -82,7 +82,7 @@ final class PureSwiftBSONTests: MongoSwiftTestCase {
 }
 
 extension PureBSONDocument {
-    func asArray() throws -> [(String, BSON)] {
+    func toArray() throws -> [(String, BSON)] {
         var out = [(String, BSON)]()
         var iter = self.makeIterator()
         while let next = try iter.nextOrError() {
