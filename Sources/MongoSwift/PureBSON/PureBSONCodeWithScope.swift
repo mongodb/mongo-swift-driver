@@ -45,10 +45,6 @@ extension PureBSONCodeWithScope: PureBSONValue {
 
     internal init(from data: inout Data) throws {
         _ = try Int32(from: &data)
-        // guard data.count >= length - 4 else {
-        //     throw RuntimeError.internalError(message: "Expected to get at least \(length - 4) bytes, got \(data.count)")
-        // }
-
         self.code = try readString(from: &data)
         self.scope = try PureBSONDocument(from: &data)
 

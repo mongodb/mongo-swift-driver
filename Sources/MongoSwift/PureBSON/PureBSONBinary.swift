@@ -72,6 +72,15 @@ extension PureBSONBinary: PureBSONValue {
         }
 
         let length = Int(try Int32(from: &data))
+        
+        guard length >= 0 else {
+            throw InvalidBSONError("encoded length of binary is negative: \(length)")
+        }
+        
+        // +1 for subtype
+        guard data.count >= length + 1 else {
+            throw InvalidBSONError("encoded length of binary is \(length), but only \(data.count) bytes left to read from document")
+        }
 
         let subtypeByte = data.removeFirst()
         guard let sub = Subtype(rawValue: subtypeByte) else {
@@ -79,6 +88,8 @@ extension PureBSONBinary: PureBSONValue {
         }
 
         self.subtype = sub
+        
+
         self.data = data.subdata(in: data.startIndex..<(data.startIndex + length))
         data.removeFirst(length)
     }

@@ -37,9 +37,8 @@ final class PureSwiftBSONTests: MongoSwiftTestCase {
         testFiles = testFiles.filter { $0.hasSuffix(".json") }
 
         for fileName in testFiles {
+            // unsupported type
             if fileName.contains("decimal128") { continue }
-            if fileName != "code.json" { continue }
-            print("\n\n\nfilename: \(fileName)")
 
             let testFilePath = URL(fileURLWithPath: "\(testFilesPath)/\(fileName)")
             let testFileData = try Data(contentsOf: testFilePath)
@@ -47,18 +46,18 @@ final class PureSwiftBSONTests: MongoSwiftTestCase {
 
             if let valid = testCase.valid {
                 for v in valid {
-                    print(v.description)
                     let canonicalData = Data(hex: v.canonicalBSON)!
 
                     // native_to_bson( bson_to_native(cB) ) = cB
-                    let canonicalDoc = PureBSONDocument(canonicalData)
+                    let canonicalDoc = try PureBSONDocument(fromBSON: canonicalData)
                     let canonicalDocAsArray = try canonicalDoc.toArray()
                     let roundTrippedCanonicalDoc = PureBSONDocument(fromArray: canonicalDocAsArray)
                     expect(roundTrippedCanonicalDoc).to(equal(canonicalDoc))
 
+                    // native_to_bson( bson_to_native(dB) ) = cB
                     if let db = v.degenerateBSON {
                         let degenerateData = Data(hex: db)!
-                        let degenerateDoc = PureBSONDocument(degenerateData)
+                        let degenerateDoc = try PureBSONDocument(fromBSON: degenerateData)
                         let degenerateDocAsArray = try degenerateDoc.toArray()
                         let roundTrippedDegenerateDoc = PureBSONDocument(fromArray: degenerateDocAsArray)
                         expect(roundTrippedDegenerateDoc).to(equal(canonicalDoc))
@@ -69,8 +68,12 @@ final class PureSwiftBSONTests: MongoSwiftTestCase {
             if let decodeErrors = testCase.decodeErrors {
                 for error in decodeErrors {
                     let badData = Data(hex: error.bson)!
-                    let badDoc = PureBSONDocument(badData)
-                    expect(try badDoc.toArray()).to(throwError())
+                    do {
+                        let badDoc = try PureBSONDocument(fromBSON: badData)
+                        _ = try badDoc.toArray()
+                    } catch {
+                        expect(error).toNot(beNil())
+                    }
                 }
             }
 

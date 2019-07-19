@@ -28,6 +28,10 @@ public struct PureBSONDocumentIterator: IteratorProtocol {
     /// Attempts to get the next value in the iterator, or throws an error if
     /// the BSON is invalid/unparseable.
     internal mutating func nextOrError() throws -> (String, BSON)? {
+        guard self.data.count >= 1 else {
+            throw InvalidBSONError("document is missing terminating byte")
+        }
+
         let first = self.data.removeFirst()
 
         // We hit the null byte at the end of the document.

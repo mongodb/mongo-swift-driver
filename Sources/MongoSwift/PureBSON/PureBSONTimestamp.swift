@@ -31,8 +31,8 @@ extension PureBSONTimestamp: PureBSONValue {
             throw RuntimeError.internalError(message: "expected to get at least 8 bytes, got \(data.count)")
         }
 
-        self.timestamp = try readInteger(from: &data)
         self.increment = try readInteger(from: &data)
+        self.timestamp = try readInteger(from: &data)
     }
 
     internal func toBSON() -> Data {

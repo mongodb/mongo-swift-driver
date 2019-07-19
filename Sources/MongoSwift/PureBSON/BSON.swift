@@ -457,13 +457,11 @@ extension Array: PureBSONValue where Element == BSON {
 
     internal init(from data: inout Data) throws {
         let doc = try PureBSONDocument(from: &data)
-
+        var docIter = doc.makeIterator()
         var arr: [BSON] = []
-        for (i, key) in doc.keys.enumerated() {
-            guard String(i) == key else {
-                throw RuntimeError.internalError(message: "invalid array document: \(doc)")
-            }
-            arr.append(doc[key]!)
+        // ignore keys to allow for degenerate BSON arrays
+        while let (_, value) = try docIter.nextOrError() {
+            arr.append(value)
         }
 
         self = arr
@@ -484,12 +482,22 @@ extension Array: PureBSONValue where Element == BSON {
 /// Reads a `String` according to the "string" non-terminal of the BSON spec.
 internal func readString(from data: inout Data) throws -> String {
     let length = Int(try Int32(from: &data))
-    guard data.count >= length && data[data.startIndex + length - 1] == 0 else {
-        throw RuntimeError.internalError(message: "invalid buffer")
+
+    guard length >= 1 else {
+        throw InvalidBSONError("string length must be at least 1 to account for terminating null byte")
     }
 
-    let str = data.withUnsafeBytes { (ptr: UnsafePointer<UInt8>) -> String in
-        String(cString: ptr)
+    guard data.count >= length else {
+        throw InvalidBSONError("string length encoded as \(length), but only \(data.count) bytes left in buffer")
+    }
+
+    let lastByte = data[data.startIndex + length - 1]
+    guard lastByte == 0 else {
+        throw InvalidBSONError("expected last byte of String data to be null byte, got \(lastByte)")
+    }
+
+    guard let str = String(data: data[data.startIndex..<(data.startIndex + length - 1)], encoding: .utf8) else {
+        throw InvalidBSONError("invalid UTF-8 data")
     }
 
     data.removeFirst(str.utf8.count + 1)

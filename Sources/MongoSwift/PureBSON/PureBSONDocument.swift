@@ -27,11 +27,6 @@ public struct PureBSONDocument {
             self[key] = value
         }
     }
-
-    internal init(_ data: Data) {
-        // todo: should we do any validation here?
-        self.data = data
-    }
 }
 
 /// Public API
@@ -42,6 +37,27 @@ extension PureBSONDocument {
         // [ 4 bytes for Int32 length ] [ null byte ]
         self.data = Data(count: 5)
         self.updateLength()
+    }
+
+    /// Initializes a document from BSON `Data`. Throws an error if the BSON data is invalid.
+    internal init(fromBSON data: Data) throws {
+        guard data.count >= 5 else {
+            throw InvalidBSONError("BSON documents must be at least 5 bytes long")
+        }
+
+        var lenBytes = data.subdata(in: 0..<4)
+        let length = try Int32(from: &lenBytes)
+        
+        guard length == data.count else {
+            throw InvalidBSONError("Document length is encoded as \(length) bytes, but provided data is \(data.count) bytes")
+        }
+
+        let lastByte = data.last!
+        guard lastByte == 0 else {
+            throw InvalidBSONError("Expected last byte to be null, got \(lastByte)")
+        }
+
+        self.data = data
     }
 
     /**

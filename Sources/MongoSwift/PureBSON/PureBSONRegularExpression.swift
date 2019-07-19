@@ -35,8 +35,10 @@ extension PureBSONRegularExpression: PureBSONValue {
             throw RuntimeError.internalError(message: "expected to get at least 2 bytes, got \(data.count)")
         }
 
-        self.pattern = try String(cStringData: &data)
-        self.options = try String(cStringData: &data)
+        let pattern = try String(cStringData: &data)
+        let options = try String(cStringData: &data)
+
+        self.init(pattern: pattern, options: options)
     }
 
     internal func toBSON() -> Data {
