@@ -1,11 +1,17 @@
 /// Represents a MongoDB namespace for a database or collection.
-internal struct MongoNamespace {
-    internal let db: String
-    internal let collection: String?
+public struct MongoNamespace: Codable {
+    /// The database name.
+    public let db: String
+    /// The collection name if this is a collection's namespace, or nil otherwise.
+    public let collection: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case db, collection = "coll"
+    }
 }
 
 extension MongoNamespace: CustomStringConvertible {
-    internal var description: String {
+    public var description: String {
         guard let collection = self.collection else {
             return self.db
         }
