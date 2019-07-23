@@ -278,6 +278,96 @@ public class MongoClient {
         return MongoDatabase(name: name, client: self, options: options)
     }
 
+    /**
+     * Starts a `ChangeStream` on a `MongoClient`. Allows the client to observe all changes in a cluster - excluding
+     * system collections i.g. "config", "local", and "admin" databases. By default, the type `CollectionType` is
+     * associated with the `fullDocument` field in the `ChangeStreamsDocument`.
+     * - Parameters:
+     *   - Pipeline: The pipeline of stages to append to an initial `ChangeStream` stage.
+     *   - Options: An optional `ChangeStreamOptions` to use on the initial `ChangeStream` stage.
+     *   - Session: An optional `ChangeStream` to use with this change stream.
+     * - Returns: a `ChangeStream` on all collections in all databases in a cluster.
+     * - Throws:
+     *   - `ServerError.commandError` if an error occurs on the server while creating the cursor.
+     *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination or the pipeline passed
+     *     is invalid.
+     *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
+     *     pipeline.
+     * - SeeAlso: https://docs.mongodb.com/manual/reference/system-collections/
+     */
+     public func watch(_  pipeline: [Document],
+                       options: ChangeStreamOptions?  =  nil,
+                       session: ClientSession? = nil) throws ->
+                       ChangeStream<ChangeStreamDocument<Document>> {
+        return try self.watch(pipeline, options: options, session: session, withFullDocumentType: Document.self)
+     }
+
+     /**
+      * Starts a `ChangeStream` on a `MongoClient`. Allows the client to observe all changes in a cluster - excluding
+      * system collections i.g. "config", "local", and "admin" databases. Associates the specified `Codable` type `T`
+      * with the `fullDocument` field in the `ChangeStreamDocument`.
+      * - Parameters:
+      *   - Pipeline: The pipeline of stages to append to an initial `ChangeStream` stage.
+      *   - Options: An optional `ChangeStreamOptions` to use on the initial `ChangeStream` stage.
+      *   - Session: An optional `ChangeStream` to use with this change stream.
+      * - Returns: A `ChangeStream` on all collections in all databases in a cluster.
+      * - Throws:
+      *   - `ServerError.commandError` if an error occurs on the server while creating the cursor.
+      *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination or the pipeline passed
+      *     is invalid.
+      *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
+      *     pipeline.
+      * - SeeAlso: https://docs.mongodb.com/manual/reference/system-collections/
+      */
+     public func watch<T: Codable>(_  pipeline: [Document],
+                                   options: ChangeStreamOptions?  =  nil,
+                                   session: ClientSession? = nil,
+                                   withFullDocumentType: T.Type) throws ->
+                                   ChangeStream<ChangeStreamDocument<T>> {
+        let pipeline: Document = ["pipeline": pipeline]
+        let connection = try self.connectionPool.checkOut()
+        let opts = try encodeOptions(options: options, session: session)
+        let changeStreamPtr: OpaquePointer = mongoc_client_watch(self._client, pipeline._bson, opts?._bson)
+        return try ChangeStream<ChangeStreamDocument<T>>(stealing: changeStreamPtr,
+                                                         client: self,
+                                                         connection: connection,
+                                                         session: session,
+                                                         decoder: self.decoder)
+     }
+
+     /**
+      * Starts a `ChangeStream` on a `MongoClient`. Allows the client to observe all changes in a cluster - excluding
+      * system collections i.g. "config", "local", and "admin" databases. Associates the specified `Codable` type `T`
+      * with the returned `ChangeStream`.
+      * - Parameters:
+      *   - Pipeline: The pipeline of stages to append to an initial `ChangeStream` stage.
+      *   - Options: An optional `ChangeStreamOptions` to use on the initial `ChangeStream` stage.
+      *   - Session: An optional `ChangeStream` to use with this change stream.
+      * - Returns: A `ChangeStream` on all collections in all databases in a cluster.
+      * - Throws:
+      *   - `ServerError.commandError` if an error occurs on the server while creating the cursor.
+      *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination or the pipeline passed
+      *     is invalid.
+      *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
+      *     pipeline.
+      * - SeeAlso: https://docs.mongodb.com/manual/reference/system-collections/
+      */
+     public func watch<T: Codable>(_  pipeline: [Document],
+                                   options: ChangeStreamOptions?  =  nil,
+                                   session: ClientSession? = nil,
+                                   withFullDocumentType: T.Type) throws ->
+                                   ChangeStream<T> {
+        let pipeline: Document = ["pipeline": pipeline]
+        let connection = try self.connectionPool.checkOut()
+        let opts = try encodeOptions(options: options, session: session)
+        let changeStreamPtr: OpaquePointer = mongoc_client_watch(self._client, pipeline._bson, opts?._bson)
+        return try ChangeStream<T>(stealing: changeStreamPtr,
+                                   client: self,
+                                   connection: connection,
+                                   session: session,
+                                   decoder: self.decoder)
+     }
+
     /// Executes an `Operation` using this `MongoClient` and an optionally provided session.
     internal func executeOperation<T: Operation>(_ operation: T,
                                                  session: ClientSession? = nil) throws -> T.OperationResult {
