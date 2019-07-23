@@ -272,6 +272,91 @@ public class MongoDatabase {
         return try self._client.executeOperation(operation, session: session)
     }
 
+    /**
+     * Starts a `ChangeStream` on a database. Excludes system collections. By default, the type `CollectionType` is
+     * associated with the `fullDocument` field in `ChangeStreamsDocument`.
+     * - Parameters:
+     *   - Pipeline: The pipeline of stages to append to an initial `ChangeStream` stage.
+     *   - Options: An optional `ChangeStreamOptions` to use on the initial `ChangeStream` stage.
+     *   - Session: An optional `ChangeStream` to use with this change stream.
+     * - Throws:
+     *   - `ServerError.commandError` if an error occurs on the server while creating the cursor.
+     *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination or the pipeline passed
+     *     is invalid.
+     *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
+     *     pipeline.
+     */
+     public func watch(_ pipeline: [Document],
+                       options: ChangeStreamOptions? = nil,
+                       session: ClientSession? = nil) throws ->
+                       ChangeStream<ChangeStreamDocument<Document>> {
+        return try self.watch(pipeline, options: options, session: session, withFullDocumentType: Document.self)
+     }
+
+    /**
+     * Starts a `ChangeStream` on a database. Excludes system collections. Associates the specified `Codable` type `T`
+     * with the `fullDocument` field in the `ChangeStreamDocument`.
+     * - Parameters:
+     *   - Pipeline: The pipeline of stages to append to an initial `ChangeStream` stage.
+     *   - Options: An optional `ChangeStreamOptions` to use on the initial `ChangeStream` stage.
+     *   - Session: An optional `ChangeStream` to use with this change stream.
+     * - Throws:
+     *   - `ServerError.commandError` if an error occurs on the server while creating the cursor.
+     *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination or the pipeline passed
+     *     is invalid.
+     *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
+     *     pipeline.
+     */
+     public func watch<T: Codable>(_ pipeline: [Document],
+                                   options: ChangeStreamOptions? = nil,
+                                   session: ClientSession? = nil,
+                                   withFullDocumentType: T.Type) throws ->
+                                   ChangeStream<ChangeStreamDocument<T>> {
+        let pipeline: Document = ["pipeline": pipeline]
+        let connection = try self._client.connectionPool.checkOut()
+        let opts = try encodeOptions(options: options, session: session)
+        return try self.withMongocDatabase(from: connection) { dbPtr in
+            let changeStreamPtr: OpaquePointer = mongoc_database_watch(dbPtr, pipeline._bson, opts?._bson)
+            return try ChangeStream<ChangeStreamDocument<T>>(stealing: changeStreamPtr,
+                                                             client: self._client,
+                                                             connection: connection,
+                                                             session: session,
+                                                             decoder: self.decoder)
+        }
+     }
+
+    /**
+     * Starts a `ChangeStream` on a database. Excludes system collections. Associates the specified `Codable` type `T`
+     * with the returned `ChangeStream`.
+     * - Parameters:
+     *   - Pipeline: The pipeline of stages to append to an initial `ChangeStream` stage.
+     *   - Options: An optional `ChangeStreamOptions` to use on the initial `ChangeStream` stage.
+     *   - Session: An optional `ChangeStream` to use with this change stream.
+     * - Throws:
+     *   - `ServerError.commandError` if an error occurs on the server while creating the cursor.
+     *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination or the pipeline passed
+     *     is invalid.
+     *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
+     *     pipeline.
+     */
+     public func watch<T: Codable>(_ pipeline: [Document],
+                                   options: ChangeStreamOptions? = nil,
+                                   session: ClientSession? = nil,
+                                   withReturnType: T.Type) throws ->
+                                   ChangeStream<T> {
+        let pipeline: Document = ["pipeline": pipeline]
+        let connection = try self._client.connectionPool.checkOut()
+        let opts = try encodeOptions(options: options, session: session)
+        return try self.withMongocDatabase(from: connection) { dbPtr in
+            let changeStreamPtr: OpaquePointer = mongoc_database_watch(dbPtr, pipeline._bson, opts?._bson)
+            return try ChangeStream<T>(stealing: changeStreamPtr,
+                                       client: self._client,
+                                       connection: connection,
+                                       session: session,
+                                       decoder: self.decoder)
+        }
+     }
+
     /// Uses the provided `Connection` to get a pointer to a `mongoc_database_t` corresponding to this `MongoDatabase`,
     /// and uses it to execute the given closure. The `mongoc_database_t` is only valid for the body of the closure.
     /// The caller is *not responsible* for cleaning up the `mongoc_database_t`.
