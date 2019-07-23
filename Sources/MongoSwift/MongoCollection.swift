@@ -135,8 +135,8 @@ public class MongoCollection<T: Codable> {
     }
 
     /**
-      * Starts a `ChangeStream` on a collection. By default, the type `CollectionType` is associated with the
-      * `fullDocument`field in `ChangeStreamsDocument`.
+     * Starts a `ChangeStream` on a collection. By default, the type `CollectionType` is associated with the
+     * `fullDocument`field in `ChangeStreamsDocument`.
      * - Parameters:
      *   - Pipeline: The pipeline of stages to append to an initial `ChangeStream` stage.
      *   - Options: An optional `ChangeStreamOptions` to use on the initial `ChangeStream` stage.
@@ -159,7 +159,6 @@ public class MongoCollection<T: Codable> {
     /**
      * Starts a `ChangeStream` on a collection. Associates the specified `Codable` type `T` with the `fullDocument`
      * field in the `ChangeStreamDocument`.
-     * `ChangeStreamDocument` in the returned `ChangeStream`.
      * - Parameters:
      *   - Pipeline: The pipeline of stages to append to an initial `ChangeStream` stage.
      *   - Options: An optional `ChangeStreamOptions` to use on the initial `ChangeStream` stage.
