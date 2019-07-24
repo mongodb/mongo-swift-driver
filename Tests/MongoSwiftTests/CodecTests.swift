@@ -10,12 +10,6 @@ final class CodecTests: MongoSwiftTestCase {
     static let dataCorruptedErr = DecodingError.dataCorrupted(
             DecodingError.Context(codingPath: [], debugDescription: "dummy error"))
 
-    func testEncodeListDatabasesOptions() throws {
-        let options = ListDatabasesOptions(filter: ["a": 10], nameOnly: true)
-        let expected: Document = ["filter": ["a": 10] as Document, "nameOnly": true]
-        expect(try BSONEncoder().encode(options)).to(equal(expected))
-    }
-
     struct TestClass: Encodable {
         let val1 = "a"
         let val2 = 0
