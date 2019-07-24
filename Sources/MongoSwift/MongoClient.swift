@@ -278,23 +278,23 @@ public class MongoClient {
         return MongoDatabase(name: name, client: self, options: options)
     }
 
-    /**
-     * Starts a `ChangeStream` on a `MongoClient`. Allows the client to observe all changes in a cluster - excluding
-     * system collections i.g. "config", "local", and "admin" databases. By default, the type `CollectionType` is
-     * associated with the `fullDocument` field in the `ChangeStreamsDocument`.
-     * - Parameters:
-     *   - Pipeline: The pipeline of stages to append to an initial `ChangeStream` stage.
-     *   - Options: An optional `ChangeStreamOptions` to use on the initial `ChangeStream` stage.
-     *   - Session: An optional `ChangeStream` to use with this change stream.
-     * - Returns: a `ChangeStream` on all collections in all databases in a cluster.
-     * - Throws:
-     *   - `ServerError.commandError` if an error occurs on the server while creating the cursor.
-     *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination or the pipeline passed
-     *     is invalid.
-     *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
-     *     pipeline.
-     * - SeeAlso: https://docs.mongodb.com/manual/reference/system-collections/
-     */
+     /**
+      * Supported in MongoDB version 4.0 only.
+      * Starts a `ChangeStream` on a `MongoClient`. Allows the client to observe all changes in a cluster - excluding
+      * system collections i.g. "config", "local", and "admin" databases. By default, the type `Document` is
+      * associated with the `fullDocument` field in the `ChangeStreamDocument` emitted by the returned `ChangeStream`.
+      * - Parameters:
+      *   - pipeline: The pipeline of stages to append to an initial `ChangeStream` stage.
+      *   - options: An optional `ChangeStreamOptions` to use on the initial `ChangeStream` stage.
+      *   - session: An optional `ChangeStream` to use with this change stream.
+      * - Returns: a `ChangeStream` on all collections in all databases in a cluster.
+      * - Throws:
+      *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination or the pipeline passed
+      *     is invalid.
+      *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
+      *     pipeline.
+      * - SeeAlso: https://docs.mongodb.com/manual/reference/system-collections/
+      */
      public func watch(_  pipeline: [Document],
                        options: ChangeStreamOptions?  =  nil,
                        session: ClientSession? = nil) throws ->
@@ -303,16 +303,16 @@ public class MongoClient {
      }
 
      /**
+      * Supported in MongoDB version 4.0 only.
       * Starts a `ChangeStream` on a `MongoClient`. Allows the client to observe all changes in a cluster - excluding
       * system collections i.g. "config", "local", and "admin" databases. Associates the specified `Codable` type `T`
-      * with the `fullDocument` field in the `ChangeStreamDocument`.
+      * with the `fullDocument` field in the `ChangeStreamDocument` emitted by the returned `ChangeStream`.
       * - Parameters:
-      *   - Pipeline: The pipeline of stages to append to an initial `ChangeStream` stage.
-      *   - Options: An optional `ChangeStreamOptions` to use on the initial `ChangeStream` stage.
-      *   - Session: An optional `ChangeStream` to use with this change stream.
+      *   - pipeline: The pipeline of stages to append to an initial `ChangeStream` stage.
+      *   - options: An optional `ChangeStreamOptions` to use on the initial `ChangeStream` stage.
+      *   - session: An optional `ChangeStream` to use with this change stream.
       * - Returns: A `ChangeStream` on all collections in all databases in a cluster.
       * - Throws:
-      *   - `ServerError.commandError` if an error occurs on the server while creating the cursor.
       *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination or the pipeline passed
       *     is invalid.
       *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
@@ -336,16 +336,16 @@ public class MongoClient {
      }
 
      /**
+      * Supported in MongoDB version 4.0 only.
       * Starts a `ChangeStream` on a `MongoClient`. Allows the client to observe all changes in a cluster - excluding
       * system collections i.g. "config", "local", and "admin" databases. Associates the specified `Codable` type `T`
       * with the returned `ChangeStream`.
       * - Parameters:
-      *   - Pipeline: The pipeline of stages to append to an initial `ChangeStream` stage.
-      *   - Options: An optional `ChangeStreamOptions` to use on the initial `ChangeStream` stage.
-      *   - Session: An optional `ChangeStream` to use with this change stream.
+      *   - pipeline: The pipeline of stages to append to an initial `ChangeStream` stage.
+      *   - options: An optional `ChangeStreamOptions` to use on the initial `ChangeStream` stage.
+      *   - session: An optional `ChangeStream` to use with this change stream.
       * - Returns: A `ChangeStream` on all collections in all databases in a cluster.
       * - Throws:
-      *   - `ServerError.commandError` if an error occurs on the server while creating the cursor.
       *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination or the pipeline passed
       *     is invalid.
       *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
@@ -355,7 +355,7 @@ public class MongoClient {
      public func watch<T: Codable>(_  pipeline: [Document],
                                    options: ChangeStreamOptions?  =  nil,
                                    session: ClientSession? = nil,
-                                   withFullDocumentType: T.Type) throws ->
+                                   withReturnType: T.Type) throws ->
                                    ChangeStream<T> {
         let pipeline: Document = ["pipeline": pipeline]
         let connection = try self.connectionPool.checkOut()
