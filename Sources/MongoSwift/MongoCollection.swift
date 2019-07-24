@@ -136,14 +136,13 @@ public class MongoCollection<T: Codable> {
 
     /**
      * Starts a `ChangeStream` on a collection. By default, the type `CollectionType` is associated with the
-     * `fullDocument`field in `ChangeStreamsDocument`.
+     * `fullDocument`field in `ChangeStreamDocument` emitted by the returned `ChangeStream`.
      * - Parameters:
-     *   - Pipeline: The pipeline of stages to append to an initial `ChangeStream` stage.
-     *   - Options: An optional `ChangeStreamOptions` to use on the initial `ChangeStream` stage.
-     *   - Session: An optional `ChangeStream` to use with this change stream.
+     *   - pipeline: The pipeline of stages to append to an initial `ChangeStream` stage.
+     *   - options: An optional `ChangeStreamOptions` to use on the initial `ChangeStream` stage.
+     *   - session: An optional `ChangeStream` to use with this change stream.
      * - Returns: A change stream on a specific collection.
      * - Throws:
-     *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
      *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination or the pipeline passed
      *     is invalid.
      *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
@@ -158,18 +157,19 @@ public class MongoCollection<T: Codable> {
 
     /**
      * Starts a `ChangeStream` on a collection. Associates the specified `Codable` type `T` with the `fullDocument`
-     * field in the `ChangeStreamDocument`.
+     * field in the `ChangeStreamDocument` emitted by the returned `ChangeStream`.
      * - Parameters:
-     *   - Pipeline: The pipeline of stages to append to an initial `ChangeStream` stage.
-     *   - Options: An optional `ChangeStreamOptions` to use on the initial `ChangeStream` stage.
-     *   - Session: An optional `ChangeStream` to use with this change stream.
+     *   - pipeline: The pipeline of stages to append to an initial `ChangeStream` stage.
+     *   - options: An optional `ChangeStreamOptions` to use on the initial `ChangeStream` stage.
+     *   - session: An optional `ChangeStream` to use with this change stream.
+     *   - withFullDocumentType: The type that the change events emitted from the change stream will be decoded to.
      * - Returns: A change stream on a specific collection.
      * - Throws:
-     *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
      *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination or the pipeline passed
      *     is invalid.
      *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.
+     *   - `DecodingError` if an error occurs while decoding user-defined `withFullDocumentType` `Codable` type.
      */
     public func watch<T: Codable>(_ pipeline: [Document],
                                   options: ChangeStreamOptions? = nil,
@@ -193,16 +193,16 @@ public class MongoCollection<T: Codable> {
      * Starts a `ChangeStream` on a collection. Associates the specified `Codable` type `T` with the returned
      * `ChangeStream`.
      * - Parameters:
-     *   - Pipeline: The pipeline of stages to append to an initial `ChangeStream` stage.
-     *   - Options: An optional `ChangeStreamOptions` to use on the initial `ChangeStream` stage.
-     *   - Session: An optional `ChangeStream` to use with this change stream.
+     *   - pipeline: The pipeline of stages to append to an initial `ChangeStream` stage.
+     *   - options: An optional `ChangeStreamOptions` to use on the initial `ChangeStream` stage.
+     *   - session: An optional `ChangeStream` to use with this change stream.
      * - Returns: A change stream on a specific collection.
      * - Throws:
-     *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
      *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination or the pipeline passed
      *     is invalid.
      *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.
+     *   - `DecodingError` if an error occurs while decoding user-defined `withReturnType` `Codable` type.
      */
     public func watch<T: Codable>(_ pipeline: [Document],
                                   options: ChangeStreamOptions? = nil,

@@ -334,6 +334,7 @@ public class MongoClient {
      }
 
      /**
+      * Supported in MongoDB version 4.0 only.
       * Starts a `ChangeStream` on a `MongoClient`. Allows the client to observe all changes in a cluster - excluding
       * system collections and the "config", "local", and "admin" databases. Associates the specified `Codable` type `T`
       * with the `fullDocument` field in the `ChangeStreamEvent`s emitted by the returned `ChangeStream`.
@@ -367,6 +368,7 @@ public class MongoClient {
      }
 
      /**
+      * Supported in MongoDB version 4.0 only.
       * Starts a `ChangeStream` on a `MongoClient`. Allows the client to observe all changes in a cluster - excluding
       * system collections and the "config", "local", and "admin" databases. Associates the specified `Codable` type `T`
       * with the returned `ChangeStream`.
@@ -391,7 +393,11 @@ public class MongoClient {
      public func watch<T: Codable>(_  pipeline: [Document] = [],
                                    options: ChangeStreamOptions?  =  nil,
                                    session: ClientSession? = nil,
+<<<<<<< HEAD
                                    withEventType: T.Type) throws ->
+=======
+                                   withReturnType: T.Type) throws ->
+>>>>>>> Fix docstrings
                                    ChangeStream<T> {
         let pipeline: Document = ["pipeline": pipeline]
         let connection = try self.connectionPool.checkOut()
