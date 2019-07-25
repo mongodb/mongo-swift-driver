@@ -141,7 +141,7 @@ public class MongoCollection<T: Codable> {
      *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
      *   - options: An optional `ChangeStreamOptions` to use when constructing the `ChangeStream`.
      *   - session: An optional `ClientSession` to use with this change stream.
-     * - Returns: A change stream on a specific collection.
+     * - Returns: A `ChangeStream` on a specific collection.
      * - Throws:
      *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
      *   - `ServerError.commandError` if the pipeline passed is invalid.
@@ -166,7 +166,7 @@ public class MongoCollection<T: Codable> {
      *   - options: An optional `ChangeStreamOptions` to use when constructing the `ChangeStream`.
      *   - session: An optional `ClientSession` to use with this change stream.
      *   - withFullDocumentType: The type that the change events emitted from the change stream will be decoded to.
-     * - Returns: A change stream on a specific collection.
+     * - Returns: A `ChangeStream` on a specific collection.
      * - Throws:
      *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
      *   - `ServerError.commandError` if the pipeline passed is invalid.
@@ -205,7 +205,7 @@ public class MongoCollection<T: Codable> {
      *   - options: An optional `ChangeStreamOptions` to use when constructing the `ChangeStream`.
      *   - session: An optional `ClientSession` to use with this change stream.
      *   - withReturnType: The type that the entire change stream response will be decoded to.
-     * - Returns: A change stream on a specific collection.
+     * - Returns: A `ChangeStream` on a specific collection.
      * - Throws:
      *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
      *   - `ServerError.commandError` if the pipeline passed is invalid.
