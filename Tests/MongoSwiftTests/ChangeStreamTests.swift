@@ -340,4 +340,30 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         expect(change1?.operationType).to(equal(.insert))
         expect(change1?.fullDocument).to(equal(myType))
     }
+
+    func testChangeStreamWithPipeline() throws {
+        guard MongoSwiftTestCase.topologyType != .single else {
+            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            return
+        }
+        let client = try MongoClient()
+        let db = client.db(type(of: self).testDatabase)
+        defer { try? db.drop() }
+        let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
+        let session = try client.startSession()
+        let options = ChangeStreamOptions(fullDocument: .updateLookup)
+        let pipeline: [Document] = [["$match": ["fullDocument.a": 1] as Document]]
+        let changeStream = try coll.watch(pipeline, options: options, session: session)
+
+        try coll.insertOne(["a": 1], session: session)
+        let res1 = changeStream.next()
+
+        expect(res1).toNot(beNil())
+        expect(res1?.operationType).to(equal(.insert))
+        expect(res1?.fullDocument?["a"]).to(bsonEqual(1))
+        // expect the change stream to not contain a change event for the this insert
+        try coll.insertOne(["b": 2], session: session)
+        let res2 = changeStream.next()
+        expect(res2).to(beNil())
+    }
 }
