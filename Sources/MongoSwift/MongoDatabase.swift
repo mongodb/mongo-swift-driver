@@ -273,20 +273,24 @@ public class MongoDatabase {
     }
 
      /**
-      * Supported in MongoDB version 4.0 only.
       * Starts a `ChangeStream` on a database. Excludes system collections. By default, the type `Document` is
       * associated with the `fullDocument` field in `ChangeStreamDocument` emitted by the returned `ChangeStream`.
       * - Parameters:
-      *   - pipeline: The pipeline of stages to append to an initial `ChangeStream` stage.
-      *   - options: An optional `ChangeStreamOptions` to use on the initial `ChangeStream` stage.
-      *   - session: An optional `ChangeStream` to use with this change stream.
+      *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
+      *   - options: An optional `ChangeStreamOptions` to use when constructing the `ChangeStream`.
+      *   - session: An optional `ClientSession` to use with this change stream.
       * - Throws:
+      *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
       *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination or the pipeline passed
       *     is invalid.
       *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
       *     pipeline.
+      * - SeeAlso:
+      *   - https://docs.mongodb.com/manual/changeStreams/
+      *   - https://docs.mongodb.com/manual/meta/aggregation-quick-reference/
+      * - Note: Supported in MongoDB version 4.0 only.
       */
-     public func watch(_ pipeline: [Document],
+     public func watch(_ pipeline: [Document] = [],
                        options: ChangeStreamOptions? = nil,
                        session: ClientSession? = nil) throws ->
                        ChangeStream<ChangeStreamDocument<Document>> {
@@ -294,20 +298,25 @@ public class MongoDatabase {
      }
 
      /**
-      * Supported in MongoDB version 4.0 only.
       * Starts a `ChangeStream` on a database. Excludes system collections. Associates the specified `Codable` type `T`
       * with the `fullDocument` field in the `ChangeStreamDocument` emitted by the returned `ChangeStream`.
       * - Parameters:
-      *   - pipeline: The pipeline of stages to append to an initial `ChangeStream` stage.
-      *   - options: An optional `ChangeStreamOptions` to use on the initial `ChangeStream` stage.
-      *   - session: An optional `ChangeStream` to use with this change stream.
+      *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
+      *   - options: An optional `ChangeStreamOptions` to use when constructing the `ChangeStream`.
+      *   - session: An optional `ClientSession` to use with this change stream.
+      *   - withFullDocumentType: The type that the change events emitted from the change stream will be decoded to.
       * - Throws:
+      *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
       *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination or the pipeline passed
       *     is invalid.
       *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
       *     pipeline.
+      * - SeeAlso:
+      *   - https://docs.mongodb.com/manual/changeStreams/
+      *   - https://docs.mongodb.com/manual/meta/aggregation-quick-reference/
+      * - Note: Supported in MongoDB version 4.0 only.
       */
-     public func watch<T: Codable>(_ pipeline: [Document],
+     public func watch<T: Codable>(_ pipeline: [Document] = [],
                                    options: ChangeStreamOptions? = nil,
                                    session: ClientSession? = nil,
                                    withFullDocumentType: T.Type) throws ->
@@ -326,20 +335,26 @@ public class MongoDatabase {
      }
 
      /**
-      * Supported in MongoDB version 4.0 only.
       * Starts a `ChangeStream` on a database. Excludes system collections. Associates the specified `Codable` type `T`
       * with the returned `ChangeStream`.
       * - Parameters:
-      *   - pipeline: The pipeline of stages to append to an initial `ChangeStream` stage.
-      *   - options: An optional `ChangeStreamOptions` to use on the initial `ChangeStream` stage.
-      *   - session: An optional `ChangeStream` to use with this change stream.
+      *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
+      *   - options: An optional `ChangeStreamOptions` to use when constructing the `ChangeStream`.
+      *   - session: An optional `ClientSession` to use with this change stream.
+      *   - withReturnType: The type that the entire change stream response will be decoded to.
       * - Throws:
+      *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
       *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination or the pipeline passed
       *     is invalid.
+      *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination.
       *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
       *     pipeline.
+      * - SeeAlso:
+      *   - https://docs.mongodb.com/manual/changeStreams/
+      *   - https://docs.mongodb.com/manual/meta/aggregation-quick-reference/
+      * - Note: Supported in MongoDB version 4.0 only.
       */
-     public func watch<T: Codable>(_ pipeline: [Document],
+     public func watch<T: Codable>(_ pipeline: [Document] = [],
                                    options: ChangeStreamOptions? = nil,
                                    session: ClientSession? = nil,
                                    withReturnType: T.Type) throws ->

@@ -16,10 +16,9 @@ final class ChangeStreamTest: MongoSwiftTestCase {
             return
         }
         let session = try client.startSession()
-        let options = ChangeStreamOptions(fullDocument: .updateLookup)
-        let pipeline: [Document] = []
+        let options = ChangeStreamOptions()
         let connection = try client.connectionPool.checkOut()
-        let changeStream = try client.watch(pipeline, options: options, session: session)
+        let changeStream = try client.watch(options: options, session: session)
 
         let db1 = client.db("db1")
         defer { try? db1.drop() }
@@ -46,7 +45,7 @@ final class ChangeStreamTest: MongoSwiftTestCase {
 
         let db2 = client.db("db2")
         defer { try? db1.drop() }
-        let coll3 = try db2.collection("coll3")
+        let coll3 = db2.collection("coll3")
         try coll3.insertOne(["y": 321], session: session)
         let res4 = changeStream.next()
         // test that the change stream contains a document for changes on a collection in a different database
@@ -71,9 +70,8 @@ final class ChangeStreamTest: MongoSwiftTestCase {
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
         let session = try client.startSession()
-        let options = ChangeStreamOptions(fullDocument: .updateLookup)
-        let pipeline: [Document] = []
-        let changeStream = try db.watch(pipeline, options: options, session: session)
+        let options = ChangeStreamOptions()
+        let changeStream = try db.watch(options: options, session: session)
 
         // expect the first iteration to be nil since no changes have been made to the database.
         expect(changeStream.next()).to(beNil())
@@ -111,9 +109,8 @@ final class ChangeStreamTest: MongoSwiftTestCase {
         let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
         let session = try client.startSession()
         let options = ChangeStreamOptions(fullDocument: .updateLookup)
-        let pipeline: [Document] = []
 
-        let changeStream = try coll.watch(pipeline, options: options, session: session)
+        let changeStream = try coll.watch(options: options, session: session)
         // expect the first iteration to be nil since no changes have been made to the database.
         expect(changeStream.next()).to(beNil())
 
@@ -146,5 +143,31 @@ final class ChangeStreamTest: MongoSwiftTestCase {
 
         // test that the resumeToken is updated
         expect(changeStream.resumeToken).to(equal(res3?._id))
+    }
+
+    func testChangeStreamWithPipeline() throws {
+        guard MongoSwiftTestCase.topologyType != .single else {
+            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            return
+        }
+        let client = try MongoClient()
+        let db = client.db(type(of: self).testDatabase)
+        defer { try? db.drop() }
+        let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
+        let session = try client.startSession()
+        let options = ChangeStreamOptions(fullDocument: .updateLookup)
+        let pipeline: [Document] = [["$match": ["fullDocument.a": 1] as Document]]
+        let changeStream = try coll.watch(pipeline, options: options, session: session)
+
+        try coll.insertOne(["a": 1], session: session)
+        let res1 = changeStream.next()
+
+        expect(res1).toNot(beNil())
+        expect(res1?.operationType).to(equal(.insert))
+        expect(res1?.fullDocument?["a"]).to(bsonEqual(1))
+        // expect the change stream to not contain a change event for the this insert
+        try coll.insertOne(["b": 2], session: session)
+        let res2 = changeStream.next()
+        expect(res2).to(beNil())
     }
 }
