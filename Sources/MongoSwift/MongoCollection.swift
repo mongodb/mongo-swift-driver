@@ -144,8 +144,7 @@ public class MongoCollection<T: Codable> {
      * - Returns: A change stream on a specific collection.
      * - Throws:
      *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
-     *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination or the pipeline passed
-     *     is invalid.
+     *   - `ServerError.commandError` if the pipeline passed is invalid.
      *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.
      * - SeeAlso:
@@ -170,8 +169,8 @@ public class MongoCollection<T: Codable> {
      * - Returns: A change stream on a specific collection.
      * - Throws:
      *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
-     *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination or the pipeline passed
-     *     is invalid.
+     *   - `ServerError.commandError` if the pipeline passed is invalid.
+     *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination.
      *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.
      *   - `DecodingError` if an error occurs while decoding user-defined `withFullDocumentType` `Codable` type.
@@ -209,8 +208,8 @@ public class MongoCollection<T: Codable> {
      * - Returns: A change stream on a specific collection.
      * - Throws:
      *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
-     *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination or the pipeline passed
-     *     is invalid.
+     *   - `ServerError.commandError` if the pipeline passed is invalid.
+     *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination.
      *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.
      *   - `DecodingError` if an error occurs while decoding user-defined `withReturnType` `Codable` type.
