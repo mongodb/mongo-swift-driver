@@ -61,21 +61,6 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
     }
 }
 
-/// Options to use when listing available databases.
-public struct ListDatabasesOptions: Encodable {
-    /// An optional filter for the returned databases.
-    public var filter: Document?
-
-    /// Optionally indicate whether only names should be returned.
-    public var nameOnly: Bool?
-
-    /// Convenience constructor for basic construction
-    public init(filter: Document? = nil, nameOnly: Bool? = nil) {
-        self.filter = filter
-        self.nameOnly = nameOnly
-    }
-}
-
 /// Options to use when retrieving a `MongoDatabase` from a `MongoClient`.
 public struct DatabaseOptions: CodingStrategyProvider {
     /// A read concern to set on the retrieved database. If one is not specified, the database will inherit the
@@ -243,26 +228,67 @@ public class MongoClient {
     }
 
     /**
-     * Get a list of databases.
+     * Run the `listDatabases` command.
      *
      * - Parameters:
-     *   - options: Optional `ListDatabasesOptions` to use when executing the command
+     *   - filter: Optional `Document` specifying a filter that the listed databases must pass. This filter can be based
+     *     on the "name", "sizeOnDisk", "empty", or "shards" fields of the output.
      *
      * - Returns: A `MongoCursor` over `Document`s describing the databases matching provided criteria
      *
      * - Throws:
-     *   - `UserError.invalidArgumentError` if the options passed are an invalid combination.
      *   - `UserError.logicError` if the provided session is inactive.
      *   - `EncodingError` if an error is encountered while encoding the options to BSON.
+     *
+     * - SeeAlso: https://docs.mongodb.com/manual/reference/command/listDatabases/
      */
-    public func listDatabases(options: ListDatabasesOptions? = nil,
-                              session: ClientSession? = nil) throws -> MongoCursor<Document> {
-        let opts = try encodeOptions(options: options, session: session)
-        let conn = try self.connectionPool.checkOut()
-        guard let cursor = mongoc_client_find_databases_with_opts(conn.clientHandle, opts?._bson) else {
-            fatalError(failedToRetrieveCursorMessage)
+    public func listDatabases(_ filter: Document? = nil,
+                              session: ClientSession? = nil) throws -> [DatabaseSpecification] {
+        let operation = ListDatabasesOperation(client: self,
+                                               filter: filter,
+                                               nameOnly: nil,
+                                               session: session)
+        guard case let .specs(result) = try self.executeOperation(operation) else {
+            throw RuntimeError.internalError(message: "Invalid result")
         }
-        return try MongoCursor(from: cursor, client: self, connection: conn, decoder: self.decoder, session: session)
+        return result
+    }
+
+    /**
+     * Get a list of `MongoDatabase`s.
+     *
+     * - Parameters:
+     *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
+     *
+     * - Returns: An Array of `MongoDatabase`s that match the provided filter.
+     *
+     * - Throws:
+     *   - `UserError.logicError` if the provided session is inactive.
+     */
+    public func listMongoDatabases(_ filter: Document? = nil, session: ClientSession? = nil) throws -> [MongoDatabase] {
+        return try self.listDatabaseNames(filter, session: session).map { self.db($0) }
+    }
+
+    /**
+     * Get a list of names of databases.
+     *
+     * - Parameters:
+     *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
+     *
+     * - Returns: An Array of `MongoDatabase`s that match the provided filter.
+     *
+     * - Throws:
+     *   - `UserError.logicError` if the provided session is inactive.
+     */
+    public func listDatabaseNames(_ filter: Document? = nil, session: ClientSession? = nil) throws -> [String] {
+        let operation = ListDatabasesOperation(client: self,
+                                               filter: filter,
+                                               nameOnly: true,
+                                               session: session)
+        guard case let .names(result) = try self.executeOperation(operation) else {
+            throw RuntimeError.internalError(message: "Invalid result")
+        }
+        return result
     }
 
     /**

@@ -7,8 +7,41 @@ import XCTest
 final class MongoClientTests: MongoSwiftTestCase {
     func testListDatabases() throws {
         let client = try MongoClient()
-        let databases = try client.listDatabases(options: ListDatabasesOptions(nameOnly: true))
-        expect((Array(databases) as [Document]).count).to(beGreaterThan(0))
+
+        let databases = [
+            "db1",
+            "empty",
+            "db3"
+        ]
+
+        try databases.forEach {
+            try client.db($0).drop()
+            _ = try client.db($0).createCollection("c")
+        }
+
+        try client.db("db1").collection("c").insertOne(["a": 1])
+        try client.db("db3").collection("c").insertOne(["a": 1])
+
+        let dbInfo = try client.listDatabases()
+        expect(dbInfo.map { $0.name }).to(contain(databases))
+        expect(Set(dbInfo.map { $0.name }).count).to(equal(dbInfo.count))
+
+        let dbNames = try client.listDatabaseNames()
+        expect(dbNames).to(contain(databases))
+        expect(Set(dbNames).count).to(equal(dbNames.count))
+
+        let dbObjects = try client.listMongoDatabases()
+        expect(dbObjects.map { $0.name }).to(contain(databases))
+        expect(Set(dbObjects.map { $0.name }).count).to(equal(dbObjects.count))
+
+        expect(try client.listDatabaseNames(["name": "db1"])).to(equal(["db1"]))
+
+        let topSize = dbInfo.map { $0.sizeOnDisk }.max()!
+        expect(try client.listDatabases(["sizeOnDisk": ["$gt": topSize] as Document])).to(beEmpty())
+
+        if MongoSwiftTestCase.topologyType == .sharded {
+            expect(dbInfo.first?.shards).toNot(beNil())
+        }
     }
 
     func testOpaqueInitialization() throws {

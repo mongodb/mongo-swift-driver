@@ -41,7 +41,6 @@ extension ClientSessionTests {
 
 extension CodecTests {
     static var allTests = [
-        ("testEncodeListDatabasesOptions", testEncodeListDatabasesOptions),
         ("testStructs", testStructs),
         ("testOptionals", testOptionals),
         ("testEncodingNonBSONNumbers", testEncodingNonBSONNumbers),
