@@ -289,8 +289,8 @@ public class MongoClient {
       * - Returns: a `ChangeStream` on all collections in all databases in a cluster.
       * - Throws:
       *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
-      *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination or the pipeline passed
-      *     is invalid.
+      *   - `ServerError.commandError` if the pipeline passed is invalid.
+      *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination.
       *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
       *     pipeline.
       * - SeeAlso:
@@ -319,6 +319,7 @@ public class MongoClient {
       * - Throws:
       *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
       *   - `ServerError.commandError` if the pipeline passed is invalid.
+      *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination.
       *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
       *     pipeline.
       *   - `DecodingError` if an error occurs while decoding user-defined `withFullDocumentType` `Codable` type.
@@ -358,8 +359,6 @@ public class MongoClient {
       *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
       *   - `ServerError.commandError` if the pipeline passed is invalid.
       *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination.
-      *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
-      *     pipeline.
       *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
       *     pipeline.
       *   - `DecodingError` if an error occurs while decoding user-defined `withReturnType` `Codable` type.
