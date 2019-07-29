@@ -41,7 +41,7 @@ final class ChangeStreamTest: MongoSwiftTestCase {
         expect(changeStream.resumeToken).to(equal(res2?._id))
 
         let db2 = client.db("db2")
-        defer { try? db1.drop() }
+        defer { try? db2.drop() }
         let coll3 = db2.collection("coll3")
         try coll3.insertOne(["y": 321])
         let res4 = changeStream.next()
