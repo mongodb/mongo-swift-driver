@@ -289,7 +289,7 @@ public class MongoDatabase {
       * - SeeAlso:
       *   - https://docs.mongodb.com/manual/changeStreams/
       *   - https://docs.mongodb.com/manual/meta/aggregation-quick-reference/
-      * - Note: Supported in MongoDB version 4.0 only.
+      * - Note: Supported in MongoDB version 4.0+ only.
       */
      public func watch(_ pipeline: [Document] = [],
                        options: ChangeStreamOptions? = nil,
@@ -317,24 +317,17 @@ public class MongoDatabase {
       * - SeeAlso:
       *   - https://docs.mongodb.com/manual/changeStreams/
       *   - https://docs.mongodb.com/manual/meta/aggregation-quick-reference/
-      * - Note: Supported in MongoDB version 4.0 only.
+      * - Note: Supported in MongoDB version 4.0+ only.
       */
      public func watch<T: Codable>(_ pipeline: [Document] = [],
                                    options: ChangeStreamOptions? = nil,
                                    session: ClientSession? = nil,
                                    withFullDocumentType: T.Type) throws ->
                                    ChangeStream<ChangeStreamDocument<T>> {
-        let pipeline: Document = ["pipeline": pipeline]
-        let connection = try self._client.connectionPool.checkOut()
-        let opts = try encodeOptions(options: options, session: session)
-        return try self.withMongocDatabase(from: connection) { dbPtr in
-            let changeStreamPtr: OpaquePointer = mongoc_database_watch(dbPtr, pipeline._bson, opts?._bson)
-            return try ChangeStream<ChangeStreamDocument<T>>(stealing: changeStreamPtr,
-                                                             client: self._client,
-                                                             connection: connection,
-                                                             session: session,
-                                                             decoder: self.decoder)
-        }
+        return try self.watch(pipeline,
+                              options: options,
+                              session: session,
+                              withReturnType: ChangeStreamDocument<T>.self)
      }
 
      /**
@@ -356,7 +349,7 @@ public class MongoDatabase {
       * - SeeAlso:
       *   - https://docs.mongodb.com/manual/changeStreams/
       *   - https://docs.mongodb.com/manual/meta/aggregation-quick-reference/
-      * - Note: Supported in MongoDB version 4.0 only.
+      * - Note: Supported in MongoDB version 4.0+ only.
       */
      public func watch<T: Codable>(_ pipeline: [Document] = [],
                                    options: ChangeStreamOptions? = nil,

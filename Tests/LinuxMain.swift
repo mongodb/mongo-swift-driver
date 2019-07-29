@@ -23,6 +23,7 @@ extension ChangeStreamTest {
         ("testChangeStreamOnACollection", testChangeStreamOnACollection),
         ("testChangeStreamWithPipeline", testChangeStreamWithPipeline),
         ("testChangeStreamResumeTokenError", testChangeStreamResumeTokenError),
+        ("testChangeStreamWithWithCodableType", testChangeStreamWithWithCodableType),
     ]
 }
 

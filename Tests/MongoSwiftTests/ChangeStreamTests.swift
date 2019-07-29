@@ -41,7 +41,7 @@ final class ChangeStreamTest: MongoSwiftTestCase {
         expect(changeStream.resumeToken).to(equal(res2?._id))
 
         let db2 = client.db("db2")
-        defer { try? db2.drop() }
+        defer { try? db1.drop() }
         let coll3 = db2.collection("coll3")
         try coll3.insertOne(["y": 321])
         let res4 = changeStream.next()
@@ -179,5 +179,52 @@ final class ChangeStreamTest: MongoSwiftTestCase {
         let changeStream = try coll.watch(pipeline, options: options)
         try coll.insertOne(["a": 1])
         expect(try changeStream.nextOrError()).to(throwError(RuntimeError.internalError(message: "")))
+    }
+
+    func testChangeStreamWithWithCodableType() throws {
+        guard MongoSwiftTestCase.topologyType != .single else {
+            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            return
+        }
+
+        let client = try MongoClient()
+        let db = client.db(type(of: self).testDatabase)
+        defer { try? db.drop() }
+        let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
+        let options = ChangeStreamOptions(fullDocument: .updateLookup)
+
+        struct MyFullDocumentType: Codable {
+            let id: ObjectId
+
+            enum CodingKeys: String, CodingKey {
+                case id = "_id"
+            }
+        }
+
+        struct MyReturnType: Codable {
+            let id: Document
+            let operation: String
+            let fullDocument: MyFullDocumentType
+            let nameSpace: Document
+            let updateDescription: Document?
+
+            enum CodingKeys: String, CodingKey {
+                case id = "_id", operation = "operationType", fullDocument, nameSpace = "ns", updateDescription
+            }
+        }
+
+        // Test that creating a change stream with a custom codable type works
+        let changeStream = try coll.watch(options: options, withReturnType: MyReturnType.self)
+        expect(changeStream.error).to(beNil())
+        try coll.insertOne(["x": 1])
+        try coll.updateOne(filter: ["x": 1], update: ["$set": ["x": 2] as Document])
+        let res1 = changeStream.next()
+        expect(changeStream.error).to(beNil())
+        expect(res1).toNot(beNil())
+        expect(res1?.operation).toNot(beNil())
+        expect(res1?.fullDocument).toNot(beNil())
+        expect(res1?.nameSpace).toNot(beNil())
+        let res2 = changeStream.next()
+        expect(res2?.updateDescription).toNot(beNil())
     }
 }

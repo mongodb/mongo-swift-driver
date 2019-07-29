@@ -184,17 +184,10 @@ public class MongoCollection<T: Codable> {
                                   session: ClientSession? = nil,
                                   withFullDocumentType type: T.Type) throws ->
                                   ChangeStream<ChangeStreamDocument<T>> {
-        let pipeline: Document = ["pipeline": pipeline]
-        let connection = try self._client.connectionPool.checkOut()
-        return try self.withMongocCollection(from: connection) { collPtr in
-            let opts = try encodeOptions(options: options, session: session)
-            let changeStreamPtr: OpaquePointer = mongoc_collection_watch(collPtr, pipeline._bson, opts?._bson)
-            return try ChangeStream<ChangeStreamDocument<T>>(stealing: changeStreamPtr,
-                                                             client: self._client,
-                                                             connection: connection,
-                                                             session: session,
-                                                             decoder: self.decoder)
-        }
+        return try self.watch(pipeline,
+                              options: options,
+                              session: session,
+                              withReturnType: ChangeStreamDocument<T>.self)
     }
 
     /**
