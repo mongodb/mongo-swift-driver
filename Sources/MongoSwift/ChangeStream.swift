@@ -3,7 +3,7 @@ import mongoc
 /// `ChangeStreamOptions` to resume or start a change stream where a previous one left off.
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/#resume-a-change-stream
 public struct ResumeToken: Codable, Equatable {
-    public let resumeToken: Document
+    private let resumeToken: Document
 
     internal init(_ resumeToken: Document) {
         self.resumeToken = resumeToken
@@ -15,7 +15,8 @@ public struct ResumeToken: Codable, Equatable {
     }
 
     public init(from decoder: Decoder) throws {
-        self.resumeToken = try Document(from: decoder)
+        let container = try decoder.singleValueContainer()
+        self.resumeToken = try container.decode(Document.self)
     }
 }
 
@@ -147,12 +148,10 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
                   connection: Connection,
                   session: ClientSession? = nil,
                   decoder: BSONDecoder) throws {
-        if let options = options {
-            // TODO: SWIFT-519 starting 4.2, update resumeToken to startAfter (if set).
-            // startAfter takes precedence over resumeAfter.
-            if let resumeAfter = options.resumeAfter {
-                self.resumeToken = resumeAfter
-            }
+        // TODO: SWIFT-519 - Starting 4.2, update resumeToken to startAfter (if set).
+        // startAfter takes precedence over resumeAfter.
+        if let resumeAfter = options?.resumeAfter {
+            self.resumeToken = resumeAfter
         }
         self.client = client
         self.connection = connection

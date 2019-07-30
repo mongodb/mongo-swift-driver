@@ -306,11 +306,10 @@ public class MongoClient {
 
      /**
       * Starts a `ChangeStream` on a `MongoClient`. Allows the client to observe all changes in a cluster - excluding
-      * system collections i.g. "config", "local", and "admin" databases. By default, the type `Document` is
-      * associated with the `fullDocument` field in the `ChangeStreamDocument` emitted by the returned `ChangeStream`.
+      * system collections i.g. "config", "local", and "admin" databases.
       * - Parameters:
       *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
-      *   - options: An optional `ChangeStreamOptions` to use on the initial `ChangeStream` stage.
+      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
       *   - session: An optional `ClientSession` to use with this change stream.
       * - Returns: a `ChangeStream` on all collections in all databases in a cluster.
       * - Throws:
@@ -338,7 +337,7 @@ public class MongoClient {
       * with the `fullDocument` field in the `ChangeStreamDocument` emitted by the returned `ChangeStream`.
       * - Parameters:
       *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
-      *   - options: An optional `ChangeStreamOptions` to use on the initial `ChangeStream` stage.
+      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
       *   - session: An optional `ClientSession` to use with this change stream.
       *   - withFullDocumentType: The type that the change events emitted from the change stream will be decoded to.
       * - Returns: A `ChangeStream` on all collections in all databases in a cluster.
@@ -348,7 +347,6 @@ public class MongoClient {
       *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination.
       *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
       *     pipeline.
-      *   - `DecodingError` if an error occurs while decoding user-defined `withFullDocumentType` `Codable` type.
       * - SeeAlso:
       *   - https://docs.mongodb.com/manual/changeStreams/
       *   - https://docs.mongodb.com/manual/meta/aggregation-quick-reference/
@@ -372,7 +370,7 @@ public class MongoClient {
       * with the returned `ChangeStream`.
       * - Parameters:
       *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
-      *   - options: An optional `ChangeStreamOptions` to use on the initial `ChangeStream` stage.
+      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
       *   - session: An optional `ClientSession` to use with this change stream.
       *   - withReturnType: The type that the entire change stream response will be decoded to.
       * - Returns: A `ChangeStream` on all collections in all databases in a cluster.
@@ -382,7 +380,6 @@ public class MongoClient {
       *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination.
       *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
       *     pipeline.
-      *   - `DecodingError` if an error occurs while decoding user-defined `withReturnType` `Codable` type.
       * - SeeAlso:
       *   - https://docs.mongodb.com/manual/changeStreams/
       *   - https://docs.mongodb.com/manual/meta/aggregation-quick-reference/

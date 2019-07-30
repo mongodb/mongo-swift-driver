@@ -273,11 +273,10 @@ public class MongoDatabase {
     }
 
      /**
-      * Starts a `ChangeStream` on a database. Excludes system collections. By default, the type `Document` is
-      * associated with the `fullDocument` field in `ChangeStreamDocument` emitted by the returned `ChangeStream`.
+      * Starts a `ChangeStream` on a database. Excludes system collections.
       * - Parameters:
       *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
-      *   - options: An optional `ChangeStreamOptions` to use when constructing the `ChangeStream`.
+      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
       *   - session: An optional `ClientSession` to use with this change stream.
       * - Returns: A `ChangeStream` on all collections in a database.
       * - Throws:
@@ -303,7 +302,7 @@ public class MongoDatabase {
       * with the `fullDocument` field in the `ChangeStreamDocument` emitted by the returned `ChangeStream`.
       * - Parameters:
       *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
-      *   - options: An optional `ChangeStreamOptions` to use when constructing the `ChangeStream`.
+      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
       *   - session: An optional `ClientSession` to use with this change stream.
       *   - withFullDocumentType: The type that the change events emitted from the change stream will be decoded to.
       * - Returns: A `ChangeStream` on all collections in a database.
@@ -313,7 +312,6 @@ public class MongoDatabase {
       *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination.
       *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
       *     pipeline.
-      *   - `DecodingError` if an error occurs while decoding user-defined `withFullDocumentType` `Codable` type.
       * - SeeAlso:
       *   - https://docs.mongodb.com/manual/changeStreams/
       *   - https://docs.mongodb.com/manual/meta/aggregation-quick-reference/
@@ -345,7 +343,6 @@ public class MongoDatabase {
       *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination.
       *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
       *     pipeline.
-      *   - `DecodingError` if an error occurs while decoding user-defined `withReturnType` `Codable` type.
       * - SeeAlso:
       *   - https://docs.mongodb.com/manual/changeStreams/
       *   - https://docs.mongodb.com/manual/meta/aggregation-quick-reference/
