@@ -186,7 +186,7 @@ public class MongoCollection<T: Codable> {
         return try self.watch(pipeline,
                               options: options,
                               session: session,
-                              withReturnType: ChangeStreamDocument<T>.self)
+                              withEventType: ChangeStreamDocument<T>.self)
     }
 
     /**
@@ -196,7 +196,7 @@ public class MongoCollection<T: Codable> {
      *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
      *   - session: An optional `ClientSession` to use with this change stream.
-     *   - withReturnType: The type that the entire change stream response will be decoded to.
+     *   - withEventType: The type that the entire change stream response will be decoded to.
      * - Returns: A `ChangeStream` on a specific collection.
      * - Throws:
      *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
@@ -211,7 +211,7 @@ public class MongoCollection<T: Codable> {
     public func watch<T: Codable>(_ pipeline: [Document] = [],
                                   options: ChangeStreamOptions? = nil,
                                   session: ClientSession? = nil,
-                                  withReturnType type: T.Type) throws ->
+                                  withEventType type: T.Type) throws ->
                                   ChangeStream<T> {
         let pipeline: Document = ["pipeline": pipeline]
         let connection = try self._client.connectionPool.checkOut()

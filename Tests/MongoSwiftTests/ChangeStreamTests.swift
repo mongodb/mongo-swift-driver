@@ -236,7 +236,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         }
 
         // Test that creating a change stream with a custom codable type works
-        let changeStream = try coll.watch(options: options, withReturnType: MyReturnType.self)
+        let changeStream = try coll.watch(options: options, withEventType: MyReturnType.self)
         expect(changeStream.error).to(beNil())
         try coll.insertOne(["x": 1])
         try coll.updateOne(filter: ["x": 1], update: ["$set": ["x": 2] as Document])
