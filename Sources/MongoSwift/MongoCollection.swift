@@ -222,6 +222,7 @@ public class MongoCollection<T: Codable> {
             let opts = try encodeOptions(options: options, session: session)
             let changeStreamPtr: OpaquePointer = mongoc_collection_watch(collPtr, pipeline._bson, opts?._bson)
             return try ChangeStream<T>(stealing: changeStreamPtr,
+                                       options: options,
                                        client: self._client,
                                        connection: connection,
                                        session: session,

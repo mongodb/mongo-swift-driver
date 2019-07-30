@@ -3,10 +3,15 @@ import mongoc
 /// `ChangeStreamOptions` to resume or start a change stream where a previous one left off.
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/#resume-a-change-stream
 public struct ResumeToken: Codable, Equatable {
-    private let resumeToken: Document
+    public let resumeToken: Document
 
-    internal init(resumeToken: Document) {
+    internal init(_ resumeToken: Document) {
         self.resumeToken = resumeToken
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(self.resumeToken)
     }
 
     public init(from decoder: Decoder) throws {
@@ -18,7 +23,7 @@ public struct ResumeToken: Codable, Equatable {
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/
 public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     /// A `ResumeToken` used for manually resuming a change stream.
-    public private(set) var resumeToken: ResumeToken
+    public private(set) var resumeToken: ResumeToken?
 
     /// A `MongoClient` stored to make sure the source client stays valid until the change stream is destroyed.
     private let client: MongoClient
@@ -97,7 +102,7 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
                             .internalError(message: "_id field is missing from the change stream document.")
                 return nil
         }
-        self.resumeToken = ResumeToken(resumeToken: resumeToken)
+        self.resumeToken = ResumeToken(resumeToken)
 
         do {
             return try decoder.decode(T.self, from: doc)
@@ -137,11 +142,18 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
      *   - `UserError.invalidArgumentError` if the `mongoc_change_stream_t` was created with invalid options.
      */
     internal init(stealing changeStream: OpaquePointer,
+                  options: ChangeStreamOptions? = nil,
                   client: MongoClient,
                   connection: Connection,
                   session: ClientSession? = nil,
                   decoder: BSONDecoder) throws {
-        self.resumeToken = ResumeToken(resumeToken: [])
+        if let options = options {
+            // TODO: SWIFT-519 starting 4.2, update resumeToken to startAfter (if set).
+            // startAfter takes precedence over resumeAfter.
+            if let resumeAfter = options.resumeAfter {
+                self.resumeToken = resumeAfter
+            }
+        }
         self.client = client
         self.connection = connection
         self.session = session

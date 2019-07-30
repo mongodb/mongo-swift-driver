@@ -16,7 +16,7 @@ extension BSONValueTests {
     ]
 }
 
-extension ChangeStreamTest {
+extension ChangeStreamTests {
     static var allTests = [
         ("testChangeStreamOnAClient", testChangeStreamOnAClient),
         ("testChangeStreamOnADatabase", testChangeStreamOnADatabase),
@@ -246,7 +246,7 @@ extension SDAMTests {
 
 XCTMain([
     testCase(BSONValueTests.allTests),
-    testCase(ChangeStreamTest.allTests),
+    testCase(ChangeStreamTests.allTests),
     testCase(ClientSessionTests.allTests),
     testCase(CodecTests.allTests),
     testCase(CommandMonitoringTests.allTests),

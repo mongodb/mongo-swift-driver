@@ -3,7 +3,7 @@ import mongoc
 import Nimble
 import XCTest
 
-final class ChangeStreamTest: MongoSwiftTestCase {
+final class ChangeStreamTests: MongoSwiftTestCase {
     func testChangeStreamOnAClient() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
             print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
@@ -164,6 +164,28 @@ final class ChangeStreamTest: MongoSwiftTestCase {
         expect(res2).to(beNil())
     }
 
+    func testChangeStreamResumeToken() throws {
+        guard MongoSwiftTestCase.topologyType != .single else {
+            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            return
+        }
+
+        let client = try MongoClient()
+        let db = client.db(type(of: self).testDatabase)
+        defer { try? db.drop() }
+        let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
+        let changeStream1 = try coll.watch()
+        try coll.insertOne(["x": 1])
+        changeStream1.next()
+        expect(changeStream1.error).to(beNil())
+        // save the current resumeToken and use it as the resumeAfter in a new change stream
+        let resumeAfter = changeStream1.resumeToken
+        let changeStream2 = try coll.watch(options: ChangeStreamOptions(resumeAfter: resumeAfter))
+        // expect this change stream to have its resumeToken set to the resumeAfter
+        expect(changeStream2.resumeToken).to(equal(resumeAfter))
+        expect(changeStream2.error).to(beNil())
+    }
+
     func testChangeStreamResumeTokenError() throws {
          guard MongoSwiftTestCase.topologyType != .single else {
             print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
@@ -178,7 +200,7 @@ final class ChangeStreamTest: MongoSwiftTestCase {
         let pipeline: [Document] = [["$project": ["_id": 0] as Document]]
         let changeStream = try coll.watch(pipeline, options: options)
         try coll.insertOne(["a": 1])
-        expect(try changeStream.nextOrError()).to(throwError(RuntimeError.internalError(message: "")))
+        expect(try changeStream.nextOrError()).to(throwError())
     }
 
     func testChangeStreamWithWithCodableType() throws {
