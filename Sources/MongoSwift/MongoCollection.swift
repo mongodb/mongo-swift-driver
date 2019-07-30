@@ -136,7 +136,7 @@ public class MongoCollection<T: Codable> {
 
     /**
      * Starts a `ChangeStream` on a collection. By default, the type `CollectionType` is associated with the
-     * `fullDocument` field in `ChangeStreamDocument` emitted by the returned `ChangeStream`.
+     * `fullDocument` field in `ChangeStreamDocument`s emitted by the returned `ChangeStream`.
      * - Parameters:
      *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
