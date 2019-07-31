@@ -138,6 +138,34 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         expect(changeStream.resumeToken).to(equal(res3?._id))
     }
 
+    func testChangeStreamOnACollectionWithCodableType() throws {
+        guard MongoSwiftTestCase.topologyType != .single else {
+            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            return
+        }
+
+        let client = try MongoClient()
+        let db = client.db(type(of: self).testDatabase)
+        defer { try? db.drop() }
+
+        struct MyType: Codable {
+            let foo: String
+            let bar: Int
+        }
+
+        let coll = try db.createCollection(self.getCollectionName(suffix: "1"), withType: MyType.self)
+        let options = ChangeStreamOptions(fullDocument: .updateLookup)
+        let changeStream = try coll.watch(options: options)
+
+        try coll.insertOne(MyType(foo: "blah", bar: 123))
+        let res1 = changeStream.next()
+        expect(changeStream.error).to(beNil())
+        expect(res1).toNot(beNil())
+        expect(res1?.operationType).to(equal(.insert))
+        expect(res1?.fullDocument?.foo).to(bsonEqual("blah"))
+        expect(res1?.fullDocument?.bar).to(bsonEqual(123))
+    }
+
     func testChangeStreamWithPipeline() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
             print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
@@ -203,7 +231,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         expect(try changeStream.nextOrError()).to(throwError())
     }
 
-    func testChangeStreamWithWithCodableType() throws {
+    func testChangeStreamWithCodableType() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
             print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
             return

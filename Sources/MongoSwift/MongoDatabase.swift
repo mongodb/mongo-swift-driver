@@ -288,6 +288,7 @@ public class MongoDatabase {
       * - SeeAlso:
       *   - https://docs.mongodb.com/manual/changeStreams/
       *   - https://docs.mongodb.com/manual/meta/aggregation-quick-reference/
+      *   - https://docs.mongodb.com/manual/reference/system-collections/
       * - Note: Supported in MongoDB version 4.0+ only.
       */
      public func watch(_ pipeline: [Document] = [],
@@ -299,12 +300,13 @@ public class MongoDatabase {
 
      /**
       * Starts a `ChangeStream` on a database. Excludes system collections. Associates the specified `Codable` type `T`
-      * with the `fullDocument` field in the `ChangeStreamDocument` emitted by the returned `ChangeStream`.
+      * with the `fullDocument` field in the `ChangeStreamDocument`s emitted by the returned `ChangeStream`.
       * - Parameters:
       *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
       *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
       *   - session: An optional `ClientSession` to use with this change stream.
-      *   - withFullDocumentType: The type that the change events emitted from the change stream will be decoded to.
+      *   - withFullDocumentType: The type that the `fullDocument` field of the emitted `ChangeStreamDocument`s will be
+      *                           decoded to.
       * - Returns: A `ChangeStream` on all collections in a database.
       * - Throws:
       *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
@@ -335,7 +337,8 @@ public class MongoDatabase {
       *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
       *   - options: An optional `ChangeStreamOptions` to use when constructing the `ChangeStream`.
       *   - session: An optional `ClientSession` to use with this change stream.
-      *   - withEventType: The type that the entire change stream response will be decoded to.
+      *   - withEventType: The type that the entire change stream response will be decoded to and that will be returned
+      *                    when iterating through the change stream.
       * - Returns: A `ChangeStream` on all collections in a database.
       * - Throws:
       *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.

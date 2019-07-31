@@ -44,8 +44,11 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     /// Used for storing Swift errors.
     private var swiftError: Error?
 
-    /// The error that occurred while iterating the change stream, if one exists. This should be used to check
-    /// for errors after `next()` returns `nil`.
+    /** The error that occurred while iterating the change stream, if one exists. This should be used to check
+     *  for errors after `next()` returns `nil`.
+     *  - Errors:
+     *      - `DecodingError` if an error occurs decoding the server's response.
+     */
     public var error: Error? {
         if let err = self.swiftError {
             return err
@@ -79,6 +82,10 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     /// `maxAwaitTimeMS` milliseconds as specified in the `ChangeStreamOptions`, or for the server default timeout
     /// if omitted.
     public func next() -> T? {
+        // If an error exists, refuse iterating the change stream to avoid overwriting the original error.
+        guard self.error == nil else {
+            return nil
+        }
         // Allocate space for a reference to a BSON pointer.
         let out = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
         defer {
