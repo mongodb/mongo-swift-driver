@@ -334,7 +334,7 @@ public class MongoClient {
      /**
       * Starts a `ChangeStream` on a `MongoClient`. Allows the client to observe all changes in a cluster - excluding
       * system collections i.g. "config", "local", and "admin" databases. Associates the specified `Codable` type `T`
-      * with the `fullDocument` field in the `ChangeStreamDocument` emitted by the returned `ChangeStream`.
+      * with the `fullDocument` field in the `ChangeStreamDocument`s emitted by the returned `ChangeStream`.
       * - Parameters:
       *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
       *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
