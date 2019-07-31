@@ -47,7 +47,7 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     /** The error that occurred while iterating the change stream, if one exists. This should be used to check
      *  for errors after `next()` returns `nil`.
      *  - Errors:
-     *      - `DecodingError` if an error occurs decoding the server's response.
+     *      - `DecodingError` if an error occurs while decoding the server's response.
      */
     public var error: Error? {
         if let err = self.swiftError {
@@ -130,7 +130,7 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
      *   - `ServerError.commandError` if an error occurs on the server while iterating the change stream cursor.
      *   - `UserError.logicError` if this function is called and the session associated with this change stream is
      *     inactive.
-     *   - `DecodingError` if an error occurs decoding the server's response.
+     *   - `DecodingError` if an error occurs while decoding the server's response.
      */
     public func nextOrError() throws -> T? {
         if let next = self.next() {
