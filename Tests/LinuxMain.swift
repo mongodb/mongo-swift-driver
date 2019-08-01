@@ -21,11 +21,12 @@ extension ChangeStreamTests {
         ("testChangeStreamOnAClient", testChangeStreamOnAClient),
         ("testChangeStreamOnADatabase", testChangeStreamOnADatabase),
         ("testChangeStreamOnACollection", testChangeStreamOnACollection),
-        ("testChangeStreamOnACollectionWithCodableType", testChangeStreamOnACollectionWithCodableType),
         ("testChangeStreamWithPipeline", testChangeStreamWithPipeline),
         ("testChangeStreamResumeToken", testChangeStreamResumeToken),
         ("testChangeStreamResumeTokenError", testChangeStreamResumeTokenError),
-        ("testChangeStreamWithCodableType", testChangeStreamWithCodableType),
+        ("testChangeStreamWithEventType", testChangeStreamWithEventType),
+        ("testChangeStreamOnWithFullDocumentType", testChangeStreamOnWithFullDocumentType),
+        ("testChangeStreamOnACollectionWithCodableType", testChangeStreamOnACollectionWithCodableType),
     ]
 }
 
