@@ -256,23 +256,21 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        do {
-            // test that the change stream works on client and database when using withEventType
-            let clientChangeStream = try client.watch(withEventType: MyEventType.self)
-            let dbChangeStream = try db.watch(withEventType: MyEventType.self)
-            let expectedFullDocument = MyFullDocumentType(id: 2, x: 1, y: 2)
-            try coll.insertOne(["_id": 2, "x": 1, "y": 2])
-            let clientChange = clientChangeStream.next()
-            let dbChange = dbChangeStream.next()
-            expect(clientChangeStream).toNot(beNil())
-            expect(clientChangeStream.error).to(beNil())
-            expect(clientChange?.operation).to(equal("insert"))
-            expect(clientChange?.fullDocument).to(equal(expectedFullDocument))
-            expect(dbChangeStream).toNot(beNil())
-            expect(dbChangeStream.error).to(beNil())
-            expect(dbChange?.operation).to(equal("insert"))
-            expect(dbChange?.fullDocument).to(equal(expectedFullDocument))
-        }
+        // test that the change stream works on client and database when using withEventType
+        let clientChangeStream = try client.watch(withEventType: MyEventType.self)
+        let dbChangeStream = try db.watch(withEventType: MyEventType.self)
+        let expectedFullDocument = MyFullDocumentType(id: 2, x: 1, y: 2)
+        try coll.insertOne(["_id": 2, "x": 1, "y": 2])
+        let clientChange = clientChangeStream.next()
+        let dbChange = dbChangeStream.next()
+        expect(clientChangeStream).toNot(beNil())
+        expect(clientChangeStream.error).to(beNil())
+        expect(clientChange?.operation).to(equal("insert"))
+        expect(clientChange?.fullDocument).to(equal(expectedFullDocument))
+        expect(dbChangeStream).toNot(beNil())
+        expect(dbChangeStream.error).to(beNil())
+        expect(dbChange?.operation).to(equal("insert"))
+        expect(dbChange?.fullDocument).to(equal(expectedFullDocument))
     }
 
     func testChangeStreamOnWithFullDocumentType() throws {
@@ -281,7 +279,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let doc: Document = ["_id": 1, "x": 1, "y": 2]
+        let doc1: Document = ["_id": 1, "x": 1, "y": 2]
 
         let client = try MongoClient()
         let db = client.db(type(of: self).testDatabase)
@@ -291,26 +289,24 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
         // test that the change stream works on a collection when using withFullDocumentType
         let collChangeStream = try coll.watch()
-        try coll.insertOne(doc)
+        try coll.insertOne(doc1)
         let collChange = collChangeStream.next()
-        expect(collChange?.fullDocument).to(equal(doc))
+        expect(collChange?.fullDocument).to(equal(doc1))
 
         guard try client.serverVersion() >= ServerVersion(major: 4, minor: 0) else {
             print("Skipping test case for server version \(try client.serverVersion())")
             return
         }
 
-        do {
-            // test that the change stream works on client and database when using withFullDocumentType
-            let clientChangeStream = try client.watch()
-            let dbChangeStream = try db.watch()
-            let doc: Document = ["_id": 2, "x": 1, "y": 2]
-            try coll.insertOne(doc)
-            let clientChange = clientChangeStream.next()
-            let dbChange = dbChangeStream.next()
-            expect(clientChange?.fullDocument).to(equal(doc))
-            expect(dbChange?.fullDocument).to(equal(doc))
-        }
+       // test that the change stream works on client and database when using withFullDocumentType
+        let clientChangeStream = try client.watch()
+        let dbChangeStream = try db.watch()
+        let doc2: Document = ["_id": 2, "x": 1, "y": 2]
+        try coll.insertOne(doc2)
+        let clientChange = clientChangeStream.next()
+        let dbChange = dbChangeStream.next()
+        expect(clientChange?.fullDocument).to(equal(doc2))
+        expect(dbChange?.fullDocument).to(equal(doc2))
     }
 
     struct MyType: Codable, Equatable {
