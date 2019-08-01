@@ -62,7 +62,7 @@ extension MongoCollection {
 
     /**
      * Starts a `ChangeStream` on a collection. Associates the specified `Codable` type `T` with the returned
-     * `ChangeStream`. Excludes system collections
+     * `ChangeStream`. Excludes system collections.
      * - Parameters:
      *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
