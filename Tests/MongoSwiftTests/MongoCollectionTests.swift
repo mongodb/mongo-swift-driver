@@ -108,9 +108,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         let encoder = BSONEncoder()
         let center = NotificationCenter.default
 
-        let client = try MongoClient(options: ClientOptions(eventMonitoring: true))
-        client.enableMonitoring(forEvents: .commandMonitoring)
-
+        let client = try MongoClient(options: ClientOptions(commandMonitoring: true))
         var db = client.db(type(of: self).testDatabase)
 
         let collection = db.collection("collection")

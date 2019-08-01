@@ -13,7 +13,7 @@ internal struct Connection {
 /// A pool of one or more connections.
 internal class ConnectionPool {
     /// Represents the mode of a `ConnectionPool`.
-    private enum Mode {
+    internal enum Mode {
         /// Indicates that we are in single-client mode using the associated pointer to a `mongoc_client_t`.
         case single(client: OpaquePointer)
         /// Indicates that we are in pooled mode using the associated pointer to a `mongoc_client_pool_t`.
@@ -23,7 +23,7 @@ internal class ConnectionPool {
     }
 
     /// The mode of this `ConnectionPool`.
-    private var mode: Mode
+    internal private(set) var mode: Mode
 
     /// Initializes the pool in single mode using the provided pointer to a `mongoc_client_t`.
     internal init(stealing pointer: OpaquePointer) {
@@ -95,19 +95,5 @@ internal class ConnectionPool {
         let connection = try self.checkOut()
         defer { self.checkIn(connection) }
         return try body(connection)
-    }
-
-    /// Sets APM callbacks to be used for all connections in the pool.
-    internal func setAPMCallbacks(client: MongoClient, callbacks: OpaquePointer) {
-        // we can pass the MongoClient as unretained because the callbacks are stored on clientHandle, so if the
-        // callback is being executed, this pool and therefore its parent `MongoClient` must still be valid.
-        switch self.mode {
-        case let .single(clientHandle):
-            mongoc_client_set_apm_callbacks(clientHandle, callbacks, Unmanaged.passUnretained(client).toOpaque())
-        case let .pooled(pool):
-            mongoc_client_pool_set_apm_callbacks(pool, callbacks, Unmanaged.passUnretained(client).toOpaque())
-        case .none:
-            fatalError("ConnectionPool was already closed")
-        }
     }
 }
