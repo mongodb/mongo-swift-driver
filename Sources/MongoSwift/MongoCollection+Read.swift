@@ -8,6 +8,7 @@ extension MongoCollection {
      * - Parameters:
      *   - filter: A `Document` that should match the query
      *   - options: Optional `FindOptions` to use when executing the command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: A `MongoCursor` over the resulting `Document`s
      *
@@ -43,6 +44,7 @@ extension MongoCollection {
      * - Parameters:
      *   - pipeline: an `[Document]` containing the pipeline of aggregation operations to perform
      *   - options: Optional `AggregateOptions` to use when executing the command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: A `MongoCursor` over the resulting `Document`s
      *
@@ -84,6 +86,7 @@ extension MongoCollection {
      * - Parameters:
      *   - filter: a `Document`, the filter that documents must match in order to be counted
      *   - options: Optional `CountOptions` to use when executing the command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: The count of the documents that matched the filter
      *
@@ -105,6 +108,7 @@ extension MongoCollection {
      * - Parameters:
      *   - filter: a `Document`, the filter that documents must match in order to be counted
      *   - options: Optional `CountDocumentsOptions` to use when executing the command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: The count of the documents that matched the filter
      */
@@ -120,6 +124,7 @@ extension MongoCollection {
      *
      * - Parameters:
      *   - options: Optional `EstimatedDocumentCountOptions` to use when executing the command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: an estimate of the count of documents in this collection
      */
@@ -136,6 +141,7 @@ extension MongoCollection {
      *   - fieldName: The field for which the distinct values will be found
      *   - filter: a `Document` representing the filter documents must match in order to be considered for the operation
      *   - options: Optional `DistinctOptions` to use when executing the command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: A `[BSONValue]` containing the distinct values for the specified criteria
      *

@@ -8,6 +8,7 @@ extension MongoCollection {
      * - Parameters:
      *   - filter: `Document` representing the match criteria
      *   - options: Optional `FindOneAndDeleteOptions` to use when executing the command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: The deleted document, represented as a `CollectionType`, or `nil` if no document was deleted.
      *
@@ -34,6 +35,7 @@ extension MongoCollection {
      *   - filter: `Document` representing the match criteria
      *   - replacement: a `CollectionType` to replace the found document
      *   - options: Optional `FindOneAndReplaceOptions` to use when executing the command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: A `CollectionType`, representing either the original document or its replacement,
      *      depending on selected options, or `nil` if there was no match.
@@ -62,6 +64,7 @@ extension MongoCollection {
      *   - filter: `Document` representing the match criteria
      *   - update: a `Document` containing updates to apply
      *   - options: Optional `FindOneAndUpdateOptions` to use when executing the command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: A `CollectionType` representing either the original or updated document,
      *      depending on selected options, or `nil` if there was no match.

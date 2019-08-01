@@ -8,6 +8,7 @@ extension MongoCollection {
      * - Parameters:
      *   - requests: a `[WriteModel]` containing the writes to perform.
      *   - options: optional `BulkWriteOptions` to use while executing the operation.
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: a `BulkWriteResult`, or `nil` if the write concern is unacknowledged.
      *

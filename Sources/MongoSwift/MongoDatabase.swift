@@ -176,6 +176,7 @@ public class MongoDatabase {
      * - Parameters:
      *   - name: a `String`, the name of the collection to create
      *   - options: Optional `CreateCollectionOptions` to use for the collection
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: the newly created `MongoCollection<Document>`
      *
@@ -200,6 +201,7 @@ public class MongoDatabase {
      * - Parameters:
      *   - name: a `String`, the name of the collection to create
      *   - options: Optional `CreateCollectionOptions` to use for the collection
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: the newly created `MongoCollection<T>`
      *
@@ -223,6 +225,7 @@ public class MongoDatabase {
      * - Parameters:
      *   - filter: a `Document`, optional criteria to filter results by
      *   - options: Optional `ListCollectionsOptions` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: a `MongoCursor` over an array of collections
      *
@@ -254,6 +257,7 @@ public class MongoDatabase {
      * - Parameters:
      *   - command: a `Document` containing the command to issue against the database
      *   - options: Optional `RunCommandOptions` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: a `Document` containing the server response for the command
      *

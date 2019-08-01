@@ -156,6 +156,7 @@ extension MongoCollection {
      *   - keys: a `Document` specifing the keys for the index
      *   - options: Optional `IndexOptions` to use for the index
      *   - commandOptions: Optional `CreateIndexOptions` to use for the command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: The name of the created index.
      *
@@ -182,6 +183,7 @@ extension MongoCollection {
      * - Parameters:
      *   - model: An `IndexModel` representing the keys and options for the index
      *   - options: Optional `CreateIndexOptions` to use for the command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: The name of the created index.
      *
@@ -205,6 +207,7 @@ extension MongoCollection {
      * - Parameters:
      *   - models: An `[IndexModel]` specifying the indexes to create
      *   - options: Optional `CreateIndexOptions` to use for the command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: An `[String]` containing the names of all the indexes that were created.
      *
@@ -229,6 +232,7 @@ extension MongoCollection {
      * - Parameters:
      *   - name: The name of the index to drop
      *   - options: Optional `DropIndexOptions` to use for the command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Throws:
      *   - `ServerError.writeError` if an error occurs while performing the command.
@@ -253,6 +257,7 @@ extension MongoCollection {
      * - Parameters:
      *   - keys: a `Document` containing the keys for the index to drop
      *   - options: Optional `DropIndexOptions` to use for the command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: a `Document` containing the server's response to the command.
      *
@@ -276,6 +281,7 @@ extension MongoCollection {
      * - Parameters:
      *   - model: An `IndexModel` describing the index to drop
      *   - options: Optional `DropIndexOptions` to use for the command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: a `Document` containing the server's response to the command.
      *
@@ -298,6 +304,7 @@ extension MongoCollection {
      *
      * - Parameters:
      *   - options: Optional `DropIndexOptions` to use for the command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: a `Document` containing the server's response to the command.
      *
@@ -324,6 +331,9 @@ extension MongoCollection {
 
     /**
      * Retrieves a list of the indexes currently on this collection.
+     *
+     * - Parameters:
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: A `MongoCursor` over the index names.
      *

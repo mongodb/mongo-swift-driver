@@ -233,6 +233,7 @@ public class MongoClient {
      * - Parameters:
      *   - filter: Optional `Document` specifying a filter that the listed databases must pass. This filter can be based
      *     on the "name", "sizeOnDisk", "empty", or "shards" fields of the output.
+     *   - session: Optional `ClientSession` to use when executing this command.
      *
      * - Returns: A `MongoCursor` over `Document`s describing the databases matching provided criteria
      *
@@ -259,6 +260,7 @@ public class MongoClient {
      *
      * - Parameters:
      *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: An Array of `MongoDatabase`s that match the provided filter.
      *
@@ -274,6 +276,7 @@ public class MongoClient {
      *
      * - Parameters:
      *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: An Array of `MongoDatabase`s that match the provided filter.
      *

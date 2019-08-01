@@ -9,6 +9,7 @@ extension MongoCollection {
      * - Parameters:
      *   - value: A `CollectionType` value to encode and insert
      *   - options: Optional `InsertOneOptions` to use when executing the command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: The optional result of attempting to perform the insert. If the `WriteConcern`
      *            is unacknowledged, `nil` is returned.
@@ -38,6 +39,7 @@ extension MongoCollection {
      * - Parameters:
      *   - values: The `CollectionType` values to insert
      *   - options: optional `InsertManyOptions` to use while executing the operation
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: an `InsertManyResult`, or `nil` if the write concern is unacknowledged.
      *
@@ -64,6 +66,7 @@ extension MongoCollection {
      *   - filter: A `Document` representing the match criteria
      *   - replacement: The replacement value, a `CollectionType` value to be encoded and inserted
      *   - options: Optional `ReplaceOptions` to use when executing the command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: The optional result of attempting to replace a document. If the `WriteConcern`
      *            is unacknowledged, `nil` is returned.
@@ -97,6 +100,7 @@ extension MongoCollection {
      *   - filter: A `Document` representing the match criteria
      *   - update: A `Document` representing the update to be applied to a matching document
      *   - options: Optional `UpdateOptions` to use when executing the command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: The optional result of attempting to update a document. If the `WriteConcern` is
      *            unacknowledged, `nil` is returned.
@@ -131,6 +135,7 @@ extension MongoCollection {
      *   - filter: A `Document` representing the match criteria
      *   - update: A `Document` representing the update to be applied to matching documents
      *   - options: Optional `UpdateOptions` to use when executing the command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: The optional result of attempting to update multiple documents. If the write
      *            concern is unacknowledged, nil is returned
@@ -164,6 +169,7 @@ extension MongoCollection {
      * - Parameters:
      *   - filter: A `Document` representing the match criteria
      *   - options: Optional `DeleteOptions` to use when executing the command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: The optional result of performing the deletion. If the `WriteConcern` is
      *            unacknowledged, `nil` is returned.
@@ -192,6 +198,7 @@ extension MongoCollection {
      * - Parameters:
      *   - filter: Document representing the match criteria
      *   - options: Optional `DeleteOptions` to use when executing the command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: The optional result of performing the deletion. If the `WriteConcern` is
      *            unacknowledged, `nil` is returned.
