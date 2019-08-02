@@ -519,11 +519,11 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
         expect(try coll.deleteMany(["x": 10], options: DeleteOptions(writeConcern: wc3))).toNot(throwError())
 
         expect(try coll.createIndex(["x": 1],
-                                    commandOptions: CreateIndexOptions(writeConcern: wc1))).toNot(throwError())
+                                    options: CreateIndexOptions(writeConcern: wc1))).toNot(throwError())
         expect(try coll.createIndexes([IndexModel(keys: ["x": -1])],
                                       options: CreateIndexOptions(writeConcern: wc3))).toNot(throwError())
 
-        expect(try coll.dropIndex(["x": 1], commandOptions: DropIndexOptions(writeConcern: wc1))).toNot(throwError())
+        expect(try coll.dropIndex(["x": 1], options: DropIndexOptions(writeConcern: wc1))).toNot(throwError())
         expect(try coll.dropIndexes(options: DropIndexOptions(writeConcern: wc3))).toNot(throwError())
     }
 

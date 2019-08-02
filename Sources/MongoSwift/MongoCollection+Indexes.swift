@@ -154,8 +154,8 @@ extension MongoCollection {
      *
      * - Parameters:
      *   - keys: a `Document` specifing the keys for the index
-     *   - options: Optional `IndexOptions` to use for the index
-     *   - commandOptions: Optional `CreateIndexOptions` to use for the command
+     *   - indexOptions: Optional `IndexOptions` to use for the index
+     *   - options: Optional `CreateIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: The name of the created index.
@@ -169,11 +169,11 @@ extension MongoCollection {
      */
     @discardableResult
     public func createIndex(_ keys: Document,
-                            options: IndexOptions? = nil,
-                            commandOptions: CreateIndexOptions? = nil,
+                            indexOptions: IndexOptions? = nil,
+                            options: CreateIndexOptions? = nil,
                             session: ClientSession? = nil) throws -> String {
-        return try createIndexes([IndexModel(keys: keys, options: options)],
-                                 options: commandOptions,
+        return try createIndexes([IndexModel(keys: keys, options: indexOptions)],
+                                 options: options,
                                  session: session)[0]
     }
 
@@ -270,9 +270,9 @@ extension MongoCollection {
      */
     @discardableResult
     public func dropIndex(_ keys: Document,
-                          commandOptions: DropIndexOptions? = nil,
+                          options: DropIndexOptions? = nil,
                           session: ClientSession? = nil) throws -> Document {
-        return try _dropIndexes(index: keys, options: commandOptions, session: session)
+        return try _dropIndexes(index: keys, options: options, session: session)
     }
 
     /**
