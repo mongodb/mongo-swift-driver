@@ -1,9 +1,16 @@
 # Using MongoSwift in Mulithreaded Applications
 
-As of MongoSwift 0.2.0, `MongoClient`s are safe to use across threads.
-Each `MongoClient` is backed by a pool of server connections, which are used for any server interaction done by the client or one of its child `MongoDatabase` or `MongoCollection`s.
-Every `MongoClient` you create will start a background thread in order to monitor the MongoDB topology you are connected to. **In order to minimize the number of these background threads, we recommend sharing `MongoClient`s across threads.**
+## Threadsafe Types
+As of MongoSwift 0.2.0, the following types are safe to use across threads:
+* `MongoClient`
+* `MongoDatabase`
+* `MongoCollection`
 
-`MongoDatabase`s and `MongoCollection`s have no mutable state, and store references to their parent `MongoClient`s. Any operation performed on one of these objects will use a connection from its parent client's pool. 
+*We make no guarantees about the safety of using any other type across threads.*
 
-There is no performance benefit to sharing `MongoDatabase`s and `MongoCollection`s across threads if you are already sharing the parent clients across threads, but it is perfectly safe to do so.
+## Best Practices
+Each `MongoClient` is backed by a pool of server connections. Any time a client or one of its child objects (a `MongoDatabase` or `MongoCollection`) makes a request to the database (a `find`, `insertOne`, etc.) a connection will be retrieved from the pool, used to execute the operation, and then returned to the pool when it is finished.
+
+Each `MongoClient` uses its own background thread to monitors the MongoDB topology you are connected to.
+
+**In order to share the connection pool across threads and minimize the number of background monitoring threads, we recommend sharing `MongoClient`s across threads.**
