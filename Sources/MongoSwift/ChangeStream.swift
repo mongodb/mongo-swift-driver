@@ -3,6 +3,7 @@ import mongoc
 /// `ChangeStreamOptions` to resume or start a change stream where a previous one left off.
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/#resume-a-change-stream
 public struct ResumeToken: Codable, Equatable {
+    /// A `Document` associated with the most recent event seen by this change stream.
     private let resumeToken: Document
 
     internal init(_ resumeToken: Document) {
@@ -44,10 +45,11 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     /// Used for storing Swift errors.
     private var swiftError: Error?
 
-    /** The error that occurred while iterating the change stream, if one exists. This should be used to check
-     *  for errors after `next()` returns `nil`.
+    /**
+     * The error that occurred while iterating the change stream, if one exists. This should be used to check
+     * for errors after `next()` returns `nil`.
      *  - Errors:
-     *      - `DecodingError` if an error occurs while decoding the server's response.
+     *    - `DecodingError` if an error occurs while decoding the server's response.
      */
     public var error: Error? {
         if let err = self.swiftError {

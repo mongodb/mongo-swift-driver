@@ -273,7 +273,7 @@ public class MongoDatabase {
     }
 
      /**
-      * Starts a `ChangeStream` on a database. Excludes system collections.
+      * Starts a `ChangeStream` on a database. The server will return an error if this is called on a system collection.
       * - Parameters:
       *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
       *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
@@ -281,7 +281,6 @@ public class MongoDatabase {
       * - Returns: A `ChangeStream` on all collections in a database.
       * - Throws:
       *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
-      *   - `ServerError.commandError` if the pipeline passed is invalid.
       *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination.
       *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
       *     pipeline.
@@ -299,8 +298,9 @@ public class MongoDatabase {
      }
 
      /**
-      * Starts a `ChangeStream` on a database. Excludes system collections. Associates the specified `Codable` type `T`
-      * with the `fullDocument` field in the `ChangeStreamDocument`s emitted by the returned `ChangeStream`.
+      * Starts a `ChangeStream` on a database. The server will return an error if this is called on a system collection.
+      * Associates the specified `Codable` type `T` with the `fullDocument` field in the `ChangeStreamDocument`s emitted
+      * by the returned `ChangeStream`.
       * - Parameters:
       *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
       *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
@@ -310,7 +310,6 @@ public class MongoDatabase {
       * - Returns: A `ChangeStream` on all collections in a database.
       * - Throws:
       *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
-      *   - `ServerError.commandError` if the pipeline passed is invalid.
       *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination.
       *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
       *     pipeline.
@@ -332,8 +331,8 @@ public class MongoDatabase {
      }
 
      /**
-      * Starts a `ChangeStream` on a database. Excludes system collections. Associates the specified `Codable` type `T`
-      * with the returned `ChangeStream`.
+      * Starts a `ChangeStream` on a database. The server will return an error if this is called on a system collection.
+      * Associates the specified `Codable` type `T` with the returned `ChangeStream`.
       * - Parameters:
       *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
       *   - options: An optional `ChangeStreamOptions` to use when constructing the `ChangeStream`.
@@ -343,7 +342,6 @@ public class MongoDatabase {
       * - Returns: A `ChangeStream` on all collections in a database.
       * - Throws:
       *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
-      *   - `ServerError.commandError` if the pipeline passed is invalid.
       *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination.
       *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
       *     pipeline.

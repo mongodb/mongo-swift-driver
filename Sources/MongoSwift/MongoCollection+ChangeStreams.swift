@@ -4,7 +4,7 @@ extension MongoCollection {
     /**
      * Starts a `ChangeStream` on a collection. The `CollectionType` will be associated with the
      * `fullDocument` field in `ChangeStreamDocument`s emitted by the returned `ChangeStream`.
-     * Excludes system collections.
+     * The server will return an error if this is called on a system collection.
      * - Parameters:
      *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
@@ -12,7 +12,6 @@ extension MongoCollection {
      * - Returns: A `ChangeStream` on a specific collection.
      * - Throws:
      *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
-     *   - `ServerError.commandError` if the pipeline passed is invalid.
      *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination.
      *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.
@@ -30,7 +29,8 @@ extension MongoCollection {
 
     /**
      * Starts a `ChangeStream` on a collection. Associates the specified `Codable` type `T` with the `fullDocument`
-     * field in the `ChangeStreamDocument`s emitted by the returned `ChangeStream`. Excludes system collections.
+     * field in the `ChangeStreamDocument`s emitted by the returned `ChangeStream`. The server will return an error
+     * if this is called on a system collection.
      * - Parameters:
      *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
@@ -40,7 +40,6 @@ extension MongoCollection {
      * - Returns: A `ChangeStream` on a specific collection.
      * - Throws:
      *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
-     *   - `ServerError.commandError` if the pipeline passed is invalid.
      *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination.
      *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.
@@ -62,7 +61,7 @@ extension MongoCollection {
 
     /**
      * Starts a `ChangeStream` on a collection. Associates the specified `Codable` type `T` with the returned
-     * `ChangeStream`. Excludes system collections.
+     * `ChangeStream`. The server will return an error if this is called on a system collection.
      * - Parameters:
      *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
@@ -72,7 +71,6 @@ extension MongoCollection {
      * - Returns: A `ChangeStream` on a specific collection.
      * - Throws:
      *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
-     *   - `ServerError.commandError` if the pipeline passed is invalid.
      *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination.
      *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.

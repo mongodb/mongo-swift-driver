@@ -163,7 +163,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         expect(change1).toNot(beNil())
         expect(change1?.operationType).to(equal(.insert))
         expect(change1?.fullDocument).to(equal(doc1))
-        // test that a change when inserting a field not included in the pipeline
+        // test that a change event does not exists for this insert since this field's been excluded by the pipeline.
         try coll.insertOne(["b": 2])
         let change2 = changeStream.next()
         expect(change2).to(beNil())
@@ -181,6 +181,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
         let changeStream1 = try coll.watch()
         try coll.insertOne(["x": 1])
+        try coll.insertOne(["y": 2])
         changeStream1.next()
         expect(changeStream1.error).to(beNil())
         // save the current resumeToken and use it as the resumeAfter in a new change stream
@@ -188,10 +189,12 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         let changeStream2 = try coll.watch(options: ChangeStreamOptions(resumeAfter: resumeAfter))
         // expect this change stream to have its resumeToken set to the resumeAfter
         expect(changeStream2.resumeToken).to(equal(resumeAfter))
+        // expect this change stream to have more events after resuming
+        expect(changeStream2.next()).toNot(beNil())
         expect(changeStream2.error).to(beNil())
     }
 
-    func testChangeStreamResumeTokenError() throws {
+    func testChangeStreamProjectOutIdError() throws {
          guard MongoSwiftTestCase.topologyType != .single else {
             print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
             return
@@ -273,13 +276,13 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         expect(dbChange?.fullDocument).to(equal(expectedFullDocument))
     }
 
-    func testChangeStreamOnWithFullDocumentType() throws {
+    func testChangeStreamWithFullDocumentType() throws {
          guard MongoSwiftTestCase.topologyType != .single else {
             print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
             return
         }
 
-        let doc1: Document = ["_id": 1, "x": 1, "y": 2]
+        let expectedDoc1 = MyFullDocumentType(id: 1, x: 1, y: 2)
 
         let client = try MongoClient()
         let db = client.db(type(of: self).testDatabase)
@@ -288,10 +291,10 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
 
         // test that the change stream works on a collection when using withFullDocumentType
-        let collChangeStream = try coll.watch()
-        try coll.insertOne(doc1)
+        let collChangeStream = try coll.watch(withFullDocumentType: MyFullDocumentType.self)
+        try coll.insertOne(["_id": 1, "x": 1, "y": 2])
         let collChange = collChangeStream.next()
-        expect(collChange?.fullDocument).to(equal(doc1))
+        expect(collChange?.fullDocument).to(equal(expectedDoc1))
 
         guard try client.serverVersion() >= ServerVersion(major: 4, minor: 0) else {
             print("Skipping test case for server version \(try client.serverVersion())")
@@ -299,14 +302,15 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         }
 
        // test that the change stream works on client and database when using withFullDocumentType
-        let clientChangeStream = try client.watch()
-        let dbChangeStream = try db.watch()
-        let doc2: Document = ["_id": 2, "x": 1, "y": 2]
-        try coll.insertOne(doc2)
+        let clientChangeStream = try client.watch(withFullDocumentType: MyFullDocumentType.self)
+        let dbChangeStream = try db.watch(withFullDocumentType: MyFullDocumentType.self)
+        let y: Int
+        let expectedDoc2 = MyFullDocumentType(id: 2, x: 1, y: 2)
+        try coll.insertOne(["_id": 2, "x": 1, "y": 2])
         let clientChange = clientChangeStream.next()
         let dbChange = dbChangeStream.next()
-        expect(clientChange?.fullDocument).to(equal(doc2))
-        expect(dbChange?.fullDocument).to(equal(doc2))
+        expect(clientChange?.fullDocument).to(equal(expectedDoc2))
+        expect(dbChange?.fullDocument).to(equal(expectedDoc2))
     }
 
     struct MyType: Codable, Equatable {

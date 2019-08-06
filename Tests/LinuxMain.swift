@@ -23,9 +23,9 @@ extension ChangeStreamTests {
         ("testChangeStreamOnACollection", testChangeStreamOnACollection),
         ("testChangeStreamWithPipeline", testChangeStreamWithPipeline),
         ("testChangeStreamResumeToken", testChangeStreamResumeToken),
-        ("testChangeStreamResumeTokenError", testChangeStreamResumeTokenError),
+        ("testChangeStreamProjectOutIdError", testChangeStreamProjectOutIdError),
         ("testChangeStreamWithEventType", testChangeStreamWithEventType),
-        ("testChangeStreamOnWithFullDocumentType", testChangeStreamOnWithFullDocumentType),
+        ("testChangeStreamWithFullDocumentType", testChangeStreamWithFullDocumentType),
         ("testChangeStreamOnACollectionWithCodableType", testChangeStreamOnACollectionWithCodableType),
     ]
 }
