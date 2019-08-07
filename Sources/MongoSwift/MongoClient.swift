@@ -327,9 +327,9 @@ public class MongoClient {
      * - Note: Supported in MongoDB version 4.0+ only.
      */
     public func watch(_  pipeline: [Document] = [],
-                       options: ChangeStreamOptions?  =  nil,
-                       session: ClientSession? = nil) throws ->
-                       ChangeStream<ChangeStreamEvent<Document>> {
+                      options: ChangeStreamOptions?  =  nil,
+                      session: ClientSession? = nil) throws ->
+                      ChangeStream<ChangeStreamEvent<Document>> {
         return try self.watch(pipeline, options: options, session: session, withFullDocumentType: Document.self)
     }
 
@@ -356,10 +356,10 @@ public class MongoClient {
      * - Note: Supported in MongoDB version 4.0+ only.
      */
     public func watch<T: Codable>(_  pipeline: [Document] = [],
-                                   options: ChangeStreamOptions?  =  nil,
-                                   session: ClientSession? = nil,
-                                   withFullDocumentType: T.Type) throws ->
-                                   ChangeStream<ChangeStreamEvent<T>> {
+                                  options: ChangeStreamOptions?  =  nil,
+                                  session: ClientSession? = nil,
+                                  withFullDocumentType: T.Type) throws ->
+                                  ChangeStream<ChangeStreamEvent<T>> {
         return try self.watch(pipeline,
                               options: options,
                               session: session,
@@ -389,10 +389,10 @@ public class MongoClient {
      * - Note: Supported in MongoDB version 4.0+ only.
      */
     public func watch<T: Codable>(_  pipeline: [Document] = [],
-                                   options: ChangeStreamOptions?  =  nil,
-                                   session: ClientSession? = nil,
-                                   withEventType: T.Type) throws ->
-                                   ChangeStream<T> {
+                                  options: ChangeStreamOptions?  =  nil,
+                                  session: ClientSession? = nil,
+                                  withEventType: T.Type) throws ->
+                                  ChangeStream<T> {
         let pipeline: Document = ["pipeline": pipeline]
         let connection = try self.connectionPool.checkOut()
         let opts = try encodeOptions(options: options, session: session)
