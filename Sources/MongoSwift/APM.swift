@@ -56,7 +56,6 @@ public struct CommandStartedEvent: MongoEvent, InitializableFromOpaquePointer {
         self.operationId = mongoc_apm_command_started_get_operation_id(event)
         self.connectionId = ConnectionId(mongoc_apm_command_started_get_host(event))
     }
-    
 }
 
 /// An event published when a command succeeds. The event is stored under the key `event`

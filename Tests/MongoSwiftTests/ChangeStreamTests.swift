@@ -23,7 +23,7 @@ internal struct ChangeStreamTest: Decodable, ChangeStreamSpecTest {
     let changeStreamOptions: ChangeStreamOptions
 
     /// Array of documents, each describing an operation.
-    let operations: [AnyTestOperation]
+    let operations: [ChangeStreamAnyTestOperation]
 
     /// A list of command-started events in Extended JSON format.
     let expectations: [Document]?
@@ -57,28 +57,33 @@ private struct ChangeStreamTestFile: Decodable {
     let tests: [ChangeStreamTest]
 }
 
-/// Creates a change stream on the topology specified by the spec test
-private func createChangeStream(client: MongoClient, testFile: ChangeStreamTestFile, test: ChangeStreamTest)
-                                throws -> ChangeStream<ChangeStreamTestEventDocument>? {
-    let pipeline = test.changeStreamPipeline
-    let opts = test.changeStreamOptions
-    let db = client.db(testFile.database_name)
-    let coll = db.collection(testFile.collection_name)
+final class ChangeStreamTests: MongoSwiftTestCase, FailPointConfigured {
+    var activeFailPoint: FailPoint?
 
-    switch test.target {
-    case "collection":
-        return try coll.watch(pipeline, options: opts, withEventType: ChangeStreamTestEventDocument.self)
-    case "database":
-        return try db.watch(pipeline, options: opts, withEventType: ChangeStreamTestEventDocument.self)
-    case "client":
-        return try client.watch(pipeline, options: opts, withEventType: ChangeStreamTestEventDocument.self)
-    default:
-        throw RuntimeError.internalError(message: "target is missing")
+    override func tearDown() {
+        self.disableActiveFailPoint()
     }
-    return nil
-}
 
-final class ChangeStreamTests: MongoSwiftTestCase {
+    /// Creates a change stream on the topology specified by the spec test
+    private func createChangeStream(client: MongoClient, testFile: ChangeStreamTestFile, test: ChangeStreamTest)
+                                    throws -> ChangeStream<ChangeStreamTestEventDocument>? {
+        let pipeline = test.changeStreamPipeline
+        let opts = test.changeStreamOptions
+        let db = client.db(testFile.database_name)
+        let coll = db.collection(testFile.collection_name)
+
+        switch test.target {
+        case "collection":
+            return try coll.watch(pipeline, options: opts, withEventType: ChangeStreamTestEventDocument.self)
+        case "database":
+            return try db.watch(pipeline, options: opts, withEventType: ChangeStreamTestEventDocument.self)
+        case "client":
+            return try client.watch(pipeline, options: opts, withEventType: ChangeStreamTestEventDocument.self)
+        default:
+            throw UserError.logicError(message: "target is missing")
+        }
+    }
+
     func testChangeStreamSpec() throws {
         let testFilesPath = MongoSwiftTestCase.specsPath + "/change-streams/tests"
         let testFiles: [String] = try FileManager.default.contentsOfDirectory(atPath: testFilesPath)
@@ -100,7 +105,6 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             let db2 = globalClient.db(testFile.database2_name)
             print("\n------------\nExecuting tests from file \(testFilesPath)/\(testFile.name)...\n")
             for test in testFile.tests {
-                // create test collections
                 try db1.drop()
                 try db2.drop()
                 try db1.createCollection(testFile.collection_name)
@@ -120,44 +124,23 @@ final class ChangeStreamTests: MongoSwiftTestCase {
                 print("Executing test: \(test.description)")
 
                 var seenError: Error?
-                var changeStream: ChangeStream<ChangeStreamTestEventDocument>?
                 let client = try MongoClient(MongoSwiftTestCase.connStr, options: ClientOptions(eventMonitoring: true))
-                client.enableMonitoring(forEvents: .commandMonitoring)
 
-                let center = NotificationCenter.default
-                var receivedEvents = [CommandStartedEvent]()
-
-                let observer = center.addObserver(forName: .commandStarted, object: nil, queue: nil) { notif in
-                    guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
-                        return
-                    }
-                    receivedEvents.append(event)
-                }
-                defer { center.removeObserver(observer) }
-
-                // Create a change stream using client against the target
+                var changeStream: ChangeStream<ChangeStreamTestEventDocument>?
                 do {
                     changeStream = try createChangeStream(client: client, testFile: testFile, test: test)
                 } catch {
                     seenError = error
                 }
 
-                // If there was no error, use globalClient and run every operation in operations in serial
-                // against the server until all operations have been executed or an error is thrown.
-                // Capture any error.
-                try test.run(client: globalClient, db1: db1, db2: db2, seenError: seenError, changeStream: changeStream)
-                // If there are any expectations
-                // For each (expected, idx) in expectations
-                // Assert that actual[idx] MATCHES expected
-                if let expectations = test.expectations {
-                    let encoder = BSONEncoder()
-                    for expected in expectations {
-                        print(expected)
-                        print()
-                        print(receivedEvents.removeFirst())
-                        //expect(encoder.encode(receivedEvents.removeFirst().command)).to(equal(expected.command))
-                    }
+                if let failPoint = test.failPoint {
+                    try self.activateFailPoint(failPoint)
                 }
+                defer { self.disableActiveFailPoint() }
+
+                try test.run(client: globalClient, seenError: seenError, changeStream: changeStream)
+
+                // TODO: add APM assertions
             }
         }
     }

@@ -3,6 +3,25 @@ import mongoc
 import Nimble
 import XCTest
 
+internal struct ChangeStreamAnyTestOperation: Decodable {
+    let anyTestOperation: AnyTestOperation
+
+    let database: String?
+
+    let collection: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case database, collection
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.database = try container.decodeIfPresent(String.self, forKey: .database)
+        self.collection = try container.decodeIfPresent(String.self, forKey: .collection)
+        self.anyTestOperation = try AnyTestOperation(from: decoder)
+    }
+}
+
 internal struct TestResult: Decodable {
     /// Describes an error received during the test
     let error: ChangeStreamTestError?
@@ -23,9 +42,7 @@ internal struct ChangeStreamTestEventDocument: Codable, Equatable {
     let ns: MongoNamespace?
 
     let fullDocument: Document?
-}
 
-extension ChangeStreamTestEventDocument {
     public static func == (lhs: ChangeStreamTestEventDocument, rhs: ChangeStreamTestEventDocument) -> Bool {
         let lhsFullDoc = lhs.fullDocument?.filter { elem in
             let key = elem.key
@@ -43,67 +60,59 @@ extension ChangeStreamTestEventDocument {
 
 internal protocol ChangeStreamSpecTest: Decodable {
     var description: String { get }
-    var operations: [AnyTestOperation] { get }
+    var operations: [ChangeStreamAnyTestOperation] { get }
     var result: TestResult { get }
 
-    func run(client: MongoClient, db1: MongoDatabase, db2: MongoDatabase, seenError: Error?, changeStream: ChangeStream<ChangeStreamTestEventDocument>?) throws
+    func run(client: MongoClient,
+             seenError: Error?,
+             changeStream: ChangeStream<ChangeStreamTestEventDocument>?) throws
 }
 
 extension ChangeStreamSpecTest {
     func run(client: MongoClient,
-             db1: MongoDatabase,
-             db2: MongoDatabase,
              seenError: Error?,
              changeStream: ChangeStream<ChangeStreamTestEventDocument>?) throws {
         var seenError = seenError
         for operation in self.operations {
             guard let dbName = operation.database else {
+                print("The database name for running the operation is missing.")
                 return
             }
 
             guard let collName = operation.collection else {
+                print("The collection name for running the operation is missing.")
                 return
             }
 
-            var db: MongoDatabase
-            var coll: MongoCollection<Document>
-            switch dbName {
-            case db1.name:
-                coll = db1.collection(collName)
-                db = db1
-            case db2.name:
-                coll = db2.collection(collName)
-                db = db2
-            default:
-                throw UserError.logicError(message: "unsupported database name \(dbName)")
-            }
+            let db = client.db(dbName)
+            let coll = db.collection(collName)
 
             do {
-                try operation.op.execute(client: client,
-                                         database: db,
-                                         collection: coll,
-                                         session: nil)
+                try operation.anyTestOperation.op.execute(client: client,
+                                                          database: db,
+                                                          collection: coll,
+                                                          session: nil)
             } catch {
                 seenError = error
             }
         }
-        // If there was an error
+
         if seenError != nil {
             // assert errors match expected errors
-            assertErrors(seenError: seenError)
+            assertError(seenError: seenError)
         } else {
             // assert change doc match expected change doc
             assertSuccess(changeStream: changeStream)
         }
      }
 
-     private func assertErrors(seenError: Error?) {
-        // Assert that an error was expected for the self.
+     private func assertError(seenError: Error?) {
+        // assert that an error was expected for the test
         expect(self.result.error).toNot(beNil())
-        // Assert that the error MATCHES result.error
-        if let errorCode = self.result.error?.code {
+        // assert that the error matches expected error
+        if let expectedErrorCode = self.result.error?.code {
             expect(seenError as? ServerError).to(equal(ServerError
-                                                    .commandError(code: errorCode,
+                                                    .commandError(code: expectedErrorCode,
                                                                   codeName: "",
                                                                   message: "",
                                                                   errorLabels: self.result.error?
@@ -112,16 +121,13 @@ extension ChangeStreamSpecTest {
     }
 
     private func assertSuccess(changeStream: ChangeStream<ChangeStreamTestEventDocument>?) {
-        // Assert that no error was expected for the test
+        // assert that no error was expected for the test
         expect(self.result.error).to(beNil())
-        // Assert that the changes received from changeStream MATCH the results in result.success
-        if let changeStream = changeStream {
-            if let expectedChange = self.result.success {
-                for i in 0...expectedChange.count - 1 {
-                    let expectedChange = expectedChange[i]
-                    if let change = changeStream.next() {
-                        expect(change).to(equal(expectedChange))
-                    }
+        // assert that the changes received from changeStream MATCH the results in result.success
+        if let changeStream = changeStream, let expectedChanges = self.result.success {
+            for expectedChange in expectedChanges {
+                if let change = changeStream.next() {
+                    expect(change).to(equal(expectedChange))
                 }
             }
         }
