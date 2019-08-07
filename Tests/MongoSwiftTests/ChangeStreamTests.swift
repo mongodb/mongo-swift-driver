@@ -145,7 +145,7 @@ final class ChangeStreamTests: MongoSwiftTestCase, FailPointConfigured {
         }
     }
 
-    func testChangeStreamOnAClient() throws {
+     func testChangeStreamOnAClient() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
             print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
             return
@@ -360,16 +360,6 @@ final class ChangeStreamTests: MongoSwiftTestCase, FailPointConfigured {
         enum CodingKeys: String, CodingKey {
             case id = "_id", x, y
         }
-
-        let client = try MongoClient()
-        let db = client.db(type(of: self).testDatabase)
-        defer { try? db.drop() }
-        let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
-        let options = ChangeStreamOptions(fullDocument: .updateLookup)
-        let pipeline: [Document] = [["$project": ["_id": 0] as Document]]
-        let changeStream = try coll.watch(pipeline, options: options)
-        try coll.insertOne(["a": 1])
-        expect(try changeStream.nextOrError()).to(throwError(RuntimeError.internalError(message: "")))
     }
 
     struct MyEventType: Codable, Equatable {
