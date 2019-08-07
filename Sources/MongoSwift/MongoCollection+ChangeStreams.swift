@@ -85,16 +85,11 @@ extension MongoCollection {
                                   withEventType type: T.Type) throws ->
                                   ChangeStream<T> {
         let pipeline: Document = ["pipeline": pipeline]
-        let connection = try self._client.connectionPool.checkOut()
-        return try self.withMongocCollection(from: connection) { collPtr in
-            let opts = try encodeOptions(options: options, session: session)
-            let changeStreamPtr: OpaquePointer = mongoc_collection_watch(collPtr, pipeline._bson, opts?._bson)
-            return try ChangeStream<T>(stealing: changeStreamPtr,
-                                       options: options,
-                                       client: self._client,
-                                       connection: connection,
-                                       session: session,
-                                       decoder: self.decoder)
+        let opts = try encodeOptions(options: options, session: session)
+        return try ChangeStream<T>(options: options, client: self._client, decoder: self.decoder, session: session) { conn in
+            self.withMongocCollection(from: conn) { collPtr in
+                mongoc_collection_watch(collPtr, pipeline._bson, opts?._bson)
+            }
         }
     }
 }

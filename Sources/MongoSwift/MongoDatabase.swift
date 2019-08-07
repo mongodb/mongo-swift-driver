@@ -357,15 +357,11 @@ public class MongoDatabase {
                                   withEventType: T.Type) throws ->
                                   ChangeStream<T> {
         let pipeline: Document = ["pipeline": pipeline]
-        let connection = try self._client.connectionPool.checkOut()
         let opts = try encodeOptions(options: options, session: session)
-        return try self.withMongocDatabase(from: connection) { dbPtr in
-            let changeStreamPtr: OpaquePointer = mongoc_database_watch(dbPtr, pipeline._bson, opts?._bson)
-            return try ChangeStream<T>(stealing: changeStreamPtr,
-                                       client: self._client,
-                                       connection: connection,
-                                       session: session,
-                                       decoder: self.decoder)
+        return try ChangeStream<T>(options: options, client: self._client, decoder: self.decoder, session: session) { conn in
+            self.withMongocDatabase(from: conn) { dbPtr in
+                mongoc_database_watch(dbPtr, pipeline._bson, opts?._bson)
+            }
         }
     }
 

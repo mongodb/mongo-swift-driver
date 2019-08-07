@@ -395,14 +395,10 @@ public class MongoClient {
                                   withEventType: T.Type) throws ->
                                   ChangeStream<T> {
         let pipeline: Document = ["pipeline": pipeline]
-        let connection = try self.connectionPool.checkOut()
         let opts = try encodeOptions(options: options, session: session)
-        let changeStreamPtr: OpaquePointer = mongoc_client_watch(self._client, pipeline._bson, opts?._bson)
-        return try ChangeStream<T>(stealing: changeStreamPtr,
-                                   client: self,
-                                   connection: connection,
-                                   session: session,
-                                   decoder: self.decoder)
+        return try ChangeStream<T>(options: options, client: self, decoder: self.decoder, session: session) { conn in
+            mongoc_client_watch(conn.clientHandle, pipeline._bson, opts?._bson)
+        }
     }
 
     /// Executes an `Operation` using this `MongoClient` and an optionally provided session.
