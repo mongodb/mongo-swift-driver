@@ -3,7 +3,8 @@ import mongoc
 extension MongoCollection {
     /**
      * Starts a `ChangeStream` on a collection. The `CollectionType` will be associated with the `fullDocument` field
-     * in `ChangeStreamEvent`s emitted by the returned `ChangeStream`. Excludes system collections.
+     * in `ChangeStreamEvent`s emitted by the returned `ChangeStream`. The server will return an error if this is called
+     * on a system collection.
      * - Parameters:
      *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
@@ -60,7 +61,7 @@ extension MongoCollection {
 
     /**
      * Starts a `ChangeStream` on a collection. Associates the specified `Codable` type `T` with the returned
-     * `ChangeStream`. Excludes system collections.
+     * `ChangeStream`. The server will return an error if this is called on a system collection.
      * - Parameters:
      *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
