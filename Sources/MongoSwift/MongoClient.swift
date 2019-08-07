@@ -349,7 +349,6 @@ public class MongoClient {
       *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination.
       *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
       *     pipeline.
-      *   - `DecodingError` if an error occurs while decoding user-defined `withFullDocumentType` `Codable` type.
       * - SeeAlso:
       *   - https://docs.mongodb.com/manual/changeStreams/
       *   - https://docs.mongodb.com/manual/meta/aggregation-quick-reference/
@@ -383,7 +382,6 @@ public class MongoClient {
       *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination.
       *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
       *     pipeline.
-      *   - `DecodingError` if an error occurs while decoding user-defined `withEventType` `Codable` type.
       * - SeeAlso:
       *   - https://docs.mongodb.com/manual/changeStreams/
       *   - https://docs.mongodb.com/manual/meta/aggregation-quick-reference/

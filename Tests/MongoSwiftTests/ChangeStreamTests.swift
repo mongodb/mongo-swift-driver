@@ -159,7 +159,6 @@ final class ChangeStreamTests: MongoSwiftTestCase, FailPointConfigured {
 
         let changeStream = try client.watch()
 
-        let changeStream = try client.watch()
         let db1 = client.db("db1")
         defer { try? db1.drop() }
         let coll1 = db1.collection("coll1")
@@ -361,6 +360,16 @@ final class ChangeStreamTests: MongoSwiftTestCase, FailPointConfigured {
         enum CodingKeys: String, CodingKey {
             case id = "_id", x, y
         }
+
+        let client = try MongoClient()
+        let db = client.db(type(of: self).testDatabase)
+        defer { try? db.drop() }
+        let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
+        let options = ChangeStreamOptions(fullDocument: .updateLookup)
+        let pipeline: [Document] = [["$project": ["_id": 0] as Document]]
+        let changeStream = try coll.watch(pipeline, options: options)
+        try coll.insertOne(["a": 1])
+        expect(try changeStream.nextOrError()).to(throwError(RuntimeError.internalError(message: "")))
     }
 
     struct MyEventType: Codable, Equatable {
@@ -481,95 +490,5 @@ final class ChangeStreamTests: MongoSwiftTestCase, FailPointConfigured {
         expect(change1).toNot(beNil())
         expect(change1?.operationType).to(equal(.insert))
         expect(change1?.fullDocument).to(equal(myType))
-    }
-
-    func testChangeStreamWithPipeline() throws {
-        guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
-            return
-        }
-
-        let client = try MongoClient()
-        let db = client.db(type(of: self).testDatabase)
-        defer { try? db.drop() }
-        let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
-        let options = ChangeStreamOptions(fullDocument: .updateLookup)
-        let pipeline: [Document] = [["$match": ["fullDocument.a": 1] as Document]]
-        let changeStream = try coll.watch(pipeline, options: options)
-
-        try coll.insertOne(["a": 1])
-        let res1 = changeStream.next()
-
-        expect(res1).toNot(beNil())
-        expect(res1?.operationType).to(equal(.insert))
-        expect(res1?.fullDocument?["a"]).to(bsonEqual(1))
-        // expect the change stream to not contain a change event for the this insert
-        try coll.insertOne(["b": 2])
-        let res2 = changeStream.next()
-        expect(res2).to(beNil())
-    }
-
-    func testChangeStreamResumeTokenError() throws {
-         guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
-            return
-        }
-
-        let client = try MongoClient()
-        let db = client.db(type(of: self).testDatabase)
-        defer { try? db.drop() }
-        let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
-        let options = ChangeStreamOptions(fullDocument: .updateLookup)
-        let pipeline: [Document] = [["$project": ["_id": 0] as Document]]
-        let changeStream = try coll.watch(pipeline, options: options)
-        try coll.insertOne(["a": 1])
-        expect(try changeStream.nextOrError()).to(throwError(RuntimeError.internalError(message: "")))
-    }
-
-    func testChangeStreamWithWithCodableType() throws {
-        guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
-            return
-        }
-
-        let client = try MongoClient()
-        let db = client.db(type(of: self).testDatabase)
-        defer { try? db.drop() }
-        let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
-        let options = ChangeStreamOptions(fullDocument: .updateLookup)
-
-        struct MyFullDocumentType: Codable {
-            let id: ObjectId
-
-            enum CodingKeys: String, CodingKey {
-                case id = "_id"
-            }
-        }
-
-        struct MyReturnType: Codable {
-            let id: Document
-            let operation: String
-            let fullDocument: MyFullDocumentType
-            let nameSpace: Document
-            let updateDescription: Document?
-
-            enum CodingKeys: String, CodingKey {
-                case id = "_id", operation = "operationType", fullDocument, nameSpace = "ns", updateDescription
-            }
-        }
-
-        // Test that creating a change stream with a custom codable type works
-        let changeStream = try coll.watch(options: options, withEventType: MyReturnType.self)
-        expect(changeStream.error).to(beNil())
-        try coll.insertOne(["x": 1])
-        try coll.updateOne(filter: ["x": 1], update: ["$set": ["x": 2] as Document])
-        let res1 = changeStream.next()
-        expect(changeStream.error).to(beNil())
-        expect(res1).toNot(beNil())
-        expect(res1?.operation).toNot(beNil())
-        expect(res1?.fullDocument).toNot(beNil())
-        expect(res1?.nameSpace).toNot(beNil())
-        let res2 = changeStream.next()
-        expect(res2?.updateDescription).toNot(beNil())
     }
 }
