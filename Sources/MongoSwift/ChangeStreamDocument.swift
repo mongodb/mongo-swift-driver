@@ -47,7 +47,7 @@ public struct ChangeStreamEvent<T: Codable>: Codable {
     public let _id: ResumeToken
 
     /// A document containing the database and collection names in which this change happened.
-    public let ns: MongoNamespace
+    public let ns: MongoNamespace?
 
     /**
      * Only present for options of type `insert`, `update`, `replace` and `delete`. For unsharded collections this
