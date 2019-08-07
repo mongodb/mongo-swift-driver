@@ -38,7 +38,7 @@ public enum OperationType: String, Codable {
 }
 
 /// The response document type from a `ChangeStream`.
-public struct ChangeStreamDocument<T: Codable>: Codable {
+public struct ChangeStreamEvent<T: Codable>: Codable {
     /// Describes the type of operation for this change.
     public let operationType: OperationType
 

@@ -2,9 +2,8 @@ import mongoc
 
 extension MongoCollection {
     /**
-     * Starts a `ChangeStream` on a collection. The `CollectionType` will be associated with the
-     * `fullDocument` field in `ChangeStreamDocument`s emitted by the returned `ChangeStream`.
-     * The server will return an error if this is called on a system collection.
+     * Starts a `ChangeStream` on a collection. The `CollectionType` will be associated with the `fullDocument` field
+     * in `ChangeStreamEvent`s emitted by the returned `ChangeStream`. Excludes system collections.
      * - Parameters:
      *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
@@ -23,19 +22,19 @@ extension MongoCollection {
     public func watch(_ pipeline: [Document] = [],
                       options: ChangeStreamOptions? =  nil,
                       session: ClientSession? = nil) throws ->
-                      ChangeStream<ChangeStreamDocument<CollectionType>> {
+                      ChangeStream<ChangeStreamEvent<CollectionType>> {
         return try self.watch(pipeline, options: options, session: session, withFullDocumentType: CollectionType.self)
     }
 
     /**
      * Starts a `ChangeStream` on a collection. Associates the specified `Codable` type `T` with the `fullDocument`
-     * field in the `ChangeStreamDocument`s emitted by the returned `ChangeStream`. The server will return an error
+     * field in the `ChangeStreamEvent`s emitted by the returned `ChangeStream`. The server will return an error
      * if this is called on a system collection.
      * - Parameters:
      *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
      *   - session: An optional `ClientSession` to use with this change stream.
-     *   - withFullDocumentType: The type that the `fullDocument` field of the emitted `ChangeStreamDocument`s will be
+     *   - withFullDocumentType: The type that the `fullDocument` field of the emitted `ChangeStreamEvent`s will be
      *                           decoded to.
      * - Returns: A `ChangeStream` on a specific collection.
      * - Throws:
@@ -52,16 +51,16 @@ extension MongoCollection {
                                   options: ChangeStreamOptions? = nil,
                                   session: ClientSession? = nil,
                                   withFullDocumentType type: T.Type) throws ->
-                                  ChangeStream<ChangeStreamDocument<T>> {
+                                  ChangeStream<ChangeStreamEvent<T>> {
         return try self.watch(pipeline,
                               options: options,
                               session: session,
-                              withEventType: ChangeStreamDocument<T>.self)
+                              withEventType: ChangeStreamEvent<T>.self)
     }
 
     /**
      * Starts a `ChangeStream` on a collection. Associates the specified `Codable` type `T` with the returned
-     * `ChangeStream`. The server will return an error if this is called on a system collection.
+     * `ChangeStream`. Excludes system collections.
      * - Parameters:
      *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.

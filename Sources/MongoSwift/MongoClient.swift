@@ -326,19 +326,19 @@ public class MongoClient {
      public func watch(_  pipeline: [Document] = [],
                        options: ChangeStreamOptions?  =  nil,
                        session: ClientSession? = nil) throws ->
-                       ChangeStream<ChangeStreamDocument<Document>> {
+                       ChangeStream<ChangeStreamEvent<Document>> {
         return try self.watch(pipeline, options: options, session: session, withFullDocumentType: Document.self)
      }
 
      /**
       * Starts a `ChangeStream` on a `MongoClient`. Allows the client to observe all changes in a cluster - excluding
       * system collections and the "config", "local", and "admin" databases. Associates the specified `Codable` type `T`
-      * with the `fullDocument` field in the `ChangeStreamDocument`s emitted by the returned `ChangeStream`.
+      * with the `fullDocument` field in the `ChangeStreamEvent`s emitted by the returned `ChangeStream`.
       * - Parameters:
       *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
       *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
       *   - session: An optional `ClientSession` to use with this change stream.
-      *   - withFullDocumentType: The type that the `fullDocument` field of the emitted `ChangeStreamDocument`s will be
+      *   - withFullDocumentType: The type that the `fullDocument` field of the emitted `ChangeStreamEvent`s will be
       *                           decoded to.
       * - Returns: A `ChangeStream` on all collections in all databases in a cluster.
       * - Throws:
@@ -356,11 +356,11 @@ public class MongoClient {
                                    options: ChangeStreamOptions?  =  nil,
                                    session: ClientSession? = nil,
                                    withFullDocumentType: T.Type) throws ->
-                                   ChangeStream<ChangeStreamDocument<T>> {
+                                   ChangeStream<ChangeStreamEvent<T>> {
         return try self.watch(pipeline,
                               options: options,
                               session: session,
-                              withEventType: ChangeStreamDocument<T>.self)
+                              withEventType: ChangeStreamEvent<T>.self)
      }
 
      /**

@@ -273,7 +273,7 @@ public class MongoDatabase {
     }
 
      /**
-      * Starts a `ChangeStream` on a database. The server will return an error if this is called on a system collection.
+      * Starts a `ChangeStream` on a database. Excludes system collections.
       * - Parameters:
       *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
       *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
@@ -293,19 +293,19 @@ public class MongoDatabase {
      public func watch(_ pipeline: [Document] = [],
                        options: ChangeStreamOptions? = nil,
                        session: ClientSession? = nil) throws ->
-                       ChangeStream<ChangeStreamDocument<Document>> {
+                       ChangeStream<ChangeStreamEvent<Document>> {
         return try self.watch(pipeline, options: options, session: session, withFullDocumentType: Document.self)
      }
 
      /**
-      * Starts a `ChangeStream` on a database. The server will return an error if this is called on a system collection.
-      * Associates the specified `Codable` type `T` with the `fullDocument` field in the `ChangeStreamDocument`s emitted
+      * Starts a `ChangeStream` on a database. Excludes system collections.
+      * Associates the specified `Codable` type `T` with the `fullDocument` field in the `ChangeStreamEvent`s emitted
       * by the returned `ChangeStream`.
       * - Parameters:
       *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
       *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
       *   - session: An optional `ClientSession` to use with this change stream.
-      *   - withFullDocumentType: The type that the `fullDocument` field of the emitted `ChangeStreamDocument`s will be
+      *   - withFullDocumentType: The type that the `fullDocument` field of the emitted `ChangeStreamEvent`s will be
       *                           decoded to.
       * - Returns: A `ChangeStream` on all collections in a database.
       * - Throws:
@@ -323,15 +323,15 @@ public class MongoDatabase {
                                    options: ChangeStreamOptions? = nil,
                                    session: ClientSession? = nil,
                                    withFullDocumentType: T.Type) throws ->
-                                   ChangeStream<ChangeStreamDocument<T>> {
+                                   ChangeStream<ChangeStreamEvent<T>> {
         return try self.watch(pipeline,
                               options: options,
                               session: session,
-                              withEventType: ChangeStreamDocument<T>.self)
+                              withEventType: ChangeStreamEvent<T>.self)
      }
 
      /**
-      * Starts a `ChangeStream` on a database. The server will return an error if this is called on a system collection.
+      * Starts a `ChangeStream` on a database. Excludes system collections.
       * Associates the specified `Codable` type `T` with the returned `ChangeStream`.
       * - Parameters:
       *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
