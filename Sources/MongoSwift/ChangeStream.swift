@@ -5,20 +5,26 @@ import mongoc
 public struct ResumeToken: Codable, Equatable {
     private let resumeToken: Document
 
-    internal init(resumeToken: Document) {
+    internal init(_ resumeToken: Document) {
         self.resumeToken = resumeToken
     }
 
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(self.resumeToken)
+    }
+
     public init(from decoder: Decoder) throws {
-        self.resumeToken = try Document(from: decoder)
+        let container = try decoder.singleValueContainer()
+        self.resumeToken = try container.decode(Document.self)
     }
 }
 
 /// A MongoDB ChangeStream.
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/
 public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
-    /// A `ResumeToken` used for manually resuming a change stream.
-    public private(set) var resumeToken: ResumeToken
+    /// A `ResumeToken` associated with the most recent event seen by the change stream.
+    public private(set) var resumeToken: ResumeToken?
 
     /// A `MongoClient` stored to make sure the source client stays valid until the change stream is destroyed.
     private let client: MongoClient
@@ -38,8 +44,12 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     /// Used for storing Swift errors.
     private var swiftError: Error?
 
-    /// The error that occurred while iterating the change stream, if one exists. This should be used to check
-    /// for errors after `next()` returns `nil`.
+    /**
+     * The error that occurred while iterating the change stream, if one exists. This should be used to check
+     * for errors after `next()` returns `nil`.
+     *  - Errors:
+     *    - `DecodingError` if an error occurs while decoding the server's response.
+     */
     public var error: Error? {
         if let err = self.swiftError {
             return err
@@ -73,6 +83,10 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     /// `maxAwaitTimeMS` milliseconds as specified in the `ChangeStreamOptions`, or for the server default timeout
     /// if omitted.
     public func next() -> T? {
+        // If an error exists, refuse iterating the change stream to avoid overwriting the original error.
+        guard self.error == nil else {
+            return nil
+        }
         // Allocate space for a reference to a BSON pointer.
         let out = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
         defer {
@@ -97,7 +111,7 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
                             .internalError(message: "_id field is missing from the change stream document.")
                 return nil
         }
-        self.resumeToken = ResumeToken(resumeToken: resumeToken)
+        self.resumeToken = ResumeToken(resumeToken)
 
         do {
             return try decoder.decode(T.self, from: doc)
@@ -117,7 +131,7 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
      *   - `ServerError.commandError` if an error occurs on the server while iterating the change stream cursor.
      *   - `UserError.logicError` if this function is called and the session associated with this change stream is
      *     inactive.
-     *   - `DecodingError` if an error occurs decoding the server's response.
+     *   - `DecodingError` if an error occurs while decoding the server's response.
      */
     public func nextOrError() throws -> T? {
         if let next = self.next() {
@@ -137,11 +151,16 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
      *   - `UserError.invalidArgumentError` if the `mongoc_change_stream_t` was created with invalid options.
      */
     internal init(stealing changeStream: OpaquePointer,
+                  options: ChangeStreamOptions? = nil,
                   client: MongoClient,
                   connection: Connection,
                   session: ClientSession? = nil,
                   decoder: BSONDecoder) throws {
-        self.resumeToken = ResumeToken(resumeToken: [])
+        // TODO: SWIFT-519 - Starting 4.2, update resumeToken to startAfter (if set).
+        // startAfter takes precedence over resumeAfter.
+        if let resumeAfter = options?.resumeAfter {
+            self.resumeToken = resumeAfter
+        }
         self.client = client
         self.connection = connection
         self.session = session
