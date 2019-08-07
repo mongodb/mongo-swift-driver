@@ -1,4 +1,5 @@
 import mongoc
+
 /// A token used for manually resuming a change stream. Pass this to the `resumeAfter` field of
 /// `ChangeStreamOptions` to resume or start a change stream where a previous one left off.
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/#resume-a-change-stream
@@ -172,9 +173,9 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
         }
     }
 
-     /// Cleans up internal state.
-     deinit {
-         mongoc_change_stream_destroy(self.changeStream)
-         self.client.connectionPool.checkIn(self.connection)
-     }
+    /// Cleans up internal state.
+    deinit {
+        mongoc_change_stream_destroy(self.changeStream)
+        self.client.connectionPool.checkIn(self.connection)
+    }
 }
