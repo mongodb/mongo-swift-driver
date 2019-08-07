@@ -18,6 +18,7 @@ extension BSONValueTests {
 
 extension ChangeStreamTests {
     static var allTests = [
+        ("testChangeStreamSpec", testChangeStreamSpec),
         ("testChangeStreamOnAClient", testChangeStreamOnAClient),
         ("testChangeStreamOnADatabase", testChangeStreamOnADatabase),
         ("testChangeStreamOnACollection", testChangeStreamOnACollection),
