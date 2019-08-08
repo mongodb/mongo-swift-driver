@@ -13,7 +13,7 @@ private struct Kitten: Codable {
 /// `Kitten` from the collection.  `MongoCollection` is safe to share across threads.
 private let collection = try MongoClient().db("home").collection("kittens", withType: Kitten.self)
 
-var routes = Routes()
+private var routes = Routes()
 routes.add(method: .get, uri: "/kittens") { _, response in
 	response.setHeader(.contentType, value: "application/json")
 	do {
@@ -26,4 +26,3 @@ routes.add(method: .get, uri: "/kittens") { _, response in
 	response.completed()
 }
 try HTTPServer.launch(name: "localhost", port: 8080, routes: routes)
-
