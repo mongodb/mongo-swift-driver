@@ -85,6 +85,14 @@ final class ChangeStreamTests: MongoSwiftTestCase, FailPointConfigured {
         }
     }
 
+    func toTopologyTypeArray(topologies: [String]) -> [TopologyDescription.TopologyType] {
+        var topologyTypeArr: [TopologyDescription.TopologyType] = []
+        for topology in topologies {
+            topologyTypeArr.append(TopologyDescription.TopologyType(from: topology))
+        }
+        return topologyTypeArr
+    }
+
     func testChangeStreamSpec() throws {
         let testFilesPath = MongoSwiftTestCase.specsPath + "/change-streams/tests"
         let testFiles: [String] = try FileManager.default.contentsOfDirectory(atPath: testFilesPath)
@@ -113,9 +121,9 @@ final class ChangeStreamTests: MongoSwiftTestCase, FailPointConfigured {
                 try db1.createCollection(testFile.collection_name)
                 try db2.createCollection(testFile.collection2_name)
 
-                let testTopology = TopologyDescription.TopologyType(from: test.topology[0])
+                let testTopologies = toTopologyTypeArray(topologies: test.topology)
 
-                guard testTopology == topology else {
+                guard testTopologies.contains(topology) else {
                     print("Skipping test case because of unsupported topology type \(topology)")
                     continue
                 }
