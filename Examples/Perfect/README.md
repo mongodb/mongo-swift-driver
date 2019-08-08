@@ -1,6 +1,6 @@
-# KituraExample
+# PerfectExample
 
-This is a minimal working example of using the driver in a Kitura application.
+This is a minimal working example of using the driver in a Perfect application.
 
 To test it out, do the following:
 1. Run `mongod` to start MongoDB running on `localhost:27017`.
