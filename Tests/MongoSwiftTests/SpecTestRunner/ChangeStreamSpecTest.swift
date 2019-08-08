@@ -118,7 +118,15 @@ extension ChangeStreamSpecTest {
      private func assertError(seenError: Error?) {
         // assert that an error was expected for the test
         expect(self.result.error).toNot(beNil())
-        // TODO: assert that the error matches expected error
+        // assert that the error matches expected error
+        if let expectedErrorCode = self.result.error?.code {
+            expect(seenError as? ServerError).to(equal(ServerError
+                                                    .commandError(code: expectedErrorCode,
+                                                                  codeName: "",
+                                                                  message: "",
+                                                                  errorLabels: self.result.error?
+                                                                                          .errorLabels)))
+        }
     }
 
     private func assertSuccess(changeStream: ChangeStream<ChangeStreamTestEventDocument>?) {

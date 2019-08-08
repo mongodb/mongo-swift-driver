@@ -108,7 +108,6 @@ final class ChangeStreamTests: MongoSwiftTestCase, FailPointConfigured {
         let globalClient = try MongoClient(MongoSwiftTestCase.connStr)
 
         for testFile in tests {
-            var seenError: Error?
             let client = try MongoClient(MongoSwiftTestCase.connStr)
             let version = try globalClient.serverVersion()
             let topology = MongoSwiftTestCase.topologyType
@@ -134,6 +133,7 @@ final class ChangeStreamTests: MongoSwiftTestCase, FailPointConfigured {
                 }
                 print("Executing test: \(test.description)")
 
+                var seenError: Error?
                 var changeStream: ChangeStream<ChangeStreamTestEventDocument>?
                 do {
                     changeStream = try createChangeStream(client: client, testFile: testFile, test: test)
