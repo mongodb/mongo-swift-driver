@@ -358,7 +358,10 @@ public class MongoDatabase {
                                   ChangeStream<T> {
         let pipeline: Document = ["pipeline": pipeline]
         let opts = try encodeOptions(options: options, session: session)
-        return try ChangeStream<T>(options: options, client: self._client, decoder: self.decoder, session: session) { conn in
+        return try ChangeStream<T>(options: options,
+                                   client: self._client,
+                                   decoder: self.decoder,
+                                   session: session) { conn in
             self.withMongocDatabase(from: conn) { dbPtr in
                 mongoc_database_watch(dbPtr, pipeline._bson, opts?._bson)
             }
