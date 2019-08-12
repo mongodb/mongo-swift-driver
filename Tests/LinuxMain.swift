@@ -1,4 +1,4 @@
-// Generated using Sourcery 0.16.1 — https://github.com/krzysztofzablocki/Sourcery
+// Generated using Sourcery 0.15.0 — https://github.com/krzysztofzablocki/Sourcery
 // DO NOT EDIT
 
 
@@ -16,9 +16,14 @@ extension BSONValueTests {
     ]
 }
 
-extension ChangeStreamTests {
+extension ChangeStreamSpecTests {
     static var allTests = [
         ("testChangeStreamSpec", testChangeStreamSpec),
+    ]
+}
+
+extension ChangeStreamTests {
+    static var allTests = [
         ("testChangeStreamOnAClient", testChangeStreamOnAClient),
         ("testChangeStreamOnADatabase", testChangeStreamOnADatabase),
         ("testChangeStreamOnACollection", testChangeStreamOnACollection),
@@ -250,6 +255,7 @@ extension SDAMTests {
 
 XCTMain([
     testCase(BSONValueTests.allTests),
+    testCase(ChangeStreamSpecTests.allTests),
     testCase(ChangeStreamTests.allTests),
     testCase(ClientSessionTests.allTests),
     testCase(CodecTests.allTests),
