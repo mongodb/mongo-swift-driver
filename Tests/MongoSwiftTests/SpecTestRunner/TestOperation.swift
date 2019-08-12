@@ -413,7 +413,7 @@ struct RenameCollection: TestOperation {
                  session: ClientSession? = nil) throws -> TestOperationResult? {
         let admin = client.db("admin")
         let fromNamespace = database.name + "." + collection.name
-        let toNamespace = database.name + "." + to
+        let toNamespace = database.name + "." + self.to
         return TestOperationResult(from: try admin.runCommand([
                                                                 "renameCollection": fromNamespace,
                                                                 "to": toNamespace

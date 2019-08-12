@@ -4,7 +4,7 @@ import Nimble
 import XCTest
 
 /// Struct representing a single test within a spec test JSON file.
-internal struct ChangeStreamTest: Decodable, ChangeStreamSpecTest {
+internal struct ChangeStreamTest: Decodable {
     let description: String
     let minServerVersion: ServerVersion
 
@@ -12,7 +12,7 @@ internal struct ChangeStreamTest: Decodable, ChangeStreamSpecTest {
     let failPoint: FailPoint?
 
     /// The entity on which to run the change stream.
-    let target: String
+    let target: ChangeStreamTarget
 
     /// An array of server topologies against which to run the test.
     let topology: [String]
@@ -24,73 +24,81 @@ internal struct ChangeStreamTest: Decodable, ChangeStreamSpecTest {
     let changeStreamOptions: ChangeStreamOptions
 
     /// Array of documents, each describing an operation.
-    let operations: [ChangeStreamAnyTestOperation]
+    let operations: [ChangeStreamTestOperation]
 
     /// A list of command-started events in Extended JSON format.
     let expectations: [Document]?
 
     // The expected result of running a test.
-    let result: TestResult
+    let result: ChangeStreamTestResult
+
+    internal func run(globalClient: MongoClient, database: String, collection: String) throws {
+        let client = try MongoClient()
+
+        // TODO SWIFT-535: add APM assertions
+        do {
+            let changeStream = try self.target.watch(client,
+                                                     database,
+                                                     collection,
+                                                     self.changeStreamPipeline,
+                                                     self.changeStreamOptions)
+            for operation in self.operations {
+                _ = try operation.execute(using: globalClient)
+            }
+
+            switch self.result {
+            case .error:
+                _ = try changeStream.nextOrError()
+                fail("\(self.description) failed: expected error but got none while iterating")
+            case let .success(events):
+                var seenEvents: [ChangeStreamTestEvent] = []
+                for _ in 0..<events.count {
+                    let event = try changeStream.nextOrError()
+                    expect(event).toNot(beNil())
+                    seenEvents.append(event!)
+                }
+                expect(seenEvents).to(equal(events), description: self.description)
+            }
+        } catch {
+            self.result.matchesError(error: error, description: self.description)
+        }
+    }
 }
 
 /// Struct representing a single change-streams spec test JSON file.
 private struct ChangeStreamTestFile: Decodable {
-    private enum CodingKeys: CodingKey {
-        case database_name, collection_name, database2_name, collection2_name, tests
+    private enum CodingKeys: String, CodingKey {
+        case databaseName = "database_name",
+             collectionName = "collection_name",
+             database2Name = "database2_name",
+             collection2Name = "collection2_name",
+             tests
     }
 
     /// Name of this test case
     var name: String = ""
 
     /// The default database.
-    let database_name: String
+    let databaseName: String
 
     /// The default collection.
-    let collection_name: String
+    let collectionName: String
 
     /// Secondary database
-    let database2_name: String
+    let database2Name: String
 
     // Secondary collection
-    let collection2_name: String
+    let collection2Name: String
 
     /// An array of tests that are to be run independently of each other.
     let tests: [ChangeStreamTest]
 }
 
-final class ChangeStreamTests: MongoSwiftTestCase, FailPointConfigured {
+final class ChangeStreamSpecTests: MongoSwiftTestCase, FailPointConfigured {
     var activeFailPoint: FailPoint?
 
     override func tearDown() {
         self.disableActiveFailPoint()
-    }
-
-    /// Creates a change stream on the topology specified by the spec test
-    private func createChangeStream(client: MongoClient, testFile: ChangeStreamTestFile, test: ChangeStreamTest)
-                                    throws -> ChangeStream<ChangeStreamTestEventDocument>? {
-        let pipeline = test.changeStreamPipeline
-        let opts = test.changeStreamOptions
-        let db = client.db(testFile.database_name)
-        let coll = db.collection(testFile.collection_name)
-
-        switch test.target {
-        case "collection":
-            return try coll.watch(pipeline, options: opts, withEventType: ChangeStreamTestEventDocument.self)
-        case "database":
-            return try db.watch(pipeline, options: opts, withEventType: ChangeStreamTestEventDocument.self)
-        case "client":
-            return try client.watch(pipeline, options: opts, withEventType: ChangeStreamTestEventDocument.self)
-        default:
-            throw UserError.logicError(message: "target is missing")
-        }
-    }
-
-    func toTopologyTypeArray(topologies: [String]) -> [TopologyDescription.TopologyType] {
-        var topologyTypeArr: [TopologyDescription.TopologyType] = []
-        for topology in topologies {
-            topologyTypeArr.append(TopologyDescription.TopologyType(from: topology))
-        }
-        return topologyTypeArr
     }
 
     func testChangeStreamSpec() throws {
@@ -107,51 +115,48 @@ final class ChangeStreamTests: MongoSwiftTestCase, FailPointConfigured {
 
         let globalClient = try MongoClient(MongoSwiftTestCase.connStr)
 
+        let version = try globalClient.serverVersion()
+        let topology = MongoSwiftTestCase.topologyType
+
         for testFile in tests {
-            let client = try MongoClient(MongoSwiftTestCase.connStr)
-            let version = try globalClient.serverVersion()
-            let topology = MongoSwiftTestCase.topologyType
-            let db1 = globalClient.db(testFile.database_name)
-            let db2 = globalClient.db(testFile.database2_name)
+            let db1 = globalClient.db(testFile.databaseName)
+            let db2 = globalClient.db(testFile.database2Name)
             print("\n------------\nExecuting tests from file \(testFilesPath)/\(testFile.name)...\n")
             for test in testFile.tests {
                 try db1.drop()
                 try db2.drop()
-                try db1.createCollection(testFile.collection_name)
-                try db2.createCollection(testFile.collection2_name)
+                _ = try db1.createCollection(testFile.collectionName)
+                _ = try db2.createCollection(testFile.collection2Name)
 
-                let testTopologies = toTopologyTypeArray(topologies: test.topology)
-
+                let testTopologies = test.topology.map { TopologyDescription.TopologyType(from: $0) }
                 guard testTopologies.contains(topology) else {
-                    print("Skipping test case because of unsupported topology type \(topology)")
+                    print("Skipping test case \"\(test.description)\": unsupported topology type \(topology)")
                     continue
                 }
 
                 guard version >= test.minServerVersion else {
-                    print("Skipping tests from file, minimum required server version not met.")
+                    print("Skipping tests case \"\(test.description)\": minimum required server " +
+                                  "version \(test.minServerVersion) not met.")
                     continue
                 }
-                print("Executing test: \(test.description)")
 
-                var seenError: Error?
-                var changeStream: ChangeStream<ChangeStreamTestEventDocument>?
-                do {
-                    changeStream = try createChangeStream(client: client, testFile: testFile, test: test)
-                } catch {
-                    seenError = error
-                }
+                print("Executing test: \(test.description)")
 
                 if let failPoint = test.failPoint {
                     try self.activateFailPoint(failPoint)
                 }
+                defer { self.disableActiveFailPoint() }
 
-                try test.run(client: globalClient, seenError: seenError, changeStream: changeStream)
-
-                // TODO: add APM assertions
+                try test.run(globalClient: globalClient,
+                             database: testFile.databaseName,
+                             collection: testFile.collectionName
+                )
             }
         }
     }
+}
 
+final class ChangeStreamTests: MongoSwiftTestCase {
     func testChangeStreamOnAClient() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
             print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
@@ -330,7 +335,7 @@ final class ChangeStreamTests: MongoSwiftTestCase, FailPointConfigured {
         let changeStream1 = try coll.watch()
         try coll.insertOne(["x": 1])
         try coll.insertOne(["y": 2])
-        changeStream1.next()
+        _ = changeStream1.next()
         expect(changeStream1.error).to(beNil())
         // save the current resumeToken and use it as the resumeAfter in a new change stream
         let resumeAfter = changeStream1.resumeToken
@@ -449,10 +454,9 @@ final class ChangeStreamTests: MongoSwiftTestCase, FailPointConfigured {
             return
         }
 
-       // test that the change stream works on client and database when using withFullDocumentType
+        // test that the change stream works on client and database when using withFullDocumentType
         let clientChangeStream = try client.watch(withFullDocumentType: MyFullDocumentType.self)
         let dbChangeStream = try db.watch(withFullDocumentType: MyFullDocumentType.self)
-        let y: Int
         let expectedDoc2 = MyFullDocumentType(id: 2, x: 1, y: 2)
         try coll.insertOne(["_id": 2, "x": 1, "y": 2])
         let clientChange = clientChangeStream.next()
