@@ -236,19 +236,15 @@ public class MongoDatabase {
     public func listCollections(options: ListCollectionsOptions? = nil,
                                 session: ClientSession? = nil) throws -> MongoCursor<Document> {
         let opts = try encodeOptions(options: options, session: session)
-        let conn = try self._client.connectionPool.checkOut()
-        let collections: OpaquePointer = self.withMongocDatabase(from: conn) { dbPtr in
-            guard let collections = mongoc_database_find_collections_with_opts(dbPtr, opts?._bson) else {
-                fatalError(failedToRetrieveCursorMessage)
-            }
-            return collections
-        }
 
-        return try MongoCursor(from: collections,
-                               client: self._client,
-                               connection: conn,
-                               decoder: self.decoder,
-                               session: session)
+        return try MongoCursor(client: self._client, decoder: self.decoder, session: session) { conn in
+            self.withMongocDatabase(from: conn) { dbPtr in
+                guard let collections = mongoc_database_find_collections_with_opts(dbPtr, opts?._bson) else {
+                    fatalError(failedToRetrieveCursorMessage)
+                }
+                return collections
+            }
+        }
     }
 
     /**
@@ -361,15 +357,14 @@ public class MongoDatabase {
                                   withEventType: T.Type) throws ->
                                   ChangeStream<T> {
         let pipeline: Document = ["pipeline": pipeline]
-        let connection = try self._client.connectionPool.checkOut()
         let opts = try encodeOptions(options: options, session: session)
-        return try self.withMongocDatabase(from: connection) { dbPtr in
-            let changeStreamPtr: OpaquePointer = mongoc_database_watch(dbPtr, pipeline._bson, opts?._bson)
-            return try ChangeStream<T>(stealing: changeStreamPtr,
-                                       client: self._client,
-                                       connection: connection,
-                                       session: session,
-                                       decoder: self.decoder)
+        return try ChangeStream<T>(options: options,
+                                   client: self._client,
+                                   decoder: self.decoder,
+                                   session: session) { conn in
+            self.withMongocDatabase(from: conn) { dbPtr in
+                mongoc_database_watch(dbPtr, pipeline._bson, opts?._bson)
+            }
         }
     }
 

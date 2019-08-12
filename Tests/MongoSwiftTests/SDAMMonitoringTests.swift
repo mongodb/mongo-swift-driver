@@ -52,6 +52,7 @@ final class SDAMTests: MongoSwiftTestCase {
 
             receivedEvents.append(event)
         }
+
         // do some basic operations
         let db = client.db(type(of: self).testDatabase)
         _ = try db.createCollection(self.getCollectionName())
@@ -59,14 +60,11 @@ final class SDAMTests: MongoSwiftTestCase {
 
         center.removeObserver(observer)
 
-        var error = bson_error_t()
-        guard let uri = mongoc_uri_new_with_error(MongoSwiftTestCase.connStr, &error) else {
-            XCTFail(toErrorString(error))
-            return
-        }
+        var opts = ClientOptions()
+        let connString = try ConnectionString(MongoSwiftTestCase.connStr, options: &opts)
 
-        guard let hostlist = mongoc_uri_get_hosts(uri) else {
-            XCTFail("Could not get hostlists for uri: \(uri)")
+        guard let hostlist = mongoc_uri_get_hosts(connString._uri) else {
+            XCTFail("Could not get hostlists for uri: \(MongoSwiftTestCase.connStr)")
             return
         }
 

@@ -21,9 +21,14 @@ internal struct DefaultOperationExecutor: OperationExecutor {
     internal func execute<T: Operation>(_ operation: T,
                                         client: MongoClient,
                                         session: ClientSession?) throws -> T.OperationResult {
-        // TODO SWIFT-374: if session is non-nil, use its underlying Connection
+        // if a session was provided, use its underlying connection
+        if let session = session {
+            let conn = try session.getConnection(forUseWith: client)
+            return try operation.execute(using: conn, session: session)
+        }
+        // otherwise use a new connection from the pool
         return try client.connectionPool.withConnection { conn in
-            try operation.execute(using: conn, session: session)
+            try operation.execute(using: conn, session: nil)
         }
     }
 }

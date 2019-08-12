@@ -471,6 +471,18 @@ private func postNotification<T: MongoEvent>(type: T.Type,
     if let center = client.notificationCenter, let enabledTypes = client.monitoringEventTypes {
         if enabledTypes.contains(type.eventType) {
             let eventStruct = type.init(event)
+
+            // TODO SWIFT-524: remove workaround for CDRIVER-3256
+            if let tdChanged = eventStruct as? TopologyDescriptionChangedEvent,
+                    tdChanged.previousDescription == tdChanged.newDescription {
+                return
+            }
+
+            if let sdChanged = eventStruct as? ServerDescriptionChangedEvent,
+                    sdChanged.previousDescription == sdChanged.newDescription {
+                return
+            }
+
             let notification = Notification(name: type.eventName, userInfo: ["event": eventStruct])
             center.post(notification)
         }

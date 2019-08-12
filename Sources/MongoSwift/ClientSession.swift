@@ -55,13 +55,30 @@ private func withSessionOpts<T>(wrapping options: ClientSessionOptions?,
  */
 public final class ClientSession {
     /// Error thrown when an inactive session is used.
-    internal static var SessionInactiveError = UserError.logicError(message: "Tried to use an inactive session")
+    internal static let SessionInactiveError = UserError.logicError(message: "Tried to use an inactive session")
+    /// Error thrown when a user attempts to use a session with a client it was not created from.
+    internal static let ClientMismatchError = UserError.invalidArgumentError(
+        message: "Sessions may only be used with the MongoClient used to create them")
 
-    /// Pointer to the underlying `mongoc_client_session_t`.
-    internal fileprivate(set) var _session: OpaquePointer?
+    /// Enum for tracking the state of a session.
+    internal enum State {
+        /// Indicates that the session is active. Stores a pointer to the underlying `mongoc_client_session_t` and the
+        /// source `Connection` for this session.
+        case active(session: OpaquePointer, connection: Connection)
+        /// Indicates that the session has been ended.
+        case inactive
+    }
+
+    /// Indicates the state of this session.
+    internal private(set) var state: State
 
     /// Returns whether this session has been ended or not.
-    internal var active: Bool { return self._session != nil }
+    internal var active: Bool {
+        if case .active = self.state {
+            return true
+        }
+        return false
+    }
 
     /// The client used to start this session.
     public let client: MongoClient
@@ -69,21 +86,29 @@ public final class ClientSession {
     /// The session ID of this session.
     public let id: Document
 
-    /// The most recent cluster time seen by this session.
-    /// If no operations have been executed using this session and `advanceClusterTime` has not been called, this will
-    /// be `nil`.
+    /// The most recent cluster time seen by this session. This value will be nil if either of the following are true:
+    /// - No operations have been executed using this session and `advanceClusterTime` has not been called.
+    /// - This session has been ended.
     public var clusterTime: Document? {
-        guard let time = mongoc_client_session_get_cluster_time(self._session) else {
+        guard case let .active(session, _) = self.state,
+                    let time = mongoc_client_session_get_cluster_time(session) else {
             return nil
         }
         return Document(copying: time)
     }
 
-    /// The operation time of the most recent operation performed using this session.
+    /// The operation time of the most recent operation performed using this session. This value will be nil if either
+    /// of the following are true:
+    /// - No operations have been performed using this session.
+    /// - This session has been ended.
     public var operationTime: Timestamp? {
+        guard case let .active(session, _) = self.state else {
+            return nil
+        }
+
         var timestamp: UInt32 = 0
         var increment: UInt32 = 0
-        mongoc_client_session_get_operation_time(self._session, &timestamp, &increment)
+        mongoc_client_session_get_operation_time(session, &timestamp, &increment)
 
         guard timestamp != 0 && increment != 0 else {
             return nil
@@ -99,25 +124,42 @@ public final class ClientSession {
         self.options = options
         self.client = client
 
-        self._session = try withSessionOpts(wrapping: options) { opts in
+        let connection = try client.connectionPool.checkOut()
+        let session: OpaquePointer = try withSessionOpts(wrapping: options) { opts in
             var error = bson_error_t()
-            guard let session = mongoc_client_start_session(client._client, opts, &error) else {
+            guard let session = mongoc_client_start_session(connection.clientHandle, opts, &error) else {
+                // we won't call end(), so need to check the connection back in here manually.
+                client.connectionPool.checkIn(connection)
                 throw extractMongoError(error: error)
             }
             return session
         }
+
+        self.state = .active(session: session, connection: connection)
         // swiftlint:disable:next force_unwrapping
-        self.id = Document(copying: mongoc_client_session_get_lsid(self._session)!) // always returns a value
+        self.id = Document(copying: mongoc_client_session_get_lsid(session)!) // always returns a value
+    }
+
+    /// Retrieves this session's underlying connection. Throws an error if the provided client was not the client used
+    /// to create this session, or if this session has been ended.
+    internal func getConnection(forUseWith client: MongoClient) throws -> Connection {
+        guard case let .active(_, connection) = self.state else {
+            throw ClientSession.SessionInactiveError
+        }
+        guard self.client == client else {
+            throw ClientSession.ClientMismatchError
+        }
+        return connection
     }
 
     /// Destroy the underlying `mongoc_client_session_t` and set this session to inactive.
     /// Does nothing if this session is already inactive.
     internal func end() {
-        guard self.active else {
-            return
+        if case let .active(session, connection) = self.state {
+            mongoc_client_session_destroy(session)
+            self.client.connectionPool.checkIn(connection)
+            self.state = .inactive
         }
-        mongoc_client_session_destroy(self._session)
-        self._session = nil
     }
 
     /// Cleans up internal state.
@@ -126,38 +168,44 @@ public final class ClientSession {
     }
 
     /**
-     * Advances the clusterTime for this session to the given time, if it is greater than the current clusterTime.
-     * If the provided clusterTime is less than the current clusterTime, this method has no effect.
+     * Advances the clusterTime for this session to the given time, if it is greater than the current clusterTime. If
+     * the session has been ended, or if the provided clusterTime is less than the current clusterTime, this method has
+     * no effect.
      *
      * - Parameters:
      *   - clusterTime: The session's new cluster time, as a `Document` like `["cluster time": Timestamp(...)]`
      */
     public func advanceClusterTime(to clusterTime: Document) {
-        mongoc_client_session_advance_cluster_time(self._session, clusterTime._storage._bson)
+        if case let .active(session, _) = self.state {
+            mongoc_client_session_advance_cluster_time(session, clusterTime._bson)
+        }
     }
 
     /**
      * Advances the operationTime for this session to the given time if it is greater than the current operationTime.
-     * If the provided operationTime is less than the current operationTime, this method has no effect.
+     * If the session has been ended, or if the provided operationTime is less than the current operationTime, this
+     * method has no effect.
      *
      * - Parameters:
      *   - operationTime: The session's new operationTime
      */
     public func advanceOperationTime(to operationTime: Timestamp) {
-        mongoc_client_session_advance_operation_time(self._session, operationTime.timestamp, operationTime.increment)
+        if case let .active(session, _) = self.state {
+            mongoc_client_session_advance_operation_time(session, operationTime.timestamp, operationTime.increment)
+        }
     }
 
     /// Appends this provided session to an options document for libmongoc interoperability.
     /// - Throws:
     ///   - `UserError.logicError` if this session is inactive
     internal func append(to doc: inout Document) throws {
-        guard self.active else {
+        guard case let .active(session, _) = self.state else {
             throw ClientSession.SessionInactiveError
         }
 
         var error = bson_error_t()
         try withMutableBSONPointer(to: &doc) { docPtr in
-            guard mongoc_client_session_append(self._session, docPtr, &error) else {
+            guard mongoc_client_session_append(session, docPtr, &error) else {
                 throw extractMongoError(error: error)
             }
         }

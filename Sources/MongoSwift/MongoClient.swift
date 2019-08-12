@@ -105,9 +105,6 @@ public struct DatabaseOptions: CodingStrategyProvider {
 
 /// A MongoDB Client.
 public class MongoClient {
-    // TODO SWIFT-374: remove this property.
-    internal let _client: OpaquePointer
-
     internal let connectionPool: ConnectionPool
 
     private let operationExecutor: OperationExecutor = DefaultOperationExecutor()
@@ -118,6 +115,12 @@ public class MongoClient {
     /// If command and/or server monitoring is enabled, indicates what event types notifications will be posted for.
     internal var monitoringEventTypes: [MongoEventType]?
 
+    /// A unique identifier for this client.
+    internal let _id = clientIdGenerator.next()
+
+    /// Counter for generating client _ids.
+    internal static let clientIdGenerator = Counter(label: "MongoClient ID generator")
+
     /// Encoder whose options are inherited by databases derived from this client.
     public let encoder: BSONEncoder
 
@@ -125,23 +128,13 @@ public class MongoClient {
     public let decoder: BSONDecoder
 
     /// The read concern set on this client, or nil if one is not set.
-    public var readConcern: ReadConcern? {
-        // per libmongoc docs, we don't need to handle freeing this ourselves
-        let rc = ReadConcern(from: mongoc_client_get_read_concern(self._client))
-        return rc.isDefault ? nil : rc
-    }
+    public let readConcern: ReadConcern?
 
-    /// The `ReadPreference` set on this client
-    public var readPreference: ReadPreference {
-        return ReadPreference(from: mongoc_client_get_read_prefs(self._client))
-    }
+    /// The `ReadPreference` set on this client.
+    public let readPreference: ReadPreference
 
     /// The write concern set on this client, or nil if one is not set.
-    public var writeConcern: WriteConcern? {
-        // per libmongoc docs, we don't need to handle freeing this ourselves
-        let wc = WriteConcern(from: mongoc_client_get_write_concern(self._client))
-        return wc.isDefault ? nil : wc
-    }
+    public let writeConcern: WriteConcern?
 
     /**
      * Create a new client connection to a MongoDB server.
@@ -161,15 +154,23 @@ public class MongoClient {
         // Initialize mongoc. Repeated calls have no effect so this is safe to do every time.
         initializeMongoc()
 
-        // TODO: when we stop storing _client, we will store these options and use them to determine the return values
-        // for MongoClient.readConcern, etc.
         var options = options ?? ClientOptions()
         let connString = try ConnectionString(connectionString, options: &options)
         self.connectionPool = try ConnectionPool(from: connString)
 
-        // temporarily retrieve the single client from the pool.
-        self._client = try self.connectionPool.checkOut().clientHandle
+        if let rc = options.readConcern, !rc.isDefault {
+            self.readConcern = rc
+        } else {
+            self.readConcern = nil
+        }
 
+        if let wc = options.writeConcern, !wc.isDefault {
+            self.writeConcern = wc
+        } else {
+            self.writeConcern = nil
+        }
+
+        self.readPreference = options.readPreference ?? ReadPreference(.primary)
         self.encoder = BSONEncoder(options: options)
         self.decoder = BSONDecoder(options: options)
 
@@ -197,10 +198,12 @@ public class MongoClient {
      *   - pointer: the `mongoc_client_t` to store and use internally
      */
     public init(stealing pointer: OpaquePointer) {
-        self._client = pointer
         self.connectionPool = ConnectionPool(stealing: pointer)
         self.encoder = BSONEncoder()
         self.decoder = BSONDecoder()
+        self.readConcern = nil
+        self.readPreference = ReadPreference(.primary)
+        self.writeConcern = nil
     }
 
     /**
@@ -235,7 +238,7 @@ public class MongoClient {
      *     on the "name", "sizeOnDisk", "empty", or "shards" fields of the output.
      *   - session: Optional `ClientSession` to use when executing this command.
      *
-     * - Returns: A `MongoCursor` over `Document`s describing the databases matching provided criteria
+     * - Returns: A `[DatabaseSpecification]` containing the databases matching provided criteria.
      *
      * - Throws:
      *   - `UserError.logicError` if the provided session is inactive.
@@ -247,9 +250,8 @@ public class MongoClient {
                               session: ClientSession? = nil) throws -> [DatabaseSpecification] {
         let operation = ListDatabasesOperation(client: self,
                                                filter: filter,
-                                               nameOnly: nil,
-                                               session: session)
-        guard case let .specs(result) = try self.executeOperation(operation) else {
+                                               nameOnly: nil)
+        guard case let .specs(result) = try self.executeOperation(operation, session: session) else {
             throw RuntimeError.internalError(message: "Invalid result")
         }
         return result
@@ -278,7 +280,7 @@ public class MongoClient {
      *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An Array of `MongoDatabase`s that match the provided filter.
+     * - Returns: A `[String]` containing names of databases that match the provided filter.
      *
      * - Throws:
      *   - `UserError.logicError` if the provided session is inactive.
@@ -286,9 +288,8 @@ public class MongoClient {
     public func listDatabaseNames(_ filter: Document? = nil, session: ClientSession? = nil) throws -> [String] {
         let operation = ListDatabasesOperation(client: self,
                                                filter: filter,
-                                               nameOnly: true,
-                                               session: session)
-        guard case let .names(result) = try self.executeOperation(operation) else {
+                                               nameOnly: true)
+        guard case let .names(result) = try self.executeOperation(operation, session: session) else {
             throw RuntimeError.internalError(message: "Invalid result")
         }
         return result
@@ -394,19 +395,21 @@ public class MongoClient {
                                   withEventType: T.Type) throws ->
                                   ChangeStream<T> {
         let pipeline: Document = ["pipeline": pipeline]
-        let connection = try self.connectionPool.checkOut()
         let opts = try encodeOptions(options: options, session: session)
-        let changeStreamPtr: OpaquePointer = mongoc_client_watch(self._client, pipeline._bson, opts?._bson)
-        return try ChangeStream<T>(stealing: changeStreamPtr,
-                                   client: self,
-                                   connection: connection,
-                                   session: session,
-                                   decoder: self.decoder)
+        return try ChangeStream<T>(options: options, client: self, decoder: self.decoder, session: session) { conn in
+            mongoc_client_watch(conn.clientHandle, pipeline._bson, opts?._bson)
+        }
     }
 
     /// Executes an `Operation` using this `MongoClient` and an optionally provided session.
     internal func executeOperation<T: Operation>(_ operation: T,
                                                  session: ClientSession? = nil) throws -> T.OperationResult {
         return try self.operationExecutor.execute(operation, client: self, session: session)
+    }
+}
+
+extension MongoClient: Equatable {
+    public static func == (lhs: MongoClient, rhs: MongoClient) -> Bool {
+        return lhs._id == rhs._id
     }
 }

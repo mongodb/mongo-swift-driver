@@ -33,7 +33,7 @@ public struct ConnectionId: Equatable {
 /// A struct describing a mongod or mongos process.
 public struct ServerDescription {
     /// The possible types for a server.
-    public enum ServerType: String {
+    public enum ServerType: String, Equatable {
         /// A standalone mongod server.
         case standalone = "Standalone"
         /// A router to a sharded cluster, i.e. a mongos server.
@@ -181,11 +181,35 @@ public struct ServerDescription {
     }
 }
 
+extension ServerDescription: Equatable {
+    public static func == (lhs: ServerDescription, rhs: ServerDescription) -> Bool {
+        // Compare everything except `error` it is always nil and `MongoError`s are not `Equatable`
+        return lhs.connectionId == rhs.connectionId &&
+                lhs.roundTripTime == rhs.roundTripTime &&
+                lhs.lastWriteDate == rhs.lastWriteDate &&
+                lhs.opTime == rhs.opTime &&
+                lhs.type == rhs.type &&
+                lhs.minWireVersion == rhs.minWireVersion &&
+                lhs.maxWireVersion == rhs.maxWireVersion &&
+                lhs.me == rhs.me &&
+                lhs.hosts == rhs.hosts &&
+                lhs.arbiters == rhs.arbiters &&
+                lhs.passives == rhs.passives &&
+                lhs.tags == rhs.tags &&
+                lhs.setName == rhs.setName &&
+                lhs.setVersion == rhs.setVersion &&
+                lhs.electionId == rhs.electionId &&
+                lhs.primary == rhs.primary &&
+                lhs.lastUpdateTime == rhs.lastUpdateTime &&
+                lhs.logicalSessionTimeoutMinutes == rhs.logicalSessionTimeoutMinutes
+    }
+}
+
 /// A struct describing the state of a MongoDB deployment: its type (standalone, replica set, or sharded),
 /// which servers are up, what type of servers they are, which is primary, and so on.
 public struct TopologyDescription {
     /// The possible types for a topology.
-    public enum TopologyType: String {
+    public enum TopologyType: String, Equatable {
         /// A single mongod server.
         case single = "Single"
         /// A replica set with no primary.
@@ -214,7 +238,12 @@ public struct TopologyDescription {
     public let type: TopologyType
 
     /// The replica set name.
-    public var setName: String? { return self.servers[0].setName }
+    public var setName: String? {
+        guard !self.servers.isEmpty else {
+            return nil
+        }
+        return self.servers[0].setName
+    }
 
     /// The largest setVersion ever reported by a primary.
     public var maxSetVersion: Int64?
@@ -269,5 +298,17 @@ public struct TopologyDescription {
             // swiftlint:disable:next force_unwrapping
             self.servers = Array(buffer).map { ServerDescription($0!) } // documented as always returning a value.
         }
+    }
+}
+
+extension TopologyDescription: Equatable {
+    public static func == (lhs: TopologyDescription, rhs: TopologyDescription) -> Bool {
+        // Compare everything except `error` it is always nil and `MongoError`s are not `Equatable`
+        return lhs.type == rhs.type &&
+                lhs.setName == rhs.setName &&
+                lhs.maxSetVersion == rhs.maxSetVersion &&
+                lhs.maxElectionId == rhs.maxElectionId &&
+                lhs.servers == rhs.servers &&
+                lhs.stale == rhs.stale
     }
 }

@@ -21,21 +21,16 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
      *   - `UserError.invalidArgumentError` if the options passed to the command that generated this cursor formed an
      *     invalid combination.
      */
-    internal init(from cursor: OpaquePointer,
-                  client: MongoClient,
-                  connection: Connection,
+    internal init(client: MongoClient,
                   decoder: BSONDecoder,
-                  session: ClientSession?) throws {
-        self._cursor = cursor
+                  session: ClientSession?,
+                  initializer: (Connection) -> OpaquePointer) throws {
+        self._connection = try session?.getConnection(forUseWith: client) ?? client.connectionPool.checkOut()
+        self._cursor = initializer(self._connection)
         self._client = client
-        self._connection = connection
         self._session = session
         self.decoder = decoder
         self.swiftError = nil
-
-        if let session = session, !session.active {
-            throw ClientSession.SessionInactiveError
-        }
 
         if let err = self.error {
             // Errors in creation of the cursor are limited to invalid argument errors, but some errors are reported
@@ -51,7 +46,10 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
 
     /// Cleans up internal state.
     deinit {
-        self._client.connectionPool.checkIn(self._connection)
+        // If the cursor was created with a session, then the session owns the connection.
+        if self._session == nil {
+            self._client.connectionPool.checkIn(self._connection)
+        }
         mongoc_cursor_destroy(self._cursor)
     }
 

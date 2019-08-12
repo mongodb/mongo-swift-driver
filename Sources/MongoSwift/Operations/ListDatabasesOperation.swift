@@ -27,19 +27,16 @@ internal enum ListDatabasesResults {
 
 /// An operation corresponding to a "listDatabases" command on a collection.
 internal struct ListDatabasesOperation: Operation {
-    private let session: ClientSession?
     private let client: MongoClient
     private let filter: Document?
     private let nameOnly: Bool?
 
     internal init(client: MongoClient,
                   filter: Document?,
-                  nameOnly: Bool?,
-                  session: ClientSession?) {
+                  nameOnly: Bool?) {
         self.client = client
         self.filter = filter
         self.nameOnly = nameOnly
-        self.session = session
     }
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> ListDatabasesResults {
@@ -53,12 +50,12 @@ internal struct ListDatabasesOperation: Operation {
             cmd["nameOnly"] = nameOnly
         }
 
-        let opts = try encodeOptions(options: nil as Document?, session: self.session)
+        let opts = try encodeOptions(options: nil as Document?, session: session)
         var reply = Document()
         var error = bson_error_t()
 
         let success = withMutableBSONPointer(to: &reply) { replyPtr in
-            mongoc_client_read_command_with_opts(self.client._client,
+            mongoc_client_read_command_with_opts(connection.clientHandle,
                                                  "admin",
                                                  cmd._bson,
                                                  readPref._readPreference,
