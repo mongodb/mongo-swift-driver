@@ -1,5 +1,5 @@
 /// Represents a MongoDB namespace for a database or collection.
-public struct MongoNamespace: Codable {
+public struct MongoNamespace: Codable, Equatable {
     /// The database name.
     public let db: String
     /// The collection name if this is a collection's namespace, or nil otherwise.

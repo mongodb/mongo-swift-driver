@@ -26,6 +26,9 @@ extension FailPointConfigured {
 }
 
 /// Struct modeling a MongoDB fail point.
+///
+/// - Note: if a fail point results in a connection being closed / interrupted, libmongoc built in debug mode will print
+///         a warning.
 internal struct FailPoint: Decodable {
     private var failPoint: Document
 

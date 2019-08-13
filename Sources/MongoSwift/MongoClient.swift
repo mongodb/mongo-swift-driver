@@ -358,8 +358,7 @@ public class MongoClient {
      */
     public func watch(_  pipeline: [Document] = [],
                       options: ChangeStreamOptions?  =  nil,
-                      session: ClientSession? = nil) throws ->
-                      ChangeStream<ChangeStreamEvent<Document>> {
+                      session: ClientSession? = nil) throws -> ChangeStream<ChangeStreamEvent<Document>> {
         return try self.watch(pipeline, options: options, session: session, withFullDocumentType: Document.self)
     }
 
@@ -388,8 +387,7 @@ public class MongoClient {
     public func watch<T: Codable>(_  pipeline: [Document] = [],
                                   options: ChangeStreamOptions?  =  nil,
                                   session: ClientSession? = nil,
-                                  withFullDocumentType: T.Type) throws ->
-                                  ChangeStream<ChangeStreamEvent<T>> {
+                                  withFullDocumentType: T.Type) throws -> ChangeStream<ChangeStreamEvent<T>> {
         return try self.watch(pipeline,
                               options: options,
                               session: session,
@@ -421,8 +419,7 @@ public class MongoClient {
     public func watch<T: Codable>(_  pipeline: [Document] = [],
                                   options: ChangeStreamOptions?  =  nil,
                                   session: ClientSession? = nil,
-                                  withEventType: T.Type) throws ->
-                                  ChangeStream<T> {
+                                  withEventType: T.Type) throws -> ChangeStream<T> {
         let pipeline: Document = ["pipeline": pipeline]
         let opts = try encodeOptions(options: options, session: session)
         return try ChangeStream<T>(options: options, client: self, decoder: self.decoder, session: session) { conn in

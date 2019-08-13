@@ -22,8 +22,7 @@ extension MongoCollection {
      */
     public func watch(_ pipeline: [Document] = [],
                       options: ChangeStreamOptions? =  nil,
-                      session: ClientSession? = nil) throws ->
-                      ChangeStream<ChangeStreamEvent<CollectionType>> {
+                      session: ClientSession? = nil) throws -> ChangeStream<ChangeStreamEvent<CollectionType>> {
         return try self.watch(pipeline, options: options, session: session, withFullDocumentType: CollectionType.self)
     }
 
@@ -51,8 +50,7 @@ extension MongoCollection {
     public func watch<T: Codable>(_ pipeline: [Document] = [],
                                   options: ChangeStreamOptions? = nil,
                                   session: ClientSession? = nil,
-                                  withFullDocumentType type: T.Type) throws ->
-                                  ChangeStream<ChangeStreamEvent<T>> {
+                                  withFullDocumentType type: T.Type) throws -> ChangeStream<ChangeStreamEvent<T>> {
         return try self.watch(pipeline,
                               options: options,
                               session: session,
@@ -82,8 +80,7 @@ extension MongoCollection {
     public func watch<T: Codable>(_ pipeline: [Document] = [],
                                   options: ChangeStreamOptions? = nil,
                                   session: ClientSession? = nil,
-                                  withEventType type: T.Type) throws ->
-                                  ChangeStream<T> {
+                                  withEventType type: T.Type) throws -> ChangeStream<T> {
         let pipeline: Document = ["pipeline": pipeline]
         let opts = try encodeOptions(options: options, session: session)
         return try ChangeStream<T>(options: options,
