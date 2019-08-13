@@ -56,7 +56,7 @@ struct AnyTestOperation: Decodable {
         case "rename":
             self.op = try container.decode(RenameCollection.self, forKey: .arguments)
         case "drop":
-            self.op = try container.decode(DropCollection.self, forKey: .name)
+            self.op = DropCollection()
         default:
             throw UserError.logicError(message: "unsupported op name \(opName)")
         }
@@ -411,13 +411,10 @@ struct RenameCollection: TestOperation {
                  database: MongoDatabase,
                  collection: MongoCollection<Document>,
                  session: ClientSession? = nil) throws -> TestOperationResult? {
-        let admin = client.db("admin")
         let fromNamespace = database.name + "." + collection.name
         let toNamespace = database.name + "." + self.to
-        return TestOperationResult(from: try admin.runCommand([
-                                                                "renameCollection": fromNamespace,
-                                                                "to": toNamespace
-                                                                ]))
+        let cmd: Document = ["renameCollection": fromNamespace, "to": toNamespace]
+        return TestOperationResult(from: try client.db("admin").runCommand(cmd))
     }
 }
 
