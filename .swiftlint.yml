@@ -52,7 +52,6 @@ excluded:
   - Sources/libmongoc
   - Package.swift
   - Examples/*/Package.swift
-  - Examples/Docs/*.swift
   - Tests/LinuxMain.swift
 
 trailing_whitespace:
