@@ -98,7 +98,7 @@ internal class ConnectionPool {
     }
 
     /// Temporary API for testing purposes. This will likely change in SWIFT-471.
-    internal func setSSLOpts(caFile: String?, pemFile: String?) throws {
+    internal func setSSLOpts(caFile: String?, pemFile: String?, allowInvalidHostnames: Bool? = nil) throws {
         // we need to use asCString rather than withCString to avoid nesting
         // a ton of closures and handling every permutation of set/unset options.
         let caString = caFile?.asCString
@@ -114,6 +114,10 @@ internal class ConnectionPool {
         }
         if let pem = pemString {
             opts.pem_file = pem
+        }
+
+        if let invalidHosts = allowInvalidHostnames {
+            opts.allow_invalid_hostname = invalidHosts
         }
 
         switch self.mode {

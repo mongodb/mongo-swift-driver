@@ -5,9 +5,9 @@ targets = project.native_targets
 
 # make a file reference for the provided project with file at dirPath (relative)
 def make_reference(project, path)
-	fileRef = project.new(Xcodeproj::Project::Object::PBXFileReference)
-	fileRef.path = path
-	return fileRef
+    fileRef = project.new(Xcodeproj::Project::Object::PBXFileReference)
+    fileRef.path = path
+    return fileRef
 end
 
 tests_target = targets.find { |t| t.uuid == "MongoSwift::MongoSwiftTests" }
@@ -17,7 +17,8 @@ corpus = make_reference(project, "./Tests/Specs/bson-corpus")
 read_write_concern = make_reference(project, "./Tests/Specs/read-write-concern")
 retryable_writes = make_reference(project, "./Tests/Specs/retryable-writes")
 change_streams = make_reference(project, "./Tests/Specs/change-streams")
+dns_seedlist = make_reference(project, "./Tests/Specs/initial-dns-seedlist-discovery")
 
-tests_target.add_resources([crud, cm, corpus, read_write_concern, retryable_writes, change_streams])
+tests_target.add_resources([crud, cm, corpus, read_write_concern, retryable_writes, change_streams, dns_seedlist])
 
 project.save
