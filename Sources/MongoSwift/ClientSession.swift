@@ -4,6 +4,8 @@ import mongoc
 /// Options to use when creating a ClientSession.
 public struct ClientSessionOptions {
     /// Whether to enable causal consistency for this session. By default, causal consistency is enabled.
+    ///
+    /// - SeeAlso: https://docs.mongodb.com/manual/core/read-isolation-consistency-recency/
     public let causalConsistency: Bool?
 
     /// Convenience initializer allowing any/all parameters to be omitted.
