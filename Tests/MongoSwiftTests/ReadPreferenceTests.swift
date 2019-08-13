@@ -92,7 +92,7 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
 
     func testOperationReadPreference() throws {
         // setup a collection
-        let client = try MongoClient()
+        let client = try MongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
         let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
@@ -125,7 +125,7 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
 
         do {
             // expect that a client with an unset read preference has it default to primary
-            let client = try MongoClient()
+            let client = try MongoClient.makeTestClient()
             expect(client.readPreference).to(equal(ReadPreference(.primary)))
 
             // expect that a database created from this client inherits its read preference
@@ -156,7 +156,7 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
     func testDatabaseReadPreference() throws {
         let primary = ReadPreference(.primary)
         let secondary = ReadPreference(.secondary)
-        let client = try MongoClient()
+        let client = try MongoClient.makeTestClient()
 
         do {
             // expect that a database with an unset read preference defaults to primary

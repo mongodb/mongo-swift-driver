@@ -273,7 +273,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
     }
 
     func testDatabaseReadConcern() throws {
-        let client = try MongoClient()
+        let client = try MongoClient.makeTestClient()
         let empty = ReadConcern()
         let local = ReadConcern(.local)
         let localString = ReadConcern("local")
@@ -334,7 +334,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
     }
 
     func testDatabaseWriteConcern() throws {
-        let client = try MongoClient()
+        let client = try MongoClient.makeTestClient()
 
         let empty = WriteConcern()
         let w1 = try WriteConcern(w: .number(1))
@@ -378,7 +378,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
 
     func testOperationReadConcerns() throws {
         // setup a collection
-        let client = try MongoClient()
+        let client = try MongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
         let coll = try db.createCollection(self.getCollectionName())
@@ -438,7 +438,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
                                                            result: expectedBulkResult,
                                                            errorLabels: nil)
 
-        let client = try MongoClient(MongoSwiftTestCase.connStr)
+        let client = try MongoClient.makeTestClient()
         let database = client.db(type(of: self).testDatabase)
         let collection = database.collection(self.getCollectionName())
         defer { try? collection.drop() }
@@ -451,7 +451,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
     }
 
     func testOperationWriteConcerns() throws {
-        let client = try MongoClient()
+        let client = try MongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
 

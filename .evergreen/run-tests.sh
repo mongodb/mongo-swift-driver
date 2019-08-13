@@ -11,6 +11,13 @@ TOPOLOGY=${TOPOLOGY:-single}
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 EXTRA_FLAGS="-Xlinker -rpath -Xlinker ${INSTALL_DIR}/lib"
 
+# ssl setup
+SSL=${SSL:-nossl}
+if [ "$SSL" != "nossl" ]; then
+   export SSL_KEY_FILE="$DRIVERS_TOOLS/.evergreen/x509gen/client.pem"
+   export SSL_CA_FILE="$DRIVERS_TOOLS/.evergreen/x509gen/ca.pem"
+fi
+
 # enable swiftenv
 export SWIFTENV_ROOT="${INSTALL_DIR}/swiftenv"
 export PATH="${SWIFTENV_ROOT}/bin:$PATH"

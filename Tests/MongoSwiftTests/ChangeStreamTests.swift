@@ -157,7 +157,7 @@ internal struct ChangeStreamTest: Decodable {
     let result: ChangeStreamTestResult
 
     internal func run(globalClient: MongoClient, database: String, collection: String) throws {
-        let client = try MongoClient(options: ClientOptions(commandMonitoring: true))
+        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
 
         let center = client.notificationCenter
         var events: [TestCommandStartedEvent] = []
@@ -256,7 +256,7 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase, FailPointConfigured {
             return testFile
         }
 
-        let globalClient = try MongoClient(MongoSwiftTestCase.connStr)
+        let globalClient = try MongoClient.makeTestClient()
 
         let version = try globalClient.serverVersion()
         let topology = MongoSwiftTestCase.topologyType
@@ -311,7 +311,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient()
+        let client = try MongoClient.makeTestClient()
         guard try client.serverVersion() >= ServerVersion(major: 4, minor: 0) else {
             print("Skipping test case for server version \(try client.serverVersion())")
             return
@@ -363,7 +363,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient()
+        let client = try MongoClient.makeTestClient()
         guard try client.serverVersion() >= ServerVersion(major: 4, minor: 0) else {
             print("Skipping test case for server version \(try client.serverVersion())")
             return
@@ -405,7 +405,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient()
+        let client = try MongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
         let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
@@ -449,7 +449,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient()
+        let client = try MongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
         let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
@@ -476,7 +476,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient()
+        let client = try MongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
         let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
@@ -501,7 +501,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient()
+        let client = try MongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
         let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
@@ -540,7 +540,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient()
+        let client = try MongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
         let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
@@ -585,7 +585,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
         let expectedDoc1 = MyFullDocumentType(id: 1, x: 1, y: 2)
 
-        let client = try MongoClient()
+        let client = try MongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
 
@@ -624,7 +624,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient()
+        let client = try MongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
 

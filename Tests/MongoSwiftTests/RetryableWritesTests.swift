@@ -56,7 +56,7 @@ final class RetryableWritesTests: MongoSwiftTestCase, FailPointConfigured {
     override class func tearDown() {
         super.tearDown()
         do {
-            try MongoClient().db(self.testDatabase).drop()
+            try MongoClient.makeTestClient().db(self.testDatabase).drop()
         } catch {
             print("Dropping test db \(self.testDatabase) failed: \(error)")
         }
@@ -74,7 +74,7 @@ final class RetryableWritesTests: MongoSwiftTestCase, FailPointConfigured {
         }
 
         for testFile in tests {
-            let setupClient = try MongoClient(MongoSwiftTestCase.connStr)
+            let setupClient = try MongoClient.makeTestClient()
             let version = try setupClient.serverVersion()
 
             if let requirements = testFile.runOn {
@@ -89,7 +89,7 @@ final class RetryableWritesTests: MongoSwiftTestCase, FailPointConfigured {
                 print("Executing test: \(test.description)")
 
                 let clientOptions = test.clientOptions ?? ClientOptions(retryWrites: true)
-                let client = try MongoClient(MongoSwiftTestCase.connStr, options: clientOptions)
+                let client = try MongoClient.makeTestClient(options: clientOptions)
                 let db = client.db(type(of: self).testDatabase)
                 let collection = db.collection(self.getCollectionName(suffix: test.description))
 

@@ -6,7 +6,7 @@ import XCTest
 
 final class MongoClientTests: MongoSwiftTestCase {
     func testListDatabases() throws {
-        let client = try MongoClient()
+        let client = try MongoClient.makeTestClient()
 
         let databases = [
             "db1",
@@ -17,6 +17,12 @@ final class MongoClientTests: MongoSwiftTestCase {
         try databases.forEach {
             try client.db($0).drop()
             _ = try client.db($0).createCollection("c")
+        }
+
+        defer {
+            databases.forEach {
+                try? client.db($0).drop()
+            }
         }
 
         try client.db("db1").collection("c").insertOne(["a": 1])
@@ -45,6 +51,10 @@ final class MongoClientTests: MongoSwiftTestCase {
     }
 
     func testOpaqueInitialization() throws {
+        if MongoSwiftTestCase.ssl {
+            print("Skipping test, bypasses SSL setup")
+            return
+        }
         let connectionString = MongoSwiftTestCase.connStr
         var error = bson_error_t()
         guard let uri = mongoc_uri_new_with_error(connectionString, &error) else {
@@ -73,7 +83,7 @@ final class MongoClientTests: MongoSwiftTestCase {
     func testServerVersion() throws {
         typealias Version = ServerVersion
 
-        expect(try MongoClient().serverVersion()).toNot(throwError())
+        expect(try MongoClient.makeTestClient().serverVersion()).toNot(throwError())
 
         let three6 = Version(major: 3, minor: 6)
         let three61 = Version(major: 3, minor: 6, patch: 1)
@@ -144,7 +154,7 @@ final class MongoClientTests: MongoSwiftTestCase {
         let wrapperWithId = { id in Wrapper(_id: id, date: date, uuid: uuid, data: data) }
         let wrapper = wrapperWithId("baseline")
 
-        let defaultClient = try MongoClient()
+        let defaultClient = try MongoClient.makeTestClient()
         let defaultDb = defaultClient.db(type(of: self).testDatabase)
         let collDoc = defaultDb.collection(self.getCollectionName())
 
@@ -168,7 +178,7 @@ final class MongoClientTests: MongoSwiftTestCase {
                 uuidCodingStrategy: .deferredToUUID,
                 dataCodingStrategy: .base64
         )
-        let clientCustom = try MongoClient(options: custom)
+        let clientCustom = try MongoClient.makeTestClient(options: custom)
         let collClient = clientCustom.db(defaultDb.name).collection(collDoc.name, withType: Wrapper.self)
 
         let collClientId = "customClient"

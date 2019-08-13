@@ -96,4 +96,48 @@ internal class ConnectionPool {
         defer { self.checkIn(connection) }
         return try body(connection)
     }
+
+    /// Temporary API for testing purposes. This will likely change in SWIFT-471.
+    internal func setSSLOpts(caFile: String?, pemFile: String?) throws {
+        // we need to use asCString rather than withCString to avoid nesting
+        // a ton of closures and handling every permutation of set/unset options.
+        let caString = caFile?.asCString
+        let pemString = pemFile?.asCString
+        defer {
+            caString?.deallocate()
+            pemString?.deallocate()
+        }
+
+        var opts = mongoc_ssl_opt_t()
+        if let ca = caString {
+            opts.ca_file = ca
+        }
+        if let pem = pemString {
+            opts.pem_file = pem
+        }
+
+        switch self.mode {
+        case let .single(clientHandle):
+            mongoc_client_set_ssl_opts(clientHandle, &opts)
+        case let .pooled(pool):
+            mongoc_client_pool_set_ssl_opts(pool, &opts)
+        case .none:
+            throw RuntimeError.internalError(message: "ConnectionPool was already closed")
+        }
+    }
+}
+
+extension String {
+    /// Returns this String as a C string. This pointer *must* be deallocated when
+    /// you are done using it. Prefer to use `String.withCString` whenever possible.
+    /// taken from: https://gist.github.com/yossan/51019a1af9514831f50bb196b7180107
+    fileprivate var asCString: UnsafePointer<Int8> {
+        // + 1 for null terminator
+        let count = self.utf8.count + 1
+        let result = UnsafeMutablePointer<Int8>.allocate(capacity: count)
+        self.withCString { baseAddress in
+            result.initialize(from: baseAddress, count: count)
+        }
+        return UnsafePointer(result)
+    }
 }
