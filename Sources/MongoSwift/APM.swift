@@ -1,12 +1,8 @@
 import Foundation
 import mongoc
 
-/// A protocol for monitoring events to implement, specifying their type and name.
+/// A protocol for monitoring events to implement, specifying their name.
 public protocol MongoEvent {
-    /// The MongoEventType corresponding to the event. This event will be posted if
-    /// monitoring is enabled for its eventType.
-    static var eventType: MongoEventType { get }
-
     /// The name this event will be posted under.
     static var eventName: Notification.Name { get }
 }
@@ -21,9 +17,6 @@ private protocol InitializableFromOpaquePointer {
 /// An event published when a command starts. The event is stored under the key `event`
 /// in the `userInfo` property of `Notification`s posted under the name .commandStarted.
 public struct CommandStartedEvent: MongoEvent, InitializableFromOpaquePointer {
-    /// The type of this event.
-    public static var eventType: MongoEventType { return .commandMonitoring }
-
     /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .commandStarted }
 
@@ -61,9 +54,6 @@ public struct CommandStartedEvent: MongoEvent, InitializableFromOpaquePointer {
 /// An event published when a command succeeds. The event is stored under the key `event`
 /// in the `userInfo` property of `Notification`s posted under the name .commandSucceeded.
 public struct CommandSucceededEvent: MongoEvent, InitializableFromOpaquePointer {
-    /// The type of this event.
-    public static var eventType: MongoEventType { return .commandMonitoring }
-
     /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .commandSucceeded }
 
@@ -101,9 +91,6 @@ public struct CommandSucceededEvent: MongoEvent, InitializableFromOpaquePointer 
 /// An event published when a command fails. The event is stored under the key `event`
 /// in the `userInfo` property of `Notification`s posted under the name .commandFailed.
 public struct CommandFailedEvent: MongoEvent, InitializableFromOpaquePointer {
-    /// The type of this event.
-    public static var eventType: MongoEventType { return .commandMonitoring }
-
     /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .commandFailed }
 
@@ -141,9 +128,6 @@ public struct CommandFailedEvent: MongoEvent, InitializableFromOpaquePointer {
 
 /// Published when a server description changes. This does NOT include changes to the server's roundTripTime property.
 public struct ServerDescriptionChangedEvent: MongoEvent, InitializableFromOpaquePointer {
-    /// The type of this event.
-    public static var eventType: MongoEventType { return .serverMonitoring }
-
     /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .serverDescriptionChanged }
 
@@ -174,9 +158,6 @@ public struct ServerDescriptionChangedEvent: MongoEvent, InitializableFromOpaque
 
 /// Published when a server is initialized.
 public struct ServerOpeningEvent: MongoEvent, InitializableFromOpaquePointer {
-    /// The type of this event.
-    public static var eventType: MongoEventType { return .serverMonitoring }
-
     /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .serverOpening }
 
@@ -199,9 +180,6 @@ public struct ServerOpeningEvent: MongoEvent, InitializableFromOpaquePointer {
 
 /// Published when a server is closed.
 public struct ServerClosedEvent: MongoEvent, InitializableFromOpaquePointer {
-    /// The type of this event.
-    public static var eventType: MongoEventType { return .serverMonitoring }
-
     /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .serverClosed }
 
@@ -224,9 +202,6 @@ public struct ServerClosedEvent: MongoEvent, InitializableFromOpaquePointer {
 
 /// Published when a topology description changes.
 public struct TopologyDescriptionChangedEvent: MongoEvent, InitializableFromOpaquePointer {
-    /// The type of this event.
-    public static var eventType: MongoEventType { return .serverMonitoring }
-
     /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .topologyDescriptionChanged }
 
@@ -253,9 +228,6 @@ public struct TopologyDescriptionChangedEvent: MongoEvent, InitializableFromOpaq
 
 /// Published when a topology is initialized.
 public struct TopologyOpeningEvent: MongoEvent, InitializableFromOpaquePointer {
-    /// The type of this event.
-    public static var eventType: MongoEventType { return .serverMonitoring }
-
     /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .topologyOpening }
 
@@ -274,9 +246,6 @@ public struct TopologyOpeningEvent: MongoEvent, InitializableFromOpaquePointer {
 
 /// Published when a topology is closed.
 public struct TopologyClosedEvent: MongoEvent, InitializableFromOpaquePointer {
-    /// The type of this event.
-    public static var eventType: MongoEventType { return .serverMonitoring }
-
     /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .topologyClosed }
 
@@ -296,9 +265,6 @@ public struct TopologyClosedEvent: MongoEvent, InitializableFromOpaquePointer {
 /// Published when the server monitor’s ismaster command is started - immediately before
 /// the ismaster command is serialized into raw BSON and written to the socket.
 public struct ServerHeartbeatStartedEvent: MongoEvent, InitializableFromOpaquePointer {
-    /// The type of this event.
-    public static var eventType: MongoEventType { return .serverMonitoring }
-
     /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .serverHeartbeatStarted }
 
@@ -313,9 +279,6 @@ public struct ServerHeartbeatStartedEvent: MongoEvent, InitializableFromOpaquePo
 
 /// Published when the server monitor’s ismaster succeeds.
 public struct ServerHeartbeatSucceededEvent: MongoEvent, InitializableFromOpaquePointer {
-    /// The type of this event.
-    public static var eventType: MongoEventType { return .serverMonitoring }
-
     /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .serverHeartbeatSucceeded }
 
@@ -339,9 +302,6 @@ public struct ServerHeartbeatSucceededEvent: MongoEvent, InitializableFromOpaque
 
 /// Published when the server monitor’s ismaster fails, either with an “ok: 0” or a socket exception.
 public struct ServerHeartbeatFailedEvent: MongoEvent, InitializableFromOpaquePointer {
-    /// The type of this event.
-    public static var eventType: MongoEventType { return .serverMonitoring }
-
     /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .serverHeartbeatFailed }
 
@@ -462,31 +422,27 @@ private func postNotification<T: MongoEvent>(type: T.Type,
     guard let event = _event else {
         fatalError("Missing event pointer for \(type)")
     }
+
+    let eventStruct = type.init(event)
+
+    // TODO SWIFT-524: remove workaround for CDRIVER-3256
+    if let tdChanged = eventStruct as? TopologyDescriptionChangedEvent,
+            tdChanged.previousDescription == tdChanged.newDescription {
+        return
+    }
+
+    if let sdChanged = eventStruct as? ServerDescriptionChangedEvent,
+            sdChanged.previousDescription == sdChanged.newDescription {
+        return
+    }
+
+    let notification = Notification(name: type.eventName, userInfo: ["event": eventStruct])
+
     guard let context = contextFunc(event) else {
         fatalError("Missing context for \(type)")
     }
-
     let client = Unmanaged<MongoClient>.fromOpaque(context).takeUnretainedValue()
-
-    if let center = client.notificationCenter, let enabledTypes = client.monitoringEventTypes {
-        if enabledTypes.contains(type.eventType) {
-            let eventStruct = type.init(event)
-
-            // TODO SWIFT-524: remove workaround for CDRIVER-3256
-            if let tdChanged = eventStruct as? TopologyDescriptionChangedEvent,
-                    tdChanged.previousDescription == tdChanged.newDescription {
-                return
-            }
-
-            if let sdChanged = eventStruct as? ServerDescriptionChangedEvent,
-                    sdChanged.previousDescription == sdChanged.newDescription {
-                return
-            }
-
-            let notification = Notification(name: type.eventName, userInfo: ["event": eventStruct])
-            center.post(notification)
-        }
-    }
+    client.notificationCenter.post(notification)
 }
 
 /// Extend Notification.Name to have class properties corresponding to each type
@@ -518,67 +474,42 @@ extension Notification.Name {
     public static let serverHeartbeatFailed = Notification.Name(rawValue: "serverHeartbeatFailed")
 }
 
-/// The two categories of events that can be monitored. One or both can be enabled for a `MongoClient`.
-public enum MongoEventType {
-    /// Encompasses events named `.commandStarted`, `.commandSucceeded`, `.commandFailed`
-    case commandMonitoring
-    /// Encompasses events named `.serverChanged`, `.serverOpening`, `.serverClosed`,
-    /// `.topologyChangedEvent`, `.topologyOpening`, `.topologyClosed`,
-    /// `.serverHeartbeatStarted`, `.serverHeartbeatClosed`, `.serverHeartbeatFailed`
-    case serverMonitoring
-}
-
-/// An extension of MongoClient to add monitoring capability for commands and server discovery and monitoring.
-extension MongoClient {
-    /// Internal function to install all monitoring callbacks for tbis client. This is used if the MongoClient
-    /// is initialized with eventMonitoring = true
-    internal func initializeMonitoring() {
+/// An extension of `ConnectionPool` to add monitoring capability for commands and server discovery and monitoring.
+extension ConnectionPool {
+    /// Internal function to install monitoring callbacks for this pool.
+    internal func initializeMonitoring(commandMonitoring: Bool, serverMonitoring: Bool, client: MongoClient) {
         guard let callbacks = mongoc_apm_callbacks_new() else {
             fatalError("failed to initialize new mongoc_apm_callbacks_t")
         }
         defer { mongoc_apm_callbacks_destroy(callbacks) }
 
-        mongoc_apm_set_command_started_cb(callbacks, commandStarted)
-        mongoc_apm_set_command_succeeded_cb(callbacks, commandSucceeded)
-        mongoc_apm_set_command_failed_cb(callbacks, commandFailed)
-        mongoc_apm_set_server_changed_cb(callbacks, serverDescriptionChanged)
-        mongoc_apm_set_server_opening_cb(callbacks, serverOpening)
-        mongoc_apm_set_server_closed_cb(callbacks, serverClosed)
-        mongoc_apm_set_topology_changed_cb(callbacks, topologyDescriptionChanged)
-        mongoc_apm_set_topology_opening_cb(callbacks, topologyOpening)
-        mongoc_apm_set_topology_closed_cb(callbacks, topologyClosed)
-        mongoc_apm_set_server_heartbeat_started_cb(callbacks, serverHeartbeatStarted)
-        mongoc_apm_set_server_heartbeat_succeeded_cb(callbacks, serverHeartbeatSucceeded)
-        mongoc_apm_set_server_heartbeat_failed_cb(callbacks, serverHeartbeatFailed)
-
-        self.connectionPool.setAPMCallbacks(client: self, callbacks: callbacks)
-    }
-
-    /// Disables monitoring for this `MongoClient`. Notifications can be reenabled using `enableMonitoring`.
-    public func disableMonitoring() {
-        self.monitoringEventTypes = nil
-        self.notificationCenter = nil
-    }
-
-    /**
-     *  Enables monitoring for this `MongoClient` for the event type specified, or both types if neither is specified.
-     *  Sets the destination `NotificationCenter` to the one provided, or the application's default `NotificationCenter`
-     *  if one is not specified.
-     *
-     *  - Parameters:
-     *      - forEvents:   A `MongoEventType?` to enable monitoring for, defaulting to nil. If unspecified, monitoring
-     *                     will be enabled for both `.commandMonitoring` and `.serverMonitoring` events.
-     *      - usingCenter: A `NotificationCenter` that event notifications should be posted to, defaulting to the
-     *                     default `NotificationCenter` for the application.
-     *
-     */
-    public func enableMonitoring(forEvents eventType: MongoEventType? = nil,
-                                 usingCenter center: NotificationCenter = NotificationCenter.default) {
-        if let type = eventType {
-            self.monitoringEventTypes = [type]
-        } else {
-            self.monitoringEventTypes = [.commandMonitoring, .serverMonitoring]
+        if commandMonitoring {
+            mongoc_apm_set_command_started_cb(callbacks, commandStarted)
+            mongoc_apm_set_command_succeeded_cb(callbacks, commandSucceeded)
+            mongoc_apm_set_command_failed_cb(callbacks, commandFailed)
         }
-        self.notificationCenter = center
+
+        if serverMonitoring {
+            mongoc_apm_set_server_changed_cb(callbacks, serverDescriptionChanged)
+            mongoc_apm_set_server_opening_cb(callbacks, serverOpening)
+            mongoc_apm_set_server_closed_cb(callbacks, serverClosed)
+            mongoc_apm_set_topology_changed_cb(callbacks, topologyDescriptionChanged)
+            mongoc_apm_set_topology_opening_cb(callbacks, topologyOpening)
+            mongoc_apm_set_topology_closed_cb(callbacks, topologyClosed)
+            mongoc_apm_set_server_heartbeat_started_cb(callbacks, serverHeartbeatStarted)
+            mongoc_apm_set_server_heartbeat_succeeded_cb(callbacks, serverHeartbeatSucceeded)
+            mongoc_apm_set_server_heartbeat_failed_cb(callbacks, serverHeartbeatFailed)
+        }
+
+        // we can pass the MongoClient as unretained because the callbacks are stored on clientHandle, so if the
+        // callback is being executed, this pool and therefore its parent `MongoClient` must still be valid.
+        switch self.mode {
+        case let .single(clientHandle):
+            mongoc_client_set_apm_callbacks(clientHandle, callbacks, Unmanaged.passUnretained(client).toOpaque())
+        case let .pooled(pool):
+            mongoc_client_pool_set_apm_callbacks(pool, callbacks, Unmanaged.passUnretained(client).toOpaque())
+        case .none:
+            fatalError("ConnectionPool was already closed")
+        }
     }
 }

@@ -6,9 +6,33 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
     /// Determines whether the client should retry supported write operations.
     public var retryWrites: Bool?
 
-    /// Indicates whether this client should be set up to enable monitoring command and server discovery and monitoring
-    /// events.
-    public var eventMonitoring: Bool
+    /**
+     * Indicates whether this client should publish command monitoring events. If true, the following event types will
+     * be published, under the listed names (which are defined as static properties of `Notification.Name`):
+     * - `CommandStartedEvent`: `.commandStarted`
+     * - `CommandSucceededEvent`: `.commandSucceeded`
+     * - `CommandFailedEvent`: `.commandFailed`
+     */
+    public var commandMonitoring: Bool = false
+
+    /**
+     * Indicates whether this client should publish command monitoring events. If true, the following event types will
+     * be published, under the listed names (which are defined as static properties of `Notification.Name`):
+     * - `ServerOpeningEvent`: `.serverOpening`
+     * - `ServerClosedEvent`: `.serverClosed`
+     * - `ServerDescriptionChangedEvent`: `.serverDescriptionChanged`
+     * - `TopologyOpeningEvent`: `.topologyOpening`
+     * - `TopologyClosedEvent`: `.topologyClosed`
+     * - `TopologyDescriptionChangedEvent`: `.topologyDescriptionChanged`
+     * - `ServerHeartbeatStartedEvent`: `serverHeartbeatStarted`
+     * - `ServerHeartbeatSucceededEvent`: `serverHeartbeatSucceeded`
+     * - `ServerHeartbeatFailedEvent`: `serverHeartbeatFailed`
+     */
+    public var serverMonitoring: Bool = false
+
+    /// If command and/or server monitoring is enabled, indicates the `NotificationCenter` events are posted to. If one
+    /// is not specified, the application's default `NotificationCenter` will be used.
+    public var notificationCenter: NotificationCenter?
 
     /// Specifies a ReadConcern to use for the client. If one is not specified, the server's default read concern will
     /// be used.
@@ -38,20 +62,24 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
     // swiftlint:enable redundant_optional_initialization
 
     private enum CodingKeys: CodingKey {
-        case retryWrites, eventMonitoring, readConcern, writeConcern
+        case retryWrites, readConcern, writeConcern
     }
 
     /// Convenience initializer allowing any/all to be omitted or optional.
-    public init(eventMonitoring: Bool = false,
-                readConcern: ReadConcern? = nil,
+    public init(readConcern: ReadConcern? = nil,
                 readPreference: ReadPreference? = nil,
                 retryWrites: Bool? = nil,
                 writeConcern: WriteConcern? = nil,
+                commandMonitoring: Bool = false,
+                serverMonitoring: Bool = false,
+                notificationCenter: NotificationCenter? = nil,
                 dateCodingStrategy: DateCodingStrategy? = nil,
                 uuidCodingStrategy: UUIDCodingStrategy? = nil,
                 dataCodingStrategy: DataCodingStrategy? = nil) {
         self.retryWrites = retryWrites
-        self.eventMonitoring = eventMonitoring
+        self.commandMonitoring = commandMonitoring
+        self.serverMonitoring = serverMonitoring
+        self.notificationCenter = notificationCenter
         self.readConcern = readConcern
         self.readPreference = readPreference
         self.writeConcern = writeConcern
@@ -110,10 +138,7 @@ public class MongoClient {
     private let operationExecutor: OperationExecutor = DefaultOperationExecutor()
 
     /// If command and/or server monitoring is enabled, stores the NotificationCenter events are posted to.
-    internal var notificationCenter: NotificationCenter?
-
-    /// If command and/or server monitoring is enabled, indicates what event types notifications will be posted for.
-    internal var monitoringEventTypes: [MongoEventType]?
+    internal let notificationCenter: NotificationCenter
 
     /// A unique identifier for this client.
     internal let _id = clientIdGenerator.next()
@@ -173,8 +198,11 @@ public class MongoClient {
         self.readPreference = options.readPreference ?? ReadPreference(.primary)
         self.encoder = BSONEncoder(options: options)
         self.decoder = BSONDecoder(options: options)
+        self.notificationCenter = options.notificationCenter ?? NotificationCenter.default
 
-        if options.eventMonitoring { self.initializeMonitoring() }
+        self.connectionPool.initializeMonitoring(commandMonitoring: options.commandMonitoring,
+                                                 serverMonitoring: options.serverMonitoring,
+                                                 client: self)
     }
 
     /**
@@ -204,6 +232,7 @@ public class MongoClient {
         self.readConcern = nil
         self.readPreference = ReadPreference(.primary)
         self.writeConcern = nil
+        self.notificationCenter = NotificationCenter.default
     }
 
     /**

@@ -16,8 +16,7 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
         }
 
         let decoder = BSONDecoder()
-        let client = try MongoClient(options: ClientOptions(eventMonitoring: true))
-        client.enableMonitoring(forEvents: .commandMonitoring)
+        let client = try MongoClient(options: ClientOptions(commandMonitoring: true))
 
         let cmPath = MongoSwiftTestCase.specsPath + "/command-monitoring/tests"
         let testFiles = try FileManager.default.contentsOfDirectory(atPath: cmPath).filter { $0.hasSuffix(".json") }
@@ -80,11 +79,10 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
     }
 
     func testAlternateNotificationCenters() throws {
-        let client = try MongoClient(options: ClientOptions(eventMonitoring: true))
+        let customCenter = NotificationCenter()
+        let client = try MongoClient(options: ClientOptions(commandMonitoring: true, notificationCenter: customCenter))
         let db = client.db(type(of: self).testDatabase)
         let collection = try db.createCollection(self.getCollectionName())
-        let customCenter = NotificationCenter()
-        client.enableMonitoring(forEvents: .commandMonitoring, usingCenter: customCenter)
         var eventCount = 0
         let observer = customCenter.addObserver(forName: nil, object: nil, queue: nil) { _ in
             eventCount += 1

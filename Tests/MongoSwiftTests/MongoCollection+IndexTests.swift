@@ -213,9 +213,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         let center = NotificationCenter.default
         let maxTimeMS: Int64 = 1000
 
-        let client = try MongoClient(options: ClientOptions(eventMonitoring: true))
-        client.enableMonitoring(forEvents: .commandMonitoring)
-
+        let client = try MongoClient(options: ClientOptions(commandMonitoring: true))
         let db = client.db(type(of: self).testDatabase)
 
         let collection = db.collection("collection")
