@@ -3,6 +3,51 @@ import Foundation
 import Nimble
 import XCTest
 
+/// A struct containing the portions of a `CommandStartedEvent` the spec tests use for testing.
+internal struct TestCommandStartedEvent: Decodable, Matchable {
+    let command: Document
+
+    let commandName: String
+
+    let databaseName: String
+
+    internal enum CodingKeys: String, CodingKey {
+        case command, commandName = "command_name", databaseName = "database_name"
+    }
+
+    internal enum TopLevelCodingKeys: String, CodingKey {
+        case type = "command_started_event"
+    }
+
+    internal init(from event: CommandStartedEvent) {
+        self.command = event.command
+        self.databaseName = event.databaseName
+        self.commandName = event.commandName
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: TopLevelCodingKeys.self)
+        let eventContainer = try container.nestedContainer(keyedBy: CodingKeys.self, forKey: .type)
+        self.command = try eventContainer.decode(Document.self, forKey: .command)
+        self.commandName = try eventContainer.decode(String.self, forKey: .commandName)
+        self.databaseName = try eventContainer.decode(String.self, forKey: .databaseName)
+    }
+
+    internal func matches(expected: Any) -> Bool {
+        guard !isPlaceholder(expected) else {
+            return true
+        }
+
+        guard let expected = expected as? TestCommandStartedEvent else {
+            return false
+        }
+
+        return self.commandName == expected.commandName &&
+                self.databaseName == expected.databaseName &&
+                self.command.matches(expected: expected.command)
+    }
+}
+
 /// Protocol that test cases which configure fail points during their execution conform to.
 internal protocol FailPointConfigured: class {
     /// The fail point currently set, if one exists.
