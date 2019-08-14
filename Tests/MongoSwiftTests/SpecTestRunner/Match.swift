@@ -2,11 +2,15 @@ import Foundation
 import MongoSwift
 import Nimble
 
+// swiftlint:disable line_length
 /// Protocol that allows a type to assert it matches a given value according to the specs' MATCHES function.
-/// See: https://github.com/mongodb/specifications/tree/master/source/connection-monitoring-and-pooling/tests#spec-test-match-function
+/// https://github.com/mongodb/specifications/tree/master/source/connection-monitoring-and-pooling/tests#spec-test-match-function
 internal protocol Matchable {
+    /// Returns whether this MATCHES the expected value according to the function defined in the spec.
+    /// https://github.com/mongodb/specifications/tree/master/source/connection-monitoring-and-pooling/tests#spec-test-match-function
     func matches(expected: Any) -> Bool
 }
+// swiftlint:enable line_length
 
 /// Extension that adds MATCHES functionality to `Array`.
 extension Array: Matchable {
@@ -66,9 +70,11 @@ extension BSONValue {
     }
 }
 
+// swiftlint:disable line_length
 /// A Nimble matcher for the MATCHES function defined in the spec.
-/// See: https://github.com/mongodb/specifications/tree/master/source/connection-monitoring-and-pooling/tests#spec-test-match-function
+/// https://github.com/mongodb/specifications/tree/master/source/connection-monitoring-and-pooling/tests#spec-test-match-function
 internal func match(_ expectedValue: Any?) -> Predicate<Matchable> {
+    // switlint:enable line_length
     return Predicate.define("match <\(stringify(expectedValue))>") { actualExpression, msg in
         let actualValue = try actualExpression.evaluate()
         switch (expectedValue, actualValue) {
