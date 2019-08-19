@@ -74,7 +74,7 @@ extension BSONValue {
 /// A Nimble matcher for the MATCHES function defined in the spec.
 /// https://github.com/mongodb/specifications/tree/master/source/connection-monitoring-and-pooling/tests#spec-test-match-function
 internal func match(_ expectedValue: Any?) -> Predicate<Matchable> {
-    // switlint:enable line_length
+    // swiftlint:enable line_length
     return Predicate.define("match <\(stringify(expectedValue))>") { actualExpression, msg in
         let actualValue = try actualExpression.evaluate()
         switch (expectedValue, actualValue) {
