@@ -104,9 +104,8 @@ extension MongoClient {
     internal func serverVersion() throws -> ServerVersion {
         // TODO SWIFT-539: use serverStatus instead of buildInfo due to CDRIVER-3318
         let serverStatus = try self.db("admin").runCommand(["serverStatus": 1],
-                                                            options: RunCommandOptions(
-                                                            readPreference: ReadPreference(.primary)
-                                                        ))
+                                                           options: RunCommandOptions(
+                                                                readPreference: ReadPreference(.primary)))
         guard let versionString = serverStatus["version"] as? String else {
             throw TestError(message: "serverStatus reply missing version string: \(serverStatus)")
         }
@@ -126,7 +125,8 @@ extension MongoClient {
         return true
     }
 
-    static func makeTestClient(_ uri: String = MongoSwiftTestCase.connStr, options: ClientOptions? = nil) throws -> MongoClient {
+    static func makeTestClient(_ uri: String = MongoSwiftTestCase.connStr,
+                               options: ClientOptions? = nil) throws -> MongoClient {
         let client = try MongoClient(uri, options: options)
         if MongoSwiftTestCase.ssl {
              try client.connectionPool.setSSLOpts(caFile: MongoSwiftTestCase.sslCAFilePath,
