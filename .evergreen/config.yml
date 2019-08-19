@@ -416,7 +416,7 @@ buildvariants:
      - ".3.6"
   rules:
   # pre 4.0 we are just using legacy linux mongoDB since ubuntu 18.04 didn't
-  # exist when 3.6 came out. it legacy doesn't link to OpenSSL so we can't run
+  # exist when 3.6 came out. legacy doesn't link to OpenSSL so we can't run
   # SSL tests there.
   - if:
       os-fully-featured: "ubuntu-18.04"
