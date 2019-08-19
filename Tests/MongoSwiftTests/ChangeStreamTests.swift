@@ -20,22 +20,22 @@ internal enum ChangeStreamTarget: String, Decodable {
                         _ database: String?,
                         _ collection: String?,
                         _ pipeline: [Document],
-                        _ options: ChangeStreamOptions) throws -> ChangeStream<ChangeStreamTestEvent> {
+                        _ options: ChangeStreamOptions) throws -> ChangeStream<Document> {
         switch self {
         case .client:
-            return try client.watch(pipeline, options: options, withEventType: ChangeStreamTestEvent.self)
+            return try client.watch(pipeline, options: options, withEventType: Document.self)
         case .database:
             guard let database = database else {
                 throw RuntimeError.internalError(message: "missing db in watch")
             }
-            return try client.db(database).watch(pipeline, options: options, withEventType: ChangeStreamTestEvent.self)
+            return try client.db(database).watch(pipeline, options: options, withEventType: Document.self)
         case .collection:
             guard let collection = collection, let database = database else {
                 throw RuntimeError.internalError(message: "missing db or collection in watch")
             }
             return try client.db(database)
                     .collection(collection)
-                    .watch(pipeline, options: options, withEventType: ChangeStreamTestEvent.self)
+                    .watch(pipeline, options: options, withEventType: Document.self)
         }
     }
 }
@@ -76,8 +76,8 @@ internal enum ChangeStreamTestResult: Decodable {
     /// Describes an error received during the test
     case error(code: Int, labels: [String]?)
 
-    /// An Extended JSON array of documents expected to be received from the changeStream
-    case success([ChangeStreamTestEvent])
+    /// An array of event documents expected to be received from the change stream without error during the test.
+    case success([Document])
 
     /// Top-level coding keys. Used for determining whether this result is a success or failure.
     internal enum CodingKeys: CodingKey {
@@ -89,7 +89,7 @@ internal enum ChangeStreamTestResult: Decodable {
         case code, errorLabels
     }
 
-    /// Asserts that the given error matches the on expected by this result.
+    /// Asserts that the given error matches the one expected by this result.
     internal func assertMatchesError(error: Error, description: String) {
         guard case let .error(code, labels) = self else {
             fail("\(description) failed: got error but result success")
@@ -112,7 +112,7 @@ internal enum ChangeStreamTestResult: Decodable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         if container.contains(.success) {
-            self = .success(try container.decode([ChangeStreamTestEvent].self, forKey: .success))
+            self = .success(try container.decode([Document].self, forKey: .success))
         } else {
             let nested = try container.nestedContainer(keyedBy: ErrorCodingKeys.self, forKey: .error)
             let code = try nested.decode(Int.self, forKey: .code)
@@ -122,30 +122,15 @@ internal enum ChangeStreamTestResult: Decodable {
     }
 }
 
-/// An event document containing only a subset of fields required for comparison in `ChangeStreamTest`s.
-/// When comparing for equality, only presence of the `_id` field of `fullDocument` is compared.
-internal struct ChangeStreamTestEvent: Codable, Equatable {
-    let operationType: String
-
-    let ns: MongoNamespace?
-
-    let fullDocument: Document?
-
-    public static func == (lhs: ChangeStreamTestEvent, rhs: ChangeStreamTestEvent) -> Bool {
-        let lhsFullDoc = lhs.fullDocument?.filter { $0.key != "_id" }
-        let rhsFullDoc = rhs.fullDocument?.filter { $0.key != "_id" }
-        return lhsFullDoc == rhsFullDoc &&
-                lhs.ns == rhs.ns &&
-                lhs.operationType == rhs.operationType
-    }
-}
-
 /// Struct representing a single test within a spec test JSON file.
 internal struct ChangeStreamTest: Decodable {
+    /// The title of this test.
     let description: String
+
+    /// The minimum server version that this test can be run against.
     let minServerVersion: ServerVersion
 
-    /// The configureFailPoint command document to run to configure a fail point on the primary server.
+    /// The fail point that should be set prior to running this test.
     let failPoint: FailPoint?
 
     /// The entity on which to run the change stream.
@@ -154,25 +139,40 @@ internal struct ChangeStreamTest: Decodable {
     /// An array of server topologies against which to run the test.
     let topology: [String]
 
-    /// An array of additional aggregation pipeline stages to add to the change stream
+    /// An array of additional aggregation pipeline stages to pass to the `watch` used to create the change stream for
+    /// this test.
     let changeStreamPipeline: [Document]
 
-    /// Additional options to add to the changeStream
+    /// Additional options to pass to the `watch` used to create the change stream for this test.
     let changeStreamOptions: ChangeStreamOptions
 
-    /// Array of documents, each describing an operation.
+    /// An array of documents, each describing an operation that should be run as part of this test.
     let operations: [ChangeStreamTestOperation]
 
-    /// A list of command-started events in Extended JSON format.
-    let expectations: [Document]?
+    /// A list of command-started events that are expected to have been emitted by the client that starts the change
+    /// stream for this test.
+    let expectations: [TestCommandStartedEvent]?
 
-    // The expected result of running a test.
+    // The expected result of running this test.
     let result: ChangeStreamTestResult
 
     internal func run(globalClient: MongoClient, database: String, collection: String) throws {
-        let client = try MongoClient()
+        let client = try MongoClient(options: ClientOptions(commandMonitoring: true))
 
-        // TODO SWIFT-535: add APM assertions
+        let center = client.notificationCenter
+        var events: [TestCommandStartedEvent] = []
+        let observer = center.addObserver(forName: .commandStarted, object: nil, queue: nil) { notification in
+            guard let event = notification.userInfo?["event"] as? CommandStartedEvent else {
+                fail("\(self.description) failed: bad event type")
+                return
+            }
+            guard event.commandName != "isMaster" else {
+                return
+            }
+            events.append(TestCommandStartedEvent(from: event))
+        }
+        defer { client.notificationCenter.removeObserver(observer) }
+
         do {
             let changeStream = try self.target.watch(client,
                                                      database,
@@ -188,16 +188,20 @@ internal struct ChangeStreamTest: Decodable {
                 _ = try changeStream.nextOrError()
                 fail("\(self.description) failed: expected error but got none while iterating")
             case let .success(events):
-                var seenEvents: [ChangeStreamTestEvent] = []
+                var seenEvents: [Document] = []
                 for _ in 0..<events.count {
                     let event = try changeStream.nextOrError()
-                    expect(event).toNot(beNil())
+                    expect(event).toNot(beNil(), description: description)
                     seenEvents.append(event!)
                 }
-                expect(seenEvents).to(equal(events), description: self.description)
+                expect(seenEvents).to(match(events), description: self.description)
             }
         } catch {
             self.result.assertMatchesError(error: error, description: self.description)
+        }
+
+        if let expectations = self.expectations {
+            expect(events).to(match(expectations), description: self.description)
         }
     }
 }
@@ -212,7 +216,7 @@ private struct ChangeStreamTestFile: Decodable {
              tests
     }
 
-    /// Name of this test case
+    /// Name of this test case.
     var name: String = ""
 
     /// The default database.
@@ -221,10 +225,10 @@ private struct ChangeStreamTestFile: Decodable {
     /// The default collection.
     let collectionName: String
 
-    /// Secondary database
+    /// Secondary database.
     let database2Name: String
 
-    // Secondary collection
+    // Secondary collection.
     let collection2Name: String
 
     /// An array of tests that are to be run independently of each other.
