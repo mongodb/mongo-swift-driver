@@ -123,6 +123,16 @@ extension MongoClient {
         return try ServerVersion(versionString)
     }
 
+    /// Get the max wire version of the primary.
+    internal func maxWireVersion() throws -> Int {
+        let options = RunCommandOptions(readPreference: ReadPreference(.primary))
+        let isMaster = try self.db("admin").runCommand(["isMaster": 1], options: options)
+        guard let max = (isMaster["maxWireVersion"] as? BSONNumber)?.intValue else {
+            throw TestError(message: "isMaster reply missing maxwireversion \(isMaster)")
+        }
+        return max
+    }
+
     internal func serverVersionIsInRange(_ min: String?, _ max: String?) throws -> Bool {
         let version = try self.serverVersion()
 
@@ -258,4 +268,37 @@ internal func bsonEqual(_ expectedValue: BSONValue?) -> Predicate<BSONValue> {
             return PredicateResult(bool: matches, message: msg)
         }
     }
+}
+
+internal func capturingCommandEvents(eventTypes: [Notification.Name]? = nil,
+                                     commandNames: [String]? = nil,
+                                     f: (MongoClient) throws -> Void) throws -> [MongoCommandEvent] {
+    let client = try MongoClient(options: ClientOptions(commandMonitoring: true))
+    let center = client.notificationCenter
+
+    var events: [MongoCommandEvent] = []
+    let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
+        guard let event = notif.userInfo?["event"] as? MongoCommandEvent else {
+            return
+        }
+
+        if let eventWhitelist = eventTypes {
+            guard eventWhitelist.contains(type(of: event).eventName) else {
+                return
+            }
+        }
+
+        if let whitelist = commandNames {
+            guard whitelist.contains(event.commandName) else {
+                return
+            }
+        }
+
+        events.append(event)
+    }
+    defer { center.removeObserver(observer) }
+
+    try f(client)
+
+    return events
 }

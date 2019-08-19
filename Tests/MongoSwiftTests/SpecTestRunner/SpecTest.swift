@@ -78,6 +78,10 @@ internal struct FailPoint: Decodable {
         return self.failPoint["configureFailPoint"] as? String ?? ""
     }
 
+    private init(_ document: Document) {
+        self.failPoint = document
+    }
+
     public init(from decoder: Decoder) throws {
         self.failPoint = try Document(from: decoder)
     }
@@ -112,6 +116,50 @@ internal struct FailPoint: Decodable {
         } catch {
             print("Failed to disable fail point \(self.name): \(error)")
         }
+    }
+
+    public enum Mode {
+        case times(Int)
+        case alwaysOn
+        case off
+        case activationProbability(Double)
+
+        internal func toBSONValue() -> BSONValue {
+            switch self {
+            case let .times(i):
+                return ["times": i] as Document
+            case let .activationProbability(d):
+                return ["activationProbability": d] as Document
+            default:
+                return String(describing: self)
+            }
+        }
+    }
+
+    public static func failCommand(failCommands: [String],
+                                   mode: Mode,
+                                   closeConnection: Bool? = nil,
+                                   errorCode: Int? = nil,
+                                   writeConcernError: Document? = nil) -> FailPoint {
+        var data: Document = [
+            "failCommands": failCommands
+        ]
+        if let close = closeConnection {
+            data["closeConnection"] = close
+        }
+        if let code = errorCode {
+            data["errorCode"] = code
+        }
+        if let writeConcernError = writeConcernError {
+            data["writeConcernError"] = writeConcernError
+        }
+
+        let command: Document = [
+            "configureFailPoint": "failCommand",
+            "mode": mode.toBSONValue(),
+            "data": data
+        ]
+        return FailPoint(command)
     }
 }
 

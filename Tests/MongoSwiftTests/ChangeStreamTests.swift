@@ -311,6 +311,119 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase, FailPointConfigured {
 
 /// Class for spec prose tests and other integration tests associated with change streams.
 final class ChangeStreamTests: MongoSwiftTestCase {
+    /// Prose test 1 of change stream spec.
+    func testChangeStreamTracksResumeToken() throws {
+        guard MongoSwiftTestCase.topologyType != .single else {
+            print("Skipping \(self.name) because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            return
+        }
+
+        let client = try MongoClient()
+        let coll = client.db(type(of: self).testDatabase).collection(self.getCollectionName())
+        defer { try? coll.drop() }
+
+        let changeStream = try coll.watch()
+        for x in 0..<5 {
+            try coll.insertOne(["x": x])
+        }
+
+        expect(changeStream.resumeToken).to(beNil())
+
+        var lastSeen: ResumeToken?
+        for change in changeStream {
+            expect(changeStream.resumeToken).toNot(beNil())
+            expect(changeStream.resumeToken).to(equal(change._id))
+            if lastSeen != nil {
+                expect(changeStream.resumeToken).toNot(equal(lastSeen))
+            }
+            lastSeen = changeStream.resumeToken
+        }
+    }
+
+    /// Prose test 2 of change stream spec.
+    func testChangeStreamMissingId() throws {
+        guard MongoSwiftTestCase.topologyType != .single else {
+            print("Skipping \(self.name) because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            return
+        }
+
+        let client = try MongoClient()
+        let coll = try client.db(type(of: self).testDatabase).createCollection(self.getCollectionName())
+        defer { try? coll.drop() }
+
+        let changeStream = try coll.watch([["$project": ["_id": false] as Document]])
+        for x in 0..<5 {
+            try coll.insertOne(["x": x])
+        }
+
+        let expectedError: Error
+        if try client.maxWireVersion() >= 8 {
+            expectedError = ServerError.commandError(code: 280,
+                                                     codeName: "ChangeStreamFatalError",
+                                                     message: "",
+                                                     errorLabels: ["NonResumableChangeStreamError"])
+        } else {
+            expectedError = UserError.logicError(message: "")
+        }
+        expect(try changeStream.nextOrError()).to(throwError(expectedError))
+    }
+
+    /// Prose test 3 of change stream spec.
+    func testChangeStreamAutomaticResume() throws {
+        guard MongoSwiftTestCase.topologyType != .single else {
+            print("Skipping \(self.name) because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            return
+        }
+
+        let events = try capturingCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) { client in
+            let coll = try client.db(type(of: self).testDatabase).createCollection(self.getCollectionName())
+            defer { try? coll.drop() }
+
+            let changeStream = try coll.watch([["$match": ["fullDocument.x": 2] as Document]],
+                                              options: ChangeStreamOptions(fullDocument: .updateLookup, batchSize: 123))
+            for x in 0..<5 {
+                try coll.insertOne(["x": x])
+            }
+
+            // notMaster error
+            let failPoint = FailPoint.failCommand(failCommands: ["getMore"], mode: .times(1), errorCode: 10107)
+            try failPoint.enable()
+            defer { failPoint.disable() }
+
+            while try changeStream.nextOrError() != nil {}
+        }
+
+        expect(events.count).to(equal(2))
+
+        let originalCommand = (events[0] as? CommandStartedEvent)!.command
+        let resumeCommand = (events[1] as? CommandStartedEvent)!.command
+
+        let originalPipeline = originalCommand["pipeline"]! as! [Document]
+        let resumePipeline = resumeCommand["pipeline"]! as! [Document]
+
+        // verify the $changeStream stage is identical except for resume options.
+        let filteredStreamStage = { (pipeline: [Document]) -> Document in
+            let stage = pipeline[0]
+            let streamDoc = stage["$changeStream"] as? Document
+            expect(streamDoc).toNot(beNil())
+            return streamDoc!.filter { $0.key != "startAtOperationTime" }
+        }
+        expect(filteredStreamStage(resumePipeline)).to(equal(filteredStreamStage(originalPipeline)))
+
+        // verify the pipeline was preserved.
+        expect(resumePipeline[1...]).to(equal(originalPipeline[1...]))
+
+        // verify the cursor options were preserved.
+        expect(resumeCommand["cursor"]).to(bsonEqual(originalCommand["cursor"]))
+    }
+
+    func testChangeStreamFailedAggregate() throws {
+        guard MongoSwiftTestCase.topologyType != .single else {
+            print("Skipping \(self.name) because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            return
+        }
+    }
+
     func testChangeStreamOnAClient() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
             print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
@@ -499,23 +612,6 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         // expect this change stream to have more events after resuming
         expect(changeStream2.next()).toNot(beNil())
         expect(changeStream2.error).to(beNil())
-    }
-
-    func testChangeStreamProjectOutIdError() throws {
-         guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
-            return
-        }
-
-        let client = try MongoClient.makeTestClient()
-        let db = client.db(type(of: self).testDatabase)
-        defer { try? db.drop() }
-        let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
-        let options = ChangeStreamOptions(fullDocument: .updateLookup)
-        let pipeline: [Document] = [["$project": ["_id": 0] as Document]]
-        let changeStream = try coll.watch(pipeline, options: options)
-        try coll.insertOne(["a": 1])
-        expect(try changeStream.nextOrError()).to(throwError())
     }
 
     struct MyFullDocumentType: Codable, Equatable {
