@@ -1,4 +1,4 @@
-// Generated using Sourcery 0.16.1 — https://github.com/krzysztofzablocki/Sourcery
+// Generated using Sourcery 0.16.2 — https://github.com/krzysztofzablocki/Sourcery
 // DO NOT EDIT
 
 
@@ -24,12 +24,20 @@ extension ChangeStreamSpecTests {
 
 extension ChangeStreamTests {
     static var allTests = [
+        ("testChangeStreamTracksResumeToken", testChangeStreamTracksResumeToken),
+        ("testChangeStreamMissingId", testChangeStreamMissingId),
+        ("testChangeStreamAutomaticResume", testChangeStreamAutomaticResume),
+        ("testChangeStreamFailedAggregate", testChangeStreamFailedAggregate),
+        ("testChangeStreamDoesntResume", testChangeStreamDoesntResume),
+        ("testChangeStreamDoesntCloseOnEmptyBatch", testChangeStreamDoesntCloseOnEmptyBatch),
+        ("testChangeStreamResumeAfterKillCursor", testChangeStreamResumeAfterKillCursor),
+        ("testChangeStreamResumeTokenUpdatesEmptyBatch", testChangeStreamResumeTokenUpdatesEmptyBatch),
+        ("testChangeStreamResumeTokenUpdatesNonemptyBatch", testChangeStreamResumeTokenUpdatesNonemptyBatch),
         ("testChangeStreamOnAClient", testChangeStreamOnAClient),
         ("testChangeStreamOnADatabase", testChangeStreamOnADatabase),
         ("testChangeStreamOnACollection", testChangeStreamOnACollection),
         ("testChangeStreamWithPipeline", testChangeStreamWithPipeline),
         ("testChangeStreamResumeToken", testChangeStreamResumeToken),
-        ("testChangeStreamProjectOutIdError", testChangeStreamProjectOutIdError),
         ("testChangeStreamWithEventType", testChangeStreamWithEventType),
         ("testChangeStreamWithFullDocumentType", testChangeStreamWithFullDocumentType),
         ("testChangeStreamOnACollectionWithCodableType", testChangeStreamOnACollectionWithCodableType),

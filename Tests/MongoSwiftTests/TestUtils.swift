@@ -155,6 +155,18 @@ extension MongoClient {
         }
         return client
     }
+
+    internal func supportsFailCommand() -> Bool {
+        guard let version = try? self.serverVersion() else {
+            return false
+        }
+        switch MongoSwiftTestCase.topologyType {
+        case .sharded:
+            return version >= ServerVersion(major: 4, minor: 1, patch: 5)
+        default:
+            return version >= ServerVersion(major: 4, minor: 0)
+        }
+    }
 }
 
 extension Document {
@@ -270,9 +282,9 @@ internal func bsonEqual(_ expectedValue: BSONValue?) -> Predicate<BSONValue> {
     }
 }
 
-internal func capturingCommandEvents(eventTypes: [Notification.Name]? = nil,
-                                     commandNames: [String]? = nil,
-                                     f: (MongoClient) throws -> Void) throws -> [MongoCommandEvent] {
+internal func captureCommandEvents(eventTypes: [Notification.Name]? = nil,
+                                   commandNames: [String]? = nil,
+                                   f: (MongoClient) throws -> Void) throws -> [MongoCommandEvent] {
     let client = try MongoClient(options: ClientOptions(commandMonitoring: true))
     let center = client.notificationCenter
 

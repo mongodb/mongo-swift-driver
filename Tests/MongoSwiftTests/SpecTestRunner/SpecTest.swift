@@ -118,6 +118,7 @@ internal struct FailPoint: Decodable {
         }
     }
 
+    /// Enum representing the options for the "mode" field of a `configureFailPoint` command.
     public enum Mode {
         case times(Int)
         case alwaysOn
@@ -136,6 +137,9 @@ internal struct FailPoint: Decodable {
         }
     }
 
+    /// Factory function for creating a `failCommand` failpoint.
+    /// Note: enabling a `failCommand` failpoint will override any other `failCommand` failpoint that is currently
+    /// enabled.
     public static func failCommand(failCommands: [String],
                                    mode: Mode,
                                    closeConnection: Bool? = nil,
