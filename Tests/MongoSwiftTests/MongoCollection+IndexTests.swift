@@ -73,7 +73,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
 
     func testIndexOptions() throws {
         // TODO SWIFT-539: unskip
-        if MongoSwiftTestCase.ssl {
+        if MongoSwiftTestCase.ssl && MongoSwiftTestCase.isMacOS {
             print("Skipping test, fails with SSL, see CDRIVER-3318")
             return
         }

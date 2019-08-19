@@ -98,16 +98,27 @@ class MongoSwiftTestCase: XCTestCase {
     static var sslCAFilePath: String? {
         return ProcessInfo.processInfo.environment["SSL_CA_FILE"]
     }
+
+    /// Temporary helper to assist with skipping tests due to CDRIVER-3318. Returns whether we are running on MacOS.
+    /// Remove when SWIFT-539 is completed.
+    static var isMacOS: Bool {
+#if os(OSX)
+        return true
+#else
+        return false
+#endif
+    }
 }
 
 extension MongoClient {
     internal func serverVersion() throws -> ServerVersion {
-        // TODO SWIFT-539: use serverStatus instead of buildInfo due to CDRIVER-3318
-        let serverStatus = try self.db("admin").runCommand(["serverStatus": 1],
-                                                           options: RunCommandOptions(
-                                                                readPreference: ReadPreference(.primary)))
-        guard let versionString = serverStatus["version"] as? String else {
-            throw TestError(message: "serverStatus reply missing version string: \(serverStatus)")
+        // TODO SWIFT-539: switch to always using buildInfo. fails on MacOS + SSL due to CDRIVER-3318
+        let cmd = MongoSwiftTestCase.ssl && MongoSwiftTestCase.isMacOS ? "serverStatus" : "buildInfo"
+        let reply = try self.db("admin").runCommand([cmd: 1],
+                                                     options: RunCommandOptions(
+                                                     readPreference: ReadPreference(.primary)))
+        guard let versionString = reply["version"] as? String else {
+            throw TestError(message: " reply missing version string: \(reply)")
         }
         return try ServerVersion(versionString)
     }
