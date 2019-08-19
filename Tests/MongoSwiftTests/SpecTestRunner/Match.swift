@@ -7,18 +7,23 @@ import Nimble
 /// https://github.com/mongodb/specifications/tree/master/source/connection-monitoring-and-pooling/tests#spec-test-match-function
 internal protocol Matchable {
     /// Returns whether this MATCHES the expected value according to the function defined in the spec.
+    /// This assumes `expected` is NOT a placeholder value (i.e. 42/"42"). Use `matches` if `expected` may be a
+    /// placeholder.
     /// https://github.com/mongodb/specifications/tree/master/source/connection-monitoring-and-pooling/tests#spec-test-match-function
-    func matches(expected: Any) -> Bool
+    func contentMatches(expected: Any) -> Bool
 }
 // swiftlint:enable line_length
 
+extension Matchable {
+    /// Returns whether this MATCHES the expected value according to the function defined in the spec.
+    internal func matches(expected: Any) -> Bool {
+        return isPlaceholder(expected) || self.contentMatches(expected: expected)
+    }
+}
+
 /// Extension that adds MATCHES functionality to `Array`.
 extension Array: Matchable {
-    internal func matches(expected: Any) -> Bool {
-        guard !isPlaceholder(expected) else {
-            return true
-        }
-
+    internal func contentMatches(expected: Any) -> Bool {
         guard let expected = expected as? [Any], expected.count <= self.count else {
             return false
         }
@@ -42,7 +47,7 @@ extension Array: Matchable {
 
 /// Extension that adds MATCHES functionality to `Document`.
 extension Document: Matchable {
-    internal func matches(expected: Any) -> Bool {
+    internal func contentMatches(expected: Any) -> Bool {
         guard !isPlaceholder(expected) else {
             return true
         }

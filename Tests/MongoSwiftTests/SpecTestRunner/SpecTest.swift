@@ -33,11 +33,7 @@ internal struct TestCommandStartedEvent: Decodable, Matchable {
         self.databaseName = try eventContainer.decode(String.self, forKey: .databaseName)
     }
 
-    internal func matches(expected: Any) -> Bool {
-        guard !isPlaceholder(expected) else {
-            return true
-        }
-
+    internal func contentMatches(expected: Any) -> Bool {
         guard let expected = expected as? TestCommandStartedEvent else {
             return false
         }
