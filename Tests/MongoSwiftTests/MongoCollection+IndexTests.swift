@@ -2,6 +2,8 @@
 import Nimble
 import XCTest
 
+private var _client: MongoClient?
+
 final class MongoCollection_IndexTests: MongoSwiftTestCase {
     var collName: String = ""
     var coll: MongoCollection<Document>!
@@ -12,7 +14,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
     override class func setUp() {
         super.setUp()
         do {
-            _client = try MongoClient()
+            _client = try MongoClient.makeTestClient()
         } catch {
             print("Setup failed: \(error)")
         }
@@ -70,6 +72,12 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
     }
 
     func testIndexOptions() throws {
+        // TODO SWIFT-539: unskip
+        if MongoSwiftTestCase.ssl && MongoSwiftTestCase.isMacOS {
+            print("Skipping test, fails with SSL, see CDRIVER-3318")
+            return
+        }
+
         let options = IndexOptions(
             background: true,
             name: "testOptions",
@@ -203,7 +211,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
     }
 
     func testListIndexes() throws {
-        let indexes = try coll.listIndexes()
+        let indexes = try self.coll.listIndexes()
         // New collection, so expect just the _id_ index to exist.
         expect(indexes.next()?["name"]).to(bsonEqual("_id_"))
         expect(indexes.next()).to(beNil())
@@ -213,7 +221,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         let center = NotificationCenter.default
         let maxTimeMS: Int64 = 1000
 
-        let client = try MongoClient(options: ClientOptions(commandMonitoring: true))
+        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
         let db = client.db(type(of: self).testDatabase)
 
         let collection = db.collection("collection")

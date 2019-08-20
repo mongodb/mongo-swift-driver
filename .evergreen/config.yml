@@ -103,6 +103,7 @@ functions:
           ${PREPARE_SHELL}
           MONGODB_VERSION=${MONGODB_VERSION} \
             TOPOLOGY=${TOPOLOGY} \
+            SSL=${SSL} \
             sh ${DRIVERS_TOOLS}/.evergreen/run-orchestration.sh
     # run-orchestration generates expansion file with the MONGODB_URI for the cluster
     - command: expansions.update
@@ -131,6 +132,7 @@ functions:
 
           MONGODB_URI=${MONGODB_URI} \
           TOPOLOGY=${TOPOLOGY} \
+          SSL=${SSL} \
           SWIFT_VERSION=${SWIFT_VERSION} \
             sh ${PROJECT_DIRECTORY}/.evergreen/run-tests.sh
 
@@ -182,6 +184,7 @@ tasks:
       tags: ["3.6", "standalone"]
       commands:
         - func: "prepare resources"
+        - func: "fix absolute paths"
         - func: "bootstrap mongo-orchestration"
           vars:
             MONGODB_VERSION: "3.6"
@@ -193,6 +196,7 @@ tasks:
       tags: ["3.6", "replica_set"]
       commands:
         - func: "prepare resources"
+        - func: "fix absolute paths"
         - func: "bootstrap mongo-orchestration"
           vars:
             MONGODB_VERSION: "3.6"
@@ -204,6 +208,7 @@ tasks:
       tags: ["3.6", "sharded_cluster"]
       commands:
         - func: "prepare resources"
+        - func: "fix absolute paths"
         - func: "bootstrap mongo-orchestration"
           vars:
             MONGODB_VERSION: "3.6"
@@ -215,6 +220,7 @@ tasks:
       tags: ["4.0", "standalone"]
       commands:
         - func: "prepare resources"
+        - func: "fix absolute paths"
         - func: "bootstrap mongo-orchestration"
           vars:
             MONGODB_VERSION: "4.0"
@@ -226,6 +232,7 @@ tasks:
       tags: ["4.0", "replica_set"]
       commands:
         - func: "prepare resources"
+        - func: "fix absolute paths"
         - func: "bootstrap mongo-orchestration"
           vars:
             MONGODB_VERSION: "4.0"
@@ -237,6 +244,7 @@ tasks:
       tags: ["4.0", "sharded_cluster"]
       commands:
         - func: "prepare resources"
+        - func: "fix absolute paths"
         - func: "bootstrap mongo-orchestration"
           vars:
             MONGODB_VERSION: "4.0"
@@ -248,6 +256,7 @@ tasks:
       tags: ["4.2", "standalone"]
       commands:
         - func: "prepare resources"
+        - func: "fix absolute paths"
         - func: "bootstrap mongo-orchestration"
           vars:
             MONGODB_VERSION: "4.2"
@@ -259,6 +268,7 @@ tasks:
       tags: ["4.2", "replica_set"]
       commands:
         - func: "prepare resources"
+        - func: "fix absolute paths"
         - func: "bootstrap mongo-orchestration"
           vars:
             MONGODB_VERSION: "4.2"
@@ -270,6 +280,7 @@ tasks:
       tags: ["4.2", "sharded_cluster"]
       commands:
         - func: "prepare resources"
+        - func: "fix absolute paths"
         - func: "bootstrap mongo-orchestration"
           vars:
             MONGODB_VERSION: "4.2"
@@ -281,6 +292,7 @@ tasks:
       tags: ["latest", "standalone"]
       commands:
         - func: "prepare resources"
+        - func: "fix absolute paths"
         - func: "bootstrap mongo-orchestration"
           vars:
             MONGODB_VERSION: "latest"
@@ -292,6 +304,7 @@ tasks:
       tags: ["latest", "replica_set"]
       commands:
         - func: "prepare resources"
+        - func: "fix absolute paths"
         - func: "bootstrap mongo-orchestration"
           vars:
             MONGODB_VERSION: "latest"
@@ -303,6 +316,7 @@ tasks:
       tags: ["latest", "sharded_cluster"]
       commands:
         - func: "prepare resources"
+        - func: "fix absolute paths"
         - func: "bootstrap mongo-orchestration"
           vars:
             MONGODB_VERSION: "latest"
@@ -374,18 +388,50 @@ axes:
         variables:
            SWIFT_VERSION: "5.0"
 
+  - id: ssl
+    display_name: SSL
+    values:
+      - id: ssl
+        display_name: SSL
+        variables:
+          SSL: "ssl"
+      - id: nossl
+        display_name: NoSSL
+        variables:
+          SSL: "nossl"
 
 
 buildvariants:
 
 - matrix_name: "tests-all"
-  matrix_spec: {"os-fully-featured": "*", "swift-version": "*"}
-  display_name: "${swift-version} ${os-fully-featured}"
+  matrix_spec: 
+    os-fully-featured: "*"
+    swift-version: "*"
+    ssl: "*"
+  display_name: "${swift-version} ${os-fully-featured} ${ssl}"
   tasks:
      - ".latest"
      - ".4.2"
      - ".4.0"
      - ".3.6"
+  rules:
+  # pre 4.0 we are just using legacy linux mongoDB since ubuntu 18.04 didn't
+  # exist when 3.6 came out. legacy doesn't link to OpenSSL so we can't run
+  # SSL tests there.
+  - if:
+      os-fully-featured: "ubuntu-18.04"
+      swift-version: "*"
+      ssl: "ssl"
+    then:
+      remove_tasks: ".3.6"
+  # workaround for CDRIVER-3318 preventing us from doing any version checks
+  # on sharded clusters. remove in SWIFT-539
+  - if:
+      os-fully-featured: "macos-1014"
+      swift-version: "*"
+      ssl: "ssl"
+    then:
+      remove_tasks: ".sharded_cluster"
 
 - matrix_name: "atlas-connect"
   matrix_spec: 

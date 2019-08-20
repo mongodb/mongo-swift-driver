@@ -83,16 +83,42 @@ class MongoSwiftTestCase: XCTestCase {
         }
         return TopologyDescription.TopologyType(from: topology)
     }
+
+    /// Indicates that we are running the tests with SSL enabled, determined by the environment variable $SSL.
+    static var ssl: Bool {
+        return ProcessInfo.processInfo.environment["SSL"] == "ssl"
+    }
+
+    /// Returns the path where the SSL key file is located, determined by the environment variable $SSL_KEY_FILE.
+    static var sslPEMKeyFilePath: String? {
+        return ProcessInfo.processInfo.environment["SSL_KEY_FILE"]
+    }
+
+    /// Returns the path where the SSL CA file is located, determined by the environment variable $SSL_CA_FILE..
+    static var sslCAFilePath: String? {
+        return ProcessInfo.processInfo.environment["SSL_CA_FILE"]
+    }
+
+    /// Temporary helper to assist with skipping tests due to CDRIVER-3318. Returns whether we are running on MacOS.
+    /// Remove when SWIFT-539 is completed.
+    static var isMacOS: Bool {
+#if os(OSX)
+        return true
+#else
+        return false
+#endif
+    }
 }
 
 extension MongoClient {
     internal func serverVersion() throws -> ServerVersion {
-        let buildInfo = try self.db("admin").runCommand(["buildInfo": 1],
-                                                        options: RunCommandOptions(
-                                                            readPreference: ReadPreference(.primary)
-                                                        ))
-        guard let versionString = buildInfo["version"] as? String else {
-            throw TestError(message: "buildInfo reply missing version string: \(buildInfo)")
+        // TODO SWIFT-539: switch to always using buildInfo. fails on MacOS + SSL due to CDRIVER-3318
+        let cmd = MongoSwiftTestCase.ssl && MongoSwiftTestCase.isMacOS ? "serverStatus" : "buildInfo"
+        let reply = try self.db("admin").runCommand([cmd: 1],
+                                                    options: RunCommandOptions(
+                                                    readPreference: ReadPreference(.primary)))
+        guard let versionString = reply["version"] as? String else {
+            throw TestError(message: " reply missing version string: \(reply)")
         }
         return try ServerVersion(versionString)
     }
@@ -110,8 +136,14 @@ extension MongoClient {
         return true
     }
 
-    internal convenience init(options: ClientOptions? = nil) throws {
-        try self.init(MongoSwiftTestCase.connStr, options: options)
+    static func makeTestClient(_ uri: String = MongoSwiftTestCase.connStr,
+                               options: ClientOptions? = nil) throws -> MongoClient {
+        let client = try MongoClient(uri, options: options)
+        if MongoSwiftTestCase.ssl {
+             try client.connectionPool.setSSLOpts(caFile: MongoSwiftTestCase.sslCAFilePath,
+                                                  pemFile: MongoSwiftTestCase.sslPEMKeyFilePath)
+        }
+        return client
     }
 }
 

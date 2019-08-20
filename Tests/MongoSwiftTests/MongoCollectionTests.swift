@@ -2,7 +2,7 @@
 import Nimble
 import XCTest
 
-var _client: MongoClient?
+private var _client: MongoClient?
 
 final class MongoCollectionTests: MongoSwiftTestCase {
     var collName: String = ""
@@ -14,7 +14,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     override class func setUp() {
         super.setUp()
         do {
-            _client = try MongoClient()
+            _client = try MongoClient.makeTestClient()
         } catch {
             print("Setup failed: \(error)")
         }
@@ -108,7 +108,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         let encoder = BSONEncoder()
         let center = NotificationCenter.default
 
-        let client = try MongoClient(options: ClientOptions(commandMonitoring: true))
+        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
         var db = client.db(type(of: self).testDatabase)
 
         let collection = db.collection("collection")
@@ -307,7 +307,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     }
 
     func testCodableCollection() throws {
-        let client = try MongoClient()
+        let client = try MongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
         let coll1 = try db.createCollection(self.getCollectionName(suffix: "codable"), withType: Basic.self)
         defer { try? coll1.drop() }

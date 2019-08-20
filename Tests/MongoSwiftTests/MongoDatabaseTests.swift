@@ -8,14 +8,14 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
     }
 
     override func tearDown() {
-        guard let client = try? MongoClient(MongoSwiftTestCase.connStr) else {
+        guard let client = try? MongoClient.makeTestClient() else {
             return
         }
         try? client.db(type(of: self).testDatabase).drop()
     }
 
     func testMongoDatabase() throws {
-        let client = try MongoClient(MongoSwiftTestCase.connStr)
+        let client = try MongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
 
         let command: Document = ["create": self.getCollectionName(suffix: "1")]
@@ -48,7 +48,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         let encoder = BSONEncoder()
         let center = NotificationCenter.default
 
-        let client = try MongoClient(options: ClientOptions(commandMonitoring: true))
+        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
         var db = client.db(type(of: self).testDatabase)
 
         let collection = db.collection("collection")
@@ -79,7 +79,13 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
     }
 
     func testCreateCollection() throws {
-        let client = try MongoClient(MongoSwiftTestCase.connStr)
+        // TODO SWIFT-539: unskip
+        if MongoSwiftTestCase.ssl && MongoSwiftTestCase.isMacOS {
+            print("Skipping test, fails with SSL, see CDRIVER-3318")
+            return
+        }
+
+        let client = try MongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
 
         let indexOpts: Document =
@@ -108,7 +114,6 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         )
 
         expect(try db.createCollection("fooView", options: viewOptions)).toNot(throwError())
-
         let decoder = BSONDecoder()
         var collectionInfo = try db.listCollections().map { try decoder.decode(CollectionInfo.self, from: $0) }
         collectionInfo.sort { $0.name < $1.name }

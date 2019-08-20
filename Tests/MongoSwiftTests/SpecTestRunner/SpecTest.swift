@@ -101,13 +101,13 @@ internal struct FailPoint: Decodable {
                 commandDoc[k] = v
             }
         }
-        let client = try MongoClient(MongoSwiftTestCase.connStr)
+        let client = try MongoClient.makeTestClient()
         try client.db("admin").runCommand(commandDoc)
     }
 
     internal func disable() {
         do {
-            let client = try MongoClient(MongoSwiftTestCase.connStr)
+            let client = try MongoClient.makeTestClient()
             try client.db("admin").runCommand(["configureFailPoint": self.name, "mode": "off"])
         } catch {
             print("Failed to disable fail point \(self.name): \(error)")

@@ -10,7 +10,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
     override class func setUp() {
         super.setUp()
         do {
-            client = try MongoClient()
+            client = try MongoClient.makeTestClient()
         } catch {
             print("Setup failed: \(error)")
         }
