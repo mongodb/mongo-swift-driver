@@ -115,8 +115,8 @@ extension MongoClient {
         // TODO SWIFT-539: switch to always using buildInfo. fails on MacOS + SSL due to CDRIVER-3318
         let cmd = MongoSwiftTestCase.ssl && MongoSwiftTestCase.isMacOS ? "serverStatus" : "buildInfo"
         let reply = try self.db("admin").runCommand([cmd: 1],
-                                                     options: RunCommandOptions(
-                                                     readPreference: ReadPreference(.primary)))
+                                                    options: RunCommandOptions(
+                                                    readPreference: ReadPreference(.primary)))
         guard let versionString = reply["version"] as? String else {
             throw TestError(message: " reply missing version string: \(reply)")
         }
