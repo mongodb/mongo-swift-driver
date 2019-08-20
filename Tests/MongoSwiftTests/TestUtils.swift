@@ -285,7 +285,7 @@ internal func bsonEqual(_ expectedValue: BSONValue?) -> Predicate<BSONValue> {
 internal func captureCommandEvents(eventTypes: [Notification.Name]? = nil,
                                    commandNames: [String]? = nil,
                                    f: (MongoClient) throws -> Void) throws -> [MongoCommandEvent] {
-    let client = try MongoClient(options: ClientOptions(commandMonitoring: true))
+    let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
     let center = client.notificationCenter
 
     var events: [MongoCommandEvent] = []

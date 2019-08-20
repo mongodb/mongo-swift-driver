@@ -323,7 +323,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient()
+        let client = try MongoClient.makeTestClient()
         let coll = try client.db(type(of: self).testDatabase).createCollection(self.getCollectionName())
         defer { try? coll.drop() }
 
@@ -353,7 +353,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient()
+        let client = try MongoClient.makeTestClient()
         let coll = try client.db(type(of: self).testDatabase).createCollection(self.getCollectionName())
         defer { try? coll.drop() }
 
@@ -381,7 +381,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        guard try MongoClient().supportsFailCommand() else {
+        guard try MongoClient.makeTestClient().supportsFailCommand() else {
             print("Skipping \(self.name) because server version doesn't support failCommand")
             return
         }
@@ -437,7 +437,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient()
+        let client = try MongoClient.makeTestClient()
 
         guard client.supportsFailCommand() else {
             print("Skipping \(self.name) because server version doesn't support failCommand")
@@ -473,7 +473,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient()
+        let client = try MongoClient.makeTestClient()
         guard client.supportsFailCommand() else {
             print("Skipping \(self.name) because server version doesn't support failCommand")
             return
@@ -524,7 +524,10 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let collection = try MongoClient().db(type(of: self).testDatabase).createCollection(self.getCollectionName())
+        let collection = try MongoClient
+                .makeTestClient()
+                .db(type(of: self).testDatabase)
+                .createCollection(self.getCollectionName())
         defer { try? collection.drop() }
 
         var changeStream: ChangeStream<ChangeStreamEvent<Document>>?
@@ -541,7 +544,10 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
         let reply = (event[0] as! CommandSucceededEvent).reply["cursor"] as! Document
         let cursorId = (reply["id"] as! BSONNumber).intValue!
-        try MongoClient().db("admin").runCommand(["killCursors": self.getCollectionName(), "cursors": [cursorId]])
+        try MongoClient
+                .makeTestClient()
+                .db("admin")
+                .runCommand(["killCursors": self.getCollectionName(), "cursors": [cursorId]])
 
         expect(changeStream!.next()).toNot(beNil())
         expect(changeStream!.error).to(beNil())
@@ -556,7 +562,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient()
+        let client = try MongoClient.makeTestClient()
         guard try client.serverVersion() < ServerVersion(major: 4, minor: 0, patch: 7) else {
             print("Skipping \(self.name) because of unsupported server version")
             return
@@ -590,7 +596,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient()
+        let client = try MongoClient.makeTestClient()
         guard try client.serverVersion() < ServerVersion(major: 4, minor: 0, patch: 7) else {
             print("Skipping \(self.name) because of unsupported server version")
             return
