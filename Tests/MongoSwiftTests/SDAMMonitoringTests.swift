@@ -67,7 +67,7 @@ final class SDAMTests: MongoSwiftTestCase {
         }
 
         // check event count and that events are of the expected types
-        expect(receivedEvents.count).to(equal(5))
+        expect(receivedEvents.count).to(beGreaterThanOrEqualTo(5))
         expect(receivedEvents[0]).to(beAnInstanceOf(TopologyOpeningEvent.self))
         expect(receivedEvents[1]).to(beAnInstanceOf(TopologyDescriptionChangedEvent.self))
         expect(receivedEvents[2]).to(beAnInstanceOf(ServerOpeningEvent.self))
