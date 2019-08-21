@@ -314,8 +314,6 @@ final class ChangeStreamTests: MongoSwiftTestCase {
     /// A short maxAwaitTimeMS setting used to speed up tests.
     private static let MAX_AWAIT_TIME: Int64 = 100
 
-    // TODO: implement 4.2 required prose tests
-
     /// Prose test 1 of change stream spec.
     func testChangeStreamTracksResumeToken() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
@@ -567,6 +565,8 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         }
     }
 
+    // TODO SWIFT-567: Implement prose test 11
+
     // Prose test 12 of change stream spec.
     func testChangeStreamResumeTokenUpdatesEmptyBatch() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
@@ -626,6 +626,8 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         }
         expect(changeStream.resumeToken).to(equal(try changeStream.nextOrError()!._id))
     }
+
+    // TODO SWIFT-576: Implement prose tests 14, 17, & 18
 
     func testChangeStreamOnAClient() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
