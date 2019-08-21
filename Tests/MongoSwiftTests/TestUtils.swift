@@ -282,13 +282,15 @@ internal func bsonEqual(_ expectedValue: BSONValue?) -> Predicate<BSONValue> {
     }
 }
 
-internal func captureCommandEvents(eventTypes: [Notification.Name]? = nil,
+/// Captures any command monitoring events filtered by type and name that are emitted during the execution of the
+/// provided closure. Only events emitted by the provided client will be captured.
+internal func captureCommandEvents(from client: MongoClient,
+                                   eventTypes: [Notification.Name]? = nil,
                                    commandNames: [String]? = nil,
-                                   f: (MongoClient) throws -> Void) throws -> [MongoCommandEvent] {
-    let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
+                                   f: () throws -> Void) rethrows -> [MongoCommandEvent] {
     let center = client.notificationCenter
-
     var events: [MongoCommandEvent] = []
+
     let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
         guard let event = notif.userInfo?["event"] as? MongoCommandEvent else {
             return
@@ -299,18 +301,27 @@ internal func captureCommandEvents(eventTypes: [Notification.Name]? = nil,
                 return
             }
         }
-
         if let whitelist = commandNames {
             guard whitelist.contains(event.commandName) else {
                 return
             }
         }
-
         events.append(event)
     }
     defer { center.removeObserver(observer) }
 
-    try f(client)
+    try f()
 
     return events
+}
+
+/// Captures any command monitoring events filtered by type and name that are emitted during the execution of the
+/// provided closure. A client pre-configured for command monitoring is passed into the closure.
+internal func captureCommandEvents(eventTypes: [Notification.Name]? = nil,
+                                   commandNames: [String]? = nil,
+                                   f: (MongoClient) throws -> Void) throws -> [MongoCommandEvent] {
+    let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
+    return try captureCommandEvents(from: client, eventTypes: eventTypes, commandNames: commandNames) {
+        try f(client)
+    }
 }

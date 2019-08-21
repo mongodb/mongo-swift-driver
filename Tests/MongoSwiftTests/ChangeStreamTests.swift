@@ -517,42 +517,54 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         expect(events).to(beEmpty())
     }
 
-    /// Prose test 10 of change stream spec.
-    func testChangeStreamResumeAfterKillCursor() throws {
+    /// Prose tests 8 and 10 of change stream spec.
+    func testChangeStreamFailedKillCursors() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
             print("Skipping \(self.name) because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
             return
         }
 
-        let collection = try MongoClient
-                .makeTestClient()
-                .db(type(of: self).testDatabase)
-                .createCollection(self.getCollectionName())
+        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
+        guard client.supportsFailCommand() else {
+            print("Skipping \(self.name) because server version doesn't support failCommand")
+            return
+        }
+
+        let collection = try client.db(type(of: self).testDatabase).createCollection(self.getCollectionName())
         defer { try? collection.drop() }
 
         var changeStream: ChangeStream<ChangeStreamEvent<Document>>?
-        let event = try captureCommandEvents(eventTypes: [.commandSucceeded], commandNames: ["aggregate"]) { client in
-            let coll = client.db(type(of: self).testDatabase).collection(self.getCollectionName())
-
-            changeStream = try coll.watch(options: ChangeStreamOptions(batchSize: 1))
-            try coll.insertOne(["x": 1])
-            try coll.insertOne(["x": 2])
-            try coll.insertOne(["x": 3])
+        let aggEvent = try captureCommandEvents(from: client,
+                                                eventTypes: [.commandSucceeded],
+                                                commandNames: ["aggregate"]) {
+            let options = ChangeStreamOptions(maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME, batchSize: 1)
+            changeStream = try collection.watch(options: options)
         }
 
-        expect(try changeStream!.nextOrError()).toNot(throwError())
+        for i in 0..<5 {
+            try collection.insertOne(["x": 1])
+        }
 
-        let reply = (event[0] as! CommandSucceededEvent).reply["cursor"] as! Document
+        expect(try changeStream?.nextOrError()).toNot(throwError())
+
+        // kill the underlying cursor to trigger a resume.
+        let reply = (aggEvent[0] as! CommandSucceededEvent).reply["cursor"] as! Document
         let cursorId = (reply["id"] as! BSONNumber).intValue!
         try MongoClient
                 .makeTestClient()
                 .db("admin")
                 .runCommand(["killCursors": self.getCollectionName(), "cursors": [cursorId]])
 
-        expect(changeStream!.next()).toNot(beNil())
-        expect(changeStream!.error).to(beNil())
-        expect(changeStream!.next()).toNot(beNil())
-        expect(changeStream!.error).to(beNil())
+        // Make the killCursors command fail as part of the resume process.
+        let failPoint = FailPoint.failCommand(failCommands: ["killCursors"], mode: .times(1), errorCode: 10107)
+        try failPoint.enable()
+        defer { failPoint.disable() }
+
+        // even if killCursors command fails, no error should be returned to the user.
+        for _ in 0..<4 {
+            expect(changeStream?.next()).toNot(beNil())
+            expect(changeStream?.error).to(beNil())
+        }
     }
 
     // Prose test 12 of change stream spec.
