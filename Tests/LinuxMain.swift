@@ -30,7 +30,7 @@ extension ChangeStreamTests {
         ("testChangeStreamFailedAggregate", testChangeStreamFailedAggregate),
         ("testChangeStreamDoesntResume", testChangeStreamDoesntResume),
         ("testChangeStreamDoesntCloseOnEmptyBatch", testChangeStreamDoesntCloseOnEmptyBatch),
-        ("testChangeStreamResumeAfterKillCursor", testChangeStreamResumeAfterKillCursor),
+        ("testChangeStreamFailedKillCursors", testChangeStreamFailedKillCursors),
         ("testChangeStreamResumeTokenUpdatesEmptyBatch", testChangeStreamResumeTokenUpdatesEmptyBatch),
         ("testChangeStreamResumeTokenUpdatesNonemptyBatch", testChangeStreamResumeTokenUpdatesNonemptyBatch),
         ("testChangeStreamOnAClient", testChangeStreamOnAClient),
