@@ -360,16 +360,15 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             try coll.insertOne(["x": x])
         }
 
-        let expectedError: Error
         if try client.maxWireVersion() >= 8 {
-            expectedError = ServerError.commandError(code: 280,
-                                                     codeName: "ChangeStreamFatalError",
-                                                     message: "",
-                                                     errorLabels: ["NonResumableChangeStreamError"])
+            let expectedError = ServerError.commandError(code: 280,
+                                                         codeName: "ChangeStreamFatalError",
+                                                         message: "",
+                                                         errorLabels: ["NonResumableChangeStreamError"])
+            expect(try changeStream.nextOrError()).to(throwError(expectedError))
         } else {
-            expectedError = UserError.logicError(message: "")
+            expect(try changeStream.nextOrError()).to(throwError(UserError.logicError(message: "")))
         }
-        expect(try changeStream.nextOrError()).to(throwError(expectedError))
     }
 
     /// Prose test 3 of change stream spec.
@@ -435,21 +434,26 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient.makeTestClient()
+        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
 
         guard client.supportsFailCommand() else {
             print("Skipping \(self.name) because server version doesn't support failCommand")
             return
         }
 
-        let coll = try client.db(type(of: self).testDatabase).createCollection(self.getCollectionName())
-        defer { try? coll.drop() }
-
         let failpoint = FailPoint.failCommand(failCommands: ["aggregate"], mode: .times(1), errorCode: 10107)
         try failpoint.enable()
         defer { failpoint.disable() }
 
-        expect(try coll.watch()).to(throwError())
+        let coll = try client.db(type(of: self).testDatabase).createCollection(self.getCollectionName())
+        defer { try? coll.drop() }
+
+        let aggAttempts = try captureCommandEvents(from: client,
+                                                   eventTypes: [.commandStarted],
+                                                   commandNames: ["aggregate"]) {
+            expect(try coll.watch()).to(throwError())
+        }
+        expect(aggAttempts.count).to(equal(1))
 
         // The above failpoint was configured to only run once, so this aggregate will succeed.
         let changeStream = try coll.watch()
@@ -460,8 +464,13 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         try getMoreFailpoint.enable()
         defer { getMoreFailpoint.disable() }
 
-        // getMore failure will trigger resume process, aggregate will fail and not retry again.
-        expect(try changeStream.nextOrError()).to(throwError())
+        let aggAttempts1 = try captureCommandEvents(from: client,
+                                                    eventTypes: [.commandStarted],
+                                                    commandNames: ["aggregate"]) {
+            // getMore failure will trigger resume process, aggregate will fail and not retry again.
+            expect(try changeStream.nextOrError()).to(throwError())
+        }
+        expect(aggAttempts1.count).to(equal(1))
     }
 
     /// Prose test 5 of change stream spec.
@@ -483,17 +492,26 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         let interrupted = FailPoint.failCommand(failCommands: ["getMore"], mode: .times(1), errorCode: 11601)
         try interrupted.enable()
         defer { interrupted.disable() }
-        expect(try coll.watch().nextOrError()).to(throwError())
+        let interruptedAggs = try captureCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) {
+            expect(try $0.watch().nextOrError()).to(throwError())
+        }
+        expect(interruptedAggs.count).to(equal(1))
 
         let cappedPositionLost = FailPoint.failCommand(failCommands: ["getMore"], mode: .times(1), errorCode: 136)
         try cappedPositionLost.enable()
         defer { cappedPositionLost.disable() }
-        expect(try coll.watch().nextOrError()).to(throwError())
+        let cappedAggs = try captureCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) {
+            expect(try $0.watch().nextOrError()).to(throwError())
+        }
+        expect(cappedAggs.count).to(equal(1))
 
         let cursorKilled = FailPoint.failCommand(failCommands: ["getMore"], mode: .times(1), errorCode: 237)
         try cursorKilled.enable()
         defer { cursorKilled.disable() }
-        expect(try coll.watch().nextOrError()).to(throwError())
+        let killedAggs = try captureCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) {
+            expect(try $0.watch().nextOrError()).to(throwError())
+        }
+        expect(killedAggs.count).to(equal(1))
     }
 
     /// Prose test 7 of change stream spec.
