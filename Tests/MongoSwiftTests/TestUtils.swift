@@ -77,6 +77,10 @@ class MongoSwiftTestCase: XCTestCase {
         return name.replacingOccurrences(of: "[ \\+\\$]", with: "_", options: [.regularExpression])
     }
 
+    internal func getNamespace(suffix: String? = nil) -> MongoNamespace {
+        return MongoNamespace(db: type(of: self).testDatabase, collection: self.getCollectionName(suffix: suffix))
+    }
+
     static var topologyType: TopologyDescription.TopologyType {
         guard let topology = ProcessInfo.processInfo.environment["MONGODB_TOPOLOGY"] else {
             return .single
@@ -148,6 +152,9 @@ extension MongoClient {
 
     static func makeTestClient(_ uri: String = MongoSwiftTestCase.connStr,
                                options: ClientOptions? = nil) throws -> MongoClient {
+        var options = options ?? ClientOptions()
+        options.serverMonitoring = true
+        options.commandMonitoring = true
         let client = try MongoClient(uri, options: options)
         if MongoSwiftTestCase.ssl {
              try client.connectionPool.setSSLOpts(caFile: MongoSwiftTestCase.sslCAFilePath,
@@ -324,4 +331,36 @@ internal func captureCommandEvents(eventTypes: [Notification.Name]? = nil,
     return try captureCommandEvents(from: client, eventTypes: eventTypes, commandNames: commandNames) {
         try f(client)
     }
+}
+
+/// Creates the given namespace and passes handles to it and its parents to the given function. After the function
+/// executes, the collection associated with the namespace is dropped.
+///
+/// Note: If a collection is not specified as part of the input namespace, this function will throw an error.
+internal func withTestNamespace<T>(ns: MongoNamespace,
+                                   clientOptions: ClientOptions? = nil,
+                                   collectionOptions: CreateCollectionOptions? = nil,
+                                   f: (MongoClient, MongoDatabase, MongoCollection<Document>) throws -> T) throws -> T {
+    let client = try MongoClient.makeTestClient(options: clientOptions)
+
+    return try withTestNamespace(client: client, ns: ns, options: collectionOptions) { db, coll in
+        try f(client, db, coll)
+    }
+}
+
+/// Creates the given namespace using the given client and passes handles to it and its parent database to the given
+/// function. After the function executes, the collection associated with the namespace is dropped.
+///
+/// Note: If a collection is not specified as part of the input namespace, this function will throw an error.
+internal func withTestNamespace<T>(client: MongoClient,
+                                   ns: MongoNamespace,
+                                   options: CreateCollectionOptions? = nil,
+                                   _ f: (MongoDatabase, MongoCollection<Document>) throws -> T) throws -> T {
+    guard let collName = ns.collection else {
+        throw UserError.invalidArgumentError(message: "missing collection")
+    }
+    let database = client.db(ns.db)
+    let collection = try database.createCollection(collName, options: options)
+    defer { try? collection.drop() }
+    return try f(database, collection)
 }

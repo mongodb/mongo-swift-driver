@@ -140,6 +140,7 @@ internal struct FailPoint: Decodable {
     /// Factory function for creating a `failCommand` failpoint.
     /// Note: enabling a `failCommand` failpoint will override any other `failCommand` failpoint that is currently
     /// enabled.
+    /// For more information, see the wiki: https://github.com/mongodb/mongo/wiki/The-%22failCommand%22-fail-point
     public static func failCommand(failCommands: [String],
                                    mode: Mode,
                                    closeConnection: Bool? = nil,

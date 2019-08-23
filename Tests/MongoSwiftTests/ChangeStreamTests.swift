@@ -321,26 +321,24 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient.makeTestClient()
-        let coll = try client.db(type(of: self).testDatabase).createCollection(self.getCollectionName())
-        defer { try? coll.drop() }
-
-        let changeStream =
-                try coll.watch(options: ChangeStreamOptions(maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME))
-        for x in 0..<5 {
-            try coll.insertOne(["x": x])
-        }
-
-        expect(changeStream.resumeToken).to(beNil())
-
-        var lastSeen: ResumeToken?
-        for change in changeStream {
-            expect(changeStream.resumeToken).toNot(beNil())
-            expect(changeStream.resumeToken).to(equal(change._id))
-            if lastSeen != nil {
-                expect(changeStream.resumeToken).toNot(equal(lastSeen))
+        try withTestNamespace(ns: self.getNamespace()) { _, _, coll in
+            let changeStream =
+                    try coll.watch(options: ChangeStreamOptions(maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME))
+            for x in 0..<5 {
+                try coll.insertOne(["x": x])
             }
-            lastSeen = changeStream.resumeToken
+
+            expect(changeStream.resumeToken).to(beNil())
+
+            var lastSeen: ResumeToken?
+            for change in changeStream {
+                expect(changeStream.resumeToken).toNot(beNil())
+                expect(changeStream.resumeToken).to(equal(change._id))
+                if lastSeen != nil {
+                    expect(changeStream.resumeToken).toNot(equal(lastSeen))
+                }
+                lastSeen = changeStream.resumeToken
+            }
         }
     }
 
@@ -351,23 +349,21 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient.makeTestClient()
-        let coll = try client.db(type(of: self).testDatabase).createCollection(self.getCollectionName())
-        defer { try? coll.drop() }
+        try withTestNamespace(ns: self.getNamespace()) { client, _, coll in
+            let changeStream = try coll.watch([["$project": ["_id": false] as Document]])
+            for x in 0..<5 {
+                try coll.insertOne(["x": x])
+            }
 
-        let changeStream = try coll.watch([["$project": ["_id": false] as Document]])
-        for x in 0..<5 {
-            try coll.insertOne(["x": x])
-        }
-
-        if try client.maxWireVersion() >= 8 {
-            let expectedError = ServerError.commandError(code: 280,
-                                                         codeName: "ChangeStreamFatalError",
-                                                         message: "",
-                                                         errorLabels: ["NonResumableChangeStreamError"])
-            expect(try changeStream.nextOrError()).to(throwError(expectedError))
-        } else {
-            expect(try changeStream.nextOrError()).to(throwError(UserError.logicError(message: "")))
+            if try client.maxWireVersion() >= 8 {
+                let expectedError = ServerError.commandError(code: 280,
+                                                             codeName: "ChangeStreamFatalError",
+                                                             message: "",
+                                                             errorLabels: ["NonResumableChangeStreamError"])
+                expect(try changeStream.nextOrError()).to(throwError(expectedError))
+            } else {
+                expect(try changeStream.nextOrError()).to(throwError(UserError.logicError(message: "")))
+            }
         }
     }
 
@@ -384,23 +380,22 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         }
 
         let events = try captureCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) { client in
-            let coll = try client.db(type(of: self).testDatabase).createCollection(self.getCollectionName())
-            defer { try? coll.drop() }
+            try withTestNamespace(client: client, ns: self.getNamespace()) { _, coll in
+                let options = ChangeStreamOptions(fullDocument: .updateLookup,
+                                                  maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME,
+                                                  batchSize: 123)
+                let changeStream = try coll.watch([["$match": ["fullDocument.x": 2] as Document]], options: options)
+                for x in 0..<5 {
+                    try coll.insertOne(["x": x])
+                }
 
-            let options = ChangeStreamOptions(fullDocument: .updateLookup,
-                                              maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME,
-                                              batchSize: 123)
-            let changeStream = try coll.watch([["$match": ["fullDocument.x": 2] as Document]], options: options)
-            for x in 0..<5 {
-                try coll.insertOne(["x": x])
+                // notMaster error
+                let failPoint = FailPoint.failCommand(failCommands: ["getMore"], mode: .times(1), errorCode: 10107)
+                try failPoint.enable()
+                defer { failPoint.disable() }
+
+                while try changeStream.nextOrError() != nil {}
             }
-
-            // notMaster error
-            let failPoint = FailPoint.failCommand(failCommands: ["getMore"], mode: .times(1), errorCode: 10107)
-            try failPoint.enable()
-            defer { failPoint.disable() }
-
-            while try changeStream.nextOrError() != nil {}
         }
 
         expect(events.count).to(equal(2))
@@ -436,41 +431,40 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
         let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
 
-        guard client.supportsFailCommand() else {
-            print("Skipping \(self.name) because server version doesn't support failCommand")
-            return
+        try withTestNamespace(ns: self.getNamespace()) { client, _, coll in
+            guard client.supportsFailCommand() else {
+                print("Skipping \(self.name) because server version doesn't support failCommand")
+                return
+            }
+
+            let failpoint = FailPoint.failCommand(failCommands: ["aggregate"], mode: .times(1), errorCode: 10107)
+            try failpoint.enable()
+            defer { failpoint.disable() }
+
+            let aggAttempts = try captureCommandEvents(from: client,
+                                                       eventTypes: [.commandStarted],
+                                                       commandNames: ["aggregate"]) {
+                expect(try coll.watch()).to(throwError())
+            }
+            expect(aggAttempts.count).to(equal(1))
+
+            // The above failpoint was configured to only run once, so this aggregate will succeed.
+            let changeStream = try coll.watch()
+
+            let getMoreFailpoint = FailPoint.failCommand(failCommands: ["getMore", "aggregate"],
+                                                         mode: .times(2),
+                                                         errorCode: 10107)
+            try getMoreFailpoint.enable()
+            defer { getMoreFailpoint.disable() }
+
+            let aggAttempts1 = try captureCommandEvents(from: client,
+                                                        eventTypes: [.commandStarted],
+                                                        commandNames: ["aggregate"]) {
+                // getMore failure will trigger resume process, aggregate will fail and not retry again.
+                expect(try changeStream.nextOrError()).to(throwError())
+            }
+            expect(aggAttempts1.count).to(equal(1))
         }
-
-        let failpoint = FailPoint.failCommand(failCommands: ["aggregate"], mode: .times(1), errorCode: 10107)
-        try failpoint.enable()
-        defer { failpoint.disable() }
-
-        let coll = try client.db(type(of: self).testDatabase).createCollection(self.getCollectionName())
-        defer { try? coll.drop() }
-
-        let aggAttempts = try captureCommandEvents(from: client,
-                                                   eventTypes: [.commandStarted],
-                                                   commandNames: ["aggregate"]) {
-            expect(try coll.watch()).to(throwError())
-        }
-        expect(aggAttempts.count).to(equal(1))
-
-        // The above failpoint was configured to only run once, so this aggregate will succeed.
-        let changeStream = try coll.watch()
-
-        let getMoreFailpoint = FailPoint.failCommand(failCommands: ["getMore", "aggregate"],
-                                                     mode: .times(2),
-                                                     errorCode: 10107)
-        try getMoreFailpoint.enable()
-        defer { getMoreFailpoint.disable() }
-
-        let aggAttempts1 = try captureCommandEvents(from: client,
-                                                    eventTypes: [.commandStarted],
-                                                    commandNames: ["aggregate"]) {
-            // getMore failure will trigger resume process, aggregate will fail and not retry again.
-            expect(try changeStream.nextOrError()).to(throwError())
-        }
-        expect(aggAttempts1.count).to(equal(1))
     }
 
     /// Prose test 5 of change stream spec.
@@ -480,14 +474,10 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient.makeTestClient()
-        guard client.supportsFailCommand() else {
+        guard try MongoClient.makeTestClient().supportsFailCommand() else {
             print("Skipping \(self.name) because server version doesn't support failCommand")
             return
         }
-
-        let coll = try client.db(type(of: self).testDatabase).createCollection(self.getCollectionName())
-        defer { try? coll.drop() }
 
         let interrupted = FailPoint.failCommand(failCommands: ["getMore"], mode: .times(1), errorCode: 11601)
         try interrupted.enable()
@@ -524,62 +514,59 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         // need to keep the stream alive so its deinit doesn't kill the cursor.
         var changeStream: ChangeStream<ChangeStreamEvent<Document>>?
         let events = try captureCommandEvents(commandNames: ["killCursors"]) { client in
-            let coll = try client.db(type(of: self).testDatabase).createCollection(self.getCollectionName())
-            defer { try? coll.drop() }
-            changeStream =
-                    try coll.watch(options: ChangeStreamOptions(maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME))
-            _ = try changeStream!.nextOrError()
+            try withTestNamespace(client: client, ns: self.getNamespace()) { _, coll in
+                changeStream =
+                        try coll.watch(options: ChangeStreamOptions(maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME))
+                _ = try changeStream!.nextOrError()
+            }
         }
         expect(events).to(beEmpty())
     }
 
     /// Prose tests 8 and 10 of change stream spec.
+    /// Note: we're skipping prose test 9 because it tests against a narrow server version range that we don't have as
+    /// part of our evg matrix.
     func testChangeStreamFailedKillCursors() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
             print("Skipping \(self.name) because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
             return
         }
 
-        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
-        guard client.supportsFailCommand() else {
-            print("Skipping \(self.name) because server version doesn't support failCommand")
-            return
-        }
+        try withTestNamespace(ns: self.getNamespace()) { client, _, collection in
+            guard client.supportsFailCommand() else {
+                print("Skipping \(self.name) because server version doesn't support failCommand")
+                return
+            }
 
-        let collection = try client.db(type(of: self).testDatabase).createCollection(self.getCollectionName())
-        defer { try? collection.drop() }
+            var changeStream: ChangeStream<ChangeStreamEvent<Document>>?
+            let aggEvent = try captureCommandEvents(from: client,
+                                                    eventTypes: [.commandSucceeded],
+                                                    commandNames: ["aggregate"]) {
+                let options = ChangeStreamOptions(maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME, batchSize: 1)
+                changeStream = try collection.watch(options: options)
+            }
 
-        var changeStream: ChangeStream<ChangeStreamEvent<Document>>?
-        let aggEvent = try captureCommandEvents(from: client,
-                                                eventTypes: [.commandSucceeded],
-                                                commandNames: ["aggregate"]) {
-            let options = ChangeStreamOptions(maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME, batchSize: 1)
-            changeStream = try collection.watch(options: options)
-        }
+            for i in 0..<5 {
+                try collection.insertOne(["x": 1])
+            }
 
-        for i in 0..<5 {
-            try collection.insertOne(["x": 1])
-        }
+            expect(try changeStream?.nextOrError()).toNot(throwError())
 
-        expect(try changeStream?.nextOrError()).toNot(throwError())
+            // kill the underlying cursor to trigger a resume.
+            let reply = (aggEvent[0] as! CommandSucceededEvent).reply["cursor"] as! Document
+            let cursorId = (reply["id"] as! BSONNumber).intValue!
+            try client.db("admin").runCommand(["killCursors": self.getCollectionName(), "cursors": [cursorId]])
 
-        // kill the underlying cursor to trigger a resume.
-        let reply = (aggEvent[0] as! CommandSucceededEvent).reply["cursor"] as! Document
-        let cursorId = (reply["id"] as! BSONNumber).intValue!
-        try MongoClient
-                .makeTestClient()
-                .db("admin")
-                .runCommand(["killCursors": self.getCollectionName(), "cursors": [cursorId]])
+            // Make the killCursors command fail as part of the resume process.
+            let failPoint = FailPoint.failCommand(failCommands: ["killCursors"], mode: .times(1), errorCode: 10107)
+            try failPoint.enable()
+            defer { failPoint.disable() }
 
-        // Make the killCursors command fail as part of the resume process.
-        let failPoint = FailPoint.failCommand(failCommands: ["killCursors"], mode: .times(1), errorCode: 10107)
-        try failPoint.enable()
-        defer { failPoint.disable() }
-
-        // even if killCursors command fails, no error should be returned to the user.
-        for _ in 0..<4 {
-            expect(changeStream?.next()).toNot(beNil())
-            expect(changeStream?.error).to(beNil())
+            // even if killCursors command fails, no error should be returned to the user.
+            for _ in 0..<4 {
+                expect(changeStream?.next()).toNot(beNil())
+                expect(changeStream?.error).to(beNil())
+            }
         }
     }
 
@@ -592,31 +579,31 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient.makeTestClient()
-        guard try client.serverVersion() < ServerVersion(major: 4, minor: 0, patch: 7) else {
-            print("Skipping \(self.name) because of unsupported server version")
-            return
+        try withTestNamespace(ns: self.getNamespace()) { client, _, coll in
+            guard try client.serverVersion() < ServerVersion(major: 4, minor: 0, patch: 7) else {
+                print("Skipping \(self.name) because of unsupported server version")
+                return
+            }
+
+            var options = ChangeStreamOptions(maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME)
+
+            let basicStream = try coll.watch(options: options)
+            _ = try basicStream.nextOrError()
+            expect(basicStream.resumeToken).to(beNil())
+            try coll.insertOne(["x": 1])
+            let firstToken = try basicStream.nextOrError()!._id
+            expect(basicStream.resumeToken).to(equal(firstToken))
+
+            options.resumeAfter = firstToken
+            let resumeStream = try coll.watch(options: options)
+            expect(resumeStream.resumeToken).to(equal(firstToken))
+            _ = try resumeStream.nextOrError()
+            expect(resumeStream.resumeToken).to(equal(firstToken))
+            try coll.insertOne(["x": 1])
+            let lastId = try resumeStream.nextOrError()?._id
+            expect(lastId).toNot(beNil())
+            expect(resumeStream.resumeToken).to(equal(lastId))
         }
-
-        let coll = try client.db(type(of: self).testDatabase).createCollection(self.getCollectionName())
-        defer { try? coll.drop() }
-
-        var options = ChangeStreamOptions(maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME)
-
-        let basicStream = try coll.watch(options: options)
-        _ = try basicStream.nextOrError()
-        expect(basicStream.resumeToken).to(beNil())
-        try coll.insertOne(["x": 1])
-        let firstToken = try basicStream.nextOrError()!._id
-        expect(basicStream.resumeToken).to(equal(firstToken))
-
-        options.resumeAfter = firstToken
-        let resumeStream = try coll.watch(options: options)
-        expect(resumeStream.resumeToken).to(equal(firstToken))
-        _ = try resumeStream.nextOrError()
-        expect(resumeStream.resumeToken).to(equal(firstToken))
-        try coll.insertOne(["x": 1])
-        expect(resumeStream.resumeToken).to(equal(resumeStream.next()!._id))
     }
 
     // Prose test 13 of change stream spec.
@@ -626,23 +613,24 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient.makeTestClient()
-        guard try client.serverVersion() < ServerVersion(major: 4, minor: 0, patch: 7) else {
-            print("Skipping \(self.name) because of unsupported server version")
-            return
-        }
+        try withTestNamespace(ns: self.getNamespace()) { client, _, coll in
+            guard try client.serverVersion() < ServerVersion(major: 4, minor: 0, patch: 7) else {
+                print("Skipping \(self.name) because of unsupported server version")
+                return
+            }
 
-        let coll = try client.db(type(of: self).testDatabase).createCollection(self.getCollectionName())
-        defer { try? coll.drop() }
-
-        let changeStream = try coll.watch(options: ChangeStreamOptions(maxAwaitTimeMS: 100))
-        for i in 0..<5 {
-            try coll.insertOne(["x": i])
+            let changeStream =
+                    try coll.watch(options: ChangeStreamOptions(maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME))
+            for i in 0..<5 {
+                try coll.insertOne(["x": i])
+            }
+            for _ in 0..<3 {
+                _ = try changeStream.nextOrError()
+            }
+            let lastId = try changeStream.nextOrError()?._id
+            expect(lastId).toNot(beNil())
+            expect(changeStream.resumeToken).to(equal(lastId))
         }
-        for _ in 0..<3 {
-            _ = try changeStream.nextOrError()
-        }
-        expect(changeStream.resumeToken).to(equal(try changeStream.nextOrError()!._id))
     }
 
     // TODO SWIFT-576: Implement prose tests 14, 17, & 18
