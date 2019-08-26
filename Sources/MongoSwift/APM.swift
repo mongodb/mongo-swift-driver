@@ -452,12 +452,11 @@ private func postNotification<T: MongoEvent>(type: T.Type,
         return
     }
 
-    let notification = Notification(name: type.eventName, userInfo: ["event": eventStruct])
-
     guard let context = contextFunc(event) else {
         fatalError("Missing context for \(type)")
     }
     let client = Unmanaged<MongoClient>.fromOpaque(context).takeUnretainedValue()
+    let notification = Notification(name: type.eventName, object: client, userInfo: ["event": eventStruct])
     client.notificationCenter.post(notification)
 }
 

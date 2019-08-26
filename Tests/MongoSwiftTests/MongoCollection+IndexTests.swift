@@ -228,7 +228,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         try collection.insertOne(["test": "blahblah"])
 
         var receivedEvents = [CommandStartedEvent]()
-        let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
+        let observer = center.addObserver(forName: .commandStarted, object: client, queue: nil) { notif in
             guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
                 return
             }
