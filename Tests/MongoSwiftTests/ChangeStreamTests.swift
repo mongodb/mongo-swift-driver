@@ -315,6 +315,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
     private static let MAX_AWAIT_TIME: Int64 = 100
 
     /// Prose test 1 of change stream spec.
+    /// "ChangeStream must continuously track the last seen resumeToken"
     func testChangeStreamTracksResumeToken() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
             print("Skipping \(self.name) because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
@@ -342,7 +343,12 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         }
     }
 
-    /// Prose test 2 of change stream spec.
+    /**
+     * Prose test 2 of change stream spec.
+     *
+     * `ChangeStream` will throw an exception if the server response is missing the resume token (if wire version
+     * is < 8, this is a driver-side error; for 8+, this is a server-side error).
+     */
     func testChangeStreamMissingId() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
             print("Skipping \(self.name) because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
@@ -367,7 +373,12 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         }
     }
 
-    /// Prose test 3 of change stream spec.
+    /**
+     * Prose test 3 of change stream spec.
+     *
+     * `ChangeStream` will automatically resume one time on a resumable error (including not master) with the initial
+     * pipeline and options, except for the addition/update of a resumeToken.
+     */
     func testChangeStreamAutomaticResume() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
             print("Skipping \(self.name) because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
@@ -422,7 +433,11 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         expect(resumeCommand["cursor"]).to(bsonEqual(originalCommand["cursor"]))
     }
 
-    /// Prose test 4 of change stream spec.
+    /**
+     * Prose test 4 of change stream spec.
+     *
+     * ChangeStream will not attempt to resume on any error encountered while executing an aggregate command.
+     */
     func testChangeStreamFailedAggregate() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
             print("Skipping \(self.name) because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
@@ -467,7 +482,12 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         }
     }
 
-    /// Prose test 5 of change stream spec.
+    /**
+     * Prose test 5 of change stream spec.
+     *
+     * `ChangeStream` will not attempt to resume after encountering error code 11601 (Interrupted),
+     * 136 (CappedPositionLost), or 237 (CursorKilled) while executing a getMore command.
+     */
     func testChangeStreamDoesntResume() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
             print("Skipping \(self.name) because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
@@ -504,7 +524,12 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         expect(killedAggs.count).to(equal(1))
     }
 
-    /// Prose test 7 of change stream spec.
+    /**
+     * Prose test 7 of change stream spec.
+     *
+     * Ensure that a cursor returned from an aggregate command with a cursor id and an initial empty batch is not
+     * closed on the driver side.
+     */
     func testChangeStreamDoesntCloseOnEmptyBatch() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
             print("Skipping \(self.name) because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
@@ -523,9 +548,15 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         expect(events).to(beEmpty())
     }
 
-    /// Prose tests 8 and 10 of change stream spec.
-    /// Note: we're skipping prose test 9 because it tests against a narrow server version range that we don't have as
-    /// part of our evg matrix.
+    /**
+     * Prose tests 8 and 10 of change stream spec.
+     *
+     * The killCursors command sent during the "Resume Process" must not be allowed to throw an exception, and
+     * `ChangeStream` will resume after a killCursors command is issued for its child cursor.
+     *
+     * Note: we're skipping prose test 9 because it tests against a narrow server version range that we don't have as
+     * part of our evergreen matrix.
+     */
     func testChangeStreamFailedKillCursors() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
             print("Skipping \(self.name) because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
@@ -572,7 +603,17 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
     // TODO SWIFT-567: Implement prose test 11
 
-    // Prose test 12 of change stream spec.
+    /**
+     * Prose test 12 of change stream spec.
+     *
+     * For a ChangeStream under these conditions:
+     *   - Running against a server <4.0.7.
+     *   - The batch is empty or has been iterated to the last document.
+     * Expected result:
+     *   - getResumeToken must return the _id of the last document returned if one exists.
+     *   - getResumeToken must return resumeAfter from the initial aggregate if the option was specified.
+     *   - If resumeAfter was not specified, the getResumeToken result must be empty.
+     */
     func testChangeStreamResumeTokenUpdatesEmptyBatch() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
             print("Skipping \(self.name) because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
@@ -606,7 +647,15 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         }
     }
 
-    // Prose test 13 of change stream spec.
+    /**
+     * Prose test 13 of the change stream spec.
+     *
+     * For a ChangeStream under these conditions:
+     *    - The batch is not empty.
+     *    - The batch has been iterated up to but not including the last element.
+     * Expected result:
+     *    - getResumeToken must return the _id of the previous document returned.
+     */
     func testChangeStreamResumeTokenUpdatesNonemptyBatch() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
             print("Skipping \(self.name) because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
