@@ -6,7 +6,7 @@ public struct ListCollectionsOptions: Encodable {
     public var batchSize: Int?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional
-    public init(batchSize: Int? = nil, filter: Document? = nil) {
+    public init(batchSize: Int? = nil) {
         self.batchSize = batchSize
     }
 }
