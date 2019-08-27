@@ -53,6 +53,6 @@ private func changeStreams() throws {
         // Start example 3
         let resumeToken = next?._id
         let resumedCursor = try inventory.watch(options: ChangeStreamOptions(resumeAfter: resumeToken))
-        let nextAfterResume = try cursor.nextOrError()
+        let nextAfterResume = try resumedCursor.nextOrError()
     }
 }
