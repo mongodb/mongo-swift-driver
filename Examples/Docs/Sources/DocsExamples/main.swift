@@ -32,3 +32,27 @@ private func causalConsistency() throws {
         }
     }
 }
+
+/// Examples used for the MongoDB documentation on Change Streams.
+/// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/
+private func changeStreams() throws {
+    let client = try MongoClient()
+    let inventory = client.db("example").collection("inventory")
+
+    do {
+        // Start example 1
+        let cursor = try inventory.watch()
+        let next = try cursor.nextOrError()
+    }
+
+    do {
+        // Start example 2
+        let cursor = try inventory.watch(options: ChangeStreamOptions(fullDocument: .updateLookup))
+        let next = try cursor.nextOrError()
+
+        // Start example 3
+        let resumeToken = next?._id
+        let resumedCursor = try inventory.watch(options: ChangeStreamOptions(resumeAfter: resumeToken))
+        let nextAfterResume = try cursor.nextOrError()
+    }
+}

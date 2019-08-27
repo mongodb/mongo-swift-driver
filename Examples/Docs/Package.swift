@@ -4,7 +4,7 @@ import PackageDescription
 let package = Package(
     name: "DocsExamples",
     dependencies: [
-        .package(url: "https://github.com/mongodb/mongo-swift-driver", .upToNextMinor(from: "0.1.0"))
+        .package(url: "https://github.com/mongodb/mongo-swift-driver", .branch("master"))
     ],
     targets: [
         .target(name: "DocsExamples", dependencies: ["MongoSwift"])
