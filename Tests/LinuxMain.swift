@@ -81,6 +81,12 @@ extension CrudTests {
     ]
 }
 
+extension DNSSeedlistTests {
+    static var allTests = [
+        ("testInitialDNSSeedlistDiscovery", testInitialDNSSeedlistDiscovery),
+    ]
+}
+
 extension DocumentTests {
     static var allTests = [
         ("testDocument", testDocument),
@@ -261,6 +267,7 @@ XCTMain([
     testCase(CodecTests.allTests),
     testCase(CommandMonitoringTests.allTests),
     testCase(CrudTests.allTests),
+    testCase(DNSSeedlistTests.allTests),
     testCase(DocumentTests.allTests),
     testCase(Document_CollectionTests.allTests),
     testCase(Document_SequenceTests.allTests),
