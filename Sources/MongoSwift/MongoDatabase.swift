@@ -235,7 +235,8 @@ public class MongoDatabase {
         var opts = try encodeOptions(options: options, session: session)
         if let filterDoc = filter {
             opts = opts ?? Document()
-            opts!["filter"] = filterDoc
+            // swiftlint:disable:next force_unwrapping
+            opts!["filter"] = filterDoc // guaranteed safe because of nil coalescing default.
         }
 
         return try MongoCursor(client: self._client, decoder: self.decoder, session: session) { conn in
