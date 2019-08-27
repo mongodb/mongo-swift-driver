@@ -2,6 +2,8 @@
 
 MongoSwift 0.2.0 added support for [change streams](https://docs.mongodb.com/manual/changeStreams/), which allow applications to access real-time data changes. Applications can use change streams to subscribe to all data changes on a single collection, a database, or an entire deployment, and immediately react to them. Because change streams use the aggregation framework, applications can also filter for specific changes or transform the notifications at will.
 
+**Note**: Change streams only work with MongoDB replica sets and sharded clusters.
+
 ## Examples
 
 ### Open a Change Stream on a `MongoCollection<Document>` (MongoDB 3.6+)
