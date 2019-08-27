@@ -135,7 +135,8 @@ public struct CommandFailedEvent: MongoCommandEvent, InitializableFromOpaquePoin
         self.commandName = String(cString: mongoc_apm_command_failed_get_command_name(event))
         var error = bson_error_t()
         mongoc_apm_command_failed_get_error(event, &error)
-        self.failure = extractMongoError(error: error) // should always return a ServerError.commandError
+        let reply = Document(copying: mongoc_apm_command_failed_get_reply(event))
+        self.failure = extractMongoError(error: error, reply: reply) // should always return a ServerError.commandError
         self.requestId = mongoc_apm_command_failed_get_request_id(event)
         self.operationId = mongoc_apm_command_failed_get_operation_id(event)
         self.connectionId = ConnectionId(mongoc_apm_command_failed_get_host(event))

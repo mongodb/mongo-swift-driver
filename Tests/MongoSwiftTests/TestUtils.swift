@@ -112,6 +112,42 @@ class MongoSwiftTestCase: XCTestCase {
         return false
 #endif
     }
+
+    /// Creates the given namespace and passes handles to it and its parents to the given function. After the function
+    /// executes, the collection associated with the namespace is dropped.
+    ///
+    /// Note: If a collection is not specified as part of the input namespace, this function will throw an error.
+    internal func withTestNamespace<T>(ns: MongoNamespace? = nil,
+                                       clientOptions: ClientOptions? = nil,
+                                       collectionOptions: CreateCollectionOptions? = nil,
+                                       f: (MongoClient, MongoDatabase, MongoCollection<Document>) throws -> T)
+    throws -> T {
+        let client = try MongoClient.makeTestClient(options: clientOptions)
+
+        return try withTestNamespace(client: client, ns: ns, options: collectionOptions) { db, coll in
+            try f(client, db, coll)
+        }
+    }
+
+    /// Creates the given namespace using the given client and passes handles to it and its parent database to the given
+    /// function. After the function executes, the collection associated with the namespace is dropped.
+    ///
+    /// Note: If a collection is not specified as part of the input namespace, this function will throw an error.
+    internal func withTestNamespace<T>(client: MongoClient,
+                                       ns: MongoNamespace? = nil,
+                                       options: CreateCollectionOptions? = nil,
+                                       _ f: (MongoDatabase, MongoCollection<Document>) throws -> T) throws -> T {
+        let ns = ns ?? self.getNamespace()
+
+        guard let collName = ns.collection else {
+            throw UserError.invalidArgumentError(message: "missing collection")
+        }
+
+        let database = client.db(ns.db)
+        let collection = try database.createCollection(collName, options: options)
+        defer { try? collection.drop() }
+        return try f(database, collection)
+    }
 }
 
 extension MongoClient {
@@ -331,36 +367,4 @@ internal func captureCommandEvents(eventTypes: [Notification.Name]? = nil,
     return try captureCommandEvents(from: client, eventTypes: eventTypes, commandNames: commandNames) {
         try f(client)
     }
-}
-
-/// Creates the given namespace and passes handles to it and its parents to the given function. After the function
-/// executes, the collection associated with the namespace is dropped.
-///
-/// Note: If a collection is not specified as part of the input namespace, this function will throw an error.
-internal func withTestNamespace<T>(ns: MongoNamespace,
-                                   clientOptions: ClientOptions? = nil,
-                                   collectionOptions: CreateCollectionOptions? = nil,
-                                   f: (MongoClient, MongoDatabase, MongoCollection<Document>) throws -> T) throws -> T {
-    let client = try MongoClient.makeTestClient(options: clientOptions)
-
-    return try withTestNamespace(client: client, ns: ns, options: collectionOptions) { db, coll in
-        try f(client, db, coll)
-    }
-}
-
-/// Creates the given namespace using the given client and passes handles to it and its parent database to the given
-/// function. After the function executes, the collection associated with the namespace is dropped.
-///
-/// Note: If a collection is not specified as part of the input namespace, this function will throw an error.
-internal func withTestNamespace<T>(client: MongoClient,
-                                   ns: MongoNamespace,
-                                   options: CreateCollectionOptions? = nil,
-                                   _ f: (MongoDatabase, MongoCollection<Document>) throws -> T) throws -> T {
-    guard let collName = ns.collection else {
-        throw UserError.invalidArgumentError(message: "missing collection")
-    }
-    let database = client.db(ns.db)
-    let collection = try database.createCollection(collName, options: options)
-    defer { try? collection.drop() }
-    return try f(database, collection)
 }

@@ -322,7 +322,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        try withTestNamespace(ns: self.getNamespace()) { _, _, coll in
+        try withTestNamespace { _, _, coll in
             let changeStream =
                     try coll.watch(options: ChangeStreamOptions(maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME))
             for x in 0..<5 {
@@ -355,7 +355,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        try withTestNamespace(ns: self.getNamespace()) { client, _, coll in
+        try withTestNamespace { client, _, coll in
             let changeStream = try coll.watch([["$project": ["_id": false] as Document]])
             for x in 0..<5 {
                 try coll.insertOne(["x": x])
@@ -391,7 +391,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         }
 
         let events = try captureCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) { client in
-            try withTestNamespace(client: client, ns: self.getNamespace()) { _, coll in
+            try withTestNamespace(client: client) { _, coll in
                 let options = ChangeStreamOptions(fullDocument: .updateLookup,
                                                   maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME,
                                                   batchSize: 123)
@@ -444,9 +444,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
-
-        try withTestNamespace(ns: self.getNamespace()) { client, _, coll in
+        try withTestNamespace { client, _, coll in
             guard client.supportsFailCommand() else {
                 print("Skipping \(self.name) because server version doesn't support failCommand")
                 return
@@ -522,6 +520,15 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             expect(try $0.watch().nextOrError()).to(throwError())
         }
         expect(killedAggs.count).to(equal(1))
+
+        // TODO SWIFT-609: enable this portion of the test.
+        // let nonResumableLabel = FailPoint.failCommand(failCommands: ["getMore"], mode: .times(1), errorCode: 280)
+        //  try nonResumableLabel.enable()
+        // defer { nonResumableLabel.disable() }
+        // let labelAggs = try captureCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) {
+        //    expect(try $0.watch().nextOrError()).to(throwError())
+        // }
+        // expect(labelAggs.count).to(equal(1))
     }
 
     /**
@@ -539,7 +546,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         // need to keep the stream alive so its deinit doesn't kill the cursor.
         var changeStream: ChangeStream<ChangeStreamEvent<Document>>?
         let events = try captureCommandEvents(commandNames: ["killCursors"]) { client in
-            try withTestNamespace(client: client, ns: self.getNamespace()) { _, coll in
+            try withTestNamespace(client: client) { _, coll in
                 changeStream =
                         try coll.watch(options: ChangeStreamOptions(maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME))
                 _ = try changeStream!.nextOrError()
@@ -563,7 +570,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        try withTestNamespace(ns: self.getNamespace()) { client, _, collection in
+        try withTestNamespace { client, _, collection in
             guard client.supportsFailCommand() else {
                 print("Skipping \(self.name) because server version doesn't support failCommand")
                 return
@@ -620,7 +627,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        try withTestNamespace(ns: self.getNamespace()) { client, _, coll in
+        try withTestNamespace { client, _, coll in
             guard try client.serverVersion() < ServerVersion(major: 4, minor: 0, patch: 7) else {
                 print("Skipping \(self.name) because of unsupported server version")
                 return
@@ -662,7 +669,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        try withTestNamespace(ns: self.getNamespace()) { client, _, coll in
+        try withTestNamespace { client, _, coll in
             guard try client.serverVersion() < ServerVersion(major: 4, minor: 0, patch: 7) else {
                 print("Skipping \(self.name) because of unsupported server version")
                 return
