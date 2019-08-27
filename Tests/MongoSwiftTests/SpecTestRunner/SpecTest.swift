@@ -116,7 +116,7 @@ internal struct FailPoint: Decodable {
 }
 
 /// A struct representing a server version.
-internal struct ServerVersion: Comparable, Decodable {
+internal struct ServerVersion: Comparable, Decodable, CustomStringConvertible {
     let major: Int
     let minor: Int
     let patch: Int
@@ -159,6 +159,10 @@ internal struct ServerVersion: Comparable, Decodable {
         self.major = major
         self.minor = minor
         self.patch = patch ?? 0
+    }
+
+    var description: String {
+        return "\(major).\(minor).\(patch)"
     }
 
     static func < (lhs: ServerVersion, rhs: ServerVersion) -> Bool {
