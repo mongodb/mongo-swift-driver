@@ -81,7 +81,7 @@ private func changeStreams() throws {
             ["$addFields": ["newField": "this is an added field!"] as Document]
         ]
         let inventory = db.collection("inventory")
-        let cursor = try inventory.watch(pipeline)
+        let cursor = try inventory.watch(pipeline, withEventType: Document.self)
         let next = try cursor.nextOrError()
         // End Changestream Example 4
     }
