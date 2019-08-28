@@ -6,8 +6,9 @@ import MongoSwift
 /// Examples used for the MongoDB documentation on Causal Consistency.
 /// - SeeAlso: https://docs.mongodb.com/manual/core/read-isolation-consistency-recency/#examples
 private func causalConsistency() throws {
-    // Start example 1
     let client1 = try MongoClient()
+
+    // Start Causal Consistency Example 1
     let s1 = try client1.startSession(options: ClientSessionOptions(causalConsistency: true))
     let currentDate = Date()
     var dbOptions = DatabaseOptions(readConcern: ReadConcern(.majority),
@@ -17,9 +18,11 @@ private func causalConsistency() throws {
                         update: ["$set": ["end": currentDate] as Document],
                         session: s1)
     try items.insertOne(["sku": "nuts-111", "name": "Pecans", "start": currentDate], session: s1)
+    // End Causal Consistency Example 1
 
-    // Start example 2
     let client2 = try MongoClient()
+
+    // Start Causal Consistency Example 2
     try client2.withSession(options: ClientSessionOptions(causalConsistency: true)) { s2 in
         // The cluster and operation times are guaranteed to be non-nil since we already used s1 for operations above.
         s2.advanceClusterTime(to: s1.clusterTime!)
@@ -31,6 +34,7 @@ private func causalConsistency() throws {
             print(item)
         }
     }
+    // End Causal Consistency Example 2
 }
 
 /// Examples used for the MongoDB documentation on Change Streams.
@@ -40,19 +44,22 @@ private func changeStreams() throws {
     let inventory = client.db("example").collection("inventory")
 
     do {
-        // Start example 1
+        // Start Changestream Example 1
         let cursor = try inventory.watch()
         let next = try cursor.nextOrError()
+        // End Changestream Example 1
     }
 
     do {
-        // Start example 2
+        // Start Changestream Example 2
         let cursor = try inventory.watch(options: ChangeStreamOptions(fullDocument: .updateLookup))
         let next = try cursor.nextOrError()
+        // End Changestream Example 2
 
-        // Start example 3
+        // Start Changestream Example 3
         let resumeToken = next?._id
         let resumedCursor = try inventory.watch(options: ChangeStreamOptions(resumeAfter: resumeToken))
         let nextAfterResume = try resumedCursor.nextOrError()
+        // End Changestream Example 3
     }
 }
