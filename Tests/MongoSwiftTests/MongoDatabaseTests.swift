@@ -26,9 +26,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         // create collection using createCollection
         expect(try db.createCollection(self.getCollectionName(suffix: "2"))).toNot(throwError())
         expect(try (Array(db.listCollections()) as [Document]).count).to(equal(2))
-
-        let opts = ListCollectionsOptions(filter: ["type": "view"] as Document)
-        expect(try db.listCollections(options: opts)).to(beEmpty())
+        expect(try db.listCollections(["type": "view"])).to(beEmpty())
 
         expect(try db.drop()).toNot(throwError())
         let names = try client.listDatabaseNames()

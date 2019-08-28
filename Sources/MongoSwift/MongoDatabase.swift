@@ -2,16 +2,12 @@ import mongoc
 
 /// Options to use when executing a `listCollections` command on a `MongoDatabase`.
 public struct ListCollectionsOptions: Encodable {
-    /// A filter to match collections against.
-    public var filter: Document?
-
     /// The batchSize for the returned cursor.
     public var batchSize: Int?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional
-    public init(batchSize: Int? = nil, filter: Document? = nil) {
+    public init(batchSize: Int? = nil) {
         self.batchSize = batchSize
-        self.filter = filter
     }
 }
 
@@ -233,9 +229,15 @@ public class MongoDatabase {
      *   - `userError.invalidArgumentError` if the options passed are an invalid combination.
      *   - `UserError.logicError` if the provided session is inactive.
      */
-    public func listCollections(options: ListCollectionsOptions? = nil,
+    public func listCollections(_ filter: Document? = nil,
+                                options: ListCollectionsOptions? = nil,
                                 session: ClientSession? = nil) throws -> MongoCursor<Document> {
-        let opts = try encodeOptions(options: options, session: session)
+        var opts = try encodeOptions(options: options, session: session)
+        if let filterDoc = filter {
+            opts = opts ?? Document()
+            // swiftlint:disable:next force_unwrapping
+            opts!["filter"] = filterDoc // guaranteed safe because of nil coalescing default.
+        }
 
         return try MongoCursor(client: self._client, decoder: self.decoder, session: session) { conn in
             self.withMongocDatabase(from: conn) { dbPtr in
