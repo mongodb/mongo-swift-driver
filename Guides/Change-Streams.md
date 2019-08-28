@@ -106,5 +106,21 @@ for change in resumedChangeStream {
 }
 ```
 
+### Modify Change Stream Output
+```swift
+let client = try MongoClient()
+let inventory = client.db("example").collection("inventory")
+
+// Only include events where the changed document's username = "alice"
+let pipeline: [Document] = [
+    ["$match": ["fullDocument.username": "alice"] as Document]
+]
+
+let cursor = try inventory.watch(pipeline)
+for change in cursor {
+    // process `ChangeStreamEvent<Document>` here
+}
+```
+
 ## See Also
 - [MongoDB Change Streams documentation](https://docs.mongodb.com/manual/changeStreams/)
