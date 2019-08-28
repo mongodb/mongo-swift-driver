@@ -278,7 +278,7 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase, FailPointConfigured {
             for test in testFile.tests {
                 let testTopologies = test.topology.map { TopologyDescription.TopologyType(from: $0) }
                 guard testTopologies.contains(topology) else {
-                    print("Skipping test case \"\(test.description)\": unsupported topology type \(topology)")
+                    print(unsupportedTopologyMessage(testName: test.description, topology: topology))
                     continue
                 }
 
@@ -318,7 +318,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
     /// "ChangeStream must continuously track the last seen resumeToken"
     func testChangeStreamTracksResumeToken() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping \(self.name) because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 
@@ -351,7 +351,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
      */
     func testChangeStreamMissingId() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping \(self.name) because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 
@@ -381,7 +381,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
      */
     func testChangeStreamAutomaticResume() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping \(self.name) because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 
@@ -440,7 +440,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
      */
     func testChangeStreamFailedAggregate() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping \(self.name) because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 
@@ -488,7 +488,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
      */
     func testChangeStreamDoesntResume() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping \(self.name) because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 
@@ -539,7 +539,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
      */
     func testChangeStreamDoesntCloseOnEmptyBatch() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping \(self.name) because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 
@@ -566,7 +566,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
      */
     func testChangeStreamFailedKillCursors() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping \(self.name) because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 
@@ -623,13 +623,13 @@ final class ChangeStreamTests: MongoSwiftTestCase {
      */
     func testChangeStreamResumeTokenUpdatesEmptyBatch() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping \(self.name) because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 
         try withTestNamespace { client, _, coll in
             guard try client.serverVersion() < ServerVersion(major: 4, minor: 0, patch: 7) else {
-                print("Skipping \(self.name) because of unsupported server version")
+                print(unsupportedServerVersionMessage(testName: self.name))
                 return
             }
 
@@ -665,7 +665,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
      */
     func testChangeStreamResumeTokenUpdatesNonemptyBatch() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping \(self.name) because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 
@@ -693,7 +693,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
     func testChangeStreamOnAClient() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 
@@ -745,7 +745,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
     func testChangeStreamOnADatabase() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 
@@ -787,7 +787,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
     func testChangeStreamOnACollection() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 
@@ -831,7 +831,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
     func testChangeStreamWithPipeline() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 
@@ -858,7 +858,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
     func testChangeStreamResumeToken() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 
@@ -905,7 +905,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
     func testChangeStreamWithEventType() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 
@@ -948,7 +948,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
     func testChangeStreamWithFullDocumentType() throws {
          guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 
@@ -989,7 +989,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
     func testChangeStreamOnACollectionWithCodableType() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 

@@ -286,7 +286,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
     /// Sessions spec test 11: Test that the clusterTime is reported properly.
     func testClusterTime() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 
@@ -310,7 +310,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
     /// Test that causal consistency guarantees are met on deployments that support cluster time.
     func testCausalConsistency() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 
@@ -464,7 +464,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
     /// Test causal consistent behavior on a topology that doesn't support cluster time.
     func testCausalConsistencyStandalone() throws {
         guard MongoSwiftTestCase.topologyType == .single else {
-            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 

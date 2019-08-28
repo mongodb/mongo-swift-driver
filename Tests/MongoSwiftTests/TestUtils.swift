@@ -368,3 +368,13 @@ internal func captureCommandEvents(eventTypes: [Notification.Name]? = nil,
         try f(client)
     }
 }
+
+internal func unsupportedTopologyMessage(testName: String,
+                                         topology: TopologyDescription.TopologyType = MongoSwiftTestCase.topologyType)
+                -> String {
+    return "Skipping \(testName) due to unsupported topology type \(topology)"
+}
+
+internal func unsupportedServerVersionMessage(testName: String) -> String {
+    return "Skipping \(testName) due to unsupported server version."
+}
