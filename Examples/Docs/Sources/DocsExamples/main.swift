@@ -41,10 +41,14 @@ private func causalConsistency() throws {
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/
 private func changeStreams() throws {
     let client = try MongoClient()
-    let inventory = client.db("example").collection("inventory")
+    let db = client.db("example")
+
+    // The following examples assume that you have connected to a MongoDB replica set and have
+    // accessed a database that contains an inventory collection.
 
     do {
         // Start Changestream Example 1
+        let inventory = db.collection("inventory")
         let cursor = try inventory.watch()
         let next = try cursor.nextOrError()
         // End Changestream Example 1
@@ -52,6 +56,7 @@ private func changeStreams() throws {
 
     do {
         // Start Changestream Example 2
+        let inventory = db.collection("inventory")
         let cursor = try inventory.watch(options: ChangeStreamOptions(fullDocument: .updateLookup))
         let next = try cursor.nextOrError()
         // End Changestream Example 2
@@ -59,6 +64,7 @@ private func changeStreams() throws {
 
     do {
         // Start Changestream Example 3
+        let inventory = db.collection("inventory")
         let cursor = try inventory.watch(options: ChangeStreamOptions(fullDocument: .updateLookup))
         let next = try cursor.nextOrError()
 
@@ -66,5 +72,17 @@ private func changeStreams() throws {
         let resumedCursor = try inventory.watch(options: ChangeStreamOptions(resumeAfter: resumeToken))
         let nextAfterResume = try resumedCursor.nextOrError()
         // End Changestream Example 3
+    }
+
+    do {
+        // Start Changestream Example 4
+        let pipeline: [Document] = [
+            ["$match": ["fullDocument.username": "alice"] as Document],
+            ["$addFields": ["newField": "this is an added field!"] as Document]
+        ]
+        let inventory = db.collection("inventory")
+        let cursor = try inventory.watch(pipeline)
+        let next = try cursor.nextOrError()
+        // End Changestream Example 4
     }
 }
