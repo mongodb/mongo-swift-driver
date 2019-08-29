@@ -10,12 +10,17 @@ MongoSwift 0.2.0 added support for [change streams](https://docs.mongodb.com/man
 ```swift
 let client = try MongoClient()
 let inventory = client.db("example").collection("inventory")
-let cursor = try inventory.watch() // returns a `ChangeStream<ChangeStreamEvent<Document>>`
+let stream = try inventory.watch() // returns a `ChangeStream<ChangeStreamEvent<Document>>`
 
 // perform some operations using `inventory`...
 
-for change in cursor {
+for change in stream {
     // process `ChangeStreamEvent<Document>` here
+}
+
+// check if any errors occurred while iterating
+if let error = stream.error {
+    // handle error
 }
 ```
 
@@ -23,12 +28,17 @@ for change in cursor {
 ```swift
 let client = try MongoClient()
 let inventory = client.db("example").collection("inventory", withType: MyCodableType.self)
-let cursor = try inventory.watch() // returns a `ChangeStream<ChangeStreamEvent<MyCodableType>>`
+let stream = try inventory.watch() // returns a `ChangeStream<ChangeStreamEvent<MyCodableType>>`
 
 // perform some operations using `inventory`...
 
-for change in cursor {
+for change in stream {
     // process `ChangeStreamEvent<MyCodableType>` here
+}
+
+// check if any errors occurred while iterating
+if let error = stream.error {
+    // handle error
 }
 ```
 
@@ -36,12 +46,17 @@ for change in cursor {
 ```swift
 let client = try MongoClient()
 let inventory = client.db("example").collection("inventory")
-let cursor = try inventory.watch(withFullDocumentType: MyCodableType.self) // returns a `ChangeStream<ChangeStreamEvent<MyCodableType>>`
+let stream = try inventory.watch(withFullDocumentType: MyCodableType.self) // returns a `ChangeStream<ChangeStreamEvent<MyCodableType>>`
 
 // perform some operations using `inventory`...
 
-for change in cursor {
+for change in stream {
     // process `ChangeStreamEvent<MyCodableType>` here
+}
+
+// check if any errors occurred while iterating
+if let error = stream.error {
+    // handle error
 }
 ```
 
@@ -49,12 +64,17 @@ for change in cursor {
 ```swift
 let client = try MongoClient()
 let inventory = client.db("example").collection("inventory")
-let cursor = try inventory.watch(withEventType: MyCodableType.self) // returns a `ChangeStream<MyCodableType>`
+let stream = try inventory.watch(withEventType: MyCodableType.self) // returns a `ChangeStream<MyCodableType>`
 
 // perform some operations using `inventory`...
 
-for change in cursor {
+for change in stream {
     // process `MyCodableType` here
+}
+
+// check if any errors occurred while iterating
+if let error = stream.error {
+    // handle error
 }
 ```
 
@@ -62,12 +82,17 @@ for change in cursor {
 ```swift
 let client = try MongoClient()
 let db = client.db("example")
-let cursor = try db.watch()
+let stream = try db.watch()
 
 // perform some operations using `db`...
 
-for change in cursor {
+for change in stream {
     // process `ChangeStreamEvent<Document>` here
+}
+
+// check if any errors occurred while iterating
+if let error = stream.error {
+    // handle error
 }
 ```
 
@@ -76,12 +101,17 @@ Note: the types of the `fullDocument` property, as well as the return type of `C
 ### Open a Change Stream on a `MongoClient` (MongoDB 4.0+)
 ```swift
 let client = try MongoClient()
-let cursor = try client.watch()
+let stream = try client.watch()
 
 // perform some operations using `client`...
 
-for change in cursor {
+for change in stream {
     // process `ChangeStreamEvent<Document>` here
+}
+
+// check if any errors occurred while iterating
+if let error = stream.error {
+    // handle error
 }
 ```
 
@@ -91,18 +121,23 @@ Note: the types of the `fullDocument` property, as well as the return type of `C
 ```swift
 let client = try MongoClient()
 let inventory = client.db("example").collection("inventory")
-let cursor = try inventory.watch()
+let stream = try inventory.watch()
 
 // perform some operations using `inventory`...
 
 // read the first change event
-let next = try cursor.nextOrError()
+let next = try stream.nextOrError()
 
 // create a new change stream that starts after the first change event
-let resumeToken = next?.resumeToken
-let resumedChangeStream = try inventory.watch(options: ChangeStreamOptions(resumeAfter: resumeToken))
-for change in resumedChangeStream {
+let resumeToken = stream.resumeToken
+let resumedStream = try inventory.watch(options: ChangeStreamOptions(resumeAfter: resumeToken))
+for change in resumedStream {
     // process `ChangeStreamEvent<Document>` here
+}
+
+// check if any errors occurred while iterating
+if let error = resumedStream.error {
+    // handle error
 }
 ```
 
@@ -116,9 +151,14 @@ let pipeline: [Document] = [
     ["$match": ["fullDocument.username": "alice"] as Document]
 ]
 
-let cursor = try inventory.watch(pipeline)
-for change in cursor {
+let stream = try inventory.watch(pipeline)
+for change in stream {
     // process `ChangeStreamEvent<Document>` here
+}
+
+// check if any errors occurred while iterating
+if let error = stream.error {
+    // handle error
 }
 ```
 
