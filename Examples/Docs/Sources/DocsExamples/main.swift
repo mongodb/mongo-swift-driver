@@ -68,7 +68,7 @@ private func changeStreams() throws {
         let cursor = try inventory.watch(options: ChangeStreamOptions(fullDocument: .updateLookup))
         let next = try cursor.nextOrError()
 
-        let resumeToken = next?._id
+        let resumeToken = cursor.resumeToken
         let resumedCursor = try inventory.watch(options: ChangeStreamOptions(resumeAfter: resumeToken))
         let nextAfterResume = try resumedCursor.nextOrError()
         // End Changestream Example 3

@@ -1,0 +1,43 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "MongoSwift",
+        "repositoryURL": "https://github.com/mongodb/mongo-swift-driver",
+        "state": {
+          "branch": "master",
+          "revision": "3797f79a2fabf335956b22014c082a11b45ed26a",
+          "version": null
+        }
+      },
+      {
+        "package": "Nimble",
+        "repositoryURL": "https://github.com/Quick/Nimble.git",
+        "state": {
+          "branch": null,
+          "revision": "f8657642dfdec9973efc79cc68bcef43a653a2bc",
+          "version": "8.0.2"
+        }
+      },
+      {
+        "package": "bson",
+        "repositoryURL": "https://github.com/mongodb/swift-bson",
+        "state": {
+          "branch": null,
+          "revision": "40f770ed265bb9958edbcd0c809a3c2afe75a3ba",
+          "version": "2.1.0"
+        }
+      },
+      {
+        "package": "mongoc",
+        "repositoryURL": "https://github.com/mongodb/swift-mongoc",
+        "state": {
+          "branch": null,
+          "revision": "e503b50210dae2cf0220474c2f12087830150e9f",
+          "version": "2.0.0"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
