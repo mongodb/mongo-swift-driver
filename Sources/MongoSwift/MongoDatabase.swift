@@ -56,6 +56,15 @@ public struct CollectionOptions: CodingStrategyProvider {
     }
 }
 
+/// Specifications of a collection returned when executing `listCollections`.
+public struct CollectionSpecification: Codable {
+    /// The name of the collection.
+    public var name: String
+
+    /// Options of the collection.
+    public var collectionOptions: CreateCollectionOptions?
+}
+
 /// Options to use when executing dropDatabase command.
 public struct DropDatabaseOptions: Codable {
     /// An optional `WriteConcern` to use for the command.
@@ -231,7 +240,7 @@ public struct MongoDatabase {
      */
     public func listCollections(_ filter: Document? = nil,
                                 options: ListCollectionsOptions? = nil,
-                                session: ClientSession? = nil) throws -> MongoCursor<Document> {
+                                session: ClientSession? = nil) throws -> MongoCursor<CollectionSpecification> {
         var opts = try encodeOptions(options: options, session: session)
         if let filterDoc = filter {
             opts = opts ?? Document()
@@ -239,14 +248,57 @@ public struct MongoDatabase {
             opts!["filter"] = filterDoc // guaranteed safe because of nil coalescing default.
         }
 
-        return try MongoCursor(client: self._client, decoder: self.decoder, session: session) { conn in
-            self.withMongocDatabase(from: conn) { dbPtr in
-                guard let collections = mongoc_database_find_collections_with_opts(dbPtr, opts?._bson) else {
-                    fatalError(failedToRetrieveCursorMessage)
-                }
-                return collections
-            }
+        let operation = ListCollectionsOperation(database: self, options: opts, nameOnly: false)
+        guard case let .specs(result) = try self._client.executeOperation(operation, session: session) else {
+            throw RuntimeError.internalError(message: "Invalid result")
         }
+        return result
+    }
+
+    /**
+     * Gets a list of `MongoCollection`s.
+     *
+     * - Parameters:
+     *   - filter: a `Document`, optional criteria to filter results by
+     *   - options: Optional `ListCollectionsOptions` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
+     *
+     * - Returns: An array of `MongoCollection`s that match the provided filter.
+     *
+     * - Throws:
+     *   - `userError.invalidArgumentError` if the options passed are an invalid combination.
+     *   - `UserError.logicError` if the provided session is inactive.
+     */
+    public func listMongoCollections(_ filter: Document? = nil,
+                                     options: ListCollectionsOptions? = nil,
+                                     session: ClientSession? = nil) throws -> [MongoCollection<Document>] {
+        return try self.listCollectionNames(filter, options: options, session: session).map { self.collection($0) }
+    }
+
+    /**
+     * Gets a list of names of collections.
+     *
+     * - Parameters:
+     *   - filter: a `Document`, optional criteria to filter results by
+     *   - options: Optional `ListCollectionsOptions` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
+     *
+     * - Returns: A `[String]` containing names of collections that match the provided filter.
+     *
+     * - Throws:
+     *   - `userError.invalidArgumentError` if the options passed are an invalid combination.
+     *   - `UserError.logicError` if the provided session is inactive.
+     */
+    public func listCollectionNames(_ filter: Document? = nil,
+                                    options: ListCollectionsOptions? = nil,
+                                    session: ClientSession? = nil) throws -> [String] {
+        let opts = try encodeOptions(options: options, session: session)
+
+        let operation = ListCollectionsOperation(database: self, options: opts, nameOnly: true)
+        guard case let .names(result) = try self._client.executeOperation(operation, session: session) else {
+            throw RuntimeError.internalError(message: "Invalid result")
+        }
+        return result
     }
 
     /**
