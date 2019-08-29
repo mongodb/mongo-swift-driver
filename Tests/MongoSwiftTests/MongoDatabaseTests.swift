@@ -21,11 +21,11 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         let command: Document = ["create": self.getCollectionName(suffix: "1")]
         let res = try db.runCommand(command)
         expect((res["ok"] as? BSONNumber)?.doubleValue).to(bsonEqual(1.0))
-        expect(try (Array(db.listCollections()) as [Document]).count).to(equal(1))
+        expect(try (Array(db.listCollections()) as [CollectionSpecification]).count).to(equal(1))
 
         // create collection using createCollection
         expect(try db.createCollection(self.getCollectionName(suffix: "2"))).toNot(throwError())
-        expect(try (Array(db.listCollections()) as [Document]).count).to(equal(2))
+        expect(try (Array(db.listCollections()) as [CollectionSpecification]).count).to(equal(2))
         expect(try db.listCollections(["type": "view"])).to(beEmpty())
 
         expect(try db.drop()).toNot(throwError())
@@ -113,7 +113,9 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
 
         expect(try db.createCollection("fooView", options: viewOptions)).toNot(throwError())
         let decoder = BSONDecoder()
-        var collectionInfo = try db.listCollections().map { try decoder.decode(CollectionInfo.self, from: $0) }
+        let encoder = BSONEncoder()
+        var collectionInfo =
+            try db.listCollections().map { try decoder.decode(CollectionInfo.self, from: try encoder.encode($0)) }
         collectionInfo.sort { $0.name < $1.name }
 
         expect(collectionInfo).to(haveCount(3))
@@ -125,6 +127,30 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         expect(collectionInfo[1]).to(equal(expectedView))
 
         expect(collectionInfo[2].name).to(equal("system.views"))
+    }
+
+    func testListCollections() throws {
+        let client = try MongoClient.makeTestClient()
+        let db = client.db(type(of: self).testDatabase)
+
+        let cappedOptions = CreateCollectionOptions(autoIndexId: true, capped: true, max: 1000, size: 10240)
+        let uncappedOptions = CreateCollectionOptions(autoIndexId: true, capped: false)
+
+        try db.createCollection("capped", options: cappedOptions)
+        try db.createCollection("uncapped", options: uncappedOptions)
+        try db.collection("capped").insertOne(["a": 1])
+        try db.collection("uncapped").insertOne(["b": 2])
+
+        var collectionNames = try db.listCollectionNames()
+        collectionNames.sort { $0 < $1 }
+
+        expect(collectionNames).to(haveCount(2))
+        expect(collectionNames[0]).to(equal("capped"))
+        expect(collectionNames[1]).to(equal("uncapped"))
+
+        let cappedNames = try db.listCollectionNames(["options.capped": true] as Document)
+        expect(cappedNames).to(haveCount(1))
+        expect(cappedNames[0]).to(equal("capped"))
     }
 }
 

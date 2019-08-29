@@ -1,5 +1,17 @@
 import mongoc
 
+/// Specifications of a collection returned when executing `listCollections`.
+public struct CollectionSpecification: Codable {
+    /// The name of the collection.
+    public var name: String
+
+    /// Type returned.
+    public var type: String
+
+    /// Options of the collection.
+    public var options: CreateCollectionOptions?
+}
+
 /// Internal intermediate result of a ListCollections command.
 internal enum ListCollectionsResults {
     /// Includes the names and sizes.
@@ -11,20 +23,20 @@ internal enum ListCollectionsResults {
 
 /// An operation corresponding to a "listCollections" command on a database.
 internal struct ListCollectionsOperation: Operation {
-	private let database: MongoDatabase
-	private let options: Document?
-	private let nameOnly: Bool?
+    private let database: MongoDatabase
+    private let options: Document?
+    private let nameOnly: Bool?
 
-	internal init(database: MongoDatabase, options: Document?, nameOnly: Bool?) {
-		self.database = database
-		self.options = options
-		self.nameOnly = nameOnly
-	}
+    internal init(database: MongoDatabase, options: Document?, nameOnly: Bool?) {
+        self.database = database
+        self.options = options
+        self.nameOnly = nameOnly
+    }
 
-	internal func execute(using connection: Connection, session: ClientSession?) throws -> ListCollectionsResults {
-		let cursor: MongoCursor<CollectionSpecification> = try MongoCursor(client: self.database._client,
-																		   decoder: self.database.decoder,
-																		   session: session) { conn in
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> ListCollectionsResults {
+        let cursor: MongoCursor<CollectionSpecification> = try MongoCursor(client: self.database._client,
+                                                                           decoder: self.database.decoder,
+                                                                           session: session) { conn in
             self.database.withMongocDatabase(from: conn) { dbPtr in
                 guard let collections = mongoc_database_find_collections_with_opts(dbPtr, self.options?._bson) else {
                     fatalError(failedToRetrieveCursorMessage)
@@ -33,11 +45,11 @@ internal struct ListCollectionsOperation: Operation {
             }
         }
         if self.nameOnly ?? false {
-        	var names = [String]()
-        	for collection in cursor {
-        		names.append(collection.name)
-        	}
-        	return .names(names)
+            var names = [String]()
+            for collection in cursor {
+                names.append(collection.name)
+            }
+            return .names(names)
         }
         return .specs(cursor)
     }

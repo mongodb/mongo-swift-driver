@@ -56,15 +56,6 @@ public struct CollectionOptions: CodingStrategyProvider {
     }
 }
 
-/// Specifications of a collection returned when executing `listCollections`.
-public struct CollectionSpecification: Codable {
-    /// The name of the collection.
-    public var name: String
-
-    /// Options of the collection.
-    public var collectionOptions: CreateCollectionOptions?
-}
-
 /// Options to use when executing dropDatabase command.
 public struct DropDatabaseOptions: Codable {
     /// An optional `WriteConcern` to use for the command.
@@ -292,7 +283,12 @@ public struct MongoDatabase {
     public func listCollectionNames(_ filter: Document? = nil,
                                     options: ListCollectionsOptions? = nil,
                                     session: ClientSession? = nil) throws -> [String] {
-        let opts = try encodeOptions(options: options, session: session)
+        var opts = try encodeOptions(options: options, session: session)
+        if let filterDoc = filter {
+            opts = opts ?? Document()
+            // swiftlint:disable:next force_unwrapping
+            opts!["filter"] = filterDoc // guaranteed safe because of nil coalescing default.
+        }
 
         let operation = ListCollectionsOperation(database: self, options: opts, nameOnly: true)
         guard case let .names(result) = try self._client.executeOperation(operation, session: session) else {
