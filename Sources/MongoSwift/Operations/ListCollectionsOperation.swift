@@ -3,18 +3,29 @@ import mongoc
 /// Specifications of a collection returned when executing `listCollections`.
 public struct CollectionSpecification: Codable {
     /// The name of the collection.
-    public var name: String
+    public let name: String
 
-    /// Type returned.
-    public var type: String
+    /// The type of collection (either "collection" or "view").
+    public let type: String
 
-    /// Options of the collection.
-    public var options: CreateCollectionOptions?
+    /// Options that were used when creating this collection.
+    public let options: CreateCollectionOptions?
+}
+
+/// Options to use when executing a `listCollections` command on a `MongoDatabase`.
+public struct ListCollectionsOptions: Encodable {
+    /// The batchSize for the returned cursor.
+    public var batchSize: Int?
+
+    /// Convenience initializer allowing any/all parameters to be omitted or optional
+    public init(batchSize: Int? = nil) {
+        self.batchSize = batchSize
+    }
 }
 
 /// Internal intermediate result of a ListCollections command.
 internal enum ListCollectionsResults {
-    /// Includes the names and sizes.
+    /// Includes the name, type, and creation options of each collection.
     case specs(MongoCursor<CollectionSpecification>)
 
     /// Only includes the names.
@@ -24,33 +35,44 @@ internal enum ListCollectionsResults {
 /// An operation corresponding to a "listCollections" command on a database.
 internal struct ListCollectionsOperation: Operation {
     private let database: MongoDatabase
-    private let options: Document?
+    private let filter: Document?
+    private let options: ListCollectionsOptions?
     private let nameOnly: Bool?
 
-    internal init(database: MongoDatabase, options: Document?, nameOnly: Bool?) {
+    internal init(database: MongoDatabase, filter: Document? = nil, options: ListCollectionsOptions?, nameOnly: Bool?) {
         self.database = database
+        self.filter = filter
         self.options = options
         self.nameOnly = nameOnly
     }
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> ListCollectionsResults {
-        let cursor: MongoCursor<CollectionSpecification> = try MongoCursor(client: self.database._client,
-                                                                           decoder: self.database.decoder,
-                                                                           session: session) { conn in
+        var opts = try encodeOptions(options: self.options, session: session)
+        if let filterDoc = self.filter {
+            opts = opts ?? Document()
+            // swiftlint:disable:next force_unwrapping
+            opts!["filter"] = filterDoc // guaranteed safe because of nil coalescing default.
+        }
+
+        let initializer = { (conn: Connection) -> OpaquePointer in
             self.database.withMongocDatabase(from: conn) { dbPtr in
-                guard let collections = mongoc_database_find_collections_with_opts(dbPtr, self.options?._bson) else {
+                guard let collections = mongoc_database_find_collections_with_opts(dbPtr, opts?._bson) else {
                     fatalError(failedToRetrieveCursorMessage)
                 }
                 return collections
             }
         }
         if self.nameOnly ?? false {
-            var names = [String]()
-            for collection in cursor {
-                names.append(collection.name)
-            }
-            return .names(names)
+            let cursor: MongoCursor<Document> = try MongoCursor(client: self.database._client,
+                                                                decoder: self.database.decoder,
+                                                                session: session,
+                                                                initializer: initializer)
+            return .names(cursor.map {$0["name"] as? String ?? ""})
         }
+        let cursor: MongoCursor<CollectionSpecification> = try MongoCursor(client: self.database._client,
+                                                                           decoder: self.database.decoder,
+                                                                           session: session,
+                                                                           initializer: initializer)
         return .specs(cursor)
     }
 }

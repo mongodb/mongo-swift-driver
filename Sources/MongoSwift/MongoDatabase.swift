@@ -1,16 +1,5 @@
 import mongoc
 
-/// Options to use when executing a `listCollections` command on a `MongoDatabase`.
-public struct ListCollectionsOptions: Encodable {
-    /// The batchSize for the returned cursor.
-    public var batchSize: Int?
-
-    /// Convenience initializer allowing any/all parameters to be omitted or optional
-    public init(batchSize: Int? = nil) {
-        self.batchSize = batchSize
-    }
-}
-
 /// Options to set on a retrieved `MongoCollection`.
 public struct CollectionOptions: CodingStrategyProvider {
     /// A read concern to set on the returned collection. If one is not specified, the collection will inherit the
@@ -223,7 +212,7 @@ public struct MongoDatabase {
      *   - options: Optional `ListCollectionsOptions` to use when executing this command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: a `MongoCursor` over an array of collections
+     * - Returns: a `MongoCursor` over an array of `CollectionSpecification`s
      *
      * - Throws:
      *   - `userError.invalidArgumentError` if the options passed are an invalid combination.
@@ -232,14 +221,7 @@ public struct MongoDatabase {
     public func listCollections(_ filter: Document? = nil,
                                 options: ListCollectionsOptions? = nil,
                                 session: ClientSession? = nil) throws -> MongoCursor<CollectionSpecification> {
-        var opts = try encodeOptions(options: options, session: session)
-        if let filterDoc = filter {
-            opts = opts ?? Document()
-            // swiftlint:disable:next force_unwrapping
-            opts!["filter"] = filterDoc // guaranteed safe because of nil coalescing default.
-        }
-
-        let operation = ListCollectionsOperation(database: self, options: opts, nameOnly: false)
+        let operation = ListCollectionsOperation(database: self, filter: filter, options: options, nameOnly: false)
         guard case let .specs(result) = try self._client.executeOperation(operation, session: session) else {
             throw RuntimeError.internalError(message: "Invalid result")
         }
@@ -247,7 +229,7 @@ public struct MongoDatabase {
     }
 
     /**
-     * Gets a list of `MongoCollection`s.
+     * Gets a list of `MongoCollection`s in this database.
      *
      * - Parameters:
      *   - filter: a `Document`, optional criteria to filter results by
@@ -267,7 +249,7 @@ public struct MongoDatabase {
     }
 
     /**
-     * Gets a list of names of collections.
+     * Gets a list of names of collections in this database.
      *
      * - Parameters:
      *   - filter: a `Document`, optional criteria to filter results by
@@ -283,14 +265,7 @@ public struct MongoDatabase {
     public func listCollectionNames(_ filter: Document? = nil,
                                     options: ListCollectionsOptions? = nil,
                                     session: ClientSession? = nil) throws -> [String] {
-        var opts = try encodeOptions(options: options, session: session)
-        if let filterDoc = filter {
-            opts = opts ?? Document()
-            // swiftlint:disable:next force_unwrapping
-            opts!["filter"] = filterDoc // guaranteed safe because of nil coalescing default.
-        }
-
-        let operation = ListCollectionsOperation(database: self, options: opts, nameOnly: true)
+        let operation = ListCollectionsOperation(database: self, filter: filter, options: options, nameOnly: true)
         guard case let .names(result) = try self._client.executeOperation(operation, session: session) else {
             throw RuntimeError.internalError(message: "Invalid result")
         }

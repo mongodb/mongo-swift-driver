@@ -112,18 +112,16 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         )
 
         expect(try db.createCollection("fooView", options: viewOptions)).toNot(throwError())
-        let decoder = BSONDecoder()
-        let encoder = BSONEncoder()
-        var collectionInfo =
-            try db.listCollections().map { try decoder.decode(CollectionInfo.self, from: try encoder.encode($0)) }
+
+        var collectionInfo = try Array(db.listCollections()) as [CollectionSpecification]
         collectionInfo.sort { $0.name < $1.name }
 
         expect(collectionInfo).to(haveCount(3))
 
-        let expectedFoo = CollectionInfo(name: "foo", type: "collection", options: fooOptions)
+        let expectedFoo = CollectionSpecification(name: "foo", type: "collection", options: fooOptions)
         expect(collectionInfo[0]).to(equal(expectedFoo))
 
-        let expectedView = CollectionInfo(name: "fooView", type: "view", options: viewOptions)
+        let expectedView = CollectionSpecification(name: "fooView", type: "view", options: viewOptions)
         expect(collectionInfo[1]).to(equal(expectedView))
 
         expect(collectionInfo[2].name).to(equal("system.views"))
@@ -151,13 +149,11 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         let cappedNames = try db.listCollectionNames(["options.capped": true] as Document)
         expect(cappedNames).to(haveCount(1))
         expect(cappedNames[0]).to(equal("capped"))
-    }
-}
 
-struct CollectionInfo: Decodable, Equatable {
-    let name: String
-    let type: String
-    let options: CreateCollectionOptions
+        let mongoCollections = try db.listMongoCollections(["options.capped": true] as Document)
+        expect(mongoCollections).to(haveCount(1))
+        expect(mongoCollections[0].name).to(equal("capped"))
+    }
 }
 
 extension CreateCollectionOptions: Equatable {
@@ -180,5 +176,13 @@ extension CreateCollectionOptions: Equatable {
                // ^ server adds a bunch of extra fields and a version number
                // to collations. rather than deal with those, just verify the
                // locale matches.
+    }
+}
+
+extension CollectionSpecification: Equatable {
+    public static func == (lhs: CollectionSpecification, rhs: CollectionSpecification) -> Bool {
+        return lhs.name == rhs.name &&
+               lhs.type == rhs.type &&
+               lhs.options == rhs.options
     }
 }
