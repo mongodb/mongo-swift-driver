@@ -99,7 +99,7 @@ internal struct ListCollectionsOperation: Operation {
                                                                 decoder: self.database.decoder,
                                                                 session: session,
                                                                 initializer: initializer)
-            return .names(cursor.map {$0["name"] as? String ?? ""})
+            return .names(cursor.map { $0["name"] as? String ?? "" })
         }
         let cursor: MongoCursor<CollectionSpecification> = try MongoCursor(client: self.database._client,
                                                                            decoder: self.database.decoder,
