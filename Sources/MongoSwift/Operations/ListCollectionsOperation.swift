@@ -1,12 +1,44 @@
 import mongoc
 
+/// Describes the type of data store returned when executing `listCollections`
+public enum CollectionType: RawRepresentable, Codable {
+    /// Specifies that the data store returned is a collection.
+    case collection
+    /// Specifies that the data store returned is a view.
+    case view
+    /// For an unknown value. For forwards compatibility, no error will be thrown when an unknown value is provided.
+    case other(String)
+
+    public var rawValue: String {
+        switch self {
+        case .collection:
+            return "collection"
+        case .view:
+            return "view"
+        case .other(let v):
+            return v
+        }
+    }
+
+    public init(rawValue: String) {
+        switch rawValue {
+        case "collection":
+            self = .collection
+        case "view":
+            self = .view
+        default:
+            self = .other(rawValue)
+        }
+    }
+}
+
 /// Specifications of a collection returned when executing `listCollections`.
 public struct CollectionSpecification: Codable {
     /// The name of the collection.
     public let name: String
 
-    /// The type of collection (either "collection" or "view").
-    public let type: String
+    /// The type of data store returned.
+    public let type: CollectionType
 
     /// Options that were used when creating this collection.
     public let options: CreateCollectionOptions?

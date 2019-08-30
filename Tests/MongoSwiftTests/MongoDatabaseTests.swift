@@ -118,10 +118,14 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
 
         expect(collectionInfo).to(haveCount(3))
 
-        let expectedFoo = CollectionSpecification(name: "foo", type: "collection", options: fooOptions)
+        let expectedFoo = CollectionSpecification(name: "foo", 
+                                                  type: CollectionType(rawValue: "collection"), 
+                                                  options: fooOptions)
         expect(collectionInfo[0]).to(equal(expectedFoo))
 
-        let expectedView = CollectionSpecification(name: "fooView", type: "view", options: viewOptions)
+        let expectedView = CollectionSpecification(name: "fooView", 
+                                                   type: CollectionType(rawValue: "view"), 
+                                                   options: viewOptions)
         expect(collectionInfo[1]).to(equal(expectedView))
 
         expect(collectionInfo[2].name).to(equal("system.views"))
