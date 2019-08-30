@@ -218,18 +218,17 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
     }
 
     func testCreateDropIndexByModelWithMaxTimeMS() throws {
+        let center = NotificationCenter.default
         let maxTimeMS: Int64 = 1000
 
-        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true,
-                                                                           notificationCenter: NotificationCenter()))
-        let center = client.notificationCenter
+        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
         let db = client.db(type(of: self).testDatabase)
 
         let collection = db.collection("collection")
         try collection.insertOne(["test": "blahblah"])
 
         var receivedEvents = [CommandStartedEvent]()
-        let observer = center.addObserver(forName: .commandStarted, object: nil, queue: nil) { notif in
+        let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
             guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
                 return
             }

@@ -444,7 +444,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        try withTestNamespace { client, _, coll in
+        try withTestNamespace(clientOptions: ClientOptions(commandMonitoring: true)) { client, _, coll in
             guard client.supportsFailCommand() else {
                 print("Skipping \(self.name) because server version doesn't support failCommand")
                 return
@@ -570,7 +570,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        try withTestNamespace { client, _, collection in
+        try withTestNamespace(clientOptions: ClientOptions(commandMonitoring: true)) { client, _, collection in
             guard client.supportsFailCommand() else {
                 print("Skipping \(self.name) because server version doesn't support failCommand")
                 return

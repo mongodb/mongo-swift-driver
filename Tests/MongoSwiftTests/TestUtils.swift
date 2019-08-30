@@ -188,9 +188,6 @@ extension MongoClient {
 
     static func makeTestClient(_ uri: String = MongoSwiftTestCase.connStr,
                                options: ClientOptions? = nil) throws -> MongoClient {
-        var options = options ?? ClientOptions()
-        options.serverMonitoring = true
-        options.commandMonitoring = true
         let client = try MongoClient(uri, options: options)
         if MongoSwiftTestCase.ssl {
              try client.connectionPool.setSSLOpts(caFile: MongoSwiftTestCase.sslCAFilePath,
