@@ -99,7 +99,11 @@ internal struct ListCollectionsOperation: Operation {
                                                                 decoder: self.database.decoder,
                                                                 session: session,
                                                                 initializer: initializer)
-            return .names(cursor.map { $0["name"] as? String ?? "" })
+            return try .names(cursor.map { guard let name = $0["name"] as? String else {
+                throw RuntimeError.internalError(message: "Invalid server response: collection has no name")
+                }
+                return name
+            })
         }
         let cursor: MongoCursor<CollectionSpecification> = try MongoCursor(client: self.database._client,
                                                                            decoder: self.database.decoder,
