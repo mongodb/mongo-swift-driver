@@ -422,7 +422,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
         // sharded error is pretty gross), we just skip the sharded clusters. Also, a WriteConcernError isn't
         // encountered on standalones, so we skip those as well.
         guard MongoSwiftTestCase.topologyType == .replicaSetWithPrimary else {
-            print("Skipping \(self.name) because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 

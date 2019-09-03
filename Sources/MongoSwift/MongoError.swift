@@ -227,6 +227,8 @@ private func parseMongocError(_ error: bson_error_t, reply: Document?) -> MongoE
         return RuntimeError.connectionError(message: message, errorLabels: errorLabels)
     case (MONGOC_ERROR_CURSOR, MONGOC_ERROR_CURSOR_INVALID_CURSOR):
         return UserError.logicError(message: message)
+    case (MONGOC_ERROR_CURSOR, MONGOC_ERROR_CHANGE_STREAM_NO_RESUME_TOKEN):
+        return UserError.logicError(message: message)
     case (MONGOC_ERROR_PROTOCOL, MONGOC_ERROR_PROTOCOL_BAD_WIRE_VERSION):
         return RuntimeError.compatibilityError(message: message)
     default:

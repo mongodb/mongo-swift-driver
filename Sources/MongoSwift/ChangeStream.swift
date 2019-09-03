@@ -108,9 +108,9 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
 
         // Update the resumeToken with the `_id` field from the document.
         guard let resumeToken = doc["_id"] as? Document else {
-            self.swiftError = RuntimeError
-                            .internalError(message: "_id field is missing from the change stream document.")
-                return nil
+            self.swiftError =
+                    RuntimeError.internalError(message: "_id field is missing from the change stream document.")
+            return nil
         }
         self.resumeToken = ResumeToken(resumeToken)
 
@@ -118,8 +118,8 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
             return try decoder.decode(T.self, from: doc)
         } catch {
             self.swiftError = error
+            return nil
         }
-        return nil
     }
 
     /**
