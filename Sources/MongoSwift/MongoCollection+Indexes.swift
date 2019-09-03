@@ -8,10 +8,26 @@ public struct IndexModel: Codable {
     /// Contains the options for the index.
     public let options: IndexOptions?
 
-    /// Convenience initializer providing a default `options` value
-    public init(keys: Document, options: IndexOptions? = nil) {
+    /// Contains the version of the index.
+    public let v: Int32?
+
+    /// Contains the default name of the index.
+    public let name: String?
+
+    /// Contains the namespace of the index.
+    public let ns: String?
+
+    /// Convenience initializer providing a default `options`, `v`, `name` and `ns` value.
+    public init(keys: Document,
+                options: IndexOptions? = nil,
+                v: Int32? = nil,
+                name: String? = nil,
+                ns: String? = nil) {
         self.keys = keys
         self.options = options
+        self.v = v
+        self.name = name
+        self.ns = ns
     }
 
     /// Gets the default name for this index.
@@ -19,15 +35,25 @@ public struct IndexModel: Codable {
         return self.keys.map { k, v in "\(k)_\(v)" }.joined(separator: "_")
     }
 
-    // Encode own data as well as nested options data
+    // Encode own data as well as nested options data.
     private enum CodingKeys: String, CodingKey {
-        case key, name
+        case keys, options, name, v, ns
     }
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(keys, forKey: .key)
+        try container.encode(keys, forKey: .keys)
         try container.encode(self.options?.name ?? self.defaultName, forKey: .name)
+    }
+
+    /// Initializer to conform to Decodable protocol.
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        keys = try values.decode(Document.self, forKey: .keys)
+        options = try values.decode(IndexOptions.self, forKey: .options)
+        name = try values.decode(String.self, forKey: .name)
+        v = try values.decode(Int32.self, forKey: .v)
+        ns = try values.decode(String.self, forKey: .ns)
     }
 }
 
@@ -359,7 +385,7 @@ extension MongoCollection {
      */
     public func listIndexNames(session: ClientSession? = nil) throws -> [String] {
         let operation = ListIndexesOperation(collection: self, nameOnly: true)
-        guard case let .specs(result) = try self._client.executeOperation(operation, session: session) else {
+        guard case let .names(result) = try self._client.executeOperation(operation, session: session) else {
             throw RuntimeError.internalError(message: "Invalid result")
         }
         return result

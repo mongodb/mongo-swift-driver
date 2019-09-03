@@ -10,11 +10,11 @@ internal enum ListIndexesResults {
 }
 
 /// An operation corresponding to a listIndex command on a collection.
-internal struct ListIndexesOperation: Operation {
-    private let collection: MongoCollection<Document>
+internal struct ListIndexesOperation<T: Codable>: Operation {
+    private let collection: MongoCollection<T>
     private let nameOnly: Bool?
 
-    internal init(collection: MongoCollection<Document>, nameOnly: Bool?) {
+    internal init(collection: MongoCollection<T>, nameOnly: Bool?) {
         self.collection = collection
         self.nameOnly = nameOnly
     }
@@ -32,16 +32,16 @@ internal struct ListIndexesOperation: Operation {
         }
 
         if self.nameOnly ?? false {
-            let cursor: MongoCursor<Document> = try MongoCursor(client: self.collection._client, 
+            let cursor: MongoCursor<Document> = try MongoCursor(client: self.collection._client,
                                                                 decoder: self.collection.decoder,
                                                                 session: session,
                                                                 initializer: initializer)
             return .names(cursor.map { $0["name"] as? String ?? "" })
         }
-        let cursor: MongoCursor<IndexModel> = try MongoCursor<Document>(client: self.collection_client,
-                                                                        decoder: self.collection.decoder,
-                                                                        session: session,
-                                                                        initializer: initializer)
+        let cursor: MongoCursor<IndexModel> = try MongoCursor(client: self.collection._client,
+                                                              decoder: self.collection.decoder,
+                                                              session: session,
+                                                              initializer: initializer)
         return .specs(cursor)
     }
 }
