@@ -119,12 +119,12 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         expect(collectionInfo).to(haveCount(3))
 
         let expectedFoo = CollectionSpecification(name: "foo",
-                                                  type: CollectionType(rawValue: "collection"),
+                                                  type: .collection,
                                                   options: fooOptions)
         expect(collectionInfo[0]).to(equal(expectedFoo))
 
         let expectedView = CollectionSpecification(name: "fooView",
-                                                   type: CollectionType(rawValue: "view"),
+                                                   type: .view,
                                                    options: viewOptions)
         expect(collectionInfo[1]).to(equal(expectedView))
 

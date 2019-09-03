@@ -1,6 +1,6 @@
 import mongoc
 
-/// Describes the type of data store returned when executing `listCollections`
+/// Describes the type of data store returned when executing `listCollections`.
 public enum CollectionType: RawRepresentable, Codable {
     /// Specifies that the data store returned is a collection.
     case collection
@@ -71,7 +71,7 @@ internal struct ListCollectionsOperation: Operation {
     private let options: ListCollectionsOptions?
     private let nameOnly: Bool?
 
-    internal init(database: MongoDatabase, filter: Document? = nil, options: ListCollectionsOptions?, nameOnly: Bool?) {
+    internal init(database: MongoDatabase, filter: Document?, options: ListCollectionsOptions?, nameOnly: Bool?) {
         self.database = database
         self.filter = filter
         self.options = options
