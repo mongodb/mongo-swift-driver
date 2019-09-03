@@ -100,7 +100,7 @@ internal struct ListCollectionsOperation: Operation {
                                                                 session: session,
                                                                 initializer: initializer)
             return try .names(cursor.map { guard let name = $0["name"] as? String else {
-                throw RuntimeError.internalError(message: "Invalid server response: collection has no name")
+                    throw RuntimeError.internalError(message: "Invalid server response: collection has no name")
                 }
                 return name
             })
