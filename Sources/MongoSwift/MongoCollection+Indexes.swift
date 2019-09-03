@@ -1,7 +1,7 @@
 import mongoc
 
 /// A struct representing an index on a `MongoCollection`.
-public struct IndexModel: Encodable {
+public struct IndexModel: Codable {
     /// Contains the required keys for the index.
     public let keys: Document
 
@@ -335,20 +335,33 @@ extension MongoCollection {
      * - Parameters:
      *   - session: Optional `ClientSession` to use when executing this command
      *
+     * - Returns: A `MongoCursor` over the `IndexModel`s.
+     *
+     * - Throws: `UserError.logicError` if the provided session is inactive.
+     */
+    public func listIndexes(session: ClientSession? = nil) throws -> MongoCursor<IndexModel> {
+        let operation = ListIndexesOperation(collection: self, nameOnly: false)
+        guard case let .specs(result) = try self._client.executeOperation(operation, session: session) else {
+            throw RuntimeError.internalError(message: "Invalid result")
+        }
+        return result
+    }
+
+    /**
+     * Retrieves a list of names of the indexes currently on this collection.
+     *
+     * - Parameters:
+     *   - session: Optional `ClientSession` to use when executing this command
+     *
      * - Returns: A `MongoCursor` over the index names.
      *
      * - Throws: `UserError.logicError` if the provided session is inactive.
      */
-    public func listIndexes(session: ClientSession? = nil) throws -> MongoCursor<Document> {
-        let opts = try encodeOptions(options: Document(), session: session)
-
-        return try MongoCursor(client: self._client, decoder: self.decoder, session: session) { conn in
-            self.withMongocCollection(from: conn) { collPtr in
-                guard let cursor = mongoc_collection_find_indexes_with_opts(collPtr, opts?._bson) else {
-                    fatalError(failedToRetrieveCursorMessage)
-                }
-                return cursor
-            }
+    public func listIndexNames(session: ClientSession? = nil) throws -> [String] {
+        let operation = ListIndexesOperation(collection: self, nameOnly: true)
+        guard case let .specs(result) = try self._client.executeOperation(operation, session: session) else {
+            throw RuntimeError.internalError(message: "Invalid result")
         }
+        return result
     }
 }
