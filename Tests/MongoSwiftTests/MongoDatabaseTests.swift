@@ -1,3 +1,4 @@
+import Foundation
 @testable import MongoSwift
 import Nimble
 import XCTest
@@ -118,14 +119,21 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
 
         expect(collectionInfo).to(haveCount(3))
 
+        let fooInfo = CollectionSpecificationInfo(readOnly: false, uuid: UUID())
+        let fooIndex = ["name": "_id_"] as Document
         let expectedFoo = CollectionSpecification(name: "foo",
                                                   type: .collection,
-                                                  options: fooOptions)
+                                                  options: fooOptions,
+                                                  info: fooInfo,
+                                                  idIndex: fooIndex)
         expect(collectionInfo[0]).to(equal(expectedFoo))
 
+        let viewInfo = CollectionSpecificationInfo(readOnly: true, uuid: nil)
         let expectedView = CollectionSpecification(name: "fooView",
                                                    type: .view,
-                                                   options: viewOptions)
+                                                   options: viewOptions,
+                                                   info: viewInfo,
+                                                   idIndex: nil)
         expect(collectionInfo[1]).to(equal(expectedView))
 
         expect(collectionInfo[2].name).to(equal("system.views"))
@@ -187,6 +195,8 @@ extension CollectionSpecification: Equatable {
     public static func == (lhs: CollectionSpecification, rhs: CollectionSpecification) -> Bool {
         return lhs.name == rhs.name &&
                lhs.type == rhs.type &&
-               lhs.options == rhs.options
+               lhs.options == rhs.options &&
+               lhs.info.readOnly == rhs.info.readOnly &&
+               lhs.idIndex?.name as? String == rhs.idIndex?.name as? String
     }
 }

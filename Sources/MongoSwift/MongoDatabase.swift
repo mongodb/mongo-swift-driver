@@ -221,7 +221,7 @@ public struct MongoDatabase {
     public func listCollections(_ filter: Document? = nil,
                                 options: ListCollectionsOptions? = nil,
                                 session: ClientSession? = nil) throws -> MongoCursor<CollectionSpecification> {
-        let operation = ListCollectionsOperation(database: self, filter: filter, options: options, nameOnly: false)
+        let operation = ListCollectionsOperation(database: self, nameOnly: false, filter: filter, options: options)
         guard case let .specs(result) = try self._client.executeOperation(operation, session: session) else {
             throw RuntimeError.internalError(message: "Invalid result")
         }
@@ -252,7 +252,8 @@ public struct MongoDatabase {
      * Gets a list of names of collections in this database.
      *
      * - Parameters:
-     *   - filter: a `Document`, optional criteria to filter results by
+     *   - filter: a `Document`, optional criteria to filter results by. For `listConnectionNames` the filter expression
+     *             can only filter based on a collection’s name.
      *   - options: Optional `ListCollectionsOptions` to use when executing this command
      *   - session: Optional `ClientSession` to use when executing this command
      *
@@ -265,7 +266,7 @@ public struct MongoDatabase {
     public func listCollectionNames(_ filter: Document? = nil,
                                     options: ListCollectionsOptions? = nil,
                                     session: ClientSession? = nil) throws -> [String] {
-        let operation = ListCollectionsOperation(database: self, filter: filter, options: options, nameOnly: true)
+        let operation = ListCollectionsOperation(database: self, nameOnly: true, filter: filter, options: options)
         guard case let .names(result) = try self._client.executeOperation(operation, session: session) else {
             throw RuntimeError.internalError(message: "Invalid result")
         }

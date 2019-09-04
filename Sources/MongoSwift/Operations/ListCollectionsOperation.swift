@@ -1,3 +1,4 @@
+import Foundation
 import mongoc
 
 /// Describes the type of data store returned when executing `listCollections`.
@@ -32,6 +33,21 @@ public enum CollectionType: RawRepresentable, Codable {
     }
 }
 
+/**
+ * Info about the collection that is returned with a `listCollections` call.
+ *
+ * - SeeAlso:
+ *   - https://docs.mongodb.com/manual/reference/command/listCollections/#listCollections.cursor
+ */
+public struct CollectionSpecificationInfo: Codable {
+    /// Tells whether or not the data store is read only.
+    public let readOnly: Bool
+
+    /// The collection's UUID - once established, this does not change. The UUID remains the same
+    /// across replica set members and shards in a sharded cluster.
+    public let uuid: UUID?
+}
+
 /// Specifications of a collection returned when executing `listCollections`.
 public struct CollectionSpecification: Codable {
     /// The name of the collection.
@@ -42,6 +58,12 @@ public struct CollectionSpecification: Codable {
 
     /// Options that were used when creating this collection.
     public let options: CreateCollectionOptions?
+
+    /// Contains info pertaining to the collection.
+    public let info: CollectionSpecificationInfo
+
+    /// Provides info on the _id index of the collection.
+    public let idIndex: Document?
 }
 
 /// Options to use when executing a `listCollections` command on a `MongoDatabase`.
@@ -67,15 +89,15 @@ internal enum ListCollectionsResults {
 /// An operation corresponding to a "listCollections" command on a database.
 internal struct ListCollectionsOperation: Operation {
     private let database: MongoDatabase
+    private let nameOnly: Bool
     private let filter: Document?
     private let options: ListCollectionsOptions?
-    private let nameOnly: Bool?
 
-    internal init(database: MongoDatabase, filter: Document?, options: ListCollectionsOptions?, nameOnly: Bool?) {
+    internal init(database: MongoDatabase, nameOnly: Bool, filter: Document?, options: ListCollectionsOptions?) {
         self.database = database
+        self.nameOnly = nameOnly
         self.filter = filter
         self.options = options
-        self.nameOnly = nameOnly
     }
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> ListCollectionsResults {
@@ -83,7 +105,16 @@ internal struct ListCollectionsOperation: Operation {
         if let filterDoc = self.filter {
             opts = opts ?? Document()
             // swiftlint:disable:next force_unwrapping
-            opts!["filter"] = filterDoc // guaranteed safe because of nil coalescing default.
+            opts!["filter"] = filterDoc // Guaranteed safe because of nil coalescing default.
+
+            let keys = filterDoc.keys.filter { $0 != "name" }
+            if self.nameOnly && !keys.isEmpty {
+                // swiftlint:disable:next force_unwrapping
+                opts!["nameOnly"] = false // Same as above.
+            } else {
+                // swiftlint:disable:next force_unwrapping
+                opts!["nameOnly"] = self.nameOnly // Same as above.
+            }
         }
 
         let initializer = { (conn: Connection) -> OpaquePointer in
@@ -94,12 +125,13 @@ internal struct ListCollectionsOperation: Operation {
                 return collections
             }
         }
-        if self.nameOnly ?? false {
+        if self.nameOnly {
             let cursor: MongoCursor<Document> = try MongoCursor(client: self.database._client,
                                                                 decoder: self.database.decoder,
                                                                 session: session,
                                                                 initializer: initializer)
-            return try .names(cursor.map { guard let name = $0["name"] as? String else {
+            return try .names(cursor.map {
+                guard let name = $0["name"] as? String else {
                     throw RuntimeError.internalError(message: "Invalid server response: collection has no name")
                 }
                 return name
