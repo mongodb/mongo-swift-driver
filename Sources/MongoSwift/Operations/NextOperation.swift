@@ -17,12 +17,16 @@ internal struct NextOperation<T: Codable>: Operation {
             throw ClientSession.SessionInactiveError
         }
 
+        guard case let .open(cursorPtr, _, _, _) = cursor.state else {
+            return nil
+        }
+
         let out = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
         defer {
             out.deinitialize(count: 1)
             out.deallocate()
         }
-        guard mongoc_cursor_next(cursor._cursor, out) else {
+        guard mongoc_cursor_next(cursorPtr, out) else {
             return nil
         }
 

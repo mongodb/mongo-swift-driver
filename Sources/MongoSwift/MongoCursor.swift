@@ -2,17 +2,23 @@ import mongoc
 
 /// A MongoDB cursor.
 public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
-    /// Pointer to underlying `mongoc_cursor_t`.
-    internal let _cursor: OpaquePointer
-    /// We store these three objects to ensure that they remain in scope for as long as this cursor does.
-    private let _client: MongoClient
-    private let _connection: Connection
-    private let _session: ClientSession?
-
-    private var swiftError: Error?
+    internal private(set) var state: State
+    private let tailable: Bool
 
     /// Decoder from the `MongoCollection` or `MongoDatabase` that created this cursor.
     internal let decoder: BSONDecoder
+
+    /// Enum for tracking the state of a cursor.
+    internal enum State {
+        /// Indicates that the cursor is still open. Stores a pointer to the `mongoc_cursor_t`, along with the source
+        /// connection, client, and possibly session to ensure they are kept alive as long as the cursor is.
+        case open(cursor: OpaquePointer, connection: Connection, client: MongoClient, session: ClientSession?)
+        case closed
+    }
+
+    /// The error that occurred while iterating this cursor, if one exists. This should be used to check for errors
+    /// after `next()` returns `nil`.
+    public private(set) var error: Error?
 
     /**
      * Initializes a new `MongoCursor` instance. Not meant to be instantiated directly by a user.
@@ -24,13 +30,14 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     internal init(client: MongoClient,
                   decoder: BSONDecoder,
                   session: ClientSession?,
+                  tailable: Bool = false,
                   initializer: (Connection) -> OpaquePointer) throws {
-        self._connection = try session?.getConnection(forUseWith: client) ?? client.connectionPool.checkOut()
-        self._cursor = initializer(self._connection)
-        self._client = client
-        self._session = session
+        let connection = try session?.getConnection(forUseWith: client) ?? client.connectionPool.checkOut()
+        let cursor = initializer(connection)
+        self.state = .open(cursor: cursor, connection: connection, client: client, session: session)
+        self.tailable = tailable
         self.decoder = decoder
-        self.swiftError = nil
+        self.error = nil
 
         if let err = self.error {
             // Errors in creation of the cursor are limited to invalid argument errors, but some errors are reported
@@ -45,12 +52,21 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     }
 
     /// Cleans up internal state.
-    deinit {
-        // If the cursor was created with a session, then the session owns the connection.
-        if self._session == nil {
-            self._client.connectionPool.checkIn(self._connection)
+    private func close() {
+        guard case let .open(cursor, conn, client, session) = self.state else {
+            return
         }
-        mongoc_cursor_destroy(self._cursor)
+        // If the cursor was created with a session, then the session owns the connection.
+        if session == nil {
+            client.connectionPool.checkIn(conn)
+        }
+        mongoc_cursor_destroy(cursor)
+        self.state = .closed
+    }
+
+    /// Closes the cursor if it hasn't been closed already.
+    deinit {
+        self.close()
     }
 
     /**
@@ -73,11 +89,11 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         return nil
     }
 
-    /// The error that occurred while iterating this cursor, if one exists. This should be used to check for errors
-    /// after `next()` returns `nil`.
-    public var error: Error? {
-        if let err = self.swiftError {
-            return err
+    /// Retrieves any error that occurred in mongoc or on the server while iterating the cursor. Returns nil if this
+    /// cursor is already closed, or if no error occurred.
+    private func getMongocError() -> MongoError? {
+        guard case let .open(cursor, _, _, _) = self.state else {
+            return nil
         }
 
         var replyPtr = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
@@ -87,7 +103,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         }
 
         var error = bson_error_t()
-        guard mongoc_cursor_error_document(self._cursor, &error, replyPtr) else {
+        guard mongoc_cursor_error_document(cursor, &error, replyPtr) else {
             return nil
         }
 
@@ -108,12 +124,24 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     /// the `.error` property to check for errors.
     public func next() -> T? {
         do {
+            guard case let .open(_, conn, _, session) = self.state else {
+                self.error = UserError.logicError(message: "")
+                return nil
+            }
+
             let operation = NextOperation(cursor: self)
-            let out = try operation.execute(using: self._connection, session: self._session)
-            self.swiftError = nil
+            guard let out = try operation.execute(using: conn, session: session) else {
+                self.error = self.getMongocError()
+                if !self.tailable {
+                    self.close()
+                }
+                return nil
+            }
             return out
         } catch {
-            self.swiftError = error
+            // This indicates an error occurred decoding a document to this cursor's type.
+            self.error = error
+            self.close()
             return nil
         }
     }
