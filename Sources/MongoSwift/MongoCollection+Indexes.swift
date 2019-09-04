@@ -51,16 +51,20 @@ import mongoc
 
 
 /// A struct representing an index on a `MongoCollection`.
-public struct IndexModel: Encodable {
+public struct IndexModel: Codable {
     /// Contains the required keys for the index.
     public let keys: Document
+
+    /// Contains the name of the index.
+    public let name: String?
 
     /// Contains the options for the index.
     public let options: IndexOptions?
 
     /// Convenience initializer providing a default `options` value
-    public init(keys: Document, options: IndexOptions? = nil) {
+    public init(keys: Document, name: String? = nil, options: IndexOptions? = nil) {
         self.keys = keys
+        self.name = name
         self.options = options
     }
 
@@ -71,13 +75,34 @@ public struct IndexModel: Encodable {
 
     // Encode own data as well as nested options data
     private enum CodingKeys: String, CodingKey {
-        case key, name
+        case key, name, options
+    }
+
+    // Encode everything besides the name, as we will handle that when encoding the `IndexModel`
+    private enum OptionsKeys: String, CodingKey {
+        case background, expireAfterSeconds, sparse, storageEngine, unique, indexVersion = "v",
+            defaultLanguage = "default_language", languageOverride = "language_override", textIndexVersion, weights,
+            sphereIndexVersion = "2dsphereIndexVersion", bits, max, min, bucketSize, partialFilterExpression, collation
     }
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(keys, forKey: .key)
         try container.encode(self.options?.name ?? self.defaultName, forKey: .name)
+    }
+
+    public init(from decoder: Decoder) throws {
+        print("in init for indexmodel!!!")
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        print("A \(values)")
+        keys = try values.decode(Document.self, forKey: .key)
+        print("B \(keys)")
+        name = try values.decode(String.self, forKey: .name)
+        print("C \(name)")
+        options = try IndexOptions(from: decoder)
+        // options = try values.decode(IndexOptions.self, forKey: .options)
+        // print("D \(options)")
+        print("done")
     }
 }
 

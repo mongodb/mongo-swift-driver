@@ -65,11 +65,15 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
     func testCreateIndexFromModel() throws {
         let model = IndexModel(keys: ["cat": 1])
         expect(try self.coll.createIndex(model)).to(equal("cat_1"))
+        let origIndexes = try coll.listIndexes()
+        for idx in origIndexes {
+            print("hi hi")
+        }
         var indexes = try Array(coll.listIndexes()) as [IndexModel]
         indexes.sort { $0.defaultName < $1.defaultName }
 
         print("HERE")
-        indexes.map { print($0.defaultName) }
+        indexes.map { print($0) }
         print("DONE")
 
         expect(indexes).to(haveCount(2))
@@ -79,63 +83,69 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         // expect(indexes.next()).to(beNil())
     }
 
-    // func testIndexOptions() throws {
-    //     // TODO SWIFT-539: unskip
-    //     if MongoSwiftTestCase.ssl && MongoSwiftTestCase.isMacOS {
-    //         print("Skipping test, fails with SSL, see CDRIVER-3318")
-    //         return
-    //     }
+    func testIndexOptions() throws {
+        // TODO SWIFT-539: unskip
+        if MongoSwiftTestCase.ssl && MongoSwiftTestCase.isMacOS {
+            print("Skipping test, fails with SSL, see CDRIVER-3318")
+            return
+        }
 
-    //     let options = IndexOptions(
-    //         background: true,
-    //         name: "testOptions",
-    //         sparse: false,
-    //         storageEngine: ["wiredTiger": ["configString": "access_pattern_hint=random"] as Document],
-    //         unique: true,
-    //         indexVersion: 2,
-    //         defaultLanguage: "english",
-    //         languageOverride: "cat",
-    //         textIndexVersion: 2,
-    //         weights: ["cat": 0.5, "_id": 0.5],
-    //         sphereIndexVersion: 2,
-    //         bits: 32,
-    //         max: 30,
-    //         min: 0,
-    //         bucketSize: 10,
-    //         collation: ["locale": "fr"]
-    //     )
+        let options = IndexOptions(
+            background: true,
+            name: "testOptions",
+            sparse: false,
+            storageEngine: ["wiredTiger": ["configString": "access_pattern_hint=random"] as Document],
+            unique: true,
+            indexVersion: 2,
+            defaultLanguage: "english",
+            languageOverride: "cat",
+            textIndexVersion: 2,
+            weights: ["cat": 0.5, "_id": 0.5],
+            sphereIndexVersion: 2,
+            bits: 32,
+            max: 30,
+            min: 0,
+            bucketSize: 10,
+            collation: ["locale": "fr"]
+        )
 
-    //     let model = IndexModel(keys: ["cat": 1, "_id": -1], options: options)
-    //     expect(try self.coll.createIndex(model)).to(equal("testOptions"))
+        let model = IndexModel(keys: ["cat": 1, "_id": -1], options: options)
+        expect(try self.coll.createIndex(model)).to(equal("testOptions"))
 
-    //     let ttlOptions = IndexOptions(expireAfterSeconds: 100, name: "ttl")
-    //     let ttlModel = IndexModel(keys: ["cat": 1], options: ttlOptions)
-    //     expect(try self.coll.createIndex(ttlModel)).to(equal("ttl"))
+        let ttlOptions = IndexOptions(expireAfterSeconds: 100, name: "ttl")
+        let ttlModel = IndexModel(keys: ["cat": 1], options: ttlOptions)
+        expect(try self.coll.createIndex(ttlModel)).to(equal("ttl"))
 
-    //     var indexes: [IndexOptions] = try self.coll.listIndexes().map { indexDoc in
-    //         var decoded = try BSONDecoder().decode(IndexOptions.self, from: indexDoc)
-    //         // name is not one of the CodingKeys for IndexOptions so manually pull
-    //         // it out of the doc and set it on the options.
-    //         decoded.name = indexDoc.name as? String
-    //         return decoded
-    //     }
+        // var indexes: [IndexOptions] = try self.coll.listIndexes().map { indexDoc in
+        //     var decoded = try BSONDecoder().decode(IndexOptions.self, from: indexDoc)
+        //     // name is not one of the CodingKeys for IndexOptions so manually pull
+        //     // it out of the doc and set it on the options.
+        //     decoded.name = indexDoc.name as? String
+        //     return decoded
+        // }
 
-    //     indexes.sort { $0.name! < $1.name! }
-    //     expect(indexes).to(haveCount(3))
+        var indexes: [IndexOptions] = try self.coll.listIndexes().map { indexModel in 
+            var options = indexModel.options
+            options?.name = indexModel.name
+            return options ?? IndexOptions()
+        }
 
-    //     // _id index
-    //     expect(indexes[0]).to(equal(IndexOptions(name: "_id_", indexVersion: 2)))
+        indexes.sort { $0.name! < $1.name! }
+        expect(indexes).to(haveCount(3))
 
-    //     // testOptions index
-    //     var expectedTestOptions = options
-    //     expectedTestOptions.name = "testOptions"
-    //     expect(indexes[1]).to(equal(expectedTestOptions))
+        // _id index
+        expect(indexes[0]).to(equal(IndexOptions(name: "_id_", indexVersion: 2)))
 
-    //     // ttl index
-    //     var expectedTtlOptions = ttlOptions
-    //     expectedTtlOptions.indexVersion = 2
-    //     expect(indexes[2]).to(equal(expectedTtlOptions))
-    // }
+        // testOptions index
+        var expectedTestOptions = options
+        expectedTestOptions.name = "testOptions"
+        expect(indexes[1]).to(equal(expectedTestOptions))
+
+        // ttl index
+        var expectedTtlOptions = ttlOptions
+        expectedTtlOptions.indexVersion = 2
+        expect(indexes[2]).to(equal(expectedTtlOptions))
+    }
 
     // func testCreateIndexesFromModels() throws {
     //     let model1 = IndexModel(keys: ["cat": 1])
