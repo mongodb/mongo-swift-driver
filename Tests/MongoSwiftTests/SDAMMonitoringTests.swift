@@ -29,7 +29,7 @@ final class SDAMTests: MongoSwiftTestCase {
     // swiftlint:enable line_length
     func testMonitoring() throws {
         guard MongoSwiftTestCase.topologyType == .single else {
-            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 

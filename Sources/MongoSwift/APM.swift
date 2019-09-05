@@ -7,6 +7,22 @@ public protocol MongoEvent {
     static var eventName: Notification.Name { get }
 }
 
+/// A protocol for command monitoring events to implement, specifying the command name and other shared fields.
+public protocol MongoCommandEvent: MongoEvent {
+    /// The command name.
+    var commandName: String { get }
+
+    /// The driver generated request id.
+    var requestId: Int64 { get }
+
+    /// The driver generated operation id. This is used to link events together such
+    /// as bulk write operations.
+    var operationId: Int64 { get }
+
+    /// The connection id for the command.
+    var connectionId: ConnectionId { get }
+}
+
 /// A protocol for monitoring events to implement, indicating that they can be initialized from an OpaquePointer
 /// to the corresponding libmongoc type.
 private protocol InitializableFromOpaquePointer {
@@ -16,7 +32,7 @@ private protocol InitializableFromOpaquePointer {
 
 /// An event published when a command starts. The event is stored under the key `event`
 /// in the `userInfo` property of `Notification`s posted under the name .commandStarted.
-public struct CommandStartedEvent: MongoEvent, InitializableFromOpaquePointer {
+public struct CommandStartedEvent: MongoCommandEvent, InitializableFromOpaquePointer {
     /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .commandStarted }
 
@@ -53,7 +69,7 @@ public struct CommandStartedEvent: MongoEvent, InitializableFromOpaquePointer {
 
 /// An event published when a command succeeds. The event is stored under the key `event`
 /// in the `userInfo` property of `Notification`s posted under the name .commandSucceeded.
-public struct CommandSucceededEvent: MongoEvent, InitializableFromOpaquePointer {
+public struct CommandSucceededEvent: MongoCommandEvent, InitializableFromOpaquePointer {
     /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .commandSucceeded }
 
@@ -90,7 +106,7 @@ public struct CommandSucceededEvent: MongoEvent, InitializableFromOpaquePointer 
 
 /// An event published when a command fails. The event is stored under the key `event`
 /// in the `userInfo` property of `Notification`s posted under the name .commandFailed.
-public struct CommandFailedEvent: MongoEvent, InitializableFromOpaquePointer {
+public struct CommandFailedEvent: MongoCommandEvent, InitializableFromOpaquePointer {
     /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .commandFailed }
 
@@ -119,7 +135,8 @@ public struct CommandFailedEvent: MongoEvent, InitializableFromOpaquePointer {
         self.commandName = String(cString: mongoc_apm_command_failed_get_command_name(event))
         var error = bson_error_t()
         mongoc_apm_command_failed_get_error(event, &error)
-        self.failure = extractMongoError(error: error) // should always return a ServerError.commandError
+        let reply = Document(copying: mongoc_apm_command_failed_get_reply(event))
+        self.failure = extractMongoError(error: error, reply: reply) // should always return a ServerError.commandError
         self.requestId = mongoc_apm_command_failed_get_request_id(event)
         self.operationId = mongoc_apm_command_failed_get_operation_id(event)
         self.connectionId = ConnectionId(mongoc_apm_command_failed_get_host(event))
@@ -436,12 +453,11 @@ private func postNotification<T: MongoEvent>(type: T.Type,
         return
     }
 
-    let notification = Notification(name: type.eventName, userInfo: ["event": eventStruct])
-
     guard let context = contextFunc(event) else {
         fatalError("Missing context for \(type)")
     }
     let client = Unmanaged<MongoClient>.fromOpaque(context).takeUnretainedValue()
+    let notification = Notification(name: type.eventName, userInfo: ["event": eventStruct])
     client.notificationCenter.post(notification)
 }
 

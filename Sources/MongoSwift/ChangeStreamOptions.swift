@@ -34,7 +34,7 @@ public struct ChangeStreamOptions: Codable {
      * will always be present in the case of 'insert' and 'replace' operations (containing the document being inserted)
      * and will be nil for all other operations.
      */
-    public let fullDocument: FullDocument?
+    public var fullDocument: FullDocument?
 
     /**
      * A `ResumeToken` that manually specifies the logical starting point for the new change stream.
@@ -43,24 +43,24 @@ public struct ChangeStreamOptions: Codable {
      * - Note: A change stream cannot be resumed after an invalidate event (e.g. a collection drop or rename).
      * - SeeAlso: https://docs.mongodb.com/manual/changeStreams/#resume-a-change-stream
      */
-    public let resumeAfter: ResumeToken?
+    public var resumeAfter: ResumeToken?
 
     /// The maximum amount of time in milliseconds for the server to wait on new documents to satisfy a
     /// change stream query. If omitted, the server will use its default timeout.
-    public let maxAwaitTimeMS: Int64?
+    public var maxAwaitTimeMS: Int64?
 
     /// The number of documents to return per batch. If omitted, the server will use its default batch size.
     /// - SeeAlso: https://docs.mongodb.com/manual/reference/command/aggregate
-    public let batchSize: Int32?
+    public var batchSize: Int32?
 
     /// Specifies a collation.
     /// - SeeAlso: https://docs.mongodb.com/manual/reference/command/aggregate
-    public let collation: Document?
+    public var collation: Document?
 
     /// The change stream will only provide changes that occurred at or after the specified timestamp.
     /// Any command run against the server will return an operation time that can be used here.
     /// - SeeAlso: https://docs.mongodb.com/manual/reference/method/db.runCommand/
-    public let startAtOperationTime: Timestamp?
+    public var startAtOperationTime: Timestamp?
 
     /**
      * Similar to `resumeAfter`, this option takes a `ResumeToken` which will serve as the logical starting
@@ -71,7 +71,7 @@ public struct ChangeStreamOptions: Codable {
      * - SeeAlso: https://docs.mongodb.com/master/changeStreams/#change-stream-start-after
      */
      // TODO: SWIFT-519 - Make this public when support is added for 4.2 change stream features.
-    internal let startAfter: ResumeToken?
+    internal var startAfter: ResumeToken?
 
     /// Initializes a `ChangeStreamOptions`.
     public init(fullDocument: FullDocument? = nil,

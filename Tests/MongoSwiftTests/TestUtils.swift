@@ -77,6 +77,10 @@ class MongoSwiftTestCase: XCTestCase {
         return name.replacingOccurrences(of: "[ \\+\\$]", with: "_", options: [.regularExpression])
     }
 
+    internal func getNamespace(suffix: String? = nil) -> MongoNamespace {
+        return MongoNamespace(db: type(of: self).testDatabase, collection: self.getCollectionName(suffix: suffix))
+    }
+
     static var topologyType: TopologyDescription.TopologyType {
         guard let topology = ProcessInfo.processInfo.environment["MONGODB_TOPOLOGY"] else {
             return .single
@@ -108,6 +112,42 @@ class MongoSwiftTestCase: XCTestCase {
         return false
 #endif
     }
+
+    /// Creates the given namespace and passes handles to it and its parents to the given function. After the function
+    /// executes, the collection associated with the namespace is dropped.
+    ///
+    /// Note: If a collection is not specified as part of the input namespace, this function will throw an error.
+    internal func withTestNamespace<T>(ns: MongoNamespace? = nil,
+                                       clientOptions: ClientOptions? = nil,
+                                       collectionOptions: CreateCollectionOptions? = nil,
+                                       f: (MongoClient, MongoDatabase, MongoCollection<Document>) throws -> T)
+    throws -> T {
+        let client = try MongoClient.makeTestClient(options: clientOptions)
+
+        return try withTestNamespace(client: client, ns: ns, options: collectionOptions) { db, coll in
+            try f(client, db, coll)
+        }
+    }
+
+    /// Creates the given namespace using the given client and passes handles to it and its parent database to the given
+    /// function. After the function executes, the collection associated with the namespace is dropped.
+    ///
+    /// Note: If a collection is not specified as part of the input namespace, this function will throw an error.
+    internal func withTestNamespace<T>(client: MongoClient,
+                                       ns: MongoNamespace? = nil,
+                                       options: CreateCollectionOptions? = nil,
+                                       _ f: (MongoDatabase, MongoCollection<Document>) throws -> T) throws -> T {
+        let ns = ns ?? self.getNamespace()
+
+        guard let collName = ns.collection else {
+            throw UserError.invalidArgumentError(message: "missing collection")
+        }
+
+        let database = client.db(ns.db)
+        let collection = try database.createCollection(collName, options: options)
+        defer { try? collection.drop() }
+        return try f(database, collection)
+    }
 }
 
 extension MongoClient {
@@ -121,6 +161,16 @@ extension MongoClient {
             throw TestError(message: " reply missing version string: \(reply)")
         }
         return try ServerVersion(versionString)
+    }
+
+    /// Get the max wire version of the primary.
+    internal func maxWireVersion() throws -> Int {
+        let options = RunCommandOptions(readPreference: ReadPreference(.primary))
+        let isMaster = try self.db("admin").runCommand(["isMaster": 1], options: options)
+        guard let max = (isMaster["maxWireVersion"] as? BSONNumber)?.intValue else {
+            throw TestError(message: "isMaster reply missing maxwireversion \(isMaster)")
+        }
+        return max
     }
 
     internal func serverVersionIsInRange(_ min: String?, _ max: String?) throws -> Bool {
@@ -144,6 +194,18 @@ extension MongoClient {
                                                   pemFile: MongoSwiftTestCase.sslPEMKeyFilePath)
         }
         return client
+    }
+
+    internal func supportsFailCommand() -> Bool {
+        guard let version = try? self.serverVersion() else {
+            return false
+        }
+        switch MongoSwiftTestCase.topologyType {
+        case .sharded:
+            return version >= ServerVersion(major: 4, minor: 1, patch: 5)
+        default:
+            return version >= ServerVersion(major: 4, minor: 0)
+        }
     }
 }
 
@@ -258,4 +320,58 @@ internal func bsonEqual(_ expectedValue: BSONValue?) -> Predicate<BSONValue> {
             return PredicateResult(bool: matches, message: msg)
         }
     }
+}
+
+/// Captures any command monitoring events filtered by type and name that are emitted during the execution of the
+/// provided closure. Only events emitted by the provided client will be captured.
+internal func captureCommandEvents(from client: MongoClient,
+                                   eventTypes: [Notification.Name]? = nil,
+                                   commandNames: [String]? = nil,
+                                   f: () throws -> Void) rethrows -> [MongoCommandEvent] {
+    let center = client.notificationCenter
+    var events: [MongoCommandEvent] = []
+
+    let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
+        guard let event = notif.userInfo?["event"] as? MongoCommandEvent else {
+            return
+        }
+
+        if let eventWhitelist = eventTypes {
+            guard eventWhitelist.contains(type(of: event).eventName) else {
+                return
+            }
+        }
+        if let whitelist = commandNames {
+            guard whitelist.contains(event.commandName) else {
+                return
+            }
+        }
+        events.append(event)
+    }
+    defer { center.removeObserver(observer) }
+
+    try f()
+
+    return events
+}
+
+/// Captures any command monitoring events filtered by type and name that are emitted during the execution of the
+/// provided closure. A client pre-configured for command monitoring is passed into the closure.
+internal func captureCommandEvents(eventTypes: [Notification.Name]? = nil,
+                                   commandNames: [String]? = nil,
+                                   f: (MongoClient) throws -> Void) throws -> [MongoCommandEvent] {
+    let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
+    return try captureCommandEvents(from: client, eventTypes: eventTypes, commandNames: commandNames) {
+        try f(client)
+    }
+}
+
+internal func unsupportedTopologyMessage(testName: String,
+                                         topology: TopologyDescription.TopologyType = MongoSwiftTestCase.topologyType)
+                -> String {
+    return "Skipping \(testName) due to unsupported topology type \(topology)"
+}
+
+internal func unsupportedServerVersionMessage(testName: String) -> String {
+    return "Skipping \(testName) due to unsupported server version."
 }

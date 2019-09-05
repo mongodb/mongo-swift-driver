@@ -278,7 +278,7 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase, FailPointConfigured {
             for test in testFile.tests {
                 let testTopologies = test.topology.map { TopologyDescription.TopologyType(from: $0) }
                 guard testTopologies.contains(topology) else {
-                    print("Skipping test case \"\(test.description)\": unsupported topology type \(topology)")
+                    print(unsupportedTopologyMessage(testName: test.description, topology: topology))
                     continue
                 }
 
@@ -311,9 +311,389 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase, FailPointConfigured {
 
 /// Class for spec prose tests and other integration tests associated with change streams.
 final class ChangeStreamTests: MongoSwiftTestCase {
+    /// A short maxAwaitTimeMS setting used to speed up tests.
+    private static let MAX_AWAIT_TIME: Int64 = 100
+
+    /// Prose test 1 of change stream spec.
+    /// "ChangeStream must continuously track the last seen resumeToken"
+    func testChangeStreamTracksResumeToken() throws {
+        guard MongoSwiftTestCase.topologyType != .single else {
+            print(unsupportedTopologyMessage(testName: self.name))
+            return
+        }
+
+        try withTestNamespace { _, _, coll in
+            let changeStream =
+                    try coll.watch(options: ChangeStreamOptions(maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME))
+            for x in 0..<5 {
+                try coll.insertOne(["x": x])
+            }
+
+            expect(changeStream.resumeToken).to(beNil())
+
+            var lastSeen: ResumeToken?
+            for change in changeStream {
+                expect(changeStream.resumeToken).toNot(beNil())
+                expect(changeStream.resumeToken).to(equal(change._id))
+                if lastSeen != nil {
+                    expect(changeStream.resumeToken).toNot(equal(lastSeen))
+                }
+                lastSeen = changeStream.resumeToken
+            }
+        }
+    }
+
+    /**
+     * Prose test 2 of change stream spec.
+     *
+     * `ChangeStream` will throw an exception if the server response is missing the resume token (if wire version
+     * is < 8, this is a driver-side error; for 8+, this is a server-side error).
+     */
+    func testChangeStreamMissingId() throws {
+        guard MongoSwiftTestCase.topologyType != .single else {
+            print(unsupportedTopologyMessage(testName: self.name))
+            return
+        }
+
+        try withTestNamespace { client, _, coll in
+            let changeStream = try coll.watch([["$project": ["_id": false] as Document]])
+            for x in 0..<5 {
+                try coll.insertOne(["x": x])
+            }
+
+            if try client.maxWireVersion() >= 8 {
+                let expectedError = ServerError.commandError(code: 280,
+                                                             codeName: "ChangeStreamFatalError",
+                                                             message: "",
+                                                             errorLabels: ["NonResumableChangeStreamError"])
+                expect(try changeStream.nextOrError()).to(throwError(expectedError))
+            } else {
+                expect(try changeStream.nextOrError()).to(throwError(UserError.logicError(message: "")))
+            }
+        }
+    }
+
+    /**
+     * Prose test 3 of change stream spec.
+     *
+     * `ChangeStream` will automatically resume one time on a resumable error (including not master) with the initial
+     * pipeline and options, except for the addition/update of a resumeToken.
+     */
+    func testChangeStreamAutomaticResume() throws {
+        guard MongoSwiftTestCase.topologyType != .single else {
+            print(unsupportedTopologyMessage(testName: self.name))
+            return
+        }
+
+        guard try MongoClient.makeTestClient().supportsFailCommand() else {
+            print("Skipping \(self.name) because server version doesn't support failCommand")
+            return
+        }
+
+        let events = try captureCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) { client in
+            try withTestNamespace(client: client) { _, coll in
+                let options = ChangeStreamOptions(fullDocument: .updateLookup,
+                                                  maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME,
+                                                  batchSize: 123)
+                let changeStream = try coll.watch([["$match": ["fullDocument.x": 2] as Document]], options: options)
+                for x in 0..<5 {
+                    try coll.insertOne(["x": x])
+                }
+
+                // notMaster error
+                let failPoint = FailPoint.failCommand(failCommands: ["getMore"], mode: .times(1), errorCode: 10107)
+                try failPoint.enable()
+                defer { failPoint.disable() }
+
+                while try changeStream.nextOrError() != nil {}
+            }
+        }
+
+        expect(events.count).to(equal(2))
+
+        let originalCommand = (events[0] as? CommandStartedEvent)!.command
+        let resumeCommand = (events[1] as? CommandStartedEvent)!.command
+
+        let originalPipeline = originalCommand["pipeline"]! as! [Document]
+        let resumePipeline = resumeCommand["pipeline"]! as! [Document]
+
+        // verify the $changeStream stage is identical except for resume options.
+        let filteredStreamStage = { (pipeline: [Document]) -> Document in
+            let stage = pipeline[0]
+            let streamDoc = stage["$changeStream"] as? Document
+            expect(streamDoc).toNot(beNil())
+            return streamDoc!.filter { $0.key != "startAtOperationTime" }
+        }
+        expect(filteredStreamStage(resumePipeline)).to(equal(filteredStreamStage(originalPipeline)))
+
+        // verify the pipeline was preserved.
+        expect(resumePipeline[1...]).to(equal(originalPipeline[1...]))
+
+        // verify the cursor options were preserved.
+        expect(resumeCommand["cursor"]).to(bsonEqual(originalCommand["cursor"]))
+    }
+
+    /**
+     * Prose test 4 of change stream spec.
+     *
+     * ChangeStream will not attempt to resume on any error encountered while executing an aggregate command.
+     */
+    func testChangeStreamFailedAggregate() throws {
+        guard MongoSwiftTestCase.topologyType != .single else {
+            print(unsupportedTopologyMessage(testName: self.name))
+            return
+        }
+
+        try withTestNamespace(clientOptions: ClientOptions(commandMonitoring: true)) { client, _, coll in
+            guard client.supportsFailCommand() else {
+                print("Skipping \(self.name) because server version doesn't support failCommand")
+                return
+            }
+
+            let failpoint = FailPoint.failCommand(failCommands: ["aggregate"], mode: .times(1), errorCode: 10107)
+            try failpoint.enable()
+            defer { failpoint.disable() }
+
+            let aggAttempts = try captureCommandEvents(from: client,
+                                                       eventTypes: [.commandStarted],
+                                                       commandNames: ["aggregate"]) {
+                expect(try coll.watch()).to(throwError())
+            }
+            expect(aggAttempts.count).to(equal(1))
+
+            // The above failpoint was configured to only run once, so this aggregate will succeed.
+            let changeStream = try coll.watch()
+
+            let getMoreFailpoint = FailPoint.failCommand(failCommands: ["getMore", "aggregate"],
+                                                         mode: .times(2),
+                                                         errorCode: 10107)
+            try getMoreFailpoint.enable()
+            defer { getMoreFailpoint.disable() }
+
+            let aggAttempts1 = try captureCommandEvents(from: client,
+                                                        eventTypes: [.commandStarted],
+                                                        commandNames: ["aggregate"]) {
+                // getMore failure will trigger resume process, aggregate will fail and not retry again.
+                expect(try changeStream.nextOrError()).to(throwError())
+            }
+            expect(aggAttempts1.count).to(equal(1))
+        }
+    }
+
+    /**
+     * Prose test 5 of change stream spec.
+     *
+     * `ChangeStream` will not attempt to resume after encountering error code 11601 (Interrupted),
+     * 136 (CappedPositionLost), or 237 (CursorKilled) while executing a getMore command.
+     */
+    func testChangeStreamDoesntResume() throws {
+        guard MongoSwiftTestCase.topologyType != .single else {
+            print(unsupportedTopologyMessage(testName: self.name))
+            return
+        }
+
+        guard try MongoClient.makeTestClient().supportsFailCommand() else {
+            print("Skipping \(self.name) because server version doesn't support failCommand")
+            return
+        }
+
+        let interrupted = FailPoint.failCommand(failCommands: ["getMore"], mode: .times(1), errorCode: 11601)
+        try interrupted.enable()
+        defer { interrupted.disable() }
+        let interruptedAggs = try captureCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) {
+            expect(try $0.watch().nextOrError()).to(throwError())
+        }
+        expect(interruptedAggs.count).to(equal(1))
+
+        let cappedPositionLost = FailPoint.failCommand(failCommands: ["getMore"], mode: .times(1), errorCode: 136)
+        try cappedPositionLost.enable()
+        defer { cappedPositionLost.disable() }
+        let cappedAggs = try captureCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) {
+            expect(try $0.watch().nextOrError()).to(throwError())
+        }
+        expect(cappedAggs.count).to(equal(1))
+
+        let cursorKilled = FailPoint.failCommand(failCommands: ["getMore"], mode: .times(1), errorCode: 237)
+        try cursorKilled.enable()
+        defer { cursorKilled.disable() }
+        let killedAggs = try captureCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) {
+            expect(try $0.watch().nextOrError()).to(throwError())
+        }
+        expect(killedAggs.count).to(equal(1))
+
+        // TODO SWIFT-609: enable this portion of the test.
+        // let nonResumableLabel = FailPoint.failCommand(failCommands: ["getMore"], mode: .times(1), errorCode: 280)
+        //  try nonResumableLabel.enable()
+        // defer { nonResumableLabel.disable() }
+        // let labelAggs = try captureCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) {
+        //    expect(try $0.watch().nextOrError()).to(throwError())
+        // }
+        // expect(labelAggs.count).to(equal(1))
+    }
+
+    /**
+     * Prose test 7 of change stream spec.
+     *
+     * Ensure that a cursor returned from an aggregate command with a cursor id and an initial empty batch is not
+     * closed on the driver side.
+     */
+    func testChangeStreamDoesntCloseOnEmptyBatch() throws {
+        guard MongoSwiftTestCase.topologyType != .single else {
+            print(unsupportedTopologyMessage(testName: self.name))
+            return
+        }
+
+        // need to keep the stream alive so its deinit doesn't kill the cursor.
+        var changeStream: ChangeStream<ChangeStreamEvent<Document>>?
+        let events = try captureCommandEvents(commandNames: ["killCursors"]) { client in
+            try withTestNamespace(client: client) { _, coll in
+                changeStream =
+                        try coll.watch(options: ChangeStreamOptions(maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME))
+                _ = try changeStream!.nextOrError()
+            }
+        }
+        expect(events).to(beEmpty())
+    }
+
+    /**
+     * Prose tests 8 and 10 of change stream spec.
+     *
+     * The killCursors command sent during the "Resume Process" must not be allowed to throw an exception, and
+     * `ChangeStream` will resume after a killCursors command is issued for its child cursor.
+     *
+     * Note: we're skipping prose test 9 because it tests against a narrow server version range that we don't have as
+     * part of our evergreen matrix.
+     */
+    func testChangeStreamFailedKillCursors() throws {
+        guard MongoSwiftTestCase.topologyType != .single else {
+            print(unsupportedTopologyMessage(testName: self.name))
+            return
+        }
+
+        try withTestNamespace(clientOptions: ClientOptions(commandMonitoring: true)) { client, _, collection in
+            guard client.supportsFailCommand() else {
+                print("Skipping \(self.name) because server version doesn't support failCommand")
+                return
+            }
+
+            var changeStream: ChangeStream<ChangeStreamEvent<Document>>?
+            let aggEvent = try captureCommandEvents(from: client,
+                                                    eventTypes: [.commandSucceeded],
+                                                    commandNames: ["aggregate"]) {
+                let options = ChangeStreamOptions(maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME, batchSize: 1)
+                changeStream = try collection.watch(options: options)
+            }
+
+            for i in 0..<5 {
+                try collection.insertOne(["x": 1])
+            }
+
+            expect(try changeStream?.nextOrError()).toNot(throwError())
+
+            // kill the underlying cursor to trigger a resume.
+            let reply = (aggEvent[0] as! CommandSucceededEvent).reply["cursor"] as! Document
+            let cursorId = (reply["id"] as! BSONNumber).intValue!
+            try client.db("admin").runCommand(["killCursors": self.getCollectionName(), "cursors": [cursorId]])
+
+            // Make the killCursors command fail as part of the resume process.
+            let failPoint = FailPoint.failCommand(failCommands: ["killCursors"], mode: .times(1), errorCode: 10107)
+            try failPoint.enable()
+            defer { failPoint.disable() }
+
+            // even if killCursors command fails, no error should be returned to the user.
+            for _ in 0..<4 {
+                expect(changeStream?.next()).toNot(beNil())
+                expect(changeStream?.error).to(beNil())
+            }
+        }
+    }
+
+    // TODO SWIFT-567: Implement prose test 11
+
+    /**
+     * Prose test 12 of change stream spec.
+     *
+     * For a ChangeStream under these conditions:
+     *   - Running against a server <4.0.7.
+     *   - The batch is empty or has been iterated to the last document.
+     * Expected result:
+     *   - getResumeToken must return the _id of the last document returned if one exists.
+     *   - getResumeToken must return resumeAfter from the initial aggregate if the option was specified.
+     *   - If resumeAfter was not specified, the getResumeToken result must be empty.
+     */
+    func testChangeStreamResumeTokenUpdatesEmptyBatch() throws {
+        guard MongoSwiftTestCase.topologyType != .single else {
+            print(unsupportedTopologyMessage(testName: self.name))
+            return
+        }
+
+        try withTestNamespace { client, _, coll in
+            guard try client.serverVersion() < ServerVersion(major: 4, minor: 0, patch: 7) else {
+                print(unsupportedServerVersionMessage(testName: self.name))
+                return
+            }
+
+            var options = ChangeStreamOptions(maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME)
+
+            let basicStream = try coll.watch(options: options)
+            _ = try basicStream.nextOrError()
+            expect(basicStream.resumeToken).to(beNil())
+            try coll.insertOne(["x": 1])
+            let firstToken = try basicStream.nextOrError()!._id
+            expect(basicStream.resumeToken).to(equal(firstToken))
+
+            options.resumeAfter = firstToken
+            let resumeStream = try coll.watch(options: options)
+            expect(resumeStream.resumeToken).to(equal(firstToken))
+            _ = try resumeStream.nextOrError()
+            expect(resumeStream.resumeToken).to(equal(firstToken))
+            try coll.insertOne(["x": 1])
+            let lastId = try resumeStream.nextOrError()?._id
+            expect(lastId).toNot(beNil())
+            expect(resumeStream.resumeToken).to(equal(lastId))
+        }
+    }
+
+    /**
+     * Prose test 13 of the change stream spec.
+     *
+     * For a ChangeStream under these conditions:
+     *    - The batch is not empty.
+     *    - The batch has been iterated up to but not including the last element.
+     * Expected result:
+     *    - getResumeToken must return the _id of the previous document returned.
+     */
+    func testChangeStreamResumeTokenUpdatesNonemptyBatch() throws {
+        guard MongoSwiftTestCase.topologyType != .single else {
+            print(unsupportedTopologyMessage(testName: self.name))
+            return
+        }
+
+        try withTestNamespace { client, _, coll in
+            guard try client.serverVersion() < ServerVersion(major: 4, minor: 0, patch: 7) else {
+                print("Skipping \(self.name) because of unsupported server version")
+                return
+            }
+
+            let changeStream =
+                    try coll.watch(options: ChangeStreamOptions(maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME))
+            for i in 0..<5 {
+                try coll.insertOne(["x": i])
+            }
+            for _ in 0..<3 {
+                _ = try changeStream.nextOrError()
+            }
+            let lastId = try changeStream.nextOrError()?._id
+            expect(lastId).toNot(beNil())
+            expect(changeStream.resumeToken).to(equal(lastId))
+        }
+    }
+
+    // TODO SWIFT-576: Implement prose tests 14, 17, & 18
+
     func testChangeStreamOnAClient() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 
@@ -365,7 +745,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
     func testChangeStreamOnADatabase() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 
@@ -377,7 +757,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
-        let changeStream = try db.watch()
+        let changeStream = try db.watch(options: ChangeStreamOptions(maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME))
 
         // expect the first iteration to be nil since no changes have been made to the database.
         expect(changeStream.next()).to(beNil())
@@ -407,7 +787,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
     func testChangeStreamOnACollection() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 
@@ -451,7 +831,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
     func testChangeStreamWithPipeline() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 
@@ -459,7 +839,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
         let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
-        let options = ChangeStreamOptions(fullDocument: .updateLookup)
+        let options = ChangeStreamOptions(fullDocument: .updateLookup, maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME)
         let pipeline: [Document] = [["$match": ["fullDocument.a": 1] as Document]]
         let changeStream = try coll.watch(pipeline, options: options)
 
@@ -478,7 +858,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
     func testChangeStreamResumeToken() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 
@@ -499,23 +879,6 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         // expect this change stream to have more events after resuming
         expect(changeStream2.next()).toNot(beNil())
         expect(changeStream2.error).to(beNil())
-    }
-
-    func testChangeStreamProjectOutIdError() throws {
-         guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
-            return
-        }
-
-        let client = try MongoClient.makeTestClient()
-        let db = client.db(type(of: self).testDatabase)
-        defer { try? db.drop() }
-        let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
-        let options = ChangeStreamOptions(fullDocument: .updateLookup)
-        let pipeline: [Document] = [["$project": ["_id": 0] as Document]]
-        let changeStream = try coll.watch(pipeline, options: options)
-        try coll.insertOne(["a": 1])
-        expect(try changeStream.nextOrError()).to(throwError())
     }
 
     struct MyFullDocumentType: Codable, Equatable {
@@ -542,7 +905,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
     func testChangeStreamWithEventType() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 
@@ -585,7 +948,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
     func testChangeStreamWithFullDocumentType() throws {
          guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 
@@ -626,7 +989,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
     func testChangeStreamOnACollectionWithCodableType() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
-            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 

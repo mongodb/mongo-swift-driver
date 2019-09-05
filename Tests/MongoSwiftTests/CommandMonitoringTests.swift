@@ -11,7 +11,7 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
 
     func testCommandMonitoring() throws {
         guard MongoSwiftTestCase.topologyType != .sharded else {
-            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print(unsupportedTopologyMessage(testName: self.name))
             return
         }
 

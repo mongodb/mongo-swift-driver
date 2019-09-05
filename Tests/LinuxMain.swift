@@ -24,12 +24,20 @@ extension ChangeStreamSpecTests {
 
 extension ChangeStreamTests {
     static var allTests = [
+        ("testChangeStreamTracksResumeToken", testChangeStreamTracksResumeToken),
+        ("testChangeStreamMissingId", testChangeStreamMissingId),
+        ("testChangeStreamAutomaticResume", testChangeStreamAutomaticResume),
+        ("testChangeStreamFailedAggregate", testChangeStreamFailedAggregate),
+        ("testChangeStreamDoesntResume", testChangeStreamDoesntResume),
+        ("testChangeStreamDoesntCloseOnEmptyBatch", testChangeStreamDoesntCloseOnEmptyBatch),
+        ("testChangeStreamFailedKillCursors", testChangeStreamFailedKillCursors),
+        ("testChangeStreamResumeTokenUpdatesEmptyBatch", testChangeStreamResumeTokenUpdatesEmptyBatch),
+        ("testChangeStreamResumeTokenUpdatesNonemptyBatch", testChangeStreamResumeTokenUpdatesNonemptyBatch),
         ("testChangeStreamOnAClient", testChangeStreamOnAClient),
         ("testChangeStreamOnADatabase", testChangeStreamOnADatabase),
         ("testChangeStreamOnACollection", testChangeStreamOnACollection),
         ("testChangeStreamWithPipeline", testChangeStreamWithPipeline),
         ("testChangeStreamResumeToken", testChangeStreamResumeToken),
-        ("testChangeStreamProjectOutIdError", testChangeStreamProjectOutIdError),
         ("testChangeStreamWithEventType", testChangeStreamWithEventType),
         ("testChangeStreamWithFullDocumentType", testChangeStreamWithFullDocumentType),
         ("testChangeStreamOnACollectionWithCodableType", testChangeStreamOnACollectionWithCodableType),
