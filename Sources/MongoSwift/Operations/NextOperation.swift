@@ -17,8 +17,10 @@ internal struct NextOperation<T: Codable>: Operation {
             throw ClientSession.SessionInactiveError
         }
 
+        // We already check this in `MongoCursor.next()` in order to extract the relevant connection and session,
+        // but error again here just in case.
         guard case let .open(cursorPtr, _, _, _) = cursor.state else {
-            return nil
+            throw ClosedCursorError
         }
 
         let out = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)

@@ -1,13 +1,9 @@
 import mongoc
 
+internal let ClosedCursorError = UserError.logicError(message: "Cannot advance a completed or failed cursor.")
+
 /// A MongoDB cursor.
 public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
-    internal private(set) var state: State
-    private let isTailable: Bool
-
-    /// Decoder from the `MongoCollection` or `MongoDatabase` that created this cursor.
-    internal let decoder: BSONDecoder
-
     /// Enum for tracking the state of a cursor.
     internal enum State {
         /// Indicates that the cursor is still open. Stores a pointer to the `mongoc_cursor_t`, along with the source
@@ -16,9 +12,17 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         case closed
     }
 
+    internal private(set) var state: State
+
     /// The error that occurred while iterating this cursor, if one exists. This should be used to check for errors
     /// after `next()` returns `nil`.
     public private(set) var error: Error?
+
+    /// Indicates whether this is a tailable cursor.
+    private let isTailable: Bool
+
+    /// Decoder from the `MongoCollection` or `MongoDatabase` that created this cursor.
+    internal let decoder: BSONDecoder
 
     /**
      * Indicates whether this cursor has the potential to return more data. This property is mainly useful for
@@ -144,7 +148,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     public func next() -> T? {
         // We already closed the mongoc cursor, either because we reached the end or encountered an error.
         guard case let .open(cursor, conn, _, session) = self.state else {
-            self.error = UserError.logicError(message: "Cannot advance a completed or failed cursor.")
+            self.error = ClosedCursorError
             return nil
         }
 
