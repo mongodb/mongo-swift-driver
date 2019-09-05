@@ -12,9 +12,9 @@ internal enum ListIndexesResults {
 /// An operation corresponding to a listIndex command on a collection.
 internal struct ListIndexesOperation<T: Codable>: Operation {
     private let collection: MongoCollection<T>
-    private let nameOnly: Bool?
+    private let nameOnly: Bool
 
-    internal init(collection: MongoCollection<T>, nameOnly: Bool?) {
+    internal init(collection: MongoCollection<T>, nameOnly: Bool) {
         self.collection = collection
         self.nameOnly = nameOnly
     }
@@ -30,8 +30,14 @@ internal struct ListIndexesOperation<T: Codable>: Operation {
                 return indexes
             }
         }
+        let toPrint: MongoCursor<Document> = try MongoCursor(client: self.collection._client,
+                                                                decoder: self.collection.decoder,
+                                                                session: session,
+                                                                initializer: initializer)
+        print("here is the original document:")
+        toPrint.map { print($0) }
 
-        if self.nameOnly ?? false {
+        if self.nameOnly {
             let cursor: MongoCursor<Document> = try MongoCursor(client: self.collection._client,
                                                                 decoder: self.collection.decoder,
                                                                 session: session,

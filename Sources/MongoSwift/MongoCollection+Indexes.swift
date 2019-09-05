@@ -1,55 +1,5 @@
 import mongoc
 
-// /// A struct representing an index on a `MongoCollection`.
-// public struct IndexModel: Codable {
-//     /// Contains the required keys for the index.
-//     public let keys: Document
-
-//     /// Contains the options for the index.
-//     public let options: IndexOptions?
-
-//     // /// Contains the version of the index.
-//     // public let v: Int32?
-
-//     // /// Contains the default name of the index.
-//     // public let name: String?
-
-//     // /// Contains the namespace of the index.
-//     // public let ns: String?
-
-//     /// Convenience initializer providing a default `options`, `v`, `name` and `ns` value.
-//     // public init(keys: Document,
-//     //             options: IndexOptions? = nil,
-//     //             v: Int32? = nil,
-//     //             name: String? = nil,
-//     //             ns: String? = nil) {
-//     public init(keys: Document, options: IndexOptions? = nil) {
-//         self.keys = keys
-//         self.options = options
-//         // self.v = v
-//         // self.name = name
-//         // self.ns = ns
-//     }
-
-//     /// Gets the default name for this index.
-//     internal var defaultName: String {
-//         return self.keys.map { k, v in "\(k)_\(v)" }.joined(separator: "_")
-//     }
-
-//     // Encode own data as well as nested options data.
-//     private enum CodingKeys: String, CodingKey {
-//         case key, options
-//         // case keys, options, name, v, ns
-//     }
-
-//     public func encode(to encoder: Encoder) throws {
-//         var container = encoder.container(keyedBy: CodingKeys.self)
-//         try container.encode(keys, forKey: .key)
-//         // try container.encode(keys, forKey: .keys)
-//         try container.encode(self.options?.name ?? self.defaultName, forKey: .name)
-//     }
-
-
 /// A struct representing an index on a `MongoCollection`.
 public struct IndexModel: Codable {
     /// Contains the required keys for the index.
@@ -58,13 +8,21 @@ public struct IndexModel: Codable {
     /// Contains the name of the index.
     public let name: String?
 
+    /// Contains the version of the index that lives on the server.
+    public let v: Int?
+
+    /// Contains the namespace of the index.
+    public let ns: String?
+
     /// Contains the options for the index.
     public let options: IndexOptions?
 
     /// Convenience initializer providing a default `options` value
-    public init(keys: Document, name: String? = nil, options: IndexOptions? = nil) {
+    public init(keys: Document, name: String? = nil, v: Int? = nil, ns: String? = nil, options: IndexOptions? = nil) {
         self.keys = keys
         self.name = name
+        self.v = v
+        self.ns = ns
         self.options = options
     }
 
@@ -75,10 +33,10 @@ public struct IndexModel: Codable {
 
     // Encode own data as well as nested options data
     private enum CodingKeys: String, CodingKey {
-        case key, name, options
+        case key, name, v, ns, options
     }
 
-    // Encode everything besides the name, as we will handle that when encoding the `IndexModel`
+    // Encode nested options data
     private enum OptionsKeys: String, CodingKey {
         case background, expireAfterSeconds, sparse, storageEngine, unique, indexVersion = "v",
             defaultLanguage = "default_language", languageOverride = "language_override", textIndexVersion, weights,
@@ -88,36 +46,18 @@ public struct IndexModel: Codable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(keys, forKey: .key)
-        try container.encode(self.options?.name ?? self.defaultName, forKey: .name)
+        try container.encode(self.name ?? self.options?.name ?? self.defaultName, forKey: .name)
     }
 
     public init(from decoder: Decoder) throws {
-        print("in init for indexmodel!!!")
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        print("A \(values)")
-        keys = try values.decode(Document.self, forKey: .key)
-        print("B \(keys)")
-        name = try values.decode(String.self, forKey: .name)
-        print("C \(name)")
-        options = try IndexOptions(from: decoder)
-        // options = try values.decode(IndexOptions.self, forKey: .options)
-        // print("D \(options)")
-        print("done")
+        self.keys = try values.decode(Document.self, forKey: .key)
+        self.name = try values.decode(String.self, forKey: .name)
+        self.v = try values.decode(Int.self, forKey: .v)
+        self.ns = try values.decode(String.self, forKey: .ns)
+        self.options = try IndexOptions(from: decoder)
     }
 }
-
-
-
-    // /// Initializer to conform to Decodable protocol.
-    // public init(from decoder: Decoder) throws {
-    //     let values = try decoder.container(keyedBy: CodingKeys.self)
-    //     keys = try values.decode(Document.self, forKey: .keys)
-    //     options = try values.decode(IndexOptions.self, forKey: .options)
-    //     name = try values.decode(String.self, forKey: .name)
-    //     v = try values.decode(Int32.self, forKey: .v)
-    //     ns = try values.decode(String.self, forKey: .ns)
-    // }
-// }
 
 /// Options to use when creating an index for a collection.
 public struct IndexOptions: Codable {
