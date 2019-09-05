@@ -30,13 +30,6 @@ internal struct ListIndexesOperation<T: Codable>: Operation {
                 return indexes
             }
         }
-        let toPrint: MongoCursor<Document> = try MongoCursor(client: self.collection._client,
-                                                                decoder: self.collection.decoder,
-                                                                session: session,
-                                                                initializer: initializer)
-        print("here is the original document:")
-        toPrint.map { print($0) }
-
         if self.nameOnly {
             let cursor: MongoCursor<Document> = try MongoCursor(client: self.collection._client,
                                                                 decoder: self.collection.decoder,
