@@ -144,8 +144,9 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         return extractMongoError(error: error)
     }
 
-    /// Returns the next `Document` in this cursor, or nil. Once this function returns `nil`, the caller should use
-    /// the `.error` property to check for errors.
+    /// Returns the next `Document` in this cursor, or `nil`. After this function returns `nil`, the caller should use
+    /// the `.error` property to check for errors. For tailable cursors, users should also check `isAlive` after this
+    /// method returns `nil`, to determine if the cursor has the potential to return any more data in the future.
     public func next() -> T? {
         // We already closed the mongoc cursor, either because we reached the end or encountered an error.
         guard case let .open(cursor, conn, _, session) = self.state else {
