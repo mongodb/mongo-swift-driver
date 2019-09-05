@@ -12,6 +12,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         case closed
     }
 
+    /// The state of this cursor.
     internal private(set) var state: State
 
     /// The error that occurred while iterating this cursor, if one exists. This should be used to check for errors
@@ -27,7 +28,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     /**
      * Indicates whether this cursor has the potential to return more data. This property is mainly useful for
      * tailable cursors, where the cursor may be empty but contain more results later on. For non-tailable cursors,
-     * the cursor will always be dead as soon as `next()` returns nil, or as soon as `nextOrError()` returns `nil` or
+     * the cursor will always be dead as soon as `next()` returns `nil`, or as soon as `nextOrError()` returns `nil` or
      * throws an error.
      */
     public var isAlive: Bool {
@@ -138,8 +139,8 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
             return extractMongoError(error: error, reply: reply)
         }
 
-        // Otherwise, the only feasible error is that the user tried to advance a dead cursor, which is a logic error.
-        // We will still parse the mongoc error to cover all cases.
+        // The only feasible error here is that we tried to advance a dead mongoc cursor. Due to our cursor-closing
+        // logic in `next()` that should never happen, but parse the error anyway just in case we end up here.
         return extractMongoError(error: error)
     }
 
@@ -165,11 +166,10 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
                 }
                 return nil
             }
-
             return out
         } catch {
             // This indicates that an error occurred executing the `NextOperation`. Currently the only possible error
-            // is a DecodingError when decoding a Document to this cursor's type.
+            // is a `DecodingError` when decoding a `Document` to this cursor's type.
             self.error = error
             // Since we encountered an error, close the cursor.
             self.close()
