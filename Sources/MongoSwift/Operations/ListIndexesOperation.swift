@@ -35,7 +35,12 @@ internal struct ListIndexesOperation<T: Codable>: Operation {
                                                                 decoder: self.collection.decoder,
                                                                 session: session,
                                                                 initializer: initializer)
-            return .names(cursor.map { $0["name"] as? String ?? "" })
+            return try .names(cursor.map {
+                guard let name = $0["name"] as? String else {
+                    throw RuntimeError.internalError(message: "Invalid server response: collection has no name")
+                }
+                return name
+            })
         }
         let cursor: MongoCursor<IndexModel> = try MongoCursor(client: self.collection._client,
                                                               decoder: self.collection.decoder,
