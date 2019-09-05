@@ -22,8 +22,8 @@ extension MongoCollection {
                      session: ClientSession? = nil) throws -> MongoCursor<CollectionType> {
         let opts = try encodeOptions(options: options, session: session)
         let rp = options?.readPreference?._readPreference
-
-        return try MongoCursor(client: self._client, decoder: self.decoder, session: session) { conn in
+        let isTailable = [.tailable, .tailableAwait].contains(options?.cursorType)
+        return try MongoCursor(client: self._client, decoder: self.decoder, session: session, isTailable: isTailable) { conn in
             self.withMongocCollection(from: conn) { collPtr in
                 guard let cursor = mongoc_collection_find_with_opts(collPtr, filter._bson, opts?._bson, rp) else {
                     fatalError(failedToRetrieveCursorMessage)

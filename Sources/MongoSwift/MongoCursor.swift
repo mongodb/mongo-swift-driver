@@ -3,7 +3,7 @@ import mongoc
 /// A MongoDB cursor.
 public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     internal private(set) var state: State
-    private let tailable: Bool
+    private let isTailable: Bool
 
     /// Decoder from the `MongoCollection` or `MongoDatabase` that created this cursor.
     internal let decoder: BSONDecoder
@@ -21,6 +21,29 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     public private(set) var error: Error?
 
     /**
+     * Indicates whether this cursor has the potential to return more data. This property is mainly useful for
+     * tailable cursors, where the cursor may be empty but contain more results later on. For non-tailable cursors,
+     * the cursor will always be dead as soon as `next()` returns nil, or as soon as `nextOrError()` returns `nil` or
+     * throws an error.
+     */
+    public var isAlive: Bool {
+        if case .open = self.state {
+            return true
+        }
+        return false
+    }
+
+    /// Returns the ID used by the server to track the cursor. `nil` until mongoc actually talks to the server by
+    /// iterating the cursor, and `nil` after mongoc has fetched all the results from the server.
+    internal var id: Int64? {
+        guard case let .open(cursor, _, _, _) = self.state else {
+            return nil
+        }
+        let id = mongoc_cursor_get_id(cursor)
+        return id == 0 ? nil : id
+    }
+
+    /**
      * Initializes a new `MongoCursor` instance. Not meant to be instantiated directly by a user.
      *
      * - Throws:
@@ -30,24 +53,20 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     internal init(client: MongoClient,
                   decoder: BSONDecoder,
                   session: ClientSession?,
-                  tailable: Bool = false,
+                  isTailable: Bool = false,
                   initializer: (Connection) -> OpaquePointer) throws {
         let connection = try session?.getConnection(forUseWith: client) ?? client.connectionPool.checkOut()
         let cursor = initializer(connection)
         self.state = .open(cursor: cursor, connection: connection, client: client, session: session)
-        self.tailable = tailable
+        self.isTailable = isTailable
         self.decoder = decoder
         self.error = nil
 
-        if let err = self.error {
+        if let err = self.getMongocError() {
             // Errors in creation of the cursor are limited to invalid argument errors, but some errors are reported
             // by libmongoc as invalid cursor errors. These would be parsed to .logicErrors, so we need to rethrow them
             // as the correct case.
-            if let mongoSwiftErr = err as? MongoError {
-                throw UserError.invalidArgumentError(message: mongoSwiftErr.errorDescription ?? "")
-            }
-
-            throw err
+            throw UserError.invalidArgumentError(message: err.errorDescription ?? "")
         }
     }
 
@@ -123,24 +142,32 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     /// Returns the next `Document` in this cursor, or nil. Once this function returns `nil`, the caller should use
     /// the `.error` property to check for errors.
     public func next() -> T? {
-        do {
-            guard case let .open(_, conn, _, session) = self.state else {
-                self.error = UserError.logicError(message: "")
-                return nil
-            }
+        // We already closed the mongoc cursor, either because we reached the end or encountered an error.
+        guard case let .open(cursor, conn, _, session) = self.state else {
+            self.error = UserError.logicError(message: "Cannot advance a completed or failed cursor.")
+            return nil
+        }
 
+        do {
             let operation = NextOperation(cursor: self)
             guard let out = try operation.execute(using: conn, session: session) else {
                 self.error = self.getMongocError()
-                if !self.tailable {
+                // Since there was no document returned, we should close the cursor if:
+                // 1. this is not a tailable cursor, or
+                // 2. this is a tailable cursor and an error occurred, or
+                // 3. this is a tailable cursor that will not possibly return any more data
+                if !self.isTailable || self.error != nil || !mongoc_cursor_more(cursor) {
                     self.close()
                 }
                 return nil
             }
+
             return out
         } catch {
-            // This indicates an error occurred decoding a document to this cursor's type.
+            // This indicates that an error occurred executing the `NextOperation`. Currently the only possible error
+            // is a DecodingError when decoding a Document to this cursor's type.
             self.error = error
+            // Since we encountered an error, close the cursor.
             self.close()
             return nil
         }
