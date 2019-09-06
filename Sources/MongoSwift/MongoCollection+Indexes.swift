@@ -5,24 +5,12 @@ public struct IndexModel: Codable {
     /// Contains the required keys for the index.
     public let keys: Document
 
-    /// Contains the name of the index.
-    public let name: String?
-
-    /// Contains the version of the index that lives on the server.
-    public let v: Int?
-
-    /// Contains the namespace of the index.
-    public let ns: String?
-
     /// Contains the options for the index.
     public let options: IndexOptions?
 
     /// Convenience initializer providing a default `options` value
-    public init(keys: Document, name: String? = nil, v: Int? = nil, ns: String? = nil, options: IndexOptions? = nil) {
+    public init(keys: Document, options: IndexOptions? = nil) {
         self.keys = keys
-        self.name = name
-        self.v = v
-        self.ns = ns
         self.options = options
     }
 
@@ -33,28 +21,18 @@ public struct IndexModel: Codable {
 
     // Encode own data as well as nested options data
     private enum CodingKeys: String, CodingKey {
-        case key, name, v, ns, options
-    }
-
-    // Encode nested options data
-    private enum OptionsKeys: String, CodingKey {
-        case background, expireAfterSeconds, sparse, storageEngine, unique, indexVersion = "v",
-            defaultLanguage = "default_language", languageOverride = "language_override", textIndexVersion, weights,
-            sphereIndexVersion = "2dsphereIndexVersion", bits, max, min, bucketSize, partialFilterExpression, collation
+        case key, name
     }
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(keys, forKey: .key)
-        try container.encode(self.name ?? self.options?.name ?? self.defaultName, forKey: .name)
+        try container.encode(self.options?.name ?? self.defaultName, forKey: .name)
     }
 
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         self.keys = try values.decode(Document.self, forKey: .key)
-        self.name = try values.decode(String.self, forKey: .name)
-        self.v = try values.decode(Int.self, forKey: .v)
-        self.ns = try values.decode(String.self, forKey: .ns)
         self.options = try IndexOptions(from: decoder)
     }
 }
@@ -89,7 +67,7 @@ public struct IndexOptions: Codable {
     public var unique: Bool?
 
     /// Optionally specifies the index version number, either 0 or 1.
-    public var indexVersion: Int32?
+    public var version: Int32?
 
     /// Optionally specifies the default language for text indexes. Is 'english' if none is provided.
     public var defaultLanguage: String?
@@ -128,6 +106,9 @@ public struct IndexOptions: Codable {
     /// is sent and the default collation of the collection server-side is used.
     public var collation: Document?
 
+    /// Optionally specifies the namespace of the index.
+    public var ns: String?
+
     /// Convenience initializer allowing any/all parameters to be omitted.
     public init(background: Bool? = nil,
                 expireAfterSeconds: Int32? = nil,
@@ -135,7 +116,7 @@ public struct IndexOptions: Codable {
                 sparse: Bool? = nil,
                 storageEngine: Document? = nil,
                 unique: Bool? = nil,
-                indexVersion: Int32? = nil,
+                version: Int32? = nil,
                 defaultLanguage: String? = nil,
                 languageOverride: String? = nil,
                 textIndexVersion: Int32? = nil,
@@ -146,14 +127,15 @@ public struct IndexOptions: Codable {
                 min: Double? = nil,
                 bucketSize: Int32? = nil,
                 partialFilterExpression: Document? = nil,
-                collation: Document? = nil) {
+                collation: Document? = nil,
+                ns: String? = nil) {
         self.background = background
         self.expireAfterSeconds = expireAfterSeconds
         self.name = name
         self.sparse = sparse
         self.storageEngine = storageEngine
         self.unique = unique
-        self.indexVersion = indexVersion
+        self.version = version
         self.defaultLanguage = defaultLanguage
         self.languageOverride = languageOverride
         self.textIndexVersion = textIndexVersion
@@ -165,13 +147,15 @@ public struct IndexOptions: Codable {
         self.bucketSize = bucketSize
         self.partialFilterExpression = partialFilterExpression
         self.collation = collation
+        self.ns = ns
     }
 
-    // Encode everything besides the name, as we will handle that when encoding the `IndexModel`
+    // The `name` key is encoded in `IndexModel` but needed here for decoding
     private enum CodingKeys: String, CodingKey {
-        case background, expireAfterSeconds, sparse, storageEngine, unique, indexVersion = "v",
+        case background, expireAfterSeconds, name, sparse, storageEngine, unique, version = "v",
             defaultLanguage = "default_language", languageOverride = "language_override", textIndexVersion, weights,
-            sphereIndexVersion = "2dsphereIndexVersion", bits, max, min, bucketSize, partialFilterExpression, collation
+            sphereIndexVersion = "2dsphereIndexVersion", bits, max, min, bucketSize, partialFilterExpression,
+            collation, ns
     }
 }
 

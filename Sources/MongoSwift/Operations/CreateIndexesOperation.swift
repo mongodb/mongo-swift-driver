@@ -51,7 +51,6 @@ internal struct CreateIndexesOperation<T: Codable>: Operation {
         guard success else {
             throw extractMongoError(error: error, reply: reply)
         }
-
         return self.models.map { $0.options?.name ?? $0.defaultName }
     }
 }

@@ -878,7 +878,7 @@ final class CodecTests: MongoSwiftTestCase {
                 sparse: false,
                 storageEngine: ["a": 1],
                 unique: true,
-                indexVersion: 123,
+                version: 123,
                 defaultLanguage: "english",
                 languageOverride: "asdf",
                 textIndexVersion: 123,
@@ -905,6 +905,7 @@ final class CodecTests: MongoSwiftTestCase {
             "bits",
             "max",
             "min",
+            "name",
             "bucketSize",
             "partialFilterExpression",
             "collation"

@@ -66,8 +66,9 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         let model = IndexModel(keys: ["cat": 1])
         expect(try self.coll.createIndex(model)).to(equal("cat_1"))
         let indexes = try coll.listIndexes()
-        expect(indexes.next()?.name).to(equal("_id_"))
-        expect(indexes.next()?.name).to(equal("cat_1"))
+        // indexes.map { print($0) }
+        expect(indexes.next()?.options?.name).to(equal("_id_"))
+        expect(indexes.next()?.options?.name).to(equal("cat_1"))
         expect(indexes.next()).to(beNil())
     }
 
@@ -84,7 +85,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
             sparse: false,
             storageEngine: ["wiredTiger": ["configString": "access_pattern_hint=random"] as Document],
             unique: true,
-            indexVersion: 2,
+            version: 2,
             defaultLanguage: "english",
             languageOverride: "cat",
             textIndexVersion: 2,
@@ -94,27 +95,27 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
             max: 30,
             min: 0,
             bucketSize: 10,
-            collation: ["locale": "fr"]
+            collation: ["locale": "fr"],
+            ns: "test.MongoCollection_IndexTests_testIndexOptions"
         )
 
         let model = IndexModel(keys: ["cat": 1, "_id": -1], options: options)
         expect(try self.coll.createIndex(model)).to(equal("testOptions"))
 
-        let ttlOptions = IndexOptions(expireAfterSeconds: 100, name: "ttl")
+        let ttlOptions = IndexOptions(expireAfterSeconds: 100,
+                                      name: "ttl",
+                                      ns: "test.MongoCollection_IndexTests_testIndexOptions")
         let ttlModel = IndexModel(keys: ["cat": 1], options: ttlOptions)
         expect(try self.coll.createIndex(ttlModel)).to(equal("ttl"))
 
-        var indexOptions: [IndexOptions] = try self.coll.listIndexes().map { indexModel in
-            var options = indexModel.options
-            options?.name = indexModel.name
-            return options ?? IndexOptions()
-        }
-
+        var indexOptions: [IndexOptions] = try self.coll.listIndexes().map { $0.options ?? IndexOptions() }
         indexOptions.sort { $0.name! < $1.name! }
         expect(indexOptions).to(haveCount(3))
 
         // _id index
-        expect(indexOptions[0]).to(equal(IndexOptions(name: "_id_", indexVersion: 2)))
+        expect(indexOptions[0]).to(equal(IndexOptions(name: "_id_",
+                                                      version: 2,
+                                                      ns: "test.MongoCollection_IndexTests_testIndexOptions")))
 
         // testOptions index
         var expectedTestOptions = options
@@ -123,7 +124,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
 
         // ttl index
         var expectedTtlOptions = ttlOptions
-        expectedTtlOptions.indexVersion = 2
+        expectedTtlOptions.version = 2
         expect(indexOptions[2]).to(equal(expectedTtlOptions))
     }
 
@@ -132,9 +133,9 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         let model2 = IndexModel(keys: ["cat": -1])
         expect( try self.coll.createIndexes([model1, model2]) ).to(equal(["cat_1", "cat_-1"]))
         let indexes = try coll.listIndexes()
-        expect(indexes.next()?.name).to(equal("_id_"))
-        expect(indexes.next()?.name).to(equal("cat_1"))
-        expect(indexes.next()?.name).to(equal("cat_-1"))
+        expect(indexes.next()?.options?.name).to(equal("_id_"))
+        expect(indexes.next()?.options?.name).to(equal("cat_1"))
+        expect(indexes.next()?.options?.name).to(equal("cat_-1"))
         expect(indexes.next()).to(beNil())
     }
 
@@ -146,11 +147,11 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         expect(try self.coll.createIndex(model)).to(equal("blah"))
 
         let indexes = try coll.listIndexes()
-        expect(indexes.next()?.name).to(equal("_id_"))
-        expect(indexes.next()?.name).to(equal("cat_1"))
+        expect(indexes.next()?.options?.name).to(equal("_id_"))
+        expect(indexes.next()?.options?.name).to(equal("cat_1"))
 
         let thirdIndex = indexes.next()
-        expect(thirdIndex?.name).to(equal("blah"))
+        expect(thirdIndex?.options?.name).to(equal("blah"))
         expect(thirdIndex?.options?.unique).to(equal(true))
 
         expect(indexes.next()).to(beNil())
@@ -163,7 +164,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
 
         // now there should only be _id_ left
         let indexes = try coll.listIndexes()
-        expect(indexes.next()?.name).to(equal("_id_"))
+        expect(indexes.next()?.options?.name).to(equal("_id_"))
         expect(indexes.next()).to(beNil())
     }
 
@@ -177,7 +178,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         // now there should only be _id_ left
         let indexes = try coll.listIndexes()
         expect(indexes).toNot(beNil())
-        expect(indexes.next()?.name).to(equal("_id_"))
+        expect(indexes.next()?.options?.name).to(equal("_id_"))
         expect(indexes.next()).to(beNil())
     }
 
@@ -191,7 +192,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         // now there should only be _id_ left
         let indexes = try coll.listIndexes()
         expect(indexes).toNot(beNil())
-        expect(indexes.next()?.name).to(equal("_id_"))
+        expect(indexes.next()?.options?.name).to(equal("_id_"))
         expect(indexes.next()).to(beNil())
     }
 
@@ -204,14 +205,14 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
 
         // now there should only be _id_ left
         let indexes = try coll.listIndexes()
-        expect(indexes.next()?.name).to(equal("_id_"))
+        expect(indexes.next()?.options?.name).to(equal("_id_"))
         expect(indexes.next()).to(beNil())
     }
 
     func testListIndexNames() throws {
         let model1 = IndexModel(keys: ["cat": 1])
-        let model2 = IndexModel(keys: ["cat": -1], name: "neg cat")
-        expect( try self.coll.createIndexes([model1, model2]) ).to(equal(["cat_1", "cat_-1"]))
+        let model2 = IndexModel(keys: ["cat": -1], options: IndexOptions(name: "neg cat"))
+        expect( try self.coll.createIndexes([model1, model2]) ).to(equal(["cat_1", "neg cat"]))
         let indexNames = try coll.listIndexNames()
 
         expect(indexNames.count).to(equal(3))
@@ -252,7 +253,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         // now there should only be _id_ left
         let indexes = try coll.listIndexes()
         expect(indexes).toNot(beNil())
-        expect(indexes.next()?.name).to(equal("_id_"))
+        expect(indexes.next()?.options?.name).to(equal("_id_"))
         expect(indexes.next()).to(beNil())
 
         // test that maxTimeMS is an accepted option for createIndex and dropIndex
@@ -274,7 +275,7 @@ extension IndexOptions: Equatable {
             lhs.sparse == rhs.sparse &&
             lhs.storageEngine == rhs.storageEngine &&
             lhs.unique == rhs.unique &&
-            lhs.indexVersion == rhs.indexVersion &&
+            lhs.version == rhs.version &&
             lhs.defaultLanguage == rhs.defaultLanguage &&
             lhs.languageOverride == rhs.languageOverride &&
             lhs.textIndexVersion == rhs.textIndexVersion &&
@@ -285,7 +286,8 @@ extension IndexOptions: Equatable {
             lhs.min == rhs.min &&
             lhs.bucketSize == rhs.bucketSize &&
             lhs.partialFilterExpression == rhs.partialFilterExpression &&
-            lhs.collation?["locale"] as? String == rhs.collation?["locale"] as? String
+            lhs.collation?["locale"] as? String == rhs.collation?["locale"] as? String &&
+            lhs.ns == rhs.ns
             // ^ server adds a bunch of extra fields and a version number
             // to collations. rather than deal with those, just verify the
             // locale matches.
