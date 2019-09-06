@@ -40,11 +40,11 @@ public enum CollectionType: RawRepresentable, Codable {
  *   - https://docs.mongodb.com/manual/reference/command/listCollections/#listCollections.cursor
  */
 public struct CollectionSpecificationInfo: Codable {
-    /// Tells whether or not the data store is read only.
+    /// Indicates whether or not the data store is read-only.
     public let readOnly: Bool
 
-    /// The collection's UUID - once established, this does not change. The UUID remains the same
-    /// across replica set members and shards in a sharded cluster.
+    /// The collection's UUID - once established, this does not change and remains the same across replica
+    /// set members and shards in a sharded cluster. If the data store is a view, this field is nil.
     public let uuid: UUID?
 }
 
@@ -101,25 +101,21 @@ internal struct ListCollectionsOperation: Operation {
     }
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> ListCollectionsResults {
-        var opts = try encodeOptions(options: self.options, session: session)
+        var opts = try encodeOptions(options: self.options, session: session) ?? Document()
+        opts["nameOnly"] = self.nameOnly
         if let filterDoc = self.filter {
-            opts = opts ?? Document()
-            // swiftlint:disable:next force_unwrapping
-            opts!["filter"] = filterDoc // Guaranteed safe because of nil coalescing default.
+            opts["filter"] = filterDoc
 
-            let keys = filterDoc.keys.filter { $0 != "name" }
-            if self.nameOnly && !keys.isEmpty {
-                // swiftlint:disable:next force_unwrapping
-                opts!["nameOnly"] = false // Same as above.
-            } else {
-                // swiftlint:disable:next force_unwrapping
-                opts!["nameOnly"] = self.nameOnly // Same as above.
+            // If `listCollectionNames` is called with a non-name filter key, change server-side nameOnly flag to false
+            let nonNameKeys = filterDoc.keys.filter { $0 != "name" }
+            if self.nameOnly && !nonNameKeys.isEmpty {
+                opts["nameOnly"] = false
             }
         }
 
         let initializer = { (conn: Connection) -> OpaquePointer in
             self.database.withMongocDatabase(from: conn) { dbPtr in
-                guard let collections = mongoc_database_find_collections_with_opts(dbPtr, opts?._bson) else {
+                guard let collections = mongoc_database_find_collections_with_opts(dbPtr, opts._bson) else {
                     fatalError(failedToRetrieveCursorMessage)
                 }
                 return collections

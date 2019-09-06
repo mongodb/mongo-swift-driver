@@ -252,8 +252,7 @@ public struct MongoDatabase {
      * Gets a list of names of collections in this database.
      *
      * - Parameters:
-     *   - filter: a `Document`, optional criteria to filter results by. For `listConnectionNames` the filter expression
-     *             can only filter based on a collection’s name.
+     *   - filter: a `Document`, optional criteria to filter results by
      *   - options: Optional `ListCollectionsOptions` to use when executing this command
      *   - session: Optional `ClientSession` to use when executing this command
      *
