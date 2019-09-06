@@ -286,8 +286,7 @@ extension IndexOptions: Equatable {
             lhs.min == rhs.min &&
             lhs.bucketSize == rhs.bucketSize &&
             lhs.partialFilterExpression == rhs.partialFilterExpression &&
-            lhs.collation?["locale"] as? String == rhs.collation?["locale"] as? String &&
-            lhs.ns == rhs.ns
+            lhs.collation?["locale"] as? String == rhs.collation?["locale"] as? String
             // ^ server adds a bunch of extra fields and a version number
             // to collations. rather than deal with those, just verify the
             // locale matches.
