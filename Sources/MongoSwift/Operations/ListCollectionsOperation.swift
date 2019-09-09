@@ -110,7 +110,7 @@ internal struct ListCollectionsOperation: Operation {
         if let filterDoc = self.filter {
             opts["filter"] = filterDoc
 
-            // If `listCollectionNames` is called with a non-name filter key, change server-side nameOnly flag to false
+            // If `listCollectionNames` is called with a non-name filter key, change server-side nameOnly flag to false.
             let nonNameKeys = filterDoc.keys.filter { $0 != "name" }
             if self.nameOnly && !nonNameKeys.isEmpty {
                 opts["nameOnly"] = false

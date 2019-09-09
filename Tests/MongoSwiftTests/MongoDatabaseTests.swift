@@ -140,7 +140,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
     }
 
     func testListCollections() throws {
-        let client = try MongoClient.makeTestClient()
+        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
         let db = client.db(type(of: self).testDatabase)
         try db.drop()
 
@@ -152,20 +152,34 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         try db.collection("capped").insertOne(["a": 1])
         try db.collection("uncapped").insertOne(["b": 2])
 
-        var collectionNames = try db.listCollectionNames()
-        collectionNames.sort { $0 < $1 }
+        let listNamesEvent = try captureCommandEvents(from: client,
+                                                      eventTypes: [.commandStarted],
+                                                      commandNames: ["listCollections"]) {
+            var collectionNames = try db.listCollectionNames()
+            collectionNames.sort { $0 < $1 }
 
-        expect(collectionNames).to(haveCount(2))
-        expect(collectionNames[0]).to(equal("capped"))
-        expect(collectionNames[1]).to(equal("uncapped"))
+            expect(collectionNames).to(haveCount(2))
+            expect(collectionNames[0]).to(equal("capped"))
+            expect(collectionNames[1]).to(equal("uncapped"))
 
-        let cappedNames = try db.listCollectionNames(["options.capped": true] as Document)
-        expect(cappedNames).to(haveCount(1))
-        expect(cappedNames[0]).to(equal("capped"))
+            let filteredCollectionNames = try db.listCollectionNames(["name": "nonexistent"] as Document)
+            expect(filteredCollectionNames).to(haveCount(0))
 
-        let mongoCollections = try db.listMongoCollections(["options.capped": true] as Document)
-        expect(mongoCollections).to(haveCount(1))
-        expect(mongoCollections[0].name).to(equal("capped"))
+            let cappedNames = try db.listCollectionNames(["options.capped": true] as Document)
+            expect(cappedNames).to(haveCount(1))
+            expect(cappedNames[0]).to(equal("capped"))
+
+            let mongoCollections = try db.listMongoCollections(["options.capped": true] as Document)
+            expect(mongoCollections).to(haveCount(1))
+            expect(mongoCollections[0].name).to(equal("capped"))
+        }
+        expect(listNamesEvent).to(haveCount(4))
+
+        // Check nameOnly flag passed to server for respective listCollection calls.
+        expect((listNamesEvent[0] as? CommandStartedEvent)?.command["nameOnly"]).to(bsonEqual(true))
+        expect((listNamesEvent[1] as? CommandStartedEvent)?.command["nameOnly"]).to(bsonEqual(true))
+        expect((listNamesEvent[2] as? CommandStartedEvent)?.command["nameOnly"]).to(bsonEqual(false))
+        expect((listNamesEvent[3] as? CommandStartedEvent)?.command["nameOnly"]).to(bsonEqual(false))
     }
 }
 
