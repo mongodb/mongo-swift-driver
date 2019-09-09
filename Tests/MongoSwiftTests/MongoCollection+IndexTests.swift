@@ -85,7 +85,8 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
             return
         }
 
-        let nsString = MongoSwiftTestCase.isMacOS ? "test.MongoCollection_IndexTests_testIndexOptions" : "test.MongoCollection_IndexTests.testIndexOptions"
+        let nsString = MongoSwiftTestCase.isMacOS ? "test.MongoCollection_IndexTests_testIndexOptions" :
+                                                    "test.MongoCollection_IndexTests.testIndexOptions"
 
         let options = IndexOptions(
             background: true,
