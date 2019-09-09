@@ -79,9 +79,13 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
             return
         }
 
-        // guard _client.serverVersion() < ServerVersion("4.3.0") else {
-        //     print("Skipping test, fails with latest server version because of missing ns field")
-        // }
+        let sv = try _client?.serverVersion() ?? ServerVersion("8000")
+        guard try sv < ServerVersion("4.3.0") else {
+            print("Skipping test, fails with latest server version because of missing ns field")
+            return
+        }
+
+        let nsString = MongoSwiftTestCase.isMacOS ? "test.MongoCollection_IndexTests_testIndexOptions" : "test.MongoCollection_IndexTests.testIndexOptions"
 
         let options = IndexOptions(
             background: true,
@@ -100,15 +104,13 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
             min: 0,
             bucketSize: 10,
             collation: ["locale": "fr"],
-            ns: "test.MongoCollection_IndexTests_testIndexOptions"
+            ns: nsString
         )
 
         let model = IndexModel(keys: ["cat": 1, "_id": -1], options: options)
         expect(try self.coll.createIndex(model)).to(equal("testOptions"))
 
-        let ttlOptions = IndexOptions(expireAfterSeconds: 100,
-                                      name: "ttl",
-                                      ns: "test.MongoCollection_IndexTests_testIndexOptions")
+        let ttlOptions = IndexOptions(expireAfterSeconds: 100, name: "ttl", ns: nsString)
         let ttlModel = IndexModel(keys: ["cat": 1], options: ttlOptions)
         expect(try self.coll.createIndex(ttlModel)).to(equal("ttl"))
 
@@ -117,9 +119,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         expect(indexOptions).to(haveCount(3))
 
         // _id index
-        expect(indexOptions[0]).to(equal(IndexOptions(name: "_id_",
-                                                      version: 2,
-                                                      ns: "test.MongoCollection_IndexTests_testIndexOptions")))
+        expect(indexOptions[0]).to(equal(IndexOptions(name: "_id_", version: 2, ns: nsString)))
 
         // testOptions index
         var expectedTestOptions = options
