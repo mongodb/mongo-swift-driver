@@ -142,6 +142,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
     func testListCollections() throws {
         let client = try MongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
+        try db.drop()
 
         let cappedOptions = CreateCollectionOptions(autoIndexId: true, capped: true, max: 1000, size: 10240)
         let uncappedOptions = CreateCollectionOptions(autoIndexId: true, capped: false)

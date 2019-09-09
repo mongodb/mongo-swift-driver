@@ -47,8 +47,12 @@ public struct CollectionSpecificationInfo: Codable {
     /// set members and shards in a sharded cluster. If the data store is a view, this field is nil.
     public let uuid: UUID?
 }
-
-/// Specifications of a collection returned when executing `listCollections`.
+/**
+ * Specifications of a collection returned when executing `listCollections`.
+ *
+ * - SeeAlso:
+ *   - https://docs.mongodb.com/manual/reference/command/listCollections/#listCollections.cursor
+ */
 public struct CollectionSpecification: Codable {
     /// The name of the collection.
     public let name: String
