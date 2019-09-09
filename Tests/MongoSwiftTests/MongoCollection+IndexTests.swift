@@ -79,6 +79,10 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
             return
         }
 
+        // guard _client.serverVersion() < ServerVersion("4.3.0") else {
+        //     print("Skipping test, fails with latest server version because of missing ns field")
+        // }
+
         let options = IndexOptions(
             background: true,
             name: "testOptions",
@@ -95,12 +99,16 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
             max: 30,
             min: 0,
             bucketSize: 10,
-            collation: ["locale": "fr"])
+            collation: ["locale": "fr"],
+            ns: "test.MongoCollection_IndexTests_testIndexOptions"
+        )
 
         let model = IndexModel(keys: ["cat": 1, "_id": -1], options: options)
         expect(try self.coll.createIndex(model)).to(equal("testOptions"))
 
-        let ttlOptions = IndexOptions(expireAfterSeconds: 100, name: "ttl")
+        let ttlOptions = IndexOptions(expireAfterSeconds: 100,
+                                      name: "ttl",
+                                      ns: "test.MongoCollection_IndexTests_testIndexOptions")
         let ttlModel = IndexModel(keys: ["cat": 1], options: ttlOptions)
         expect(try self.coll.createIndex(ttlModel)).to(equal("ttl"))
 
@@ -109,7 +117,9 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         expect(indexOptions).to(haveCount(3))
 
         // _id index
-        expect(indexOptions[0]).to(equal(IndexOptions(name: "_id_", version: 2)))
+        expect(indexOptions[0]).to(equal(IndexOptions(name: "_id_",
+                                                      version: 2,
+                                                      ns: "test.MongoCollection_IndexTests_testIndexOptions")))
 
         // testOptions index
         var expectedTestOptions = options
@@ -280,7 +290,8 @@ extension IndexOptions: Equatable {
             lhs.min == rhs.min &&
             lhs.bucketSize == rhs.bucketSize &&
             lhs.partialFilterExpression == rhs.partialFilterExpression &&
-            lhs.collation?["locale"] as? String == rhs.collation?["locale"] as? String
+            lhs.collation?["locale"] as? String == rhs.collation?["locale"] as? String &&
+            lhs.ns == rhs.ns
             // ^ server adds a bunch of extra fields and a version number
             // to collations. rather than deal with those, just verify the
             // locale matches.
