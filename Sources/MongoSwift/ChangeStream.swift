@@ -25,7 +25,7 @@ public struct ResumeToken: Codable, Equatable {
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/
 public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     /// A `ResumeToken` associated with the most recent event seen by the change stream.
-    internal var resumeToken: ResumeToken?
+    public private(set) var resumeToken: ResumeToken?
 
     /// A `MongoClient` stored to make sure the source client stays valid until the change stream is destroyed.
     private let client: MongoClient
@@ -37,10 +37,10 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     private let session: ClientSession?
 
     /// A reference to the `mongoc_change_stream_t` pointer.
-    internal let changeStream: OpaquePointer
+    private let changeStream: OpaquePointer
 
     /// Decoder for decoding documents into type `T`.
-    internal let decoder: BSONDecoder
+    private let decoder: BSONDecoder
 
     /// Used for storing Swift errors.
     private var swiftError: Error?
@@ -84,17 +84,42 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     /// `maxAwaitTimeMS` milliseconds as specified in the `ChangeStreamOptions`, or for the server default timeout
     /// if omitted.
     public func next() -> T? {
+        // If an error exists, refuse iterating the change stream to avoid overwriting the original error.
+        guard self.error == nil else {
+            return nil
+        }
+        // Allocate space for a reference to a BSON pointer.
+        let out = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
+        defer {
+            out.deinitialize(count: 1)
+            out.deallocate()
+        }
+
+        guard mongoc_change_stream_next(self.changeStream, out) else {
+            return nil
+        }
+
+        guard let pointee = out.pointee else {
+            fatalError("The change stream was advanced, but the document is nil.")
+        }
+
+        // we have to copy because libmongoc owns the pointer.
+        let doc = Document(copying: pointee)
+
+        // Update the resumeToken with the `_id` field from the document.
+        guard let resumeToken = doc["_id"] as? Document else {
+            self.swiftError =
+                    RuntimeError.internalError(message: "_id field is missing from the change stream document.")
+            return nil
+        }
+        self.resumeToken = ResumeToken(resumeToken)
 
         do {
-            let operation = ChangeStreamNextOperation(changeStream: self)
-            let out = try operation.execute(using: self.connection, session: self.session)
-            self.swiftError = nil
-            return out
+            return try decoder.decode(T.self, from: doc)
         } catch {
             self.swiftError = error
             return nil
         }
-
     }
 
     /**
