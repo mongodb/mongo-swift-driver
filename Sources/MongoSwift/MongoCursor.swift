@@ -20,7 +20,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     public private(set) var error: Error?
 
     /// Indicates whether this is a tailable cursor.
-    private let isTailable: Bool
+    private let cursorType: CursorType
 
     /// Decoder from the `MongoCollection` or `MongoDatabase` that created this cursor.
     internal let decoder: BSONDecoder
@@ -58,12 +58,12 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     internal init(client: MongoClient,
                   decoder: BSONDecoder,
                   session: ClientSession?,
-                  isTailable: Bool = false,
+                  cursorType: CursorType? = nil,
                   initializer: (Connection) -> OpaquePointer) throws {
         let connection = try session?.getConnection(forUseWith: client) ?? client.connectionPool.checkOut()
         let cursor = initializer(connection)
         self.state = .open(cursor: cursor, connection: connection, client: client, session: session)
-        self.isTailable = isTailable
+        self.cursorType = cursorType ?? .nonTailable
         self.decoder = decoder
         self.error = nil
 
@@ -162,7 +162,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
                 // 1. this is not a tailable cursor, or
                 // 2. this is a tailable cursor and an error occurred, or
                 // 3. this is a tailable cursor that will not possibly return any more data
-                if !self.isTailable || self.error != nil || !mongoc_cursor_more(cursor) {
+                if !self.cursorType.isTailable || self.error != nil || !mongoc_cursor_more(cursor) {
                     self.close()
                 }
                 return nil
