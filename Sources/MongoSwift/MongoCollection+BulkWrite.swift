@@ -32,6 +32,7 @@ extension MongoCollection {
     }
 }
 
+/// Enum encompassing operations that can be run as part of a `bulkWrite`.
 public enum WriteModel<T: Codable> {
     /// A `deleteOne`.
     /// Parameters:
@@ -186,7 +187,8 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
         let opts = try encodeOptions(options: options, session: session)
         var insertedIds: [Int: BSONValue] = [:]
 
-        let (serverId, writeConcern): (UInt32, WriteConcern) = try self.collection.withMongocCollection(from: connection) { collPtr in
+        let (serverId, isAcknowledged): (UInt32, Bool) =
+            try self.collection.withMongocCollection(from: connection) { collPtr in
             guard let bulk = mongoc_collection_create_bulk_operation_with_opts(collPtr, opts?._bson) else {
                 fatalError("failed to initialize mongoc_bulk_operation_t")
             }
@@ -203,7 +205,7 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
             }
 
             let writeConcern = WriteConcern(from: mongoc_bulk_operation_get_write_concern(bulk))
-            return (serverId, writeConcern)
+            return (serverId, writeConcern.isAcknowledged)
         }
 
         let result = try BulkWriteResult(reply: reply, insertedIds: insertedIds)
@@ -212,10 +214,10 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
             throw extractBulkWriteError(for: self,
                                         error: error,
                                         reply: reply,
-                                        partialResult: writeConcern.isAcknowledged ? result : nil)
+                                        partialResult: isAcknowledged ? result : nil)
         }
 
-        return writeConcern.isAcknowledged ? result : nil
+        return isAcknowledged ? result : nil
     }
 }
 

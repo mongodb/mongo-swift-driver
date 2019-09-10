@@ -65,7 +65,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
 
         // verify inserted doc without _id was not modified.
         guard case let .insertOne(doc) = requests[1] else {
-            fatalError("couldn't case model to .insertOne")
+            fatalError("couldn't cast model to .insertOne")
         }
         expect(doc).to(equal(["x": 22]))
 
