@@ -26,7 +26,9 @@ extension MongoCollection {
                           options: InsertOneOptions? = nil,
                           session: ClientSession? = nil) throws -> InsertOneResult? {
         return try convertingBulkWriteErrors {
-            let result = try self.bulkWrite([.insertOne(value)], options: options?.asBulkWriteOptions(), session: session)
+            let result = try self.bulkWrite([.insertOne(value)],
+                                            options: options?.asBulkWriteOptions(),
+                                            session: session)
             return try InsertOneResult(from: result)
         }
     }

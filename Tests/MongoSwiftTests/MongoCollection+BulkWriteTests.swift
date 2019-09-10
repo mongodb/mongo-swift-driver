@@ -87,7 +87,9 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         let requests: [WriteModel<Document>] = [
             .insertOne(["_id": id2]),
             .insertOne(doc),
-            .updateOne(filter: ["_id": id3], update: ["$set": ["asdfasdf": 1] as Document], options: UpdateModelOptions(upsert: true))
+            .updateOne(filter: ["_id": id3],
+                       update: ["$set": ["asdfasdf": 1] as Document],
+                       options: UpdateModelOptions(upsert: true))
         ]
 
         let expectedResult = BulkWriteResult(
@@ -119,8 +121,12 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         let requests: [WriteModel<Document>] = [
             .updateOne(filter: ["_id": 2], update: ["$inc": ["x": 1] as Document], options: nil),
             .updateMany(filter: ["_id": ["$gt": 2] as Document], update: ["$inc": ["x": -1] as Document], options: nil),
-            .updateOne(filter: ["_id": 5], update: ["$set": ["x": 55] as Document], options: UpdateModelOptions(upsert: true)),
-            .updateOne(filter: ["x": 66], update: ["$set": ["x": 66] as Document], options: UpdateModelOptions(upsert: true)),
+            .updateOne(filter: ["_id": 5],
+                       update: ["$set": ["x": 55] as Document],
+                       options: UpdateModelOptions(upsert: true)),
+            .updateOne(filter: ["x": 66],
+                       update: ["$set": ["x": 66] as Document],
+                       options: UpdateModelOptions(upsert: true)),
             .updateMany(filter: ["x": ["$gt": 50] as Document], update: ["$inc": ["x": 1] as Document], options: nil)
         ]
 
@@ -163,11 +169,15 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         try createFixtures(3)
 
         let requests: [WriteModel<Document>] = [
-            .updateOne(filter: ["_id": ["$gt": 1] as Document], update: ["$inc": ["x": 1] as Document], options: nil),
+            .updateOne(filter: ["_id": ["$gt": 1] as Document],
+                       update: ["$inc": ["x": 1] as Document],
+                       options: nil),
             .updateMany(filter: ["_id": ["$gt": 1] as Document], update: ["$inc": ["x": 1] as Document], options: nil),
             .insertOne(["_id": 4]),
             .deleteMany(["x": ["$nin": [24, 34]] as Document], options: nil),
-            .replaceOne(filter: ["_id": 4], replacement: ["_id": 4, "x": 44], options: ReplaceOneModelOptions(upsert: true))
+            .replaceOne(filter: ["_id": 4],
+                        replacement: ["_id": 4, "x": 44],
+                        options: ReplaceOneModelOptions(upsert: true))
         ]
 
         let result: BulkWriteResult! = try self.coll.bulkWrite(requests)

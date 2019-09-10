@@ -37,12 +37,12 @@ public enum WriteModel<T: Codable> {
     /// A `deleteOne`.
     /// Parameters:
     /// - A `Document` representing the match criteria.
-    /// - `options`: Optional `DeleteModelOptions`. 
+    /// - `options`: Optional `DeleteModelOptions`.
     case deleteOne(Document, options: DeleteModelOptions?)
     /// A `deleteMany`.
     /// Parameters:
     /// - A `Document` representing the match criteria.
-    /// - `options`: Optional `DeleteModelOptions`. 
+    /// - `options`: Optional `DeleteModelOptions`.
     case deleteMany(Document, options: DeleteModelOptions?)
     /// An `insertOne`.
     /// Parameters:
@@ -64,13 +64,13 @@ public enum WriteModel<T: Codable> {
     /// Parameters:
     /// - `filter`: A `Document` representing the match criteria.
     /// - `update`: A `Document` containing update operators.
-    /// - `options`: Optional `UpdateModelOptions`.  
+    /// - `options`: Optional `UpdateModelOptions`.
     case updateMany(filter: Document, update: Document, options: UpdateModelOptions?)
 
     fileprivate func addToBulkWrite(_ bulk: OpaquePointer, encoder: BSONEncoder) throws -> BSONValue? {
         var error = bson_error_t()
         let success: Bool
-        var res: BSONValue? = nil
+        var res: BSONValue?
         switch self {
         case let .deleteOne(filter, options):
             let opts = try encoder.encode(options)
@@ -189,24 +189,24 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
 
         let (serverId, isAcknowledged): (UInt32, Bool) =
             try self.collection.withMongocCollection(from: connection) { collPtr in
-            guard let bulk = mongoc_collection_create_bulk_operation_with_opts(collPtr, opts?._bson) else {
-                fatalError("failed to initialize mongoc_bulk_operation_t")
-            }
-            defer { mongoc_bulk_operation_destroy(bulk) }
-
-            try self.models.enumerated().forEach { index, model in
-                if let res = try model.addToBulkWrite(bulk, encoder: self.encoder) {
-                    insertedIds[index] = res
+                guard let bulk = mongoc_collection_create_bulk_operation_with_opts(collPtr, opts?._bson) else {
+                    fatalError("failed to initialize mongoc_bulk_operation_t")
                 }
-            }
+                defer { mongoc_bulk_operation_destroy(bulk) }
 
-            let serverId = withMutableBSONPointer(to: &reply) { replyPtr in
-                mongoc_bulk_operation_execute(bulk, replyPtr, &error)
-            }
+                try self.models.enumerated().forEach { index, model in
+                    if let res = try model.addToBulkWrite(bulk, encoder: self.encoder) {
+                        insertedIds[index] = res
+                    }
+                }
 
-            let writeConcern = WriteConcern(from: mongoc_bulk_operation_get_write_concern(bulk))
-            return (serverId, writeConcern.isAcknowledged)
-        }
+                let serverId = withMutableBSONPointer(to: &reply) { replyPtr in
+                    mongoc_bulk_operation_execute(bulk, replyPtr, &error)
+                }
+
+                let writeConcern = WriteConcern(from: mongoc_bulk_operation_get_write_concern(bulk))
+                return (serverId, writeConcern.isAcknowledged)
+            }
 
         let result = try BulkWriteResult(reply: reply, insertedIds: insertedIds)
 

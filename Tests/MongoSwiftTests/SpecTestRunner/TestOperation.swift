@@ -287,7 +287,7 @@ extension WriteModel: Decodable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let name = try container.decode(String.self, forKey: .name)
-        
+
         switch name {
         case "insertOne":
             let args = try container.nestedContainer(keyedBy: InsertOneKeys.self, forKey: .arguments)
@@ -309,7 +309,7 @@ extension WriteModel: Decodable {
             let args = try container.nestedContainer(keyedBy: UpdateKeys.self, forKey: .arguments)
             let filter = try args.decode(Document.self, forKey: .filter)
             let update = try args.decode(Document.self, forKey: .update)
-            self = name == "updateOne" ? 
+            self = name == "updateOne" ?
                             .updateOne(filter: filter, update: update, options: options) :
                             .updateMany(filter: filter, update: update, options: options)
         default:
