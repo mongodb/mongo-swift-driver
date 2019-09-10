@@ -116,27 +116,45 @@ public enum WriteModel<T: Codable> {
 }
 
 /// Options to use with a `WriteModel.deleteOne` or `WriteModel.deleteMany`.
-public struct DeleteModelOptions: Encodable {
+public struct DeleteModelOptions: Codable {
     /// The collation to use.
-    public let collation: Document?
+    public var collation: Document?
+
+    /// Initializer allowing any/all options to be omitted or optional.
+    public init(collation: Document? = nil) {
+        self.collation = collation
+    }
 }
 
 /// Options to use with a `WriteModel.replaceOne`.
-public struct ReplaceOneModelOptions: Encodable {
+public struct ReplaceOneModelOptions: Codable {
     /// The collation to use.
-    public let collation: Document?
+    public var collation: Document?
     /// When `true`, creates a new document if no document matches the query.
-    public let upsert: Bool?
+    public var upsert: Bool?
+
+       /// Initializer allowing any/all options to be omitted or optional.
+    public init(collation: Document? = nil, upsert: Bool? = nil) {
+        self.collation = collation
+        self.upsert = upsert
+    }
 }
 
 /// Options to use with a `WriteModel.updateOne` or `WriteModel.updateMany`.
-public struct UpdateModelOptions: Encodable {
+public struct UpdateModelOptions: Codable {
     /// A set of filters specifying to which array elements an update should apply.
-    public let arrayFilters: [Document]?
+    public var arrayFilters: [Document]?
     /// The collation to use.
-    public let collation: Document?
+    public var collation: Document?
     /// When `true`, creates a new document if no document matches the query.
-    public let upsert: Bool?
+    public var upsert: Bool?
+
+    /// Initializer allowing any/all options to be omitted or optional.
+    public init(arrayFilters: [Document]? = nil, collation: Document? = nil, upsert: Bool? = nil) {
+        self.arrayFilters = arrayFilters
+        self.collation = collation
+        self.upsert = upsert
+    }
 }
 
 /// An operation corresponding to a "bulkWrite" command on a collection.

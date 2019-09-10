@@ -262,30 +262,56 @@ struct InsertMany: TestOperation {
     }
 }
 
-/// Wrapper around a `WriteModel` adding `Decodable` conformance.
-struct AnyWriteModel: Decodable {
-    let model: WriteModel
-
+/// Extension of `WriteModel` adding `Decodable` conformance.
+extension WriteModel: Decodable {
     private enum CodingKeys: CodingKey {
         case name, arguments
+    }
+
+    private enum InsertOneKeys: CodingKey {
+        case document
+    }
+
+    private enum DeleteKeys: CodingKey {
+        case filter
+    }
+
+    private enum ReplaceOneKeys: CodingKey {
+        case filter, replacement
+    }
+
+    private enum UpdateKeys: CodingKey {
+        case filter, update
     }
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let name = try container.decode(String.self, forKey: .name)
+        
         switch name {
         case "insertOne":
-            self.model = try container.decode(InsertOneModel.self, forKey: .arguments)
-        case "deleteOne":
-            self.model = try container.decode(DeleteOneModel.self, forKey: .arguments)
-        case "deleteMany":
-            self.model = try container.decode(DeleteManyModel.self, forKey: .arguments)
+            let args = try container.nestedContainer(keyedBy: InsertOneKeys.self, forKey: .arguments)
+            let doc = try args.decode(T.self, forKey: .document)
+            self = .insertOne(doc)
+        case "deleteOne", "deleteMany":
+            let options = try container.decode(DeleteModelOptions.self, forKey: .arguments)
+            let args = try container.nestedContainer(keyedBy: DeleteKeys.self, forKey: .arguments)
+            let filter = try args.decode(Document.self, forKey: .filter)
+            self = name == "deleteOne" ? .deleteOne(filter, options: options) : .deleteMany(filter, options: options)
         case "replaceOne":
-            self.model = try container.decode(ReplaceOneModel.self, forKey: .arguments)
-        case "updateOne":
-            self.model = try container.decode(UpdateOneModel.self, forKey: .arguments)
-        case "updateMany":
-            self.model = try container.decode(UpdateManyModel.self, forKey: .arguments)
+            let options = try container.decode(ReplaceOneModelOptions.self, forKey: .arguments)
+            let args = try container.nestedContainer(keyedBy: ReplaceOneKeys.self, forKey: .arguments)
+            let filter = try args.decode(Document.self, forKey: .filter)
+            let replacement = try args.decode(T.self, forKey: .replacement)
+            self = .replaceOne(filter: filter, replacement: replacement, options: options)
+        case "updateOne", "updateMany":
+            let options = try container.decode(UpdateModelOptions.self, forKey: .arguments)
+            let args = try container.nestedContainer(keyedBy: UpdateKeys.self, forKey: .arguments)
+            let filter = try args.decode(Document.self, forKey: .filter)
+            let update = try args.decode(Document.self, forKey: .update)
+            self = name == "updateOne" ? 
+                            .updateOne(filter: filter, update: update, options: options) :
+                            .updateMany(filter: filter, update: update, options: options)
         default:
             throw DecodingError.typeMismatch(WriteModel.self,
                                              DecodingError.Context(codingPath: decoder.codingPath,
@@ -295,14 +321,14 @@ struct AnyWriteModel: Decodable {
 }
 
 struct BulkWrite: TestOperation {
-    let requests: [AnyWriteModel]
+    let requests: [WriteModel<Document>]
     let options: BulkWriteOptions
 
     func execute(client: MongoClient,
                  database: MongoDatabase,
                  collection: MongoCollection<Document>,
                  session: ClientSession? = nil) throws -> TestOperationResult? {
-        let result = try collection.bulkWrite(self.requests.map { $0.model }, options: self.options, session: session)
+        let result = try collection.bulkWrite(self.requests, options: self.options, session: session)
         return TestOperationResult(from: result)
     }
 }

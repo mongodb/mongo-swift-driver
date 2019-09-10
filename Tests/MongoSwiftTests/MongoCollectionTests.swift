@@ -136,7 +136,6 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(commandStarted).to(beTrue())
     }
 
-    private typealias InsertOne = MongoCollection<Document>.InsertOneModel
     func testInsertMany() throws {
         expect(try self.coll.count()).to(equal(2))
         // try inserting a mix of documents with and without IDs to verify they are generated

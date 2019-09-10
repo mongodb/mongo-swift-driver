@@ -21,8 +21,6 @@ final class ClientSessionTests: MongoSwiftTestCase {
     typealias ClientSessionOp = (name: String, body: (MongoClient, ClientSession?) throws -> Void)
     typealias SessionOp = (name: String, body: (ClientSession?) throws -> Void)
 
-    typealias InsertOneModel = MongoCollection<Document>.InsertOneModel
-
     // list of read only operations on MongoCollection that take in a session
     let collectionSessionReadOps: [CollectionSessionOp] = [
         (name: "find", body: { _ = try $0.find([:], session: $1).nextOrError() }),
@@ -33,7 +31,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
 
     // list of write operations on MongoCollection that take in a session
     let collectionSessionWriteOps: [CollectionSessionOp] = [
-        (name: "bulkWrite", body: { _ = try $0.bulkWrite([InsertOneModel([:])], session: $1) }),
+        (name: "bulkWrite", body: { _ = try $0.bulkWrite([.insertOne([:])], session: $1) }),
         (name: "insertOne", body: { _ = try $0.insertOne([:], session: $1) }),
         (name: "insertMany", body: { _ = try $0.insertMany([[:]], session: $1) }),
         (name: "replaceOne", body: { _ = try $0.replaceOne(filter: [:], replacement: [:], session: $1) }),
