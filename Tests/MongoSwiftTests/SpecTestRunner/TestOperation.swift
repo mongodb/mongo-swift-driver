@@ -291,7 +291,7 @@ extension WriteModel: Decodable {
         switch name {
         case "insertOne":
             let args = try container.nestedContainer(keyedBy: InsertOneKeys.self, forKey: .arguments)
-            let doc = try args.decode(T.self, forKey: .document)
+            let doc = try args.decode(CollectionType.self, forKey: .document)
             self = .insertOne(doc)
         case "deleteOne", "deleteMany":
             let options = try container.decode(DeleteModelOptions.self, forKey: .arguments)
@@ -302,7 +302,7 @@ extension WriteModel: Decodable {
             let options = try container.decode(ReplaceOneModelOptions.self, forKey: .arguments)
             let args = try container.nestedContainer(keyedBy: ReplaceOneKeys.self, forKey: .arguments)
             let filter = try args.decode(Document.self, forKey: .filter)
-            let replacement = try args.decode(T.self, forKey: .replacement)
+            let replacement = try args.decode(CollectionType.self, forKey: .replacement)
             self = .replaceOne(filter: filter, replacement: replacement, options: options)
         case "updateOne", "updateMany":
             let options = try container.decode(UpdateModelOptions.self, forKey: .arguments)

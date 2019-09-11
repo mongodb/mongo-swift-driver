@@ -33,7 +33,7 @@ extension MongoCollection {
 }
 
 /// Enum encompassing operations that can be run as part of a `bulkWrite`.
-public enum WriteModel<T: Codable> {
+public enum WriteModel<CollectionType: Codable> {
     /// A `deleteOne`.
     /// Parameters:
     /// - A `Document` representing the match criteria.
@@ -47,13 +47,13 @@ public enum WriteModel<T: Codable> {
     /// An `insertOne`.
     /// Parameters:
     /// - A `T` to insert.
-    case insertOne(T)
+    case insertOne(CollectionType)
     /// A `replaceOne`.
     /// Parameters:
     /// - `filter`: A `Document` representing the match criteria.
     /// - `replacement`: A `T` to use as the replacement value.
     /// - `options`: Optional `ReplaceOneModelOptions`.
-    case replaceOne(filter: Document, replacement: T, options: ReplaceOneModelOptions?)
+    case replaceOne(filter: Document, replacement: CollectionType, options: ReplaceOneModelOptions?)
     /// An `updateOne`.
     /// Parameters:
     /// - `filter`: A `Document` representing the match criteria.
@@ -67,6 +67,9 @@ public enum WriteModel<T: Codable> {
     /// - `options`: Optional `UpdateModelOptions`.
     case updateMany(filter: Document, update: Document, options: UpdateModelOptions?)
 
+    /// Adds this model to the provided `mongoc_bulk_t`, using the provided encoder for encoding options and
+    /// `CollectionType` values if needed. If this is an `insertOne`, returns the `_id` field of the inserted
+    /// document; otherwise, returns nil.
     fileprivate func addToBulkWrite(_ bulk: OpaquePointer, encoder: BSONEncoder) throws -> BSONValue? {
         var error = bson_error_t()
         let success: Bool
