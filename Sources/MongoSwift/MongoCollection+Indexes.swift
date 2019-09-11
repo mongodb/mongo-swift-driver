@@ -106,9 +106,6 @@ public struct IndexOptions: Codable {
     /// is sent and the default collation of the collection server-side is used.
     public var collation: Document?
 
-    /// Optionally specifies the namespace of the index.
-    public var ns: String?
-
     /// Convenience initializer allowing any/all parameters to be omitted.
     public init(background: Bool? = nil,
                 expireAfterSeconds: Int32? = nil,
@@ -127,8 +124,7 @@ public struct IndexOptions: Codable {
                 min: Double? = nil,
                 bucketSize: Int32? = nil,
                 partialFilterExpression: Document? = nil,
-                collation: Document? = nil,
-                ns: String? = nil) {
+                collation: Document? = nil) {
         self.background = background
         self.expireAfterSeconds = expireAfterSeconds
         self.name = name
@@ -147,7 +143,6 @@ public struct IndexOptions: Codable {
         self.bucketSize = bucketSize
         self.partialFilterExpression = partialFilterExpression
         self.collation = collation
-        self.ns = ns
     }
 
     // The `name` key is encoded in `IndexModel` but needed here for decoding
@@ -155,7 +150,7 @@ public struct IndexOptions: Codable {
         case background, expireAfterSeconds, name, sparse, storageEngine, unique, version = "v",
             defaultLanguage = "default_language", languageOverride = "language_override", textIndexVersion, weights,
             sphereIndexVersion = "2dsphereIndexVersion", bits, max, min, bucketSize, partialFilterExpression,
-            collation, ns
+            collation
     }
 }
 
@@ -352,11 +347,8 @@ extension MongoCollection {
      * - Throws: `UserError.logicError` if the provided session is inactive.
      */
     public func listIndexes(session: ClientSession? = nil) throws -> MongoCursor<IndexModel> {
-        let operation = ListIndexesOperation(collection: self, nameOnly: false)
-        guard case let .specs(result) = try self._client.executeOperation(operation, session: session) else {
-            throw RuntimeError.internalError(message: "Invalid result")
-        }
-        return result
+        let operation = ListIndexesOperation(collection: self)
+        return try self._client.executeOperation(operation, session: session)
     }
 
     /**
@@ -370,10 +362,8 @@ extension MongoCollection {
      * - Throws: `UserError.logicError` if the provided session is inactive.
      */
     public func listIndexNames(session: ClientSession? = nil) throws -> [String] {
-        let operation = ListIndexesOperation(collection: self, nameOnly: true)
-        guard case let .names(result) = try self._client.executeOperation(operation, session: session) else {
-            throw RuntimeError.internalError(message: "Invalid result")
-        }
-        return result
+        let operation = ListIndexesOperation(collection: self)
+        let models = try self._client.executeOperation(operation, session: session)
+        return models.map { $0.options?.name ?? $0.defaultName }
     }
 }
