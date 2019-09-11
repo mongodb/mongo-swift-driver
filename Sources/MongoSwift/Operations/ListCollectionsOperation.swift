@@ -111,8 +111,7 @@ internal struct ListCollectionsOperation: Operation {
             opts["filter"] = filterDoc
 
             // If `listCollectionNames` is called with a non-name filter key, change server-side nameOnly flag to false.
-            let nonNameKeys = filterDoc.keys.filter { $0 != "name" }
-            if self.nameOnly && !nonNameKeys.isEmpty {
+            if self.nameOnly && filterDoc.keys.contains { $0 != "name" } {
                 opts["nameOnly"] = false
             }
         }
