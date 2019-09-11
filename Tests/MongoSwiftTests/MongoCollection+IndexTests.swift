@@ -66,7 +66,6 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         let model = IndexModel(keys: ["cat": 1])
         expect(try self.coll.createIndex(model)).to(equal("cat_1"))
         let indexes = try coll.listIndexes()
-        // indexes.map { print($0) }
         expect(indexes.next()?.options?.name).to(equal("_id_"))
         expect(indexes.next()?.options?.name).to(equal("cat_1"))
         expect(indexes.next()).to(beNil())
