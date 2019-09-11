@@ -365,6 +365,12 @@ public struct MongoDatabase {
                 mongoc_database_watch(dbPtr, pipeline._bson, opts?._bson)
             }
         }
+        // let helper: (Connection, (OpaquePointer) throws -> T) rethrows -> T = { conn, body in
+        //     self.withMongocDatabase(from: conn) {
+        //         body()
+        //     }
+        // }
+        // let operation = WatchOperation(target: .client, pipeline: pipeline, options: options, session: session, withMongocHelper: helper)
     }
 
     /// Uses the provided `Connection` to get a pointer to a `mongoc_database_t` corresponding to this `MongoDatabase`,
