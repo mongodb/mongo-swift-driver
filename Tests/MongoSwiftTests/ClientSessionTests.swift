@@ -16,6 +16,9 @@ final class ClientSessionTests: MongoSwiftTestCase {
         super.tearDown()
     }
 
+    // A bug in the compiler results in this test causing a crash in pre 5.1
+    #if swift(>=5.1)
+
     typealias CollectionSessionOp = (name: String, body: (MongoCollection<Document>, ClientSession?) throws -> Void)
     typealias DatabaseSessionOp = (name: String, body: (MongoDatabase, ClientSession?) throws -> Void)
     typealias ClientSessionOp = (name: String, body: (MongoClient, ClientSession?) throws -> Void)
@@ -550,4 +553,5 @@ final class ClientSessionTests: MongoSwiftTestCase {
             expect(session.operationTime).to(beNil())
         }
     }
+    #endif
 }
