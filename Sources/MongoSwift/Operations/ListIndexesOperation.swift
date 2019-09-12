@@ -1,6 +1,6 @@
 import mongoc
 
-/// An operation corresponding to a listIndex command on a collection.
+/// An operation corresponding to a listIndexes command on a collection.
 internal struct ListIndexesOperation<T: Codable>: Operation {
     private let collection: MongoCollection<T>
 
@@ -9,7 +9,7 @@ internal struct ListIndexesOperation<T: Codable>: Operation {
     }
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> MongoCursor<IndexModel> {
-        let opts = try encodeOptions(options: Document(), session: session)
+        let opts = try encodeOptions(options: nil as Document?, session: session)
 
         return try MongoCursor(client: self.collection._client,
                                decoder: self.collection.decoder,
