@@ -10,35 +10,12 @@ internal enum ChangeStreamTarget: String, Decodable {
 
     /// Indicates the change stream will be opened to watch a `MongoCollection`.
     case collection
-
-    // public var rawValue: String {
-    //     switch self {
-    //     case .client:
-    //         return "client"
-    //     case .database:
-    //         return "database"
-    //     case .collection:
-    //         return "collection"
-    //     }
-    // }
-
-    // public init?(rawValue: String) {
-    //     switch rawValue {
-    //     case "client":
-    //         self = .client
-    //     case "database":
-    //         self = .database
-    //     case "collection":
-    //         self = .collection
-    //     }
-    // }
 }
 
 internal struct WatchOperation<T: Codable>: Operation {
     private let target: ChangeStreamTarget
     private let pipeline: [Document]
     private let options: ChangeStreamOptions?
-    private let session: ClientSession?
     private let client: MongoClient
     private let database: String?
     private let collection: String?
@@ -46,7 +23,6 @@ internal struct WatchOperation<T: Codable>: Operation {
     internal init(target: ChangeStreamTarget,
                   pipeline: [Document] = [],
                   options: ChangeStreamOptions? = nil,
-                  session: ClientSession? = nil,
                   client: MongoClient,
                   database: String? = nil,
                   collection: String? = nil
@@ -54,7 +30,6 @@ internal struct WatchOperation<T: Codable>: Operation {
         self.target = target
         self.pipeline = pipeline
         self.options = options
-        self.session = session
         self.client = client
         self.database = database
         self.collection = collection
@@ -62,7 +37,7 @@ internal struct WatchOperation<T: Codable>: Operation {
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> ChangeStream<T> {
         let pipeline: Document = ["pipeline": self.pipeline]
-        let opts = try encodeOptions(options: self.options, session: self.session)
+        let opts = try encodeOptions(options: self.options, session: session)
 
         switch self.target {
         case .client:
