@@ -16,9 +16,6 @@ final class ClientSessionTests: MongoSwiftTestCase {
         super.tearDown()
     }
 
-    // A bug in the compiler results in this test causing a crash in pre 5.1
-    #if swift(>=5.1)
-
     typealias CollectionSessionOp = (name: String, body: (MongoCollection<Document>, ClientSession?) throws -> Void)
     typealias DatabaseSessionOp = (name: String, body: (MongoDatabase, ClientSession?) throws -> Void)
     typealias ClientSessionOp = (name: String, body: (MongoClient, ClientSession?) throws -> Void)
@@ -73,7 +70,10 @@ final class ClientSessionTests: MongoSwiftTestCase {
         (name: "listDatabaseNames", { _ = try $0.listDatabaseNames(session: $1) })
     ]
 
-    // iterate over all the different session op types, passing in the provided client/db/collection as needed.
+    // This function causes the compiler to crash on older versions of swift due to a bug in the compiler.
+    #if(swift(>=5.1))
+
+    /// iterate over all the different session op types, passing in the provided client/db/collection as needed.
     func forEachSessionOp(client: MongoClient,
                           database: MongoDatabase,
                           collection: MongoCollection<Document>,
@@ -88,6 +88,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
             try body((name: op.name, body: { try op.body(client, $0) }))
         }
     }
+    #endif
 
     /// Sessions spec test 1: Test that sessions are properly returned to the pool when ended.
     func testSessionCleanup() throws {
@@ -172,6 +173,9 @@ final class ClientSessionTests: MongoSwiftTestCase {
     /// Sessions spec test 3: test that every function that takes a session parameter passes the sends implicit and
     /// explicit lsids to server.
     func testSessionArguments() throws {
+        // This test causes the compiler to crash on older versions of swift due to a bug in the compiler.
+        #if(swift(>=5.1))
+
         let client1 = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
         let database = client1.db(type(of: self).testDatabase)
         let collection = try database.createCollection(self.getCollectionName())
@@ -180,11 +184,16 @@ final class ClientSessionTests: MongoSwiftTestCase {
         try forEachSessionOp(client: client1, database: database, collection: collection) { op in
             try runArgTest(session: session, op: op)
         }
+
+        #endif
     }
 
     /// Sessions spec test 4: test that a session can only be used with db's and collections that were derived from the
     /// same client.
     func testSessionClientValidation() throws {
+        // This test causes the compiler to crash on older versions of swift due to a bug in the compiler.
+        #if(swift(>=5.1))
+
         let client1 = try MongoClient.makeTestClient()
         let client2 = try MongoClient.makeTestClient()
 
@@ -196,10 +205,15 @@ final class ClientSessionTests: MongoSwiftTestCase {
             expect(try op.body(session))
                     .to(throwError(UserError.invalidArgumentError(message: "")), description: op.name)
         }
+
+        #endif
     }
 
     /// Sessions spec test 5: Test that inactive sessions cannot be used.
     func testInactiveSession() throws {
+        // This test causes the compiler to crash on older versions of swift due to a bug in the compiler.
+        #if(swift(>=5.1))
+
         let client = try MongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
         let collection = try db.createCollection(self.getCollectionName())
@@ -222,6 +236,8 @@ final class ClientSessionTests: MongoSwiftTestCase {
         expect(cursor.next()).toNot(beNil())
         session2.end()
         expect(try cursor.nextOrError()).to(throwError(ClientSession.SessionInactiveError))
+
+        #endif
     }
 
     /// Sessions spec test 10: Test cursors have the same lsid in the initial find command and in subsequent getMores.
@@ -312,6 +328,9 @@ final class ClientSessionTests: MongoSwiftTestCase {
 
     /// Test that causal consistency guarantees are met on deployments that support cluster time.
     func testCausalConsistency() throws {
+        // This test causes the compiler to crash on older versions of swift due to a bug in the compiler.
+        #if(swift(>=5.1))
+
         guard MongoSwiftTestCase.topologyType != .single else {
             print(unsupportedTopologyMessage(testName: self.name))
             return
@@ -462,6 +481,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
             _ = try collection.find(session: session).next()
             expect(seenCommand).to(beTrue())
         }
+        #endif
     }
 
     /// Test causal consistent behavior on a topology that doesn't support cluster time.
@@ -553,5 +573,4 @@ final class ClientSessionTests: MongoSwiftTestCase {
             expect(session.operationTime).to(beNil())
         }
     }
-    #endif
 }
