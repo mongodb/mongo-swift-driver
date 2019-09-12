@@ -81,15 +81,12 @@ extension MongoCollection {
                                   options: ChangeStreamOptions? = nil,
                                   session: ClientSession? = nil,
                                   withEventType type: T.Type) throws -> ChangeStream<T> {
-        let pipeline: Document = ["pipeline": pipeline]
-        let opts = try encodeOptions(options: options, session: session)
-        return try ChangeStream<T>(options: options,
-                                   client: self._client,
-                                   decoder: self.decoder,
-                                   session: session) { conn in
-            self.withMongocCollection(from: conn) { collPtr in
-                mongoc_collection_watch(collPtr, pipeline._bson, opts?._bson)
-            }
-        }
+        let operation = try WatchOperation<T>(target: ChangeStreamTarget.collection,
+                                              pipeline: pipeline,
+                                              options: options,
+                                              client: self._client,
+                                              database: self.dbName,
+                                              collection: self.name)
+        return try self._client.executeOperation(operation, session: session)
     }
 }

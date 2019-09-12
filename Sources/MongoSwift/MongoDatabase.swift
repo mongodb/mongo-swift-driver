@@ -355,22 +355,12 @@ public struct MongoDatabase {
                                   options: ChangeStreamOptions? = nil,
                                   session: ClientSession? = nil,
                                   withEventType: T.Type) throws -> ChangeStream<T> {
-        let pipeline: Document = ["pipeline": pipeline]
-        let opts = try encodeOptions(options: options, session: session)
-        return try ChangeStream<T>(options: options,
-                                   client: self._client,
-                                   decoder: self.decoder,
-                                   session: session) { conn in
-            self.withMongocDatabase(from: conn) { dbPtr in
-                mongoc_database_watch(dbPtr, pipeline._bson, opts?._bson)
-            }
-        }
-        // let helper: (Connection, (OpaquePointer) throws -> T) rethrows -> T = { conn, body in
-        //     self.withMongocDatabase(from: conn) {
-        //         body()
-        //     }
-        // }
-        // let operation = WatchOperation(target: .client, pipeline: pipeline, options: options, session: session, withMongocHelper: helper)
+        let operation = try WatchOperation<T>(target: ChangeStreamTarget.database,
+                                              pipeline: pipeline,
+                                              options: options,
+                                              client: self._client,
+                                              database: self.name)
+        return try self._client.executeOperation(operation, session: session)
     }
 
     /// Uses the provided `Connection` to get a pointer to a `mongoc_database_t` corresponding to this `MongoDatabase`,

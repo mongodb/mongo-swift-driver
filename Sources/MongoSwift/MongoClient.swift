@@ -420,17 +420,11 @@ public class MongoClient {
                                   options: ChangeStreamOptions?  =  nil,
                                   session: ClientSession? = nil,
                                   withEventType: T.Type) throws -> ChangeStream<T> {
-        // let pipeline: Document = ["pipeline": pipeline]
-        // let opts = try encodeOptions(options: options, session: session)
-        // return try ChangeStream<T>(options: options, client: self, decoder: self.decoder, session: session) { conn in
-        //     mongoc_client_watch(conn.clientHandle, pipeline._bson, opts?._bson)
-        // }
-        let operation = WatchOperation(target: ChangeStreamTarget.client,
-                                       pipeline: pipeline,
-                                       options: options,
-                                       withEventType: withEventType,
-                                       client: self)
-        try operation.execute(using: nil, session: session)
+        let operation = try WatchOperation<T>(target: ChangeStreamTarget.client,
+                                              pipeline: pipeline,
+                                              options: options,
+                                              client: self)
+        return try self.executeOperation(operation, session: session)
     }
 
     /// Executes an `Operation` using this `MongoClient` and an optionally provided session.
