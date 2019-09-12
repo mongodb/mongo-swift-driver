@@ -22,11 +22,11 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         let command: Document = ["create": self.getCollectionName(suffix: "1")]
         let res = try db.runCommand(command)
         expect((res["ok"] as? BSONNumber)?.doubleValue).to(bsonEqual(1.0))
-        expect(try (Array(db.listCollections()) as [CollectionSpecification]).count).to(equal(1))
+        expect(try (Array(db.listCollections())).count).to(equal(1))
 
         // create collection using createCollection
         expect(try db.createCollection(self.getCollectionName(suffix: "2"))).toNot(throwError())
-        expect(try (Array(db.listCollections()) as [CollectionSpecification]).count).to(equal(2))
+        expect(try (Array(db.listCollections())).count).to(equal(2))
         expect(try db.listCollections(["type": "view"])).to(beEmpty())
 
         expect(try db.drop()).toNot(throwError())
@@ -114,7 +114,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
 
         expect(try db.createCollection("fooView", options: viewOptions)).toNot(throwError())
 
-        var collectionInfo = try Array(db.listCollections()) as [CollectionSpecification]
+        var collectionInfo = try Array(db.listCollections())
         collectionInfo.sort { $0.name < $1.name }
 
         expect(collectionInfo).to(haveCount(3))
