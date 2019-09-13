@@ -12,7 +12,7 @@ public struct DropCollectionOptions: Codable {
 }
 
 /// A MongoDB collection.
-public class MongoCollection<T: Codable> {
+public struct MongoCollection<T: Codable> {
     /// The client which this collection was derived from.
     internal let _client: MongoClient
 

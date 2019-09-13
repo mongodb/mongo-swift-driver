@@ -68,7 +68,7 @@ public struct DropDatabaseOptions: Codable {
 }
 
 /// A MongoDB Database.
-public class MongoDatabase {
+public struct MongoDatabase {
     /// The client which this database was derived from.
     internal let _client: MongoClient
 
