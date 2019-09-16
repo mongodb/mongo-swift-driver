@@ -21,13 +21,13 @@ public struct IndexModel: Codable {
 
     // Encode own data as well as nested options data
     private enum CodingKeys: String, CodingKey {
-        case key, name
+        case key
     }
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(keys, forKey: .key)
-        try container.encode(self.options?.name ?? self.defaultName, forKey: .name)
+        try self.options?.encode(to: encoder)
     }
 
     public init(from decoder: Decoder) throws {
