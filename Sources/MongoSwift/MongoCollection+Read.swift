@@ -22,8 +22,10 @@ extension MongoCollection {
                      session: ClientSession? = nil) throws -> MongoCursor<CollectionType> {
         let opts = try encodeOptions(options: options, session: session)
         let rp = options?.readPreference?._readPreference
-
-        return try MongoCursor(client: self._client, decoder: self.decoder, session: session) { conn in
+        return try MongoCursor(client: self._client,
+                               decoder: self.decoder,
+                               session: session,
+                               cursorType: options?.cursorType) { conn in
             self.withMongocCollection(from: conn) { collPtr in
                 guard let cursor = mongoc_collection_find_with_opts(collPtr, filter._bson, opts?._bson, rp) else {
                     fatalError(failedToRetrieveCursorMessage)
@@ -286,6 +288,10 @@ public enum CursorType {
      * - SeeAlso: https://docs.mongodb.com/meta-driver/latest/legacy/mongodb-wire-protocol/#op-query
      */
     case tailableAwait
+
+    internal var isTailable: Bool {
+        return self != .nonTailable
+    }
 }
 
 /// Options to use when executing a `find` command on a `MongoCollection`.

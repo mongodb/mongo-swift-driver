@@ -218,6 +218,13 @@ extension MongoCollection_IndexTests {
     ]
 }
 
+extension MongoCursorTests {
+    static var allTests = [
+        ("testNonTailableCursor", testNonTailableCursor),
+        ("testTailableCursor", testTailableCursor),
+    ]
+}
+
 extension MongoDatabaseTests {
     static var allTests = [
         ("testMongoDatabase", testMongoDatabase),
@@ -283,6 +290,7 @@ XCTMain([
     testCase(MongoCollectionTests.allTests),
     testCase(MongoCollection_BulkWriteTests.allTests),
     testCase(MongoCollection_IndexTests.allTests),
+    testCase(MongoCursorTests.allTests),
     testCase(MongoDatabaseTests.allTests),
     testCase(ReadPreferenceTests.allTests),
     testCase(ReadWriteConcernTests.allTests),
