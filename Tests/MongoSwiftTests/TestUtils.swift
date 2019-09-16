@@ -4,13 +4,6 @@ import mongoc
 import Nimble
 import XCTest
 
-typealias DeleteOneModel = MongoCollection<Document>.DeleteOneModel
-typealias DeleteManyModel = MongoCollection<Document>.DeleteManyModel
-typealias InsertOneModel = MongoCollection<Document>.InsertOneModel
-typealias ReplaceOneModel = MongoCollection<Document>.ReplaceOneModel
-typealias UpdateOneModel = MongoCollection<Document>.UpdateOneModel
-typealias UpdateManyModel = MongoCollection<Document>.UpdateManyModel
-
 // sourcery: disableTests
 class MongoSwiftTestCase: XCTestCase {
     /// Gets the name of the database the test case is running against.

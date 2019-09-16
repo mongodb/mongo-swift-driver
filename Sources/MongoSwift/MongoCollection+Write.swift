@@ -26,8 +26,9 @@ extension MongoCollection {
                           options: InsertOneOptions? = nil,
                           session: ClientSession? = nil) throws -> InsertOneResult? {
         return try convertingBulkWriteErrors {
-            let model = InsertOneModel(value)
-            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
+            let result = try self.bulkWrite([.insertOne(value)],
+                                            options: options?.asBulkWriteOptions(),
+                                            session: session)
             return try InsertOneResult(from: result)
         }
     }
@@ -54,8 +55,7 @@ extension MongoCollection {
     public func insertMany(_ values: [CollectionType],
                            options: InsertManyOptions? = nil,
                            session: ClientSession? = nil) throws -> InsertManyResult? {
-        let models = values.map { InsertOneModel($0) }
-        let result = try self.bulkWrite(models, options: options, session: session)
+        let result = try self.bulkWrite(values.map { .insertOne($0) }, options: options, session: session)
         return InsertManyResult(from: result)
     }
 
@@ -84,10 +84,8 @@ extension MongoCollection {
                            options: ReplaceOptions? = nil,
                            session: ClientSession? = nil) throws -> UpdateResult? {
         return try convertingBulkWriteErrors {
-            let model = ReplaceOneModel(filter: filter,
-                                        replacement: replacement,
-                                        collation: options?.collation,
-                                        upsert: options?.upsert)
+            let modelOptions = ReplaceOneModelOptions(collation: options?.collation, upsert: options?.upsert)
+            let model = WriteModel.replaceOne(filter: filter, replacement: replacement, options: modelOptions)
             let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
             return try UpdateResult(from: result)
         }
@@ -118,11 +116,10 @@ extension MongoCollection {
                           options: UpdateOptions? = nil,
                           session: ClientSession? = nil) throws -> UpdateResult? {
         return try convertingBulkWriteErrors {
-            let model = UpdateOneModel(filter: filter,
-                                       update: update,
-                                       arrayFilters: options?.arrayFilters,
-                                       collation: options?.collation,
-                                       upsert: options?.upsert)
+            let modelOptions = UpdateModelOptions(arrayFilters: options?.arrayFilters,
+                                                  collation: options?.collation,
+                                                  upsert: options?.upsert)
+            let model: WriteModel<CollectionType> = .updateOne(filter: filter, update: update, options: modelOptions)
             let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
             return try UpdateResult(from: result)
         }
@@ -153,11 +150,10 @@ extension MongoCollection {
                            options: UpdateOptions? = nil,
                            session: ClientSession? = nil) throws -> UpdateResult? {
         return try convertingBulkWriteErrors {
-            let model = UpdateManyModel(filter: filter,
-                                        update: update,
-                                        arrayFilters: options?.arrayFilters,
-                                        collation: options?.collation,
-                                        upsert: options?.upsert)
+            let modelOptions = UpdateModelOptions(arrayFilters: options?.arrayFilters,
+                                                  collation: options?.collation,
+                                                  upsert: options?.upsert)
+            let model: WriteModel<CollectionType> = .updateMany(filter: filter, update: update, options: modelOptions)
             let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
             return try UpdateResult(from: result)
         }
@@ -186,7 +182,8 @@ extension MongoCollection {
                           options: DeleteOptions? = nil,
                           session: ClientSession? = nil) throws -> DeleteResult? {
         return try convertingBulkWriteErrors {
-            let model = DeleteOneModel(filter, collation: options?.collation)
+            let modelOptions = DeleteModelOptions(collation: options?.collation)
+            let model: WriteModel<CollectionType> = .deleteOne(filter, options: modelOptions)
             let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
             return try DeleteResult(from: result)
         }
@@ -215,7 +212,8 @@ extension MongoCollection {
                            options: DeleteOptions? = nil,
                            session: ClientSession? = nil) throws -> DeleteResult? {
         return try convertingBulkWriteErrors {
-            let model = DeleteManyModel(filter, collation: options?.collation)
+            let modelOptions = DeleteModelOptions(collation: options?.collation)
+            let model: WriteModel<CollectionType> = .deleteMany(filter, options: modelOptions)
             let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
             return try DeleteResult(from: result)
         }

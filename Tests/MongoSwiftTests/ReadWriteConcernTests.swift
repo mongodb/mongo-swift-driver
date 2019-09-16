@@ -416,7 +416,6 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
                                  options: DistinctOptions(readConcern: ReadConcern(.local)))).toNot(throwError())
     }
 
-    typealias InsertOneModel = MongoCollection<Document>.InsertOneModel
     func testWriteConcernErrors() throws {
         // Because the error codes differ between sharded clusters and replica sets for the same command (and the
         // sharded error is pretty gross), we just skip the sharded clusters. Also, a WriteConcernError isn't
@@ -446,7 +445,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
         expect(try collection.insertOne(["x": 1], options: InsertOneOptions(writeConcern: wc)))
                 .to(throwError(expectedWriteError))
 
-        expect(try collection.bulkWrite([InsertOneModel(["_id": 1])], options: BulkWriteOptions(writeConcern: wc)))
+        expect(try collection.bulkWrite([.insertOne(["_id": 1])], options: BulkWriteOptions(writeConcern: wc)))
                 .to(throwError(expectedBulkError))
     }
 

@@ -225,8 +225,8 @@ private class AggregateTest: CrudTest {
 private class BulkWriteTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let requestDocuments: [Document] = try self.args.get("requests")
-        let requests = try requestDocuments.map { try BulkWriteTest.parseWriteModel($0) }
-        let options = BulkWriteTest.parseBulkWriteOptions(self.args["options"] as? Document)
+        let requests = try requestDocuments.map { try BSONDecoder().decode(WriteModel<Document>.self, from: $0) }
+        let options = try BSONDecoder().decode(BulkWriteOptions.self, from: self.args["options"] as? Document ?? [:])
         let expectError = self.error ?? false
 
         do {
@@ -239,71 +239,6 @@ private class BulkWriteTest: CrudTest {
                 verifyBulkWriteResult(result)
             }
             expect(expectError).to(beTrue())
-        }
-    }
-
-    private static func parseBulkWriteOptions(_ options: Document?) -> BulkWriteOptions? {
-        guard let options = options else {
-            return nil
-        }
-
-        let ordered = options["ordered"] as? Bool
-
-        return BulkWriteOptions(ordered: ordered)
-    }
-
-    private static func parseWriteModel(_ request: Document) throws -> WriteModel {
-        let name: String = try request.get("name")
-        let args: Document = try request.get("arguments")
-
-        switch name {
-        case "deleteOne":
-            let filter: Document = try args.get("filter")
-            let collation = args["collation"] as? Document
-            return DeleteOneModel(filter, collation: collation)
-
-        case "deleteMany":
-            let filter: Document = try args.get("filter")
-            let collation = args["collation"] as? Document
-            return DeleteManyModel(filter, collation: collation)
-
-        case "insertOne":
-            let document: Document = try args.get("document")
-            return InsertOneModel(document)
-
-        case "replaceOne":
-            let filter: Document = try args.get("filter")
-            let replacement: Document = try args.get("replacement")
-            let collation = args["collation"] as? Document
-            let upsert = args["upsert"] as? Bool
-            return ReplaceOneModel(filter: filter, replacement: replacement, collation: collation, upsert: upsert)
-
-        case "updateOne":
-            let filter: Document = try args.get("filter")
-            let update: Document = try args.get("update")
-            let arrayFilters = args["arrayFilters"] as? [Document]
-            let collation = args["collation"] as? Document
-            let upsert = args["upsert"] as? Bool
-            return UpdateOneModel(filter: filter,
-                                  update: update,
-                                  arrayFilters: arrayFilters,
-                                  collation: collation,
-                                  upsert: upsert)
-
-        case "updateMany":
-            let filter: Document = try args.get("filter")
-            let update: Document = try args.get("update")
-            let arrayFilters = args["arrayFilters"] as? [Document]
-            let collation = args["collation"] as? Document
-            let upsert = args["upsert"] as? Bool
-            return UpdateManyModel(filter: filter,
-                                   update: update,
-                                   arrayFilters: arrayFilters,
-                                   collation: collation,
-                                   upsert: upsert)
-
-        default:
-            throw TestError(message: "Unknown bulkWrite request name: \(name)")
         }
     }
 
