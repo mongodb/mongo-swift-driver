@@ -1,7 +1,7 @@
 import mongoc
 
 /// The entity on which to start a change stream.
-internal enum ChangeStreamTarget {
+internal enum ChangeStreamTarget<CollectionType: Codable> {
     /// Indicates the change stream will be opened to watch a `MongoClient`.
     case client(MongoClient)
 
@@ -9,20 +9,18 @@ internal enum ChangeStreamTarget {
     case database(MongoDatabase)
 
     /// Indicates the change stream will be opened to watch a `MongoCollection`.
-    case collection(MongoCollection<Document>)
-
-    internal init?(collection: Any) {
-        self = .collection(collection as! MongoCollection<Document>)
-    }
+    case collection(MongoCollection<CollectionType>)
 }
 
 /// An operation corresponding to a "watch" command on either a MongoClient, MongoDatabase, or MongoCollection.
-internal struct WatchOperation<T: Codable>: Operation {
-    private let target: ChangeStreamTarget
+internal struct WatchOperation<CollectionType: Codable, T: Codable>: Operation {
+    private let target: ChangeStreamTarget<CollectionType>
     private let pipeline: [Document]
     private let options: ChangeStreamOptions?
 
-    internal init(target: ChangeStreamTarget, pipeline: [Document] = [], options: ChangeStreamOptions? = nil) throws {
+    internal init(target: ChangeStreamTarget<CollectionType>,
+                  pipeline: [Document] = [],
+                  options: ChangeStreamOptions? = nil) throws {
         self.target = target
         self.pipeline = pipeline
         self.options = options

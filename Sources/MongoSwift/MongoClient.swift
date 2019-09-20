@@ -420,9 +420,9 @@ public class MongoClient {
                                   options: ChangeStreamOptions?  =  nil,
                                   session: ClientSession? = nil,
                                   withEventType: T.Type) throws -> ChangeStream<T> {
-        let operation = try WatchOperation<T>(target: ChangeStreamTarget.client(self),
-                                              pipeline: pipeline,
-                                              options: options)
+        let operation = try WatchOperation<T, T>(target: ChangeStreamTarget.client(self),
+                                                 pipeline: pipeline,
+                                                 options: options)
         return try self.executeOperation(operation, session: session)
     }
 
