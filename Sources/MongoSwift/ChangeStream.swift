@@ -25,7 +25,7 @@ public struct ResumeToken: Codable, Equatable {
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/
 public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     /// A `ResumeToken` associated with the most recent event seen by the change stream.
-    internal var resumeToken: ResumeToken?
+    public internal(set) var resumeToken: ResumeToken?
 
     /// A `MongoClient` stored to make sure the source client stays valid until the change stream is destroyed.
     private let client: MongoClient

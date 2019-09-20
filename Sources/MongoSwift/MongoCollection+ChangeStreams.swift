@@ -81,12 +81,12 @@ extension MongoCollection {
                                   options: ChangeStreamOptions? = nil,
                                   session: ClientSession? = nil,
                                   withEventType type: T.Type) throws -> ChangeStream<T> {
-        let operation = try WatchOperation<T>(target: ChangeStreamTarget.collection,
+        guard let target = ChangeStreamTarget(collection: self) else {
+            throw RuntimeError.internalError(message: "Collection type is unable to be parsed")
+        }
+        let operation = try WatchOperation<T>(target: target,
                                               pipeline: pipeline,
-                                              options: options,
-                                              client: self._client,
-                                              database: self.dbName,
-                                              collection: self.name)
+                                              options: options)
         return try self._client.executeOperation(operation, session: session)
     }
 }

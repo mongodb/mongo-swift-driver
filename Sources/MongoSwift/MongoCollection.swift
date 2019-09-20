@@ -46,11 +46,6 @@ public struct MongoCollection<T: Codable> {
         return self.namespace.collection! // swiftlint:disable:this force_unwrapping
     }
 
-    /// The name of the database that this collection belongs to.
-    internal var dbName: String {
-        return self.namespace.db
-    }
-
     /// The `ReadConcern` set on this collection, or `nil` if one is not set.
     public let readConcern: ReadConcern?
 
