@@ -13,7 +13,7 @@ internal enum ChangeStreamTarget<CollectionType: Codable> {
 }
 
 /// An operation corresponding to a "watch" command on either a MongoClient, MongoDatabase, or MongoCollection.
-internal struct WatchOperation<CollectionType: Codable, ChangeStreamEventType: Codable>: Operation {
+internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codable>: Operation {
     private let target: ChangeStreamTarget<CollectionType>
     private let pipeline: [Document]
     private let options: ChangeStreamOptions?
@@ -27,32 +27,32 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamEventType: C
     }
 
     internal func execute(using connection: Connection,
-                          session: ClientSession?) throws -> ChangeStream<ChangeStreamEventType> {
+                          session: ClientSession?) throws -> ChangeStream<ChangeStreamType> {
         let pipeline: Document = ["pipeline": self.pipeline]
         let opts = try encodeOptions(options: self.options, session: session)
 
         switch self.target {
         case let .client(client):
-            return try ChangeStream<ChangeStreamEventType>(options: self.options,
-                                                           client: client,
-                                                           decoder: client.decoder,
-                                                           session: session) { conn in
+            return try ChangeStream<ChangeStreamType>(options: self.options,
+                                                      client: client,
+                                                      decoder: client.decoder,
+                                                      session: session) { conn in
                 mongoc_client_watch(conn.clientHandle, pipeline._bson, opts?._bson)
             }
         case let .database(db):
-            return try ChangeStream<ChangeStreamEventType>(options: self.options,
-                                                           client: db._client,
-                                                           decoder: db.decoder,
-                                                           session: session) { conn in
+            return try ChangeStream<ChangeStreamType>(options: self.options,
+                                                      client: db._client,
+                                                      decoder: db.decoder,
+                                                      session: session) { conn in
                 db.withMongocDatabase(from: conn) { dbPtr in
                     mongoc_database_watch(dbPtr, pipeline._bson, opts?._bson)
                 }
             }
         case let .collection(coll):
-            return try ChangeStream<ChangeStreamEventType>(options: self.options,
-                                                           client: coll._client,
-                                                           decoder: coll.decoder,
-                                                           session: session) { conn in
+            return try ChangeStream<ChangeStreamType>(options: self.options,
+                                                      client: coll._client,
+                                                      decoder: coll.decoder,
+                                                      session: session) { conn in
                 coll.withMongocCollection(from: conn) { collPtr in
                     mongoc_collection_watch(collPtr, pipeline._bson, opts?._bson)
                 }
