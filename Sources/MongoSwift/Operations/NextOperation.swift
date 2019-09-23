@@ -13,6 +13,8 @@ internal enum NextOperationTarget<T: Codable> {
 internal struct NextOperation<T: Codable>: Operation {
     private let target: NextOperationTarget<T>
 
+    internal static var connectionUsage: ConnectionUsage { return .ignores }
+
     internal init(target: NextOperationTarget<T>) {
         self.target = target
     }

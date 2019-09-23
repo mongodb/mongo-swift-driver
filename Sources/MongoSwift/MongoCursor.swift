@@ -149,14 +149,14 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     /// method returns `nil`, to determine if the cursor has the potential to return any more data in the future.
     public func next() -> T? {
         // We already closed the mongoc cursor, either because we reached the end or encountered an error.
-        guard case let .open(cursor, conn, _, session) = self.state else {
+        guard case let .open(cursor, _, client, session) = self.state else {
             self.error = ClosedCursorError
             return nil
         }
 
         do {
             let operation = NextOperation(target: .cursor(self))
-            guard let out = try operation.execute(using: conn, session: session) else {
+            guard let out = try client.executeOperation(operation, session: session) else {
                 self.error = self.getMongocError()
                 // Since there was no document returned, we should close the cursor if:
                 // 1. this is not a tailable cursor, or

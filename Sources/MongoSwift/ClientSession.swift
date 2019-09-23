@@ -122,7 +122,7 @@ public final class ClientSession {
     public let options: ClientSessionOptions?
 
     /// Initializes a new client session.
-    internal init(client: MongoClient, options: ClientSessionOptions? = nil) throws {
+    internal init(client: MongoClient, options: ClientSessionOptions?) throws {
         self.options = options
         self.client = client
 
