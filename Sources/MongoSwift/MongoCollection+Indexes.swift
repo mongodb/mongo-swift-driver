@@ -145,7 +145,6 @@ public struct IndexOptions: Codable {
         self.collation = collation
     }
 
-    // The `name` key is encoded in `IndexModel` but needed here for decoding
     private enum CodingKeys: String, CodingKey {
         case background, expireAfterSeconds, name, sparse, storageEngine, unique, version = "v",
             defaultLanguage = "default_language", languageOverride = "language_override", textIndexVersion, weights,
