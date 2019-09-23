@@ -213,7 +213,7 @@ extension MongoCollection_IndexTests {
         ("testDropIndexByModel", testDropIndexByModel),
         ("testDropIndexByKeys", testDropIndexByKeys),
         ("testDropAllIndexes", testDropAllIndexes),
-        ("testListIndexes", testListIndexes),
+        ("testListIndexNames", testListIndexNames),
         ("testCreateDropIndexByModelWithMaxTimeMS", testCreateDropIndexByModelWithMaxTimeMS),
     ]
 }

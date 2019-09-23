@@ -31,8 +31,8 @@ internal struct CreateIndexesOperation<T: Codable>: Operation {
         var indexData = [Document]()
         for index in self.models {
             var indexDoc = try self.collection.encoder.encode(index)
-            if let opts = try self.collection.encoder.encode(index.options) {
-                try indexDoc.merge(opts)
+            if indexDoc["name"] == nil {
+                indexDoc["name"] = index.defaultName
             }
             indexData.append(indexDoc)
         }
@@ -51,7 +51,6 @@ internal struct CreateIndexesOperation<T: Codable>: Operation {
         guard success else {
             throw extractMongoError(error: error, reply: reply)
         }
-
         return self.models.map { $0.options?.name ?? $0.defaultName }
     }
 }

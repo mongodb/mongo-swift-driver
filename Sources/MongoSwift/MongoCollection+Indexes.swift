@@ -1,7 +1,7 @@
 import mongoc
 
 /// A struct representing an index on a `MongoCollection`.
-public struct IndexModel: Encodable {
+public struct IndexModel: Codable {
     /// Contains the required keys for the index.
     public let keys: Document
 
@@ -21,13 +21,19 @@ public struct IndexModel: Encodable {
 
     // Encode own data as well as nested options data
     private enum CodingKeys: String, CodingKey {
-        case key, name
+        case key
     }
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(keys, forKey: .key)
-        try container.encode(self.options?.name ?? self.defaultName, forKey: .name)
+        try self.options?.encode(to: encoder)
+    }
+
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        self.keys = try values.decode(Document.self, forKey: .key)
+        self.options = try IndexOptions(from: decoder)
     }
 }
 
@@ -61,7 +67,7 @@ public struct IndexOptions: Codable {
     public var unique: Bool?
 
     /// Optionally specifies the index version number, either 0 or 1.
-    public var indexVersion: Int32?
+    public var version: Int32?
 
     /// Optionally specifies the default language for text indexes. Is 'english' if none is provided.
     public var defaultLanguage: String?
@@ -107,7 +113,7 @@ public struct IndexOptions: Codable {
                 sparse: Bool? = nil,
                 storageEngine: Document? = nil,
                 unique: Bool? = nil,
-                indexVersion: Int32? = nil,
+                version: Int32? = nil,
                 defaultLanguage: String? = nil,
                 languageOverride: String? = nil,
                 textIndexVersion: Int32? = nil,
@@ -125,7 +131,7 @@ public struct IndexOptions: Codable {
         self.sparse = sparse
         self.storageEngine = storageEngine
         self.unique = unique
-        self.indexVersion = indexVersion
+        self.version = version
         self.defaultLanguage = defaultLanguage
         self.languageOverride = languageOverride
         self.textIndexVersion = textIndexVersion
@@ -139,11 +145,11 @@ public struct IndexOptions: Codable {
         self.collation = collation
     }
 
-    // Encode everything besides the name, as we will handle that when encoding the `IndexModel`
     private enum CodingKeys: String, CodingKey {
-        case background, expireAfterSeconds, sparse, storageEngine, unique, indexVersion = "v",
+        case background, expireAfterSeconds, name, sparse, storageEngine, unique, version = "v",
             defaultLanguage = "default_language", languageOverride = "language_override", textIndexVersion, weights,
-            sphereIndexVersion = "2dsphereIndexVersion", bits, max, min, bucketSize, partialFilterExpression, collation
+            sphereIndexVersion = "2dsphereIndexVersion", bits, max, min, bucketSize, partialFilterExpression,
+            collation
     }
 }
 
@@ -335,20 +341,33 @@ extension MongoCollection {
      * - Parameters:
      *   - session: Optional `ClientSession` to use when executing this command
      *
+     * - Returns: A `MongoCursor` over the `IndexModel`s.
+     *
+     * - Throws: `UserError.logicError` if the provided session is inactive.
+     */
+    public func listIndexes(session: ClientSession? = nil) throws -> MongoCursor<IndexModel> {
+        let operation = ListIndexesOperation(collection: self)
+        return try self._client.executeOperation(operation, session: session)
+    }
+
+    /**
+     * Retrieves a list of names of the indexes currently on this collection.
+     *
+     * - Parameters:
+     *   - session: Optional `ClientSession` to use when executing this command
+     *
      * - Returns: A `MongoCursor` over the index names.
      *
      * - Throws: `UserError.logicError` if the provided session is inactive.
      */
-    public func listIndexes(session: ClientSession? = nil) throws -> MongoCursor<Document> {
-        let opts = try encodeOptions(options: Document(), session: session)
-
-        return try MongoCursor(client: self._client, decoder: self.decoder, session: session) { conn in
-            self.withMongocCollection(from: conn) { collPtr in
-                guard let cursor = mongoc_collection_find_indexes_with_opts(collPtr, opts?._bson) else {
-                    fatalError(failedToRetrieveCursorMessage)
-                }
-                return cursor
+    public func listIndexNames(session: ClientSession? = nil) throws -> [String] {
+        let operation = ListIndexesOperation(collection: self)
+        let models = try self._client.executeOperation(operation, session: session)
+        return try models.map { model in
+            guard let name = model.options?.name else {
+                throw RuntimeError.internalError(message: "Server response missing a 'name' field")
             }
+            return name
         }
     }
 }
