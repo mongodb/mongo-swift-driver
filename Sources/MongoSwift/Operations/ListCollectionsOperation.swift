@@ -66,8 +66,8 @@ public struct CollectionSpecification: Codable {
     /// Contains info pertaining to the collection.
     public let info: CollectionSpecificationInfo
 
-    /// Provides info on the _id index of the collection.
-    public let idIndex: Document?
+    /// Provides info on the _id index of the collection, is nil when this data store is of type view.
+    public let idIndex: IndexModel?
 }
 
 /// Options to use when executing a `listCollections` command on a `MongoDatabase`.

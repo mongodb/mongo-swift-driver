@@ -120,7 +120,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         expect(collectionInfo).to(haveCount(3))
 
         let fooInfo = CollectionSpecificationInfo(readOnly: false, uuid: UUID())
-        let fooIndex = ["name": "_id_"] as Document
+        let fooIndex = IndexModel(keys: ["_id": 1] as Document, options: IndexOptions(name: "_id_"))
         let expectedFoo = CollectionSpecification(name: "foo",
                                                   type: .collection,
                                                   options: fooOptions,
@@ -212,6 +212,6 @@ extension CollectionSpecification: Equatable {
                lhs.type == rhs.type &&
                lhs.options == rhs.options &&
                lhs.info.readOnly == rhs.info.readOnly &&
-               lhs.idIndex?.name as? String == rhs.idIndex?.name as? String
+               lhs.idIndex?.options?.name == rhs.idIndex?.options?.name
     }
 }
