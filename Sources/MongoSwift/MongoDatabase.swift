@@ -1,16 +1,5 @@
 import mongoc
 
-/// Options to use when executing a `listCollections` command on a `MongoDatabase`.
-public struct ListCollectionsOptions: Encodable {
-    /// The batchSize for the returned cursor.
-    public var batchSize: Int?
-
-    /// Convenience initializer allowing any/all parameters to be omitted or optional
-    public init(batchSize: Int? = nil) {
-        self.batchSize = batchSize
-    }
-}
-
 /// Options to set on a retrieved `MongoCollection`.
 public struct CollectionOptions: CodingStrategyProvider {
     /// A read concern to set on the returned collection. If one is not specified, the collection will inherit the
@@ -223,7 +212,7 @@ public struct MongoDatabase {
      *   - options: Optional `ListCollectionsOptions` to use when executing this command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: a `MongoCursor` over an array of collections
+     * - Returns: a `MongoCursor` over an array of `CollectionSpecification`s
      *
      * - Throws:
      *   - `userError.invalidArgumentError` if the options passed are an invalid combination.
@@ -231,22 +220,56 @@ public struct MongoDatabase {
      */
     public func listCollections(_ filter: Document? = nil,
                                 options: ListCollectionsOptions? = nil,
-                                session: ClientSession? = nil) throws -> MongoCursor<Document> {
-        var opts = try encodeOptions(options: options, session: session)
-        if let filterDoc = filter {
-            opts = opts ?? Document()
-            // swiftlint:disable:next force_unwrapping
-            opts!["filter"] = filterDoc // guaranteed safe because of nil coalescing default.
+                                session: ClientSession? = nil) throws -> MongoCursor<CollectionSpecification> {
+        let operation = ListCollectionsOperation(database: self, nameOnly: false, filter: filter, options: options)
+        guard case let .specs(result) = try self._client.executeOperation(operation, session: session) else {
+            throw RuntimeError.internalError(message: "Invalid result")
         }
+        return result
+    }
 
-        return try MongoCursor(client: self._client, decoder: self.decoder, session: session) { conn in
-            self.withMongocDatabase(from: conn) { dbPtr in
-                guard let collections = mongoc_database_find_collections_with_opts(dbPtr, opts?._bson) else {
-                    fatalError(failedToRetrieveCursorMessage)
-                }
-                return collections
-            }
+    /**
+     * Gets a list of `MongoCollection`s in this database.
+     *
+     * - Parameters:
+     *   - filter: a `Document`, optional criteria to filter results by
+     *   - options: Optional `ListCollectionsOptions` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
+     *
+     * - Returns: An array of `MongoCollection`s that match the provided filter.
+     *
+     * - Throws:
+     *   - `userError.invalidArgumentError` if the options passed are an invalid combination.
+     *   - `UserError.logicError` if the provided session is inactive.
+     */
+    public func listMongoCollections(_ filter: Document? = nil,
+                                     options: ListCollectionsOptions? = nil,
+                                     session: ClientSession? = nil) throws -> [MongoCollection<Document>] {
+        return try self.listCollectionNames(filter, options: options, session: session).map { self.collection($0) }
+    }
+
+    /**
+     * Gets a list of names of collections in this database.
+     *
+     * - Parameters:
+     *   - filter: a `Document`, optional criteria to filter results by
+     *   - options: Optional `ListCollectionsOptions` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
+     *
+     * - Returns: A `[String]` containing names of collections that match the provided filter.
+     *
+     * - Throws:
+     *   - `userError.invalidArgumentError` if the options passed are an invalid combination.
+     *   - `UserError.logicError` if the provided session is inactive.
+     */
+    public func listCollectionNames(_ filter: Document? = nil,
+                                    options: ListCollectionsOptions? = nil,
+                                    session: ClientSession? = nil) throws -> [String] {
+        let operation = ListCollectionsOperation(database: self, nameOnly: true, filter: filter, options: options)
+        guard case let .names(result) = try self._client.executeOperation(operation, session: session) else {
+            throw RuntimeError.internalError(message: "Invalid result")
         }
+        return result
     }
 
     /**

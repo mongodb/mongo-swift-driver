@@ -1,3 +1,4 @@
+import Foundation
 @testable import MongoSwift
 import Nimble
 import XCTest
@@ -21,11 +22,11 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         let command: Document = ["create": self.getCollectionName(suffix: "1")]
         let res = try db.runCommand(command)
         expect((res["ok"] as? BSONNumber)?.doubleValue).to(bsonEqual(1.0))
-        expect(try (Array(db.listCollections()) as [Document]).count).to(equal(1))
+        expect(try (Array(db.listCollections())).count).to(equal(1))
 
         // create collection using createCollection
         expect(try db.createCollection(self.getCollectionName(suffix: "2"))).toNot(throwError())
-        expect(try (Array(db.listCollections()) as [Document]).count).to(equal(2))
+        expect(try (Array(db.listCollections())).count).to(equal(2))
         expect(try db.listCollections(["type": "view"])).to(beEmpty())
 
         expect(try db.drop()).toNot(throwError())
@@ -112,26 +113,74 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         )
 
         expect(try db.createCollection("fooView", options: viewOptions)).toNot(throwError())
-        let decoder = BSONDecoder()
-        var collectionInfo = try db.listCollections().map { try decoder.decode(CollectionInfo.self, from: $0) }
+
+        var collectionInfo = try Array(db.listCollections())
         collectionInfo.sort { $0.name < $1.name }
 
         expect(collectionInfo).to(haveCount(3))
 
-        let expectedFoo = CollectionInfo(name: "foo", type: "collection", options: fooOptions)
+        let fooInfo = CollectionSpecificationInfo(readOnly: false, uuid: UUID())
+        let fooIndex = IndexModel(keys: ["_id": 1] as Document, options: IndexOptions(name: "_id_"))
+        let expectedFoo = CollectionSpecification(name: "foo",
+                                                  type: .collection,
+                                                  options: fooOptions,
+                                                  info: fooInfo,
+                                                  idIndex: fooIndex)
         expect(collectionInfo[0]).to(equal(expectedFoo))
 
-        let expectedView = CollectionInfo(name: "fooView", type: "view", options: viewOptions)
+        let viewInfo = CollectionSpecificationInfo(readOnly: true, uuid: nil)
+        let expectedView = CollectionSpecification(name: "fooView",
+                                                   type: .view,
+                                                   options: viewOptions,
+                                                   info: viewInfo,
+                                                   idIndex: nil)
         expect(collectionInfo[1]).to(equal(expectedView))
 
         expect(collectionInfo[2].name).to(equal("system.views"))
     }
-}
 
-struct CollectionInfo: Decodable, Equatable {
-    let name: String
-    let type: String
-    let options: CreateCollectionOptions
+    func testListCollections() throws {
+        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
+        let db = client.db(type(of: self).testDatabase)
+        try db.drop()
+
+        let cappedOptions = CreateCollectionOptions(autoIndexId: true, capped: true, max: 1000, size: 10240)
+        let uncappedOptions = CreateCollectionOptions(autoIndexId: true, capped: false)
+
+        try db.createCollection("capped", options: cappedOptions)
+        try db.createCollection("uncapped", options: uncappedOptions)
+        try db.collection("capped").insertOne(["a": 1])
+        try db.collection("uncapped").insertOne(["b": 2])
+
+        let listNamesEvent = try captureCommandEvents(from: client,
+                                                      eventTypes: [.commandStarted],
+                                                      commandNames: ["listCollections"]) {
+            var collectionNames = try db.listCollectionNames()
+            collectionNames.sort { $0 < $1 }
+
+            expect(collectionNames).to(haveCount(2))
+            expect(collectionNames[0]).to(equal("capped"))
+            expect(collectionNames[1]).to(equal("uncapped"))
+
+            let filteredCollectionNames = try db.listCollectionNames(["name": "nonexistent"] as Document)
+            expect(filteredCollectionNames).to(haveCount(0))
+
+            let cappedNames = try db.listCollectionNames(["options.capped": true] as Document)
+            expect(cappedNames).to(haveCount(1))
+            expect(cappedNames[0]).to(equal("capped"))
+
+            let mongoCollections = try db.listMongoCollections(["options.capped": true] as Document)
+            expect(mongoCollections).to(haveCount(1))
+            expect(mongoCollections[0].name).to(equal("capped"))
+        }
+        expect(listNamesEvent).to(haveCount(4))
+
+        // Check nameOnly flag passed to server for respective listCollection calls.
+        expect((listNamesEvent[0] as? CommandStartedEvent)?.command["nameOnly"]).to(bsonEqual(true))
+        expect((listNamesEvent[1] as? CommandStartedEvent)?.command["nameOnly"]).to(bsonEqual(true))
+        expect((listNamesEvent[2] as? CommandStartedEvent)?.command["nameOnly"]).to(bsonEqual(false))
+        expect((listNamesEvent[3] as? CommandStartedEvent)?.command["nameOnly"]).to(bsonEqual(false))
+    }
 }
 
 extension CreateCollectionOptions: Equatable {
@@ -154,5 +203,15 @@ extension CreateCollectionOptions: Equatable {
                // ^ server adds a bunch of extra fields and a version number
                // to collations. rather than deal with those, just verify the
                // locale matches.
+    }
+}
+
+extension CollectionSpecification: Equatable {
+    public static func == (lhs: CollectionSpecification, rhs: CollectionSpecification) -> Bool {
+        return lhs.name == rhs.name &&
+               lhs.type == rhs.type &&
+               lhs.options == rhs.options &&
+               lhs.info.readOnly == rhs.info.readOnly &&
+               lhs.idIndex?.options?.name == rhs.idIndex?.options?.name
     }
 }

@@ -230,6 +230,7 @@ extension MongoDatabaseTests {
         ("testMongoDatabase", testMongoDatabase),
         ("testDropDatabase", testDropDatabase),
         ("testCreateCollection", testCreateCollection),
+        ("testListCollections", testListCollections),
     ]
 }
 
