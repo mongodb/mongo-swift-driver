@@ -81,7 +81,7 @@ extension MongoCollection {
                                   options: ChangeStreamOptions? = nil,
                                   session: ClientSession? = nil,
                                   withEventType type: T.Type) throws -> ChangeStream<T> {
-        let operation = try WatchOperation<CollectionType, T>(target: ChangeStreamTarget.collection(self),
+        let operation = try WatchOperation<CollectionType, T>(target: .collection(self),
                                                               pipeline: pipeline,
                                                               options: options)
         return try self._client.executeOperation(operation, session: session)

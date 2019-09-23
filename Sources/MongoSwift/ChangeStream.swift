@@ -85,12 +85,16 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     /// if omitted.
     public func next() -> T? {
         do {
+            // If an error exists, refuse iterating the change stream to avoid overwriting the original error.
+            guard self.error == nil else {
+                return nil
+            }
             let operation = ChangeStreamNextOperation(changeStream: self)
             let out = try operation.execute(using: self.connection, session: self.session)
-            self.swiftError = nil
             return out
         } catch {
             self.swiftError = error
+            self.close()
             return nil
         }
     }
@@ -148,11 +152,16 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     }
 
     /// Cleans up internal state.
-    deinit {
+    private func close() {
         mongoc_change_stream_destroy(self.changeStream)
         // If the change stream was created with a session, then the session owns the connection.
         if self.session == nil {
             self.client.connectionPool.checkIn(self.connection)
         }
+    }
+
+    /// Closes the cursor if it hasn't been closed already.
+    deinit {
+        self.close()
     }
 }
