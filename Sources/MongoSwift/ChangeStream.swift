@@ -103,8 +103,8 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
             }
             let operation = ChangeStreamNextOperation(changeStream: self)
             guard let out = try operation.execute(using: connection, session: session) else {
-                if let err = self.getChangeStreamError() {
-                    self.error = err
+                self.error = self.getChangeStreamError
+                if self.error != nil {
                     self.close()
                 }
                 return nil
