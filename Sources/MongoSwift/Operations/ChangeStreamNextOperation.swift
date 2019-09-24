@@ -13,6 +13,12 @@ internal struct ChangeStreamNextOperation<T: Codable>: Operation {
         guard self.changeStream.error == nil else {
             return nil
         }
+        // We already check this in `ChangeStream.next()` in order to extract the relevant connection and session,
+        // but error again here just in case.
+        guard case let .open(changeStreamPtr, _, _, _) = changeStream.state else {
+            throw ClosedChangeStreamError
+        }
+
         // Allocate space for a reference to a BSON pointer.
         let out = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
         defer {
@@ -20,7 +26,7 @@ internal struct ChangeStreamNextOperation<T: Codable>: Operation {
             out.deallocate()
         }
 
-        guard mongoc_change_stream_next(self.changeStream.changeStream, out) else {
+        guard mongoc_change_stream_next(changeStreamPtr, out) else {
             return nil
         }
 
