@@ -47,14 +47,15 @@ extension MongoCollection {
      *   - https://docs.mongodb.com/manual/meta/aggregation-quick-reference/
      *   - https://docs.mongodb.com/manual/reference/system-collections/
      */
-    public func watch<T: Codable>(_ pipeline: [Document] = [],
-                                  options: ChangeStreamOptions? = nil,
-                                  session: ClientSession? = nil,
-                                  withFullDocumentType type: T.Type) throws -> ChangeStream<ChangeStreamEvent<T>> {
+    public func watch<FullDocType: Codable>(_ pipeline: [Document] = [],
+                                            options: ChangeStreamOptions? = nil,
+                                            session: ClientSession? = nil,
+                                            withFullDocumentType type: FullDocType.Type)
+                                        throws -> ChangeStream<ChangeStreamEvent<FullDocType>> {
         return try self.watch(pipeline,
                               options: options,
                               session: session,
-                              withEventType: ChangeStreamEvent<T>.self)
+                              withEventType: ChangeStreamEvent<FullDocType>.self)
     }
 
     /**
@@ -77,13 +78,13 @@ extension MongoCollection {
      *   - https://docs.mongodb.com/manual/meta/aggregation-quick-reference/
      *   - https://docs.mongodb.com/manual/reference/system-collections/
      */
-    public func watch<T: Codable>(_ pipeline: [Document] = [],
-                                  options: ChangeStreamOptions? = nil,
-                                  session: ClientSession? = nil,
-                                  withEventType type: T.Type) throws -> ChangeStream<T> {
-        let operation = try WatchOperation<CollectionType, T>(target: .collection(self),
-                                                              pipeline: pipeline,
-                                                              options: options)
+    public func watch<EventType: Codable>(_ pipeline: [Document] = [],
+                                          options: ChangeStreamOptions? = nil,
+                                          session: ClientSession? = nil,
+                                          withEventType type: EventType.Type) throws -> ChangeStream<EventType> {
+        let operation = try WatchOperation<CollectionType, EventType>(target: .collection(self),
+                                                                      pipeline: pipeline,
+                                                                      options: options)
         return try self._client.executeOperation(operation, session: session)
     }
 }
