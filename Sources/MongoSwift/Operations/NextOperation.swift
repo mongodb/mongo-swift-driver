@@ -11,11 +11,6 @@ internal enum NextOperationTarget<T: Codable> {
 
 /// An operation corresponding to a `next` call on a `NextOperationTarget`.
 internal struct NextOperation<T: Codable>: Operation {
-    // private let cursor: MongoCursor<T>
-
-    // internal init(cursor: MongoCursor<T>) {
-    //     self.cursor = cursor
-    // }
     private let target: NextOperationTarget<T>
 
     internal init(target: NextOperationTarget<T>) {
