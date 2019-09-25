@@ -1,11 +1,25 @@
 import mongoc
 
-/// An operation corresponding to a `next` call on a MongoCursor.
-internal struct NextOperation<T: Codable>: Operation {
-    private let cursor: MongoCursor<T>
+/// The entity on which the `next` operation is called.
+internal enum NextOperationTarget<T: Codable> {
+    /// Indicates the `next` call will be on a MongoCursor.
+    case cursor(MongoCursor<T>)
 
-    internal init(cursor: MongoCursor<T>) {
-        self.cursor = cursor
+    /// Indicates the `next` call will be on a change stream.
+    case changeStream(ChangeStream<T>)
+}
+
+/// An operation corresponding to a `next` call on a `NextOperationTarget`.
+internal struct NextOperation<T: Codable>: Operation {
+    // private let cursor: MongoCursor<T>
+
+    // internal init(cursor: MongoCursor<T>) {
+    //     self.cursor = cursor
+    // }
+    private let target: NextOperationTarget<T>
+
+    internal init(target: NextOperationTarget<T>) {
+        self.target = target
     }
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> T? {
@@ -17,27 +31,48 @@ internal struct NextOperation<T: Codable>: Operation {
             throw ClientSession.SessionInactiveError
         }
 
-        // We already check this in `MongoCursor.next()` in order to extract the relevant connection and session,
-        // but error again here just in case.
-        guard case let .open(cursorPtr, _, _, _) = cursor.state else {
-            throw ClosedCursorError
-        }
-
         let out = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
         defer {
             out.deinitialize(count: 1)
             out.deallocate()
         }
-        guard mongoc_cursor_next(cursorPtr, out) else {
-            return nil
+
+        switch self.target {
+        case let .cursor(cursor):
+            // We already check this in `MongoCursor.next()` in order to extract the relevant connection and session,
+            // but error again here just in case.
+            guard case let .open(cursorPtr, _, _, _) = cursor.state else {
+                throw ClosedCursorError
+            }
+            guard mongoc_cursor_next(cursorPtr, out) else {
+                return nil
+            }
+        case let .changeStream(changeStream):
+            guard case let .open(changeStreamPtr, _, _, _) = changeStream.state else {
+                throw ClosedChangeStreamError
+            }
+            guard mongoc_change_stream_next(changeStreamPtr, out) else {
+                return nil
+            }
         }
 
         guard let pointee = out.pointee else {
-            fatalError("mongoc_cursor_next returned true, but document is nil")
+            fatalError("The cursor was advanced, but the document is nil")
         }
 
-        // we have to copy because libmongoc owns the pointer.
+        // We have to copy because libmongoc owns the pointer.
         let doc = Document(copying: pointee)
-        return try self.cursor.decoder.decode(T.self, from: doc)
+
+        switch self.target {
+        case let .cursor(cursor):
+            return try cursor.decoder.decode(T.self, from: doc)
+        case let .changeStream(changeStream):
+            // Update the resumeToken with the `_id` field from the document.
+            guard let resumeToken = doc["_id"] as? Document else {
+                throw RuntimeError.internalError(message: "_id field is missing from the change stream document.")
+            }
+            changeStream.resumeToken = ResumeToken(resumeToken)
+            return try changeStream.decoder.decode(T.self, from: doc)
+        }
     }
 }

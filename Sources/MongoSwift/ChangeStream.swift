@@ -94,11 +94,7 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
             return nil
         }
         do {
-            // If an error exists, refuse iterating the change stream to avoid overwriting the original error.
-            guard self.error == nil else {
-                return nil
-            }
-            let operation = ChangeStreamNextOperation(changeStream: self)
+            let operation = NextOperation(target: .changeStream(self))
             guard let out = try operation.execute(using: connection, session: session) else {
                 self.error = self.getChangeStreamError()
                 if self.error != nil {
