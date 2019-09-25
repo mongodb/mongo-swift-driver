@@ -9,10 +9,6 @@ internal struct ChangeStreamNextOperation<T: Codable>: Operation {
     }
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> T? {
-        // If an error exists, refuse iterating the change stream to avoid overwriting the original error.
-        guard self.changeStream.error == nil else {
-            return nil
-        }
         // We already check this in `ChangeStream.next()` in order to extract the relevant connection and session,
         // but error again here just in case.
         guard case let .open(changeStreamPtr, _, _, _) = changeStream.state else {

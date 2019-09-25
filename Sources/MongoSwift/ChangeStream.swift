@@ -59,9 +59,6 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
         guard case let .open(changeStream, _, _, _) = self.state else {
             return nil
         }
-        if let err = self.error {
-            return err
-        }
 
         var replyPtr = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
         defer {
@@ -103,7 +100,7 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
             }
             let operation = ChangeStreamNextOperation(changeStream: self)
             guard let out = try operation.execute(using: connection, session: session) else {
-                self.error = self.getChangeStreamError
+                self.error = self.getChangeStreamError()
                 if self.error != nil {
                     self.close()
                 }
