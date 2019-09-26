@@ -17,6 +17,7 @@ internal struct NextOperation<T: Codable>: Operation {
         self.target = target
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     internal func execute(using connection: Connection, session: ClientSession?) throws -> T? {
         // NOTE: this method does not actually use the `connection` parameter passed in. for the moment, it is only
         // here so that `NextOperation` conforms to `Operation`. if we eventually rewrite MongoCursor to no longer
