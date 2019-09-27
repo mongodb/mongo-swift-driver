@@ -10,6 +10,37 @@ internal struct Connection {
     }
 }
 
+/// Options used to configure TLS/SSL connections to the database.
+public struct TLSOptions {
+    /// Specifies the path to the client certificate key file.
+    public let pemFile: String?
+
+    /// Specifies the path to the client certificate key password.
+    public let pemPassword: String?
+
+    /// Specifies the path to the certificate authority file.
+    public let caFile: String?
+
+    /// Indicates whether invalid certificates are allowed. By default this is set to false.
+    public let weakCertValidation: Bool?
+
+    /// Indicates whether invalid hostnames are allowed. By default this is set to false.
+    public let allowInvalidHostnames: Bool?
+
+    /// Allows the user to specify TLS/SSL options.
+    public init(pemFile: String? = nil,
+                pemPassword: String? = nil,
+                caFile: String? = nil,
+                weakCertValidation: Bool? = nil,
+                allowInvalidHostnames: Bool? = nil) {
+        self.pemFile = pemFile
+        self.pemPassword = pemPassword
+        self.caFile = caFile
+        self.weakCertValidation = weakCertValidation
+        self.allowInvalidHostnames = allowInvalidHostnames
+    }
+}
+
 /// A pool of one or more connections.
 internal class ConnectionPool {
     /// Represents the mode of a `ConnectionPool`.
@@ -97,29 +128,33 @@ internal class ConnectionPool {
         return try body(connection)
     }
 
-    /// Temporary API for testing purposes. This will likely change in SWIFT-471.
-    internal func setSSLOpts(caFile: String?, pemFile: String?, allowInvalidHostnames: Bool? = nil) throws {
-        // we need to use asCString rather than withCString to avoid nesting
-        // a ton of closures and handling every permutation of set/unset options.
-        let caString = caFile?.asCString
-        let pemString = pemFile?.asCString
+    /// Allows the user to set TLS/SSL options at the client level.
+    public func setTLSOptions(options: TLSOptions) throws {
+        let pemFileStr = options.pemFile?.asCString
+        let pemPassStr = options.pemPassword?.asCString
+        let caFileStr = options.caFile?.asCString
         defer {
-            caString?.deallocate()
-            pemString?.deallocate()
+            pemFileStr?.deallocate()
+            pemPassStr?.deallocate()
+            caFileStr?.deallocate()
         }
 
         var opts = mongoc_ssl_opt_t()
-        if let ca = caString {
-            opts.ca_file = ca
+        if let pemFileStr = pemFileStr {
+            opts.pem_file = pemFileStr
         }
-        if let pem = pemString {
-            opts.pem_file = pem
+        if let pemPassStr = pemPassStr {
+            opts.pem_pwd = pemPassStr
         }
-
-        if let invalidHosts = allowInvalidHostnames {
+        if let caFileStr = caFileStr {
+            opts.ca_file = caFileStr
+        }
+        if let weakCert = options.weakCertValidation {
+            opts.weak_cert_validation = weakCert
+        }
+        if let invalidHosts = options.allowInvalidHostnames {
             opts.allow_invalid_hostname = invalidHosts
         }
-
         switch self.mode {
         case let .single(clientHandle):
             mongoc_client_set_ssl_opts(clientHandle, &opts)
