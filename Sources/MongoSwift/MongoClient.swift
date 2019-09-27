@@ -59,6 +59,8 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
     /// databases or collections that derive from it.
     public var dataCodingStrategy: DataCodingStrategy? = nil
 
+    public var tlsConfig: TLSConfig? = nil
+
     // swiftlint:enable redundant_optional_initialization
 
     private enum CodingKeys: CodingKey {
@@ -75,7 +77,8 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
                 notificationCenter: NotificationCenter? = nil,
                 dateCodingStrategy: DateCodingStrategy? = nil,
                 uuidCodingStrategy: UUIDCodingStrategy? = nil,
-                dataCodingStrategy: DataCodingStrategy? = nil) {
+                dataCodingStrategy: DataCodingStrategy? = nil,
+                tlsConfig: TLSConfig? = nil) {
         self.retryWrites = retryWrites
         self.commandMonitoring = commandMonitoring
         self.serverMonitoring = serverMonitoring
@@ -86,6 +89,7 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
         self.dateCodingStrategy = dateCodingStrategy
         self.uuidCodingStrategy = uuidCodingStrategy
         self.dataCodingStrategy = dataCodingStrategy
+        self.tlsConfig = tlsConfig
     }
 }
 
@@ -132,7 +136,7 @@ public struct DatabaseOptions: CodingStrategyProvider {
 }
 
 /// Options used to configure TLS/SSL connections to the database.
-public struct TLSOptions {
+public struct TLSConfig {
     /// Specifies the path to the client certificate key file.
     public let pemFile: String?
 
@@ -212,7 +216,7 @@ public class MongoClient {
 
         var options = options ?? ClientOptions()
         let connString = try ConnectionString(connectionString, options: &options)
-        self.connectionPool = try ConnectionPool(from: connString)
+        self.connectionPool = try ConnectionPool(from: connString, withTLSConfig: options.tlsConfig)
 
         if let rc = options.readConcern, !rc.isDefault {
             self.readConcern = rc
@@ -366,10 +370,6 @@ public class MongoClient {
      */
     public func db(_ name: String, options: DatabaseOptions? = nil) -> MongoDatabase {
         return MongoDatabase(name: name, client: self, options: options)
-    }
-
-    public func setTLSOptions(_ options: TLSOptions) throws {
-        try self.connectionPool.setTLSOptions(options)
     }
 
     /**

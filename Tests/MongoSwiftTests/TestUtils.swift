@@ -115,6 +115,12 @@ class MongoSwiftTestCase: XCTestCase {
                                        collectionOptions: CreateCollectionOptions? = nil,
                                        f: (MongoClient, MongoDatabase, MongoCollection<Document>) throws -> T)
     throws -> T {
+        if MongoSwiftTestCase.ssl {
+            let config = TLSConfig(pemFile: MongoSwiftTestCase.sslPEMKeyFilePath,
+                                   caFile: MongoSwiftTestCase.sslCAFilePath)
+            var clientOptions = clientOptions ?? ClientOptions()
+            clientOptions.tlsConfig = config
+        }
         let client = try MongoClient.makeTestClient(options: clientOptions)
 
         return try withTestNamespace(client: client, ns: ns, options: collectionOptions) { db, coll in
@@ -182,11 +188,11 @@ extension MongoClient {
     static func makeTestClient(_ uri: String = MongoSwiftTestCase.connStr,
                                options: ClientOptions? = nil) throws -> MongoClient {
         let client = try MongoClient(uri, options: options)
-        if MongoSwiftTestCase.ssl {
-            let options = TLSOptions(pemFile: MongoSwiftTestCase.sslPEMKeyFilePath,
-                                     caFile: MongoSwiftTestCase.sslCAFilePath)
-            try client.setTLSOptions(options)
-        }
+        // if MongoSwiftTestCase.ssl {
+        //     let options = TLSOptions(pemFile: MongoSwiftTestCase.sslPEMKeyFilePath,
+        //                              caFile: MongoSwiftTestCase.sslCAFilePath)
+        //     try client.setTLSOptions(options)
+        // }
         return client
     }
 
@@ -354,7 +360,13 @@ internal func captureCommandEvents(from client: MongoClient,
 internal func captureCommandEvents(eventTypes: [Notification.Name]? = nil,
                                    commandNames: [String]? = nil,
                                    f: (MongoClient) throws -> Void) throws -> [MongoCommandEvent] {
-    let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
+    var clientOpts = ClientOptions(commandMonitoring: true)
+    if MongoSwiftTestCase.ssl {
+        let config = TLSConfig(pemFile: MongoSwiftTestCase.sslPEMKeyFilePath,
+                               caFile: MongoSwiftTestCase.sslCAFilePath)
+        clientOpts.tlsConfig = config
+    }
+    let client = try MongoClient.makeTestClient(options: clientOpts)
     return try captureCommandEvents(from: client, eventTypes: eventTypes, commandNames: commandNames) {
         try f(client)
     }
