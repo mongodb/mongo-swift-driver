@@ -131,6 +131,37 @@ public struct DatabaseOptions: CodingStrategyProvider {
     }
 }
 
+/// Options used to configure TLS/SSL connections to the database.
+public struct TLSOptions {
+    /// Specifies the path to the client certificate key file.
+    public let pemFile: String?
+
+    /// Specifies the path to the client certificate key password.
+    public let pemPassword: String?
+
+    /// Specifies the path to the certificate authority file.
+    public let caFile: String?
+
+    /// Indicates whether invalid certificates are allowed. By default this is set to false.
+    public let weakCertValidation: Bool?
+
+    /// Indicates whether invalid hostnames are allowed. By default this is set to false.
+    public let allowInvalidHostnames: Bool?
+
+    /// Convenience initializer allowing any/all arguments to be omitted or optional.
+    public init(pemFile: String? = nil,
+                pemPassword: String? = nil,
+                caFile: String? = nil,
+                weakCertValidation: Bool? = nil,
+                allowInvalidHostnames: Bool? = nil) {
+        self.pemFile = pemFile
+        self.pemPassword = pemPassword
+        self.caFile = caFile
+        self.weakCertValidation = weakCertValidation
+        self.allowInvalidHostnames = allowInvalidHostnames
+    }
+}
+
 /// A MongoDB Client.
 public class MongoClient {
     internal let connectionPool: ConnectionPool
@@ -335,6 +366,10 @@ public class MongoClient {
      */
     public func db(_ name: String, options: DatabaseOptions? = nil) -> MongoDatabase {
         return MongoDatabase(name: name, client: self, options: options)
+    }
+
+    public func setTLSOptions(_ options: TLSOptions) throws {
+        try self.connectionPool.setTLSOptions(options)
     }
 
     /**

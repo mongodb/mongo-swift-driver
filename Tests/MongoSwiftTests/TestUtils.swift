@@ -185,7 +185,7 @@ extension MongoClient {
         if MongoSwiftTestCase.ssl {
             let options = TLSOptions(pemFile: MongoSwiftTestCase.sslPEMKeyFilePath,
                                      caFile: MongoSwiftTestCase.sslCAFilePath)
-            try client.connectionPool.setTLSOptions(options: options)
+            try client.setTLSOptions(options)
         }
         return client
     }

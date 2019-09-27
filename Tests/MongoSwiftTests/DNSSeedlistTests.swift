@@ -81,7 +81,7 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
                 let opts = TLSOptions(pemFile: MongoSwiftTestCase.sslPEMKeyFilePath,
                                       caFile: MongoSwiftTestCase.sslCAFilePath,
                                       allowInvalidHostnames: true)
-                try client.connectionPool.setTLSOptions(options: opts)
+                try client.setTLSOptions(opts)
                 // mongoc connects lazily so we need to send a command.
                 let db = client.db("test")
                 _ = try db.runCommand(["isMaster": 1])

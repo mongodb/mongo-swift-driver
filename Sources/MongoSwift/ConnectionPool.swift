@@ -10,37 +10,6 @@ internal struct Connection {
     }
 }
 
-/// Options used to configure TLS/SSL connections to the database.
-public struct TLSOptions {
-    /// Specifies the path to the client certificate key file.
-    public let pemFile: String?
-
-    /// Specifies the path to the client certificate key password.
-    public let pemPassword: String?
-
-    /// Specifies the path to the certificate authority file.
-    public let caFile: String?
-
-    /// Indicates whether invalid certificates are allowed. By default this is set to false.
-    public let weakCertValidation: Bool?
-
-    /// Indicates whether invalid hostnames are allowed. By default this is set to false.
-    public let allowInvalidHostnames: Bool?
-
-    /// Allows the user to specify TLS/SSL options.
-    public init(pemFile: String? = nil,
-                pemPassword: String? = nil,
-                caFile: String? = nil,
-                weakCertValidation: Bool? = nil,
-                allowInvalidHostnames: Bool? = nil) {
-        self.pemFile = pemFile
-        self.pemPassword = pemPassword
-        self.caFile = caFile
-        self.weakCertValidation = weakCertValidation
-        self.allowInvalidHostnames = allowInvalidHostnames
-    }
-}
-
 /// A pool of one or more connections.
 internal class ConnectionPool {
     /// Represents the mode of a `ConnectionPool`.
@@ -128,8 +97,8 @@ internal class ConnectionPool {
         return try body(connection)
     }
 
-    /// Allows the user to set TLS/SSL options at the client level.
-    public func setTLSOptions(options: TLSOptions) throws {
+    /// Sets TLS/SSL options that the user passes in at the client level.
+    internal func setTLSOptions(_ options: TLSOptions) throws {
         let pemFileStr = options.pemFile?.asCString
         let pemPassStr = options.pemPassword?.asCString
         let caFileStr = options.caFile?.asCString
