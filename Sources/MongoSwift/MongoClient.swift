@@ -138,9 +138,9 @@ public struct DatabaseOptions: CodingStrategyProvider {
 /// Options used to configure TLS/SSL connections to the database.
 public struct TLSConfig {
     /// Specifies the path to the client certificate key file.
-    public var pemFile: String?
+    public var pemFile: URL?
 
-    /// Specifies the path to the client certificate key password.
+    /// Specifies the client certificate key password.
     public var pemPassword: String?
 
     /// Specifies the path to the certificate authority file.
@@ -153,7 +153,7 @@ public struct TLSConfig {
     public var allowInvalidHostnames: Bool?
 
     /// Convenience initializer allowing any/all arguments to be omitted or optional.
-    public init(pemFile: String? = nil,
+    public init(pemFile: URL? = nil,
                 pemPassword: String? = nil,
                 caFile: String? = nil,
                 weakCertValidation: Bool? = nil,

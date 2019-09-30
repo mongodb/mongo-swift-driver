@@ -102,7 +102,7 @@ internal class ConnectionPool {
 
     /// Sets TLS/SSL options that the user passes in through the client level.
     private func setTLSConfig(_ config: TLSConfig) throws {
-        let pemFileStr = config.pemFile?.asCString
+        let pemFileStr = config.pemFile?.absoluteString.asCString
         let pemPassStr = config.pemPassword?.asCString
         let caFileStr = config.caFile?.asCString
         defer {
