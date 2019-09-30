@@ -115,12 +115,6 @@ class MongoSwiftTestCase: XCTestCase {
                                        collectionOptions: CreateCollectionOptions? = nil,
                                        f: (MongoClient, MongoDatabase, MongoCollection<Document>) throws -> T)
     throws -> T {
-        if MongoSwiftTestCase.ssl {
-            let config = TLSConfig(pemFile: MongoSwiftTestCase.sslPEMKeyFilePath,
-                                   caFile: MongoSwiftTestCase.sslCAFilePath)
-            var clientOptions = clientOptions ?? ClientOptions()
-            clientOptions.tlsConfig = config
-        }
         let client = try MongoClient.makeTestClient(options: clientOptions)
 
         return try withTestNamespace(client: client, ns: ns, options: collectionOptions) { db, coll in
@@ -187,13 +181,12 @@ extension MongoClient {
 
     static func makeTestClient(_ uri: String = MongoSwiftTestCase.connStr,
                                options: ClientOptions? = nil) throws -> MongoClient {
-        let client = try MongoClient(uri, options: options)
-        // if MongoSwiftTestCase.ssl {
-        //     let options = TLSOptions(pemFile: MongoSwiftTestCase.sslPEMKeyFilePath,
-        //                              caFile: MongoSwiftTestCase.sslCAFilePath)
-        //     try client.setTLSOptions(options)
-        // }
-        return client
+        var opts = options ?? ClientOptions()
+        if MongoSwiftTestCase.ssl {
+            opts.tlsConfig = TLSConfig(pemFile: MongoSwiftTestCase.sslPEMKeyFilePath,
+                                       caFile: MongoSwiftTestCase.sslCAFilePath)
+        }
+        return try MongoClient(uri, options: opts)
     }
 
     internal func supportsFailCommand() -> Bool {
