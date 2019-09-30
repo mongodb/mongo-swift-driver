@@ -1,5 +1,8 @@
 import mongoc
 
+internal let ClosedChangeStreamError =
+    UserError.logicError(message: "Cannot advance a completed or failed change stream.")
+
 /// A token used for manually resuming a change stream. Pass this to the `resumeAfter` field of
 /// `ChangeStreamOptions` to resume or start a change stream where a previous one left off.
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/#resume-a-change-stream
@@ -24,36 +27,37 @@ public struct ResumeToken: Codable, Equatable {
 /// A MongoDB ChangeStream.
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/
 public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
+    /// Enum for tracking the state of a change stream.
+    internal enum State {
+        /// Indicates that the change stream is still open. Stores a pointer to the `mongoc_change_stream_t`, along
+        /// with the source connection, client, and possibly session to ensure they are kept alive as long
+        /// as the change stream is.
+        case open(changeStream: OpaquePointer, connection: Connection, client: MongoClient, session: ClientSession?)
+        case closed
+    }
+
+    /// The state of this change stream.
+    internal private(set) var state: State
+
     /// A `ResumeToken` associated with the most recent event seen by the change stream.
-    public private(set) var resumeToken: ResumeToken?
-
-    /// A `MongoClient` stored to make sure the source client stays valid until the change stream is destroyed.
-    private let client: MongoClient
-
-    /// A `Connection` stored to make sure the client connection stays valid until the change stream is destroyed.
-    private let connection: Connection
-
-    /// A `ClientSession` stored to make sure the session stays valid until the change stream is destroyed.
-    private let session: ClientSession?
-
-    /// A reference to the `mongoc_change_stream_t` pointer.
-    private let changeStream: OpaquePointer
+    public internal(set) var resumeToken: ResumeToken?
 
     /// Decoder for decoding documents into type `T`.
-    private let decoder: BSONDecoder
+    internal let decoder: BSONDecoder
 
-    /// Used for storing Swift errors.
-    private var swiftError: Error?
+    /// The error that occurred while iterating the change stream, if one exists. This should be used to check
+    /// for errors after `next()` returns `nil`.
+    public private(set) var error: Error?
 
     /**
-     * The error that occurred while iterating the change stream, if one exists. This should be used to check
-     * for errors after `next()` returns `nil`.
+     * Retrieves any error that occured in mongoc or on the server while iterating the change stream. Returns nil if
+     * this change stream is already closed, or if no error occurred.
      *  - Errors:
      *    - `DecodingError` if an error occurs while decoding the server's response.
      */
-    public var error: Error? {
-        if let err = self.swiftError {
-            return err
+    private func getChangeStreamError() -> Error? {
+        guard case let .open(changeStream, _, _, _) = self.state else {
+            return nil
         }
 
         var replyPtr = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
@@ -63,7 +67,7 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
         }
 
         var error = bson_error_t()
-        guard mongoc_change_stream_error_document(self.changeStream, &error, replyPtr) else {
+        guard mongoc_change_stream_error_document(changeStream, &error, replyPtr) else {
             return nil
         }
 
@@ -84,40 +88,24 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     /// `maxAwaitTimeMS` milliseconds as specified in the `ChangeStreamOptions`, or for the server default timeout
     /// if omitted.
     public func next() -> T? {
-        // If an error exists, refuse iterating the change stream to avoid overwriting the original error.
-        guard self.error == nil else {
+        // We already closed the mongoc change stream, either because we reached the end or encountered an error.
+        guard case let .open(_, connection, _, session) = self.state else {
+            self.error = ClosedChangeStreamError
             return nil
         }
-        // Allocate space for a reference to a BSON pointer.
-        let out = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
-        defer {
-            out.deinitialize(count: 1)
-            out.deallocate()
-        }
-
-        guard mongoc_change_stream_next(self.changeStream, out) else {
-            return nil
-        }
-
-        guard let pointee = out.pointee else {
-            fatalError("The change stream was advanced, but the document is nil.")
-        }
-
-        // we have to copy because libmongoc owns the pointer.
-        let doc = Document(copying: pointee)
-
-        // Update the resumeToken with the `_id` field from the document.
-        guard let resumeToken = doc["_id"] as? Document else {
-            self.swiftError =
-                    RuntimeError.internalError(message: "_id field is missing from the change stream document.")
-            return nil
-        }
-        self.resumeToken = ResumeToken(resumeToken)
-
         do {
-            return try decoder.decode(T.self, from: doc)
+            let operation = NextOperation(target: .changeStream(self))
+            guard let out = try operation.execute(using: connection, session: session) else {
+                self.error = self.getChangeStreamError()
+                if self.error != nil {
+                    self.close()
+                }
+                return nil
+            }
+            return out
         } catch {
-            self.swiftError = error
+            self.error = error
+            self.close()
             return nil
         }
     }
@@ -156,30 +144,37 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
                   decoder: BSONDecoder,
                   session: ClientSession?,
                   initializer: (Connection) -> OpaquePointer) throws {
-        self.connection = try session?.getConnection(forUseWith: client) ?? client.connectionPool.checkOut()
-        self.changeStream = initializer(self.connection)
+        let connection = try session?.getConnection(forUseWith: client) ?? client.connectionPool.checkOut()
+        let changeStream = initializer(connection)
+        self.state = .open(changeStream: changeStream, connection: connection, client: client, session: session)
 
         // TODO: SWIFT-519 - Starting 4.2, update resumeToken to startAfter (if set).
         // startAfter takes precedence over resumeAfter.
         if let resumeAfter = options?.resumeAfter {
             self.resumeToken = resumeAfter
         }
-        self.client = client
-        self.session = session
         self.decoder = decoder
-        self.swiftError = nil
 
-        if let err = self.error {
+        if let err = self.getChangeStreamError() {
             throw err
         }
     }
 
     /// Cleans up internal state.
-    deinit {
-        mongoc_change_stream_destroy(self.changeStream)
-        // If the change stream was created with a session, then the session owns the connection.
-        if self.session == nil {
-            self.client.connectionPool.checkIn(self.connection)
+    private func close() {
+        guard case let .open(changeStream, connection, client, session) = self.state else {
+            return
         }
+        mongoc_change_stream_destroy(changeStream)
+        // If the change stream was created with a session, then the session owns the connection.
+        if session == nil {
+            client.connectionPool.checkIn(connection)
+        }
+        self.state = .closed
+    }
+
+    /// Closes the cursor if it hasn't been closed already.
+    deinit {
+        self.close()
     }
 }
