@@ -18,7 +18,7 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codabl
     private let pipeline: [Document]
     private let options: ChangeStreamOptions?
 
-    internal static var connectionUsage: ConnectionUsage { return .steals }
+    internal var connectionUsage: ConnectionUsage { return .steals }
 
     internal init(target: ChangeStreamTarget<CollectionType>,
                   pipeline: [Document],

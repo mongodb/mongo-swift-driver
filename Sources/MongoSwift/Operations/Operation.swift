@@ -4,7 +4,7 @@ internal protocol Operation {
     /// The result type this operation returns.
     associatedtype OperationResult
     /// Indicates how this operation interactions with `Connection`s.
-    static var connectionUsage: ConnectionUsage { get }
+    var connectionUsage: ConnectionUsage { get }
 
     /// Executes this operation using the provided connection and optional session, and returns its corresponding
     /// result type.
@@ -13,7 +13,7 @@ internal protocol Operation {
 
 extension Operation {
     /// This is the behavior of most operations so default to this.
-    internal static var connectionUsage: ConnectionUsage { return .uses }
+    internal var connectionUsage: ConnectionUsage { return .uses }
 }
 
 /// Uses to indicate how an `Operation` type uses `Connection`s passed to its execute method.
@@ -22,12 +22,12 @@ internal enum ConnectionUsage {
     /// over responsibility for later returning it to the pool. This applies to e.g. `WatchOperation` where the
     /// resulting `ChangeStream` will hold onto its source `Connection` until deinitialization.
     case steals
-    /// This operation will ignore the connection passed to its execute method, as it already is holding onto a
-    /// connection. This applies to e.g. `NextOperation` where the operation must use its parent cursor's source
-    /// connection rather than an arbitrary one from the pool.
-    case ignores
-    /// This operation will use the connection provided to its execute method to execute itself. It will not save it
-    /// or pass it off for later usage. This applies to the majority of operations.
+    /// This operation is already holding onto the provided connection, which should be used to execute it. This
+    /// applies to e.g. `NextOperation` where the operation must use its parent cursor's source connection rather than
+    /// an arbitrary one from the pool.
+    case owns(Connection)
+    /// This operation will use the connection provided to its execute method to execute itself. It will not save it or
+    /// pass it off for later usage. This applies to the majority of operations.
     case uses
 }
 
@@ -44,16 +44,14 @@ internal struct DefaultOperationExecutor: OperationExecutor {
     internal func execute<T: Operation>(_ operation: T,
                                         client: MongoClient,
                                         session: ClientSession?) throws -> T.OperationResult {
-        switch T.connectionUsage {
+        switch operation.connectionUsage {
         case .steals:
             // don't return the connection to the pool, as the operation will handle it
             let conn = try session?.getConnection(forUseWith: client) ?? client.connectionPool.checkOut()
             return try operation.execute(using: conn, session: session)
-        case .ignores:
-            // we won't use the connection so pass in a dummy. initialization always succeeds with this bit pattern.
-            // swiftlint:disable:next force_unwrapping
-            let dummy = Connection(OpaquePointer(bitPattern: 1)!)
-            return try operation.execute(using: dummy, session: session)
+        case let .owns(conn):
+            // pass in the connection this operation already owns
+            return try operation.execute(using: conn, session: session)
         case .uses:
             // if a session was provided, use its underlying connection
             if let session = session {
