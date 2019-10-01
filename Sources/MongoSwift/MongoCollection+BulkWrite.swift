@@ -166,6 +166,7 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
     private let collection: MongoCollection<T>
     private let models: [WriteModel<T>]
     internal let options: BulkWriteOptions?
+
     fileprivate let encoder: BSONEncoder
 
     fileprivate init(collection: MongoCollection<T>, models: [WriteModel<T>], options: BulkWriteOptions?) {
