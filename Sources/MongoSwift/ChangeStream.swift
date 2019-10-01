@@ -50,51 +50,6 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     public private(set) var error: Error?
 
     /**
-     * Initializes a `ChangeStream`.
-     * - Throws:
-     *   - `ServerError.commandError` if an error occurred on the server when creating the `mongoc_change_stream_t`.
-     *   - `UserError.invalidArgumentError` if the `mongoc_change_stream_t` was created with invalid options.
-     */
-    internal init(changeStream: OpaquePointer,
-                  connection: Connection,
-                  client: MongoClient,
-                  session: ClientSession?,
-                  decoder: BSONDecoder,
-                  options: ChangeStreamOptions?
-                  ) throws {
-        self.state = .open(changeStream: changeStream, connection: connection, client: client, session: session)
-        self.decoder = decoder
-
-        // TODO: SWIFT-519 - Starting 4.2, update resumeToken to startAfter (if set).
-        // startAfter takes precedence over resumeAfter.
-        if let resumeAfter = options?.resumeAfter {
-            self.resumeToken = resumeAfter
-        }
-
-        if let err = self.getChangeStreamError() {
-            throw err
-        }
-    }
-
-    /// Cleans up internal state.
-    private func close() {
-        guard case let .open(changeStream, connection, client, session) = self.state else {
-            return
-        }
-        mongoc_change_stream_destroy(changeStream)
-        // If the change stream was created with a session, then the session owns the connection.
-        if session == nil {
-            client.connectionPool.checkIn(connection)
-        }
-        self.state = .closed
-    }
-
-    /// Closes the cursor if it hasn't been closed already.
-    deinit {
-        self.close()
-    }
-
-    /**
      * Retrieves any error that occured in mongoc or on the server while iterating the change stream. Returns nil if
      * this change stream is already closed, or if no error occurred.
      *  - Errors:
@@ -176,5 +131,50 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
             throw error
         }
         return nil
+    }
+
+    /**
+     * Initializes a `ChangeStream`.
+     * - Throws:
+     *   - `ServerError.commandError` if an error occurred on the server when creating the `mongoc_change_stream_t`.
+     *   - `UserError.invalidArgumentError` if the `mongoc_change_stream_t` was created with invalid options.
+     */
+    internal init(changeStream: OpaquePointer,
+                  connection: Connection,
+                  client: MongoClient,
+                  session: ClientSession?,
+                  decoder: BSONDecoder,
+                  options: ChangeStreamOptions?
+                  ) throws {
+        self.state = .open(changeStream: changeStream, connection: connection, client: client, session: session)
+        self.decoder = decoder
+
+        // TODO: SWIFT-519 - Starting 4.2, update resumeToken to startAfter (if set).
+        // startAfter takes precedence over resumeAfter.
+        if let resumeAfter = options?.resumeAfter {
+            self.resumeToken = resumeAfter
+        }
+
+        if let err = self.getChangeStreamError() {
+            throw err
+        }
+    }
+
+    /// Cleans up internal state.
+    private func close() {
+        guard case let .open(changeStream, connection, client, session) = self.state else {
+            return
+        }
+        mongoc_change_stream_destroy(changeStream)
+        // If the change stream was created with a session, then the session owns the connection.
+        if session == nil {
+            client.connectionPool.checkIn(connection)
+        }
+        self.state = .closed
+    }
+
+    /// Closes the cursor if it hasn't been closed already.
+    deinit {
+        self.close()
     }
 }
