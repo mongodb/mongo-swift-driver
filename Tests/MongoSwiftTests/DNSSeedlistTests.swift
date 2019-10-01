@@ -77,11 +77,11 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
                 // TODO SWIFT-471: we should pass `allowInvalidHostnames` via the `ClientOptions` to `makeTestClient`.
                 // for now we just bypass the factory method to set this additional option since we only need it for
                 // these DNS tests and not for SSL tests in general.
-                let config = TLSConfig(pemFile: URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? ""),
-                                       caFile: MongoSwiftTestCase.sslCAFilePath,
-                                       allowInvalidHostnames: true)
+                let opts = TLSOptions(pemFile: URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? ""),
+                                      caFile: MongoSwiftTestCase.sslCAFilePath,
+                                      allowInvalidHostnames: true)
                 let client = try MongoClient(testCase.uri,
-                                             options: ClientOptions(serverMonitoring: true, tlsConfig: config))
+                                             options: ClientOptions(serverMonitoring: true, tlsOptions: opts))
 
                 // mongoc connects lazily so we need to send a command.
                 let db = client.db("test")

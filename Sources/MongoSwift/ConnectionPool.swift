@@ -36,7 +36,7 @@ internal class ConnectionPool {
     }
 
     /// Initializes the pool in pooled mode using the provided `ConnectionString`.
-    internal init(from connString: ConnectionString, withTLSConfig config: TLSConfig? = nil) throws {
+    internal init(from connString: ConnectionString, withOptions options: TLSOptions? = nil) throws {
         guard let pool = mongoc_client_pool_new(connString._uri) else {
             throw UserError.invalidArgumentError(message: "libmongoc not built with TLS support")
         }
@@ -46,8 +46,8 @@ internal class ConnectionPool {
         }
 
         self.mode = .pooled(pool: pool)
-        if let config = config {
-            try self.setTLSConfig(config)
+        if let options = options {
+            try self.setTLSOptions(options)
         }
     }
 
@@ -101,10 +101,10 @@ internal class ConnectionPool {
     }
 
     /// Sets TLS/SSL options that the user passes in through the client level.
-    private func setTLSConfig(_ config: TLSConfig) throws {
-        let pemFileStr = config.pemFile?.absoluteString.asCString
-        let pemPassStr = config.pemPassword?.asCString
-        let caFileStr = config.caFile?.asCString
+    private func setTLSOptions(_ options: TLSOptions) throws {
+        let pemFileStr = options.pemFile?.absoluteString.asCString
+        let pemPassStr = options.pemPassword?.asCString
+        let caFileStr = options.caFile?.asCString
         defer {
             pemFileStr?.deallocate()
             pemPassStr?.deallocate()
@@ -121,10 +121,10 @@ internal class ConnectionPool {
         if let caFileStr = caFileStr {
             opts.ca_file = caFileStr
         }
-        if let weakCert = config.weakCertValidation {
+        if let weakCert = options.weakCertValidation {
             opts.weak_cert_validation = weakCert
         }
-        if let invalidHosts = config.allowInvalidHostnames {
+        if let invalidHosts = options.allowInvalidHostnames {
             opts.allow_invalid_hostname = invalidHosts
         }
         switch self.mode {

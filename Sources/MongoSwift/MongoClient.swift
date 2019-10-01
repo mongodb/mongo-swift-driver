@@ -59,7 +59,7 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
     /// databases or collections that derive from it.
     public var dataCodingStrategy: DataCodingStrategy? = nil
 
-    public var tlsConfig: TLSConfig? = nil
+    public var tlsOptions: TLSOptions? = nil
 
     // swiftlint:enable redundant_optional_initialization
 
@@ -78,7 +78,7 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
                 dateCodingStrategy: DateCodingStrategy? = nil,
                 uuidCodingStrategy: UUIDCodingStrategy? = nil,
                 dataCodingStrategy: DataCodingStrategy? = nil,
-                tlsConfig: TLSConfig? = nil) {
+                tlsOptions: TLSOptions? = nil) {
         self.retryWrites = retryWrites
         self.commandMonitoring = commandMonitoring
         self.serverMonitoring = serverMonitoring
@@ -89,7 +89,7 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
         self.dateCodingStrategy = dateCodingStrategy
         self.uuidCodingStrategy = uuidCodingStrategy
         self.dataCodingStrategy = dataCodingStrategy
-        self.tlsConfig = tlsConfig
+        self.tlsOptions = tlsOptions
     }
 }
 
@@ -136,7 +136,7 @@ public struct DatabaseOptions: CodingStrategyProvider {
 }
 
 /// Options used to configure TLS/SSL connections to the database.
-public struct TLSConfig {
+public struct TLSOptions {
     /// Specifies the path to the client certificate key file.
     public var pemFile: URL?
 
@@ -216,7 +216,7 @@ public class MongoClient {
 
         var options = options ?? ClientOptions()
         let connString = try ConnectionString(connectionString, options: &options)
-        self.connectionPool = try ConnectionPool(from: connString, withTLSConfig: options.tlsConfig)
+        self.connectionPool = try ConnectionPool(from: connString, withOptions: options.tlsOptions)
 
         if let rc = options.readConcern, !rc.isDefault {
             self.readConcern = rc
