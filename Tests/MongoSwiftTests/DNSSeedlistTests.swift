@@ -75,7 +75,7 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
             // parsing the URI, and other times they are not until we try to send a command.
             func doTest() throws {
                 let opts = TLSOptions(pemFile: URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? ""),
-                                      caFile: MongoSwiftTestCase.sslCAFilePath,
+                                      caFile: URL(string: MongoSwiftTestCase.sslCAFilePath ?? ""),
                                       allowInvalidHostnames: true)
                 let client = try MongoClient(testCase.uri,
                                              options: ClientOptions(serverMonitoring: true, tlsOptions: opts))

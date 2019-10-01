@@ -104,7 +104,7 @@ internal class ConnectionPool {
     private func setTLSOptions(_ options: TLSOptions) throws {
         let pemFileStr = options.pemFile?.absoluteString.asCString
         let pemPassStr = options.pemPassword?.asCString
-        let caFileStr = options.caFile?.asCString
+        let caFileStr = options.caFile?.absoluteString.asCString
         defer {
             pemFileStr?.deallocate()
             pemPassStr?.deallocate()

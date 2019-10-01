@@ -144,7 +144,7 @@ public struct TLSOptions {
     public var pemPassword: String?
 
     /// Specifies the path to the certificate authority file.
-    public var caFile: String?
+    public var caFile: URL?
 
     /// Indicates whether invalid certificates are allowed. By default this is set to false.
     public var weakCertValidation: Bool?
@@ -155,7 +155,7 @@ public struct TLSOptions {
     /// Convenience initializer allowing any/all arguments to be omitted or optional.
     public init(pemFile: URL? = nil,
                 pemPassword: String? = nil,
-                caFile: String? = nil,
+                caFile: URL? = nil,
                 weakCertValidation: Bool? = nil,
                 allowInvalidHostnames: Bool? = nil) {
         self.pemFile = pemFile
