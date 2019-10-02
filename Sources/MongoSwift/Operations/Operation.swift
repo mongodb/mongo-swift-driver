@@ -58,6 +58,14 @@ internal struct DefaultOperationExecutor: OperationExecutor {
     }
 }
 
+/// Given a client and optionally a session associated which are to be associated with an operation, returns a
+/// connection for the operation to use. If session is non-nil, returns the session's underlying session. If session is
+/// nil, returns a new connection from the client's pool. If it is a new connection from the pool, the caller is
+/// responsible for making sure it is eventually returned to the pool.
+internal func resolveConnection(client: MongoClient, session: ClientSession?) throws -> Connection {
+     return try session?.getConnection(forUseWith: client) ?? client.connectionPool.checkOut()
+}
+
 /// Internal function for generating an options `Document` for passing to libmongoc.
 internal func encodeOptions<T: Encodable>(options: T?, session: ClientSession?) throws -> Document? {
     guard options != nil || session != nil else {

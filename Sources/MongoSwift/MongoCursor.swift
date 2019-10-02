@@ -60,7 +60,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
                   session: ClientSession?,
                   cursorType: CursorType? = nil,
                   initializer: (Connection) -> OpaquePointer) throws {
-        let connection = try session?.getConnection(forUseWith: client) ?? client.connectionPool.checkOut()
+        let connection = try resolveConnection(client: client, session: session)
         let cursor = initializer(connection)
         self.state = .open(cursor: cursor, connection: connection, client: client, session: session)
         self.cursorType = cursorType ?? .nonTailable
