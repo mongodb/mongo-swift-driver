@@ -17,15 +17,16 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codabl
     private let target: ChangeStreamTarget<CollectionType>
     private let pipeline: [Document]
     private let options: ChangeStreamOptions?
-
-    internal var connectionUsage: ConnectionUsage { return .steals }
+    internal let connectionStrategy: ConnectionStrategy
 
     internal init(target: ChangeStreamTarget<CollectionType>,
                   pipeline: [Document],
-                  options: ChangeStreamOptions?) throws {
+                  options: ChangeStreamOptions?,
+                  stealing connection: Connection) throws {
         self.target = target
         self.pipeline = pipeline
         self.options = options
+        self.connectionStrategy = .bound(to: connection)
     }
 
     internal func execute(using connection: Connection,
@@ -56,7 +57,7 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codabl
             }
         }
 
-        return try ChangeStream<ChangeStreamType>(changeStream: changeStream,
+        return try ChangeStream<ChangeStreamType>(stealing: changeStream,
                                                   connection: connection,
                                                   client: client,
                                                   session: session,

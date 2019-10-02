@@ -155,7 +155,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         }
 
         do {
-            let operation = NextOperation(target: .cursor(self), connection: connection)
+            let operation = NextOperation(target: .cursor(self), using: connection)
             guard let out = try client.executeOperation(operation, session: session) else {
                 self.error = self.getMongocError()
                 // Since there was no document returned, we should close the cursor if:

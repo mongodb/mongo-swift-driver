@@ -94,7 +94,7 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
             return nil
         }
         do {
-            let operation = NextOperation(target: .changeStream(self), connection: connection)
+            let operation = NextOperation(target: .changeStream(self), using: connection)
             guard let out = try client.executeOperation(operation, session: session) else {
                 self.error = self.getChangeStreamError()
                 if self.error != nil {
@@ -139,7 +139,7 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
      *   - `ServerError.commandError` if an error occurred on the server when creating the `mongoc_change_stream_t`.
      *   - `UserError.invalidArgumentError` if the `mongoc_change_stream_t` was created with invalid options.
      */
-    internal init(changeStream: OpaquePointer,
+    internal init(stealing changeStream: OpaquePointer,
                   connection: Connection,
                   client: MongoClient,
                   session: ClientSession?,
