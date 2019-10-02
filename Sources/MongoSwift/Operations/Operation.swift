@@ -59,11 +59,18 @@ internal struct DefaultOperationExecutor: OperationExecutor {
 }
 
 /// Given a client and optionally a session associated which are to be associated with an operation, returns a
-/// connection for the operation to use. If session is non-nil, returns the session's underlying session. If session is
-/// nil, returns a new connection from the client's pool. If it is a new connection from the pool, the caller is
-/// responsible for making sure it is eventually returned to the pool.
+/// connection for the operation to use. After the connection is no longer in use, it should be returned by
+/// passing it to `returnConnection` along with the same client and session that were passed into this method.
 internal func resolveConnection(client: MongoClient, session: ClientSession?) throws -> Connection {
      return try session?.getConnection(forUseWith: client) ?? client.connectionPool.checkOut()
+}
+
+/// Handles releasing a connection that was returned by `resolveConnection`. Must be called with the same client and
+/// session that were passed to `resolveConnection`.
+internal func releaseConnection(connection: Connection, client: MongoClient, session: ClientSession?) {
+    if session == nil {
+        client.connectionPool.checkIn(connection)
+    }
 }
 
 /// Internal function for generating an options `Document` for passing to libmongoc.

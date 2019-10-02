@@ -80,11 +80,8 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         guard case let .open(cursor, conn, client, session) = self.state else {
             return
         }
-        // If the cursor was created with a session, then the session owns the connection.
-        if session == nil {
-            client.connectionPool.checkIn(conn)
-        }
         mongoc_cursor_destroy(cursor)
+        releaseConnection(connection: conn, client: client, session: session)
         self.state = .closed
     }
 

@@ -166,10 +166,7 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
             return
         }
         mongoc_change_stream_destroy(changeStream)
-        // If the change stream was created with a session, then the session owns the connection.
-        if session == nil {
-            client.connectionPool.checkIn(connection)
-        }
+        releaseConnection(connection: connection, client: client, session: session)
         self.state = .closed
     }
 

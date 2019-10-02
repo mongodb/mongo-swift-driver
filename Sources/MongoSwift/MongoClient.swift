@@ -421,7 +421,7 @@ public class MongoClient {
                                           options: ChangeStreamOptions?  =  nil,
                                           session: ClientSession? = nil,
                                           withEventType: EventType.Type) throws -> ChangeStream<EventType> {
-        let connection = try resolveConnection(client: self._client, session: session)
+        let connection = try resolveConnection(client: self, session: session)
         let operation = try WatchOperation<Document, EventType>(target: .client(self),
                                                                 pipeline: pipeline,
                                                                 options: options,
