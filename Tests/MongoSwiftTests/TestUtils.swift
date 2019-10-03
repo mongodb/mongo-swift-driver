@@ -354,11 +354,6 @@ internal func captureCommandEvents(eventTypes: [Notification.Name]? = nil,
                                    commandNames: [String]? = nil,
                                    f: (MongoClient) throws -> Void) throws -> [MongoCommandEvent] {
     var clientOpts = ClientOptions(commandMonitoring: true)
-    if MongoSwiftTestCase.ssl {
-        let opts = TLSOptions(pemFile: URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? ""),
-                              caFile: URL(string: MongoSwiftTestCase.sslCAFilePath ?? ""))
-        clientOpts.tlsOptions = opts
-    }
     let client = try MongoClient.makeTestClient(options: clientOpts)
     return try captureCommandEvents(from: client, eventTypes: eventTypes, commandNames: commandNames) {
         try f(client)

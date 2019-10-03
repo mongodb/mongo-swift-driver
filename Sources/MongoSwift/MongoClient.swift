@@ -59,6 +59,7 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
     /// databases or collections that derive from it.
     public var dataCodingStrategy: DataCodingStrategy? = nil
 
+    /// Specifies the TLS/SSL options to use for database connections.
     public var tlsOptions: TLSOptions? = nil
 
     // swiftlint:enable redundant_optional_initialization
@@ -216,7 +217,7 @@ public class MongoClient {
 
         var options = options ?? ClientOptions()
         let connString = try ConnectionString(connectionString, options: &options)
-        self.connectionPool = try ConnectionPool(from: connString, withOptions: options.tlsOptions)
+        self.connectionPool = try ConnectionPool(from: connString, options: options.tlsOptions)
 
         if let rc = options.readConcern, !rc.isDefault {
             self.readConcern = rc
