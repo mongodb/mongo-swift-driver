@@ -53,8 +53,8 @@ final class BSONValueTests: MongoSwiftTestCase {
                           alternate: .timestamp(Timestamp(timestamp: 5, inc: 10)))
         // Date
         checkTrueAndFalse(
-                val: .date(Date(timeIntervalSinceReferenceDate: 5000)),
-                alternate: .date(Date(timeIntervalSinceReferenceDate: 5001))
+                val: .datetime(Date(timeIntervalSinceReferenceDate: 5000)),
+                alternate: .datetime(Date(timeIntervalSinceReferenceDate: 5001))
         )
         // MinKey & MaxKey
         expect(MinKey()).to(bsonEqual(MinKey()))
@@ -71,7 +71,7 @@ final class BSONValueTests: MongoSwiftTestCase {
                 val: .binary(try Binary(data: Data(base64Encoded: "c//SZESzTGmQ6OfR38A11A==")!, subtype: .uuid)),
                 alternate: .binary(try Binary(data: Data(base64Encoded: "c//88KLnfdfefOfR33ddFA==")!, subtype: .uuid))
         )
-        // TODO SWIFT-230: unskip
+        // TODO SWIFT-630: unskip
 //        // Document
 //        checkTrueAndFalse(
 //                val: [

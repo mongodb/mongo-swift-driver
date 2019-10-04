@@ -29,9 +29,9 @@ public enum BSON {
     /// A BSON boolean.
     case bool(Bool)
 
-    /// A BSON datetime.
+    /// A BSON UTC datetime.
     /// - SeeAlso: https://docs.mongodb.com/manual/reference/bson-types/#date
-    case date(Date)
+    case datetime(Date)
 
     /// A BSON null.
     case null
@@ -45,10 +45,10 @@ public enum BSON {
     /// A BSON symbol.
     case symbol(Symbol)
 
-    /// A BSON code.
+    /// A BSON JavaScript code.
     case code(Code)
 
-    /// A BSON code with scope.
+    /// A BSON JavaScript code with scope.
     case codeWithScope(CodeWithScope)
 
     /// A BSON int32.
@@ -61,7 +61,8 @@ public enum BSON {
     /// A BSON int64.
     case int64(Int64)
 
-    /// A BSON decimal128.
+    /// A BSON Decimal128.
+    /// - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/bson-decimal128/decimal128.rst
     case decimal128(Decimal128)
 
     /// A BSON minKey.
@@ -69,6 +70,16 @@ public enum BSON {
 
     /// A BSON maxKey.
     case maxKey
+
+    /// Initialize a `BSON` from an integer. On 64-bit systems, this will result in an `.int64`. On 32-bit systems,
+    /// this will result in an `.int32`.
+    public init(_ int: Int) {
+        if Int.bsonType == .int32 {
+            self = .int32(Int32(int))
+        } else {
+            self = .int64(Int64(int))
+        }
+    }
 
     /// If this `BSON` is an `.int32`, return it as an `Int32`. Otherwise, return nil.
     public var int32Value: Int32? {
@@ -120,7 +131,7 @@ public enum BSON {
 
     /// If this `BSON` is a `.date`, return it as a `Date`. Otherwise, return nil.
     public var dateValue: Date? {
-        guard case let .date(d) = self else {
+        guard case let .datetime(d) = self else {
             return nil
         }
         return d
@@ -341,7 +352,7 @@ extension BSON {
             return v
         case let .bool(v):
             return v
-        case let .date(v):
+        case let .datetime(v):
             return v
         case let .regex(v):
             return v
@@ -384,12 +395,10 @@ extension BSON: ExpressibleByFloatLiteral {
 }
 
 extension BSON: ExpressibleByIntegerLiteral {
+    /// Initialize a `BSON` from an integer. On 64-bit systems, this will result in an `.int64`. On 32-bit systems,
+    /// this will result in an `.int32`.
     public init(integerLiteral value: Int) {
-        if Int.bsonType == .int32 {
-            self = .int32(Int32(value))
-        } else {
-            self = .int64(Int64(value))
-        }
+        self.init(value)
     }
 }
 
