@@ -9,7 +9,7 @@ extension BSONValueTests {
     static var allTests = [
         ("testInvalidDecimal128", testInvalidDecimal128),
         ("testUUIDBytes", testUUIDBytes),
-        ("testBSONEquals", testBSONEquals),
+        ("testBSONEquatable", testBSONEquatable),
         ("testObjectIdRoundTrip", testObjectIdRoundTrip),
         ("testHashable", testHashable),
         ("testBSONNumber", testBSONNumber),
