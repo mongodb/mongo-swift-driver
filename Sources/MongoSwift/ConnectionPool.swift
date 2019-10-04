@@ -100,7 +100,8 @@ internal class ConnectionPool {
         return try body(connection)
     }
 
-    /// Sets TLS/SSL options that the user passes in through the client level.
+    // Sets TLS/SSL options that the user passes in through the client level. This must be called from
+    // the ConnectionPool init before the pool is used.
     private func setTLSOptions(_ options: TLSOptions) throws {
         let pemFileStr = options.pemFile?.absoluteString.asCString
         let pemPassStr = options.pemPassword?.asCString
