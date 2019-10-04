@@ -181,12 +181,12 @@ extension MongoClient {
 
     static func makeTestClient(_ uri: String = MongoSwiftTestCase.connStr,
                                options: ClientOptions? = nil) throws -> MongoClient {
-        let client = try MongoClient(uri, options: options)
+        var opts = options ?? ClientOptions()
         if MongoSwiftTestCase.ssl {
-             try client.connectionPool.setSSLOpts(caFile: MongoSwiftTestCase.sslCAFilePath,
-                                                  pemFile: MongoSwiftTestCase.sslPEMKeyFilePath)
+            opts.tlsOptions = TLSOptions(pemFile: URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? ""),
+                                         caFile: URL(string: MongoSwiftTestCase.sslCAFilePath ?? ""))
         }
-        return client
+        return try MongoClient(uri, options: opts)
     }
 
     internal func supportsFailCommand() -> Bool {
@@ -353,7 +353,8 @@ internal func captureCommandEvents(from client: MongoClient,
 internal func captureCommandEvents(eventTypes: [Notification.Name]? = nil,
                                    commandNames: [String]? = nil,
                                    f: (MongoClient) throws -> Void) throws -> [MongoCommandEvent] {
-    let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
+    var clientOpts = ClientOptions(commandMonitoring: true)
+    let client = try MongoClient.makeTestClient(options: clientOpts)
     return try captureCommandEvents(from: client, eventTypes: eventTypes, commandNames: commandNames) {
         try f(client)
     }

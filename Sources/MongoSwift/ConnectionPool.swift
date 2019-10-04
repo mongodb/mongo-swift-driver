@@ -36,7 +36,7 @@ internal class ConnectionPool {
     }
 
     /// Initializes the pool in pooled mode using the provided `ConnectionString`.
-    internal init(from connString: ConnectionString) throws {
+    internal init(from connString: ConnectionString, options: TLSOptions? = nil) throws {
         guard let pool = mongoc_client_pool_new(connString._uri) else {
             throw UserError.invalidArgumentError(message: "libmongoc not built with TLS support")
         }
@@ -46,6 +46,9 @@ internal class ConnectionPool {
         }
 
         self.mode = .pooled(pool: pool)
+        if let options = options {
+            try self.setTLSOptions(options)
+        }
     }
 
     /// Closes the pool if it has not been manually closed already.
@@ -97,29 +100,34 @@ internal class ConnectionPool {
         return try body(connection)
     }
 
-    /// Temporary API for testing purposes. This will likely change in SWIFT-471.
-    internal func setSSLOpts(caFile: String?, pemFile: String?, allowInvalidHostnames: Bool? = nil) throws {
-        // we need to use asCString rather than withCString to avoid nesting
-        // a ton of closures and handling every permutation of set/unset options.
-        let caString = caFile?.asCString
-        let pemString = pemFile?.asCString
+    // Sets TLS/SSL options that the user passes in through the client level. This must be called from
+    // the ConnectionPool init before the pool is used.
+    private func setTLSOptions(_ options: TLSOptions) throws {
+        let pemFileStr = options.pemFile?.absoluteString.asCString
+        let pemPassStr = options.pemPassword?.asCString
+        let caFileStr = options.caFile?.absoluteString.asCString
         defer {
-            caString?.deallocate()
-            pemString?.deallocate()
+            pemFileStr?.deallocate()
+            pemPassStr?.deallocate()
+            caFileStr?.deallocate()
         }
 
         var opts = mongoc_ssl_opt_t()
-        if let ca = caString {
-            opts.ca_file = ca
+        if let pemFileStr = pemFileStr {
+            opts.pem_file = pemFileStr
         }
-        if let pem = pemString {
-            opts.pem_file = pem
+        if let pemPassStr = pemPassStr {
+            opts.pem_pwd = pemPassStr
         }
-
-        if let invalidHosts = allowInvalidHostnames {
+        if let caFileStr = caFileStr {
+            opts.ca_file = caFileStr
+        }
+        if let weakCert = options.weakCertValidation {
+            opts.weak_cert_validation = weakCert
+        }
+        if let invalidHosts = options.allowInvalidHostnames {
             opts.allow_invalid_hostname = invalidHosts
         }
-
         switch self.mode {
         case let .single(clientHandle):
             mongoc_client_set_ssl_opts(clientHandle, &opts)

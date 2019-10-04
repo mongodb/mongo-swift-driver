@@ -59,6 +59,9 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
     /// databases or collections that derive from it.
     public var dataCodingStrategy: DataCodingStrategy? = nil
 
+    /// Specifies the TLS/SSL options to use for database connections.
+    public var tlsOptions: TLSOptions? = nil
+
     // swiftlint:enable redundant_optional_initialization
 
     private enum CodingKeys: CodingKey {
@@ -75,7 +78,8 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
                 notificationCenter: NotificationCenter? = nil,
                 dateCodingStrategy: DateCodingStrategy? = nil,
                 uuidCodingStrategy: UUIDCodingStrategy? = nil,
-                dataCodingStrategy: DataCodingStrategy? = nil) {
+                dataCodingStrategy: DataCodingStrategy? = nil,
+                tlsOptions: TLSOptions? = nil) {
         self.retryWrites = retryWrites
         self.commandMonitoring = commandMonitoring
         self.serverMonitoring = serverMonitoring
@@ -86,6 +90,7 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
         self.dateCodingStrategy = dateCodingStrategy
         self.uuidCodingStrategy = uuidCodingStrategy
         self.dataCodingStrategy = dataCodingStrategy
+        self.tlsOptions = tlsOptions
     }
 }
 
@@ -128,6 +133,37 @@ public struct DatabaseOptions: CodingStrategyProvider {
         self.dateCodingStrategy = dateCodingStrategy
         self.uuidCodingStrategy = uuidCodingStrategy
         self.dataCodingStrategy = dataCodingStrategy
+    }
+}
+
+/// Options used to configure TLS/SSL connections to the database.
+public struct TLSOptions {
+    /// Specifies the path to the client certificate key file.
+    public var pemFile: URL?
+
+    /// Specifies the client certificate key password.
+    public var pemPassword: String?
+
+    /// Specifies the path to the certificate authority file.
+    public var caFile: URL?
+
+    /// Indicates whether invalid certificates are allowed. By default this is set to false.
+    public var weakCertValidation: Bool?
+
+    /// Indicates whether invalid hostnames are allowed. By default this is set to false.
+    public var allowInvalidHostnames: Bool?
+
+    /// Convenience initializer allowing any/all arguments to be omitted or optional.
+    public init(pemFile: URL? = nil,
+                pemPassword: String? = nil,
+                caFile: URL? = nil,
+                weakCertValidation: Bool? = nil,
+                allowInvalidHostnames: Bool? = nil) {
+        self.pemFile = pemFile
+        self.pemPassword = pemPassword
+        self.caFile = caFile
+        self.weakCertValidation = weakCertValidation
+        self.allowInvalidHostnames = allowInvalidHostnames
     }
 }
 
@@ -181,7 +217,7 @@ public class MongoClient {
 
         var options = options ?? ClientOptions()
         let connString = try ConnectionString(connectionString, options: &options)
-        self.connectionPool = try ConnectionPool(from: connString)
+        self.connectionPool = try ConnectionPool(from: connString, options: options.tlsOptions)
 
         if let rc = options.readConcern, !rc.isDefault {
             self.readConcern = rc
