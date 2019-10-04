@@ -60,7 +60,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
                   session: ClientSession?,
                   cursorType: CursorType? = nil,
                   initializer: (Connection) -> OpaquePointer) throws {
-        let connection = try session?.getConnection(forUseWith: client) ?? client.connectionPool.checkOut()
+        let connection = try resolveConnection(client: client, session: session)
         let cursor = initializer(connection)
         self.state = .open(cursor: cursor, connection: connection, client: client, session: session)
         self.cursorType = cursorType ?? .nonTailable
@@ -80,11 +80,8 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         guard case let .open(cursor, conn, client, session) = self.state else {
             return
         }
-        // If the cursor was created with a session, then the session owns the connection.
-        if session == nil {
-            client.connectionPool.checkIn(conn)
-        }
         mongoc_cursor_destroy(cursor)
+        releaseConnection(connection: conn, client: client, session: session)
         self.state = .closed
     }
 
@@ -149,14 +146,14 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     /// method returns `nil`, to determine if the cursor has the potential to return any more data in the future.
     public func next() -> T? {
         // We already closed the mongoc cursor, either because we reached the end or encountered an error.
-        guard case let .open(cursor, conn, _, session) = self.state else {
+        guard case let .open(cursor, connection, client, session) = self.state else {
             self.error = ClosedCursorError
             return nil
         }
 
         do {
-            let operation = NextOperation(target: .cursor(self))
-            guard let out = try operation.execute(using: conn, session: session) else {
+            let operation = NextOperation(target: .cursor(self), using: connection)
+            guard let out = try client.executeOperation(operation, session: session) else {
                 self.error = self.getMongocError()
                 // Since there was no document returned, we should close the cursor if:
                 // 1. this is not a tailable cursor, or

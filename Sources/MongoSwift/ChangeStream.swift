@@ -89,13 +89,13 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     /// if omitted.
     public func next() -> T? {
         // We already closed the mongoc change stream, either because we reached the end or encountered an error.
-        guard case let .open(_, connection, _, session) = self.state else {
+        guard case let .open(_, connection, client, session) = self.state else {
             self.error = ClosedChangeStreamError
             return nil
         }
         do {
-            let operation = NextOperation(target: .changeStream(self))
-            guard let out = try operation.execute(using: connection, session: session) else {
+            let operation = NextOperation(target: .changeStream(self), using: connection)
+            guard let out = try client.executeOperation(operation, session: session) else {
                 self.error = self.getChangeStreamError()
                 if self.error != nil {
                     self.close()
@@ -139,21 +139,21 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
      *   - `ServerError.commandError` if an error occurred on the server when creating the `mongoc_change_stream_t`.
      *   - `UserError.invalidArgumentError` if the `mongoc_change_stream_t` was created with invalid options.
      */
-    internal init(options: ChangeStreamOptions?,
+    internal init(stealing changeStream: OpaquePointer,
+                  connection: Connection,
                   client: MongoClient,
-                  decoder: BSONDecoder,
                   session: ClientSession?,
-                  initializer: (Connection) -> OpaquePointer) throws {
-        let connection = try session?.getConnection(forUseWith: client) ?? client.connectionPool.checkOut()
-        let changeStream = initializer(connection)
+                  decoder: BSONDecoder,
+                  options: ChangeStreamOptions?
+                  ) throws {
         self.state = .open(changeStream: changeStream, connection: connection, client: client, session: session)
+        self.decoder = decoder
 
         // TODO: SWIFT-519 - Starting 4.2, update resumeToken to startAfter (if set).
         // startAfter takes precedence over resumeAfter.
         if let resumeAfter = options?.resumeAfter {
             self.resumeToken = resumeAfter
         }
-        self.decoder = decoder
 
         if let err = self.getChangeStreamError() {
             throw err
@@ -166,10 +166,7 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
             return
         }
         mongoc_change_stream_destroy(changeStream)
-        // If the change stream was created with a session, then the session owns the connection.
-        if session == nil {
-            client.connectionPool.checkIn(connection)
-        }
+        releaseConnection(connection: connection, client: client, session: session)
         self.state = .closed
     }
 

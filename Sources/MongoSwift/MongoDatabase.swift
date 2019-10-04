@@ -379,9 +379,11 @@ public struct MongoDatabase {
                                           options: ChangeStreamOptions? = nil,
                                           session: ClientSession? = nil,
                                           withEventType: EventType.Type) throws -> ChangeStream<EventType> {
+        let connection = try resolveConnection(client: self._client, session: session)
         let operation = try WatchOperation<Document, EventType>(target: .database(self),
                                                                 pipeline: pipeline,
-                                                                options: options)
+                                                                options: options,
+                                                                stealing: connection)
         return try self._client.executeOperation(operation, session: session)
     }
 
