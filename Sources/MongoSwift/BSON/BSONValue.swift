@@ -750,6 +750,45 @@ extension Int64: BSONNumber {
     }
 }
 
+/// A struct to represent the BSON Code type.
+public struct Code: BSONValue, Equatable, Codable, Hashable {
+    public var bsonType: BSONType { return .javascript }
+
+    internal var bson: BSON { return .code(self) }
+
+    /// A string containing Javascript code.
+    public let code: String
+
+    /// Initializes a `CodeWithScope` with an optional scope value.
+    public init(code: String) {
+        self.code = code
+    }
+
+    public init(from decoder: Decoder) throws {
+        throw getDecodingError(type: CodeWithScope.self, decoder: decoder)
+    }
+
+    public func encode(to: Encoder) throws {
+        throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
+    }
+
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
+        guard bson_append_code(storage._bson, key, Int32(key.utf8.count), self.code) else {
+            throw bsonTooLargeError(value: self, forKey: key)
+        }
+    }
+
+    public static func from(iterator iter: DocumentIterator) throws -> Code {
+        return try iter.withBSONIterPointer { iterPtr in
+            guard iter.currentType == .javascript else {
+                throw wrongIterTypeError(iter, expected: Code.self)
+            }
+            let code = String(cString: bson_iter_code(iterPtr, nil))
+            return self.init(code: code)
+        }
+    }
+}
+
 /// A struct to represent the BSON Code and CodeWithScope types.
 public struct CodeWithScope: BSONValue, Equatable, Codable, Hashable {
     /// A string containing Javascript code.
