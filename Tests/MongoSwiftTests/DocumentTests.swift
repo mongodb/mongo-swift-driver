@@ -261,7 +261,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
     func testRawBSON() throws {
         let doc = try Document(fromJSON: "{\"a\" : [{\"$numberInt\": \"10\"}]}")
-        let fromRawBSON = Document(fromBSON: doc.rawBSON)
+        let fromRawBSON = try Document(fromBSON: doc.rawBSON)
         expect(doc).to(equal(fromRawBSON))
     }
 
@@ -282,7 +282,7 @@ final class DocumentTests: MongoSwiftTestCase {
         let int32min_sub1 = Int64(Int32.min) - Int64(1)
         let int32max_add1 = Int64(Int32.max) + Int64(1)
 
-        var doc: Document = [
+        let doc: Document = [
             "int32min": Int(Int32.min),
             "int32max": Int(Int32.max),
             "int32min-1": Int(int32min_sub1),
@@ -358,7 +358,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
                 // for cB input:
                 // native_to_bson( bson_to_native(cB) ) = cB
-                let docFromCB = Document(fromBSON: cBData)
+                let docFromCB = try Document(fromBSON: cBData)
                 expect(docFromCB.rawBSON).to(equal(cBData))
 
                 // test round tripping through documents
@@ -388,7 +388,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
                 // native_to_relaxed_extended_json( bson_to_native(cB) ) = rEJ (if rEJ exists)
                 if let rEJ = validCase["relaxed_extjson"] as? String {
-                     expect(Document(fromBSON: cBData).extendedJSON).to(cleanEqual(rEJ))
+                     expect(try Document(fromBSON: cBData).extendedJSON).to(cleanEqual(rEJ))
                 }
 
                 // for cEJ input:
@@ -408,11 +408,11 @@ final class DocumentTests: MongoSwiftTestCase {
                     }
 
                     // bson_to_canonical_extended_json(dB) = cEJ
-                    expect(Document(fromBSON: dBData).canonicalExtendedJSON).to(cleanEqual(cEJ))
+                    expect(try Document(fromBSON: dBData).canonicalExtendedJSON).to(cleanEqual(cEJ))
 
                     // bson_to_relaxed_extended_json(dB) = rEJ (if rEJ exists)
                     if let rEJ = validCase["relaxed_extjson"] as? String {
-                        expect(Document(fromBSON: dBData).extendedJSON).to(cleanEqual(rEJ))
+                        expect(try Document(fromBSON: dBData).extendedJSON).to(cleanEqual(rEJ))
                     }
                 }
 
@@ -688,7 +688,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
     func testDocumentDictionarySimilarity() throws {
         var doc: Document = ["hello": "world", "swift": 4.2, "null": BSONNull(), "remove_me": "please"]
-        var dict: [String: BSONValue] = ["hello": "world", "swift": 4.2, "null": BSONNull(), "remove_me": "please"]
+        let dict: [String: BSONValue] = ["hello": "world", "swift": 4.2, "null": BSONNull(), "remove_me": "please"]
 
         expect(doc["hello"]).to(bsonEqual(dict["hello"]))
         expect(doc["swift"]).to(bsonEqual(dict["swift"]))
@@ -770,7 +770,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
         decoder.uuidDecodingStrategy = .binary
         let uuidt = uuid.uuid
-        let bytes = Data(bytes: [
+        let bytes = Data([
             uuidt.0, uuidt.1, uuidt.2, uuidt.3,
             uuidt.4, uuidt.5, uuidt.6, uuidt.7,
             uuidt.8, uuidt.9, uuidt.10, uuidt.11,

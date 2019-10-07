@@ -302,7 +302,7 @@ public struct Binary: BSONValue, Equatable, Codable, Hashable {
     public init(from uuid: UUID) throws {
         let uuidt = uuid.uuid
 
-        let uuidData = Data(bytes: [
+        let uuidData = Data([
             uuidt.0, uuidt.1, uuidt.2, uuidt.3,
             uuidt.4, uuidt.5, uuidt.6, uuidt.7,
             uuidt.8, uuidt.9, uuidt.10, uuidt.11,
@@ -509,11 +509,11 @@ public struct Decimal128: BSONNumber, Equatable, Codable, CustomStringConvertibl
 
     public var description: String {
         var str = Data(count: Int(BSON_DECIMAL128_STRING))
-        return str.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<Int8>) in
-            withUnsafePointer(to: self.decimal128) { ptr in
-                bson_decimal128_to_string(ptr, bytes)
+        return str.withUnsafeMutableCStringPointer { strPtr in
+            withUnsafePointer(to: self.decimal128) { decPtr in
+                bson_decimal128_to_string(decPtr, strPtr)
             }
-            return String(cString: bytes)
+            return String(cString: strPtr)
         }
     }
 
@@ -887,11 +887,11 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
     /// This `ObjectId`'s data represented as a `String`.
     public var hex: String {
         var str = Data(count: 25)
-        return str.withUnsafeMutableBytes { (rawBuffer: UnsafeMutablePointer<Int8>) in
+        return str.withUnsafeMutableCStringPointer { strPtr in
             withUnsafePointer(to: self.oid) { oidPtr in
-                bson_oid_to_string(oidPtr, rawBuffer)
+                bson_oid_to_string(oidPtr, strPtr)
             }
-            return String(cString: rawBuffer)
+            return String(cString: strPtr)
         }
     }
 
@@ -1373,4 +1373,20 @@ internal func getDecodingError<T: BSONValue>(type: T.Type, decoder: Decoder) -> 
 
     // Non-BSONDecoders are currently unsupported
     return bsonDecodingUnsupportedError(type: T.self, at: decoder.codingPath)
+}
+
+extension Data {
+    /// Gets access to the start of the data buffer in the form of an UnsafeMutablePointer<CChar>. Useful for calling C
+    /// API methods that expect a location for a string. **You must only call this method on Data instances with 
+    /// count > 0 so that the base address will exist.**
+    /// Based on https://mjtsai.com/blog/2019/03/27/swift-5-released/
+    fileprivate mutating func withUnsafeMutableCStringPointer<T>(body: (UnsafeMutablePointer<CChar>) throws -> T)
+                                                                                                    rethrows -> T {
+        return try self.withUnsafeMutableBytes { (rawPtr: UnsafeMutableRawBufferPointer) in
+            let bufferPtr = rawPtr.bindMemory(to: CChar.self)
+            // swiftlint:disable:next force_unwrapping - baseAddress is non-nil as long as Data's count > 0.
+            let bytesPtr = bufferPtr.baseAddress!
+            return try body(bytesPtr)
+        }
+    }
 }

@@ -379,14 +379,14 @@ axes:
   - id: swift-version
     display_name: "Swift"
     values:
-      - id: "4.2"
-        display_name: "Swift 4.2"
-        variables:
-           SWIFT_VERSION: "4.2.4"
       - id: "5.0"
         display_name: "Swift 5.0"
         variables:
-           SWIFT_VERSION: "5.0"
+           SWIFT_VERSION: "5.0.3"
+      - id: "5.1"
+        display_name: "Swift 5.1"
+        variables:
+           SWIFT_VERSION: "5.1"
 
   - id: ssl
     display_name: SSL

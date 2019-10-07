@@ -147,8 +147,8 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         let cappedOptions = CreateCollectionOptions(autoIndexId: true, capped: true, max: 1000, size: 10240)
         let uncappedOptions = CreateCollectionOptions(autoIndexId: true, capped: false)
 
-        try db.createCollection("capped", options: cappedOptions)
-        try db.createCollection("uncapped", options: uncappedOptions)
+        _ = try db.createCollection("capped", options: cappedOptions)
+        _ = try db.createCollection("uncapped", options: uncappedOptions)
         try db.collection("capped").insertOne(["a": 1])
         try db.collection("uncapped").insertOne(["b": 2])
 

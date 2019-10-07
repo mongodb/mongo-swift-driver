@@ -3,7 +3,7 @@
     "pins": [
       {
         "package": "Nimble",
-        "repositoryURL": "https://github.com/Quick/Nimble.git",
+        "repositoryURL": "https://github.com/Quick/Nimble",
         "state": {
           "branch": null,
           "revision": "f8657642dfdec9973efc79cc68bcef43a653a2bc",

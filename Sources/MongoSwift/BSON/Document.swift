@@ -335,7 +335,7 @@ extension Document {
      *   - A `UserError.invalidArgumentError` if the data passed in is invalid JSON.
      */
     public init(fromJSON: Data) throws {
-        self._storage = DocumentStorage(stealing: try fromJSON.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) in
+        self._storage = DocumentStorage(stealing: try fromJSON.withUnsafeBytePointer { bytes in
             var error = bson_error_t()
             guard let bson = bson_new_from_json(bytes, fromJSON.count, &error) else {
                 if error.domain == BSON_ERROR_JSON {
@@ -356,12 +356,23 @@ extension Document {
         // see https://www.objc.io/blog/2018/02/13/string-to-data-and-back/
         try self.init(fromJSON: json.data(using: .utf8)!) // swiftlint:disable:this force_unwrapping
     }
+    /**
+     * Constructs a `Document` from raw BSON `Data`.
+     * - Throws:
+     *   - A `UserError.invalidArgumentError` if `bson` is too short or too long to be valid BSON.
+     *   - A `UserError.invalidArgumentError` if the first four bytes of `bson` do not contain `bson.count`.
+     *   - A `UserError.invalidArgumentError` if the final byte of `bson` is not a null byte.
+     * - SeeAlso: http://bsonspec.org/
+     */
+    public init(fromBSON bson: Data) throws {
+        let data: MutableBSONPointer = try bson.withUnsafeBytePointer { bytes in
+            guard let data = bson_new_from_data(bytes, bson.count) else {
+                throw UserError.invalidArgumentError(message: "Invalid BSON data")
+            }
+            return data
+        }
 
-    /// Constructs a `Document` from raw BSON `Data`.
-    public init(fromBSON: Data) {
-        self._storage = DocumentStorage(stealing: fromBSON.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) in
-            bson_new_from_data(bytes, fromBSON.count)
-        })
+        self._storage = DocumentStorage(stealing: data)
     }
 
     /// Returns a `Boolean` indicating whether this `Document` contains the provided key.
@@ -545,5 +556,19 @@ extension Document: ExpressibleByArrayLiteral {
 extension Document: Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(self.rawBSON)
+    }
+}
+
+extension Data {
+    /// Gets access to the start of the data buffer in the form of an UnsafePointer<UInt8>?. Useful for calling C API
+    /// ethods that expect the location of an uint8_t. The pointer provided to `body` will be null if the `Data` has
+    /// count == 0.
+    /// Based on https://mjtsai.com/blog/2019/03/27/swift-5-released/
+    fileprivate func withUnsafeBytePointer<T>(body: (UnsafePointer<UInt8>?) throws -> T) rethrows -> T {
+        return try self.withUnsafeBytes { (rawPtr: UnsafeRawBufferPointer) in
+            let bufferPtr = rawPtr.bindMemory(to: UInt8.self)
+            let bytesPtr = bufferPtr.baseAddress
+            return try body(bytesPtr)
+        }
     }
 }
