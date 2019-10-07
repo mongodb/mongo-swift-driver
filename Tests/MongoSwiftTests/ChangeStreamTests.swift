@@ -422,7 +422,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             let stage = pipeline[0]
             let streamDoc = stage["$changeStream"] as? Document
             expect(streamDoc).toNot(beNil())
-            return streamDoc!.filter { $0.key != "startAtOperationTime" }
+            return streamDoc!.filter { $0.key != "resumeAfter" }
         }
         expect(filteredStreamStage(resumePipeline)).to(equal(filteredStreamStage(originalPipeline)))
 
@@ -444,7 +444,11 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        try withTestNamespace(clientOptions: ClientOptions(commandMonitoring: true)) { client, _, coll in
+        // turn off retryReads so that retry attempts can be distinguished from resume attempts.
+        var opts = ClientOptions(commandMonitoring: true)
+        opts.retryReads = false
+
+        try withTestNamespace(clientOptions: opts) { client, _, coll in
             guard client.supportsFailCommand() else {
                 print("Skipping \(self.name) because server version doesn't support failCommand")
                 return
