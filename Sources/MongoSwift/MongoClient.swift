@@ -1,7 +1,9 @@
 import Foundation
 import mongoc
 
-/// Options to use when creating a `MongoClient`.
+/// Options to use when creating a `MongoClient`. For fields that are also included in the connection string URI
+/// (ie. readConcern, writeConcern, readPreference, retryWrites), the values specified here will override the ones
+/// specified in the URI. If they are not specified here or in the URI, the server's default read concern will be used.
 public struct ClientOptions: CodingStrategyProvider, Decodable {
     /// Determines whether the client should retry supported read operations.
     /// TODO SWIFT-587 make this public.
@@ -38,17 +40,18 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
     /// is not specified, the application's default `NotificationCenter` will be used.
     public var notificationCenter: NotificationCenter?
 
-    /// Specifies a ReadConcern to use for the client. If one is not specified, the server's default read concern will
-    /// be used.
+    /// Specifies a ReadConcern to use for the client. To override a read concern set in the URI with the server's
+    /// default, specify an empty ReadConcern here.
     public var readConcern: ReadConcern?
 
-    /// Specifies a WriteConcern to use for the client. If one is not specified, the server's default write concern
-    /// will be used.
+    /// Specifies a WriteConcern to use for the client. To override a write concern set in the URI with the server's
+    /// default, specify an empty WriteConcern here.
     public var writeConcern: WriteConcern?
 
     // swiftlint:disable redundant_optional_initialization
 
-    /// Specifies a ReadPreference to use for the client.
+    /// Specifies a ReadPreference to use for the client. To override a read preference set in the URI with the server's
+    /// default, specify a ReadPreference of mode .primary here.
     public var readPreference: ReadPreference? = nil
 
     /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this client and any
