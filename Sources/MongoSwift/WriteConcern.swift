@@ -130,7 +130,7 @@ public struct WriteConcern: Codable {
             self.w = .number(number)
         }
 
-        let wtimeout = Int64(mongoc_write_concern_get_wtimeout(writeConcern))
+        let wtimeout = mongoc_write_concern_get_wtimeout_int64(writeConcern)
         if wtimeout != 0 {
             self.wtimeoutMS = wtimeout
         } else {
@@ -142,16 +142,6 @@ public struct WriteConcern: Codable {
         case w, journal = "j", wtimeoutMS = "wtimeout"
     }
 
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encodeIfPresent(self.w, forKey: .w)
-        if let wtimeout = self.wtimeoutMS {
-            // TODO: Casting wtimeout to Int32 is the only reason this encode method is needed.
-            // Remove this encode method once SWIFT-395 gets fixed.
-            try container.encode(Int32(truncatingIfNeeded: wtimeout), forKey: .wtimeoutMS)
-        }
-        try container.encodeIfPresent(self.journal, forKey: .journal)
-    }
     /**
      *  Creates a new `mongoc_write_concern_t` based on this `WriteConcern` and passes it to the provided closure.
      *  The pointer is only valid within the body of the closure and will be freed after the body completes.
@@ -173,7 +163,7 @@ public struct WriteConcern: Codable {
             }
         }
         if let wtimeoutMS = self.wtimeoutMS {
-            mongoc_write_concern_set_wtimeout(writeConcern, Int32(truncatingIfNeeded: wtimeoutMS))
+            mongoc_write_concern_set_wtimeout_int64(writeConcern, wtimeoutMS)
         }
         return try body(writeConcern)
     }
