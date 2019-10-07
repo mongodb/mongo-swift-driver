@@ -40,18 +40,18 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
     /// is not specified, the application's default `NotificationCenter` will be used.
     public var notificationCenter: NotificationCenter?
 
-    /// Specifies a ReadConcern to use for the client. To override a read concern set in the URI with the server's
-    /// default, specify an empty ReadConcern here.
+    /// Specifies a ReadConcern to use for the client. Explicitly setting the read concern to `nil` here is the same as
+    /// not specifying one at all.
     public var readConcern: ReadConcern?
 
-    /// Specifies a WriteConcern to use for the client. To override a write concern set in the URI with the server's
-    /// default, specify an empty WriteConcern here.
+    /// Specifies a WriteConcern to use for the client. Explicitly setting the write concern to `nil` here is the same
+    /// as not specifying one at all.
     public var writeConcern: WriteConcern?
 
     // swiftlint:disable redundant_optional_initialization
 
-    /// Specifies a ReadPreference to use for the client. To override a read preference set in the URI with the server's
-    /// default, specify an empty ReadPreference here.
+    /// Specifies a ReadPreference to use for the client. Explicitly setting the read preference to `nil` here is the
+    /// same as not specifying one at all.
     public var readPreference: ReadPreference? = nil
 
     /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this client and any
