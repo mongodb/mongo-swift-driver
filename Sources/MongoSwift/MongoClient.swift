@@ -51,7 +51,7 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
     // swiftlint:disable redundant_optional_initialization
 
     /// Specifies a ReadPreference to use for the client. To override a read preference set in the URI with the server's
-    /// default, specify a ReadPreference of mode .primary here.
+    /// default, specify an empty ReadPreference here.
     public var readPreference: ReadPreference? = nil
 
     /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this client and any
@@ -104,15 +104,15 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
 /// Options to use when retrieving a `MongoDatabase` from a `MongoClient`.
 public struct DatabaseOptions: CodingStrategyProvider {
     /// A read concern to set on the retrieved database. If one is not specified, the database will inherit the
-    /// client's read concern.
+    /// client's read concern. To set the read concern to the server's default, specify an empty ReadConcern.
     public var readConcern: ReadConcern?
 
     /// A read preference to set on the retrieved database. If one is not specified, the database will inherit the
-    /// client's read preference.
+    /// client's read preference. To set the read preference to the server's default, specify an empty ReadPreference.
     public var readPreference: ReadPreference?
 
     /// A write concern to set on the retrieved database. If one is not specified, the database will inherit the
-    /// client's write concern.
+    /// client's write concern. To set the write concern to the server's default, specify an empty WriteConcern.
     public var writeConcern: WriteConcern?
 
     /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this database and

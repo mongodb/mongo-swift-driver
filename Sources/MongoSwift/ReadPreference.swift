@@ -96,6 +96,11 @@ public final class ReadPreference {
         self._readPreference = mongoc_read_prefs_new(mode.readMode)
     }
 
+    /// Initialize a new empty `ReadPreference` with the server's default.
+    public init() {
+        self._readPreference = mongoc_read_prefs_new(MONGOC_READ_PRIMARY)
+    }
+
     /**
      * Initializes a `ReadPreference`.
      *

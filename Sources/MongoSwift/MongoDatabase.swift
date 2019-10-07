@@ -3,15 +3,15 @@ import mongoc
 /// Options to set on a retrieved `MongoCollection`.
 public struct CollectionOptions: CodingStrategyProvider {
     /// A read concern to set on the returned collection. If one is not specified, the collection will inherit the
-    /// database's read concern.
+    /// database's read concern. To set the read concern to the server's default, specify an empty ReadConcern.
     public var readConcern: ReadConcern?
 
     /// A read preference to set on the returned collection. If one is not specified, the collection will inherit the
-    /// database's read preference.
+    /// database's read preference. To set the read preference to the server's default, specify an empty ReadPreference.
     public var readPreference: ReadPreference?
 
     /// A write concern to set on the returned collection. If one is not specified, the collection will inherit the
-    /// database's write concern.
+    /// database's write concern. To set the write concern to the server's default, specify an empty WriteConcern.
     public var writeConcern: WriteConcern?
 
     /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
