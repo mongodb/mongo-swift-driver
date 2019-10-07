@@ -292,12 +292,6 @@ public enum BSON {
             return nil
         }
     }
-
-    /// Return this BSON as an `[T]` if possible, transforming each element via the provided closure.
-    /// If the closure returns nil, the value will be discarded from the resultant array.
-    public func asArray<T>(_ transform: (BSON) -> T?) -> [T]? {
-        return self.arrayValue?.compactMap(transform)
-    }
 }
 
 /// Extension providing the internal API of `BSON`
