@@ -521,14 +521,13 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         }
         expect(killedAggs.count).to(equal(1))
 
-        // TODO SWIFT-609: enable this portion of the test.
-        // let nonResumableLabel = FailPoint.failCommand(failCommands: ["getMore"], mode: .times(1), errorCode: 280)
-        //  try nonResumableLabel.enable()
-        // defer { nonResumableLabel.disable() }
-        // let labelAggs = try captureCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) {
-        //    expect(try $0.watch().nextOrError()).to(throwError())
-        // }
-        // expect(labelAggs.count).to(equal(1))
+        let nonResumableLabel = FailPoint.failCommand(failCommands: ["getMore"], mode: .times(1), errorCode: 280)
+         try nonResumableLabel.enable()
+        defer { nonResumableLabel.disable() }
+        let labelAggs = try captureCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) {
+           expect(try $0.watch().nextOrError()).to(throwError())
+        }
+        expect(labelAggs.count).to(equal(1))
     }
 
     /**
