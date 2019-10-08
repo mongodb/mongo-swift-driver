@@ -1,17 +1,17 @@
 import mongoc
 
-/// Options to set on a retrieved `MongoCollection`.
+/// Options to set on a retrieved `MongoCollection`. If an option is not specified here, the database will inherit the
+/// value from the parent collection or the server default if the db's option is not set. To override an option inherited
+/// from the db (e.g. a read concern) with the default value, it must be explicitly specified (e.g. ReadConcern(), not
+/// nil).
 public struct CollectionOptions: CodingStrategyProvider {
-    /// A read concern to set on the returned collection. If one is not specified, the collection will inherit the
-    /// database's read concern. To set the read concern to the server's default, specify an empty ReadConcern.
+    /// A read concern to set on the returned collection.
     public var readConcern: ReadConcern?
 
-    /// A read preference to set on the returned collection. If one is not specified, the collection will inherit the
-    /// database's read preference. To set the read preference to the server's default, specify an empty ReadPreference.
+    /// A read preference to set on the returned collection.
     public var readPreference: ReadPreference?
 
-    /// A write concern to set on the returned collection. If one is not specified, the collection will inherit the
-    /// database's write concern. To set the write concern to the server's default, specify an empty WriteConcern.
+    /// A write concern to set on the returned collection.
     public var writeConcern: WriteConcern?
 
     /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
