@@ -527,7 +527,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
         // the next set of assertions relies on the presence of the NonResumableChangeStreamError label, which was
         // introduced in 4.1.1 via SERVER-40446.
-        guard MongoClient.makeTestClient().serverVersion >= ServerVersion(major: 4, minor: 1, patch: 1) else {
+        guard try MongoClient.makeTestClient().serverVersion() >= ServerVersion(major: 4, minor: 1, patch: 1) else {
             return
         }
 
