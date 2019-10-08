@@ -35,7 +35,7 @@ Bug reports in JIRA for all driver projects (i.e. NODE, PYTHON, CSHARP, JAVA) an
 Core Server (i.e. SERVER) project are **public**.
 
 ## Installation
-`MongoSwift` works with Swift 4.2+.
+`MongoSwift` works with Swift 5.0+.
 
 ### macOS and Linux
 
