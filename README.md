@@ -8,10 +8,8 @@ The official [MongoDB](https://www.mongodb.com/) driver for Swift.
 - [Documentation](#documentation)
 - [Bugs/Feature Requests](#bugs--feature-requests)
 - [Installation](#installation)
-    - [macOS and Linux](#macos-and-linux)
-      - [Step 1: Install the MongoDB C Driver](#step-1-install-the-mongodb-c-driver)
-      - [Step 2: Install MongoSwift](#step-2-install-mongoswift)
-    - [iOS, tvOS, and watchOS](#ios-tvos-and-watchos)
+    - [Step 1: Install the MongoDB C Driver](#step-1-install-the-mongodb-c-driver)
+    - [Step 2: Install MongoSwift](#step-2-install-mongoswift)
 - [Example Usage](#example-usage)
     - [Connect to MongoDB and Create a Collection](#connect-to-mongodb-and-create-a-collection)
     - [Create and Insert a Document](#create-and-insert-a-document)
@@ -35,13 +33,11 @@ Bug reports in JIRA for all driver projects (i.e. NODE, PYTHON, CSHARP, JAVA) an
 Core Server (i.e. SERVER) project are **public**.
 
 ## Installation
-`MongoSwift` works with Swift 5.0+.
+`MongoSwift` works with Swift 5.0+ on MacOS and Linux.
 
-### macOS and Linux
+Installation is supported via [Swift Package Manager](https://swift.org/package-manager/).
 
-Installation on macOS and Linux is supported via [Swift Package Manager](https://swift.org/package-manager/).
-
-#### Step 1: Install the MongoDB C Driver
+### Step 1: Install the MongoDB C Driver
 The driver wraps the MongoDB C driver, and using it requires having the C driver's two components, `libbson` and `libmongoc`, installed on your system. **The minimum required version of the C Driver is 1.15.1**.
 
 *On a Mac*, you can install both components at once using [Homebrew](https://brew.sh/):
@@ -51,13 +47,13 @@ The driver wraps the MongoDB C driver, and using it requires having the C driver
 
 See example installation from source on Ubuntu in [Docker](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/Docker).
 
-#### Step 2: Install MongoSwift
+### Step 2: Install MongoSwift
 *Please follow the instructions in the previous section on installing the MongoDB C Driver before proceeding.*
 
 Add MongoSwift to your dependencies in `Package.swift`:
 
 ```swift
-// swift-tools-version:4.2
+// swift-tools-version:5.0
 import PackageDescription
 
 let package = Package(
@@ -72,27 +68,6 @@ let package = Package(
 ```
 
 Then run `swift build` to download, compile, and link all your dependencies.
-
-## iOS, tvOS, and watchOS
-Installation is supported via [CocoaPods](https://cocoapods.org/).
-
-The pod includes as a dependency an embedded version of the MongoDB C Driver, meant for use on these OSes.
-
-**Note**: the embedded driver currently does not support SSL. See [#141](https://github.com/mongodb/mongo-swift-driver/issues/141) and [CDRIVER-2850](https://jira.mongodb.org/browse/CDRIVER-2850) for more information.
-
-Add `MongoSwift` to your Podfile as follows:
-
-
-```ruby
-platform :ios, '11.0'
-use_frameworks!
-
-target 'MyApp' do
-    pod 'MongoSwift', '~> VERSION.STRING.HERE'
-end
-```
-
-Then run `pod install` to install your project's dependencies.
 
 ## Example Usage
 
@@ -164,8 +139,8 @@ Note that `Document` conforms to `Collection`, so useful methods from
 all available. However, runtime guarantees are not yet met for many of these
 methods.
 
-### Usage With Kitura and Vapor
-The `Examples/` directory contains sample projects that use the driver with [Kitura](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/Kitura) and [Vapor](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/Vapor).
+### Usage With Kitura, Vapor, and Perfect
+The `Examples/` directory contains sample projects that use the driver with [Kitura](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/Kitura), [Vapor](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/Vapor), and [Perfect](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/Perfect).
 
 ## Development Instructions
 
