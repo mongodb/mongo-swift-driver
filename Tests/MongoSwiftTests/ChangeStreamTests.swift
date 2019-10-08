@@ -525,8 +525,14 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         }
         expect(killedAggs.count).to(equal(1))
 
+        // the next set of assertions relies on the presence of the NonResumableChangeStreamError label, which was
+        // introduced in 4.1.1 via SERVER-40446.
+        guard MongoClient.makeTestClient().serverVersion >= ServerVersion(major: 4, minor: 1, patch: 1) else {
+            return
+        }
+
         let nonResumableLabel = FailPoint.failCommand(failCommands: ["getMore"], mode: .times(1), errorCode: 280)
-         try nonResumableLabel.enable()
+        try nonResumableLabel.enable()
         defer { nonResumableLabel.disable() }
         let labelAggs = try captureCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) {
            expect(try $0.watch().nextOrError()).to(throwError())
