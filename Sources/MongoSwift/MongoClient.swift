@@ -2,8 +2,8 @@ import Foundation
 import mongoc
 
 /// Options to use when creating a `MongoClient`. For options that are also included in the connection string URI, the
-/// final values are set in the following priority: the value specified here (if non-nil), the value specified in the
-/// URI, and the server’s default value if both are unset.
+/// final values are set in descending order of priority: the value specified here (if non-nil), the value specified in
+/// the URI, and the server’s default value if both are unset.
 public struct ClientOptions: CodingStrategyProvider, Decodable {
     /// Determines whether the client should retry supported read operations.
     /// TODO SWIFT-587 make this public.
