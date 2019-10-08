@@ -8,7 +8,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/mongodb/swift-bson", .upToNextMajor(from: "2.0.0")),
         .package(url: "https://github.com/mongodb/swift-mongoc", .upToNextMajor(from: "2.0.0")),
-        .package(url: "https://github.com/Quick/Nimble", .exact("8.0.2"))
+        .package(url: "https://github.com/Quick/Nimble.git", .exact("8.0.2"))
     ],
     targets: [
         .target(name: "MongoSwift", dependencies: ["mongoc", "bson"]),
