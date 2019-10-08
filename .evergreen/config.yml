@@ -383,6 +383,7 @@ axes:
         display_name: "Swift 5.0"
         variables:
            SWIFT_VERSION: "5.0.3"
+      # TODO SWIFT-634: uncomment this
       # - id: "5.1"
       #   display_name: "Swift 5.1"
       #   variables:
