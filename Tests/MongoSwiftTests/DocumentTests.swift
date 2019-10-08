@@ -1,5 +1,6 @@
 import Foundation
 @testable import MongoSwift
+import mongoc
 import Nimble
 import XCTest
 
@@ -367,21 +368,9 @@ final class DocumentTests: MongoSwiftTestCase {
                 // element in the original document will have gone from bson_t -> Swift data type -> bson_t. At the end,
                 // the new bson_t should be identical to the original one. If not, our bson_t translation layer is
                 // lossy and/or buggy.
-                let testRoundTrip = {
-                    let nativeFromDoc = docFromCB.toArray()
-                    let docFromNative = Document(fromArray: nativeFromDoc)
-                    expect(docFromNative.rawBSON).to(equal(cBData))
-                }
-
-                // Linux swift terminates all strings when encountering null bytes in Swift < 4.2.3 (SR-7455).
-                // TODO: remove this conditional compile when the minimum supported version is >= 4.2.3
-                #if swift(>=4.2.3) || !os(Linux)
-                testRoundTrip()
-                #else
-                if description != "Embedded nulls" {
-                    testRoundTrip()
-                }
-                #endif
+                let nativeFromDoc = docFromCB.toArray()
+                let docFromNative = Document(fromArray: nativeFromDoc)
+                expect(docFromNative.rawBSON).to(equal(cBData))
 
                 // native_to_canonical_extended_json( bson_to_native(cB) ) = cEJ
                 expect(docFromCB.canonicalExtendedJSON).to(cleanEqual(cEJ))
@@ -1019,6 +1008,19 @@ final class DocumentTests: MongoSwiftTestCase {
             expect(doc["int32"] as? Int32).to(equal(Int32(12)))
             expect(doc["int64"] as? Int).to(equal(12))
             expect(doc["int64"] as? Int64).to(beNil())
+        }
+    }
+
+    func testInvalidBSON() throws {
+        let invalidData = [
+            Data(count: 0), // too short
+            Data(count: 4), // too short
+            Data(hexString: "0100000000")!, // incorrectly sized
+            Data(hexString: "0500000001")!, // correctly sized, but doesn't end with null byte
+        ]
+
+        for data in invalidData {
+            expect(try Document(fromBSON: data)).to(throwError(UserError.invalidArgumentError(message: "")))
         }
     }
 }

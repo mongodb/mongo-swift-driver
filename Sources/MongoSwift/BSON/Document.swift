@@ -365,14 +365,12 @@ extension Document {
      * - SeeAlso: http://bsonspec.org/
      */
     public init(fromBSON bson: Data) throws {
-        let data: MutableBSONPointer = try bson.withUnsafeBytePointer { bytes in
+        self._storage = DocumentStorage(stealing: try bson.withUnsafeBytePointer { bytes in
             guard let data = bson_new_from_data(bytes, bson.count) else {
                 throw UserError.invalidArgumentError(message: "Invalid BSON data")
             }
             return data
-        }
-
-        self._storage = DocumentStorage(stealing: data)
+        })
     }
 
     /// Returns a `Boolean` indicating whether this `Document` contains the provided key.
@@ -561,7 +559,7 @@ extension Document: Hashable {
 
 extension Data {
     /// Gets access to the start of the data buffer in the form of an UnsafePointer<UInt8>?. Useful for calling C API
-    /// ethods that expect the location of an uint8_t. The pointer provided to `body` will be null if the `Data` has
+    /// methods that expect the location of an uint8_t. The pointer provided to `body` will be null if the `Data` has
     /// count == 0.
     /// Based on https://mjtsai.com/blog/2019/03/27/swift-5-released/
     fileprivate func withUnsafeBytePointer<T>(body: (UnsafePointer<UInt8>?) throws -> T) rethrows -> T {

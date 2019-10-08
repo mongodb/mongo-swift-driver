@@ -121,6 +121,7 @@ extension DocumentTests {
         ("testDateDecodingStrategies", testDateDecodingStrategies),
         ("testDataCodingStrategies", testDataCodingStrategies),
         ("testIntegerRetrieval", testIntegerRetrieval),
+        ("testInvalidBSON", testInvalidBSON),
     ]
 }
 
