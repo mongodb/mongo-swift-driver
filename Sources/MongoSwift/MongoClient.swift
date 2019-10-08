@@ -3,6 +3,10 @@ import mongoc
 
 /// Options to use when creating a `MongoClient`.
 public struct ClientOptions: CodingStrategyProvider, Decodable {
+    /// Determines whether the client should retry supported read operations.
+    /// TODO SWIFT-587 make this public.
+    internal var retryReads: Bool?
+
     /// Determines whether the client should retry supported write operations.
     public var retryWrites: Bool?
 

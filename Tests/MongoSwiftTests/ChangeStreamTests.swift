@@ -422,7 +422,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             let stage = pipeline[0]
             let streamDoc = stage["$changeStream"] as? Document
             expect(streamDoc).toNot(beNil())
-            return streamDoc!.filter { $0.key != "startAtOperationTime" }
+            return streamDoc!.filter { $0.key != "resumeAfter" }
         }
         expect(filteredStreamStage(resumePipeline)).to(equal(filteredStreamStage(originalPipeline)))
 
@@ -444,7 +444,11 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        try withTestNamespace(clientOptions: ClientOptions(commandMonitoring: true)) { client, _, coll in
+        // turn off retryReads so that retry attempts can be distinguished from resume attempts.
+        var opts = ClientOptions(commandMonitoring: true)
+        opts.retryReads = false
+
+        try withTestNamespace(clientOptions: opts) { client, _, coll in
             guard client.supportsFailCommand() else {
                 print("Skipping \(self.name) because server version doesn't support failCommand")
                 return
@@ -521,14 +525,19 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         }
         expect(killedAggs.count).to(equal(1))
 
-        // TODO SWIFT-609: enable this portion of the test.
-        // let nonResumableLabel = FailPoint.failCommand(failCommands: ["getMore"], mode: .times(1), errorCode: 280)
-        //  try nonResumableLabel.enable()
-        // defer { nonResumableLabel.disable() }
-        // let labelAggs = try captureCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) {
-        //    expect(try $0.watch().nextOrError()).to(throwError())
-        // }
-        // expect(labelAggs.count).to(equal(1))
+        // the next set of assertions relies on the presence of the NonResumableChangeStreamError label, which was
+        // introduced in 4.1.1 via SERVER-40446.
+        guard try MongoClient.makeTestClient().serverVersion() >= ServerVersion(major: 4, minor: 1, patch: 1) else {
+            return
+        }
+
+        let nonResumableLabel = FailPoint.failCommand(failCommands: ["getMore"], mode: .times(1), errorCode: 280)
+        try nonResumableLabel.enable()
+        defer { nonResumableLabel.disable() }
+        let labelAggs = try captureCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) {
+           expect(try $0.watch().nextOrError()).to(throwError())
+        }
+        expect(labelAggs.count).to(equal(1))
     }
 
     /**

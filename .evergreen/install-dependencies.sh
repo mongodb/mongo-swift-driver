@@ -13,7 +13,7 @@ export SWIFTENV_ROOT="${INSTALL_DIR}/swiftenv"
 export PATH=/opt/cmake/bin:${SWIFTENV_ROOT}/bin:$PATH
 
 # should be set by EVG eventuallty
-LIBMONGOC_VERSION="r1.14"
+LIBMONGOC_VERSION="r1.15"
 
 # find cmake and set the path to it in $CMAKE
 . $EVG_DIR/find-cmake.sh

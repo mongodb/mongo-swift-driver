@@ -30,9 +30,20 @@ internal class ConnectionString {
         options.readPreference = self.readPreference
 
         if let rw = options.retryWrites {
-            self.retryWrites = rw
+            mongoc_uri_set_option_as_bool(self._uri, MONGOC_URI_RETRYWRITES, rw)
         }
-        options.retryWrites = self.retryWrites
+        if let rr = options.retryReads {
+            mongoc_uri_set_option_as_bool(self._uri, MONGOC_URI_RETRYREADS, rr)
+        }
+
+        // we can't get values for retryReads and retryWrites individually, so we will read
+        // them out from the full doc here instead.
+        guard let opts = mongoc_uri_get_options(self._uri) else {
+            return
+        }
+        let optsDoc = Document(copying: opts)
+        options.retryReads = optsDoc["retryreads"] as? Bool
+        options.retryWrites = optsDoc["retrywrites"] as? Bool
     }
 
     /// Cleans up the underlying `mongoc_uri_t`.
@@ -71,16 +82,6 @@ internal class ConnectionString {
         }
         set(rp) {
             mongoc_uri_set_read_prefs_t(self._uri, rp._readPreference)
-        }
-    }
-
-    /// Indicates whether writes will be retried.
-    internal var retryWrites: Bool {
-        get {
-            return mongoc_uri_get_option_as_bool(self._uri, MONGOC_URI_RETRYWRITES, false)
-        }
-        set(rw) {
-            mongoc_uri_set_option_as_bool(self._uri, MONGOC_URI_RETRYWRITES, rw)
         }
     }
 }
