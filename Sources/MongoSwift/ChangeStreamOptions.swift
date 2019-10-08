@@ -28,6 +28,14 @@ public enum FullDocument: RawRepresentable, Codable {
 
 /// Options to use when creating a `ChangeStream`.
 public struct ChangeStreamOptions: Codable {
+    /// The number of documents to return per batch. If omitted, the server will use its default batch size.
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/command/aggregate
+    public var batchSize: Int32?
+
+    /// Specifies a collation.
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/command/aggregate
+    public var collation: Document?
+
     /**
      * Indicates how the `fullDocument` field of a change stream document should be filled out by the server.
      * By default (indicated by a nil value for this option), the `fullDocument` field in the change stream document
@@ -35,6 +43,10 @@ public struct ChangeStreamOptions: Codable {
      * and will be nil for all other operations.
      */
     public var fullDocument: FullDocument?
+
+    /// The maximum amount of time in milliseconds for the server to wait on new documents to satisfy a
+    /// change stream query. If omitted, the server will use its default timeout.
+    public var maxAwaitTimeMS: Int64?
 
     /**
      * A `ResumeToken` that manually specifies the logical starting point for the new change stream.
@@ -44,23 +56,6 @@ public struct ChangeStreamOptions: Codable {
      * - SeeAlso: https://docs.mongodb.com/manual/changeStreams/#resume-a-change-stream
      */
     public var resumeAfter: ResumeToken?
-
-    /// The maximum amount of time in milliseconds for the server to wait on new documents to satisfy a
-    /// change stream query. If omitted, the server will use its default timeout.
-    public var maxAwaitTimeMS: Int64?
-
-    /// The number of documents to return per batch. If omitted, the server will use its default batch size.
-    /// - SeeAlso: https://docs.mongodb.com/manual/reference/command/aggregate
-    public var batchSize: Int32?
-
-    /// Specifies a collation.
-    /// - SeeAlso: https://docs.mongodb.com/manual/reference/command/aggregate
-    public var collation: Document?
-
-    /// The change stream will only provide changes that occurred at or after the specified timestamp.
-    /// Any command run against the server will return an operation time that can be used here.
-    /// - SeeAlso: https://docs.mongodb.com/manual/reference/method/db.runCommand/
-    public var startAtOperationTime: Timestamp?
 
     /**
      * Similar to `resumeAfter`, this option takes a `ResumeToken` which will serve as the logical starting
@@ -73,19 +68,24 @@ public struct ChangeStreamOptions: Codable {
      // TODO: SWIFT-519 - Make this public when support is added for 4.2 change stream features.
     internal var startAfter: ResumeToken?
 
+    /// The change stream will only provide changes that occurred at or after the specified timestamp.
+    /// Any command run against the server will return an operation time that can be used here.
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/method/db.runCommand/
+    public var startAtOperationTime: Timestamp?
+
     /// Initializes a `ChangeStreamOptions`.
-    public init(fullDocument: FullDocument? = nil,
-                resumeAfter: ResumeToken? = nil,
-                maxAwaitTimeMS: Int64? = nil,
-                batchSize: Int32? = nil,
+    public init(batchSize: Int32? = nil,
                 collation: Document? = nil,
+                fullDocument: FullDocument? = nil,
+                maxAwaitTimeMS: Int64? = nil,
+                resumeAfter: ResumeToken? = nil,
                 startAtOperationTime: Timestamp? = nil) {
-        self.fullDocument = fullDocument
-        self.resumeAfter = resumeAfter
-        self.maxAwaitTimeMS = maxAwaitTimeMS
         self.batchSize = batchSize
         self.collation = collation
-        self.startAtOperationTime = startAtOperationTime
+        self.fullDocument = fullDocument
+        self.maxAwaitTimeMS = maxAwaitTimeMS
+        self.resumeAfter = resumeAfter
         self.startAfter = nil
+        self.startAtOperationTime = startAtOperationTime
     }
 }

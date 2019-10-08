@@ -74,9 +74,9 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
             // Enclose all of the potentially throwing code in `doTest`. Sometimes the expected errors come when
             // parsing the URI, and other times they are not until we try to send a command.
             func doTest() throws {
-                let opts = TLSOptions(pemFile: URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? ""),
+                let opts = TLSOptions(allowInvalidHostnames: true,
                                       caFile: URL(string: MongoSwiftTestCase.sslCAFilePath ?? ""),
-                                      allowInvalidHostnames: true)
+                                      pemFile: URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? ""))
                 let client = try MongoClient(testCase.uri,
                                              options: ClientOptions(serverMonitoring: true, tlsOptions: opts))
 

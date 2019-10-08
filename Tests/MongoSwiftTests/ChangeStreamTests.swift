@@ -392,9 +392,9 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
         let events = try captureCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) { client in
             try withTestNamespace(client: client) { _, coll in
-                let options = ChangeStreamOptions(fullDocument: .updateLookup,
-                                                  maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME,
-                                                  batchSize: 123)
+                let options = ChangeStreamOptions(batchSize: 123,
+                                                  fullDocument: .updateLookup,
+                                                  maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME)
                 let changeStream = try coll.watch([["$match": ["fullDocument.x": 2] as Document]], options: options)
                 for x in 0..<5 {
                     try coll.insertOne(["x": x])
@@ -589,7 +589,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             let aggEvent = try captureCommandEvents(from: client,
                                                     eventTypes: [.commandSucceeded],
                                                     commandNames: ["aggregate"]) {
-                let options = ChangeStreamOptions(maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME, batchSize: 1)
+                let options = ChangeStreamOptions(batchSize: 1, maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME)
                 changeStream = try collection.watch(options: options)
             }
 

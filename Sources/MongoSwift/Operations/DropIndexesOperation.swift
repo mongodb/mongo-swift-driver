@@ -2,16 +2,16 @@ import mongoc
 
 /// Options to use when dropping an index from a `MongoCollection`.
 public struct DropIndexOptions: Encodable {
-    /// An optional `WriteConcern` to use for the command.
-    public var writeConcern: WriteConcern?
-
     /// The maximum amount of time to allow the query to run - enforced server-side.
     public var maxTimeMS: Int64?
 
+    /// An optional `WriteConcern` to use for the command.
+    public var writeConcern: WriteConcern?
+
     /// Initializer allowing any/all parameters to be omitted.
-    public init(writeConcern: WriteConcern? = nil, maxTimeMS: Int64? = nil) {
-        self.writeConcern = writeConcern
+    public init(maxTimeMS: Int64? = nil, writeConcern: WriteConcern? = nil) {
         self.maxTimeMS = maxTimeMS
+        self.writeConcern = writeConcern
     }
 }
 

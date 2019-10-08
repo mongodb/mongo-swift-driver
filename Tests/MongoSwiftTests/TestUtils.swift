@@ -183,8 +183,8 @@ extension MongoClient {
                                options: ClientOptions? = nil) throws -> MongoClient {
         var opts = options ?? ClientOptions()
         if MongoSwiftTestCase.ssl {
-            opts.tlsOptions = TLSOptions(pemFile: URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? ""),
-                                         caFile: URL(string: MongoSwiftTestCase.sslCAFilePath ?? ""))
+            opts.tlsOptions = TLSOptions(caFile: URL(string: MongoSwiftTestCase.sslCAFilePath ?? ""),
+                                         pemFile: URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? ""))
         }
         return try MongoClient(uri, options: opts)
     }
@@ -353,8 +353,7 @@ internal func captureCommandEvents(from client: MongoClient,
 internal func captureCommandEvents(eventTypes: [Notification.Name]? = nil,
                                    commandNames: [String]? = nil,
                                    f: (MongoClient) throws -> Void) throws -> [MongoCommandEvent] {
-    var clientOpts = ClientOptions(commandMonitoring: true)
-    let client = try MongoClient.makeTestClient(options: clientOpts)
+    let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
     return try captureCommandEvents(from: client, eventTypes: eventTypes, commandNames: commandNames) {
         try f(client)
     }

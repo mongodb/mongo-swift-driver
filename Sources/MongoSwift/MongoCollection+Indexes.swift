@@ -42,8 +42,30 @@ public struct IndexOptions: Codable {
     /// Optionally tells the server to build the index in the background and not block other tasks.
     public var background: Bool?
 
+    /// Optionally specifies the precision of the stored geo hash in the 2d index, from 1 to 32.
+    public var bits: Int32?
+
+    /// Optionally specifies the number of units within which to group the location values in a geo haystack index.
+    public var bucketSize: Int32?
+
+    /// Optionally specifies a collation to use for the index in MongoDB 3.4 and higher. If not specified, no collation
+    /// is sent and the default collation of the collection server-side is used.
+    public var collation: Document?
+
+    /// Optionally specifies the default language for text indexes. Is 'english' if none is provided.
+    public var defaultLanguage: String?
+
     /// Optionally specifies the length in time, in seconds, for documents to remain in a collection.
     public var expireAfterSeconds: Int32?
+
+    /// Optionally specifies the field in the document to override the language.
+    public var languageOverride: String?
+
+    /// Optionally sets the maximum boundary for latitude and longitude in the 2d index.
+    public var max: Double?
+
+    /// Optionally sets the minimum boundary for latitude and longitude in the index in a 2d index.
+    public var min: Double?
 
     /**
      * Optionally specify a specific name for the index outside of the default generated name. If none is provided then
@@ -56,12 +78,24 @@ public struct IndexOptions: Codable {
      */
     public var name: String?
 
+    /// Optionally specifies a filter for use in a partial index. Only documents that match the filter expression are
+    /// included in the index. New in MongoDB 3.2.
+    public var partialFilterExpression: Document?
+
     /// Optionally tells the index to only reference documents with the specified field in the index.
     public var sparse: Bool?
+
+    /// Optionally specifies the 2dsphere index version number. MongoDB 2.4 can only support version 1. MongoDB 2.6 and
+    /// higher may support version 1 or 2.
+    public var sphereIndexVersion: Int32?
 
     /// Optionally used only in MongoDB 3.0.0 and higher. Allows users to configure the storage engine on a per-index
     /// basis when creating an index.
     public var storageEngine: Document?
+
+    /// Optionally provides the text index version number. MongoDB 2.4 can only support version 1. MongoDB 2.6 and
+    /// higher may support version 1 or 2.
+    public var textIndexVersion: Int32?
 
     /// Optionally forces the index to be unique.
     public var unique: Bool?
@@ -69,80 +103,46 @@ public struct IndexOptions: Codable {
     /// Optionally specifies the index version number, either 0 or 1.
     public var version: Int32?
 
-    /// Optionally specifies the default language for text indexes. Is 'english' if none is provided.
-    public var defaultLanguage: String?
-
-    /// Optionally specifies the field in the document to override the language.
-    public var languageOverride: String?
-
-    /// Optionally provides the text index version number. MongoDB 2.4 can only support version 1. MongoDB 2.6 and
-    /// higher may support version 1 or 2.
-    public var textIndexVersion: Int32?
-
     /// Optionally specifies fields in the index and their corresponding weight values.
     public var weights: Document?
 
-    /// Optionally specifies the 2dsphere index version number. MongoDB 2.4 can only support version 1. MongoDB 2.6 and
-    /// higher may support version 1 or 2.
-    public var sphereIndexVersion: Int32?
-
-    /// Optionally specifies the precision of the stored geo hash in the 2d index, from 1 to 32.
-    public var bits: Int32?
-
-    /// Optionally sets the maximum boundary for latitude and longitude in the 2d index.
-    public var max: Double?
-
-    /// Optionally sets the minimum boundary for latitude and longitude in the index in a 2d index.
-    public var min: Double?
-
-    /// Optionally specifies the number of units within which to group the location values in a geo haystack index.
-    public var bucketSize: Int32?
-
-    /// Optionally specifies a filter for use in a partial index. Only documents that match the filter expression are
-    /// included in the index. New in MongoDB 3.2.
-    public var partialFilterExpression: Document?
-
-    /// Optionally specifies a collation to use for the index in MongoDB 3.4 and higher. If not specified, no collation
-    /// is sent and the default collation of the collection server-side is used.
-    public var collation: Document?
-
     /// Convenience initializer allowing any/all parameters to be omitted.
     public init(background: Bool? = nil,
-                expireAfterSeconds: Int32? = nil,
-                name: String? = nil,
-                sparse: Bool? = nil,
-                storageEngine: Document? = nil,
-                unique: Bool? = nil,
-                version: Int32? = nil,
-                defaultLanguage: String? = nil,
-                languageOverride: String? = nil,
-                textIndexVersion: Int32? = nil,
-                weights: Document? = nil,
-                sphereIndexVersion: Int32? = nil,
                 bits: Int32? = nil,
+                bucketSize: Int32? = nil,
+                collation: Document? = nil,
+                defaultLanguage: String? = nil,
+                expireAfterSeconds: Int32? = nil,
+                languageOverride: String? = nil,
                 max: Double? = nil,
                 min: Double? = nil,
-                bucketSize: Int32? = nil,
+                name: String? = nil,
                 partialFilterExpression: Document? = nil,
-                collation: Document? = nil) {
+                sparse: Bool? = nil,
+                sphereIndexVersion: Int32? = nil,
+                storageEngine: Document? = nil,
+                textIndexVersion: Int32? = nil,
+                unique: Bool? = nil,
+                version: Int32? = nil,
+                weights: Document? = nil) {
         self.background = background
-        self.expireAfterSeconds = expireAfterSeconds
-        self.name = name
-        self.sparse = sparse
-        self.storageEngine = storageEngine
-        self.unique = unique
-        self.version = version
-        self.defaultLanguage = defaultLanguage
-        self.languageOverride = languageOverride
-        self.textIndexVersion = textIndexVersion
-        self.weights = weights
-        self.sphereIndexVersion = sphereIndexVersion
         self.bits = bits
+        self.bucketSize = bucketSize
+        self.collation = collation
+        self.defaultLanguage = defaultLanguage
+        self.expireAfterSeconds = expireAfterSeconds
+        self.languageOverride = languageOverride
         self.max = max
         self.min = min
-        self.bucketSize = bucketSize
+        self.name = name
         self.partialFilterExpression = partialFilterExpression
-        self.collation = collation
+        self.sparse = sparse
+        self.sphereIndexVersion = sphereIndexVersion
+        self.storageEngine = storageEngine
+        self.textIndexVersion = textIndexVersion
+        self.unique = unique
+        self.version = version
+        self.weights = weights
     }
 
     private enum CodingKeys: String, CodingKey {

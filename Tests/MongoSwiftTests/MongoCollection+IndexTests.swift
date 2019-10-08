@@ -80,21 +80,21 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
 
         let options = IndexOptions(
             background: true,
-            name: "testOptions",
-            sparse: false,
-            storageEngine: ["wiredTiger": ["configString": "access_pattern_hint=random"] as Document],
-            unique: true,
-            version: 2,
+            bits: 32,
+            bucketSize: 10,
+            collation: ["locale": "fr"],
             defaultLanguage: "english",
             languageOverride: "cat",
-            textIndexVersion: 2,
-            weights: ["cat": 0.5, "_id": 0.5],
-            sphereIndexVersion: 2,
-            bits: 32,
             max: 30,
             min: 0,
-            bucketSize: 10,
-            collation: ["locale": "fr"]
+            name: "testOptions",
+            sparse: false,
+            sphereIndexVersion: 2,
+            storageEngine: ["wiredTiger": ["configString": "access_pattern_hint=random"] as Document],
+            textIndexVersion: 2,
+            unique: true,
+            version: 2,
+            weights: ["cat": 0.5, "_id": 0.5]
         )
 
         let model = IndexModel(keys: ["cat": 1, "_id": -1], options: options)
@@ -237,10 +237,10 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
 
         let model = IndexModel(keys: ["cat": 1])
         let wc = try WriteConcern(w: .number(1))
-        let createIndexOpts = CreateIndexOptions(writeConcern: wc, maxTimeMS: maxTimeMS)
+        let createIndexOpts = CreateIndexOptions(maxTimeMS: maxTimeMS, writeConcern: wc)
         expect( try collection.createIndex(model, options: createIndexOpts)).to(equal("cat_1"))
 
-        let dropIndexOpts = DropIndexOptions(writeConcern: wc, maxTimeMS: maxTimeMS)
+        let dropIndexOpts = DropIndexOptions(maxTimeMS: maxTimeMS, writeConcern: wc)
         let res = try collection.dropIndex(model, options: dropIndexOpts)
         expect((res["ok"] as? BSONNumber)?.doubleValue).to(bsonEqual(1.0))
 
