@@ -1,6 +1,6 @@
 import Foundation
-@testable import MongoSwift
 import mongoc
+@testable import MongoSwift
 import Nimble
 import XCTest
 
@@ -1016,7 +1016,7 @@ final class DocumentTests: MongoSwiftTestCase {
             Data(count: 0), // too short
             Data(count: 4), // too short
             Data(hexString: "0100000000")!, // incorrectly sized
-            Data(hexString: "0500000001")!, // correctly sized, but doesn't end with null byte
+            Data(hexString: "0500000001")! // correctly sized, but doesn't end with null byte
         ]
 
         for data in invalidData {

@@ -1377,14 +1377,15 @@ internal func getDecodingError<T: BSONValue>(type: T.Type, decoder: Decoder) -> 
 
 extension Data {
     /// Gets access to the start of the data buffer in the form of an UnsafeMutablePointer<CChar>. Useful for calling C
-    /// API methods that expect a location for a string. **You must only call this method on Data instances with 
+    /// API methods that expect a location for a string. **You must only call this method on Data instances with
     /// count > 0 so that the base address will exist.**
     /// Based on https://mjtsai.com/blog/2019/03/27/swift-5-released/
     fileprivate mutating func withUnsafeMutableCStringPointer<T>(body: (UnsafeMutablePointer<CChar>) throws -> T)
                                                                                                     rethrows -> T {
         return try self.withUnsafeMutableBytes { (rawPtr: UnsafeMutableRawBufferPointer) in
             let bufferPtr = rawPtr.bindMemory(to: CChar.self)
-            // swiftlint:disable:next force_unwrapping - baseAddress is non-nil as long as Data's count > 0.
+            // baseAddress is non-nil as long as Data's count > 0.
+            // swiftlint:disable:next force_unwrapping
             let bytesPtr = bufferPtr.baseAddress!
             return try body(bytesPtr)
         }
