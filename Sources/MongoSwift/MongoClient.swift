@@ -3,7 +3,7 @@ import mongoc
 
 /// Options to use when creating a `MongoClient`. For options that are also included in the connection string URI, the
 /// final values are set in descending order of priority: the value specified here (if non-nil), the value specified in
-/// the URI, and the server’s default value if both are unset.
+/// the URI, or the server’s default value if both are unset.
 public struct ClientOptions: CodingStrategyProvider, Decodable {
     /// Determines whether the client should retry supported read operations.
     /// TODO SWIFT-587 make this public.
@@ -101,7 +101,7 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
 /// Options to use when retrieving a `MongoDatabase` from a `MongoClient`. If an option is not specified here, the
 /// database will inherit the value from the parent client or the server default if the client’s option is not set.
 /// To override an option inherited from the client (e.g. a read concern) with the default value, it must be explicitly
-/// specified (e.g. ReadConcern(), not nil).
+/// specified here (e.g. ReadConcern(), not nil).
 public struct DatabaseOptions: CodingStrategyProvider {
     /// A read concern to set on the retrieved database.
     public var readConcern: ReadConcern?

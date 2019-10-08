@@ -1,9 +1,9 @@
 import mongoc
 
-/// Options to set on a retrieved `MongoCollection`. If an option is not specified here, the database will inherit the
+/// Options to set on a retrieved `MongoCollection`. If an option is not specified here, the collection will inherit the
 /// value from the parent collection or the server default if the db's option is not set. To override an option inherited
-/// from the db (e.g. a read concern) with the default value, it must be explicitly specified (e.g. ReadConcern(), not
-/// nil).
+/// from the db (e.g. a read concern) with the default value, it must be explicitly specified here (e.g. ReadConcern(),
+/// not nil).
 public struct CollectionOptions: CodingStrategyProvider {
     /// A read concern to set on the returned collection.
     public var readConcern: ReadConcern?
