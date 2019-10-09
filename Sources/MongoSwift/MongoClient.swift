@@ -1,9 +1,7 @@
 import Foundation
 import mongoc
 
-/// Options to use when creating a `MongoClient`. For options that are also included in the connection string URI, the
-/// final values are set in descending order of priority: the value specified here (if non-nil), the value specified in
-/// the URI, or the server’s default value if both are unset.
+/// Options to use when creating a `MongoClient`.
 public struct ClientOptions: CodingStrategyProvider, Decodable {
     /// Determines whether the client should retry supported read operations.
     /// TODO SWIFT-587 make this public.
@@ -98,10 +96,7 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
     }
 }
 
-/// Options to use when retrieving a `MongoDatabase` from a `MongoClient`. If an option is not specified here, the
-/// database will inherit the value from the parent client or the server default if the client’s option is not set.
-/// To override an option inherited from the client (e.g. a read concern) with the default value, it must be explicitly
-/// specified here (e.g. ReadConcern(), not nil).
+/// Options to use when retrieving a `MongoDatabase` from a `MongoClient`.
 public struct DatabaseOptions: CodingStrategyProvider {
     /// A read concern to set on the retrieved database.
     public var readConcern: ReadConcern?
@@ -202,7 +197,9 @@ public class MongoClient {
     public let writeConcern: WriteConcern?
 
     /**
-     * Create a new client connection to a MongoDB server.
+     * Create a new client connection to a MongoDB server. For options that included in both the connection string URI
+     * and the ClientOptions struct, the final value is set in descending order of priority: the value specified in
+     * ClientOptions (if non-nil), the value specified in the URI, or the server’s default value if both are unset.
      *
      * - Parameters:
      *   - connectionString: the connection string to connect to.
@@ -235,7 +232,7 @@ public class MongoClient {
             self.writeConcern = nil
         }
 
-        self.readPreference = options.readPreference ?? ReadPreference(.primary)
+        self.readPreference = options.readPreference ?? ReadPreference()
         self.encoder = BSONEncoder(options: options)
         self.decoder = BSONDecoder(options: options)
         self.notificationCenter = options.notificationCenter ?? NotificationCenter.default
@@ -270,7 +267,7 @@ public class MongoClient {
         self.encoder = BSONEncoder()
         self.decoder = BSONDecoder()
         self.readConcern = nil
-        self.readPreference = ReadPreference(.primary)
+        self.readPreference = ReadPreference()
         self.writeConcern = nil
         self.notificationCenter = NotificationCenter.default
     }
@@ -365,7 +362,10 @@ public class MongoClient {
     }
 
     /**
-     * Gets a `MongoDatabase` instance for the given database name.
+     * Gets a `MongoDatabase` instance for the given database name. If an option is not specified in the optional
+     * `DatabaseOptions` param, the database will inherit the value from the parent client or the server default if
+     * the client’s option is not set. To override an option inherited from the client (e.g. a read concern) with the
+     * default value, it must be explicitly specified in the options param (e.g. ReadConcern(), not nil).
      *
      * - Parameters:
      *   - name: the name of the database to retrieve

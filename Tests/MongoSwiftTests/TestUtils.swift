@@ -149,7 +149,7 @@ extension MongoClient {
         let cmd = MongoSwiftTestCase.ssl && MongoSwiftTestCase.isMacOS ? "serverStatus" : "buildInfo"
         let reply = try self.db("admin").runCommand([cmd: 1],
                                                     options: RunCommandOptions(
-                                                    readPreference: ReadPreference(.primary)))
+                                                    readPreference: ReadPreference()))
         guard let versionString = reply["version"] as? String else {
             throw TestError(message: " reply missing version string: \(reply)")
         }
@@ -158,7 +158,7 @@ extension MongoClient {
 
     /// Get the max wire version of the primary.
     internal func maxWireVersion() throws -> Int {
-        let options = RunCommandOptions(readPreference: ReadPreference(.primary))
+        let options = RunCommandOptions(readPreference: ReadPreference())
         let isMaster = try self.db("admin").runCommand(["isMaster": 1], options: options)
         guard let max = (isMaster["maxWireVersion"] as? BSONNumber)?.intValue else {
             throw TestError(message: "isMaster reply missing maxwireversion \(isMaster)")
