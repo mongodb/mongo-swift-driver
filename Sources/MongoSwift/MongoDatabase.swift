@@ -141,7 +141,10 @@ public struct MongoDatabase {
     /**
      * Access a collection within this database, and associates the specified `Codable` type `T` with the
      * returned `MongoCollection`. This association only exists in the context of this particular
-     * `MongoCollection` instance.
+     * `MongoCollection` instance. If an option is not specified in the `CollectionOptions` param, the
+     * collection will inherit the value from the parent database or the server default if the db's option is not set.
+     * To override an option inherited from the db (e.g. a read concern) with the default value, it must be explicitly
+     * specified in the options param (e.g. ReadConcern(), not nil).
      *
      * - Parameters:
      *   - name: the name of the collection to get
