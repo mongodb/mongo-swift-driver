@@ -35,16 +35,12 @@ internal func retrieveSpecTestFiles<T: Decodable>(specName: String,
     if let sd = subdirectory {
         path += "/\(sd)"
     }
-    let res = try FileManager.default
+    return try FileManager.default
                 .contentsOfDirectory(atPath: path)
                 .filter { $0.hasSuffix(".json") }
                 .map { ($0, URL(fileURLWithPath: "\(path)/\($0)")) }
                 .map { ($0.0, try Document(fromJSONFile: $0.1)) }
                 .map { ($0.0, try BSONDecoder().decode(T.self, from: $0.1)) }
-    if res.count == 0 {
-        fatalError("count 0")
-    }
-    return res
 }
 
 /// Given two documents, returns a copy of the input document with all keys that *don't*
