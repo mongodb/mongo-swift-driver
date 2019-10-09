@@ -199,7 +199,7 @@ public class MongoClient {
     /**
      * Create a new client connection to a MongoDB server. For options that included in both the connection string URI
      * and the ClientOptions struct, the final value is set in descending order of priority: the value specified in
-     * ClientOptions (if non-nil), the value specified in the URI, or the server’s default value if both are unset.
+     * ClientOptions (if non-nil), the value specified in the URI, or the default value if both are unset.
      *
      * - Parameters:
      *   - connectionString: the connection string to connect to.
@@ -363,7 +363,7 @@ public class MongoClient {
 
     /**
      * Gets a `MongoDatabase` instance for the given database name. If an option is not specified in the optional
-     * `DatabaseOptions` param, the database will inherit the value from the parent client or the server default if
+     * `DatabaseOptions` param, the database will inherit the value from the parent client or the default if
      * the client’s option is not set. To override an option inherited from the client (e.g. a read concern) with the
      * default value, it must be explicitly specified in the options param (e.g. ReadConcern(), not nil).
      *
