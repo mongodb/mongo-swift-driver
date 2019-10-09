@@ -216,9 +216,6 @@ private struct ChangeStreamTestFile: Decodable {
              tests
     }
 
-    /// Name of this test case.
-    var name: String = ""
-
     /// The default database.
     let databaseName: String
 
@@ -251,30 +248,21 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase, FailPointConfigured {
             return
         }
 
-        let testFilesPath = MongoSwiftTestCase.specsPath + "/change-streams/tests"
-        let testFiles: [String] = try FileManager.default.contentsOfDirectory(atPath: testFilesPath)
-
-        let tests: [ChangeStreamTestFile] = try testFiles.map { fileName in
-            let url = URL(fileURLWithPath: "\(testFilesPath)/\(fileName)")
-            var testFile = try BSONDecoder().decode(ChangeStreamTestFile.self, from: Document(fromJSONFile: url))
-
-            testFile.name = fileName
-            return testFile
-        }
+        let tests = try retrieveSpecTestFiles(specName: "change-streams", asType: ChangeStreamTestFile.self)
 
         let globalClient = try SyncMongoClient.makeTestClient()
 
         let version = try globalClient.serverVersion()
         let topology = MongoSwiftTestCase.topologyType
 
-        for testFile in tests {
+        for (testName, testFile) in tests {
             let db1 = globalClient.db(testFile.databaseName)
             let db2 = globalClient.db(testFile.database2Name)
             defer {
                 try? db1.drop()
                 try? db2.drop()
             }
-            print("\n------------\nExecuting tests from file \(testFilesPath)/\(testFile.name)...\n")
+            print("\n------------\nExecuting tests from file \(testName)...\n")
             for test in testFile.tests {
                 let testTopologies = test.topology.map { TopologyDescription.TopologyType(from: $0) }
                 guard testTopologies.contains(topology) else {

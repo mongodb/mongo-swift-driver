@@ -527,11 +527,10 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
     }
 
     func testConnectionStrings() throws {
-        let csPath = "\(MongoSwiftTestCase.specsPath)/read-write-concern/tests/connection-string"
-        let testFiles = try FileManager.default.contentsOfDirectory(atPath: csPath).filter { $0.hasSuffix(".json") }
-        for filename in testFiles {
-            let testFilePath = URL(fileURLWithPath: "\(csPath)/\(filename)")
-            let asDocument = try Document(fromJSONFile: testFilePath)
+        let testFiles = try retrieveSpecTestFiles(specName: "read-write-concern", 
+                                                  subdirectory: "connection-string",
+                                                  asType: Document.self)
+        for (_, asDocument) in testFiles {
             let tests: [Document] = try asDocument.get("tests")
             for test in tests {
                 let description: String = try test.get("description")
@@ -565,11 +564,11 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
 
     func testDocuments() throws {
         let encoder = BSONEncoder()
-        let docsPath = "\(MongoSwiftTestCase.specsPath)/read-write-concern/tests/document"
-        let testFiles = try FileManager.default.contentsOfDirectory(atPath: docsPath).filter { $0.hasSuffix(".json") }
-        for filename in testFiles {
-            let testFilePath = URL(fileURLWithPath: "\(docsPath)/\(filename)")
-            let asDocument = try Document(fromJSONFile: testFilePath)
+        let testFiles = try retrieveSpecTestFiles(specName: "read-write-concern", 
+                                          subdirectory: "document",
+                                          asType: Document.self)
+
+        for (_, asDocument) in testFiles {
             let tests: [Document] = try asDocument.get("tests")
             for test in tests {
                 let valid: Bool = try test.get("valid")

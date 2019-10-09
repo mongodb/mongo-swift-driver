@@ -15,16 +15,19 @@ final class CrudTests: MongoSwiftTestCase {
     }
 
     // Run tests for .json files at the provided path
-    func doTests(forPath: String) throws {
+    func doTests(forSubdirectory dir: String) throws {
+        let files = try retrieveSpecTestFiles(specName: "crud", subdirectory: dir, asType: CrudTestFile.self)
+
         let client = try SyncMongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
-        for (filename, file) in try parseFiles(atPath: forPath) {
+
+        for (filename, file) in files {
             if try !client.serverVersionIsInRange(file.minServerVersion, file.maxServerVersion) {
                 print("Skipping tests from file \(filename) for server version \(try client.serverVersion())")
                 continue
             }
 
-            print("\n------------\nExecuting tests from file \(forPath)/\(filename)...\n")
+            print("\n------------\nExecuting tests from file \(dir)/\(filename)...\n")
 
             // For each file, execute the test cases contained in it
             for (i, test) in file.tests.enumerated() {
@@ -46,32 +49,14 @@ final class CrudTests: MongoSwiftTestCase {
         print() // for readability of results
     }
 
-    // Go through each .json file at the given path and parse the information in it
-    // into a corresponding CrudTestFile with a [CrudTest]
-    private func parseFiles(atPath path: String) throws -> [(String, CrudTestFile)] {
-        let decoder = BSONDecoder()
-        var tests = [(String, CrudTestFile)]()
-
-        let testFiles = try FileManager.default.contentsOfDirectory(atPath: path).filter { $0.hasSuffix(".json") }
-        for fileName in testFiles {
-            let testFilePath = URL(fileURLWithPath: "\(path)/\(fileName)")
-            let asDocument = try Document(fromJSONFile: testFilePath)
-            let test = try decoder.decode(CrudTestFile.self, from: asDocument)
-            tests.append((fileName, test))
-        }
-        return tests
-    }
-
     // Run all the tests at the /read path
-    func testReads() throws {
-        let testFilesPath = MongoSwiftTestCase.specsPath + "/crud/tests/read"
-        try doTests(forPath: testFilesPath)
+    func testReads() throws {        
+        try doTests(forSubdirectory: "read")
     }
 
     // Run all the tests at the /write path
     func testWrites() throws {
-        let testFilesPath = MongoSwiftTestCase.specsPath + "/crud/tests/write"
-        try doTests(forPath: testFilesPath)
+        try doTests(forSubdirectory: "write")
     }
 }
 
