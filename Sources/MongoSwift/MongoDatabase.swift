@@ -2,16 +2,13 @@ import mongoc
 
 /// Options to set on a retrieved `MongoCollection`.
 public struct CollectionOptions: CodingStrategyProvider {
-    /// A read concern to set on the returned collection. If one is not specified, the collection will inherit the
-    /// database's read concern.
+    /// A read concern to set on the returned collection.
     public var readConcern: ReadConcern?
 
-    /// A read preference to set on the returned collection. If one is not specified, the collection will inherit the
-    /// database's read preference.
+    /// A read preference to set on the returned collection.
     public var readPreference: ReadPreference?
 
-    /// A write concern to set on the returned collection. If one is not specified, the collection will inherit the
-    /// database's write concern.
+    /// A write concern to set on the returned collection.
     public var writeConcern: WriteConcern?
 
     /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
@@ -126,7 +123,10 @@ public struct MongoDatabase {
     }
 
     /**
-     * Access a collection within this database.
+     * Access a collection within this database. If an option is not specified in the `CollectionOptions` param, the
+     * collection will inherit the value from the parent database or the default if the db's option is not set.
+     * To override an option inherited from the db (e.g. a read concern) with the default value, it must be explicitly
+     * specified in the options param (e.g. ReadConcern(), not nil).
      *
      * - Parameters:
      *   - name: the name of the collection to get
@@ -141,7 +141,10 @@ public struct MongoDatabase {
     /**
      * Access a collection within this database, and associates the specified `Codable` type `T` with the
      * returned `MongoCollection`. This association only exists in the context of this particular
-     * `MongoCollection` instance.
+     * `MongoCollection` instance. If an option is not specified in the `CollectionOptions` param, the
+     * collection will inherit the value from the parent database or the default if the db's option is not set.
+     * To override an option inherited from the db (e.g. a read concern) with the default value, it must be explicitly
+     * specified in the options param (e.g. ReadConcern(), not nil).
      *
      * - Parameters:
      *   - name: the name of the collection to get

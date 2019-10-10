@@ -96,6 +96,11 @@ public final class ReadPreference {
         self._readPreference = mongoc_read_prefs_new(mode.readMode)
     }
 
+    /// Initializes a new ReadPreference with the default mode (primary).
+    public convenience init() {
+        self.init(.primary)
+    }
+
     /**
      * Initializes a `ReadPreference`.
      *

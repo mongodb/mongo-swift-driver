@@ -8,6 +8,9 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
     }
 
     func testMode() {
+        let defaultPref = ReadPreference()
+        expect(defaultPref.mode).to(equal(ReadPreference.Mode.primary))
+
         let primary = ReadPreference(.primary)
         expect(primary.mode).to(equal(ReadPreference.Mode.primary))
 

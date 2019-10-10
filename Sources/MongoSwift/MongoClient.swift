@@ -38,12 +38,10 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
     /// is not specified, the application's default `NotificationCenter` will be used.
     public var notificationCenter: NotificationCenter?
 
-    /// Specifies a ReadConcern to use for the client. If one is not specified, the server's default read concern will
-    /// be used.
+    /// Specifies a ReadConcern to use for the client.
     public var readConcern: ReadConcern?
 
-    /// Specifies a WriteConcern to use for the client. If one is not specified, the server's default write concern
-    /// will be used.
+    /// Specifies a WriteConcern to use for the client.
     public var writeConcern: WriteConcern?
 
     // swiftlint:disable redundant_optional_initialization
@@ -100,16 +98,13 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
 
 /// Options to use when retrieving a `MongoDatabase` from a `MongoClient`.
 public struct DatabaseOptions: CodingStrategyProvider {
-    /// A read concern to set on the retrieved database. If one is not specified, the database will inherit the
-    /// client's read concern.
+    /// A read concern to set on the retrieved database.
     public var readConcern: ReadConcern?
 
-    /// A read preference to set on the retrieved database. If one is not specified, the database will inherit the
-    /// client's read preference.
+    /// A read preference to set on the retrieved database.
     public var readPreference: ReadPreference?
 
-    /// A write concern to set on the retrieved database. If one is not specified, the database will inherit the
-    /// client's write concern.
+    /// A write concern to set on the retrieved database.
     public var writeConcern: WriteConcern?
 
     /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this database and
@@ -202,7 +197,9 @@ public class MongoClient {
     public let writeConcern: WriteConcern?
 
     /**
-     * Create a new client connection to a MongoDB server.
+     * Create a new client connection to a MongoDB server. For options that included in both the connection string URI
+     * and the ClientOptions struct, the final value is set in descending order of priority: the value specified in
+     * ClientOptions (if non-nil), the value specified in the URI, or the default value if both are unset.
      *
      * - Parameters:
      *   - connectionString: the connection string to connect to.
@@ -235,7 +232,7 @@ public class MongoClient {
             self.writeConcern = nil
         }
 
-        self.readPreference = options.readPreference ?? ReadPreference(.primary)
+        self.readPreference = options.readPreference ?? ReadPreference()
         self.encoder = BSONEncoder(options: options)
         self.decoder = BSONDecoder(options: options)
         self.notificationCenter = options.notificationCenter ?? NotificationCenter.default
@@ -270,7 +267,7 @@ public class MongoClient {
         self.encoder = BSONEncoder()
         self.decoder = BSONDecoder()
         self.readConcern = nil
-        self.readPreference = ReadPreference(.primary)
+        self.readPreference = ReadPreference()
         self.writeConcern = nil
         self.notificationCenter = NotificationCenter.default
     }
@@ -365,7 +362,10 @@ public class MongoClient {
     }
 
     /**
-     * Gets a `MongoDatabase` instance for the given database name.
+     * Gets a `MongoDatabase` instance for the given database name. If an option is not specified in the optional
+     * `DatabaseOptions` param, the database will inherit the value from the parent client or the default if
+     * the client’s option is not set. To override an option inherited from the client (e.g. a read concern) with the
+     * default value, it must be explicitly specified in the options param (e.g. ReadConcern(), not nil).
      *
      * - Parameters:
      *   - name: the name of the database to retrieve
