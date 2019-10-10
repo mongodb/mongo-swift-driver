@@ -771,7 +771,7 @@ final class CodecTests: MongoSwiftTestCase {
 
         let rc = ReadConcern(.majority)
         let wc = try WriteConcern(wtimeoutMS: 123)
-        let rp = ReadPreference()
+        let rp = ReadPreference(.primary)
 
         let agg = AggregateOptions(
                 allowDiskUse: true,

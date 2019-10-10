@@ -8,7 +8,10 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
     }
 
     func testMode() {
-        let primary = ReadPreference()
+        let defaultPref = ReadPreference()
+        expect(defaultPref.mode).to(equal(ReadPreference.Mode.primary))
+
+        let primary = ReadPreference(.primary)
         expect(primary.mode).to(equal(ReadPreference.Mode.primary))
 
         let primaryPreferred = ReadPreference(.primaryPreferred)
@@ -67,11 +70,11 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
     }
 
     func testEquatable() throws {
-        expect(ReadPreference()).to(equal(ReadPreference()))
-        expect(ReadPreference()).toNot(equal(ReadPreference(.primaryPreferred)))
-        expect(ReadPreference()).toNot(equal(ReadPreference(.secondary)))
-        expect(ReadPreference()).toNot(equal(ReadPreference(.secondaryPreferred)))
-        expect(ReadPreference()).toNot(equal(ReadPreference(.nearest)))
+        expect(ReadPreference(.primary)).to(equal(ReadPreference(.primary)))
+        expect(ReadPreference(.primary)).toNot(equal(ReadPreference(.primaryPreferred)))
+        expect(ReadPreference(.primary)).toNot(equal(ReadPreference(.secondary)))
+        expect(ReadPreference(.primary)).toNot(equal(ReadPreference(.secondaryPreferred)))
+        expect(ReadPreference(.primary)).toNot(equal(ReadPreference(.nearest)))
 
         expect(try ReadPreference(.secondary, tagSets: nil))
             .to(equal(ReadPreference(.secondary)))
@@ -154,18 +157,18 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
     }
 
     func testDatabaseReadPreference() throws {
-        let primary = ReadPreference()
+        let primary = ReadPreference(.primary)
         let secondary = ReadPreference(.secondary)
         let client = try MongoClient.makeTestClient()
 
         do {
             // expect that a database with an unset read preference defaults to primary
             let db = client.db(type(of: self).testDatabase)
-            expect(db.readPreference).to(equal(ReadPreference()))
+            expect(db.readPreference).to(equal(ReadPreference(.primary)))
 
              // expect that a collection inherits its database default read preference
             let coll1 = db.collection(self.getCollectionName(suffix: "1"))
-            expect(coll1.readPreference).to(equal(ReadPreference()))
+            expect(coll1.readPreference).to(equal(ReadPreference(.primary)))
 
             // expect that a collection can override its inherited read preference
             let coll2 = db.collection(self.getCollectionName(suffix: "2"),
@@ -182,7 +185,7 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
             // expect that a collection can override its database read preference
             let coll2 = db.collection(self.getCollectionName(suffix: "2"),
                                       options: CollectionOptions(readPreference: primary))
-            expect(coll2.readPreference).to(equal(ReadPreference()))
+            expect(coll2.readPreference).to(equal(ReadPreference(.primary)))
         }
     }
 }

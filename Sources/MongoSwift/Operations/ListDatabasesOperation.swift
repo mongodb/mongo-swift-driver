@@ -41,7 +41,7 @@ internal struct ListDatabasesOperation: Operation {
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> ListDatabasesResults {
         // spec requires that this command be run against the primary.
-        let readPref = ReadPreference()
+        let readPref = ReadPreference(.primary)
         var cmd: Document = ["listDatabases": 1]
         if let filter = self.filter {
             cmd["filter"] = filter
