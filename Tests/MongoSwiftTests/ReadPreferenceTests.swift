@@ -108,7 +108,7 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
         expect((res["ok"] as? BSONNumber)?.doubleValue).to(bsonEqual(1.0))
 
         // expect running other commands to not throw errors when passing in a valid read preference
-        expect(try coll.find(options: FindOptions(readPreference: ReadPreference()))).toNot(throwError())
+        expect(try coll.find(options: FindOptions(readPreference: ReadPreference(.primary)))).toNot(throwError())
 
         expect(try coll.aggregate([["$project": ["a": 1] as Document]],
                                   options: AggregateOptions(readPreference: ReadPreference(.secondaryPreferred))))
@@ -129,11 +129,11 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
         do {
             // expect that a client with an unset read preference has it default to primary
             let client = try MongoClient.makeTestClient()
-            expect(client.readPreference).to(equal(ReadPreference()))
+            expect(client.readPreference).to(equal(ReadPreference(.primary)))
 
             // expect that a database created from this client inherits its read preference
             let db1 = client.db(type(of: self).testDatabase)
-            expect(db1.readPreference).to(equal(ReadPreference()))
+            expect(db1.readPreference).to(equal(ReadPreference(.primary)))
 
             // expect that a database can override the readPreference it inherited from a client
             let opts = DatabaseOptions(readPreference: secondary)
