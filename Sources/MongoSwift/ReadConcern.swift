@@ -85,7 +85,7 @@ public struct ReadConcern: Codable {
 
     /// Initializes a new `ReadConcern` from a `Document`.
     public init(_ doc: Document) {
-        if let level = doc["level"] as? String {
+        if let level = doc["level"]?.stringValue {
             self.init(level)
         } else {
             self.init()

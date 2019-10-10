@@ -10,13 +10,14 @@ final class Document_SequenceTests: MongoSwiftTestCase {
             "true": true,
             "false": false,
             "int": 25,
-            "int32": Int32(5),
-            "double": Double(15),
-            "decimal128": Decimal128("1.2E+10")!,
-            "minkey": MinKey(),
-            "maxkey": MaxKey(),
-            "date": Date(timeIntervalSince1970: 5000),
-            "timestamp": Timestamp(timestamp: 5, inc: 10)
+            "int32": .int32(5),
+            "int64": .int64(123),
+            "double": .double(15),
+            "decimal128": .decimal128(Decimal128("1.2E+10")!),
+            "minkey": .minKey,
+            "maxkey": .maxKey,
+            "date": .datetime(Date(timeIntervalSince1970: 5000)),
+            "timestamp": .timestamp(Timestamp(timestamp: 5, inc: 10))
         ]
 
         // create and use iter manually
@@ -24,86 +25,92 @@ final class Document_SequenceTests: MongoSwiftTestCase {
 
         let stringTup = iter.next()!
         expect(stringTup.key).to(equal("string"))
-        expect(stringTup.value).to(bsonEqual("test string"))
+        expect(stringTup.value).to(equal("test string"))
 
         let trueTup = iter.next()!
         expect(trueTup.key).to(equal("true"))
-        expect(trueTup.value).to(bsonEqual(true))
+        expect(trueTup.value).to(equal(true))
 
         let falseTup = iter.next()!
         expect(falseTup.key).to(equal("false"))
-        expect(falseTup.value).to(bsonEqual(false))
+        expect(falseTup.value).to(equal(false))
 
         let intTup = iter.next()!
         expect(intTup.key).to(equal("int"))
-        expect(intTup.value).to(bsonEqual(25))
+        expect(intTup.value).to(equal(25))
 
         let int32Tup = iter.next()!
         expect(int32Tup.key).to(equal("int32"))
-        expect(int32Tup.value).to(bsonEqual(Int32(5)))
+        expect(int32Tup.value).to(equal(.int32(5)))
+
+        let int64Tup = iter.next()!
+        expect(int64Tup.key).to(equal("int64"))
+        expect(int64Tup.value).to(equal(.int64(123)))
 
         let doubleTup = iter.next()!
         expect(doubleTup.key).to(equal("double"))
-        expect(doubleTup.value).to(bsonEqual(15.0))
+        expect(doubleTup.value).to(equal(15.0))
 
         let decimalTup = iter.next()!
         expect(decimalTup.key).to(equal("decimal128"))
-        expect(decimalTup.value).to(bsonEqual(Decimal128("1.2E+10")!))
+        expect(decimalTup.value).to(equal(.decimal128(Decimal128("1.2E+10")!)))
 
         let minTup = iter.next()!
         expect(minTup.key).to(equal("minkey"))
-        expect(minTup.value).to(bsonEqual(MinKey()))
+        expect(minTup.value).to(equal(.minKey))
 
         let maxTup = iter.next()!
         expect(maxTup.key).to(equal("maxkey"))
-        expect(maxTup.value).to(bsonEqual(MaxKey()))
+        expect(maxTup.value).to(equal(.maxKey))
 
         let dateTup = iter.next()!
         expect(dateTup.key).to(equal("date"))
-        expect(dateTup.value).to(bsonEqual(Date(timeIntervalSince1970: 5000)))
+        expect(dateTup.value).to(equal(.datetime(Date(timeIntervalSince1970: 5000))))
 
         let timeTup = iter.next()!
         expect(timeTup.key).to(equal("timestamp"))
-        expect(timeTup.value).to(bsonEqual(Timestamp(timestamp: 5, inc: 10)))
+        expect(timeTup.value).to(equal(.timestamp(Timestamp(timestamp: 5, inc: 10))))
 
         expect(iter.next()).to(beNil())
 
         // iterate via looping
         var expectedKeys = [
-            "string", "true", "false", "int", "int32", "double",
+            "string", "true", "false", "int", "int32", "int64", "double",
             "decimal128", "minkey", "maxkey", "date", "timestamp"
+        ]
+        var expectedValues: [BSON] = [
+            "test string", true, false, 25, .int32(5), .int64(123), .double(15),
+            .decimal128(Decimal128("1.2E+10")!), .minKey, .maxKey, .datetime(Date(timeIntervalSince1970: 5000)),
+            .timestamp(Timestamp(timestamp: 5, inc: 10))
         ]
         for (k, v) in doc {
             expect(k).to(equal(expectedKeys.removeFirst()))
-            // we can't compare `BSONValue`s for equality, nor can we cast v
-            // to a dynamically determined equatable type, so just verify
-            // it's a `BSONValue` anyway
-            expect(v).to(beAKindOf(BSONValue.self))
+            expect(v).to(equal(expectedValues.removeFirst()))
         }
     }
 
     func testMapFilter() throws {
-        let doc1: Document = ["a": 1, "b": BSONNull(), "c": 3, "d": 4, "e": BSONNull()]
-        expect(doc1.mapValues { $0 is BSONNull ? 1 : $0 }).to(equal(["a": 1, "b": 1, "c": 3, "d": 4, "e": 1]))
+        let doc1: Document = ["a": 1, "b": .null, "c": 3, "d": 4, "e": .null]
+        expect(doc1.mapValues { $0 == .null ? 1 : $0 }).to(equal(["a": 1, "b": 1, "c": 3, "d": 4, "e": 1]))
         let output1 = doc1.mapValues { val in
-            if let int = val as? Int {
-                return int + 1
+            if let int = val.asInt() {
+                return BSON(integerLiteral: int + 1)
             }
             return val
         }
-        expect(output1).to(equal(["a": 2, "b": BSONNull(), "c": 4, "d": 5, "e": BSONNull()]))
-        expect(doc1.filter { !($0.value is BSONNull) }).to(equal(["a": 1, "c": 3, "d": 4]))
+        expect(output1).to(equal(["a": 2, "b": .null, "c": 4, "d": 5, "e": .null]))
+        expect(doc1.filter { !($0.value == .null) }).to(equal(["a": 1, "c": 3, "d": 4]))
 
-        let doc2: Document = ["a": 1, "b": "hello", "c": [1, 2] as [Int]]
-        expect(doc2.filter { $0.value is String }).to(equal(["b": "hello"]))
+        let doc2: Document = ["a": 1, "b": "hello", "c": [1, 2]]
+        expect(doc2.filter { $0.value.stringValue != nil }).to(equal(["b": "hello"]))
         let output2 = doc2.mapValues { val in
             switch val {
-            case let val as Int:
-                return val + 1
-            case let val as String:
-                return val + " there"
-            case let val as [Int]:
-                return val.reduce(0, +)
+            case let .int64(val):
+                return .int64(val + 1)
+            case let .string(val):
+                return .string(val + " there")
+            case .array:
+                return BSON(integerLiteral: val.arrayValue!.compactMap { $0.asInt() }.reduce(0, +))
             default:
                 return val
             }
@@ -117,13 +124,13 @@ final class Document_SequenceTests: MongoSwiftTestCase {
     // shared docs for subsequence tests
     let emptyDoc = Document()
     let smallDoc: Document = ["x": 1]
-    let doc: Document = ["a": 1, "b": "hi", "c": [1, 2] as [Int], "d": false, "e": BSONNull(), "f": MinKey(), "g": 10]
+    let doc: Document = ["a": 1, "b": "hi", "c": [1, 2], "d": false, "e": .null, "f": .minKey, "g": 10]
 
     // shared predicates for subsequence tests
-    func isInt(_ pair: Document.KeyValuePair) -> Bool { return pair.value is Int }
-    func isNotNil(_ pair: Document.KeyValuePair) -> Bool { return !(pair.value is BSONNull) }
+    func isInt(_ pair: Document.KeyValuePair) -> Bool { return pair.value.asInt() != nil }
+    func isNotNil(_ pair: Document.KeyValuePair) -> Bool { return pair.value != .null }
     func is10(_ pair: Document.KeyValuePair) -> Bool {
-        if let int = pair.value as? Int {
+        if let int = pair.value.asInt() {
             return int == 10
          }
         return false
@@ -142,14 +149,14 @@ final class Document_SequenceTests: MongoSwiftTestCase {
         expect(self.doc.dropFirst()).to(equal(
             [
                 "b": "hi",
-                "c": [1, 2] as [Int],
+                "c": [1, 2],
                 "d": false,
-                "e": BSONNull(),
-                "f": MinKey(),
+                "e": .null,
+                "f": .minKey,
                 "g": 10
             ]
         ))
-        expect(self.doc.dropFirst(4)).to(equal(["e": BSONNull(), "f": MinKey(), "g": 10]))
+        expect(self.doc.dropFirst(4)).to(equal(["e": .null, "f": .minKey, "g": 10]))
         expect(self.doc.dropFirst(7)).to(equal([:]))
         expect(self.doc.dropFirst(8)).to(equal([:]))
     }
@@ -166,12 +173,12 @@ final class Document_SequenceTests: MongoSwiftTestCase {
         expect(self.doc.dropLast()).to(equal([
             "a": 1,
             "b": "hi",
-            "c": [1, 2] as [Int],
+            "c": [1, 2],
             "d": false,
-            "e": BSONNull(),
-            "f": MinKey()
+            "e": .null,
+            "f": .minKey
         ]))
-        expect(self.doc.dropLast(4)).to(equal(["a": 1, "b": "hi", "c": [1, 2] as [Int]]))
+        expect(self.doc.dropLast(4)).to(equal(["a": 1, "b": "hi", "c": [1, 2]]))
         expect(self.doc.dropLast(7)).to(equal([:]))
         expect(self.doc.dropLast(8)).to(equal([:]))
     }
@@ -181,16 +188,16 @@ final class Document_SequenceTests: MongoSwiftTestCase {
         expect(self.smallDoc.drop(while: self.isInt)).to(equal([:]))
         expect(self.doc.drop(while: self.isInt)).to(equal([
             "b": "hi",
-            "c": [1, 2] as [Int],
+            "c": [1, 2],
             "d": false,
-            "e": BSONNull(),
-            "f": MinKey(),
+            "e": .null,
+            "f": .minKey,
             "g": 10
         ]))
 
         expect(self.emptyDoc.drop(while: self.isNotNil)).to(equal([:]))
         expect(self.smallDoc.drop(while: self.isNotNil)).to(equal([:]))
-        expect(self.doc.drop(while: self.isNotNil)).to(equal(["e": BSONNull(), "f": MinKey(), "g": 10]))
+        expect(self.doc.drop(while: self.isNotNil)).to(equal(["e": .null, "f": .minKey, "g": 10]))
 
         expect(self.emptyDoc.drop(while: self.isNot10)).to(equal([:]))
         expect(self.smallDoc.drop(while: self.isNot10)).to(equal([:]))
@@ -212,7 +219,7 @@ final class Document_SequenceTests: MongoSwiftTestCase {
         expect(self.doc.prefix(0)).to(equal([:]))
         expect(self.doc.prefix(1)).to(equal(["a": 1]))
         expect(self.doc.prefix(2)).to(equal(["a": 1, "b": "hi"]))
-        expect(self.doc.prefix(4)).to(equal(["a": 1, "b": "hi", "c": [1, 2] as [Int], "d": false]))
+        expect(self.doc.prefix(4)).to(equal(["a": 1, "b": "hi", "c": [1, 2], "d": false]))
         expect(self.doc.prefix(7)).to(equal(doc))
         expect(self.doc.prefix(8)).to(equal(doc))
     }
@@ -224,7 +231,7 @@ final class Document_SequenceTests: MongoSwiftTestCase {
 
         expect(self.emptyDoc.prefix(while: self.isNotNil)).to(equal([:]))
         expect(self.smallDoc.prefix(while: self.isNotNil)).to(equal(smallDoc))
-        expect(self.doc.prefix(while: self.isNotNil)).to(equal(["a": 1, "b": "hi", "c": [1, 2] as [Int], "d": false]))
+        expect(self.doc.prefix(while: self.isNotNil)).to(equal(["a": 1, "b": "hi", "c": [1, 2], "d": false]))
 
         expect(self.emptyDoc.prefix(while: self.isNot10)).to(equal([:]))
         expect(self.smallDoc.prefix(while: self.isNot10)).to(equal(smallDoc))
@@ -232,10 +239,10 @@ final class Document_SequenceTests: MongoSwiftTestCase {
             [
                 "a": 1,
                 "b": "hi",
-                "c": [1, 2] as [Int],
+                "c": [1, 2],
                 "d": false,
-                "e": BSONNull(),
-                "f": MinKey()
+                "e": .null,
+                "f": .minKey
             ]
         ))
 
@@ -256,8 +263,8 @@ final class Document_SequenceTests: MongoSwiftTestCase {
 
         expect(self.doc.suffix(0)).to(equal([]))
         expect(self.doc.suffix(1)).to(equal(["g": 10]))
-        expect(self.doc.suffix(2)).to(equal(["f": MinKey(), "g": 10]))
-        expect(self.doc.suffix(4)).to(equal(["d": false, "e": BSONNull(), "f": MinKey(), "g": 10]))
+        expect(self.doc.suffix(2)).to(equal(["f": .minKey, "g": 10]))
+        expect(self.doc.suffix(4)).to(equal(["d": false, "e": .null, "f": .minKey, "g": 10]))
         expect(self.doc.suffix(7)).to(equal(doc))
         expect(self.doc.suffix(8)).to(equal(doc))
     }
@@ -269,10 +276,10 @@ final class Document_SequenceTests: MongoSwiftTestCase {
             [
                 [
                     "b": "hi",
-                    "c": [1, 2] as [Int],
+                    "c": [1, 2],
                     "d": false,
-                    "e": BSONNull(),
-                    "f": MinKey()
+                    "e": .null,
+                    "f": .minKey
                 ]
             ]
         ))
@@ -282,13 +289,13 @@ final class Document_SequenceTests: MongoSwiftTestCase {
         expect(self.doc.split(omittingEmptySubsequences: false, whereSeparator: self.isInt)).to(equal(
             [
                 [:],
-                ["b": "hi", "c": [1, 2] as [Int], "d": false, "e": BSONNull(), "f": MinKey()],
+                ["b": "hi", "c": [1, 2], "d": false, "e": .null, "f": .minKey],
                 [:]
             ]
         ))
 
         expect(self.doc.split(maxSplits: 1, omittingEmptySubsequences: false, whereSeparator: self.isInt))
-            .to(equal([[:], ["b": "hi", "c": [1, 2] as [Int], "d": false, "e": BSONNull(), "f": MinKey(), "g": 10]]))
+                .to(equal([[:], ["b": "hi", "c": [1, 2], "d": false, "e": .null, "f": .minKey, "g": 10]]))
     }
 
     func testIsEmpty() throws {

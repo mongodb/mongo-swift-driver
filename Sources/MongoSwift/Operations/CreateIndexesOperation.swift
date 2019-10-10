@@ -28,16 +28,16 @@ internal struct CreateIndexesOperation<T: Codable>: Operation {
     }
 
     internal func execute(using connection: Connection, session: SyncClientSession?) throws -> [String] {
-        var indexData = [Document]()
+        var indexData = [BSON]()
         for index in self.models {
             var indexDoc = try self.collection.encoder.encode(index)
             if indexDoc["name"] == nil {
-                indexDoc["name"] = index.defaultName
+                indexDoc["name"] = .string(index.defaultName)
             }
-            indexData.append(indexDoc)
+            indexData.append(.document(indexDoc))
         }
 
-        let command: Document = ["createIndexes": self.collection.name, "indexes": indexData]
+        let command: Document = ["createIndexes": .string(self.collection.name), "indexes": .array(indexData)]
 
         let opts = try encodeOptions(options: options, session: session)
 

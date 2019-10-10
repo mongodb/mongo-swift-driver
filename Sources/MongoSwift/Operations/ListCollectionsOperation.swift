@@ -106,9 +106,9 @@ internal struct ListCollectionsOperation: Operation {
 
     internal func execute(using connection: Connection, session: SyncClientSession?) throws -> ListCollectionsResults {
         var opts = try encodeOptions(options: self.options, session: session) ?? Document()
-        opts["nameOnly"] = self.nameOnly
+        opts["nameOnly"] = .bool(self.nameOnly)
         if let filterDoc = self.filter {
-            opts["filter"] = filterDoc
+            opts["filter"] = .document(filterDoc)
 
             // If `listCollectionNames` is called with a non-name filter key, change server-side nameOnly flag to false.
             if self.nameOnly && filterDoc.keys.contains { $0 != "name" } {
@@ -130,7 +130,7 @@ internal struct ListCollectionsOperation: Operation {
                                                                         session: session,
                                                                         initializer: initializer)
             return try .names(cursor.map {
-                guard let name = $0["name"] as? String else {
+                guard let name = $0["name"]?.stringValue else {
                     throw RuntimeError.internalError(message: "Invalid server response: collection has no name")
                 }
                 return name

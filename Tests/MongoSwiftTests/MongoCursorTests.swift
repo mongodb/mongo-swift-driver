@@ -44,7 +44,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
             expect(try cursor.nextOrError()).toNot(throwError())
 
             // run killCursors so next iteration fails on the server
-            try db.runCommand(["killCursors": coll.name, "cursors": [cursor.id]])
+            try db.runCommand(["killCursors": .string(coll.name), "cursors": [.int64(cursor.id!)]])
             let expectedError2 = ServerError.commandError(code: 43,
                                                           codeName: "CursorNotFound",
                                                           message: "",
@@ -94,7 +94,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
 
             // insert 3 docs so the cursor loses track of its position
             for i in 4..<7 {
-                try coll.insertOne(["_id": i, "x": i])
+                try coll.insertOne(["_id": BSON(i), "x": BSON(i)])
             }
 
             let expectedError = ServerError.commandError(code: 136,

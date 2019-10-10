@@ -100,17 +100,17 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
         defer { try? db.drop() }
         let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
 
-        let command: Document = ["count": coll.name]
+        let command: Document = ["count": .string(coll.name)]
 
         // expect runCommand to return a success response when passing in a valid read preference
         let opts = RunCommandOptions(readPreference: ReadPreference(.secondaryPreferred))
         let res = try db.runCommand(command, options: opts)
-        expect((res["ok"] as? BSONNumber)?.doubleValue).to(bsonEqual(1.0))
+        expect(res["ok"]?.asDouble()).to(equal(1.0))
 
         // expect running other commands to not throw errors when passing in a valid read preference
         expect(try coll.find(options: FindOptions(readPreference: ReadPreference(.primary)))).toNot(throwError())
 
-        expect(try coll.aggregate([["$project": ["a": 1] as Document]],
+        expect(try coll.aggregate([["$project": ["a": 1]]],
                                   options: AggregateOptions(readPreference: ReadPreference(.secondaryPreferred))))
                                   .toNot(throwError())
 

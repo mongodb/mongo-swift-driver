@@ -120,50 +120,50 @@ public struct ServerDescription {
 
     /// An internal function to handle parsing isMaster and setting ServerDescription attributes appropriately.
     internal mutating func parseIsMaster(_ isMaster: Document) {
-        if let lastWrite = isMaster["lastWrite"] as? Document {
-            self.lastWriteDate = lastWrite["lastWriteDate"] as? Date
-            self.opTime = lastWrite["opTime"] as? ObjectId
+        if let lastWrite = isMaster["lastWrite"]?.documentValue {
+            self.lastWriteDate = lastWrite["lastWriteDate"]?.dateValue
+            self.opTime = lastWrite["opTime"]?.objectIdValue
         }
 
-        if let minVersion = (isMaster["minWireVersion"] as? BSONNumber)?.int32Value {
+        if let minVersion = isMaster["minWireVersion"]?.asInt32() {
             self.minWireVersion = minVersion
         }
 
-        if let maxVersion = (isMaster["maxWireVersion"] as? BSONNumber)?.int32Value {
+        if let maxVersion = isMaster["maxWireVersion"]?.asInt32() {
             self.maxWireVersion = maxVersion
         }
 
-        if let me = isMaster["me"] as? String {
+        if let me = isMaster["me"]?.stringValue {
             self.me = ConnectionId(me)
         }
 
-        if let hosts = isMaster["hosts"] as? [String] {
+        if let hosts = isMaster["hosts"]?.arrayValue?.compactMap({ $0.stringValue }) {
             self.hosts = hosts.map { ConnectionId($0) }
         }
 
-        if let passives = isMaster["passives"] as? [String] {
+        if let passives = isMaster["passives"]?.arrayValue?.compactMap({ $0.stringValue }) {
             self.passives = passives.map { ConnectionId($0) }
         }
 
-        if let arbiters = isMaster["arbiters"] as? [String] {
+        if let arbiters = isMaster["arbiters"]?.arrayValue?.compactMap({ $0.stringValue }) {
             self.arbiters = arbiters.map { ConnectionId($0) }
         }
 
-        if let tags = isMaster["tags"] as? Document {
+        if let tags = isMaster["tags"]?.documentValue {
             for (k, v) in tags {
-                self.tags[k] = v as? String
+                self.tags[k] = v.stringValue
             }
         }
 
-        self.setName = isMaster["setName"] as? String
-        self.setVersion = (isMaster["setVersion"] as? BSONNumber)?.int64Value
-        self.electionId = isMaster["electionId"] as? ObjectId
+        self.setName = isMaster["setName"]?.stringValue
+        self.setVersion = isMaster["setVersion"]?.int64Value
+        self.electionId = isMaster["electionId"]?.objectIdValue
 
-        if let primary = isMaster["primary"] as? String {
+        if let primary = isMaster["primary"]?.stringValue {
             self.primary = ConnectionId(primary)
         }
 
-        self.logicalSessionTimeoutMinutes = (isMaster["logicalSessionTimeoutMinutes"] as? BSONNumber)?.int64Value
+        self.logicalSessionTimeoutMinutes = isMaster["logicalSessionTimeoutMinutes"]?.int64Value
     }
 
     /// An internal initializer to create a `ServerDescription` from an OpaquePointer to a

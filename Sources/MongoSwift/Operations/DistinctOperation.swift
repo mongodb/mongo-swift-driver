@@ -46,11 +46,11 @@ internal struct DistinctOperation<T: Codable>: Operation {
         self.options = options
     }
 
-    internal func execute(using connection: Connection, session: SyncClientSession?) throws -> [BSONValue] {
+    internal func execute(using connection: Connection, session: SyncClientSession?) throws -> [BSON] {
         let command: Document = [
-            "distinct": self.collection.name,
-            "key": self.fieldName,
-            "query": self.filter
+            "distinct": .string(self.collection.name),
+            "key": .string(self.fieldName),
+            "query": .document(self.filter)
         ]
 
         let opts = try encodeOptions(options: self.options, session: session)
@@ -66,7 +66,7 @@ internal struct DistinctOperation<T: Codable>: Operation {
             throw extractMongoError(error: error, reply: reply)
         }
 
-        guard let values = try reply.getValue(for: "values") as? [BSONValue] else {
+        guard let values = try reply.getValue(for: "values")?.arrayValue else {
             throw RuntimeError.internalError(message:
                 "expected server reply \(reply) to contain an array of distinct values")
         }

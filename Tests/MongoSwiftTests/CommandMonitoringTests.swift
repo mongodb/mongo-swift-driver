@@ -143,7 +143,7 @@ private struct CMTest: Decodable {
     // swiftlint:disable cyclomatic_complexity
     func doOperation(withCollection collection: SyncMongoCollection<Document>) throws {
         // TODO SWIFT-31: use readPreferences for commands if provided
-        let filter: Document = self.op.args["filter"] as? Document ?? [:]
+        let filter: Document = self.op.args["filter"]?.documentValue ?? [:]
 
         switch self.op.name {
         case "count":
@@ -154,29 +154,29 @@ private struct CMTest: Decodable {
             _ = try? collection.deleteOne(filter)
 
         case "find":
-            let modifiers = self.op.args["modifiers"] as? Document
+            let modifiers = self.op.args["modifiers"]?.documentValue
             var hint: Hint?
-            if let hintDoc = modifiers?["$hint"] as? Document {
+            if let hintDoc = modifiers?["$hint"]?.documentValue {
                 hint = .indexSpec(hintDoc)
             }
-            let options = FindOptions(batchSize: (self.op.args["batchSize"] as? BSONNumber)?.int32Value,
-                                      comment: modifiers?["$comment"] as? String,
+            let options = FindOptions(batchSize: self.op.args["batchSize"]?.asInt32(),
+                                      comment: modifiers?["$comment"]?.stringValue,
                                       hint: hint,
-                                      limit: (self.op.args["limit"] as? BSONNumber)?.int64Value,
-                                      max: modifiers?["$max"] as? Document,
-                                      maxTimeMS: (modifiers?["$maxTimeMS"] as? BSONNumber)?.int64Value,
-                                      min: modifiers?["$min"] as? Document,
-                                      returnKey: modifiers?["$returnKey"] as? Bool,
-                                      showRecordId: modifiers?["$showDiskLoc"] as? Bool,
-                                      skip: (self.op.args["skip"] as? BSONNumber)?.int64Value,
-                                      sort: self.op.args["sort"] as? Document)
+                                      limit: self.op.args["limit"]?.asInt64(),
+                                      max: modifiers?["$max"]?.documentValue,
+                                      maxTimeMS: modifiers?["$maxTimeMS"]?.asInt64(),
+                                      min: modifiers?["$min"]?.documentValue,
+                                      returnKey: modifiers?["$returnKey"]?.boolValue,
+                                      showRecordId: modifiers?["$showDiskLoc"]?.boolValue,
+                                      skip: self.op.args["skip"]?.asInt64(),
+                                      sort: self.op.args["sort"]?.documentValue)
 
             // we have to iterate the cursor to make the command execute
             for _ in try! collection.find(filter, options: options) {}
 
         case "insertMany":
-            let documents: [Document] = try self.op.args.get("documents")
-            let options = InsertManyOptions(ordered: self.op.args["ordered"] as? Bool)
+            let documents = (self.op.args["documents"]?.arrayValue?.compactMap { $0.documentValue })!
+            let options = InsertManyOptions(ordered: self.op.args["ordered"]?.boolValue)
             _ = try? collection.insertMany(documents, options: options)
 
         case "insertOne":
@@ -189,7 +189,7 @@ private struct CMTest: Decodable {
 
         case "updateOne":
             let update: Document = try self.op.args.get("update")
-            let options = UpdateOptions(upsert: self.op.args["upsert"] as? Bool)
+            let options = UpdateOptions(upsert: self.op.args["upsert"]?.boolValue)
             _ = try? collection.updateOne(filter: filter, update: update, options: options)
 
         default:
@@ -211,15 +211,15 @@ private protocol ExpectationType {
 private func makeExpectation(_ document: Document) throws -> ExpectationType {
     let decoder = BSONDecoder()
 
-    if let doc = document["command_started_event"] as? Document {
+    if let doc = document["command_started_event"]?.documentValue {
         return try decoder.decode(CommandStartedExpectation.self, from: doc)
     }
 
-    if let doc = document["command_succeeded_event"] as? Document {
+    if let doc = document["command_succeeded_event"]?.documentValue {
         return try decoder.decode(CommandSucceededExpectation.self, from: doc)
     }
 
-    if let doc = document["command_failed_event"] as? Document {
+    if let doc = document["command_failed_event"]?.documentValue {
         return try decoder.decode(CommandFailedExpectation.self, from: doc)
     }
 
@@ -250,10 +250,10 @@ private struct CommandStartedExpectation: ExpectationType, Decodable {
         // if it's a getMore, we can't directly compare the results
         if commandName == "getMore" {
             // verify that the getMore ID matches the stored cursor ID for this test
-            expect(event.command["getMore"]).to(bsonEqual(testContext["cursorId"] as? BSONNumber))
+            expect(event.command["getMore"]).to(equal(testContext["cursorId"] as? BSON))
             // compare collection and batchSize fields
-            expect(event.command["collection"]).to(bsonEqual(self.command["collection"]))
-            expect(event.command["batchSize"]).to(bsonEqual(self.command["batchSize"]))
+            expect(event.command["collection"]).to(equal(self.command["collection"]))
+            expect(event.command["batchSize"]).to(equal(self.command["batchSize"]))
         } else {
             // remove fields from the command we received that are not in the expected
             // command, and reorder them, so we can do a direct comparison of the documents
@@ -271,29 +271,36 @@ private func normalizeCommand(_ input: Document) -> Document {
         // from the expected command unless if it is set to true, because none of the
         // tests explicitly provide upsert: false or multi: false, yet they
         // are in the expected commands anyway.
-        if ["upsert", "multi"].contains(k), let bV = v as? Bool {
+        if ["upsert", "multi"].contains(k), let bV = v.boolValue {
             if bV { output[k] = true } else { continue }
 
         // The tests don't explicitly store maxTimeMS as an Int64, so libmongoc
         // parses it as an Int32 which we convert to Int. convert to Int64 here because we
-        /// (as per the crud spec) use an Int64 for maxTimeMS and send that to
+        // (as per the crud spec) use an Int64 for maxTimeMS and send that to
         // the server in our actual commands.
-        } else if k == "maxTimeMS", let iV = (v as? BSONNumber)?.int64Value {
-            output[k] = iV
+        } else if k == "maxTimeMS", let iV = v.asInt64() {
+            output[k] = .int64(iV)
 
         // The expected batch sizes are always Int64s, however, find command
         // events actually have Int32 batch sizes... (as the spec says...)
         // but getMores have Int64s. so only convert if it's a find command...
-        } else if k == "batchSize", let iV = v as? BSONNumber {
-            if input["find"] != nil { output[k] = iV.int32Value! } else { output[k] = v }
+        } else if k == "batchSize" && input["find"] != nil {
+            output[k] = .int32(v.asInt32()!)
 
         // recursively normalize if it's a document
-        } else if let docVal = v as? Document {
-            output[k] = normalizeCommand(docVal)
+        } else if let docVal = v.documentValue {
+            output[k] = .document(normalizeCommand(docVal))
 
         // recursively normalize each element if it's an array
-        } else if let arrVal = v as? [Document] {
-            output[k] = arrVal.map { normalizeCommand($0) }
+        } else if case let .array(arrVal) = v {
+            output[k] = .array(arrVal.map {
+                switch $0 {
+                case let .document(d):
+                    return .document(normalizeCommand(d))
+                default:
+                    return $0
+                }
+            })
 
         // just copy the value over as is
         } else {
@@ -325,8 +332,8 @@ private struct CommandSucceededExpectation: ExpectationType, Decodable {
     let commandName: String
 
     var reply: Document { return normalizeExpectedReply(originalReply) }
-    var writeErrors: [Document]? { return originalReply["writeErrors"] as? [Document] }
-    var cursor: Document? { return originalReply["cursor"] as? Document }
+    var writeErrors: [Document]? { return originalReply["writeErrors"]?.arrayValue?.compactMap { $0.documentValue } }
+    var cursor: Document? { return originalReply["cursor"]?.documentValue }
 
     enum CodingKeys: String, CodingKey {
         case commandName = "command_name", originalReply = "reply"
@@ -344,7 +351,7 @@ private struct CommandSucceededExpectation: ExpectationType, Decodable {
         expect(event.commandName).to(equal(self.commandName))
 
         // compare writeErrors, if any
-        let receivedWriteErrs = event.reply["writeErrors"] as? [Document]
+        let receivedWriteErrs = event.reply["writeErrors"]?.arrayValue?.compactMap { $0.documentValue }
         if let expectedErrs = self.writeErrors {
             expect(receivedWriteErrs).toNot(beNil())
             checkWriteErrors(expected: expectedErrs, actual: receivedWriteErrs!)
@@ -352,17 +359,17 @@ private struct CommandSucceededExpectation: ExpectationType, Decodable {
             expect(receivedWriteErrs).to(beNil())
         }
 
-        let receivedCursor = event.reply["cursor"] as? Document
+        let receivedCursor = event.reply["cursor"]?.documentValue
         if let expectedCursor = self.cursor {
             // if the received cursor has an ID, and the expected ID is not 0, compare cursor IDs
-            if let id = receivedCursor!["id"] as? BSONNumber, (expectedCursor["id"] as? BSONNumber)?.intValue != 0 {
-                let storedId = testContext["cursorId"] as? BSONNumber
+            if let id = receivedCursor!["id"], expectedCursor["id"]?.asInt() != 0 {
+                let storedId = testContext["cursorId"] as? BSON
                 // if we aren't already storing a cursor ID for this test, add one
                 if storedId == nil {
                     testContext["cursorId"] = id
                 // otherwise, verify that this ID matches the stored one
                 } else {
-                    expect(storedId).to(bsonEqual(id))
+                    expect(storedId).to(equal(id))
                 }
             }
             compareCursors(expected: expectedCursor, actual: receivedCursor!)
@@ -378,9 +385,9 @@ private struct CommandSucceededExpectation: ExpectationType, Decodable {
         expect(expected.count).to(equal(actual.count))
         for err in actual {
             // check each error code exists and is > 0
-            expect((err["code"] as? BSONNumber)?.intValue).to(beGreaterThan(0))
+            expect(err["code"]?.asInt()).to(beGreaterThan(0))
             // check each error msg exists and has length > 0
-            expect(err["errmsg"] as? String).toNot(beEmpty())
+            expect(err["errmsg"]?.stringValue).toNot(beEmpty())
         }
     }
 
@@ -388,11 +395,11 @@ private struct CommandSucceededExpectation: ExpectationType, Decodable {
     /// (handled in `compare` because we need the test context).
     func compareCursors(expected: Document, actual: Document) {
         let ordered = rearrangeDoc(actual, toLookLike: expected)
-        expect(ordered["ns"]).to(bsonEqual(expected["ns"]))
-        if let firstBatch = expected["firstBatch"] as? [Document] {
-            expect(ordered["firstBatch"]).to(bsonEqual(firstBatch))
-        } else if let nextBatch = expected["nextBatch"] as? [Document] {
-            expect(ordered["nextBatch"]).to(bsonEqual(nextBatch))
+        expect(ordered["ns"]).to(equal(expected["ns"]))
+        if let firstBatch = expected["firstBatch"] {
+            expect(ordered["firstBatch"]).to(equal(firstBatch))
+        } else if let nextBatch = expected["nextBatch"] {
+            expect(ordered["nextBatch"]).to(equal(nextBatch))
         }
     }
 }
@@ -409,8 +416,8 @@ private func normalizeExpectedReply(_ input: Document) -> Document {
             continue
         // The server sends back doubles, but the JSON test files
         // contain integer statuses (see SPEC-1050.)
-        } else if k == "ok", let dV = (v as? BSONNumber)?.doubleValue {
-            output[k] = dV
+        } else if k == "ok", let dV = v.asDouble() {
+            output[k] = .double(dV)
         // just copy the value over as is
         } else {
             output[k] = v

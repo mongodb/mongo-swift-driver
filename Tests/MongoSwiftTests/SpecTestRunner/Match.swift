@@ -10,34 +10,58 @@ internal protocol Matchable {
     /// This assumes `expected` is NOT a placeholder value (i.e. 42/"42"). Use `matches` if `expected` may be a
     /// placeholder.
     /// https://github.com/mongodb/specifications/tree/master/source/connection-monitoring-and-pooling/tests#spec-test-match-function
-    func contentMatches(expected: Any) -> Bool
+    func contentMatches(expected: Self) -> Bool
+
+    /// Determines if this value is considered a wildcard for the purposes of the MATCHES function.
+    func isPlaceholder() -> Bool
 }
 // swiftlint:enable line_length
 
 extension Matchable {
+    internal func isPlaceholder() -> Bool {
+        return false
+    }
+
     /// Returns whether this MATCHES the expected value according to the function defined in the spec.
-    internal func matches(expected: Any) -> Bool {
-        return isPlaceholder(expected) || self.contentMatches(expected: expected)
+    internal func matches<T: Matchable>(expected: T) -> Bool {
+        guard !expected.isPlaceholder() else {
+            return true
+        }
+
+        guard let expected = expected as? Self else {
+            return false
+        }
+        return self.contentMatches(expected: expected)
+    }
+}
+
+extension Matchable where Self: Equatable {
+    internal func contentMatches(expected: Self) -> Bool {
+        return self == expected
+    }
+}
+
+extension Int: Matchable {
+    internal func isPlaceholder() -> Bool {
+        return self == 42
+    }
+}
+
+extension String: Matchable {
+    internal func isPlaceholder() -> Bool {
+        return self == "42"
     }
 }
 
 /// Extension that adds MATCHES functionality to `Array`.
-extension Array: Matchable {
-    internal func contentMatches(expected: Any) -> Bool {
-        guard let expected = expected as? [Any], expected.count <= self.count else {
+extension Array: Matchable where Element: Matchable {
+    internal func contentMatches(expected: [Element]) -> Bool {
+        guard expected.count <= self.count else {
             return false
         }
 
         for (aV, eV) in zip(self, expected) {
-            if let matchable = aV as? Matchable {
-                guard matchable.matches(expected: eV) else {
-                    return false
-                }
-            } else if let actualBSON = aV as? BSONValue, let expectedBSON = eV as? BSONValue {
-                guard actualBSON.bsonMatches(expected: expectedBSON) else {
-                    return false
-                }
-            } else {
+            guard aV.matches(expected: eV) else {
                 return false
             }
         }
@@ -47,17 +71,9 @@ extension Array: Matchable {
 
 /// Extension that adds MATCHES functionality to `Document`.
 extension Document: Matchable {
-    internal func contentMatches(expected: Any) -> Bool {
-        guard !isPlaceholder(expected) else {
-            return true
-        }
-
-        guard let expected = expected as? Document else {
-            return false
-        }
-
+    internal func contentMatches(expected: Document) -> Bool {
         for (eK, eV) in expected {
-            guard let aV = self[eK], aV.bsonMatches(expected: eV) else {
+            guard let aV = self[eK], aV.matches(expected: eV) else {
                 return false
             }
         }
@@ -65,20 +81,28 @@ extension Document: Matchable {
     }
 }
 
-/// Extension that adds MATCHES functionality to `BSONValue`.
-extension BSONValue {
-    internal func bsonMatches(expected: BSONValue) -> Bool {
-        if let matchable = self as? Matchable {
-            return matchable.matches(expected: expected)
+/// Extension that adds MATCHES functionality to `BSON`.
+extension BSON: Matchable {
+    internal func isPlaceholder() -> Bool {
+        return self.asInt() == 42 || self.stringValue == "42"
+    }
+
+    internal func contentMatches(expected: BSON) -> Bool {
+        switch (self, expected) {
+        case let (.document(actual), .document(expected)):
+            return actual.matches(expected: expected)
+        case let (.array(actual), .array(expected)):
+            return actual.matches(expected: expected)
+        default:
+            return self == expected
         }
-        return isPlaceholder(expected) || self.bsonEquals(expected)
     }
 }
 
 // swiftlint:disable line_length
 /// A Nimble matcher for the MATCHES function defined in the spec.
 /// https://github.com/mongodb/specifications/tree/master/source/connection-monitoring-and-pooling/tests#spec-test-match-function
-internal func match(_ expectedValue: Any?) -> Predicate<Matchable> {
+internal func match<T: Matchable, V: Matchable>(_ expectedValue: V?) -> Predicate<T> {
     // swiftlint:enable line_length
     return Predicate.define("match <\(stringify(expectedValue))>") { actualExpression, msg in
         let actualValue = try actualExpression.evaluate()
@@ -92,9 +116,4 @@ internal func match(_ expectedValue: Any?) -> Predicate<Matchable> {
             return PredicateResult(bool: matches, message: msg)
         }
     }
-}
-
-/// Determines if an expected value is considered a wildcard for the purposes of the MATCHES function.
-internal func isPlaceholder(_ expected: Any) -> Bool {
-    return (expected as? BSONNumber)?.intValue == 42 || expected as? String == "42"
 }

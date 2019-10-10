@@ -110,11 +110,11 @@ final class ClientSessionTests: MongoSwiftTestCase {
 
         let sessionC: SyncClientSession = try client.startSession()
         expect(sessionC.active).to(beTrue())
-        expect(sessionC.id).to(bsonEqual(idB))
+        expect(sessionC.id).to(equal(idB))
 
         let sessionD: SyncClientSession = try client.startSession()
         expect(sessionD.active).to(beTrue())
-        expect(sessionD.id).to(bsonEqual(idA))
+        expect(sessionD.id).to(equal(idA))
 
         // test via explicitly ending
         sessionC.end()
@@ -124,17 +124,17 @@ final class ClientSessionTests: MongoSwiftTestCase {
 
         // test via withSession
         try client.withSession { session in
-            expect(session.id).to(bsonEqual(idA))
+            expect(session.id).to(equal(idA))
         }
 
         try client.withSession { session in
-            expect(session.id).to(bsonEqual(idA))
+            expect(session.id).to(equal(idA))
         }
 
         try client.withSession { session in
-            expect(session.id).to(bsonEqual(idA))
+            expect(session.id).to(equal(idA))
             try client.withSession { nestedSession in
-                expect(nestedSession.id).to(bsonEqual(idB))
+                expect(nestedSession.id).to(equal(idB))
             }
         }
     }
@@ -153,11 +153,11 @@ final class ClientSessionTests: MongoSwiftTestCase {
 
             expect(event.command["lsid"]).toNot(beNil(), description: op.name)
             if !seenExplicit {
-                expect(event.command["lsid"]).to(bsonEqual(session.id), description: op.name)
+                expect(event.command["lsid"]).to(equal(.document(session.id)), description: op.name)
                 seenExplicit = true
             } else {
                 expect(seenImplicit).to(beFalse())
-                expect(event.command["lsid"]).toNot(bsonEqual(session.id), description: op.name)
+                expect(event.command["lsid"]).toNot(equal(.document(session.id)), description: op.name)
                 seenImplicit = true
             }
         }
@@ -231,7 +231,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
         let database = client.db(type(of: self).testDatabase)
         let collection1 = database.collection(self.getCollectionName())
 
-        try (1...3).forEach { try collection1.insertOne(["x": $0]) }
+        try (1...3).forEach { try collection1.insertOne(["x": BSON($0)]) }
 
         let cursor = try collection.find(session: session2)
         expect(cursor.next()).toNot(beNil())
@@ -249,10 +249,10 @@ final class ClientSessionTests: MongoSwiftTestCase {
         let session = try client.startSession()
 
         for x in 1...3 {
-            try collection.insertOne(["x": x])
+            try collection.insertOne(["x": BSON(x)])
         }
 
-        var id: Document?
+        var id: BSON?
         var seenFind = false
         var seenGetMore = false
 
@@ -265,21 +265,21 @@ final class ClientSessionTests: MongoSwiftTestCase {
             if event.command["find"] != nil {
                 seenFind = true
                 if let id = id {
-                    expect(id).to(bsonEqual(event.command["lsid"]))
+                    expect(id).to(equal(event.command["lsid"]))
                 } else {
                     expect(event.command["lsid"]).toNot(beNil())
-                    id = event.command["lsid"] as? Document
+                    id = event.command["lsid"]
                 }
             } else if event.command["getMore"] != nil {
                 seenGetMore = true
                 expect(id).toNot(beNil())
                 expect(event.command["lsid"]).toNot(beNil())
-                expect(event.command["lsid"]).to(bsonEqual(id))
+                expect(event.command["lsid"]).to(equal(id))
             }
         }
 
         // explicit
-        id = session.id
+        id = .document(session.id)
         seenFind = false
         seenGetMore = false
         let cursor = try collection.find(options: FindOptions(batchSize: 2), session: session)
@@ -321,9 +321,11 @@ final class ClientSessionTests: MongoSwiftTestCase {
         try client.withSession { session in
             let date = Date()
             expect(session.clusterTime).to(beNil())
-            let newTime: Document = ["clusterTime": Timestamp(timestamp: Int(date.timeIntervalSince1970), inc: 100)]
+            let newTime: Document = [
+                "clusterTime": .timestamp(Timestamp(timestamp: Int(date.timeIntervalSince1970), inc: 100))
+            ]
             session.advanceClusterTime(to: newTime)
-            expect(session.clusterTime).to(bsonEqual(newTime))
+            expect(session.clusterTime).to(equal(newTime))
         }
     }
 
@@ -359,14 +361,14 @@ final class ClientSessionTests: MongoSwiftTestCase {
                 guard let event = notif.userInfo?["event"] as? CommandSucceededEvent else {
                     return
                 }
-                replyOpTime = event.reply["operationTime"] as? Timestamp
+                replyOpTime = event.reply["operationTime"]?.timestampValue
             }
             defer { center.removeObserver(replyObserver) }
 
             _ = try collection.find(session: session).next()
             expect(seenCommands).to(beTrue())
             expect(replyOpTime).toNot(beNil())
-            expect(replyOpTime).to(bsonEqual(session.operationTime))
+            expect(replyOpTime).to(equal(session.operationTime))
         }
 
         // Causal consistency spec test 3: the first read/write on a session should update the operationTime of a
@@ -391,9 +393,9 @@ final class ClientSessionTests: MongoSwiftTestCase {
                     guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
                         return
                     }
-                    let readConcern = event.command["readConcern"] as? Document
+                    let readConcern = event.command["readConcern"]?.documentValue
                     expect(readConcern).toNot(beNil(), description: op.name)
-                    expect(readConcern!["afterClusterTime"]).to(bsonEqual(opTime), description: op.name)
+                    expect(readConcern!["afterClusterTime"]?.timestampValue).to(equal(opTime), description: op.name)
                     expect(readConcern!["level"]).to(beNil(), description: op.name)
                     seenCommand = true
                 }
@@ -416,8 +418,8 @@ final class ClientSessionTests: MongoSwiftTestCase {
                     guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
                         return
                     }
-                    expect((event.command["readConcern"] as? Document)?["afterClusterTime"])
-                            .to(bsonEqual(opTime), description: op.name)
+                    expect(event.command["readConcern"]?.documentValue?["afterClusterTime"]?.timestampValue)
+                            .to(equal(opTime), description: op.name)
                     seenCommand = true
                 }
                 defer { center.removeObserver(observer) }
@@ -435,11 +437,11 @@ final class ClientSessionTests: MongoSwiftTestCase {
                 guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
                     return
                 }
-                expect((event.command["readConcern"] as? Document)?["afterClusterTime"]).to(beNil())
+                expect(event.command["readConcern"]?.documentValue?["afterClusterTime"]).to(beNil())
                 seenCommand = true
             }
             defer { center.removeObserver(observer) }
-            _ = try collection.aggregate([["$match": ["x": 1] as Document]], session: session).next()
+            _ = try collection.aggregate([["$match": ["x": 1]]], session: session).next()
             expect(seenCommand).to(beTrue())
         }
 
@@ -456,10 +458,10 @@ final class ClientSessionTests: MongoSwiftTestCase {
                 guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
                     return
                 }
-                let readConcern = event.command["readConcern"] as? Document
+                let readConcern = event.command["readConcern"]?.documentValue
                 expect(readConcern).toNot(beNil())
-                expect(readConcern!["afterClusterTime"]).to(bsonEqual(opTime))
-                expect(readConcern!["level"]).to(bsonEqual("snapshot"))
+                expect(readConcern!["afterClusterTime"]?.timestampValue).to(equal(opTime))
+                expect(readConcern!["level"]).to(equal("snapshot"))
                 seenCommand = true
             }
             defer { center.removeObserver(observer) }
@@ -508,7 +510,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
                 guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
                     return
                 }
-                expect((event.command["readConcern"] as? Document)?["afterClusterTime"]).to(beNil())
+                expect(event.command["readConcern"]?.documentValue?["afterClusterTime"]).to(beNil())
                 seenCommand = true
             }
             defer { center.removeObserver(observer) }
@@ -556,7 +558,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
                 guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
                     return
                 }
-                expect((event.command["readConcern"] as? Document)?["afterClusterTime"]).to(beNil())
+                expect(event.command["readConcern"]?.documentValue?["afterClusterTime"]).to(beNil())
                 seenCommand = true
             }
             defer { center.removeObserver(startObserver) }

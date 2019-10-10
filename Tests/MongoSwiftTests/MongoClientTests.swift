@@ -43,7 +43,7 @@ final class MongoClientTests: MongoSwiftTestCase {
         expect(try client.listDatabaseNames(["name": "db1"])).to(equal(["db1"]))
 
         let topSize = dbInfo.map { $0.sizeOnDisk }.max()!
-        expect(try client.listDatabases(["sizeOnDisk": ["$gt": topSize] as Document])).to(beEmpty())
+        expect(try client.listDatabases(["sizeOnDisk": ["$gt": BSON(topSize)]])).to(beEmpty())
 
         if MongoSwiftTestCase.topologyType == .sharded {
             expect(dbInfo.first?.shards).toNot(beNil())
@@ -71,7 +71,7 @@ final class MongoClientTests: MongoSwiftTestCase {
         let insertResult = try coll.insertOne([ "test": 42 ])
         let findResult = try coll.find([ "_id": insertResult!.insertedId ])
         let docs = Array(findResult)
-        expect(docs[0]["test"]).to(bsonEqual(42))
+        expect(docs[0]["test"]).to(equal(42))
         try db.drop()
     }
 
@@ -161,14 +161,14 @@ final class MongoClientTests: MongoSwiftTestCase {
         // default behavior is .bsonDate, .binary, .binary
         let collDefault = defaultDb.collection(self.getCollectionName(), withType: Wrapper.self)
 
-        let defaultId = "default"
-        try collDefault.insertOne(wrapperWithId(defaultId))
+        let defaultId: BSON = "default"
+        try collDefault.insertOne(wrapperWithId(defaultId.stringValue!))
 
         var doc = try collDoc.find(["_id": defaultId]).nextOrError()
         expect(doc).toNot(beNil())
-        expect(doc?["date"] as? Date).to(equal(date))
-        expect(doc?["uuid"] as? Binary).to(equal(try Binary(from: uuid)))
-        expect(doc?["data"] as? Binary).to(equal(try Binary(data: data, subtype: .generic)))
+        expect(doc?["date"]?.dateValue).to(equal(date))
+        expect(doc?["uuid"]?.binaryValue).to(equal(try Binary(from: uuid)))
+        expect(doc?["data"]?.binaryValue).to(equal(try Binary(data: data, subtype: .generic)))
 
         expect(try collDefault.find(["_id": defaultId]).nextOrError()).to(equal(wrapper))
 
@@ -181,14 +181,14 @@ final class MongoClientTests: MongoSwiftTestCase {
         let clientCustom = try SyncMongoClient.makeTestClient(options: custom)
         let collClient = clientCustom.db(defaultDb.name).collection(collDoc.name, withType: Wrapper.self)
 
-        let collClientId = "customClient"
-        try collClient.insertOne(wrapperWithId(collClientId))
+        let collClientId: BSON = "customClient"
+        try collClient.insertOne(wrapperWithId(collClientId.stringValue!))
 
-        doc = try collDoc.find(["_id": collClientId] as Document).nextOrError()
+        doc = try collDoc.find(["_id": collClientId]).nextOrError()
         expect(doc).toNot(beNil())
-        expect(doc?["date"] as? Double).to(beCloseTo(date.timeIntervalSince1970, within: 0.001))
-        expect(doc?["uuid"] as? String).to(equal(uuid.uuidString))
-        expect(doc?["data"] as? String).to(equal(data.base64EncodedString()))
+        expect(doc?["date"]?.doubleValue).to(beCloseTo(date.timeIntervalSince1970, within: 0.001))
+        expect(doc?["uuid"]?.stringValue).to(equal(uuid.uuidString))
+        expect(doc?["data"]?.stringValue).to(equal(data.base64EncodedString()))
 
         expect(try collClient.find(["_id": collClientId]).nextOrError()).to(equal(wrapper))
 
@@ -201,16 +201,16 @@ final class MongoClientTests: MongoSwiftTestCase {
         let dbCustom = clientCustom.db(defaultDb.name, options: dbOpts)
         let collDb = dbCustom.collection(collClient.name, withType: Wrapper.self)
 
-        let customDbId = "customDb"
-        try collDb.insertOne(wrapperWithId(customDbId))
+        let customDbId: BSON = "customDb"
+        try collDb.insertOne(wrapperWithId(customDbId.stringValue!))
 
-        doc = try collDoc.find(["_id": customDbId] as Document).next()
+        doc = try collDoc.find(["_id": customDbId]).next()
         expect(doc).toNot(beNil())
-        expect(doc?["date"] as? Double).to(beCloseTo(date.timeIntervalSinceReferenceDate, within: 0.001))
-        expect(doc?["uuid"] as? Binary).to(equal(try Binary(from: uuid)))
-        expect(doc?["data"] as? Binary).to(equal(try Binary(data: data, subtype: .generic)))
+        expect(doc?["date"]?.doubleValue).to(beCloseTo(date.timeIntervalSinceReferenceDate, within: 0.001))
+        expect(doc?["uuid"]?.binaryValue).to(equal(try Binary(from: uuid)))
+        expect(doc?["data"]?.binaryValue).to(equal(try Binary(data: data, subtype: .generic)))
 
-        expect(try collDb.find(["_id": customDbId] as Document).nextOrError()).to(equal(wrapper))
+        expect(try collDb.find(["_id": customDbId]).nextOrError()).to(equal(wrapper))
 
         // Construct collection with differing strategies from database
         let dbCollOpts = CollectionOptions(
@@ -220,16 +220,16 @@ final class MongoClientTests: MongoSwiftTestCase {
         )
         let collCustom = dbCustom.collection(collClient.name, withType: Wrapper.self, options: dbCollOpts)
 
-        let customDbCollId = "customDbColl"
-        try collCustom.insertOne(wrapperWithId(customDbCollId))
+        let customDbCollId: BSON = "customDbColl"
+        try collCustom.insertOne(wrapperWithId(customDbCollId.stringValue!))
         doc = try collDoc.find(["_id": customDbCollId]).nextOrError()
 
         expect(doc).toNot(beNil())
-        expect(doc?["date"]).to(bsonEqual(date.msSinceEpoch))
-        expect(doc?["uuid"] as? String).to(equal(uuid.uuidString))
-        expect(doc?["data"] as? String).to(equal(data.base64EncodedString()))
+        expect(doc?["date"]?.int64Value).to(equal(date.msSinceEpoch))
+        expect(doc?["uuid"]?.stringValue).to(equal(uuid.uuidString))
+        expect(doc?["data"]?.stringValue).to(equal(data.base64EncodedString()))
 
-        expect(try collCustom.find(["_id": customDbCollId] as Document).nextOrError())
+        expect(try collCustom.find(["_id": customDbCollId]).nextOrError())
                 .to(equal(wrapper))
 
         try defaultDb.drop()

@@ -1,4 +1,3 @@
-import Foundation
 @testable import MongoSwift
 import Nimble
 import XCTest
@@ -19,9 +18,9 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         let client = try SyncMongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
 
-        let command: Document = ["create": self.getCollectionName(suffix: "1")]
+        let command: Document = ["create": .string(self.getCollectionName(suffix: "1"))]
         let res = try db.runCommand(command)
-        expect((res["ok"] as? BSONNumber)?.doubleValue).to(bsonEqual(1.0))
+        expect(res["ok"]?.asDouble()).to(equal(1.0))
         expect(try (Array(db.listCollections())).count).to(equal(1))
 
         // create collection using createCollection
@@ -36,7 +35,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         expect(db.name).to(equal(type(of: self).testDatabase))
 
         // error code 59: CommandNotFound
-        expect(try db.runCommand(["asdfsadf": ObjectId()]))
+        expect(try db.runCommand(["asdfsadf": .objectId(ObjectId())]))
                 .to(throwError(ServerError.commandError(code: 59,
                                                         codeName: "CommandNotFound",
                                                         message: "",
@@ -65,7 +64,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
 
             expect(event.command["dropDatabase"]).toNot(beNil())
             let expectedWriteConcern = try? encoder.encode(expectedWriteConcerns[eventsSeen])
-            expect(event.command["writeConcern"] as? Document).to(sortedEqual(expectedWriteConcern))
+            expect(event.command["writeConcern"]?.documentValue).to(sortedEqual(expectedWriteConcern))
             eventsSeen += 1
         }
 
@@ -88,7 +87,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         let db = client.db(type(of: self).testDatabase)
 
         let indexOpts: Document =
-            ["storageEngine": ["wiredTiger": ["configString": "access_pattern_hint=random"] as Document] as Document]
+            ["storageEngine": ["wiredTiger": ["configString": "access_pattern_hint=random"]]]
 
         // test non-view options
         let fooOptions = CreateCollectionOptions(
@@ -98,17 +97,17 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
             indexOptionDefaults: indexOpts,
             max: 1000,
             size: 10240,
-            storageEngine: ["wiredTiger": ["configString": "access_pattern_hint=random"] as Document],
+            storageEngine: ["wiredTiger": ["configString": "access_pattern_hint=random"]],
             validationAction: "warn",
             validationLevel: "moderate",
-            validator: ["phone": ["$type": "string"] as Document],
+            validator: ["phone": ["$type": "string"]],
             writeConcern: try WriteConcern(w: .majority)
         )
         expect(try db.createCollection("foo", options: fooOptions)).toNot(throwError())
 
         // test view options
         let viewOptions = CreateCollectionOptions(
-            pipeline: [["$project": ["a": 1] as Document]],
+            pipeline: [["$project": ["a": 1]]],
             viewOn: "foo"
         )
 
@@ -162,24 +161,24 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
             expect(collectionNames[0]).to(equal("capped"))
             expect(collectionNames[1]).to(equal("uncapped"))
 
-            let filteredCollectionNames = try db.listCollectionNames(["name": "nonexistent"] as Document)
+            let filteredCollectionNames = try db.listCollectionNames(["name": "nonexistent"])
             expect(filteredCollectionNames).to(haveCount(0))
 
-            let cappedNames = try db.listCollectionNames(["options.capped": true] as Document)
+            let cappedNames = try db.listCollectionNames(["options.capped": true])
             expect(cappedNames).to(haveCount(1))
             expect(cappedNames[0]).to(equal("capped"))
 
-            let mongoCollections = try db.listMongoCollections(["options.capped": true] as Document)
+            let mongoCollections = try db.listMongoCollections(["options.capped": true])
             expect(mongoCollections).to(haveCount(1))
             expect(mongoCollections[0].name).to(equal("capped"))
         }
         expect(listNamesEvent).to(haveCount(4))
 
         // Check nameOnly flag passed to server for respective listCollection calls.
-        expect((listNamesEvent[0] as? CommandStartedEvent)?.command["nameOnly"]).to(bsonEqual(true))
-        expect((listNamesEvent[1] as? CommandStartedEvent)?.command["nameOnly"]).to(bsonEqual(true))
-        expect((listNamesEvent[2] as? CommandStartedEvent)?.command["nameOnly"]).to(bsonEqual(false))
-        expect((listNamesEvent[3] as? CommandStartedEvent)?.command["nameOnly"]).to(bsonEqual(false))
+        expect((listNamesEvent[0] as? CommandStartedEvent)?.command["nameOnly"]).to(equal(true))
+        expect((listNamesEvent[1] as? CommandStartedEvent)?.command["nameOnly"]).to(equal(true))
+        expect((listNamesEvent[2] as? CommandStartedEvent)?.command["nameOnly"]).to(equal(false))
+        expect((listNamesEvent[3] as? CommandStartedEvent)?.command["nameOnly"]).to(equal(false))
     }
 }
 
@@ -199,7 +198,7 @@ extension CreateCollectionOptions: Equatable {
                lhs.indexOptionDefaults == rhs.indexOptionDefaults &&
                lhs.viewOn == rhs.viewOn &&
                lhs.pipeline == rhs.pipeline &&
-               lhs.collation?["locale"] as? String == rhs.collation?["locale"] as? String
+               lhs.collation?["locale"] == rhs.collation?["locale"]
                // ^ server adds a bunch of extra fields and a version number
                // to collations. rather than deal with those, just verify the
                // locale matches.

@@ -60,8 +60,8 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         let result: BulkWriteResult! = try self.coll.bulkWrite(requests)
 
         expect(result.insertedCount).to(equal(2))
-        expect(result.insertedIds[0]!).to(bsonEqual(1))
-        expect(result.insertedIds[1]!).to(beAnInstanceOf(ObjectId.self))
+        expect(result.insertedIds[0]!).to(equal(1))
+        expect(result.insertedIds[1]!.type).to(equal(.objectId))
 
         // verify inserted doc without _id was not modified.
         guard case let .insertOne(doc) = requests[1] else {
@@ -76,9 +76,9 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
     }
 
     func testBulkWriteErrors() throws {
-        let id = ObjectId()
-        let id2 = ObjectId()
-        let id3 = ObjectId()
+        let id = BSON.objectId(ObjectId())
+        let id2 = BSON.objectId(ObjectId())
+        let id3 = BSON.objectId(ObjectId())
 
         let doc = ["_id": id] as Document
 
@@ -88,7 +88,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
             .insertOne(["_id": id2]),
             .insertOne(doc),
             .updateOne(filter: ["_id": id3],
-                       update: ["$set": ["asdfasdf": 1] as Document],
+                       update: ["$set": ["asdfasdf": 1]],
                        options: UpdateModelOptions(upsert: true))
         ]
 
@@ -119,15 +119,15 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         try createFixtures(4)
 
         let requests: [WriteModel<Document>] = [
-            .updateOne(filter: ["_id": 2], update: ["$inc": ["x": 1] as Document], options: nil),
-            .updateMany(filter: ["_id": ["$gt": 2] as Document], update: ["$inc": ["x": -1] as Document], options: nil),
+            .updateOne(filter: ["_id": 2], update: ["$inc": ["x": 1]], options: nil),
+            .updateMany(filter: ["_id": ["$gt": 2]], update: ["$inc": ["x": -1]], options: nil),
             .updateOne(filter: ["_id": 5],
-                       update: ["$set": ["x": 55] as Document],
+                       update: ["$set": ["x": 55]],
                        options: UpdateModelOptions(upsert: true)),
             .updateOne(filter: ["x": 66],
-                       update: ["$set": ["x": 66] as Document],
+                       update: ["$set": ["x": 66]],
                        options: UpdateModelOptions(upsert: true)),
-            .updateMany(filter: ["x": ["$gt": 50] as Document], update: ["$inc": ["x": 1] as Document], options: nil)
+            .updateMany(filter: ["x": ["$gt": 50]], update: ["$inc": ["x": 1]], options: nil)
         ]
 
         let result: BulkWriteResult! = try self.coll.bulkWrite(requests)
@@ -135,8 +135,8 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         expect(result.matchedCount).to(equal(5))
         expect(result.modifiedCount).to(equal(5))
         expect(result.upsertedCount).to(equal(2))
-        expect(result.upsertedIds[2]!).to(bsonEqual(5))
-        expect(result.upsertedIds[3]!).to(beAnInstanceOf(ObjectId.self))
+        expect(result.upsertedIds[2]!).to(equal(5))
+        expect(result.upsertedIds[3]!.type).to(equal(.objectId))
 
         let cursor = try coll.find()
         expect(cursor.next()).to(equal(["_id": 1, "x": 11]))
@@ -153,7 +153,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
 
         let requests: [WriteModel<Document>] = [
             .deleteOne(["_id": 1], options: nil),
-            .deleteMany(["_id": ["$gt": 2] as Document], options: nil)
+            .deleteMany(["_id": ["$gt": 2]], options: nil)
         ]
 
         let result: BulkWriteResult! = try self.coll.bulkWrite(requests)
@@ -169,12 +169,12 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         try createFixtures(3)
 
         let requests: [WriteModel<Document>] = [
-            .updateOne(filter: ["_id": ["$gt": 1] as Document],
-                       update: ["$inc": ["x": 1] as Document],
+            .updateOne(filter: ["_id": ["$gt": 1]],
+                       update: ["$inc": ["x": 1]],
                        options: nil),
-            .updateMany(filter: ["_id": ["$gt": 1] as Document], update: ["$inc": ["x": 1] as Document], options: nil),
+            .updateMany(filter: ["_id": ["$gt": 1]], update: ["$inc": ["x": 1]], options: nil),
             .insertOne(["_id": 4]),
-            .deleteMany(["x": ["$nin": [24, 34]] as Document], options: nil),
+            .deleteMany(["x": ["$nin": [24, 34]]], options: nil),
             .replaceOne(filter: ["_id": 4],
                         replacement: ["_id": 4, "x": 44],
                         options: ReplaceOneModelOptions(upsert: true))
@@ -183,11 +183,11 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         let result: BulkWriteResult! = try self.coll.bulkWrite(requests)
 
         expect(result.insertedCount).to(equal(1))
-        expect(result.insertedIds[2]!).to(bsonEqual(4))
+        expect(result.insertedIds[2]!).to(equal(4))
         expect(result.matchedCount).to(equal(3))
         expect(result.modifiedCount).to(equal(3))
         expect(result.upsertedCount).to(equal(1))
-        expect(result.upsertedIds[4]!).to(bsonEqual(4))
+        expect(result.upsertedIds[4]!).to(equal(4))
         expect(result.deletedCount).to(equal(2))
 
         let cursor = try coll.find()
@@ -211,7 +211,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         var documents: [Document] = []
 
         for i in 1...n {
-            documents.append(["_id": i, "x": Int("\(i)\(i)")!])
+            documents.append(["_id": BSON(i), "x": BSON(Int("\(i)\(i)")!)])
         }
 
         try self.coll.insertMany(documents)

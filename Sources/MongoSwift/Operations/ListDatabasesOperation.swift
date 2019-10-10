@@ -44,10 +44,10 @@ internal struct ListDatabasesOperation: Operation {
         let readPref = ReadPreference(.primary)
         var cmd: Document = ["listDatabases": 1]
         if let filter = self.filter {
-            cmd["filter"] = filter
+            cmd["filter"] = .document(filter)
         }
         if let nameOnly = self.nameOnly {
-            cmd["nameOnly"] = nameOnly
+            cmd["nameOnly"] = .bool(nameOnly)
         }
 
         let opts = try encodeOptions(options: nil as Document?, session: session)
@@ -68,12 +68,12 @@ internal struct ListDatabasesOperation: Operation {
             throw extractMongoError(error: error, reply: reply)
         }
 
-        guard let databases = reply["databases"] as? [Document] else {
+        guard let databases = reply["databases"]?.arrayValue?.compactMap({ $0.documentValue }) else {
             throw RuntimeError.internalError(message: "Invalid server response: \(reply)")
         }
 
         if self.nameOnly ?? false {
-            return .names(databases.map { $0["name"] as? String ?? "" })
+            return .names(databases.map { $0["name"]?.stringValue ?? "" })
         }
 
         return try .specs(databases.map { try self.client.decoder.decode(DatabaseSpecification.self, from: $0) })

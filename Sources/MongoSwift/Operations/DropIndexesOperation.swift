@@ -18,17 +18,17 @@ public struct DropIndexOptions: Encodable {
 /// An operation corresponding to a "dropIndexes" command.
 internal struct DropIndexesOperation<T: Codable>: Operation {
     private let collection: SyncMongoCollection<T>
-    private let index: BSONValue
+    private let index: BSON
     private let options: DropIndexOptions?
 
-    internal init(collection: SyncMongoCollection<T>, index: BSONValue, options: DropIndexOptions?) {
+    internal init(collection: SyncMongoCollection<T>, index: BSON, options: DropIndexOptions?) {
         self.collection = collection
         self.index = index
         self.options = options
     }
 
     internal func execute(using connection: Connection, session: SyncClientSession?) throws -> Document {
-        let command: Document = ["dropIndexes": self.collection.name, "index": self.index]
+        let command: Document = ["dropIndexes": .string(self.collection.name), "index": self.index]
         let opts = try encodeOptions(options: self.options, session: session)
         var reply = Document()
         var error = bson_error_t()

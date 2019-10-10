@@ -70,8 +70,10 @@ internal class FindAndModifyOptions {
 
         // build an "extra" document of fields without their own setters
         var extra = Document()
-        if let filters = arrayFilters { try extra.setValue(for: "arrayFilters", to: filters) }
-        if let coll = collation { try extra.setValue(for: "collation", to: coll) }
+        if let filters = arrayFilters {
+            try extra.setValue(for: "arrayFilters", to: .array(filters.map { .document($0) }))
+        }
+        if let coll = collation { try extra.setValue(for: "collation", to: .document(coll)) }
 
         // note: mongoc_find_and_modify_opts_set_max_time_ms() takes in a
         // uint32_t, but it should be a positive 64-bit integer, so we
@@ -80,12 +82,12 @@ internal class FindAndModifyOptions {
             guard maxTime > 0 else {
                 throw UserError.invalidArgumentError(message: "maxTimeMS must be positive, but got value \(maxTime)")
             }
-            try extra.setValue(for: "maxTimeMS", to: maxTime)
+            try extra.setValue(for: "maxTimeMS", to: .int64(maxTime))
         }
 
         if let wc = writeConcern {
             do {
-                try extra.setValue(for: "writeConcern", to: try BSONEncoder().encode(wc))
+                try extra.setValue(for: "writeConcern", to: .document(try BSONEncoder().encode(wc)))
             } catch {
                 throw RuntimeError.internalError(message: "Error encoding WriteConcern \(wc): \(error)")
             }
@@ -156,7 +158,7 @@ internal struct FindAndModifyOperation<T: Codable>: Operation {
             throw extractMongoError(error: error, reply: reply)
         }
 
-        guard let value = try reply.getValue(for: "value") as? Document else {
+        guard let value = try reply.getValue(for: "value")?.documentValue else {
             return nil
         }
 

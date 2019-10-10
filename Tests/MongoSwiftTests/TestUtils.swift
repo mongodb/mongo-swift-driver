@@ -43,7 +43,7 @@ class MongoSwiftTestCase: XCTestCase {
     }
 
     // indicates whether we are running on a 32-bit platform
-    static let is32Bit = Int.bsonType == .int32
+    static let is32Bit = MemoryLayout<Int>.size == 4
 
     /// Generates a unique collection name of the format "<Test Suite>_<Test Name>_<suffix>". If no suffix is provided,
     /// the last underscore is omitted.
@@ -137,7 +137,7 @@ extension SyncMongoClient {
         let reply = try self.db("admin").runCommand([cmd: 1],
                                                     options: RunCommandOptions(
                                                     readPreference: ReadPreference(.primary)))
-        guard let versionString = reply["version"] as? String else {
+        guard let versionString = reply["version"]?.stringValue else {
             throw TestError(message: " reply missing version string: \(reply)")
         }
         return try ServerVersion(versionString)
@@ -147,7 +147,7 @@ extension SyncMongoClient {
     internal func maxWireVersion() throws -> Int {
         let options = RunCommandOptions(readPreference: ReadPreference(.primary))
         let isMaster = try self.db("admin").runCommand(["isMaster": 1], options: options)
-        guard let max = (isMaster["maxWireVersion"] as? BSONNumber)?.intValue else {
+        guard let max = isMaster["maxWireVersion"]?.asInt() else {
             throw TestError(message: "isMaster reply missing maxwireversion \(isMaster)")
         }
         return max
@@ -253,22 +253,6 @@ internal func sortedEqual(_ expectedValue: Document?) -> Predicate<Document> {
 
         let matches = expected.sortedEquals(actual)
         return PredicateResult(status: PredicateStatus(bool: matches), message: msg)
-    }
-}
-
-/// A Nimble matcher for testing BSONValue equality.
-internal func bsonEqual(_ expectedValue: BSONValue?) -> Predicate<BSONValue> {
-    return Predicate.define("equal <\(stringify(expectedValue))>") { actualExpression, msg in
-        let actualValue = try actualExpression.evaluate()
-        switch (expectedValue, actualValue) {
-        case (nil, _?):
-            return PredicateResult(status: .fail, message: msg.appendedBeNilHint())
-        case (nil, nil), (_, nil):
-            return PredicateResult(status: .fail, message: msg)
-        case let (expected?, actual?):
-            let matches = expected.bsonEquals(actual)
-            return PredicateResult(bool: matches, message: msg)
-        }
     }
 }
 

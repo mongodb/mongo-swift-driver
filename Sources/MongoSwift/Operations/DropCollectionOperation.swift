@@ -11,7 +11,7 @@ internal struct DropCollectionOperation<T: Codable>: Operation {
     }
 
     internal func execute(using connection: Connection, session: SyncClientSession?) throws {
-        let command: Document = ["drop": self.collection.name]
+        let command: Document = ["drop": .string(self.collection.name)]
         let opts = try encodeOptions(options: options, session: session)
 
         var reply = Document()

@@ -314,7 +314,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             let changeStream =
                     try coll.watch(options: ChangeStreamOptions(maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME))
             for x in 0..<5 {
-                try coll.insertOne(["x": x])
+                try coll.insertOne(["x": BSON(x)])
             }
 
             expect(changeStream.resumeToken).to(beNil())
@@ -344,9 +344,9 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         }
 
         try withTestNamespace { client, _, coll in
-            let changeStream = try coll.watch([["$project": ["_id": false] as Document]])
+            let changeStream = try coll.watch([["$project": ["_id": false]]])
             for x in 0..<5 {
-                try coll.insertOne(["x": x])
+                try coll.insertOne(["x": BSON(x)])
             }
 
             if try client.maxWireVersion() >= 8 {
@@ -383,9 +383,9 @@ final class ChangeStreamTests: MongoSwiftTestCase {
                 let options = ChangeStreamOptions(batchSize: 123,
                                                   fullDocument: .updateLookup,
                                                   maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME)
-                let changeStream = try coll.watch([["$match": ["fullDocument.x": 2] as Document]], options: options)
+                let changeStream = try coll.watch([["$match": ["fullDocument.x": 2]]], options: options)
                 for x in 0..<5 {
-                    try coll.insertOne(["x": x])
+                    try coll.insertOne(["x": .int64(Int64(x))])
                 }
 
                 // notMaster error
@@ -402,13 +402,13 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         let originalCommand = (events[0] as? CommandStartedEvent)!.command
         let resumeCommand = (events[1] as? CommandStartedEvent)!.command
 
-        let originalPipeline = originalCommand["pipeline"]! as! [Document]
-        let resumePipeline = resumeCommand["pipeline"]! as! [Document]
+        let originalPipeline = originalCommand["pipeline"]!.arrayValue!.compactMap { $0.documentValue }
+        let resumePipeline = resumeCommand["pipeline"]!.arrayValue!.compactMap { $0.documentValue }
 
         // verify the $changeStream stage is identical except for resume options.
         let filteredStreamStage = { (pipeline: [Document]) -> Document in
             let stage = pipeline[0]
-            let streamDoc = stage["$changeStream"] as? Document
+            let streamDoc = stage["$changeStream"]?.documentValue
             expect(streamDoc).toNot(beNil())
             return streamDoc!.filter { $0.key != "resumeAfter" }
         }
@@ -418,7 +418,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         expect(resumePipeline[1...]).to(equal(originalPipeline[1...]))
 
         // verify the cursor options were preserved.
-        expect(resumeCommand["cursor"]).to(bsonEqual(originalCommand["cursor"]))
+        expect(resumeCommand["cursor"]).to(equal(originalCommand["cursor"]))
     }
 
     /**
@@ -588,9 +588,9 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             expect(try changeStream?.nextOrError()).toNot(throwError())
 
             // kill the underlying cursor to trigger a resume.
-            let reply = (aggEvent[0] as! CommandSucceededEvent).reply["cursor"] as! Document
-            let cursorId = (reply["id"] as! BSONNumber).intValue!
-            try client.db("admin").runCommand(["killCursors": self.getCollectionName(), "cursors": [cursorId]])
+            let reply = (aggEvent[0] as! CommandSucceededEvent).reply["cursor"]!.documentValue!
+            let cursorId = reply["id"]!
+            try client.db("admin").runCommand(["killCursors": .string(self.getCollectionName()), "cursors": [cursorId]])
 
             // Make the killCursors command fail as part of the resume process.
             let failPoint = FailPoint.failCommand(failCommands: ["killCursors"], mode: .times(1), errorCode: 10107)
@@ -675,7 +675,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             let changeStream =
                     try coll.watch(options: ChangeStreamOptions(maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME))
             for i in 0..<5 {
-                try coll.insertOne(["x": i])
+                try coll.insertOne(["x": BSON(i)])
             }
             for _ in 0..<3 {
                 _ = try changeStream.nextOrError()
@@ -806,7 +806,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         // expect the resumeToken to be updated to the _id field of the most recently accessed document
         expect(changeStream.resumeToken).to(equal(change1?._id))
 
-        try coll.updateOne(filter: ["x": 1], update: ["$set": ["x": 2] as Document])
+        try coll.updateOne(filter: ["x": 1], update: ["$set": ["x": 2]])
         let change2 = changeStream.next()
         // expect the change stream to contain a change document for the `update` operation
         expect(change2).toNot(beNil())
@@ -837,7 +837,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         defer { try? db.drop() }
         let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
         let options = ChangeStreamOptions(fullDocument: .updateLookup, maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME)
-        let pipeline: [Document] = [["$match": ["fullDocument.a": 1] as Document]]
+        let pipeline: [Document] = [["$match": ["fullDocument.a": 1]]]
         let changeStream = try coll.watch(pipeline, options: options)
 
         let doc1: Document = ["_id": 1, "a": 1]

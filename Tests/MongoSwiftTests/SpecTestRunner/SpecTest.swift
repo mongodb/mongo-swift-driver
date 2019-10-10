@@ -33,14 +33,10 @@ internal struct TestCommandStartedEvent: Decodable, Matchable {
         self.databaseName = try eventContainer.decode(String.self, forKey: .databaseName)
     }
 
-    internal func contentMatches(expected: Any) -> Bool {
-        guard let expected = expected as? TestCommandStartedEvent else {
-            return false
-        }
-
-        return self.commandName == expected.commandName &&
-                self.databaseName == expected.databaseName &&
-                self.command.matches(expected: expected.command)
+    internal func contentMatches(expected: TestCommandStartedEvent) -> Bool {
+        return self.commandName.matches(expected: expected.commandName)
+                && self.databaseName.matches(expected: expected.databaseName)
+                && self.command.matches(expected: expected.command)
     }
 }
 
@@ -75,7 +71,7 @@ internal struct FailPoint: Decodable {
 
     /// The fail point being configured.
     internal var name: String {
-        return self.failPoint["configureFailPoint"] as? String ?? ""
+        return self.failPoint["configureFailPoint"]?.stringValue ?? ""
     }
 
     private init(_ document: Document) {
@@ -95,12 +91,12 @@ internal struct FailPoint: Decodable {
 
             // Need to convert error codes to int32's due to c driver bug (CDRIVER-3121)
             if k == "data",
-               var data = v as? Document,
-               var wcErr = data["writeConcernError"] as? Document,
-               let code = wcErr["code"] as? BSONNumber {
-                wcErr["code"] = code.int32Value
-                data["writeConcernError"] = wcErr
-                commandDoc["data"] = data
+               var data = v.documentValue,
+               var wcErr = data["writeConcernError"]?.documentValue,
+               let code = wcErr["code"] {
+                wcErr["code"] = .int32(code.asInt32()!)
+                data["writeConcernError"] = .document(wcErr)
+                commandDoc["data"] = .document(data)
             } else {
                 commandDoc[k] = v
             }
@@ -112,7 +108,7 @@ internal struct FailPoint: Decodable {
     internal func disable() {
         do {
             let client = try SyncMongoClient.makeTestClient()
-            try client.db("admin").runCommand(["configureFailPoint": self.name, "mode": "off"])
+            try client.db("admin").runCommand(["configureFailPoint": .string(self.name), "mode": "off"])
         } catch {
             print("Failed to disable fail point \(self.name): \(error)")
         }
@@ -125,14 +121,14 @@ internal struct FailPoint: Decodable {
         case off
         case activationProbability(Double)
 
-        internal func toBSONValue() -> BSONValue {
+        internal func toBSON() -> BSON {
             switch self {
             case let .times(i):
-                return ["times": i] as Document
+                return ["times": BSON(i)]
             case let .activationProbability(d):
-                return ["activationProbability": d] as Document
+                return ["activationProbability": .double(d)]
             default:
-                return String(describing: self)
+                return .string(String(describing: self))
             }
         }
     }
@@ -147,22 +143,22 @@ internal struct FailPoint: Decodable {
                                    errorCode: Int? = nil,
                                    writeConcernError: Document? = nil) -> FailPoint {
         var data: Document = [
-            "failCommands": failCommands
+            "failCommands": .array(failCommands.map { .string($0) })
         ]
         if let close = closeConnection {
-            data["closeConnection"] = close
+            data["closeConnection"] = .bool(close)
         }
         if let code = errorCode {
-            data["errorCode"] = code
+            data["errorCode"] = BSON(code)
         }
         if let writeConcernError = writeConcernError {
-            data["writeConcernError"] = writeConcernError
+            data["writeConcernError"] = .document(writeConcernError)
         }
 
         let command: Document = [
             "configureFailPoint": "failCommand",
-            "mode": mode.toBSONValue(),
-            "data": data
+            "mode": mode.toBSON(),
+            "data": .document(data)
         ]
         return FailPoint(command)
     }

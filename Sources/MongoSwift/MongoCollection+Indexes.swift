@@ -16,7 +16,7 @@ public struct IndexModel: Codable {
 
     /// Gets the default name for this index.
     internal var defaultName: String {
-        return self.keys.map { k, v in "\(k)_\(v)" }.joined(separator: "_")
+        return self.keys.map { k, v in "\(k)_\(v.bsonValue)" }.joined(separator: "_")
     }
 
     // Encode own data as well as nested options data
@@ -254,7 +254,7 @@ extension SyncMongoCollection {
             throw UserError.invalidArgumentError(message:
                 "Invalid index name '*'; use dropIndexes() to drop all indexes")
         }
-        return try _dropIndexes(index: name, options: options, session: session)
+        return try _dropIndexes(index: .string(name), options: options, session: session)
     }
 
     /**
@@ -278,7 +278,7 @@ extension SyncMongoCollection {
     public func dropIndex(_ keys: Document,
                           options: DropIndexOptions? = nil,
                           session: SyncClientSession? = nil) throws -> Document {
-        return try _dropIndexes(index: keys, options: options, session: session)
+        return try _dropIndexes(index: .document(keys), options: options, session: session)
     }
 
     /**
@@ -302,7 +302,7 @@ extension SyncMongoCollection {
     public func dropIndex(_ model: IndexModel,
                           options: DropIndexOptions? = nil,
                           session: SyncClientSession? = nil) throws -> Document {
-        return try _dropIndexes(index: model.keys, options: options, session: session)
+        return try _dropIndexes(index: .document(model.keys), options: options, session: session)
     }
 
     /**
@@ -328,7 +328,7 @@ extension SyncMongoCollection {
 
     /// Internal helper to drop an index. `index` must either be an index specification document or a
     /// string index name.
-    private func _dropIndexes(index: BSONValue,
+    private func _dropIndexes(index: BSON,
                               options: DropIndexOptions?,
                               session: SyncClientSession?) throws -> Document {
         let operation = DropIndexesOperation(collection: self, index: index, options: options)

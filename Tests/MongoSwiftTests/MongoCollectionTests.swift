@@ -70,8 +70,8 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
     func testInsertOne() throws {
         expect(try self.coll.deleteMany([:])).toNot(beNil())
-        expect(try self.coll.insertOne(self.doc1)?.insertedId).to(bsonEqual(1))
-        expect(try self.coll.insertOne(self.doc2)?.insertedId).to(bsonEqual(2))
+        expect(try self.coll.insertOne(self.doc1)?.insertedId).to(equal(1))
+        expect(try self.coll.insertOne(self.doc2)?.insertedId).to(equal(2))
         expect(try self.coll.count()).to(equal(2))
 
         // try inserting a document without an ID
@@ -100,8 +100,8 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
     func testAggregate() throws {
         expect(
-            Array(try self.coll.aggregate([["$project": ["_id": 0, "cat": 1] as Document]])))
-            .to(equal([["cat": "dog"], ["cat": "cat"]] as [Document]))
+            Array(try self.coll.aggregate([["$project": ["_id": 0, "cat": 1]]])))
+                .to(equal([["cat": "dog"], ["cat": "cat"]] as [Document]))
     }
 
     func testDrop() throws {
@@ -125,8 +125,8 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
             expect(event.command["drop"]).toNot(beNil())
             expect(event.command["writeConcern"]).toNot(beNil())
-            expect(event.command["writeConcern"] as? Document)
-                .to(sortedEqual(try? encoder.encode(expectedWriteConcern)))
+            expect(event.command["writeConcern"]?.documentValue)
+                    .to(sortedEqual(try? encoder.encode(expectedWriteConcern)))
         }
 
         defer { center.removeObserver(observer) }
@@ -149,10 +149,10 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         // the inserted IDs should either be the ones we set,
         // or newly created ObjectIds
         for (_, v) in res!.insertedIds {
-            if let val = v as? BSONNumber {
-                expect([10, 11]).to(contain(val.intValue))
+            if let val = v.asInt() {
+                expect([10, 11]).to(contain(val))
             } else {
-                expect(v).to(beAnInstanceOf(ObjectId.self))
+                expect(v.type).to(equal(.objectId))
             }
         }
 
@@ -160,10 +160,10 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(docNoId1).to(equal(["x": 1]))
         expect(docNoId2).to(equal(["x": 2]))
 
-        let newDoc1: Document = ["_id": ObjectId()]
-        let newDoc2: Document = ["_id": ObjectId()]
-        let newDoc3: Document = ["_id": ObjectId()]
-        let newDoc4: Document = ["_id": ObjectId()]
+        let newDoc1: Document = ["_id": .objectId(ObjectId())]
+        let newDoc2: Document = ["_id": .objectId(ObjectId())]
+        let newDoc3: Document = ["_id": .objectId(ObjectId())]
+        let newDoc4: Document = ["_id": .objectId(ObjectId())]
 
         let expectedResultOrdered = BulkWriteResult(insertedCount: 1, insertedIds: [0: newDoc1["_id"]!])
         let expectedErrorsOrdered = [
@@ -246,7 +246,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
     func testUpdateOne() throws {
         let updateOneResult = try coll.updateOne(
-            filter: ["_id": 2], update: ["$set": ["apple": "banana"] as Document])
+            filter: ["_id": 2], update: ["$set": ["apple": "banana"]])
         expect(updateOneResult?.matchedCount).to(equal(1))
         expect(updateOneResult?.modifiedCount).to(equal(1))
     }
@@ -254,13 +254,13 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     func testUpdateOneWithUnacknowledgedWriteConcern() throws {
         let options = UpdateOptions(writeConcern: try WriteConcern(w: .number(0)))
         let updateOneResult = try coll.updateOne(
-            filter: ["_id": 2], update: ["$set": ["apple": "banana"] as Document], options: options)
+            filter: ["_id": 2], update: ["$set": ["apple": "banana"]], options: options)
         expect(updateOneResult).to(beNil())
     }
 
     func testUpdateMany() throws {
         let updateManyResult = try coll.updateMany(
-            filter: [:], update: ["$set": ["apple": "pear"] as Document])
+            filter: [:], update: ["$set": ["apple": "pear"]])
         expect(updateManyResult?.matchedCount).to(equal(2))
         expect(updateManyResult?.modifiedCount).to(equal(2))
     }
@@ -268,22 +268,22 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     func testUpdateManyWithUnacknowledgedWriteConcern() throws {
         let options = UpdateOptions(writeConcern: try WriteConcern(w: .number(0)))
         let updateManyResult = try coll.updateMany(
-            filter: [:], update: ["$set": ["apple": "pear"] as Document], options: options)
+            filter: [:], update: ["$set": ["apple": "pear"]], options: options)
         expect(updateManyResult).to(beNil())
     }
 
     func testDistinct() throws {
         let distinct1 = try coll.distinct(fieldName: "cat", filter: [:])
-        expect((distinct1 as? [String])?.sorted()).to(equal(["cat", "dog"]))
+        expect(BSON.array(distinct1).arrayValue?.compactMap { $0.stringValue }.sorted()).to(equal(["cat", "dog"]))
         // nonexistent field
         expect(try self.coll.distinct(fieldName: "abc", filter: [:])).to(beEmpty())
 
         // test a null distinct value
-        try coll.insertOne(["cat": BSONNull()])
+        try coll.insertOne(["cat": .null])
         let distinct2 = try coll.distinct(fieldName: "cat", filter: [:])
         expect(distinct2).to(haveCount(3))
         // swiftlint:disable trailing_closure
-        expect(distinct2).to(containElementSatisfying({ $0 is BSONNull }))
+        expect(distinct2).to(containElementSatisfying({ $0 == .null }))
         // swiftlint:enable trailing_closure
     }
 
@@ -330,7 +330,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(try coll1.findOneAndReplace(filter: ["x": 1], replacement: b5)).to(equal(b1))
 
         // test successfully decode to collection type
-        expect(try coll1.findOneAndUpdate(filter: ["x": 3], update: ["$set": ["x": 6] as Document])).to(equal(b3))
+        expect(try coll1.findOneAndUpdate(filter: ["x": 3], update: ["$set": ["x": 6]])).to(equal(b3))
         expect(try coll1.findOneAndDelete(["x": 4])).to(equal(b4))
     }
 
@@ -380,7 +380,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(try encoder.encode(stringHint)).to(equal(["hint": "hi"]))
 
         let docHint = AggregateOptions(hint: .indexSpec(["hi": 1]))
-        expect(try encoder.encode(docHint)).to(equal(["hint": ["hi": 1] as Document]))
+        expect(try encoder.encode(docHint)).to(equal(["hint": ["hi": 1]]))
     }
 
     func testFindOneAndDelete() throws {
@@ -443,7 +443,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         // test using maxTimeMS
         let opts1 = FindOneAndUpdateOptions(maxTimeMS: 100)
         let result1 = try self.coll.findOneAndUpdate(filter: ["cat": "cat"],
-                                                     update: ["$set": ["cat": "blah"] as Document],
+                                                     update: ["$set": ["cat": "blah"]],
                                                      options: opts1)
         expect(result1).to(equal(self.doc2))
         expect(try self.coll.count()).to(equal(2))
@@ -451,7 +451,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         // test using bypassDocumentValidation
         let opts2 = FindOneAndUpdateOptions(bypassDocumentValidation: true)
         let result2 = try self.coll.findOneAndUpdate(filter: ["cat": "dog"],
-                                                     update: ["$set": ["cat": "hi"] as Document],
+                                                     update: ["$set": ["cat": "hi"]],
                                                      options: opts2)
         expect(result2).to(equal(self.doc1))
         expect(try self.coll.count()).to(equal(2))
@@ -459,7 +459,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         // test using a write concern
         let opts3 = FindOneAndUpdateOptions(writeConcern: try WriteConcern(w: .majority))
         let result3 = try self.coll.findOneAndUpdate(filter: ["cat": "blah"],
-                                                     update: ["$set": ["cat": "cat"] as Document],
+                                                     update: ["$set": ["cat": "cat"]],
                                                      options: opts3)
         expect(result3).to(equal(["_id": 2, "cat": "blah"]))
         expect(try self.coll.count()).to(equal(2))
@@ -474,15 +474,15 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     }
 
     func testNullIds() throws {
-        let result1 = try self.coll.insertOne(["_id": BSONNull(), "hi": "hello"])
+        let result1 = try self.coll.insertOne(["_id": .null, "hi": "hello"])
         expect(result1).toNot(beNil())
-        expect(result1?.insertedId).to(bsonEqual(BSONNull()))
+        expect(result1?.insertedId).to(equal(.null))
 
-        try self.coll.deleteOne(["_id": BSONNull()])
+        try self.coll.deleteOne(["_id": .null])
 
-        let result2 = try self.coll.insertMany([["_id": BSONNull()], ["_id": 20]])
+        let result2 = try self.coll.insertMany([["_id": .null], ["_id": 20]])
         expect(result2).toNot(beNil())
-        expect(result2?.insertedIds[0]).to(bsonEqual(BSONNull()))
-        expect(result2?.insertedIds[1]).to(bsonEqual(20))
+        expect(result2?.insertedIds[0]).to(equal(.null))
+        expect(result2?.insertedIds[1]).to(equal(20))
     }
 }

@@ -8,16 +8,16 @@ extension WriteConcern {
     /// use `decode` because the format is different in spec tests
     /// ("journal" instead of "j", etc.)
     fileprivate init(_ doc: Document) throws {
-        let j = doc["journal"] as? Bool
+        let j = doc["journal"]?.boolValue
 
         var w: W?
-        if let wtag = doc["w"] as? String {
+        if let wtag = doc["w"]?.stringValue {
             w = wtag == "majority" ? .majority : .tag(wtag)
-        } else if let wInt = (doc["w"] as? BSONNumber)?.int32Value {
+        } else if let wInt = doc["w"]?.asInt32() {
             w = .number(wInt)
         }
 
-        let wt = (doc["wtimeoutMS"] as? BSONNumber)?.int64Value
+        let wt = doc["wtimeoutMS"]?.asInt64()
 
         try self.init(journal: j, w: w, wtimeoutMS: wt)
     }
@@ -383,17 +383,17 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
         defer { try? db.drop() }
         let coll = try db.createCollection(self.getCollectionName())
 
-        let command: Document = ["count": coll.name]
+        let command: Document = ["count": .string(coll.name)]
 
         // run command with a valid readConcern
         let options1 = RunCommandOptions(readConcern: ReadConcern(.local))
         let res1 = try db.runCommand(command, options: options1)
-        expect((res1["ok"] as? BSONNumber)?.doubleValue).to(bsonEqual(1.0))
+        expect(res1["ok"]?.asDouble()).to(equal(1.0))
 
         // run command with an empty readConcern
         let options2 = RunCommandOptions(readConcern: ReadConcern())
         let res2 = try db.runCommand(command, options: options2)
-        expect((res2["ok"] as? BSONNumber)?.doubleValue).to(bsonEqual(1.0))
+        expect(res2["ok"]?.asDouble()).to(equal(1.0))
 
         // running command with an invalid RC level should throw
         let options3 = RunCommandOptions(readConcern: ReadConcern("blah"))
@@ -407,7 +407,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
         // try various command + read concern pairs to make sure they work
         expect(try coll.find(options: FindOptions(readConcern: ReadConcern(.local)))).toNot(throwError())
 
-        expect(try coll.aggregate([["$project": ["a": 1] as Document]],
+        expect(try coll.aggregate([["$project": ["a": 1]]],
                                   options: AggregateOptions(readConcern: ReadConcern(.majority)))).toNot(throwError())
 
         expect(try coll.count(options: CountOptions(readConcern: ReadConcern(.majority)))).toNot(throwError())
@@ -457,7 +457,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
         var counter = 0
         func nextDoc() -> Document {
             defer { counter += 1 }
-            return ["x": counter]
+            return ["x": BSON(integerLiteral: counter)]
         }
 
         let coll = try db.createCollection(self.getCollectionName())
@@ -465,17 +465,17 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
         let wc2 = WriteConcern()
         let wc3 = try WriteConcern(journal: true)
 
-        let command: Document = ["insert": coll.name, "documents": [nextDoc()] as [Document]]
+        let command: Document = ["insert": .string(coll.name), "documents": [.document(nextDoc())]]
 
         // run command with a valid writeConcern
         let options1 = RunCommandOptions(writeConcern: wc1)
         let res1 = try db.runCommand(command, options: options1)
-        expect((res1["ok"] as? BSONNumber)?.doubleValue).to(bsonEqual(1.0))
+        expect(res1["ok"]?.asDouble()).to(equal(1.0))
 
         // run command with an empty writeConcern
         let options2 = RunCommandOptions(writeConcern: wc2)
         let res2 = try db.runCommand(command, options: options2)
-        expect((res2["ok"] as? BSONNumber)?.doubleValue).to(bsonEqual(1.0))
+        expect(res2["ok"]?.asDouble()).to(equal(1.0))
 
         expect(try coll.insertOne(nextDoc(), options: InsertOneOptions(writeConcern: wc1))).toNot(throwError())
         expect(try coll.insertOne(nextDoc(), options: InsertOneOptions(writeConcern: wc3))).toNot(throwError())
@@ -486,22 +486,22 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
                                    options: InsertManyOptions(writeConcern: wc3))).toNot(throwError())
 
         expect(try coll.updateOne(filter: ["x": 1],
-                                  update: ["$set": nextDoc()],
+                                  update: ["$set": .document(nextDoc())],
                                   options: UpdateOptions(writeConcern: wc2))).toNot(throwError())
         expect(try coll.updateOne(filter: ["x": 2],
-                                  update: ["$set": nextDoc()],
+                                  update: ["$set": .document(nextDoc())],
                                   options: UpdateOptions(writeConcern: wc3))).toNot(throwError())
 
         expect(try coll.updateMany(filter: ["x": 3],
-                                   update: ["$set": nextDoc()],
+                                   update: ["$set": .document(nextDoc())],
                                    options: UpdateOptions(writeConcern: wc2))).toNot(throwError())
         expect(try coll.updateMany(filter: ["x": 4],
-                                   update: ["$set": nextDoc()],
+                                   update: ["$set": .document(nextDoc())],
                                    options: UpdateOptions(writeConcern: wc3))).toNot(throwError())
 
         let coll2 = try db.createCollection(self.getCollectionName(suffix: "2"))
         defer { try? coll2.drop() }
-        let pipeline: [Document] = [["$out": "\(db.name).\(coll2.name)"]]
+        let pipeline: [Document] = [["$out": .string("\(db.name).\(coll2.name)")]]
         expect(try coll.aggregate(pipeline, options: AggregateOptions(writeConcern: wc1))).toNot(throwError())
 
         expect(try coll.replaceOne(filter: ["x": 5],
@@ -531,7 +531,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
                                                   subdirectory: "connection-string",
                                                   asType: Document.self)
         for (_, asDocument) in testFiles {
-            let tests: [Document] = try asDocument.get("tests")
+            let tests: [Document] = asDocument["tests"]!.arrayValue!.compactMap { $0.documentValue }
             for test in tests {
                 let description: String = try test.get("description")
                 // skipping because C driver does not comply with these; see CDRIVER-2621
@@ -540,14 +540,14 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
                 let valid: Bool = try test.get("valid")
                 if valid {
                     let client = try SyncMongoClient(uri)
-                    if let readConcern = test["readConcern"] as? Document {
+                    if let readConcern = test["readConcern"]?.documentValue {
                         let rc = ReadConcern(readConcern)
                         if rc.isDefault {
                             expect(client.readConcern).to(beNil())
                         } else {
                             expect(client.readConcern).to(equal(rc))
                         }
-                    } else if let writeConcern = test["writeConcern"] as? Document {
+                    } else if let writeConcern = test["writeConcern"]?.documentValue {
                         let wc = try WriteConcern(writeConcern)
                         if wc.isDefault {
                             expect(client.writeConcern).to(beNil())
@@ -569,10 +569,10 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
                                                   asType: Document.self)
 
         for (_, asDocument) in testFiles {
-            let tests: [Document] = try asDocument.get("tests")
+            let tests = asDocument["tests"]!.arrayValue!.compactMap { $0.documentValue }
             for test in tests {
                 let valid: Bool = try test.get("valid")
-                if let rcToUse = test["readConcern"] as? Document {
+                if let rcToUse = test["readConcern"]?.documentValue {
                     let rc = ReadConcern(rcToUse)
 
                     let isDefault: Bool = try test.get("isServerDefault")
@@ -584,7 +584,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
                     } else {
                         expect(try encoder.encode(rc)).to(equal(expected))
                     }
-                } else if let wcToUse = test["writeConcern"] as? Document {
+                } else if let wcToUse = test["writeConcern"]?.documentValue {
                     if valid {
                         let wc = try WriteConcern(wcToUse)
 
@@ -598,8 +598,8 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
                         if expected == [:] {
                             expect(try encoder.encode(wc)).to(beNil())
                         } else {
-                            if let wtimeoutMS = expected["wtimeout"] as? BSONNumber {
-                                expected["wtimeout"] = wtimeoutMS.int64Value!
+                            if let wtimeoutMS = expected["wtimeout"] {
+                                expected["wtimeout"] = .int64(wtimeoutMS.asInt64()!)
                             }
                             expect(try encoder.encode(wc)).to(sortedEqual(expected))
                         }

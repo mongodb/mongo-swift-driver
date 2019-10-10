@@ -45,46 +45,45 @@ final class BSONValueTests: MongoSwiftTestCase {
         checkTrueAndFalse(val: "some", alternate: "not some")
         // RegularExpression
         checkTrueAndFalse(
-                val: .regex(RegularExpression(pattern: ".*", options: "")),
-                alternate: .regex(RegularExpression(pattern: ".+", options: ""))
+            val: .regex(RegularExpression(pattern: ".*", options: "")),
+            alternate: .regex(RegularExpression(pattern: ".+", options: ""))
         )
         // Timestamp
         checkTrueAndFalse(val: .timestamp(Timestamp(timestamp: 1, inc: 2)),
                           alternate: .timestamp(Timestamp(timestamp: 5, inc: 10)))
         // Date
         checkTrueAndFalse(
-                val: .datetime(Date(timeIntervalSinceReferenceDate: 5000)),
-                alternate: .datetime(Date(timeIntervalSinceReferenceDate: 5001))
+            val: .datetime(Date(timeIntervalSinceReferenceDate: 5000)),
+            alternate: .datetime(Date(timeIntervalSinceReferenceDate: 5001))
         )
         // MinKey & MaxKey
-        expect(MinKey()).to(bsonEqual(MinKey()))
-        expect(MaxKey()).to(bsonEqual(MaxKey()))
+        expect(BSON.minKey).to(equal(.minKey))
+        expect(BSON.maxKey).to(equal(.maxKey))
         // ObjectId
         checkTrueAndFalse(val: .objectId(ObjectId()), alternate: .objectId(ObjectId()))
         // CodeWithScope
         checkTrueAndFalse(
-                val: .codeWithScope(CodeWithScope(code: "console.log('foo');")),
-                alternate: .codeWithScope(CodeWithScope(code: "console.log(x);", scope: ["x": 2]))
+            val: .codeWithScope(CodeWithScope(code: "console.log('foo');")),
+            alternate: .codeWithScope(CodeWithScope(code: "console.log(x);", scope: ["x": 2]))
         )
         // Binary
         checkTrueAndFalse(
-                val: .binary(try Binary(data: Data(base64Encoded: "c//SZESzTGmQ6OfR38A11A==")!, subtype: .uuid)),
-                alternate: .binary(try Binary(data: Data(base64Encoded: "c//88KLnfdfefOfR33ddFA==")!, subtype: .uuid))
+            val: .binary(try Binary(data: Data(base64Encoded: "c//SZESzTGmQ6OfR38A11A==")!, subtype: .uuid)),
+            alternate: .binary(try Binary(data: Data(base64Encoded: "c//88KLnfdfefOfR33ddFA==")!, subtype: .uuid))
         )
-        // TODO SWIFT-630: unskip
-//        // Document
-//        checkTrueAndFalse(
-//                val: [
-//                    "foo": 1.414,
-//                    "bar": "swift",
-//                    "nested": [ "a": 1, "b": "2" ]
-//                ],
-//                alternate: [
-//                    "foo": 1.414,
-//                    "bar": "swift",
-//                    "nested": [ "a": 1, "b": "different" ]
-//                ]
-//        )
+        // Document
+        checkTrueAndFalse(
+            val: [
+                "foo": 1.414,
+                "bar": "swift",
+                "nested": [ "a": 1, "b": "2" ]
+            ],
+            alternate: [
+                "foo": 1.414,
+                "bar": "swift",
+                "nested": [ "a": 1, "b": "different" ]
+            ]
+        )
 
         // Different types
         expect(BSON.int32(4)).toNot(equal("swift"))
@@ -129,7 +128,7 @@ final class BSONValueTests: MongoSwiftTestCase {
         let testObject = TestObject(id: objectId)
         let encodedTestObject = try BSONEncoder().encode(testObject)
 
-        guard let _id = encodedTestObject["_id"] as? ObjectId else {
+        guard let _id = encodedTestObject["_id"]?.objectIdValue else {
             fail("encoded document did not contain objectId _id")
             return
         }
@@ -144,49 +143,6 @@ final class BSONValueTests: MongoSwiftTestCase {
         expect(objectIdFromString).to(equal(objectId))
         expect(objectIdFromString.hex).to(equal(oid))
         expect(objectIdFromString.timestamp).to(equal(timestamp))
-    }
-
-    /// Test AnyBSONValue Hashable conformance
-    func testHashable() throws {
-        let expected = try CodecTests.AllBSONTypes.factory()
-
-        let values = Mirror(reflecting: expected).children.map { child in AnyBSONValue(child.value as! BSONValue) }
-        let valuesSet = Set<AnyBSONValue>(values)
-
-        expect(Set<Int>(valuesSet.map { abv in abv.hashValue }).count).to(equal(values.count))
-        expect(valuesSet.count).to(equal(values.count))
-        expect(values).to(contain(Array(valuesSet)))
-
-        let abv1 = AnyBSONValue(Int32(1))
-        let abv2 = AnyBSONValue(Int64(1))
-        let abv3 = AnyBSONValue(Int32(5))
-
-        var map: [AnyBSONValue: Int] = [abv1: 1, abv2: 2]
-
-        expect(map[abv1]).to(equal(1))
-        expect(map[abv2]).to(equal(2))
-
-        map[abv1] = 4
-        map[abv2] = 3
-        map[abv3] = 5
-
-        expect(map[abv1]).to(equal(4))
-        expect(map[abv2]).to(equal(3))
-        expect(map[abv3]).to(equal(5))
-
-        let str = AnyBSONValue("world")
-        let doc = AnyBSONValue(["value": str.value] as Document)
-        let json = AnyBSONValue((doc.value as! Document).extendedJSON)
-
-        map[str] = 12
-        map[doc] = 13
-        map[json] = 14
-
-        expect(map[str]).to(equal(12))
-        expect(map[doc]).to(equal(13))
-        expect(map[json]).to(equal(14))
-
-        expect(Set([str.hashValue, doc.hashValue, json.hashValue]).count).to(equal(3))
     }
 
     struct BSONNumberTestCase {

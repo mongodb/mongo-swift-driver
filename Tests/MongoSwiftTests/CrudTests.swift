@@ -109,23 +109,23 @@ private class CrudTest {
     let operationName: String
     let args: Document
     let error: Bool?
-    let result: BSONValue?
+    let result: BSON?
     let collection: Document?
 
-    var arrayFilters: [Document]? { return self.args["arrayFilters"] as? [Document] }
-    var batchSize: Int32? { return (self.args["batchSize"] as? BSONNumber)?.int32Value }
-    var collation: Document? { return self.args["collation"] as? Document }
-    var sort: Document? { return self.args["sort"] as? Document }
-    var skip: Int64? { return (self.args["skip"] as? BSONNumber)?.int64Value }
-    var limit: Int64? { return (self.args["limit"] as? BSONNumber)?.int64Value }
-    var projection: Document? { return self.args["projection"] as? Document }
+    var arrayFilters: [Document]? { return self.args["arrayFilters"]?.arrayValue?.compactMap { $0.documentValue } }
+    var batchSize: Int32? { return self.args["batchSize"]?.int32Value }
+    var collation: Document? { return self.args["collation"]?.documentValue }
+    var sort: Document? { return self.args["sort"]?.documentValue }
+    var skip: Int64? { return self.args["skip"]?.asInt64() }
+    var limit: Int64? { return self.args["limit"]?.asInt64() }
+    var projection: Document? { return self.args["projection"]?.documentValue }
     var returnDoc: ReturnDocument? {
-        if let ret = self.args["returnDocument"] as? String {
+        if let ret = self.args["returnDocument"]?.stringValue {
             return ret == "After" ? .after : .before
         }
         return nil
     }
-    var upsert: Bool? { return self.args["upsert"] as? Bool }
+    var upsert: Bool? { return self.args["upsert"]?.boolValue }
 
     /// Initializes a new `CrudTest` from a `Document`.
     required init(_ test: Document) throws {
@@ -134,9 +134,9 @@ private class CrudTest {
         self.operationName = try operation.get("name")
         self.args = try operation.get("arguments")
         let outcome: Document = try test.get("outcome")
-        self.error = outcome["error"] as? Bool
+        self.error = outcome["error"]?.boolValue
         self.result = outcome["result"]
-        self.collection = outcome["collection"] as? Document
+        self.collection = outcome["collection"]?.documentValue
     }
 
     // Subclasses should implement `execute` according to the particular operation(s) they are for.
@@ -151,23 +151,23 @@ private class CrudTest {
         }
         // if a name is not specified, check the current collection
         var collToCheck = coll
-        if let name = collection["name"] as? String {
+        if let name = collection["name"]?.stringValue {
             collToCheck = db.collection(name)
         }
-        expect(Array(try collToCheck.find([:]))).to(equal(try collection.get("data")))
+        expect(BSON.array(try collToCheck.find([:]).map { .document($0) })).to(equal(collection["data"]))
     }
 
     // Given an `UpdateResult`, verify that it matches the expected results in this `CrudTest`.
     // Meant for use by subclasses whose operations return `UpdateResult`s, such as `UpdateTest`
     // and `ReplaceOneTest`.
     func verifyUpdateResult(_ result: UpdateResult?) throws {
-        let expected = try BSONDecoder().decode(UpdateResult.self, from: self.result as! Document)
+        let expected = try BSONDecoder().decode(UpdateResult.self, from: self.result!.documentValue!)
         expect(result?.matchedCount).to(equal(expected.matchedCount))
         expect(result?.modifiedCount).to(equal(expected.modifiedCount))
         expect(result?.upsertedCount).to(equal(expected.upsertedCount))
 
-        if let upsertedId = result?.upsertedId as? BSONNumber {
-            expect(upsertedId).to(bsonEqual(expected.upsertedId))
+        if let upsertedId = result?.upsertedId {
+            expect(upsertedId).to(equal(expected.upsertedId))
         } else {
             expect(expected.upsertedId).to(beNil())
         }
@@ -180,10 +180,10 @@ private class CrudTest {
             return
         }
 
-        if self.result is BSONNull {
+        if self.result == .null {
             expect(result).to(beNil())
         } else {
-            expect(result).to(equal(self.result as? Document))
+            expect(result).to(equal(self.result?.documentValue))
         }
     }
 }
@@ -191,7 +191,7 @@ private class CrudTest {
 /// A class for executing `aggregate` tests
 private class AggregateTest: CrudTest {
     override func execute(usingCollection coll: SyncMongoCollection<Document>) throws {
-        let pipeline: [Document] = try self.args.get("pipeline")
+        let pipeline = self.args["pipeline"]!.arrayValue!.compactMap { $0.documentValue }
         let options = AggregateOptions(batchSize: self.batchSize, collation: self.collation)
         let cursor = try coll.aggregate(pipeline, options: options)
         if self.collection != nil {
@@ -202,16 +202,16 @@ private class AggregateTest: CrudTest {
             expect(cursor.next()).to(beNil())
         } else {
             // if not $out, verify that the cursor contains the expected documents.
-            expect(Array(cursor)).to(equal(self.result as? [Document]))
+            expect(BSON.array(cursor.map { .document($0) })).to(equal(self.result))
         }
     }
 }
 
 private class BulkWriteTest: CrudTest {
     override func execute(usingCollection coll: SyncMongoCollection<Document>) throws {
-        let requestDocuments: [Document] = try self.args.get("requests")
+        let requestDocuments: [Document] = self.args["requests"]!.arrayValue!.compactMap { $0.documentValue }
         let requests = try requestDocuments.map { try BSONDecoder().decode(WriteModel<Document>.self, from: $0) }
-        let options = try BSONDecoder().decode(BulkWriteOptions.self, from: self.args["options"] as? Document ?? [:])
+        let options = try BSONDecoder().decode(BulkWriteOptions.self, from: self.args["options"]?.documentValue ?? [:])
         let expectError = self.error ?? false
 
         do {
@@ -227,7 +227,7 @@ private class BulkWriteTest: CrudTest {
         }
     }
 
-    private static func prepareIds(_ ids: [Int: BSONValue]) -> Document {
+    private static func prepareIds(_ ids: [Int: BSON]) -> Document {
         var document = Document()
 
         // Dictionaries are unsorted. Sort before comparing with expected map
@@ -239,29 +239,29 @@ private class BulkWriteTest: CrudTest {
     }
 
     private func verifyBulkWriteResult(_ result: BulkWriteResult) {
-        guard let expected = self.result as? Document else {
+        guard let expected = self.result?.documentValue else {
             return
         }
 
-        if let expectedDeletedCount = expected["deletedCount"] as? BSONNumber {
-            expect(result.deletedCount).to(equal(expectedDeletedCount.intValue))
+        if let expectedDeletedCount = expected["deletedCount"]?.asInt() {
+            expect(result.deletedCount).to(equal(expectedDeletedCount))
         }
-        if let expectedInsertedCount = expected["insertedCount"] as? BSONNumber {
-            expect(result.insertedCount).to(equal(expectedInsertedCount.intValue))
+        if let expectedInsertedCount = expected["insertedCount"]?.asInt() {
+            expect(result.insertedCount).to(equal(expectedInsertedCount))
         }
-        if let expectedInsertedIds = expected["insertedIds"] as? Document {
+        if let expectedInsertedIds = expected["insertedIds"]?.documentValue {
             expect(BulkWriteTest.prepareIds(result.insertedIds)).to(equal(expectedInsertedIds))
         }
-        if let expectedMatchedCount = expected["matchedCount"] as? BSONNumber {
-            expect(result.matchedCount).to(equal(expectedMatchedCount.intValue))
+        if let expectedMatchedCount = expected["matchedCount"]?.asInt() {
+            expect(result.matchedCount).to(equal(expectedMatchedCount))
         }
-        if let expectedModifiedCount = expected["modifiedCount"] as? BSONNumber {
-            expect(result.modifiedCount).to(equal(expectedModifiedCount.intValue))
+        if let expectedModifiedCount = expected["modifiedCount"]?.asInt() {
+            expect(result.modifiedCount).to(equal(expectedModifiedCount))
         }
-        if let expectedUpsertedCount = expected["upsertedCount"] as? BSONNumber {
-            expect(result.upsertedCount).to(equal(expectedUpsertedCount.intValue))
+        if let expectedUpsertedCount = expected["upsertedCount"]?.asInt() {
+            expect(result.upsertedCount).to(equal(expectedUpsertedCount))
         }
-        if let expectedUpsertedIds = expected["upsertedIds"] as? Document {
+        if let expectedUpsertedIds = expected["upsertedIds"]?.documentValue {
             expect(BulkWriteTest.prepareIds(result.upsertedIds)).to(equal(expectedUpsertedIds))
         }
     }
@@ -273,7 +273,7 @@ private class CountTest: CrudTest {
         let filter: Document = try self.args.get("filter")
         let options = CountOptions(collation: self.collation, limit: self.limit, skip: self.skip)
         let result = try coll.count(filter, options: options)
-        expect(result).to(equal((self.result as? BSONNumber)?.intValue))
+        expect(result).to(equal(self.result?.asInt()))
     }
 }
 
@@ -288,21 +288,21 @@ private class DeleteTest: CrudTest {
         } else {
             result = try coll.deleteMany(filter, options: options)
         }
-        let expected = self.result as? Document
+        let expected = self.result?.documentValue
         // the only value in a DeleteResult is `deletedCount`
-        expect(result?.deletedCount).to(equal((expected?["deletedCount"] as? BSONNumber)?.intValue))
+        expect(result?.deletedCount).to(equal(expected?["deletedCount"]?.asInt()))
     }
 }
 
 /// A class for executing `distinct` tests
 private class DistinctTest: CrudTest {
     override func execute(usingCollection coll: SyncMongoCollection<Document>) throws {
-        let filter = self.args["filter"] as? Document
+        let filter = self.args["filter"]?.documentValue
         let fieldName: String = try self.args.get("fieldName")
         let options = DistinctOptions(collation: self.collation)
         // rather than casting to all the possible BSON types, just wrap the arrays in documents to compare them
         let resultDoc: Document = [
-            "result": try coll.distinct(fieldName: fieldName, filter: filter ?? [:], options: options)
+            "result": .array(try coll.distinct(fieldName: fieldName, filter: filter ?? [:], options: options))
         ]
         if let result = self.result {
             let expectedDoc: Document = ["result": result]
@@ -320,8 +320,8 @@ private class FindTest: CrudTest {
                                   limit: self.limit,
                                   skip: self.skip,
                                   sort: self.sort)
-        let result = try Array(coll.find(filter, options: options))
-        expect(result).to(equal(self.result as? [Document]))
+        let result = BSON.array(try coll.find(filter, options: options).map { .document($0) })
+        expect(result).to(equal(self.result))
     }
 }
 
@@ -374,8 +374,8 @@ private class FindOneAndUpdateTest: CrudTest {
 /// A class for executing `insertMany` tests
 private class InsertManyTest: CrudTest {
     override func execute(usingCollection coll: SyncMongoCollection<Document>) throws {
-        let documents: [Document] = try self.args.get("documents")
-        let options = InsertManyTest.parseInsertManyOptions(self.args["options"] as? Document)
+        let documents = self.args["documents"]!.arrayValue!.compactMap { $0.documentValue }
+        let options = InsertManyTest.parseInsertManyOptions(self.args["options"]?.documentValue)
         let expectError = self.error ?? false
 
         do {
@@ -396,12 +396,12 @@ private class InsertManyTest: CrudTest {
             return nil
         }
 
-        let ordered = options["ordered"] as? Bool
+        let ordered = options["ordered"]?.boolValue
 
         return InsertManyOptions(ordered: ordered)
     }
 
-    private static func prepareIds(_ ids: [Int: BSONValue]) -> Document {
+    private static func prepareIds(_ ids: [Int: BSON]) -> Document {
         var document = Document()
 
         // Dictionaries are unsorted. Sort before comparing with expected map
@@ -413,14 +413,14 @@ private class InsertManyTest: CrudTest {
     }
 
     private func verifyInsertManyResult(_ result: InsertManyResult) {
-        guard let expected = self.result as? Document else {
+        guard let expected = self.result?.documentValue else {
             return
         }
 
-        if let expectedInsertedCount = expected["insertedCount"] as? BSONNumber {
-            expect(result.insertedCount).to(equal(expectedInsertedCount.intValue))
+        if let expectedInsertedCount = expected["insertedCount"]?.asInt() {
+            expect(result.insertedCount).to(equal(expectedInsertedCount))
         }
-        if let expectedInsertedIds = expected["insertedIds"] as? Document {
+        if let expectedInsertedIds = expected["insertedIds"]?.documentValue {
             expect(InsertManyTest.prepareIds(result.insertedIds)).to(equal(expectedInsertedIds))
         }
     }
@@ -431,7 +431,7 @@ private class InsertOneTest: CrudTest {
     override func execute(usingCollection coll: SyncMongoCollection<Document>) throws {
         let doc: Document = try self.args.get("document")
         let result = try coll.insertOne(doc)
-        expect(doc["_id"]).to(bsonEqual(result?.insertedId))
+        expect(doc["_id"]).to(equal(result?.insertedId))
     }
 }
 
