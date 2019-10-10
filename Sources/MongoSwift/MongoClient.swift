@@ -217,29 +217,30 @@ public class SyncMongoClient {
         // Initialize mongoc. Repeated calls have no effect so this is safe to do every time.
         initializeMongoc()
 
-        var options = options ?? ClientOptions()
-        let connString = try ConnectionString(connectionString, options: &options)
-        self.connectionPool = try ConnectionPool(from: connString, options: options.tlsOptions)
+        let connString = try ConnectionString(connectionString, options: options)
+        self.connectionPool = try ConnectionPool(from: connString, options: options?.tlsOptions)
 
-        if let rc = options.readConcern, !rc.isDefault {
+        let rc = connString.readConcern
+        if !rc.isDefault {
             self.readConcern = rc
         } else {
             self.readConcern = nil
         }
 
-        if let wc = options.writeConcern, !wc.isDefault {
+        let wc = connString.writeConcern
+        if !wc.isDefault {
             self.writeConcern = wc
         } else {
             self.writeConcern = nil
         }
 
-        self.readPreference = options.readPreference ?? ReadPreference()
+        self.readPreference = connString.readPreference
         self.encoder = BSONEncoder(options: options)
         self.decoder = BSONDecoder(options: options)
-        self.notificationCenter = options.notificationCenter ?? NotificationCenter.default
+        self.notificationCenter = options?.notificationCenter ?? NotificationCenter.default
 
-        self.connectionPool.initializeMonitoring(commandMonitoring: options.commandMonitoring,
-                                                 serverMonitoring: options.serverMonitoring,
+        self.connectionPool.initializeMonitoring(commandMonitoring: options?.commandMonitoring ?? false,
+                                                 serverMonitoring: options?.serverMonitoring ?? false,
                                                  client: self)
     }
 

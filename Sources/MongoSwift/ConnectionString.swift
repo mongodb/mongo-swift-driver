@@ -5,45 +5,41 @@ internal class ConnectionString {
     /// Pointer to the underlying `mongoc_uri_t`.
     internal let _uri: OpaquePointer
 
-    /// Initializes a new `ConnectionString` with the provided options. Updates `options` to correctly reflect the
-    /// final options set on the `ConnectionString`.
-    internal init(_ connectionString: String, options: inout ClientOptions) throws {
+    /// Initializes a new `ConnectionString` with the provided options.
+    internal init(_ connectionString: String, options: ClientOptions? = nil) throws {
         var error = bson_error_t()
         guard let uri = mongoc_uri_new_with_error(connectionString, &error) else {
             throw extractMongoError(error: error)
         }
         self._uri = uri
 
-        if let rc = options.readConcern {
+        if let rc = options?.readConcern {
             self.readConcern = rc
         }
-        options.readConcern = self.readConcern
 
-        if let wc = options.writeConcern {
+        if let wc = options?.writeConcern {
             self.writeConcern = wc
         }
-        options.writeConcern = self.writeConcern
 
-        if let rp = options.readPreference {
+        if let rp = options?.readPreference {
             self.readPreference = rp
         }
-        options.readPreference = self.readPreference
 
-        if let rw = options.retryWrites {
+        if let rw = options?.retryWrites {
             mongoc_uri_set_option_as_bool(self._uri, MONGOC_URI_RETRYWRITES, rw)
         }
-        if let rr = options.retryReads {
+
+        if let rr = options?.retryReads {
             mongoc_uri_set_option_as_bool(self._uri, MONGOC_URI_RETRYREADS, rr)
         }
+    }
 
-        // we can't get values for retryReads and retryWrites individually, so we will read
-        // them out from the full doc here instead.
+    /// Retrieves the options set on this connection string as a document. If none are set, returns nil.
+    private var optionsDocument: Document? {
         guard let opts = mongoc_uri_get_options(self._uri) else {
-            return
+            return nil
         }
-        let optsDoc = Document(copying: opts)
-        options.retryReads = optsDoc["retryreads"] as? Bool
-        options.retryWrites = optsDoc["retrywrites"] as? Bool
+        return Document(copying: opts)
     }
 
     /// Cleans up the underlying `mongoc_uri_t`.
