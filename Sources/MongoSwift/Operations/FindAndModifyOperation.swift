@@ -22,20 +22,22 @@ internal class FindAndModifyOptions {
     ///
     /// - Throws: `UserError.invalidArgumentError` if any of the options are invalid.
     // swiftlint:disable:next cyclomatic_complexity
-    internal init(arrayFilters: [Document]? = nil,
-                  bypassDocumentValidation: Bool? = nil,
-                  collation: Document?,
-                  maxTimeMS: Int64?,
-                  projection: Document?,
-                  remove: Bool? = nil,
-                  returnDocument: ReturnDocument? = nil,
-                  sort: Document?,
-                  upsert: Bool? = nil,
-                  writeConcern: WriteConcern?) throws {
+    internal init(
+        arrayFilters: [Document]? = nil,
+        bypassDocumentValidation: Bool? = nil,
+        collation: Document?,
+        maxTimeMS: Int64?,
+        projection: Document?,
+        remove: Bool? = nil,
+        returnDocument: ReturnDocument? = nil,
+        sort: Document?,
+        upsert: Bool? = nil,
+        writeConcern: WriteConcern?
+    ) throws {
         self._options = mongoc_find_and_modify_opts_new()
 
         if let bypass = bypassDocumentValidation,
-        !mongoc_find_and_modify_opts_set_bypass_document_validation(self._options, bypass) {
+            !mongoc_find_and_modify_opts_set_bypass_document_validation(self._options, bypass) {
             throw UserError.invalidArgumentError(message: "Error setting bypassDocumentValidation to \(bypass)")
         }
 
@@ -53,12 +55,14 @@ internal class FindAndModifyOptions {
         let mongocFlags = mongoc_find_and_modify_flags_t(rawValue: flags)
 
         if mongocFlags != MONGOC_FIND_AND_MODIFY_NONE
-        && !mongoc_find_and_modify_opts_set_flags(self._options, mongocFlags) {
+            && !mongoc_find_and_modify_opts_set_flags(self._options, mongocFlags) {
             let remStr = String(describing: remove)
             let upsStr = String(describing: upsert)
             let retStr = String(describing: returnDocument)
-            throw UserError.invalidArgumentError(message:
-                "Error setting flags to \(flags); remove=\(remStr), upsert=\(upsStr), returnDocument=\(retStr)")
+            throw UserError.invalidArgumentError(
+                message:
+                "Error setting flags to \(flags); remove=\(remStr), upsert=\(upsStr), returnDocument=\(retStr)"
+            )
         }
 
         if let sort = sort {
@@ -123,10 +127,12 @@ internal struct FindAndModifyOperation<T: Codable>: Operation {
     private let update: Document?
     private let options: FindAndModifyOptionsConvertible?
 
-    internal init(collection: MongoCollection<T>,
-                  filter: Document,
-                  update: Document?,
-                  options: FindAndModifyOptionsConvertible?) {
+    internal init(
+        collection: MongoCollection<T>,
+        filter: Document,
+        update: Document?,
+        options: FindAndModifyOptionsConvertible?
+    ) {
         self.collection = collection
         self.filter = filter
         self.update = update
@@ -144,11 +150,13 @@ internal struct FindAndModifyOperation<T: Codable>: Operation {
         var error = bson_error_t()
         let success = withMutableBSONPointer(to: &reply) { replyPtr in
             self.collection.withMongocCollection(from: connection) { collPtr in
-                mongoc_collection_find_and_modify_with_opts(collPtr,
-                                                            self.filter._bson,
-                                                            opts._options,
-                                                            replyPtr,
-                                                            &error)
+                mongoc_collection_find_and_modify_with_opts(
+                    collPtr,
+                    self.filter._bson,
+                    opts._options,
+                    replyPtr,
+                    &error
+                )
             }
         }
         guard success else {

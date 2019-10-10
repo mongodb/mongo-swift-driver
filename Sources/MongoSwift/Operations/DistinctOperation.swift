@@ -17,10 +17,12 @@ public struct DistinctOptions: Codable {
     // swiftlint:enable redundant_optional_initialization
 
     /// Convenience initializer allowing any/all parameters to be optional
-    public init(collation: Document? = nil,
-                maxTimeMS: Int64? = nil,
-                readConcern: ReadConcern? = nil,
-                readPreference: ReadPreference? = nil) {
+    public init(
+        collation: Document? = nil,
+        maxTimeMS: Int64? = nil,
+        readConcern: ReadConcern? = nil,
+        readPreference: ReadPreference? = nil
+    ) {
         self.collation = collation
         self.maxTimeMS = maxTimeMS
         self.readConcern = readConcern
@@ -67,8 +69,10 @@ internal struct DistinctOperation<T: Codable>: Operation {
         }
 
         guard let values = try reply.getValue(for: "values") as? [BSONValue] else {
-            throw RuntimeError.internalError(message:
-                "expected server reply \(reply) to contain an array of distinct values")
+            throw RuntimeError.internalError(
+                message:
+                "expected server reply \(reply) to contain an array of distinct values"
+            )
         }
 
         return values

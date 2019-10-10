@@ -31,8 +31,8 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
                 XCTFail("Invalid client")
                 return
             }
-            coll = try client.db(type(of: self).testDatabase).createCollection(self.collName)
-            try coll.insertMany([doc1, doc2])
+            self.coll = try client.db(type(of: self).testDatabase).createCollection(self.collName)
+            try self.coll.insertMany([doc1, doc2])
         } catch {
             XCTFail("Setup failed: \(error)")
         }
@@ -42,7 +42,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
     override func tearDown() {
         super.tearDown()
         do {
-            if coll != nil { try coll.drop() }
+            if self.coll != nil { try self.coll.drop() }
         } catch {
             XCTFail("Dropping test collection \(type(of: self).testDatabase).\(self.collName) failed: \(error)")
         }
@@ -72,7 +72,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
     }
 
     func testIndexOptions() throws {
-        // TODO SWIFT-539: unskip
+        // TODO: SWIFT-539: unskip
         if MongoSwiftTestCase.ssl && MongoSwiftTestCase.isMacOS {
             print("Skipping test, fails with SSL, see CDRIVER-3318")
             return
@@ -125,7 +125,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
     func testCreateIndexesFromModels() throws {
         let model1 = IndexModel(keys: ["cat": 1])
         let model2 = IndexModel(keys: ["cat": -1])
-        expect( try self.coll.createIndexes([model1, model2]) ).to(equal(["cat_1", "cat_-1"]))
+        expect(try self.coll.createIndexes([model1, model2])).to(equal(["cat_1", "cat_-1"]))
         let indexes = try coll.listIndexes()
         expect(indexes.next()?.options?.name).to(equal("_id_"))
         expect(indexes.next()?.options?.name).to(equal("cat_1"))
@@ -206,7 +206,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
     func testListIndexNames() throws {
         let model1 = IndexModel(keys: ["cat": 1])
         let model2 = IndexModel(keys: ["cat": -1], options: IndexOptions(name: "neg cat"))
-        expect( try self.coll.createIndexes([model1, model2]) ).to(equal(["cat_1", "neg cat"]))
+        expect(try self.coll.createIndexes([model1, model2])).to(equal(["cat_1", "neg cat"]))
         let indexNames = try coll.listIndexNames()
 
         expect(indexNames.count).to(equal(3))
@@ -238,7 +238,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         let model = IndexModel(keys: ["cat": 1])
         let wc = try WriteConcern(w: .number(1))
         let createIndexOpts = CreateIndexOptions(writeConcern: wc, maxTimeMS: maxTimeMS)
-        expect( try collection.createIndex(model, options: createIndexOpts)).to(equal("cat_1"))
+        expect(try collection.createIndex(model, options: createIndexOpts)).to(equal("cat_1"))
 
         let dropIndexOpts = DropIndexOptions(writeConcern: wc, maxTimeMS: maxTimeMS)
         let res = try collection.dropIndex(model, options: dropIndexOpts)
@@ -281,8 +281,8 @@ extension IndexOptions: Equatable {
             lhs.bucketSize == rhs.bucketSize &&
             lhs.partialFilterExpression == rhs.partialFilterExpression &&
             lhs.collation?["locale"] as? String == rhs.collation?["locale"] as? String
-            // ^ server adds a bunch of extra fields and a version number
-            // to collations. rather than deal with those, just verify the
-            // locale matches.
+        // ^ server adds a bunch of extra fields and a version number
+        // to collations. rather than deal with those, just verify the
+        // locale matches.
     }
 }

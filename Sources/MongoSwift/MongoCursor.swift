@@ -55,11 +55,13 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
      *   - `UserError.invalidArgumentError` if the options passed to the command that generated this cursor formed an
      *     invalid combination.
      */
-    internal init(client: MongoClient,
-                  decoder: BSONDecoder,
-                  session: ClientSession?,
-                  cursorType: CursorType? = nil,
-                  initializer: (Connection) -> OpaquePointer) throws {
+    internal init(
+        client: MongoClient,
+        decoder: BSONDecoder,
+        session: ClientSession?,
+        cursorType: CursorType? = nil,
+        initializer: (Connection) -> OpaquePointer
+    ) throws {
         let connection = try resolveConnection(client: client, session: session)
         let cursor = initializer(connection)
         self.state = .open(cursor: cursor, connection: connection, client: client, session: session)

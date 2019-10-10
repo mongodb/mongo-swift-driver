@@ -18,7 +18,7 @@ final class CrudTests: MongoSwiftTestCase {
     func doTests(forPath: String) throws {
         let client = try MongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
-        for (filename, file) in try parseFiles(atPath: forPath) {
+        for (filename, file) in try self.parseFiles(atPath: forPath) {
             if try !client.serverVersionIsInRange(file.minServerVersion, file.maxServerVersion) {
                 print("Skipping tests from file \(filename) for server version \(try client.serverVersion())")
                 continue
@@ -140,6 +140,7 @@ private class CrudTest {
         }
         return nil
     }
+
     var upsert: Bool? { return self.args["upsert"] as? Bool }
 
     /// Initializes a new `CrudTest` from a `Document`.
@@ -155,7 +156,7 @@ private class CrudTest {
     }
 
     // Subclasses should implement `execute` according to the particular operation(s) they are for.
-    func execute(usingCollection coll: MongoCollection<Document>) throws { XCTFail("Unimplemented") }
+    func execute(usingCollection _: MongoCollection<Document>) throws { XCTFail("Unimplemented") }
 
     // If the test has a `collection` field in its `outcome`, verify that the expected
     // data is present. If there is no `collection` field, do nothing.
@@ -330,11 +331,13 @@ private class DistinctTest: CrudTest {
 private class FindTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let filter: Document = try self.args.get("filter")
-        let options = FindOptions(batchSize: self.batchSize,
-                                  collation: self.collation,
-                                  limit: self.limit,
-                                  skip: self.skip,
-                                  sort: self.sort)
+        let options = FindOptions(
+            batchSize: self.batchSize,
+            collation: self.collation,
+            limit: self.limit,
+            skip: self.skip,
+            sort: self.sort
+        )
         let result = try Array(coll.find(filter, options: options))
         expect(result).to(equal(self.result as? [Document]))
     }
@@ -357,11 +360,13 @@ private class FindOneAndReplaceTest: CrudTest {
         let filter: Document = try self.args.get("filter")
         let replacement: Document = try self.args.get("replacement")
 
-        let opts = FindOneAndReplaceOptions(collation: self.collation,
-                                            projection: self.projection,
-                                            returnDocument: self.returnDoc,
-                                            sort: self.sort,
-                                            upsert: self.upsert)
+        let opts = FindOneAndReplaceOptions(
+            collation: self.collation,
+            projection: self.projection,
+            returnDocument: self.returnDoc,
+            sort: self.sort,
+            upsert: self.upsert
+        )
 
         let result = try coll.findOneAndReplace(filter: filter, replacement: replacement, options: opts)
         self.verifyFindAndModifyResult(result)
@@ -374,12 +379,14 @@ private class FindOneAndUpdateTest: CrudTest {
         let filter: Document = try self.args.get("filter")
         let update: Document = try self.args.get("update")
 
-        let opts = FindOneAndUpdateOptions(arrayFilters: self.arrayFilters,
-                                           collation: self.collation,
-                                           projection: self.projection,
-                                           returnDocument: self.returnDoc,
-                                           sort: self.sort,
-                                           upsert: self.upsert)
+        let opts = FindOneAndUpdateOptions(
+            arrayFilters: self.arrayFilters,
+            collation: self.collation,
+            projection: self.projection,
+            returnDocument: self.returnDoc,
+            sort: self.sort,
+            upsert: self.upsert
+        )
 
         let result = try coll.findOneAndUpdate(filter: filter, update: update, options: opts)
         self.verifyFindAndModifyResult(result)

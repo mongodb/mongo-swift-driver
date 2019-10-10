@@ -110,14 +110,15 @@ class MongoSwiftTestCase: XCTestCase {
     /// executes, the collection associated with the namespace is dropped.
     ///
     /// Note: If a collection is not specified as part of the input namespace, this function will throw an error.
-    internal func withTestNamespace<T>(ns: MongoNamespace? = nil,
-                                       clientOptions: ClientOptions? = nil,
-                                       collectionOptions: CreateCollectionOptions? = nil,
-                                       f: (MongoClient, MongoDatabase, MongoCollection<Document>) throws -> T)
-    throws -> T {
+    internal func withTestNamespace<T>(
+        ns: MongoNamespace? = nil,
+        clientOptions: ClientOptions? = nil,
+        collectionOptions: CreateCollectionOptions? = nil,
+        f: (MongoClient, MongoDatabase, MongoCollection<Document>) throws -> T
+    ) throws -> T {
         let client = try MongoClient.makeTestClient(options: clientOptions)
 
-        return try withTestNamespace(client: client, ns: ns, options: collectionOptions) { db, coll in
+        return try self.withTestNamespace(client: client, ns: ns, options: collectionOptions) { db, coll in
             try f(client, db, coll)
         }
     }
@@ -126,10 +127,12 @@ class MongoSwiftTestCase: XCTestCase {
     /// function. After the function executes, the collection associated with the namespace is dropped.
     ///
     /// Note: If a collection is not specified as part of the input namespace, this function will throw an error.
-    internal func withTestNamespace<T>(client: MongoClient,
-                                       ns: MongoNamespace? = nil,
-                                       options: CreateCollectionOptions? = nil,
-                                       _ f: (MongoDatabase, MongoCollection<Document>) throws -> T) throws -> T {
+    internal func withTestNamespace<T>(
+        client: MongoClient,
+        ns: MongoNamespace? = nil,
+        options: CreateCollectionOptions? = nil,
+        _ f: (MongoDatabase, MongoCollection<Document>) throws -> T
+    ) throws -> T {
         let ns = ns ?? self.getNamespace()
 
         guard let collName = ns.collection else {
@@ -145,11 +148,14 @@ class MongoSwiftTestCase: XCTestCase {
 
 extension MongoClient {
     internal func serverVersion() throws -> ServerVersion {
-        // TODO SWIFT-539: switch to always using buildInfo. fails on MacOS + SSL due to CDRIVER-3318
+        // TODO: SWIFT-539: switch to always using buildInfo. fails on MacOS + SSL due to CDRIVER-3318
         let cmd = MongoSwiftTestCase.ssl && MongoSwiftTestCase.isMacOS ? "serverStatus" : "buildInfo"
-        let reply = try self.db("admin").runCommand([cmd: 1],
-                                                    options: RunCommandOptions(
-                                                    readPreference: ReadPreference(.primary)))
+        let reply = try self.db("admin").runCommand(
+            [cmd: 1],
+            options: RunCommandOptions(
+                readPreference: ReadPreference(.primary)
+            )
+        )
         guard let versionString = reply["version"] as? String else {
             throw TestError(message: " reply missing version string: \(reply)")
         }
@@ -179,12 +185,16 @@ extension MongoClient {
         return true
     }
 
-    static func makeTestClient(_ uri: String = MongoSwiftTestCase.connStr,
-                               options: ClientOptions? = nil) throws -> MongoClient {
+    static func makeTestClient(
+        _ uri: String = MongoSwiftTestCase.connStr,
+        options: ClientOptions? = nil
+    ) throws -> MongoClient {
         var opts = options ?? ClientOptions()
         if MongoSwiftTestCase.ssl {
-            opts.tlsOptions = TLSOptions(pemFile: URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? ""),
-                                         caFile: URL(string: MongoSwiftTestCase.sslCAFilePath ?? ""))
+            opts.tlsOptions = TLSOptions(
+                pemFile: URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? ""),
+                caFile: URL(string: MongoSwiftTestCase.sslCAFilePath ?? "")
+            )
         }
         return try MongoClient(uri, options: opts)
     }
@@ -284,14 +294,14 @@ internal func rearrangeDoc(_ input: Document, toLookLike standard: Document) -> 
         if let sDoc = v as? Document, let iDoc = input[k] as? Document {
             output[k] = rearrangeDoc(iDoc, toLookLike: sDoc)
 
-        // if it's an array, recursively rearrange to look like corresponding sub-array
+            // if it's an array, recursively rearrange to look like corresponding sub-array
         } else if let sArr = v as? [Document], let iArr = input[k] as? [Document] {
             var newArr = [Document]()
             for (i, el) in iArr.enumerated() {
                 newArr.append(rearrangeDoc(el, toLookLike: sArr[i]))
             }
             output[k] = newArr
-        // just copy the value over as is
+            // just copy the value over as is
         } else {
             output[k] = input[k]
         }
@@ -317,10 +327,12 @@ internal func bsonEqual(_ expectedValue: BSONValue?) -> Predicate<BSONValue> {
 
 /// Captures any command monitoring events filtered by type and name that are emitted during the execution of the
 /// provided closure. Only events emitted by the provided client will be captured.
-internal func captureCommandEvents(from client: MongoClient,
-                                   eventTypes: [Notification.Name]? = nil,
-                                   commandNames: [String]? = nil,
-                                   f: () throws -> Void) rethrows -> [MongoCommandEvent] {
+internal func captureCommandEvents(
+    from client: MongoClient,
+    eventTypes: [Notification.Name]? = nil,
+    commandNames: [String]? = nil,
+    f: () throws -> Void
+) rethrows -> [MongoCommandEvent] {
     let center = client.notificationCenter
     var events: [MongoCommandEvent] = []
 
@@ -350,9 +362,11 @@ internal func captureCommandEvents(from client: MongoClient,
 
 /// Captures any command monitoring events filtered by type and name that are emitted during the execution of the
 /// provided closure. A client pre-configured for command monitoring is passed into the closure.
-internal func captureCommandEvents(eventTypes: [Notification.Name]? = nil,
-                                   commandNames: [String]? = nil,
-                                   f: (MongoClient) throws -> Void) throws -> [MongoCommandEvent] {
+internal func captureCommandEvents(
+    eventTypes: [Notification.Name]? = nil,
+    commandNames: [String]? = nil,
+    f: (MongoClient) throws -> Void
+) throws -> [MongoCommandEvent] {
     var clientOpts = ClientOptions(commandMonitoring: true)
     let client = try MongoClient.makeTestClient(options: clientOpts)
     return try captureCommandEvents(from: client, eventTypes: eventTypes, commandNames: commandNames) {
@@ -360,9 +374,10 @@ internal func captureCommandEvents(eventTypes: [Notification.Name]? = nil,
     }
 }
 
-internal func unsupportedTopologyMessage(testName: String,
-                                         topology: TopologyDescription.TopologyType = MongoSwiftTestCase.topologyType)
-                -> String {
+internal func unsupportedTopologyMessage(
+    testName: String,
+    topology: TopologyDescription.TopologyType = MongoSwiftTestCase.topologyType
+) -> String {
     return "Skipping \(testName) due to unsupported topology type \(topology)"
 }
 

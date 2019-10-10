@@ -39,13 +39,13 @@ internal struct TestCommandStartedEvent: Decodable, Matchable {
         }
 
         return self.commandName == expected.commandName &&
-                self.databaseName == expected.databaseName &&
-                self.command.matches(expected: expected.command)
+            self.databaseName == expected.databaseName &&
+            self.command.matches(expected: expected.command)
     }
 }
 
 /// Protocol that test cases which configure fail points during their execution conform to.
-internal protocol FailPointConfigured: class {
+internal protocol FailPointConfigured: AnyObject {
     /// The fail point currently set, if one exists.
     var activeFailPoint: FailPoint? { get set }
 }
@@ -95,9 +95,9 @@ internal struct FailPoint: Decodable {
 
             // Need to convert error codes to int32's due to c driver bug (CDRIVER-3121)
             if k == "data",
-               var data = v as? Document,
-               var wcErr = data["writeConcernError"] as? Document,
-               let code = wcErr["code"] as? BSONNumber {
+                var data = v as? Document,
+                var wcErr = data["writeConcernError"] as? Document,
+                let code = wcErr["code"] as? BSONNumber {
                 wcErr["code"] = code.int32Value
                 data["writeConcernError"] = wcErr
                 commandDoc["data"] = data
@@ -141,11 +141,13 @@ internal struct FailPoint: Decodable {
     /// Note: enabling a `failCommand` failpoint will override any other `failCommand` failpoint that is currently
     /// enabled.
     /// For more information, see the wiki: https://github.com/mongodb/mongo/wiki/The-%22failCommand%22-fail-point
-    public static func failCommand(failCommands: [String],
-                                   mode: Mode,
-                                   closeConnection: Bool? = nil,
-                                   errorCode: Int? = nil,
-                                   writeConcernError: Document? = nil) -> FailPoint {
+    public static func failCommand(
+        failCommands: [String],
+        mode: Mode,
+        closeConnection: Bool? = nil,
+        errorCode: Int? = nil,
+        writeConcernError: Document? = nil
+    ) -> FailPoint {
         var data: Document = [
             "failCommands": failCommands
         ]
@@ -215,7 +217,7 @@ internal struct ServerVersion: Comparable, Decodable, CustomStringConvertible {
     }
 
     var description: String {
-        return "\(major).\(minor).\(patch)"
+        return "\(self.major).\(self.minor).\(self.patch)"
     }
 
     static func < (lhs: ServerVersion, rhs: ServerVersion) -> Bool {
@@ -285,26 +287,31 @@ internal protocol SpecTest {
     var operation: AnyTestOperation { get }
 
     /// Runs the operation with the given context and performs assertions on the result based upon the expected outcome.
-    func run(client: MongoClient,
-             db: MongoDatabase,
-             collection: MongoCollection<Document>,
-             session: ClientSession?) throws
+    func run(
+        client: MongoClient,
+        db: MongoDatabase,
+        collection: MongoCollection<Document>,
+        session: ClientSession?
+    ) throws
 }
 
 /// Default implementation of a test execution.
 extension SpecTest {
-    internal func run(client: MongoClient,
-                      db: MongoDatabase,
-                      collection: MongoCollection<Document>,
-                      session: ClientSession?) throws {
+    internal func run(
+        client: MongoClient,
+        db: MongoDatabase,
+        collection: MongoCollection<Document>,
+        session: ClientSession?
+    ) throws {
         var result: TestOperationResult?
         var seenError: Error?
         do {
             result = try self.operation.op.execute(
-                    client: client,
-                    database: db,
-                    collection: collection,
-                    session: session)
+                client: client,
+                database: db,
+                collection: collection,
+                session: session
+            )
         } catch {
             if case let ServerError.bulkWriteError(_, _, _, bulkResult, _) = error {
                 result = TestOperationResult(from: bulkResult)

@@ -51,21 +51,21 @@ public class DocumentIterator: IteratorProtocol {
     /// or if at the end of the document. Returns true otherwise.
     internal func advance() -> Bool {
         return self.withMutableBSONIterPointer { iterPtr in
-          bson_iter_next(iterPtr)
+            bson_iter_next(iterPtr)
         }
     }
 
     /// Moves the iterator to the specified key. Returns false if the key does not exist. Returns true otherwise.
     internal func move(to key: String) -> Bool {
         return self.withMutableBSONIterPointer { iterPtr in
-          bson_iter_find(iterPtr, key.cString(using: .utf8))
+            bson_iter_find(iterPtr, key.cString(using: .utf8))
         }
     }
 
     /// Returns the current key. Assumes the iterator is in a valid position.
     internal var currentKey: String {
         return self.withBSONIterPointer { iterPtr in
-          String(cString: bson_iter_key(iterPtr))
+            String(cString: bson_iter_key(iterPtr))
         }
     }
 
@@ -81,7 +81,7 @@ public class DocumentIterator: IteratorProtocol {
     /// Returns the current value's type. Assumes the iterator is in a valid position.
     internal var currentType: BSONType {
         return self.withBSONIterPointer { iterPtr in
-          BSONType(rawValue: bson_iter_type(iterPtr).rawValue) ?? .invalid
+            BSONType(rawValue: bson_iter_type(iterPtr).rawValue) ?? .invalid
         }
     }
 
@@ -108,7 +108,7 @@ public class DocumentIterator: IteratorProtocol {
     internal func safeCurrentValue() throws -> BSONValue {
         guard let bsonType = DocumentIterator.bsonTypeMap[currentType] else {
             throw RuntimeError.internalError(
-                    message: "Unknown BSONType for iterator's current value with type: \(currentType)"
+                message: "Unknown BSONType for iterator's current value with type: \(self.currentType)"
             )
         }
 
@@ -133,7 +133,7 @@ public class DocumentIterator: IteratorProtocol {
 
         var output = Document()
 
-        // TODO SWIFT-224: use va_list variant of bson_copy_to_excluding to improve performance
+        // TODO: SWIFT-224: use va_list variant of bson_copy_to_excluding to improve performance
         for _ in startIndex..<endIndex {
             if let next = iter.next() {
                 output[next.key] = next.value
@@ -178,7 +178,7 @@ public class DocumentIterator: IteratorProtocol {
 
     /// Internal helper function for explicitly accessing the `bson_iter_t` as an unsafe mutable pointer
     internal func withMutableBSONIterPointer<Result>(
-      _ body: (MutableBSONIterPointer) throws -> Result
+        _ body: (MutableBSONIterPointer) throws -> Result
     ) rethrows -> Result {
 #if compiler(>=5.0)
         return try withUnsafeMutablePointer(to: &self._iter) { iterPtr in

@@ -5,49 +5,49 @@ import Foundation
 public enum BSONType: UInt32 {
     /// An invalid type
     case invalid = 0x00,
-    /// 64-bit binary floating point
-    double = 0x01,
-    /// UTF-8 string
-    string = 0x02,
-    /// BSON document
-    document = 0x03,
-    /// Array
-    array = 0x04,
-    /// Binary data
-    binary = 0x05,
-    /// Undefined value - deprecated
-    undefined = 0x06,
-    /// A MongoDB ObjectId.
-    /// - SeeAlso: https://docs.mongodb.com/manual/reference/method/ObjectId/
-    objectId = 0x07,
-    /// A boolean
-    boolean = 0x08,
-    /// UTC datetime, stored as UTC milliseconds since the Unix epoch
-    dateTime = 0x09,
-    /// Null value
-    null = 0x0a,
-    /// A regular expression
-    regularExpression = 0x0b,
-    /// A database pointer - deprecated
-    dbPointer = 0x0c,
-    /// Javascript code
-    javascript = 0x0d,
-    /// A symbol - deprecated
-    symbol = 0x0e,
-    /// JavaScript code w/ scope
-    javascriptWithScope = 0x0f,
-    /// 32-bit integer
-    int32 = 0x10,
-    /// Special internal type used by MongoDB replication and sharding
-    timestamp = 0x11,
-    /// 64-bit integer
-    int64 = 0x12,
-    /// 128-bit decimal floating point
-    decimal128 = 0x13,
-    /// Special type which compares lower than all other possible BSON element values
-    minKey = 0xff,
-    /// Special type which compares higher than all other possible BSON element values
-    maxKey = 0x7f
+        /// 64-bit binary floating point
+        double = 0x01,
+        /// UTF-8 string
+        string = 0x02,
+        /// BSON document
+        document = 0x03,
+        /// Array
+        array = 0x04,
+        /// Binary data
+        binary = 0x05,
+        /// Undefined value - deprecated
+        undefined = 0x06,
+        /// A MongoDB ObjectId.
+        /// - SeeAlso: https://docs.mongodb.com/manual/reference/method/ObjectId/
+        objectId = 0x07,
+        /// A boolean
+        boolean = 0x08,
+        /// UTC datetime, stored as UTC milliseconds since the Unix epoch
+        dateTime = 0x09,
+        /// Null value
+        null = 0x0A,
+        /// A regular expression
+        regularExpression = 0x0B,
+        /// A database pointer - deprecated
+        dbPointer = 0x0C,
+        /// Javascript code
+        javascript = 0x0D,
+        /// A symbol - deprecated
+        symbol = 0x0E,
+        /// JavaScript code w/ scope
+        javascriptWithScope = 0x0F,
+        /// 32-bit integer
+        int32 = 0x10,
+        /// Special internal type used by MongoDB replication and sharding
+        timestamp = 0x11,
+        /// 64-bit integer
+        int64 = 0x12,
+        /// 128-bit decimal floating point
+        decimal128 = 0x13,
+        /// Special type which compares lower than all other possible BSON element values
+        minKey = 0xFF,
+        /// Special type which compares higher than all other possible BSON element values
+        maxKey = 0x7F
 }
 
 /// A protocol all types representing `BSONType`s must implement.
@@ -244,7 +244,7 @@ public struct BSONNull: BSONValue, Codable, Equatable {
     }
 
     /// Initializes a new `BSONNull` instance.
-    public init() { }
+    public init() {}
 
     public init(from decoder: Decoder) throws {
         throw getDecodingError(type: BSONNull.self, decoder: decoder)
@@ -282,18 +282,18 @@ public struct Binary: BSONValue, Equatable, Codable, Hashable {
     public enum Subtype: UInt8 {
         /// Generic binary subtype
         case generic,
-        /// A function
-        function,
-        /// Binary (old)
-        binaryDeprecated,
-        /// UUID (old)
-        uuidDeprecated,
-        /// UUID (RFC 4122)
-        uuid,
-        /// MD5
-        md5,
-        /// User defined
-        userDefined = 0x80
+            /// A function
+            function,
+            /// Binary (old)
+            binaryDeprecated,
+            /// UUID (old)
+            uuidDeprecated,
+            /// UUID (RFC 4122)
+            uuid,
+            /// MD5
+            md5,
+            /// User defined
+            userDefined = 0x80
     }
 
     /// Initializes a `Binary` instance from a `UUID`.
@@ -317,8 +317,10 @@ public struct Binary: BSONValue, Equatable, Codable, Hashable {
     ///   - `UserError.invalidArgumentError` if the provided data is incompatible with the specified subtype.
     public init(data: Data, subtype: UInt8) throws {
         if [Subtype.uuid.rawValue, Subtype.uuidDeprecated.rawValue].contains(subtype) && data.count != 16 {
-            throw UserError.invalidArgumentError(message:
-                "Binary data with UUID subtype must be 16 bytes, but data has \(data.count) bytes")
+            throw UserError.invalidArgumentError(
+                message:
+                "Binary data with UUID subtype must be 16 bytes, but data has \(data.count) bytes"
+            )
         }
         self.subtype = subtype
         self.data = data
@@ -337,8 +339,10 @@ public struct Binary: BSONValue, Equatable, Codable, Hashable {
     ///     incompatible with the specified subtype.
     public init(base64: String, subtype: UInt8) throws {
         guard let dataObj = Data(base64Encoded: base64) else {
-            throw UserError.invalidArgumentError(message:
-                "failed to create Data object from invalid base64 string \(base64)")
+            throw UserError.invalidArgumentError(
+                message:
+                "failed to create Data object from invalid base64 string \(base64)"
+            )
         }
         try self.init(data: dataObj, subtype: subtype)
     }
@@ -470,7 +474,7 @@ public struct DBPointer: BSONValue, Codable, Equatable, Hashable {
     }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
-        try withUnsafePointer(to: id.oid) { oidPtr in
+        try withUnsafePointer(to: self.id.oid) { oidPtr in
             guard bson_append_dbpointer(storage._bson, key, Int32(key.utf8.count), self.ref, oidPtr) else {
                 throw bsonTooLargeError(value: self, forKey: key)
             }
@@ -576,7 +580,7 @@ public struct Decimal128: BSONNumber, Equatable, Codable, CustomStringConvertibl
 
             return Decimal128(bsonDecimal: value)
         }
-     }
+    }
 }
 
 // An extension of `Decimal128` to add capability to be hashed
@@ -587,7 +591,7 @@ extension Decimal128: Hashable {
 }
 
 /// Extension of `Decimal128` to add `BSONNumber` conformance.
-/// TODO: implement the missing converters (SWIFT-367)
+// TODO: implement the missing converters (SWIFT-367)
 extension Decimal128 {
     /// Create an `Int` from this `Decimal128`.
     /// Note: this function is not implemented yet and will always return nil.
@@ -980,16 +984,18 @@ extension UUID {
     ///   - `UserError.invalidArgumentError` if a non-UUID subtype is set on the `Binary`.
     public init(from binary: Binary) throws {
         guard [Binary.Subtype.uuid.rawValue, Binary.Subtype.uuidDeprecated.rawValue].contains(binary.subtype) else {
-            throw UserError.invalidArgumentError(message: "Expected a UUID binary type " +
-                    "(\(Binary.Subtype.uuid)), got \(binary.subtype) instead.")
+            throw UserError.invalidArgumentError(
+                message: "Expected a UUID binary type " +
+                    "(\(Binary.Subtype.uuid)), got \(binary.subtype) instead."
+            )
         }
 
         let data = binary.data
         let uuid: uuid_t = (
-                data[0], data[1], data[2], data[3],
-                data[4], data[5], data[6], data[7],
-                data[8], data[9], data[10], data[11],
-                data[12], data[13], data[14], data[15]
+            data[0], data[1], data[2], data[3],
+            data[4], data[5], data[6], data[7],
+            data[8], data[9], data[10], data[11],
+            data[12], data[13], data[14], data[15]
         )
 
         self.init(uuid: uuid)
@@ -1015,7 +1021,7 @@ extension NSRegularExpression {
         var optsObj: NSRegularExpression.Options = []
         for o in stringOptions {
             if let value = regexOptsMap[o] {
-                 optsObj.update(with: value)
+                optsObj.update(with: value)
             }
         }
         return optsObj
@@ -1125,7 +1131,8 @@ extension String: BSONValue {
 
             guard let out = self.init(rawStringData: strValue, length: Int(length)) else {
                 throw RuntimeError.internalError(
-                    message: "Underlying string data could not be parsed to a Swift String")
+                    message: "Underlying string data could not be parsed to a Swift String"
+                )
             }
 
             return out
@@ -1139,7 +1146,7 @@ public struct Symbol: BSONValue, CustomStringConvertible, Codable, Equatable, Ha
     public var bsonType: BSONType { return .symbol }
 
     public var description: String {
-        return stringValue
+        return self.stringValue
     }
 
     /// String representation of this `Symbol`.
@@ -1159,11 +1166,12 @@ public struct Symbol: BSONValue, CustomStringConvertible, Codable, Equatable, Ha
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         guard bson_append_symbol(
-                storage._bson,
-                key,
-                Int32(key.utf8.count),
-                self.stringValue,
-                Int32(self.stringValue.utf8.count)) else {
+            storage._bson,
+            key,
+            Int32(key.utf8.count),
+            self.stringValue,
+            Int32(self.stringValue.utf8.count)
+        ) else {
             throw bsonTooLargeError(value: self, forKey: key)
         }
     }
@@ -1316,18 +1324,18 @@ private func bsonEncodingUnsupportedError<T: BSONValue>(value: T, at codingPath:
     let description = "Encoding \(T.self) BSONValue type with a non-BSONEncoder is currently unsupported"
 
     return EncodingError.invalidValue(
-            value,
-            EncodingError.Context(codingPath: codingPath, debugDescription: description)
+        value,
+        EncodingError.Context(codingPath: codingPath, debugDescription: description)
     )
 }
 
 /// Error thrown when a BSONValue type introduced by the driver (e.g. ObjectId) is decoded not using BSONDecoder
-private func bsonDecodingUnsupportedError<T: BSONValue>(type: T.Type, at codingPath: [CodingKey]) -> DecodingError {
+private func bsonDecodingUnsupportedError<T: BSONValue>(type _: T.Type, at codingPath: [CodingKey]) -> DecodingError {
     let description = "Initializing a \(T.self) BSONValue type with a non-BSONDecoder is currently unsupported"
 
     return DecodingError.typeMismatch(
-            T.self,
-            DecodingError.Context(codingPath: codingPath, debugDescription: description)
+        T.self,
+        DecodingError.Context(codingPath: codingPath, debugDescription: description)
     )
 }
 
@@ -1335,13 +1343,13 @@ private func bsonDecodingUnsupportedError<T: BSONValue>(type: T.Type, at codingP
  * Error thrown when a `BSONValue` type introduced by the driver (e.g. ObjectId) is decoded directly via the top-level
  * `BSONDecoder`.
  */
-private func bsonDecodingDirectlyError<T: BSONValue>(type: T.Type, at codingPath: [CodingKey]) -> DecodingError {
+private func bsonDecodingDirectlyError<T: BSONValue>(type _: T.Type, at codingPath: [CodingKey]) -> DecodingError {
     let description = "Cannot initialize BSONValue type \(T.self) directly from BSONDecoder. It must be decoded as " +
-            "a member of a struct or a class."
+        "a member of a struct or a class."
 
     return DecodingError.typeMismatch(
-            T.self,
-            DecodingError.Context(codingPath: codingPath, debugDescription: description)
+        T.self,
+        DecodingError.Context(codingPath: codingPath, debugDescription: description)
     )
 }
 
@@ -1356,7 +1364,7 @@ private func bsonDecodingDirectlyError<T: BSONValue>(type: T.Type, at codingPath
  *   - Encountering the wrong type of BSONValue (e.g. expected "_id" to be an `ObjectId`, got a `Document` instead)
  *   - Attempting to decode a driver-introduced BSONValue with a non-BSONDecoder
  */
-internal func getDecodingError<T: BSONValue>(type: T.Type, decoder: Decoder) -> DecodingError {
+internal func getDecodingError<T: BSONValue>(type _: T.Type, decoder: Decoder) -> DecodingError {
     if let bsonDecoder = decoder as? _BSONDecoder {
         // Cannot decode driver-introduced BSONValues directly
         if decoder.codingPath.isEmpty {
@@ -1365,9 +1373,9 @@ internal func getDecodingError<T: BSONValue>(type: T.Type, decoder: Decoder) -> 
 
         // Got the wrong BSONValue type
         return DecodingError._typeMismatch(
-                at: decoder.codingPath,
-                expectation: T.self,
-                reality: bsonDecoder.storage.topContainer
+            at: decoder.codingPath,
+            expectation: T.self,
+            reality: bsonDecoder.storage.topContainer
         )
     }
 

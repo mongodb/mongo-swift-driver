@@ -20,9 +20,11 @@ extension MongoCollection {
      *   - `EncodingError` if an error occurs while encoding the `CollectionType` or the options to BSON.
      */
     @discardableResult
-    public func bulkWrite(_ requests: [WriteModel<T>],
-                          options: BulkWriteOptions? = nil,
-                          session: ClientSession? = nil) throws -> BulkWriteResult? {
+    public func bulkWrite(
+        _ requests: [WriteModel<T>],
+        options: BulkWriteOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> BulkWriteResult? {
         guard !requests.isEmpty else {
             throw UserError.invalidArgumentError(message: "requests cannot be empty")
         }
@@ -96,11 +98,13 @@ public enum WriteModel<CollectionType: Codable> {
         case let .replaceOne(filter, replacement, options):
             let replacement = try encoder.encode(replacement)
             let opts = try encoder.encode(options)
-            success = mongoc_bulk_operation_replace_one_with_opts(bulk,
-                                                                  filter._bson,
-                                                                  replacement._bson,
-                                                                  opts?._bson,
-                                                                  &error)
+            success = mongoc_bulk_operation_replace_one_with_opts(
+                bulk,
+                filter._bson,
+                replacement._bson,
+                opts?._bson,
+                &error
+            )
 
         case let .updateOne(filter, update, options):
             let opts = try encoder.encode(options)
@@ -137,7 +141,7 @@ public struct ReplaceOneModelOptions: Codable {
     /// When `true`, creates a new document if no document matches the query.
     public var upsert: Bool?
 
-       /// Initializer allowing any/all options to be omitted or optional.
+    /// Initializer allowing any/all options to be omitted or optional.
     public init(collation: Document? = nil, upsert: Bool? = nil) {
         self.collation = collation
         self.upsert = upsert
@@ -214,10 +218,12 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
         let result = try BulkWriteResult(reply: reply, insertedIds: insertedIds)
 
         guard serverId != 0 else {
-            throw extractBulkWriteError(for: self,
-                                        error: error,
-                                        reply: reply,
-                                        partialResult: isAcknowledged ? result : nil)
+            throw extractBulkWriteError(
+                for: self,
+                error: error,
+                reply: reply,
+                partialResult: isAcknowledged ? result : nil
+            )
         }
 
         return isAcknowledged ? result : nil
@@ -292,9 +298,13 @@ public struct BulkWriteResult: Decodable {
 
         // None of the results must be present themselves, but at least one must.
         guard !container.allKeys.isEmpty else {
-            throw DecodingError.valueNotFound(BulkWriteResult.self,
-                                              DecodingError.Context(codingPath: decoder.codingPath,
-                                                                    debugDescription: "No results found"))
+            throw DecodingError.valueNotFound(
+                BulkWriteResult.self,
+                DecodingError.Context(
+                    codingPath: decoder.codingPath,
+                    debugDescription: "No results found"
+                )
+            )
         }
 
         self.deletedCount = try container.decodeIfPresent(Int.self, forKey: .deletedCount) ?? 0
@@ -302,14 +312,14 @@ public struct BulkWriteResult: Decodable {
         self.modifiedCount = try container.decodeIfPresent(Int.self, forKey: .modifiedCount) ?? 0
 
         let insertedIds =
-                (try container.decodeIfPresent([Int: AnyBSONValue].self, forKey: .insertedIds) ?? [:])
-                        .mapValues { $0.value }
+            (try container.decodeIfPresent([Int: AnyBSONValue].self, forKey: .insertedIds) ?? [:])
+            .mapValues { $0.value }
         self.insertedIds = insertedIds
         self.insertedCount = try container.decodeIfPresent(Int.self, forKey: .insertedCount) ?? insertedIds.count
 
         let upsertedIds =
-                (try container.decodeIfPresent([Int: AnyBSONValue].self, forKey: .upsertedIds) ?? [:])
-                        .mapValues { $0.value }
+            (try container.decodeIfPresent([Int: AnyBSONValue].self, forKey: .upsertedIds) ?? [:])
+            .mapValues { $0.value }
         self.upsertedIds = upsertedIds
         self.upsertedCount = try container.decodeIfPresent(Int.self, forKey: .upsertedCount) ?? upsertedIds.count
     }
@@ -358,13 +368,14 @@ public struct BulkWriteResult: Decodable {
 
     /// Internal initializer used for testing purposes and error handling.
     internal init(
-            deletedCount: Int? = nil,
-            insertedCount: Int? = nil,
-            insertedIds: [Int: BSONValue]? = nil,
-            matchedCount: Int? = nil,
-            modifiedCount: Int? = nil,
-            upsertedCount: Int? = nil,
-            upsertedIds: [Int: BSONValue]? = nil) {
+        deletedCount: Int? = nil,
+        insertedCount: Int? = nil,
+        insertedIds: [Int: BSONValue]? = nil,
+        matchedCount: Int? = nil,
+        modifiedCount: Int? = nil,
+        upsertedCount: Int? = nil,
+        upsertedIds: [Int: BSONValue]? = nil
+    ) {
         self.deletedCount = deletedCount ?? 0
         self.insertedCount = insertedCount ?? 0
         self.insertedIds = insertedIds ?? [:]

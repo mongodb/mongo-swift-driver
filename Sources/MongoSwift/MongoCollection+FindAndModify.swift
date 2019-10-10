@@ -20,9 +20,11 @@ extension MongoCollection {
      *   - `DecodingError` if the deleted document cannot be decoded to a `CollectionType` value.
      */
     @discardableResult
-    public func findOneAndDelete(_ filter: Document,
-                                 options: FindOneAndDeleteOptions? = nil,
-                                 session: ClientSession? = nil) throws -> CollectionType? {
+    public func findOneAndDelete(
+        _ filter: Document,
+        options: FindOneAndDeleteOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> CollectionType? {
         // we need to always send options here in order to ensure the `remove` flag is set
         let opts = options ?? FindOneAndDeleteOptions()
         return try self.findAndModify(filter: filter, options: opts, session: session)
@@ -49,10 +51,12 @@ extension MongoCollection {
      *   - `EncodingError` if `replacement` cannot be encoded to a `Document`.
      */
     @discardableResult
-    public func findOneAndReplace(filter: Document,
-                                  replacement: CollectionType,
-                                  options: FindOneAndReplaceOptions? = nil,
-                                  session: ClientSession? = nil) throws -> CollectionType? {
+    public func findOneAndReplace(
+        filter: Document,
+        replacement: CollectionType,
+        options: FindOneAndReplaceOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> CollectionType? {
         let update = try self.encoder.encode(replacement)
         return try self.findAndModify(filter: filter, update: update, options: options, session: session)
     }
@@ -77,10 +81,12 @@ extension MongoCollection {
      *   - `DecodingError` if the updated document cannot be decoded to a `CollectionType` value.
      */
     @discardableResult
-    public func findOneAndUpdate(filter: Document,
-                                 update: Document,
-                                 options: FindOneAndUpdateOptions? = nil,
-                                 session: ClientSession? = nil) throws -> CollectionType? {
+    public func findOneAndUpdate(
+        filter: Document,
+        update: Document,
+        options: FindOneAndUpdateOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> CollectionType? {
         return try self.findAndModify(filter: filter, update: update, options: options, session: session)
     }
 
@@ -94,10 +100,12 @@ extension MongoCollection {
      *   - `ServerError.writeError` if an error occurs while executing the command.
      *   - `DecodingError` if the updated document cannot be decoded to a `CollectionType` value.
      */
-    private func findAndModify(filter: Document,
-                               update: Document? = nil,
-                               options: FindAndModifyOptionsConvertible? = nil,
-                               session: ClientSession?) throws -> CollectionType? {
+    private func findAndModify(
+        filter: Document,
+        update: Document? = nil,
+        options: FindAndModifyOptionsConvertible? = nil,
+        session: ClientSession?
+    ) throws -> CollectionType? {
         let operation = FindAndModifyOperation(collection: self, filter: filter, update: update, options: options)
         return try self._client.executeOperation(operation, session: session)
     }
@@ -137,20 +145,24 @@ public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible, Decodabl
     public var writeConcern: WriteConcern?
 
     internal func asFindAndModifyOptions() throws -> FindAndModifyOptions {
-        return try FindAndModifyOptions(collation: collation,
-                                        maxTimeMS: maxTimeMS,
-                                        projection: projection,
-                                        remove: true,
-                                        sort: sort,
-                                        writeConcern: writeConcern)
+        return try FindAndModifyOptions(
+            collation: self.collation,
+            maxTimeMS: self.maxTimeMS,
+            projection: self.projection,
+            remove: true,
+            sort: self.sort,
+            writeConcern: self.writeConcern
+        )
     }
 
     /// Convenience initializer allowing any/all parameters to be omitted/optional
-    public init(collation: Document? = nil,
-                maxTimeMS: Int64? = nil,
-                projection: Document? = nil,
-                sort: Document? = nil,
-                writeConcern: WriteConcern? = nil) {
+    public init(
+        collation: Document? = nil,
+        maxTimeMS: Int64? = nil,
+        projection: Document? = nil,
+        sort: Document? = nil,
+        writeConcern: WriteConcern? = nil
+    ) {
         self.collation = collation
         self.maxTimeMS = maxTimeMS
         self.projection = projection
@@ -186,25 +198,29 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible, Decodab
     public var writeConcern: WriteConcern?
 
     internal func asFindAndModifyOptions() throws -> FindAndModifyOptions {
-        return try FindAndModifyOptions(bypassDocumentValidation: bypassDocumentValidation,
-                                        collation: collation,
-                                        maxTimeMS: maxTimeMS,
-                                        projection: projection,
-                                        returnDocument: returnDocument,
-                                        sort: sort,
-                                        upsert: upsert,
-                                        writeConcern: writeConcern)
+        return try FindAndModifyOptions(
+            bypassDocumentValidation: self.bypassDocumentValidation,
+            collation: self.collation,
+            maxTimeMS: self.maxTimeMS,
+            projection: self.projection,
+            returnDocument: self.returnDocument,
+            sort: self.sort,
+            upsert: self.upsert,
+            writeConcern: self.writeConcern
+        )
     }
 
     /// Convenience initializer allowing any/all parameters to be omitted/optional.
-    public init(bypassDocumentValidation: Bool? = nil,
-                collation: Document? = nil,
-                maxTimeMS: Int64? = nil,
-                projection: Document? = nil,
-                returnDocument: ReturnDocument? = nil,
-                sort: Document? = nil,
-                upsert: Bool? = nil,
-                writeConcern: WriteConcern? = nil) {
+    public init(
+        bypassDocumentValidation: Bool? = nil,
+        collation: Document? = nil,
+        maxTimeMS: Int64? = nil,
+        projection: Document? = nil,
+        returnDocument: ReturnDocument? = nil,
+        sort: Document? = nil,
+        upsert: Bool? = nil,
+        writeConcern: WriteConcern? = nil
+    ) {
         self.bypassDocumentValidation = bypassDocumentValidation
         self.collation = collation
         self.maxTimeMS = maxTimeMS
@@ -246,27 +262,31 @@ public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible, Decodabl
     public var writeConcern: WriteConcern?
 
     internal func asFindAndModifyOptions() throws -> FindAndModifyOptions {
-        return try FindAndModifyOptions(arrayFilters: arrayFilters,
-                                        bypassDocumentValidation: bypassDocumentValidation,
-                                        collation: collation,
-                                        maxTimeMS: maxTimeMS,
-                                        projection: projection,
-                                        returnDocument: returnDocument,
-                                        sort: sort,
-                                        upsert: upsert,
-                                        writeConcern: writeConcern)
+        return try FindAndModifyOptions(
+            arrayFilters: self.arrayFilters,
+            bypassDocumentValidation: self.bypassDocumentValidation,
+            collation: self.collation,
+            maxTimeMS: self.maxTimeMS,
+            projection: self.projection,
+            returnDocument: self.returnDocument,
+            sort: self.sort,
+            upsert: self.upsert,
+            writeConcern: self.writeConcern
+        )
     }
 
     /// Convenience initializer allowing any/all parameters to be omitted/optional.
-    public init(arrayFilters: [Document]? = nil,
-                bypassDocumentValidation: Bool? = nil,
-                collation: Document? = nil,
-                maxTimeMS: Int64? = nil,
-                projection: Document? = nil,
-                returnDocument: ReturnDocument? = nil,
-                sort: Document? = nil,
-                upsert: Bool? = nil,
-                writeConcern: WriteConcern? = nil) {
+    public init(
+        arrayFilters: [Document]? = nil,
+        bypassDocumentValidation: Bool? = nil,
+        collation: Document? = nil,
+        maxTimeMS: Int64? = nil,
+        projection: Document? = nil,
+        returnDocument: ReturnDocument? = nil,
+        sort: Document? = nil,
+        upsert: Bool? = nil,
+        writeConcern: WriteConcern? = nil
+    ) {
         self.arrayFilters = arrayFilters
         self.bypassDocumentValidation = bypassDocumentValidation
         self.collation = collation

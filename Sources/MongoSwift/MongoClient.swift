@@ -4,7 +4,7 @@ import mongoc
 /// Options to use when creating a `MongoClient`.
 public struct ClientOptions: CodingStrategyProvider, Decodable {
     /// Determines whether the client should retry supported read operations.
-    /// TODO SWIFT-587 make this public.
+    // TODO: SWIFT-587 make this public.
     internal var retryReads: Bool?
 
     /// Determines whether the client should retry supported write operations.
@@ -71,17 +71,19 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
     }
 
     /// Convenience initializer allowing any/all to be omitted or optional.
-    public init(readConcern: ReadConcern? = nil,
-                readPreference: ReadPreference? = nil,
-                retryWrites: Bool? = nil,
-                writeConcern: WriteConcern? = nil,
-                commandMonitoring: Bool = false,
-                serverMonitoring: Bool = false,
-                notificationCenter: NotificationCenter? = nil,
-                dateCodingStrategy: DateCodingStrategy? = nil,
-                uuidCodingStrategy: UUIDCodingStrategy? = nil,
-                dataCodingStrategy: DataCodingStrategy? = nil,
-                tlsOptions: TLSOptions? = nil) {
+    public init(
+        readConcern: ReadConcern? = nil,
+        readPreference: ReadPreference? = nil,
+        retryWrites: Bool? = nil,
+        writeConcern: WriteConcern? = nil,
+        commandMonitoring: Bool = false,
+        serverMonitoring: Bool = false,
+        notificationCenter: NotificationCenter? = nil,
+        dateCodingStrategy: DateCodingStrategy? = nil,
+        uuidCodingStrategy: UUIDCodingStrategy? = nil,
+        dataCodingStrategy: DataCodingStrategy? = nil,
+        tlsOptions: TLSOptions? = nil
+    ) {
         self.retryWrites = retryWrites
         self.commandMonitoring = commandMonitoring
         self.serverMonitoring = serverMonitoring
@@ -120,12 +122,14 @@ public struct DatabaseOptions: CodingStrategyProvider {
     public var dataCodingStrategy: DataCodingStrategy?
 
     /// Convenience initializer allowing any/all arguments to be omitted or optional.
-    public init(readConcern: ReadConcern? = nil,
-                readPreference: ReadPreference? = nil,
-                writeConcern: WriteConcern? = nil,
-                dateCodingStrategy: DateCodingStrategy? = nil,
-                uuidCodingStrategy: UUIDCodingStrategy? = nil,
-                dataCodingStrategy: DataCodingStrategy? = nil) {
+    public init(
+        readConcern: ReadConcern? = nil,
+        readPreference: ReadPreference? = nil,
+        writeConcern: WriteConcern? = nil,
+        dateCodingStrategy: DateCodingStrategy? = nil,
+        uuidCodingStrategy: UUIDCodingStrategy? = nil,
+        dataCodingStrategy: DataCodingStrategy? = nil
+    ) {
         self.readConcern = readConcern
         self.readPreference = readPreference
         self.writeConcern = writeConcern
@@ -153,11 +157,13 @@ public struct TLSOptions {
     public var allowInvalidHostnames: Bool?
 
     /// Convenience initializer allowing any/all arguments to be omitted or optional.
-    public init(pemFile: URL? = nil,
-                pemPassword: String? = nil,
-                caFile: URL? = nil,
-                weakCertValidation: Bool? = nil,
-                allowInvalidHostnames: Bool? = nil) {
+    public init(
+        pemFile: URL? = nil,
+        pemPassword: String? = nil,
+        caFile: URL? = nil,
+        weakCertValidation: Bool? = nil,
+        allowInvalidHostnames: Bool? = nil
+    ) {
         self.pemFile = pemFile
         self.pemPassword = pemPassword
         self.caFile = caFile
@@ -237,18 +243,20 @@ public class MongoClient {
         self.decoder = BSONDecoder(options: options)
         self.notificationCenter = options.notificationCenter ?? NotificationCenter.default
 
-        self.connectionPool.initializeMonitoring(commandMonitoring: options.commandMonitoring,
-                                                 serverMonitoring: options.serverMonitoring,
-                                                 client: self)
+        self.connectionPool.initializeMonitoring(
+            commandMonitoring: options.commandMonitoring,
+            serverMonitoring: options.serverMonitoring,
+            client: self
+        )
     }
 
     /**
      * :nodoc:
      */
-     @available(*, deprecated, message: "Use MongoClient(stealing:) instead.")
-     public convenience init(fromPointer pointer: OpaquePointer) {
+    @available(*, deprecated, message: "Use MongoClient(stealing:) instead.")
+    public convenience init(fromPointer pointer: OpaquePointer) {
         self.init(stealing: pointer)
-     }
+    }
 
     /**
      * :nodoc:
@@ -289,8 +297,10 @@ public class MongoClient {
      * - Throws:
      *   - `RuntimeError.compatibilityError` if the deployment does not support sessions.
      */
-    public func withSession<T>(options: ClientSessionOptions? = nil,
-                               _ sessionBody: (ClientSession) throws -> T) throws -> T {
+    public func withSession<T>(
+        options: ClientSessionOptions? = nil,
+        _ sessionBody: (ClientSession) throws -> T
+    ) throws -> T {
         let session = try ClientSession(client: self, options: options)
         defer { session.end() }
         return try sessionBody(session)
@@ -312,11 +322,15 @@ public class MongoClient {
      *
      * - SeeAlso: https://docs.mongodb.com/manual/reference/command/listDatabases/
      */
-    public func listDatabases(_ filter: Document? = nil,
-                              session: ClientSession? = nil) throws -> [DatabaseSpecification] {
-        let operation = ListDatabasesOperation(client: self,
-                                               filter: filter,
-                                               nameOnly: nil)
+    public func listDatabases(
+        _ filter: Document? = nil,
+        session: ClientSession? = nil
+    ) throws -> [DatabaseSpecification] {
+        let operation = ListDatabasesOperation(
+            client: self,
+            filter: filter,
+            nameOnly: nil
+        )
         guard case let .specs(result) = try self.executeOperation(operation, session: session) else {
             throw RuntimeError.internalError(message: "Invalid result")
         }
@@ -352,9 +366,11 @@ public class MongoClient {
      *   - `UserError.logicError` if the provided session is inactive.
      */
     public func listDatabaseNames(_ filter: Document? = nil, session: ClientSession? = nil) throws -> [String] {
-        let operation = ListDatabasesOperation(client: self,
-                                               filter: filter,
-                                               nameOnly: true)
+        let operation = ListDatabasesOperation(
+            client: self,
+            filter: filter,
+            nameOnly: true
+        )
         guard case let .names(result) = try self.executeOperation(operation, session: session) else {
             throw RuntimeError.internalError(message: "Invalid result")
         }
@@ -396,9 +412,11 @@ public class MongoClient {
      *   - https://docs.mongodb.com/manual/reference/system-collections/
      * - Note: Supported in MongoDB version 4.0+ only.
      */
-    public func watch(_  pipeline: [Document] = [],
-                      options: ChangeStreamOptions?  =  nil,
-                      session: ClientSession? = nil) throws -> ChangeStream<ChangeStreamEvent<Document>> {
+    public func watch(
+        _ pipeline: [Document] = [],
+        options: ChangeStreamOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> ChangeStream<ChangeStreamEvent<Document>> {
         return try self.watch(pipeline, options: options, session: session, withFullDocumentType: Document.self)
     }
 
@@ -424,15 +442,19 @@ public class MongoClient {
      *   - https://docs.mongodb.com/manual/reference/system-collections/
      * - Note: Supported in MongoDB version 4.0+ only.
      */
-    public func watch<FullDocType: Codable>(_  pipeline: [Document] = [],
-                                            options: ChangeStreamOptions?  =  nil,
-                                            session: ClientSession? = nil,
-                                            withFullDocumentType: FullDocType.Type)
-                                        throws -> ChangeStream<ChangeStreamEvent<FullDocType>> {
-        return try self.watch(pipeline,
-                              options: options,
-                              session: session,
-                              withEventType: ChangeStreamEvent<FullDocType>.self)
+    public func watch<FullDocType: Codable>(
+        _ pipeline: [Document] = [],
+        options: ChangeStreamOptions? = nil,
+        session: ClientSession? = nil,
+        withFullDocumentType _: FullDocType.Type
+    )
+        throws -> ChangeStream<ChangeStreamEvent<FullDocType>> {
+        return try self.watch(
+            pipeline,
+            options: options,
+            session: session,
+            withEventType: ChangeStreamEvent<FullDocType>.self
+        )
     }
 
     /**
@@ -457,21 +479,27 @@ public class MongoClient {
      *   - https://docs.mongodb.com/manual/reference/system-collections/
      * - Note: Supported in MongoDB version 4.0+ only.
      */
-    public func watch<EventType: Codable>(_  pipeline: [Document] = [],
-                                          options: ChangeStreamOptions?  =  nil,
-                                          session: ClientSession? = nil,
-                                          withEventType: EventType.Type) throws -> ChangeStream<EventType> {
+    public func watch<EventType: Codable>(
+        _ pipeline: [Document] = [],
+        options: ChangeStreamOptions? = nil,
+        session: ClientSession? = nil,
+        withEventType _: EventType.Type
+    ) throws -> ChangeStream<EventType> {
         let connection = try resolveConnection(client: self, session: session)
-        let operation = try WatchOperation<Document, EventType>(target: .client(self),
-                                                                pipeline: pipeline,
-                                                                options: options,
-                                                                stealing: connection)
+        let operation = try WatchOperation<Document, EventType>(
+            target: .client(self),
+            pipeline: pipeline,
+            options: options,
+            stealing: connection
+        )
         return try self.executeOperation(operation, session: session)
     }
 
     /// Executes an `Operation` using this `MongoClient` and an optionally provided session.
-    internal func executeOperation<T: Operation>(_ operation: T,
-                                                 session: ClientSession? = nil) throws -> T.OperationResult {
+    internal func executeOperation<T: Operation>(
+        _ operation: T,
+        session: ClientSession? = nil
+    ) throws -> T.OperationResult {
         return try self.operationExecutor.execute(operation, client: self, session: session)
     }
 }

@@ -45,10 +45,12 @@ final class MongoCursorTests: MongoSwiftTestCase {
 
             // run killCursors so next iteration fails on the server
             try db.runCommand(["killCursors": coll.name, "cursors": [cursor.id]])
-            let expectedError2 = ServerError.commandError(code: 43,
-                                                          codeName: "CursorNotFound",
-                                                          message: "",
-                                                          errorLabels: nil)
+            let expectedError2 = ServerError.commandError(
+                code: 43,
+                codeName: "CursorNotFound",
+                message: "",
+                errorLabels: nil
+            )
             expect(try cursor.nextOrError()).to(throwError(expectedError2))
             // cursor should be closed now that it errored
             expect(cursor.isAlive).to(beFalse())
@@ -97,10 +99,12 @@ final class MongoCursorTests: MongoSwiftTestCase {
                 try coll.insertOne(["_id": i, "x": i])
             }
 
-            let expectedError = ServerError.commandError(code: 136,
-                                                         codeName: "CappedPositionLost",
-                                                         message: "",
-                                                         errorLabels: nil)
+            let expectedError = ServerError.commandError(
+                code: 136,
+                codeName: "CappedPositionLost",
+                message: "",
+                errorLabels: nil
+            )
             expect(try cursor.nextOrError()).to(throwError(expectedError))
             // cursor should be closed now that it errored
             expect(cursor.isAlive).to(beFalse())

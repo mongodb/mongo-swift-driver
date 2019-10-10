@@ -17,7 +17,7 @@ final class BSONValueTests: MongoSwiftTestCase {
 
         // UUIDs must have 16 bytes
         expect(try Binary(data: twoBytes, subtype: .uuidDeprecated))
-                .to(throwError(UserError.invalidArgumentError(message: "")))
+            .to(throwError(UserError.invalidArgumentError(message: "")))
         expect(try Binary(data: twoBytes, subtype: .uuid)).to(throwError(UserError.invalidArgumentError(message: "")))
         expect(try Binary(data: sixteenBytes, subtype: .uuidDeprecated)).toNot(throwError())
         expect(try Binary(data: sixteenBytes, subtype: .uuid)).toNot(throwError())
@@ -30,28 +30,28 @@ final class BSONValueTests: MongoSwiftTestCase {
 
     func testBSONEquals() throws {
         // Int
-        checkTrueAndFalse(val: 1, alternate: 2)
+        self.checkTrueAndFalse(val: 1, alternate: 2)
         // Int32
-        checkTrueAndFalse(val: Int32(32), alternate: Int32(33))
+        self.checkTrueAndFalse(val: Int32(32), alternate: Int32(33))
         // Int64
-        checkTrueAndFalse(val: Int64(64), alternate: Int64(65))
+        self.checkTrueAndFalse(val: Int64(64), alternate: Int64(65))
         // Double
-        checkTrueAndFalse(val: 1.618, alternate: 2.718)
+        self.checkTrueAndFalse(val: 1.618, alternate: 2.718)
         // Decimal128
-        checkTrueAndFalse(val: Decimal128("1.618")!, alternate: Decimal128("2.718")!)
+        self.checkTrueAndFalse(val: Decimal128("1.618")!, alternate: Decimal128("2.718")!)
         // Bool
-        checkTrueAndFalse(val: true, alternate: false)
+        self.checkTrueAndFalse(val: true, alternate: false)
         // String
-        checkTrueAndFalse(val: "some", alternate: "not some")
+        self.checkTrueAndFalse(val: "some", alternate: "not some")
         // RegularExpression
-        checkTrueAndFalse(
+        self.checkTrueAndFalse(
             val: RegularExpression(pattern: ".*", options: ""),
             alternate: RegularExpression(pattern: ".+", options: "")
         )
         // Timestamp
-        checkTrueAndFalse(val: Timestamp(timestamp: 1, inc: 2), alternate: Timestamp(timestamp: 5, inc: 10))
+        self.checkTrueAndFalse(val: Timestamp(timestamp: 1, inc: 2), alternate: Timestamp(timestamp: 5, inc: 10))
         // Date
-        checkTrueAndFalse(
+        self.checkTrueAndFalse(
             val: Date(timeIntervalSinceReferenceDate: 5000),
             alternate: Date(timeIntervalSinceReferenceDate: 5001)
         )
@@ -59,29 +59,29 @@ final class BSONValueTests: MongoSwiftTestCase {
         expect(MinKey()).to(bsonEqual(MinKey()))
         expect(MaxKey()).to(bsonEqual(MaxKey()))
         // ObjectId
-        checkTrueAndFalse(val: ObjectId(), alternate: ObjectId())
+        self.checkTrueAndFalse(val: ObjectId(), alternate: ObjectId())
         // CodeWithScope
-        checkTrueAndFalse(
+        self.checkTrueAndFalse(
             val: CodeWithScope(code: "console.log('foo');"),
             alternate: CodeWithScope(code: "console.log(x);", scope: ["x": 2])
         )
         // Binary
-        checkTrueAndFalse(
+        self.checkTrueAndFalse(
             val: try Binary(data: Data(base64Encoded: "c//SZESzTGmQ6OfR38A11A==")!, subtype: .uuid),
             alternate: try Binary(data: Data(base64Encoded: "c//88KLnfdfefOfR33ddFA==")!, subtype: .uuid)
         )
         // Document
-        checkTrueAndFalse(
+        self.checkTrueAndFalse(
             val: [
                 "foo": 1.414,
                 "bar": "swift",
-                "nested": [ "a": 1, "b": "2" ] as Document
-                ] as Document,
+                "nested": ["a": 1, "b": "2"] as Document
+            ] as Document,
             alternate: [
                 "foo": 1.414,
                 "bar": "swift",
-                "nested": [ "a": 1, "b": "different" ] as Document
-                ] as Document
+                "nested": ["a": 1, "b": "different"] as Document
+            ] as Document
         )
         // Check that when an array contains non-BSONValues, we return false
         let arr = [[String: Int]()]
@@ -199,7 +199,7 @@ final class BSONValueTests: MongoSwiftTestCase {
 
         func run() {
             let candidates = ([self.int, self.double, self.int32, self.int64, self.decimal] as [BSONNumber?])
-                    .compactMap { $0 }
+                .compactMap { $0 }
 
             candidates.forEach { l in
                 // Skip the Decimal128 conversions until they're implemented

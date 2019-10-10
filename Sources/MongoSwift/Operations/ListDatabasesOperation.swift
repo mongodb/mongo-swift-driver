@@ -31,9 +31,11 @@ internal struct ListDatabasesOperation: Operation {
     private let filter: Document?
     private let nameOnly: Bool?
 
-    internal init(client: MongoClient,
-                  filter: Document?,
-                  nameOnly: Bool?) {
+    internal init(
+        client: MongoClient,
+        filter: Document?,
+        nameOnly: Bool?
+    ) {
         self.client = client
         self.filter = filter
         self.nameOnly = nameOnly
@@ -55,13 +57,15 @@ internal struct ListDatabasesOperation: Operation {
         var error = bson_error_t()
 
         let success = withMutableBSONPointer(to: &reply) { replyPtr in
-            mongoc_client_read_command_with_opts(connection.clientHandle,
-                                                 "admin",
-                                                 cmd._bson,
-                                                 readPref._readPreference,
-                                                 opts?._bson,
-                                                 replyPtr,
-                                                 &error)
+            mongoc_client_read_command_with_opts(
+                connection.clientHandle,
+                "admin",
+                cmd._bson,
+                readPref._readPreference,
+                opts?._bson,
+                replyPtr,
+                &error
+            )
         }
 
         guard success else {

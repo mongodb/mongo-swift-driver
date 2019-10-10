@@ -49,7 +49,7 @@ public struct WriteConcern: Codable {
     public var isAcknowledged: Bool {
         // An Unacknowledged WriteConcern is when (w equals 0) AND (journal is not set or is false).
         if let w = self.w, case let .number(wNumber) = w {
-            return !((journal == nil || journal == false ) && wNumber == 0)
+            return !((self.journal == nil || self.journal == false) && wNumber == 0)
         }
         return true
     }
@@ -63,7 +63,7 @@ public struct WriteConcern: Codable {
     private var isValid: Bool {
         if let w = self.w, case let .number(wNumber) = w {
             // A WriteConcern is invalid if journal is set to true and w is equal to zero.
-            return journal == nil || journal == false || wNumber != 0
+            return self.journal == nil || self.journal == false || wNumber != 0
         }
         return true
     }
@@ -84,7 +84,7 @@ public struct WriteConcern: Codable {
         if let wtimeoutMS = wtimeoutMS {
             if wtimeoutMS < 0 {
                 throw UserError
-                .invalidArgumentError(message: "Invalid value: wtimeoutMS=\(wtimeoutMS) cannot be negative.")
+                    .invalidArgumentError(message: "Invalid value: wtimeoutMS=\(wtimeoutMS) cannot be negative.")
             }
         }
         self.wtimeoutMS = wtimeoutMS
@@ -100,8 +100,10 @@ public struct WriteConcern: Codable {
             let journalStr = String(describing: journal)
             let wStr = String(describing: w)
             let timeoutStr = String(describing: wtimeoutMS)
-            throw UserError.invalidArgumentError(message:
-                "Invalid combination of options: journal=\(journalStr), w=\(wStr), wtimeoutMS=\(timeoutStr)")
+            throw UserError.invalidArgumentError(
+                message:
+                "Invalid combination of options: journal=\(journalStr), w=\(wStr), wtimeoutMS=\(timeoutStr)"
+            )
         }
     }
 

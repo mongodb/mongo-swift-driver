@@ -22,13 +22,17 @@ extension MongoCollection {
      *   - `EncodingError` if an error occurs while encoding the `CollectionType` to BSON.
      */
     @discardableResult
-    public func insertOne(_ value: CollectionType,
-                          options: InsertOneOptions? = nil,
-                          session: ClientSession? = nil) throws -> InsertOneResult? {
+    public func insertOne(
+        _ value: CollectionType,
+        options: InsertOneOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> InsertOneResult? {
         return try convertingBulkWriteErrors {
-            let result = try self.bulkWrite([.insertOne(value)],
-                                            options: options?.asBulkWriteOptions(),
-                                            session: session)
+            let result = try self.bulkWrite(
+                [.insertOne(value)],
+                options: options?.asBulkWriteOptions(),
+                session: session
+            )
             return try InsertOneResult(from: result)
         }
     }
@@ -52,9 +56,11 @@ extension MongoCollection {
      *   - `EncodingError` if an error occurs while encoding the `CollectionType` or options to BSON.
      */
     @discardableResult
-    public func insertMany(_ values: [CollectionType],
-                           options: InsertManyOptions? = nil,
-                           session: ClientSession? = nil) throws -> InsertManyResult? {
+    public func insertMany(
+        _ values: [CollectionType],
+        options: InsertManyOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> InsertManyResult? {
         let result = try self.bulkWrite(values.map { .insertOne($0) }, options: options, session: session)
         return InsertManyResult(from: result)
     }
@@ -79,10 +85,12 @@ extension MongoCollection {
      *   - `EncodingError` if an error occurs while encoding the `CollectionType` or options to BSON.
      */
     @discardableResult
-    public func replaceOne(filter: Document,
-                           replacement: CollectionType,
-                           options: ReplaceOptions? = nil,
-                           session: ClientSession? = nil) throws -> UpdateResult? {
+    public func replaceOne(
+        filter: Document,
+        replacement: CollectionType,
+        options: ReplaceOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> UpdateResult? {
         return try convertingBulkWriteErrors {
             let modelOptions = ReplaceOneModelOptions(collation: options?.collation, upsert: options?.upsert)
             let model = WriteModel.replaceOne(filter: filter, replacement: replacement, options: modelOptions)
@@ -111,14 +119,18 @@ extension MongoCollection {
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     @discardableResult
-    public func updateOne(filter: Document,
-                          update: Document,
-                          options: UpdateOptions? = nil,
-                          session: ClientSession? = nil) throws -> UpdateResult? {
+    public func updateOne(
+        filter: Document,
+        update: Document,
+        options: UpdateOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> UpdateResult? {
         return try convertingBulkWriteErrors {
-            let modelOptions = UpdateModelOptions(arrayFilters: options?.arrayFilters,
-                                                  collation: options?.collation,
-                                                  upsert: options?.upsert)
+            let modelOptions = UpdateModelOptions(
+                arrayFilters: options?.arrayFilters,
+                collation: options?.collation,
+                upsert: options?.upsert
+            )
             let model: WriteModel<CollectionType> = .updateOne(filter: filter, update: update, options: modelOptions)
             let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
             return try UpdateResult(from: result)
@@ -145,14 +157,18 @@ extension MongoCollection {
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     @discardableResult
-    public func updateMany(filter: Document,
-                           update: Document,
-                           options: UpdateOptions? = nil,
-                           session: ClientSession? = nil) throws -> UpdateResult? {
+    public func updateMany(
+        filter: Document,
+        update: Document,
+        options: UpdateOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> UpdateResult? {
         return try convertingBulkWriteErrors {
-            let modelOptions = UpdateModelOptions(arrayFilters: options?.arrayFilters,
-                                                  collation: options?.collation,
-                                                  upsert: options?.upsert)
+            let modelOptions = UpdateModelOptions(
+                arrayFilters: options?.arrayFilters,
+                collation: options?.collation,
+                upsert: options?.upsert
+            )
             let model: WriteModel<CollectionType> = .updateMany(filter: filter, update: update, options: modelOptions)
             let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
             return try UpdateResult(from: result)
@@ -178,9 +194,11 @@ extension MongoCollection {
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     @discardableResult
-    public func deleteOne(_ filter: Document,
-                          options: DeleteOptions? = nil,
-                          session: ClientSession? = nil) throws -> DeleteResult? {
+    public func deleteOne(
+        _ filter: Document,
+        options: DeleteOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> DeleteResult? {
         return try convertingBulkWriteErrors {
             let modelOptions = DeleteModelOptions(collation: options?.collation)
             let model: WriteModel<CollectionType> = .deleteOne(filter, options: modelOptions)
@@ -208,9 +226,11 @@ extension MongoCollection {
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     @discardableResult
-    public func deleteMany(_ filter: Document,
-                           options: DeleteOptions? = nil,
-                           session: ClientSession? = nil) throws -> DeleteResult? {
+    public func deleteMany(
+        _ filter: Document,
+        options: DeleteOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> DeleteResult? {
         return try convertingBulkWriteErrors {
             let modelOptions = DeleteModelOptions(collation: options?.collation)
             let model: WriteModel<CollectionType> = .deleteMany(filter, options: modelOptions)
@@ -230,8 +250,10 @@ private protocol BulkWriteOptionsConvertible {
 /// Default implementation of the protocol.
 private extension BulkWriteOptionsConvertible {
     func asBulkWriteOptions() -> BulkWriteOptions {
-        return BulkWriteOptions(bypassDocumentValidation: self.bypassDocumentValidation,
-                                writeConcern: self.writeConcern)
+        return BulkWriteOptions(
+            bypassDocumentValidation: self.bypassDocumentValidation,
+            writeConcern: self.writeConcern
+        )
     }
 }
 
@@ -273,11 +295,13 @@ public struct UpdateOptions: Codable, BulkWriteOptionsConvertible {
     public var writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all parameters to be optional
-    public init(arrayFilters: [Document]? = nil,
-                bypassDocumentValidation: Bool? = nil,
-                collation: Document? = nil,
-                upsert: Bool? = nil,
-                writeConcern: WriteConcern? = nil) {
+    public init(
+        arrayFilters: [Document]? = nil,
+        bypassDocumentValidation: Bool? = nil,
+        collation: Document? = nil,
+        upsert: Bool? = nil,
+        writeConcern: WriteConcern? = nil
+    ) {
         self.arrayFilters = arrayFilters
         self.bypassDocumentValidation = bypassDocumentValidation
         self.collation = collation
@@ -301,10 +325,12 @@ public struct ReplaceOptions: Codable, BulkWriteOptionsConvertible {
     public var writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all parameters to be optional
-    public init(bypassDocumentValidation: Bool? = nil,
-                collation: Document? = nil,
-                upsert: Bool? = nil,
-                writeConcern: WriteConcern? = nil) {
+    public init(
+        bypassDocumentValidation: Bool? = nil,
+        collation: Document? = nil,
+        upsert: Bool? = nil,
+        writeConcern: WriteConcern? = nil
+    ) {
         self.bypassDocumentValidation = bypassDocumentValidation
         self.collation = collation
         self.upsert = upsert
@@ -320,11 +346,12 @@ public struct DeleteOptions: Codable, BulkWriteOptionsConvertible {
     /// An optional `WriteConcern` to use for the command.
     public var writeConcern: WriteConcern?
 
-     /// Convenience initializer allowing collation to be omitted or optional
+    /// Convenience initializer allowing collation to be omitted or optional
     public init(collation: Document? = nil, writeConcern: WriteConcern? = nil) {
         self.collation = collation
         self.writeConcern = writeConcern
     }
+
     /// This is a requirement of the BulkWriteOptionsConvertible protocol.
     /// Since it does not apply to deletions, we just set it to nil.
     internal var bypassDocumentValidation: Bool? { return nil }

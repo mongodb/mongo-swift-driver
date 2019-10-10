@@ -12,6 +12,7 @@ internal protocol Matchable {
     /// https://github.com/mongodb/specifications/tree/master/source/connection-monitoring-and-pooling/tests#spec-test-match-function
     func contentMatches(expected: Any) -> Bool
 }
+
 // swiftlint:enable line_length
 
 extension Matchable {

@@ -11,7 +11,7 @@ public enum FullDocument: RawRepresentable, Codable {
         switch self {
         case .updateLookup:
             return "updateLookup"
-        case .other(let v):
+        case let .other(v):
             return v
         }
     }
@@ -70,16 +70,18 @@ public struct ChangeStreamOptions: Codable {
      * - Note: The server will report an error if `startAfter` and `resumeAfter` are both specified.
      * - SeeAlso: https://docs.mongodb.com/master/changeStreams/#change-stream-start-after
      */
-     // TODO: SWIFT-519 - Make this public when support is added for 4.2 change stream features.
+    // TODO: SWIFT-519 - Make this public when support is added for 4.2 change stream features.
     internal var startAfter: ResumeToken?
 
     /// Initializes a `ChangeStreamOptions`.
-    public init(fullDocument: FullDocument? = nil,
-                resumeAfter: ResumeToken? = nil,
-                maxAwaitTimeMS: Int64? = nil,
-                batchSize: Int32? = nil,
-                collation: Document? = nil,
-                startAtOperationTime: Timestamp? = nil) {
+    public init(
+        fullDocument: FullDocument? = nil,
+        resumeAfter: ResumeToken? = nil,
+        maxAwaitTimeMS: Int64? = nil,
+        batchSize: Int32? = nil,
+        collation: Document? = nil,
+        startAtOperationTime: Timestamp? = nil
+    ) {
         self.fullDocument = fullDocument
         self.resumeAfter = resumeAfter
         self.maxAwaitTimeMS = maxAwaitTimeMS

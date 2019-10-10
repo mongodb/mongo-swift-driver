@@ -3,10 +3,12 @@
 /// Protocol describing the behavior of a spec test "operation"
 protocol TestOperation: Decodable {
     /// Execute the operation given the context.
-    func execute(client: MongoClient,
-                 database: MongoDatabase,
-                 collection: MongoCollection<Document>,
-                 session: ClientSession?) throws -> TestOperationResult?
+    func execute(
+        client: MongoClient,
+        database: MongoDatabase,
+        collection: MongoCollection<Document>,
+        session: ClientSession?
+    ) throws -> TestOperationResult?
 }
 
 /// Wrapper around a `TestOperation.swift` allowing it to be decoded from a spec test.
@@ -75,11 +77,14 @@ struct Aggregate: TestOperation {
         self.pipeline = try container.decode([Document].self, forKey: .pipeline)
     }
 
-    func execute(client: MongoClient,
-                 database: MongoDatabase,
-                 collection: MongoCollection<Document>,
-                 session: ClientSession? = nil) throws -> TestOperationResult? {
-        return TestOperationResult(from: try collection.aggregate(pipeline, options: self.options, session: session))
+    func execute(
+        client _: MongoClient,
+        database _: MongoDatabase,
+        collection: MongoCollection<Document>,
+        session: ClientSession? = nil
+    ) throws -> TestOperationResult? {
+        let result = try collection.aggregate(self.pipeline, options: self.options, session: session)
+        return TestOperationResult(from: result)
     }
 }
 
@@ -95,11 +100,13 @@ struct Count: TestOperation {
         self.filter = try container.decode(Document.self, forKey: .filter)
     }
 
-    func execute(client: MongoClient,
-                 database: MongoDatabase,
-                 collection: MongoCollection<Document>,
-                 session: ClientSession? = nil) throws -> TestOperationResult? {
-        return .int(try collection.count(filter, options: self.options, session: session))
+    func execute(
+        client _: MongoClient,
+        database _: MongoDatabase,
+        collection: MongoCollection<Document>,
+        session: ClientSession? = nil
+    ) throws -> TestOperationResult? {
+        return .int(try collection.count(self.filter, options: self.options, session: session))
     }
 }
 
@@ -115,10 +122,12 @@ struct Distinct: TestOperation {
         self.fieldName = try container.decode(String.self, forKey: .fieldName)
     }
 
-    func execute(client: MongoClient,
-                 database: MongoDatabase,
-                 collection: MongoCollection<Document>,
-                 session: ClientSession? = nil) throws -> TestOperationResult? {
+    func execute(
+        client _: MongoClient,
+        database _: MongoDatabase,
+        collection: MongoCollection<Document>,
+        session: ClientSession? = nil
+    ) throws -> TestOperationResult? {
         return .array(try collection.distinct(fieldName: self.fieldName, options: self.options, session: session))
     }
 }
@@ -135,10 +144,12 @@ struct Find: TestOperation {
         self.filter = try container.decode(Document.self, forKey: .filter)
     }
 
-    func execute(client: MongoClient,
-                 database: MongoDatabase,
-                 collection: MongoCollection<Document>,
-                 session: ClientSession? = nil) throws -> TestOperationResult? {
+    func execute(
+        client _: MongoClient,
+        database _: MongoDatabase,
+        collection: MongoCollection<Document>,
+        session: ClientSession? = nil
+    ) throws -> TestOperationResult? {
         return TestOperationResult(from: try collection.find(self.filter, options: self.options, session: session))
     }
 }
@@ -157,14 +168,18 @@ struct UpdateOne: TestOperation {
         self.update = try container.decode(Document.self, forKey: .update)
     }
 
-    func execute(client: MongoClient,
-                 database: MongoDatabase,
-                 collection: MongoCollection<Document>,
-                 session: ClientSession? = nil) throws -> TestOperationResult? {
-        let result = try collection.updateOne(filter: self.filter,
-                                              update: self.update,
-                                              options: self.options,
-                                              session: session)
+    func execute(
+        client _: MongoClient,
+        database _: MongoDatabase,
+        collection: MongoCollection<Document>,
+        session: ClientSession? = nil
+    ) throws -> TestOperationResult? {
+        let result = try collection.updateOne(
+            filter: self.filter,
+            update: self.update,
+            options: self.options,
+            session: session
+        )
         return TestOperationResult(from: result)
     }
 }
@@ -183,14 +198,18 @@ struct UpdateMany: TestOperation {
         self.update = try container.decode(Document.self, forKey: .update)
     }
 
-    func execute(client: MongoClient,
-                 database: MongoDatabase,
-                 collection: MongoCollection<Document>,
-                 session: ClientSession? = nil) throws -> TestOperationResult? {
-        let result = try collection.updateMany(filter: self.filter,
-                                               update: self.update,
-                                               options: self.options,
-                                               session: session)
+    func execute(
+        client _: MongoClient,
+        database _: MongoDatabase,
+        collection: MongoCollection<Document>,
+        session: ClientSession? = nil
+    ) throws -> TestOperationResult? {
+        let result = try collection.updateMany(
+            filter: self.filter,
+            update: self.update,
+            options: self.options,
+            session: session
+        )
         return TestOperationResult(from: result)
     }
 }
@@ -207,10 +226,12 @@ struct DeleteMany: TestOperation {
         self.filter = try container.decode(Document.self, forKey: .filter)
     }
 
-    func execute(client: MongoClient,
-                 database: MongoDatabase,
-                 collection: MongoCollection<Document>,
-                 session: ClientSession? = nil) throws -> TestOperationResult? {
+    func execute(
+        client _: MongoClient,
+        database _: MongoDatabase,
+        collection: MongoCollection<Document>,
+        session: ClientSession? = nil
+    ) throws -> TestOperationResult? {
         let result = try collection.deleteMany(self.filter, options: self.options, session: session)
         return TestOperationResult(from: result)
     }
@@ -228,10 +249,12 @@ struct DeleteOne: TestOperation {
         self.filter = try container.decode(Document.self, forKey: .filter)
     }
 
-    func execute(client: MongoClient,
-                 database: MongoDatabase,
-                 collection: MongoCollection<Document>,
-                 session: ClientSession? = nil) throws -> TestOperationResult? {
+    func execute(
+        client _: MongoClient,
+        database _: MongoDatabase,
+        collection: MongoCollection<Document>,
+        session: ClientSession? = nil
+    ) throws -> TestOperationResult? {
         let result = try collection.deleteOne(self.filter, options: self.options, session: session)
         return TestOperationResult(from: result)
     }
@@ -240,10 +263,12 @@ struct DeleteOne: TestOperation {
 struct InsertOne: TestOperation {
     let document: Document
 
-    func execute(client: MongoClient,
-                 database: MongoDatabase,
-                 collection: MongoCollection<Document>,
-                 session: ClientSession? = nil) throws -> TestOperationResult? {
+    func execute(
+        client _: MongoClient,
+        database _: MongoDatabase,
+        collection: MongoCollection<Document>,
+        session _: ClientSession? = nil
+    ) throws -> TestOperationResult? {
         return TestOperationResult(from: try collection.insertOne(self.document))
     }
 }
@@ -252,13 +277,17 @@ struct InsertMany: TestOperation {
     let documents: [Document]
     let options: InsertManyOptions
 
-    func execute(client: MongoClient,
-                 database: MongoDatabase,
-                 collection: MongoCollection<Document>,
-                 session: ClientSession? = nil) throws -> TestOperationResult? {
-        return TestOperationResult(from: try collection.insertMany(self.documents,
-                                                                   options: self.options,
-                                                                   session: session))
+    func execute(
+        client _: MongoClient,
+        database _: MongoDatabase,
+        collection: MongoCollection<Document>,
+        session: ClientSession? = nil
+    ) throws -> TestOperationResult? {
+        return TestOperationResult(from: try collection.insertMany(
+            self.documents,
+            options: self.options,
+            session: session
+        ))
     }
 }
 
@@ -310,12 +339,16 @@ extension WriteModel: Decodable {
             let filter = try args.decode(Document.self, forKey: .filter)
             let update = try args.decode(Document.self, forKey: .update)
             self = name == "updateOne" ?
-                            .updateOne(filter: filter, update: update, options: options) :
-                            .updateMany(filter: filter, update: update, options: options)
+                .updateOne(filter: filter, update: update, options: options) :
+                .updateMany(filter: filter, update: update, options: options)
         default:
-            throw DecodingError.typeMismatch(WriteModel.self,
-                                             DecodingError.Context(codingPath: decoder.codingPath,
-                                                                   debugDescription: "Unknown write model: \(name)"))
+            throw DecodingError.typeMismatch(
+                WriteModel.self,
+                DecodingError.Context(
+                    codingPath: decoder.codingPath,
+                    debugDescription: "Unknown write model: \(name)"
+                )
+            )
         }
     }
 }
@@ -324,10 +357,12 @@ struct BulkWrite: TestOperation {
     let requests: [WriteModel<Document>]
     let options: BulkWriteOptions
 
-    func execute(client: MongoClient,
-                 database: MongoDatabase,
-                 collection: MongoCollection<Document>,
-                 session: ClientSession? = nil) throws -> TestOperationResult? {
+    func execute(
+        client _: MongoClient,
+        database _: MongoDatabase,
+        collection: MongoCollection<Document>,
+        session: ClientSession? = nil
+    ) throws -> TestOperationResult? {
         let result = try collection.bulkWrite(self.requests, options: self.options, session: session)
         return TestOperationResult(from: result)
     }
@@ -347,14 +382,18 @@ struct FindOneAndUpdate: TestOperation {
         self.update = try container.decode(Document.self, forKey: .update)
     }
 
-    func execute(client: MongoClient,
-                 database: MongoDatabase,
-                 collection: MongoCollection<Document>,
-                 session: ClientSession? = nil) throws -> TestOperationResult? {
-        let doc = try collection.findOneAndUpdate(filter: self.filter,
-                                                  update: self.update,
-                                                  options: self.options,
-                                                  session: session)
+    func execute(
+        client _: MongoClient,
+        database _: MongoDatabase,
+        collection: MongoCollection<Document>,
+        session: ClientSession? = nil
+    ) throws -> TestOperationResult? {
+        let doc = try collection.findOneAndUpdate(
+            filter: self.filter,
+            update: self.update,
+            options: self.options,
+            session: session
+        )
         return TestOperationResult(from: doc)
     }
 }
@@ -371,10 +410,12 @@ struct FindOneAndDelete: TestOperation {
         self.filter = try container.decode(Document.self, forKey: .filter)
     }
 
-    func execute(client: MongoClient,
-                 database: MongoDatabase,
-                 collection: MongoCollection<Document>,
-                 session: ClientSession? = nil) throws -> TestOperationResult? {
+    func execute(
+        client _: MongoClient,
+        database _: MongoDatabase,
+        collection: MongoCollection<Document>,
+        session: ClientSession? = nil
+    ) throws -> TestOperationResult? {
         let result = try collection.findOneAndDelete(self.filter, options: self.options, session: session)
         return TestOperationResult(from: result)
     }
@@ -394,14 +435,18 @@ struct FindOneAndReplace: TestOperation {
         self.replacement = try container.decode(Document.self, forKey: .replacement)
     }
 
-    func execute(client: MongoClient,
-                 database: MongoDatabase,
-                 collection: MongoCollection<Document>,
-                 session: ClientSession? = nil) throws -> TestOperationResult? {
-        return TestOperationResult(from: try collection.findOneAndReplace(filter: self.filter,
-                                                                          replacement: self.replacement,
-                                                                          options: self.options,
-                                                                          session: session))
+    func execute(
+        client _: MongoClient,
+        database _: MongoDatabase,
+        collection: MongoCollection<Document>,
+        session: ClientSession? = nil
+    ) throws -> TestOperationResult? {
+        return TestOperationResult(from: try collection.findOneAndReplace(
+            filter: self.filter,
+            replacement: self.replacement,
+            options: self.options,
+            session: session
+        ))
     }
 }
 
@@ -419,24 +464,30 @@ struct ReplaceOne: TestOperation {
         self.replacement = try container.decode(Document.self, forKey: .replacement)
     }
 
-    func execute(client: MongoClient,
-                 database: MongoDatabase,
-                 collection: MongoCollection<Document>,
-                 session: ClientSession? = nil) throws -> TestOperationResult? {
-        return TestOperationResult(from: try collection.replaceOne(filter: self.filter,
-                                                                   replacement: self.replacement,
-                                                                   options: self.options,
-                                                                   session: session))
+    func execute(
+        client _: MongoClient,
+        database _: MongoDatabase,
+        collection: MongoCollection<Document>,
+        session: ClientSession? = nil
+    ) throws -> TestOperationResult? {
+        return TestOperationResult(from: try collection.replaceOne(
+            filter: self.filter,
+            replacement: self.replacement,
+            options: self.options,
+            session: session
+        ))
     }
 }
 
 struct RenameCollection: TestOperation {
     let to: String
 
-    func execute(client: MongoClient,
-                 database: MongoDatabase,
-                 collection: MongoCollection<Document>,
-                 session: ClientSession? = nil) throws -> TestOperationResult? {
+    func execute(
+        client: MongoClient,
+        database: MongoDatabase,
+        collection: MongoCollection<Document>,
+        session _: ClientSession? = nil
+    ) throws -> TestOperationResult? {
         let fromNamespace = database.name + "." + collection.name
         let toNamespace = database.name + "." + self.to
         let cmd: Document = ["renameCollection": fromNamespace, "to": toNamespace]
@@ -445,10 +496,12 @@ struct RenameCollection: TestOperation {
 }
 
 struct DropCollection: TestOperation {
-    func execute(client: MongoClient,
-                 database: MongoDatabase,
-                 collection: MongoCollection<Document>,
-                 session: ClientSession? = nil) throws -> TestOperationResult? {
+    func execute(
+        client _: MongoClient,
+        database _: MongoDatabase,
+        collection: MongoCollection<Document>,
+        session _: ClientSession? = nil
+    ) throws -> TestOperationResult? {
         try collection.drop()
         return nil
     }

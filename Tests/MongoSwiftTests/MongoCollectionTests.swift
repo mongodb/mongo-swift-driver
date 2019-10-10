@@ -31,8 +31,8 @@ final class MongoCollectionTests: MongoSwiftTestCase {
                 XCTFail("Invalid client")
                 return
             }
-            coll = try client.db(type(of: self).testDatabase).createCollection(self.collName)
-            try coll.insertMany([doc1, doc2])
+            self.coll = try client.db(type(of: self).testDatabase).createCollection(self.collName)
+            try self.coll.insertMany([doc1, doc2])
         } catch {
             XCTFail("Setup failed: \(error)")
         }
@@ -42,7 +42,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     override func tearDown() {
         super.tearDown()
         do {
-            if coll != nil { try coll.drop() }
+            if self.coll != nil { try self.coll.drop() }
         } catch {
             XCTFail("Dropping test collection \(type(of: self).testDatabase).\(self.collName) failed: \(error)")
         }
@@ -83,9 +83,9 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
         // error code 11000: DuplicateKey
         let expectedError = ServerError.writeError(
-                writeError: WriteError(code: 11000, codeName: "DuplicateKey", message: ""),
-                writeConcernError: nil,
-                errorLabels: nil
+            writeError: WriteError(code: 11000, codeName: "DuplicateKey", message: ""),
+            writeConcernError: nil,
+            errorLabels: nil
         )
 
         expect(try self.coll.insertOne(["_id": 1])).to(throwError(expectedError))
@@ -171,11 +171,12 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         ]
 
         let expectedErrorOrdered = ServerError.bulkWriteError(
-                writeErrors: expectedErrorsOrdered,
-                writeConcernError: nil,
-                otherError: nil,
-                result: expectedResultOrdered,
-                errorLabels: nil)
+            writeErrors: expectedErrorsOrdered,
+            writeConcernError: nil,
+            otherError: nil,
+            result: expectedResultOrdered,
+            errorLabels: nil
+        )
 
         expect(try self.coll.insertMany([newDoc1, docId1, newDoc2, docId2])).to(throwError(expectedErrorOrdered))
 
@@ -185,14 +186,15 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         ]
         let expectedResult = BulkWriteResult(insertedCount: 2, insertedIds: [0: newDoc3["_id"]!, 2: newDoc4["_id"]!])
         let expectedError = ServerError.bulkWriteError(
-                writeErrors: expectedErrors,
-                writeConcernError: nil,
-                otherError: nil,
-                result: expectedResult,
-                errorLabels: nil)
+            writeErrors: expectedErrors,
+            writeConcernError: nil,
+            otherError: nil,
+            result: expectedResult,
+            errorLabels: nil
+        )
 
         expect(try self.coll.insertMany([newDoc3, docId1, newDoc4, docId2], options: InsertManyOptions(ordered: false)))
-                .to(throwError(expectedError))
+            .to(throwError(expectedError))
     }
 
     func testInsertManyWithEmptyValues() {
@@ -240,13 +242,15 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     func testReplaceOneWithUnacknowledgedWriteConcern() throws {
         let options = ReplaceOptions(writeConcern: try WriteConcern(w: .number(0)))
         let replaceOneResult = try coll.replaceOne(
-            filter: ["_id": 1], replacement: ["apple": "banana"], options: options)
+            filter: ["_id": 1], replacement: ["apple": "banana"], options: options
+        )
         expect(replaceOneResult).to(beNil())
     }
 
     func testUpdateOne() throws {
         let updateOneResult = try coll.updateOne(
-            filter: ["_id": 2], update: ["$set": ["apple": "banana"] as Document])
+            filter: ["_id": 2], update: ["$set": ["apple": "banana"] as Document]
+        )
         expect(updateOneResult?.matchedCount).to(equal(1))
         expect(updateOneResult?.modifiedCount).to(equal(1))
     }
@@ -254,13 +258,15 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     func testUpdateOneWithUnacknowledgedWriteConcern() throws {
         let options = UpdateOptions(writeConcern: try WriteConcern(w: .number(0)))
         let updateOneResult = try coll.updateOne(
-            filter: ["_id": 2], update: ["$set": ["apple": "banana"] as Document], options: options)
+            filter: ["_id": 2], update: ["$set": ["apple": "banana"] as Document], options: options
+        )
         expect(updateOneResult).to(beNil())
     }
 
     func testUpdateMany() throws {
         let updateManyResult = try coll.updateMany(
-            filter: [:], update: ["$set": ["apple": "pear"] as Document])
+            filter: [:], update: ["$set": ["apple": "pear"] as Document]
+        )
         expect(updateManyResult?.matchedCount).to(equal(2))
         expect(updateManyResult?.modifiedCount).to(equal(2))
     }
@@ -268,7 +274,8 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     func testUpdateManyWithUnacknowledgedWriteConcern() throws {
         let options = UpdateOptions(writeConcern: try WriteConcern(w: .number(0)))
         let updateManyResult = try coll.updateMany(
-            filter: [:], update: ["$set": ["apple": "pear"] as Document], options: options)
+            filter: [:], update: ["$set": ["apple": "pear"] as Document], options: options
+        )
         expect(updateManyResult).to(beNil())
     }
 
@@ -279,7 +286,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(try self.coll.distinct(fieldName: "abc", filter: [:])).to(beEmpty())
 
         // test a null distinct value
-        try coll.insertOne(["cat": BSONNull()])
+        try self.coll.insertOne(["cat": BSONNull()])
         let distinct2 = try coll.distinct(fieldName: "cat", filter: [:])
         expect(distinct2).to(haveCount(3))
         // swiftlint:disable trailing_closure
@@ -293,10 +300,10 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
     func testCursorIteration() throws {
         let findResult1 = try coll.find(["cat": "cat"])
-        while let _ = try findResult1.nextOrError() { }
+        while let _ = try findResult1.nextOrError() {}
 
         let findResult2 = try coll.find(["cat": "cat"])
-        for _ in findResult2 { }
+        for _ in findResult2 {}
         expect(findResult2.error).to(beNil())
     }
 
@@ -342,19 +349,19 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
         // test mutated cursorType
         nonTailable.cursorType = .tailable
-        expect(try encoder.encode(nonTailable)).to(equal(["awaitData": false, "tailable": true ]))
+        expect(try encoder.encode(nonTailable)).to(equal(["awaitData": false, "tailable": true]))
 
         var tailable = FindOptions(cursorType: .tailable)
-        expect(try encoder.encode(tailable)).to(equal(["awaitData": false, "tailable": true ]))
+        expect(try encoder.encode(tailable)).to(equal(["awaitData": false, "tailable": true]))
 
         tailable.cursorType = .nonTailable
-        expect(try encoder.encode(tailable)).to(equal(["awaitData": false, "tailable": false ]))
+        expect(try encoder.encode(tailable)).to(equal(["awaitData": false, "tailable": false]))
 
         var tailableAwait = FindOptions(cursorType: .tailableAwait)
-        expect(try encoder.encode(tailableAwait)).to(equal(["awaitData": true, "tailable": true ]))
+        expect(try encoder.encode(tailableAwait)).to(equal(["awaitData": true, "tailable": true]))
 
         tailableAwait.cursorType = .tailable
-        expect(try encoder.encode(tailableAwait)).to(equal(["awaitData": false, "tailable": true ]))
+        expect(try encoder.encode(tailableAwait)).to(equal(["awaitData": false, "tailable": true]))
 
         // test nill cursorType
         tailableAwait.cursorType = nil
@@ -364,13 +371,13 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(try encoder.encode(nilTailable)).to(beNil())
 
         nilTailable.cursorType = .tailable
-        expect(try encoder.encode(nilTailable)).to(equal(["awaitData": false, "tailable": true ]))
+        expect(try encoder.encode(nilTailable)).to(equal(["awaitData": false, "tailable": true]))
 
         nilTailable.cursorType = nil
         expect(try encoder.encode(nilTailable)).to(beNil())
 
         nilTailable.cursorType = .tailableAwait
-        expect(try encoder.encode(nilTailable)).to(equal(["awaitData": true, "tailable": true ]))
+        expect(try encoder.encode(nilTailable)).to(equal(["awaitData": true, "tailable": true]))
     }
 
     func testEncodeHint() throws {
@@ -400,33 +407,39 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         let invalidOpts1 = FindOneAndDeleteOptions(maxTimeMS: 0)
         let invalidOpts2 = FindOneAndDeleteOptions(maxTimeMS: -1)
         expect(try self.coll.findOneAndDelete([:], options: invalidOpts1))
-                .to(throwError(UserError.invalidArgumentError(message: "")))
+            .to(throwError(UserError.invalidArgumentError(message: "")))
         expect(try self.coll.findOneAndDelete([:], options: invalidOpts2))
-                .to(throwError(UserError.invalidArgumentError(message: "")))
+            .to(throwError(UserError.invalidArgumentError(message: "")))
     }
 
     func testFindOneAndReplace() throws {
         // test using maxTimeMS
         let opts1 = FindOneAndReplaceOptions(maxTimeMS: 100)
-        let result1 = try self.coll.findOneAndReplace(filter: ["cat": "cat"],
-                                                      replacement: ["cat": "blah"],
-                                                      options: opts1)
+        let result1 = try self.coll.findOneAndReplace(
+            filter: ["cat": "cat"],
+            replacement: ["cat": "blah"],
+            options: opts1
+        )
         expect(result1).to(equal(self.doc2))
         expect(try self.coll.count()).to(equal(2))
 
         // test using bypassDocumentValidation
         let opts2 = FindOneAndReplaceOptions(bypassDocumentValidation: true)
-        let result2 = try self.coll.findOneAndReplace(filter: ["cat": "dog"],
-                                                      replacement: ["cat": "hi"],
-                                                      options: opts2)
+        let result2 = try self.coll.findOneAndReplace(
+            filter: ["cat": "dog"],
+            replacement: ["cat": "hi"],
+            options: opts2
+        )
         expect(result2).to(equal(self.doc1))
         expect(try self.coll.count()).to(equal(2))
 
         // test using a write concern
         let opts3 = FindOneAndReplaceOptions(writeConcern: try WriteConcern(w: .majority))
-        let result3 = try self.coll.findOneAndReplace(filter: ["cat": "blah"],
-                                                      replacement: ["cat": "cat"],
-                                                      options: opts3)
+        let result3 = try self.coll.findOneAndReplace(
+            filter: ["cat": "blah"],
+            replacement: ["cat": "cat"],
+            options: opts3
+        )
         expect(result3).to(equal(["_id": 2, "cat": "blah"]))
         expect(try self.coll.count()).to(equal(2))
 
@@ -434,33 +447,39 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         let invalidOpts1 = FindOneAndReplaceOptions(maxTimeMS: 0)
         let invalidOpts2 = FindOneAndReplaceOptions(maxTimeMS: -1)
         expect(try self.coll.findOneAndReplace(filter: [:], replacement: [:], options: invalidOpts1))
-                .to(throwError(UserError.invalidArgumentError(message: "")))
+            .to(throwError(UserError.invalidArgumentError(message: "")))
         expect(try self.coll.findOneAndReplace(filter: [:], replacement: [:], options: invalidOpts2))
-                .to(throwError(UserError.invalidArgumentError(message: "")))
+            .to(throwError(UserError.invalidArgumentError(message: "")))
     }
 
     func testFindOneAndUpdate() throws {
         // test using maxTimeMS
         let opts1 = FindOneAndUpdateOptions(maxTimeMS: 100)
-        let result1 = try self.coll.findOneAndUpdate(filter: ["cat": "cat"],
-                                                     update: ["$set": ["cat": "blah"] as Document],
-                                                     options: opts1)
+        let result1 = try self.coll.findOneAndUpdate(
+            filter: ["cat": "cat"],
+            update: ["$set": ["cat": "blah"] as Document],
+            options: opts1
+        )
         expect(result1).to(equal(self.doc2))
         expect(try self.coll.count()).to(equal(2))
 
         // test using bypassDocumentValidation
         let opts2 = FindOneAndUpdateOptions(bypassDocumentValidation: true)
-        let result2 = try self.coll.findOneAndUpdate(filter: ["cat": "dog"],
-                                                     update: ["$set": ["cat": "hi"] as Document],
-                                                     options: opts2)
+        let result2 = try self.coll.findOneAndUpdate(
+            filter: ["cat": "dog"],
+            update: ["$set": ["cat": "hi"] as Document],
+            options: opts2
+        )
         expect(result2).to(equal(self.doc1))
         expect(try self.coll.count()).to(equal(2))
 
         // test using a write concern
         let opts3 = FindOneAndUpdateOptions(writeConcern: try WriteConcern(w: .majority))
-        let result3 = try self.coll.findOneAndUpdate(filter: ["cat": "blah"],
-                                                     update: ["$set": ["cat": "cat"] as Document],
-                                                     options: opts3)
+        let result3 = try self.coll.findOneAndUpdate(
+            filter: ["cat": "blah"],
+            update: ["$set": ["cat": "cat"] as Document],
+            options: opts3
+        )
         expect(result3).to(equal(["_id": 2, "cat": "blah"]))
         expect(try self.coll.count()).to(equal(2))
 
@@ -468,9 +487,9 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         let invalidOpts1 = FindOneAndUpdateOptions(maxTimeMS: 0)
         let invalidOpts2 = FindOneAndUpdateOptions(maxTimeMS: -1)
         expect(try self.coll.findOneAndUpdate(filter: [:], update: [:], options: invalidOpts1))
-                .to(throwError(UserError.invalidArgumentError(message: "")))
+            .to(throwError(UserError.invalidArgumentError(message: "")))
         expect(try self.coll.findOneAndUpdate(filter: [:], update: [:], options: invalidOpts2))
-                .to(throwError(UserError.invalidArgumentError(message: "")))
+            .to(throwError(UserError.invalidArgumentError(message: "")))
     }
 
     func testNullIds() throws {

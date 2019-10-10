@@ -14,8 +14,8 @@ public struct AnyBSONValue: Codable, Equatable, Hashable {
         case let v as Binary:
             hasher.combine(v)
         case let arr as [BSONValue]:
-             let mapped = arr.map { AnyBSONValue($0) }
-             hasher.combine(mapped)
+            let mapped = arr.map { AnyBSONValue($0) }
+            hasher.combine(mapped)
         case let v as String:
             hasher.combine(v)
         case let v as ObjectId:
@@ -89,8 +89,11 @@ public struct AnyBSONValue: Codable, Equatable, Hashable {
             } else {
                 throw EncodingError.invalidValue(
                     self.value,
-                    EncodingError.Context(codingPath: [],
-                                          debugDescription: "Encountered a non-Codable value while encoding \(self)"))
+                    EncodingError.Context(
+                        codingPath: [],
+                        debugDescription: "Encountered a non-Codable value while encoding \(self)"
+                    )
+                )
             }
         }
     }
@@ -126,13 +129,13 @@ public struct AnyBSONValue: Codable, Equatable, Hashable {
             if bsonDecoder.storage.topContainer is Date {
                 guard case .bsonDateTime = bsonDecoder.options.dateDecodingStrategy else {
                     throw DecodingError.typeMismatch(
-                            AnyBSONValue.self,
-                            DecodingError.Context(
-                                    codingPath: bsonDecoder.codingPath,
-                                    debugDescription: "Got a BSON datetime but was expecting another format. To " +
-                                            "decode from BSON datetimes, use the default .bsonDateTime " +
-                                            "DateDecodingStrategy."
-                            )
+                        AnyBSONValue.self,
+                        DecodingError.Context(
+                            codingPath: bsonDecoder.codingPath,
+                            debugDescription: "Got a BSON datetime but was expecting another format. To " +
+                                "decode from BSON datetimes, use the default .bsonDateTime " +
+                                "DateDecodingStrategy."
+                        )
                     )
                 }
             }
@@ -184,10 +187,11 @@ public struct AnyBSONValue: Codable, Equatable, Hashable {
             self.value = value
         } else {
             throw DecodingError.typeMismatch(
-                    AnyBSONValue.self,
-                    DecodingError.Context(
-                            codingPath: decoder.codingPath,
-                            debugDescription: "Encountered a value that could not be decoded to any BSON type")
+                AnyBSONValue.self,
+                DecodingError.Context(
+                    codingPath: decoder.codingPath,
+                    debugDescription: "Encountered a value that could not be decoded to any BSON type"
+                )
             )
         }
     }

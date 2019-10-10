@@ -15,9 +15,11 @@ public struct RunCommandOptions: Encodable {
     public var writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional.
-    public init(readConcern: ReadConcern? = nil,
-                readPreference: ReadPreference? = nil,
-                writeConcern: WriteConcern? = nil) {
+    public init(
+        readConcern: ReadConcern? = nil,
+        readPreference: ReadPreference? = nil,
+        writeConcern: WriteConcern? = nil
+    ) {
         self.readConcern = readConcern
         self.readPreference = readPreference
         self.writeConcern = writeConcern

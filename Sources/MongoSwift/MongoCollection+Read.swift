@@ -17,15 +17,19 @@ extension MongoCollection {
      *   - `UserError.logicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
-    public func find(_ filter: Document = [:],
-                     options: FindOptions? = nil,
-                     session: ClientSession? = nil) throws -> MongoCursor<CollectionType> {
+    public func find(
+        _ filter: Document = [:],
+        options: FindOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> MongoCursor<CollectionType> {
         let opts = try encodeOptions(options: options, session: session)
         let rp = options?.readPreference?._readPreference
-        return try MongoCursor(client: self._client,
-                               decoder: self.decoder,
-                               session: session,
-                               cursorType: options?.cursorType) { conn in
+        return try MongoCursor(
+            client: self._client,
+            decoder: self.decoder,
+            session: session,
+            cursorType: options?.cursorType
+        ) { conn in
             self.withMongocCollection(from: conn) { collPtr in
                 guard let cursor = mongoc_collection_find_with_opts(collPtr, filter._bson, opts?._bson, rp) else {
                     fatalError(failedToRetrieveCursorMessage)
@@ -50,20 +54,24 @@ extension MongoCollection {
      *   - `UserError.logicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
-    public func aggregate(_ pipeline: [Document],
-                          options: AggregateOptions? = nil,
-                          session: ClientSession? = nil) throws -> MongoCursor<Document> {
+    public func aggregate(
+        _ pipeline: [Document],
+        options: AggregateOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> MongoCursor<Document> {
         let opts = try encodeOptions(options: options, session: session)
         let rp = options?.readPreference?._readPreference
         let pipeline: Document = ["pipeline": pipeline]
 
         return try MongoCursor(client: self._client, decoder: self.decoder, session: session) { conn in
             self.withMongocCollection(from: conn) { collPtr in
-                guard let cursor = mongoc_collection_aggregate(collPtr,
-                                                               MONGOC_QUERY_NONE,
-                                                               pipeline._bson,
-                                                               opts?._bson,
-                                                               rp) else {
+                guard let cursor = mongoc_collection_aggregate(
+                    collPtr,
+                    MONGOC_QUERY_NONE,
+                    pipeline._bson,
+                    opts?._bson,
+                    rp
+                ) else {
                     fatalError(failedToRetrieveCursorMessage)
                 }
                 return cursor
@@ -71,7 +79,7 @@ extension MongoCollection {
         }
     }
 
-    // TODO SWIFT-133: mark this method deprecated https://jira.mongodb.org/browse/SWIFT-133
+    // TODO: SWIFT-133: mark this method deprecated https://jira.mongodb.org/browse/SWIFT-133
     /**
      * Counts the number of documents in this collection matching the provided filter.
      *
@@ -87,9 +95,11 @@ extension MongoCollection {
      *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
-    public func count(_ filter: Document = [:],
-                      options: CountOptions? = nil,
-                      session: ClientSession? = nil) throws -> Int {
+    public func count(
+        _ filter: Document = [:],
+        options: CountOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> Int {
         let operation = CountOperation(collection: self, filter: filter, options: options)
         return try self._client.executeOperation(operation, session: session)
     }
@@ -104,10 +114,12 @@ extension MongoCollection {
      *
      * - Returns: The count of the documents that matched the filter
      */
-    private func countDocuments(_ filter: Document = [:],
-                                options: CountDocumentsOptions? = nil,
-                                session: ClientSession? = nil) throws -> Int {
-        // TODO SWIFT-133: implement this https://jira.mongodb.org/browse/SWIFT-133
+    private func countDocuments(
+        _: Document = [:],
+        options _: CountDocumentsOptions? = nil,
+        session _: ClientSession? = nil
+    ) throws -> Int {
+        // TODO: SWIFT-133: implement this https://jira.mongodb.org/browse/SWIFT-133
         throw UserError.logicError(message: "Unimplemented command")
     }
 
@@ -120,9 +132,11 @@ extension MongoCollection {
      *
      * - Returns: an estimate of the count of documents in this collection
      */
-    private func estimatedDocumentCount(options: EstimatedDocumentCountOptions? = nil,
-                                        session: ClientSession? = nil) throws -> Int {
-        // TODO SWIFT-133: implement this https://jira.mongodb.org/browse/SWIFT-133
+    private func estimatedDocumentCount(
+        options _: EstimatedDocumentCountOptions? = nil,
+        session _: ClientSession? = nil
+    ) throws -> Int {
+        // TODO: SWIFT-133: implement this https://jira.mongodb.org/browse/SWIFT-133
         throw UserError.logicError(message: "Unimplemented command")
     }
 
@@ -143,10 +157,12 @@ extension MongoCollection {
      *   - `UserError.logicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
-    public func distinct(fieldName: String,
-                         filter: Document = [:],
-                         options: DistinctOptions? = nil,
-                         session: ClientSession? = nil) throws -> [BSONValue] {
+    public func distinct(
+        fieldName: String,
+        filter: Document = [:],
+        options: DistinctOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> [BSONValue] {
         let operation = DistinctOperation(collection: self, fieldName: fieldName, filter: filter, options: options)
         return try self._client.executeOperation(operation, session: session)
     }
@@ -217,16 +233,18 @@ public struct AggregateOptions: Codable {
     public var writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional.
-    public init(allowDiskUse: Bool? = nil,
-                batchSize: Int32? = nil,
-                bypassDocumentValidation: Bool? = nil,
-                collation: Document? = nil,
-                comment: String? = nil,
-                hint: Hint? = nil,
-                maxTimeMS: Int64? = nil,
-                readConcern: ReadConcern? = nil,
-                readPreference: ReadPreference? = nil,
-                writeConcern: WriteConcern? = nil) {
+    public init(
+        allowDiskUse: Bool? = nil,
+        batchSize: Int32? = nil,
+        bypassDocumentValidation: Bool? = nil,
+        collation: Document? = nil,
+        comment: String? = nil,
+        hint: Hint? = nil,
+        maxTimeMS: Int64? = nil,
+        readConcern: ReadConcern? = nil,
+        readPreference: ReadPreference? = nil,
+        writeConcern: WriteConcern? = nil
+    ) {
         self.allowDiskUse = allowDiskUse
         self.batchSize = batchSize
         self.bypassDocumentValidation = bypassDocumentValidation
@@ -396,26 +414,28 @@ public struct FindOptions: Codable {
     // swiftlint:enable redundant_optional_initialization
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional.
-    public init(allowPartialResults: Bool? = nil,
-                batchSize: Int32? = nil,
-                collation: Document? = nil,
-                comment: String? = nil,
-                cursorType: CursorType? = nil,
-                hint: Hint? = nil,
-                limit: Int64? = nil,
-                max: Document? = nil,
-                maxAwaitTimeMS: Int64? = nil,
-                maxScan: Int64? = nil,
-                maxTimeMS: Int64? = nil,
-                min: Document? = nil,
-                noCursorTimeout: Bool? = nil,
-                projection: Document? = nil,
-                readConcern: ReadConcern? = nil,
-                readPreference: ReadPreference? = nil,
-                returnKey: Bool? = nil,
-                showRecordId: Bool? = nil,
-                skip: Int64? = nil,
-                sort: Document? = nil) {
+    public init(
+        allowPartialResults: Bool? = nil,
+        batchSize: Int32? = nil,
+        collation: Document? = nil,
+        comment: String? = nil,
+        cursorType: CursorType? = nil,
+        hint: Hint? = nil,
+        limit: Int64? = nil,
+        max: Document? = nil,
+        maxAwaitTimeMS: Int64? = nil,
+        maxScan: Int64? = nil,
+        maxTimeMS: Int64? = nil,
+        min: Document? = nil,
+        noCursorTimeout: Bool? = nil,
+        projection: Document? = nil,
+        readConcern: ReadConcern? = nil,
+        readPreference: ReadPreference? = nil,
+        returnKey: Bool? = nil,
+        showRecordId: Bool? = nil,
+        skip: Int64? = nil,
+        sort: Document? = nil
+    ) {
         self.allowPartialResults = allowPartialResults
         self.batchSize = batchSize
         self.collation = collation

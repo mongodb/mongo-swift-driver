@@ -16,8 +16,10 @@ public struct ClientSessionOptions {
 
 /// Private helper for providing a `mongoc_session_opt_t` that is only valid within the body of the provided
 /// closure.
-private func withSessionOpts<T>(wrapping options: ClientSessionOptions?,
-                                _ body: (OpaquePointer) throws -> T) rethrows -> T {
+private func withSessionOpts<T>(
+    wrapping options: ClientSessionOptions?,
+    _ body: (OpaquePointer) throws -> T
+) rethrows -> T {
     // swiftlint:disable:next force_unwrapping
     var opts = mongoc_session_opts_new()! // always returns a value
     defer { mongoc_session_opts_destroy(opts) }
@@ -60,7 +62,8 @@ public final class ClientSession {
     internal static let SessionInactiveError = UserError.logicError(message: "Tried to use an inactive session")
     /// Error thrown when a user attempts to use a session with a client it was not created from.
     internal static let ClientMismatchError = UserError.invalidArgumentError(
-        message: "Sessions may only be used with the MongoClient used to create them")
+        message: "Sessions may only be used with the MongoClient used to create them"
+    )
 
     /// Enum for tracking the state of a session.
     internal enum State {
@@ -93,7 +96,7 @@ public final class ClientSession {
     /// - This session has been ended.
     public var clusterTime: Document? {
         guard case let .active(session, _) = self.state,
-                    let time = mongoc_client_session_get_cluster_time(session) else {
+            let time = mongoc_client_session_get_cluster_time(session) else {
             return nil
         }
         return Document(copying: time)

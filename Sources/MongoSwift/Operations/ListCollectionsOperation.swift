@@ -16,7 +16,7 @@ public enum CollectionType: RawRepresentable, Codable {
             return "collection"
         case .view:
             return "view"
-        case .other(let v):
+        case let .other(v):
             return v
         }
     }
@@ -47,6 +47,7 @@ public struct CollectionSpecificationInfo: Codable {
     /// set members and shards in a sharded cluster. If the data store is a view, this field is nil.
     public let uuid: UUID?
 }
+
 /**
  * Specifications of a collection returned when executing `listCollections`.
  *
@@ -104,7 +105,7 @@ internal struct ListCollectionsOperation: Operation {
         self.options = options
     }
 
-    internal func execute(using connection: Connection, session: ClientSession?) throws -> ListCollectionsResults {
+    internal func execute(using _: Connection, session: ClientSession?) throws -> ListCollectionsResults {
         var opts = try encodeOptions(options: self.options, session: session) ?? Document()
         opts["nameOnly"] = self.nameOnly
         if let filterDoc = self.filter {
@@ -125,10 +126,12 @@ internal struct ListCollectionsOperation: Operation {
             }
         }
         if self.nameOnly {
-            let cursor: MongoCursor<Document> = try MongoCursor(client: self.database._client,
-                                                                decoder: self.database.decoder,
-                                                                session: session,
-                                                                initializer: initializer)
+            let cursor: MongoCursor<Document> = try MongoCursor(
+                client: self.database._client,
+                decoder: self.database.decoder,
+                session: session,
+                initializer: initializer
+            )
             return try .names(cursor.map {
                 guard let name = $0["name"] as? String else {
                     throw RuntimeError.internalError(message: "Invalid server response: collection has no name")
@@ -136,10 +139,12 @@ internal struct ListCollectionsOperation: Operation {
                 return name
             })
         }
-        let cursor: MongoCursor<CollectionSpecification> = try MongoCursor(client: self.database._client,
-                                                                           decoder: self.database.decoder,
-                                                                           session: session,
-                                                                           initializer: initializer)
+        let cursor: MongoCursor<CollectionSpecification> = try MongoCursor(
+            client: self.database._client,
+            decoder: self.database.decoder,
+            session: session,
+            initializer: initializer
+        )
         return .specs(cursor)
     }
 }

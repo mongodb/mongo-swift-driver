@@ -26,7 +26,7 @@ public struct IndexModel: Codable {
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(keys, forKey: .key)
+        try container.encode(self.keys, forKey: .key)
         try self.options?.encode(to: encoder)
     }
 
@@ -107,24 +107,26 @@ public struct IndexOptions: Codable {
     public var collation: Document?
 
     /// Convenience initializer allowing any/all parameters to be omitted.
-    public init(background: Bool? = nil,
-                expireAfterSeconds: Int32? = nil,
-                name: String? = nil,
-                sparse: Bool? = nil,
-                storageEngine: Document? = nil,
-                unique: Bool? = nil,
-                version: Int32? = nil,
-                defaultLanguage: String? = nil,
-                languageOverride: String? = nil,
-                textIndexVersion: Int32? = nil,
-                weights: Document? = nil,
-                sphereIndexVersion: Int32? = nil,
-                bits: Int32? = nil,
-                max: Double? = nil,
-                min: Double? = nil,
-                bucketSize: Int32? = nil,
-                partialFilterExpression: Document? = nil,
-                collation: Document? = nil) {
+    public init(
+        background: Bool? = nil,
+        expireAfterSeconds: Int32? = nil,
+        name: String? = nil,
+        sparse: Bool? = nil,
+        storageEngine: Document? = nil,
+        unique: Bool? = nil,
+        version: Int32? = nil,
+        defaultLanguage: String? = nil,
+        languageOverride: String? = nil,
+        textIndexVersion: Int32? = nil,
+        weights: Document? = nil,
+        sphereIndexVersion: Int32? = nil,
+        bits: Int32? = nil,
+        max: Double? = nil,
+        min: Double? = nil,
+        bucketSize: Int32? = nil,
+        partialFilterExpression: Document? = nil,
+        collation: Document? = nil
+    ) {
         self.background = background
         self.expireAfterSeconds = expireAfterSeconds
         self.name = name
@@ -174,13 +176,17 @@ extension MongoCollection {
      *   - `EncodingError` if an error occurs while encoding the index specification or options.
      */
     @discardableResult
-    public func createIndex(_ keys: Document,
-                            indexOptions: IndexOptions? = nil,
-                            options: CreateIndexOptions? = nil,
-                            session: ClientSession? = nil) throws -> String {
-        return try createIndexes([IndexModel(keys: keys, options: indexOptions)],
-                                 options: options,
-                                 session: session)[0]
+    public func createIndex(
+        _ keys: Document,
+        indexOptions: IndexOptions? = nil,
+        options: CreateIndexOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> String {
+        return try self.createIndexes(
+            [IndexModel(keys: keys, options: indexOptions)],
+            options: options,
+            session: session
+        )[0]
     }
 
     /**
@@ -201,10 +207,12 @@ extension MongoCollection {
      *   - `EncodingError` if an error occurs while encoding the index specification or options.
      */
     @discardableResult
-    public func createIndex(_ model: IndexModel,
-                            options: CreateIndexOptions? = nil,
-                            session: ClientSession? = nil) throws -> String {
-        return try createIndexes([model], options: options, session: session)[0]
+    public func createIndex(
+        _ model: IndexModel,
+        options: CreateIndexOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> String {
+        return try self.createIndexes([model], options: options, session: session)[0]
     }
 
     /**
@@ -225,9 +233,11 @@ extension MongoCollection {
      *   - `EncodingError` if an error occurs while encoding the index specifications or options.
      */
     @discardableResult
-    public func createIndexes(_ models: [IndexModel],
-                              options: CreateIndexOptions? = nil,
-                              session: ClientSession? = nil) throws -> [String] {
+    public func createIndexes(
+        _ models: [IndexModel],
+        options: CreateIndexOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> [String] {
         let operation = CreateIndexesOperation(collection: self, models: models, options: options)
         return try self._client.executeOperation(operation, session: session)
     }
@@ -247,14 +257,18 @@ extension MongoCollection {
      *   - `EncodingError` if an error occurs while encoding the options.
      */
     @discardableResult
-    public func dropIndex(_ name: String,
-                          options: DropIndexOptions? = nil,
-                          session: ClientSession? = nil) throws -> Document {
+    public func dropIndex(
+        _ name: String,
+        options: DropIndexOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> Document {
         guard name != "*" else {
-            throw UserError.invalidArgumentError(message:
-                "Invalid index name '*'; use dropIndexes() to drop all indexes")
+            throw UserError.invalidArgumentError(
+                message:
+                "Invalid index name '*'; use dropIndexes() to drop all indexes"
+            )
         }
-        return try _dropIndexes(index: name, options: options, session: session)
+        return try self._dropIndexes(index: name, options: options, session: session)
     }
 
     /**
@@ -275,10 +289,12 @@ extension MongoCollection {
      *   - `EncodingError` if an error occurs while encoding the options.
      */
     @discardableResult
-    public func dropIndex(_ keys: Document,
-                          options: DropIndexOptions? = nil,
-                          session: ClientSession? = nil) throws -> Document {
-        return try _dropIndexes(index: keys, options: options, session: session)
+    public func dropIndex(
+        _ keys: Document,
+        options: DropIndexOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> Document {
+        return try self._dropIndexes(index: keys, options: options, session: session)
     }
 
     /**
@@ -299,10 +315,12 @@ extension MongoCollection {
      *   - `EncodingError` if an error occurs while encoding the options.
      */
     @discardableResult
-    public func dropIndex(_ model: IndexModel,
-                          options: DropIndexOptions? = nil,
-                          session: ClientSession? = nil) throws -> Document {
-        return try _dropIndexes(index: model.keys, options: options, session: session)
+    public func dropIndex(
+        _ model: IndexModel,
+        options: DropIndexOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> Document {
+        return try self._dropIndexes(index: model.keys, options: options, session: session)
     }
 
     /**
@@ -323,14 +341,16 @@ extension MongoCollection {
      */
     @discardableResult
     public func dropIndexes(options: DropIndexOptions? = nil, session: ClientSession? = nil) throws -> Document {
-        return try _dropIndexes(index: "*", options: options, session: session)
+        return try self._dropIndexes(index: "*", options: options, session: session)
     }
 
     /// Internal helper to drop an index. `index` must either be an index specification document or a
     /// string index name.
-    private func _dropIndexes(index: BSONValue,
-                              options: DropIndexOptions?,
-                              session: ClientSession?) throws -> Document {
+    private func _dropIndexes(
+        index: BSONValue,
+        options: DropIndexOptions?,
+        session: ClientSession?
+    ) throws -> Document {
         let operation = DropIndexesOperation(collection: self, index: index, options: options)
         return try self._client.executeOperation(operation, session: session)
     }

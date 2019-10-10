@@ -114,9 +114,9 @@ final class DocumentTests: MongoSwiftTestCase {
 
         // UUIDs must have 16 bytes
         expect(try Binary(data: testData, subtype: .uuidDeprecated))
-                .to(throwError(UserError.invalidArgumentError(message: "")))
+            .to(throwError(UserError.invalidArgumentError(message: "")))
         expect(try Binary(data: testData, subtype: .uuid))
-                .to(throwError(UserError.invalidArgumentError(message: "")))
+            .to(throwError(UserError.invalidArgumentError(message: "")))
 
         let expectedKeys = [
             "string", "true", "false", "int", "int32", "int64", "double", "decimal128",
@@ -207,8 +207,8 @@ final class DocumentTests: MongoSwiftTestCase {
         let regex = DocumentTests.testDoc.regex as? RegularExpression
         expect(regex).to(equal(RegularExpression(pattern: "^abc", options: "imx")))
         expect(try NSRegularExpression(from: regex!)).to(equal(try NSRegularExpression(
-                pattern: "^abc",
-                options: NSRegularExpression.optionsFromString("imx")
+            pattern: "^abc",
+            options: NSRegularExpression.optionsFromString("imx")
         )))
 
         let nestedArray = DocumentTests.testDoc.nestedarray as? [[Int32]]
@@ -238,25 +238,25 @@ final class DocumentTests: MongoSwiftTestCase {
     }
 
     func testDocumentFromArray() {
-       let doc1: Document = ["foo", MinKey(), BSONNull()]
+        let doc1: Document = ["foo", MinKey(), BSONNull()]
 
-       expect(doc1.keys).to(equal(["0", "1", "2"]))
-       expect(doc1["0"]).to(bsonEqual("foo"))
-       expect(doc1["1"]).to(bsonEqual(MinKey()))
-       expect(doc1["2"]).to(bsonEqual(BSONNull()))
+        expect(doc1.keys).to(equal(["0", "1", "2"]))
+        expect(doc1["0"]).to(bsonEqual("foo"))
+        expect(doc1["1"]).to(bsonEqual(MinKey()))
+        expect(doc1["2"]).to(bsonEqual(BSONNull()))
 
-       let elements: [BSONValue] = ["foo", MinKey(), BSONNull()]
-       let doc2 = Document(elements)
+        let elements: [BSONValue] = ["foo", MinKey(), BSONNull()]
+        let doc2 = Document(elements)
 
-       expect(doc2.keys).to(equal(["0", "1", "2"]))
-       expect(doc2["0"]).to(bsonEqual("foo"))
-       expect(doc2["1"]).to(bsonEqual(MinKey()))
-       expect(doc2["2"]).to(bsonEqual(BSONNull()))
+        expect(doc2.keys).to(equal(["0", "1", "2"]))
+        expect(doc2["0"]).to(bsonEqual("foo"))
+        expect(doc2["1"]).to(bsonEqual(MinKey()))
+        expect(doc2["2"]).to(bsonEqual(BSONNull()))
     }
 
     func testEquatable() {
         expect(["hi": true, "hello": "hi", "cat": 2] as Document)
-        .to(equal(["hi": true, "hello": "hi", "cat": 2] as Document))
+            .to(equal(["hi": true, "hello": "hi", "cat": 2] as Document))
     }
 
     func testRawBSON() throws {
@@ -373,22 +373,22 @@ final class DocumentTests: MongoSwiftTestCase {
                     expect(docFromNative.rawBSON).to(equal(cBData))
                 }
 
-                // Linux swift terminates all strings when encountering null bytes in Swift < 4.2.3 (SR-7455).
-                // TODO: remove this conditional compile when the minimum supported version is >= 4.2.3
-                #if swift(>=4.2.3) || !os(Linux)
+// Linux swift terminates all strings when encountering null bytes in Swift < 4.2.3 (SR-7455).
+// TODO: remove this conditional compile when the minimum supported version is >= 4.2.3
+#if swift(>=4.2.3) || !os(Linux)
                 testRoundTrip()
-                #else
+#else
                 if description != "Embedded nulls" {
                     testRoundTrip()
                 }
-                #endif
+#endif
 
                 // native_to_canonical_extended_json( bson_to_native(cB) ) = cEJ
                 expect(docFromCB.canonicalExtendedJSON).to(cleanEqual(cEJ))
 
                 // native_to_relaxed_extended_json( bson_to_native(cB) ) = rEJ (if rEJ exists)
                 if let rEJ = validCase["relaxed_extjson"] as? String {
-                     expect(Document(fromBSON: cBData).extendedJSON).to(cleanEqual(rEJ))
+                    expect(Document(fromBSON: cBData).extendedJSON).to(cleanEqual(rEJ))
                 }
 
                 // for cEJ input:
@@ -652,7 +652,7 @@ final class DocumentTests: MongoSwiftTestCase {
         }
 
         expect(nonOverwritableDoc).to(
-                equal(["string": BSONNull(), "nil": BSONNull(), "doc": BSONNull(), "arr": BSONNull()]))
+            equal(["string": BSONNull(), "nil": BSONNull(), "doc": BSONNull(), "arr": BSONNull()]))
     }
 
     // Test types where replacing them with an instance of their own type is a no-op
@@ -829,10 +829,10 @@ final class DocumentTests: MongoSwiftTestCase {
         let deferred = try encoder.encode(dateStruct)
         expect(deferred["date"] as? TimeInterval).to(equal(date.timeIntervalSinceReferenceDate))
 
-        encoder.dateEncodingStrategy = .custom({ d, e in
+        encoder.dateEncodingStrategy = .custom { d, e in
             var container = e.singleValueContainer()
             try container.encode(Int64(d.timeIntervalSince1970 + 12))
-        })
+        }
         let custom = try encoder.encode(dateStruct)
         expect(custom["date"]).to(bsonEqual(Int64(date.timeIntervalSince1970 + 12)))
 
@@ -841,31 +841,31 @@ final class DocumentTests: MongoSwiftTestCase {
         dateFormatter.timeStyle = .none
 
         let noSecondsDate = DateWrapper(date: dateFormatter.date(from: "1/2/19")!)
-        encoder.dateEncodingStrategy = .custom({d, e in
+        encoder.dateEncodingStrategy = .custom { d, e in
             var container = e.unkeyedContainer()
             try dateFormatter.string(from: d).split(separator: "/").forEach { component in
                 try container.encode(String(component))
             }
-        })
+        }
         let customArr = try encoder.encode(noSecondsDate)
         expect(dateFormatter.date(from: (customArr["date"] as! [String]).joined(separator: "/")))
-                .to(equal(noSecondsDate.date))
+            .to(equal(noSecondsDate.date))
 
         enum DateKeys: String, CodingKey {
             case month, day, year
         }
 
-        encoder.dateEncodingStrategy = .custom({d, e in
+        encoder.dateEncodingStrategy = .custom { d, e in
             var container = e.container(keyedBy: DateKeys.self)
             let components = dateFormatter.string(from: d).split(separator: "/").map { String($0) }
             try container.encode(components[0], forKey: .month)
             try container.encode(components[1], forKey: .day)
             try container.encode(components[2], forKey: .year)
-        })
+        }
         let customDoc = try encoder.encode(noSecondsDate)
         expect(customDoc["date"] as? Document).to(bsonEqual(["month": "1", "day": "2", "year": "19"] as Document))
 
-        encoder.dateEncodingStrategy = .custom({ _, _ in })
+        encoder.dateEncodingStrategy = .custom { _, _ in }
         let customNoop = try encoder.encode(noSecondsDate)
         expect(customNoop["date"] as? Document).to(bsonEqual([:] as Document))
     }
@@ -923,7 +923,7 @@ final class DocumentTests: MongoSwiftTestCase {
             expect(isoStruct.date).to(equal(date))
             expect(try decoder.decode(DateWrapper.self, from: formatted)).to(throwError(CodecTests.dataCorruptedErr))
             expect(try decoder.decode(DateWrapper.self, from: badlyFormatted))
-                    .to(throwError(CodecTests.dataCorruptedErr))
+                .to(throwError(CodecTests.dataCorruptedErr))
         }
 
         decoder.dateDecodingStrategy = .custom({ decode in try Date(from: decode) })
@@ -978,27 +978,27 @@ final class DocumentTests: MongoSwiftTestCase {
         let roundTripBase64 = try decoder.decode(DataWrapper.self, from: base64Doc)
         expect(roundTripBase64.data).to(equal(data))
         expect(try decoder.decode(DataWrapper.self, from: ["data": "this is not base64 encoded~"]))
-                .to(throwError(CodecTests.dataCorruptedErr))
+            .to(throwError(CodecTests.dataCorruptedErr))
 
         let customEncodedDoc = ["d": data.base64EncodedString(), "hash": data.hashValue] as Document
-        encoder.dataEncodingStrategy = .custom({ d, encoder in
+        encoder.dataEncodingStrategy = .custom { _, encoder in
             var container = encoder.singleValueContainer()
             try container.encode(customEncodedDoc)
-        })
-        decoder.dataDecodingStrategy = .custom({ decoder in
+        }
+        decoder.dataDecodingStrategy = .custom { decoder in
             let doc = try Document(from: decoder)
             guard let d = Data(base64Encoded: doc["d"] as! String) else {
                 throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: [], debugDescription: "bad base64"))
             }
             expect(d.hashValue).to(equal(data.hashValue))
             return d
-        })
+        }
         let customDoc = try encoder.encode(dataStruct)
         expect(customDoc["data"]).to(bsonEqual(customEncodedDoc))
         let roundTripCustom = try decoder.decode(DataWrapper.self, from: customDoc)
         expect(roundTripCustom.data).to(equal(data))
 
-        encoder.dataEncodingStrategy = .custom({ _, _ in })
+        encoder.dataEncodingStrategy = .custom { _, _ in }
         expect(try encoder.encode(dataStruct)).to(bsonEqual(["data": [:] as Document] as Document))
     }
 

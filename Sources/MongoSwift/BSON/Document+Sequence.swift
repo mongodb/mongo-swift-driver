@@ -203,15 +203,19 @@ extension Document: Sequence {
      *
      * - Returns: An array of documents, split from this document's key-value pairs.
      */
-    public func split(maxSplits: Int = Int.max,
-                      omittingEmptySubsequences: Bool = true,
-                      whereSeparator isSeparator: (KeyValuePair) throws -> Bool) rethrows -> [Document] {
+    public func split(
+        maxSplits: Int = Int.max,
+        omittingEmptySubsequences: Bool = true,
+        whereSeparator isSeparator: (KeyValuePair) throws -> Bool
+    ) rethrows -> [Document] {
         // rather than implementing the complex logic necessary for split, convert to an array and call split on that
         let asArr = Array(self)
         // convert to a [[KeyValuePair]]
-        let splitArrs = try asArr.split(maxSplits: maxSplits,
-                                        omittingEmptySubsequences: omittingEmptySubsequences,
-                                        whereSeparator: isSeparator)
+        let splitArrs = try asArr.split(
+            maxSplits: maxSplits,
+            omittingEmptySubsequences: omittingEmptySubsequences,
+            whereSeparator: isSeparator
+        )
 
         // convert each nested [KeyValuePair] back to a Document
         var output = [Document]()

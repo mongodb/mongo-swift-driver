@@ -20,9 +20,11 @@ extension MongoCollection {
      *   - https://docs.mongodb.com/manual/meta/aggregation-quick-reference/
      *   - https://docs.mongodb.com/manual/reference/system-collections/
      */
-    public func watch(_ pipeline: [Document] = [],
-                      options: ChangeStreamOptions? =  nil,
-                      session: ClientSession? = nil) throws -> ChangeStream<ChangeStreamEvent<CollectionType>> {
+    public func watch(
+        _ pipeline: [Document] = [],
+        options: ChangeStreamOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> ChangeStream<ChangeStreamEvent<CollectionType>> {
         return try self.watch(pipeline, options: options, session: session, withFullDocumentType: CollectionType.self)
     }
 
@@ -47,15 +49,19 @@ extension MongoCollection {
      *   - https://docs.mongodb.com/manual/meta/aggregation-quick-reference/
      *   - https://docs.mongodb.com/manual/reference/system-collections/
      */
-    public func watch<FullDocType: Codable>(_ pipeline: [Document] = [],
-                                            options: ChangeStreamOptions? = nil,
-                                            session: ClientSession? = nil,
-                                            withFullDocumentType type: FullDocType.Type)
-                                        throws -> ChangeStream<ChangeStreamEvent<FullDocType>> {
-        return try self.watch(pipeline,
-                              options: options,
-                              session: session,
-                              withEventType: ChangeStreamEvent<FullDocType>.self)
+    public func watch<FullDocType: Codable>(
+        _ pipeline: [Document] = [],
+        options: ChangeStreamOptions? = nil,
+        session: ClientSession? = nil,
+        withFullDocumentType _: FullDocType.Type
+    )
+        throws -> ChangeStream<ChangeStreamEvent<FullDocType>> {
+        return try self.watch(
+            pipeline,
+            options: options,
+            session: session,
+            withEventType: ChangeStreamEvent<FullDocType>.self
+        )
     }
 
     /**
@@ -78,15 +84,19 @@ extension MongoCollection {
      *   - https://docs.mongodb.com/manual/meta/aggregation-quick-reference/
      *   - https://docs.mongodb.com/manual/reference/system-collections/
      */
-    public func watch<EventType: Codable>(_ pipeline: [Document] = [],
-                                          options: ChangeStreamOptions? = nil,
-                                          session: ClientSession? = nil,
-                                          withEventType type: EventType.Type) throws -> ChangeStream<EventType> {
+    public func watch<EventType: Codable>(
+        _ pipeline: [Document] = [],
+        options: ChangeStreamOptions? = nil,
+        session: ClientSession? = nil,
+        withEventType _: EventType.Type
+    ) throws -> ChangeStream<EventType> {
         let connection = try resolveConnection(client: self._client, session: session)
-        let operation = try WatchOperation<CollectionType, EventType>(target: .collection(self),
-                                                                      pipeline: pipeline,
-                                                                      options: options,
-                                                                      stealing: connection)
+        let operation = try WatchOperation<CollectionType, EventType>(
+            target: .collection(self),
+            pipeline: pipeline,
+            options: options,
+            stealing: connection
+        )
         return try self._client.executeOperation(operation, session: session)
     }
 }

@@ -185,23 +185,23 @@ extension ServerDescription: Equatable {
     public static func == (lhs: ServerDescription, rhs: ServerDescription) -> Bool {
         // Compare everything except `error` it is always nil and `MongoError`s are not `Equatable`
         return lhs.connectionId == rhs.connectionId &&
-                lhs.roundTripTime == rhs.roundTripTime &&
-                lhs.lastWriteDate == rhs.lastWriteDate &&
-                lhs.opTime == rhs.opTime &&
-                lhs.type == rhs.type &&
-                lhs.minWireVersion == rhs.minWireVersion &&
-                lhs.maxWireVersion == rhs.maxWireVersion &&
-                lhs.me == rhs.me &&
-                lhs.hosts == rhs.hosts &&
-                lhs.arbiters == rhs.arbiters &&
-                lhs.passives == rhs.passives &&
-                lhs.tags == rhs.tags &&
-                lhs.setName == rhs.setName &&
-                lhs.setVersion == rhs.setVersion &&
-                lhs.electionId == rhs.electionId &&
-                lhs.primary == rhs.primary &&
-                lhs.lastUpdateTime == rhs.lastUpdateTime &&
-                lhs.logicalSessionTimeoutMinutes == rhs.logicalSessionTimeoutMinutes
+            lhs.roundTripTime == rhs.roundTripTime &&
+            lhs.lastWriteDate == rhs.lastWriteDate &&
+            lhs.opTime == rhs.opTime &&
+            lhs.type == rhs.type &&
+            lhs.minWireVersion == rhs.minWireVersion &&
+            lhs.maxWireVersion == rhs.maxWireVersion &&
+            lhs.me == rhs.me &&
+            lhs.hosts == rhs.hosts &&
+            lhs.arbiters == rhs.arbiters &&
+            lhs.passives == rhs.passives &&
+            lhs.tags == rhs.tags &&
+            lhs.setName == rhs.setName &&
+            lhs.setVersion == rhs.setVersion &&
+            lhs.electionId == rhs.electionId &&
+            lhs.primary == rhs.primary &&
+            lhs.lastUpdateTime == rhs.lastUpdateTime &&
+            lhs.logicalSessionTimeoutMinutes == rhs.logicalSessionTimeoutMinutes
     }
 }
 
@@ -265,7 +265,7 @@ public struct TopologyDescription {
     /// or `nil` if any of them are `nil`.
     public var logicalSessionTimeoutMinutes: Int64? {
         let timeoutValues = self.servers.map { $0.logicalSessionTimeoutMinutes }
-        if timeoutValues.contains (where: { $0 == nil }) {
+        if timeoutValues.contains(where: { $0 == nil }) {
             return nil
         }
         return timeoutValues.compactMap { $0 }.min()
@@ -305,10 +305,10 @@ extension TopologyDescription: Equatable {
     public static func == (lhs: TopologyDescription, rhs: TopologyDescription) -> Bool {
         // Compare everything except `error` it is always nil and `MongoError`s are not `Equatable`
         return lhs.type == rhs.type &&
-                lhs.setName == rhs.setName &&
-                lhs.maxSetVersion == rhs.maxSetVersion &&
-                lhs.maxElectionId == rhs.maxElectionId &&
-                lhs.servers == rhs.servers &&
-                lhs.stale == rhs.stale
+            lhs.setName == rhs.setName &&
+            lhs.maxSetVersion == rhs.maxSetVersion &&
+            lhs.maxElectionId == rhs.maxElectionId &&
+            lhs.servers == rhs.servers &&
+            lhs.stale == rhs.stale
     }
 }

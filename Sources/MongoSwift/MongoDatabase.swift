@@ -27,12 +27,14 @@ public struct CollectionOptions: CodingStrategyProvider {
     public var dataCodingStrategy: DataCodingStrategy?
 
     /// Convenience initializer allowing any/all arguments to be omitted or optional.
-    public init(readConcern: ReadConcern? = nil,
-                readPreference: ReadPreference? = nil,
-                writeConcern: WriteConcern? = nil,
-                dateCodingStrategy: DateCodingStrategy? = nil,
-                uuidCodingStrategy: UUIDCodingStrategy? = nil,
-                dataCodingStrategy: DataCodingStrategy? = nil) {
+    public init(
+        readConcern: ReadConcern? = nil,
+        readPreference: ReadPreference? = nil,
+        writeConcern: WriteConcern? = nil,
+        dateCodingStrategy: DateCodingStrategy? = nil,
+        uuidCodingStrategy: UUIDCodingStrategy? = nil,
+        dataCodingStrategy: DataCodingStrategy? = nil
+    ) {
         self.readConcern = readConcern
         self.readPreference = readPreference
         self.writeConcern = writeConcern
@@ -69,7 +71,7 @@ public struct MongoDatabase {
     public let decoder: BSONDecoder
 
     /// The name of this database.
-    public var name: String { return namespace.db }
+    public var name: String { return self.namespace.db }
 
     /// The `ReadConcern` set on this database, or `nil` if one is not set.
     public let readConcern: ReadConcern?
@@ -109,14 +111,14 @@ public struct MongoDatabase {
     }
 
     /**
-    *   Drops this database.
-    * - Parameters:
-    *   - options: An optional `DropDatabaseOptions` to use when executing this command
-    *   - session: An optional `ClientSession` to use for this command
-    *
-    * - Throws:
-    *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
-    */
+     *   Drops this database.
+     * - Parameters:
+     *   - options: An optional `DropDatabaseOptions` to use when executing this command
+     *   - session: An optional `ClientSession` to use for this command
+     *
+     * - Throws:
+     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     */
     public func drop(options: DropDatabaseOptions? = nil, session: ClientSession? = nil) throws {
         let operation = DropDatabaseOperation(database: self, options: options)
         return try self._client.executeOperation(operation, session: session)
@@ -152,9 +154,11 @@ public struct MongoDatabase {
      *
      * - Returns: the requested `MongoCollection<T>`
      */
-    public func collection<T: Codable>(_ name: String,
-                                       withType: T.Type,
-                                       options: CollectionOptions? = nil) -> MongoCollection<T> {
+    public func collection<T: Codable>(
+        _ name: String,
+        withType _: T.Type,
+        options: CollectionOptions? = nil
+    ) -> MongoCollection<T> {
         return MongoCollection(name: name, database: self, options: options)
     }
 
@@ -174,9 +178,11 @@ public struct MongoDatabase {
      *   - `UserError.logicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
-    public func createCollection(_ name: String,
-                                 options: CreateCollectionOptions? = nil,
-                                 session: ClientSession? = nil) throws -> MongoCollection<Document> {
+    public func createCollection(
+        _ name: String,
+        options: CreateCollectionOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> MongoCollection<Document> {
         return try self.createCollection(name, withType: Document.self, options: options, session: session)
     }
 
@@ -199,10 +205,12 @@ public struct MongoDatabase {
      *   - `UserError.logicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
-    public func createCollection<T: Codable>(_ name: String,
-                                             withType type: T.Type,
-                                             options: CreateCollectionOptions? = nil,
-                                             session: ClientSession? = nil) throws -> MongoCollection<T> {
+    public func createCollection<T: Codable>(
+        _ name: String,
+        withType type: T.Type,
+        options: CreateCollectionOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> MongoCollection<T> {
         let operation = CreateCollectionOperation(database: self, name: name, type: type, options: options)
         return try self._client.executeOperation(operation, session: session)
     }
@@ -221,9 +229,11 @@ public struct MongoDatabase {
      *   - `userError.invalidArgumentError` if the options passed are an invalid combination.
      *   - `UserError.logicError` if the provided session is inactive.
      */
-    public func listCollections(_ filter: Document? = nil,
-                                options: ListCollectionsOptions? = nil,
-                                session: ClientSession? = nil) throws -> MongoCursor<CollectionSpecification> {
+    public func listCollections(
+        _ filter: Document? = nil,
+        options: ListCollectionsOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> MongoCursor<CollectionSpecification> {
         let operation = ListCollectionsOperation(database: self, nameOnly: false, filter: filter, options: options)
         guard case let .specs(result) = try self._client.executeOperation(operation, session: session) else {
             throw RuntimeError.internalError(message: "Invalid result")
@@ -245,9 +255,11 @@ public struct MongoDatabase {
      *   - `userError.invalidArgumentError` if the options passed are an invalid combination.
      *   - `UserError.logicError` if the provided session is inactive.
      */
-    public func listMongoCollections(_ filter: Document? = nil,
-                                     options: ListCollectionsOptions? = nil,
-                                     session: ClientSession? = nil) throws -> [MongoCollection<Document>] {
+    public func listMongoCollections(
+        _ filter: Document? = nil,
+        options: ListCollectionsOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> [MongoCollection<Document>] {
         return try self.listCollectionNames(filter, options: options, session: session).map { self.collection($0) }
     }
 
@@ -265,9 +277,11 @@ public struct MongoDatabase {
      *   - `userError.invalidArgumentError` if the options passed are an invalid combination.
      *   - `UserError.logicError` if the provided session is inactive.
      */
-    public func listCollectionNames(_ filter: Document? = nil,
-                                    options: ListCollectionsOptions? = nil,
-                                    session: ClientSession? = nil) throws -> [String] {
+    public func listCollectionNames(
+        _ filter: Document? = nil,
+        options: ListCollectionsOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> [String] {
         let operation = ListCollectionsOperation(database: self, nameOnly: true, filter: filter, options: options)
         guard case let .names(result) = try self._client.executeOperation(operation, session: session) else {
             throw RuntimeError.internalError(message: "Invalid result")
@@ -293,9 +307,11 @@ public struct MongoDatabase {
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     @discardableResult
-    public func runCommand(_ command: Document,
-                           options: RunCommandOptions? = nil,
-                           session: ClientSession? = nil) throws -> Document {
+    public func runCommand(
+        _ command: Document,
+        options: RunCommandOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> Document {
         let operation = RunCommandOperation(database: self, command: command, options: options)
         return try self._client.executeOperation(operation, session: session)
     }
@@ -318,9 +334,11 @@ public struct MongoDatabase {
      *   - https://docs.mongodb.com/manual/reference/system-collections/
      * - Note: Supported in MongoDB version 4.0+ only.
      */
-    public func watch(_ pipeline: [Document] = [],
-                      options: ChangeStreamOptions? = nil,
-                      session: ClientSession? = nil) throws -> ChangeStream<ChangeStreamEvent<Document>> {
+    public func watch(
+        _ pipeline: [Document] = [],
+        options: ChangeStreamOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> ChangeStream<ChangeStreamEvent<Document>> {
         return try self.watch(pipeline, options: options, session: session, withFullDocumentType: Document.self)
     }
 
@@ -346,15 +364,19 @@ public struct MongoDatabase {
      *   - https://docs.mongodb.com/manual/reference/system-collections/
      * - Note: Supported in MongoDB version 4.0+ only.
      */
-    public func watch<FullDocType: Codable>(_ pipeline: [Document] = [],
-                                            options: ChangeStreamOptions? = nil,
-                                            session: ClientSession? = nil,
-                                            withFullDocumentType: FullDocType.Type)
-                                        throws -> ChangeStream<ChangeStreamEvent<FullDocType>> {
-        return try self.watch(pipeline,
-                              options: options,
-                              session: session,
-                              withEventType: ChangeStreamEvent<FullDocType>.self)
+    public func watch<FullDocType: Codable>(
+        _ pipeline: [Document] = [],
+        options: ChangeStreamOptions? = nil,
+        session: ClientSession? = nil,
+        withFullDocumentType _: FullDocType.Type
+    )
+        throws -> ChangeStream<ChangeStreamEvent<FullDocType>> {
+        return try self.watch(
+            pipeline,
+            options: options,
+            session: session,
+            withEventType: ChangeStreamEvent<FullDocType>.self
+        )
     }
 
     /**
@@ -378,15 +400,19 @@ public struct MongoDatabase {
      *   - https://docs.mongodb.com/manual/reference/system-collections/
      * - Note: Supported in MongoDB version 4.0+ only.
      */
-    public func watch<EventType: Codable>(_ pipeline: [Document] = [],
-                                          options: ChangeStreamOptions? = nil,
-                                          session: ClientSession? = nil,
-                                          withEventType: EventType.Type) throws -> ChangeStream<EventType> {
+    public func watch<EventType: Codable>(
+        _ pipeline: [Document] = [],
+        options: ChangeStreamOptions? = nil,
+        session: ClientSession? = nil,
+        withEventType _: EventType.Type
+    ) throws -> ChangeStream<EventType> {
         let connection = try resolveConnection(client: self._client, session: session)
-        let operation = try WatchOperation<Document, EventType>(target: .database(self),
-                                                                pipeline: pipeline,
-                                                                options: options,
-                                                                stealing: connection)
+        let operation = try WatchOperation<Document, EventType>(
+            target: .database(self),
+            pipeline: pipeline,
+            options: options,
+            stealing: connection
+        )
         return try self._client.executeOperation(operation, session: session)
     }
 
