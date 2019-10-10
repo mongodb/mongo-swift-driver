@@ -81,6 +81,11 @@ public enum BSON {
         }
     }
 
+    /// Gets the `BSONType` of this `BSON`.
+    public var type: BSONType {
+        return self.bsonValue.bsonType
+    }
+
     /// If this `BSON` is an `.int32`, return it as an `Int32`. Otherwise, return nil.
     public var int32Value: Int32? {
         guard case let .int32(i) = self else {
