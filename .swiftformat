@@ -1,0 +1,34 @@
+# unnecessary
+--disable andOperator
+
+# put #if to the first column
+--ifdef "outdent"
+
+# 4 spaces
+--indent 4
+
+# 0..<3 vs 0 ..< 3
+--ranges "no-space"
+
+# always want explicit acl
+--disable redundantExtensionACL
+
+# always want explicit self
+--self insert
+
+# don't need semicolons
+--semicolons "never"
+
+--disable trailingCommas
+
+# first element of collection on newline after opening brace/bracket
+--wrapcollections "before-first"
+
+# keep first argument on same line as opening paren
+--wraparguments "before-first"
+
+# if x == 1 vs if 1 == x
+--disable yodaConditions
+
+# the ordering doesn't match linter's
+--disable specifiers

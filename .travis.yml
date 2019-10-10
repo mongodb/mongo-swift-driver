@@ -52,9 +52,9 @@ jobs:
     - stage: post-tests
       name: lint
       os: osx
-      install: ./Tests/Scripts/install_dependencies.sh swiftlint
+      install: ./Tests/Scripts/install_dependencies.sh swiftlint && ./Tests/Scripts/install_dependencies.sh swiftformat
       before_script: skip
-      script: ${PWD}/swiftlint/swiftlint --strict
+      script: ${PWD}/swiftlint/swiftlint --strict && ${PWD}/SwiftFormat/CommandLineTool/swiftformat --lint .
 
 
 install:

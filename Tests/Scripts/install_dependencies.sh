@@ -47,6 +47,13 @@ elif [[ $1 = "swiftlint" ]]
 then
 	install_from_gh swiftlint https://github.com/realm/SwiftLint/releases/download/0.32.0/portable_swiftlint.zip
 
+elif [[ $1 = "swiftformat" ]]
+then
+  git clone https://github.com/nicklockwood/SwiftFormat
+  pushd SwiftFormat
+  swift build -c release
+  popd
+
 else
 	echo Missing/unknown install option: "$1"
 	echo Usage: "./travis_install.sh libmongoc|mongodb|sourcery|swiftlint"
