@@ -24,7 +24,7 @@
 # first element of collection on newline after opening brace/bracket
 --wrapcollections "before-first"
 
-# keep first argument on same line as opening paren
+# put first argument on its own line
 --wraparguments "before-first"
 
 # if x == 1 vs if 1 == x

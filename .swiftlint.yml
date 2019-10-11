@@ -53,6 +53,7 @@ excluded:
   - Package.swift
   - Examples/*/Package.swift
   - Tests/LinuxMain.swift
+  - SwiftFormat
 
 trailing_whitespace:
   ignores_comments: false
