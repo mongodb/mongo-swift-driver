@@ -195,15 +195,15 @@ public struct AggregateOptions: Codable {
     /// Specifies a collation.
     public var collation: Document?
 
-    /// The maximum amount of time to allow the query to run.
-    public var maxTimeMS: Int64?
-
     /// Enables users to specify an arbitrary string to help trace the operation through
     /// the database profiler, currentOp and logs. The default is to not send a value.
     public var comment: String?
 
     /// The index hint to use for the aggregation. The hint does not apply to $lookup and $graphLookup stages.
     public var hint: Hint?
+
+    /// The maximum amount of time to allow the query to run.
+    public var maxTimeMS: Int64?
 
     /// A `ReadConcern` to use in read stages of this operation.
     public var readConcern: ReadConcern?
@@ -299,6 +299,9 @@ public struct FindOptions: Codable {
     /// Get partial results from a mongos if some shards are down (instead of throwing an error).
     public var allowPartialResults: Bool?
 
+    /// If a `CursorType` is provided, indicates whether it is `.tailableAwait`.
+    private var awaitData: Bool?
+
     /// The number of documents to return per batch.
     public var batchSize: Int32?
 
@@ -308,11 +311,34 @@ public struct FindOptions: Codable {
     /// Attaches a comment to the query.
     public var comment: String?
 
-    /// If a `CursorType` is provided, indicates whether it is `.tailable` or .`tailableAwait`.
-    private var tailable: Bool?
+    /// Indicates the type of cursor to use. This value includes both the tailable and awaitData options.
+    public var cursorType: CursorType? {
+        get {
+            if self.tailable == nil && self.awaitData == nil {
+                return nil
+            }
 
-    /// If a `CursorType` is provided, indicates whether it is `.tailableAwait`.
-    private var awaitData: Bool?
+            if self.tailable == true && self.awaitData == true {
+                return .tailableAwait
+            }
+
+            if self.tailable == true {
+                return .tailable
+            }
+
+            return .nonTailable
+        }
+
+        set(newCursorType) {
+            if newCursorType == nil {
+                self.tailable = nil
+                self.awaitData = nil
+            } else {
+                self.tailable = newCursorType == .tailable || newCursorType == .tailableAwait
+                self.awaitData = newCursorType == .tailableAwait
+            }
+        }
+    }
 
     /// A hint for the index to use.
     public var hint: Hint?
@@ -343,6 +369,14 @@ public struct FindOptions: Codable {
     /// Limits the fields to return for all matching documents.
     public var projection: Document?
 
+    /// A ReadConcern to use for this operation.
+    public var readConcern: ReadConcern?
+
+    // swiftlint:disable redundant_optional_initialization
+
+    /// A ReadPreference to use for this operation.
+    public var readPreference: ReadPreference? = nil
+
     /// If true, returns only the index keys in the resulting documents.
     public var returnKey: Bool?
 
@@ -356,42 +390,8 @@ public struct FindOptions: Codable {
     /// The order in which to return matching documents.
     public var sort: Document?
 
-    /// A ReadConcern to use for this operation.
-    public var readConcern: ReadConcern?
-
-    // swiftlint:disable redundant_optional_initialization
-
-    /// A ReadPreference to use for this operation.
-    public var readPreference: ReadPreference? = nil
-
-    /// Indicates the type of cursor to use. This value includes both the tailable and awaitData options.
-    public var cursorType: CursorType? {
-        get {
-            if self.tailable == nil && self.awaitData == nil {
-                return nil
-            }
-
-            if self.tailable == true && self.awaitData == true {
-                return .tailableAwait
-            }
-
-            if self.tailable == true {
-                return .tailable
-            }
-
-            return .nonTailable
-        }
-
-        set(newCursorType) {
-            if newCursorType == nil {
-                self.tailable = nil
-                self.awaitData = nil
-            } else {
-                self.tailable = newCursorType == .tailable || newCursorType == .tailableAwait
-                self.awaitData = newCursorType == .tailableAwait
-            }
-        }
-    }
+    /// If a `CursorType` is provided, indicates whether it is `.tailable` or .`tailableAwait`.
+    private var tailable: Bool?
 
     // swiftlint:enable redundant_optional_initialization
 

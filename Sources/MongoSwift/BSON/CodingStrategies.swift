@@ -17,19 +17,19 @@ public protocol CodingStrategyProvider {
 
 /// Options struct used for configuring the coding strategies on `BSONEncoder` and `BSONDecoder`.
 public struct BSONCoderOptions: CodingStrategyProvider {
+    public var dataCodingStrategy: DataCodingStrategy?
+
     public var dateCodingStrategy: DateCodingStrategy?
 
     public var uuidCodingStrategy: UUIDCodingStrategy?
 
-    public var dataCodingStrategy: DataCodingStrategy?
-
     /// Initializes a new `BSONCoderOptions`.
-    public init(dateCodingStrategy: DateCodingStrategy? = nil,
-                uuidCodingStrategy: UUIDCodingStrategy? = nil,
-                dataCodingStrategy: DataCodingStrategy? = nil) {
+    public init(dataCodingStrategy: DataCodingStrategy? = nil,
+                dateCodingStrategy: DateCodingStrategy? = nil,
+                uuidCodingStrategy: UUIDCodingStrategy? = nil) {
+        self.dataCodingStrategy = dataCodingStrategy
         self.dateCodingStrategy = dateCodingStrategy
         self.uuidCodingStrategy = uuidCodingStrategy
-        self.dataCodingStrategy = dataCodingStrategy
     }
 }
 

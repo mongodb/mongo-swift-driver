@@ -3,13 +3,6 @@ import mongoc
 
 /// Options to use when creating a `MongoClient`.
 public struct ClientOptions: CodingStrategyProvider, Decodable {
-    /// Determines whether the client should retry supported read operations.
-    /// TODO SWIFT-587 make this public.
-    internal var retryReads: Bool?
-
-    /// Determines whether the client should retry supported write operations.
-    public var retryWrites: Bool?
-
     /**
      * Indicates whether this client should publish command monitoring events. If true, the following event types will
      * be published, under the listed names (which are defined as static properties of `Notification.Name`):
@@ -18,6 +11,33 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
      * - `CommandFailedEvent`: `.commandFailed`
      */
     public var commandMonitoring: Bool = false
+
+    // swiftlint:disable redundant_optional_initialization
+
+    /// Specifies the `DataCodingStrategy` to use for BSON encoding/decoding operations performed by this client and any
+    /// databases or collections that derive from it.
+    public var dataCodingStrategy: DataCodingStrategy? = nil
+
+    /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this client and any
+    /// databases or collections that derive from it.
+    public var dateCodingStrategy: DateCodingStrategy? = nil
+
+    /// If command and/or server monitoring is enabled, indicates the `NotificationCenter` events are posted to. If one
+    /// is not specified, the application's default `NotificationCenter` will be used.
+    public var notificationCenter: NotificationCenter?
+
+    /// Specifies a ReadConcern to use for the client.
+    public var readConcern: ReadConcern?
+
+    /// Specifies a ReadPreference to use for the client.
+    public var readPreference: ReadPreference? = nil
+
+    /// Determines whether the client should retry supported read operations.
+    /// TODO SWIFT-587 make this public.
+    internal var retryReads: Bool?
+
+    /// Determines whether the client should retry supported write operations.
+    public var retryWrites: Bool?
 
     /**
      * Indicates whether this client should publish command monitoring events. If true, the following event types will
@@ -34,135 +54,115 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
      */
     public var serverMonitoring: Bool = false
 
-    /// If command and/or server monitoring is enabled, indicates the `NotificationCenter` events are posted to. If one
-    /// is not specified, the application's default `NotificationCenter` will be used.
-    public var notificationCenter: NotificationCenter?
-
-    /// Specifies a ReadConcern to use for the client.
-    public var readConcern: ReadConcern?
-
-    /// Specifies a WriteConcern to use for the client.
-    public var writeConcern: WriteConcern?
-
-    // swiftlint:disable redundant_optional_initialization
-
-    /// Specifies a ReadPreference to use for the client.
-    public var readPreference: ReadPreference? = nil
-
-    /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this client and any
-    /// databases or collections that derive from it.
-    public var dateCodingStrategy: DateCodingStrategy? = nil
+    /// Specifies the TLS/SSL options to use for database connections.
+    public var tlsOptions: TLSOptions? = nil
 
     /// Specifies the `UUIDCodingStrategy` to use for BSON encoding/decoding operations performed by this client and any
     /// databases or collections that derive from it.
     public var uuidCodingStrategy: UUIDCodingStrategy? = nil
 
-    /// Specifies the `DataCodingStrategy` to use for BSON encoding/decoding operations performed by this client and any
-    /// databases or collections that derive from it.
-    public var dataCodingStrategy: DataCodingStrategy? = nil
-
-    /// Specifies the TLS/SSL options to use for database connections.
-    public var tlsOptions: TLSOptions? = nil
-
     // swiftlint:enable redundant_optional_initialization
+
+    /// Specifies a WriteConcern to use for the client.
+    public var writeConcern: WriteConcern?
 
     private enum CodingKeys: CodingKey {
         case retryWrites, readConcern, writeConcern
     }
 
     /// Convenience initializer allowing any/all to be omitted or optional.
-    public init(readConcern: ReadConcern? = nil,
+    public init(commandMonitoring: Bool = false,
+                dataCodingStrategy: DataCodingStrategy? = nil,
+                dateCodingStrategy: DateCodingStrategy? = nil,
+                notificationCenter: NotificationCenter? = nil,
+                readConcern: ReadConcern? = nil,
                 readPreference: ReadPreference? = nil,
                 retryWrites: Bool? = nil,
-                writeConcern: WriteConcern? = nil,
-                commandMonitoring: Bool = false,
                 serverMonitoring: Bool = false,
-                notificationCenter: NotificationCenter? = nil,
-                dateCodingStrategy: DateCodingStrategy? = nil,
+                tlsOptions: TLSOptions? = nil,
                 uuidCodingStrategy: UUIDCodingStrategy? = nil,
-                dataCodingStrategy: DataCodingStrategy? = nil,
-                tlsOptions: TLSOptions? = nil) {
-        self.retryWrites = retryWrites
+                writeConcern: WriteConcern? = nil) {
         self.commandMonitoring = commandMonitoring
-        self.serverMonitoring = serverMonitoring
+        self.dataCodingStrategy = dataCodingStrategy
+        self.dateCodingStrategy = dateCodingStrategy
         self.notificationCenter = notificationCenter
         self.readConcern = readConcern
         self.readPreference = readPreference
-        self.writeConcern = writeConcern
-        self.dateCodingStrategy = dateCodingStrategy
-        self.uuidCodingStrategy = uuidCodingStrategy
-        self.dataCodingStrategy = dataCodingStrategy
+        self.retryWrites = retryWrites
+        self.serverMonitoring = serverMonitoring
         self.tlsOptions = tlsOptions
+        self.uuidCodingStrategy = uuidCodingStrategy
+        self.writeConcern = writeConcern
     }
 }
 
 /// Options to use when retrieving a `MongoDatabase` from a `MongoClient`.
 public struct DatabaseOptions: CodingStrategyProvider {
+    /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this database and
+    /// any collections that derive from it.
+    public var dataCodingStrategy: DataCodingStrategy?
+
+    /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this database and
+    /// any collections that derive from it.
+    public var dateCodingStrategy: DateCodingStrategy?
+
     /// A read concern to set on the retrieved database.
     public var readConcern: ReadConcern?
 
     /// A read preference to set on the retrieved database.
     public var readPreference: ReadPreference?
 
-    /// A write concern to set on the retrieved database.
-    public var writeConcern: WriteConcern?
-
-    /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this database and
-    /// any collections that derive from it.
-    public var dateCodingStrategy: DateCodingStrategy?
-
     /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this database and
     /// any collections that derive from it.
     public var uuidCodingStrategy: UUIDCodingStrategy?
 
-    /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this database and
-    /// any collections that derive from it.
-    public var dataCodingStrategy: DataCodingStrategy?
+    /// A write concern to set on the retrieved database.
+    public var writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all arguments to be omitted or optional.
-    public init(readConcern: ReadConcern? = nil,
-                readPreference: ReadPreference? = nil,
-                writeConcern: WriteConcern? = nil,
+    public init(dataCodingStrategy: DataCodingStrategy? = nil,
                 dateCodingStrategy: DateCodingStrategy? = nil,
+                readConcern: ReadConcern? = nil,
+                readPreference: ReadPreference? = nil,
                 uuidCodingStrategy: UUIDCodingStrategy? = nil,
-                dataCodingStrategy: DataCodingStrategy? = nil) {
+                writeConcern: WriteConcern? = nil) {
+        self.dataCodingStrategy = dataCodingStrategy
+        self.dateCodingStrategy = dateCodingStrategy
         self.readConcern = readConcern
         self.readPreference = readPreference
-        self.writeConcern = writeConcern
-        self.dateCodingStrategy = dateCodingStrategy
         self.uuidCodingStrategy = uuidCodingStrategy
-        self.dataCodingStrategy = dataCodingStrategy
+        self.writeConcern = writeConcern
     }
 }
 
 /// Options used to configure TLS/SSL connections to the database.
 public struct TLSOptions {
+    /// Indicates whether invalid hostnames are allowed. By default this is set to false.
+    public var allowInvalidHostnames: Bool?
+
+    /// Specifies the path to the certificate authority file.
+    public var caFile: URL?
+
     /// Specifies the path to the client certificate key file.
     public var pemFile: URL?
 
     /// Specifies the client certificate key password.
     public var pemPassword: String?
 
-    /// Specifies the path to the certificate authority file.
-    public var caFile: URL?
-
     /// Indicates whether invalid certificates are allowed. By default this is set to false.
     public var weakCertValidation: Bool?
 
-    /// Indicates whether invalid hostnames are allowed. By default this is set to false.
-    public var allowInvalidHostnames: Bool?
-
     /// Convenience initializer allowing any/all arguments to be omitted or optional.
-    public init(pemFile: URL? = nil,
-                pemPassword: String? = nil,
+    public init(allowInvalidHostnames: Bool? = nil,
                 caFile: URL? = nil,
-                weakCertValidation: Bool? = nil,
-                allowInvalidHostnames: Bool? = nil) {
+                pemFile: URL? = nil,
+                pemPassword: String? = nil,
+                weakCertValidation: Bool? = nil) {
+        self.allowInvalidHostnames = allowInvalidHostnames
+        self.caFile = caFile
         self.pemFile = pemFile
         self.pemPassword = pemPassword
-        self.caFile = caFile
         self.weakCertValidation = weakCertValidation
-        self.allowInvalidHostnames = allowInvalidHostnames
     }
 }
 

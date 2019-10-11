@@ -2,66 +2,67 @@ import mongoc
 
 /// Options to use when executing a `createCollection` command on a `MongoDatabase`.
 public struct CreateCollectionOptions: Codable, CodingStrategyProvider {
-    /// Indicates whether this will be a capped collection.
-    public var capped: Bool?
-
     /// Whether or not this collection will automatically generate an index on _id.
     public var autoIndexId: Bool?
 
-    /// Maximum size, in bytes, of this collection (if capped).
-    public var size: Int64?
-
-    /// Maximum number of documents allowed in the collection (if capped).
-    public var max: Int64?
-
-    /// Specifies storage engine configuration for this collection.
-    public var storageEngine: Document?
-
-    /// What validator should be used for the collection.
-    public var validator: Document?
-
-    /// Determines how strictly MongoDB applies the validation rules to existing documents during an update.
-    public var validationLevel: String?
-
-    /// Determines whether to error on invalid documents or just warn about the violations but allow invalid documents
-    /// to be inserted.
-    public var validationAction: String?
-
-    /// Specify a default configuration for indexes created on this collection.
-    public var indexOptionDefaults: Document?
-
-    /// The name of the source collection or view from which to create the view.
-    public var viewOn: String?
-
-    /// An array consisting of aggregation pipeline stages. When used with `viewOn`, will create the view by applying
-    /// this pipeline to the source collection or view.
-    public var pipeline: [Document]?
+    /// Indicates whether this will be a capped collection.
+    public var capped: Bool?
 
     /// Specifies the default collation for the collection.
     public var collation: Document?
 
-    /// A write concern to use when executing this command. To set a read or write concern for the collection itself,
-    /// retrieve the collection using `MongoDatabase.collection`.
-    public var writeConcern: WriteConcern?
-
     // swiftlint:disable redundant_optional_initialization
     // to get synthesized decodable conformance for the struct, these strategies need default values.
+
+    /// Specifies the `DataCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
+    /// It is the responsibility of the user to ensure that any `Data`s already stored in this collection can be
+    /// decoded using this strategy.
+    public var dataCodingStrategy: DataCodingStrategy? = nil
 
     /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
     /// It is the responsibility of the user to ensure that any `Date`s already stored in this collection can be
     /// decoded using this strategy.
     public var dateCodingStrategy: DateCodingStrategy? = nil
 
+    /// Specify a default configuration for indexes created on this collection.
+    public var indexOptionDefaults: Document?
+
+    /// Maximum number of documents allowed in the collection (if capped).
+    public var max: Int64?
+
+    /// An array consisting of aggregation pipeline stages. When used with `viewOn`, will create the view by applying
+    /// this pipeline to the source collection or view.
+    public var pipeline: [Document]?
+
+    /// Maximum size, in bytes, of this collection (if capped).
+    public var size: Int64?
+
+    /// Specifies storage engine configuration for this collection.
+    public var storageEngine: Document?
+
     /// Specifies the `UUIDCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
     /// It is the responsibility of the user to ensure that any `UUID`s already stored in this collection can be
     /// decoded using this strategy.
     public var uuidCodingStrategy: UUIDCodingStrategy? = nil
 
-    /// Specifies the `DataCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
-    /// It is the responsibility of the user to ensure that any `Data`s already stored in this collection can be
-    /// decoded using this strategy.
-    public var dataCodingStrategy: DataCodingStrategy? = nil
     // swiftlint:enable redundant_optional_initialization
+
+    /// Determines whether to error on invalid documents or just warn about the violations but allow invalid documents
+    /// to be inserted.
+    public var validationAction: String?
+
+    /// Determines how strictly MongoDB applies the validation rules to existing documents during an update.
+    public var validationLevel: String?
+
+    /// What validator should be used for the collection.
+    public var validator: Document?
+
+    /// The name of the source collection or view from which to create the view.
+    public var viewOn: String?
+
+    /// A write concern to use when executing this command. To set a read or write concern for the collection itself,
+    /// retrieve the collection using `MongoDatabase.collection`.
+    public var writeConcern: WriteConcern?
 
     private enum CodingKeys: String, CodingKey {
         case capped, autoIndexId, size, max, storageEngine, validator, validationLevel, validationAction,
@@ -72,35 +73,35 @@ public struct CreateCollectionOptions: Codable, CodingStrategyProvider {
     public init(autoIndexId: Bool? = nil,
                 capped: Bool? = nil,
                 collation: Document? = nil,
+                dataCodingStrategy: DataCodingStrategy? = nil,
+                dateCodingStrategy: DateCodingStrategy? = nil,
                 indexOptionDefaults: Document? = nil,
                 max: Int64? = nil,
                 pipeline: [Document]? = nil,
                 size: Int64? = nil,
                 storageEngine: Document? = nil,
+                uuidCodingStrategy: UUIDCodingStrategy? = nil,
                 validationAction: String? = nil,
                 validationLevel: String? = nil,
                 validator: Document? = nil,
                 viewOn: String? = nil,
-                writeConcern: WriteConcern? = nil,
-                dateCodingStrategy: DateCodingStrategy? = nil,
-                uuidCodingStrategy: UUIDCodingStrategy? = nil,
-                dataCodingStrategy: DataCodingStrategy? = nil) {
+                writeConcern: WriteConcern? = nil) {
         self.autoIndexId = autoIndexId
         self.capped = capped
         self.collation = collation
+        self.dataCodingStrategy = dataCodingStrategy
+        self.dateCodingStrategy = dateCodingStrategy
         self.indexOptionDefaults = indexOptionDefaults
         self.max = max
         self.pipeline = pipeline
         self.size = size
         self.storageEngine = storageEngine
+        self.uuidCodingStrategy = uuidCodingStrategy
         self.validationAction = validationAction
         self.validationLevel = validationLevel
         self.validator = validator
         self.viewOn = viewOn
         self.writeConcern = writeConcern
-        self.dateCodingStrategy = dateCodingStrategy
-        self.uuidCodingStrategy = uuidCodingStrategy
-        self.dataCodingStrategy = dataCodingStrategy
     }
 }
 
@@ -129,9 +130,9 @@ internal struct CreateCollectionOperation<T: Codable>: Operation {
             mongoc_collection_destroy(collection)
         }
 
-        let collectionOptions = CollectionOptions(dateCodingStrategy: self.options?.dateCodingStrategy,
-                                                  uuidCodingStrategy: self.options?.uuidCodingStrategy,
-                                                  dataCodingStrategy: self.options?.dataCodingStrategy)
+        let collectionOptions = CollectionOptions(dataCodingStrategy: self.options?.dataCodingStrategy,
+                                                  dateCodingStrategy: self.options?.dateCodingStrategy,
+                                                  uuidCodingStrategy: self.options?.uuidCodingStrategy)
 
         return MongoCollection(name: self.name, database: self.database, options: collectionOptions)
     }

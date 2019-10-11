@@ -234,6 +234,12 @@ extension MongoDatabaseTests {
     ]
 }
 
+extension OptionsTests {
+    static var allTests = [
+        ("testOptionsAlphabeticalOrder", testOptionsAlphabeticalOrder),
+    ]
+}
+
 extension ReadPreferenceTests {
     static var allTests = [
         ("testMode", testMode),
@@ -293,6 +299,7 @@ XCTMain([
     testCase(MongoCollection_IndexTests.allTests),
     testCase(MongoCursorTests.allTests),
     testCase(MongoDatabaseTests.allTests),
+    testCase(OptionsTests.allTests),
     testCase(ReadPreferenceTests.allTests),
     testCase(ReadWriteConcernTests.allTests),
     testCase(RetryableWritesTests.allTests),

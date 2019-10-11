@@ -2,43 +2,43 @@ import mongoc
 
 /// Options to set on a retrieved `MongoCollection`.
 public struct CollectionOptions: CodingStrategyProvider {
-    /// A read concern to set on the returned collection.
-    public var readConcern: ReadConcern?
-
-    /// A read preference to set on the returned collection.
-    public var readPreference: ReadPreference?
-
-    /// A write concern to set on the returned collection.
-    public var writeConcern: WriteConcern?
+    /// Specifies the `DataCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
+    /// It is the responsibility of the user to ensure that any `Data`s already stored in this collection can be
+    /// decoded using this strategy.
+    public var dataCodingStrategy: DataCodingStrategy?
 
     /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
     /// It is the responsibility of the user to ensure that any `Date`s already stored in this collection can be
     /// decoded using this strategy.
     public var dateCodingStrategy: DateCodingStrategy?
 
+    /// A read concern to set on the returned collection.
+    public var readConcern: ReadConcern?
+
+    /// A read preference to set on the returned collection.
+    public var readPreference: ReadPreference?
+
     /// Specifies the `UUIDCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
     /// It is the responsibility of the user to ensure that any `UUID`s already stored in this collection can be
     /// decoded using this strategy.
     public var uuidCodingStrategy: UUIDCodingStrategy?
 
-    /// Specifies the `DataCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
-    /// It is the responsibility of the user to ensure that any `Data`s already stored in this collection can be
-    /// decoded using this strategy.
-    public var dataCodingStrategy: DataCodingStrategy?
+    /// A write concern to set on the returned collection.
+    public var writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all arguments to be omitted or optional.
-    public init(readConcern: ReadConcern? = nil,
-                readPreference: ReadPreference? = nil,
-                writeConcern: WriteConcern? = nil,
+    public init(dataCodingStrategy: DataCodingStrategy? = nil,
                 dateCodingStrategy: DateCodingStrategy? = nil,
+                readConcern: ReadConcern? = nil,
+                readPreference: ReadPreference? = nil,
                 uuidCodingStrategy: UUIDCodingStrategy? = nil,
-                dataCodingStrategy: DataCodingStrategy? = nil) {
+                writeConcern: WriteConcern? = nil) {
+        self.dataCodingStrategy = dataCodingStrategy
+        self.dateCodingStrategy = dateCodingStrategy
         self.readConcern = readConcern
         self.readPreference = readPreference
-        self.writeConcern = writeConcern
-        self.dateCodingStrategy = dateCodingStrategy
         self.uuidCodingStrategy = uuidCodingStrategy
-        self.dataCodingStrategy = dataCodingStrategy
+        self.writeConcern = writeConcern
     }
 }
 

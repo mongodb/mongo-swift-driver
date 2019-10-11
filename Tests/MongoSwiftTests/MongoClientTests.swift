@@ -174,9 +174,9 @@ final class MongoClientTests: MongoSwiftTestCase {
 
         // Customize strategies on the client
         let custom = ClientOptions(
+                dataCodingStrategy: .base64,
                 dateCodingStrategy: .secondsSince1970,
-                uuidCodingStrategy: .deferredToUUID,
-                dataCodingStrategy: .base64
+                uuidCodingStrategy: .deferredToUUID
         )
         let clientCustom = try MongoClient.makeTestClient(options: custom)
         let collClient = clientCustom.db(defaultDb.name).collection(collDoc.name, withType: Wrapper.self)
@@ -194,9 +194,9 @@ final class MongoClientTests: MongoSwiftTestCase {
 
         // Construct db with differing strategies from client
         let dbOpts = DatabaseOptions(
+                dataCodingStrategy: .binary,
                 dateCodingStrategy: .deferredToDate,
-                uuidCodingStrategy: .binary,
-                dataCodingStrategy: .binary
+                uuidCodingStrategy: .binary
         )
         let dbCustom = clientCustom.db(defaultDb.name, options: dbOpts)
         let collDb = dbCustom.collection(collClient.name, withType: Wrapper.self)
@@ -214,9 +214,9 @@ final class MongoClientTests: MongoSwiftTestCase {
 
         // Construct collection with differing strategies from database
         let dbCollOpts = CollectionOptions(
+                dataCodingStrategy: .base64,
                 dateCodingStrategy: .millisecondsSince1970,
-                uuidCodingStrategy: .deferredToUUID,
-                dataCodingStrategy: .base64
+                uuidCodingStrategy: .deferredToUUID
         )
         let collCustom = dbCustom.collection(collClient.name, withType: Wrapper.self, options: dbCollOpts)
 
