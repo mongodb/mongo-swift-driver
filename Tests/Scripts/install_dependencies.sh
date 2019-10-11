@@ -56,5 +56,5 @@ then
 
 else
 	echo Missing/unknown install option: "$1"
-	echo Usage: "./travis_install.sh libmongoc|mongodb|sourcery|swiftlint"
+	echo Usage: "./travis_install.sh libmongoc|mongodb|sourcery|swiftlint|swiftformat"
 fi

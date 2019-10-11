@@ -52,6 +52,7 @@ jobs:
     - stage: post-tests
       name: lint
       os: osx
+      osx_image: xcode11
       install: ./Tests/Scripts/install_dependencies.sh swiftlint && ./Tests/Scripts/install_dependencies.sh swiftformat
       before_script: skip
       script: ${PWD}/swiftlint/swiftlint --strict && ${PWD}/SwiftFormat/CommandLineTool/swiftformat --lint .
