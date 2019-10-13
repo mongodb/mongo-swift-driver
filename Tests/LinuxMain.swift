@@ -5,6 +5,13 @@
 @testable import MongoSwiftTests
 import XCTest
 
+extension AuthTests {
+    static var allTests = [
+        ("testAuthConnectionStrings", testAuthConnectionStrings),
+        ("testAuthProseTests", testAuthProseTests),
+    ]
+}
+
 extension BSONValueTests {
     static var allTests = [
         ("testInvalidDecimal128", testInvalidDecimal128),
@@ -283,6 +290,7 @@ extension SDAMTests {
 }
 
 XCTMain([
+    testCase(AuthTests.allTests),
     testCase(BSONValueTests.allTests),
     testCase(ChangeStreamSpecTests.allTests),
     testCase(ChangeStreamTests.allTests),
