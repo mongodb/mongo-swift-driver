@@ -47,7 +47,8 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
             return
         }
 
-        let tests = try retrieveSpecTestFiles(specName: "initial-dns-seedlist-discovery", asType: DNSSeedlistTestCase.self)
+        let tests = try retrieveSpecTestFiles(specName: "initial-dns-seedlist-discovery",
+                                              asType: DNSSeedlistTestCase.self)
         for (filename, testCase) in tests {
             // TODO SWIFT-593: run these tests
             guard !["encoded-userinfo-and-db.json", "uri-with-auth.json"].contains(filename) else {

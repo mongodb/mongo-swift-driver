@@ -50,7 +50,7 @@ final class CrudTests: MongoSwiftTestCase {
     }
 
     // Run all the tests at the /read path
-    func testReads() throws {        
+    func testReads() throws {
         try doTests(forSubdirectory: "read")
     }
 

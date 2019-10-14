@@ -527,7 +527,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
     }
 
     func testConnectionStrings() throws {
-        let testFiles = try retrieveSpecTestFiles(specName: "read-write-concern", 
+        let testFiles = try retrieveSpecTestFiles(specName: "read-write-concern",
                                                   subdirectory: "connection-string",
                                                   asType: Document.self)
         for (_, asDocument) in testFiles {
@@ -564,9 +564,9 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
 
     func testDocuments() throws {
         let encoder = BSONEncoder()
-        let testFiles = try retrieveSpecTestFiles(specName: "read-write-concern", 
-                                          subdirectory: "document",
-                                          asType: Document.self)
+        let testFiles = try retrieveSpecTestFiles(specName: "read-write-concern",
+                                                  subdirectory: "document",
+                                                  asType: Document.self)
 
         for (_, asDocument) in testFiles {
             let tests: [Document] = try asDocument.get("tests")
