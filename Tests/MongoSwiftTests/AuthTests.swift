@@ -224,6 +224,9 @@ final class AuthTests: MongoSwiftTestCase {
         }
     }
 
+    // TODO SWIFT-640: spec says "Drivers that allow specifying auth parameters in code as well as via connection
+    // string should test both for the test cases described below". Once we support setting auth options via options
+    // struct we should test that here too.
     func testAuthProseTests() throws {
         // 1. Create three test users, one with only SHA-1, one with only SHA-256 and one with both.
         let testUsers = [
