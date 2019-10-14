@@ -3,12 +3,12 @@ import mongoc
 internal let ClosedCursorError = UserError.logicError(message: "Cannot advance a completed or failed cursor.")
 
 /// A MongoDB cursor.
-public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
+public class SyncMongoCursor<T: Codable>: Sequence, IteratorProtocol {
     /// Enum for tracking the state of a cursor.
     internal enum State {
         /// Indicates that the cursor is still open. Stores a pointer to the `mongoc_cursor_t`, along with the source
         /// connection, client, and possibly session to ensure they are kept alive as long as the cursor is.
-        case open(cursor: OpaquePointer, connection: Connection, client: MongoClient, session: ClientSession?)
+        case open(cursor: OpaquePointer, connection: Connection, client: SyncMongoClient, session: SyncClientSession?)
         case closed
     }
 
@@ -22,7 +22,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     /// Indicates whether this is a tailable cursor.
     private let cursorType: CursorType
 
-    /// Decoder from the `MongoCollection` or `MongoDatabase` that created this cursor.
+    /// Decoder from the client, database, or collection that created this cursor.
     internal let decoder: BSONDecoder
 
     /**
@@ -49,15 +49,15 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     }
 
     /**
-     * Initializes a new `MongoCursor` instance. Not meant to be instantiated directly by a user.
+     * Initializes a new `SyncMongoCursor` instance. Not meant to be instantiated directly by a user.
      *
      * - Throws:
      *   - `UserError.invalidArgumentError` if the options passed to the command that generated this cursor formed an
      *     invalid combination.
      */
-    internal init(client: MongoClient,
+    internal init(client: SyncMongoClient,
                   decoder: BSONDecoder,
-                  session: ClientSession?,
+                  session: SyncClientSession?,
                   cursorType: CursorType? = nil,
                   initializer: (Connection) -> OpaquePointer) throws {
         let connection = try resolveConnection(client: client, session: session)
