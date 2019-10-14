@@ -235,7 +235,7 @@ final class AuthTests: MongoSwiftTestCase {
             TestUser(username: "both", password: "both", mechanisms: [.scramSHA1, .scramSHA256])
         ]
 
-        let admin = try MongoClient.makeTestClient().db("admin")
+        let admin = try SyncMongoClient.makeTestClient().db("admin")
         defer { _ = try? admin.runCommand(["dropAllUsersFromDatabase": 1]) }
         for user in testUsers {
             try admin.runCommand(user.createCmd)
@@ -248,13 +248,13 @@ final class AuthTests: MongoSwiftTestCase {
             // - Explicitly specifying each mechanism the user supports.
             try user.mechanisms.forEach { mech in
                 let connStr = try user.addToConnString(connString, mechanism: mech)
-                let client = try MongoClient.makeTestClient(connStr)
+                let client = try SyncMongoClient.makeTestClient(connStr)
                 expect(try client.db("admin").runCommand(["dbstats": 1])).toNot(throwError())
             }
 
             // - Specifying no mechanism and relying on mechanism negotiation.
             let connStrNoMech = try user.addToConnString(connString)
-            let clientNoMech = try MongoClient.makeTestClient(connStrNoMech)
+            let clientNoMech = try SyncMongoClient.makeTestClient(connStrNoMech)
             expect(try clientNoMech.db("admin").runCommand(["dbstats": 1])).toNot(throwError())
 
             // 3. For test users that support only one mechanism, verify that explicitly specifying the other mechanism
@@ -262,7 +262,7 @@ final class AuthTests: MongoSwiftTestCase {
             if user.mechanisms.count == 1 {
                 let wrongMech: AuthMechanism = user.mechanisms[0] == .scramSHA1 ? .scramSHA256 : .scramSHA1
                 let connStrWrongMech = try user.addToConnString(connString, mechanism: wrongMech)
-                let clientWrongMech = try MongoClient.makeTestClient(connStrWrongMech)
+                let clientWrongMech = try SyncMongoClient.makeTestClient(connStrWrongMech)
                 expect(try clientWrongMech.db("admin").runCommand(["dbstats": 1]))
                     .to(throwError(RuntimeError.authenticationError(message: "")))
             }
@@ -292,7 +292,7 @@ final class AuthTests: MongoSwiftTestCase {
 
         for user in saslPrepConnectUsers {
             let connStr = try user.addToConnString(connString, mechanism: user.mechanisms[0])
-            let client = try MongoClient.makeTestClient(connStr)
+            let client = try SyncMongoClient.makeTestClient(connStr)
             expect(try client.db("admin").runCommand(["dbstats": 1])).toNot(throwError())
         }
 
