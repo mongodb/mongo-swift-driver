@@ -292,5 +292,9 @@ final class AuthTests: MongoSwiftTestCase {
             let client = try MongoClient.makeTestClient(connStr)
             expect(try client.db("admin").runCommand(["dbstats": 1])).toNot(throwError())
         }
+
+        // TODO whenever auth is implemented in pure Swift - implement this test case:
+        // For SCRAM-SHA-1 and SCRAM-SHA-256, test that the minimum iteration count is respected. This may be done via
+        // unit testing of an underlying SCRAM library.
     }
 }
