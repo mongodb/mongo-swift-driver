@@ -1,6 +1,6 @@
 import mongoc
 
-/// Options to use when creating a new index on a `MongoCollection`.
+/// Options to use when creating a new index on a `MongoCollection` or a `SyncMongoCollection`.
 public struct CreateIndexOptions: Encodable {
     /// The maximum amount of time to allow the query to run - enforced server-side.
     public var maxTimeMS: Int64?
@@ -17,17 +17,17 @@ public struct CreateIndexOptions: Encodable {
 
 /// An operation corresponding to a "createIndexes" command.
 internal struct CreateIndexesOperation<T: Codable>: Operation {
-    private let collection: MongoCollection<T>
+    private let collection: SyncMongoCollection<T>
     private let models: [IndexModel]
     private let options: CreateIndexOptions?
 
-    internal init(collection: MongoCollection<T>, models: [IndexModel], options: CreateIndexOptions?) {
+    internal init(collection: SyncMongoCollection<T>, models: [IndexModel], options: CreateIndexOptions?) {
         self.collection = collection
         self.models = models
         self.options = options
     }
 
-    internal func execute(using connection: Connection, session: ClientSession?) throws -> [String] {
+    internal func execute(using connection: Connection, session: SyncClientSession?) throws -> [String] {
         var indexData = [Document]()
         for index in self.models {
             var indexDoc = try self.collection.encoder.encode(index)
