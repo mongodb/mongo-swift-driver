@@ -35,8 +35,8 @@ public struct BSONCoderOptions: CodingStrategyProvider {
 
 /**
  * Enum representing the various encoding/decoding strategy pairs for `Date`s.
- * Set these on a `MongoClient`, `MongoDatabase`, or `MongoCollection` so that the strategies will be applied when
- * converting `Date`s between their BSON representations and their representations in (non `Document`) `Codable` types.
+ * Set these on a client, database, or collection so that the strategies will be applied when converting `Date`s
+ * between their BSON representations and their representations in (non `Document`) `Codable` types.
  *
  * As per the BSON specification, the default strategy is to encode `Date`s as BSON datetime objects.
  *
@@ -120,8 +120,8 @@ public enum DateCodingStrategy: RawRepresentable {
 
 /**
  * Enum representing the various encoding/decoding strategy pairs for `UUID`s.
- * Set these on a `MongoClient`, `MongoDatabase`, or `MongoCollection` so that the strategies will be applied when
- * converting `UUID`s between their BSON representations and their representations in (non `Document`) `Codable` types.
+ * Set these on a client, database, or collection so that the strategies will be applied when converting `UUID`s
+ * between their BSON representations and their representations in (non `Document`) `Codable` types.
  *
  * As per the BSON specification, the default strategy is to encode `UUID`s as BSON binary types with the UUID
  * subtype.
@@ -160,8 +160,8 @@ public enum UUIDCodingStrategy: RawRepresentable {
 
 /**
  * Enum representing the various encoding/decoding strategy pairs for `Data`s.
- * Set these on a `MongoClient`, `MongoDatabase`, or `MongoCollection` so that the strategies will be applied when
- * converting `Data`s between their BSON representations and their representations in (non `Document`) `Codable` types.
+ * Set these on a client, database, or collection so that the strategies will be applied when converting `Data`s
+ * between their BSON representations and their representations in (non `Document`) `Codable` types.
  *
  * As per the BSON specification, the default strategy is to encode `Data`s as BSON binary types with the generic
  * binary subtype.
