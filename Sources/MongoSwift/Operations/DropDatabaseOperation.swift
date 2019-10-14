@@ -1,16 +1,16 @@
 import mongoc
 
-/// An operation corresponding to a "drop" command on a MongoDatabase.
+/// An operation corresponding to a "drop" command on a database.
 internal struct DropDatabaseOperation: Operation {
-    private let database: MongoDatabase
+    private let database: SyncMongoDatabase
     private let options: DropDatabaseOptions?
 
-    internal init(database: MongoDatabase, options: DropDatabaseOptions?) {
+    internal init(database: SyncMongoDatabase, options: DropDatabaseOptions?) {
         self.database = database
         self.options = options
     }
 
-    internal func execute(using connection: Connection, session: ClientSession?) throws {
+    internal func execute(using connection: Connection, session: SyncClientSession?) throws {
         let command: Document = ["dropDatabase": 1]
         let opts = try encodeOptions(options: self.options, session: session)
 

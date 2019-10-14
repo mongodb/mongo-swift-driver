@@ -2,11 +2,11 @@
 import Nimble
 import XCTest
 
-private var _client: MongoClient?
+private var _client: SyncMongoClient?
 
 final class MongoCollection_IndexTests: MongoSwiftTestCase {
     var collName: String = ""
-    var coll: MongoCollection<Document>!
+    var coll: SyncMongoCollection<Document>!
     let doc1: Document = ["_id": 1, "cat": "dog"]
     let doc2: Document = ["_id": 2, "cat": "cat"]
 
@@ -14,7 +14,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
     override class func setUp() {
         super.setUp()
         do {
-            _client = try MongoClient.makeTestClient()
+            _client = try SyncMongoClient.makeTestClient()
         } catch {
             print("Setup failed: \(error)")
         }
@@ -219,7 +219,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         let center = NotificationCenter.default
         let maxTimeMS: Int64 = 1000
 
-        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
+        let client = try SyncMongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
         let db = client.db(type(of: self).testDatabase)
 
         let collection = db.collection("collection")

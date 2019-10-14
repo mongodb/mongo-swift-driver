@@ -1,6 +1,6 @@
 import mongoc
 
-/// Options to use when running a command against a `MongoDatabase`.
+/// Options to use when running a command against a `MongoDatabase` or a `SyncMongoDatabase`.
 public struct RunCommandOptions: Encodable {
     /// An optional `ReadConcern` to use for this operation. This option should only be used when executing a command
     /// that reads.
@@ -30,17 +30,17 @@ public struct RunCommandOptions: Encodable {
 
 /// An operation corresponding to a `runCommand` call.
 internal struct RunCommandOperation: Operation {
-    private let database: MongoDatabase
+    private let database: SyncMongoDatabase
     private let command: Document
     private let options: RunCommandOptions?
 
-    internal init(database: MongoDatabase, command: Document, options: RunCommandOptions?) {
+    internal init(database: SyncMongoDatabase, command: Document, options: RunCommandOptions?) {
         self.database = database
         self.command = command
         self.options = options
     }
 
-    internal func execute(using connection: Connection, session: ClientSession?) throws -> Document {
+    internal func execute(using connection: Connection, session: SyncClientSession?) throws -> Document {
         let rp = self.options?.readPreference?._readPreference
         let opts = try encodeOptions(options: self.options, session: session)
         var reply = Document()

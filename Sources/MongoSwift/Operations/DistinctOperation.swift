@@ -1,6 +1,6 @@
 import mongoc
 
-/// Options to use when executing a `distinct` command on a `MongoCollection`.
+/// Options to use when executing a `distinct` command on a `MongoCollection` or a `SyncMongoCollection`.
 public struct DistinctOptions: Codable {
     /// Specifies a collation.
     public var collation: Document?
@@ -34,19 +34,19 @@ public struct DistinctOptions: Codable {
 
 /// An operation corresponding to a "distinct" command on a collection.
 internal struct DistinctOperation<T: Codable>: Operation {
-    private let collection: MongoCollection<T>
+    private let collection: SyncMongoCollection<T>
     private let fieldName: String
     private let filter: Document
     private let options: DistinctOptions?
 
-    internal init(collection: MongoCollection<T>, fieldName: String, filter: Document, options: DistinctOptions?) {
+    internal init(collection: SyncMongoCollection<T>, fieldName: String, filter: Document, options: DistinctOptions?) {
         self.collection = collection
         self.fieldName = fieldName
         self.filter = filter
         self.options = options
     }
 
-    internal func execute(using connection: Connection, session: ClientSession?) throws -> [BSONValue] {
+    internal func execute(using connection: Connection, session: SyncClientSession?) throws -> [BSONValue] {
         let command: Document = [
             "distinct": self.collection.name,
             "key": self.fieldName,

@@ -6,7 +6,7 @@ import XCTest
 
 final class MongoClientTests: MongoSwiftTestCase {
     func testListDatabases() throws {
-        let client = try MongoClient.makeTestClient()
+        let client = try SyncMongoClient.makeTestClient()
 
         let databases = [
             "db1",
@@ -65,7 +65,7 @@ final class MongoClientTests: MongoSwiftTestCase {
             throw UserError.invalidArgumentError(message: "libmongoc not built with TLS support.")
         }
 
-        let client = MongoClient(stealing: client_t)
+        let client = SyncMongoClient(stealing: client_t)
         let db = client.db(type(of: self).testDatabase)
         let coll = db.collection(self.getCollectionName())
         let insertResult = try coll.insertOne([ "test": 42 ])
@@ -77,13 +77,13 @@ final class MongoClientTests: MongoSwiftTestCase {
 
     func testFailedClientInitialization() {
         // check that we fail gracefully with an error if passing in an invalid URI
-        expect(try MongoClient("abcd")).to(throwError(UserError.invalidArgumentError(message: "")))
+        expect(try SyncMongoClient("abcd")).to(throwError(UserError.invalidArgumentError(message: "")))
     }
 
     func testServerVersion() throws {
         typealias Version = ServerVersion
 
-        expect(try MongoClient.makeTestClient().serverVersion()).toNot(throwError())
+        expect(try SyncMongoClient.makeTestClient().serverVersion()).toNot(throwError())
 
         let three6 = Version(major: 3, minor: 6)
         let three61 = Version(major: 3, minor: 6, patch: 1)
@@ -154,7 +154,7 @@ final class MongoClientTests: MongoSwiftTestCase {
         let wrapperWithId = { id in Wrapper(_id: id, date: date, uuid: uuid, data: data) }
         let wrapper = wrapperWithId("baseline")
 
-        let defaultClient = try MongoClient.makeTestClient()
+        let defaultClient = try SyncMongoClient.makeTestClient()
         let defaultDb = defaultClient.db(type(of: self).testDatabase)
         let collDoc = defaultDb.collection(self.getCollectionName())
 
@@ -178,7 +178,7 @@ final class MongoClientTests: MongoSwiftTestCase {
                 dateCodingStrategy: .secondsSince1970,
                 uuidCodingStrategy: .deferredToUUID
         )
-        let clientCustom = try MongoClient.makeTestClient(options: custom)
+        let clientCustom = try SyncMongoClient.makeTestClient(options: custom)
         let collClient = clientCustom.db(defaultDb.name).collection(collDoc.name, withType: Wrapper.self)
 
         let collClientId = "customClient"

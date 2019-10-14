@@ -27,11 +27,11 @@ internal enum ListDatabasesResults {
 
 /// An operation corresponding to a "listDatabases" command on a collection.
 internal struct ListDatabasesOperation: Operation {
-    private let client: MongoClient
+    private let client: SyncMongoClient
     private let filter: Document?
     private let nameOnly: Bool?
 
-    internal init(client: MongoClient,
+    internal init(client: SyncMongoClient,
                   filter: Document?,
                   nameOnly: Bool?) {
         self.client = client
@@ -39,7 +39,7 @@ internal struct ListDatabasesOperation: Operation {
         self.nameOnly = nameOnly
     }
 
-    internal func execute(using connection: Connection, session: ClientSession?) throws -> ListDatabasesResults {
+    internal func execute(using connection: Connection, session: SyncClientSession?) throws -> ListDatabasesResults {
         // spec requires that this command be run against the primary.
         let readPref = ReadPreference(.primary)
         var cmd: Document = ["listDatabases": 1]

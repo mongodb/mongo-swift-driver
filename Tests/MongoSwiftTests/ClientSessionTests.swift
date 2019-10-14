@@ -6,7 +6,7 @@ import XCTest
 final class ClientSessionTests: MongoSwiftTestCase {
     override func tearDown() {
         do {
-            let client = try MongoClient.makeTestClient()
+            let client = try SyncMongoClient.makeTestClient()
             try client.db(type(of: self).testDatabase).drop()
         } catch let ServerError.commandError(code, _, _, _) where code == 26 {
             // skip database not found errors
@@ -16,12 +16,15 @@ final class ClientSessionTests: MongoSwiftTestCase {
         super.tearDown()
     }
 
-    typealias CollectionSessionOp = (name: String, body: (MongoCollection<Document>, ClientSession?) throws -> Void)
-    typealias DatabaseSessionOp = (name: String, body: (MongoDatabase, ClientSession?) throws -> Void)
-    typealias ClientSessionOp = (name: String, body: (MongoClient, ClientSession?) throws -> Void)
-    typealias SessionOp = (name: String, body: (ClientSession?) throws -> Void)
+    typealias CollectionSessionOp = (name: String,
+                                     body: (SyncMongoCollection<Document>, SyncClientSession?) throws -> Void)
+    typealias DatabaseSessionOp = (name: String,
+                                   body: (SyncMongoDatabase, SyncClientSession?) throws -> Void)
+    typealias ClientSessionOp = (name: String,
+                                 body: (SyncMongoClient, SyncClientSession?) throws -> Void)
+    typealias SessionOp = (name: String, body: (SyncClientSession?) throws -> Void)
 
-    // list of read only operations on MongoCollection that take in a session
+    // list of read only operations on SyncMongoCollection that take in a session
     let collectionSessionReadOps: [CollectionSessionOp] = [
         (name: "find", body: { _ = try $0.find([:], session: $1).nextOrError() }),
         (name: "aggregate", body: { _ = try $0.aggregate([], session: $1).nextOrError() }),
@@ -29,7 +32,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
         (name: "count", body: { _ = try $0.count(session: $1) })
     ]
 
-    // list of write operations on MongoCollection that take in a session
+    // list of write operations on SyncMongoCollection that take in a session
     let collectionSessionWriteOps: [CollectionSessionOp] = [
         (name: "bulkWrite", body: { _ = try $0.bulkWrite([.insertOne([:])], session: $1) }),
         (name: "insertOne", body: { _ = try $0.insertOne([:], session: $1) }),
@@ -53,7 +56,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
         (name: "drop", body: { _ = try $0.drop(session: $1) })
     ]
 
-    // list of operations on MongoDatabase that take in a session
+    // list of operations on SyncMongoDatabase that take in a session
     let databaseSessionOps: [DatabaseSessionOp] = [
         (name: "runCommand", { try $0.runCommand(["isMaster": 0], session: $1) }),
         (name: "createCollection", body: { _ = try $0.createCollection("asdf", session: $1) }),
@@ -61,7 +64,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
         (name: "drop", body: { _ = try $0.drop(session: $1) })
     ]
 
-    // list of operatoins on MongoClient that take in a session
+    // list of operatoins on SyncMongoClient that take in a session
     let clientSessionOps: [ClientSessionOp] = [
         (name: "listDatabases", { _ = try $0.listDatabases(session: $1) }),
         (name: "listMongoDatabases", { _ = try $0.listMongoDatabases(session: $1) }),
@@ -72,9 +75,9 @@ final class ClientSessionTests: MongoSwiftTestCase {
     #if(swift(>=5.1))
 
     /// iterate over all the different session op types, passing in the provided client/db/collection as needed.
-    func forEachSessionOp(client: MongoClient,
-                          database: MongoDatabase,
-                          collection: MongoCollection<Document>,
+    func forEachSessionOp(client: SyncMongoClient,
+                          database: SyncMongoDatabase,
+                          collection: SyncMongoCollection<Document>,
                           _ body: (SessionOp) throws -> Void) rethrows {
         try (collectionSessionReadOps + collectionSessionWriteOps).forEach { op in
             try body((name: op.name, body: { try op.body(collection, $0) }))
@@ -90,12 +93,12 @@ final class ClientSessionTests: MongoSwiftTestCase {
 
     /// Sessions spec test 1: Test that sessions are properly returned to the pool when ended.
     func testSessionCleanup() throws {
-        let client = try MongoClient.makeTestClient()
+        let client = try SyncMongoClient.makeTestClient()
 
-        var sessionA: ClientSession? = try client.startSession()
+        var sessionA: SyncClientSession? = try client.startSession()
         expect(sessionA!.active).to(beTrue())
 
-        var sessionB: ClientSession? = try client.startSession()
+        var sessionB: SyncClientSession? = try client.startSession()
         expect(sessionB!.active).to(beTrue())
 
         let idA = sessionA!.id
@@ -105,11 +108,11 @@ final class ClientSessionTests: MongoSwiftTestCase {
         sessionA = nil
         sessionB = nil
 
-        let sessionC: ClientSession = try client.startSession()
+        let sessionC: SyncClientSession = try client.startSession()
         expect(sessionC.active).to(beTrue())
         expect(sessionC.id).to(bsonEqual(idB))
 
-        let sessionD: ClientSession = try client.startSession()
+        let sessionD: SyncClientSession = try client.startSession()
         expect(sessionD.active).to(beTrue())
         expect(sessionD.id).to(bsonEqual(idA))
 
@@ -138,7 +141,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
 
     // Executes the body twice, once with the supplied session and once without, verifying that a correct lsid is
     // seen both times.
-    func runArgTest(session: ClientSession, op: SessionOp) throws {
+    func runArgTest(session: SyncClientSession, op: SessionOp) throws {
         let center = NotificationCenter.default
 
         var seenExplicit = false
@@ -174,7 +177,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
         // This test causes the compiler to crash on older versions of swift due to a bug in the compiler.
         #if(swift(>=5.1))
 
-        let client1 = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
+        let client1 = try SyncMongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
         let database = client1.db(type(of: self).testDatabase)
         let collection = try database.createCollection(self.getCollectionName())
         let session = try client1.startSession()
@@ -192,8 +195,8 @@ final class ClientSessionTests: MongoSwiftTestCase {
         // This test causes the compiler to crash on older versions of swift due to a bug in the compiler.
         #if(swift(>=5.1))
 
-        let client1 = try MongoClient.makeTestClient()
-        let client2 = try MongoClient.makeTestClient()
+        let client1 = try SyncMongoClient.makeTestClient()
+        let client2 = try SyncMongoClient.makeTestClient()
 
         let database = client1.db(type(of: self).testDatabase)
         let collection = try database.createCollection(self.getCollectionName())
@@ -212,7 +215,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
         // This test causes the compiler to crash on older versions of swift due to a bug in the compiler.
         #if(swift(>=5.1))
 
-        let client = try MongoClient.makeTestClient()
+        let client = try SyncMongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
         let collection = try db.createCollection(self.getCollectionName())
         let session1 = try client.startSession()
@@ -221,7 +224,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
         expect(session1.active).to(beFalse())
 
         try forEachSessionOp(client: client, database: db, collection: collection) { op in
-            expect(try op.body(session1)).to(throwError(ClientSession.SessionInactiveError), description: op.name)
+            expect(try op.body(session1)).to(throwError(SyncClientSession.SessionInactiveError), description: op.name)
         }
 
         let session2 = try client.startSession()
@@ -233,14 +236,14 @@ final class ClientSessionTests: MongoSwiftTestCase {
         let cursor = try collection.find(session: session2)
         expect(cursor.next()).toNot(beNil())
         session2.end()
-        expect(try cursor.nextOrError()).to(throwError(ClientSession.SessionInactiveError))
+        expect(try cursor.nextOrError()).to(throwError(SyncClientSession.SessionInactiveError))
 
         #endif
     }
 
     /// Sessions spec test 10: Test cursors have the same lsid in the initial find command and in subsequent getMores.
     func testSessionCursor() throws {
-        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
+        let client = try SyncMongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
         let database = client.db(type(of: self).testDatabase)
         let collection = try database.createCollection(self.getCollectionName())
         let session = try client.startSession()
@@ -307,7 +310,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient.makeTestClient()
+        let client = try SyncMongoClient.makeTestClient()
 
         try client.withSession { session in
             expect(session.clusterTime).to(beNil())
@@ -335,7 +338,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
         }
 
         let center = NotificationCenter.default
-        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
+        let client = try SyncMongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
         let db = client.db(type(of: self).testDatabase)
         let collection = try db.createCollection(self.getCollectionName())
 
@@ -490,7 +493,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
         }
 
         let center = NotificationCenter.default
-        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
+        let client = try SyncMongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
         let db = client.db(type(of: self).testDatabase)
         let collection = db.collection(self.getCollectionName())
 
@@ -536,7 +539,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
     /// Test causal consistent behavior that is expected on any topology, regardless of whether it supports cluster time
     func testCausalConsistencyAnyTopology() throws {
         let center = NotificationCenter.default
-        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
+        let client = try SyncMongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
         let db = client.db(type(of: self).testDatabase)
         let collection = db.collection(self.getCollectionName())
 

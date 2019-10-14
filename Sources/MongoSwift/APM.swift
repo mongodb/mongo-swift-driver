@@ -456,7 +456,7 @@ private func postNotification<T: MongoEvent>(type: T.Type,
     guard let context = contextFunc(event) else {
         fatalError("Missing context for \(type)")
     }
-    let client = Unmanaged<MongoClient>.fromOpaque(context).takeUnretainedValue()
+    let client = Unmanaged<SyncMongoClient>.fromOpaque(context).takeUnretainedValue()
     let notification = Notification(name: type.eventName, userInfo: ["event": eventStruct])
     client.notificationCenter.post(notification)
 }
@@ -493,7 +493,7 @@ extension Notification.Name {
 /// An extension of `ConnectionPool` to add monitoring capability for commands and server discovery and monitoring.
 extension ConnectionPool {
     /// Internal function to install monitoring callbacks for this pool.
-    internal func initializeMonitoring(commandMonitoring: Bool, serverMonitoring: Bool, client: MongoClient) {
+    internal func initializeMonitoring(commandMonitoring: Bool, serverMonitoring: Bool, client: SyncMongoClient) {
         guard let callbacks = mongoc_apm_callbacks_new() else {
             fatalError("failed to initialize new mongoc_apm_callbacks_t")
         }
@@ -517,8 +517,8 @@ extension ConnectionPool {
             mongoc_apm_set_server_heartbeat_failed_cb(callbacks, serverHeartbeatFailed)
         }
 
-        // we can pass the MongoClient as unretained because the callbacks are stored on clientHandle, so if the
-        // callback is being executed, this pool and therefore its parent `MongoClient` must still be valid.
+        // we can pass the SyncMongoClient as unretained because the callbacks are stored on clientHandle, so if the
+        // callback is being executed, this pool and therefore its parent `SyncMongoClient` must still be valid.
         switch self.mode {
         case let .single(clientHandle):
             mongoc_client_set_apm_callbacks(clientHandle, callbacks, Unmanaged.passUnretained(client).toOpaque())

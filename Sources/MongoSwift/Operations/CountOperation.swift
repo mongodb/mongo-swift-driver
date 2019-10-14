@@ -1,6 +1,6 @@
 import mongoc
 
-/// Options to use when executing a `count` command on a `MongoCollection`.
+/// Options to use when executing a `count` command on a `MongoCollection` or a `SyncMongoCollection`.
 public struct CountOptions: Codable {
     /// Specifies a collation.
     public var collation: Document?
@@ -49,17 +49,17 @@ public struct CountOptions: Codable {
 
 /// An operation corresponding to a "count" command on a collection.
 internal struct CountOperation<T: Codable>: Operation {
-    private let collection: MongoCollection<T>
+    private let collection: SyncMongoCollection<T>
     private let filter: Document
     private let options: CountOptions?
 
-    internal init(collection: MongoCollection<T>, filter: Document, options: CountOptions?) {
+    internal init(collection: SyncMongoCollection<T>, filter: Document, options: CountOptions?) {
         self.collection = collection
         self.filter = filter
         self.options = options
     }
 
-    internal func execute(using connection: Connection, session: ClientSession?) throws -> Int {
+    internal func execute(using connection: Connection, session: SyncClientSession?) throws -> Int {
         let opts = try encodeOptions(options: options, session: session)
         let rp = self.options?.readPreference?._readPreference
         var error = bson_error_t()

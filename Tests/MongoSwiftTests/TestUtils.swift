@@ -113,9 +113,10 @@ class MongoSwiftTestCase: XCTestCase {
     internal func withTestNamespace<T>(ns: MongoNamespace? = nil,
                                        clientOptions: ClientOptions? = nil,
                                        collectionOptions: CreateCollectionOptions? = nil,
-                                       f: (MongoClient, MongoDatabase, MongoCollection<Document>) throws -> T)
+                                       f: (SyncMongoClient, SyncMongoDatabase, SyncMongoCollection<Document>)
+                                       throws -> T)
     throws -> T {
-        let client = try MongoClient.makeTestClient(options: clientOptions)
+        let client = try SyncMongoClient.makeTestClient(options: clientOptions)
 
         return try withTestNamespace(client: client, ns: ns, options: collectionOptions) { db, coll in
             try f(client, db, coll)
@@ -126,10 +127,11 @@ class MongoSwiftTestCase: XCTestCase {
     /// function. After the function executes, the collection associated with the namespace is dropped.
     ///
     /// Note: If a collection is not specified as part of the input namespace, this function will throw an error.
-    internal func withTestNamespace<T>(client: MongoClient,
+    internal func withTestNamespace<T>(client: SyncMongoClient,
                                        ns: MongoNamespace? = nil,
                                        options: CreateCollectionOptions? = nil,
-                                       _ f: (MongoDatabase, MongoCollection<Document>) throws -> T) throws -> T {
+                                       _ f: (SyncMongoDatabase, SyncMongoCollection<Document>) throws -> T)
+                                      throws -> T {
         let ns = ns ?? self.getNamespace()
 
         guard let collName = ns.collection else {
@@ -143,7 +145,7 @@ class MongoSwiftTestCase: XCTestCase {
     }
 }
 
-extension MongoClient {
+extension SyncMongoClient {
     internal func serverVersion() throws -> ServerVersion {
         // TODO SWIFT-539: switch to always using buildInfo. fails on MacOS + SSL due to CDRIVER-3318
         let cmd = MongoSwiftTestCase.ssl && MongoSwiftTestCase.isMacOS ? "serverStatus" : "buildInfo"
@@ -180,13 +182,13 @@ extension MongoClient {
     }
 
     static func makeTestClient(_ uri: String = MongoSwiftTestCase.connStr,
-                               options: ClientOptions? = nil) throws -> MongoClient {
+                               options: ClientOptions? = nil) throws -> SyncMongoClient {
         var opts = options ?? ClientOptions()
         if MongoSwiftTestCase.ssl {
             opts.tlsOptions = TLSOptions(caFile: URL(string: MongoSwiftTestCase.sslCAFilePath ?? ""),
                                          pemFile: URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? ""))
         }
-        return try MongoClient(uri, options: opts)
+        return try SyncMongoClient(uri, options: opts)
     }
 
     internal func supportsFailCommand() -> Bool {
@@ -317,7 +319,7 @@ internal func bsonEqual(_ expectedValue: BSONValue?) -> Predicate<BSONValue> {
 
 /// Captures any command monitoring events filtered by type and name that are emitted during the execution of the
 /// provided closure. Only events emitted by the provided client will be captured.
-internal func captureCommandEvents(from client: MongoClient,
+internal func captureCommandEvents(from client: SyncMongoClient,
                                    eventTypes: [Notification.Name]? = nil,
                                    commandNames: [String]? = nil,
                                    f: () throws -> Void) rethrows -> [MongoCommandEvent] {
@@ -352,8 +354,8 @@ internal func captureCommandEvents(from client: MongoClient,
 /// provided closure. A client pre-configured for command monitoring is passed into the closure.
 internal func captureCommandEvents(eventTypes: [Notification.Name]? = nil,
                                    commandNames: [String]? = nil,
-                                   f: (MongoClient) throws -> Void) throws -> [MongoCommandEvent] {
-    let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
+                                   f: (SyncMongoClient) throws -> Void) throws -> [MongoCommandEvent] {
+    let client = try SyncMongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
     return try captureCommandEvents(from: client, eventTypes: eventTypes, commandNames: commandNames) {
         try f(client)
     }

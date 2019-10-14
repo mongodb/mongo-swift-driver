@@ -77,8 +77,8 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
                 let opts = TLSOptions(allowInvalidHostnames: true,
                                       caFile: URL(string: MongoSwiftTestCase.sslCAFilePath ?? ""),
                                       pemFile: URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? ""))
-                let client = try MongoClient(testCase.uri,
-                                             options: ClientOptions(serverMonitoring: true, tlsOptions: opts))
+                let client = try SyncMongoClient(testCase.uri,
+                                                 options: ClientOptions(serverMonitoring: true, tlsOptions: opts))
 
                 // mongoc connects lazily so we need to send a command.
                 let db = client.db("test")

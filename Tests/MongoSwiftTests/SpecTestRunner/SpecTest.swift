@@ -105,13 +105,13 @@ internal struct FailPoint: Decodable {
                 commandDoc[k] = v
             }
         }
-        let client = try MongoClient.makeTestClient()
+        let client = try SyncMongoClient.makeTestClient()
         try client.db("admin").runCommand(commandDoc)
     }
 
     internal func disable() {
         do {
-            let client = try MongoClient.makeTestClient()
+            let client = try SyncMongoClient.makeTestClient()
             try client.db("admin").runCommand(["configureFailPoint": self.name, "mode": "off"])
         } catch {
             print("Failed to disable fail point \(self.name): \(error)")
@@ -285,18 +285,18 @@ internal protocol SpecTest {
     var operation: AnyTestOperation { get }
 
     /// Runs the operation with the given context and performs assertions on the result based upon the expected outcome.
-    func run(client: MongoClient,
-             db: MongoDatabase,
-             collection: MongoCollection<Document>,
-             session: ClientSession?) throws
+    func run(client: SyncMongoClient,
+             db: SyncMongoDatabase,
+             collection: SyncMongoCollection<Document>,
+             session: SyncClientSession?) throws
 }
 
 /// Default implementation of a test execution.
 extension SpecTest {
-    internal func run(client: MongoClient,
-                      db: MongoDatabase,
-                      collection: MongoCollection<Document>,
-                      session: ClientSession?) throws {
+    internal func run(client: SyncMongoClient,
+                      db: SyncMongoDatabase,
+                      collection: SyncMongoCollection<Document>,
+                      session: SyncClientSession?) throws {
         var result: TestOperationResult?
         var seenError: Error?
         do {

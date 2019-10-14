@@ -70,7 +70,7 @@ public struct CollectionSpecification: Codable {
     public let idIndex: IndexModel?
 }
 
-/// Options to use when executing a `listCollections` command on a `MongoDatabase`.
+/// Options to use when executing a `listCollections` command on a `MongoDatabase` or a `SyncMongoDatabase`.
 public struct ListCollectionsOptions: Encodable {
     /// The batchSize for the returned cursor.
     public var batchSize: Int?
@@ -84,7 +84,7 @@ public struct ListCollectionsOptions: Encodable {
 /// Internal intermediate result of a ListCollections command.
 internal enum ListCollectionsResults {
     /// Includes the name, type, and creation options of each collection.
-    case specs(MongoCursor<CollectionSpecification>)
+    case specs(SyncMongoCursor<CollectionSpecification>)
 
     /// Only includes the names.
     case names([String])
@@ -92,19 +92,19 @@ internal enum ListCollectionsResults {
 
 /// An operation corresponding to a "listCollections" command on a database.
 internal struct ListCollectionsOperation: Operation {
-    private let database: MongoDatabase
+    private let database: SyncMongoDatabase
     private let nameOnly: Bool
     private let filter: Document?
     private let options: ListCollectionsOptions?
 
-    internal init(database: MongoDatabase, nameOnly: Bool, filter: Document?, options: ListCollectionsOptions?) {
+    internal init(database: SyncMongoDatabase, nameOnly: Bool, filter: Document?, options: ListCollectionsOptions?) {
         self.database = database
         self.nameOnly = nameOnly
         self.filter = filter
         self.options = options
     }
 
-    internal func execute(using connection: Connection, session: ClientSession?) throws -> ListCollectionsResults {
+    internal func execute(using connection: Connection, session: SyncClientSession?) throws -> ListCollectionsResults {
         var opts = try encodeOptions(options: self.options, session: session) ?? Document()
         opts["nameOnly"] = self.nameOnly
         if let filterDoc = self.filter {
@@ -125,10 +125,10 @@ internal struct ListCollectionsOperation: Operation {
             }
         }
         if self.nameOnly {
-            let cursor: MongoCursor<Document> = try MongoCursor(client: self.database._client,
-                                                                decoder: self.database.decoder,
-                                                                session: session,
-                                                                initializer: initializer)
+            let cursor: SyncMongoCursor<Document> = try SyncMongoCursor(client: self.database._client,
+                                                                        decoder: self.database.decoder,
+                                                                        session: session,
+                                                                        initializer: initializer)
             return try .names(cursor.map {
                 guard let name = $0["name"] as? String else {
                     throw RuntimeError.internalError(message: "Invalid server response: collection has no name")
@@ -136,10 +136,10 @@ internal struct ListCollectionsOperation: Operation {
                 return name
             })
         }
-        let cursor: MongoCursor<CollectionSpecification> = try MongoCursor(client: self.database._client,
-                                                                           decoder: self.database.decoder,
-                                                                           session: session,
-                                                                           initializer: initializer)
+        let cursor: SyncMongoCursor<CollectionSpecification> = try SyncMongoCursor(client: self.database._client,
+                                                                                   decoder: self.database.decoder,
+                                                                                   session: session,
+                                                                                   initializer: initializer)
         return .specs(cursor)
     }
 }
