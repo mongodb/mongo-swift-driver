@@ -1,16 +1,16 @@
 import mongoc
 
-/// An operation corresponding to a "drop" command on a MongoCollection.
+/// An operation corresponding to a "drop" command on a collection.
 internal struct DropCollectionOperation<T: Codable>: Operation {
-    private let collection: MongoCollection<T>
+    private let collection: SyncMongoCollection<T>
     private let options: DropCollectionOptions?
 
-    internal init(collection: MongoCollection<T>, options: DropCollectionOptions?) {
+    internal init(collection: SyncMongoCollection<T>, options: DropCollectionOptions?) {
         self.collection = collection
         self.options = options
     }
 
-    internal func execute(using connection: Connection, session: ClientSession?) throws {
+    internal func execute(using connection: Connection, session: SyncClientSession?) throws {
         let command: Document = ["drop": self.collection.name]
         let opts = try encodeOptions(options: options, session: session)
 
