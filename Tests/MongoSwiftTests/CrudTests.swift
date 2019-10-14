@@ -235,7 +235,7 @@ private class BulkWriteTest: CrudTest {
                 verifyBulkWriteResult(result)
             }
             expect(expectError).to(beFalse())
-        } catch ServerError.bulkWriteError(_, _, _, let result, _) {
+        } catch let ServerError.bulkWriteError(_, _, _, result, _) {
             if let result = result {
                 verifyBulkWriteResult(result)
             }
@@ -405,7 +405,7 @@ private class InsertManyTest: CrudTest {
                 verifyInsertManyResult(result)
             }
             expect(expectError).to(beFalse())
-        } catch ServerError.bulkWriteError(_, _, _, let result, _) {
+        } catch let ServerError.bulkWriteError(_, _, _, result, _) {
             if let result = result {
                 verifyInsertManyResult(InsertManyResult(from: result)!)
             }
