@@ -171,7 +171,7 @@ public struct TLSOptions {
 public class SyncMongoClient {
     internal let connectionPool: ConnectionPool
 
-    private let operationExecutor: OperationExecutor = DefaultOperationExecutor()
+    private let operationExecutor: SyncOperationExecutor = DefaultSyncOperationExecutor()
 
     /// If command and/or server monitoring is enabled, stores the NotificationCenter events are posted to.
     internal let notificationCenter: NotificationCenter
