@@ -31,11 +31,12 @@ extension ConnectionString {
     }
 
     /// Returns the auth mechanism if one was provided, otherwise nil.
-    private var authMechanism: String? {
+    private var authMechanism: AuthMechanism? {
         guard let mechanism = mongoc_uri_get_auth_mechanism(self._uri) else {
             return nil
         }
-        return String(cString: mechanism)
+        let str = String(cString: mechanism)
+        return AuthMechanism(rawValue: str)
     }
 
     /// Returns a document containing the auth mechanism properties if any were provided, otherwise nil.
@@ -69,9 +70,7 @@ extension ConnectionString {
         }
     }
 
-    /// Returns the credential configured on this URI. May be empty if no options are set. This Credential is only
-    /// guaranteed to be valid for as long as the life of this `ConnectionString`. See `authMechanismProperties` for
-    /// details.
+    /// Returns the credential configured on this URI. Will be empty if no options are set.
     fileprivate var credential: Credential {
         return Credential(username: self.username,
                           password: self.password,
@@ -99,6 +98,16 @@ struct AuthTestCase: Decodable {
     let credential: Credential?
 }
 
+/// Possible authentication mechanisms.
+enum AuthMechanism: String, Decodable {
+    case scramSHA1 = "SCRAM-SHA-1"
+    case scramSHA256 = "SCRAM-SHA-256"
+    case gssAPI = "GSSAPI"
+    case mongodbCR = "MONGODB-CR"
+    case mongodbX509 = "MONGODB-X509"
+    case plain = "PLAIN"
+}
+
 /// Represents an authentication credential.
 struct Credential: Decodable, Equatable {
     /// A string containing the username. For auth mechanisms that do not utilize a password, this may be the entire
@@ -108,9 +117,9 @@ struct Credential: Decodable, Equatable {
     let password: String?
     /// A string containing the authentication database.
     let source: String?
-    /// A string containing the authentication mechanism. A nil value for this key is used to indicate that a mechanism
-    /// wasn't specified and that mechanism negotiation is required.
-    let mechanism: String?
+    /// The authentication mechanism. A nil value for this key is used to indicate that a mechanism wasn't specified
+    /// and that mechanism negotiation is required.
+    let mechanism: AuthMechanism?
     /// A document containing mechanism-specific properties.
     let mechanismProperties: Document?
 
@@ -124,7 +133,7 @@ struct Credential: Decodable, Equatable {
         self.username = try container.decodeIfPresent(String.self, forKey: .username)
         self.password = try container.decodeIfPresent(String.self, forKey: .password)
         self.source = try container.decodeIfPresent(String.self, forKey: .source)
-        self.mechanism = try container.decodeIfPresent(String.self, forKey: .mechanism)
+        self.mechanism = try container.decodeIfPresent(AuthMechanism.self, forKey: .mechanism)
 
         // libmongoc does not return the service name if it's the default, but it is contained in the spec test files,
         // so filter it out here if it's present.
@@ -138,18 +147,13 @@ struct Credential: Decodable, Equatable {
         }
     }
 
-    init(username: String?, password: String?, source: String?, mechanism: String?, mechanismProperties: Document?) {
+    init(username: String?, password: String?, source: String?, mechanism: AuthMechanism?, mechanismProperties: Document?) {
         self.mechanism = mechanism
         self.mechanismProperties = mechanismProperties
         self.password = password
         self.source = source
         self.username = username
     }
-}
-
-enum AuthMechanism: String {
-    case scramSHA1 = "SCRAM-SHA-1"
-    case scramSHA256 = "SCRAM-SHA-256"
 }
 
 final class AuthTests: MongoSwiftTestCase {

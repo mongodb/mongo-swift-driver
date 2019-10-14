@@ -34,14 +34,6 @@ internal class ConnectionString {
         }
     }
 
-    /// Retrieves the options set on this connection string as a document. If none are set, returns nil.
-    private var optionsDocument: Document? {
-        guard let opts = mongoc_uri_get_options(self._uri) else {
-            return nil
-        }
-        return Document(copying: opts)
-    }
-
     /// Cleans up the underlying `mongoc_uri_t`.
     deinit {
         mongoc_uri_destroy(self._uri)
