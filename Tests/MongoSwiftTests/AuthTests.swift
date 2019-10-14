@@ -268,7 +268,7 @@ final class AuthTests: MongoSwiftTestCase {
         // 4. To test SASLprep behavior, create two users:
         let saslPrepUsers = [
             TestUser(username: "IX", password: "IX", mechanisms: [.scramSHA256]),
-            TestUser(username: "\\u2168", password: "\\u2163", mechanisms: [.scramSHA256])
+            TestUser(username: "\u{2168}", password: "\u{2163}", mechanisms: [.scramSHA256])
         ]
         for user in saslPrepUsers {
             try admin.runCommand(user.createCmd)
