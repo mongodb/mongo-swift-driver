@@ -109,8 +109,8 @@ public struct SyncMongoCollection<T: Codable> {
         defer { mongoc_collection_destroy(collection) }
 
         // `collection` will automatically inherit read concern, write concern, and read preference from the parent
-        // client. If this `SyncMongoCollection`'s value for any of those settings is different than the parent, we need to
-        // explicitly set it here.
+        // client. If this `SyncMongoCollection`'s value for any of those settings is different than the parent, we
+        //  need to explicitly set it here.
 
         if self.readConcern != self._client.readConcern {
             // a nil value for self.readConcern corresponds to the empty read concern.

@@ -36,7 +36,7 @@ internal protocol SyncOperationExecutor {
 }
 
 /// Default executor type used by `SyncMongoClient`s.
-internal struct DefaultSyncOperationExecutor: OperationExecutor {
+internal struct DefaultSyncOperationExecutor: SyncOperationExecutor {
     internal func execute<T: Operation>(_ operation: T,
                                         client: SyncMongoClient,
                                         session: SyncClientSession?) throws -> T.OperationResult {

@@ -32,7 +32,10 @@ public class SyncChangeStream<T: Codable>: Sequence, IteratorProtocol {
         /// Indicates that the change stream is still open. Stores a pointer to the `mongoc_change_stream_t`, along
         /// with the source connection, client, and possibly session to ensure they are kept alive as long
         /// as the change stream is.
-        case open(changeStream: OpaquePointer, connection: Connection, client: SyncMongoClient, session: SyncClientSession?)
+        case open(changeStream: OpaquePointer,
+                  connection: Connection,
+                  client: SyncMongoClient,
+                  session: SyncClientSession?)
         case closed
     }
 

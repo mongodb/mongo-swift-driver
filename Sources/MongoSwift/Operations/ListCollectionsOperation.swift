@@ -126,9 +126,9 @@ internal struct ListCollectionsOperation: Operation {
         }
         if self.nameOnly {
             let cursor: SyncMongoCursor<Document> = try SyncMongoCursor(client: self.database._client,
-                                                                decoder: self.database.decoder,
-                                                                session: session,
-                                                                initializer: initializer)
+                                                                        decoder: self.database.decoder,
+                                                                        session: session,
+                                                                        initializer: initializer)
             return try .names(cursor.map {
                 guard let name = $0["name"] as? String else {
                     throw RuntimeError.internalError(message: "Invalid server response: collection has no name")
@@ -137,9 +137,9 @@ internal struct ListCollectionsOperation: Operation {
             })
         }
         let cursor: SyncMongoCursor<CollectionSpecification> = try SyncMongoCursor(client: self.database._client,
-                                                                           decoder: self.database.decoder,
-                                                                           session: session,
-                                                                           initializer: initializer)
+                                                                                   decoder: self.database.decoder,
+                                                                                   session: session,
+                                                                                   initializer: initializer)
         return .specs(cursor)
     }
 }

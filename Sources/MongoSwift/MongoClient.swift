@@ -290,7 +290,7 @@ public class SyncMongoClient {
      * - Throws:
      *   - `RuntimeError.compatibilityError` if the deployment does not support sessions.
      */
-    public func withSession<T>(options: SyncClientSessionOptions? = nil,
+    public func withSession<T>(options: ClientSessionOptions? = nil,
                                _ sessionBody: (SyncClientSession) throws -> T) throws -> T {
         let session = try SyncClientSession(client: self, options: options)
         defer { session.end() }
@@ -336,7 +336,8 @@ public class SyncMongoClient {
      * - Throws:
      *   - `UserError.logicError` if the provided session is inactive.
      */
-    public func listMongoDatabases(_ filter: Document? = nil, session: SyncClientSession? = nil) throws -> [SyncMongoDatabase] {
+    public func listMongoDatabases(_ filter: Document? = nil,
+                                   session: SyncClientSession? = nil) throws -> [SyncMongoDatabase] {
         return try self.listDatabaseNames(filter, session: session).map { self.db($0) }
     }
 
@@ -379,22 +380,27 @@ public class SyncMongoClient {
     }
 
     /**
-     * Starts a `SyncChangeStream` on a `SyncMongoClient`. Allows the client to observe all changes in a cluster - excluding
-     * system collections and the "config", "local", and "admin" databases.
+     * Starts a `SyncChangeStream` on a `SyncMongoClient`. Allows the client to observe all changes in a cluster -
+     * excluding system collections and the "config", "local", and "admin" databases.
+     *
      * - Parameters:
      *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
      *   - session: An optional `SyncClientSession` to use with this change stream.
+     *
      * - Returns: a `SyncChangeStream` on all collections in all databases in a cluster.
+     *
      * - Throws:
      *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
      *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination.
      *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.
+     *
      * - SeeAlso:
      *   - https://docs.mongodb.com/manual/changeStreams/
      *   - https://docs.mongodb.com/manual/meta/aggregation-quick-reference/
      *   - https://docs.mongodb.com/manual/reference/system-collections/
+     *
      * - Note: Supported in MongoDB version 4.0+ only.
      */
     public func watch(_  pipeline: [Document] = [],
@@ -404,25 +410,31 @@ public class SyncMongoClient {
     }
 
     /**
-     * Starts a `SyncChangeStream` on a `SyncMongoClient`. Allows the client to observe all changes in a cluster - excluding
-     * system collections and the "config", "local", and "admin" databases. Associates the specified `Codable` type `T`
-     * with the `fullDocument` field in the `ChangeStreamEvent`s emitted by the returned `SyncChangeStream`.
+     * Starts a `SyncChangeStream` on a `SyncMongoClient`. Allows the client to observe all changes in a cluster -
+     * excluding system collections and the "config", "local", and "admin" databases. Associates the specified
+     * `Codable` type `T` with the `fullDocument` field in the `ChangeStreamEvent`s emitted by the returned
+     * `SyncChangeStream`.
+     *
      * - Parameters:
      *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
      *   - session: An optional `SyncClientSession` to use with this change stream.
      *   - withFullDocumentType: The type that the `fullDocument` field of the emitted `ChangeStreamEvent`s will be
      *                           decoded to.
+     *
      * - Returns: A `SyncChangeStream` on all collections in all databases in a cluster.
+     *
      * - Throws:
      *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
      *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination.
      *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.
+     *
      * - SeeAlso:
      *   - https://docs.mongodb.com/manual/changeStreams/
      *   - https://docs.mongodb.com/manual/meta/aggregation-quick-reference/
      *   - https://docs.mongodb.com/manual/reference/system-collections/
+     *
      * - Note: Supported in MongoDB version 4.0+ only.
      */
     public func watch<FullDocType: Codable>(_  pipeline: [Document] = [],
@@ -437,25 +449,30 @@ public class SyncMongoClient {
     }
 
     /**
-     * Starts a `SyncChangeStream` on a `SyncMongoClient`. Allows the client to observe all changes in a cluster - excluding
-     * system collections and the "config", "local", and "admin" databases. Associates the specified `Codable` type `T`
-     * with the returned `SyncChangeStream`.
+     * Starts a `SyncChangeStream` on a `SyncMongoClient`. Allows the client to observe all changes in a cluster -
+     * excluding system collections and the "config", "local", and "admin" databases. Associates the specified
+     * `Codable` type `T` with the returned `SyncChangeStream`.
+     *
      * - Parameters:
      *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
      *   - session: An optional `SyncClientSession` to use with this change stream.
      *   - withEventType: The type that the entire change stream response will be decoded to and that will be returned
      *                    when iterating through the change stream.
+     *
      * - Returns: A `SyncChangeStream` on all collections in all databases in a cluster.
+     *
      * - Throws:
      *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
      *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination.
      *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.
+     *
      * - SeeAlso:
      *   - https://docs.mongodb.com/manual/changeStreams/
      *   - https://docs.mongodb.com/manual/meta/aggregation-quick-reference/
      *   - https://docs.mongodb.com/manual/reference/system-collections/
+     *
      * - Note: Supported in MongoDB version 4.0+ only.
      */
     public func watch<EventType: Codable>(_  pipeline: [Document] = [],

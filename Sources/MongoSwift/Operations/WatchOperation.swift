@@ -58,10 +58,10 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codabl
         }
 
         return try SyncChangeStream<ChangeStreamType>(stealing: changeStream,
-                                                  connection: connection,
-                                                  client: client,
-                                                  session: session,
-                                                  decoder: decoder,
-                                                  options: self.options)
+                                                      connection: connection,
+                                                      client: client,
+                                                      session: session,
+                                                      decoder: decoder,
+                                                      options: self.options)
     }
 }

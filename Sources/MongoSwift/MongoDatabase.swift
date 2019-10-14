@@ -302,20 +302,25 @@ public struct SyncMongoDatabase {
 
     /**
      * Starts a `SyncChangeStream` on a database. Excludes system collections.
+     *
      * - Parameters:
      *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
      *   - session: An optional `SyncClientSession` to use with this change stream.
+     *
      * - Returns: A `SyncChangeStream` on all collections in a database.
+     *
      * - Throws:
      *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
      *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination.
      *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.
+     *
      * - SeeAlso:
      *   - https://docs.mongodb.com/manual/changeStreams/
      *   - https://docs.mongodb.com/manual/meta/aggregation-quick-reference/
      *   - https://docs.mongodb.com/manual/reference/system-collections/
+     *
      * - Note: Supported in MongoDB version 4.0+ only.
      */
     public func watch(_ pipeline: [Document] = [],
@@ -328,22 +333,27 @@ public struct SyncMongoDatabase {
      * Starts a `SyncChangeStream` on a database. Excludes system collections.
      * Associates the specified `Codable` type `T` with the `fullDocument` field in the `ChangeStreamEvent`s emitted
      * by the returned `SyncChangeStream`.
+     *
      * - Parameters:
      *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
      *   - session: An optional `SyncClientSession` to use with this change stream.
      *   - withFullDocumentType: The type that the `fullDocument` field of the emitted `ChangeStreamEvent`s will be
      *                           decoded to.
+     *
      * - Returns: A `SyncChangeStream` on all collections in a database.
+     *
      * - Throws:
      *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
      *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination.
      *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.
+     *
      * - SeeAlso:
      *   - https://docs.mongodb.com/manual/changeStreams/
      *   - https://docs.mongodb.com/manual/meta/aggregation-quick-reference/
      *   - https://docs.mongodb.com/manual/reference/system-collections/
+     *
      * - Note: Supported in MongoDB version 4.0+ only.
      */
     public func watch<FullDocType: Codable>(_ pipeline: [Document] = [],
@@ -360,22 +370,27 @@ public struct SyncMongoDatabase {
     /**
      * Starts a `SyncChangeStream` on a database. Excludes system collections.
      * Associates the specified `Codable` type `T` with the returned `SyncChangeStream`.
+     *
      * - Parameters:
      *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
      *   - options: An optional `ChangeStreamOptions` to use when constructing the `SyncChangeStream`.
      *   - session: An optional `SyncClientSession` to use with this change stream.
      *   - withEventType: The type that the entire change stream response will be decoded to and that will be returned
      *                    when iterating through the change stream.
+     *
      * - Returns: A `SyncChangeStream` on all collections in a database.
+     *
      * - Throws:
      *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
      *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination.
      *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.
+     *
      * - SeeAlso:
      *   - https://docs.mongodb.com/manual/changeStreams/
      *   - https://docs.mongodb.com/manual/meta/aggregation-quick-reference/
      *   - https://docs.mongodb.com/manual/reference/system-collections/
+     *
      * - Note: Supported in MongoDB version 4.0+ only.
      */
     public func watch<EventType: Codable>(_ pipeline: [Document] = [],
@@ -390,9 +405,9 @@ public struct SyncMongoDatabase {
         return try self._client.executeOperation(operation, session: session)
     }
 
-    /// Uses the provided `Connection` to get a pointer to a `mongoc_database_t` corresponding to this `SyncMongoDatabase`,
-    /// and uses it to execute the given closure. The `mongoc_database_t` is only valid for the body of the closure.
-    /// The caller is *not responsible* for cleaning up the `mongoc_database_t`.
+    /// Uses the provided `Connection` to get a pointer to a `mongoc_database_t` corresponding to this
+    /// `SyncMongoDatabase`, and uses it to execute the given closure. The `mongoc_database_t` is only valid for the
+    /// body of the closure. The caller is *not responsible* for cleaning up the `mongoc_database_t`.
     internal func withMongocDatabase<T>(from connection: Connection, body: (OpaquePointer) throws -> T) rethrows -> T {
         guard let db = mongoc_client_get_database(connection.clientHandle, self.name) else {
             fatalError("Couldn't get database '\(self.name)'")
@@ -400,8 +415,8 @@ public struct SyncMongoDatabase {
         defer { mongoc_database_destroy(db) }
 
         // `db` will automatically inherit read concern, write concern, and read preference from the parent client. If
-        // this `SyncMongoDatabase`'s value for any of those settings is different than the parent, we need to explicitly
-        // set it here.
+        // this database's value for any of those settings is different than the parent, we need to explicitly set it
+        // here.
 
         if self.readConcern != self._client.readConcern {
             // a nil value for self.readConcern corresponds to the empty read concern.

@@ -37,8 +37,8 @@ internal struct NextOperation<T: Codable>: Operation {
 
         switch self.target {
         case let .cursor(cursor):
-            // We already check this in `SyncMongoCursor.next()` in order to extract the relevant connection and session,
-            // but error again here just in case.
+            // We already check this in `SyncMongoCursor.next()` in order to extract the relevant connection and
+            // session, but error again here just in case.
             guard case let .open(cursorPtr, _, _, _) = cursor.state else {
                 throw ClosedCursorError
             }
