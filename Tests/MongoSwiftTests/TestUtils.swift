@@ -11,21 +11,6 @@ class MongoSwiftTestCase: XCTestCase {
         return "test"
     }
 
-    /// Gets the path of the directory containing spec files, depending on whether
-    /// we're running from XCode or the command line
-    static var specsPath: String {
-        // if we can access the "/Tests" directory, assume we're running from command line
-        if FileManager.default.fileExists(atPath: "./Tests") {
-            return "./Tests/Specs"
-        }
-        // otherwise we're in Xcode, get the bundle's resource path
-        guard let path = Bundle(for: self).resourcePath else {
-            XCTFail("Missing resource path")
-            return ""
-        }
-        return path
-    }
-
     /// Gets the connection string for the database being used for testing from the environment variable, $MONGODB_URI.
     /// If the environment variable does not exist, this will use a default of "mongodb://127.0.0.1/".
     static var connStr: String {
@@ -215,11 +200,6 @@ extension Document {
         let rearranged = rearrangeDoc(other, toLookLike: self)
         return self == rearranged
     }
-
-    init(fromJSONFile file: URL) throws {
-        let jsonString = try String(contentsOf: file, encoding: .utf8)
-        try self.init(fromJSON: jsonString)
-    }
 }
 
 /// Cleans and normalizes a given JSON string for comparison purposes
@@ -274,31 +254,6 @@ internal func sortedEqual(_ expectedValue: Document?) -> Predicate<Document> {
         let matches = expected.sortedEquals(actual)
         return PredicateResult(status: PredicateStatus(bool: matches), message: msg)
     }
-}
-
-/// Given two documents, returns a copy of the input document with all keys that *don't*
-/// exist in `standard` removed, and with all matching keys put in the same order they
-/// appear in `standard`.
-internal func rearrangeDoc(_ input: Document, toLookLike standard: Document) -> Document {
-    var output = Document()
-    for (k, v) in standard {
-        // if it's a document, recursively rearrange to look like corresponding sub-document
-        if let sDoc = v as? Document, let iDoc = input[k] as? Document {
-            output[k] = rearrangeDoc(iDoc, toLookLike: sDoc)
-
-        // if it's an array, recursively rearrange to look like corresponding sub-array
-        } else if let sArr = v as? [Document], let iArr = input[k] as? [Document] {
-            var newArr = [Document]()
-            for (i, el) in iArr.enumerated() {
-                newArr.append(rearrangeDoc(el, toLookLike: sArr[i]))
-            }
-            output[k] = newArr
-        // just copy the value over as is
-        } else {
-            output[k] = input[k]
-        }
-    }
-    return output
 }
 
 /// A Nimble matcher for testing BSONValue equality.

@@ -47,17 +47,13 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
             return
         }
 
-        let specsPath = MongoSwiftTestCase.specsPath + "/initial-dns-seedlist-discovery/tests"
-        let testFiles = try FileManager.default.contentsOfDirectory(atPath: specsPath).filter { $0.hasSuffix(".json") }
-        for filename in testFiles {
+        let tests = try retrieveSpecTestFiles(specName: "initial-dns-seedlist-discovery",
+                                              asType: DNSSeedlistTestCase.self)
+        for (filename, testCase) in tests {
             // TODO SWIFT-593: run these tests
             guard !["encoded-userinfo-and-db.json", "uri-with-auth.json"].contains(filename) else {
                 continue
             }
-
-            let testFilePath = URL(fileURLWithPath: "\(specsPath)/\(filename)")
-            let testDocument = try Document(fromJSONFile: testFilePath)
-            let testCase = try BSONDecoder().decode(DNSSeedlistTestCase.self, from: testDocument)
 
             // listen for TopologyDescriptionChanged events and continually record the latest description we've seen.
             let center = NotificationCenter.default

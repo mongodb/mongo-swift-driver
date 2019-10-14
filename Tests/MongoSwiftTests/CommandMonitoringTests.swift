@@ -15,21 +15,15 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
             return
         }
 
-        let decoder = BSONDecoder()
         let client = try SyncMongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
 
-        let cmPath = MongoSwiftTestCase.specsPath + "/command-monitoring/tests"
-        let testFiles = try FileManager.default.contentsOfDirectory(atPath: cmPath).filter { $0.hasSuffix(".json") }
-        for filename in testFiles {
+        let tests = try retrieveSpecTestFiles(specName: "command-monitoring", asType: CMTestFile.self)
+        for (filename, testFile) in tests {
             // read in the file data and parse into a struct
             let name = filename.components(separatedBy: ".")[0]
 
             // remove this if/when bulkwrite is supported
             if name.lowercased().contains("bulkwrite") { continue }
-
-            let testFilePath = URL(fileURLWithPath: "\(cmPath)/\(filename)")
-            let asDocument = try Document(fromJSONFile: testFilePath)
-            let testFile = try decoder.decode(CMTestFile.self, from: asDocument)
 
             print("-----------------------")
             print("Executing tests for file \(name)...\n")

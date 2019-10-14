@@ -28,9 +28,6 @@ private struct RetryableWritesTestFile: Decodable {
         case runOn, data, tests
     }
 
-    /// Name of this test case
-    var name: String = ""
-
     /// Server version and topology requirements in order for tests from this file to be run.
     let runOn: [TestRequirement]?
 
@@ -63,28 +60,19 @@ final class RetryableWritesTests: MongoSwiftTestCase, FailPointConfigured {
     }
 
     func testRetryableWrites() throws {
-        let testFilesPath = MongoSwiftTestCase.specsPath + "/retryable-writes/tests"
-        let testFiles: [String] = try FileManager.default.contentsOfDirectory(atPath: testFilesPath)
-
-        let tests: [RetryableWritesTestFile] = try testFiles.map { fileName in
-            let url = URL(fileURLWithPath: "\(testFilesPath)/\(fileName)")
-            var testFile = try BSONDecoder().decode(RetryableWritesTestFile.self, from: Document(fromJSONFile: url))
-            testFile.name = fileName
-            return testFile
-        }
-
-        for testFile in tests {
+        let tests = try retrieveSpecTestFiles(specName: "retryable-writes", asType: RetryableWritesTestFile.self)
+        for (fileName, testFile) in tests {
             let setupClient = try SyncMongoClient.makeTestClient()
             let version = try setupClient.serverVersion()
 
             if let requirements = testFile.runOn {
                 guard requirements.contains(where: { $0.isMet(by: version, MongoSwiftTestCase.topologyType) }) else {
-                    print("Skipping tests from file \(testFile.name), deployment requirements not met.")
+                    print("Skipping tests from file \(fileName), deployment requirements not met.")
                     continue
                 }
             }
 
-            print("\n------------\nExecuting tests from file \(testFilesPath)/\(testFile.name)...\n")
+            print("\n------------\nExecuting tests from file \(fileName)...\n")
             for test in testFile.tests {
                 print("Executing test: \(test.description)")
 
