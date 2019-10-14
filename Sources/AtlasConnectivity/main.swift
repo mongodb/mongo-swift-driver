@@ -12,7 +12,7 @@ for config in configs {
     }
 
     do {
-        let client = try MongoClient(uri)
+        let client = try SyncMongoClient(uri)
         // run isMaster
         let db = client.db("test")
         _ = try db.runCommand(["isMaster": 1])
