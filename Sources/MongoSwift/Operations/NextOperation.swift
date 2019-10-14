@@ -2,11 +2,11 @@ import mongoc
 
 /// The entity on which the `next` operation is called.
 internal enum NextOperationTarget<T: Codable> {
-    /// Indicates the `next` call will be on a MongoCursor.
-    case cursor(MongoCursor<T>)
+    /// Indicates the `next` call will be on a cursor.
+    case cursor(SyncMongoCursor<T>)
 
     /// Indicates the `next` call will be on a change stream.
-    case changeStream(ChangeStream<T>)
+    case changeStream(SyncChangeStream<T>)
 }
 
 /// An operation corresponding to a `next` call on a `NextOperationTarget`.
@@ -20,13 +20,13 @@ internal struct NextOperation<T: Codable>: Operation {
     }
 
     // swiftlint:disable:next cyclomatic_complexity
-    internal func execute(using connection: Connection, session: ClientSession?) throws -> T? {
+    internal func execute(using connection: Connection, session: SyncClientSession?) throws -> T? {
         // NOTE: this method does not actually use the `connection` parameter passed in. for the moment, it is only
-        // here so that `NextOperation` conforms to `Operation`. if we eventually rewrite MongoCursor to no longer
+        // here so that `NextOperation` conforms to `Operation`. if we eventually rewrite our cursors to no longer
         // wrap a mongoc cursor then we will use the connection here.
 
         if let session = session, !session.active {
-            throw ClientSession.SessionInactiveError
+            throw SyncClientSession.SessionInactiveError
         }
 
         let out = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
@@ -37,7 +37,7 @@ internal struct NextOperation<T: Codable>: Operation {
 
         switch self.target {
         case let .cursor(cursor):
-            // We already check this in `MongoCursor.next()` in order to extract the relevant connection and session,
+            // We already check this in `SyncMongoCursor.next()` in order to extract the relevant connection and session,
             // but error again here just in case.
             guard case let .open(cursorPtr, _, _, _) = cursor.state else {
                 throw ClosedCursorError
