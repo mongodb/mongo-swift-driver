@@ -1,7 +1,7 @@
 import mongoc
 
-/// An extension of `MongoCollection` encapsulating write operations.
-extension MongoCollection {
+/// An extension of `SyncMongoCollection` encapsulating write operations.
+extension SyncMongoCollection {
     /**
      * Encodes the provided value to BSON and inserts it. If the value is missing an identifier, one will be
      * generated for it.
@@ -9,7 +9,7 @@ extension MongoCollection {
      * - Parameters:
      *   - value: A `CollectionType` value to encode and insert
      *   - options: Optional `InsertOneOptions` to use when executing the command
-     *   - session: Optional `ClientSession` to use when executing this command
+     *   - session: Optional `SyncClientSession` to use when executing this command
      *
      * - Returns: The optional result of attempting to perform the insert. If the `WriteConcern`
      *            is unacknowledged, `nil` is returned.
@@ -24,7 +24,7 @@ extension MongoCollection {
     @discardableResult
     public func insertOne(_ value: CollectionType,
                           options: InsertOneOptions? = nil,
-                          session: ClientSession? = nil) throws -> InsertOneResult? {
+                          session: SyncClientSession? = nil) throws -> InsertOneResult? {
         return try convertingBulkWriteErrors {
             let result = try self.bulkWrite([.insertOne(value)],
                                             options: options?.asBulkWriteOptions(),
@@ -40,7 +40,7 @@ extension MongoCollection {
      * - Parameters:
      *   - values: The `CollectionType` values to insert
      *   - options: optional `InsertManyOptions` to use while executing the operation
-     *   - session: Optional `ClientSession` to use when executing this command
+     *   - session: Optional `SyncClientSession` to use when executing this command
      *
      * - Returns: an `InsertManyResult`, or `nil` if the write concern is unacknowledged.
      *
@@ -54,7 +54,7 @@ extension MongoCollection {
     @discardableResult
     public func insertMany(_ values: [CollectionType],
                            options: InsertManyOptions? = nil,
-                           session: ClientSession? = nil) throws -> InsertManyResult? {
+                           session: SyncClientSession? = nil) throws -> InsertManyResult? {
         let result = try self.bulkWrite(values.map { .insertOne($0) }, options: options, session: session)
         return InsertManyResult(from: result)
     }
@@ -66,7 +66,7 @@ extension MongoCollection {
      *   - filter: A `Document` representing the match criteria
      *   - replacement: The replacement value, a `CollectionType` value to be encoded and inserted
      *   - options: Optional `ReplaceOptions` to use when executing the command
-     *   - session: Optional `ClientSession` to use when executing this command
+     *   - session: Optional `SyncClientSession` to use when executing this command
      *
      * - Returns: The optional result of attempting to replace a document. If the `WriteConcern`
      *            is unacknowledged, `nil` is returned.
@@ -82,7 +82,7 @@ extension MongoCollection {
     public func replaceOne(filter: Document,
                            replacement: CollectionType,
                            options: ReplaceOptions? = nil,
-                           session: ClientSession? = nil) throws -> UpdateResult? {
+                           session: SyncClientSession? = nil) throws -> UpdateResult? {
         return try convertingBulkWriteErrors {
             let modelOptions = ReplaceOneModelOptions(collation: options?.collation, upsert: options?.upsert)
             let model = WriteModel.replaceOne(filter: filter, replacement: replacement, options: modelOptions)
@@ -98,7 +98,7 @@ extension MongoCollection {
      *   - filter: A `Document` representing the match criteria
      *   - update: A `Document` representing the update to be applied to a matching document
      *   - options: Optional `UpdateOptions` to use when executing the command
-     *   - session: Optional `ClientSession` to use when executing this command
+     *   - session: Optional `SyncClientSession` to use when executing this command
      *
      * - Returns: The optional result of attempting to update a document. If the `WriteConcern` is
      *            unacknowledged, `nil` is returned.
@@ -114,7 +114,7 @@ extension MongoCollection {
     public func updateOne(filter: Document,
                           update: Document,
                           options: UpdateOptions? = nil,
-                          session: ClientSession? = nil) throws -> UpdateResult? {
+                          session: SyncClientSession? = nil) throws -> UpdateResult? {
         return try convertingBulkWriteErrors {
             let modelOptions = UpdateModelOptions(arrayFilters: options?.arrayFilters,
                                                   collation: options?.collation,
@@ -132,7 +132,7 @@ extension MongoCollection {
      *   - filter: A `Document` representing the match criteria
      *   - update: A `Document` representing the update to be applied to matching documents
      *   - options: Optional `UpdateOptions` to use when executing the command
-     *   - session: Optional `ClientSession` to use when executing this command
+     *   - session: Optional `SyncClientSession` to use when executing this command
      *
      * - Returns: The optional result of attempting to update multiple documents. If the write
      *            concern is unacknowledged, nil is returned
@@ -148,7 +148,7 @@ extension MongoCollection {
     public func updateMany(filter: Document,
                            update: Document,
                            options: UpdateOptions? = nil,
-                           session: ClientSession? = nil) throws -> UpdateResult? {
+                           session: SyncClientSession? = nil) throws -> UpdateResult? {
         return try convertingBulkWriteErrors {
             let modelOptions = UpdateModelOptions(arrayFilters: options?.arrayFilters,
                                                   collation: options?.collation,
@@ -165,7 +165,7 @@ extension MongoCollection {
      * - Parameters:
      *   - filter: A `Document` representing the match criteria
      *   - options: Optional `DeleteOptions` to use when executing the command
-     *   - session: Optional `ClientSession` to use when executing this command
+     *   - session: Optional `SyncClientSession` to use when executing this command
      *
      * - Returns: The optional result of performing the deletion. If the `WriteConcern` is
      *            unacknowledged, `nil` is returned.
@@ -180,7 +180,7 @@ extension MongoCollection {
     @discardableResult
     public func deleteOne(_ filter: Document,
                           options: DeleteOptions? = nil,
-                          session: ClientSession? = nil) throws -> DeleteResult? {
+                          session: SyncClientSession? = nil) throws -> DeleteResult? {
         return try convertingBulkWriteErrors {
             let modelOptions = DeleteModelOptions(collation: options?.collation)
             let model: WriteModel<CollectionType> = .deleteOne(filter, options: modelOptions)
@@ -195,7 +195,7 @@ extension MongoCollection {
      * - Parameters:
      *   - filter: Document representing the match criteria
      *   - options: Optional `DeleteOptions` to use when executing the command
-     *   - session: Optional `ClientSession` to use when executing this command
+     *   - session: Optional `SyncClientSession` to use when executing this command
      *
      * - Returns: The optional result of performing the deletion. If the `WriteConcern` is
      *            unacknowledged, `nil` is returned.
@@ -210,7 +210,7 @@ extension MongoCollection {
     @discardableResult
     public func deleteMany(_ filter: Document,
                            options: DeleteOptions? = nil,
-                           session: ClientSession? = nil) throws -> DeleteResult? {
+                           session: SyncClientSession? = nil) throws -> DeleteResult? {
         return try convertingBulkWriteErrors {
             let modelOptions = DeleteModelOptions(collation: options?.collation)
             let model: WriteModel<CollectionType> = .deleteMany(filter, options: modelOptions)
@@ -237,7 +237,7 @@ private extension BulkWriteOptionsConvertible {
 
 // Write command options structs
 
-/// Options to use when executing an `insertOne` command on a `MongoCollection`.
+/// Options to use when executing an `insertOne` command on a `MongoCollection` or a `SyncMongoCollection`.
 public struct InsertOneOptions: Codable, BulkWriteOptionsConvertible {
     /// If true, allows the write to opt-out of document level validation.
     public var bypassDocumentValidation: Bool?
@@ -252,10 +252,10 @@ public struct InsertOneOptions: Codable, BulkWriteOptionsConvertible {
     }
 }
 
-/// Options to use when executing a multi-document insert operation on a `MongoCollection`.
+/// Options to use when executing a multi-document insert operation on a `MongoCollection` or a `SyncMongoCollection`.
 public typealias InsertManyOptions = BulkWriteOptions
 
-/// Options to use when executing an `update` command on a `MongoCollection`.
+/// Options to use when executing an `update` command on a `MongoCollection` or a `SyncMongoCollection`.
 public struct UpdateOptions: Codable, BulkWriteOptionsConvertible {
     /// A set of filters specifying to which array elements an update should apply.
     public var arrayFilters: [Document]?
@@ -286,7 +286,7 @@ public struct UpdateOptions: Codable, BulkWriteOptionsConvertible {
     }
 }
 
-/// Options to use when executing a `replace` command on a `MongoCollection`.
+/// Options to use when executing a `replace` command on a `MongoCollection` or a `SyncMongoCollection`.
 public struct ReplaceOptions: Codable, BulkWriteOptionsConvertible {
     /// If true, allows the write to opt-out of document level validation.
     public var bypassDocumentValidation: Bool?
@@ -312,7 +312,7 @@ public struct ReplaceOptions: Codable, BulkWriteOptionsConvertible {
     }
 }
 
-/// Options to use when executing a `delete` command on a `MongoCollection`.
+/// Options to use when executing a `delete` command on a `MongoCollection` or a `SyncMongoCollection`.
 public struct DeleteOptions: Codable, BulkWriteOptionsConvertible {
     /// Specifies a collation.
     public var collation: Document?
@@ -332,7 +332,7 @@ public struct DeleteOptions: Codable, BulkWriteOptionsConvertible {
 
 // Write command results structs
 
-/// The result of an `insertOne` command on a `MongoCollection`.
+/// The result of an `insertOne` command on a `MongoCollection` or a `SyncMongoCollection`.
 public struct InsertOneResult: Decodable {
     private enum CodingKeys: String, CodingKey {
         case insertedId
@@ -359,7 +359,7 @@ public struct InsertOneResult: Decodable {
     }
 }
 
-/// The result of a multi-document insert operation on a `MongoCollection`.
+/// The result of a multi-document insert operation on a `MongoCollection` or a `SyncMongoCollection`.
 public struct InsertManyResult {
     /// Number of documents inserted.
     public let insertedCount: Int
@@ -377,7 +377,7 @@ public struct InsertManyResult {
     }
 }
 
-/// The result of a `delete` command on a `MongoCollection`.
+/// The result of a `delete` command on a `MongoCollection` or a `SyncMongoCollection`.
 public struct DeleteResult: Decodable {
     /// The number of documents that were deleted.
     public let deletedCount: Int
@@ -390,7 +390,7 @@ public struct DeleteResult: Decodable {
     }
 }
 
-/// The result of an `update` operation a `MongoCollection`.
+/// The result of an `update` operation on a `MongoCollection` or a `SyncMongoCollection`.
 public struct UpdateResult: Decodable {
     /// The number of documents that matched the filter.
     public let matchedCount: Int
