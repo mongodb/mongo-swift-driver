@@ -1,7 +1,7 @@
 import Foundation
 import mongoc
 
-/// Options to use when creating a ClientSession.
+/// Options to use when creating a `ClientSession` or `SyncClientSession`.
 public struct ClientSessionOptions {
     /// Whether to enable causal consistency for this session. By default, causal consistency is enabled.
     ///
@@ -31,7 +31,7 @@ private func withSessionOpts<T>(wrapping options: ClientSessionOptions?,
  * A MongoDB client session.
  * This class represents a logical session used for ordering sequential operations.
  *
- * To create a client session, use `startSession` or `withSession` on a `MongoClient`.
+ * To create a client session, use `startSession` or `withSession` on a `MongoClient` or a `SyncMongoClient`.
  *
  * If `causalConsistency` is not set to `false` when starting a session, read and write operations that use the session
  * will be provided causal consistency guarantees depending on the read and write concerns used. Using "majority"
@@ -55,12 +55,12 @@ private func withSessionOpts<T>(wrapping options: ClientSessionOptions?,
  *   - https://docs.mongodb.com/manual/core/read-isolation-consistency-recency/#sessions
  *   - https://docs.mongodb.com/manual/core/causal-consistency-read-write-concerns/
  */
-public final class ClientSession {
+public final class SyncClientSession {
     /// Error thrown when an inactive session is used.
     internal static let SessionInactiveError = UserError.logicError(message: "Tried to use an inactive session")
     /// Error thrown when a user attempts to use a session with a client it was not created from.
     internal static let ClientMismatchError = UserError.invalidArgumentError(
-        message: "Sessions may only be used with the MongoClient used to create them")
+        message: "Sessions may only be used with the client used to create them")
 
     /// Enum for tracking the state of a session.
     internal enum State {
@@ -83,7 +83,7 @@ public final class ClientSession {
     }
 
     /// The client used to start this session.
-    public let client: MongoClient
+    public let client: SyncMongoClient
 
     /// The session ID of this session.
     public let id: Document
@@ -122,7 +122,7 @@ public final class ClientSession {
     public let options: ClientSessionOptions?
 
     /// Initializes a new client session.
-    internal init(client: MongoClient, options: ClientSessionOptions? = nil) throws {
+    internal init(client: SyncMongoClient, options: ClientSessionOptions? = nil) throws {
         self.options = options
         self.client = client
 
@@ -144,12 +144,12 @@ public final class ClientSession {
 
     /// Retrieves this session's underlying connection. Throws an error if the provided client was not the client used
     /// to create this session, or if this session has been ended.
-    internal func getConnection(forUseWith client: MongoClient) throws -> Connection {
+    internal func getConnection(forUseWith client: SyncMongoClient) throws -> Connection {
         guard case let .active(_, connection) = self.state else {
-            throw ClientSession.SessionInactiveError
+            throw SyncClientSession.SessionInactiveError
         }
         guard self.client == client else {
-            throw ClientSession.ClientMismatchError
+            throw SyncClientSession.ClientMismatchError
         }
         return connection
     }
@@ -202,7 +202,7 @@ public final class ClientSession {
     ///   - `UserError.logicError` if this session is inactive
     internal func append(to doc: inout Document) throws {
         guard case let .active(session, _) = self.state else {
-            throw ClientSession.SessionInactiveError
+            throw SyncClientSession.SessionInactiveError
         }
 
         var error = bson_error_t()
