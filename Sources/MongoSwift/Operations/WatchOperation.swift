@@ -2,17 +2,17 @@ import mongoc
 
 /// The entity on which to start a change stream.
 internal enum ChangeStreamTarget<CollectionType: Codable> {
-    /// Indicates the change stream will be opened to watch a `MongoClient`.
-    case client(MongoClient)
+    /// Indicates the change stream will be opened to watch a client.
+    case client(SyncMongoClient)
 
-    /// Indicates the change stream will be opened to watch a `MongoDatabase`.
-    case database(MongoDatabase)
+    /// Indicates the change stream will be opened to watch a database.
+    case database(SyncMongoDatabase)
 
-    /// Indicates the change stream will be opened to watch a `MongoCollection`.
-    case collection(MongoCollection<CollectionType>)
+    /// Indicates the change stream will be opened to watch a collection.
+    case collection(SyncMongoCollection<CollectionType>)
 }
 
-/// An operation corresponding to a "watch" command on either a MongoClient, MongoDatabase, or MongoCollection.
+/// An operation corresponding to a "watch" command on either a client, database, or collection.
 internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codable>: Operation {
     private let target: ChangeStreamTarget<CollectionType>
     private let pipeline: [Document]
@@ -30,12 +30,12 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codabl
     }
 
     internal func execute(using connection: Connection,
-                          session: ClientSession?) throws -> ChangeStream<ChangeStreamType> {
+                          session: SyncClientSession?) throws -> SyncChangeStream<ChangeStreamType> {
         let pipeline: Document = ["pipeline": self.pipeline]
         let opts = try encodeOptions(options: self.options, session: session)
 
         let changeStream: OpaquePointer
-        let client: MongoClient
+        let client: SyncMongoClient
         let decoder: BSONDecoder
 
         switch self.target {
@@ -57,7 +57,7 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codabl
             }
         }
 
-        return try ChangeStream<ChangeStreamType>(stealing: changeStream,
+        return try SyncChangeStream<ChangeStreamType>(stealing: changeStream,
                                                   connection: connection,
                                                   client: client,
                                                   session: session,
