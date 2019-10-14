@@ -37,7 +37,7 @@ public enum OperationType: String, Codable {
     case rename
 }
 
-/// The response document type from a `ChangeStream`.
+/// The response document type from a change stream.
 public struct ChangeStreamEvent<T: Codable>: Codable {
     /// Describes the type of operation for this change.
     public let operationType: OperationType
@@ -64,7 +64,7 @@ public struct ChangeStreamEvent<T: Codable>: Codable {
     /**
      * Always present for operations of type `insert` and `replace`. Also present for operations of type `update` if
      * the user has specified `.updateLookup` for the `fullDocument` option in the `ChangeStreamOptions` used to create
-     * the `ChangeStream` that emitted this document.
+     * the change stream that emitted this document.
      *
      * For operations of type `insert’ and `replace’, this key will contain the document being inserted, or the new
      * version of the document that is replacing the existing document, respectively.
