@@ -5,22 +5,22 @@ import XCTest
 
 /// The entity on which to start a change stream.
 internal enum ChangeStreamTarget: String, Decodable {
-    /// Indicates the change stream will be opened to watch a `MongoClient`.
+    /// Indicates the change stream will be opened to watch a client.
     case client
 
-    /// Indicates the change stream will be opened to watch a `MongoDatabase`.
+    /// Indicates the change stream will be opened to watch a database.
     case database
 
-    /// Indicates the change stream will be opened to watch a `MongoCollection`.
+    /// Indicates the change stream will be opened to watch a collection.
     case collection
 
     /// Open a change stream against this target. An error will be thrown if the necessary namespace information is not
     /// provided.
-    internal func watch(_ client: MongoClient,
+    internal func watch(_ client: SyncMongoClient,
                         _ database: String?,
                         _ collection: String?,
                         _ pipeline: [Document],
-                        _ options: ChangeStreamOptions) throws -> ChangeStream<Document> {
+                        _ options: ChangeStreamOptions) throws -> SyncChangeStream<Document> {
         switch self {
         case .client:
             return try client.watch(pipeline, options: options, withEventType: Document.self)
@@ -64,7 +64,7 @@ internal struct ChangeStreamTestOperation: Decodable {
     }
 
     /// Run the operation against the namespace associated with this operation.
-    internal func execute(using client: MongoClient) throws -> TestOperationResult? {
+    internal func execute(using client: SyncMongoClient) throws -> TestOperationResult? {
         let db = client.db(self.database)
         let coll = db.collection(self.collection)
         return try self.operation.op.execute(client: client, database: db, collection: coll, session: nil)
@@ -156,8 +156,8 @@ internal struct ChangeStreamTest: Decodable {
     // The expected result of running this test.
     let result: ChangeStreamTestResult
 
-    internal func run(globalClient: MongoClient, database: String, collection: String) throws {
-        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
+    internal func run(globalClient: SyncMongoClient, database: String, collection: String) throws {
+        let client = try SyncMongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
 
         let center = client.notificationCenter
         var events: [TestCommandStartedEvent] = []
@@ -262,7 +262,7 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase, FailPointConfigured {
             return testFile
         }
 
-        let globalClient = try MongoClient.makeTestClient()
+        let globalClient = try SyncMongoClient.makeTestClient()
 
         let version = try globalClient.serverVersion()
         let topology = MongoSwiftTestCase.topologyType
@@ -385,7 +385,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        guard try MongoClient.makeTestClient().supportsFailCommand() else {
+        guard try SyncMongoClient.makeTestClient().supportsFailCommand() else {
             print("Skipping \(self.name) because server version doesn't support failCommand")
             return
         }
@@ -496,7 +496,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        guard try MongoClient.makeTestClient().supportsFailCommand() else {
+        guard try SyncMongoClient.makeTestClient().supportsFailCommand() else {
             print("Skipping \(self.name) because server version doesn't support failCommand")
             return
         }
@@ -527,7 +527,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
         // the next set of assertions relies on the presence of the NonResumableChangeStreamError label, which was
         // introduced in 4.1.1 via SERVER-40446.
-        guard try MongoClient.makeTestClient().serverVersion() >= ServerVersion(major: 4, minor: 1, patch: 1) else {
+        guard try SyncMongoClient.makeTestClient().serverVersion() >= ServerVersion(major: 4, minor: 1, patch: 1) else {
             return
         }
 
@@ -553,7 +553,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         }
 
         // need to keep the stream alive so its deinit doesn't kill the cursor.
-        var changeStream: ChangeStream<ChangeStreamEvent<Document>>?
+        var changeStream: SyncChangeStream<ChangeStreamEvent<Document>>?
         let events = try captureCommandEvents(commandNames: ["killCursors"]) { client in
             try withTestNamespace(client: client) { _, coll in
                 changeStream =
@@ -585,7 +585,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
                 return
             }
 
-            var changeStream: ChangeStream<ChangeStreamEvent<Document>>?
+            var changeStream: SyncChangeStream<ChangeStreamEvent<Document>>?
             let aggEvent = try captureCommandEvents(from: client,
                                                     eventTypes: [.commandSucceeded],
                                                     commandNames: ["aggregate"]) {
@@ -706,7 +706,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient.makeTestClient()
+        let client = try SyncMongoClient.makeTestClient()
         guard try client.serverVersion() >= ServerVersion(major: 4, minor: 0) else {
             print("Skipping test case for server version \(try client.serverVersion())")
             return
@@ -758,7 +758,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient.makeTestClient()
+        let client = try SyncMongoClient.makeTestClient()
         guard try client.serverVersion() >= ServerVersion(major: 4, minor: 0) else {
             print("Skipping test case for server version \(try client.serverVersion())")
             return
@@ -800,7 +800,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient.makeTestClient()
+        let client = try SyncMongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
         let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
@@ -844,7 +844,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient.makeTestClient()
+        let client = try SyncMongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
         let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
@@ -871,7 +871,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient.makeTestClient()
+        let client = try SyncMongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
         let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
@@ -918,7 +918,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient.makeTestClient()
+        let client = try SyncMongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
         let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
@@ -963,7 +963,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
         let expectedDoc1 = MyFullDocumentType(id: 1, x: 1, y: 2)
 
-        let client = try MongoClient.makeTestClient()
+        let client = try SyncMongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
 
@@ -1002,7 +1002,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient.makeTestClient()
+        let client = try SyncMongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
 

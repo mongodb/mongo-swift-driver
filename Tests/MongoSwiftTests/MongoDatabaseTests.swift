@@ -9,14 +9,14 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
     }
 
     override func tearDown() {
-        guard let client = try? MongoClient.makeTestClient() else {
+        guard let client = try? SyncMongoClient.makeTestClient() else {
             return
         }
         try? client.db(type(of: self).testDatabase).drop()
     }
 
     func testMongoDatabase() throws {
-        let client = try MongoClient.makeTestClient()
+        let client = try SyncMongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
 
         let command: Document = ["create": self.getCollectionName(suffix: "1")]
@@ -47,7 +47,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         let encoder = BSONEncoder()
         let center = NotificationCenter.default
 
-        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
+        let client = try SyncMongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
         var db = client.db(type(of: self).testDatabase)
 
         let collection = db.collection("collection")
@@ -84,7 +84,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient.makeTestClient()
+        let client = try SyncMongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
 
         let indexOpts: Document =
@@ -140,7 +140,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
     }
 
     func testListCollections() throws {
-        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
+        let client = try SyncMongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
         let db = client.db(type(of: self).testDatabase)
         try db.drop()
 

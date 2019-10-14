@@ -28,7 +28,7 @@ enum TestOperationResult: Decodable, Equatable {
         self = .bulkWrite(result.bulkResultValue)
     }
 
-    public init(from cursor: MongoCursor<Document>) {
+    public init(from cursor: SyncMongoCursor<Document>) {
         self = .array(Array(cursor))
     }
 

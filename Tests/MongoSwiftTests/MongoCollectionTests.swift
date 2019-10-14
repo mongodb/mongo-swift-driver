@@ -2,11 +2,11 @@
 import Nimble
 import XCTest
 
-private var _client: MongoClient?
+private var _client: SyncMongoClient?
 
 final class MongoCollectionTests: MongoSwiftTestCase {
     var collName: String = ""
-    var coll: MongoCollection<Document>!
+    var coll: SyncMongoCollection<Document>!
     let doc1: Document = ["_id": 1, "cat": "dog"]
     let doc2: Document = ["_id": 2, "cat": "cat"]
 
@@ -14,7 +14,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     override class func setUp() {
         super.setUp()
         do {
-            _client = try MongoClient.makeTestClient()
+            _client = try SyncMongoClient.makeTestClient()
         } catch {
             print("Setup failed: \(error)")
         }
@@ -108,7 +108,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         let encoder = BSONEncoder()
         let center = NotificationCenter.default
 
-        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
+        let client = try SyncMongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
         var db = client.db(type(of: self).testDatabase)
 
         let collection = db.collection("collection")
@@ -306,7 +306,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     }
 
     func testCodableCollection() throws {
-        let client = try MongoClient.makeTestClient()
+        let client = try SyncMongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
         let coll1 = try db.createCollection(self.getCollectionName(suffix: "codable"), withType: Basic.self)
         defer { try? coll1.drop() }

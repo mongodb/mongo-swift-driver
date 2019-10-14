@@ -3,14 +3,14 @@ import Nimble
 import XCTest
 
 final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
-    static var client: MongoClient?
-    var coll: MongoCollection<Document>!
+    static var client: SyncMongoClient?
+    var coll: SyncMongoCollection<Document>!
 
     /// Set up the entire suite - run once before all tests
     override class func setUp() {
         super.setUp()
         do {
-            client = try MongoClient.makeTestClient()
+            client = try SyncMongoClient.makeTestClient()
         } catch {
             print("Setup failed: \(error)")
         }
