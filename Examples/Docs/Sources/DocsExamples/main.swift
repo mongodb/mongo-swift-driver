@@ -6,7 +6,7 @@ import MongoSwift
 /// Examples used for the MongoDB documentation on Causal Consistency.
 /// - SeeAlso: https://docs.mongodb.com/manual/core/read-isolation-consistency-recency/#examples
 private func causalConsistency() throws {
-    let client1 = try MongoClient()
+    let client1 = try SyncMongoClient()
 
     // Start Causal Consistency Example 1
     let s1 = try client1.startSession(options: ClientSessionOptions(causalConsistency: true))
@@ -16,12 +16,10 @@ private func causalConsistency() throws {
         writeConcern: try WriteConcern(w: .majority, wtimeoutMS: 1000)
     )
     let items = client1.db("test", options: dbOptions).collection("items")
-    try items.updateOne(
-        filter: ["sku": "111", "end": BSONNull()],
-        update: ["$set": ["end": currentDate] as Document],
-        session: s1
-    )
-    try items.insertOne(["sku": "nuts-111", "name": "Pecans", "start": currentDate], session: s1)
+    try items.updateOne(filter: ["sku": "111", "end": .null],
+                        update: ["$set": ["end": .datetime(currentDate)]],
+                        session: s1)
+    try items.insertOne(["sku": "nuts-111", "name": "Pecans", "start": .datetime(currentDate)], session: s1)
     // End Causal Consistency Example 1
 
     let client2 = try MongoClient()
@@ -34,7 +32,7 @@ private func causalConsistency() throws {
 
         dbOptions.readPreference = ReadPreference(.secondary)
         let items2 = client2.db("test", options: dbOptions).collection("items")
-        for item in try items2.find(["end": BSONNull()], session: s2) {
+        for item in try items2.find(["end": .null], session: s2) {
             print(item)
         }
     }
@@ -81,8 +79,8 @@ private func changeStreams() throws {
     do {
         // Start Changestream Example 4
         let pipeline: [Document] = [
-            ["$match": ["fullDocument.username": "alice"] as Document],
-            ["$addFields": ["newField": "this is an added field!"] as Document]
+            ["$match": ["fullDocument.username": "alice"]],
+            ["$addFields": ["newField": "this is an added field!"]]
         ]
         let inventory = db.collection("inventory")
         let cursor = try inventory.watch(pipeline, withEventType: Document.self)
