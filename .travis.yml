@@ -21,22 +21,8 @@ jobs:
 
     - stage: tests
       os: osx
-      osx_image: xcode10.1
-      env: SWIFT_VERSION=4.2.4
-
-    - stage: tests
-      os: osx
-      osx_image: xcode10.2
-      env: SWIFT_VERSION=4.2.4
-
-    - stage: tests
-      os: osx
       osx_image: xcode10.2
       env: SWIFT_VERSION=5.0
-
-    - stage: tests
-      os: linux
-      env: SWIFT_VERSION=4.2.4
 
     - stage: tests
       os: linux
@@ -45,7 +31,7 @@ jobs:
     - stage: post-tests
       name: code coverage
       os: osx
-      osx_image: xcode10.1
+      osx_image: xcode10.2
       script: make coverage
       after_success: bash <(curl -s https://codecov.io/bash)
 

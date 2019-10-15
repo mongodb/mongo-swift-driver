@@ -1,4 +1,5 @@
 import Foundation
+import mongoc
 @testable import MongoSwift
 import Nimble
 import XCTest
@@ -261,7 +262,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
     func testRawBSON() throws {
         let doc = try Document(fromJSON: "{\"a\" : [{\"$numberInt\": \"10\"}]}")
-        let fromRawBSON = Document(fromBSON: doc.rawBSON)
+        let fromRawBSON = try Document(fromBSON: doc.rawBSON)
         expect(doc).to(equal(fromRawBSON))
     }
 
@@ -282,7 +283,7 @@ final class DocumentTests: MongoSwiftTestCase {
         let int32min_sub1 = Int64(Int32.min) - Int64(1)
         let int32max_add1 = Int64(Int32.max) + Int64(1)
 
-        var doc: Document = [
+        let doc: Document = [
             "int32min": Int(Int32.min),
             "int32max": Int(Int32.max),
             "int32min-1": Int(int32min_sub1),
@@ -358,7 +359,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
                 // for cB input:
                 // native_to_bson( bson_to_native(cB) ) = cB
-                let docFromCB = Document(fromBSON: cBData)
+                let docFromCB = try Document(fromBSON: cBData)
                 expect(docFromCB.rawBSON).to(equal(cBData))
 
                 // test round tripping through documents
@@ -367,28 +368,16 @@ final class DocumentTests: MongoSwiftTestCase {
                 // element in the original document will have gone from bson_t -> Swift data type -> bson_t. At the end,
                 // the new bson_t should be identical to the original one. If not, our bson_t translation layer is
                 // lossy and/or buggy.
-                let testRoundTrip = {
-                    let nativeFromDoc = docFromCB.toArray()
-                    let docFromNative = Document(fromArray: nativeFromDoc)
-                    expect(docFromNative.rawBSON).to(equal(cBData))
-                }
-
-                // Linux swift terminates all strings when encountering null bytes in Swift < 4.2.3 (SR-7455).
-                // TODO: remove this conditional compile when the minimum supported version is >= 4.2.3
-                #if swift(>=4.2.3) || !os(Linux)
-                testRoundTrip()
-                #else
-                if description != "Embedded nulls" {
-                    testRoundTrip()
-                }
-                #endif
+                let nativeFromDoc = docFromCB.toArray()
+                let docFromNative = Document(fromArray: nativeFromDoc)
+                expect(docFromNative.rawBSON).to(equal(cBData))
 
                 // native_to_canonical_extended_json( bson_to_native(cB) ) = cEJ
                 expect(docFromCB.canonicalExtendedJSON).to(cleanEqual(cEJ))
 
                 // native_to_relaxed_extended_json( bson_to_native(cB) ) = rEJ (if rEJ exists)
                 if let rEJ = validCase["relaxed_extjson"] as? String {
-                     expect(Document(fromBSON: cBData).extendedJSON).to(cleanEqual(rEJ))
+                     expect(try Document(fromBSON: cBData).extendedJSON).to(cleanEqual(rEJ))
                 }
 
                 // for cEJ input:
@@ -408,11 +397,11 @@ final class DocumentTests: MongoSwiftTestCase {
                     }
 
                     // bson_to_canonical_extended_json(dB) = cEJ
-                    expect(Document(fromBSON: dBData).canonicalExtendedJSON).to(cleanEqual(cEJ))
+                    expect(try Document(fromBSON: dBData).canonicalExtendedJSON).to(cleanEqual(cEJ))
 
                     // bson_to_relaxed_extended_json(dB) = rEJ (if rEJ exists)
                     if let rEJ = validCase["relaxed_extjson"] as? String {
-                        expect(Document(fromBSON: dBData).extendedJSON).to(cleanEqual(rEJ))
+                        expect(try Document(fromBSON: dBData).extendedJSON).to(cleanEqual(rEJ))
                     }
                 }
 
@@ -688,7 +677,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
     func testDocumentDictionarySimilarity() throws {
         var doc: Document = ["hello": "world", "swift": 4.2, "null": BSONNull(), "remove_me": "please"]
-        var dict: [String: BSONValue] = ["hello": "world", "swift": 4.2, "null": BSONNull(), "remove_me": "please"]
+        let dict: [String: BSONValue] = ["hello": "world", "swift": 4.2, "null": BSONNull(), "remove_me": "please"]
 
         expect(doc["hello"]).to(bsonEqual(dict["hello"]))
         expect(doc["swift"]).to(bsonEqual(dict["swift"]))
@@ -770,7 +759,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
         decoder.uuidDecodingStrategy = .binary
         let uuidt = uuid.uuid
-        let bytes = Data(bytes: [
+        let bytes = Data([
             uuidt.0, uuidt.1, uuidt.2, uuidt.3,
             uuidt.4, uuidt.5, uuidt.6, uuidt.7,
             uuidt.8, uuidt.9, uuidt.10, uuidt.11,
@@ -1019,6 +1008,19 @@ final class DocumentTests: MongoSwiftTestCase {
             expect(doc["int32"] as? Int32).to(equal(Int32(12)))
             expect(doc["int64"] as? Int).to(equal(12))
             expect(doc["int64"] as? Int64).to(beNil())
+        }
+    }
+
+    func testInvalidBSON() throws {
+        let invalidData = [
+            Data(count: 0), // too short
+            Data(count: 4), // too short
+            Data(hexString: "0100000000")!, // incorrectly sized
+            Data(hexString: "0500000001")! // correctly sized, but doesn't end with null byte
+        ]
+
+        for data in invalidData {
+            expect(try Document(fromBSON: data)).to(throwError(UserError.invalidArgumentError(message: "")))
         }
     }
 }

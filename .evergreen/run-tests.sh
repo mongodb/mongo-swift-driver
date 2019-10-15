@@ -5,7 +5,7 @@ set -o errexit  # Exit the script with error if any of the commands fail
 # variables
 PROJECT_DIRECTORY=${PROJECT_DIRECTORY:-$PWD}
 MONGODB_URI=${MONGODB_URI:-"NO_URI_PROVIDED"}
-SWIFT_VERSION=${SWIFT_VERSION:-4.2}
+SWIFT_VERSION=${SWIFT_VERSION:-5.0}
 INSTALL_DIR="${PROJECT_DIRECTORY}/opt"
 TOPOLOGY=${TOPOLOGY:-single}
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')

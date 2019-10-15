@@ -3,7 +3,7 @@ set -o errexit  # Exit the script with error if any of the commands fail
 
 # variables
 PROJECT_DIRECTORY=${PROJECT_DIRECTORY:-$PWD}
-SWIFT_VERSION=${SWIFT_VERSION:-4.2}
+SWIFT_VERSION=${SWIFT_VERSION:-5.0}
 INSTALL_DIR="${PROJECT_DIRECTORY}/opt"
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 EXTRA_FLAGS="-Xlinker -rpath -Xlinker ${INSTALL_DIR}/lib"
