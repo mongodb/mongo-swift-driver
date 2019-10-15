@@ -232,6 +232,12 @@ final class AuthTests: MongoSwiftTestCase {
     // string should test both for the test cases described below". Once we support setting auth options via options
     // struct we should test that here too.
     func testAuthProseTests() throws {
+        let client = try SyncMongoClient.makeTestClient()
+        guard try client.serverVersion() >= ServerVersion(major: 4, minor: 0) else {
+            print(unsupportedServerVersionMessage(testName: self.name))
+            return
+        }
+
         // 1. Create three test users, one with only SHA-1, one with only SHA-256 and one with both.
         let testUsers = [
             TestUser(username: "sha1", password: "sha1", mechanisms: [.scramSHA1]),
@@ -239,7 +245,7 @@ final class AuthTests: MongoSwiftTestCase {
             TestUser(username: "both", password: "both", mechanisms: [.scramSHA1, .scramSHA256])
         ]
 
-        let admin = try SyncMongoClient.makeTestClient().db("admin")
+        let admin = client.db("admin")
         defer { _ = try? admin.runCommand(["dropAllUsersFromDatabase": 1]) }
         for user in testUsers {
             try admin.runCommand(user.createCmd)
