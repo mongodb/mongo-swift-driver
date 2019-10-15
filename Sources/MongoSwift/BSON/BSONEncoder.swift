@@ -735,14 +735,13 @@ private class MutableArray: BSONValue {
         self.array.insert(value, at: index)
     }
 
-    fileprivate func encode(to storage: DocumentStorage, forKey key: String) throws {
-        try self.array.map { _ in BSON.null }.encode(to: storage, forKey: key)
-    }
-
     fileprivate init() {}
 
     /// methods required by the BSONValue protocol that we don't actually need/use. MutableArray
     /// is just a BSONValue to simplify usage alongside true BSONValues within the encoder.
+    fileprivate func encode(to storage: DocumentStorage, forKey key: String) throws {
+        fatalError("`MutableArray` is not meant to be encoded to a `DocumentStorage`")
+    }
     internal static func from(iterator iter: DocumentIterator) -> BSON {
         fatalError("`MutableArray` is not meant to be initialized from a `DocumentIterator`")
     }
@@ -797,14 +796,14 @@ private class MutableDictionary: BSONValue {
         return doc
     }
 
-    fileprivate func encode(to storage: DocumentStorage, forKey key: String) throws {
-        try self.asDocument().encode(to: storage, forKey: key)
-    }
-
     fileprivate init() {}
 
     /// methods required by the BSONValue protocol that we don't actually need/use. MutableDictionary
     /// is just a BSONValue to simplify usage alongside true BSONValues within the encoder.
+    fileprivate func encode(to storage: DocumentStorage, forKey key: String) throws {
+        fatalError("`MutableDictionary` is not meant to be encoded to a `DocumentStorage`")
+    }
+
     internal static func from(iterator iter: DocumentIterator) -> BSON {
         fatalError("`MutableDictionary` is not meant to be initialized from a `DocumentIterator`")
     }

@@ -50,9 +50,9 @@ internal func rearrangeDoc(_ input: Document, toLookLike standard: Document) -> 
     var output = Document()
     for (k, v) in standard {
         switch (v, input[k]) {
-        case let (.document(sDoc), .document(iDoc)):
+        case let (.document(sDoc), .document(iDoc)?):
             output[k] = .document(rearrangeDoc(iDoc, toLookLike: sDoc))
-        case let (.array(sArr), .array(iArr)):
+        case let (.array(sArr), .array(iArr)?):
             var newArr: [BSON] = []
             for (i, el) in iArr.enumerated() {
                 if let docEl = el.documentValue, let sDoc = sArr[i].documentValue {
