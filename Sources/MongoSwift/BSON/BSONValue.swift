@@ -21,21 +21,21 @@ public enum BSONType: UInt32 {
     /// - SeeAlso: https://docs.mongodb.com/manual/reference/method/ObjectId/
     objectId = 0x07,
     /// A boolean
-    boolean = 0x08,
+    bool = 0x08,
     /// UTC datetime, stored as UTC milliseconds since the Unix epoch
-    dateTime = 0x09,
+    datetime = 0x09,
     /// Null value
     null = 0x0a,
     /// A regular expression
-    regularExpression = 0x0b,
+    regex = 0x0b,
     /// A database pointer - deprecated
     dbPointer = 0x0c,
     /// Javascript code
-    javascript = 0x0d,
+    code = 0x0d,
     /// A symbol - deprecated
     symbol = 0x0e,
     /// JavaScript code w/ scope
-    javascriptWithScope = 0x0f,
+    codeWithScope = 0x0f,
     /// 32-bit integer
     int32 = 0x10,
     /// Special internal type used by MongoDB replication and sharding
@@ -396,7 +396,7 @@ public struct Binary: BSONValue, Equatable, Codable, Hashable {
 
 /// An extension of `Bool` to represent the BSON Boolean type.
 extension Bool: BSONValue {
-    public var bsonType: BSONType { return .boolean }
+    public var bsonType: BSONType { return .bool }
 
     public func encode(to storage: DocumentStorage, forKey key: String) throws {
         guard bson_append_bool(storage._bson, key, Int32(key.utf8.count), self) else {
@@ -405,7 +405,7 @@ extension Bool: BSONValue {
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> Bool {
-        guard iter.currentType == .boolean else {
+        guard iter.currentType == .bool else {
             throw wrongIterTypeError(iter, expected: Bool.self)
         }
 
@@ -417,7 +417,7 @@ extension Bool: BSONValue {
 
 /// An extension of `Date` to represent the BSON Datetime type. Supports millisecond level precision.
 extension Date: BSONValue {
-    public var bsonType: BSONType { return .dateTime }
+    public var bsonType: BSONType { return .datetime }
 
     /// Initializes a new `Date` representing the instance `msSinceEpoch` milliseconds
     /// since the Unix epoch.
@@ -435,7 +435,7 @@ extension Date: BSONValue {
     }
 
     public static func from(iterator iter: DocumentIterator) throws -> Date {
-        guard iter.currentType == .dateTime else {
+        guard iter.currentType == .datetime else {
             throw wrongIterTypeError(iter, expected: Date.self)
         }
 
@@ -750,6 +750,45 @@ extension Int64: BSONNumber {
     }
 }
 
+/// A struct to represent the BSON Code type.
+public struct Code: BSONValue, Equatable, Codable, Hashable {
+    public var bsonType: BSONType { return .code }
+
+    internal var bson: BSON { return .code(self) }
+
+    /// A string containing Javascript code.
+    public let code: String
+
+    /// Initializes a `CodeWithScope` with an optional scope value.
+    public init(code: String) {
+        self.code = code
+    }
+
+    public init(from decoder: Decoder) throws {
+        throw getDecodingError(type: Code.self, decoder: decoder)
+    }
+
+    public func encode(to: Encoder) throws {
+        throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
+    }
+
+    public func encode(to storage: DocumentStorage, forKey key: String) throws {
+        guard bson_append_code(storage._bson, key, Int32(key.utf8.count), self.code) else {
+            throw bsonTooLargeError(value: self, forKey: key)
+        }
+    }
+
+    public static func from(iterator iter: DocumentIterator) throws -> Code {
+        return try iter.withBSONIterPointer { iterPtr in
+            guard iter.currentType == .code else {
+                throw wrongIterTypeError(iter, expected: Code.self)
+            }
+            let code = String(cString: bson_iter_code(iterPtr, nil))
+            return self.init(code: code)
+        }
+    }
+}
+
 /// A struct to represent the BSON Code and CodeWithScope types.
 public struct CodeWithScope: BSONValue, Equatable, Codable, Hashable {
     /// A string containing Javascript code.
@@ -759,7 +798,7 @@ public struct CodeWithScope: BSONValue, Equatable, Codable, Hashable {
     public let scope: Document?
 
     public var bsonType: BSONType {
-        return self.scope == nil ? .javascript : .javascriptWithScope
+        return self.scope == nil ? .code : .codeWithScope
     }
 
     /// Initializes a `CodeWithScope` with an optional scope value.
@@ -791,12 +830,12 @@ public struct CodeWithScope: BSONValue, Equatable, Codable, Hashable {
     public static func from(iterator iter: DocumentIterator) throws -> CodeWithScope {
         return try iter.withBSONIterPointer { iterPtr in
             var length: UInt32 = 0
-            if iter.currentType.rawValue == BSONType.javascript.rawValue {
+            if iter.currentType.rawValue == BSONType.code.rawValue {
                 let code = String(cString: bson_iter_code(iterPtr, &length))
                 return self.init(code: code)
             }
 
-            guard iter.currentType == .javascriptWithScope else {
+            guard iter.currentType == .codeWithScope else {
                 throw wrongIterTypeError(iter, expected: CodeWithScope.self)
             }
 
@@ -1039,7 +1078,7 @@ extension NSRegularExpression {
 
 /// A struct to represent a BSON regular expression.
 public struct RegularExpression: BSONValue, Equatable, Codable, Hashable {
-    public var bsonType: BSONType { return .regularExpression }
+    public var bsonType: BSONType { return .regex }
 
     /// The pattern for this regular expression.
     public let pattern: String

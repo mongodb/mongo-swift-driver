@@ -23,77 +23,76 @@ final class BSONValueTests: MongoSwiftTestCase {
         expect(try Binary(data: sixteenBytes, subtype: .uuid)).toNot(throwError())
     }
 
-    fileprivate func checkTrueAndFalse(val: BSONValue, alternate: BSONValue) {
-        expect(val).to(bsonEqual(val))
-        expect(val).toNot(bsonEqual(alternate))
+    fileprivate func checkTrueAndFalse(val: BSON, alternate: BSON) {
+        expect(val).to(equal(val))
+        expect(val).toNot(equal(alternate))
     }
 
-    func testBSONEquals() throws {
+    func testBSONEquatable() throws {
         // Int
         checkTrueAndFalse(val: 1, alternate: 2)
         // Int32
-        checkTrueAndFalse(val: Int32(32), alternate: Int32(33))
+        checkTrueAndFalse(val: .int32(32), alternate: .int32(33))
         // Int64
-        checkTrueAndFalse(val: Int64(64), alternate: Int64(65))
+        checkTrueAndFalse(val: .int64(64), alternate: .int64(65))
         // Double
         checkTrueAndFalse(val: 1.618, alternate: 2.718)
         // Decimal128
-        checkTrueAndFalse(val: Decimal128("1.618")!, alternate: Decimal128("2.718")!)
+        checkTrueAndFalse(val: .decimal128(Decimal128("1.618")!), alternate: .decimal128(Decimal128("2.718")!))
         // Bool
         checkTrueAndFalse(val: true, alternate: false)
         // String
         checkTrueAndFalse(val: "some", alternate: "not some")
         // RegularExpression
         checkTrueAndFalse(
-            val: RegularExpression(pattern: ".*", options: ""),
-            alternate: RegularExpression(pattern: ".+", options: "")
+                val: .regex(RegularExpression(pattern: ".*", options: "")),
+                alternate: .regex(RegularExpression(pattern: ".+", options: ""))
         )
         // Timestamp
-        checkTrueAndFalse(val: Timestamp(timestamp: 1, inc: 2), alternate: Timestamp(timestamp: 5, inc: 10))
+        checkTrueAndFalse(val: .timestamp(Timestamp(timestamp: 1, inc: 2)),
+                          alternate: .timestamp(Timestamp(timestamp: 5, inc: 10)))
         // Date
         checkTrueAndFalse(
-            val: Date(timeIntervalSinceReferenceDate: 5000),
-            alternate: Date(timeIntervalSinceReferenceDate: 5001)
+                val: .datetime(Date(timeIntervalSinceReferenceDate: 5000)),
+                alternate: .datetime(Date(timeIntervalSinceReferenceDate: 5001))
         )
         // MinKey & MaxKey
         expect(MinKey()).to(bsonEqual(MinKey()))
         expect(MaxKey()).to(bsonEqual(MaxKey()))
         // ObjectId
-        checkTrueAndFalse(val: ObjectId(), alternate: ObjectId())
+        checkTrueAndFalse(val: .objectId(ObjectId()), alternate: .objectId(ObjectId()))
         // CodeWithScope
         checkTrueAndFalse(
-            val: CodeWithScope(code: "console.log('foo');"),
-            alternate: CodeWithScope(code: "console.log(x);", scope: ["x": 2])
+                val: .codeWithScope(CodeWithScope(code: "console.log('foo');")),
+                alternate: .codeWithScope(CodeWithScope(code: "console.log(x);", scope: ["x": 2]))
         )
         // Binary
         checkTrueAndFalse(
-            val: try Binary(data: Data(base64Encoded: "c//SZESzTGmQ6OfR38A11A==")!, subtype: .uuid),
-            alternate: try Binary(data: Data(base64Encoded: "c//88KLnfdfefOfR33ddFA==")!, subtype: .uuid)
+                val: .binary(try Binary(data: Data(base64Encoded: "c//SZESzTGmQ6OfR38A11A==")!, subtype: .uuid)),
+                alternate: .binary(try Binary(data: Data(base64Encoded: "c//88KLnfdfefOfR33ddFA==")!, subtype: .uuid))
         )
-        // Document
-        checkTrueAndFalse(
-            val: [
-                "foo": 1.414,
-                "bar": "swift",
-                "nested": [ "a": 1, "b": "2" ] as Document
-                ] as Document,
-            alternate: [
-                "foo": 1.414,
-                "bar": "swift",
-                "nested": [ "a": 1, "b": "different" ] as Document
-                ] as Document
-        )
-        // Check that when an array contains non-BSONValues, we return false
-        let arr = [[String: Int]()]
-        expect(arr.bsonEquals(arr)).to(beFalse())
+        // TODO SWIFT-630: unskip
+//        // Document
+//        checkTrueAndFalse(
+//                val: [
+//                    "foo": 1.414,
+//                    "bar": "swift",
+//                    "nested": [ "a": 1, "b": "2" ]
+//                ],
+//                alternate: [
+//                    "foo": 1.414,
+//                    "bar": "swift",
+//                    "nested": [ "a": 1, "b": "different" ]
+//                ]
+//        )
 
         // Different types
-        expect(4).toNot(bsonEqual("swift"))
+        expect(BSON.int32(4)).toNot(equal("swift"))
 
         // Arrays of different sizes should not be equal
-        let b0: [BSONValue] = [1, 2]
-        let b1: [BSONValue] = [1, 2, 3]
-        expect(b0.bsonEquals(b1)).to(beFalse())
+        let b0: BSON = [1, 2]
+        let b1: BSON = [1, 2, 3]
+        expect(b0).toNot(equal(b1))
     }
 
     /// Test object for ObjectIdRoundTrip
@@ -197,33 +196,38 @@ final class BSONValueTests: MongoSwiftTestCase {
         let int64: Int64?
         let decimal: Decimal128?
 
-        func run() {
-            let candidates = ([self.int, self.double, self.int32, self.int64, self.decimal] as [BSONNumber?])
-                    .compactMap { $0 }
+        static func compare<T: Equatable>(computed: T?, expected: T?) {
+            guard computed != nil else {
+                expect(expected).to(beNil())
+                return
+            }
+            expect(computed).to(equal(expected))
+        }
 
-            candidates.forEach { l in
+        func run() {
+            let candidates: [BSON?] = [
+                self.int.map { BSON(integerLiteral: $0) },
+                self.double.map { .double($0) },
+                self.int32.map { .int32($0) },
+                self.int64.map { .int64($0) },
+                self.decimal.map { .decimal128($0) }
+            ]
+
+            candidates.compactMap { $0 }.forEach { l in
                 // Skip the Decimal128 conversions until they're implemented
                 // TODO: don't skip these (SWIFT-367)
-                if l is Decimal128 {
+                guard l.decimal128Value == nil else {
                     return
                 }
 
-                let compare = { (computed: BSONNumber?, expected: BSONNumber?) in
-                    guard computed != nil else {
-                        expect(expected).to(beNil())
-                        return
-                    }
-                    expect(computed).to(bsonEqual(expected))
-                }
-
-                compare(l.intValue, self.int)
-                compare(l.int32Value, self.int32)
-                compare(l.int64Value, self.int64)
-                compare(l.doubleValue, self.double)
+                BSONNumberTestCase.compare(computed: l.asInt(), expected: self.int)
+                BSONNumberTestCase.compare(computed: l.asInt32(), expected: self.int32)
+                BSONNumberTestCase.compare(computed: l.asInt64(), expected: self.int64)
+                BSONNumberTestCase.compare(computed: l.asDouble(), expected: self.double)
 
                 // Skip double for this conversion since it generates a Decimal128(5.0) =/= Decimal128(5)
-                if !(l is Double) {
-                    compare(l.decimal128Value, self.decimal)
+                if l.doubleValue == nil {
+                    BSONNumberTestCase.compare(computed: l.asDecimal128(), expected: self.decimal)
                 }
             }
         }
@@ -231,10 +235,10 @@ final class BSONValueTests: MongoSwiftTestCase {
 
     func testBSONNumber() throws {
         let decimal128 = Decimal128("5.5")!
-        let double = 5.5
+        let double: BSON = 5.5
 
-        expect(double.doubleValue).to(equal(double))
-        expect(double.decimal128Value).to(equal(decimal128))
+        expect(double.asDouble()).to(equal(5.5))
+        expect(double.asDecimal128()).to(equal(decimal128))
 
         let cases = [
             BSONNumberTestCase(int: 5, double: 5.0, int32: Int32(5), int64: Int64(5), decimal: Decimal128("5")!),
