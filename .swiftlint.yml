@@ -37,7 +37,7 @@ opt_in_rules:
   - trailing_closure
   - unneeded_parentheses_in_closure_argument
   - unused_import
-  - unused_private_declaration
+  - unused_declaration
   - vertical_parameter_alignment_on_call
   - vertical_whitespace_closing_braces
   - vertical_whitespace_opening_braces

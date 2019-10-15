@@ -265,7 +265,7 @@ public struct TopologyDescription {
     /// or `nil` if any of them are `nil`.
     public var logicalSessionTimeoutMinutes: Int64? {
         let timeoutValues = self.servers.map { $0.logicalSessionTimeoutMinutes }
-        if timeoutValues.contains (where: { $0 == nil }) {
+        if timeoutValues.contains(where: { $0 == nil }) {
             return nil
         }
         return timeoutValues.compactMap { $0 }.min()

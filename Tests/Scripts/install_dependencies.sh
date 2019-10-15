@@ -45,7 +45,7 @@ then
 
 elif [[ $1 = "swiftlint" ]]
 then
-	install_from_gh swiftlint https://github.com/realm/SwiftLint/releases/download/0.32.0/portable_swiftlint.zip
+	install_from_gh swiftlint https://github.com/realm/SwiftLint/releases/download/0.35.0/portable_swiftlint.zip
 
 else
 	echo Missing/unknown install option: "$1"
