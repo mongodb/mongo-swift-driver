@@ -147,7 +147,11 @@ struct Credential: Decodable, Equatable {
         }
     }
 
-    init(username: String?, password: String?, source: String?, mechanism: AuthMechanism?, mechanismProperties: Document?) {
+    init(username: String?,
+         password: String?,
+         source: String?,
+         mechanism: AuthMechanism?,
+         mechanismProperties: Document?) {
         self.mechanism = mechanism
         self.mechanismProperties = mechanismProperties
         self.password = password
