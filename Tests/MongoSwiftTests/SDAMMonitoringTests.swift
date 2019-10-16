@@ -58,8 +58,7 @@ final class SDAMTests: MongoSwiftTestCase {
 
         center.removeObserver(observer)
 
-        var opts = ClientOptions()
-        let connString = try ConnectionString(MongoSwiftTestCase.connStr, options: &opts)
+        let connString = try ConnectionString(MongoSwiftTestCase.connStr)
 
         guard let hostlist = mongoc_uri_get_hosts(connString._uri) else {
             XCTFail("Could not get hostlists for uri: \(MongoSwiftTestCase.connStr)")
