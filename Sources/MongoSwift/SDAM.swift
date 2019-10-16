@@ -137,15 +137,15 @@ public struct ServerDescription {
             self.me = ConnectionId(me)
         }
 
-        if let hosts = isMaster["hosts"]?.arrayValue?.compactMap({ $0.stringValue }) {
+        if let hosts = isMaster["hosts"]?.arrayValue?.asArrayOf(String.self) {
             self.hosts = hosts.map { ConnectionId($0) }
         }
 
-        if let passives = isMaster["passives"]?.arrayValue?.compactMap({ $0.stringValue }) {
+        if let passives = isMaster["passives"]?.arrayValue?.asArrayOf(String.self) {
             self.passives = passives.map { ConnectionId($0) }
         }
 
-        if let arbiters = isMaster["arbiters"]?.arrayValue?.compactMap({ $0.stringValue }) {
+        if let arbiters = isMaster["arbiters"]?.arrayValue?.asArrayOf(String.self) {
             self.arbiters = arbiters.map { ConnectionId($0) }
         }
 
@@ -163,7 +163,7 @@ public struct ServerDescription {
             self.primary = ConnectionId(primary)
         }
 
-        self.logicalSessionTimeoutMinutes = isMaster["logicalSessionTimeoutMinutes"]?.int64Value
+        self.logicalSessionTimeoutMinutes = isMaster["logicalSessionTimeoutMinutes"]?.asInt64()
     }
 
     /// An internal initializer to create a `ServerDescription` from an OpaquePointer to a

@@ -887,7 +887,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(msInt64Struct.date).to(equal(date))
         expect(try BSONDecoder().decode(DateWrapper.self, from: msInt64)).to(throwError(CodecTests.typeMismatchErr))
 
-        let msDouble: Document = ["date": .int64(date.msSinceEpoch)]
+        let msDouble: Document = ["date": .double(Double(date.msSinceEpoch))]
         let msDoubleStruct = try decoder.decode(DateWrapper.self, from: msDouble)
         expect(msDoubleStruct.date).to(equal(date))
 

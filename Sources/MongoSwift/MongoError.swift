@@ -202,7 +202,7 @@ private func parseMongocError(_ error: bson_error_t, reply: Document?) -> MongoE
     let code = mongoc_error_code_t(rawValue: error.code)
     let message = toErrorString(error)
 
-    let errorLabels = reply?["errorLabels"]?.arrayValue?.compactMap { $0.stringValue }
+    let errorLabels = reply?["errorLabels"]?.arrayValue?.asArrayOf(String.self)
     let codeName = reply?["codeName"]?.stringValue ?? ""
 
     switch (domain, code) {
@@ -265,7 +265,7 @@ internal func extractMongoError(error bsonError: bson_error_t, reply: Document? 
         return ServerError.writeError(
                 writeError: writeError,
                 writeConcernError: wcError,
-                errorLabels: serverReply["errorLabels"]?.arrayValue?.compactMap { $0.stringValue }
+                errorLabels: serverReply["errorLabels"]?.arrayValue?.asArrayOf(String.self)
         )
     } catch {
         return fallback
@@ -338,7 +338,7 @@ internal func extractBulkWriteError<T: Codable>(for op: BulkWriteOperation<T>,
                 writeConcernError: try extractWriteConcernError(from: reply),
                 otherError: other,
                 result: errResult,
-                errorLabels: reply["errorLabels"]?.arrayValue?.compactMap { $0.stringValue }
+                errorLabels: reply["errorLabels"]?.arrayValue?.asArrayOf(String.self)
         )
     } catch {
         return fallback

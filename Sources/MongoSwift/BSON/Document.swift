@@ -136,9 +136,10 @@ extension Document {
      *     key-value pair.
      */
     internal mutating func setValue(for key: String, to newValue: BSON, checkForKey: Bool = true) throws {
+        let newBSONValue = newValue.bsonValue
+
         // if the key already exists in the `Document`, we need to replace it
         if checkForKey, let existingType = DocumentIterator(forDocument: self, advancedTo: key)?.currentType {
-            let newBSONValue = newValue.bsonValue
             let newBSONType = newBSONValue.bsonType
             let sameTypes = newBSONType == existingType
 
@@ -173,7 +174,7 @@ extension Document {
         // otherwise, it's a new key
         } else {
             self.copyStorageIfRequired()
-            try newValue.bsonValue.encode(to: self._storage, forKey: key)
+            try newBSONValue.encode(to: self._storage, forKey: key)
         }
     }
 

@@ -327,10 +327,6 @@ public struct BulkWriteResult: Decodable {
      *   - `RuntimeError.internalError` if an unexpected error occurs reading the reply from the server.
      */
     fileprivate init(reply: Document, insertedIds: [Int: BSON]) throws {
-        // These values are converted to Int via BSONNumber because they're returned from libmongoc as BSON int32s,
-        // which are retrieved from documents as Ints on 32-bit systems and Int32s on 64-bit ones. To retrieve them in a
-        // cross-platform manner, we must convert them this way. Also, regardless of how they are stored in the
-        // we want to use them as Ints.
         self.deletedCount = try reply.getValue(for: "nRemoved")?.asInt() ?? 0
         self.insertedCount = try reply.getValue(for: "nInserted")?.asInt() ?? 0
         self.insertedIds = insertedIds
@@ -340,7 +336,11 @@ public struct BulkWriteResult: Decodable {
 
         var upsertedIds = [Int: BSON]()
 
-        if let upserted = try reply.getValue(for: "upserted")?.arrayValue?.compactMap({ $0.documentValue }) {
+        if let upserted = try reply.getValue(for: "upserted")?.arrayValue {
+            guard let upserted = upserted.asArrayOf(Document.self) else {
+                throw RuntimeError.internalError(message: "\"upserted\" array did not contain only documents")
+            }
+
             for upsert in upserted {
                 guard let index = try upsert.getValue(for: "index")?.asInt() else {
                     throw RuntimeError.internalError(message: "Could not cast upserted index to `Int`")

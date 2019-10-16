@@ -68,12 +68,18 @@ internal struct ListDatabasesOperation: Operation {
             throw extractMongoError(error: error, reply: reply)
         }
 
-        guard let databases = reply["databases"]?.arrayValue?.compactMap({ $0.documentValue }) else {
+        guard let databases = reply["databases"]?.arrayValue?.asArrayOf(Document.self) else {
             throw RuntimeError.internalError(message: "Invalid server response: \(reply)")
         }
 
         if self.nameOnly ?? false {
-            return .names(databases.map { $0["name"]?.stringValue ?? "" })
+            let names: [String] = try databases.map {
+                guard let name = $0["name"]?.stringValue else {
+                    throw RuntimeError.internalError(message: "Server response missing names: \(reply)")
+                }
+                return name
+            }
+            return .names(names)
         }
 
         return try .specs(databases.map { try self.client.decoder.decode(DatabaseSpecification.self, from: $0) })

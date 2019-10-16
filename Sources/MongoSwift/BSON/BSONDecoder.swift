@@ -269,9 +269,11 @@ internal class _BSONDecoder: Decoder {
     // Returns the data stored in this decoder in a container appropriate for holding values with no keys.
     public func unkeyedContainer() throws -> UnkeyedDecodingContainer {
         guard let arr = self.storage.topContainer.arrayValue else {
-            throw DecodingError._typeMismatch(at: self.codingPath,
-                                              expectation: [BSONValue].self,
-                                              reality: self.storage.topContainer.bsonValue)
+            throw DecodingError._typeMismatch(
+                at: self.codingPath,
+                expectation: [BSON].self,
+                reality: self.storage.topContainer.bsonValue
+            )
         }
 
         return _BSONUnkeyedDecodingContainer(referencing: self, wrapping: arr)
@@ -314,7 +316,8 @@ internal struct _BSONDecodingStorage {
 
 /// Extend _BSONDecoder to add methods for "unboxing" values as various types.
 extension _BSONDecoder {
-    fileprivate func unboxBSON<T>(_ value: BSON, f: (BSON) -> T?) throws -> T {
+    /// Unbox a type using the provided closure.
+    fileprivate func unboxCustom<T>(_ value: BSON, f: (BSON) -> T?) throws -> T {
         // We throw in the case of BSONNull because nulls should be requested through decodeNil().
         guard value != .null else {
             throw DecodingError.valueNotFound(
@@ -329,6 +332,7 @@ extension _BSONDecoder {
         return typed
     }
 
+    /// Attempt to unbox a type that conforms to `BSONValue`.
     fileprivate func unboxBSONValue<T: BSONValue>(_ value: BSON, as type: T.Type) throws -> T {
         // We throw in the case of BSONNull because nulls should be requested through decodeNil().
         guard value != .null else {
@@ -344,6 +348,7 @@ extension _BSONDecoder {
         return typed
     }
 
+    /// Attempt to unbox a type that conforms to `CodableNumber`.
     fileprivate func unboxNumber<T: CodableNumber>(_ value: BSON, as type: T.Type) throws -> T {
         guard let primitive = T(from: value) else {
             throw DecodingError._numberMismatch(at: self.codingPath, expectation: type, reality: value.bsonValue)
@@ -351,6 +356,7 @@ extension _BSONDecoder {
         return primitive
     }
 
+    /// Attempt to unbox a `Data` according to the set `DataDecodingStrategy`.
     fileprivate func unboxData(_ value: BSON) throws -> Data {
         switch self.options.dataDecodingStrategy {
         case .deferredToData:
@@ -358,10 +364,10 @@ extension _BSONDecoder {
             defer { self.storage.popContainer() }
             return try Data(from: self)
         case .binary:
-            let binary = try self.unboxBSON(value) { $0.binaryValue }
+            let binary = try self.unboxCustom(value) { $0.binaryValue }
             return binary.data
         case.base64:
-            let base64Str = try self.unboxBSON(value) { $0.stringValue }
+            let base64Str = try self.unboxCustom(value) { $0.stringValue }
 
             guard let data = Data(base64Encoded: base64Str) else {
                 throw DecodingError.dataCorrupted(
@@ -378,11 +384,11 @@ extension _BSONDecoder {
         }
     }
 
-    /// Private helper function used specifically for decoding dates.
+    /// Attempt to unbox a `Data` according to the set `DateDecodingStrategy`.
     fileprivate func unboxDate(_ value: BSON) throws -> Date {
         switch self.options.dateDecodingStrategy {
         case .bsonDateTime:
-            let date = try self.unboxBSON(value) { $0.dateValue }
+            let date = try self.unboxCustom(value) { $0.dateValue }
             return date
         case .deferredToDate:
             self.storage.push(container: value)
@@ -398,7 +404,7 @@ extension _BSONDecoder {
             guard #available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) else {
                 fatalError("ISO8601DateFormatter is unavailable on this platform.")
             }
-            let isoString = try self.unboxBSON(value) { $0.stringValue }
+            let isoString = try self.unboxCustom(value) { $0.stringValue }
             guard let date = BSONDecoder.iso8601Formatter.date(from: isoString) else {
                 throw DecodingError.dataCorrupted(
                         DecodingError.Context(
@@ -414,7 +420,7 @@ extension _BSONDecoder {
             defer { self.storage.popContainer() }
             return try f(self)
         case .formatted(let formatter):
-            let dateString = try self.unboxBSON(value) { $0.stringValue }
+            let dateString = try self.unboxCustom(value) { $0.stringValue }
             guard let date = formatter.date(from: dateString) else {
                 throw DecodingError.dataCorrupted(
                         DecodingError.Context(
@@ -428,7 +434,7 @@ extension _BSONDecoder {
         }
     }
 
-    /// Private helper used specifically for decoding UUIDs.
+    /// Attempt to unbox a `Data` according to the set `UUIDDecodingStrategy`.
     fileprivate func unboxUUID(_ value: BSON) throws -> UUID {
         switch self.options.uuidDecodingStrategy {
         case .deferredToUUID:
@@ -436,7 +442,7 @@ extension _BSONDecoder {
             defer { self.storage.popContainer() }
             return try UUID(from: self)
         case .binary:
-            let binary = try self.unboxBSON(value) { $0.binaryValue }
+            let binary = try self.unboxCustom(value) { $0.binaryValue }
             do {
                 return try UUID(from: binary)
             } catch {
@@ -573,7 +579,7 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey>: KeyedDecodingContainer
 
     // swiftlint:disable line_length
     public func decode(_ type: Bool.Type, forKey key: Key) throws -> Bool {
-        return try self.decoder.unboxBSON(getValue(forKey: key)) { $0.boolValue }
+        return try self.decoder.unboxCustom(getValue(forKey: key)) { $0.boolValue }
     }
     public func decode(_ type: Int.Type, forKey key: Key) throws -> Int { return try decodeNumber(type, forKey: key) }
     public func decode(_ type: Int8.Type, forKey key: Key) throws -> Int8 { return try decodeNumber(type, forKey: key) }
@@ -588,7 +594,7 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey>: KeyedDecodingContainer
     public func decode(_ type: Float.Type, forKey key: Key) throws -> Float { return try decodeNumber(type, forKey: key) }
     public func decode(_ type: Double.Type, forKey key: Key) throws -> Double { return try decodeNumber(type, forKey: key) }
     public func decode(_ type: String.Type, forKey key: Key) throws -> String {
-        return try self.decoder.unboxBSON(try self.getValue(forKey: key)) { $0.stringValue }
+        return try self.decoder.unboxCustom(try self.getValue(forKey: key)) { $0.stringValue }
     }
     // swiftlint:enable line_length
 

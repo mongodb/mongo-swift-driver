@@ -131,6 +131,18 @@ extension Array: BSONValue where Element == BSON {
             throw bsonTooLargeError(value: self, forKey: key)
         }
     }
+
+    /// Attempts to map this `[BSON]` to a `[T]`, where `T` is a `BSONValue`.
+    internal func asArrayOf<T: BSONValue>(_ type: T.Type) -> [T]? {
+        var result: [T] = []
+        for element in self {
+            guard let bsonValue = element.bsonValue as? T else {
+                return nil
+            }
+            result.append(bsonValue)
+        }
+        return result
+    }
 }
 
 /// A struct to represent the BSON null type.
@@ -582,7 +594,7 @@ public struct CodeWithScope: BSONValue, Equatable, Codable, Hashable {
     public let scope: Document
 
     /// Initializes a `CodeWithScope` with an optional scope value.
-    public init(code: String, scope: Document = [:]) {
+    public init(code: String, scope: Document) {
         self.code = code
         self.scope = scope
     }

@@ -63,7 +63,7 @@ final class BSONValueTests: MongoSwiftTestCase {
         checkTrueAndFalse(val: .objectId(ObjectId()), alternate: .objectId(ObjectId()))
         // CodeWithScope
         checkTrueAndFalse(
-            val: .codeWithScope(CodeWithScope(code: "console.log('foo');")),
+            val: .codeWithScope(CodeWithScope(code: "console.log('foo');", scope: [:])),
             alternate: .codeWithScope(CodeWithScope(code: "console.log(x);", scope: ["x": 2]))
         )
         // Binary

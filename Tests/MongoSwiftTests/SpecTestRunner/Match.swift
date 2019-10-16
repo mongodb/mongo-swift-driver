@@ -60,12 +60,7 @@ extension Array: Matchable where Element: Matchable {
             return false
         }
 
-        for (aV, eV) in zip(self, expected) {
-            guard aV.matches(expected: eV) else {
-                return false
-            }
-        }
-        return true
+        return zip(self, expected).allSatisfy { aV, eV in aV.matches(expected: eV) }
     }
 }
 
@@ -84,7 +79,7 @@ extension Document: Matchable {
 /// Extension that adds MATCHES functionality to `BSON`.
 extension BSON: Matchable {
     internal func isPlaceholder() -> Bool {
-        return self.asInt() == 42 || self.stringValue == "42"
+        return self.asInt()?.isPlaceholder() == true || self.stringValue?.isPlaceholder() == true
     }
 
     internal func contentMatches(expected: BSON) -> Bool {

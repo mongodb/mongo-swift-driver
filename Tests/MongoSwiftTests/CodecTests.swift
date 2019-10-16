@@ -504,7 +504,7 @@ final class CodecTests: MongoSwiftTestCase {
         }
     }
 
-    // test encoding/decoding AnyBSONValues with BSONEncoder and Decoder
+    // test encoding/decoding BSONs with BSONEncoder and Decoder
     func testBSONIsBSONCodable() throws {
         let encoder = BSONEncoder()
         let decoder = BSONDecoder()
