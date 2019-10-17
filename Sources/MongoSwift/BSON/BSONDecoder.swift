@@ -622,7 +622,7 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey>: KeyedDecodingContainer
 
             guard let array = value.arrayValue else {
                 throw DecodingError._typeMismatch(at: self.codingPath,
-                                                  expectation: [BSONValue].self,
+                                                  expectation: [BSON].self,
                                                   reality: value.bsonValue)
             }
 
