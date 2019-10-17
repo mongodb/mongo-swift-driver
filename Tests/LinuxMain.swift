@@ -1,4 +1,4 @@
-// Generated using Sourcery 0.16.1 — https://github.com/krzysztofzablocki/Sourcery
+// Generated using Sourcery 0.16.2 — https://github.com/krzysztofzablocki/Sourcery
 // DO NOT EDIT
 
 
@@ -276,6 +276,12 @@ extension ReadWriteConcernTests {
     ]
 }
 
+extension RetryableReadsTests {
+    static var allTests = [
+        ("testRetryableReads", testRetryableReads),
+    ]
+}
+
 extension RetryableWritesTests {
     static var allTests = [
         ("testRetryableWrites", testRetryableWrites),
@@ -310,6 +316,7 @@ XCTMain([
     testCase(OptionsTests.allTests),
     testCase(ReadPreferenceTests.allTests),
     testCase(ReadWriteConcernTests.allTests),
+    testCase(RetryableReadsTests.allTests),
     testCase(RetryableWritesTests.allTests),
     testCase(SDAMTests.allTests),
 ])

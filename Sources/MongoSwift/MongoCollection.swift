@@ -17,7 +17,7 @@ public struct SyncMongoCollection<T: Codable> {
     internal let _client: SyncMongoClient
 
     /// The namespace for this collection.
-    private let namespace: MongoNamespace
+    internal let namespace: MongoNamespace
 
     /// Encoder used by this collection for BSON conversions. (e.g. converting `CollectionType`s, indexes, and options
     /// to documents).

@@ -3,10 +3,15 @@ import Foundation
 import Nimble
 import XCTest
 
-/// Struct representing a single test within a spec test JSON file.
-private struct RetryableWritesTest: Decodable, SpecTest {
+/// Struct representing a single test within a retryable-writes spec test JSON file.
+private struct RetryableWritesTest: Decodable {
+    /// Description of the test.
     let description: String
+
+    /// The expected outcome of executing the operation.
     let outcome: TestOutcome
+
+    /// The operation to execute as part of this test case.
     let operation: AnyTestOperation
 
     /// Options used to configure the `SyncMongoClient` used for this test.
@@ -67,12 +72,12 @@ final class RetryableWritesTests: MongoSwiftTestCase, FailPointConfigured {
 
             if let requirements = testFile.runOn {
                 guard requirements.contains(where: { $0.isMet(by: version, MongoSwiftTestCase.topologyType) }) else {
-                    print("Skipping tests from file \(fileName), deployment requirements not met.")
+                    fileLevelLog("Skipping tests from file \(fileName), deployment requirements not met.")
                     continue
                 }
             }
 
-            print("\n------------\nExecuting tests from file \(fileName)...\n")
+            fileLevelLog("Executing tests from file \(fileName)...\n")
             for test in testFile.tests {
                 print("Executing test: \(test.description)")
 
@@ -90,7 +95,35 @@ final class RetryableWritesTests: MongoSwiftTestCase, FailPointConfigured {
                 }
                 defer { self.disableActiveFailPoint() }
 
-                try test.run(client: client, db: db, collection: collection, session: nil)
+                var result: TestOperationResult?
+                var seenError: Error?
+
+                do {
+                    result = try test.operation.execute(on: .collection(collection), session: nil)
+                } catch {
+                    if case let ServerError.bulkWriteError(_, _, _, bulkResult, _) = error {
+                        result = TestOperationResult(from: bulkResult)
+                    }
+                    seenError = error
+                }
+
+                if test.outcome.error ?? false {
+                    expect(seenError).toNot(beNil(), description: test.description)
+                } else {
+                    expect(seenError).to(beNil(), description: test.description)
+                }
+
+                if let expectedResult = test.outcome.result {
+                    expect(result).toNot(beNil())
+                    expect(result).to(equal(expectedResult))
+                }
+
+                let verifyColl = db.collection(test.outcome.collection.name ?? collection.name)
+                let foundDocs = try Array(verifyColl.find())
+                expect(foundDocs.count).to(equal(test.outcome.collection.data.count))
+                zip(foundDocs, test.outcome.collection.data).forEach {
+                    expect($0).to(sortedEqual($1), description: test.description)
+                }
             }
         }
     }

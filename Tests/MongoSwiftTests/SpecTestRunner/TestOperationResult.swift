@@ -28,8 +28,16 @@ enum TestOperationResult: Decodable, Equatable {
         self = .bulkWrite(result.bulkResultValue)
     }
 
-    public init(from cursor: SyncMongoCursor<Document>) {
-        self = .array(cursor.map { .document($0) })
+    public init<T: Codable>(from cursor: SyncMongoCursor<T>) throws {
+        let result = try cursor.map { BSON.document(try BSONEncoder().encode($0)) }
+        guard cursor.error == nil else {
+            throw cursor.error!
+        }
+        self = .array(result)
+    }
+
+    public init<T: Codable>(from array: [T]) throws {
+        self = try .array(array.map { .document(try BSONEncoder().encode($0)) })
     }
 
     public init(from decoder: Decoder) throws {
