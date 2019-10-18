@@ -348,108 +348,133 @@ public struct ServerHeartbeatFailedEvent: MongoEvent, InitializableFromOpaquePoi
 
 /// A callback that will be set for "command started" events if the user enables command monitoring.
 private func commandStarted(_event: OpaquePointer?) {
-    postNotification(type: CommandStartedEvent.self,
-                     _event: _event,
-                     contextFunc: mongoc_apm_command_started_get_context)
+    postNotification(
+        type: CommandStartedEvent.self,
+        _event: _event,
+        contextFunc: mongoc_apm_command_started_get_context
+    )
 }
 
 /// A callback that will be set for "command succeeded" events if the user enables command monitoring.
 private func commandSucceeded(_event: OpaquePointer?) {
-    postNotification(type: CommandSucceededEvent.self,
-                     _event: _event,
-                     contextFunc: mongoc_apm_command_succeeded_get_context)
+    postNotification(
+        type: CommandSucceededEvent.self,
+        _event: _event,
+        contextFunc: mongoc_apm_command_succeeded_get_context
+    )
 }
 
 /// A callback that will be set for "command failed" events if the user enables command monitoring.
 private func commandFailed(_event: OpaquePointer?) {
-    postNotification(type: CommandFailedEvent.self,
-                     _event: _event,
-                     contextFunc: mongoc_apm_command_failed_get_context)
+    postNotification(
+        type: CommandFailedEvent.self,
+        _event: _event,
+        contextFunc: mongoc_apm_command_failed_get_context
+    )
 }
 
 /// A callback that will be set for "server description changed" events if the user enables server monitoring.
 private func serverDescriptionChanged(_event: OpaquePointer?) {
-    postNotification(type: ServerDescriptionChangedEvent.self,
-                     _event: _event,
-                     contextFunc: mongoc_apm_server_changed_get_context)
+    postNotification(
+        type: ServerDescriptionChangedEvent.self,
+        _event: _event,
+        contextFunc: mongoc_apm_server_changed_get_context
+    )
 }
 
 /// A callback that will be set for "server opening" events if the user enables server monitoring.
 private func serverOpening(_event: OpaquePointer?) {
-    postNotification(type: ServerOpeningEvent.self,
-                     _event: _event,
-                     contextFunc: mongoc_apm_server_opening_get_context)
+    postNotification(
+        type: ServerOpeningEvent.self,
+        _event: _event,
+        contextFunc: mongoc_apm_server_opening_get_context
+    )
 }
 
 /// A callback that will be set for "server closed" events if the user enables server monitoring.
 private func serverClosed(_event: OpaquePointer?) {
-    postNotification(type: ServerClosedEvent.self,
-                     _event: _event,
-                     contextFunc: mongoc_apm_server_closed_get_context)
+    postNotification(
+        type: ServerClosedEvent.self,
+        _event: _event,
+        contextFunc: mongoc_apm_server_closed_get_context
+    )
 }
 
 /// A callback that will be set for "topology description changed" events if the user enables server monitoring.
 private func topologyDescriptionChanged(_event: OpaquePointer?) {
-    postNotification(type: TopologyDescriptionChangedEvent.self,
-                     _event: _event,
-                     contextFunc: mongoc_apm_topology_changed_get_context)
+    postNotification(
+        type: TopologyDescriptionChangedEvent.self,
+        _event: _event,
+        contextFunc: mongoc_apm_topology_changed_get_context
+    )
 }
 
 /// A callback that will be set for "topology opening" events if the user enables server monitoring.
 private func topologyOpening(_event: OpaquePointer?) {
-    postNotification(type: TopologyOpeningEvent.self,
-                     _event: _event,
-                     contextFunc: mongoc_apm_topology_opening_get_context)
+    postNotification(
+        type: TopologyOpeningEvent.self,
+        _event: _event,
+        contextFunc: mongoc_apm_topology_opening_get_context
+    )
 }
 
 /// A callback that will be set for "topology closed" events if the user enables server monitoring.
 private func topologyClosed(_event: OpaquePointer?) {
-    postNotification(type: TopologyClosedEvent.self,
-                     _event: _event,
-                     contextFunc: mongoc_apm_topology_closed_get_context)
+    postNotification(
+        type: TopologyClosedEvent.self,
+        _event: _event,
+        contextFunc: mongoc_apm_topology_closed_get_context
+    )
 }
 
 /// A callback that will be set for "server heartbeat started" events if the user enables server monitoring.
 private func serverHeartbeatStarted(_event: OpaquePointer?) {
-    postNotification(type: ServerHeartbeatStartedEvent.self,
-                     _event: _event,
-                     contextFunc: mongoc_apm_server_heartbeat_started_get_context)
+    postNotification(
+        type: ServerHeartbeatStartedEvent.self,
+        _event: _event,
+        contextFunc: mongoc_apm_server_heartbeat_started_get_context
+    )
 }
 
 /// A callback that will be set for "server heartbeat succeeded" events if the user enables server monitoring.
 private func serverHeartbeatSucceeded(_event: OpaquePointer?) {
-    postNotification(type: ServerHeartbeatSucceededEvent.self,
-                     _event: _event,
-                     contextFunc: mongoc_apm_server_heartbeat_succeeded_get_context)
+    postNotification(
+        type: ServerHeartbeatSucceededEvent.self,
+        _event: _event,
+        contextFunc: mongoc_apm_server_heartbeat_succeeded_get_context
+    )
 }
 
 /// A callback that will be set for "server heartbeat failed" events if the user enables server monitoring.
 private func serverHeartbeatFailed(_event: OpaquePointer?) {
-    postNotification(type: ServerHeartbeatFailedEvent.self,
-                     _event: _event,
-                     contextFunc: mongoc_apm_server_heartbeat_failed_get_context)
+    postNotification(
+        type: ServerHeartbeatFailedEvent.self,
+        _event: _event,
+        contextFunc: mongoc_apm_server_heartbeat_failed_get_context
+    )
 }
 
 /// Posts a Notification with the specified name, containing an event of type T generated using the provided _event
 /// and context function.
-private func postNotification<T: MongoEvent>(type: T.Type,
-                                             _event: OpaquePointer?,
-                                             contextFunc: (OpaquePointer) -> UnsafeMutableRawPointer?
-                                            ) where T: InitializableFromOpaquePointer {
+private func postNotification<T: MongoEvent>(
+    type: T.Type,
+    _event: OpaquePointer?,
+    contextFunc: (OpaquePointer) -> UnsafeMutableRawPointer?
+) where T: InitializableFromOpaquePointer {
     guard let event = _event else {
         fatalError("Missing event pointer for \(type)")
     }
 
     let eventStruct = type.init(event)
 
-    // TODO SWIFT-524: remove workaround for CDRIVER-3256
+    // TODO: SWIFT-524: remove workaround for CDRIVER-3256
     if let tdChanged = eventStruct as? TopologyDescriptionChangedEvent,
-            tdChanged.previousDescription == tdChanged.newDescription {
+        tdChanged.previousDescription == tdChanged.newDescription {
         return
     }
 
     if let sdChanged = eventStruct as? ServerDescriptionChangedEvent,
-            sdChanged.previousDescription == sdChanged.newDescription {
+        sdChanged.previousDescription == sdChanged.newDescription {
         return
     }
 

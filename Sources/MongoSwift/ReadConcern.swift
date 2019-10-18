@@ -31,7 +31,7 @@ public struct ReadConcern: Codable {
                 return "linearizable"
             case .snapshot:
                 return "snapshot"
-            case .other(let l):
+            case let .other(l):
                 return l
             }
         }
@@ -57,7 +57,7 @@ public struct ReadConcern: Codable {
 
     /// Indicates whether this `ReadConcern` is the server default.
     public var isDefault: Bool {
-       return level == nil
+        return self.level == nil
     }
 
     // Initializes a new `ReadConcern` with the same level as the provided `mongoc_read_concern_t`.

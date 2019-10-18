@@ -19,18 +19,22 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codabl
     private let options: ChangeStreamOptions?
     internal let connectionStrategy: ConnectionStrategy
 
-    internal init(target: ChangeStreamTarget<CollectionType>,
-                  pipeline: [Document],
-                  options: ChangeStreamOptions?,
-                  stealing connection: Connection) throws {
+    internal init(
+        target: ChangeStreamTarget<CollectionType>,
+        pipeline: [Document],
+        options: ChangeStreamOptions?,
+        stealing connection: Connection
+    ) throws {
         self.target = target
         self.pipeline = .array(pipeline.map { .document($0) })
         self.options = options
         self.connectionStrategy = .bound(to: connection)
     }
 
-    internal func execute(using connection: Connection,
-                          session: SyncClientSession?) throws -> SyncChangeStream<ChangeStreamType> {
+    internal func execute(
+        using connection: Connection,
+        session: SyncClientSession?
+    ) throws -> SyncChangeStream<ChangeStreamType> {
         let pipeline: Document = ["pipeline": self.pipeline]
         let opts = try encodeOptions(options: self.options, session: session)
 
@@ -57,11 +61,13 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codabl
             }
         }
 
-        return try SyncChangeStream<ChangeStreamType>(stealing: changeStream,
-                                                      connection: connection,
-                                                      client: client,
-                                                      session: session,
-                                                      decoder: decoder,
-                                                      options: self.options)
+        return try SyncChangeStream<ChangeStreamType>(
+            stealing: changeStream,
+            connection: connection,
+            client: client,
+            session: session,
+            decoder: decoder,
+            options: self.options
+        )
     }
 }

@@ -24,11 +24,13 @@ public enum ServerError: MongoError {
     /// Note: `writeErrors` may not be present if the error experienced was a Write Concern related error.
     /// Note: `otherError` may be populated if a non-write error occurs as part of one of the operations (e.g. a
     /// connection failure occurs after already successfully performing a few inserts).
-    case bulkWriteError(writeErrors: [BulkWriteError]?,
-                        writeConcernError: WriteConcernError?,
-                        otherError: Error?,
-                        result: BulkWriteResult?,
-                        errorLabels: [String]?)
+    case bulkWriteError(
+        writeErrors: [BulkWriteError]?,
+        writeConcernError: WriteConcernError?,
+        otherError: Error?,
+        result: BulkWriteResult?,
+        errorLabels: [String]?
+    )
 
     public var errorDescription: String? {
         switch self {
@@ -219,10 +221,11 @@ private func parseMongocError(_ error: bson_error_t, reply: Document?) -> MongoE
         return UserError.invalidArgumentError(message: message)
     case (MONGOC_ERROR_SERVER, _):
         return ServerError.commandError(
-                code: ServerErrorCode(code.rawValue),
-                codeName: codeName,
-                message: message,
-                errorLabels: errorLabels)
+            code: ServerErrorCode(code.rawValue),
+            codeName: codeName,
+            message: message,
+            errorLabels: errorLabels
+        )
     case (MONGOC_ERROR_STREAM, _), (MONGOC_ERROR_SERVER_SELECTION, MONGOC_ERROR_SERVER_SELECTION_FAILURE):
         return RuntimeError.connectionError(message: message, errorLabels: errorLabels)
     case (MONGOC_ERROR_CURSOR, MONGOC_ERROR_CURSOR_INVALID_CURSOR):
@@ -232,8 +235,10 @@ private func parseMongocError(_ error: bson_error_t, reply: Document?) -> MongoE
     case (MONGOC_ERROR_PROTOCOL, MONGOC_ERROR_PROTOCOL_BAD_WIRE_VERSION):
         return RuntimeError.compatibilityError(message: message)
     default:
-        assert(errorLabels == nil, "errorLabels set on error, but were not thrown as a MongoError. " +
-                "Labels: \(errorLabels ?? [])")
+        assert(
+            errorLabels == nil, "errorLabels set on error, but were not thrown as a MongoError. " +
+                "Labels: \(errorLabels ?? [])"
+        )
         return RuntimeError.internalError(message: message)
     }
 }
@@ -242,18 +247,19 @@ private func parseMongocError(_ error: bson_error_t, reply: Document?) -> MongoE
 internal func extractMongoError(error bsonError: bson_error_t, reply: Document? = nil) -> MongoError {
     // if the reply is nil or writeErrors or writeConcernErrors aren't present, then this is likely a commandError.
     guard let serverReply: Document = reply,
-          !(serverReply["writeErrors"]?.arrayValue ?? []).isEmpty ||
-          !(serverReply["writeConcernErrors"]?.arrayValue ?? []).isEmpty else {
+        !(serverReply["writeErrors"]?.arrayValue ?? []).isEmpty ||
+        !(serverReply["writeConcernErrors"]?.arrayValue ?? []).isEmpty else {
         return parseMongocError(bsonError, reply: reply)
     }
 
     let fallback = RuntimeError.internalError(
-            message: "Got error from the server but couldn't parse it. Message: \(toErrorString(bsonError))")
+        message: "Got error from the server but couldn't parse it. Message: \(toErrorString(bsonError))"
+    )
 
     do {
         var writeError: WriteError?
         if let writeErrors = serverReply["writeErrors"]?.arrayValue?.compactMap({ $0.documentValue }),
-           !writeErrors.isEmpty {
+            !writeErrors.isEmpty {
             writeError = try BSONDecoder().decode(WriteError.self, from: writeErrors[0])
         }
         let wcError = try extractWriteConcernError(from: serverReply)
@@ -263,9 +269,9 @@ internal func extractMongoError(error bsonError: bson_error_t, reply: Document? 
         }
 
         return ServerError.writeError(
-                writeError: writeError,
-                writeConcernError: wcError,
-                errorLabels: serverReply["errorLabels"]?.arrayValue?.asArrayOf(String.self)
+            writeError: writeError,
+            writeConcernError: wcError,
+            errorLabels: serverReply["errorLabels"]?.arrayValue?.asArrayOf(String.self)
         )
     } catch {
         return fallback
@@ -275,12 +281,16 @@ internal func extractMongoError(error bsonError: bson_error_t, reply: Document? 
 /// Internal function used to get a `ServerError.bulkWriteError` from a libmongoc error and a server reply to a
 /// `BulkWriteOperation`. If a partial result is provided, an updated result with the failed results filtered out will
 /// be returned as part of the error.
-internal func extractBulkWriteError<T: Codable>(for op: BulkWriteOperation<T>,
-                                                error: bson_error_t,
-                                                reply: Document,
-                                                partialResult: BulkWriteResult? = nil) -> Error {
-    let fallback = RuntimeError.internalError(message: "Got error from the server but couldn't parse it. " +
-            "Message: \(toErrorString(error))")
+internal func extractBulkWriteError<T: Codable>(
+    for op: BulkWriteOperation<T>,
+    error: bson_error_t,
+    reply: Document,
+    partialResult: BulkWriteResult? = nil
+) -> Error {
+    let fallback = RuntimeError.internalError(
+        message: "Got error from the server but couldn't parse it. " +
+            "Message: \(toErrorString(error))"
+    )
 
     do {
         var bulkWriteErrors: [BulkWriteError] = []
@@ -308,13 +318,13 @@ internal func extractBulkWriteError<T: Codable>(for op: BulkWriteOperation<T>,
             }
 
             errResult = BulkWriteResult(
-                    deletedCount: result.deletedCount,
-                    insertedCount: result.insertedCount,
-                    insertedIds: filteredIds,
-                    matchedCount: result.matchedCount,
-                    modifiedCount: result.modifiedCount,
-                    upsertedCount: result.upsertedCount,
-                    upsertedIds: result.upsertedIds
+                deletedCount: result.deletedCount,
+                insertedCount: result.insertedCount,
+                insertedIds: filteredIds,
+                matchedCount: result.matchedCount,
+                modifiedCount: result.modifiedCount,
+                upsertedCount: result.upsertedCount,
+                upsertedIds: result.upsertedIds
             )
         }
 
@@ -326,19 +336,19 @@ internal func extractBulkWriteError<T: Codable>(for op: BulkWriteOperation<T>,
         // omit the "other" error.
         // we also want to omit any write concern errors since they will also be reported elsewhere.
         if case let .some(ServerError.commandError(code, _, _, _)) = other as? ServerError,
-           let wErr = bulkWriteErrors.first,
-           wErr.code == code {
+            let wErr = bulkWriteErrors.first,
+            wErr.code == code {
             other = nil
         } else if error.domain == MONGOC_ERROR_WRITE_CONCERN.rawValue {
             other = nil
         }
 
         return ServerError.bulkWriteError(
-                writeErrors: bulkWriteErrors,
-                writeConcernError: try extractWriteConcernError(from: reply),
-                otherError: other,
-                result: errResult,
-                errorLabels: reply["errorLabels"]?.arrayValue?.asArrayOf(String.self)
+            writeErrors: bulkWriteErrors,
+            writeConcernError: try extractWriteConcernError(from: reply),
+            otherError: other,
+            result: errResult,
+            errorLabels: reply["errorLabels"]?.arrayValue?.asArrayOf(String.self)
         )
     } catch {
         return fallback
@@ -348,7 +358,7 @@ internal func extractBulkWriteError<T: Codable>(for op: BulkWriteOperation<T>,
 /// Extracts a `WriteConcernError` from a server reply.
 private func extractWriteConcernError(from reply: Document) throws -> WriteConcernError? {
     guard let writeConcernErrors = reply["writeConcernErrors"]?.arrayValue?.compactMap({ $0.documentValue }),
-          !writeConcernErrors.isEmpty else {
+        !writeConcernErrors.isEmpty else {
         return nil
     }
     return try BSONDecoder().decode(WriteConcernError.self, from: writeConcernErrors[0])
@@ -362,9 +372,11 @@ internal func convertingBulkWriteErrors<T>(_ body: () throws -> T) throws -> T {
         return try body()
     } catch let ServerError.bulkWriteError(bulkWriteErrors, writeConcernError, other, _, errorLabels) {
         if let bwes = bulkWriteErrors, !bwes.isEmpty {
-            let writeError = WriteError(code: bwes[0].code,
-                                        codeName: bwes[0].codeName,
-                                        message: bwes[0].message)
+            let writeError = WriteError(
+                code: bwes[0].code,
+                codeName: bwes[0].codeName,
+                message: bwes[0].message
+            )
             throw ServerError.writeError(writeError: writeError, writeConcernError: nil, errorLabels: errorLabels)
         } else if let wcErr = writeConcernError {
             throw ServerError.writeError(writeError: nil, writeConcernError: wcErr, errorLabels: errorLabels)
@@ -386,13 +398,17 @@ internal func toErrorString(_ error: bson_error_t) -> String {
 }
 
 internal func bsonTooLargeError(value: BSONValue, forKey: String) -> MongoError {
-    return RuntimeError.internalError(message:
-        "Failed to set value for key \(forKey) to \(value) with BSON type \(value.bsonType): document too large")
+    return RuntimeError.internalError(
+        message:
+        "Failed to set value for key \(forKey) to \(value) with BSON type \(value.bsonType): document too large"
+    )
 }
 
 internal func wrongIterTypeError(_ iter: DocumentIterator, expected type: BSONValue.Type) -> MongoError {
-    return UserError.logicError(message: "Tried to retreive a \(type) from an iterator whose next type " +
-            "is \(iter.currentType) for key \(iter.currentKey)")
+    return UserError.logicError(
+        message: "Tried to retreive a \(type) from an iterator whose next type " +
+            "is \(iter.currentType) for key \(iter.currentKey)"
+    )
 }
 
 internal let failedToRetrieveCursorMessage = "Couldn't get cursor from the server"

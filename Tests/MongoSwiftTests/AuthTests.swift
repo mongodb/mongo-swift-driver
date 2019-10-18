@@ -69,11 +69,13 @@ extension ConnectionString {
 
     /// Returns the credential configured on this URI. Will be empty if no options are set.
     fileprivate var credential: Credential {
-        return Credential(username: self.username,
-                          password: self.password,
-                          source: self.authSource,
-                          mechanism: self.authMechanism,
-                          mechanismProperties: self.authMechanismProperties)
+        return Credential(
+            username: self.username,
+            password: self.password,
+            source: self.authSource,
+            mechanism: self.authMechanism,
+            mechanismProperties: self.authMechanismProperties
+        )
     }
 }
 
@@ -124,7 +126,7 @@ struct Credential: Decodable, Equatable {
         case username, password, source, mechanism, mechanismProperties = "mechanism_properties"
     }
 
-    // TODO SWIFT-636: remove this initializer and the one below it.
+    // TODO: SWIFT-636: remove this initializer and the one below it.
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.username = try container.decodeIfPresent(String.self, forKey: .username)
@@ -144,11 +146,13 @@ struct Credential: Decodable, Equatable {
         }
     }
 
-    init(username: String?,
-         password: String?,
-         source: String?,
-         mechanism: AuthMechanism?,
-         mechanismProperties: Document?) {
+    init(
+        username: String?,
+        password: String?,
+        source: String?,
+        mechanism: AuthMechanism?,
+        mechanismProperties: Document?
+    ) {
         self.mechanism = mechanism
         self.mechanismProperties = mechanismProperties
         self.password = password
@@ -162,7 +166,7 @@ final class AuthTests: MongoSwiftTestCase {
         let testFiles = try retrieveSpecTestFiles(specName: "auth", asType: AuthTestFile.self)
         let invalidArgumentError = UserError.invalidArgumentError(message: "")
 
-            for (_, file) in testFiles {
+        for (_, file) in testFiles {
             for testCase in file.tests {
                 guard testCase.valid else {
                     expect(try ConnectionString(testCase.uri))
@@ -226,7 +230,7 @@ final class AuthTests: MongoSwiftTestCase {
         }
     }
 
-    // TODO SWIFT-640: spec says "Drivers that allow specifying auth parameters in code as well as via connection
+    // TODO: SWIFT-640: spec says "Drivers that allow specifying auth parameters in code as well as via connection
     // string should test both for the test cases described below". Once we support setting auth options via options
     // struct we should test that here too.
     func testAuthProseTests() throws {
@@ -292,10 +296,10 @@ final class AuthTests: MongoSwiftTestCase {
         //   As a URI, those have to be UTF-8 encoded and URL-escaped.
         let saslPrepConnectUsers = [
             TestUser(username: "IX", password: "IX", mechanisms: [.scramSHA256])
-            // TODO SWIFT-638 : unskip these tests. URIs cannot be parsed by libmongoc - see CDRIVER-3390.
-            //TestUser(username: "IX", password: "I%C2%ADX", mechanisms: [.scramSHA256]),
-            //TestUser(username: "%E2%85%A8", password: "IV", mechanisms: [.scramSHA256]),
-            //TestUser(username: "%E2%85%A8", password: "I%C2%ADV", mechanisms: [.scramSHA256])
+            // TODO: SWIFT-638 : unskip these tests. URIs cannot be parsed by libmongoc - see CDRIVER-3390.
+            // TestUser(username: "IX", password: "I%C2%ADX", mechanisms: [.scramSHA256]),
+            // TestUser(username: "%E2%85%A8", password: "IV", mechanisms: [.scramSHA256]),
+            // TestUser(username: "%E2%85%A8", password: "I%C2%ADV", mechanisms: [.scramSHA256])
         ]
 
         for user in saslPrepConnectUsers {
@@ -304,7 +308,7 @@ final class AuthTests: MongoSwiftTestCase {
             expect(try client.db("admin").runCommand(["dbstats": 1])).toNot(throwError())
         }
 
-        // TODO whenever auth is implemented in pure Swift - implement this test case:
+        // TODO: whenever auth is implemented in pure Swift - implement this test case:
         // For SCRAM-SHA-1 and SCRAM-SHA-256, test that the minimum iteration count is respected. This may be done via
         // unit testing of an underlying SCRAM library.
     }

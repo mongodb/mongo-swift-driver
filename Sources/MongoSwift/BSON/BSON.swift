@@ -432,10 +432,11 @@ extension BSON: Codable {
             }
 
             throw DecodingError.typeMismatch(
-                    BSON.self,
-                    DecodingError.Context(
-                            codingPath: decoder.codingPath,
-                            debugDescription: "Encountered a value that could not be decoded to any BSON type")
+                BSON.self,
+                DecodingError.Context(
+                    codingPath: decoder.codingPath,
+                    debugDescription: "Encountered a value that could not be decoded to any BSON type"
+                )
             )
         }
     }

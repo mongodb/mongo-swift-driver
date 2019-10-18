@@ -132,20 +132,21 @@ final class Document_SequenceTests: MongoSwiftTestCase {
     func is10(_ pair: Document.KeyValuePair) -> Bool {
         if let int = pair.value.asInt() {
             return int == 10
-         }
+        }
         return false
     }
-    func isNot10(_ pair: Document.KeyValuePair) -> Bool { return !is10(pair) }
+
+    func isNot10(_ pair: Document.KeyValuePair) -> Bool { return !self.is10(pair) }
 
     func testDropFirst() throws {
         expect(self.emptyDoc.dropFirst(0)).to(equal([:]))
         expect(self.emptyDoc.dropFirst(1)).to(equal([:]))
 
-        expect(self.smallDoc.dropFirst(0)).to(equal(smallDoc))
+        expect(self.smallDoc.dropFirst(0)).to(equal(self.smallDoc))
         expect(self.smallDoc.dropFirst()).to(equal([:]))
         expect(self.smallDoc.dropFirst(2)).to(equal([:]))
 
-        expect(self.doc.dropFirst(0)).to(equal(doc))
+        expect(self.doc.dropFirst(0)).to(equal(self.doc))
         expect(self.doc.dropFirst()).to(equal(
             [
                 "b": "hi",
@@ -165,11 +166,11 @@ final class Document_SequenceTests: MongoSwiftTestCase {
         expect(self.emptyDoc.dropLast(0)).to(equal([:]))
         expect(self.emptyDoc.dropLast(1)).to(equal([:]))
 
-        expect(self.smallDoc.dropLast(0)).to(equal(smallDoc))
+        expect(self.smallDoc.dropLast(0)).to(equal(self.smallDoc))
         expect(self.smallDoc.dropLast()).to(equal([:]))
         expect(self.smallDoc.dropLast(2)).to(equal([:]))
 
-        expect(self.doc.dropLast(0)).to(equal(doc))
+        expect(self.doc.dropLast(0)).to(equal(self.doc))
         expect(self.doc.dropLast()).to(equal([
             "a": 1,
             "b": "hi",
@@ -204,8 +205,8 @@ final class Document_SequenceTests: MongoSwiftTestCase {
         expect(self.doc.drop(while: self.isNot10)).to(equal(["g": 10]))
 
         expect(self.emptyDoc.drop(while: self.is10)).to(equal([:]))
-        expect(self.smallDoc.drop(while: self.is10)).to(equal(smallDoc))
-        expect(self.doc.drop(while: self.is10)).to(equal(doc))
+        expect(self.smallDoc.drop(while: self.is10)).to(equal(self.smallDoc))
+        expect(self.doc.drop(while: self.is10)).to(equal(self.doc))
     }
 
     func testPrefixLength() throws {
@@ -213,28 +214,28 @@ final class Document_SequenceTests: MongoSwiftTestCase {
         expect(self.emptyDoc.prefix(1)).to(equal([:]))
 
         expect(self.smallDoc.prefix(0)).to(equal([:]))
-        expect(self.smallDoc.prefix(1)).to(equal(smallDoc))
-        expect(self.smallDoc.prefix(2)).to(equal(smallDoc))
+        expect(self.smallDoc.prefix(1)).to(equal(self.smallDoc))
+        expect(self.smallDoc.prefix(2)).to(equal(self.smallDoc))
 
         expect(self.doc.prefix(0)).to(equal([:]))
         expect(self.doc.prefix(1)).to(equal(["a": 1]))
         expect(self.doc.prefix(2)).to(equal(["a": 1, "b": "hi"]))
         expect(self.doc.prefix(4)).to(equal(["a": 1, "b": "hi", "c": [1, 2], "d": false]))
-        expect(self.doc.prefix(7)).to(equal(doc))
-        expect(self.doc.prefix(8)).to(equal(doc))
+        expect(self.doc.prefix(7)).to(equal(self.doc))
+        expect(self.doc.prefix(8)).to(equal(self.doc))
     }
 
     func testPrefixPredicate() throws {
         expect(self.emptyDoc.prefix(while: self.isInt)).to(equal([:]))
-        expect(self.smallDoc.prefix(while: self.isInt)).to(equal(smallDoc))
+        expect(self.smallDoc.prefix(while: self.isInt)).to(equal(self.smallDoc))
         expect(self.doc.prefix(while: self.isInt)).to(equal(["a": 1]))
 
         expect(self.emptyDoc.prefix(while: self.isNotNil)).to(equal([:]))
-        expect(self.smallDoc.prefix(while: self.isNotNil)).to(equal(smallDoc))
+        expect(self.smallDoc.prefix(while: self.isNotNil)).to(equal(self.smallDoc))
         expect(self.doc.prefix(while: self.isNotNil)).to(equal(["a": 1, "b": "hi", "c": [1, 2], "d": false]))
 
         expect(self.emptyDoc.prefix(while: self.isNot10)).to(equal([:]))
-        expect(self.smallDoc.prefix(while: self.isNot10)).to(equal(smallDoc))
+        expect(self.smallDoc.prefix(while: self.isNot10)).to(equal(self.smallDoc))
         expect(self.doc.prefix(while: self.isNot10)).to(equal(
             [
                 "a": 1,
@@ -257,16 +258,16 @@ final class Document_SequenceTests: MongoSwiftTestCase {
         expect(self.emptyDoc.suffix(5)).to(equal([:]))
 
         expect(self.smallDoc.suffix(0)).to(equal([:]))
-        expect(self.smallDoc.suffix(1)).to(equal(smallDoc))
-        expect(self.smallDoc.suffix(2)).to(equal(smallDoc))
-        expect(self.smallDoc.suffix(5)).to(equal(smallDoc))
+        expect(self.smallDoc.suffix(1)).to(equal(self.smallDoc))
+        expect(self.smallDoc.suffix(2)).to(equal(self.smallDoc))
+        expect(self.smallDoc.suffix(5)).to(equal(self.smallDoc))
 
         expect(self.doc.suffix(0)).to(equal([]))
         expect(self.doc.suffix(1)).to(equal(["g": 10]))
         expect(self.doc.suffix(2)).to(equal(["f": .minKey, "g": 10]))
         expect(self.doc.suffix(4)).to(equal(["d": false, "e": .null, "f": .minKey, "g": 10]))
-        expect(self.doc.suffix(7)).to(equal(doc))
-        expect(self.doc.suffix(8)).to(equal(doc))
+        expect(self.doc.suffix(7)).to(equal(self.doc))
+        expect(self.doc.suffix(8)).to(equal(self.doc))
     }
 
     func testSplit() throws {
@@ -295,7 +296,7 @@ final class Document_SequenceTests: MongoSwiftTestCase {
         ))
 
         expect(self.doc.split(maxSplits: 1, omittingEmptySubsequences: false, whereSeparator: self.isInt))
-                .to(equal([[:], ["b": "hi", "c": [1, 2], "d": false, "e": .null, "f": .minKey, "g": 10]]))
+            .to(equal([[:], ["b": "hi", "c": [1, 2], "d": false, "e": .null, "f": .minKey, "g": 10]]))
     }
 
     func testIsEmpty() throws {

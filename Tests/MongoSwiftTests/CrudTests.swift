@@ -51,12 +51,12 @@ final class CrudTests: MongoSwiftTestCase {
 
     // Run all the tests at the /read path
     func testReads() throws {
-        try doTests(forSubdirectory: "read")
+        try self.doTests(forSubdirectory: "read")
     }
 
     // Run all the tests at the /write path
     func testWrites() throws {
-        try doTests(forSubdirectory: "write")
+        try self.doTests(forSubdirectory: "write")
     }
 }
 
@@ -64,7 +64,7 @@ final class CrudTests: MongoSwiftTestCase {
 private struct CrudTestFile: Decodable {
     let data: [Document]
     let testDocs: [Document]
-    var tests: [CrudTest] { return try! testDocs.map { try makeCrudTest($0) } }
+    var tests: [CrudTest] { return try! self.testDocs.map { try makeCrudTest($0) } }
     let minServerVersion: String?
     let maxServerVersion: String?
 
@@ -125,6 +125,7 @@ private class CrudTest {
         }
         return nil
     }
+
     var upsert: Bool? { return self.args["upsert"]?.boolValue }
 
     /// Initializes a new `CrudTest` from a `Document`.
@@ -140,7 +141,7 @@ private class CrudTest {
     }
 
     // Subclasses should implement `execute` according to the particular operation(s) they are for.
-    func execute(usingCollection coll: SyncMongoCollection<Document>) throws { XCTFail("Unimplemented") }
+    func execute(usingCollection _: SyncMongoCollection<Document>) throws { XCTFail("Unimplemented") }
 
     // If the test has a `collection` field in its `outcome`, verify that the expected
     // data is present. If there is no `collection` field, do nothing.
@@ -216,10 +217,10 @@ private class BulkWriteTest: CrudTest {
 
         do {
             if let result = try coll.bulkWrite(requests, options: options) {
-                verifyBulkWriteResult(result)
+                self.verifyBulkWriteResult(result)
             }
             expect(expectError).to(beFalse())
-        } catch ServerError.bulkWriteError(_, _, _, let result, _) {
+        } catch let ServerError.bulkWriteError(_, _, _, result, _) {
             if let result = result {
                 verifyBulkWriteResult(result)
             }
@@ -315,11 +316,13 @@ private class DistinctTest: CrudTest {
 private class FindTest: CrudTest {
     override func execute(usingCollection coll: SyncMongoCollection<Document>) throws {
         let filter: Document = try self.args.get("filter")
-        let options = FindOptions(batchSize: self.batchSize,
-                                  collation: self.collation,
-                                  limit: self.limit,
-                                  skip: self.skip,
-                                  sort: self.sort)
+        let options = FindOptions(
+            batchSize: self.batchSize,
+            collation: self.collation,
+            limit: self.limit,
+            skip: self.skip,
+            sort: self.sort
+        )
         let result = BSON.array(try coll.find(filter, options: options).map { .document($0) })
         expect(result).to(equal(self.result))
     }
@@ -342,11 +345,13 @@ private class FindOneAndReplaceTest: CrudTest {
         let filter: Document = try self.args.get("filter")
         let replacement: Document = try self.args.get("replacement")
 
-        let opts = FindOneAndReplaceOptions(collation: self.collation,
-                                            projection: self.projection,
-                                            returnDocument: self.returnDoc,
-                                            sort: self.sort,
-                                            upsert: self.upsert)
+        let opts = FindOneAndReplaceOptions(
+            collation: self.collation,
+            projection: self.projection,
+            returnDocument: self.returnDoc,
+            sort: self.sort,
+            upsert: self.upsert
+        )
 
         let result = try coll.findOneAndReplace(filter: filter, replacement: replacement, options: opts)
         self.verifyFindAndModifyResult(result)
@@ -359,12 +364,14 @@ private class FindOneAndUpdateTest: CrudTest {
         let filter: Document = try self.args.get("filter")
         let update: Document = try self.args.get("update")
 
-        let opts = FindOneAndUpdateOptions(arrayFilters: self.arrayFilters,
-                                           collation: self.collation,
-                                           projection: self.projection,
-                                           returnDocument: self.returnDoc,
-                                           sort: self.sort,
-                                           upsert: self.upsert)
+        let opts = FindOneAndUpdateOptions(
+            arrayFilters: self.arrayFilters,
+            collation: self.collation,
+            projection: self.projection,
+            returnDocument: self.returnDoc,
+            sort: self.sort,
+            upsert: self.upsert
+        )
 
         let result = try coll.findOneAndUpdate(filter: filter, update: update, options: opts)
         self.verifyFindAndModifyResult(result)
@@ -383,7 +390,7 @@ private class InsertManyTest: CrudTest {
                 verifyInsertManyResult(result)
             }
             expect(expectError).to(beFalse())
-        } catch ServerError.bulkWriteError(_, _, _, let result, _) {
+        } catch let ServerError.bulkWriteError(_, _, _, result, _) {
             if let result = result {
                 verifyInsertManyResult(InsertManyResult(from: result)!)
             }

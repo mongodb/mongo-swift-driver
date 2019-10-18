@@ -33,7 +33,7 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
     public var readPreference: ReadPreference? = nil
 
     /// Determines whether the client should retry supported read operations.
-    /// TODO SWIFT-587 make this public.
+    // TODO: SWIFT-587 make this public.
     internal var retryReads: Bool?
 
     /// Determines whether the client should retry supported write operations.
@@ -71,17 +71,19 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
     }
 
     /// Convenience initializer allowing any/all to be omitted or optional.
-    public init(commandMonitoring: Bool = false,
-                dataCodingStrategy: DataCodingStrategy? = nil,
-                dateCodingStrategy: DateCodingStrategy? = nil,
-                notificationCenter: NotificationCenter? = nil,
-                readConcern: ReadConcern? = nil,
-                readPreference: ReadPreference? = nil,
-                retryWrites: Bool? = nil,
-                serverMonitoring: Bool = false,
-                tlsOptions: TLSOptions? = nil,
-                uuidCodingStrategy: UUIDCodingStrategy? = nil,
-                writeConcern: WriteConcern? = nil) {
+    public init(
+        commandMonitoring: Bool = false,
+        dataCodingStrategy: DataCodingStrategy? = nil,
+        dateCodingStrategy: DateCodingStrategy? = nil,
+        notificationCenter: NotificationCenter? = nil,
+        readConcern: ReadConcern? = nil,
+        readPreference: ReadPreference? = nil,
+        retryWrites: Bool? = nil,
+        serverMonitoring: Bool = false,
+        tlsOptions: TLSOptions? = nil,
+        uuidCodingStrategy: UUIDCodingStrategy? = nil,
+        writeConcern: WriteConcern? = nil
+    ) {
         self.commandMonitoring = commandMonitoring
         self.dataCodingStrategy = dataCodingStrategy
         self.dateCodingStrategy = dateCodingStrategy
@@ -121,12 +123,14 @@ public struct DatabaseOptions: CodingStrategyProvider {
     public var writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all arguments to be omitted or optional.
-    public init(dataCodingStrategy: DataCodingStrategy? = nil,
-                dateCodingStrategy: DateCodingStrategy? = nil,
-                readConcern: ReadConcern? = nil,
-                readPreference: ReadPreference? = nil,
-                uuidCodingStrategy: UUIDCodingStrategy? = nil,
-                writeConcern: WriteConcern? = nil) {
+    public init(
+        dataCodingStrategy: DataCodingStrategy? = nil,
+        dateCodingStrategy: DateCodingStrategy? = nil,
+        readConcern: ReadConcern? = nil,
+        readPreference: ReadPreference? = nil,
+        uuidCodingStrategy: UUIDCodingStrategy? = nil,
+        writeConcern: WriteConcern? = nil
+    ) {
         self.dataCodingStrategy = dataCodingStrategy
         self.dateCodingStrategy = dateCodingStrategy
         self.readConcern = readConcern
@@ -154,11 +158,13 @@ public struct TLSOptions {
     public var weakCertValidation: Bool?
 
     /// Convenience initializer allowing any/all arguments to be omitted or optional.
-    public init(allowInvalidHostnames: Bool? = nil,
-                caFile: URL? = nil,
-                pemFile: URL? = nil,
-                pemPassword: String? = nil,
-                weakCertValidation: Bool? = nil) {
+    public init(
+        allowInvalidHostnames: Bool? = nil,
+        caFile: URL? = nil,
+        pemFile: URL? = nil,
+        pemPassword: String? = nil,
+        weakCertValidation: Bool? = nil
+    ) {
         self.allowInvalidHostnames = allowInvalidHostnames
         self.caFile = caFile
         self.pemFile = pemFile
@@ -239,18 +245,20 @@ public class SyncMongoClient {
         self.decoder = BSONDecoder(options: options)
         self.notificationCenter = options?.notificationCenter ?? NotificationCenter.default
 
-        self.connectionPool.initializeMonitoring(commandMonitoring: options?.commandMonitoring ?? false,
-                                                 serverMonitoring: options?.serverMonitoring ?? false,
-                                                 client: self)
+        self.connectionPool.initializeMonitoring(
+            commandMonitoring: options?.commandMonitoring ?? false,
+            serverMonitoring: options?.serverMonitoring ?? false,
+            client: self
+        )
     }
 
     /**
      * :nodoc:
      */
-     @available(*, deprecated, message: "Use SyncMongoClient(stealing:) instead.")
-     public convenience init(fromPointer pointer: OpaquePointer) {
+    @available(*, deprecated, message: "Use SyncMongoClient(stealing:) instead.")
+    public convenience init(fromPointer pointer: OpaquePointer) {
         self.init(stealing: pointer)
-     }
+    }
 
     /**
      * :nodoc:
@@ -291,8 +299,10 @@ public class SyncMongoClient {
      * - Throws:
      *   - `RuntimeError.compatibilityError` if the deployment does not support sessions.
      */
-    public func withSession<T>(options: ClientSessionOptions? = nil,
-                               _ sessionBody: (SyncClientSession) throws -> T) throws -> T {
+    public func withSession<T>(
+        options: ClientSessionOptions? = nil,
+        _ sessionBody: (SyncClientSession) throws -> T
+    ) throws -> T {
         let session = try SyncClientSession(client: self, options: options)
         defer { session.end() }
         return try sessionBody(session)
@@ -314,11 +324,15 @@ public class SyncMongoClient {
      *
      * - SeeAlso: https://docs.mongodb.com/manual/reference/command/listDatabases/
      */
-    public func listDatabases(_ filter: Document? = nil,
-                              session: SyncClientSession? = nil) throws -> [DatabaseSpecification] {
-        let operation = ListDatabasesOperation(client: self,
-                                               filter: filter,
-                                               nameOnly: nil)
+    public func listDatabases(
+        _ filter: Document? = nil,
+        session: SyncClientSession? = nil
+    ) throws -> [DatabaseSpecification] {
+        let operation = ListDatabasesOperation(
+            client: self,
+            filter: filter,
+            nameOnly: nil
+        )
         guard case let .specs(result) = try self.executeOperation(operation, session: session) else {
             throw RuntimeError.internalError(message: "Invalid result")
         }
@@ -337,8 +351,10 @@ public class SyncMongoClient {
      * - Throws:
      *   - `UserError.logicError` if the provided session is inactive.
      */
-    public func listMongoDatabases(_ filter: Document? = nil,
-                                   session: SyncClientSession? = nil) throws -> [SyncMongoDatabase] {
+    public func listMongoDatabases(
+        _ filter: Document? = nil,
+        session: SyncClientSession? = nil
+    ) throws -> [SyncMongoDatabase] {
         return try self.listDatabaseNames(filter, session: session).map { self.db($0) }
     }
 
@@ -355,9 +371,11 @@ public class SyncMongoClient {
      *   - `UserError.logicError` if the provided session is inactive.
      */
     public func listDatabaseNames(_ filter: Document? = nil, session: SyncClientSession? = nil) throws -> [String] {
-        let operation = ListDatabasesOperation(client: self,
-                                               filter: filter,
-                                               nameOnly: true)
+        let operation = ListDatabasesOperation(
+            client: self,
+            filter: filter,
+            nameOnly: true
+        )
         guard case let .names(result) = try self.executeOperation(operation, session: session) else {
             throw RuntimeError.internalError(message: "Invalid result")
         }
@@ -404,9 +422,11 @@ public class SyncMongoClient {
      *
      * - Note: Supported in MongoDB version 4.0+ only.
      */
-    public func watch(_  pipeline: [Document] = [],
-                      options: ChangeStreamOptions?  =  nil,
-                      session: SyncClientSession? = nil) throws -> SyncChangeStream<ChangeStreamEvent<Document>> {
+    public func watch(
+        _ pipeline: [Document] = [],
+        options: ChangeStreamOptions? = nil,
+        session: SyncClientSession? = nil
+    ) throws -> SyncChangeStream<ChangeStreamEvent<Document>> {
         return try self.watch(pipeline, options: options, session: session, withFullDocumentType: Document.self)
     }
 
@@ -438,15 +458,19 @@ public class SyncMongoClient {
      *
      * - Note: Supported in MongoDB version 4.0+ only.
      */
-    public func watch<FullDocType: Codable>(_  pipeline: [Document] = [],
-                                            options: ChangeStreamOptions?  =  nil,
-                                            session: SyncClientSession? = nil,
-                                            withFullDocumentType: FullDocType.Type)
-                                        throws -> SyncChangeStream<ChangeStreamEvent<FullDocType>> {
-        return try self.watch(pipeline,
-                              options: options,
-                              session: session,
-                              withEventType: ChangeStreamEvent<FullDocType>.self)
+    public func watch<FullDocType: Codable>(
+        _ pipeline: [Document] = [],
+        options: ChangeStreamOptions? = nil,
+        session: SyncClientSession? = nil,
+        withFullDocumentType _: FullDocType.Type
+    )
+        throws -> SyncChangeStream<ChangeStreamEvent<FullDocType>> {
+        return try self.watch(
+            pipeline,
+            options: options,
+            session: session,
+            withEventType: ChangeStreamEvent<FullDocType>.self
+        )
     }
 
     /**
@@ -476,21 +500,27 @@ public class SyncMongoClient {
      *
      * - Note: Supported in MongoDB version 4.0+ only.
      */
-    public func watch<EventType: Codable>(_  pipeline: [Document] = [],
-                                          options: ChangeStreamOptions?  =  nil,
-                                          session: SyncClientSession? = nil,
-                                          withEventType: EventType.Type) throws -> SyncChangeStream<EventType> {
+    public func watch<EventType: Codable>(
+        _ pipeline: [Document] = [],
+        options: ChangeStreamOptions? = nil,
+        session: SyncClientSession? = nil,
+        withEventType _: EventType.Type
+    ) throws -> SyncChangeStream<EventType> {
         let connection = try resolveConnection(client: self, session: session)
-        let operation = try WatchOperation<Document, EventType>(target: .client(self),
-                                                                pipeline: pipeline,
-                                                                options: options,
-                                                                stealing: connection)
+        let operation = try WatchOperation<Document, EventType>(
+            target: .client(self),
+            pipeline: pipeline,
+            options: options,
+            stealing: connection
+        )
         return try self.executeOperation(operation, session: session)
     }
 
     /// Executes an `Operation` using this `SyncMongoClient` and an optionally provided session.
-    internal func executeOperation<T: Operation>(_ operation: T,
-                                                 session: SyncClientSession? = nil) throws -> T.OperationResult {
+    internal func executeOperation<T: Operation>(
+        _ operation: T,
+        session: SyncClientSession? = nil
+    ) throws -> T.OperationResult {
         return try self.operationExecutor.execute(operation, client: self, session: session)
     }
 }

@@ -11,12 +11,16 @@ private func causalConsistency() throws {
     // Start Causal Consistency Example 1
     let s1 = try client1.startSession(options: ClientSessionOptions(causalConsistency: true))
     let currentDate = Date()
-    var dbOptions = DatabaseOptions(readConcern: ReadConcern(.majority),
-                                    writeConcern: try WriteConcern(w: .majority, wtimeoutMS: 1000))
+    var dbOptions = DatabaseOptions(
+        readConcern: ReadConcern(.majority),
+        writeConcern: try WriteConcern(w: .majority, wtimeoutMS: 1000)
+    )
     let items = client1.db("test", options: dbOptions).collection("items")
-    try items.updateOne(filter: ["sku": "111", "end": BSONNull()],
-                        update: ["$set": ["end": currentDate] as Document],
-                        session: s1)
+    try items.updateOne(
+        filter: ["sku": "111", "end": BSONNull()],
+        update: ["$set": ["end": currentDate] as Document],
+        session: s1
+    )
     try items.insertOne(["sku": "nuts-111", "name": "Pecans", "start": currentDate], session: s1)
     // End Causal Consistency Example 1
 

@@ -26,13 +26,15 @@ public struct CountOptions: Codable {
     public var skip: Int64?
 
     /// Convenience initializer allowing any/all parameters to be optional
-    public init(collation: Document? = nil,
-                hint: Hint? = nil,
-                limit: Int64? = nil,
-                maxTimeMS: Int64? = nil,
-                readConcern: ReadConcern? = nil,
-                readPreference: ReadPreference? = nil,
-                skip: Int64? = nil) {
+    public init(
+        collation: Document? = nil,
+        hint: Hint? = nil,
+        limit: Int64? = nil,
+        maxTimeMS: Int64? = nil,
+        readConcern: ReadConcern? = nil,
+        readPreference: ReadPreference? = nil,
+        skip: Int64? = nil
+    ) {
         self.collation = collation
         self.hint = hint
         self.limit = limit
@@ -66,14 +68,16 @@ internal struct CountOperation<T: Codable>: Operation {
         let count = self.collection.withMongocCollection(from: connection) { collPtr in
             // because we already encode skip and limit in the options,
             // pass in 0s so we don't get duplicate parameter errors.
-            mongoc_collection_count_with_opts(collPtr,
-                                              MONGOC_QUERY_NONE,
-                                              self.filter._bson,
-                                              0, // skip
-                                              0, // limit
-                                              opts?._bson,
-                                              rp,
-                                              &error)
+            mongoc_collection_count_with_opts(
+                collPtr,
+                MONGOC_QUERY_NONE,
+                self.filter._bson,
+                0, // skip
+                0, // limit
+                opts?._bson,
+                rp,
+                &error
+            )
         }
 
         guard count != -1 else { throw extractMongoError(error: error) }

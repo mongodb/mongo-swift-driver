@@ -47,10 +47,12 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
             return
         }
 
-        let tests = try retrieveSpecTestFiles(specName: "initial-dns-seedlist-discovery",
-                                              asType: DNSSeedlistTestCase.self)
+        let tests = try retrieveSpecTestFiles(
+            specName: "initial-dns-seedlist-discovery",
+            asType: DNSSeedlistTestCase.self
+        )
         for (filename, testCase) in tests {
-            // TODO SWIFT-593: run these tests
+            // TODO: SWIFT-593: run these tests
             guard !["encoded-userinfo-and-db.json", "uri-with-auth.json"].contains(filename) else {
                 continue
             }
@@ -70,11 +72,15 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
             // Enclose all of the potentially throwing code in `doTest`. Sometimes the expected errors come when
             // parsing the URI, and other times they are not until we try to send a command.
             func doTest() throws {
-                let opts = TLSOptions(allowInvalidHostnames: true,
-                                      caFile: URL(string: MongoSwiftTestCase.sslCAFilePath ?? ""),
-                                      pemFile: URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? ""))
-                let client = try SyncMongoClient(testCase.uri,
-                                                 options: ClientOptions(serverMonitoring: true, tlsOptions: opts))
+                let opts = TLSOptions(
+                    allowInvalidHostnames: true,
+                    caFile: URL(string: MongoSwiftTestCase.sslCAFilePath ?? ""),
+                    pemFile: URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? "")
+                )
+                let client = try SyncMongoClient(
+                    testCase.uri,
+                    options: ClientOptions(serverMonitoring: true, tlsOptions: opts)
+                )
 
                 // mongoc connects lazily so we need to send a command.
                 let db = client.db("test")
@@ -95,7 +101,7 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
 
             // "You MUST verify that each of the values of the Connection String Options under options match the
             // Client's parsed value for that option."
-            // TODO SWIFT-597: Implement these assertions. Not possible now.
+            // TODO: SWIFT-597: Implement these assertions. Not possible now.
 
             // Note: we also skip this assertion: "You SHOULD verify that the client's initial seed list matches the
             // list of seeds." mongoc doesn't make this assertion in their test runner either.

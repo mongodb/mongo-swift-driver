@@ -15,6 +15,7 @@ internal protocol Matchable {
     /// Determines if this value is considered a wildcard for the purposes of the MATCHES function.
     func isPlaceholder() -> Bool
 }
+
 // swiftlint:enable line_length
 
 extension Matchable {

@@ -74,8 +74,10 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
 
     func testAlternateNotificationCenters() throws {
         let customCenter = NotificationCenter()
-        let client = try SyncMongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true,
-                                                                               notificationCenter: customCenter))
+        let client = try SyncMongoClient.makeTestClient(options: ClientOptions(
+            commandMonitoring: true,
+            notificationCenter: customCenter
+        ))
         let db = client.db(type(of: self).testDatabase)
         let collection = try db.createCollection(self.getCollectionName())
         var eventCount = 0
@@ -101,7 +103,7 @@ private struct CMTestFile: Decodable {
 
     enum CodingKeys: String, CodingKey {
         case data, collectionName = "collection_name",
-        databaseName = "database_name", tests, namespace
+            databaseName = "database_name", tests, namespace
     }
 }
 
@@ -132,8 +134,8 @@ private struct CMTest: Decodable {
 
     enum CodingKeys: String, CodingKey {
         case description, op = "operation", expectationDocs = "expectations",
-        minServerVersion = "ignore_if_server_version_less_than",
-        maxServerVersion = "ignore_if_server_version_greater_than"
+            minServerVersion = "ignore_if_server_version_less_than",
+            maxServerVersion = "ignore_if_server_version_greater_than"
     }
 
     // Given a collection, perform the operation specified for this test on it.
@@ -142,7 +144,7 @@ private struct CMTest: Decodable {
     // events won't match up.
     // swiftlint:disable cyclomatic_complexity
     func doOperation(withCollection collection: SyncMongoCollection<Document>) throws {
-        // TODO SWIFT-31: use readPreferences for commands if provided
+        // TODO: SWIFT-31: use readPreferences for commands if provided
         let filter: Document = self.op.args["filter"]?.documentValue ?? [:]
 
         switch self.op.name {
@@ -159,17 +161,19 @@ private struct CMTest: Decodable {
             if let hintDoc = modifiers?["$hint"]?.documentValue {
                 hint = .indexSpec(hintDoc)
             }
-            let options = FindOptions(batchSize: self.op.args["batchSize"]?.asInt32(),
-                                      comment: modifiers?["$comment"]?.stringValue,
-                                      hint: hint,
-                                      limit: self.op.args["limit"]?.asInt64(),
-                                      max: modifiers?["$max"]?.documentValue,
-                                      maxTimeMS: modifiers?["$maxTimeMS"]?.asInt64(),
-                                      min: modifiers?["$min"]?.documentValue,
-                                      returnKey: modifiers?["$returnKey"]?.boolValue,
-                                      showRecordId: modifiers?["$showDiskLoc"]?.boolValue,
-                                      skip: self.op.args["skip"]?.asInt64(),
-                                      sort: self.op.args["sort"]?.documentValue)
+            let options = FindOptions(
+                batchSize: self.op.args["batchSize"]?.asInt32(),
+                comment: modifiers?["$comment"]?.stringValue,
+                hint: hint,
+                limit: self.op.args["limit"]?.asInt64(),
+                max: modifiers?["$max"]?.documentValue,
+                maxTimeMS: modifiers?["$maxTimeMS"]?.asInt64(),
+                min: modifiers?["$min"]?.documentValue,
+                returnKey: modifiers?["$returnKey"]?.boolValue,
+                showRecordId: modifiers?["$showDiskLoc"]?.boolValue,
+                skip: self.op.args["skip"]?.asInt64(),
+                sort: self.op.args["sort"]?.documentValue
+            )
 
             // we have to iterate the cursor to make the command execute
             for _ in try! collection.find(filter, options: options) {}
@@ -196,6 +200,7 @@ private struct CMTest: Decodable {
             XCTFail("Unrecognized operation name \(self.op.name)")
         }
     }
+
     // swiftlint:enable cyclomatic_complexity
 }
 
@@ -234,8 +239,8 @@ private struct CommandStartedExpectation: ExpectationType, Decodable {
 
     enum CodingKeys: String, CodingKey {
         case command,
-        commandName = "command_name",
-        databaseName = "database_name"
+            commandName = "command_name",
+            databaseName = "database_name"
     }
 
     func compare(to notification: Notification, testContext: inout [String: Any]) {
@@ -274,24 +279,24 @@ private func normalizeCommand(_ input: Document) -> Document {
         if ["upsert", "multi"].contains(k), let bV = v.boolValue {
             if bV { output[k] = true } else { continue }
 
-        // The tests don't explicitly store maxTimeMS as an Int64, so libmongoc
-        // parses it as an Int32 which we convert to Int. convert to Int64 here because we
-        // (as per the crud spec) use an Int64 for maxTimeMS and send that to
-        // the server in our actual commands.
+            // The tests don't explicitly store maxTimeMS as an Int64, so libmongoc
+            // parses it as an Int32 which we convert to Int. convert to Int64 here because we
+            // (as per the crud spec) use an Int64 for maxTimeMS and send that to
+            // the server in our actual commands.
         } else if k == "maxTimeMS", let iV = v.asInt64() {
             output[k] = .int64(iV)
 
-        // The expected batch sizes are always Int64s, however, find command
-        // events actually have Int32 batch sizes... (as the spec says...)
-        // but getMores have Int64s. so only convert if it's a find command...
+            // The expected batch sizes are always Int64s, however, find command
+            // events actually have Int32 batch sizes... (as the spec says...)
+            // but getMores have Int64s. so only convert if it's a find command...
         } else if k == "batchSize" && input["find"] != nil {
             output[k] = .int32(v.asInt32()!)
 
-        // recursively normalize if it's a document
+            // recursively normalize if it's a document
         } else if let docVal = v.documentValue {
             output[k] = .document(normalizeCommand(docVal))
 
-        // recursively normalize each element if it's an array
+            // recursively normalize each element if it's an array
         } else if case let .array(arrVal) = v {
             output[k] = .array(arrVal.map {
                 switch $0 {
@@ -302,7 +307,7 @@ private func normalizeCommand(_ input: Document) -> Document {
                 }
             })
 
-        // just copy the value over as is
+            // just copy the value over as is
         } else {
             output[k] = v
         }
@@ -317,7 +322,7 @@ private struct CommandFailedExpectation: ExpectationType, Decodable {
         case commandName = "command_name"
     }
 
-    func compare(to notification: Notification, testContext: inout [String: Any]) {
+    func compare(to notification: Notification, testContext _: inout [String: Any]) {
         guard let event = notification.userInfo?["event"] as? CommandFailedEvent else {
             XCTFail("Notification \(notification) did not contain a CommandFailedEvent")
             return
@@ -367,7 +372,7 @@ private struct CommandSucceededExpectation: ExpectationType, Decodable {
                 // if we aren't already storing a cursor ID for this test, add one
                 if storedId == nil {
                     testContext["cursorId"] = id
-                // otherwise, verify that this ID matches the stored one
+                    // otherwise, verify that this ID matches the stored one
                 } else {
                     expect(storedId).to(equal(id))
                 }
@@ -414,11 +419,11 @@ private func normalizeExpectedReply(_ input: Document) -> Document {
         // writeErrors and cursor separately.
         if ["writeErrors", "cursor"].contains(k) {
             continue
-        // The server sends back doubles, but the JSON test files
-        // contain integer statuses (see SPEC-1050.)
+            // The server sends back doubles, but the JSON test files
+            // contain integer statuses (see SPEC-1050.)
         } else if k == "ok", let dV = v.asDouble() {
             output[k] = .double(dV)
-        // just copy the value over as is
+            // just copy the value over as is
         } else {
             output[k] = v
         }

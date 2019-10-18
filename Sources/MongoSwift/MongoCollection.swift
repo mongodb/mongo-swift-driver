@@ -99,11 +99,15 @@ public struct SyncMongoCollection<T: Codable> {
     /// Uses the provided `Connection` to get a pointer to a `mongoc_collection_t` corresponding to this
     /// `SyncMongoCollection`, and uses it to execute the given closure. The `mongoc_collection_t` is only valid for the
     /// body of the closure. The caller is *not responsible* for cleaning up the `mongoc_collection_t`.
-    internal func withMongocCollection<T>(from connection: Connection,
-                                          body: (OpaquePointer) throws -> T) rethrows -> T {
-        guard let collection = mongoc_client_get_collection(connection.clientHandle,
-                                                            self.namespace.db,
-                                                            self.namespace.collection) else {
+    internal func withMongocCollection<T>(
+        from connection: Connection,
+        body: (OpaquePointer) throws -> T
+    ) rethrows -> T {
+        guard let collection = mongoc_client_get_collection(
+            connection.clientHandle,
+            self.namespace.db,
+            self.namespace.collection
+        ) else {
             fatalError("Couldn't get collection '\(self.namespace)'")
         }
         defer { mongoc_collection_destroy(collection) }

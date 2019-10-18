@@ -54,6 +54,7 @@ extension Int: CodableNumber {
         return BSON(self).bsonValue
     }
 }
+
 extension Int32: CodableNumber {}
 extension Int64: CodableNumber {}
 
