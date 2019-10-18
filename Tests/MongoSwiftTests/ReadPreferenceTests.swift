@@ -116,8 +116,10 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
         ))
             .toNot(throwError())
 
-        expect(try coll.count(options: CountOptions(readPreference: ReadPreference(.secondaryPreferred))))
-            .toNot(throwError())
+        expect(try coll.countDocuments(
+            options:
+            CountDocumentsOptions(readPreference: ReadPreference(.secondaryPreferred))
+        )).toNot(throwError())
 
         expect(try coll.distinct(
             fieldName: "a",

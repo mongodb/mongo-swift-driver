@@ -1,7 +1,7 @@
 import mongoc
 
-/// Options to use when executing a `count` command on a `MongoCollection` or a `SyncMongoCollection`.
-public struct CountOptions: Codable {
+/// Options to use when executing a `countDocuments` command on a `MongoCollection`.
+public struct CountDocumentsOptions: Codable {
     /// Specifies a collation.
     public var collation: Document?
 
@@ -50,12 +50,12 @@ public struct CountOptions: Codable {
 }
 
 /// An operation corresponding to a "count" command on a collection.
-internal struct CountOperation<T: Codable>: Operation {
+internal struct CountDocumentsOperation<T: Codable>: Operation {
     private let collection: SyncMongoCollection<T>
     private let filter: Document
-    private let options: CountOptions?
+    private let options: CountDocumentsOptions?
 
-    internal init(collection: SyncMongoCollection<T>, filter: Document, options: CountOptions?) {
+    internal init(collection: SyncMongoCollection<T>, filter: Document, options: CountDocumentsOptions?) {
         self.collection = collection
         self.filter = filter
         self.options = options
@@ -66,18 +66,7 @@ internal struct CountOperation<T: Codable>: Operation {
         let rp = self.options?.readPreference?._readPreference
         var error = bson_error_t()
         let count = self.collection.withMongocCollection(from: connection) { collPtr in
-            // because we already encode skip and limit in the options,
-            // pass in 0s so we don't get duplicate parameter errors.
-            mongoc_collection_count_with_opts(
-                collPtr,
-                MONGOC_QUERY_NONE,
-                self.filter._bson,
-                0, // skip
-                0, // limit
-                opts?._bson,
-                rp,
-                &error
-            )
+            mongoc_collection_count_documents(collPtr, self.filter._bson, opts?._bson, rp, nil, &error)
         }
 
         guard count != -1 else { throw extractMongoError(error: error) }

@@ -22,8 +22,11 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
             // read in the file data and parse into a struct
             let name = filename.components(separatedBy: ".")[0]
 
-            // remove this if/when bulkwrite is supported
+            // TODO: SWIFT-346: remove this skip
             if name.lowercased().contains("bulkwrite") { continue }
+
+            // remove this when command.json is updated with the new count API (see SPEC-1272)
+            if name.lowercased() == "command" { continue }
 
             print("-----------------------")
             print("Executing tests for file \(name)...\n")
@@ -149,7 +152,7 @@ private struct CMTest: Decodable {
 
         switch self.op.name {
         case "count":
-            _ = try? collection.count(filter)
+            _ = try? collection.countDocuments(filter)
         case "deleteMany":
             _ = try? collection.deleteMany(filter)
         case "deleteOne":

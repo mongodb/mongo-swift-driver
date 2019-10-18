@@ -28,13 +28,14 @@ final class OptionsTests: MongoSwiftTestCase {
         DropCollectionOptions(),
         CollectionOptions(),
         DropDatabaseOptions(),
-        CountOptions(),
         CreateCollectionOptions(),
         CreateIndexOptions(),
         DistinctOptions(),
         DropIndexOptions(),
         ListCollectionsOptions(),
-        RunCommandOptions()
+        RunCommandOptions(),
+        CountDocumentsOptions(),
+        EstimatedDocumentCountOptions()
     ]
 
     // This will be useful with Swift 5.1 auto-generated initializers

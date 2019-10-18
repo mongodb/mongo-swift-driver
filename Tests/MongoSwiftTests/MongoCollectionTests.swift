@@ -63,16 +63,16 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     }
 
     func testCount() throws {
-        expect(try self.coll.count()).to(equal(2))
-        let options = CountOptions(limit: 5, maxTimeMS: 1000, skip: 5)
-        expect(try self.coll.count(options: options)).to(equal(0))
+        expect(try self.coll.countDocuments()).to(equal(2))
+        let options = CountDocumentsOptions(limit: 5, maxTimeMS: 1000, skip: 5)
+        expect(try self.coll.countDocuments(options: options)).to(equal(0))
     }
 
     func testInsertOne() throws {
         expect(try self.coll.deleteMany([:])).toNot(beNil())
         expect(try self.coll.insertOne(self.doc1)?.insertedId).to(equal(1))
         expect(try self.coll.insertOne(self.doc2)?.insertedId).to(equal(2))
-        expect(try self.coll.count()).to(equal(2))
+        expect(try self.coll.countDocuments()).to(equal(2))
 
         // try inserting a document without an ID
         let docNoID: Document = ["x": 1]
@@ -136,7 +136,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     }
 
     func testInsertMany() throws {
-        expect(try self.coll.count()).to(equal(2))
+        expect(try self.coll.countDocuments()).to(equal(2))
         // try inserting a mix of documents with and without IDs to verify they are generated
         let docNoId1: Document = ["x": 1]
         let docNoId2: Document = ["x": 2]
@@ -326,7 +326,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         try coll1.insertOne(b1)
         try coll1.insertMany([b2, b3])
         try coll1.replaceOne(filter: ["x": 2], replacement: b4)
-        expect(try coll1.count()).to(equal(3))
+        expect(try coll1.countDocuments()).to(equal(3))
 
         for doc in try coll1.find() {
             expect(doc).to(beAnInstanceOf(Basic.self))
@@ -394,13 +394,13 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         let opts1 = FindOneAndDeleteOptions(maxTimeMS: 100)
         let result1 = try self.coll.findOneAndDelete(["cat": "cat"], options: opts1)
         expect(result1).to(equal(self.doc2))
-        expect(try self.coll.count()).to(equal(1))
+        expect(try self.coll.countDocuments()).to(equal(1))
 
         // test using a write concern
         let opts2 = FindOneAndDeleteOptions(writeConcern: try WriteConcern(w: .majority))
         let result2 = try self.coll.findOneAndDelete([:], options: opts2)
         expect(result2).to(equal(self.doc1))
-        expect(try self.coll.count()).to(equal(0))
+        expect(try self.coll.countDocuments()).to(equal(0))
 
         // test invalid maxTimeMS throws error
         let invalidOpts1 = FindOneAndDeleteOptions(maxTimeMS: 0)
@@ -420,7 +420,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
             options: opts1
         )
         expect(result1).to(equal(self.doc2))
-        expect(try self.coll.count()).to(equal(2))
+        expect(try self.coll.countDocuments()).to(equal(2))
 
         // test using bypassDocumentValidation
         let opts2 = FindOneAndReplaceOptions(bypassDocumentValidation: true)
@@ -430,7 +430,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
             options: opts2
         )
         expect(result2).to(equal(self.doc1))
-        expect(try self.coll.count()).to(equal(2))
+        expect(try self.coll.countDocuments()).to(equal(2))
 
         // test using a write concern
         let opts3 = FindOneAndReplaceOptions(writeConcern: try WriteConcern(w: .majority))
@@ -440,7 +440,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
             options: opts3
         )
         expect(result3).to(equal(["_id": 2, "cat": "blah"]))
-        expect(try self.coll.count()).to(equal(2))
+        expect(try self.coll.countDocuments()).to(equal(2))
 
         // test invalid maxTimeMS throws error
         let invalidOpts1 = FindOneAndReplaceOptions(maxTimeMS: 0)
@@ -460,7 +460,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
             options: opts1
         )
         expect(result1).to(equal(self.doc2))
-        expect(try self.coll.count()).to(equal(2))
+        expect(try self.coll.countDocuments()).to(equal(2))
 
         // test using bypassDocumentValidation
         let opts2 = FindOneAndUpdateOptions(bypassDocumentValidation: true)
@@ -470,7 +470,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
             options: opts2
         )
         expect(result2).to(equal(self.doc1))
-        expect(try self.coll.count()).to(equal(2))
+        expect(try self.coll.countDocuments()).to(equal(2))
 
         // test using a write concern
         let opts3 = FindOneAndUpdateOptions(writeConcern: try WriteConcern(w: .majority))
@@ -480,7 +480,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
             options: opts3
         )
         expect(result3).to(equal(["_id": 2, "cat": "blah"]))
-        expect(try self.coll.count()).to(equal(2))
+        expect(try self.coll.countDocuments()).to(equal(2))
 
         // test invalid maxTimeMS throws error
         let invalidOpts1 = FindOneAndUpdateOptions(maxTimeMS: 0)
