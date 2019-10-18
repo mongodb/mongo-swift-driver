@@ -6,7 +6,7 @@ enum TestOperationResult: Decodable, Equatable {
     case int(Int)
 
     /// Result of CRUD operations that return an array of `BSONValues` (e.g. `distinct`).
-    case array([BSONValue])
+    case array([BSON])
 
     /// Result of CRUD operations that return a single `Document` (e.g. `findOneAndDelete`).
     case document(Document)
@@ -29,7 +29,7 @@ enum TestOperationResult: Decodable, Equatable {
     }
 
     public init(from cursor: SyncMongoCursor<Document>) {
-        self = .array(Array(cursor))
+        self = .array(cursor.map { .document($0) })
     }
 
     public init(from decoder: Decoder) throws {
@@ -41,8 +41,8 @@ enum TestOperationResult: Decodable, Equatable {
             self = .bulkWrite(bulkWriteResult)
         } else if let int = try? Int(from: decoder) {
             self = .int(int)
-        } else if let array = try? [AnyBSONValue](from: decoder) {
-            self = .array(array.map { $0.value })
+        } else if let array = try? [BSON](from: decoder) {
+            self = .array(array)
         } else if let doc = try? Document(from: decoder) {
             self = .document(doc)
         } else {
@@ -60,7 +60,7 @@ enum TestOperationResult: Decodable, Equatable {
         case let (.int(lhsInt), .int(rhsInt)):
             return lhsInt == rhsInt
         case let (.array(lhsArray), .array(rhsArray)):
-            return lhsArray.bsonEquals(rhsArray)
+            return lhsArray == rhsArray
         case let(.document(lhsDoc), .document(rhsDoc)):
             return lhsDoc.sortedEquals(rhsDoc)
         default:
@@ -93,7 +93,7 @@ extension InsertOneResult: BulkWriteResultConvertible {
 
 extension UpdateResult: BulkWriteResultConvertible {
     internal var bulkResultValue: BulkWriteResult {
-        var upsertedIds: [Int: BSONValue]?
+        var upsertedIds: [Int: BSON]?
         if let upsertedId = self.upsertedId {
             upsertedIds = [0: upsertedId]
         }

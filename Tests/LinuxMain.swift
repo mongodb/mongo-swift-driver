@@ -18,7 +18,6 @@ extension BSONValueTests {
         ("testUUIDBytes", testUUIDBytes),
         ("testBSONEquatable", testBSONEquatable),
         ("testObjectIdRoundTrip", testObjectIdRoundTrip),
-        ("testHashable", testHashable),
         ("testBSONNumber", testBSONNumber),
     ]
 }
@@ -76,7 +75,7 @@ extension CodecTests {
         ("testDecodeScalars", testDecodeScalars),
         ("testDocumentIsCodable", testDocumentIsCodable),
         ("testEncodeArray", testEncodeArray),
-        ("testAnyBSONValueIsBSONCodable", testAnyBSONValueIsBSONCodable),
+        ("testBSONIsBSONCodable", testBSONIsBSONCodable),
         ("testIncorrectEncodeFunction", testIncorrectEncodeFunction),
         ("testOptionsEncoding", testOptionsEncoding),
     ]
@@ -127,7 +126,7 @@ extension DocumentTests {
         ("testDateEncodingStrategies", testDateEncodingStrategies),
         ("testDateDecodingStrategies", testDateDecodingStrategies),
         ("testDataCodingStrategies", testDataCodingStrategies),
-        ("testIntegerRetrieval", testIntegerRetrieval),
+        ("testIntegerLiteral", testIntegerLiteral),
         ("testInvalidBSON", testInvalidBSON),
     ]
 }

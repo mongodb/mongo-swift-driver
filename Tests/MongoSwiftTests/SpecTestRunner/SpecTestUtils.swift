@@ -49,19 +49,20 @@ internal func retrieveSpecTestFiles<T: Decodable>(specName: String,
 internal func rearrangeDoc(_ input: Document, toLookLike standard: Document) -> Document {
     var output = Document()
     for (k, v) in standard {
-        // if it's a document, recursively rearrange to look like corresponding sub-document
-        if let sDoc = v as? Document, let iDoc = input[k] as? Document {
-            output[k] = rearrangeDoc(iDoc, toLookLike: sDoc)
-
-        // if it's an array, recursively rearrange to look like corresponding sub-array
-        } else if let sArr = v as? [Document], let iArr = input[k] as? [Document] {
-            var newArr = [Document]()
+        switch (v, input[k]) {
+        case let (.document(sDoc), .document(iDoc)?):
+            output[k] = .document(rearrangeDoc(iDoc, toLookLike: sDoc))
+        case let (.array(sArr), .array(iArr)?):
+            var newArr: [BSON] = []
             for (i, el) in iArr.enumerated() {
-                newArr.append(rearrangeDoc(el, toLookLike: sArr[i]))
+                if let docEl = el.documentValue, let sDoc = sArr[i].documentValue {
+                    newArr.append(.document(rearrangeDoc(docEl, toLookLike: sDoc)))
+                } else {
+                    newArr.append(el)
+                }
             }
-            output[k] = newArr
-        // just copy the value over as is
-        } else {
+            output[k] = .array(newArr)
+        default:
             output[k] = input[k]
         }
     }

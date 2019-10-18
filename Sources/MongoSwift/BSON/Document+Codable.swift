@@ -16,11 +16,11 @@ extension Document: Codable {
         for (k, v) in self {
             // swiftlint:disable:next force_unwrapping
             let key = _BSONKey(stringValue: k)! // the initializer never actually returns nil.
-            if v is BSONNull {
+            switch v {
+            case .null:
                 try container.encodeNil(forKey: key)
-            } else {
-                let val = AnyBSONValue(v)
-                try container.encode(val, forKey: key)
+            default:
+                try container.encode(v, forKey: key)
             }
         }
     }
@@ -34,8 +34,8 @@ extension Document: Codable {
         // return the container `Document`
         if let bsonDecoder = decoder as? _BSONDecoder {
             let topContainer = bsonDecoder.storage.topContainer
-            guard let doc = topContainer as? Document else {
-                throw DecodingError._typeMismatch(at: [], expectation: Document.self, reality: topContainer)
+            guard let doc = topContainer.documentValue else {
+                throw DecodingError._typeMismatch(at: [], expectation: Document.self, reality: topContainer.bsonValue)
             }
             self = doc
             return
@@ -48,9 +48,9 @@ extension Document: Codable {
         for key in container.allKeys {
             let k = key.stringValue
             if try container.decodeNil(forKey: key) {
-                try output.setValue(for: k, to: BSONNull())
+                try output.setValue(for: k, to: .null)
             } else {
-                let val = try container.decode(AnyBSONValue.self, forKey: key).value
+                let val = try container.decode(BSON.self, forKey: key)
                 try output.setValue(for: k, to: val)
             }
         }

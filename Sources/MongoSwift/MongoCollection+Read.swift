@@ -55,7 +55,7 @@ extension SyncMongoCollection {
                           session: SyncClientSession? = nil) throws -> SyncMongoCursor<Document> {
         let opts = try encodeOptions(options: options, session: session)
         let rp = options?.readPreference?._readPreference
-        let pipeline: Document = ["pipeline": pipeline]
+        let pipeline: Document = ["pipeline": .array(pipeline.map { .document($0) })]
 
         return try SyncMongoCursor(client: self._client, decoder: self.decoder, session: session) { conn in
             self.withMongocCollection(from: conn) { collPtr in
@@ -146,7 +146,7 @@ extension SyncMongoCollection {
     public func distinct(fieldName: String,
                          filter: Document = [:],
                          options: DistinctOptions? = nil,
-                         session: SyncClientSession? = nil) throws -> [BSONValue] {
+                         session: SyncClientSession? = nil) throws -> [BSON] {
         let operation = DistinctOperation(collection: self, fieldName: fieldName, filter: filter, options: options)
         return try self._client.executeOperation(operation, session: session)
     }

@@ -66,7 +66,7 @@ internal struct NextOperation<T: Codable>: Operation {
             return try cursor.decoder.decode(T.self, from: doc)
         case let .changeStream(changeStream):
             // Update the resumeToken with the `_id` field from the document.
-            guard let resumeToken = doc["_id"] as? Document else {
+            guard let resumeToken = doc["_id"]?.documentValue else {
                 throw RuntimeError.internalError(message: "_id field is missing from the change stream document.")
             }
             changeStream.resumeToken = ResumeToken(resumeToken)

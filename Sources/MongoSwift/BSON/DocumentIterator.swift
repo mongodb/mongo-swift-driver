@@ -70,7 +70,7 @@ public class DocumentIterator: IteratorProtocol {
     }
 
     /// Returns the current value. Assumes the iterator is in a valid position.
-    internal var currentValue: BSONValue {
+    internal var currentValue: BSON {
         do {
             return try self.safeCurrentValue()
         } catch { // Since properties cannot throw, we need to catch and raise a fatalError.
@@ -95,8 +95,8 @@ public class DocumentIterator: IteratorProtocol {
 
     /// Returns the values from the iterator's current position to the end. The iterator
     /// will be exhausted after this property is accessed.
-    internal var values: [BSONValue] {
-        var values = [BSONValue]()
+    internal var values: [BSON] {
+        var values = [BSON]()
         while self.advance() { values.append(self.currentValue) }
         return values
     }
@@ -105,7 +105,7 @@ public class DocumentIterator: IteratorProtocol {
     ///
     /// - Throws:
     ///   - `RuntimeError.internalError` if the current value of this `DocumentIterator` cannot be decoded to BSON.
-    internal func safeCurrentValue() throws -> BSONValue {
+    internal func safeCurrentValue() throws -> BSON {
         guard let bsonType = DocumentIterator.bsonTypeMap[currentType] else {
             throw RuntimeError.internalError(
                     message: "Unknown BSONType for iterator's current value with type: \(currentType)"
@@ -159,8 +159,9 @@ public class DocumentIterator: IteratorProtocol {
      *   - `UserError.logicError` if the new value is a `Decimal128` or `ObjectId` and is improperly formatted.
      */
     internal func overwriteCurrentValue(with newValue: Overwritable) throws {
-        guard newValue.bsonType == self.currentType else {
-            fatalError("Expected \(newValue) to have BSON type \(self.currentType), but has type \(newValue.bsonType)")
+        let newValueType = type(of: newValue).bsonType
+        guard newValueType == self.currentType else {
+            fatalError("Expected \(newValue) to have BSON type \(self.currentType), but has type \(newValueType)")
         }
         try newValue.writeToCurrentPosition(of: self)
     }
@@ -193,19 +194,19 @@ public class DocumentIterator: IteratorProtocol {
         .double: Double.self,
         .string: String.self,
         .document: Document.self,
-        .array: [BSONValue].self,
+        .array: [BSON].self,
         .binary: Binary.self,
         .objectId: ObjectId.self,
         .bool: Bool.self,
         .datetime: Date.self,
         .regex: RegularExpression.self,
         .dbPointer: DBPointer.self,
-        .code: CodeWithScope.self,
+        .code: Code.self,
         .symbol: Symbol.self,
         .codeWithScope: CodeWithScope.self,
-        .int32: Int.bsonType == .int32 ? Int.self : Int32.self,
+        .int32: Int32.self,
         .timestamp: Timestamp.self,
-        .int64: Int.bsonType == .int64 ? Int.self : Int64.self,
+        .int64: Int64.self,
         .decimal128: Decimal128.self,
         .minKey: MinKey.self,
         .maxKey: MaxKey.self,

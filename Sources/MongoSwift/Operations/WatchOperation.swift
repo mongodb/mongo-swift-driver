@@ -15,7 +15,7 @@ internal enum ChangeStreamTarget<CollectionType: Codable> {
 /// An operation corresponding to a "watch" command on either a client, database, or collection.
 internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codable>: Operation {
     private let target: ChangeStreamTarget<CollectionType>
-    private let pipeline: [Document]
+    private let pipeline: BSON
     private let options: ChangeStreamOptions?
     internal let connectionStrategy: ConnectionStrategy
 
@@ -24,7 +24,7 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codabl
                   options: ChangeStreamOptions?,
                   stealing connection: Connection) throws {
         self.target = target
-        self.pipeline = pipeline
+        self.pipeline = .array(pipeline.map { .document($0) })
         self.options = options
         self.connectionStrategy = .bound(to: connection)
     }

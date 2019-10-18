@@ -11,7 +11,7 @@ import mongoc
 /// ```
 extension Document: Sequence {
     /// The element type of a document: a tuple containing an individual key-value pair.
-    public typealias KeyValuePair = (key: String, value: BSONValue)
+    public typealias KeyValuePair = (key: String, value: BSON)
 
     // Since a `Document` is a recursive structure, we want to enforce the use of it as a subsequence of itself.
     // instead of something like `Slice<Document>`.
@@ -40,7 +40,7 @@ extension Document: Sequence {
      *
      * - Throws: An error if `transform` throws an error.
      */
-    public func mapValues(_ transform: (BSONValue) throws -> BSONValue) rethrows -> Document {
+    public func mapValues(_ transform: (BSON) throws -> BSON) rethrows -> Document {
         var output = Document()
         for (k, v) in self {
             output[k] = try transform(v)

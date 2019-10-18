@@ -113,7 +113,7 @@ extension Document {
      *
      * - Returns: a new `Document`
      */
-    internal init(_ elements: [BSONValue]) {
+    internal init(_ elements: [BSON]) {
         self._storage = DocumentStorage()
         for (i, elt) in elements.enumerated() {
             do {
@@ -135,10 +135,12 @@ extension Document {
      *   - `RuntimeError.internalError` if the `DocumentStorage` would exceed the maximum size by encoding this
      *     key-value pair.
      */
-    internal mutating func setValue(for key: String, to newValue: BSONValue, checkForKey: Bool = true) throws {
+    internal mutating func setValue(for key: String, to newValue: BSON, checkForKey: Bool = true) throws {
+        let newBSONValue = newValue.bsonValue
+
         // if the key already exists in the `Document`, we need to replace it
         if checkForKey, let existingType = DocumentIterator(forDocument: self, advancedTo: key)?.currentType {
-            let newBSONType = newValue.bsonType
+            let newBSONType = newBSONValue.bsonType
             let sameTypes = newBSONType == existingType
 
             // if the new type is the same and it's a type with no custom data, no-op
@@ -147,7 +149,7 @@ extension Document {
             }
 
             // if the new type is the same and it's a fixed length type, we can overwrite
-            if let ov = newValue as? Overwritable, ov.bsonType == existingType {
+            if let ov = newBSONValue as? Overwritable, ov.bsonType == existingType {
                 self.copyStorageIfRequired()
                 // key is guaranteed present so initialization will succeed.
                 // swiftlint:disable:next force_unwrapping
@@ -172,7 +174,7 @@ extension Document {
         // otherwise, it's a new key
         } else {
             self.copyStorageIfRequired()
-            try newValue.encode(to: self._storage, forKey: key)
+            try newBSONValue.encode(to: self._storage, forKey: key)
         }
     }
 
@@ -180,7 +182,7 @@ extension Document {
     /// `Document`.
     ///
     /// - Throws: `RuntimeError.internalError` if the BSON buffer is too small (< 5 bytes).
-    internal func getValue(for key: String) throws -> BSONValue? {
+    internal func getValue(for key: String) throws -> BSON? {
         guard let iter = DocumentIterator(forDocument: self) else {
             throw RuntimeError.internalError(message: "BSON buffer is unexpectedly too small (< 5 bytes)")
         }
@@ -211,7 +213,7 @@ extension Document {
      *
      */
     internal func get<T: BSONValue>(_ key: String) throws -> T {
-        guard let value = try self.getValue(for: key) as? T else {
+        guard let value = try self.getValue(for: key)?.bsonValue as? T else {
             throw RuntimeError.internalError(message: "Could not cast value for key \(key) to type \(T.self)")
         }
         return value
@@ -255,7 +257,7 @@ extension Document {
             return self
         }
 
-        var idDoc: Document = ["_id": ObjectId()]
+        var idDoc: Document = ["_id": .objectId(ObjectId())]
         try idDoc.merge(self)
         return idDoc
     }
@@ -269,7 +271,7 @@ extension Document {
     }
 
     /// Returns a `[BSONValue]` containing the values stored in this `Document`.
-    public var values: [BSONValue] {
+    public var values: [BSON] {
         return self.makeIterator().values
     }
 
@@ -321,6 +323,22 @@ extension Document {
     /// Initializes a new, empty `Document`.
     public init() {
         self._storage = DocumentStorage()
+    }
+
+    internal init(keyValuePairs: [(String, BSON)]) {
+        // make sure all keys are unique
+        guard Set(keyValuePairs.map { $0.0 }).count == keyValuePairs.count else {
+            fatalError("Dictionary literal \(keyValuePairs) contains duplicate keys")
+        }
+
+        self._storage = DocumentStorage()
+        for (key, value) in keyValuePairs {
+            do {
+                try self.setValue(for: key, to: value, checkForKey: false)
+            } catch {
+                fatalError("Error setting key \(key) to value \(String(describing: value)): \(error)")
+            }
+        }
     }
 
     /**
@@ -389,7 +407,7 @@ extension Document {
      * A nil return suggests that the subscripted key does not exist in the `Document`. A true BSON null is returned as
      * a `BSONNull`.
      */
-    public subscript(key: String) -> BSONValue? {
+    public subscript(key: String) -> BSON? {
         // TODO: This `get` method _should_ guarantee constant-time O(1) access, and it is possible to make it do so.
         // This criticism also applies to indexed-based subscripting via `Int`.
         // See SWIFT-250.
@@ -418,7 +436,7 @@ extension Document {
      *  print(d["a", default: "foo"]) // prints "foo"
      *  ```
      */
-    public subscript(key: String, default defaultValue: @autoclosure () -> BSONValue) -> BSONValue {
+    public subscript(key: String, default defaultValue: @autoclosure () -> BSON) -> BSON {
         return self[key] ?? defaultValue()
     }
 
@@ -436,7 +454,7 @@ extension Document {
      * Only available in Swift 4.2+.
      */
     @available(swift 4.2)
-    public subscript(dynamicMember member: String) -> BSONValue? {
+    public subscript(dynamicMember member: String) -> BSON? {
         get {
             return self[member]
         }
@@ -448,20 +466,22 @@ extension Document {
 
 /// An extension of `Document` to make it a `BSONValue`.
 extension Document: BSONValue {
-    public var bsonType: BSONType { return .document }
+    internal static var bsonType: BSONType { return .document }
 
-    public func encode(to storage: DocumentStorage, forKey key: String) throws {
+    internal var bson: BSON { return .document(self) }
+
+    internal func encode(to storage: DocumentStorage, forKey key: String) throws {
         guard bson_append_document(storage._bson, key, Int32(key.utf8.count), self._bson) else {
             throw bsonTooLargeError(value: self, forKey: key)
         }
     }
 
-    public static func from(iterator iter: DocumentIterator) throws -> Document {
+    internal static func from(iterator iter: DocumentIterator) throws -> BSON {
         guard iter.currentType == .document else {
             throw wrongIterTypeError(iter, expected: Document.self)
         }
 
-        return try iter.withBSONIterPointer { iterPtr in
+        return .document(try iter.withBSONIterPointer { iterPtr in
             var length: UInt32 = 0
             let document = UnsafeMutablePointer<UnsafePointer<UInt8>?>.allocate(capacity: 1)
             defer {
@@ -476,7 +496,7 @@ extension Document: BSONValue {
             }
 
             return self.init(stealing: docData)
-        }
+        })
     }
 }
 
@@ -508,20 +528,8 @@ extension Document: ExpressibleByDictionaryLiteral {
      *
      * - Returns: a new `Document`
      */
-    public init(dictionaryLiteral keyValuePairs: (String, BSONValue)...) {
-        // make sure all keys are unique
-        guard Set(keyValuePairs.map { $0.0 }).count == keyValuePairs.count else {
-            fatalError("Dictionary literal \(keyValuePairs) contains duplicate keys")
-        }
-
-        self._storage = DocumentStorage()
-        for (key, value) in keyValuePairs {
-            do {
-                try self.setValue(for: key, to: value, checkForKey: false)
-            } catch {
-                fatalError("Error setting key \(key) to value \(String(describing: value)): \(error)")
-            }
-        }
+    public init(dictionaryLiteral keyValuePairs: (String, BSON)...) {
+        self.init(keyValuePairs: keyValuePairs)
     }
 }
 
@@ -545,7 +553,7 @@ extension Document: ExpressibleByArrayLiteral {
      *
      * - Returns: a new `Document`
      */
-    public init(arrayLiteral elements: BSONValue...) {
+    public init(arrayLiteral elements: BSON...) {
         self.init(elements)
     }
 }

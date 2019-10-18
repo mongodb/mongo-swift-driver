@@ -4,7 +4,7 @@ import Foundation
 internal protocol CodableNumber {
     /// Attempts to initialize this type from an analogous `BSONValue`. Returns `nil`
     /// the `from` value cannot be accurately represented as this type.
-    init?(from value: BSONValue)
+    init?(from value: BSON)
 
     /// Initializer for creating from `Int`, `Int32`, `Int64`
     init?<T: BinaryInteger>(exactly source: T)
@@ -18,24 +18,19 @@ internal protocol CodableNumber {
 }
 
 extension CodableNumber {
-    internal init?(from value: BSONValue) {
+    internal init?(from value: BSON) {
         switch value {
-        case let v as Int:
+        case let .int32(v):
             if let exact = Self(exactly: v) {
                 self = exact
                 return
             }
-        case let v as Int32:
+        case let .int64(v):
             if let exact = Self(exactly: v) {
                 self = exact
                 return
             }
-        case let v as Int64:
-            if let exact = Self(exactly: v) {
-                self = exact
-                return
-            }
-        case let v as Double:
+        case let .double(v):
             if let exact = Self(exactly: v) {
                 self = exact
                 return
@@ -54,7 +49,11 @@ extension CodableNumber {
     }
 }
 
-extension Int: CodableNumber {}
+extension Int: CodableNumber {
+    internal var bsonValue: BSONValue? {
+        return BSON(self).bsonValue
+    }
+}
 extension Int32: CodableNumber {}
 extension Int64: CodableNumber {}
 

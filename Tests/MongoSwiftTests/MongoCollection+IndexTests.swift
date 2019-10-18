@@ -90,7 +90,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
             name: "testOptions",
             sparse: false,
             sphereIndexVersion: 2,
-            storageEngine: ["wiredTiger": ["configString": "access_pattern_hint=random"] as Document],
+            storageEngine: ["wiredTiger": ["configString": "access_pattern_hint=random"]],
             textIndexVersion: 2,
             unique: true,
             version: 2,
@@ -167,7 +167,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         expect(try self.coll.createIndex(model)).to(equal("cat_1"))
 
         let res = try self.coll.dropIndex(model)
-        expect((res["ok"] as? BSONNumber)?.doubleValue).to(bsonEqual(1.0))
+        expect(res["ok"]?.asDouble()).to(equal(1.0))
 
         // now there should only be _id_ left
         let indexes = try coll.listIndexes()
@@ -181,7 +181,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         expect(try self.coll.createIndex(model)).to(equal("cat_1"))
 
         let res = try self.coll.dropIndex(["cat": 1])
-        expect((res["ok"] as? BSONNumber)?.doubleValue).to(bsonEqual(1.0))
+        expect(res["ok"]?.asDouble()).to(equal(1.0))
 
         // now there should only be _id_ left
         let indexes = try coll.listIndexes()
@@ -195,7 +195,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         expect(try self.coll.createIndex(model)).to(equal("cat_1"))
 
         let res = try self.coll.dropIndexes()
-        expect((res["ok"] as? BSONNumber)?.doubleValue).to(bsonEqual(1.0))
+        expect(res["ok"]?.asDouble()).to(equal(1.0))
 
         // now there should only be _id_ left
         let indexes = try coll.listIndexes()
@@ -206,7 +206,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
     func testListIndexNames() throws {
         let model1 = IndexModel(keys: ["cat": 1])
         let model2 = IndexModel(keys: ["cat": -1], options: IndexOptions(name: "neg cat"))
-        expect( try self.coll.createIndexes([model1, model2]) ).to(equal(["cat_1", "neg cat"]))
+        expect(try self.coll.createIndexes([model1, model2])).to(equal(["cat_1", "neg cat"]))
         let indexNames = try coll.listIndexNames()
 
         expect(indexNames.count).to(equal(3))
@@ -242,7 +242,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
 
         let dropIndexOpts = DropIndexOptions(maxTimeMS: maxTimeMS, writeConcern: wc)
         let res = try collection.dropIndex(model, options: dropIndexOpts)
-        expect((res["ok"] as? BSONNumber)?.doubleValue).to(bsonEqual(1.0))
+        expect(res["ok"]?.asDouble()).to(equal(1.0))
 
         // now there should only be _id_ left
         let indexes = try coll.listIndexes()
@@ -254,10 +254,10 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         expect(receivedEvents.count).to(equal(2))
         expect(receivedEvents[0].command["createIndexes"]).toNot(beNil())
         expect(receivedEvents[0].command["maxTimeMS"]).toNot(beNil())
-        expect(receivedEvents[0].command["maxTimeMS"]).to(bsonEqual(maxTimeMS))
+        expect(receivedEvents[0].command["maxTimeMS"]).to(equal(.int64(maxTimeMS)))
         expect(receivedEvents[1].command["dropIndexes"]).toNot(beNil())
         expect(receivedEvents[1].command["maxTimeMS"]).toNot(beNil())
-        expect(receivedEvents[1].command["maxTimeMS"]).to(bsonEqual(maxTimeMS))
+        expect(receivedEvents[1].command["maxTimeMS"]).to(equal(.int64(maxTimeMS)))
     }
 }
 
@@ -280,7 +280,7 @@ extension IndexOptions: Equatable {
             lhs.min == rhs.min &&
             lhs.bucketSize == rhs.bucketSize &&
             lhs.partialFilterExpression == rhs.partialFilterExpression &&
-            lhs.collation?["locale"] as? String == rhs.collation?["locale"] as? String
+            lhs.collation?["locale"] == rhs.collation?["locale"]
             // ^ server adds a bunch of extra fields and a version number
             // to collations. rather than deal with those, just verify the
             // locale matches.

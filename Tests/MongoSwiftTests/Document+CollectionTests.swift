@@ -17,7 +17,7 @@ final class Document_CollectionTests: MongoSwiftTestCase {
         expect(doc.endIndex).to(equal(doc.count))
         expect(doc.index(after: doc.index(after: doc.startIndex))).to(equal(doc.endIndex))
         expect(doc[1].key).to(equal("b"))
-        expect(doc[1].value).to(bsonEqual(4))
+        expect(doc[1].value).to(equal(4))
 
         // doc.indices
         expect(doc.indices.count).to(equal(doc.count))
@@ -28,7 +28,7 @@ final class Document_CollectionTests: MongoSwiftTestCase {
         // doc.first
         let firstElem = doc[doc.startIndex]
         expect(doc.first?.key).to(equal(firstElem.key))
-        expect(doc.first?.value).to(bsonEqual(firstElem.value))
+        expect(doc.first?.value).to(equal(firstElem.value))
 
         // doc.distance
         expect(doc.distance(from: doc.startIndex, to: doc.endIndex)).to(equal(doc.count))
@@ -44,8 +44,8 @@ final class Document_CollectionTests: MongoSwiftTestCase {
         expect(doc.index(doc.startIndex, offsetBy: 2, limitedBy: doc.endIndex)).to(equal(doc.endIndex))
         expect(doc.index(doc.startIndex, offsetBy: 99, limitedBy: 1)).to(beNil())
 
-        // firstIndex(where:); This line is commented out because Travis currently builds on 9.4, but this needs 10+
-        //            expect(doc.firstIndex { $0.key == "a" && bsonEquals($0.value, 3) }).to(equal(doc.startIndex))
+        // firstIndex(where:)
+        expect(doc.firstIndex { $0.key == "a" && $0.value == 3 }).to(equal(doc.startIndex))
     }
 
     func testMutators() throws {
@@ -54,7 +54,7 @@ final class Document_CollectionTests: MongoSwiftTestCase {
         // doc.removeFirst
         let firstElem = doc.removeFirst()
         expect(firstElem.key).to(equal("a"))
-        expect(firstElem.value).to(bsonEqual(3))
+        expect(firstElem.value).to(equal(3))
         expect(doc).to(equal(["b": 2, "c": 5, "d": 4]))
 
         // doc.removeFirst(k:)
@@ -64,7 +64,7 @@ final class Document_CollectionTests: MongoSwiftTestCase {
         // doc.popFirst
         let lastElem = doc.popFirst()
         expect(lastElem?.key).to(equal("d"))
-        expect(lastElem?.value).to(bsonEqual(4))
+        expect(lastElem?.value).to(equal(4))
         expect(doc).to(equal([:]))
 
         // doc.merge

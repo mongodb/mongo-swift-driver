@@ -70,10 +70,10 @@ public enum WriteModel<CollectionType: Codable> {
     /// Adds this model to the provided `mongoc_bulk_t`, using the provided encoder for encoding options and
     /// `CollectionType` values if needed. If this is an `insertOne`, returns the `_id` field of the inserted
     /// document; otherwise, returns nil.
-    fileprivate func addToBulkWrite(_ bulk: OpaquePointer, encoder: BSONEncoder) throws -> BSONValue? {
+    fileprivate func addToBulkWrite(_ bulk: OpaquePointer, encoder: BSONEncoder) throws -> BSON? {
         var error = bson_error_t()
         let success: Bool
-        var res: BSONValue?
+        var res: BSON?
         switch self {
         case let .deleteOne(filter, options):
             let opts = try encoder.encode(options)
@@ -188,7 +188,7 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
         var reply = Document()
         var error = bson_error_t()
         let opts = try encodeOptions(options: options, session: session)
-        var insertedIds: [Int: BSONValue] = [:]
+        var insertedIds: [Int: BSON] = [:]
 
         let (serverId, isAcknowledged): (UInt32, Bool) =
             try self.collection.withMongocCollection(from: connection) { collPtr in
@@ -269,7 +269,7 @@ public struct BulkWriteResult: Decodable {
     public let insertedCount: Int
 
     /// Map of the index of the operation to the id of the inserted document.
-    public let insertedIds: [Int: BSONValue]
+    public let insertedIds: [Int: BSON]
 
     /// Number of documents matched for update.
     public let matchedCount: Int
@@ -281,7 +281,7 @@ public struct BulkWriteResult: Decodable {
     public let upsertedCount: Int
 
     /// Map of the index of the operation to the id of the upserted document.
-    public let upsertedIds: [Int: BSONValue]
+    public let upsertedIds: [Int: BSON]
 
     private enum CodingKeys: CodingKey {
         case deletedCount, insertedCount, insertedIds, matchedCount, modifiedCount, upsertedCount, upsertedIds
@@ -301,15 +301,11 @@ public struct BulkWriteResult: Decodable {
         self.matchedCount = try container.decodeIfPresent(Int.self, forKey: .matchedCount) ?? 0
         self.modifiedCount = try container.decodeIfPresent(Int.self, forKey: .modifiedCount) ?? 0
 
-        let insertedIds =
-                (try container.decodeIfPresent([Int: AnyBSONValue].self, forKey: .insertedIds) ?? [:])
-                        .mapValues { $0.value }
+        let insertedIds = try container.decodeIfPresent([Int: BSON].self, forKey: .insertedIds) ?? [:]
         self.insertedIds = insertedIds
         self.insertedCount = try container.decodeIfPresent(Int.self, forKey: .insertedCount) ?? insertedIds.count
 
-        let upsertedIds =
-                (try container.decodeIfPresent([Int: AnyBSONValue].self, forKey: .upsertedIds) ?? [:])
-                        .mapValues { $0.value }
+        let upsertedIds = try container.decodeIfPresent([Int: BSON].self, forKey: .upsertedIds) ?? [:]
         self.upsertedIds = upsertedIds
         self.upsertedCount = try container.decodeIfPresent(Int.self, forKey: .upsertedCount) ?? upsertedIds.count
     }
@@ -330,23 +326,23 @@ public struct BulkWriteResult: Decodable {
      * - Throws:
      *   - `RuntimeError.internalError` if an unexpected error occurs reading the reply from the server.
      */
-    fileprivate init(reply: Document, insertedIds: [Int: BSONValue]) throws {
-        // These values are converted to Int via BSONNumber because they're returned from libmongoc as BSON int32s,
-        // which are retrieved from documents as Ints on 32-bit systems and Int32s on 64-bit ones. To retrieve them in a
-        // cross-platform manner, we must convert them this way. Also, regardless of how they are stored in the
-        // we want to use them as Ints.
-        self.deletedCount = (try reply.getValue(for: "nRemoved") as? BSONNumber)?.intValue ?? 0
-        self.insertedCount = (try reply.getValue(for: "nInserted") as? BSONNumber)?.intValue ?? 0
+    fileprivate init(reply: Document, insertedIds: [Int: BSON]) throws {
+        self.deletedCount = try reply.getValue(for: "nRemoved")?.asInt() ?? 0
+        self.insertedCount = try reply.getValue(for: "nInserted")?.asInt() ?? 0
         self.insertedIds = insertedIds
-        self.matchedCount = (try reply.getValue(for: "nMatched") as? BSONNumber)?.intValue ?? 0
-        self.modifiedCount = (try reply.getValue(for: "nModified") as? BSONNumber)?.intValue ?? 0
-        self.upsertedCount = (try reply.getValue(for: "nUpserted") as? BSONNumber)?.intValue ?? 0
+        self.matchedCount = try reply.getValue(for: "nMatched")?.asInt() ?? 0
+        self.modifiedCount = try reply.getValue(for: "nModified")?.asInt() ?? 0
+        self.upsertedCount = try reply.getValue(for: "nUpserted")?.asInt() ?? 0
 
-        var upsertedIds = [Int: BSONValue]()
+        var upsertedIds = [Int: BSON]()
 
-        if let upserted = try reply.getValue(for: "upserted") as? [Document] {
+        if let upserted = try reply.getValue(for: "upserted")?.arrayValue {
+            guard let upserted = upserted.asArrayOf(Document.self) else {
+                throw RuntimeError.internalError(message: "\"upserted\" array did not contain only documents")
+            }
+
             for upsert in upserted {
-                guard let index = (try upsert.getValue(for: "index") as? BSONNumber)?.intValue else {
+                guard let index = try upsert.getValue(for: "index")?.asInt() else {
                     throw RuntimeError.internalError(message: "Could not cast upserted index to `Int`")
                 }
                 upsertedIds[index] = upsert["_id"]
@@ -360,11 +356,11 @@ public struct BulkWriteResult: Decodable {
     internal init(
             deletedCount: Int? = nil,
             insertedCount: Int? = nil,
-            insertedIds: [Int: BSONValue]? = nil,
+            insertedIds: [Int: BSON]? = nil,
             matchedCount: Int? = nil,
             modifiedCount: Int? = nil,
             upsertedCount: Int? = nil,
-            upsertedIds: [Int: BSONValue]? = nil) {
+            upsertedIds: [Int: BSON]? = nil) {
         self.deletedCount = deletedCount ?? 0
         self.insertedCount = insertedCount ?? 0
         self.insertedIds = insertedIds ?? [:]

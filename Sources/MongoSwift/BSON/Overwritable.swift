@@ -19,19 +19,6 @@ extension Bool: Overwritable {
     }
 }
 
-extension Int: Overwritable {
-    internal func writeToCurrentPosition(of iter: DocumentIterator) throws {
-        switch self.typedValue {
-        case let int32 as Int32:
-            return int32.writeToCurrentPosition(of: iter)
-        case let int64 as Int64:
-            return int64.writeToCurrentPosition(of: iter)
-        default:
-            throw RuntimeError.internalError(message: "`Int` value \(self) could not be encoded as `Int32` or `Int64`")
-        }
-    }
-}
-
 extension Int32: Overwritable {
     internal func writeToCurrentPosition(of iter: DocumentIterator) {
         iter.withMutableBSONIterPointer { iterPtr in bson_iter_overwrite_int32(iterPtr, self) }

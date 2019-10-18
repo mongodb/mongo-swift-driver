@@ -55,16 +55,13 @@ extension ConnectionString {
             return copy.mapValues { value in
                 // mongoc returns boolean options e.g. CANONICALIZE_HOSTNAME as strings, but they are booleans in the
                 // spec test file.
-                guard let str = value as? String else {
-                    return value
-                }
-                switch str {
+                switch value {
                 case "true":
                     return true
                 case "false":
                     return false
                 default:
-                    return str
+                    return value
                 }
             }
         }
@@ -138,7 +135,7 @@ struct Credential: Decodable, Equatable {
         // libmongoc does not return the service name if it's the default, but it is contained in the spec test files,
         // so filter it out here if it's present.
         let properties = try container.decodeIfPresent(Document.self, forKey: .mechanismProperties)
-        let filteredProperties = properties?.filter { !($0.0 == "SERVICE_NAME" && $0.1 as? String == "mongodb") }
+        let filteredProperties = properties?.filter { !($0.0 == "SERVICE_NAME" && $0.1 == "mongodb") }
         // if SERVICE_NAME was the only key then don't return an empty document.
         if filteredProperties?.isEmpty == true {
             self.mechanismProperties = nil
@@ -188,10 +185,11 @@ final class AuthTests: MongoSwiftTestCase {
         /// A command to create this user.
         var createCmd: Document {
             return [
-                        "createUser": self.username,
-                        "pwd": self.password, "roles": ["root"],
-                        "mechanisms": self.mechanisms.map { $0.rawValue }
-                    ]
+                "createUser": .string(self.username),
+                "pwd": .string(self.password),
+                "roles": ["root"],
+                "mechanisms": .array(self.mechanisms.map { .string($0.rawValue) })
+            ]
         }
 
         /// Adds this user's username and password, and an optionally provided auth mechanism, to the connection string.

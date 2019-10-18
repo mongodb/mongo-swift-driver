@@ -73,8 +73,8 @@ public final class ReadPreference {
         // we have to copy because libmongoc owns the pointer.
         let wrapped = Document(copying: bson)
 
-        // swiftlint:disable:next force_cast
-        return wrapped.values as! [Document]
+        // swiftlint:disable:next force_unwrapping
+        return wrapped.values.map { $0.documentValue! }
     }
 
     /// The maxStalenessSeconds of this `ReadPreference`
@@ -123,7 +123,7 @@ public final class ReadPreference {
                 throw UserError.invalidArgumentError(message: "tagSets may not be used with primary mode")
             }
 
-            let tags = try BSONEncoder().encode(Document(tagSets))
+            let tags = try BSONEncoder().encode(Document(tagSets.map { .document($0) }))
             mongoc_read_prefs_set_tags(self._readPreference, tags._bson)
         }
 

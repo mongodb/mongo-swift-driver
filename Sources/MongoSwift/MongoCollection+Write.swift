@@ -334,13 +334,9 @@ public struct DeleteOptions: Codable, BulkWriteOptionsConvertible {
 
 /// The result of an `insertOne` command on a `MongoCollection` or a `SyncMongoCollection`.
 public struct InsertOneResult: Decodable {
-    private enum CodingKeys: String, CodingKey {
-        case insertedId
-    }
-
     /// The identifier that was inserted. If the document doesn't have an identifier, this value
     /// will be generated and added to the document before insertion.
-    public let insertedId: BSONValue
+    public let insertedId: BSON
 
     internal init?(from result: BulkWriteResult?) throws {
         guard let result = result else {
@@ -351,12 +347,6 @@ public struct InsertOneResult: Decodable {
         }
         self.insertedId = id
     }
-
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        let abv = try container.decode(AnyBSONValue.self, forKey: .insertedId)
-        self.insertedId = abv.value
-    }
 }
 
 /// The result of a multi-document insert operation on a `MongoCollection` or a `SyncMongoCollection`.
@@ -365,7 +355,7 @@ public struct InsertManyResult {
     public let insertedCount: Int
 
     /// Map of the index of the document in `values` to the value of its ID
-    public let insertedIds: [Int: BSONValue]
+    public let insertedIds: [Int: BSON]
 
     /// Internal initializer used for converting from a `BulkWriteResult` optional to an `InsertManyResult` optional.
     internal init?(from result: BulkWriteResult?) {
@@ -399,7 +389,7 @@ public struct UpdateResult: Decodable {
     public let modifiedCount: Int
 
     /// The identifier of the inserted document if an upsert took place.
-    public let upsertedId: BSONValue?
+    public let upsertedId: BSON?
 
     /// The number of documents that were upserted.
     public let upsertedCount: Int
@@ -423,14 +413,5 @@ public struct UpdateResult: Decodable {
 
     private enum CodingKeys: String, CodingKey {
         case matchedCount, modifiedCount, upsertedId, upsertedCount
-    }
-
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.matchedCount = try container.decode(Int.self, forKey: .matchedCount)
-        self.modifiedCount = try container.decode(Int.self, forKey: .modifiedCount)
-        let id = try container.decodeIfPresent(AnyBSONValue.self, forKey: .upsertedId)
-        self.upsertedId = id?.value
-        self.upsertedCount = try container.decode(Int.self, forKey: .upsertedCount)
     }
 }

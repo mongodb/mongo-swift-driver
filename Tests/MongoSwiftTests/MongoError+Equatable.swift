@@ -54,11 +54,8 @@ extension ServerError: Equatable {
 
 extension BulkWriteResult: Equatable {
     public static func == (lhs: BulkWriteResult, rhs: BulkWriteResult) -> Bool {
-        let iidsEqual = lhs.insertedIds.mapValues { AnyBSONValue($0) } == rhs.insertedIds.mapValues { AnyBSONValue($0) }
-        let uidsEqual = lhs.upsertedIds.mapValues { AnyBSONValue($0) } == rhs.upsertedIds.mapValues { AnyBSONValue($0) }
-
-        return iidsEqual
-                && uidsEqual
+        return lhs.insertedIds == rhs.insertedIds
+                && lhs.upsertedIds == rhs.upsertedIds
                 && lhs.upsertedCount == rhs.upsertedCount
                 && lhs.modifiedCount == rhs.modifiedCount
                 && lhs.matchedCount == rhs.matchedCount
