@@ -541,6 +541,14 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey>: KeyedDecodingContainer
         return entry
     }
 
+    /// Decode a BSONValue type from this container for the given key.
+    private func decodeBSONType<T: BSONValue>(_ type: T.Type, forKey key: Key) throws -> T {
+        let entry = try getValue(forKey: key)
+        return try self.decoder.with(pushedKey: key) {
+             try decoder.unboxBSONValue(entry, as: type)
+        }
+    }
+
     /// Decodes a CodableNumber type from this container for the given key.
     private func decodeNumber<T: CodableNumber>(_ type: T.Type, forKey key: Key) throws -> T {
         let entry = try getValue(forKey: key)
@@ -578,9 +586,7 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey>: KeyedDecodingContainer
     }
 
     // swiftlint:disable line_length
-    public func decode(_ type: Bool.Type, forKey key: Key) throws -> Bool {
-        return try self.decoder.unboxCustom(getValue(forKey: key)) { $0.boolValue }
-    }
+    public func decode(_ type: Bool.Type, forKey key: Key) throws -> Bool { return try self.decodeBSONType(Bool.self, forKey: key) }
     public func decode(_ type: Int.Type, forKey key: Key) throws -> Int { return try decodeNumber(type, forKey: key) }
     public func decode(_ type: Int8.Type, forKey key: Key) throws -> Int8 { return try decodeNumber(type, forKey: key) }
     public func decode(_ type: Int16.Type, forKey key: Key) throws -> Int16 { return try decodeNumber(type, forKey: key) }
@@ -593,9 +599,7 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey>: KeyedDecodingContainer
     public func decode(_ type: UInt64.Type, forKey key: Key) throws -> UInt64 { return try decodeNumber(type, forKey: key) }
     public func decode(_ type: Float.Type, forKey key: Key) throws -> Float { return try decodeNumber(type, forKey: key) }
     public func decode(_ type: Double.Type, forKey key: Key) throws -> Double { return try decodeNumber(type, forKey: key) }
-    public func decode(_ type: String.Type, forKey key: Key) throws -> String {
-        return try self.decoder.unboxCustom(try self.getValue(forKey: key)) { $0.stringValue }
-    }
+    public func decode(_ type: String.Type, forKey key: Key) throws -> String { return try self.decodeBSONType(String.self, forKey: key) }
     // swiftlint:enable line_length
 
     /// Returns the data stored for the given key as represented in a container keyed by the given key type.
