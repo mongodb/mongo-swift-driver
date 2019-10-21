@@ -53,7 +53,7 @@ excluded:
   - Package.swift
   - Examples/*/Package.swift
   - Tests/LinuxMain.swift
-  - SwiftFormat
+  - SwiftFormat # this is the path we download SwiftFormat to on travis
 
 trailing_whitespace:
   ignores_comments: false

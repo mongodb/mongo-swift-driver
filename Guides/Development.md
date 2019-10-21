@@ -78,7 +78,7 @@ To regenerate the files, run `make documentation` from the project's root direct
 ## Linting and Style
 We use [SwiftLint](https://github.com/realm/SwiftLint#using-homebrew) for linting. You can see our configuration in the `.swiftlint.yml` file in the project's root directory.  Run `swiftlint` in the `/Sources` directory to lint all of our files. Running `swiftlint autocorrect` will correct some types of violations.
 
-We use [SwiftFormat](https://github.com/nicklockwood/SwiftFormat) for formatting the code. You can see our configuration in the `.swiftformat` file in the project's root directory. Our linter config contains a superset of the rules that our formatter does, so some manual tweaking may be necessary to satisy both once the formatter is run (e.g. line length enforcement). Most of the time, the formatter should put the code into a format that passes the linter.
+We use [SwiftFormat](https://github.com/nicklockwood/SwiftFormat) for formatting the code. You can see our configuration in the `.swiftformat` file in the project's root directory. Our linter config contains a superset of the rules that our formatter does, so some manual tweaking may be necessary to satisfy both once the formatter is run (e.g. line length enforcement). Most of the time, the formatter should put the code into a format that passes the linter.
 
 To pass all the formatting stages of our testing matrix, both `swiftlint --strict` and `swiftformat --lint .` must finish successfully.
 
