@@ -91,7 +91,7 @@ Note: we have included the client `connectionString` parameter for clarity, but 
 ```swift
 let doc: Document = ["_id": 100, "a": 1, "b": 2, "c": 3]
 let result = try collection.insertOne(doc)
-print(result?.insertedId ?? "") // prints `100`
+print(result?.insertedId ?? "") // prints `.int64(100)`
 ```
 
 ### Find Documents
@@ -108,7 +108,7 @@ for d in documents {
 var doc: Document = ["a": 1, "b": 2, "c": 3]
 
 print(doc) // prints `{"a" : 1, "b" : 2, "c" : 3}`
-print(doc["a"] ?? "") // prints `1`
+print(doc["a"] ?? "") // prints `.int64(1)`
 
 // Set a new value
 doc["d"] = 4
@@ -116,7 +116,7 @@ print(doc) // prints `{"a" : 1, "b" : 2, "c" : 3, "d" : 4}`
 
 // Using functional methods like map, filter:
 let evensDoc = doc.filter { elem in
-    guard let value = elem.value as? Int else {
+    guard let value = elem.value.asInt() else {
         return false
     }
     return value % 2 == 0
@@ -124,11 +124,11 @@ let evensDoc = doc.filter { elem in
 print(evensDoc) // prints `{ "b" : 2, "d" : 4 }`
 
 let doubled = doc.map { elem -> Int in
-    guard let value = elem.value as? Int else {
+    guard case let value = .int64(value) else {
         return 0
     }
 
-    return value * 2
+    return Int(value * 2)
 }
 print(doubled) // prints `[2, 4, 6, 8]`
 ```
