@@ -19,6 +19,14 @@ jobs:
         - make linuxmain SOURCERY=${PWD}/sourcery/bin/sourcery
         - git diff --exit-code Tests/LinuxMain.swift
 
+    - stage: pre-tests
+      name: lint
+      os: osx
+      osx_image: xcode11.1
+      install: ./Tests/Scripts/install_dependencies.sh swiftlint && ./Tests/Scripts/install_dependencies.sh swiftformat
+      before_script: skip
+      script: ${PWD}/swiftlint/swiftlint --strict && ${PWD}/SwiftFormat/CommandLineTool/swiftformat --verbose --lint .
+
     - stage: tests
       os: osx
       osx_image: xcode10.2
@@ -34,15 +42,6 @@ jobs:
       osx_image: xcode10.2
       script: make coverage
       after_success: bash <(curl -s https://codecov.io/bash)
-
-    - stage: post-tests
-      name: lint
-      os: osx
-      osx_image: xcode11.1
-      install: ./Tests/Scripts/install_dependencies.sh swiftlint
-      before_script: skip
-      script: ${PWD}/swiftlint/swiftlint --strict
-
 
 install:
   - INSTALLER=Tests/Scripts/install_dependencies.sh

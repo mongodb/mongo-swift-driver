@@ -129,8 +129,10 @@ public final class ReadPreference {
 
         if let maxStalenessSeconds = maxStalenessSeconds {
             guard maxStalenessSeconds >= MONGOC_SMALLEST_MAX_STALENESS_SECONDS else {
-                throw UserError.invalidArgumentError(message: "Expected maxStalenessSeconds to be >= " +
-                    " \(MONGOC_SMALLEST_MAX_STALENESS_SECONDS), \(maxStalenessSeconds) given")
+                throw UserError.invalidArgumentError(
+                    message: "Expected maxStalenessSeconds to be >= " +
+                        " \(MONGOC_SMALLEST_MAX_STALENESS_SECONDS), \(maxStalenessSeconds) given"
+                )
             }
 
             mongoc_read_prefs_set_max_staleness_seconds(self._readPreference, maxStalenessSeconds)

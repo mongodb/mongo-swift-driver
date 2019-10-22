@@ -17,7 +17,7 @@ final class BSONValueTests: MongoSwiftTestCase {
 
         // UUIDs must have 16 bytes
         expect(try Binary(data: twoBytes, subtype: .uuidDeprecated))
-                .to(throwError(UserError.invalidArgumentError(message: "")))
+            .to(throwError(UserError.invalidArgumentError(message: "")))
         expect(try Binary(data: twoBytes, subtype: .uuid)).to(throwError(UserError.invalidArgumentError(message: "")))
         expect(try Binary(data: sixteenBytes, subtype: .uuidDeprecated)).toNot(throwError())
         expect(try Binary(data: sixteenBytes, subtype: .uuid)).toNot(throwError())
@@ -30,29 +30,31 @@ final class BSONValueTests: MongoSwiftTestCase {
 
     func testBSONEquatable() throws {
         // Int
-        checkTrueAndFalse(val: 1, alternate: 2)
+        self.checkTrueAndFalse(val: 1, alternate: 2)
         // Int32
-        checkTrueAndFalse(val: .int32(32), alternate: .int32(33))
+        self.checkTrueAndFalse(val: .int32(32), alternate: .int32(33))
         // Int64
-        checkTrueAndFalse(val: .int64(64), alternate: .int64(65))
+        self.checkTrueAndFalse(val: .int64(64), alternate: .int64(65))
         // Double
-        checkTrueAndFalse(val: 1.618, alternate: 2.718)
+        self.checkTrueAndFalse(val: 1.618, alternate: 2.718)
         // Decimal128
-        checkTrueAndFalse(val: .decimal128(Decimal128("1.618")!), alternate: .decimal128(Decimal128("2.718")!))
+        self.checkTrueAndFalse(val: .decimal128(Decimal128("1.618")!), alternate: .decimal128(Decimal128("2.718")!))
         // Bool
-        checkTrueAndFalse(val: true, alternate: false)
+        self.checkTrueAndFalse(val: true, alternate: false)
         // String
-        checkTrueAndFalse(val: "some", alternate: "not some")
+        self.checkTrueAndFalse(val: "some", alternate: "not some")
         // RegularExpression
-        checkTrueAndFalse(
+        self.checkTrueAndFalse(
             val: .regex(RegularExpression(pattern: ".*", options: "")),
             alternate: .regex(RegularExpression(pattern: ".+", options: ""))
         )
         // Timestamp
-        checkTrueAndFalse(val: .timestamp(Timestamp(timestamp: 1, inc: 2)),
-                          alternate: .timestamp(Timestamp(timestamp: 5, inc: 10)))
+        self.checkTrueAndFalse(
+            val: .timestamp(Timestamp(timestamp: 1, inc: 2)),
+            alternate: .timestamp(Timestamp(timestamp: 5, inc: 10))
+        )
         // Date
-        checkTrueAndFalse(
+        self.checkTrueAndFalse(
             val: .datetime(Date(timeIntervalSinceReferenceDate: 5000)),
             alternate: .datetime(Date(timeIntervalSinceReferenceDate: 5001))
         )
@@ -60,28 +62,28 @@ final class BSONValueTests: MongoSwiftTestCase {
         expect(BSON.minKey).to(equal(.minKey))
         expect(BSON.maxKey).to(equal(.maxKey))
         // ObjectId
-        checkTrueAndFalse(val: .objectId(ObjectId()), alternate: .objectId(ObjectId()))
+        self.checkTrueAndFalse(val: .objectId(ObjectId()), alternate: .objectId(ObjectId()))
         // CodeWithScope
-        checkTrueAndFalse(
+        self.checkTrueAndFalse(
             val: .codeWithScope(CodeWithScope(code: "console.log('foo');", scope: [:])),
             alternate: .codeWithScope(CodeWithScope(code: "console.log(x);", scope: ["x": 2]))
         )
         // Binary
-        checkTrueAndFalse(
+        self.checkTrueAndFalse(
             val: .binary(try Binary(data: Data(base64Encoded: "c//SZESzTGmQ6OfR38A11A==")!, subtype: .uuid)),
             alternate: .binary(try Binary(data: Data(base64Encoded: "c//88KLnfdfefOfR33ddFA==")!, subtype: .uuid))
         )
         // Document
-        checkTrueAndFalse(
+        self.checkTrueAndFalse(
             val: [
                 "foo": 1.414,
                 "bar": "swift",
-                "nested": [ "a": 1, "b": "2" ]
+                "nested": ["a": 1, "b": "2"]
             ],
             alternate: [
                 "foo": 1.414,
                 "bar": "swift",
-                "nested": [ "a": 1, "b": "different" ]
+                "nested": ["a": 1, "b": "different"]
             ]
         )
 

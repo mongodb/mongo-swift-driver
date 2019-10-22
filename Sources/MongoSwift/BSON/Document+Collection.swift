@@ -19,7 +19,7 @@ extension Document: Collection {
 
     private func failIndexCheck(_ i: Index) {
         let invalidIndexMsg = "Index \(i) is invalid"
-        guard !self.isEmpty && self.startIndex ... self.endIndex - 1 ~= i else {
+        guard !self.isEmpty && self.startIndex...self.endIndex - 1 ~= i else {
             fatalError(invalidIndexMsg)
         }
     }
@@ -27,7 +27,7 @@ extension Document: Collection {
     /// Returns the index after the given index for this Document.
     public func index(after i: Index) -> Index {
         // Index must be a valid one, meaning it must exist somewhere in self.keys.
-        failIndexCheck(i)
+        self.failIndexCheck(i)
         return i + 1
     }
 
@@ -37,7 +37,7 @@ extension Document: Collection {
         // TODO: This method _should_ guarantee constant-time O(1) access, and it is possible to make it do so. This
         // criticism also applies to key-based subscripting via `String`.
         // See SWIFT-250.
-        failIndexCheck(position)
+        self.failIndexCheck(position)
         guard let iter = DocumentIterator(forDocument: self) else {
             fatalError("Failed to initialize an iterator over document \(self)")
         }

@@ -46,9 +46,12 @@ enum TestOperationResult: Decodable, Equatable {
         } else if let doc = try? Document(from: decoder) {
             self = .document(doc)
         } else {
-            throw DecodingError.valueNotFound(TestOperationResult.self,
-                                              DecodingError.Context(codingPath: decoder.codingPath,
-                                                                    debugDescription: "couldn't decode outcome")
+            throw DecodingError.valueNotFound(
+                TestOperationResult.self,
+                DecodingError.Context(
+                    codingPath: decoder.codingPath,
+                    debugDescription: "couldn't decode outcome"
+                )
             )
         }
     }
@@ -61,7 +64,7 @@ enum TestOperationResult: Decodable, Equatable {
             return lhsInt == rhsInt
         case let (.array(lhsArray), .array(rhsArray)):
             return lhsArray == rhsArray
-        case let(.document(lhsDoc), .document(rhsDoc)):
+        case let (.document(lhsDoc), .document(rhsDoc)):
             return lhsDoc.sortedEquals(rhsDoc)
         default:
             return false
@@ -98,10 +101,12 @@ extension UpdateResult: BulkWriteResultConvertible {
             upsertedIds = [0: upsertedId]
         }
 
-        return BulkWriteResult(matchedCount: self.matchedCount,
-                               modifiedCount: self.modifiedCount,
-                               upsertedCount: self.upsertedCount,
-                               upsertedIds: upsertedIds)
+        return BulkWriteResult(
+            matchedCount: self.matchedCount,
+            modifiedCount: self.modifiedCount,
+            upsertedCount: self.upsertedCount,
+            upsertedIds: upsertedIds
+        )
     }
 }
 

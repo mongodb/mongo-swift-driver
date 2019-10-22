@@ -36,10 +36,12 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
 
         // error code 59: CommandNotFound
         expect(try db.runCommand(["asdfsadf": .objectId(ObjectId())]))
-                .to(throwError(ServerError.commandError(code: 59,
-                                                        codeName: "CommandNotFound",
-                                                        message: "",
-                                                        errorLabels: nil)))
+            .to(throwError(ServerError.commandError(
+                code: 59,
+                codeName: "CommandNotFound",
+                message: "",
+                errorLabels: nil
+            )))
     }
 
     func testDropDatabase() throws {
@@ -53,9 +55,9 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         try collection.insertOne(["test": "blahblah"])
 
         var expectedWriteConcerns: [WriteConcern] = [
-                                                    try WriteConcern(journal: true, w: .number(1)),
-                                                    try WriteConcern(journal: true, w: .number(1), wtimeoutMS: 123)
-                                                ]
+            try WriteConcern(journal: true, w: .number(1)),
+            try WriteConcern(journal: true, w: .number(1), wtimeoutMS: 123)
+        ]
         var eventsSeen = 0
         let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
             guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
@@ -77,7 +79,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
     }
 
     func testCreateCollection() throws {
-        // TODO SWIFT-539: unskip
+        // TODO: SWIFT-539: unskip
         if MongoSwiftTestCase.ssl && MongoSwiftTestCase.isMacOS {
             print("Skipping test, fails with SSL, see CDRIVER-3318")
             return
@@ -120,19 +122,23 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
 
         let fooInfo = CollectionSpecificationInfo(readOnly: false, uuid: UUID())
         let fooIndex = IndexModel(keys: ["_id": 1] as Document, options: IndexOptions(name: "_id_"))
-        let expectedFoo = CollectionSpecification(name: "foo",
-                                                  type: .collection,
-                                                  options: fooOptions,
-                                                  info: fooInfo,
-                                                  idIndex: fooIndex)
+        let expectedFoo = CollectionSpecification(
+            name: "foo",
+            type: .collection,
+            options: fooOptions,
+            info: fooInfo,
+            idIndex: fooIndex
+        )
         expect(collectionInfo[0]).to(equal(expectedFoo))
 
         let viewInfo = CollectionSpecificationInfo(readOnly: true, uuid: nil)
-        let expectedView = CollectionSpecification(name: "fooView",
-                                                   type: .view,
-                                                   options: viewOptions,
-                                                   info: viewInfo,
-                                                   idIndex: nil)
+        let expectedView = CollectionSpecification(
+            name: "fooView",
+            type: .view,
+            options: viewOptions,
+            info: viewInfo,
+            idIndex: nil
+        )
         expect(collectionInfo[1]).to(equal(expectedView))
 
         expect(collectionInfo[2].name).to(equal("system.views"))
@@ -151,9 +157,11 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         try db.collection("capped").insertOne(["a": 1])
         try db.collection("uncapped").insertOne(["b": 2])
 
-        let listNamesEvent = try captureCommandEvents(from: client,
-                                                      eventTypes: [.commandStarted],
-                                                      commandNames: ["listCollections"]) {
+        let listNamesEvent = try captureCommandEvents(
+            from: client,
+            eventTypes: [.commandStarted],
+            commandNames: ["listCollections"]
+        ) {
             var collectionNames = try db.listCollectionNames()
             collectionNames.sort { $0 < $1 }
 
@@ -188,29 +196,29 @@ extension CreateCollectionOptions: Equatable {
     // and is not a property of the collection.
     public static func == (lhs: CreateCollectionOptions, rhs: CreateCollectionOptions) -> Bool {
         return rhs.capped == lhs.capped &&
-               rhs.autoIndexId == lhs.autoIndexId &&
-               lhs.size == rhs.size &&
-               lhs.max == rhs.max &&
-               lhs.storageEngine == rhs.storageEngine &&
-               lhs.validator == rhs.validator &&
-               lhs.validationLevel == rhs.validationLevel &&
-               lhs.validationAction == rhs.validationAction &&
-               lhs.indexOptionDefaults == rhs.indexOptionDefaults &&
-               lhs.viewOn == rhs.viewOn &&
-               lhs.pipeline == rhs.pipeline &&
-               lhs.collation?["locale"] == rhs.collation?["locale"]
-               // ^ server adds a bunch of extra fields and a version number
-               // to collations. rather than deal with those, just verify the
-               // locale matches.
+            rhs.autoIndexId == lhs.autoIndexId &&
+            lhs.size == rhs.size &&
+            lhs.max == rhs.max &&
+            lhs.storageEngine == rhs.storageEngine &&
+            lhs.validator == rhs.validator &&
+            lhs.validationLevel == rhs.validationLevel &&
+            lhs.validationAction == rhs.validationAction &&
+            lhs.indexOptionDefaults == rhs.indexOptionDefaults &&
+            lhs.viewOn == rhs.viewOn &&
+            lhs.pipeline == rhs.pipeline &&
+            lhs.collation?["locale"] == rhs.collation?["locale"]
+        // ^ server adds a bunch of extra fields and a version number
+        // to collations. rather than deal with those, just verify the
+        // locale matches.
     }
 }
 
 extension CollectionSpecification: Equatable {
     public static func == (lhs: CollectionSpecification, rhs: CollectionSpecification) -> Bool {
         return lhs.name == rhs.name &&
-               lhs.type == rhs.type &&
-               lhs.options == rhs.options &&
-               lhs.info.readOnly == rhs.info.readOnly &&
-               lhs.idIndex?.options?.name == rhs.idIndex?.options?.name
+            lhs.type == rhs.type &&
+            lhs.options == rhs.options &&
+            lhs.info.readOnly == rhs.info.readOnly &&
+            lhs.idIndex?.options?.name == rhs.idIndex?.options?.name
     }
 }

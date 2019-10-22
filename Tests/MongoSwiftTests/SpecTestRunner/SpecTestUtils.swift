@@ -28,19 +28,21 @@ extension Document {
 
 /// Given a spec folder name (e.g. "crud") and optionally a subdirectory name for a folder (e.g. "read") retrieves an
 /// array of [(filename, file decoded to type T)].
-internal func retrieveSpecTestFiles<T: Decodable>(specName: String,
-                                                  subdirectory: String? = nil,
-                                                  asType: T.Type) throws -> [(String, T)] {
+internal func retrieveSpecTestFiles<T: Decodable>(
+    specName: String,
+    subdirectory: String? = nil,
+    asType _: T.Type
+) throws -> [(String, T)] {
     var path = "\(MongoSwiftTestCase.specsPath)/\(specName)/tests"
     if let sd = subdirectory {
         path += "/\(sd)"
     }
     return try FileManager.default
-                .contentsOfDirectory(atPath: path)
-                .filter { $0.hasSuffix(".json") }
-                .map { ($0, URL(fileURLWithPath: "\(path)/\($0)")) }
-                .map { ($0.0, try Document(fromJSONFile: $0.1)) }
-                .map { ($0.0, try BSONDecoder().decode(T.self, from: $0.1)) }
+        .contentsOfDirectory(atPath: path)
+        .filter { $0.hasSuffix(".json") }
+        .map { ($0, URL(fileURLWithPath: "\(path)/\($0)")) }
+        .map { ($0.0, try Document(fromJSONFile: $0.1)) }
+        .map { ($0.0, try BSONDecoder().decode(T.self, from: $0.1)) }
 }
 
 /// Given two documents, returns a copy of the input document with all keys that *don't*

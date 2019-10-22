@@ -66,26 +66,28 @@ public struct CreateCollectionOptions: Codable, CodingStrategyProvider {
 
     private enum CodingKeys: String, CodingKey {
         case capped, autoIndexId, size, max, storageEngine, validator, validationLevel, validationAction,
-             indexOptionDefaults, viewOn, pipeline, collation, writeConcern
+            indexOptionDefaults, viewOn, pipeline, collation, writeConcern
     }
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional.
-    public init(autoIndexId: Bool? = nil,
-                capped: Bool? = nil,
-                collation: Document? = nil,
-                dataCodingStrategy: DataCodingStrategy? = nil,
-                dateCodingStrategy: DateCodingStrategy? = nil,
-                indexOptionDefaults: Document? = nil,
-                max: Int64? = nil,
-                pipeline: [Document]? = nil,
-                size: Int64? = nil,
-                storageEngine: Document? = nil,
-                uuidCodingStrategy: UUIDCodingStrategy? = nil,
-                validationAction: String? = nil,
-                validationLevel: String? = nil,
-                validator: Document? = nil,
-                viewOn: String? = nil,
-                writeConcern: WriteConcern? = nil) {
+    public init(
+        autoIndexId: Bool? = nil,
+        capped: Bool? = nil,
+        collation: Document? = nil,
+        dataCodingStrategy: DataCodingStrategy? = nil,
+        dateCodingStrategy: DateCodingStrategy? = nil,
+        indexOptionDefaults: Document? = nil,
+        max: Int64? = nil,
+        pipeline: [Document]? = nil,
+        size: Int64? = nil,
+        storageEngine: Document? = nil,
+        uuidCodingStrategy: UUIDCodingStrategy? = nil,
+        validationAction: String? = nil,
+        validationLevel: String? = nil,
+        validator: Document? = nil,
+        viewOn: String? = nil,
+        writeConcern: WriteConcern? = nil
+    ) {
         self.autoIndexId = autoIndexId
         self.capped = capped
         self.collation = collation
@@ -130,9 +132,11 @@ internal struct CreateCollectionOperation<T: Codable>: Operation {
             mongoc_collection_destroy(collection)
         }
 
-        let collectionOptions = CollectionOptions(dataCodingStrategy: self.options?.dataCodingStrategy,
-                                                  dateCodingStrategy: self.options?.dateCodingStrategy,
-                                                  uuidCodingStrategy: self.options?.uuidCodingStrategy)
+        let collectionOptions = CollectionOptions(
+            dataCodingStrategy: self.options?.dataCodingStrategy,
+            dateCodingStrategy: self.options?.dateCodingStrategy,
+            uuidCodingStrategy: self.options?.uuidCodingStrategy
+        )
 
         return SyncMongoCollection(name: self.name, database: self.database, options: collectionOptions)
     }

@@ -24,9 +24,11 @@ public struct BSONCoderOptions: CodingStrategyProvider {
     public var uuidCodingStrategy: UUIDCodingStrategy?
 
     /// Initializes a new `BSONCoderOptions`.
-    public init(dataCodingStrategy: DataCodingStrategy? = nil,
-                dateCodingStrategy: DateCodingStrategy? = nil,
-                uuidCodingStrategy: UUIDCodingStrategy? = nil) {
+    public init(
+        dataCodingStrategy: DataCodingStrategy? = nil,
+        dateCodingStrategy: DateCodingStrategy? = nil,
+        uuidCodingStrategy: UUIDCodingStrategy? = nil
+    ) {
         self.dataCodingStrategy = dataCodingStrategy
         self.dateCodingStrategy = dateCodingStrategy
         self.uuidCodingStrategy = uuidCodingStrategy

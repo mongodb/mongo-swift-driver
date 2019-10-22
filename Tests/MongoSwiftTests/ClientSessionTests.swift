@@ -16,12 +16,18 @@ final class ClientSessionTests: MongoSwiftTestCase {
         super.tearDown()
     }
 
-    typealias CollectionSessionOp = (name: String,
-                                     body: (SyncMongoCollection<Document>, SyncClientSession?) throws -> Void)
-    typealias DatabaseSessionOp = (name: String,
-                                   body: (SyncMongoDatabase, SyncClientSession?) throws -> Void)
-    typealias ClientSessionOp = (name: String,
-                                 body: (SyncMongoClient, SyncClientSession?) throws -> Void)
+    typealias CollectionSessionOp = (
+        name: String,
+        body: (SyncMongoCollection<Document>, SyncClientSession?) throws -> Void
+    )
+    typealias DatabaseSessionOp = (
+        name: String,
+        body: (SyncMongoDatabase, SyncClientSession?) throws -> Void
+    )
+    typealias ClientSessionOp = (
+        name: String,
+        body: (SyncMongoClient, SyncClientSession?) throws -> Void
+    )
     typealias SessionOp = (name: String, body: (SyncClientSession?) throws -> Void)
 
     // list of read only operations on SyncMongoCollection that take in a session
@@ -71,25 +77,27 @@ final class ClientSessionTests: MongoSwiftTestCase {
         (name: "listDatabaseNames", { _ = try $0.listDatabaseNames(session: $1) })
     ]
 
-    // This function causes the compiler to crash on older versions of swift due to a bug in the compiler.
-    #if(swift(>=5.1))
+// This function causes the compiler to crash on older versions of swift due to a bug in the compiler.
+#if swift(>=5.1)
 
     /// iterate over all the different session op types, passing in the provided client/db/collection as needed.
-    func forEachSessionOp(client: SyncMongoClient,
-                          database: SyncMongoDatabase,
-                          collection: SyncMongoCollection<Document>,
-                          _ body: (SessionOp) throws -> Void) rethrows {
-        try (collectionSessionReadOps + collectionSessionWriteOps).forEach { op in
+    func forEachSessionOp(
+        client: SyncMongoClient,
+        database: SyncMongoDatabase,
+        collection: SyncMongoCollection<Document>,
+        _ body: (SessionOp) throws -> Void
+    ) rethrows {
+        try (self.collectionSessionReadOps + self.collectionSessionWriteOps).forEach { op in
             try body((name: op.name, body: { try op.body(collection, $0) }))
         }
-        try databaseSessionOps.forEach { op in
+        try self.databaseSessionOps.forEach { op in
             try body((name: op.name, body: { try op.body(database, $0) }))
         }
-        try clientSessionOps.forEach { op in
+        try self.clientSessionOps.forEach { op in
             try body((name: op.name, body: { try op.body(client, $0) }))
         }
     }
-    #endif
+#endif
 
     /// Sessions spec test 1: Test that sessions are properly returned to the pool when ended.
     func testSessionCleanup() throws {
@@ -174,26 +182,25 @@ final class ClientSessionTests: MongoSwiftTestCase {
     /// Sessions spec test 3: test that every function that takes a session parameter passes the sends implicit and
     /// explicit lsids to server.
     func testSessionArguments() throws {
-        // This test causes the compiler to crash on older versions of swift due to a bug in the compiler.
-        #if(swift(>=5.1))
-
+// This test causes the compiler to crash on older versions of swift due to a bug in the compiler.
+#if swift(>=5.1)
         let client1 = try SyncMongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
         let database = client1.db(type(of: self).testDatabase)
         let collection = try database.createCollection(self.getCollectionName())
         let session = try client1.startSession()
 
-        try forEachSessionOp(client: client1, database: database, collection: collection) { op in
+        try self.forEachSessionOp(client: client1, database: database, collection: collection) { op in
             try runArgTest(session: session, op: op)
         }
 
-        #endif
+#endif
     }
 
     /// Sessions spec test 4: test that a session can only be used with db's and collections that were derived from the
     /// same client.
     func testSessionClientValidation() throws {
-        // This test causes the compiler to crash on older versions of swift due to a bug in the compiler.
-        #if(swift(>=5.1))
+// This test causes the compiler to crash on older versions of swift due to a bug in the compiler.
+#if swift(>=5.1)
 
         let client1 = try SyncMongoClient.makeTestClient()
         let client2 = try SyncMongoClient.makeTestClient()
@@ -202,18 +209,18 @@ final class ClientSessionTests: MongoSwiftTestCase {
         let collection = try database.createCollection(self.getCollectionName())
 
         let session = try client2.startSession()
-        try forEachSessionOp(client: client1, database: database, collection: collection) { op in
+        try self.forEachSessionOp(client: client1, database: database, collection: collection) { op in
             expect(try op.body(session))
-                    .to(throwError(UserError.invalidArgumentError(message: "")), description: op.name)
+                .to(throwError(UserError.invalidArgumentError(message: "")), description: op.name)
         }
 
-        #endif
+#endif
     }
 
     /// Sessions spec test 5: Test that inactive sessions cannot be used.
     func testInactiveSession() throws {
-        // This test causes the compiler to crash on older versions of swift due to a bug in the compiler.
-        #if(swift(>=5.1))
+// This test causes the compiler to crash on older versions of swift due to a bug in the compiler.
+#if swift(>=5.1)
 
         let client = try SyncMongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
@@ -223,7 +230,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
         session1.end()
         expect(session1.active).to(beFalse())
 
-        try forEachSessionOp(client: client, database: db, collection: collection) { op in
+        try self.forEachSessionOp(client: client, database: db, collection: collection) { op in
             expect(try op.body(session1)).to(throwError(SyncClientSession.SessionInactiveError), description: op.name)
         }
 
@@ -238,7 +245,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
         session2.end()
         expect(try cursor.nextOrError()).to(throwError(SyncClientSession.SessionInactiveError))
 
-        #endif
+#endif
     }
 
     /// Sessions spec test 10: Test cursors have the same lsid in the initial find command and in subsequent getMores.
@@ -331,8 +338,8 @@ final class ClientSessionTests: MongoSwiftTestCase {
 
     /// Test that causal consistency guarantees are met on deployments that support cluster time.
     func testCausalConsistency() throws {
-        // This test causes the compiler to crash on older versions of swift due to a bug in the compiler.
-        #if(swift(>=5.1))
+// This test causes the compiler to crash on older versions of swift due to a bug in the compiler.
+#if swift(>=5.1)
 
         guard MongoSwiftTestCase.topologyType != .single else {
             print(unsupportedTopologyMessage(testName: self.name))
@@ -384,7 +391,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
         //
         // Causal consistency spec test 8: When using the default server ReadConcern the readConcern parameter in the
         // command sent to the server should not include a level field
-        try collectionSessionReadOps.forEach { op in
+        try self.collectionSessionReadOps.forEach { op in
             try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
                 _ = try collection.find(session: session).next()
                 let opTime = session.operationTime
@@ -408,7 +415,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
         // Causal consistency spec test 5: Any write operation followed by a find operation should include the
         // operationTime of the first operation in the afterClusterTime parameter of the second operation, including the
         // case where the first operation returned an error
-        try collectionSessionWriteOps.forEach { op in
+        try self.collectionSessionWriteOps.forEach { op in
             try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
                 try? op.body(collection, session)
                 let opTime = session.operationTime
@@ -419,7 +426,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
                         return
                     }
                     expect(event.command["readConcern"]?.documentValue?["afterClusterTime"]?.timestampValue)
-                            .to(equal(opTime), description: op.name)
+                        .to(equal(opTime), description: op.name)
                     seenCommand = true
                 }
                 defer { center.removeObserver(observer) }
@@ -448,8 +455,10 @@ final class ClientSessionTests: MongoSwiftTestCase {
         // Causal consistency spec test 9: When using a custom ReadConcern the readConcern field in the command sent to
         // the server should be a merger of the ReadConcern value and the afterClusterTime field
         try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
-            let collection1 = db.collection(self.getCollectionName(),
-                                            options: CollectionOptions(readConcern: ReadConcern(.snapshot)))
+            let collection1 = db.collection(
+                self.getCollectionName(),
+                options: CollectionOptions(readConcern: ReadConcern(.snapshot))
+            )
             _ = try collection1.find(session: session).next()
             let opTime = session.operationTime
 
@@ -484,7 +493,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
             _ = try collection.find(session: session).next()
             expect(seenCommand).to(beTrue())
         }
-        #endif
+#endif
     }
 
     /// Test causal consistent behavior on a topology that doesn't support cluster time.
@@ -570,8 +579,10 @@ final class ClientSessionTests: MongoSwiftTestCase {
         // Causal consistency spec test 10: When an unacknowledged write is executed in a causally consistent
         // ClientSession the operationTime property of the ClientSession is not updated
         try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
-            let collection1 = db.collection(self.getCollectionName(),
-                                            options: CollectionOptions(writeConcern: try WriteConcern(w: .number(0))))
+            let collection1 = db.collection(
+                self.getCollectionName(),
+                options: CollectionOptions(writeConcern: try WriteConcern(w: .number(0)))
+            )
             try collection1.insertOne(["x": 3])
             expect(session.operationTime).to(beNil())
         }

@@ -39,9 +39,9 @@ final class SDAMTests: MongoSwiftTestCase {
 
         let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
             guard [
-                    "serverDescriptionChanged", "serverOpening", "serverClosed", "topologyDescriptionChanged",
-                    "topologyOpening", "topologyClosed"
-                  ].contains(notif.name.rawValue) else { return }
+                "serverDescriptionChanged", "serverOpening", "serverClosed", "topologyDescriptionChanged",
+                "topologyOpening", "topologyClosed"
+            ].contains(notif.name.rawValue) else { return }
 
             guard let event = notif.userInfo?["event"] as? MongoEvent else {
                 XCTFail("Notification \(notif) did not contain an event")
@@ -92,13 +92,13 @@ final class SDAMTests: MongoSwiftTestCase {
         let event3 = receivedEvents[3] as! ServerDescriptionChangedEvent
         expect(event3.topologyId).to(equal(event2.topologyId))
         let prevServer = event3.previousDescription
-        checkDefaultHostPort(prevServer, hostlist)
-        checkEmptyLists(prevServer)
-        checkUnknownServerType(prevServer)
+        self.checkDefaultHostPort(prevServer, hostlist)
+        self.checkEmptyLists(prevServer)
+        self.checkUnknownServerType(prevServer)
 
         let newServer = event3.newDescription
-        checkDefaultHostPort(newServer, hostlist)
-        checkEmptyLists(newServer)
+        self.checkDefaultHostPort(newServer, hostlist)
+        self.checkEmptyLists(newServer)
         expect(newServer.type).to(equal(ServerDescription.ServerType.standalone))
 
         let event4 = receivedEvents[4] as! TopologyDescriptionChangedEvent
@@ -109,8 +109,8 @@ final class SDAMTests: MongoSwiftTestCase {
 
         let newTopology = event4.newDescription
         expect(newTopology.type).to(equal(TopologyDescription.TopologyType.single))
-        checkDefaultHostPort(newTopology.servers[0], hostlist)
+        self.checkDefaultHostPort(newTopology.servers[0], hostlist)
         expect(newTopology.servers[0].type).to(equal(ServerDescription.ServerType.standalone))
-        checkEmptyLists(newTopology.servers[0])
+        self.checkEmptyLists(newTopology.servers[0])
     }
 }

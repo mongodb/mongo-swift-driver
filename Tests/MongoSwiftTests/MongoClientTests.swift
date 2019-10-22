@@ -68,8 +68,8 @@ final class MongoClientTests: MongoSwiftTestCase {
         let client = SyncMongoClient(stealing: client_t)
         let db = client.db(type(of: self).testDatabase)
         let coll = db.collection(self.getCollectionName())
-        let insertResult = try coll.insertOne([ "test": 42 ])
-        let findResult = try coll.find([ "_id": insertResult!.insertedId ])
+        let insertResult = try coll.insertOne(["test": 42])
+        let findResult = try coll.find(["_id": insertResult!.insertedId])
         let docs = Array(findResult)
         expect(docs[0]["test"]).to(equal(42))
         try db.drop()
@@ -174,9 +174,9 @@ final class MongoClientTests: MongoSwiftTestCase {
 
         // Customize strategies on the client
         let custom = ClientOptions(
-                dataCodingStrategy: .base64,
-                dateCodingStrategy: .secondsSince1970,
-                uuidCodingStrategy: .deferredToUUID
+            dataCodingStrategy: .base64,
+            dateCodingStrategy: .secondsSince1970,
+            uuidCodingStrategy: .deferredToUUID
         )
         let clientCustom = try SyncMongoClient.makeTestClient(options: custom)
         let collClient = clientCustom.db(defaultDb.name).collection(collDoc.name, withType: Wrapper.self)
@@ -194,9 +194,9 @@ final class MongoClientTests: MongoSwiftTestCase {
 
         // Construct db with differing strategies from client
         let dbOpts = DatabaseOptions(
-                dataCodingStrategy: .binary,
-                dateCodingStrategy: .deferredToDate,
-                uuidCodingStrategy: .binary
+            dataCodingStrategy: .binary,
+            dateCodingStrategy: .deferredToDate,
+            uuidCodingStrategy: .binary
         )
         let dbCustom = clientCustom.db(defaultDb.name, options: dbOpts)
         let collDb = dbCustom.collection(collClient.name, withType: Wrapper.self)
@@ -214,9 +214,9 @@ final class MongoClientTests: MongoSwiftTestCase {
 
         // Construct collection with differing strategies from database
         let dbCollOpts = CollectionOptions(
-                dataCodingStrategy: .base64,
-                dateCodingStrategy: .millisecondsSince1970,
-                uuidCodingStrategy: .deferredToUUID
+            dataCodingStrategy: .base64,
+            dateCodingStrategy: .millisecondsSince1970,
+            uuidCodingStrategy: .deferredToUUID
         )
         let collCustom = dbCustom.collection(collClient.name, withType: Wrapper.self, options: dbCollOpts)
 
@@ -230,7 +230,7 @@ final class MongoClientTests: MongoSwiftTestCase {
         expect(doc?["data"]?.stringValue).to(equal(data.base64EncodedString()))
 
         expect(try collCustom.find(["_id": customDbCollId]).nextOrError())
-                .to(equal(wrapper))
+            .to(equal(wrapper))
 
         try defaultDb.drop()
     }

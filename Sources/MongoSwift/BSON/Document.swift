@@ -155,9 +155,9 @@ extension Document {
                 // swiftlint:disable:next force_unwrapping
                 try DocumentIterator(forDocument: self, advancedTo: key)!.overwriteCurrentValue(with: ov)
 
-            // otherwise, we just create a new document and replace this key
+                // otherwise, we just create a new document and replace this key
             } else {
-                // TODO SWIFT-224: use va_list variant of bson_copy_to_excluding to improve performance
+                // TODO: SWIFT-224: use va_list variant of bson_copy_to_excluding to improve performance
                 var newSelf = Document()
                 var seen = false
                 try self.forEach { pair in
@@ -171,7 +171,7 @@ extension Document {
                 self = newSelf
             }
 
-        // otherwise, it's a new key
+            // otherwise, it's a new key
         } else {
             self.copyStorageIfRequired()
             try newBSONValue.encode(to: self._storage, forKey: key)
@@ -226,8 +226,10 @@ extension Document {
             bson_concat(selfPtr, doc._bson)
         }
         guard success else {
-            throw RuntimeError.internalError(message: "Failed to merge \(doc) with \(self). This is likely due to " +
-                    "the merged document being too large.")
+            throw RuntimeError.internalError(
+                message: "Failed to merge \(doc) with \(self). This is likely due to " +
+                    "the merged document being too large."
+            )
         }
     }
 
@@ -374,6 +376,7 @@ extension Document {
         // see https://www.objc.io/blog/2018/02/13/string-to-data-and-back/
         try self.init(fromJSON: json.data(using: .utf8)!) // swiftlint:disable:this force_unwrapping
     }
+
     /**
      * Constructs a `Document` from raw BSON `Data`.
      * - Throws:
@@ -417,7 +420,7 @@ extension Document {
                 if let newValue = newValue {
                     try self.setValue(for: key, to: newValue)
                 } else {
-                    // TODO SWIFT-224: use va_list variant of bson_copy_to_excluding to improve performance
+                    // TODO: SWIFT-224: use va_list variant of bson_copy_to_excluding to improve performance
                     self = self.filter { $0.key != key }
                 }
             } catch {
@@ -534,8 +537,10 @@ extension Document: ExpressibleByDictionaryLiteral {
 }
 
 /// Executes the provided closure using a mutable pointer to the document's underlying storage.
-internal func withMutableBSONPointer<T>(to document: inout Document,
-                                        body: (MutableBSONPointer) throws -> T) rethrows -> T {
+internal func withMutableBSONPointer<T>(
+    to document: inout Document,
+    body: (MutableBSONPointer) throws -> T
+) rethrows -> T {
     document.copyStorageIfRequired()
     return try body(document._storage._bson)
 }

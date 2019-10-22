@@ -16,11 +16,13 @@ internal enum ChangeStreamTarget: String, Decodable {
 
     /// Open a change stream against this target. An error will be thrown if the necessary namespace information is not
     /// provided.
-    internal func watch(_ client: SyncMongoClient,
-                        _ database: String?,
-                        _ collection: String?,
-                        _ pipeline: [Document],
-                        _ options: ChangeStreamOptions) throws -> SyncChangeStream<Document> {
+    internal func watch(
+        _ client: SyncMongoClient,
+        _ database: String?,
+        _ collection: String?,
+        _ pipeline: [Document],
+        _ options: ChangeStreamOptions
+    ) throws -> SyncChangeStream<Document> {
         switch self {
         case .client:
             return try client.watch(pipeline, options: options, withEventType: Document.self)
@@ -34,8 +36,8 @@ internal enum ChangeStreamTarget: String, Decodable {
                 throw RuntimeError.internalError(message: "missing db or collection in watch")
             }
             return try client.db(database)
-                    .collection(collection)
-                    .watch(pipeline, options: options, withEventType: Document.self)
+                .collection(collection)
+                .watch(pipeline, options: options, withEventType: Document.self)
         }
     }
 }
@@ -174,11 +176,13 @@ internal struct ChangeStreamTest: Decodable {
         defer { client.notificationCenter.removeObserver(observer) }
 
         do {
-            let changeStream = try self.target.watch(client,
-                                                     database,
-                                                     collection,
-                                                     self.changeStreamPipeline,
-                                                     self.changeStreamOptions)
+            let changeStream = try self.target.watch(
+                client,
+                database,
+                collection,
+                self.changeStreamPipeline,
+                self.changeStreamOptions
+            )
             for operation in self.operations {
                 _ = try operation.execute(using: globalClient)
             }
@@ -191,7 +195,7 @@ internal struct ChangeStreamTest: Decodable {
                 var seenEvents: [Document] = []
                 for _ in 0..<events.count {
                     let event = try changeStream.nextOrError()
-                    expect(event).toNot(beNil(), description: description)
+                    expect(event).toNot(beNil(), description: self.description)
                     seenEvents.append(event!)
                 }
                 expect(seenEvents).to(match(events), description: self.description)
@@ -210,10 +214,10 @@ internal struct ChangeStreamTest: Decodable {
 private struct ChangeStreamTestFile: Decodable {
     private enum CodingKeys: String, CodingKey {
         case databaseName = "database_name",
-             collectionName = "collection_name",
-             database2Name = "database2_name",
-             collection2Name = "collection2_name",
-             tests
+            collectionName = "collection_name",
+            database2Name = "database2_name",
+            collection2Name = "collection2_name",
+            tests
     }
 
     /// The default database.
@@ -242,7 +246,7 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase, FailPointConfigured {
     }
 
     func testChangeStreamSpec() throws {
-        // TODO SWIFT-539: unskip
+        // TODO: SWIFT-539: unskip
         if MongoSwiftTestCase.ssl && MongoSwiftTestCase.isMacOS {
             print("Skipping test, fails with SSL, see CDRIVER-3318")
             return
@@ -272,7 +276,7 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase, FailPointConfigured {
 
                 guard version >= test.minServerVersion else {
                     print("Skipping tests case \"\(test.description)\": minimum required server " +
-                                  "version \(test.minServerVersion) not met.")
+                        "version \(test.minServerVersion) not met.")
                     continue
                 }
 
@@ -288,9 +292,10 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase, FailPointConfigured {
                 }
                 defer { self.disableActiveFailPoint() }
 
-                try test.run(globalClient: globalClient,
-                             database: testFile.databaseName,
-                             collection: testFile.collectionName
+                try test.run(
+                    globalClient: globalClient,
+                    database: testFile.databaseName,
+                    collection: testFile.collectionName
                 )
             }
         }
@@ -312,7 +317,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
         try withTestNamespace { _, _, coll in
             let changeStream =
-                    try coll.watch(options: ChangeStreamOptions(maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME))
+                try coll.watch(options: ChangeStreamOptions(maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME))
             for x in 0..<5 {
                 try coll.insertOne(["x": BSON(x)])
             }
@@ -350,10 +355,12 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             }
 
             if try client.maxWireVersion() >= 8 {
-                let expectedError = ServerError.commandError(code: 280,
-                                                             codeName: "ChangeStreamFatalError",
-                                                             message: "",
-                                                             errorLabels: ["NonResumableChangeStreamError"])
+                let expectedError = ServerError.commandError(
+                    code: 280,
+                    codeName: "ChangeStreamFatalError",
+                    message: "",
+                    errorLabels: ["NonResumableChangeStreamError"]
+                )
                 expect(try changeStream.nextOrError()).to(throwError(expectedError))
             } else {
                 expect(try changeStream.nextOrError()).to(throwError(UserError.logicError(message: "")))
@@ -380,9 +387,11 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
         let events = try captureCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) { client in
             try withTestNamespace(client: client) { _, coll in
-                let options = ChangeStreamOptions(batchSize: 123,
-                                                  fullDocument: .updateLookup,
-                                                  maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME)
+                let options = ChangeStreamOptions(
+                    batchSize: 123,
+                    fullDocument: .updateLookup,
+                    maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME
+                )
                 let changeStream = try coll.watch([["$match": ["fullDocument.x": 2]]], options: options)
                 for x in 0..<5 {
                     try coll.insertOne(["x": .int64(Int64(x))])
@@ -446,9 +455,11 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             try failpoint.enable()
             defer { failpoint.disable() }
 
-            let aggAttempts = try captureCommandEvents(from: client,
-                                                       eventTypes: [.commandStarted],
-                                                       commandNames: ["aggregate"]) {
+            let aggAttempts = try captureCommandEvents(
+                from: client,
+                eventTypes: [.commandStarted],
+                commandNames: ["aggregate"]
+            ) {
                 expect(try coll.watch()).to(throwError())
             }
             expect(aggAttempts.count).to(equal(1))
@@ -456,15 +467,19 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             // The above failpoint was configured to only run once, so this aggregate will succeed.
             let changeStream = try coll.watch()
 
-            let getMoreFailpoint = FailPoint.failCommand(failCommands: ["getMore", "aggregate"],
-                                                         mode: .times(2),
-                                                         errorCode: 10107)
+            let getMoreFailpoint = FailPoint.failCommand(
+                failCommands: ["getMore", "aggregate"],
+                mode: .times(2),
+                errorCode: 10107
+            )
             try getMoreFailpoint.enable()
             defer { getMoreFailpoint.disable() }
 
-            let aggAttempts1 = try captureCommandEvents(from: client,
-                                                        eventTypes: [.commandStarted],
-                                                        commandNames: ["aggregate"]) {
+            let aggAttempts1 = try captureCommandEvents(
+                from: client,
+                eventTypes: [.commandStarted],
+                commandNames: ["aggregate"]
+            ) {
                 // getMore failure will trigger resume process, aggregate will fail and not retry again.
                 expect(try changeStream.nextOrError()).to(throwError())
             }
@@ -523,7 +538,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         try nonResumableLabel.enable()
         defer { nonResumableLabel.disable() }
         let labelAggs = try captureCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) {
-           expect(try $0.watch().nextOrError()).to(throwError())
+            expect(try $0.watch().nextOrError()).to(throwError())
         }
         expect(labelAggs.count).to(equal(1))
     }
@@ -545,7 +560,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         let events = try captureCommandEvents(commandNames: ["killCursors"]) { client in
             try withTestNamespace(client: client) { _, coll in
                 changeStream =
-                        try coll.watch(options: ChangeStreamOptions(maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME))
+                    try coll.watch(options: ChangeStreamOptions(maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME))
                 _ = try changeStream!.nextOrError()
             }
         }
@@ -574,9 +589,11 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             }
 
             var changeStream: SyncChangeStream<ChangeStreamEvent<Document>>?
-            let aggEvent = try captureCommandEvents(from: client,
-                                                    eventTypes: [.commandSucceeded],
-                                                    commandNames: ["aggregate"]) {
+            let aggEvent = try captureCommandEvents(
+                from: client,
+                eventTypes: [.commandSucceeded],
+                commandNames: ["aggregate"]
+            ) {
                 let options = ChangeStreamOptions(batchSize: 1, maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME)
                 changeStream = try collection.watch(options: options)
             }
@@ -605,7 +622,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         }
     }
 
-    // TODO SWIFT-567: Implement prose test 11
+    // TODO: SWIFT-567: Implement prose test 11
 
     /**
      * Prose test 12 of change stream spec.
@@ -673,7 +690,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             }
 
             let changeStream =
-                    try coll.watch(options: ChangeStreamOptions(maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME))
+                try coll.watch(options: ChangeStreamOptions(maxAwaitTimeMS: ChangeStreamTests.MAX_AWAIT_TIME))
             for i in 0..<5 {
                 try coll.insertOne(["x": BSON(i)])
             }
@@ -686,7 +703,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         }
     }
 
-    // TODO SWIFT-576: Implement prose tests 14, 17, & 18
+    // TODO: SWIFT-576: Implement prose tests 14, 17, & 18
 
     func testChangeStreamOnAClient() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
@@ -715,7 +732,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         expect(change1).toNot(beNil())
         expect(change1?.operationType).to(equal(.insert))
         expect(change1?.fullDocument).to(equal(doc1))
-        //expect the resumeToken to be updated to the _id field of the most recently accessed document
+        // expect the resumeToken to be updated to the _id field of the most recently accessed document
         expect(changeStream.resumeToken).to(equal(change1?._id))
 
         // test that a change exists for a different collection in the same database
@@ -944,7 +961,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
     }
 
     func testChangeStreamWithFullDocumentType() throws {
-         guard MongoSwiftTestCase.topologyType != .single else {
+        guard MongoSwiftTestCase.topologyType != .single else {
             print(unsupportedTopologyMessage(testName: self.name))
             return
         }

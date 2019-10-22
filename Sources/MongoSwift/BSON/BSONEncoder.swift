@@ -102,11 +102,12 @@ public class BSONEncoder {
 
     /// The options set on the top-level encoder.
     fileprivate var options: _Options {
-        return _Options(userInfo: self.userInfo,
-                        dateEncodingStrategy: self.dateEncodingStrategy,
-                        uuidEncodingStrategy: self.uuidEncodingStrategy,
-                        dataEncodingStrategy: self.dataEncodingStrategy
-                )
+        return _Options(
+            userInfo: self.userInfo,
+            dateEncodingStrategy: self.dateEncodingStrategy,
+            uuidEncodingStrategy: self.uuidEncodingStrategy,
+            dataEncodingStrategy: self.dataEncodingStrategy
+        )
     }
 
     /// Initializes `self`.
@@ -151,15 +152,21 @@ public class BSONEncoder {
         guard let boxedValue = try encoder.box_(value) else {
             throw EncodingError.invalidValue(
                 value,
-                EncodingError.Context(codingPath: [],
-                                      debugDescription: "Top-level \(T.self) did not encode any values."))
+                EncodingError.Context(
+                    codingPath: [],
+                    debugDescription: "Top-level \(T.self) did not encode any values."
+                )
+            )
         }
 
         guard let dict = boxedValue as? MutableDictionary else {
             throw EncodingError.invalidValue(
                 value,
-                EncodingError.Context(codingPath: [],
-                                      debugDescription: "Top-level \(T.self) was not encoded as a complete document."))
+                EncodingError.Context(
+                    codingPath: [],
+                    debugDescription: "Top-level \(T.self) was not encoded as a complete document."
+                )
+            )
         }
 
         return dict.asDocument()
@@ -236,7 +243,7 @@ internal class _BSONEncoder: Encoder {
         return self.storage.count == self.codingPath.count
     }
 
-    public func container<Key>(keyedBy: Key.Type) -> KeyedEncodingContainer<Key> {
+    public func container<Key>(keyedBy _: Key.Type) -> KeyedEncodingContainer<Key> {
         // If an existing keyed container was already requested, return that one.
         let topContainer: MutableDictionary
         if self.canEncodeNewValue {
@@ -250,7 +257,8 @@ internal class _BSONEncoder: Encoder {
             topContainer = container
         }
         let container = _BSONKeyedEncodingContainer<Key>(
-            referencing: self, codingPath: self.codingPath, wrapping: topContainer)
+            referencing: self, codingPath: self.codingPath, wrapping: topContainer
+        )
         return KeyedEncodingContainer(container)
     }
 
@@ -393,8 +401,8 @@ extension _BSONEncoder {
     }
 
     fileprivate func handleCustomStrategy<T: Encodable>(
-            encodeFunc f: (T, Encoder) throws -> Void,
-            forValue value: T
+        encodeFunc f: (T, Encoder) throws -> Void,
+        forValue value: T
     ) throws -> BSONValue? {
         let depth = self.storage.count
 
@@ -427,15 +435,15 @@ extension _BSONEncoder {
             return date.msSinceEpoch
         case .secondsSince1970:
             return date.timeIntervalSince1970
-        case .formatted(let formatter):
+        case let .formatted(formatter):
             return formatter.string(from: date)
         case .iso8601:
             guard #available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) else {
                 fatalError("ISO8601DateFormatter is unavailable on this platform.")
             }
             return BSONDecoder.iso8601Formatter.string(from: date)
-        case .custom(let f):
-            return try handleCustomStrategy(encodeFunc: f, forValue: date)
+        case let .custom(f):
+            return try self.handleCustomStrategy(encodeFunc: f, forValue: date)
         }
     }
 
@@ -459,8 +467,8 @@ extension _BSONEncoder {
             return try Binary(data: data, subtype: .generic)
         case .base64:
             return data.base64EncodedString()
-        case .custom(let f):
-            return try handleCustomStrategy(encodeFunc: f, forValue: data)
+        case let .custom(f):
+            return try self.handleCustomStrategy(encodeFunc: f, forValue: data)
         }
     }
 
@@ -468,7 +476,7 @@ extension _BSONEncoder {
     fileprivate func box_<T: Encodable>(_ value: T) throws -> BSONValue? {
         switch value {
         case let date as Date:
-            return try boxDate(date)
+            return try self.boxDate(date)
         case let bson as BSON:
             if case let .datetime(d) = bson {
                 return try boxDate(d)
@@ -476,9 +484,9 @@ extension _BSONEncoder {
                 return bson.bsonValue
             }
         case let uuid as UUID:
-            return try boxUUID(uuid)
+            return try self.boxUUID(uuid)
         case let data as Data:
-            return try boxData(data)
+            return try self.boxData(data)
         default:
             break
         }
@@ -521,9 +529,11 @@ private struct _BSONKeyedEncodingContainer<K: CodingKey>: KeyedEncodingContainer
     public private(set) var codingPath: [CodingKey]
 
     /// Initializes `self` with the given references.
-    fileprivate init(referencing encoder: _BSONEncoder,
-                     codingPath: [CodingKey],
-                     wrapping container: MutableDictionary) {
+    fileprivate init(
+        referencing encoder: _BSONEncoder,
+        codingPath: [CodingKey],
+        wrapping container: MutableDictionary
+    ) {
         self.encoder = encoder
         self.codingPath = codingPath
         self.container = container
@@ -534,6 +544,7 @@ private struct _BSONKeyedEncodingContainer<K: CodingKey>: KeyedEncodingContainer
     public mutating func encode(_ value: Int, forKey key: Key) throws {
         self.container[key.stringValue] = BSON(value).bsonValue
     }
+
     public mutating func encode(_ value: Int8, forKey key: Key) throws { try self.encodeNumber(value, forKey: key) }
     public mutating func encode(_ value: Int16, forKey key: Key) throws { try self.encodeNumber(value, forKey: key) }
     public mutating func encode(_ value: Int32, forKey key: Key) throws { self.container[key.stringValue] = value }
@@ -551,17 +562,19 @@ private struct _BSONKeyedEncodingContainer<K: CodingKey>: KeyedEncodingContainer
         // put the key on the codingPath in case the attempt to convert the number fails and we throw
         self.encoder.codingPath.append(key)
         defer { self.encoder.codingPath.removeLast() }
-        self.container[key.stringValue] = try encoder.boxNumber(value)
+        self.container[key.stringValue] = try self.encoder.boxNumber(value)
     }
 
     public mutating func encode<T: Encodable>(_ value: T, forKey key: Key) throws {
         self.encoder.codingPath.append(key)
         defer { self.encoder.codingPath.removeLast() }
-        self.container[key.stringValue] = try encoder.box(value)
+        self.container[key.stringValue] = try self.encoder.box(value)
     }
 
-    public mutating func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type,
-                                                    forKey key: Key) -> KeyedEncodingContainer<NestedKey> {
+    public mutating func nestedContainer<NestedKey>(
+        keyedBy _: NestedKey.Type,
+        forKey key: Key
+    ) -> KeyedEncodingContainer<NestedKey> {
         let dictionary = MutableDictionary()
         self.container[key.stringValue] = dictionary
 
@@ -569,7 +582,8 @@ private struct _BSONKeyedEncodingContainer<K: CodingKey>: KeyedEncodingContainer
         defer { self.codingPath.removeLast() }
 
         let container = _BSONKeyedEncodingContainer<NestedKey>(
-            referencing: self.encoder, codingPath: self.codingPath, wrapping: dictionary)
+            referencing: self.encoder, codingPath: self.codingPath, wrapping: dictionary
+        )
         return KeyedEncodingContainer(container)
     }
 
@@ -634,17 +648,17 @@ private struct _BSONUnkeyedEncodingContainer: UnkeyedEncodingContainer {
         self.encoder.codingPath.append(_BSONKey(index: self.count))
         defer { self.encoder.codingPath.removeLast() }
 
-        self.container.add(try encoder.boxNumber(value))
+        self.container.add(try self.encoder.boxNumber(value))
     }
 
     public mutating func encode<T: Encodable>(_ value: T) throws {
         self.encoder.codingPath.append(_BSONKey(index: self.count))
         defer { self.encoder.codingPath.removeLast() }
 
-        self.container.add(try encoder.box(value))
+        self.container.add(try self.encoder.box(value))
     }
 
-    public mutating func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type)
+    public mutating func nestedContainer<NestedKey>(keyedBy _: NestedKey.Type)
         -> KeyedEncodingContainer<NestedKey> {
         self.codingPath.append(_BSONKey(index: self.count))
         defer { self.codingPath.removeLast() }
@@ -653,7 +667,8 @@ private struct _BSONUnkeyedEncodingContainer: UnkeyedEncodingContainer {
         self.container.add(dictionary)
 
         let container = _BSONKeyedEncodingContainer<NestedKey>(
-            referencing: self.encoder, codingPath: self.codingPath, wrapping: dictionary)
+            referencing: self.encoder, codingPath: self.codingPath, wrapping: dictionary
+        )
         return KeyedEncodingContainer(container)
     }
 
@@ -667,7 +682,7 @@ private struct _BSONUnkeyedEncodingContainer: UnkeyedEncodingContainer {
     }
 
     public mutating func superEncoder() -> Encoder {
-         return _BSONReferencingEncoder(referencing: self.encoder, at: self.container.count, wrapping: self.container)
+        return _BSONReferencingEncoder(referencing: self.encoder, at: self.container.count, wrapping: self.container)
     }
 }
 
@@ -680,7 +695,7 @@ extension _BSONEncoder: SingleValueEncodingContainer {
     }
 
     public func encodeNil() throws {
-        assertCanEncodeNewValue()
+        self.assertCanEncodeNewValue()
         self.storage.push(container: BSONNull())
     }
 
@@ -700,17 +715,17 @@ extension _BSONEncoder: SingleValueEncodingContainer {
     public func encode(_ value: Double) throws { try self.encodeBSONType(value) }
 
     private func encodeNumber<T: CodableNumber>(_ value: T) throws {
-        assertCanEncodeNewValue()
+        self.assertCanEncodeNewValue()
         self.storage.push(container: try self.boxNumber(value))
     }
 
     private func encodeBSONType<T: BSONValue>(_ value: T) throws {
-        assertCanEncodeNewValue()
+        self.assertCanEncodeNewValue()
         self.storage.push(container: value)
     }
 
     public func encode<T: Encodable>(_ value: T) throws {
-        assertCanEncodeNewValue()
+        self.assertCanEncodeNewValue()
         self.storage.push(container: try self.box(value))
     }
 }
@@ -726,10 +741,10 @@ private class MutableArray: BSONValue {
     fileprivate var array = [BSONValue]()
 
     fileprivate func add(_ value: BSONValue) {
-        array.append(value)
+        self.array.append(value)
     }
 
-    fileprivate var count: Int { return array.count }
+    fileprivate var count: Int { return self.array.count }
 
     fileprivate func insert(_ value: BSONValue, at index: Int) {
         self.array.insert(value, at: index)
@@ -739,16 +754,19 @@ private class MutableArray: BSONValue {
 
     /// methods required by the BSONValue protocol that we don't actually need/use. MutableArray
     /// is just a BSONValue to simplify usage alongside true BSONValues within the encoder.
-    fileprivate func encode(to storage: DocumentStorage, forKey key: String) throws {
+    fileprivate func encode(to _: DocumentStorage, forKey _: String) throws {
         fatalError("`MutableArray` is not meant to be encoded to a `DocumentStorage`")
     }
-    internal static func from(iterator iter: DocumentIterator) -> BSON {
+
+    internal static func from(iterator _: DocumentIterator) -> BSON {
         fatalError("`MutableArray` is not meant to be initialized from a `DocumentIterator`")
     }
-    fileprivate func encode(to encoder: Encoder) throws {
+
+    fileprivate func encode(to _: Encoder) throws {
         fatalError("`MutableArray` is not meant to be encoded with an `Encoder`")
     }
-    required convenience init(from decoder: Decoder) throws {
+
+    required convenience init(from _: Decoder) throws {
         fatalError("`MutableArray` is not meant to be initialized from a `Decoder`")
     }
 }
@@ -771,18 +789,18 @@ private class MutableDictionary: BSONValue {
             guard let index = keys.firstIndex(of: key) else {
                 return nil
             }
-            return values[index]
+            return self.values[index]
         }
         set(newValue) {
             if let newValue = newValue {
-                keys.append(key)
-                values.append(newValue)
+                self.keys.append(key)
+                self.values.append(newValue)
             } else {
                 guard let index = keys.firstIndex(of: key) else {
                     return
                 }
-                values.remove(at: index)
-                keys.remove(at: index)
+                self.values.remove(at: index)
+                self.keys.remove(at: index)
             }
         }
     }
@@ -790,8 +808,8 @@ private class MutableDictionary: BSONValue {
     /// Converts self to a `Document` with equivalent key-value pairs.
     fileprivate func asDocument() -> Document {
         var doc = Document()
-        for i in 0 ..< keys.count {
-            doc[keys[i]] = values[i].bson
+        for i in 0..<self.keys.count {
+            doc[keys[i]] = self.values[i].bson
         }
         return doc
     }
@@ -800,17 +818,19 @@ private class MutableDictionary: BSONValue {
 
     /// methods required by the BSONValue protocol that we don't actually need/use. MutableDictionary
     /// is just a BSONValue to simplify usage alongside true BSONValues within the encoder.
-    fileprivate func encode(to storage: DocumentStorage, forKey key: String) throws {
+    fileprivate func encode(to _: DocumentStorage, forKey _: String) throws {
         fatalError("`MutableDictionary` is not meant to be encoded to a `DocumentStorage`")
     }
 
-    internal static func from(iterator iter: DocumentIterator) -> BSON {
+    internal static func from(iterator _: DocumentIterator) -> BSON {
         fatalError("`MutableDictionary` is not meant to be initialized from a `DocumentIterator`")
     }
-    fileprivate func encode(to encoder: Encoder) throws {
+
+    fileprivate func encode(to _: Encoder) throws {
         fatalError("`MutableDictionary` is not meant to be encoded with an `Encoder`")
     }
-    fileprivate required convenience init(from decoder: Decoder) throws {
+
+    fileprivate required convenience init(from _: Decoder) throws {
         fatalError("`MutableDictionary` is not meant to be initialized from a `Decoder`")
     }
 }
@@ -818,7 +838,7 @@ private class MutableDictionary: BSONValue {
 private extension EncodingError {
     static func _numberError<T: CodableNumber>(at path: [CodingKey], value: T) -> EncodingError {
         let description = "Value \(String(describing: value)) of type \(type(of: value)) cannot be " +
-                            "exactly represented by a BSON number type (Int, Int32, Int64 or Double)."
+            "exactly represented by a BSON number type (Int, Int32, Int64 or Double)."
         return .invalidValue(value, Context(codingPath: path, debugDescription: description))
     }
 }

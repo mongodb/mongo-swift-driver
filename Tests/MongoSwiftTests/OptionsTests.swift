@@ -39,7 +39,7 @@ final class OptionsTests: MongoSwiftTestCase {
 
     // This will be useful with Swift 5.1 auto-generated initializers
     func testOptionsAlphabeticalOrder() throws {
-        for options in allOptionsStructs {
+        for options in self.allOptionsStructs {
             let mirror = Mirror(reflecting: options)
             let labels = mirror.children.map { $0.label! }
             expect(labels.sorted()).to(equal(labels), description: "\(type(of: options))")

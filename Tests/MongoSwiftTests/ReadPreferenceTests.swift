@@ -39,7 +39,7 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
 
         // Non-empty tag sets cannot be combined with primary mode
         expect(try ReadPreference(.primary, tagSets: [["dc": "east"], []]))
-                .to(throwError(UserError.invalidArgumentError(message: "")))
+            .to(throwError(UserError.invalidArgumentError(message: "")))
         expect(try ReadPreference(.primary, tagSets: [[]])).to(throwError(UserError.invalidArgumentError(message: "")))
     }
 
@@ -50,16 +50,16 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
         let rpMinMaxStaleness = try ReadPreference(.nearest, maxStalenessSeconds: 90)
         expect(rpMinMaxStaleness.maxStalenessSeconds).to(equal(90))
 
-        let rpLargeMaxStaleness = try ReadPreference(.nearest, maxStalenessSeconds: 2147483647)
-        expect(rpLargeMaxStaleness.maxStalenessSeconds).to(equal(2147483647))
+        let rpLargeMaxStaleness = try ReadPreference(.nearest, maxStalenessSeconds: 2_147_483_647)
+        expect(rpLargeMaxStaleness.maxStalenessSeconds).to(equal(2_147_483_647))
 
         // maxStalenessSeconds cannot be less than 90
         expect(try ReadPreference(.nearest, maxStalenessSeconds: -1))
-                .to(throwError(UserError.invalidArgumentError(message: "")))
+            .to(throwError(UserError.invalidArgumentError(message: "")))
         expect(try ReadPreference(.nearest, maxStalenessSeconds: 0))
-                .to(throwError(UserError.invalidArgumentError(message: "")))
+            .to(throwError(UserError.invalidArgumentError(message: "")))
         expect(try ReadPreference(.nearest, maxStalenessSeconds: 89))
-                .to(throwError(UserError.invalidArgumentError(message: "")))
+            .to(throwError(UserError.invalidArgumentError(message: "")))
     }
 
     func testInitFromPointer() {
@@ -110,16 +110,20 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
         // expect running other commands to not throw errors when passing in a valid read preference
         expect(try coll.find(options: FindOptions(readPreference: ReadPreference(.primary)))).toNot(throwError())
 
-        expect(try coll.aggregate([["$project": ["a": 1]]],
-                                  options: AggregateOptions(readPreference: ReadPreference(.secondaryPreferred))))
-                                  .toNot(throwError())
+        expect(try coll.aggregate(
+            [["$project": ["a": 1]]],
+            options: AggregateOptions(readPreference: ReadPreference(.secondaryPreferred))
+        ))
+            .toNot(throwError())
 
         expect(try coll.count(options: CountOptions(readPreference: ReadPreference(.secondaryPreferred))))
-                                        .toNot(throwError())
+            .toNot(throwError())
 
-        expect(try coll.distinct(fieldName: "a",
-                                 options: DistinctOptions(readPreference: ReadPreference(.secondaryPreferred))))
-                                 .toNot(throwError())
+        expect(try coll.distinct(
+            fieldName: "a",
+            options: DistinctOptions(readPreference: ReadPreference(.secondaryPreferred))
+        ))
+            .toNot(throwError())
     }
 
     func testClientReadPreference() throws {
@@ -166,13 +170,15 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
             let db = client.db(type(of: self).testDatabase)
             expect(db.readPreference).to(equal(ReadPreference(.primary)))
 
-             // expect that a collection inherits its database default read preference
+            // expect that a collection inherits its database default read preference
             let coll1 = db.collection(self.getCollectionName(suffix: "1"))
             expect(coll1.readPreference).to(equal(ReadPreference(.primary)))
 
             // expect that a collection can override its inherited read preference
-            let coll2 = db.collection(self.getCollectionName(suffix: "2"),
-                                      options: CollectionOptions(readPreference: secondary))
+            let coll2 = db.collection(
+                self.getCollectionName(suffix: "2"),
+                options: CollectionOptions(readPreference: secondary)
+            )
             expect(coll2.readPreference).to(equal(ReadPreference(.secondary)))
         }
 
@@ -183,8 +189,10 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
             expect(coll1.readPreference).to(equal(ReadPreference(.secondary)))
 
             // expect that a collection can override its database read preference
-            let coll2 = db.collection(self.getCollectionName(suffix: "2"),
-                                      options: CollectionOptions(readPreference: primary))
+            let coll2 = db.collection(
+                self.getCollectionName(suffix: "2"),
+                options: CollectionOptions(readPreference: primary)
+            )
             expect(coll2.readPreference).to(equal(ReadPreference(.primary)))
         }
     }
