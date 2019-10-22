@@ -397,7 +397,7 @@ extension SpecTestFile {
                 print("Skipping test \(test.description)")
                 return
             }
-            try test.run(parent: parent, dbName: self.databaseName, collName: self.collectionName, session: nil)
+            try test.run(parent: parent, dbName: self.databaseName, collName: self.collectionName)
         }
     }
 }
@@ -415,14 +415,14 @@ internal protocol SpecTest: Decodable {
     /// This field has no effect for non-sharded topologies.
     var useMultipleMongoses: Bool? { get }
 
-    /// Reason why this test should be skipped.
+    /// Reason why this test should be skipped, if applicable.
     var skipReason: String? { get }
 
     /// The optional fail point to configure before running this test.
     /// This option and useMultipleMongoses: true are mutually exclusive.
     var failPoint: FailPoint? { get }
 
-    ///
+    /// Descriptions of the operations to be run and their expected outcomes.
     var operations: [TestOperationDescription] { get }
 
     /// List of expected CommandStartedEvents.
@@ -434,8 +434,7 @@ extension SpecTest {
     internal func run(
         parent: FailPointConfigured,
         dbName: String,
-        collName: String?,
-        session _: SyncClientSession?
+        collName: String?
     ) throws {
         guard self.skipReason == nil else {
             print("Skipping test for reason: \(self.skipReason!)")

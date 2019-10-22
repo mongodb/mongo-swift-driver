@@ -32,10 +32,10 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
     /// Specifies a ReadPreference to use for the client.
     public var readPreference: ReadPreference? = nil
 
-    /// Determines whether the client should retry supported read operations.
+    /// Determines whether the client should retry supported read operations (on by default).
     public var retryReads: Bool?
 
-    /// Determines whether the client should retry supported write operations.
+    /// Determines whether the client should retry supported write operations (on by default).
     public var retryWrites: Bool?
 
     /**

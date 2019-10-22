@@ -53,10 +53,10 @@ final class RetryableReadsTests: MongoSwiftTestCase, FailPointConfigured {
     func testRetryableReads() throws {
         let skippedTestKeywords = [
             "findOne",
-            "estimatedDocumentCount",
-            "changeStream", // TODO: Unskip this test once CDRIVER-3405 is resolved
+            "changeStream", // TODO: SWIFT-648: Unskip this test
             "gridfs",
-            "countDocuments",
+            "countDocuments", // TODO: SWIFT-133: Unskip this test
+            "estimatedDocumentCount", // TODO: SWIFT-133: Unskip this test
             "mapReduce"
         ]
 
