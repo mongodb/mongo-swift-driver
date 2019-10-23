@@ -16,9 +16,11 @@ private func causalConsistency() throws {
         writeConcern: try WriteConcern(w: .majority, wtimeoutMS: 1000)
     )
     let items = client1.db("test", options: dbOptions).collection("items")
-    try items.updateOne(filter: ["sku": "111", "end": .null],
-                        update: ["$set": ["end": .datetime(currentDate)]],
-                        session: s1)
+    try items.updateOne(
+        filter: ["sku": "111", "end": .null],
+        update: ["$set": ["end": .datetime(currentDate)]],
+        session: s1
+    )
     try items.insertOne(["sku": "nuts-111", "name": "Pecans", "start": .datetime(currentDate)], session: s1)
     // End Causal Consistency Example 1
 
