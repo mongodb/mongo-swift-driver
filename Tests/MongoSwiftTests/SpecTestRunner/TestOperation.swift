@@ -27,8 +27,8 @@ struct AnyTestOperation: Decodable {
         switch opName {
         case "aggregate":
             self.op = try container.decode(Aggregate.self, forKey: .arguments)
-        case "count":
-            self.op = try container.decode(Count.self, forKey: .arguments)
+        case "countDocuments":
+            self.op = try container.decode(CountDocuments.self, forKey: .arguments)
         case "distinct":
             self.op = try container.decode(Distinct.self, forKey: .arguments)
         case "find":
@@ -88,14 +88,14 @@ struct Aggregate: TestOperation {
     }
 }
 
-struct Count: TestOperation {
+struct CountDocuments: TestOperation {
     let filter: Document
-    let options: CountOptions
+    let options: CountDocumentsOptions
 
     private enum CodingKeys: String, CodingKey { case filter }
 
     init(from decoder: Decoder) throws {
-        self.options = try CountOptions(from: decoder)
+        self.options = try CountDocumentsOptions(from: decoder)
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.filter = try container.decode(Document.self, forKey: .filter)
     }
@@ -106,7 +106,7 @@ struct Count: TestOperation {
         collection: SyncMongoCollection<Document>,
         session: SyncClientSession? = nil
     ) throws -> TestOperationResult? {
-        return .int(try collection.count(self.filter, options: self.options, session: session))
+        return .int(try collection.countDocuments(self.filter, options: self.options, session: session))
     }
 }
 

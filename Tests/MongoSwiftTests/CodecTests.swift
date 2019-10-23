@@ -805,7 +805,7 @@ final class CodecTests: MongoSwiftTestCase {
             "writeConcern"
         ]))
 
-        let count = CountOptions(
+        let count = CountDocumentsOptions(
             collation: Document(),
             hint: .indexName("hint"),
             limit: 123,

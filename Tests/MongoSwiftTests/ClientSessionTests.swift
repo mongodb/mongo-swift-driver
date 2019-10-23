@@ -35,7 +35,8 @@ final class ClientSessionTests: MongoSwiftTestCase {
         (name: "find", body: { _ = try $0.find([:], session: $1).nextOrError() }),
         (name: "aggregate", body: { _ = try $0.aggregate([], session: $1).nextOrError() }),
         (name: "distinct", body: { _ = try $0.distinct(fieldName: "x", session: $1) }),
-        (name: "count", body: { _ = try $0.count(session: $1) })
+        (name: "countDocuments", body: { _ = try $0.countDocuments(session: $1) }),
+        (name: "estimatedDocumentCount", body: { _ = try $0.estimatedDocumentCount(session: $1) })
     ]
 
     // list of write operations on SyncMongoCollection that take in a session

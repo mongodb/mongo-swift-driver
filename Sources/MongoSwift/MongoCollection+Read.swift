@@ -79,33 +79,10 @@ extension SyncMongoCollection {
         }
     }
 
-    // TODO: SWIFT-133: mark this method deprecated https://jira.mongodb.org/browse/SWIFT-133
     /**
-     * Counts the number of documents in this collection matching the provided filter.
-     *
-     * - Parameters:
-     *   - filter: a `Document`, the filter that documents must match in order to be counted
-     *   - options: Optional `CountOptions` to use when executing the command
-     *   - session: Optional `SyncClientSession` to use when executing this command
-     *
-     * - Returns: The count of the documents that matched the filter
-     *
-     * - Throws:
-     *   - `ServerError.commandError` if an error occurs that prevents the command from performing the write.
-     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
-     *   - `EncodingError` if an error occurs while encoding the options to BSON.
-     */
-    public func count(
-        _ filter: Document = [:],
-        options: CountOptions? = nil,
-        session: SyncClientSession? = nil
-    ) throws -> Int {
-        let operation = CountOperation(collection: self, filter: filter, options: options)
-        return try self._client.executeOperation(operation, session: session)
-    }
-
-    /**
-     * Counts the number of documents in this collection matching the provided filter.
+     * Counts the number of documents in this collection matching the provided filter. Note that an empty filter will
+     * force a scan of the entire collection. For a fast count of the total documents in a collection see
+     * `estimatedDocumentCount`.
      *
      * - Parameters:
      *   - filter: a `Document`, the filter that documents must match in order to be counted
@@ -114,13 +91,13 @@ extension SyncMongoCollection {
      *
      * - Returns: The count of the documents that matched the filter
      */
-    private func countDocuments(
-        _: Document = [:],
-        options _: CountDocumentsOptions? = nil,
-        session _: SyncClientSession? = nil
+    public func countDocuments(
+        _ filter: Document = [:],
+        options: CountDocumentsOptions? = nil,
+        session: SyncClientSession? = nil
     ) throws -> Int {
-        // TODO: SWIFT-133: implement this https://jira.mongodb.org/browse/SWIFT-133
-        throw UserError.logicError(message: "Unimplemented command")
+        let operation = CountDocumentsOperation(collection: self, filter: filter, options: options)
+        return try self._client.executeOperation(operation, session: session)
     }
 
     /**
@@ -132,12 +109,12 @@ extension SyncMongoCollection {
      *
      * - Returns: an estimate of the count of documents in this collection
      */
-    private func estimatedDocumentCount(
-        options _: EstimatedDocumentCountOptions? = nil,
-        session _: SyncClientSession? = nil
+    public func estimatedDocumentCount(
+        options: EstimatedDocumentCountOptions? = nil,
+        session: SyncClientSession? = nil
     ) throws -> Int {
-        // TODO: SWIFT-133: implement this https://jira.mongodb.org/browse/SWIFT-133
-        throw UserError.logicError(message: "Unimplemented command")
+        let operation = EstimatedDocumentCountOperation(collection: self, options: options)
+        return try self._client.executeOperation(operation, session: session)
     }
 
     /**
@@ -260,21 +237,6 @@ public struct AggregateOptions: Codable {
     private enum CodingKeys: String, CodingKey {
         case allowDiskUse, batchSize, bypassDocumentValidation, collation, maxTimeMS, comment, hint, readConcern,
             writeConcern
-    }
-}
-
-/// The `countDocuments` command takes the same options as the deprecated `count`.
-private typealias CountDocumentsOptions = CountOptions
-
-/// Options to use when executing an `estimatedDocumentCount` command on a `MongoCollection` or a
-/// `SyncMongoCollection`.
-private struct EstimatedDocumentCountOptions {
-    /// The maximum amount of time to allow the query to run.
-    public let maxTimeMS: Int64?
-
-    /// Initializer allowing any/all parameters to be omitted or optional.
-    public init(maxTimeMS: Int64? = nil) {
-        self.maxTimeMS = maxTimeMS
     }
 }
 
