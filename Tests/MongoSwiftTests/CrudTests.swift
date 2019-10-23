@@ -288,7 +288,7 @@ private class BulkWriteTest: CrudTest {
 
 /// A class for executing `count` tests
 private class CountTest: CrudTest {
-    override func execute(usingCollection coll: SyncMongoCollection<Document>) throws {}
+    override func execute(usingCollection _: SyncMongoCollection<Document>) throws {}
 }
 
 /// A class for executing `countDocuments` tests

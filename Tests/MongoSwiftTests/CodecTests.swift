@@ -806,13 +806,13 @@ final class CodecTests: MongoSwiftTestCase {
         ]))
 
         let count = CountDocumentsOptions(
-                collation: Document(),
-                hint: .indexName("hint"),
-                limit: 123,
-                maxTimeMS: 12,
-                readConcern: rc,
-                readPreference: rp,
-                skip: 123
+            collation: Document(),
+            hint: .indexName("hint"),
+            limit: 123,
+            maxTimeMS: 12,
+            readConcern: rc,
+            readPreference: rp,
+            skip: 123
         )
         expect(try encoder.encode(count).keys.sorted()).to(equal([
             "collation",
