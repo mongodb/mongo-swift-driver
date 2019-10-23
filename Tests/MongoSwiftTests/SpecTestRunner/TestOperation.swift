@@ -108,6 +108,8 @@ struct AnyTestOperation: Decodable, TestOperation {
             self.op = try container.decode(Aggregate.self, forKey: .arguments)
         case "countDocuments":
             self.op = try container.decode(CountDocuments.self, forKey: .arguments)
+        case "estimatedDocumentCount":
+            self.op = EstimatedDocumentCount()
         case "distinct":
             self.op = try container.decode(Distinct.self, forKey: .arguments)
         case "find":
@@ -156,7 +158,7 @@ struct AnyTestOperation: Decodable, TestOperation {
             self.op = ListCollectionNames()
         case "watch":
             self.op = Watch()
-        case "mapReduce", "download_by_name", "findOne", "download":
+        case "mapReduce", "download_by_name", "findOne", "download", "count":
             self.op = NotImplemented(name: opName)
         default:
             throw UserError.logicError(message: "unsupported op name \(opName)")
@@ -673,6 +675,15 @@ struct Watch: TestOperation {
             _ = try collection.watch(session: session)
         }
         return nil
+    }
+}
+
+struct EstimatedDocumentCount: TestOperation {
+    func execute(on target: TestOperationTarget, session: SyncClientSession?) throws -> TestOperationResult? {
+        guard case let .collection(collection) = target else {
+            throw UserError.invalidArgumentError(message: "collection not provided to estimatedDocumentCount")
+        }
+        return try .int(collection.estimatedDocumentCount(session: session))
     }
 }
 

@@ -55,8 +55,8 @@ final class RetryableReadsTests: MongoSwiftTestCase, FailPointConfigured {
             "findOne",
             "changeStream", // TODO: SWIFT-648: Unskip this test
             "gridfs",
-            "countDocuments", // TODO: SWIFT-133: Unskip this test
-            "estimatedDocumentCount", // TODO: SWIFT-133: Unskip this test
+            "count.",
+            "count-",
             "mapReduce"
         ]
 
