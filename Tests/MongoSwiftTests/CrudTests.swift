@@ -31,6 +31,10 @@ final class CrudTests: MongoSwiftTestCase {
 
             // For each file, execute the test cases contained in it
             for (i, test) in try file.makeTests().enumerated() {
+                if type(of: test) == CountTest.self {
+                    print("Skipping test for old count API, no longer supported by the driver")
+                }
+
                 print("Executing test: \(test.description)")
 
                 // for each test case:
@@ -72,16 +76,9 @@ final class CrudTests: MongoSwiftTestCase {
 private struct CrudTestFile: Decodable {
     let data: [Document]
     let testDocs: [Document]
+
     func makeTests() throws -> [CrudTest] {
-        return try testDocs
-            // skip any test cases within a file that use "count"
-            .filter { doc in
-                let op: Document = try doc.get("operation")
-                return op["name"] != "count"
-            }
-            .map {
-                try makeCrudTest($0)
-            }
+        return try self.testDocs.map { try makeCrudTest($0) }
     }
 
     let minServerVersion: String?
@@ -106,6 +103,7 @@ private func makeCrudTest(_ doc: Document) throws -> CrudTest {
 private var testTypeMap: [String: CrudTest.Type] = [
     "aggregate": AggregateTest.self,
     "bulkWrite": BulkWriteTest.self,
+    "count": CountTest.self,
     "countDocuments": CountDocumentsTest.self,
     "deleteMany": DeleteTest.self,
     "deleteOne": DeleteTest.self,
@@ -286,6 +284,11 @@ private class BulkWriteTest: CrudTest {
             expect(BulkWriteTest.prepareIds(result.upsertedIds)).to(equal(expectedUpsertedIds))
         }
     }
+}
+
+/// A class for executing `count` tests
+private class CountTest: CrudTest {
+    override func execute(usingCollection coll: SyncMongoCollection<Document>) throws {}
 }
 
 /// A class for executing `countDocuments` tests
