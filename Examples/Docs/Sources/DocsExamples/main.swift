@@ -24,7 +24,7 @@ private func causalConsistency() throws {
     try items.insertOne(["sku": "nuts-111", "name": "Pecans", "start": .datetime(currentDate)], session: s1)
     // End Causal Consistency Example 1
 
-    let client2 = try MongoClient()
+    let client2 = try SyncMongoClient()
 
     // Start Causal Consistency Example 2
     try client2.withSession(options: ClientSessionOptions(causalConsistency: true)) { s2 in
@@ -44,7 +44,7 @@ private func causalConsistency() throws {
 /// Examples used for the MongoDB documentation on Change Streams.
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/
 private func changeStreams() throws {
-    let client = try MongoClient()
+    let client = try SyncMongoClient()
     let db = client.db("example")
 
     // The following examples assume that you have connected to a MongoDB replica set and have
