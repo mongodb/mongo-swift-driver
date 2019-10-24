@@ -21,6 +21,6 @@ change_streams = make_reference(project, "./Tests/Specs/change-streams")
 dns_seedlist = make_reference(project, "./Tests/Specs/initial-dns-seedlist-discovery")
 auth = make_reference(project, "./Tests/Specs/auth")
 
-tests_target.add_resources([crud, cm, corpus, read_write_concern, retryable_writes, change_streams, dns_seedlist, auth])
+tests_target.add_resources([crud, cm, corpus, read_write_concern, retryable_writes, retryable_reads, change_streams, dns_seedlist, auth])
 
 project.save
