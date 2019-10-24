@@ -6,7 +6,7 @@ import MongoSwift
 /// Examples used for the MongoDB documentation on Causal Consistency.
 /// - SeeAlso: https://docs.mongodb.com/manual/core/read-isolation-consistency-recency/#examples
 private func causalConsistency() throws {
-    let client1 = try MongoClient()
+    let client1 = try SyncMongoClient()
 
     // Start Causal Consistency Example 1
     let s1 = try client1.startSession(options: ClientSessionOptions(causalConsistency: true))
@@ -17,14 +17,14 @@ private func causalConsistency() throws {
     )
     let items = client1.db("test", options: dbOptions).collection("items")
     try items.updateOne(
-        filter: ["sku": "111", "end": BSONNull()],
-        update: ["$set": ["end": currentDate] as Document],
+        filter: ["sku": "111", "end": .null],
+        update: ["$set": ["end": .datetime(currentDate)]],
         session: s1
     )
-    try items.insertOne(["sku": "nuts-111", "name": "Pecans", "start": currentDate], session: s1)
+    try items.insertOne(["sku": "nuts-111", "name": "Pecans", "start": .datetime(currentDate)], session: s1)
     // End Causal Consistency Example 1
 
-    let client2 = try MongoClient()
+    let client2 = try SyncMongoClient()
 
     // Start Causal Consistency Example 2
     try client2.withSession(options: ClientSessionOptions(causalConsistency: true)) { s2 in
@@ -34,7 +34,7 @@ private func causalConsistency() throws {
 
         dbOptions.readPreference = ReadPreference(.secondary)
         let items2 = client2.db("test", options: dbOptions).collection("items")
-        for item in try items2.find(["end": BSONNull()], session: s2) {
+        for item in try items2.find(["end": .null], session: s2) {
             print(item)
         }
     }
@@ -44,7 +44,7 @@ private func causalConsistency() throws {
 /// Examples used for the MongoDB documentation on Change Streams.
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/
 private func changeStreams() throws {
-    let client = try MongoClient()
+    let client = try SyncMongoClient()
     let db = client.db("example")
 
     // The following examples assume that you have connected to a MongoDB replica set and have
@@ -81,8 +81,8 @@ private func changeStreams() throws {
     do {
         // Start Changestream Example 4
         let pipeline: [Document] = [
-            ["$match": ["fullDocument.username": "alice"] as Document],
-            ["$addFields": ["newField": "this is an added field!"] as Document]
+            ["$match": ["fullDocument.username": "alice"]],
+            ["$addFields": ["newField": "this is an added field!"]]
         ]
         let inventory = db.collection("inventory")
         let cursor = try inventory.watch(pipeline, withEventType: Document.self)
