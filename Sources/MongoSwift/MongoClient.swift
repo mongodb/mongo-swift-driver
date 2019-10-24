@@ -202,7 +202,7 @@ public class MongoClient {
     public let writeConcern: WriteConcern?
 
     /// This type is not meant to be instantiated directly. Should only be instantiated via subclasses.
-    fileprivate init(_ connectionString: String, options: ClientOptions?) throws {
+    private init(_ connectionString: String, options: ClientOptions?) throws {
         // Initialize mongoc. Repeated calls have no effect so this is safe to do every time.
         initializeMongoc()
 
@@ -236,7 +236,7 @@ public class MongoClient {
     }
 
     /// This type is not meant to be instantiated directly. Should only be instantiated via subclasses.
-    fileprivate init(stealing pointer: OpaquePointer) {
+    private init(stealing pointer: OpaquePointer) {
         self.connectionPool = ConnectionPool(stealing: pointer)
         self.encoder = BSONEncoder()
         self.decoder = BSONDecoder()
@@ -273,7 +273,10 @@ public class SyncMongoClient: MongoClient {
      *   - A `UserError.invalidArgumentError` if the connection string specifies the use of TLS but libmongoc was not
      *     built with TLS support.
      */
-    override public init(_ connectionString: String = "mongodb://localhost:27017", options: ClientOptions? = nil) throws {
+    override public init(
+        _ connectionString: String = "mongodb://localhost:27017",
+        options: ClientOptions? = nil
+    ) throws {
         try super.init(connectionString, options: options)
     }
 
