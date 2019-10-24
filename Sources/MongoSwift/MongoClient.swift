@@ -202,8 +202,8 @@ public class MongoClient {
     public let writeConcern: WriteConcern?
 
     /// This type is not meant to be instantiated directly. Should only be instantiated via subclasses.
-    // swiftformat:disable:next redundantFilePrivate
-    private init(_ connectionString: String, options: ClientOptions?) throws {
+    // swiftformat:disable:next redundantFileprivate
+    fileprivate init(_ connectionString: String, options: ClientOptions?) throws {
         // Initialize mongoc. Repeated calls have no effect so this is safe to do every time.
         initializeMongoc()
 
