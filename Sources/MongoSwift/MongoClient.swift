@@ -173,11 +173,9 @@ public struct TLSOptions {
     }
 }
 
-/// A synchronous MongoDB Client.
-public class SyncMongoClient {
+/// A base class for `SyncMongoClient` and `AsyncMongoClient`.
+public class MongoClient {
     internal let connectionPool: ConnectionPool
-
-    private let operationExecutor: SyncOperationExecutor = DefaultSyncOperationExecutor()
 
     /// If command and/or server monitoring is enabled, stores the NotificationCenter events are posted to.
     internal let notificationCenter: NotificationCenter
@@ -186,7 +184,7 @@ public class SyncMongoClient {
     internal let _id = clientIdGenerator.next()
 
     /// Counter for generating client _ids.
-    internal static let clientIdGenerator = Counter(label: "SyncMongoClient ID generator")
+    internal static let clientIdGenerator = Counter(label: "MongoClient ID generator")
 
     /// Encoder whose options are inherited by databases derived from this client.
     public let encoder: BSONEncoder
@@ -203,23 +201,7 @@ public class SyncMongoClient {
     /// The write concern set on this client, or nil if one is not set.
     public let writeConcern: WriteConcern?
 
-    /**
-     * Create a new client connection to a MongoDB server. For options that included in both the connection string URI
-     * and the ClientOptions struct, the final value is set in descending order of priority: the value specified in
-     * ClientOptions (if non-nil), the value specified in the URI, or the default value if both are unset.
-     *
-     * - Parameters:
-     *   - connectionString: the connection string to connect to.
-     *   - options: optional `ClientOptions` to use for this client
-     *
-     * - SeeAlso: https://docs.mongodb.com/manual/reference/connection-string/
-     *
-     * - Throws:
-     *   - A `UserError.invalidArgumentError` if the connection string passed in is improperly formatted.
-     *   - A `UserError.invalidArgumentError` if the connection string specifies the use of TLS but libmongoc was not
-     *     built with TLS support.
-     */
-    public init(_ connectionString: String = "mongodb://localhost:27017", options: ClientOptions? = nil) throws {
+    internal init(_ connectionString: String, options: ClientOptions?) throws {
         // Initialize mongoc. Repeated calls have no effect so this is safe to do every time.
         initializeMongoc()
 
@@ -252,12 +234,45 @@ public class SyncMongoClient {
         )
     }
 
+    internal init(stealing pointer: OpaquePointer) {
+        self.connectionPool = ConnectionPool(stealing: pointer)
+        self.encoder = BSONEncoder()
+        self.decoder = BSONDecoder()
+        self.readConcern = nil
+        self.readPreference = ReadPreference()
+        self.writeConcern = nil
+        self.notificationCenter = NotificationCenter.default
+    }
+}
+
+extension MongoClient: Equatable {
+    public static func == (lhs: MongoClient, rhs: MongoClient) -> Bool {
+        return lhs._id == rhs._id
+    }
+}
+
+/// A synchronous MongoDB Client.
+public class SyncMongoClient: MongoClient {
+    private let operationExecutor: SyncOperationExecutor = DefaultSyncOperationExecutor()
+
     /**
-     * :nodoc:
+     * Create a new client connection to a MongoDB server. For options that included in both the connection string URI
+     * and the ClientOptions struct, the final value is set in descending order of priority: the value specified in
+     * ClientOptions (if non-nil), the value specified in the URI, or the default value if both are unset.
+     *
+     * - Parameters:
+     *   - connectionString: the connection string to connect to.
+     *   - options: optional `ClientOptions` to use for this client
+     *
+     * - SeeAlso: https://docs.mongodb.com/manual/reference/connection-string/
+     *
+     * - Throws:
+     *   - A `UserError.invalidArgumentError` if the connection string passed in is improperly formatted.
+     *   - A `UserError.invalidArgumentError` if the connection string specifies the use of TLS but libmongoc was not
+     *     built with TLS support.
      */
-    @available(*, deprecated, message: "Use SyncMongoClient(stealing:) instead.")
-    public convenience init(fromPointer pointer: OpaquePointer) {
-        self.init(stealing: pointer)
+    override public init(_ connectionString: String = "mongodb://localhost:27017", options: ClientOptions? = nil) throws {
+        try super.init(connectionString, options: options)
     }
 
     /**
@@ -272,14 +287,8 @@ public class SyncMongoClient {
      * - Parameters:
      *   - pointer: the `mongoc_client_t` to store and use internally
      */
-    public init(stealing pointer: OpaquePointer) {
-        self.connectionPool = ConnectionPool(stealing: pointer)
-        self.encoder = BSONEncoder()
-        self.decoder = BSONDecoder()
-        self.readConcern = nil
-        self.readPreference = ReadPreference()
-        self.writeConcern = nil
-        self.notificationCenter = NotificationCenter.default
+    override public init(stealing pointer: OpaquePointer) {
+        super.init(stealing: pointer)
     }
 
     /**
@@ -522,11 +531,5 @@ public class SyncMongoClient {
         session: SyncClientSession? = nil
     ) throws -> T.OperationResult {
         return try self.operationExecutor.execute(operation, client: self, session: session)
-    }
-}
-
-extension SyncMongoClient: Equatable {
-    public static func == (lhs: SyncMongoClient, rhs: SyncMongoClient) -> Bool {
-        return lhs._id == rhs._id
     }
 }
