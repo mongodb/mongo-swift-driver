@@ -33,7 +33,7 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codabl
 
     internal func execute(
         using connection: Connection,
-        session: SyncClientSession?
+        session: ClientSession?
     ) throws -> SyncChangeStream<ChangeStreamType> {
         let pipeline: Document = ["pipeline": self.pipeline]
         let opts = try encodeOptions(options: self.options, session: session)

@@ -121,7 +121,7 @@ internal struct CreateCollectionOperation<T: Codable>: Operation {
         self.options = options
     }
 
-    internal func execute(using connection: Connection, session: SyncClientSession?) throws -> SyncMongoCollection<T> {
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> SyncMongoCollection<T> {
         let opts = try encodeOptions(options: self.options, session: session)
         var error = bson_error_t()
 

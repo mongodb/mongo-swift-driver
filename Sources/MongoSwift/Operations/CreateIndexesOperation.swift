@@ -27,7 +27,7 @@ internal struct CreateIndexesOperation<T: Codable>: Operation {
         self.options = options
     }
 
-    internal func execute(using connection: Connection, session: SyncClientSession?) throws -> [String] {
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> [String] {
         var indexData = [BSON]()
         for index in self.models {
             var indexDoc = try self.collection.encoder.encode(index)

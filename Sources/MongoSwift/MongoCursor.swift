@@ -8,7 +8,7 @@ public class SyncMongoCursor<T: Codable>: Sequence, IteratorProtocol {
     internal enum State {
         /// Indicates that the cursor is still open. Stores a pointer to the `mongoc_cursor_t`, along with the source
         /// connection, client, and possibly session to ensure they are kept alive as long as the cursor is.
-        case open(cursor: OpaquePointer, connection: Connection, client: SyncMongoClient, session: SyncClientSession?)
+        case open(cursor: OpaquePointer, connection: Connection, client: SyncMongoClient, session: ClientSession?)
         case closed
     }
 
@@ -58,7 +58,7 @@ public class SyncMongoCursor<T: Codable>: Sequence, IteratorProtocol {
     internal init(
         client: SyncMongoClient,
         decoder: BSONDecoder,
-        session: SyncClientSession?,
+        session: ClientSession?,
         cursorType: CursorType? = nil,
         initializer: (Connection) -> OpaquePointer
     ) throws {

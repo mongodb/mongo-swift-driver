@@ -39,7 +39,7 @@ internal struct EstimatedDocumentCountOperation<T: Codable>: Operation {
         self.options = options
     }
 
-    internal func execute(using connection: Connection, session: SyncClientSession?) throws -> Int {
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> Int {
         let opts = try encodeOptions(options: options, session: session)
         let rp = self.options?.readPreference?._readPreference
         var error = bson_error_t()

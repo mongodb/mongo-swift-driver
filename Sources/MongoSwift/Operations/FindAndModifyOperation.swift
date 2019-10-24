@@ -110,7 +110,7 @@ internal class FindAndModifyOptions {
         }
     }
 
-    fileprivate func setSession(_ session: SyncClientSession?) throws {
+    fileprivate func setSession(_ session: ClientSession?) throws {
         guard let session = session else {
             return
         }
@@ -142,7 +142,7 @@ internal struct FindAndModifyOperation<T: Codable>: Operation {
         self.options = options
     }
 
-    internal func execute(using connection: Connection, session: SyncClientSession?) throws -> T? {
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> T? {
         // we always need to send *something*, as findAndModify requires one of "remove"
         // or "update" to be set.
         let opts = try self.options?.asFindAndModifyOptions() ?? FindAndModifyOptions()

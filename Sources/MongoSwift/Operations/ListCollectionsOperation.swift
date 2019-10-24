@@ -105,7 +105,7 @@ internal struct ListCollectionsOperation: Operation {
         self.options = options
     }
 
-    internal func execute(using _: Connection, session: SyncClientSession?) throws -> ListCollectionsResults {
+    internal func execute(using _: Connection, session: ClientSession?) throws -> ListCollectionsResults {
         var opts = try encodeOptions(options: self.options, session: session) ?? Document()
         opts["nameOnly"] = .bool(self.nameOnly)
         if let filterDoc = self.filter {

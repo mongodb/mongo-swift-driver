@@ -8,10 +8,7 @@ internal struct ListIndexesOperation<T: Codable>: Operation {
         self.collection = collection
     }
 
-    internal func execute(
-        using _: Connection,
-        session: SyncClientSession?
-    ) throws -> SyncMongoCursor<IndexModel> {
+    internal func execute(using _: Connection, session: ClientSession?) throws -> SyncMongoCursor<IndexModel> {
         let opts = try encodeOptions(options: nil as Document?, session: session)
 
         return try SyncMongoCursor(

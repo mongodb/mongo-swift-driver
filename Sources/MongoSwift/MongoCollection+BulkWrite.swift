@@ -188,7 +188,7 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
      *   - `ServerError.commandError` if an error occurs that prevents the operation from executing.
      *   - `ServerError.bulkWriteError` if an error occurs while performing the writes.
      */
-    internal func execute(using connection: Connection, session: SyncClientSession?) throws -> BulkWriteResult? {
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> BulkWriteResult? {
         var reply = Document()
         var error = bson_error_t()
         let opts = try encodeOptions(options: options, session: session)

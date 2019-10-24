@@ -20,13 +20,13 @@ internal struct NextOperation<T: Codable>: Operation {
     }
 
     // swiftlint:disable:next cyclomatic_complexity
-    internal func execute(using _: Connection, session: SyncClientSession?) throws -> T? {
+    internal func execute(using _: Connection, session: ClientSession?) throws -> T? {
         // NOTE: this method does not actually use the `connection` parameter passed in. for the moment, it is only
         // here so that `NextOperation` conforms to `Operation`. if we eventually rewrite our cursors to no longer
         // wrap a mongoc cursor then we will use the connection here.
 
         if let session = session, !session.active {
-            throw SyncClientSession.SessionInactiveError
+            throw ClientSession.SessionInactiveError
         }
 
         let out = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)

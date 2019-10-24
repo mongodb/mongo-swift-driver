@@ -530,7 +530,7 @@ public class SyncMongoClient: MongoClient {
     /// Executes an `Operation` using this `SyncMongoClient` and an optionally provided session.
     internal func executeOperation<T: Operation>(
         _ operation: T,
-        session: SyncClientSession? = nil
+        session: ClientSession? = nil
     ) throws -> T.OperationResult {
         return try self.operationExecutor.execute(operation, client: self, session: session)
     }

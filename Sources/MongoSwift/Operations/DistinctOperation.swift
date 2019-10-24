@@ -48,7 +48,7 @@ internal struct DistinctOperation<T: Codable>: Operation {
         self.options = options
     }
 
-    internal func execute(using connection: Connection, session: SyncClientSession?) throws -> [BSON] {
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> [BSON] {
         let command: Document = [
             "distinct": .string(self.collection.name),
             "key": .string(self.fieldName),

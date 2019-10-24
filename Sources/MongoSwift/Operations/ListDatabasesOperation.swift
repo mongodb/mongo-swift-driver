@@ -41,7 +41,7 @@ internal struct ListDatabasesOperation: Operation {
         self.nameOnly = nameOnly
     }
 
-    internal func execute(using connection: Connection, session: SyncClientSession?) throws -> ListDatabasesResults {
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> ListDatabasesResults {
         // spec requires that this command be run against the primary.
         let readPref = ReadPreference(.primary)
         var cmd: Document = ["listDatabases": 1]

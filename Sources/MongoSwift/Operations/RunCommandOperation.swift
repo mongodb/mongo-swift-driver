@@ -42,7 +42,7 @@ internal struct RunCommandOperation: Operation {
         self.options = options
     }
 
-    internal func execute(using connection: Connection, session: SyncClientSession?) throws -> Document {
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> Document {
         let rp = self.options?.readPreference?._readPreference
         let opts = try encodeOptions(options: self.options, session: session)
         var reply = Document()

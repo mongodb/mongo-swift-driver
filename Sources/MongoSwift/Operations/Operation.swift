@@ -8,7 +8,7 @@ internal protocol Operation {
 
     /// Executes this operation using the provided connection and optional session, and returns its corresponding
     /// result type.
-    func execute(using connection: Connection, session: SyncClientSession?) throws -> OperationResult
+    func execute(using connection: Connection, session: ClientSession?) throws -> OperationResult
 }
 
 extension Operation {
@@ -33,7 +33,7 @@ internal protocol SyncOperationExecutor {
     func execute<T: Operation>(
         _ operation: T,
         client: SyncMongoClient,
-        session: SyncClientSession?
+        session: ClientSession?
     ) throws -> T.OperationResult
 }
 
@@ -42,7 +42,7 @@ internal struct DefaultSyncOperationExecutor: SyncOperationExecutor {
     internal func execute<T: Operation>(
         _ operation: T,
         client: SyncMongoClient,
-        session: SyncClientSession?
+        session: ClientSession?
     ) throws -> T.OperationResult {
         switch operation.connectionStrategy {
         case let .bound(conn):
@@ -65,20 +65,20 @@ internal struct DefaultSyncOperationExecutor: SyncOperationExecutor {
 /// Given a client and optionally a session associated which are to be associated with an operation, returns a
 /// connection for the operation to use. After the connection is no longer in use, it should be returned by
 /// passing it to `returnConnection` along with the same client and session that were passed into this method.
-internal func resolveConnection(client: SyncMongoClient, session: SyncClientSession?) throws -> Connection {
+internal func resolveConnection(client: MongoClient, session: ClientSession?) throws -> Connection {
     return try session?.getConnection(forUseWith: client) ?? client.connectionPool.checkOut()
 }
 
 /// Handles releasing a connection that was returned by `resolveConnection`. Must be called with the same client and
 /// session that were passed to `resolveConnection`.
-internal func releaseConnection(connection: Connection, client: SyncMongoClient, session: SyncClientSession?) {
+internal func releaseConnection(connection: Connection, client: MongoClient, session: ClientSession?) {
     if session == nil {
         client.connectionPool.checkIn(connection)
     }
 }
 
 /// Internal function for generating an options `Document` for passing to libmongoc.
-internal func encodeOptions<T: Encodable>(options: T?, session: SyncClientSession?) throws -> Document? {
+internal func encodeOptions<T: Encodable>(options: T?, session: ClientSession?) throws -> Document? {
     guard options != nil || session != nil else {
         return nil
     }
