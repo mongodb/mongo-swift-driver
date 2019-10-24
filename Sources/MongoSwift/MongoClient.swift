@@ -202,7 +202,7 @@ public class MongoClient {
     public let writeConcern: WriteConcern?
 
     /// This type is not meant to be instantiated directly. Should only be instantiated via subclasses.
-    private init(_ connectionString: String, options: ClientOptions?) throws {
+    fileprivate init(_ connectionString: String, options: ClientOptions?) throws {
         // Initialize mongoc. Repeated calls have no effect so this is safe to do every time.
         initializeMongoc()
 
@@ -236,7 +236,7 @@ public class MongoClient {
     }
 
     /// This type is not meant to be instantiated directly. Should only be instantiated via subclasses.
-    private init(stealing pointer: OpaquePointer) {
+    fileprivate init(stealing pointer: OpaquePointer) {
         self.connectionPool = ConnectionPool(stealing: pointer)
         self.encoder = BSONEncoder()
         self.decoder = BSONDecoder()
