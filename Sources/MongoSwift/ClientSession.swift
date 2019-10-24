@@ -29,35 +29,10 @@ private func withSessionOpts<T>(
     return try body(opts)
 }
 
-/**
- * A MongoDB client session.
- * This class represents a logical session used for ordering sequential operations.
- *
- * To create a client session, use `startSession` or `withSession` on a `MongoClient` or a `SyncMongoClient`.
- *
- * If `causalConsistency` is not set to `false` when starting a session, read and write operations that use the session
- * will be provided causal consistency guarantees depending on the read and write concerns used. Using "majority"
- * read and write preferences will provide the full set of guarantees. See
- * https://docs.mongodb.com/manual/core/read-isolation-consistency-recency/#sessions for more details.
- *
- * e.g.
- *   ```
- *   let opts = CollectionOptions(readConcern: ReadConcern(.majority), writeConcern: try WriteConcern(w: .majority))
- *   let collection = database.collection("mycoll", options: opts)
- *   try client.withSession { session in
- *       try collection.insertOne(["x": 1], session: session)
- *       try collection.find(["x": 1], session: session)
- *   }
- *   ```
- *
- * To disable causal consistency, set `causalConsistency` to `false` in the `ClientSessionOptions` passed in to either
- * `withSession` or `startSession`.
- *
- * - SeeAlso:
- *   - https://docs.mongodb.com/manual/core/read-isolation-consistency-recency/#sessions
- *   - https://docs.mongodb.com/manual/core/causal-consistency-read-write-concerns/
- */
-public final class SyncClientSession {
+/// A base class for `SyncClientSession` and `AsyncClientSession`.
+public class ClientSession {
+    internal let _client: MongoClient
+
     /// Error thrown when an inactive session is used.
     internal static let SessionInactiveError = UserError.logicError(message: "Tried to use an inactive session")
     /// Error thrown when a user attempts to use a session with a client it was not created from.
@@ -75,7 +50,7 @@ public final class SyncClientSession {
     }
 
     /// Indicates the state of this session.
-    internal private(set) var state: State
+    internal fileprivate(set) var state: State
 
     /// Returns whether this session has been ended or not.
     internal var active: Bool {
@@ -84,9 +59,6 @@ public final class SyncClientSession {
         }
         return false
     }
-
-    /// The client used to start this session.
-    public let client: SyncMongoClient
 
     /// The session ID of this session.
     public let id: Document
@@ -124,11 +96,10 @@ public final class SyncClientSession {
     /// The options used to start this session.
     public let options: ClientSessionOptions?
 
-    /// Initializes a new client session.
-    internal init(client: SyncMongoClient, options: ClientSessionOptions? = nil) throws {
+    /// This type is not meant to be instantiated directly. Should only be instantiated via subclasses.
+    fileprivate init(client: MongoClient, options: ClientSessionOptions?) throws {
+        self._client = client
         self.options = options
-        self.client = client
-
         let connection = try client.connectionPool.checkOut()
         let session: OpaquePointer = try withSessionOpts(wrapping: options) { opts in
             var error = bson_error_t()
@@ -147,29 +118,14 @@ public final class SyncClientSession {
 
     /// Retrieves this session's underlying connection. Throws an error if the provided client was not the client used
     /// to create this session, or if this session has been ended.
-    internal func getConnection(forUseWith client: SyncMongoClient) throws -> Connection {
+    internal func getConnection(forUseWith client: MongoClient) throws -> Connection {
         guard case let .active(_, connection) = self.state else {
-            throw SyncClientSession.SessionInactiveError
+            throw ClientSession.SessionInactiveError
         }
-        guard self.client == client else {
-            throw SyncClientSession.ClientMismatchError
+        guard self._client == client else {
+            throw ClientSession.ClientMismatchError
         }
         return connection
-    }
-
-    /// Destroy the underlying `mongoc_client_session_t` and set this session to inactive.
-    /// Does nothing if this session is already inactive.
-    internal func end() {
-        if case let .active(session, connection) = self.state {
-            mongoc_client_session_destroy(session)
-            self.client.connectionPool.checkIn(connection)
-            self.state = .inactive
-        }
-    }
-
-    /// Cleans up internal state.
-    deinit {
-        self.end()
     }
 
     /**
@@ -205,7 +161,7 @@ public final class SyncClientSession {
     ///   - `UserError.logicError` if this session is inactive
     internal func append(to doc: inout Document) throws {
         guard case let .active(session, _) = self.state else {
-            throw SyncClientSession.SessionInactiveError
+            throw ClientSession.SessionInactiveError
         }
 
         var error = bson_error_t()
@@ -214,5 +170,59 @@ public final class SyncClientSession {
                 throw extractMongoError(error: error)
             }
         }
+    }
+}
+
+/**
+ * A MongoDB client session for use with synchronous clients, databases, and sessions.
+ * This class represents a logical session used for ordering sequential operations.
+ *
+ * To create a client session, use `startSession` or `withSession` on a `SyncMongoClient`.
+ *
+ * If `causalConsistency` is not set to `false` when starting a session, read and write operations that use the session
+ * will be provided causal consistency guarantees depending on the read and write concerns used. Using "majority"
+ * read and write preferences will provide the full set of guarantees. See
+ * https://docs.mongodb.com/manual/core/read-isolation-consistency-recency/#sessions for more details.
+ *
+ * e.g.
+ *   ```
+ *   let opts = CollectionOptions(readConcern: ReadConcern(.majority), writeConcern: try WriteConcern(w: .majority))
+ *   let collection = database.collection("mycoll", options: opts)
+ *   try client.withSession { session in
+ *       try collection.insertOne(["x": 1], session: session)
+ *       try collection.find(["x": 1], session: session)
+ *   }
+ *   ```
+ *
+ * To disable causal consistency, set `causalConsistency` to `false` in the `ClientSessionOptions` passed in to either
+ * `withSession` or `startSession`.
+ *
+ * - SeeAlso:
+ *   - https://docs.mongodb.com/manual/core/read-isolation-consistency-recency/#sessions
+ *   - https://docs.mongodb.com/manual/core/causal-consistency-read-write-concerns/
+ */
+public final class SyncClientSession: ClientSession {
+    /// The client used to start this session.
+    public let client: SyncMongoClient
+
+    /// Initializes a new client session.
+    internal init(client: SyncMongoClient, options: ClientSessionOptions? = nil) throws {
+        self.client = client
+        try super.init(client: client, options: options)
+    }
+
+    /// Destroy the underlying `mongoc_client_session_t` and set this session to inactive.
+    /// Does nothing if this session is already inactive.
+    internal func end() {
+        if case let .active(session, connection) = self.state {
+            mongoc_client_session_destroy(session)
+            self.client.connectionPool.checkIn(connection)
+            self.state = .inactive
+        }
+    }
+
+    /// Cleans up internal state.
+    deinit {
+        self.end()
     }
 }
