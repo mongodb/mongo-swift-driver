@@ -97,6 +97,7 @@ public class ClientSession {
     public let options: ClientSessionOptions?
 
     /// This type is not meant to be instantiated directly. Should only be instantiated via subclasses.
+    // swiftformat:disable:next redundantFileprivate
     fileprivate init(client: MongoClient, options: ClientSessionOptions?) throws {
         self._client = client
         self.options = options
