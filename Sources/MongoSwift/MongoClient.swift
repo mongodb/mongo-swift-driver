@@ -235,18 +235,6 @@ public class MongoClient {
             client: self
         )
     }
-
-    /// This type is not meant to be instantiated directly. Should only be instantiated via subclasses.
-    // swiftformat:disable:next redundantFileprivate
-    fileprivate init(stealing pointer: OpaquePointer) {
-        self.connectionPool = ConnectionPool(stealing: pointer)
-        self.encoder = BSONEncoder()
-        self.decoder = BSONDecoder()
-        self.readConcern = nil
-        self.readPreference = ReadPreference()
-        self.writeConcern = nil
-        self.notificationCenter = NotificationCenter.default
-    }
 }
 
 extension MongoClient: Equatable {
@@ -280,22 +268,6 @@ public class SyncMongoClient: MongoClient {
         options: ClientOptions? = nil
     ) throws {
         try super.init(connectionString, options: options)
-    }
-
-    /**
-     * :nodoc:
-     * Create a new client from an existing `mongoc_client_t`. The new client will destroy the `mongoc_client_t` upon
-     * deinitialization.
-     * Do not use this initializer unless you know what you are doing. You *must* call libmongoc_init *before* using
-     * this initializer for the first time.
-     *
-     * If this client was derived from a pool, ensure that the error api version was set to 2 on the pool.
-     *
-     * - Parameters:
-     *   - pointer: the `mongoc_client_t` to store and use internally
-     */
-    override public init(stealing pointer: OpaquePointer) {
-        super.init(stealing: pointer)
     }
 
     /**

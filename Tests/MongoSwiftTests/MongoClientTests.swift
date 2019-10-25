@@ -50,31 +50,6 @@ final class MongoClientTests: MongoSwiftTestCase {
         }
     }
 
-    func testOpaqueInitialization() throws {
-        if MongoSwiftTestCase.ssl {
-            print("Skipping test, bypasses SSL setup")
-            return
-        }
-        let connectionString = MongoSwiftTestCase.connStr
-        var error = bson_error_t()
-        guard let uri = mongoc_uri_new_with_error(connectionString, &error) else {
-            throw extractMongoError(error: error)
-        }
-
-        guard let client_t = mongoc_client_new_from_uri(uri) else {
-            throw UserError.invalidArgumentError(message: "libmongoc not built with TLS support.")
-        }
-
-        let client = SyncMongoClient(stealing: client_t)
-        let db = client.db(type(of: self).testDatabase)
-        let coll = db.collection(self.getCollectionName())
-        let insertResult = try coll.insertOne(["test": 42])
-        let findResult = try coll.find(["_id": insertResult!.insertedId])
-        let docs = Array(findResult)
-        expect(docs[0]["test"]).to(equal(42))
-        try db.drop()
-    }
-
     func testFailedClientInitialization() {
         // check that we fail gracefully with an error if passing in an invalid URI
         expect(try SyncMongoClient("abcd")).to(throwError(UserError.invalidArgumentError(message: "")))
