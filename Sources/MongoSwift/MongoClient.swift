@@ -248,9 +248,10 @@ public class SyncMongoClient: MongoClient {
     private let operationExecutor: SyncOperationExecutor = DefaultSyncOperationExecutor()
 
     /**
-     * Create a new client connection to a MongoDB server. For options that included in both the connection string URI
-     * and the ClientOptions struct, the final value is set in descending order of priority: the value specified in
-     * ClientOptions (if non-nil), the value specified in the URI, or the default value if both are unset.
+     * Create a new client for use with the MongoDB deployment specified by the connection string. For options that are
+     * included in both the connection string and the `ClientOptions` struct, the final value is set in descending
+     * order of priority: the value specified in `ClientOptions` (if non-nil), the value specified in the URI, or the
+     * default value if both are unset.
      *
      * - Parameters:
      *   - connectionString: the connection string to connect to.
