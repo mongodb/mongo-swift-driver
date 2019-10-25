@@ -92,7 +92,7 @@ final class BSONCorpusTests: MongoSwiftTestCase {
         /// An array of type-specific parse error cases.
         let parseErrors: [BSONCorpusParseErrorTest]?
 
-        /// This field will be present (and true) if the BSON type being tested has been deprecate (e.g. Symbol)
+        /// This field will be present (and true) if the BSON type being tested has been deprecated (e.g. Symbol)
         let deprecated: Bool?
     }
 
@@ -161,7 +161,7 @@ final class BSONCorpusTests: MongoSwiftTestCase {
                     // native_to_canonical_extended_json( json_to_native(cEJ) ) = cEJ
                     expect(try Document(fromJSON: cEJData).canonicalExtendedJSON).to(cleanEqual(test.canonicalExtJSON))
 
-                    // native_to_canonical_extended_json( json_to_native(cEJ) ) = cEJ
+                    // native_to_bson( json_to_native(cEJ) ) = cB (unless lossy)
                     if !lossy {
                         expect(try Document(fromJSON: cEJData).rawBSON).to(equal(cBData))
                     }
@@ -226,7 +226,7 @@ final class BSONCorpusTests: MongoSwiftTestCase {
             }
 
             if let decodeErrors = testFile.decodeErrors {
-                // We only currently support initializing documents from BSON data.
+                // TODO: SWIFT-330: unskip the other tests.
                 guard testFile.description == "Top-level document validity" else {
                     continue
                 }
