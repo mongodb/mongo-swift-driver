@@ -157,7 +157,6 @@ extension Document_SequenceTests {
 extension MongoClientTests {
     static var allTests = [
         ("testListDatabases", testListDatabases),
-        ("testOpaqueInitialization", testOpaqueInitialization),
         ("testFailedClientInitialization", testFailedClientInitialization),
         ("testServerVersion", testServerVersion),
         ("testCodingStrategies", testCodingStrategies),
