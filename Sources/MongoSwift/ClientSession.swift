@@ -29,7 +29,37 @@ private func withSessionOpts<T>(
     return try body(opts)
 }
 
-/// A base class for `SyncClientSession` and `AsyncClientSession`.
+/**
+ * A MongoDB client session for use with clients, databases, and sessions.
+ * This class represents a logical session used for ordering sequential operations.
+ *
+ * This class serves as a base class for both `SyncClientSession` and `AsyncClientSession`. The only difference between
+ * the synchronous and asynchronous variants is that `AsyncClientSession` must be ended manually by calling `end`.
+ *
+ * To create a client session, use `startSession` or `withSession` on a `SyncMongoClient` or `AsyncMongoClient`.
+ *
+ * If `causalConsistency` is not set to `false` when starting a session, read and write operations that use the session
+ * will be provided causal consistency guarantees depending on the read and write concerns used. Using "majority"
+ * read and write concerns will provide the full set of guarantees. See
+ * https://docs.mongodb.com/manual/core/read-isolation-consistency-recency/#sessions for more details.
+ *
+ * e.g.
+ *   ```
+ *   let opts = CollectionOptions(readConcern: ReadConcern(.majority), writeConcern: try WriteConcern(w: .majority))
+ *   let collection = database.collection("mycoll", options: opts)
+ *   try client.withSession { session in
+ *       try collection.insertOne(["x": 1], session: session)
+ *       try collection.find(["x": 1], session: session)
+ *   }
+ *   ```
+ *
+ * To disable causal consistency, set `causalConsistency` to `false` in the `ClientSessionOptions` passed in to either
+ * `withSession` or `startSession`.
+ *
+ * - SeeAlso:
+ *   - https://docs.mongodb.com/manual/core/read-isolation-consistency-recency/#sessions
+ *   - https://docs.mongodb.com/manual/core/causal-consistency-read-write-concerns/
+ */
 public class ClientSession {
     private let _client: MongoClient
 
@@ -182,7 +212,7 @@ public class ClientSession {
  *
  * If `causalConsistency` is not set to `false` when starting a session, read and write operations that use the session
  * will be provided causal consistency guarantees depending on the read and write concerns used. Using "majority"
- * read and write preferences will provide the full set of guarantees. See
+ * read and write concerns will provide the full set of guarantees. See
  * https://docs.mongodb.com/manual/core/read-isolation-consistency-recency/#sessions for more details.
  *
  * e.g.
