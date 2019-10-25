@@ -31,7 +31,7 @@ private func withSessionOpts<T>(
 
 /// A base class for `SyncClientSession` and `AsyncClientSession`.
 public class ClientSession {
-    internal let _client: MongoClient
+    private let _client: MongoClient
 
     /// Error thrown when an inactive session is used.
     internal static let SessionInactiveError = UserError.logicError(message: "Tried to use an inactive session")
@@ -203,6 +203,8 @@ public class ClientSession {
  *   - https://docs.mongodb.com/manual/core/causal-consistency-read-write-concerns/
  */
 public final class SyncClientSession: ClientSession {
+    // we store this in addition to the private `MongoClient` stored in the base class so that we can expose a sync
+    // client in the public API rather than the base type.
     /// The client used to start this session.
     public let client: SyncMongoClient
 
