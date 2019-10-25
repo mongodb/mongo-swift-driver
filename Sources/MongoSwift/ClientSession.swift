@@ -30,7 +30,7 @@ private func withSessionOpts<T>(
 }
 
 /**
- * A MongoDB client session for use with clients, databases, and sessions.
+ * A MongoDB client session.
  * This class represents a logical session used for ordering sequential operations.
  *
  * This class serves as a base class for both `SyncClientSession` and `AsyncClientSession`. The only difference between
