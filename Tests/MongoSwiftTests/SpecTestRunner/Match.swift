@@ -90,6 +90,9 @@ extension BSON: Matchable {
         case let (.array(actual), .array(expected)):
             return actual.matches(expected: expected)
         default:
+            if let selfInt = self.asInt(), let expectedInt = expected.asInt() {
+                return selfInt == expectedInt
+            }
             return self == expected
         }
     }

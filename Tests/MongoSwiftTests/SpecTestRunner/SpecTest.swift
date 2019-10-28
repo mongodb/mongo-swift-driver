@@ -9,7 +9,7 @@ internal struct TestCommandStartedEvent: Decodable, Matchable {
 
     let commandName: String
 
-    let databaseName: String
+    let databaseName: String?
 
     internal enum CodingKeys: String, CodingKey {
         case command, commandName = "command_name", databaseName = "database_name"
@@ -29,13 +29,26 @@ internal struct TestCommandStartedEvent: Decodable, Matchable {
         let container = try decoder.container(keyedBy: TopLevelCodingKeys.self)
         let eventContainer = try container.nestedContainer(keyedBy: CodingKeys.self, forKey: .type)
         self.command = try eventContainer.decode(Document.self, forKey: .command)
-        self.commandName = try eventContainer.decode(String.self, forKey: .commandName)
-        self.databaseName = try eventContainer.decode(String.self, forKey: .databaseName)
+        if let commandName = try eventContainer.decodeIfPresent(String.self, forKey: .commandName) {
+            self.commandName = commandName
+        } else if let firstKey = self.command.keys.first {
+            self.commandName = firstKey
+        } else {
+            throw DecodingError.keyNotFound(
+                CodingKeys.commandName,
+                DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "commandName not found")
+            )
+        }
+        self.databaseName = try eventContainer.decodeIfPresent(String.self, forKey: .databaseName)
     }
 
     internal func contentMatches(expected: TestCommandStartedEvent) -> Bool {
+        if let expectedDbName = expected.databaseName {
+            guard let dbName = self.databaseName, dbName.matches(expected: expectedDbName) else {
+                return false
+            }
+        }
         return self.commandName.matches(expected: expected.commandName)
-            && self.databaseName.matches(expected: expected.databaseName)
             && self.command.matches(expected: expected.command)
     }
 }
@@ -254,6 +267,41 @@ internal struct TestRequirement: Decodable {
     }
 }
 
+/// Enum representing the contents of deployment before a spec test has been run.
+internal enum TestData: Decodable {
+    /// Data for multiple collections, with the name of the collection mapping to its contents.
+    case multiple([String: [Document]])
+
+    /// The contents of a single collection.
+    case single([Document])
+
+    public init(from decoder: Decoder) throws {
+        if let array = try? [Document](from: decoder) {
+            self = .single(array)
+        } else if let document = try? Document(from: decoder) {
+            var mapping: [String: [Document]] = [:]
+            for (k, v) in document {
+                guard let documentArray = v.arrayValue?.asArrayOf(Document.self) else {
+                    throw DecodingError.typeMismatch(
+                        [Document].self,
+                        DecodingError.Context(
+                            codingPath: decoder.codingPath,
+                            debugDescription: "Expected array of documents, got \(v) instead"
+                        )
+                    )
+                }
+                mapping[k] = documentArray
+            }
+            self = .multiple(mapping)
+        } else {
+            throw DecodingError.typeMismatch(
+                TestData.self,
+                DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Could not decode `TestData`")
+            )
+        }
+    }
+}
+
 /// Struct representing the contents of a collection after a spec test has been run.
 internal struct CollectionTestInfo: Decodable {
     /// An optional name specifying a collection whose documents match the `data` field of this struct.
@@ -276,60 +324,154 @@ internal struct TestOutcome: Decodable {
     let collection: CollectionTestInfo
 }
 
-/// Protocol defining the behavior of an individual spec test.
-internal protocol SpecTest {
-    var description: String { get }
-    var outcome: TestOutcome { get }
-    var operation: AnyTestOperation { get }
+/// Protocol defining the behavior of an entire spec test file.
+internal protocol SpecTestFile: Decodable {
+    associatedtype TestType: SpecTest
 
-    /// Runs the operation with the given context and performs assertions on the result based upon the expected outcome.
-    func run(
-        client: SyncMongoClient,
-        db: SyncMongoDatabase,
-        collection: SyncMongoCollection<Document>,
-        session: SyncClientSession?
-    ) throws
+    /// The name of the file.
+    /// This field must be added to the file this test is decoded from.
+    var name: String { get }
+
+    /// Server version and topology requirements in order for tests from this file to be run.
+    var runOn: [TestRequirement]? { get }
+
+    /// The database to use for testing.
+    var databaseName: String { get }
+
+    /// The collection to use for testing.
+    var collectionName: String? { get }
+
+    /// Data that should exist in the collection before running any of the tests.
+    var data: TestData { get }
+
+    /// List of tests to run in this file.
+    var tests: [TestType] { get }
+}
+
+extension SpecTestFile {
+    /// Populate the database and collection specified by this test file using the provided client.
+    internal func populateData(using client: SyncMongoClient) throws {
+        let database = client.db(self.databaseName)
+
+        try? database.drop()
+
+        switch self.data {
+        case let .single(docs):
+            guard let collName = self.collectionName else {
+                throw UserError.invalidArgumentError(message: "missing collection name")
+            }
+
+            guard !docs.isEmpty else {
+                return
+            }
+
+            try database.collection(collName).insertMany(docs)
+        case let .multiple(mapping):
+            for (k, v) in mapping {
+                guard !v.isEmpty else {
+                    continue
+                }
+                try database.collection(k).insertMany(v)
+            }
+        }
+    }
+
+    /// Run all the tests specified in this file, optionally specifying keywords that, if included in a test's
+    /// description, will cause certain tests to be skipped.
+    internal func runTests(parent: FailPointConfigured, skippedTestKeywords: [String] = []) throws {
+        let setupClient = try SyncMongoClient.makeTestClient()
+        let version = try setupClient.serverVersion()
+
+        if let requirements = self.runOn {
+            guard requirements.contains(where: { $0.isMet(by: version, MongoSwiftTestCase.topologyType) }) else {
+                fileLevelLog("Skipping tests from file \(self.name), deployment requirements not met.")
+                return
+            }
+        }
+
+        try self.populateData(using: setupClient)
+
+        fileLevelLog("Executing tests from file \(self.name)...")
+        for test in self.tests {
+            guard skippedTestKeywords.allSatisfy({ !test.description.contains($0) }) else {
+                print("Skipping test \(test.description)")
+                return
+            }
+            try test.run(parent: parent, dbName: self.databaseName, collName: self.collectionName)
+        }
+    }
+}
+
+/// Protocol defining the behavior of an individual spec test.
+internal protocol SpecTest: Decodable {
+    /// The name of the test.
+    var description: String { get }
+
+    /// Options used to configure the `SyncMongoClient` used for this test.
+    var clientOptions: ClientOptions? { get }
+
+    /// If true, the `SyncMongoClient` for this test should be initialized with multiple mongos seed addresses.
+    /// If false or omitted, only a single mongos address should be specified.
+    /// This field has no effect for non-sharded topologies.
+    var useMultipleMongoses: Bool? { get }
+
+    /// Reason why this test should be skipped, if applicable.
+    var skipReason: String? { get }
+
+    /// The optional fail point to configure before running this test.
+    /// This option and useMultipleMongoses: true are mutually exclusive.
+    var failPoint: FailPoint? { get }
+
+    /// Descriptions of the operations to be run and their expected outcomes.
+    var operations: [TestOperationDescription] { get }
+
+    /// List of expected CommandStartedEvents.
+    var expectations: [TestCommandStartedEvent]? { get }
 }
 
 /// Default implementation of a test execution.
 extension SpecTest {
     internal func run(
-        client: SyncMongoClient,
-        db: SyncMongoDatabase,
-        collection: SyncMongoCollection<Document>,
-        session: SyncClientSession?
+        parent: FailPointConfigured,
+        dbName: String,
+        collName: String?
     ) throws {
-        var result: TestOperationResult?
-        var seenError: Error?
-        do {
-            result = try self.operation.op.execute(
-                client: client,
-                database: db,
-                collection: collection,
-                session: session
-            )
-        } catch {
-            if case let ServerError.bulkWriteError(_, _, _, bulkResult, _) = error {
-                result = TestOperationResult(from: bulkResult)
+        guard self.skipReason == nil else {
+            print("Skipping test for reason: \(self.skipReason!)")
+            return
+        }
+
+        print("Executing test: \(self.description)")
+
+        var clientOptions = self.clientOptions ?? ClientOptions(retryReads: true)
+        clientOptions.commandMonitoring = self.expectations != nil
+
+        if let failPoint = self.failPoint {
+            try parent.activateFailPoint(failPoint)
+        }
+        defer { parent.disableActiveFailPoint() }
+
+        let client = try SyncMongoClient.makeTestClient(options: clientOptions)
+        let db: SyncMongoDatabase = client.db(dbName)
+        var collection: SyncMongoCollection<Document>?
+
+        if let collName = collName {
+            collection = db.collection(collName)
+        }
+
+        let events = try captureCommandEvents(from: client, eventTypes: [.commandStarted]) {
+            for operation in self.operations {
+                try operation.validateExecution(
+                    client: client,
+                    database: db,
+                    collection: collection,
+                    session: nil
+                )
             }
-            seenError = error
-        }
+        }.map { TestCommandStartedEvent(from: $0 as! CommandStartedEvent) }
 
-        if self.outcome.error ?? false {
-            expect(seenError).toNot(beNil(), description: self.description)
-        } else {
-            expect(seenError).to(beNil(), description: self.description)
-        }
-
-        if let expectedResult = self.outcome.result {
-            expect(result).toNot(beNil())
-            expect(result).to(equal(expectedResult))
-        }
-        let verifyColl = db.collection(self.outcome.collection.name ?? collection.name)
-        let foundDocs = try Array(verifyColl.find())
-        expect(foundDocs.count).to(equal(self.outcome.collection.data.count))
-        zip(foundDocs, self.outcome.collection.data).forEach {
-            expect($0).to(sortedEqual($1), description: self.description)
+        if let expectations = self.expectations {
+            expect(events).to(match(expectations), description: self.description)
         }
     }
 }

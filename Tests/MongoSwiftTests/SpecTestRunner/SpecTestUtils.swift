@@ -40,9 +40,12 @@ internal func retrieveSpecTestFiles<T: Decodable>(
     return try FileManager.default
         .contentsOfDirectory(atPath: path)
         .filter { $0.hasSuffix(".json") }
-        .map { ($0, URL(fileURLWithPath: "\(path)/\($0)")) }
-        .map { ($0.0, try Document(fromJSONFile: $0.1)) }
-        .map { ($0.0, try BSONDecoder().decode(T.self, from: $0.1)) }
+        .map { filename in
+            let url = URL(fileURLWithPath: "\(path)/\(filename)")
+            var doc = try Document(fromJSONFile: url)
+            doc["name"] = .string(filename)
+            return try (filename, BSONDecoder().decode(T.self, from: doc))
+        }
 }
 
 /// Given two documents, returns a copy of the input document with all keys that *don't*
@@ -69,4 +72,8 @@ internal func rearrangeDoc(_ input: Document, toLookLike standard: Document) -> 
         }
     }
     return output
+}
+
+internal func fileLevelLog(_ message: String) {
+    print("\n------------\n\(message)\n")
 }

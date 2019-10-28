@@ -32,11 +32,10 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
     /// Specifies a ReadPreference to use for the client.
     public var readPreference: ReadPreference? = nil
 
-    /// Determines whether the client should retry supported read operations.
-    // TODO: SWIFT-587 make this public.
-    internal var retryReads: Bool?
+    /// Determines whether the client should retry supported read operations (on by default).
+    public var retryReads: Bool?
 
-    /// Determines whether the client should retry supported write operations.
+    /// Determines whether the client should retry supported write operations (on by default).
     public var retryWrites: Bool?
 
     /**
@@ -67,7 +66,7 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
     public var writeConcern: WriteConcern?
 
     private enum CodingKeys: CodingKey {
-        case retryWrites, readConcern, writeConcern
+        case retryWrites, retryReads, readConcern, writeConcern
     }
 
     /// Convenience initializer allowing any/all to be omitted or optional.
@@ -78,6 +77,7 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
         notificationCenter: NotificationCenter? = nil,
         readConcern: ReadConcern? = nil,
         readPreference: ReadPreference? = nil,
+        retryReads: Bool? = nil,
         retryWrites: Bool? = nil,
         serverMonitoring: Bool = false,
         tlsOptions: TLSOptions? = nil,
@@ -91,6 +91,7 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
         self.readConcern = readConcern
         self.readPreference = readPreference
         self.retryWrites = retryWrites
+        self.retryReads = retryReads
         self.serverMonitoring = serverMonitoring
         self.tlsOptions = tlsOptions
         self.uuidCodingStrategy = uuidCodingStrategy

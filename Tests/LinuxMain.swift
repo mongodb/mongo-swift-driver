@@ -276,6 +276,12 @@ extension ReadWriteConcernTests {
     ]
 }
 
+extension RetryableReadsTests {
+    static var allTests = [
+        ("testRetryableReads", testRetryableReads),
+    ]
+}
+
 extension RetryableWritesTests {
     static var allTests = [
         ("testRetryableWrites", testRetryableWrites),
@@ -310,6 +316,7 @@ XCTMain([
     testCase(OptionsTests.allTests),
     testCase(ReadPreferenceTests.allTests),
     testCase(ReadWriteConcernTests.allTests),
+    testCase(RetryableReadsTests.allTests),
     testCase(RetryableWritesTests.allTests),
     testCase(SDAMTests.allTests),
 ])
