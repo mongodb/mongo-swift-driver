@@ -189,26 +189,6 @@ public class BSONDecoder {
             ))
     }
 
-    /**
-     * Internal version of decode that throws `.internalErrors` instead of `DecodingErrors`. Use this when using the
-     * decoder internally on non-user-modified types.
-     *
-     * - Throws:
-     *   - `RuntimeError.internalError` if the BSON data is corrupt or if any value throws an error during decoding.
-     */
-    internal func internalDecode<T: Decodable>(
-        _ type: T.Type,
-        from document: Document,
-        withError errMsg: String = "Failed to decode \(T.self)"
-    )
-        throws -> T {
-        do {
-            return try self.decode(type, from: document)
-        } catch is DecodingError {
-            throw RuntimeError.internalError(message: errMsg)
-        }
-    }
-
     /// A struct to wrap a `Decodable` type, allowing us to support decoding to types that
     /// are not inside a wrapping object (for ex., Int or String).
     private struct DecodableWrapper<T: Decodable>: Decodable {
