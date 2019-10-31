@@ -12,6 +12,12 @@ extension AuthTests {
     ]
 }
 
+extension BSONCorpusTests {
+    static var allTests = [
+        ("testBSONCorpus", testBSONCorpus),
+    ]
+}
+
 extension BSONValueTests {
     static var allTests = [
         ("testInvalidDecimal128", testInvalidDecimal128),
@@ -110,7 +116,6 @@ extension DocumentTests {
         ("testRawBSON", testRawBSON),
         ("testValueBehavior", testValueBehavior),
         ("testIntEncodesAsInt32OrInt64", testIntEncodesAsInt32OrInt64),
-        ("testBSONCorpus", testBSONCorpus),
         ("testMerge", testMerge),
         ("testNilInNestedArray", testNilInNestedArray),
         ("testOverwritable", testOverwritable),
@@ -296,6 +301,7 @@ extension SDAMTests {
 
 XCTMain([
     testCase(AuthTests.allTests),
+    testCase(BSONCorpusTests.allTests),
     testCase(BSONValueTests.allTests),
     testCase(ChangeStreamSpecTests.allTests),
     testCase(ChangeStreamTests.allTests),
