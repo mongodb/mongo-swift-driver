@@ -1,5 +1,5 @@
 # MongoSwift BSON Library
-MongoDB stores and transmits data in the form of BSON documents, and MongoSwift provides a libary that can be used to work with such documents. The following is an example of some of the functionaltiy provided as part of that:
+MongoDB stores and transmits data in the form of [BSON](bsonspec.org) documents, and MongoSwift provides a libary that can be used to work with such documents. The following is an example of some of the functionality provided as part of that:
 ```swift
 // Document construction.
 let doc: Document = [
@@ -21,7 +21,7 @@ struct Person: Codable {
 print(try BSONDecoder().decode(Person.self, from: doc)) // Person(name: "Bob", occupation: "Software Engineer")
 print(try BSONEncoder().encode(Person(name: "Ted", occupation: "Janitor")) // { "name": "Ted", "occupation": "Janitor" }
 ```
-This guide will serve as an overview of various parts of the BSON library. To learn more specifics and cover the entirety of the API surface, please refer to the driver's API reference.
+This guide will serve as an overview of various parts of the BSON library. To learn more specifics and cover the entirety of the API surface, please refer to the driver's [API reference](https://mongodb.github.io/mongo-swift-driver/).
 
 ## BSON values
 BSON values have many possible types, ranging from simple 32-bit integers to documents which store more BSON values themselves. To accurately model this, the driver defines the `BSON` enum, which has a distinct case for each BSON type. For the more simple cases such as BSON null, the case has no associated value. For the more complex ones, such as documents, a separate type is defined that the case wraps. Where possible, the enum case will wrap the standard library/Foundation equivalent (e.g. `Double`, `String`, `Date`)
@@ -250,7 +250,7 @@ func prettyPrint(doc: Document) throws {
 In this version, the definition of the data type and the logic of the function are defined completely separately, and it leads to far more readable and concise versions of both. 
 
 ### `Codable` in MongoSwift
-There are a number of ways for users to leverage `Codable` via driver's API. One such example is through `MongoCollection<T>`. By default, `MongoDatabase::collection` returns a `MongoCollection<Document>`. Any `find` or `aggregate` method invocation on that returned collection would then return a `MongoCursor<Document>`, which when iterated returns a `Document?`:
+There are a number of ways for users to leverage `Codable` via driver's API. One such example is through `MongoCollection<T>`. By default, `MongoDatabase.collection` returns a `MongoCollection<Document>`. Any `find` or `aggregate` method invocation on that returned collection would then return a `MongoCursor<Document>`, which when iterated returns a `Document?`:
 ```swift
 let collection = db.collection("person", withType: Person.self)
 for person in try collection.find(["occupation": "Software Engineer"]) {
@@ -281,9 +281,9 @@ let value: BSONValue? = doc["a"] // 5
 let intValue = (value as? BSONNumber)?.int32Value // Int32(5)
 doc["c"] = "i am a string"
 ```
-This API provided a number of benefits, the principal one being the seamless integration of standard Swift types (e.g. `Int`) and driver custom ones (e.g `ObjectId`) into `Document`'s methods. It also had a few drawbacks, however. In order for `BSONValue` to be used as an existential type, it could not have `Self` or associated type requirements. This ended being a big restriction as it meant `BSONValue` could not be `Equatable`, `Hashable`, or `Codable`. Instead, all of this functionaltiy was put onto the separate wrapper type `AnyBSONValue`, which was used instead of an existential `BSONValue` in meany places in order to leverage these common protocol conformances.
+This API provided a number of benefits, the principal one being the seamless integration of standard Swift types (e.g. `Int`) and driver custom ones (e.g `ObjectId`) into `Document`'s methods. It also had a few drawbacks, however. In order for `BSONValue` to be used as an existential type, it could not have `Self` or associated type requirements. This ended being a big restriction as it meant `BSONValue` could not be `Equatable`, `Hashable`, or `Codable`. Instead, all of this functionaltiy was put onto the separate wrapper type `AnyBSONValue`, which was used instead of an existential `BSONValue` in many places in order to leverage these common protocol conformances.
 
-Another drawback is that subdocuments lterals could not be inferred and had to be explicitly casted:
+Another drawback is that subdocument lterals could not be inferred and had to be explicitly casted:
 ```swift
 let x: Document = [
     "x": [
@@ -333,7 +333,7 @@ func foo(x: BSON, y: BSON) {
 }
 ```
 **Generic Requirement**
-Currently, there is no equivalent protocol in BSON API v2 to `BSONValue`, so if your application was using it as a generic requirement there is no alternative in the driver. You may have to implement your own similar protocol to achieve the same effect. If such a protocol would be useful to you, please file a ticket on the driver's Jira project.
+Currently, there is no equivalent protocol in BSON API v2 to `BSONValue`, so if your application was using it as a generic requirement there is no alternative in the driver. You may have to implement your own similar protocol to achieve the same effect. If such a protocol would be useful to you, please [file a ticket on the driver's Jira project](https://github.com/mongodb/mongo-swift-driver#bugs--feature-requests).
 
 #### Updating `BSONNumber` references
 `BSON` should be a drop-in replacement for anywhere `BSONNumber` is used, except for as a generic requirement. One thing to note that `BSONNumber`'s properties (e.g. `.int32Value`) are _conversions_, whereas `BSON`'s are simple unwraps. The conversions on `BSON` are implemented as methods (e.g. `asInt32()`).
