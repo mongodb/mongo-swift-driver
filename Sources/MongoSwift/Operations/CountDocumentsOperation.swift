@@ -51,17 +51,17 @@ public struct CountDocumentsOptions: Codable {
 
 /// An operation corresponding to a "count" command on a collection.
 internal struct CountDocumentsOperation<T: Codable>: Operation {
-    private let collection: SyncMongoCollection<T>
+    private let collection: MongoCollection<T>
     private let filter: Document
     private let options: CountDocumentsOptions?
 
-    internal init(collection: SyncMongoCollection<T>, filter: Document, options: CountDocumentsOptions?) {
+    internal init(collection: MongoCollection<T>, filter: Document, options: CountDocumentsOptions?) {
         self.collection = collection
         self.filter = filter
         self.options = options
     }
 
-    internal func execute(using connection: Connection, session: SyncClientSession?) throws -> Int {
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> Int {
         let opts = try encodeOptions(options: options, session: session)
         let rp = self.options?.readPreference?._readPreference
         var error = bson_error_t()

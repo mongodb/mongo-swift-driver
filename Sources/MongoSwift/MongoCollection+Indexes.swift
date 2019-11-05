@@ -1,6 +1,6 @@
 import mongoc
 
-/// A struct representing an index on a `MongoCollection` or a `SyncMongoCollection`.
+/// A struct representing an index on a `MongoCollection`.
 public struct IndexModel: Codable {
     /// Contains the required keys for the index.
     public let keys: Document
@@ -155,8 +155,8 @@ public struct IndexOptions: Codable {
     }
 }
 
-/// An extension of `SyncMongoCollection` encapsulating index management capabilities.
-extension SyncMongoCollection {
+/// An extension of `MongoCollection` encapsulating index management capabilities.
+extension MongoCollection {
     /**
      * Creates an index over the collection for the provided keys with the provided options.
      *
@@ -164,7 +164,7 @@ extension SyncMongoCollection {
      *   - keys: a `Document` specifing the keys for the index
      *   - indexOptions: Optional `IndexOptions` to use for the index
      *   - options: Optional `CreateIndexOptions` to use for the command
-     *   - session: Optional `SyncClientSession` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: The name of the created index.
      *
@@ -180,7 +180,7 @@ extension SyncMongoCollection {
         _ keys: Document,
         indexOptions: IndexOptions? = nil,
         options: CreateIndexOptions? = nil,
-        session: SyncClientSession? = nil
+        session: ClientSession? = nil
     ) throws -> String {
         return try self.createIndexes(
             [IndexModel(keys: keys, options: indexOptions)],
@@ -195,7 +195,7 @@ extension SyncMongoCollection {
      * - Parameters:
      *   - model: An `IndexModel` representing the keys and options for the index
      *   - options: Optional `CreateIndexOptions` to use for the command
-     *   - session: Optional `SyncClientSession` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: The name of the created index.
      *
@@ -210,7 +210,7 @@ extension SyncMongoCollection {
     public func createIndex(
         _ model: IndexModel,
         options: CreateIndexOptions? = nil,
-        session: SyncClientSession? = nil
+        session: ClientSession? = nil
     ) throws -> String {
         return try self.createIndexes([model], options: options, session: session)[0]
     }
@@ -221,7 +221,7 @@ extension SyncMongoCollection {
      * - Parameters:
      *   - models: An `[IndexModel]` specifying the indexes to create
      *   - options: Optional `CreateIndexOptions` to use for the command
-     *   - session: Optional `SyncClientSession` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: An `[String]` containing the names of all the indexes that were created.
      *
@@ -236,7 +236,7 @@ extension SyncMongoCollection {
     public func createIndexes(
         _ models: [IndexModel],
         options: CreateIndexOptions? = nil,
-        session: SyncClientSession? = nil
+        session: ClientSession? = nil
     ) throws -> [String] {
         let operation = CreateIndexesOperation(collection: self, models: models, options: options)
         return try self._client.executeOperation(operation, session: session)
@@ -248,7 +248,7 @@ extension SyncMongoCollection {
      * - Parameters:
      *   - name: The name of the index to drop
      *   - options: Optional `DropIndexOptions` to use for the command
-     *   - session: Optional `SyncClientSession` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Throws:
      *   - `ServerError.writeError` if an error occurs while performing the command.
@@ -260,7 +260,7 @@ extension SyncMongoCollection {
     public func dropIndex(
         _ name: String,
         options: DropIndexOptions? = nil,
-        session: SyncClientSession? = nil
+        session: ClientSession? = nil
     ) throws -> Document {
         guard name != "*" else {
             throw UserError.invalidArgumentError(
@@ -277,7 +277,7 @@ extension SyncMongoCollection {
      * - Parameters:
      *   - keys: a `Document` containing the keys for the index to drop
      *   - options: Optional `DropIndexOptions` to use for the command
-     *   - session: Optional `SyncClientSession` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: a `Document` containing the server's response to the command.
      *
@@ -292,7 +292,7 @@ extension SyncMongoCollection {
     public func dropIndex(
         _ keys: Document,
         options: DropIndexOptions? = nil,
-        session: SyncClientSession? = nil
+        session: ClientSession? = nil
     ) throws -> Document {
         return try self._dropIndexes(index: .document(keys), options: options, session: session)
     }
@@ -303,7 +303,7 @@ extension SyncMongoCollection {
      * - Parameters:
      *   - model: An `IndexModel` describing the index to drop
      *   - options: Optional `DropIndexOptions` to use for the command
-     *   - session: Optional `SyncClientSession` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: a `Document` containing the server's response to the command.
      *
@@ -318,7 +318,7 @@ extension SyncMongoCollection {
     public func dropIndex(
         _ model: IndexModel,
         options: DropIndexOptions? = nil,
-        session: SyncClientSession? = nil
+        session: ClientSession? = nil
     ) throws -> Document {
         return try self._dropIndexes(index: .document(model.keys), options: options, session: session)
     }
@@ -328,7 +328,7 @@ extension SyncMongoCollection {
      *
      * - Parameters:
      *   - options: Optional `DropIndexOptions` to use for the command
-     *   - session: Optional `SyncClientSession` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: a `Document` containing the server's response to the command.
      *
@@ -340,7 +340,7 @@ extension SyncMongoCollection {
      *   - `EncodingError` if an error occurs while encoding the options.
      */
     @discardableResult
-    public func dropIndexes(options: DropIndexOptions? = nil, session: SyncClientSession? = nil) throws -> Document {
+    public func dropIndexes(options: DropIndexOptions? = nil, session: ClientSession? = nil) throws -> Document {
         return try self._dropIndexes(index: "*", options: options, session: session)
     }
 
@@ -349,7 +349,7 @@ extension SyncMongoCollection {
     private func _dropIndexes(
         index: BSON,
         options: DropIndexOptions?,
-        session: SyncClientSession?
+        session: ClientSession?
     ) throws -> Document {
         let operation = DropIndexesOperation(collection: self, index: index, options: options)
         return try self._client.executeOperation(operation, session: session)
@@ -359,13 +359,13 @@ extension SyncMongoCollection {
      * Retrieves a list of the indexes currently on this collection.
      *
      * - Parameters:
-     *   - session: Optional `SyncClientSession` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: A `SyncMongoCursor` over the `IndexModel`s.
+     * - Returns: A `MongoCursor` over the `IndexModel`s.
      *
      * - Throws: `UserError.logicError` if the provided session is inactive.
      */
-    public func listIndexes(session: SyncClientSession? = nil) throws -> SyncMongoCursor<IndexModel> {
+    public func listIndexes(session: ClientSession? = nil) throws -> MongoCursor<IndexModel> {
         let operation = ListIndexesOperation(collection: self)
         return try self._client.executeOperation(operation, session: session)
     }
@@ -374,13 +374,13 @@ extension SyncMongoCollection {
      * Retrieves a list of names of the indexes currently on this collection.
      *
      * - Parameters:
-     *   - session: Optional `SyncClientSession` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: A `SyncMongoCursor` over the index names.
+     * - Returns: A `MongoCursor` over the index names.
      *
      * - Throws: `UserError.logicError` if the provided session is inactive.
      */
-    public func listIndexNames(session: SyncClientSession? = nil) throws -> [String] {
+    public func listIndexNames(session: ClientSession? = nil) throws -> [String] {
         let operation = ListIndexesOperation(collection: self)
         let models = try self._client.executeOperation(operation, session: session)
         return try models.map { model in

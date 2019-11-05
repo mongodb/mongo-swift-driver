@@ -71,7 +71,7 @@ public struct CollectionSpecification: Codable {
     public let idIndex: IndexModel?
 }
 
-/// Options to use when executing a `listCollections` command on a `MongoDatabase` or a `SyncMongoDatabase`.
+/// Options to use when executing a `listCollections` command on a `MongoDatabase`.
 public struct ListCollectionsOptions: Encodable {
     /// The batchSize for the returned cursor.
     public var batchSize: Int?
@@ -85,7 +85,7 @@ public struct ListCollectionsOptions: Encodable {
 /// Internal intermediate result of a ListCollections command.
 internal enum ListCollectionsResults {
     /// Includes the name, type, and creation options of each collection.
-    case specs(SyncMongoCursor<CollectionSpecification>)
+    case specs(MongoCursor<CollectionSpecification>)
 
     /// Only includes the names.
     case names([String])
@@ -93,19 +93,19 @@ internal enum ListCollectionsResults {
 
 /// An operation corresponding to a "listCollections" command on a database.
 internal struct ListCollectionsOperation: Operation {
-    private let database: SyncMongoDatabase
+    private let database: MongoDatabase
     private let nameOnly: Bool
     private let filter: Document?
     private let options: ListCollectionsOptions?
 
-    internal init(database: SyncMongoDatabase, nameOnly: Bool, filter: Document?, options: ListCollectionsOptions?) {
+    internal init(database: MongoDatabase, nameOnly: Bool, filter: Document?, options: ListCollectionsOptions?) {
         self.database = database
         self.nameOnly = nameOnly
         self.filter = filter
         self.options = options
     }
 
-    internal func execute(using _: Connection, session: SyncClientSession?) throws -> ListCollectionsResults {
+    internal func execute(using _: Connection, session: ClientSession?) throws -> ListCollectionsResults {
         var opts = try encodeOptions(options: self.options, session: session) ?? Document()
         opts["nameOnly"] = .bool(self.nameOnly)
         if let filterDoc = self.filter {
@@ -126,7 +126,7 @@ internal struct ListCollectionsOperation: Operation {
             }
         }
         if self.nameOnly {
-            let cursor: SyncMongoCursor<Document> = try SyncMongoCursor(
+            let cursor: MongoCursor<Document> = try MongoCursor(
                 client: self.database._client,
                 decoder: self.database.decoder,
                 session: session,
@@ -139,7 +139,7 @@ internal struct ListCollectionsOperation: Operation {
                 return name
             })
         }
-        let cursor: SyncMongoCursor<CollectionSpecification> = try SyncMongoCursor(
+        let cursor: MongoCursor<CollectionSpecification> = try MongoCursor(
             client: self.database._client,
             decoder: self.database.decoder,
             session: session,

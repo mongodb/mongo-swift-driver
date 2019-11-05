@@ -1,16 +1,16 @@
 import mongoc
 
-/// An extension of `SyncMongoCollection` encapsulating read operations.
-extension SyncMongoCollection {
+/// An extension of `MongoCollection` encapsulating read operations.
+extension MongoCollection {
     /**
      * Finds the documents in this collection which match the provided filter.
      *
      * - Parameters:
      *   - filter: A `Document` that should match the query
      *   - options: Optional `FindOptions` to use when executing the command
-     *   - session: Optional `SyncClientSession` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: A `SyncMongoCursor` over the resulting `Document`s
+     * - Returns: A `MongoCursor` over the resulting `Document`s
      *
      * - Throws:
      *   - `UserError.invalidArgumentError` if the options passed are an invalid combination.
@@ -20,11 +20,11 @@ extension SyncMongoCollection {
     public func find(
         _ filter: Document = [:],
         options: FindOptions? = nil,
-        session: SyncClientSession? = nil
-    ) throws -> SyncMongoCursor<CollectionType> {
+        session: ClientSession? = nil
+    ) throws -> MongoCursor<CollectionType> {
         let opts = try encodeOptions(options: options, session: session)
         let rp = options?.readPreference?._readPreference
-        return try SyncMongoCursor(
+        return try MongoCursor(
             client: self._client,
             decoder: self.decoder,
             session: session,
@@ -45,9 +45,9 @@ extension SyncMongoCollection {
      * - Parameters:
      *   - pipeline: an `[Document]` containing the pipeline of aggregation operations to perform
      *   - options: Optional `AggregateOptions` to use when executing the command
-     *   - session: Optional `SyncClientSession` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: A `SyncMongoCursor` over the resulting `Document`s
+     * - Returns: A `MongoCursor` over the resulting `Document`s
      *
      * - Throws:
      *   - `UserError.invalidArgumentError` if the options passed are an invalid combination.
@@ -57,13 +57,13 @@ extension SyncMongoCollection {
     public func aggregate(
         _ pipeline: [Document],
         options: AggregateOptions? = nil,
-        session: SyncClientSession? = nil
-    ) throws -> SyncMongoCursor<Document> {
+        session: ClientSession? = nil
+    ) throws -> MongoCursor<Document> {
         let opts = try encodeOptions(options: options, session: session)
         let rp = options?.readPreference?._readPreference
         let pipeline: Document = ["pipeline": .array(pipeline.map { .document($0) })]
 
-        return try SyncMongoCursor(client: self._client, decoder: self.decoder, session: session) { conn in
+        return try MongoCursor(client: self._client, decoder: self.decoder, session: session) { conn in
             self.withMongocCollection(from: conn) { collPtr in
                 guard let cursor = mongoc_collection_aggregate(
                     collPtr,
@@ -87,14 +87,14 @@ extension SyncMongoCollection {
      * - Parameters:
      *   - filter: a `Document`, the filter that documents must match in order to be counted
      *   - options: Optional `CountDocumentsOptions` to use when executing the command
-     *   - session: Optional `SyncClientSession` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: The count of the documents that matched the filter
      */
     public func countDocuments(
         _ filter: Document = [:],
         options: CountDocumentsOptions? = nil,
-        session: SyncClientSession? = nil
+        session: ClientSession? = nil
     ) throws -> Int {
         let operation = CountDocumentsOperation(collection: self, filter: filter, options: options)
         return try self._client.executeOperation(operation, session: session)
@@ -105,13 +105,13 @@ extension SyncMongoCollection {
      *
      * - Parameters:
      *   - options: Optional `EstimatedDocumentCountOptions` to use when executing the command
-     *   - session: Optional `SyncClientSession` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: an estimate of the count of documents in this collection
      */
     public func estimatedDocumentCount(
         options: EstimatedDocumentCountOptions? = nil,
-        session: SyncClientSession? = nil
+        session: ClientSession? = nil
     ) throws -> Int {
         let operation = EstimatedDocumentCountOperation(collection: self, options: options)
         return try self._client.executeOperation(operation, session: session)
@@ -124,7 +124,7 @@ extension SyncMongoCollection {
      *   - fieldName: The field for which the distinct values will be found
      *   - filter: a `Document` representing the filter documents must match in order to be considered for the operation
      *   - options: Optional `DistinctOptions` to use when executing the command
-     *   - session: Optional `SyncClientSession` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: A `[BSONValue]` containing the distinct values for the specified criteria
      *
@@ -138,7 +138,7 @@ extension SyncMongoCollection {
         fieldName: String,
         filter: Document = [:],
         options: DistinctOptions? = nil,
-        session: SyncClientSession? = nil
+        session: ClientSession? = nil
     ) throws -> [BSON] {
         let operation = DistinctOperation(collection: self, fieldName: fieldName, filter: filter, options: options)
         return try self._client.executeOperation(operation, session: session)
@@ -172,7 +172,7 @@ public enum Hint: Codable {
     }
 }
 
-/// Options to use when executing an `aggregate` command on a `MongoCollection` or a `SyncMongoCollection`.
+/// Options to use when executing an `aggregate` command on a `MongoCollection`.
 public struct AggregateOptions: Codable {
     /// Enables writing to temporary files. When set to true, aggregation stages
     /// can write data to the _tmp subdirectory in the dbPath directory.
@@ -240,7 +240,7 @@ public struct AggregateOptions: Codable {
     }
 }
 
-/// The possible types of `MongoCursor` or `SyncMongoCursor` an operation can return.
+/// The possible types of `MongoCursor` or `MongoCursor` an operation can return.
 public enum CursorType {
     /**
      * The default value. A vast majority of cursors will be of this type.
@@ -275,7 +275,7 @@ public enum CursorType {
     }
 }
 
-/// Options to use when executing a `find` command on a `MongoCollection` or a `SyncMongoCollection`.
+/// Options to use when executing a `find` command on a `MongoCollection`.
 public struct FindOptions: Codable {
     /// Get partial results from a mongos if some shards are down (instead of throwing an error).
     public var allowPartialResults: Bool?

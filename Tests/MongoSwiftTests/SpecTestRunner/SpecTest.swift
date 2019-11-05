@@ -114,13 +114,13 @@ internal struct FailPoint: Decodable {
                 commandDoc[k] = v
             }
         }
-        let client = try SyncMongoClient.makeTestClient()
+        let client = try MongoClient.makeTestClient()
         try client.db("admin").runCommand(commandDoc)
     }
 
     internal func disable() {
         do {
-            let client = try SyncMongoClient.makeTestClient()
+            let client = try MongoClient.makeTestClient()
             try client.db("admin").runCommand(["configureFailPoint": .string(self.name), "mode": "off"])
         } catch {
             print("Failed to disable fail point \(self.name): \(error)")
@@ -350,7 +350,7 @@ internal protocol SpecTestFile: Decodable {
 
 extension SpecTestFile {
     /// Populate the database and collection specified by this test file using the provided client.
-    internal func populateData(using client: SyncMongoClient) throws {
+    internal func populateData(using client: MongoClient) throws {
         let database = client.db(self.databaseName)
 
         try? database.drop()
@@ -379,7 +379,7 @@ extension SpecTestFile {
     /// Run all the tests specified in this file, optionally specifying keywords that, if included in a test's
     /// description, will cause certain tests to be skipped.
     internal func runTests(parent: FailPointConfigured, skippedTestKeywords: [String] = []) throws {
-        let setupClient = try SyncMongoClient.makeTestClient()
+        let setupClient = try MongoClient.makeTestClient()
         let version = try setupClient.serverVersion()
 
         if let requirements = self.runOn {
@@ -407,10 +407,10 @@ internal protocol SpecTest: Decodable {
     /// The name of the test.
     var description: String { get }
 
-    /// Options used to configure the `SyncMongoClient` used for this test.
+    /// Options used to configure the `MongoClient` used for this test.
     var clientOptions: ClientOptions? { get }
 
-    /// If true, the `SyncMongoClient` for this test should be initialized with multiple mongos seed addresses.
+    /// If true, the `MongoClient` for this test should be initialized with multiple mongos seed addresses.
     /// If false or omitted, only a single mongos address should be specified.
     /// This field has no effect for non-sharded topologies.
     var useMultipleMongoses: Bool? { get }
@@ -451,9 +451,9 @@ extension SpecTest {
         }
         defer { parent.disableActiveFailPoint() }
 
-        let client = try SyncMongoClient.makeTestClient(options: clientOptions)
-        let db: SyncMongoDatabase = client.db(dbName)
-        var collection: SyncMongoCollection<Document>?
+        let client = try MongoClient.makeTestClient(options: clientOptions)
+        let db: MongoDatabase = client.db(dbName)
+        var collection: MongoCollection<Document>?
 
         if let collName = collName {
             collection = db.collection(collName)

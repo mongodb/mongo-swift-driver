@@ -37,7 +37,7 @@ protocol WriteConcernable {
     func getMongocWriteConcern() throws -> WriteConcern?
 }
 
-extension SyncMongoClient: ReadConcernable, WriteConcernable {
+extension MongoClient: ReadConcernable, WriteConcernable {
     func getMongocReadConcern() throws -> ReadConcern? {
         return try self.connectionPool.withConnection { conn in
             ReadConcern(from: mongoc_client_get_read_concern(conn.clientHandle))
@@ -51,7 +51,7 @@ extension SyncMongoClient: ReadConcernable, WriteConcernable {
     }
 }
 
-extension SyncMongoDatabase: ReadConcernable, WriteConcernable {
+extension MongoDatabase: ReadConcernable, WriteConcernable {
     func getMongocReadConcern() throws -> ReadConcern? {
         return try self._client.connectionPool.withConnection { conn in
             self.withMongocDatabase(from: conn) { dbPtr in
@@ -69,7 +69,7 @@ extension SyncMongoDatabase: ReadConcernable, WriteConcernable {
     }
 }
 
-extension SyncMongoCollection: ReadConcernable, WriteConcernable {
+extension MongoCollection: ReadConcernable, WriteConcernable {
     func getMongocReadConcern() throws -> ReadConcern? {
         return try self._client.connectionPool.withConnection { conn in
             self.withMongocCollection(from: conn) { collPtr in
@@ -173,7 +173,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
 
         // test behavior of a client with initialized with no RC
         do {
-            let client = try SyncMongoClient()
+            let client = try MongoClient()
             let clientDesc = "client created with no RC provided"
             // expect the client to have empty/server default read concern
             try checkReadConcern(client, empty, clientDesc)
@@ -189,7 +189,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
 
         // test behavior of a client initialized with local RC
         do {
-            let client = try SyncMongoClient(options: ClientOptions(readConcern: local))
+            let client = try MongoClient(options: ClientOptions(readConcern: local))
             let clientDesc = "client created with local RC"
             // although local is default, if it is explicitly provided it should be set
             try checkReadConcern(client, local, clientDesc)
@@ -214,12 +214,12 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
 
         // test behavior of a client initialized with majority RC
         do {
-            var client = try SyncMongoClient(options: ClientOptions(readConcern: majority))
+            var client = try MongoClient(options: ClientOptions(readConcern: majority))
             let clientDesc = "client created with majority RC"
             try checkReadConcern(client, majority, clientDesc)
 
             // test with string init
-            client = try SyncMongoClient(options: ClientOptions(readConcern: majorityString))
+            client = try MongoClient(options: ClientOptions(readConcern: majorityString))
             try checkReadConcern(client, majority, "\(clientDesc) string")
 
             // expect that a DB created from this client can override the client's majority RC with an unset one
@@ -235,7 +235,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
 
         // test behavior of a client with initialized with no WC
         do {
-            let client = try SyncMongoClient()
+            let client = try MongoClient()
             let clientDesc = "client created with no WC provided"
             // expect the readConcern property to exist and be default
             try checkWriteConcern(client, empty, clientDesc)
@@ -251,7 +251,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
 
         // test behavior of a client with w: 1
         do {
-            let client = try SyncMongoClient(options: ClientOptions(writeConcern: w1))
+            let client = try MongoClient(options: ClientOptions(writeConcern: w1))
             let clientDesc = "client created with w:1"
             // although w:1 is default, if it is explicitly provided it should be set
             try checkWriteConcern(client, w1, clientDesc)
@@ -267,7 +267,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
 
         // test behavior of a client with w: 2
         do {
-            let client = try SyncMongoClient(options: ClientOptions(writeConcern: w2))
+            let client = try MongoClient(options: ClientOptions(writeConcern: w2))
             let clientDesc = "client created with w:2"
             try checkWriteConcern(client, w2, clientDesc)
 
@@ -281,7 +281,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
     }
 
     func testDatabaseReadConcern() throws {
-        let client = try SyncMongoClient.makeTestClient()
+        let client = try MongoClient.makeTestClient()
         let empty = ReadConcern()
         let local = ReadConcern(.local)
         let localString = ReadConcern("local")
@@ -343,7 +343,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
     }
 
     func testDatabaseWriteConcern() throws {
-        let client = try SyncMongoClient.makeTestClient()
+        let client = try MongoClient.makeTestClient()
 
         let empty = WriteConcern()
         let w1 = try WriteConcern(w: .number(1))
@@ -387,7 +387,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
 
     func testOperationReadConcerns() throws {
         // setup a collection
-        let client = try SyncMongoClient.makeTestClient()
+        let client = try MongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
         let coll = try db.createCollection(self.getCollectionName())
@@ -460,7 +460,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
             errorLabels: nil
         )
 
-        let client = try SyncMongoClient.makeTestClient()
+        let client = try MongoClient.makeTestClient()
         let database = client.db(type(of: self).testDatabase)
         let collection = database.collection(self.getCollectionName())
         defer { try? collection.drop() }
@@ -473,7 +473,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
     }
 
     func testOperationWriteConcerns() throws {
-        let client = try SyncMongoClient.makeTestClient()
+        let client = try MongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
 
@@ -584,7 +584,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
                 let uri: String = try test.get("uri")
                 let valid: Bool = try test.get("valid")
                 if valid {
-                    let client = try SyncMongoClient(uri)
+                    let client = try MongoClient(uri)
                     if let readConcern = test["readConcern"]?.documentValue {
                         let rc = ReadConcern(readConcern)
                         if rc.isDefault {
@@ -601,7 +601,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
                         }
                     }
                 } else {
-                    expect(try SyncMongoClient(uri)).to(throwError(UserError.invalidArgumentError(message: "")))
+                    expect(try MongoClient(uri)).to(throwError(UserError.invalidArgumentError(message: "")))
                 }
             }
         }

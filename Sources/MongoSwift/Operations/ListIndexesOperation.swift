@@ -2,19 +2,19 @@ import mongoc
 
 /// An operation corresponding to a listIndexes command on a collection.
 internal struct ListIndexesOperation<T: Codable>: Operation {
-    private let collection: SyncMongoCollection<T>
+    private let collection: MongoCollection<T>
 
-    internal init(collection: SyncMongoCollection<T>) {
+    internal init(collection: MongoCollection<T>) {
         self.collection = collection
     }
 
     internal func execute(
         using _: Connection,
-        session: SyncClientSession?
-    ) throws -> SyncMongoCursor<IndexModel> {
+        session: ClientSession?
+    ) throws -> MongoCursor<IndexModel> {
         let opts = try encodeOptions(options: nil as Document?, session: session)
 
-        return try SyncMongoCursor(
+        return try MongoCursor(
             client: self.collection._client,
             decoder: self.collection.decoder,
             session: session

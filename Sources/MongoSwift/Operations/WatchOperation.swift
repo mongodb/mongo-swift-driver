@@ -3,13 +3,13 @@ import mongoc
 /// The entity on which to start a change stream.
 internal enum ChangeStreamTarget<CollectionType: Codable> {
     /// Indicates the change stream will be opened to watch a client.
-    case client(SyncMongoClient)
+    case client(MongoClient)
 
     /// Indicates the change stream will be opened to watch a database.
-    case database(SyncMongoDatabase)
+    case database(MongoDatabase)
 
     /// Indicates the change stream will be opened to watch a collection.
-    case collection(SyncMongoCollection<CollectionType>)
+    case collection(MongoCollection<CollectionType>)
 }
 
 /// An operation corresponding to a "watch" command on either a client, database, or collection.
@@ -33,13 +33,13 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codabl
 
     internal func execute(
         using connection: Connection,
-        session: SyncClientSession?
-    ) throws -> SyncChangeStream<ChangeStreamType> {
+        session: ClientSession?
+    ) throws -> ChangeStream<ChangeStreamType> {
         let pipeline: Document = ["pipeline": self.pipeline]
         let opts = try encodeOptions(options: self.options, session: session)
 
         let changeStream: OpaquePointer
-        let client: SyncMongoClient
+        let client: MongoClient
         let decoder: BSONDecoder
 
         switch self.target {
@@ -61,7 +61,7 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codabl
             }
         }
 
-        return try SyncChangeStream<ChangeStreamType>(
+        return try ChangeStream<ChangeStreamType>(
             stealing: changeStream,
             connection: connection,
             client: client,

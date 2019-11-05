@@ -15,7 +15,7 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try SyncMongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
+        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
 
         let tests = try retrieveSpecTestFiles(specName: "command-monitoring", asType: CMTestFile.self)
         for (filename, testFile) in tests {
@@ -77,7 +77,7 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
 
     func testAlternateNotificationCenters() throws {
         let customCenter = NotificationCenter()
-        let client = try SyncMongoClient.makeTestClient(options: ClientOptions(
+        let client = try MongoClient.makeTestClient(options: ClientOptions(
             commandMonitoring: true,
             notificationCenter: customCenter
         ))
@@ -146,7 +146,7 @@ private struct CMTest: Decodable {
     // If something fails/succeeds incorrectly, we'll know because the generated
     // events won't match up.
     // swiftlint:disable cyclomatic_complexity
-    func doOperation(withCollection collection: SyncMongoCollection<Document>) throws {
+    func doOperation(withCollection collection: MongoCollection<Document>) throws {
         // TODO: SWIFT-31: use readPreferences for commands if provided
         let filter: Document = self.op.args["filter"]?.documentValue ?? [:]
 

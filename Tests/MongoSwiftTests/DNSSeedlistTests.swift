@@ -77,7 +77,7 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
                     caFile: URL(string: MongoSwiftTestCase.sslCAFilePath ?? ""),
                     pemFile: URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? "")
                 )
-                let client = try SyncMongoClient(
+                let client = try MongoClient(
                     testCase.uri,
                     options: ClientOptions(serverMonitoring: true, tlsOptions: opts)
                 )

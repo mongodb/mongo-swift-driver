@@ -37,7 +37,7 @@ public enum OperationType: String, Codable {
     case rename
 }
 
-/// The response document type from a `ChangeStream` or a `SyncChangeStream`.
+/// The response document type from a `ChangeStream`.
 public struct ChangeStreamEvent<T: Codable>: Codable {
     /// Describes the type of operation for this change.
     public let operationType: OperationType

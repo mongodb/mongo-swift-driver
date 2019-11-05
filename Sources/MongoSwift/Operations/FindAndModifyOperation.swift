@@ -1,7 +1,6 @@
 import mongoc
 
-/// A class wrapping a `mongoc_find_and_modify_opts_t`, for use with `MongoCollection.findAndModify` and
-/// `SyncMongoCollection.findAndModify`.
+/// A class wrapping a `mongoc_find_and_modify_opts_t`, for use with `MongoCollection.findAndModify`.
 internal class FindAndModifyOptions {
     /// an `OpaquePointer` to a `mongoc_find_and_modify_opts_t`
     fileprivate var _options: OpaquePointer?
@@ -110,7 +109,7 @@ internal class FindAndModifyOptions {
         }
     }
 
-    fileprivate func setSession(_ session: SyncClientSession?) throws {
+    fileprivate func setSession(_ session: ClientSession?) throws {
         guard let session = session else {
             return
         }
@@ -125,13 +124,13 @@ internal class FindAndModifyOptions {
 
 /// An operation corresponding to a "findAndModify" command.
 internal struct FindAndModifyOperation<T: Codable>: Operation {
-    private let collection: SyncMongoCollection<T>
+    private let collection: MongoCollection<T>
     private let filter: Document
     private let update: Document?
     private let options: FindAndModifyOptionsConvertible?
 
     internal init(
-        collection: SyncMongoCollection<T>,
+        collection: MongoCollection<T>,
         filter: Document,
         update: Document?,
         options: FindAndModifyOptionsConvertible?
@@ -142,7 +141,7 @@ internal struct FindAndModifyOperation<T: Codable>: Operation {
         self.options = options
     }
 
-    internal func execute(using connection: Connection, session: SyncClientSession?) throws -> T? {
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> T? {
         // we always need to send *something*, as findAndModify requires one of "remove"
         // or "update" to be set.
         let opts = try self.options?.asFindAndModifyOptions() ?? FindAndModifyOptions()

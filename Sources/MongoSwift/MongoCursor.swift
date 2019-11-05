@@ -3,12 +3,12 @@ import mongoc
 internal let ClosedCursorError = UserError.logicError(message: "Cannot advance a completed or failed cursor.")
 
 /// A MongoDB cursor.
-public class SyncMongoCursor<T: Codable>: Sequence, IteratorProtocol {
+public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     /// Enum for tracking the state of a cursor.
     internal enum State {
         /// Indicates that the cursor is still open. Stores a pointer to the `mongoc_cursor_t`, along with the source
         /// connection, client, and possibly session to ensure they are kept alive as long as the cursor is.
-        case open(cursor: OpaquePointer, connection: Connection, client: SyncMongoClient, session: SyncClientSession?)
+        case open(cursor: OpaquePointer, connection: Connection, client: MongoClient, session: ClientSession?)
         case closed
     }
 
@@ -49,16 +49,16 @@ public class SyncMongoCursor<T: Codable>: Sequence, IteratorProtocol {
     }
 
     /**
-     * Initializes a new `SyncMongoCursor` instance. Not meant to be instantiated directly by a user.
+     * Initializes a new `MongoCursor` instance. Not meant to be instantiated directly by a user.
      *
      * - Throws:
      *   - `UserError.invalidArgumentError` if the options passed to the command that generated this cursor formed an
      *     invalid combination.
      */
     internal init(
-        client: SyncMongoClient,
+        client: MongoClient,
         decoder: BSONDecoder,
-        session: SyncClientSession?,
+        session: ClientSession?,
         cursorType: CursorType? = nil,
         initializer: (Connection) -> OpaquePointer
     ) throws {

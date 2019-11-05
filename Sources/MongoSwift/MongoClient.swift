@@ -1,7 +1,7 @@
 import Foundation
 import mongoc
 
-/// Options to use when creating a `MongoClient` or a `SyncMongoClient`.
+/// Options to use when creating a `MongoClient`.
 public struct ClientOptions: CodingStrategyProvider, Decodable {
     /**
      * Indicates whether this client should publish command monitoring events. If true, the following event types will
@@ -99,8 +99,7 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
     }
 }
 
-/// Options to use when retrieving a `MongoDatabase` from a `MongoClient`, or a `SyncMongoDatabase` from a
-/// `SyncMongoClient`.
+/// Options to use when retrieving a `MongoDatabase` from a `MongoClient`.
 public struct DatabaseOptions: CodingStrategyProvider {
     /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this database and
     /// any collections that derive from it.
@@ -174,11 +173,11 @@ public struct TLSOptions {
     }
 }
 
-/// A synchronous MongoDB Client.
-public class SyncMongoClient {
+/// A MongoDB Client.
+public class MongoClient {
     internal let connectionPool: ConnectionPool
 
-    private let operationExecutor: SyncOperationExecutor = DefaultSyncOperationExecutor()
+    private let operationExecutor: OperationExecutor = DefaultOperationExecutor()
 
     /// If command and/or server monitoring is enabled, stores the NotificationCenter events are posted to.
     internal let notificationCenter: NotificationCenter
@@ -187,7 +186,7 @@ public class SyncMongoClient {
     internal let _id = clientIdGenerator.next()
 
     /// Counter for generating client _ids.
-    internal static let clientIdGenerator = Counter(label: "SyncMongoClient ID generator")
+    internal static let clientIdGenerator = Counter(label: "MongoClient ID generator")
 
     /// Encoder whose options are inherited by databases derived from this client.
     public let encoder: BSONEncoder
@@ -256,7 +255,7 @@ public class SyncMongoClient {
     /**
      * :nodoc:
      */
-    @available(*, deprecated, message: "Use SyncMongoClient(stealing:) instead.")
+    @available(*, deprecated, message: "Use MongoClient(stealing:) instead.")
     public convenience init(fromPointer pointer: OpaquePointer) {
         self.init(stealing: pointer)
     }
@@ -284,17 +283,17 @@ public class SyncMongoClient {
     }
 
     /**
-     * Starts a new `SyncClientSession` with the provided options.
+     * Starts a new `ClientSession` with the provided options.
      *
      * - Throws:
      *   - `RuntimeError.compatibilityError` if the deployment does not support sessions.
      */
-    public func startSession(options: ClientSessionOptions? = nil) throws -> SyncClientSession {
-        return try SyncClientSession(client: self, options: options)
+    public func startSession(options: ClientSessionOptions? = nil) throws -> ClientSession {
+        return try ClientSession(client: self, options: options)
     }
 
     /**
-     * Starts a new `SyncClientSession` with the provided options and passes it to the provided closure.
+     * Starts a new `ClientSession` with the provided options and passes it to the provided closure.
      * The session is only valid within the body of the closure and will be ended after the body completes.
      *
      * - Throws:
@@ -302,9 +301,9 @@ public class SyncMongoClient {
      */
     public func withSession<T>(
         options: ClientSessionOptions? = nil,
-        _ sessionBody: (SyncClientSession) throws -> T
+        _ sessionBody: (ClientSession) throws -> T
     ) throws -> T {
-        let session = try SyncClientSession(client: self, options: options)
+        let session = try ClientSession(client: self, options: options)
         defer { session.end() }
         return try sessionBody(session)
     }
@@ -315,7 +314,7 @@ public class SyncMongoClient {
      * - Parameters:
      *   - filter: Optional `Document` specifying a filter that the listed databases must pass. This filter can be based
      *     on the "name", "sizeOnDisk", "empty", or "shards" fields of the output.
-     *   - session: Optional `SyncClientSession` to use when executing this command.
+     *   - session: Optional `ClientSession` to use when executing this command.
      *
      * - Returns: A `[DatabaseSpecification]` containing the databases matching provided criteria.
      *
@@ -327,7 +326,7 @@ public class SyncMongoClient {
      */
     public func listDatabases(
         _ filter: Document? = nil,
-        session: SyncClientSession? = nil
+        session: ClientSession? = nil
     ) throws -> [DatabaseSpecification] {
         let operation = ListDatabasesOperation(
             client: self,
@@ -341,21 +340,21 @@ public class SyncMongoClient {
     }
 
     /**
-     * Get a list of `SyncMongoDatabase`s.
+     * Get a list of `MongoDatabase`s.
      *
      * - Parameters:
      *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
-     *   - session: Optional `SyncClientSession` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An Array of `SyncMongoDatabase`s that match the provided filter.
+     * - Returns: An Array of `MongoDatabase`s that match the provided filter.
      *
      * - Throws:
      *   - `UserError.logicError` if the provided session is inactive.
      */
     public func listMongoDatabases(
         _ filter: Document? = nil,
-        session: SyncClientSession? = nil
-    ) throws -> [SyncMongoDatabase] {
+        session: ClientSession? = nil
+    ) throws -> [MongoDatabase] {
         return try self.listDatabaseNames(filter, session: session).map { self.db($0) }
     }
 
@@ -364,14 +363,14 @@ public class SyncMongoClient {
      *
      * - Parameters:
      *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
-     *   - session: Optional `SyncClientSession` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: A `[String]` containing names of databases that match the provided filter.
      *
      * - Throws:
      *   - `UserError.logicError` if the provided session is inactive.
      */
-    public func listDatabaseNames(_ filter: Document? = nil, session: SyncClientSession? = nil) throws -> [String] {
+    public func listDatabaseNames(_ filter: Document? = nil, session: ClientSession? = nil) throws -> [String] {
         let operation = ListDatabasesOperation(
             client: self,
             filter: filter,
@@ -384,7 +383,7 @@ public class SyncMongoClient {
     }
 
     /**
-     * Gets a `SyncMongoDatabase` instance for the given database name. If an option is not specified in the optional
+     * Gets a `MongoDatabase` instance for the given database name. If an option is not specified in the optional
      * `DatabaseOptions` param, the database will inherit the value from the parent client or the default if
      * the client’s option is not set. To override an option inherited from the client (e.g. a read concern) with the
      * default value, it must be explicitly specified in the options param (e.g. ReadConcern(), not nil).
@@ -393,22 +392,22 @@ public class SyncMongoClient {
      *   - name: the name of the database to retrieve
      *   - options: Optional `DatabaseOptions` to use for the retrieved database
      *
-     * - Returns: a `SyncMongoDatabase` corresponding to the provided database name
+     * - Returns: a `MongoDatabase` corresponding to the provided database name
      */
-    public func db(_ name: String, options: DatabaseOptions? = nil) -> SyncMongoDatabase {
-        return SyncMongoDatabase(name: name, client: self, options: options)
+    public func db(_ name: String, options: DatabaseOptions? = nil) -> MongoDatabase {
+        return MongoDatabase(name: name, client: self, options: options)
     }
 
     /**
-     * Starts a `SyncChangeStream` on a `SyncMongoClient`. Allows the client to observe all changes in a cluster -
+     * Starts a `ChangeStream` on a `MongoClient`. Allows the client to observe all changes in a cluster -
      * excluding system collections and the "config", "local", and "admin" databases.
      *
      * - Parameters:
      *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
-     *   - session: An optional `SyncClientSession` to use with this change stream.
+     *   - session: An optional `ClientSession` to use with this change stream.
      *
-     * - Returns: a `SyncChangeStream` on all collections in all databases in a cluster.
+     * - Returns: a `ChangeStream` on all collections in all databases in a cluster.
      *
      * - Throws:
      *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
@@ -426,25 +425,25 @@ public class SyncMongoClient {
     public func watch(
         _ pipeline: [Document] = [],
         options: ChangeStreamOptions? = nil,
-        session: SyncClientSession? = nil
-    ) throws -> SyncChangeStream<ChangeStreamEvent<Document>> {
+        session: ClientSession? = nil
+    ) throws -> ChangeStream<ChangeStreamEvent<Document>> {
         return try self.watch(pipeline, options: options, session: session, withFullDocumentType: Document.self)
     }
 
     /**
-     * Starts a `SyncChangeStream` on a `SyncMongoClient`. Allows the client to observe all changes in a cluster -
+     * Starts a `ChangeStream` on a `MongoClient`. Allows the client to observe all changes in a cluster -
      * excluding system collections and the "config", "local", and "admin" databases. Associates the specified
      * `Codable` type `T` with the `fullDocument` field in the `ChangeStreamEvent`s emitted by the returned
-     * `SyncChangeStream`.
+     * `ChangeStream`.
      *
      * - Parameters:
      *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
-     *   - session: An optional `SyncClientSession` to use with this change stream.
+     *   - session: An optional `ClientSession` to use with this change stream.
      *   - withFullDocumentType: The type that the `fullDocument` field of the emitted `ChangeStreamEvent`s will be
      *                           decoded to.
      *
-     * - Returns: A `SyncChangeStream` on all collections in all databases in a cluster.
+     * - Returns: A `ChangeStream` on all collections in all databases in a cluster.
      *
      * - Throws:
      *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
@@ -462,10 +461,10 @@ public class SyncMongoClient {
     public func watch<FullDocType: Codable>(
         _ pipeline: [Document] = [],
         options: ChangeStreamOptions? = nil,
-        session: SyncClientSession? = nil,
+        session: ClientSession? = nil,
         withFullDocumentType _: FullDocType.Type
     )
-        throws -> SyncChangeStream<ChangeStreamEvent<FullDocType>> {
+        throws -> ChangeStream<ChangeStreamEvent<FullDocType>> {
         return try self.watch(
             pipeline,
             options: options,
@@ -475,18 +474,18 @@ public class SyncMongoClient {
     }
 
     /**
-     * Starts a `SyncChangeStream` on a `SyncMongoClient`. Allows the client to observe all changes in a cluster -
+     * Starts a `ChangeStream` on a `MongoClient`. Allows the client to observe all changes in a cluster -
      * excluding system collections and the "config", "local", and "admin" databases. Associates the specified
-     * `Codable` type `T` with the returned `SyncChangeStream`.
+     * `Codable` type `T` with the returned `ChangeStream`.
      *
      * - Parameters:
      *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
-     *   - session: An optional `SyncClientSession` to use with this change stream.
+     *   - session: An optional `ClientSession` to use with this change stream.
      *   - withEventType: The type that the entire change stream response will be decoded to and that will be returned
      *                    when iterating through the change stream.
      *
-     * - Returns: A `SyncChangeStream` on all collections in all databases in a cluster.
+     * - Returns: A `ChangeStream` on all collections in all databases in a cluster.
      *
      * - Throws:
      *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
@@ -504,9 +503,9 @@ public class SyncMongoClient {
     public func watch<EventType: Codable>(
         _ pipeline: [Document] = [],
         options: ChangeStreamOptions? = nil,
-        session: SyncClientSession? = nil,
+        session: ClientSession? = nil,
         withEventType _: EventType.Type
-    ) throws -> SyncChangeStream<EventType> {
+    ) throws -> ChangeStream<EventType> {
         let connection = try resolveConnection(client: self, session: session)
         let operation = try WatchOperation<Document, EventType>(
             target: .client(self),
@@ -517,17 +516,17 @@ public class SyncMongoClient {
         return try self.executeOperation(operation, session: session)
     }
 
-    /// Executes an `Operation` using this `SyncMongoClient` and an optionally provided session.
+    /// Executes an `Operation` using this `MongoClient` and an optionally provided session.
     internal func executeOperation<T: Operation>(
         _ operation: T,
-        session: SyncClientSession? = nil
+        session: ClientSession? = nil
     ) throws -> T.OperationResult {
         return try self.operationExecutor.execute(operation, client: self, session: session)
     }
 }
 
-extension SyncMongoClient: Equatable {
-    public static func == (lhs: SyncMongoClient, rhs: SyncMongoClient) -> Bool {
+extension MongoClient: Equatable {
+    public static func == (lhs: MongoClient, rhs: MongoClient) -> Bool {
         return lhs._id == rhs._id
     }
 }

@@ -1,14 +1,14 @@
 import mongoc
 
-/// An extension of `SyncMongoCollection` encapsulating bulk write operations.
-extension SyncMongoCollection {
+/// An extension of `MongoCollection` encapsulating bulk write operations.
+extension MongoCollection {
     /**
      * Execute multiple write operations.
      *
      * - Parameters:
      *   - requests: a `[WriteModel]` containing the writes to perform.
      *   - options: optional `BulkWriteOptions` to use while executing the operation.
-     *   - session: Optional `SyncClientSession` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: a `BulkWriteResult`, or `nil` if the write concern is unacknowledged.
      *
@@ -23,7 +23,7 @@ extension SyncMongoCollection {
     public func bulkWrite(
         _ requests: [WriteModel<T>],
         options: BulkWriteOptions? = nil,
-        session: SyncClientSession? = nil
+        session: ClientSession? = nil
     ) throws -> BulkWriteResult? {
         guard !requests.isEmpty else {
             throw UserError.invalidArgumentError(message: "requests cannot be empty")
@@ -167,13 +167,13 @@ public struct UpdateModelOptions: Codable {
 
 /// An operation corresponding to a "bulkWrite" command on a collection.
 internal struct BulkWriteOperation<T: Codable>: Operation {
-    private let collection: SyncMongoCollection<T>
+    private let collection: MongoCollection<T>
     private let models: [WriteModel<T>]
     internal let options: BulkWriteOptions?
 
     fileprivate let encoder: BSONEncoder
 
-    fileprivate init(collection: SyncMongoCollection<T>, models: [WriteModel<T>], options: BulkWriteOptions?) {
+    fileprivate init(collection: MongoCollection<T>, models: [WriteModel<T>], options: BulkWriteOptions?) {
         self.collection = collection
         self.models = models
         self.options = options
@@ -188,7 +188,7 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
      *   - `ServerError.commandError` if an error occurs that prevents the operation from executing.
      *   - `ServerError.bulkWriteError` if an error occurs while performing the writes.
      */
-    internal func execute(using connection: Connection, session: SyncClientSession?) throws -> BulkWriteResult? {
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> BulkWriteResult? {
         var reply = Document()
         var error = bson_error_t()
         let opts = try encodeOptions(options: options, session: session)
@@ -230,7 +230,7 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
     }
 }
 
-/// Options to use when performing a bulk write operation on a `MongoCollection` or a `SyncMongoCollection`.
+/// Options to use when performing a bulk write operation on a `MongoCollection`.
 public struct BulkWriteOptions: Codable {
     /// If `true`, allows the write to opt-out of document level validation.
     public var bypassDocumentValidation: Bool?
@@ -266,7 +266,7 @@ public struct BulkWriteOptions: Codable {
     }
 }
 
-/// The result of a bulk write operation on a `MongoCollection` or a `SyncMongoCollection`.
+/// The result of a bulk write operation on a `MongoCollection`.
 public struct BulkWriteResult: Decodable {
     /// Number of documents deleted.
     public let deletedCount: Int

@@ -33,7 +33,7 @@ final class SDAMTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try SyncMongoClient.makeTestClient(options: ClientOptions(serverMonitoring: true))
+        let client = try MongoClient.makeTestClient(options: ClientOptions(serverMonitoring: true))
         let center = NotificationCenter.default
         var receivedEvents = [MongoEvent]()
 

@@ -24,9 +24,9 @@ public struct ResumeToken: Codable, Equatable {
     }
 }
 
-/// A synchronous MongoDB change stream.
+/// A MongoDB change stream.
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/
-public class SyncChangeStream<T: Codable>: Sequence, IteratorProtocol {
+public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     /// Enum for tracking the state of a change stream.
     internal enum State {
         /// Indicates that the change stream is still open. Stores a pointer to the `mongoc_change_stream_t`, along
@@ -35,8 +35,8 @@ public class SyncChangeStream<T: Codable>: Sequence, IteratorProtocol {
         case open(
             changeStream: OpaquePointer,
             connection: Connection,
-            client: SyncMongoClient,
-            session: SyncClientSession?
+            client: MongoClient,
+            session: ClientSession?
         )
         case closed
     }
@@ -139,7 +139,7 @@ public class SyncChangeStream<T: Codable>: Sequence, IteratorProtocol {
     }
 
     /**
-     * Initializes a `SyncChangeStream`.
+     * Initializes a `ChangeStream`.
      * - Throws:
      *   - `ServerError.commandError` if an error occurred on the server when creating the `mongoc_change_stream_t`.
      *   - `UserError.invalidArgumentError` if the `mongoc_change_stream_t` was created with invalid options.
@@ -147,8 +147,8 @@ public class SyncChangeStream<T: Codable>: Sequence, IteratorProtocol {
     internal init(
         stealing changeStream: OpaquePointer,
         connection: Connection,
-        client: SyncMongoClient,
-        session: SyncClientSession?,
+        client: MongoClient,
+        session: ClientSession?,
         decoder: BSONDecoder,
         options: ChangeStreamOptions?
     ) throws {

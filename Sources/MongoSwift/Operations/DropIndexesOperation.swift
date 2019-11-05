@@ -1,6 +1,6 @@
 import mongoc
 
-/// Options to use when dropping an index from a `MongoCollection` or a `SyncMongoCollection`.
+/// Options to use when dropping an index from a `MongoCollection`.
 public struct DropIndexOptions: Encodable {
     /// The maximum amount of time to allow the query to run - enforced server-side.
     public var maxTimeMS: Int64?
@@ -17,17 +17,17 @@ public struct DropIndexOptions: Encodable {
 
 /// An operation corresponding to a "dropIndexes" command.
 internal struct DropIndexesOperation<T: Codable>: Operation {
-    private let collection: SyncMongoCollection<T>
+    private let collection: MongoCollection<T>
     private let index: BSON
     private let options: DropIndexOptions?
 
-    internal init(collection: SyncMongoCollection<T>, index: BSON, options: DropIndexOptions?) {
+    internal init(collection: MongoCollection<T>, index: BSON, options: DropIndexOptions?) {
         self.collection = collection
         self.index = index
         self.options = options
     }
 
-    internal func execute(using connection: Connection, session: SyncClientSession?) throws -> Document {
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> Document {
         let command: Document = ["dropIndexes": .string(self.collection.name), "index": self.index]
         let opts = try encodeOptions(options: self.options, session: session)
         var reply = Document()

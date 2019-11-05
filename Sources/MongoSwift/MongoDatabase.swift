@@ -1,6 +1,6 @@
 import mongoc
 
-/// Options to set on a retrieved `MongoCollection` or `SyncMongoCollection`.
+/// Options to set on a retrieved `MongoCollection`.
 public struct CollectionOptions: CodingStrategyProvider {
     /// Specifies the `DataCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
     /// It is the responsibility of the user to ensure that any `Data`s already stored in this collection can be
@@ -55,10 +55,10 @@ public struct DropDatabaseOptions: Codable {
     }
 }
 
-/// A synchronous MongoDB Database.
-public struct SyncMongoDatabase {
+/// A MongoDB Database.
+public struct MongoDatabase {
     /// The client which this database was derived from.
-    internal let _client: SyncMongoClient
+    internal let _client: MongoClient
 
     /// The namespace for this database.
     private let namespace: MongoNamespace
@@ -82,14 +82,14 @@ public struct SyncMongoDatabase {
     /// The `WriteConcern` set on this database, or `nil` if one is not set.
     public let writeConcern: WriteConcern?
 
-    /// Initializes a new `SyncMongoDatabase` instance, not meant to be instantiated directly.
-    internal init(name: String, client: SyncMongoClient, options: DatabaseOptions?) {
+    /// Initializes a new `MongoDatabase` instance, not meant to be instantiated directly.
+    internal init(name: String, client: MongoClient, options: DatabaseOptions?) {
         self.namespace = MongoNamespace(db: name, collection: nil)
         self._client = client
 
         // for both read concern and write concern, we look for a read concern in the following order:
         // 1. options provided for this collection
-        // 2. value for this `SyncMongoDatabase`'s parent `SyncMongoClient`
+        // 2. value for this `MongoDatabase`'s parent `MongoClient`
         // if we found a non-nil value, we check if it's the empty/server default or not, and store it if not.
         if let rc = options?.readConcern ?? client.readConcern, !rc.isDefault {
             self.readConcern = rc
@@ -114,12 +114,12 @@ public struct SyncMongoDatabase {
      *   Drops this database.
      * - Parameters:
      *   - options: An optional `DropDatabaseOptions` to use when executing this command
-     *   - session: An optional `SyncClientSession` to use for this command
+     *   - session: An optional `ClientSession` to use for this command
      *
      * - Throws:
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      */
-    public func drop(options: DropDatabaseOptions? = nil, session: SyncClientSession? = nil) throws {
+    public func drop(options: DropDatabaseOptions? = nil, session: ClientSession? = nil) throws {
         let operation = DropDatabaseOperation(database: self, options: options)
         return try self._client.executeOperation(operation, session: session)
     }
@@ -134,16 +134,16 @@ public struct SyncMongoDatabase {
      *   - name: the name of the collection to get
      *   - options: options to set on the returned collection
      *
-     * - Returns: the requested `SyncMongoCollection<Document>`
+     * - Returns: the requested `MongoCollection<Document>`
      */
-    public func collection(_ name: String, options: CollectionOptions? = nil) -> SyncMongoCollection<Document> {
+    public func collection(_ name: String, options: CollectionOptions? = nil) -> MongoCollection<Document> {
         return self.collection(name, withType: Document.self, options: options)
     }
 
     /**
      * Access a collection within this database, and associates the specified `Codable` type `T` with the
-     * returned `SyncMongoCollection`. This association only exists in the context of this particular
-     * `SyncMongoCollection` instance. If an option is not specified in the `CollectionOptions` param, the
+     * returned `MongoCollection`. This association only exists in the context of this particular
+     * `MongoCollection` instance. If an option is not specified in the `CollectionOptions` param, the
      * collection will inherit the value from the parent database or the default if the db's option is not set.
      * To override an option inherited from the db (e.g. a read concern) with the default value, it must be explicitly
      * specified in the options param (e.g. ReadConcern(), not nil).
@@ -152,14 +152,14 @@ public struct SyncMongoDatabase {
      *   - name: the name of the collection to get
      *   - options: options to set on the returned collection
      *
-     * - Returns: the requested `SyncMongoCollection<T>`
+     * - Returns: the requested `MongoCollection<T>`
      */
     public func collection<T: Codable>(
         _ name: String,
         withType _: T.Type,
         options: CollectionOptions? = nil
-    ) -> SyncMongoCollection<T> {
-        return SyncMongoCollection(name: name, database: self, options: options)
+    ) -> MongoCollection<T> {
+        return MongoCollection(name: name, database: self, options: options)
     }
 
     /**
@@ -168,9 +168,9 @@ public struct SyncMongoDatabase {
      * - Parameters:
      *   - name: a `String`, the name of the collection to create
      *   - options: Optional `CreateCollectionOptions` to use for the collection
-     *   - session: Optional `SyncClientSession` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: the newly created `SyncMongoCollection<Document>`
+     * - Returns: the newly created `MongoCollection<Document>`
      *
      * - Throws:
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
@@ -181,23 +181,23 @@ public struct SyncMongoDatabase {
     public func createCollection(
         _ name: String,
         options: CreateCollectionOptions? = nil,
-        session: SyncClientSession? = nil
-    ) throws -> SyncMongoCollection<Document> {
+        session: ClientSession? = nil
+    ) throws -> MongoCollection<Document> {
         return try self.createCollection(name, withType: Document.self, options: options, session: session)
     }
 
     /**
      * Creates a collection in this database with the specified options, and associates the
-     * specified `Codable` type `T` with the returned `SyncMongoCollection`. This association only
-     * exists in the context of this particular `SyncMongoCollection` instance.
+     * specified `Codable` type `T` with the returned `MongoCollection`. This association only
+     * exists in the context of this particular `MongoCollection` instance.
      *
      *
      * - Parameters:
      *   - name: a `String`, the name of the collection to create
      *   - options: Optional `CreateCollectionOptions` to use for the collection
-     *   - session: Optional `SyncClientSession` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: the newly created `SyncMongoCollection<T>`
+     * - Returns: the newly created `MongoCollection<T>`
      *
      * - Throws:
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
@@ -209,8 +209,8 @@ public struct SyncMongoDatabase {
         _ name: String,
         withType type: T.Type,
         options: CreateCollectionOptions? = nil,
-        session: SyncClientSession? = nil
-    ) throws -> SyncMongoCollection<T> {
+        session: ClientSession? = nil
+    ) throws -> MongoCollection<T> {
         let operation = CreateCollectionOperation(database: self, name: name, type: type, options: options)
         return try self._client.executeOperation(operation, session: session)
     }
@@ -221,9 +221,9 @@ public struct SyncMongoDatabase {
      * - Parameters:
      *   - filter: a `Document`, optional criteria to filter results by
      *   - options: Optional `ListCollectionsOptions` to use when executing this command
-     *   - session: Optional `SyncClientSession` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: a `SyncMongoCursor` over an array of `CollectionSpecification`s
+     * - Returns: a `MongoCursor` over an array of `CollectionSpecification`s
      *
      * - Throws:
      *   - `userError.invalidArgumentError` if the options passed are an invalid combination.
@@ -232,8 +232,8 @@ public struct SyncMongoDatabase {
     public func listCollections(
         _ filter: Document? = nil,
         options: ListCollectionsOptions? = nil,
-        session: SyncClientSession? = nil
-    ) throws -> SyncMongoCursor<CollectionSpecification> {
+        session: ClientSession? = nil
+    ) throws -> MongoCursor<CollectionSpecification> {
         let operation = ListCollectionsOperation(database: self, nameOnly: false, filter: filter, options: options)
         guard case let .specs(result) = try self._client.executeOperation(operation, session: session) else {
             throw RuntimeError.internalError(message: "Invalid result")
@@ -242,14 +242,14 @@ public struct SyncMongoDatabase {
     }
 
     /**
-     * Gets a list of `SyncMongoCollection`s in this database.
+     * Gets a list of `MongoCollection`s in this database.
      *
      * - Parameters:
      *   - filter: a `Document`, optional criteria to filter results by
      *   - options: Optional `ListCollectionsOptions` to use when executing this command
-     *   - session: Optional `SyncClientSession` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An array of `SyncMongoCollection`s that match the provided filter.
+     * - Returns: An array of `MongoCollection`s that match the provided filter.
      *
      * - Throws:
      *   - `userError.invalidArgumentError` if the options passed are an invalid combination.
@@ -258,8 +258,8 @@ public struct SyncMongoDatabase {
     public func listMongoCollections(
         _ filter: Document? = nil,
         options: ListCollectionsOptions? = nil,
-        session: SyncClientSession? = nil
-    ) throws -> [SyncMongoCollection<Document>] {
+        session: ClientSession? = nil
+    ) throws -> [MongoCollection<Document>] {
         return try self.listCollectionNames(filter, options: options, session: session).map { self.collection($0) }
     }
 
@@ -269,7 +269,7 @@ public struct SyncMongoDatabase {
      * - Parameters:
      *   - filter: a `Document`, optional criteria to filter results by
      *   - options: Optional `ListCollectionsOptions` to use when executing this command
-     *   - session: Optional `SyncClientSession` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: A `[String]` containing names of collections that match the provided filter.
      *
@@ -280,7 +280,7 @@ public struct SyncMongoDatabase {
     public func listCollectionNames(
         _ filter: Document? = nil,
         options: ListCollectionsOptions? = nil,
-        session: SyncClientSession? = nil
+        session: ClientSession? = nil
     ) throws -> [String] {
         let operation = ListCollectionsOperation(database: self, nameOnly: true, filter: filter, options: options)
         guard case let .names(result) = try self._client.executeOperation(operation, session: session) else {
@@ -295,7 +295,7 @@ public struct SyncMongoDatabase {
      * - Parameters:
      *   - command: a `Document` containing the command to issue against the database
      *   - options: Optional `RunCommandOptions` to use when executing this command
-     *   - session: Optional `SyncClientSession` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: a `Document` containing the server response for the command
      *
@@ -310,21 +310,21 @@ public struct SyncMongoDatabase {
     public func runCommand(
         _ command: Document,
         options: RunCommandOptions? = nil,
-        session: SyncClientSession? = nil
+        session: ClientSession? = nil
     ) throws -> Document {
         let operation = RunCommandOperation(database: self, command: command, options: options)
         return try self._client.executeOperation(operation, session: session)
     }
 
     /**
-     * Starts a `SyncChangeStream` on a database. Excludes system collections.
+     * Starts a `ChangeStream` on a database. Excludes system collections.
      *
      * - Parameters:
      *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
-     *   - session: An optional `SyncClientSession` to use with this change stream.
+     *   - session: An optional `ClientSession` to use with this change stream.
      *
-     * - Returns: A `SyncChangeStream` on all collections in a database.
+     * - Returns: A `ChangeStream` on all collections in a database.
      *
      * - Throws:
      *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
@@ -342,24 +342,24 @@ public struct SyncMongoDatabase {
     public func watch(
         _ pipeline: [Document] = [],
         options: ChangeStreamOptions? = nil,
-        session: SyncClientSession? = nil
-    ) throws -> SyncChangeStream<ChangeStreamEvent<Document>> {
+        session: ClientSession? = nil
+    ) throws -> ChangeStream<ChangeStreamEvent<Document>> {
         return try self.watch(pipeline, options: options, session: session, withFullDocumentType: Document.self)
     }
 
     /**
-     * Starts a `SyncChangeStream` on a database. Excludes system collections.
+     * Starts a `ChangeStream` on a database. Excludes system collections.
      * Associates the specified `Codable` type `T` with the `fullDocument` field in the `ChangeStreamEvent`s emitted
-     * by the returned `SyncChangeStream`.
+     * by the returned `ChangeStream`.
      *
      * - Parameters:
      *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
-     *   - session: An optional `SyncClientSession` to use with this change stream.
+     *   - session: An optional `ClientSession` to use with this change stream.
      *   - withFullDocumentType: The type that the `fullDocument` field of the emitted `ChangeStreamEvent`s will be
      *                           decoded to.
      *
-     * - Returns: A `SyncChangeStream` on all collections in a database.
+     * - Returns: A `ChangeStream` on all collections in a database.
      *
      * - Throws:
      *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
@@ -377,10 +377,10 @@ public struct SyncMongoDatabase {
     public func watch<FullDocType: Codable>(
         _ pipeline: [Document] = [],
         options: ChangeStreamOptions? = nil,
-        session: SyncClientSession? = nil,
+        session: ClientSession? = nil,
         withFullDocumentType _: FullDocType.Type
     )
-        throws -> SyncChangeStream<ChangeStreamEvent<FullDocType>> {
+        throws -> ChangeStream<ChangeStreamEvent<FullDocType>> {
         return try self.watch(
             pipeline,
             options: options,
@@ -390,17 +390,17 @@ public struct SyncMongoDatabase {
     }
 
     /**
-     * Starts a `SyncChangeStream` on a database. Excludes system collections.
-     * Associates the specified `Codable` type `T` with the returned `SyncChangeStream`.
+     * Starts a `ChangeStream` on a database. Excludes system collections.
+     * Associates the specified `Codable` type `T` with the returned `ChangeStream`.
      *
      * - Parameters:
      *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
-     *   - options: An optional `ChangeStreamOptions` to use when constructing the `SyncChangeStream`.
-     *   - session: An optional `SyncClientSession` to use with this change stream.
+     *   - options: An optional `ChangeStreamOptions` to use when constructing the `ChangeStream`.
+     *   - session: An optional `ClientSession` to use with this change stream.
      *   - withEventType: The type that the entire change stream response will be decoded to and that will be returned
      *                    when iterating through the change stream.
      *
-     * - Returns: A `SyncChangeStream` on all collections in a database.
+     * - Returns: A `ChangeStream` on all collections in a database.
      *
      * - Throws:
      *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
@@ -418,9 +418,9 @@ public struct SyncMongoDatabase {
     public func watch<EventType: Codable>(
         _ pipeline: [Document] = [],
         options: ChangeStreamOptions? = nil,
-        session: SyncClientSession? = nil,
+        session: ClientSession? = nil,
         withEventType _: EventType.Type
-    ) throws -> SyncChangeStream<EventType> {
+    ) throws -> ChangeStream<EventType> {
         let connection = try resolveConnection(client: self._client, session: session)
         let operation = try WatchOperation<Document, EventType>(
             target: .database(self),
@@ -432,7 +432,7 @@ public struct SyncMongoDatabase {
     }
 
     /// Uses the provided `Connection` to get a pointer to a `mongoc_database_t` corresponding to this
-    /// `SyncMongoDatabase`, and uses it to execute the given closure. The `mongoc_database_t` is only valid for the
+    /// `MongoDatabase`, and uses it to execute the given closure. The `mongoc_database_t` is only valid for the
     /// body of the closure. The caller is *not responsible* for cleaning up the `mongoc_database_t`.
     internal func withMongocDatabase<T>(from connection: Connection, body: (OpaquePointer) throws -> T) rethrows -> T {
         guard let db = mongoc_client_get_database(connection.clientHandle, self.name) else {

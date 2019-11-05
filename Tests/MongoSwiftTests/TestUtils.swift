@@ -99,11 +99,11 @@ class MongoSwiftTestCase: XCTestCase {
         ns: MongoNamespace? = nil,
         clientOptions: ClientOptions? = nil,
         collectionOptions: CreateCollectionOptions? = nil,
-        f: (SyncMongoClient, SyncMongoDatabase, SyncMongoCollection<Document>)
+        f: (MongoClient, MongoDatabase, MongoCollection<Document>)
             throws -> T
     )
         throws -> T {
-        let client = try SyncMongoClient.makeTestClient(options: clientOptions)
+        let client = try MongoClient.makeTestClient(options: clientOptions)
 
         return try self.withTestNamespace(client: client, ns: ns, options: collectionOptions) { db, coll in
             try f(client, db, coll)
@@ -115,10 +115,10 @@ class MongoSwiftTestCase: XCTestCase {
     ///
     /// Note: If a collection is not specified as part of the input namespace, this function will throw an error.
     internal func withTestNamespace<T>(
-        client: SyncMongoClient,
+        client: MongoClient,
         ns: MongoNamespace? = nil,
         options: CreateCollectionOptions? = nil,
-        _ f: (SyncMongoDatabase, SyncMongoCollection<Document>) throws -> T
+        _ f: (MongoDatabase, MongoCollection<Document>) throws -> T
     )
         throws -> T {
         let ns = ns ?? self.getNamespace()
@@ -134,7 +134,7 @@ class MongoSwiftTestCase: XCTestCase {
     }
 }
 
-extension SyncMongoClient {
+extension MongoClient {
     internal func serverVersion() throws -> ServerVersion {
         // TODO: SWIFT-539: switch to always using buildInfo. fails on MacOS + SSL due to CDRIVER-3318
         let cmd = MongoSwiftTestCase.ssl && MongoSwiftTestCase.isMacOS ? "serverStatus" : "buildInfo"
@@ -176,7 +176,7 @@ extension SyncMongoClient {
     static func makeTestClient(
         _ uri: String = MongoSwiftTestCase.connStr,
         options: ClientOptions? = nil
-    ) throws -> SyncMongoClient {
+    ) throws -> MongoClient {
         var opts = options ?? ClientOptions()
         if MongoSwiftTestCase.ssl {
             opts.tlsOptions = TLSOptions(
@@ -184,7 +184,7 @@ extension SyncMongoClient {
                 pemFile: URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? "")
             )
         }
-        return try SyncMongoClient(uri, options: opts)
+        return try MongoClient(uri, options: opts)
     }
 
     internal func supportsFailCommand() -> Bool {
@@ -270,7 +270,7 @@ internal func sortedEqual(_ expectedValue: Document?) -> Predicate<Document> {
 /// Captures any command monitoring events filtered by type and name that are emitted during the execution of the
 /// provided closure. Only events emitted by the provided client will be captured.
 internal func captureCommandEvents(
-    from client: SyncMongoClient,
+    from client: MongoClient,
     eventTypes: [Notification.Name]? = nil,
     commandNames: [String]? = nil,
     f: () throws -> Void
@@ -307,9 +307,9 @@ internal func captureCommandEvents(
 internal func captureCommandEvents(
     eventTypes: [Notification.Name]? = nil,
     commandNames: [String]? = nil,
-    f: (SyncMongoClient) throws -> Void
+    f: (MongoClient) throws -> Void
 ) throws -> [MongoCommandEvent] {
-    let client = try SyncMongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
+    let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
     return try captureCommandEvents(from: client, eventTypes: eventTypes, commandNames: commandNames) {
         try f(client)
     }

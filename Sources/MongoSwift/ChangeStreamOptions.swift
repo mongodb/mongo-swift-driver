@@ -26,7 +26,7 @@ public enum FullDocument: RawRepresentable, Codable {
     }
 }
 
-/// Options to use when creating a `ChangeStream` or `SyncChangeStream`.
+/// Options to use when creating a `ChangeStream`.
 public struct ChangeStreamOptions: Codable {
     /// The number of documents to return per batch. If omitted, the server will use its default batch size.
     /// - SeeAlso: https://docs.mongodb.com/manual/reference/command/aggregate

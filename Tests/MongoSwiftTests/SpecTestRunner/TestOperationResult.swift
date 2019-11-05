@@ -28,7 +28,7 @@ enum TestOperationResult: Decodable, Equatable {
         self = .bulkWrite(result.bulkResultValue)
     }
 
-    public init<T: Codable>(from cursor: SyncMongoCursor<T>) throws {
+    public init<T: Codable>(from cursor: MongoCursor<T>) throws {
         let result = try cursor.map { BSON.document(try BSONEncoder().encode($0)) }
         guard cursor.error == nil else {
             throw cursor.error!

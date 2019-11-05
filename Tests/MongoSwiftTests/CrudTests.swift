@@ -8,7 +8,7 @@ final class CrudTests: MongoSwiftTestCase {
     override class func tearDown() {
         super.tearDown()
         do {
-            try SyncMongoClient.makeTestClient().db(self.testDatabase).drop()
+            try MongoClient.makeTestClient().db(self.testDatabase).drop()
         } catch {
             print("Dropping test db \(self.testDatabase) failed: \(error)")
         }
@@ -18,7 +18,7 @@ final class CrudTests: MongoSwiftTestCase {
     func doTests(forSubdirectory dir: String) throws {
         let files = try retrieveSpecTestFiles(specName: "crud", subdirectory: dir, asType: CrudTestFile.self)
 
-        let client = try SyncMongoClient.makeTestClient()
+        let client = try MongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
 
         for (filename, file) in files {
@@ -159,11 +159,11 @@ private class CrudTest {
     }
 
     // Subclasses should implement `execute` according to the particular operation(s) they are for.
-    func execute(usingCollection _: SyncMongoCollection<Document>) throws { XCTFail("Unimplemented") }
+    func execute(usingCollection _: MongoCollection<Document>) throws { XCTFail("Unimplemented") }
 
     // If the test has a `collection` field in its `outcome`, verify that the expected
     // data is present. If there is no `collection` field, do nothing.
-    func verifyData(testCollection coll: SyncMongoCollection<Document>, db: SyncMongoDatabase) throws {
+    func verifyData(testCollection coll: MongoCollection<Document>, db: MongoDatabase) throws {
         // only  some tests have data to verify
         guard let collection = self.collection else {
             return
@@ -209,7 +209,7 @@ private class CrudTest {
 
 /// A class for executing `aggregate` tests
 private class AggregateTest: CrudTest {
-    override func execute(usingCollection coll: SyncMongoCollection<Document>) throws {
+    override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let pipeline = self.args["pipeline"]!.arrayValue!.compactMap { $0.documentValue }
         let options = AggregateOptions(batchSize: self.batchSize, collation: self.collation)
         let cursor = try coll.aggregate(pipeline, options: options)
@@ -227,7 +227,7 @@ private class AggregateTest: CrudTest {
 }
 
 private class BulkWriteTest: CrudTest {
-    override func execute(usingCollection coll: SyncMongoCollection<Document>) throws {
+    override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let requestDocuments: [Document] = self.args["requests"]!.arrayValue!.compactMap { $0.documentValue }
         let requests = try requestDocuments.map { try BSONDecoder().decode(WriteModel<Document>.self, from: $0) }
         let options = try BSONDecoder().decode(BulkWriteOptions.self, from: self.args["options"]?.documentValue ?? [:])
@@ -288,12 +288,12 @@ private class BulkWriteTest: CrudTest {
 
 /// A class for executing `count` tests
 private class CountTest: CrudTest {
-    override func execute(usingCollection _: SyncMongoCollection<Document>) throws {}
+    override func execute(usingCollection _: MongoCollection<Document>) throws {}
 }
 
 /// A class for executing `countDocuments` tests
 private class CountDocumentsTest: CrudTest {
-    override func execute(usingCollection coll: SyncMongoCollection<Document>) throws {
+    override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let filter: Document = try self.args.get("filter")
         let options = CountDocumentsOptions(collation: self.collation, limit: self.limit, skip: self.skip)
         let result = try coll.countDocuments(filter, options: options)
@@ -303,7 +303,7 @@ private class CountDocumentsTest: CrudTest {
 
 /// A class for executing `estimatedDocumentCount` tests
 private class EstimatedDocumentCountTest: CrudTest {
-    override func execute(usingCollection coll: SyncMongoCollection<Document>) throws {
+    override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let options = EstimatedDocumentCountOptions()
         let result = try coll.estimatedDocumentCount(options: options)
         expect(result).to(equal(self.result?.asInt()))
@@ -312,7 +312,7 @@ private class EstimatedDocumentCountTest: CrudTest {
 
 /// A class for executing `deleteOne` and `deleteMany` tests
 private class DeleteTest: CrudTest {
-    override func execute(usingCollection coll: SyncMongoCollection<Document>) throws {
+    override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let filter: Document = try self.args.get("filter")
         let options = DeleteOptions(collation: self.collation)
         let result: DeleteResult?
@@ -329,7 +329,7 @@ private class DeleteTest: CrudTest {
 
 /// A class for executing `distinct` tests
 private class DistinctTest: CrudTest {
-    override func execute(usingCollection coll: SyncMongoCollection<Document>) throws {
+    override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let filter = self.args["filter"]?.documentValue
         let fieldName: String = try self.args.get("fieldName")
         let options = DistinctOptions(collation: self.collation)
@@ -346,7 +346,7 @@ private class DistinctTest: CrudTest {
 
 /// A class for executing `find` tests
 private class FindTest: CrudTest {
-    override func execute(usingCollection coll: SyncMongoCollection<Document>) throws {
+    override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let filter: Document = try self.args.get("filter")
         let options = FindOptions(
             batchSize: self.batchSize,
@@ -362,7 +362,7 @@ private class FindTest: CrudTest {
 
 /// A class for executing `findOneAndDelete` tests
 private class FindOneAndDeleteTest: CrudTest {
-    override func execute(usingCollection coll: SyncMongoCollection<Document>) throws {
+    override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let filter: Document = try self.args.get("filter")
         let opts = FindOneAndDeleteOptions(collation: self.collation, projection: self.projection, sort: self.sort)
 
@@ -373,7 +373,7 @@ private class FindOneAndDeleteTest: CrudTest {
 
 /// A class for executing `findOneAndUpdate` tests
 private class FindOneAndReplaceTest: CrudTest {
-    override func execute(usingCollection coll: SyncMongoCollection<Document>) throws {
+    override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let filter: Document = try self.args.get("filter")
         let replacement: Document = try self.args.get("replacement")
 
@@ -392,7 +392,7 @@ private class FindOneAndReplaceTest: CrudTest {
 
 /// A class for executing `findOneAndReplace` tests
 private class FindOneAndUpdateTest: CrudTest {
-    override func execute(usingCollection coll: SyncMongoCollection<Document>) throws {
+    override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let filter: Document = try self.args.get("filter")
         let update: Document = try self.args.get("update")
 
@@ -412,7 +412,7 @@ private class FindOneAndUpdateTest: CrudTest {
 
 /// A class for executing `insertMany` tests
 private class InsertManyTest: CrudTest {
-    override func execute(usingCollection coll: SyncMongoCollection<Document>) throws {
+    override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let documents = self.args["documents"]!.arrayValue!.compactMap { $0.documentValue }
         let options = InsertManyTest.parseInsertManyOptions(self.args["options"]?.documentValue)
         let expectError = self.error ?? false
@@ -467,7 +467,7 @@ private class InsertManyTest: CrudTest {
 
 /// A Class for executing `insertOne` tests
 private class InsertOneTest: CrudTest {
-    override func execute(usingCollection coll: SyncMongoCollection<Document>) throws {
+    override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let doc: Document = try self.args.get("document")
         let result = try coll.insertOne(doc)
         expect(doc["_id"]).to(equal(result?.insertedId))
@@ -476,7 +476,7 @@ private class InsertOneTest: CrudTest {
 
 /// A class for executing `replaceOne` tests
 private class ReplaceOneTest: CrudTest {
-    override func execute(usingCollection coll: SyncMongoCollection<Document>) throws {
+    override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let filter: Document = try self.args.get("filter")
         let replacement: Document = try self.args.get("replacement")
         let options = ReplaceOptions(collation: self.collation, upsert: self.upsert)
@@ -487,7 +487,7 @@ private class ReplaceOneTest: CrudTest {
 
 /// A class for executing `updateOne` and `updateMany` tests
 private class UpdateTest: CrudTest {
-    override func execute(usingCollection coll: SyncMongoCollection<Document>) throws {
+    override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let filter: Document = try self.args.get("filter")
         let update: Document = try self.args.get("update")
         let options = UpdateOptions(arrayFilters: self.arrayFilters, collation: self.collation, upsert: self.upsert)

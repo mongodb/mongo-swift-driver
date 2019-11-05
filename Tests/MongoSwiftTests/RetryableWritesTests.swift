@@ -14,10 +14,10 @@ private struct RetryableWritesTest: Decodable {
     /// The operation to execute as part of this test case.
     let operation: AnyTestOperation
 
-    /// Options used to configure the `SyncMongoClient` used for this test.
+    /// Options used to configure the `MongoClient` used for this test.
     let clientOptions: ClientOptions?
 
-    /// If true, the `SyncMongoClient` for this test should be initialized with multiple mongos seed addresses.
+    /// If true, the `MongoClient` for this test should be initialized with multiple mongos seed addresses.
     /// If false or omitted, only a single mongos address should be specified.
     /// This field has no effect for non-sharded topologies.
     let useMultipleMongoses: Bool?
@@ -58,7 +58,7 @@ final class RetryableWritesTests: MongoSwiftTestCase, FailPointConfigured {
     override class func tearDown() {
         super.tearDown()
         do {
-            try SyncMongoClient.makeTestClient().db(self.testDatabase).drop()
+            try MongoClient.makeTestClient().db(self.testDatabase).drop()
         } catch {
             print("Dropping test db \(self.testDatabase) failed: \(error)")
         }
@@ -67,7 +67,7 @@ final class RetryableWritesTests: MongoSwiftTestCase, FailPointConfigured {
     func testRetryableWrites() throws {
         let tests = try retrieveSpecTestFiles(specName: "retryable-writes", asType: RetryableWritesTestFile.self)
         for (fileName, testFile) in tests {
-            let setupClient = try SyncMongoClient.makeTestClient()
+            let setupClient = try MongoClient.makeTestClient()
             let version = try setupClient.serverVersion()
 
             if let requirements = testFile.runOn {
@@ -82,7 +82,7 @@ final class RetryableWritesTests: MongoSwiftTestCase, FailPointConfigured {
                 print("Executing test: \(test.description)")
 
                 let clientOptions = test.clientOptions ?? ClientOptions(retryWrites: true)
-                let client = try SyncMongoClient.makeTestClient(options: clientOptions)
+                let client = try MongoClient.makeTestClient(options: clientOptions)
                 let db = client.db(type(of: self).testDatabase)
                 let collection = db.collection(self.getCollectionName(suffix: test.description))
 

@@ -1,6 +1,6 @@
 import mongoc
 
-/// Options to use when executing a `createCollection` command on a `MongoDatabase` or a `SyncMongoDatabase`.
+/// Options to use when executing a `createCollection` command on a `MongoDatabase`.
 public struct CreateCollectionOptions: Codable, CodingStrategyProvider {
     /// Whether or not this collection will automatically generate an index on _id.
     public var autoIndexId: Bool?
@@ -61,7 +61,7 @@ public struct CreateCollectionOptions: Codable, CodingStrategyProvider {
     public var viewOn: String?
 
     /// A write concern to use when executing this command. To set a read or write concern for the collection itself,
-    /// retrieve the collection using `MongoDatabase.collection` or `SyncMongoDatabase.collection`.
+    /// retrieve the collection using `MongoDatabase.collection`.
     public var writeConcern: WriteConcern?
 
     private enum CodingKeys: String, CodingKey {
@@ -109,19 +109,19 @@ public struct CreateCollectionOptions: Codable, CodingStrategyProvider {
 
 // An operation corresponding to a `createCollection` command on a database.
 internal struct CreateCollectionOperation<T: Codable>: Operation {
-    private let database: SyncMongoDatabase
+    private let database: MongoDatabase
     private let name: String
     private let type: T.Type
     private let options: CreateCollectionOptions?
 
-    internal init(database: SyncMongoDatabase, name: String, type: T.Type, options: CreateCollectionOptions?) {
+    internal init(database: MongoDatabase, name: String, type: T.Type, options: CreateCollectionOptions?) {
         self.database = database
         self.name = name
         self.type = type
         self.options = options
     }
 
-    internal func execute(using connection: Connection, session: SyncClientSession?) throws -> SyncMongoCollection<T> {
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> MongoCollection<T> {
         let opts = try encodeOptions(options: self.options, session: session)
         var error = bson_error_t()
 
@@ -138,6 +138,6 @@ internal struct CreateCollectionOperation<T: Codable>: Operation {
             uuidCodingStrategy: self.options?.uuidCodingStrategy
         )
 
-        return SyncMongoCollection(name: self.name, database: self.database, options: collectionOptions)
+        return MongoCollection(name: self.name, database: self.database, options: collectionOptions)
     }
 }
