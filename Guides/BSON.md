@@ -190,7 +190,7 @@ doc.filter { k, v in k.contains("num") && v.asInt() != nil }.mapValues { v in .i
 ```
 See the driver's documentation for a full listing of `Document`'s public API.
 ## `Codable` and `Document`
-[`Codable`](https://developer.apple.com/documentation/swift/codable) is a protocol defined in Foundation that allows for ergonomic conversion between various serialization schemes and Swift data types. As part of the BSON libary, MongoSwift defines both `BSONEncoder` and `BSONDecoder` to facilitate this serialization and deserialization to and from BSON via `Codable`. This allows applications to work with BSON documents in a type-safe way, and it removes much of the runtime key presence and type checking required when working with raw documents. It is reccommended that users leverage `Codable` wherever possible in their applications that use the driver instead of accessing documents directly. 
+[`Codable`](https://developer.apple.com/documentation/swift/codable) is a protocol defined in Foundation that allows for ergonomic conversion between various serialization schemes and Swift data types. As part of the BSON library, MongoSwift defines both `BSONEncoder` and `BSONDecoder` to facilitate this serialization and deserialization to and from BSON via `Codable`. This allows applications to work with BSON documents in a type-safe way, and it removes much of the runtime key presence and type checking required when working with raw documents. It is reccommended that users leverage `Codable` wherever possible in their applications that use the driver instead of accessing documents directly. 
 
 For example, here is an function written using raw documents:
 ```swift
@@ -283,7 +283,7 @@ doc["c"] = "i am a string"
 ```
 This API provided a number of benefits, the principal one being the seamless integration of standard Swift types (e.g. `Int`) and driver custom ones (e.g `ObjectId`) into `Document`'s methods. It also had a few drawbacks, however. In order for `BSONValue` to be used as an existential type, it could not have `Self` or associated type requirements. This ended being a big restriction as it meant `BSONValue` could not be `Equatable`, `Hashable`, or `Codable`. Instead, all of this functionaltiy was put onto the separate wrapper type `AnyBSONValue`, which was used instead of an existential `BSONValue` in many places in order to leverage these common protocol conformances.
 
-Another drawback is that subdocument lterals could not be inferred and had to be explicitly casted:
+Another drawback is that subdocument literals could not be inferred and had to be explicitly casted:
 ```swift
 let x: Document = [
     "x": [
