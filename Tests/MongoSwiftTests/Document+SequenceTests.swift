@@ -262,7 +262,7 @@ final class Document_SequenceTests: MongoSwiftTestCase {
         expect(self.smallDoc.suffix(2)).to(equal(self.smallDoc))
         expect(self.smallDoc.suffix(5)).to(equal(self.smallDoc))
 
-        expect(self.doc.suffix(0)).to(equal([]))
+        expect(self.doc.suffix(0)).to(equal([:]))
         expect(self.doc.suffix(1)).to(equal(["g": 10]))
         expect(self.doc.suffix(2)).to(equal(["f": .minKey, "g": 10]))
         expect(self.doc.suffix(4)).to(equal(["d": false, "e": .null, "f": .minKey, "g": 10]))

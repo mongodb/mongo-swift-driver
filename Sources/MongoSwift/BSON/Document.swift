@@ -545,24 +545,6 @@ internal func withMutableBSONPointer<T>(
     return try body(document._storage._bson)
 }
 
-/// An extension of `Document` to add the capability to be initialized with an array literal.
-extension Document: ExpressibleByArrayLiteral {
-    /**
-     * Initializes a `Document` using an array literal where the values
-     * are `BSONValue`s. Values are stored under a string of their
-     * index in the array. For example:
-     * `d: Document = ["a", "b"]` will become `["0": "a", "1": "b"]`
-     *
-     * - Parameters:
-     *   - arrayLiteral: a `[BSONValue]`
-     *
-     * - Returns: a new `Document`
-     */
-    public init(arrayLiteral elements: BSON...) {
-        self.init(elements)
-    }
-}
-
 // An extension of `Document` to add the capability to be hashed
 extension Document: Hashable {
     public func hash(into hasher: inout Hasher) {
