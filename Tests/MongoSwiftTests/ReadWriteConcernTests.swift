@@ -103,7 +103,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
         expect(rc2.isDefault).to(beTrue())
 
         // test init from doc
-        let rc3 = ReadConcern(["level": "majority"])
+        let rc3 = try BSONDecoder().decode(ReadConcern.self, from: ["level": "majority"])
         expect(rc3.level).to(equal(.majority))
 
         // test string init
@@ -586,7 +586,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
                 if valid {
                     let client = try MongoClient(uri)
                     if let readConcern = test["readConcern"]?.documentValue {
-                        let rc = ReadConcern(readConcern)
+                        let rc = try BSONDecoder().decode(ReadConcern.self, from: readConcern)
                         if rc.isDefault {
                             expect(client.readConcern).to(beNil())
                         } else {
@@ -620,7 +620,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
             for test in tests {
                 let valid: Bool = try test.get("valid")
                 if let rcToUse = test["readConcern"]?.documentValue {
-                    let rc = ReadConcern(rcToUse)
+                    let rc = try BSONDecoder().decode(ReadConcern.self, from: rcToUse)
 
                     let isDefault: Bool = try test.get("isServerDefault")
                     expect(rc.isDefault).to(equal(isDefault))
