@@ -111,7 +111,6 @@ extension DocumentTests {
     static var allTests = [
         ("testDocument", testDocument),
         ("testDocumentDynamicMemberLookup", testDocumentDynamicMemberLookup),
-        ("testDocumentFromArray", testDocumentFromArray),
         ("testEquatable", testEquatable),
         ("testRawBSON", testRawBSON),
         ("testValueBehavior", testValueBehavior),
