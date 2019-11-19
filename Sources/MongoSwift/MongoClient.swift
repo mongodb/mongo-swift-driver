@@ -476,12 +476,10 @@ public class MongoClient {
         session: ClientSession? = nil,
         withEventType _: EventType.Type
     ) throws -> ChangeStream<EventType> {
-        let connection = try resolveConnection(client: self, session: session)
         let operation = try WatchOperation<Document, EventType>(
             target: .client(self),
             pipeline: pipeline,
-            options: options,
-            stealing: connection
+            options: options
         )
         return try self.executeOperation(operation, session: session)
     }
@@ -489,9 +487,10 @@ public class MongoClient {
     /// Executes an `Operation` using this `MongoClient` and an optionally provided session.
     internal func executeOperation<T: Operation>(
         _ operation: T,
+        using connection: Connection? = nil,
         session: ClientSession? = nil
     ) throws -> T.OperationResult {
-        return try self.operationExecutor.execute(operation, client: self, session: session)
+        return try self.operationExecutor.execute(operation, using: connection, client: self, session: session)
     }
 }
 

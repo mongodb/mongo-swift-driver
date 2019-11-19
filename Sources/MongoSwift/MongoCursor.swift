@@ -56,34 +56,30 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
      *     invalid combination.
      */
     internal init(
+        stealing cursor: OpaquePointer,
+        connection: Connection,
         client: MongoClient,
         decoder: BSONDecoder,
         session: ClientSession?,
-        cursorType: CursorType? = nil,
-        initializer: (Connection) -> OpaquePointer
+        cursorType: CursorType? = nil
     ) throws {
-        let connection = try resolveConnection(client: client, session: session)
-        let cursor = initializer(connection)
         self.state = .open(cursor: cursor, connection: connection, client: client, session: session)
         self.cursorType = cursorType ?? .nonTailable
         self.decoder = decoder
         self.error = nil
 
-        if let err = self.getMongocError() {
-            // Errors in creation of the cursor are limited to invalid argument errors, but some errors are reported
-            // by libmongoc as invalid cursor errors. These would be parsed to .logicErrors, so we need to rethrow them
-            // as the correct case.
-            throw UserError.invalidArgumentError(message: err.errorDescription ?? "")
+        if let error = self.getMongocError() {
+            self.close()
+            throw error
         }
     }
 
     /// Cleans up internal state.
     private func close() {
-        guard case let .open(cursor, conn, client, session) = self.state else {
+        guard case let .open(cursor, _, _, _) = self.state else {
             return
         }
         mongoc_cursor_destroy(cursor)
-        releaseConnection(connection: conn, client: client, session: session)
         self.state = .closed
     }
 
@@ -154,8 +150,8 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         }
 
         do {
-            let operation = NextOperation(target: .cursor(self), using: connection)
-            guard let out = try client.executeOperation(operation, session: session) else {
+            let operation = NextOperation(target: .cursor(self))
+            guard let out = try client.executeOperation(operation, using: connection, session: session) else {
                 self.error = self.getMongocError()
                 // Since there was no document returned, we should close the cursor if:
                 // 1. this is not a tailable cursor, or

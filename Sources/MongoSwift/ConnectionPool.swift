@@ -1,12 +1,24 @@
 import mongoc
 
 /// A connection to the database.
-internal struct Connection {
+internal class Connection {
     /// Pointer to the underlying `mongoc_client_t`.
     internal let clientHandle: OpaquePointer
+    /// The pool this connection belongs to.
+    private let pool: ConnectionPool
 
-    internal init(_ clientHandle: OpaquePointer) {
+    internal init(clientHandle: OpaquePointer, pool: ConnectionPool) {
         self.clientHandle = clientHandle
+        self.pool = pool
+    }
+
+    deinit {
+        switch self.pool.state {
+        case let .open(pool):
+            mongoc_client_pool_push(pool, self.clientHandle)
+        case .closed:
+            assertionFailure("ConnectionPool was already closed")
+        }
     }
 }
 
@@ -55,30 +67,19 @@ internal class ConnectionPool {
         self.state = .closed
     }
 
-    /// Checks out a connection. This connection must be returned to the pool via `checkIn`.
+    /// Checks out a connection. This connection will return itself to the pool when its reference count drops to 0.
     internal func checkOut() throws -> Connection {
         switch self.state {
         case let .open(pool):
-            return Connection(mongoc_client_pool_pop(pool))
+            return Connection(clientHandle: mongoc_client_pool_pop(pool), pool: self)
         case .closed:
             throw RuntimeError.internalError(message: "ConnectionPool was already closed")
-        }
-    }
-
-    /// Returns a connection to the pool.
-    internal func checkIn(_ connection: Connection) {
-        switch self.state {
-        case let .open(pool):
-            mongoc_client_pool_push(pool, connection.clientHandle)
-        case .closed:
-            fatalError("ConnectionPool was already closed")
         }
     }
 
     /// Executes the given closure using a connection from the pool.
     internal func withConnection<T>(body: (Connection) throws -> T) throws -> T {
         let connection = try self.checkOut()
-        defer { self.checkIn(connection) }
         return try body(connection)
     }
 

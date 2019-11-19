@@ -133,8 +133,6 @@ public final class ClientSession {
         let session: OpaquePointer = try withSessionOpts(wrapping: options) { opts in
             var error = bson_error_t()
             guard let session = mongoc_client_start_session(connection.clientHandle, opts, &error) else {
-                // we won't call end(), so need to check the connection back in here manually.
-                client.connectionPool.checkIn(connection)
                 throw extractMongoError(error: error)
             }
             return session
@@ -160,9 +158,8 @@ public final class ClientSession {
     /// Destroy the underlying `mongoc_client_session_t` and set this session to inactive.
     /// Does nothing if this session is already inactive.
     internal func end() {
-        if case let .active(session, connection) = self.state {
+        if case let .active(session, _) = self.state {
             mongoc_client_session_destroy(session)
-            self.client.connectionPool.checkIn(connection)
             self.state = .inactive
         }
     }

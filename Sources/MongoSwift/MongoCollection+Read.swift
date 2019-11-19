@@ -24,19 +24,23 @@ extension MongoCollection {
     ) throws -> MongoCursor<CollectionType> {
         let opts = try encodeOptions(options: options, session: session)
         let rp = options?.readPreference?._readPreference
+
+        let connection = try resolveConnection(client: self._client, session: session)
+        let cursor: OpaquePointer = self.withMongocCollection(from: connection) { collPtr in
+            guard let cursor = mongoc_collection_find_with_opts(collPtr, filter._bson, opts?._bson, rp) else {
+                fatalError(failedToRetrieveCursorMessage)
+            }
+            return cursor
+        }
+
         return try MongoCursor(
+            stealing: cursor,
+            connection: connection,
             client: self._client,
             decoder: self.decoder,
             session: session,
             cursorType: options?.cursorType
-        ) { conn in
-            self.withMongocCollection(from: conn) { collPtr in
-                guard let cursor = mongoc_collection_find_with_opts(collPtr, filter._bson, opts?._bson, rp) else {
-                    fatalError(failedToRetrieveCursorMessage)
-                }
-                return cursor
-            }
-        }
+        )
     }
 
     /**
@@ -63,20 +67,27 @@ extension MongoCollection {
         let rp = options?.readPreference?._readPreference
         let pipeline: Document = ["pipeline": .array(pipeline.map { .document($0) })]
 
-        return try MongoCursor(client: self._client, decoder: self.decoder, session: session) { conn in
-            self.withMongocCollection(from: conn) { collPtr in
-                guard let cursor = mongoc_collection_aggregate(
-                    collPtr,
-                    MONGOC_QUERY_NONE,
-                    pipeline._bson,
-                    opts?._bson,
-                    rp
-                ) else {
-                    fatalError(failedToRetrieveCursorMessage)
-                }
-                return cursor
+        let connection = try resolveConnection(client: self._client, session: session)
+        let cursor: OpaquePointer = self.withMongocCollection(from: connection) { collPtr in
+            guard let cursor = mongoc_collection_aggregate(
+                collPtr,
+                MONGOC_QUERY_NONE,
+                pipeline._bson,
+                opts?._bson,
+                rp
+            ) else {
+                fatalError(failedToRetrieveCursorMessage)
             }
+            return cursor
         }
+
+        return try MongoCursor(
+            stealing: cursor,
+            connection: connection,
+            client: self._client,
+            decoder: self.decoder,
+            session: session
+        )
     }
 
     /**
