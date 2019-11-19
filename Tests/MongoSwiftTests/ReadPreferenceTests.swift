@@ -31,16 +31,16 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
         let rpNoTagSets = try ReadPreference(.nearest, tagSets: nil)
         expect(rpNoTagSets.tagSets).to(equal([]))
 
-        let rpSomeTagSets = try ReadPreference(.nearest, tagSets: [["dc": "east"], []])
-        expect(rpSomeTagSets.tagSets).to(equal([["dc": "east"], []]))
+        let rpSomeTagSets = try ReadPreference(.nearest, tagSets: [["dc": "east"], [:]])
+        expect(rpSomeTagSets.tagSets).to(equal([["dc": "east"], [:]]))
 
-        let rpOnlyEmptyTagSet = try ReadPreference(.nearest, tagSets: [[]])
-        expect(rpOnlyEmptyTagSet.tagSets).to(equal([[]]))
+        let rpOnlyEmptyTagSet = try ReadPreference(.nearest, tagSets: [[:]])
+        expect(rpOnlyEmptyTagSet.tagSets).to(equal([[:]]))
 
         // Non-empty tag sets cannot be combined with primary mode
-        expect(try ReadPreference(.primary, tagSets: [["dc": "east"], []]))
+        expect(try ReadPreference(.primary, tagSets: [["dc": "east"], [:]]))
             .to(throwError(UserError.invalidArgumentError(message: "")))
-        expect(try ReadPreference(.primary, tagSets: [[]])).to(throwError(UserError.invalidArgumentError(message: "")))
+        expect(try ReadPreference(.primary, tagSets: [[:]])).to(throwError(UserError.invalidArgumentError(message: "")))
     }
 
     func testMaxStalenessSeconds() throws {
@@ -80,11 +80,11 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
             .to(equal(ReadPreference(.secondary)))
         expect(try ReadPreference(.secondary, tagSets: []))
             .to(equal(try ReadPreference(.secondary, tagSets: [])))
-        expect(try ReadPreference(.secondary, tagSets: [["dc": "east"], []]))
-            .to(equal(try ReadPreference(.secondary, tagSets: [["dc": "east"], []])))
-        expect(try ReadPreference(.secondary, tagSets: [["dc": "east"], []]))
-            .toNot(equal(try ReadPreference(.nearest, tagSets: [["dc": "east"], []])))
-        expect(try ReadPreference(.secondary, tagSets: [["dc": "east"], []]))
+        expect(try ReadPreference(.secondary, tagSets: [["dc": "east"], [:]]))
+            .to(equal(try ReadPreference(.secondary, tagSets: [["dc": "east"], [:]])))
+        expect(try ReadPreference(.secondary, tagSets: [["dc": "east"], [:]]))
+            .toNot(equal(try ReadPreference(.nearest, tagSets: [["dc": "east"], [:]])))
+        expect(try ReadPreference(.secondary, tagSets: [["dc": "east"], [:]]))
             .toNot(equal(try ReadPreference(.secondary, maxStalenessSeconds: 90)))
 
         expect(try ReadPreference(.secondaryPreferred, maxStalenessSeconds: nil))

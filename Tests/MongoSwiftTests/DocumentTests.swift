@@ -243,23 +243,6 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(doc.b).to(equal("different"))
     }
 
-    func testDocumentFromArray() {
-        let doc1: Document = ["foo", .minKey, .null]
-
-        expect(doc1.keys).to(equal(["0", "1", "2"]))
-        expect(doc1["0"]).to(equal("foo"))
-        expect(doc1["1"]).to(equal(.minKey))
-        expect(doc1["2"]).to(equal(.null))
-
-        let elements: [BSON] = ["foo", .minKey, .null]
-        let doc2 = Document(elements)
-
-        expect(doc2.keys).to(equal(["0", "1", "2"]))
-        expect(doc2["0"]).to(equal("foo"))
-        expect(doc2["1"]).to(equal(.minKey))
-        expect(doc2["2"]).to(equal(.null))
-    }
-
     func testEquatable() {
         expect(["hi": true, "hello": "hi", "cat": 2] as Document)
             .to(equal(["hi": true, "hello": "hi", "cat": 2] as Document))
