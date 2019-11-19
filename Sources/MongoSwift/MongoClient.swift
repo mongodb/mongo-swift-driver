@@ -253,36 +253,6 @@ public class MongoClient {
     }
 
     /**
-     * :nodoc:
-     */
-    @available(*, deprecated, message: "Use MongoClient(stealing:) instead.")
-    public convenience init(fromPointer pointer: OpaquePointer) {
-        self.init(stealing: pointer)
-    }
-
-    /**
-     * :nodoc:
-     * Create a new client from an existing `mongoc_client_t`. The new client will destroy the `mongoc_client_t` upon
-     * deinitialization.
-     * Do not use this initializer unless you know what you are doing. You *must* call libmongoc_init *before* using
-     * this initializer for the first time.
-     *
-     * If this client was derived from a pool, ensure that the error api version was set to 2 on the pool.
-     *
-     * - Parameters:
-     *   - pointer: the `mongoc_client_t` to store and use internally
-     */
-    public init(stealing pointer: OpaquePointer) {
-        self.connectionPool = ConnectionPool(stealing: pointer)
-        self.encoder = BSONEncoder()
-        self.decoder = BSONDecoder()
-        self.readConcern = nil
-        self.readPreference = ReadPreference()
-        self.writeConcern = nil
-        self.notificationCenter = NotificationCenter.default
-    }
-
-    /**
      * Starts a new `ClientSession` with the provided options.
      *
      * - Throws:

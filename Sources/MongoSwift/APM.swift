@@ -544,12 +544,10 @@ extension ConnectionPool {
 
         // we can pass the MongoClient as unretained because the callbacks are stored on clientHandle, so if the
         // callback is being executed, this pool and therefore its parent `MongoClient` must still be valid.
-        switch self.mode {
-        case let .single(clientHandle):
-            mongoc_client_set_apm_callbacks(clientHandle, callbacks, Unmanaged.passUnretained(client).toOpaque())
-        case let .pooled(pool):
+        switch self.state {
+        case let .open(pool):
             mongoc_client_pool_set_apm_callbacks(pool, callbacks, Unmanaged.passUnretained(client).toOpaque())
-        case .none:
+        case .closed:
             fatalError("ConnectionPool was already closed")
         }
     }
