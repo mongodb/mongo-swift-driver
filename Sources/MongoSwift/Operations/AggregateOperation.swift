@@ -86,8 +86,8 @@ internal struct AggregateOperation<CollectionType: Codable>: Operation {
         let rp = self.options?.readPreference?._readPreference
         let pipeline: Document = ["pipeline": .array(self.pipeline.map { .document($0) })]
 
-        let cursor: OpaquePointer = self.collection.withMongocCollection(from: connection) { collPtr in
-            guard let cursor = mongoc_collection_aggregate(
+        let result: OpaquePointer = self.collection.withMongocCollection(from: connection) { collPtr in
+            guard let result = mongoc_collection_aggregate(
                 collPtr,
                 MONGOC_QUERY_NONE,
                 pipeline._bson,
@@ -96,15 +96,17 @@ internal struct AggregateOperation<CollectionType: Codable>: Operation {
             ) else {
                 fatalError(failedToRetrieveCursorMessage)
             }
-            return cursor
+            return result
         }
 
-        return try MongoCursor(
-            stealing: cursor,
+        let cursor = try MongoCursor<Document>(
+            stealing: result,
             connection: connection,
             client: self.collection._client,
             decoder: self.collection.decoder,
             session: session
         )
+        try cursor.cacheDocument()
+        return cursor
     }
 }

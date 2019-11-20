@@ -178,8 +178,10 @@ private struct CMTest: Decodable {
                 sort: self.op.args["sort"]?.documentValue
             )
 
-            // we have to iterate the cursor to make the command execute
-            for _ in try! collection.find(filter, options: options) {}
+            do {
+                let cursor = try collection.find(filter, options: options)
+                for _ in cursor {}
+            } catch {}
 
         case "insertMany":
             let documents = (self.op.args["documents"]?.arrayValue?.compactMap { $0.documentValue })!

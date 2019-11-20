@@ -210,20 +210,22 @@ internal struct FindOperation<CollectionType: Codable>: Operation {
         let opts = try encodeOptions(options: self.options, session: session)
         let rp = self.options?.readPreference?._readPreference
 
-        let cursor: OpaquePointer = self.collection.withMongocCollection(from: connection) { collPtr in
-            guard let cursor = mongoc_collection_find_with_opts(collPtr, self.filter._bson, opts?._bson, rp) else {
+        let result: OpaquePointer = self.collection.withMongocCollection(from: connection) { collPtr in
+            guard let result = mongoc_collection_find_with_opts(collPtr, self.filter._bson, opts?._bson, rp) else {
                 fatalError(failedToRetrieveCursorMessage)
             }
-            return cursor
+            return result
         }
 
-        return try MongoCursor(
-            stealing: cursor,
+        let cursor = try MongoCursor<CollectionType>(
+            stealing: result,
             connection: connection,
             client: self.collection._client,
             decoder: self.collection.decoder,
             session: session,
             cursorType: self.options?.cursorType
         )
+        try cursor.cacheDocument()
+        return cursor
     }
 }

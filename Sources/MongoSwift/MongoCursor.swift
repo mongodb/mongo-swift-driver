@@ -88,24 +88,47 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         self.close()
     }
 
-    /**
-     * Returns the next `Document` in this cursor or `nil`, or throws an error if one occurs -- compared to `next()`,
-     * which returns `nil` and requires manually checking for an error afterward.
-     * - Returns: the next `Document` in this cursor, or `nil` if at the end of the cursor
-     * - Throws:
-     *   - `ServerError.commandError` if an error occurs on the server while iterating the cursor.
-     *   - `UserError.logicError` if this function is called after the cursor has died.
-     *   - `UserError.logicError` if this function is called and the session associated with this cursor is inactive.
-     *   - `DecodingError` if an error occurs decoding the server's response.
-     */
-    public func nextOrError() throws -> T? {
-        if let next = self.next() {
-            return next
-        }
-        if let error = self.error {
+    /// Retrieves the next document from the underlying `mongoc_cursor_t`, if one exists.
+    internal func getNextMongocDocument() throws -> T? {
+        do {
+            guard case let .open(cursor, _, _, session) = self.state else {
+                throw ClosedCursorError
+            }
+
+            if let session = session, !session.active {
+                throw ClientSession.SessionInactiveError
+            }
+
+            let out = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
+            defer {
+                out.deinitialize(count: 1)
+                out.deallocate()
+            }
+
+            guard mongoc_cursor_next(cursor, out) else {
+                if let error = self.getMongocError() {
+                    throw error
+                }
+
+                if !self.cursorType.isTailable || !mongoc_cursor_more(cursor) {
+                    self.close()
+                }
+
+                return nil
+            }
+
+            guard let pointee = out.pointee else {
+                fatalError("The cursor was advanced, but the document is nil")
+            }
+
+            // We have to copy because libmongoc owns the pointer.
+            let doc = Document(copying: pointee)
+            return try self.decoder.decode(T.self, from: doc)
+        } catch {
+            self.error = error
+            self.close()
             throw error
         }
-        return nil
     }
 
     /// Retrieves any error that occurred in mongoc or on the server while iterating the cursor. Returns nil if this
@@ -139,37 +162,54 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         return extractMongoError(error: error)
     }
 
+    private enum CachedDocument {
+        case cached(T?)
+        case none
+    }
+
+    private var cached: CachedDocument?
+
+    internal func cacheDocument() throws {
+        let next = try self.getNextMongocDocument()
+        self.cached = .cached(next)
+    }
+
+    /**
+     * Returns the next `Document` in this cursor or `nil`, or throws an error if one occurs -- compared to `next()`,
+     * which returns `nil` and requires manually checking for an error afterward.
+     * - Returns: the next `Document` in this cursor, or `nil` if at the end of the cursor
+     * - Throws:
+     *   - `ServerError.commandError` if an error occurs on the server while iterating the cursor.
+     *   - `UserError.logicError` if this function is called after the cursor has died.
+     *   - `UserError.logicError` if this function is called and the session associated with this cursor is inactive.
+     *   - `DecodingError` if an error occurs decoding the server's response.
+     */
+    public func nextOrError() throws -> T? {
+        if let next = self.next() {
+            return next
+        }
+        if let error = self.error {
+            throw error
+        }
+        return nil
+    }
+
     /// Returns the next `Document` in this cursor, or `nil`. After this function returns `nil`, the caller should use
     /// the `.error` property to check for errors. For tailable cursors, users should also check `isAlive` after this
     /// method returns `nil`, to determine if the cursor has the potential to return any more data in the future.
     public func next() -> T? {
+        if case let .cached(doc) = self.cached {
+            self.cached = .none
+            return doc
+        }
+
         // We already closed the mongoc cursor, either because we reached the end or encountered an error.
-        guard case let .open(cursor, connection, client, session) = self.state else {
+        guard case let .open(_, connection, client, session) = self.state else {
             self.error = ClosedCursorError
             return nil
         }
 
-        do {
-            let operation = NextOperation(target: .cursor(self))
-            guard let out = try client.executeOperation(operation, using: connection, session: session) else {
-                self.error = self.getMongocError()
-                // Since there was no document returned, we should close the cursor if:
-                // 1. this is not a tailable cursor, or
-                // 2. this is a tailable cursor and an error occurred, or
-                // 3. this is a tailable cursor that will not possibly return any more data
-                if !self.cursorType.isTailable || self.error != nil || !mongoc_cursor_more(cursor) {
-                    self.close()
-                }
-                return nil
-            }
-            return out
-        } catch {
-            // This indicates that an error occurred executing the `NextOperation`. Currently the only possible error
-            // is a `DecodingError` when decoding a `Document` to this cursor's type.
-            self.error = error
-            // Since we encountered an error, close the cursor.
-            self.close()
-            return nil
-        }
+        let operation = NextOperation(target: .cursor(self))
+        return try? client.executeOperation(operation, using: connection, session: session)
     }
 }
