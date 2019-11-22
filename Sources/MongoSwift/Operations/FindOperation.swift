@@ -217,7 +217,7 @@ internal struct FindOperation<CollectionType: Codable>: Operation {
             return result
         }
 
-        let cursor = try MongoCursor<CollectionType>(
+        return try MongoCursor(
             stealing: result,
             connection: connection,
             client: self.collection._client,
@@ -225,6 +225,5 @@ internal struct FindOperation<CollectionType: Codable>: Operation {
             session: session,
             cursorType: self.options?.cursorType
         )
-        return cursor
     }
 }

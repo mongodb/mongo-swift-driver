@@ -55,6 +55,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         /// Indicates that there is no value cached.
         case none
     }
+
     /// Tracks the caching status of this cursor.
     private var cached: CachedDocument
 
@@ -83,14 +84,10 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
             self.close()
             throw error
         }
-        // Cache the first document. If we can encounter an error, close the cursor.
-        do {
-            let next = try self.getNextMongocDocument()
-            self.cached = .cached(next)
-        } catch {
-            self.close()
-            throw error
-        }
+
+        // Cache the first document.
+        let next = try self.getNextDocumentFromMongocCursor()
+        self.cached = .cached(next)
     }
 
     /// Cleans up internal state.
@@ -108,7 +105,8 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     }
 
     /// Retrieves the next document from the underlying `mongoc_cursor_t`, if one exists.
-    internal func getNextMongocDocument() throws -> T? {
+    /// Will close the cursor if the end of the cursor is reached or if an error occurs.
+    internal func getNextDocumentFromMongocCursor() throws -> T? {
         guard case let .open(cursor, _, _, session) = self.state else {
             throw ClosedCursorError
         }
@@ -121,9 +119,11 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
 
         guard mongoc_cursor_next(cursor, out) else {
             if let error = self.getMongocError() {
+                self.close()
                 throw error
             }
 
+            // if we've reached the end of the cursor, close it.
             if !self.cursorType.isTailable || !mongoc_cursor_more(cursor) {
                 self.close()
             }
@@ -137,7 +137,12 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
 
         // We have to copy because libmongoc owns the pointer.
         let doc = Document(copying: pointee)
-        return try self.decoder.decode(T.self, from: doc)
+        do {
+            return try self.decoder.decode(T.self, from: doc)
+        } catch {
+            self.close()
+            throw error
+        }
     }
 
     /// Retrieves any error that occurred in mongoc or on the server while iterating the cursor. Returns nil if this
@@ -210,8 +215,8 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         do {
             return try client.executeOperation(operation, using: connection, session: session)
         } catch {
+            // This indicates that an error occurred executing the `NextOperation`.
             self.error = error
-            self.close()
             return nil
         }
     }

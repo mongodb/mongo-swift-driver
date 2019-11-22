@@ -99,13 +99,12 @@ internal struct AggregateOperation<CollectionType: Codable>: Operation {
             return result
         }
 
-        let cursor = try MongoCursor<Document>(
+        return try MongoCursor(
             stealing: result,
             connection: connection,
             client: self.collection._client,
             decoder: self.collection.decoder,
             session: session
         )
-        return cursor
     }
 }

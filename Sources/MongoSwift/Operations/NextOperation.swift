@@ -27,7 +27,7 @@ internal struct NextOperation<T: Codable>: Operation {
 
         switch self.target {
         case let .cursor(cursor):
-            return try cursor.getNextMongocDocument()
+            return try cursor.getNextDocumentFromMongocCursor()
         case let .changeStream(changeStream):
             guard case let .open(changeStreamPtr, _, _, _) = changeStream.state else {
                 throw ClosedChangeStreamError
