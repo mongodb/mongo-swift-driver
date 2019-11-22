@@ -15,7 +15,7 @@ The official [MongoDB](https://www.mongodb.com/) driver for Swift.
     - [Create and Insert a Document](#create-and-insert-a-document)
     - [Find Documents](#find-documents)
     - [Work With and Modify Documents](#work-with-and-modify-documents)
-    - [Usage With Kitura and Vapor](#usage-with-kitura-and-vapor)
+    - [Usage With Kitura, Vapor, and Perfect](#usage-with-kitura-vapor-and-perfect)
 - [Development Instructions](#development-instructions)
 
 ## Documentation
@@ -100,6 +100,10 @@ let query: Document = ["a": 1]
 let documents = try collection.find(query)
 for d in documents {
     print(d)
+}
+// check if an error occurred while iterating the cursor
+if let error = documents.error {
+    throw error
 }
 ```
 
