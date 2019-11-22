@@ -111,6 +111,10 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
             throw ClosedCursorError
         }
 
+        if let session = session, !session.active {
+            throw ClientSession.SessionInactiveError
+        }
+
         let out = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
         defer {
             out.deinitialize(count: 1)
