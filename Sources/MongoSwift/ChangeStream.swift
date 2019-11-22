@@ -99,8 +99,8 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
             return nil
         }
         do {
-            let operation = NextOperation(target: .changeStream(self), using: connection)
-            guard let out = try client.executeOperation(operation, session: session) else {
+            let operation = NextOperation(target: .changeStream(self))
+            guard let out = try client.executeOperation(operation, using: connection, session: session) else {
                 self.error = self.getChangeStreamError()
                 if self.error != nil {
                     self.close()
@@ -162,17 +162,17 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
         }
 
         if let err = self.getChangeStreamError() {
+            self.close()
             throw err
         }
     }
 
     /// Cleans up internal state.
     private func close() {
-        guard case let .open(changeStream, connection, client, session) = self.state else {
+        guard case let .open(changeStream, _, _, _) = self.state else {
             return
         }
         mongoc_change_stream_destroy(changeStream)
-        releaseConnection(connection: connection, client: client, session: session)
         self.state = .closed
     }
 

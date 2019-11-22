@@ -105,7 +105,7 @@ internal struct ListCollectionsOperation: Operation {
         self.options = options
     }
 
-    internal func execute(using _: Connection, session: ClientSession?) throws -> ListCollectionsResults {
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> ListCollectionsResults {
         var opts = try encodeOptions(options: self.options, session: session) ?? Document()
         opts["nameOnly"] = .bool(self.nameOnly)
         if let filterDoc = self.filter {
@@ -117,20 +117,20 @@ internal struct ListCollectionsOperation: Operation {
             }
         }
 
-        let initializer = { (conn: Connection) -> OpaquePointer in
-            self.database.withMongocDatabase(from: conn) { dbPtr in
-                guard let collections = mongoc_database_find_collections_with_opts(dbPtr, opts._bson) else {
-                    fatalError(failedToRetrieveCursorMessage)
-                }
-                return collections
+        let indexes: OpaquePointer = self.database.withMongocDatabase(from: connection) { dbPtr in
+            guard let collections = mongoc_database_find_collections_with_opts(dbPtr, opts._bson) else {
+                fatalError(failedToRetrieveCursorMessage)
             }
+            return collections
         }
+
         if self.nameOnly {
             let cursor: MongoCursor<Document> = try MongoCursor(
+                stealing: indexes,
+                connection: connection,
                 client: self.database._client,
                 decoder: self.database.decoder,
-                session: session,
-                initializer: initializer
+                session: session
             )
             return try .names(cursor.map {
                 guard let name = $0["name"]?.stringValue else {
@@ -140,10 +140,11 @@ internal struct ListCollectionsOperation: Operation {
             })
         }
         let cursor: MongoCursor<CollectionSpecification> = try MongoCursor(
+            stealing: indexes,
+            connection: connection,
             client: self.database._client,
             decoder: self.database.decoder,
-            session: session,
-            initializer: initializer
+            session: session
         )
         return .specs(cursor)
     }

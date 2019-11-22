@@ -17,18 +17,15 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codabl
     private let target: ChangeStreamTarget<CollectionType>
     private let pipeline: BSON
     private let options: ChangeStreamOptions?
-    internal let connectionStrategy: ConnectionStrategy
 
     internal init(
         target: ChangeStreamTarget<CollectionType>,
         pipeline: [Document],
-        options: ChangeStreamOptions?,
-        stealing connection: Connection
+        options: ChangeStreamOptions?
     ) throws {
         self.target = target
         self.pipeline = .array(pipeline.map { .document($0) })
         self.options = options
-        self.connectionStrategy = .bound(to: connection)
     }
 
     internal func execute(

@@ -12,11 +12,9 @@ internal enum NextOperationTarget<T: Codable> {
 /// An operation corresponding to a `next` call on a `NextOperationTarget`.
 internal struct NextOperation<T: Codable>: Operation {
     private let target: NextOperationTarget<T>
-    internal let connectionStrategy: ConnectionStrategy
 
-    internal init(target: NextOperationTarget<T>, using connection: Connection) {
+    internal init(target: NextOperationTarget<T>) {
         self.target = target
-        self.connectionStrategy = .bound(to: connection)
     }
 
     // swiftlint:disable:next cyclomatic_complexity
