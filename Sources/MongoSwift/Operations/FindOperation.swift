@@ -225,7 +225,6 @@ internal struct FindOperation<CollectionType: Codable>: Operation {
             session: session,
             cursorType: self.options?.cursorType
         )
-        try cursor.cacheDocument()
         return cursor
     }
 }

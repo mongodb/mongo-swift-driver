@@ -48,6 +48,16 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         return id == 0 ? nil : id
     }
 
+    /// Used to store a cached next value to return, if one exists.
+    private enum CachedDocument {
+        /// Indicates that the associated value is the next value to return. This value may be nil.
+        case cached(T?)
+        /// Indicates that there is no value cached.
+        case none
+    }
+    /// Tracks the caching status of this cursor.
+    private var cached: CachedDocument
+
     /**
      * Initializes a new `MongoCursor` instance. Not meant to be instantiated directly by a user.
      *
@@ -67,8 +77,17 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         self.cursorType = cursorType ?? .nonTailable
         self.decoder = decoder
         self.error = nil
-
+        self.cached = .none
+        // If there was an error constructing the cursor, throw it.
         if let error = self.getMongocError() {
+            self.close()
+            throw error
+        }
+        // Cache the first document. If we can encounter an error, close the cursor.
+        do {
+            let next = try self.getNextMongocDocument()
+            self.cached = .cached(next)
+        } catch {
             self.close()
             throw error
         }
@@ -90,45 +109,35 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
 
     /// Retrieves the next document from the underlying `mongoc_cursor_t`, if one exists.
     internal func getNextMongocDocument() throws -> T? {
-        do {
-            guard case let .open(cursor, _, _, session) = self.state else {
-                throw ClosedCursorError
-            }
-
-            if let session = session, !session.active {
-                throw ClientSession.SessionInactiveError
-            }
-
-            let out = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
-            defer {
-                out.deinitialize(count: 1)
-                out.deallocate()
-            }
-
-            guard mongoc_cursor_next(cursor, out) else {
-                if let error = self.getMongocError() {
-                    throw error
-                }
-
-                if !self.cursorType.isTailable || !mongoc_cursor_more(cursor) {
-                    self.close()
-                }
-
-                return nil
-            }
-
-            guard let pointee = out.pointee else {
-                fatalError("The cursor was advanced, but the document is nil")
-            }
-
-            // We have to copy because libmongoc owns the pointer.
-            let doc = Document(copying: pointee)
-            return try self.decoder.decode(T.self, from: doc)
-        } catch {
-            self.error = error
-            self.close()
-            throw error
+        guard case let .open(cursor, _, _, session) = self.state else {
+            throw ClosedCursorError
         }
+
+        let out = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
+        defer {
+            out.deinitialize(count: 1)
+            out.deallocate()
+        }
+
+        guard mongoc_cursor_next(cursor, out) else {
+            if let error = self.getMongocError() {
+                throw error
+            }
+
+            if !self.cursorType.isTailable || !mongoc_cursor_more(cursor) {
+                self.close()
+            }
+
+            return nil
+        }
+
+        guard let pointee = out.pointee else {
+            fatalError("The cursor was advanced, but the document is nil")
+        }
+
+        // We have to copy because libmongoc owns the pointer.
+        let doc = Document(copying: pointee)
+        return try self.decoder.decode(T.self, from: doc)
     }
 
     /// Retrieves any error that occurred in mongoc or on the server while iterating the cursor. Returns nil if this
@@ -160,18 +169,6 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         // The only feasible error here is that we tried to advance a dead mongoc cursor. Due to our cursor-closing
         // logic in `next()` that should never happen, but parse the error anyway just in case we end up here.
         return extractMongoError(error: error)
-    }
-
-    private enum CachedDocument {
-        case cached(T?)
-        case none
-    }
-
-    private var cached: CachedDocument?
-
-    internal func cacheDocument() throws {
-        let next = try self.getNextMongocDocument()
-        self.cached = .cached(next)
     }
 
     /**
@@ -210,6 +207,12 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         }
 
         let operation = NextOperation(target: .cursor(self))
-        return try? client.executeOperation(operation, using: connection, session: session)
+        do {
+            return try client.executeOperation(operation, using: connection, session: session)
+        } catch {
+            self.error = error
+            self.close()
+            return nil
+        }
     }
 }

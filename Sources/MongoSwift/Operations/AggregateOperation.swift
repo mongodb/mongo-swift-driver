@@ -106,7 +106,6 @@ internal struct AggregateOperation<CollectionType: Codable>: Operation {
             decoder: self.collection.decoder,
             session: session
         )
-        try cursor.cacheDocument()
         return cursor
     }
 }

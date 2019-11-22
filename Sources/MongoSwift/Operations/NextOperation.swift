@@ -21,14 +21,14 @@ internal struct NextOperation<T: Codable>: Operation {
         // NOTE: this method does not actually use the `connection` parameter passed in. for the moment, it is only
         // here so that `NextOperation` conforms to `Operation`. if we eventually rewrite our cursors to no longer
         // wrap a mongoc cursor then we will use the connection here.
+        if let session = session, !session.active {
+            throw ClientSession.SessionInactiveError
+        }
+
         switch self.target {
         case let .cursor(cursor):
             return try cursor.getNextMongocDocument()
         case let .changeStream(changeStream):
-            if let session = session, !session.active {
-                throw ClientSession.SessionInactiveError
-            }
-
             guard case let .open(changeStreamPtr, _, _, _) = changeStream.state else {
                 throw ClosedChangeStreamError
             }
