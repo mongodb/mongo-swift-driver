@@ -40,8 +40,9 @@ public final class ClientSession {
     /// Enum for tracking the state of a session.
     internal enum State {
         /// Indicates that this session has not been used yet and a corresponding `mongoc_client_session_t` has not
-        /// yet been created.
-        case notStarted
+        /// yet been created. If the user sets operation time or cluster time prior to using the session, those values
+        /// are stored here so they can be set upon starting the session.
+        case notStarted(opTime: Timestamp?, clusterTime: Document?)
         /// Indicates that the session has been started and a corresponding `mongoc_client_session_t` exists. Stores a
         /// pointer to the underlying `mongoc_client_session_t` and the source `Connection` for this session.
         case started(session: OpaquePointer, connection: Connection)
@@ -50,9 +51,9 @@ public final class ClientSession {
     }
 
     /// Indicates the state of this session.
-    internal private(set) var state: State
+    internal var state: State
 
-    /// Returns whether this session is in the `active` state.
+    /// Returns whether this session is in the `started` state.
     internal var active: Bool {
         if case .started = self.state {
             return true
@@ -71,30 +72,39 @@ public final class ClientSession {
     /// - No operations have been executed using this session and `advanceClusterTime` has not been called.
     /// - This session has been ended.
     public var clusterTime: Document? {
-        guard case let .started(session, _) = self.state,
-            let time = mongoc_client_session_get_cluster_time(session) else {
+        switch self.state {
+        case let .notStarted(_, clusterTime):
+            return clusterTime
+        case let .started(session, _):
+            guard let time = mongoc_client_session_get_cluster_time(session) else {
+                return nil
+            }
+            return Document(copying: time)
+        case .ended:
             return nil
         }
-        return Document(copying: time)
     }
 
     /// The operation time of the most recent operation performed using this session. This value will be nil if either
     /// of the following are true:
-    /// - No operations have been performed using this session.
+    /// - No operations have been performed using this session and `advanceOperationTime` has not been called.
     /// - This session has been ended.
     public var operationTime: Timestamp? {
-        guard case let .started(session, _) = self.state else {
+        switch self.state {
+        case let .notStarted(opTime, _):
+            return opTime
+        case let .started(session, _):
+            var timestamp: UInt32 = 0
+            var increment: UInt32 = 0
+            mongoc_client_session_get_operation_time(session, &timestamp, &increment)
+
+            guard timestamp != 0 && increment != 0 else {
+                return nil
+            }
+            return Timestamp(timestamp: timestamp, inc: increment)
+        case .ended:
             return nil
         }
-
-        var timestamp: UInt32 = 0
-        var increment: UInt32 = 0
-        mongoc_client_session_get_operation_time(session, &timestamp, &increment)
-
-        guard timestamp != 0 && increment != 0 else {
-            return nil
-        }
-        return Timestamp(timestamp: timestamp, inc: increment)
     }
 
     /// The options used to start this session.
@@ -104,11 +114,25 @@ public final class ClientSession {
     internal init(client: MongoClient, options: ClientSessionOptions? = nil) throws {
         self.options = options
         self.client = client
-        self.state = .notStarted
+        self.state = .notStarted(opTime: nil, clusterTime: nil)
+    }
+
+    /// Starts this session's corresponding libmongoc session, if it has not been started already. Throws an error if
+    /// this session has already been ended.
+    internal func startIfNeeded() throws {
+        switch self.state {
+        case .notStarted:
+            let operation = StartSessionOperation(session: self)
+            try self.client.executeOperation(operation)
+        case .started:
+            return
+        case .ended:
+            throw ClientSession.SessionInactiveError
+        }
     }
 
     /// Retrieves this session's underlying connection. Throws an error if the provided client was not the client used
-    /// to create this session, or if this session has been ended.
+    /// to create this session, or if this session has not been started yet, or if this session has already been ended.
     internal func getConnection(forUseWith client: MongoClient) throws -> Connection {
         guard case let .started(_, connection) = self.state else {
             throw ClientSession.SessionInactiveError
@@ -119,8 +143,8 @@ public final class ClientSession {
         return connection
     }
 
-    /// Destroy the underlying `mongoc_client_session_t` and set this session to inactive.
-    /// Does nothing if this session is already inactive.
+    /// Destroy the underlying `mongoc_client_session_t` and ends this session. Has no effect if this session is
+    /// already ended.
     internal func end() {
         if case let .started(session, _) = self.state {
             mongoc_client_session_destroy(session)
@@ -142,8 +166,13 @@ public final class ClientSession {
      *   - clusterTime: The session's new cluster time, as a `Document` like `["cluster time": Timestamp(...)]`
      */
     public func advanceClusterTime(to clusterTime: Document) {
-        if case let .started(session, _) = self.state {
+        switch self.state {
+        case let .notStarted(opTime, _):
+            self.state = .notStarted(opTime: opTime, clusterTime: clusterTime)
+        case let .started(session, _):
             mongoc_client_session_advance_cluster_time(session, clusterTime._bson)
+        case .ended:
+            return
         }
     }
 
@@ -156,8 +185,13 @@ public final class ClientSession {
      *   - operationTime: The session's new operationTime
      */
     public func advanceOperationTime(to operationTime: Timestamp) {
-        if case let .started(session, _) = self.state {
+        switch self.state {
+        case let .notStarted(_, clusterTime):
+            self.state = .notStarted(opTime: operationTime, clusterTime: clusterTime)
+        case let .started(session, _):
             mongoc_client_session_advance_operation_time(session, operationTime.timestamp, operationTime.increment)
+        case .ended:
+            return
         }
     }
 

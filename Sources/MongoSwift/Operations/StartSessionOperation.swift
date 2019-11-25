@@ -29,19 +29,38 @@ private func withSessionOpts<T>(
     return try body(opts)
 }
 
+/// An operation corresponding to starting a libmongoc session.
 internal struct StartSessionOperation: Operation {
+    /// The session to start.
     private let session: ClientSession
 
-    internal func execute(using connection: Connection, _: ClientSession?) throws {
+    internal init(session: ClientSession) {
+        self.session = session
+    }
+
+    internal func execute(using connection: Connection, session: ClientSession?) throws {
+        // session was already started
+        guard case let .notStarted(opTime, clusterTime) = self.session.state else {
+            return
+        }
+
         let sessionPtr: OpaquePointer = try withSessionOpts(wrapping: self.session.options) { opts in
             var error = bson_error_t()
-            guard let session = mongoc_client_start_session(connection.clientHandle, opts, &error) else {
+            guard let sessionPtr = mongoc_client_start_session(connection.clientHandle, opts, &error) else {
                 throw extractMongoError(error: error)
             }
-            return session
+            return sessionPtr
         }
-        session.state = .active(session: sessionPtr, connection: connection)
+        self.session.state = .started(session: sessionPtr, connection: connection)
+        // if we cached opTime or clusterTime, set them now
+        if let opTime = opTime {
+            self.session.advanceOperationTime(to: opTime)
+        }
+        if let clusterTime = clusterTime {
+            self.session.advanceClusterTime(to: clusterTime)
+        }
+
         // swiftlint:disable:next force_unwrapping
-        session.id = Document(copying: mongoc_client_session_get_lsid(sessionPtr)!) // always returns a value
+        self.session.id = Document(copying: mongoc_client_session_get_lsid(sessionPtr)!) // always returns a value
     }
 }

@@ -105,9 +105,12 @@ final class ClientSessionTests: MongoSwiftTestCase {
         let client = try MongoClient.makeTestClient()
 
         var sessionA: ClientSession? = try client.startSession()
+        // use the session to trigger starting the libmongoc session
+        _ = try client.listDatabases(session: sessionA)
         expect(sessionA!.active).to(beTrue())
 
         var sessionB: ClientSession? = try client.startSession()
+        _ = try client.listDatabases(session: sessionB)
         expect(sessionB!.active).to(beTrue())
 
         let idA = sessionA!.id
@@ -118,10 +121,12 @@ final class ClientSessionTests: MongoSwiftTestCase {
         sessionB = nil
 
         let sessionC: ClientSession = try client.startSession()
+        _ = try client.listDatabases(session: sessionC)
         expect(sessionC.active).to(beTrue())
         expect(sessionC.id).to(equal(idB))
 
         let sessionD: ClientSession = try client.startSession()
+        _ = try client.listDatabases(session: sessionD)
         expect(sessionD.active).to(beTrue())
         expect(sessionD.id).to(equal(idA))
 
@@ -133,16 +138,20 @@ final class ClientSessionTests: MongoSwiftTestCase {
 
         // test via withSession
         try client.withSession { session in
+            _ = try client.listDatabases(session: session)
             expect(session.id).to(equal(idA))
         }
 
         try client.withSession { session in
+            _ = try client.listDatabases(session: session)
             expect(session.id).to(equal(idA))
         }
 
         try client.withSession { session in
+            _ = try client.listDatabases(session: session)
             expect(session.id).to(equal(idA))
             try client.withSession { nestedSession in
+                _ = try client.listDatabases(session: nestedSession)
                 expect(nestedSession.id).to(equal(idB))
             }
         }
@@ -162,11 +171,11 @@ final class ClientSessionTests: MongoSwiftTestCase {
 
             expect(event.command["lsid"]).toNot(beNil(), description: op.name)
             if !seenExplicit {
-                expect(event.command["lsid"]).to(equal(.document(session.id)), description: op.name)
+                expect(event.command["lsid"]).to(equal(.document(session.id!)), description: op.name)
                 seenExplicit = true
             } else {
                 expect(seenImplicit).to(beFalse())
-                expect(event.command["lsid"]).toNot(equal(.document(session.id)), description: op.name)
+                expect(event.command["lsid"]).toNot(equal(.document(session.id!)), description: op.name)
                 seenImplicit = true
             }
         }
@@ -257,7 +266,8 @@ final class ClientSessionTests: MongoSwiftTestCase {
         let session = try client.startSession()
 
         for x in 1...3 {
-            try collection.insertOne(["x": BSON(x)])
+            // use the session to trigger starting the libmongoc session
+            try collection.insertOne(["x": BSON(x)], session: session)
         }
 
         var id: BSON?
@@ -287,7 +297,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
         }
 
         // explicit
-        id = .document(session.id)
+        id = .document(session.id!)
         seenFind = false
         seenGetMore = false
         let cursor = try collection.find(options: FindOptions(batchSize: 2), session: session)

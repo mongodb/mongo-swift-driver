@@ -28,6 +28,8 @@ internal struct DefaultOperationExecutor: OperationExecutor {
         client: MongoClient,
         session: ClientSession?
     ) throws -> T.OperationResult {
+        // if a session was provided, start it if it hasn't been started already.
+        try session?.startIfNeeded()
         // select a connection in following order of priority:
         // 1. connection specifically provided for use with this operation
         // 2. if a session was provided, use its underlying connection
