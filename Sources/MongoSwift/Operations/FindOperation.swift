@@ -205,8 +205,7 @@ internal struct FindOperation<CollectionType: Codable>: Operation {
     internal func execute(
         using connection: Connection,
         session: ClientSession?
-    )
-        throws -> MongoCursor<CollectionType> {
+    ) throws -> MongoCursor<CollectionType> {
         let opts = try encodeOptions(options: self.options, session: session)
         let rp = self.options?.readPreference?._readPreference
 
