@@ -329,17 +329,19 @@ internal func extractBulkWriteError<T: Codable>(
         }
 
         // extract any other error that might have occurred outside of the write/write concern errors. (e.g. connection)
-        var other: Error? = parseMongocError(error, reply: reply)
+        var other: Error?
+
+        // we want to omit any write concern errors since they will also be reported elsewhere.
+        if error.domain != MONGOC_ERROR_WRITE_CONCERN.rawValue {
+            other = parseMongocError(error, reply: reply)
+        }
 
         // in the absence of other errors, libmongoc will simply populate the mongoc_error_t with the error code of the
         // first write error and the concatenated error messages of all the write errors. in that case, we just want to
         // omit the "other" error.
-        // we also want to omit any write concern errors since they will also be reported elsewhere.
         if case let .some(ServerError.commandError(code, _, _, _)) = other as? ServerError,
             let wErr = bulkWriteErrors.first,
             wErr.code == code {
-            other = nil
-        } else if error.domain == MONGOC_ERROR_WRITE_CONCERN.rawValue {
             other = nil
         }
 
