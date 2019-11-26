@@ -60,7 +60,9 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     private var cached: CachedDocument
 
     /**
-     * Initializes a new `MongoCursor` instance. Not meant to be instantiated directly by a user.
+     * Initializes a new `MongoCursor` instance. Not meant to be instantiated directly by a user. When
+     * `cacheFirstDocument` is true, this initializer will perform I/O to retrieve the first document from the server
+     * and cache it.
      *
      * - Throws:
      *   - `UserError.invalidArgumentError` if the options passed to the command that generated this cursor formed an
@@ -72,7 +74,8 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         client: MongoClient,
         decoder: BSONDecoder,
         session: ClientSession?,
-        cursorType: CursorType? = nil
+        cursorType: CursorType? = nil,
+        cacheFirstDocument: Bool = false
     ) throws {
         self.state = .open(cursor: cursor, connection: connection, client: client, session: session)
         self.cursorType = cursorType ?? .nonTailable
@@ -85,9 +88,11 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
             throw error
         }
 
-        // Cache the first document.
-        let next = try self.getNextDocumentFromMongocCursor()
-        self.cached = .cached(next)
+        if cacheFirstDocument {
+            // Cache the first document.
+            let next = try self.getNextDocumentFromMongocCursor()
+            self.cached = .cached(next)
+        }
     }
 
     /// Cleans up internal state.

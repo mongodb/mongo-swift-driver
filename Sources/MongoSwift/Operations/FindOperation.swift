@@ -222,7 +222,8 @@ internal struct FindOperation<CollectionType: Codable>: Operation {
             client: self.collection._client,
             decoder: self.collection.decoder,
             session: session,
-            cursorType: self.options?.cursorType
+            cursorType: self.options?.cursorType,
+            cacheFirstDocument: true
         )
     }
 }

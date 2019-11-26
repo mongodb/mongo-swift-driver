@@ -132,12 +132,19 @@ internal struct ListCollectionsOperation: Operation {
                 decoder: self.database.decoder,
                 session: session
             )
-            return try .names(cursor.map {
-                guard let name = $0["name"]?.stringValue else {
+
+            var names = [String]()
+            // call the cursor method for getting the next document directly rather than just iterating through the
+            // cursor so that we avoid generating more concurrent operations and tying up more of the executor's
+            // threads.
+            while let nextDoc = try cursor.getNextDocumentFromMongocCursor() {
+                guard let name = nextDoc["name"]?.stringValue else {
                     throw RuntimeError.internalError(message: "Invalid server response: collection has no name")
                 }
-                return name
-            })
+                names.append(name)
+            }
+
+            return .names(names)
         }
         let cursor: MongoCursor<CollectionSpecification> = try MongoCursor(
             stealing: indexes,
