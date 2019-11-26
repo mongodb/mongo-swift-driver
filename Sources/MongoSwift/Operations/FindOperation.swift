@@ -216,6 +216,8 @@ internal struct FindOperation<CollectionType: Codable>: Operation {
             return result
         }
 
+        // since mongoc_collection_find_with_opts doesn't do any I/O, set cacheFirstDocument = true so that we will
+        // send the find command to the server immediately.
         return try MongoCursor(
             stealing: result,
             connection: connection,
