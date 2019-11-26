@@ -38,7 +38,7 @@ internal struct StartSessionOperation: Operation {
         self.session = session
     }
 
-    internal func execute(using connection: Connection, session: ClientSession?) throws {
+    internal func execute(using connection: Connection, session _: ClientSession?) throws {
         // session was already started
         guard case let .notStarted(opTime, clusterTime) = self.session.state else {
             return
