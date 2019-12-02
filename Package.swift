@@ -3,7 +3,8 @@ import PackageDescription
 let package = Package(
     name: "MongoSwift",
     products: [
-        .library(name: "MongoSwift", targets: ["MongoSwift"])
+        .library(name: "MongoSwift", targets: ["MongoSwift"]),
+        .library(name: "MongoSwiftSync", targets: ["MongoSwiftSync"])
     ],
     dependencies: [
         .package(url: "https://github.com/mongodb/swift-bson", .upToNextMajor(from: "2.0.0")),
@@ -12,6 +13,7 @@ let package = Package(
     ],
     targets: [
         .target(name: "MongoSwift", dependencies: ["mongoc", "bson"]),
+        .target(name: "MongoSwiftSync", dependencies: ["MongoSwift"]),
         .target(name: "AtlasConnectivity", dependencies: ["MongoSwift"]),
         .testTarget(name: "MongoSwiftTests", dependencies: ["MongoSwift", "Nimble", "mongoc"])
     ]
