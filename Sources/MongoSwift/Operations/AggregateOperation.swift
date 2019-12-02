@@ -99,12 +99,15 @@ internal struct AggregateOperation<CollectionType: Codable>: Operation {
             return result
         }
 
+        // since mongoc_collection_aggregate doesn't do any I/O, use forceIO to ensure this operation fails if we
+        // can not successfully get a cursor from the server.
         return try MongoCursor(
             stealing: result,
             connection: connection,
             client: self.collection._client,
             decoder: self.collection.decoder,
-            session: session
+            session: session,
+            forceIO: true
         )
     }
 }
