@@ -13,15 +13,10 @@
 
 ## Things to install
 * [swiftenv](https://swiftenv.fuller.li/en/latest/installation.html): a command-line tool that allows easy installation of and switching between versions of Swift.
-    * Use this to install Swift 4.2 and Swift 5.0.
 * [Jazzy](https://github.com/realm/jazzy#installation): the tool we use to generate documentation.
 * [SwiftLint](https://github.com/realm/SwiftLint#using-homebrew): the Swift linter we use. 
-* [Sourcery](https://github.com/krzysztofzablocki/Sourcery/#installation): the tool we use to generate lists of test names (required to run the tests on Linux).
+* [Sourcery](https://github.com/krzysztofzablocki/Sourcery/#installation): the tool we use for code generation.
 * [libmongoc](http://mongoc.org/libmongoc/current/api.html): the MongoDB C driver, which this library wraps. See the installation instructions provided in our [README](https://mongodb.github.io/mongo-swift-driver/#first-install-the-mongodb-c-driver) or on the [libmongoc docs](http://mongoc.org/libmongoc/current/installing.html).
-
-### If you are using (Vim/Neovim)
-* [swift.vim](https://github.com/Utagai/swift.vim): A fork of Keith Smiley's `swift.vim` with fixed indenting rules. This adds proper indenting and syntax for Swift to Vim. This fork also provides a match rule for column width highlighting.
-  * Please read the [NOTICE](https://github.com/Utagai/swift.vim#notice) for proper credits.
 
 ## The code
 You should clone this repository, as well as the [MongoDB Driver specifications](https://github.com/mongodb/specifications). 
@@ -42,7 +37,7 @@ We do not provide or maintain an already-generated `.xcodeproj` in our repositor
 Why is this necessary? The project requires a customized "copy resources" build phase to include various test `.json` files. By default, this phase is not included when you run `swift package generate-xcodeproj`. So `make project` first generates the project, and then uses `xcodeproj` to manually add the files to the appropriate targets (see `add_json_files.rb`). 
 
 ## Running Tests
-**NOTE**: Several of the tests require a mongod instance to be running on the default host/port, `localhost:27017`. (You can start this by simply running `mongod`.)
+**NOTE**: Several of the tests require a mongod instance to be running on the default host/port, `localhost:27017`. You can start this by running `mongod --setParameter enableTestCommands=1`. The `enableTestCommands` parameter is required to use some test-only commands built into MongoDB that we utilize in our tests, e.g. `failCommand`.
 
 You can run tests from Xcode as usual. If you prefer to test from the command line, keep reading.
 
@@ -72,38 +67,46 @@ Comments that are _not_ documentation should use two slashes (`//`).
 
 Documentation comments should generally be complete sentences and should end with periods. 
 
-Our documentation site is automatically generated from the source code using [Jazzy](https://github.com/realm/jazzy#installation). We regenerate it each time we release a new version of the driver.
-To regenerate the files, run `make documentation` from the project's root directory. You can then inspect the changes to the site by opening the files in `/docs` in your web browser.
+Our documentation site is automatically generated from the source code using [Jazzy](https://github.com/realm/jazzy#installation). We regenerate it via our release script each time we release a new version of the driver.
+
+If you'd like to preview how new documentation you've written will look when published, you can regenerate it by running `make documentation` and then inspecting the generated HTML files in `/docs`.
 
 ## Linting and Style
-We use [SwiftLint](https://github.com/realm/SwiftLint#using-homebrew) for linting. You can see our configuration in the `.swiftlint.yml` file in the project's root directory.  Run `swiftlint` in the `/Sources` directory to lint all of our files. Running `swiftlint autocorrect` will correct some types of violations.
+We use [SwiftLint](https://github.com/realm/SwiftLint#using-homebrew) for linting. You can see our configuration in the `.swiftlint.yml` file in the project's root directory.  Run `swiftlint` in the root directory to lint all of our files. Running `swiftlint autocorrect` will correct some types of violations.
 
-We use [SwiftFormat](https://github.com/nicklockwood/SwiftFormat) for formatting the code. You can see our configuration in the `.swiftformat` file in the project's root directory. Our linter config contains a superset of the rules that our formatter does, so some manual tweaking may be necessary to satisfy both once the formatter is run (e.g. line length enforcement). Most of the time, the formatter should put the code into a format that passes the linter.
+We use [SwiftFormat](https://github.com/nicklockwood/SwiftFormat) for formatting the code. You can see our configuration in the `.swiftformat` file in the project's root directory. Our linter config contains a superset of the rules that our formatter does, so some manual tweaking may be necessary to satisfy both once the formatter is run (e.g. line length enforcement). Most of the time, the formatter should put the code into a format that passes the linter. You can run the formatter on all of the files by running `swiftformat .` from the root directory.
 
 To pass all the formatting stages of our testing matrix, both `swiftlint --strict` and `swiftformat --lint .` must finish successfully.
 
 For style guidance, look at Swift's [API design guidelines](https://swift.org/documentation/api-design-guidelines/) and Google's [Swift Style Guide](https://google.github.io/swift/).
 
-### Sublime Text Setup
-If you use Sublime Text, you can get linting violations shown in the editor by installing the packages [SublimeLinter](https://packagecontrol.io/packages/SublimeLinter) and [SublimeLinter-contrib-swiftlint](https://packagecontrol.io/packages/SublimeLinter-contrib-swiftlint). 
+## Editor Setup
 
-### Vim/Neovim Setup
-If you use Vim or Neovim, then you can get linting support by using [`ale`](https://github.com/w0rp/ale) by `w0rp`. This will show symbols in the gutter for warnings/errors and show linter messages in the status.
+If you have a setup for developing the driver in an editor other than the ones listed, or have found any useful tools/plugins for the listed editors, please open a pull request to add information!
+
+### Sublime Text
+* For syntax highlighting, install [Decent Swift Syntax](https://packagecontrol.io/packages/Decent%20Swift%20Syntax) via Package Control.
+* For linting integration with SwiftLint, install [SublimeLinter](https://packagecontrol.io/packages/SublimeLinter) and [SublimeLinter-contrib-swiftlint](https://packagecontrol.io/packages/SublimeLinter-contrib-swiftlint) via Package Control.
+
+### Vim/Neovim
+* You can get linting support by using [`ale`](https://github.com/w0rp/ale) by `w0rp`. This will show symbols in the gutter for warnings/errors and show linter messages in the status.
+* [swift.vim](https://github.com/Utagai/swift.vim): A fork of Keith Smiley's `swift.vim` with fixed indenting rules. This adds proper indenting and syntax for Swift to Vim. This fork also provides a match rule for column width highlighting.
+  * Please read the [NOTICE](https://github.com/Utagai/swift.vim#notice) for proper credits.
 
 ## Workflow
 1. Create a feature branch, named by the corresponding JIRA ticket if exists, along with a short descriptor of the work: for example, `SWIFT-30/writeconcern`. 
-2. Do your work on the branch.
-3. If you add, remove, or rename any tests, make sure to update `LinuxMain.swift` accordingly. If you are on MacOS, you can do that by running `make sourcery`. 
-4. Make sure your code builds and passes all tests on [Travis](https://travis-ci.org/mongodb/mongo-swift-driver). Every time you push to GitHub or open a pull request, it will trigger a new build.
-5. Open a pull request on the repository. Make sure you have rebased your branch onto the latest commits on `master`.
-6. Go through code review to get the team's approval on your changes. (See the next section on [Code Review](#code-review) for more details on this process.)
-
-Once you get the required approvals and your code passes all tests:
-
-7. Rebase on master again if needed.
-8. Build and rerun tests. 
-9. Squash all commits into a single, descriptive commit method, formatted as: `TICKET-NUMBER: Description of changes`. For example, `SWIFT-30: Implement WriteConcern type`. 
-10. Merge it, or if you don't have permissions, ask someone to merge it for you.
+1. Do your work on the branch.
+1. If you add, remove, or rename any tests, make sure to update `LinuxMain.swift` accordingly. If you are on MacOS, you can do that by running `make linuxmain`.
+1. Ensure your code passes both the linter and the formatter.
+1. Make sure your code builds and passes all tests on:
+    - [Travis](https://travis-ci.org/mongodb/mongo-swift-driver). Every time you push to GitHub or open a pull request, it will trigger a new build, which includes running the linter, formatter, and basic tests.
+    - (If you work at MongoDB) [Evergreen](https://evergreen.mongodb.com/waterfall/mongo-swift-driver) - Our Evergreen matrix tests a variety of MongoDB configurations, operating systems, and Swift language versions, and provides a way to more robustly test the driver. A new Evergreen build is automatically triggered for every commit to master, but for more complex pull requests it's a good idea to run patches on Evergreen before merging.
+1. Open a pull request on the repository. Make sure you have rebased your branch onto the latest commits on `master`.
+1. Go through code review to get the team's approval on your changes. (See the next section on [Code Review](#code-review) for more details on this process.) Once you get the required approvals and your code passes all tests:
+1. Rebase on master again if needed.
+1. Rerun tests. 
+1. Squash all commits into a single, descriptive commit method, formatted as: `TICKET-NUMBER: Description of changes`. For example, `SWIFT-30: Implement WriteConcern type`. 
+1. Merge it, or if you don't have permissions, ask someone to merge it for you.
 
 ## Code Review
 
@@ -114,15 +117,19 @@ Please feel free to leave reviews on your own code when you open a pull request 
 ### Responding to a review
 You can use the same batching approach as above to respond to review comments. Once you've posted your responses and pushed new commits addressing the comments, re-request reviews from your reviewers by clicking the arrow circle icons next to their names on the list of reviewers.
 
-**Note**: GitHub allows marking comment threads on pull requests as "resolved", which hides them from view. Always allow the original commenter to resolve a conversation. This allows them to verify that your changes match what they requested before the conversation is hidden.
+**Note**: GitHub allows marking comment threads on pull requests as "resolved", which hides them from view. Always allow the _original commenter_ to resolve a conversation. This allows them to verify that your changes match what they requested before the conversation is hidden.
 
 ## Resources
 
 ### Swift
-* [A Swift Introduction to Swift](https://www.youtube.com/watch?v=CcCTM1PN1N4) - talk by Kaitlin
 * [Swift Language Guide](https://docs.swift.org/swift-book/LanguageGuide/TheBasics.html)
 * [Swift Standard Library docs](https://developer.apple.com/documentation/swift)
-* [Swift's Encoder and Decoder Protocols](https://www.youtube.com/watch?v=yL5Ff5p1hyc) - talk by Kaitlin
+* [Swift by Sundell](https://www.swiftbysundell.com/)
+* [Swift Forums](https://forums.swift.org/)
+* Some talks by Kaitlin:
+    - [A Swift Introduction to Swift](https://www.youtube.com/watch?v=CcCTM1PN1N4)
+    - [Encoding and Decoding in Swift](https://www.youtube.com/watch?v=9GZ8Hiq-Nbc)
+    - [Maintaining a Library in a Swiftly Moving Ecosystem](https://www.youtube.com/watch?v=9-fdbG9jNt4)
 
 ### MongoDB and Drivers
 * [MongoSwift docs](https://mongodb.github.io/mongo-swift-driver/)
