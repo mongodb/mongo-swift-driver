@@ -14,6 +14,7 @@
 ## Things to install
 * [swiftenv](https://swiftenv.fuller.li/en/latest/installation.html): a command-line tool that allows easy installation of and switching between versions of Swift.
 * [Jazzy](https://github.com/realm/jazzy#installation): the tool we use to generate documentation.
+* [SwiftFormat](https://github.com/nicklockwood/SwiftFormat#how-do-i-install-it): the Swift formatter we use.
 * [SwiftLint](https://github.com/realm/SwiftLint#using-homebrew): the Swift linter we use. 
 * [Sourcery](https://github.com/krzysztofzablocki/Sourcery/#installation): the tool we use for code generation.
 * [libmongoc](http://mongoc.org/libmongoc/current/api.html): the MongoDB C driver, which this library wraps. See the installation instructions provided in our [README](https://mongodb.github.io/mongo-swift-driver/#first-install-the-mongodb-c-driver) or on the [libmongoc docs](http://mongoc.org/libmongoc/current/installing.html).
