@@ -99,15 +99,15 @@ internal struct AggregateOperation<CollectionType: Codable>: Operation {
             return result
         }
 
-        // since mongoc_collection_aggregate doesn't do any I/O, set cacheFirstDocument = true so that we will send the
-        // aggregate command to the server immediately.
+        // since mongoc_collection_aggregate doesn't do any I/O, use forceIO to ensure this operation fails if we
+        // can not successfully get a cursor from the server.
         return try MongoCursor(
             stealing: result,
             connection: connection,
             client: self.collection._client,
             decoder: self.collection.decoder,
             session: session,
-            cacheFirstDocument: true
+            forceIO: true
         )
     }
 }

@@ -60,9 +60,8 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     private var cached: CachedDocument
 
     /**
-     * Initializes a new `MongoCursor` instance. Not meant to be instantiated directly by a user. When
-     * `cacheFirstDocument` is true, this initializer will perform I/O to retrieve the first document from the server
-     * and cache it.
+     * Initializes a new `MongoCursor` instance. Not meant to be instantiated directly by a user. When `forceIO` is
+     * true, this initializer will force a connection to the server if one is not already established.
      *
      * - Throws:
      *   - `UserError.invalidArgumentError` if the options passed to the command that generated this cursor formed an
@@ -75,7 +74,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         decoder: BSONDecoder,
         session: ClientSession?,
         cursorType: CursorType? = nil,
-        cacheFirstDocument: Bool = false
+        forceIO: Bool = false
     ) throws {
         self.state = .open(cursor: cursor, connection: connection, client: client, session: session)
         self.cursorType = cursorType ?? .nonTailable
@@ -88,8 +87,9 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
             throw error
         }
 
-        if cacheFirstDocument {
-            // Cache the first document.
+        // Force I/O to occur if it hasn't already by retrieving the first document from the cursor. This is useful for
+        // for e.g. `find` and `aggregate` where libmongoc does not send the initial command until you iterate.
+        if forceIO {
             let next = try self.getNextDocumentFromMongocCursor()
             self.cached = .cached(next)
         }
