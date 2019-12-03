@@ -4,8 +4,9 @@
 
 // Re-export various types from MongoSwift that are also used in the API for MongoSwiftSync. We start out with all of
 // the types in MongoSwift, and then filter out types that are not public, that are explicitly annotated with
-// "skipSyncExport" (this is used to mark types that are async-specific and types whose definitions are nested within
-// other types.
+// "skipSyncExport" (this is used to mark types that are async-specific) and types whose definitions are nested within
+// other types. We don't need to explicitly re-export nested types - importing their parent types will make them
+// available under their parents' namespaces, just as they are in the async module.
 
 @_exported import struct MongoSwift.AggregateOptions
 @_exported import enum MongoSwift.BSON
