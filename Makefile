@@ -31,6 +31,9 @@ project:
 linuxmain:
 	$(SOURCERY) --sources Tests/ --templates Tests/LinuxMain.stencil --output Tests/LinuxMain.swift
 
+exports:
+	$(SOURCERY) --sources Sources/MongoSwift/ --templates Sources/MongoSwiftSync/Exports.stencil --output Sources/MongoSwiftSync/Exports.swift
+
 test:
 	swift test -v $(FILTERARG)
 

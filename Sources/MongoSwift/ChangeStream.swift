@@ -24,6 +24,7 @@ public struct ResumeToken: Codable, Equatable {
     }
 }
 
+// sourcery: skipSyncExport
 /// A MongoDB change stream.
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/
 public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {

@@ -173,6 +173,7 @@ public struct TLSOptions {
     }
 }
 
+// sourcery: skipSyncExport
 /// A MongoDB Client.
 public class MongoClient {
     internal let connectionPool: ConnectionPool

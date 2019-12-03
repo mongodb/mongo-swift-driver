@@ -1,4 +1,4 @@
---exclude Sources/MongoSwift/MongoSwiftVersion.swift
+--exclude Sources/MongoSwift/MongoSwiftVersion.swift,Sources/MongoSwiftSync/*
 
 # unnecessary
 --disable andOperator

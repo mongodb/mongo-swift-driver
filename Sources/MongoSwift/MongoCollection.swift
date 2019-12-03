@@ -11,6 +11,7 @@ public struct DropCollectionOptions: Codable {
     }
 }
 
+// sourcery: skipSyncExport
 /// A MongoDB collection.
 public struct MongoCollection<T: Codable> {
     /// The client which this collection was derived from.

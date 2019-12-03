@@ -11,13 +11,15 @@ env:
 jobs:
   include:
     - stage: pre-tests
-      name: verify Linux tests are synced
+      name: verify Sourcery has been run
       os: osx
       install: ./Tests/Scripts/install_dependencies.sh sourcery
       before_script: skip
       script: 
         - make linuxmain SOURCERY=${PWD}/sourcery/bin/sourcery
         - git diff --exit-code Tests/LinuxMain.swift
+        - make exports SOURCERY=${PWD}/sourcery/bin/sourcery
+        - git diff --exit-code Sources/MongoSwiftSync/Exports.swift
 
     - stage: pre-tests
       name: lint

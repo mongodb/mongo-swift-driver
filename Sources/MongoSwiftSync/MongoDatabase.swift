@@ -1,81 +1,22 @@
-import mongoc
+import MongoSwift
 
-/// Options to set on a retrieved `MongoCollection`.
-public struct CollectionOptions: CodingStrategyProvider {
-    /// Specifies the `DataCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
-    /// It is the responsibility of the user to ensure that any `Data`s already stored in this collection can be
-    /// decoded using this strategy.
-    public var dataCodingStrategy: DataCodingStrategy?
-
-    /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
-    /// It is the responsibility of the user to ensure that any `Date`s already stored in this collection can be
-    /// decoded using this strategy.
-    public var dateCodingStrategy: DateCodingStrategy?
-
-    /// A read concern to set on the returned collection.
-    public var readConcern: ReadConcern?
-
-    /// A read preference to set on the returned collection.
-    public var readPreference: ReadPreference?
-
-    /// Specifies the `UUIDCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
-    /// It is the responsibility of the user to ensure that any `UUID`s already stored in this collection can be
-    /// decoded using this strategy.
-    public var uuidCodingStrategy: UUIDCodingStrategy?
-
-    /// A write concern to set on the returned collection.
-    public var writeConcern: WriteConcern?
-
-    /// Convenience initializer allowing any/all arguments to be omitted or optional.
-    public init(
-        dataCodingStrategy: DataCodingStrategy? = nil,
-        dateCodingStrategy: DateCodingStrategy? = nil,
-        readConcern: ReadConcern? = nil,
-        readPreference: ReadPreference? = nil,
-        uuidCodingStrategy: UUIDCodingStrategy? = nil,
-        writeConcern: WriteConcern? = nil
-    ) {
-        self.dataCodingStrategy = dataCodingStrategy
-        self.dateCodingStrategy = dateCodingStrategy
-        self.readConcern = readConcern
-        self.readPreference = readPreference
-        self.uuidCodingStrategy = uuidCodingStrategy
-        self.writeConcern = writeConcern
-    }
-}
-
-/// Options to use when executing a `dropDatabase` command.
-public struct DropDatabaseOptions: Codable {
-    /// An optional `WriteConcern` to use for the command.
-    public var writeConcern: WriteConcern?
-
-    /// Initializer allowing any/all parameters to be omitted.
-    public init(writeConcern: WriteConcern? = nil) {
-        self.writeConcern = writeConcern
-    }
-}
-
-// sourcery: skipSyncExport
 /// A MongoDB Database.
 public struct MongoDatabase {
     /// The client which this database was derived from.
     internal let _client: MongoClient
 
-    /// The namespace for this database.
-    private let namespace: MongoNamespace
-
     /// Encoder used by this database for BSON conversions. This encoder's options are inherited by collections derived
     /// from this database.
-    public let encoder: BSONEncoder
+    public var encoder: BSONEncoder { fatalError("unimplemented") }
 
     /// Decoder whose options are inherited by collections derived from this database.
-    public let decoder: BSONDecoder
+    public var decoder: BSONDecoder { fatalError("unimplemented") }
 
     /// The name of this database.
-    public var name: String { return self.namespace.db }
+    public var name: String { fatalError("unimplemented") }
 
     /// The `ReadConcern` set on this database, or `nil` if one is not set.
-    public let readConcern: ReadConcern?
+    public var readConcern: ReadConcern? { fatalError("unimplemented") }
 
     /// The `ReadPreference` set on this database
     public let readPreference: ReadPreference
@@ -85,30 +26,7 @@ public struct MongoDatabase {
 
     /// Initializes a new `MongoDatabase` instance, not meant to be instantiated directly.
     internal init(name: String, client: MongoClient, options: DatabaseOptions?) {
-        self.namespace = MongoNamespace(db: name, collection: nil)
-        self._client = client
-
-        // for both read concern and write concern, we look for a read concern in the following order:
-        // 1. options provided for this collection
-        // 2. value for this `MongoDatabase`'s parent `MongoClient`
-        // if we found a non-nil value, we check if it's the empty/server default or not, and store it if not.
-        if let rc = options?.readConcern ?? client.readConcern, !rc.isDefault {
-            self.readConcern = rc
-        } else {
-            self.readConcern = nil
-        }
-
-        if let wc = options?.writeConcern ?? client.writeConcern, !wc.isDefault {
-            self.writeConcern = wc
-        } else {
-            self.writeConcern = nil
-        }
-
-        // read preference has similar inheritance logic to read concern and write concern, but there is no empty read
-        // preference so we don't need to check for that as we did above.
-        self.readPreference = options?.readPreference ?? client.readPreference
-        self.encoder = BSONEncoder(copies: client.encoder, options: options)
-        self.decoder = BSONDecoder(copies: client.decoder, options: options)
+        fatalError("unimplemented")
     }
 
     /**
@@ -121,8 +39,7 @@ public struct MongoDatabase {
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      */
     public func drop(options: DropDatabaseOptions? = nil, session: ClientSession? = nil) throws {
-        let operation = DropDatabaseOperation(database: self, options: options)
-        return try self._client.executeOperation(operation, session: session)
+        fatalError("unimplemented")
     }
 
     /**
@@ -138,7 +55,7 @@ public struct MongoDatabase {
      * - Returns: the requested `MongoCollection<Document>`
      */
     public func collection(_ name: String, options: CollectionOptions? = nil) -> MongoCollection<Document> {
-        return self.collection(name, withType: Document.self, options: options)
+        fatalError("unimplemented")
     }
 
     /**
@@ -184,7 +101,7 @@ public struct MongoDatabase {
         options: CreateCollectionOptions? = nil,
         session: ClientSession? = nil
     ) throws -> MongoCollection<Document> {
-        return try self.createCollection(name, withType: Document.self, options: options, session: session)
+        fatalError("unimplemented")
     }
 
     /**
@@ -212,8 +129,7 @@ public struct MongoDatabase {
         options: CreateCollectionOptions? = nil,
         session: ClientSession? = nil
     ) throws -> MongoCollection<T> {
-        let operation = CreateCollectionOperation(database: self, name: name, type: type, options: options)
-        return try self._client.executeOperation(operation, session: session)
+        fatalError("unimplemented")
     }
 
     /**
@@ -235,11 +151,7 @@ public struct MongoDatabase {
         options: ListCollectionsOptions? = nil,
         session: ClientSession? = nil
     ) throws -> MongoCursor<CollectionSpecification> {
-        let operation = ListCollectionsOperation(database: self, nameOnly: false, filter: filter, options: options)
-        guard case let .specs(result) = try self._client.executeOperation(operation, session: session) else {
-            throw RuntimeError.internalError(message: "Invalid result")
-        }
-        return result
+        fatalError("unimplemented")
     }
 
     /**
@@ -261,7 +173,7 @@ public struct MongoDatabase {
         options: ListCollectionsOptions? = nil,
         session: ClientSession? = nil
     ) throws -> [MongoCollection<Document>] {
-        return try self.listCollectionNames(filter, options: options, session: session).map { self.collection($0) }
+        fatalError("unimplemented")
     }
 
     /**
@@ -283,11 +195,7 @@ public struct MongoDatabase {
         options: ListCollectionsOptions? = nil,
         session: ClientSession? = nil
     ) throws -> [String] {
-        let operation = ListCollectionsOperation(database: self, nameOnly: true, filter: filter, options: options)
-        guard case let .names(result) = try self._client.executeOperation(operation, session: session) else {
-            throw RuntimeError.internalError(message: "Invalid result")
-        }
-        return result
+        fatalError("unimplemented")
     }
 
     /**
@@ -313,8 +221,7 @@ public struct MongoDatabase {
         options: RunCommandOptions? = nil,
         session: ClientSession? = nil
     ) throws -> Document {
-        let operation = RunCommandOperation(database: self, command: command, options: options)
-        return try self._client.executeOperation(operation, session: session)
+        fatalError("unimplemented")
     }
 
     /**
@@ -345,7 +252,7 @@ public struct MongoDatabase {
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil
     ) throws -> ChangeStream<ChangeStreamEvent<Document>> {
-        return try self.watch(pipeline, options: options, session: session, withFullDocumentType: Document.self)
+        fatalError("unimplemented")
     }
 
     /**
@@ -382,12 +289,7 @@ public struct MongoDatabase {
         withFullDocumentType _: FullDocType.Type
     )
         throws -> ChangeStream<ChangeStreamEvent<FullDocType>> {
-        return try self.watch(
-            pipeline,
-            options: options,
-            session: session,
-            withEventType: ChangeStreamEvent<FullDocType>.self
-        )
+        fatalError("unimplemented")
     }
 
     /**
@@ -422,46 +324,6 @@ public struct MongoDatabase {
         session: ClientSession? = nil,
         withEventType _: EventType.Type
     ) throws -> ChangeStream<EventType> {
-        let operation = try WatchOperation<Document, EventType>(
-            target: .database(self),
-            pipeline: pipeline,
-            options: options
-        )
-        return try self._client.executeOperation(operation, session: session)
-    }
-
-    /// Uses the provided `Connection` to get a pointer to a `mongoc_database_t` corresponding to this
-    /// `MongoDatabase`, and uses it to execute the given closure. The `mongoc_database_t` is only valid for the
-    /// body of the closure. The caller is *not responsible* for cleaning up the `mongoc_database_t`.
-    internal func withMongocDatabase<T>(from connection: Connection, body: (OpaquePointer) throws -> T) rethrows -> T {
-        guard let db = mongoc_client_get_database(connection.clientHandle, self.name) else {
-            fatalError("Couldn't get database '\(self.name)'")
-        }
-        defer { mongoc_database_destroy(db) }
-
-        // `db` will automatically inherit read concern, write concern, and read preference from the parent client. If
-        // this database's value for any of those settings is different than the parent, we need to explicitly set it
-        // here.
-
-        if self.readConcern != self._client.readConcern {
-            // a nil value for self.readConcern corresponds to the empty read concern.
-            (self.readConcern ?? ReadConcern()).withMongocReadConcern { rcPtr in
-                mongoc_database_set_read_concern(db, rcPtr)
-            }
-        }
-
-        if self.writeConcern != self._client.writeConcern {
-            // a nil value for self.writeConcern corresponds to the empty write concern.
-            (self.writeConcern ?? WriteConcern()).withMongocWriteConcern { wcPtr in
-                mongoc_database_set_write_concern(db, wcPtr)
-            }
-        }
-
-        if self.readPreference != self._client.readPreference {
-            // there is no concept of an empty read preference so we will always have a value here.
-            mongoc_database_set_read_prefs(db, self.readPreference._readPreference)
-        }
-
-        return try body(db)
+        fatalError("unimplemented")
     }
 }
