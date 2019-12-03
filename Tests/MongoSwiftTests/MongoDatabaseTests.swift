@@ -93,7 +93,6 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
 
         // test non-view options
         let fooOptions = CreateCollectionOptions(
-            autoIndexId: true,
             capped: true,
             collation: ["locale": "fr"],
             indexOptionDefaults: indexOpts,
@@ -149,8 +148,8 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         let db = client.db(type(of: self).testDatabase)
         try db.drop()
 
-        let cappedOptions = CreateCollectionOptions(autoIndexId: true, capped: true, max: 1000, size: 10240)
-        let uncappedOptions = CreateCollectionOptions(autoIndexId: true, capped: false)
+        let cappedOptions = CreateCollectionOptions(capped: true, max: 1000, size: 10240)
+        let uncappedOptions = CreateCollectionOptions(capped: false)
 
         _ = try db.createCollection("capped", options: cappedOptions)
         _ = try db.createCollection("uncapped", options: uncappedOptions)
@@ -196,7 +195,6 @@ extension CreateCollectionOptions: Equatable {
     // and is not a property of the collection.
     public static func == (lhs: CreateCollectionOptions, rhs: CreateCollectionOptions) -> Bool {
         return rhs.capped == lhs.capped &&
-            rhs.autoIndexId == lhs.autoIndexId &&
             lhs.size == rhs.size &&
             lhs.max == rhs.max &&
             lhs.storageEngine == rhs.storageEngine &&

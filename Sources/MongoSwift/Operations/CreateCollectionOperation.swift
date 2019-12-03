@@ -2,9 +2,6 @@ import mongoc
 
 /// Options to use when executing a `createCollection` command on a `MongoDatabase`.
 public struct CreateCollectionOptions: Codable, CodingStrategyProvider {
-    /// Whether or not this collection will automatically generate an index on _id.
-    public var autoIndexId: Bool?
-
     /// Indicates whether this will be a capped collection.
     public var capped: Bool?
 
@@ -65,13 +62,12 @@ public struct CreateCollectionOptions: Codable, CodingStrategyProvider {
     public var writeConcern: WriteConcern?
 
     private enum CodingKeys: String, CodingKey {
-        case capped, autoIndexId, size, max, storageEngine, validator, validationLevel, validationAction,
+        case capped, size, max, storageEngine, validator, validationLevel, validationAction,
             indexOptionDefaults, viewOn, pipeline, collation, writeConcern
     }
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional.
     public init(
-        autoIndexId: Bool? = nil,
         capped: Bool? = nil,
         collation: Document? = nil,
         dataCodingStrategy: DataCodingStrategy? = nil,
@@ -88,7 +84,6 @@ public struct CreateCollectionOptions: Codable, CodingStrategyProvider {
         viewOn: String? = nil,
         writeConcern: WriteConcern? = nil
     ) {
-        self.autoIndexId = autoIndexId
         self.capped = capped
         self.collation = collation
         self.dataCodingStrategy = dataCodingStrategy
