@@ -2,7 +2,6 @@ import mongoc
 
 /// Options to use when executing a `createCollection` command on a `MongoDatabase`.
 public struct CreateCollectionOptions: Codable, CodingStrategyProvider {
-
     /// Indicates whether this will be a capped collection.
     public var capped: Bool?
 
