@@ -1,0 +1,14 @@
+// Re-export various types from MongoSwift that are also used in the API for MongoSwiftSync. We start out with all of
+// the types in MongoSwift, and then filter out types that are not public, that are explicitly annotated with
+// "skipSyncExport" (this is used to mark types that are async-specific and types whose definitions are nested within
+// other types. We don't need to explicitly re-export nested types - importing their parent types will make them
+// available under their parents' namespaces, just as they are in the async module.
+
+{% for type in types.all|public|!annotated:"skipSyncExport" where type.parent == nil %}
+@_exported import {{ type.kind }} MongoSwift.{{ type.name }}
+{% endfor %}
+
+// Protocols are not included in the types list, so we list them separately here.
+{% for protocol in types.protocols|public %}
+@_exported import protocol MongoSwift.{{ protocol.name }}
+{% endfor %}

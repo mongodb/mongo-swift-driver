@@ -55,6 +55,7 @@ public struct DropDatabaseOptions: Codable {
     }
 }
 
+// sourcery: skipSyncExport
 /// A MongoDB Database.
 public struct MongoDatabase {
     /// The client which this database was derived from.

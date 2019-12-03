@@ -2,6 +2,7 @@ import mongoc
 
 internal let ClosedCursorError = UserError.logicError(message: "Cannot advance a completed or failed cursor.")
 
+// sourcery: skipSyncExport
 /// A MongoDB cursor.
 public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     /// Enum for tracking the state of a cursor.
