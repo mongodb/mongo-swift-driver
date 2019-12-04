@@ -1,5 +1,6 @@
 @testable import MongoSwift
 import Nimble
+import TestsCommon
 import XCTest
 
 private var _client: MongoClient?

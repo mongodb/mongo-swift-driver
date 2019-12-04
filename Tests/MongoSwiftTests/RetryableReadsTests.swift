@@ -1,6 +1,7 @@
 import Foundation
 import MongoSwift
 import Nimble
+import TestsCommon
 import XCTest
 
 /// Struct representing a single test within a spec test JSON file.

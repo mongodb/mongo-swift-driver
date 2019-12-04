@@ -1,6 +1,7 @@
 import mongoc
 @testable import MongoSwift
 import Nimble
+import TestsCommon
 import XCTest
 
 /// The entity on which to start a change stream.
