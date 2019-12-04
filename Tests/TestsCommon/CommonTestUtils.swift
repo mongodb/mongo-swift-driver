@@ -159,8 +159,6 @@ public func sortedEqual(_ expectedValue: Document?) -> Predicate<Document> {
     }
 }
 
-
-
 public func unsupportedTopologyMessage(
     testName: String,
     topology: TopologyDescription.TopologyType = MongoSwiftTestCase.topologyType

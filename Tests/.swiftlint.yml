@@ -4,3 +4,4 @@ disabled_rules:
   - force_unwrapping
   - nesting
   - explicit_acl
+  - missing_docs

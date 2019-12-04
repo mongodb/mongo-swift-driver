@@ -115,7 +115,7 @@ extension MongoClient {
 /// Captures any command monitoring events filtered by type and name that are emitted during the execution of the
 /// provided closure. Only events emitted by the provided client will be captured.
 internal func captureCommandEvents(
-    from client: MongoClient,
+    from _: MongoClient,
     eventTypes: [Notification.Name]? = nil,
     commandNames: [String]? = nil,
     f: () throws -> Void
