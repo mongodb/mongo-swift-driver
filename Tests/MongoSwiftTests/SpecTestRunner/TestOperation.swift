@@ -114,6 +114,8 @@ struct AnyTestOperation: Decodable, TestOperation {
             self.op = try container.decode(Distinct.self, forKey: .arguments)
         case "find":
             self.op = try container.decode(Find.self, forKey: .arguments)
+        case "findOne":
+            self.op = try container.decode(FindOne.self, forKey: .arguments)
         case "updateOne":
             self.op = try container.decode(UpdateOne.self, forKey: .arguments)
         case "updateMany":
@@ -257,6 +259,26 @@ struct Find: TestOperation {
             throw UserError.invalidArgumentError(message: "collection not provided to renameCollection")
         }
         return try TestOperationResult(from: collection.find(self.filter, options: self.options, session: session))
+    }
+}
+
+struct FindOne: TestOperation {
+    let filter: Document
+    let options: FindOneOptions
+
+    private enum CodingKeys: String, CodingKey { case filter }
+
+    init(from decoder: Decoder) throws {
+        self.options = try FindOneOptions(from: decoder)
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.filter = try container.decode(Document.self, forKey: .filter)
+    }
+
+    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
+        guard case let .collection(collection) = target else {
+            throw UserError.invalidArgumentError(message: "collection not provided to renameCollection")
+        }
+        return try TestOperationResult(from: collection.findOne(self.filter, options: self.options, session: session))
     }
 }
 

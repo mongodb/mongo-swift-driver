@@ -417,6 +417,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
 
         // try various command + read concern pairs to make sure they work
         expect(try coll.find(options: FindOptions(readConcern: ReadConcern(.local)))).toNot(throwError())
+        expect(try coll.findOne(options: FindOneOptions(readConcern: ReadConcern(.local)))).toNot(throwError())
 
         expect(try coll.aggregate(
             [["$project": ["a": 1]]],

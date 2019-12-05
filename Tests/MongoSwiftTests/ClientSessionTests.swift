@@ -33,6 +33,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
     // list of read only operations on MongoCollection that take in a session
     let collectionSessionReadOps: [CollectionSessionOp] = [
         (name: "find", body: { _ = try $0.find([:], session: $1).nextOrError() }),
+        (name: "findOne", body: { _ = try $0.findOne([:], session: $1) }),
         (name: "aggregate", body: { _ = try $0.aggregate([], session: $1).nextOrError() }),
         (name: "distinct", body: { _ = try $0.distinct(fieldName: "x", session: $1) }),
         (name: "countDocuments", body: { _ = try $0.countDocuments(session: $1) }),

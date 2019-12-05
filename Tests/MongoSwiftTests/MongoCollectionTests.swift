@@ -212,6 +212,16 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(findResult.next()).to(beNil())
     }
 
+    func testFindOne() throws {
+        let findOneResult = try self.coll.findOne(["cat": "dog"])
+        expect(findOneResult).to(equal(["_id": 1, "cat": "dog"]))
+    }
+
+    func testFindOneMultipleMatches() throws {
+        let findOneResult = try self.coll.findOne()
+        expect(findOneResult).to(equal(["_id": 1, "cat": "dog"]))
+    }
+
     func testDeleteOne() throws {
         expect(try self.coll.deleteOne(["cat": "cat"])?.deletedCount).to(equal(1))
     }
