@@ -178,6 +178,8 @@ extension MongoCollectionTests {
         ("testInsertManyWithEmptyValues", testInsertManyWithEmptyValues),
         ("testInsertManyWithUnacknowledgedWriteConcern", testInsertManyWithUnacknowledgedWriteConcern),
         ("testFind", testFind),
+        ("testFindOne", testFindOne),
+        ("testFindOneMultipleMatches", testFindOneMultipleMatches),
         ("testDeleteOne", testDeleteOne),
         ("testDeleteOneWithUnacknowledgedWriteConcern", testDeleteOneWithUnacknowledgedWriteConcern),
         ("testDeleteMany", testDeleteMany),
