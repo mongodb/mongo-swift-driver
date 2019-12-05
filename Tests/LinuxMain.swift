@@ -2,7 +2,9 @@
 // DO NOT EDIT
 
 
+@testable import BSONTests
 @testable import MongoSwiftTests
+@testable import MongoSwiftSyncTests
 import XCTest
 
 extension AuthTests {
