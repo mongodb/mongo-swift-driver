@@ -1,0 +1,7 @@
+disabled_rules:
+  - force_cast
+  - force_try
+  - force_unwrapping
+  - nesting
+  - explicit_acl
+  - missing_docs
