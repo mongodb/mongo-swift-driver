@@ -57,6 +57,7 @@
 @_exported import struct MongoSwift.FindOneAndDeleteOptions
 @_exported import struct MongoSwift.FindOneAndReplaceOptions
 @_exported import struct MongoSwift.FindOneAndUpdateOptions
+@_exported import struct MongoSwift.FindOneOptions
 @_exported import struct MongoSwift.FindOptions
 @_exported import enum MongoSwift.FullDocument
 @_exported import enum MongoSwift.Hint
