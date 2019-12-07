@@ -1,6 +1,7 @@
 import Foundation
 @testable import MongoSwift
 import Nimble
+import TestsCommon
 import XCTest
 
 /// A struct containing the portions of a `CommandStartedEvent` the spec tests use for testing.

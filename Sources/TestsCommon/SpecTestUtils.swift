@@ -1,5 +1,5 @@
 import Foundation
-@testable import MongoSwift
+import MongoSwift
 import XCTest
 
 extension MongoSwiftTestCase {
@@ -20,7 +20,7 @@ extension MongoSwiftTestCase {
 }
 
 extension Document {
-    init(fromJSONFile file: URL) throws {
+    public init(fromJSONFile file: URL) throws {
         let jsonString = try String(contentsOf: file, encoding: .utf8)
         try self.init(fromJSON: jsonString)
     }
@@ -28,7 +28,7 @@ extension Document {
 
 /// Given a spec folder name (e.g. "crud") and optionally a subdirectory name for a folder (e.g. "read") retrieves an
 /// array of [(filename, file decoded to type T)].
-internal func retrieveSpecTestFiles<T: Decodable>(
+public func retrieveSpecTestFiles<T: Decodable>(
     specName: String,
     subdirectory: String? = nil,
     asType _: T.Type
@@ -51,7 +51,7 @@ internal func retrieveSpecTestFiles<T: Decodable>(
 /// Given two documents, returns a copy of the input document with all keys that *don't*
 /// exist in `standard` removed, and with all matching keys put in the same order they
 /// appear in `standard`.
-internal func rearrangeDoc(_ input: Document, toLookLike standard: Document) -> Document {
+public func rearrangeDoc(_ input: Document, toLookLike standard: Document) -> Document {
     var output = Document()
     for (k, v) in standard {
         switch (v, input[k]) {
@@ -74,6 +74,6 @@ internal func rearrangeDoc(_ input: Document, toLookLike standard: Document) -> 
     return output
 }
 
-internal func fileLevelLog(_ message: String) {
+public func fileLevelLog(_ message: String) {
     print("\n------------\n\(message)\n")
 }

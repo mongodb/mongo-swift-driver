@@ -1,6 +1,7 @@
 import Foundation
 @testable import MongoSwift
 import Nimble
+import TestsCommon
 import XCTest
 
 /// Represents a single test file.

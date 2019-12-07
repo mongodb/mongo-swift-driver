@@ -1,4 +1,6 @@
+@testable import BSONTests
 @testable import MongoSwiftTests
+@testable import MongoSwiftSyncTests
 import XCTest
 
 {% for type in types.classes|based:"XCTestCase" %}

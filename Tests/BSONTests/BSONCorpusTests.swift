@@ -1,6 +1,7 @@
 import Foundation
 import MongoSwift
 import Nimble
+import TestsCommon
 import XCTest
 
 final class BSONCorpusTests: MongoSwiftTestCase {

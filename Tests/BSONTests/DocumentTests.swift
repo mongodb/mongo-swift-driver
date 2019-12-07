@@ -2,6 +2,7 @@ import Foundation
 import mongoc
 @testable import MongoSwift
 import Nimble
+import TestsCommon
 import XCTest
 
 /// Useful extensions to the Data type for testing purposes
