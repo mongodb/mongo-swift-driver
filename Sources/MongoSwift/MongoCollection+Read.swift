@@ -34,7 +34,7 @@ extension MongoCollection {
      *   - options: Optional `FindOneOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns:  the resulting `Document`
+     * - Returns:  the resulting `Document`, or nil if there is no match
      *
      * - Throws:
      *   - `UserError.invalidArgumentError` if the options passed are an invalid combination.
@@ -51,7 +51,7 @@ extension MongoCollection {
         if let options = options {
             findOneOptions = FindOptions(findOneOptions: options)
         }
-        let cursor = try self.find(_: filter, options: findOneOptions, session: session)
+        let cursor = try self.find(filter, options: findOneOptions, session: session)
         return try cursor.nextOrError()
     }
 

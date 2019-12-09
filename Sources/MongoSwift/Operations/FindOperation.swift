@@ -182,7 +182,7 @@ public struct FindOptions: Codable {
         self.sort = sort
     }
 
-    public init(findOneOptions: FindOneOptions) {
+    internal init(findOneOptions: FindOneOptions) {
         self.allowPartialResults = findOneOptions.allowPartialResults
         self.collation = findOneOptions.collation
         self.comment = findOneOptions.comment
@@ -196,6 +196,7 @@ public struct FindOptions: Codable {
         self.returnKey = findOneOptions.returnKey
         self.showRecordId = findOneOptions.showRecordId
         self.skip = findOneOptions.skip
+        self.sort = findOneOptions.sort
     }
 
     // Encode everything except `self.readPreference`, because this is sent to libmongoc separately
@@ -219,6 +220,7 @@ public struct FindOneOptions: Codable {
 
     /// A hint for the index to use.
     public var hint: Hint?
+    
     /// The exclusive upper bound for a specific index.
     public var max: Document?
 
@@ -237,6 +239,9 @@ public struct FindOneOptions: Codable {
     /// A ReadConcern to use for this operation.
     public var readConcern: ReadConcern?
 
+    /// A ReadPreference to use for this operation.
+    public var readPreference: ReadPreference? = nil
+    
     /// If true, returns only the index keys in the resulting documents.
     public var returnKey: Bool?
 
@@ -246,6 +251,9 @@ public struct FindOneOptions: Codable {
 
     /// The number of documents to skip before returning.
     public var skip: Int64?
+    
+    /// The order in which to return matching documents.
+    public var sort: Document?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional.
     public init(
@@ -259,9 +267,11 @@ public struct FindOneOptions: Codable {
         min: Document? = nil,
         projection: Document? = nil,
         readConcern: ReadConcern? = nil,
+        readPreference: ReadPreference? = nil,
         returnKey: Bool? = nil,
         showRecordId: Bool? = nil,
-        skip: Int64? = nil
+        skip: Int64? = nil,
+        sort: Document? = nil
     ) {
         self.allowPartialResults = allowPartialResults
         self.collation = collation
@@ -273,15 +283,17 @@ public struct FindOneOptions: Codable {
         self.min = min
         self.projection = projection
         self.readConcern = readConcern
+        self.readPreference = readPreference
         self.returnKey = returnKey
         self.showRecordId = showRecordId
         self.skip = skip
+        self.sort = sort
     }
 
     // Encode everything except `self.readPreference`, because this is sent to libmongoc separately
     private enum CodingKeys: String, CodingKey {
         case allowPartialResults, collation, comment, hint, max,
-            maxScan, maxTimeMS, min, projection, readConcern, returnKey, showRecordId, skip
+            maxScan, maxTimeMS, min, projection, readConcern, returnKey, showRecordId, skip, sort
     }
 }
 

@@ -256,7 +256,7 @@ struct Find: TestOperation {
 
     func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
-            throw UserError.invalidArgumentError(message: "collection not provided to renameCollection")
+            throw UserError.invalidArgumentError(message: "collection not provided to find")
         }
         return try TestOperationResult(from: collection.find(self.filter, options: self.options, session: session))
     }
@@ -276,7 +276,7 @@ struct FindOne: TestOperation {
 
     func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
-            throw UserError.invalidArgumentError(message: "collection not provided to renameCollection")
+            throw UserError.invalidArgumentError(message: "collection not provided to findOne")
         }
         return try TestOperationResult(from: collection.findOne(self.filter, options: self.options, session: session))
     }
