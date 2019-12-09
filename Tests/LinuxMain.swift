@@ -180,6 +180,7 @@ extension MongoCollectionTests {
         ("testFind", testFind),
         ("testFindOne", testFindOne),
         ("testFindOneMultipleMatches", testFindOneMultipleMatches),
+        ("testFindOneNoMatch", testFindOneNoMatch),
         ("testDeleteOne", testDeleteOne),
         ("testDeleteOneWithUnacknowledgedWriteConcern", testDeleteOneWithUnacknowledgedWriteConcern),
         ("testDeleteMany", testDeleteMany),

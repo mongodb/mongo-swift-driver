@@ -220,7 +220,7 @@ public struct FindOneOptions: Codable {
 
     /// A hint for the index to use.
     public var hint: Hint?
-    
+
     /// The exclusive upper bound for a specific index.
     public var max: Document?
 
@@ -241,7 +241,7 @@ public struct FindOneOptions: Codable {
 
     /// A ReadPreference to use for this operation.
     public var readPreference: ReadPreference? = nil
-    
+
     /// If true, returns only the index keys in the resulting documents.
     public var returnKey: Bool?
 
@@ -251,7 +251,7 @@ public struct FindOneOptions: Codable {
 
     /// The number of documents to skip before returning.
     public var skip: Int64?
-    
+
     /// The order in which to return matching documents.
     public var sort: Document?
 
