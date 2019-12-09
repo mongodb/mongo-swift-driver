@@ -21,7 +21,7 @@ LIBMONGOC_VERSION="r1.15"
 # install libmongoc
 git clone --depth 1 -b "${LIBMONGOC_VERSION}" https://github.com/mongodb/mongo-c-driver "${BUILD_DIR}"
 cd "${BUILD_DIR}"
-$CMAKE -DCMAKE_INSTALL_PREFIX:PATH="${INSTALL_DIR}"
+$CMAKE -DCMAKE_INSTALL_PREFIX:PATH="${INSTALL_DIR}" -DENABLE_ZSTD=OFF
 make -j8 install
 cd "${PROJECT_DIRECTORY}"
 
