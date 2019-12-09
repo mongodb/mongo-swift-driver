@@ -240,7 +240,7 @@ public struct FindOneOptions: Codable {
     public var readConcern: ReadConcern?
 
     /// A ReadPreference to use for this operation.
-    public var readPreference: ReadPreference? = nil
+    public var readPreference: ReadPreference?
 
     /// If true, returns only the index keys in the resulting documents.
     public var returnKey: Bool?
