@@ -3,8 +3,7 @@
 @testable import MongoSwiftSyncTests
 import XCTest
 
-{% for type in types.classes|based:"XCTestCase" %}
-{% if not type.annotations.disableTests %}
+{% for type in types.classes|based:"MongoSwiftTestCase" %}
 extension {{ type.name }} {
     static var allTests = [
     {% for method in type.methods %}
@@ -15,12 +14,9 @@ extension {{ type.name }} {
     ]
 }
 
-{% endif %}
 {% endfor %}
 XCTMain([
-{% for type in types.classes|based:"XCTestCase" %}
-    {% if not type.annotations.disableTests %}
+{% for type in types.classes|based:"MongoSwiftTestCase" %}
     testCase({{ type.name }}.allTests),
-    {% endif %}
 {% endfor %}
 ])

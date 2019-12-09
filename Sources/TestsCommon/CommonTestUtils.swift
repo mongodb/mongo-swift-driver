@@ -4,7 +4,6 @@ import mongoc
 import Nimble
 import XCTest
 
-// sourcery: disableTests
 open class MongoSwiftTestCase: XCTestCase {
     /// Gets the name of the database the test case is running against.
     public class var testDatabase: String {
