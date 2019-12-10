@@ -7,14 +7,13 @@ private struct Kitten: Content {
     var color: String
 }
 
-/// A single collection with type `Kitten`. This allows us to directly retrieve instances of
-/// `Kitten` from the collection.  `MongoCollection` is safe to share across threads.
-private let collection = try MongoClient().db("home").collection("kittens", withType: Kitten.self)
-
 private let app = try Application()
 private let router = try app.make(Router.self)
 
 router.get("kittens") { _ -> [Kitten] in
+    /// A single collection with type `Kitten`. This allows us to directly retrieve instances of
+    /// `Kitten` from the collection.
+    let collection = try MongoClient().db("home").collection("kittens", withType: Kitten.self)
     let docs = try collection.find()
     return Array(docs)
 }
