@@ -182,7 +182,7 @@ public struct FindOptions: Codable {
         self.sort = sort
     }
 
-    internal init(findOneOptions: FindOneOptions) {
+    internal init(from findOneOptions: FindOneOptions) {
         self.allowPartialResults = findOneOptions.allowPartialResults
         self.collation = findOneOptions.collation
         self.comment = findOneOptions.comment
@@ -193,6 +193,7 @@ public struct FindOptions: Codable {
         self.min = findOneOptions.min
         self.projection = findOneOptions.projection
         self.readConcern = findOneOptions.readConcern
+        self.readPreference = findOneOptions.readPreference
         self.returnKey = findOneOptions.returnKey
         self.showRecordId = findOneOptions.showRecordId
         self.skip = findOneOptions.skip

@@ -47,11 +47,8 @@ extension MongoCollection {
         options: FindOneOptions? = nil,
         session: ClientSession? = nil
     ) throws -> T? {
-        var findOneOptions: FindOptions?
-        if let options = options {
-            findOneOptions = FindOptions(findOneOptions: options)
-        }
-        let cursor = try self.find(filter, options: findOneOptions, session: session)
+        let options = options.map { FindOptions(from: $0) }
+        let cursor = try self.find(filter, options: options, session: session)
         return try cursor.nextOrError()
     }
 
