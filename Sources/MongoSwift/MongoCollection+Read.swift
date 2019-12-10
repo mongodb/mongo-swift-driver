@@ -27,6 +27,32 @@ extension MongoCollection {
     }
 
     /**
+     * Finds a single document in this collection that matches the provided filter.
+     *
+     * - Parameters:
+     *   - filter: A `Document` that should match the query
+     *   - options: Optional `FindOneOptions` to use when executing the command
+     *   - session: Optional `ClientSession` to use when executing this command
+     *
+     * - Returns:  the resulting `Document`, or nil if there is no match
+     *
+     * - Throws:
+     *   - `UserError.invalidArgumentError` if the options passed are an invalid combination.
+     *   - `UserError.logicError` if the provided session is inactive.
+     *   - `EncodingError` if an error occurs while encoding the options to BSON.
+     */
+
+    public func findOne(
+        _ filter: Document = [:],
+        options: FindOneOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> T? {
+        let options = options.map { FindOptions(from: $0) }
+        let cursor = try self.find(filter, options: options, session: session)
+        return try cursor.nextOrError()
+    }
+
+    /**
      * Runs an aggregation framework pipeline against this collection.
      *
      * - Parameters:

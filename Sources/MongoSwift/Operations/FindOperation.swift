@@ -182,11 +182,119 @@ public struct FindOptions: Codable {
         self.sort = sort
     }
 
+    internal init(from findOneOptions: FindOneOptions) {
+        self.allowPartialResults = findOneOptions.allowPartialResults
+        self.collation = findOneOptions.collation
+        self.comment = findOneOptions.comment
+        self.hint = findOneOptions.hint
+        self.max = findOneOptions.max
+        self.maxScan = findOneOptions.maxScan
+        self.maxTimeMS = findOneOptions.maxTimeMS
+        self.min = findOneOptions.min
+        self.projection = findOneOptions.projection
+        self.readConcern = findOneOptions.readConcern
+        self.readPreference = findOneOptions.readPreference
+        self.returnKey = findOneOptions.returnKey
+        self.showRecordId = findOneOptions.showRecordId
+        self.skip = findOneOptions.skip
+        self.sort = findOneOptions.sort
+    }
+
     // Encode everything except `self.readPreference`, because this is sent to libmongoc separately
     private enum CodingKeys: String, CodingKey {
         case allowPartialResults, awaitData, batchSize, collation, comment, hint, limit, max, maxAwaitTimeMS,
             maxScan, maxTimeMS, min, noCursorTimeout, projection, readConcern, returnKey, showRecordId, tailable, skip,
             sort
+    }
+}
+
+/// Options to use when executing a `findOne` command on a `MongoCollection`.
+public struct FindOneOptions: Codable {
+    /// Get partial results from a mongos if some shards are down (instead of throwing an error).
+    public var allowPartialResults: Bool?
+
+    /// Specifies a collation.
+    public var collation: Document?
+
+    /// Attaches a comment to the query.
+    public var comment: String?
+
+    /// A hint for the index to use.
+    public var hint: Hint?
+
+    /// The exclusive upper bound for a specific index.
+    public var max: Document?
+
+    /// Maximum number of documents or index keys to scan when executing the query.
+    public var maxScan: Int64?
+
+    /// The maximum amount of time to allow the query to run.
+    public var maxTimeMS: Int64?
+
+    /// The inclusive lower bound for a specific index.
+    public var min: Document?
+
+    /// Limits the fields to return for all matching documents.
+    public var projection: Document?
+
+    /// A ReadConcern to use for this operation.
+    public var readConcern: ReadConcern?
+
+    /// A ReadPreference to use for this operation.
+    public var readPreference: ReadPreference?
+
+    /// If true, returns only the index keys in the resulting documents.
+    public var returnKey: Bool?
+
+    /// Determines whether to return the record identifier for each document. If true, adds a field $recordId
+    /// to the returned documents.
+    public var showRecordId: Bool?
+
+    /// The number of documents to skip before returning.
+    public var skip: Int64?
+
+    /// The order in which to return matching documents.
+    public var sort: Document?
+
+    /// Convenience initializer allowing any/all parameters to be omitted or optional.
+    public init(
+        allowPartialResults: Bool? = nil,
+        collation: Document? = nil,
+        comment: String? = nil,
+        hint: Hint? = nil,
+        max: Document? = nil,
+        maxScan: Int64? = nil,
+        maxTimeMS: Int64? = nil,
+        min: Document? = nil,
+        projection: Document? = nil,
+        readConcern: ReadConcern? = nil,
+        readPreference: ReadPreference? = nil,
+        returnKey: Bool? = nil,
+        showRecordId: Bool? = nil,
+        skip: Int64? = nil,
+        sort: Document? = nil
+    ) {
+        self.allowPartialResults = allowPartialResults
+        self.collation = collation
+        self.comment = comment
+        self.hint = hint
+        self.max = max
+        self.maxScan = maxScan
+        self.maxTimeMS = maxTimeMS
+        self.min = min
+        self.projection = projection
+        self.readConcern = readConcern
+        self.readPreference = readPreference
+        self.returnKey = returnKey
+        self.showRecordId = showRecordId
+        self.skip = skip
+        self.sort = sort
+    }
+
+    // Encode everything except `self.readPreference`, because this is sent to libmongoc separately
+    private enum CodingKeys: String, CodingKey {
+        case allowPartialResults, collation, comment, hint, max,
+            maxScan, maxTimeMS, min, projection, readConcern, returnKey, showRecordId, skip, sort
     }
 }
 

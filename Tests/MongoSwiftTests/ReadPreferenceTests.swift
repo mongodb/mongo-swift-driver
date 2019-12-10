@@ -110,6 +110,7 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
 
         // expect running other commands to not throw errors when passing in a valid read preference
         expect(try coll.find(options: FindOptions(readPreference: ReadPreference(.primary)))).toNot(throwError())
+        expect(try coll.findOne(options: FindOneOptions(readPreference: ReadPreference(.primary)))).toNot(throwError())
 
         expect(try coll.aggregate(
             [["$project": ["a": 1]]],

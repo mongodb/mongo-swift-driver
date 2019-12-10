@@ -22,6 +22,7 @@ final class OptionsTests: MongoSwiftTestCase {
         IndexOptions(),
         AggregateOptions(),
         FindOptions(),
+        FindOneOptions(),
         InsertOneOptions(),
         UpdateOptions(),
         ReplaceOptions(),
