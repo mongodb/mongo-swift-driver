@@ -12,35 +12,35 @@ final class MongoCursorTests: MongoSwiftTestCase {
         try self.withTestNamespace { _, db, coll in
             // query empty collection
             var cursor = try coll.find()
-            expect(try cursor.nextOrError()).toNot(throwError())
+            expect(try cursor.next()?.get()).toNot(throwError())
             // cursor should immediately be closed as its empty
             expect(cursor.isAlive).to(beFalse())
             // iterating dead cursor should error
-            expect(try cursor.nextOrError()).to(throwError(errorType: LogicError.self))
+            expect(try cursor.next()?.get()).to(throwError(logicError))
 
             // insert and read out one document
             try coll.insertOne(doc1)
             cursor = try coll.find()
-            var results = Array(cursor)
+            var results = try Array(cursor.all())
             expect(results).to(haveCount(1))
             expect(results[0]).to(equal(doc1))
             // cursor should be closed now that its exhausted
             expect(cursor.isAlive).to(beFalse())
             // iterating dead cursor should error
-            expect(try cursor.nextOrError()).to(throwError())
+            expect(try cursor.next()?.get()).to(throwError())
 
             try coll.insertMany([doc2, doc3])
             cursor = try coll.find()
-            results = Array(cursor)
+            results = try Array(cursor.all())
             expect(results).to(haveCount(3))
             expect(results).to(equal([doc1, doc2, doc3]))
             // cursor should be closed now that its exhausted
             expect(cursor.isAlive).to(beFalse())
             // iterating dead cursor should error
-            expect(try cursor.nextOrError()).to(throwError(errorType: LogicError.self))
+            expect(try cursor.next()?.get()).to(throwError(logicError))
 
             cursor = try coll.find(options: FindOptions(batchSize: 1))
-            expect(try cursor.nextOrError()).toNot(throwError())
+            expect(try cursor.next()?.get()).toNot(throwError())
 
             // run killCursors so next iteration fails on the server
             try db.runCommand(["killCursors": .string(coll.name), "cursors": [.int64(cursor.id!)]])
@@ -50,7 +50,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
                 message: "",
                 errorLabels: nil
             )
-            expect(try cursor.nextOrError()).to(throwError(expectedError2))
+            expect(try cursor.next()?.get()).to(throwError(expectedError2))
             // cursor should be closed now that it errored
             expect(cursor.isAlive).to(beFalse())
         }
@@ -62,11 +62,11 @@ final class MongoCursorTests: MongoSwiftTestCase {
             let cursorOpts = FindOptions(cursorType: .tailable)
 
             var cursor = try coll.find(options: cursorOpts)
-            expect(try cursor.nextOrError()).to(beNil())
+            expect(try cursor.next()?.get()).to(beNil())
             // no documents matched initial query, so cursor is dead
             expect(cursor.isAlive).to(beFalse())
             // iterating iterating dead cursor should error
-            expect(try cursor.nextOrError()).to(throwError(errorType: LogicError.self))
+            expect(try cursor.next()?.get()).to(throwError(logicError))
 
             // insert a doc so something matches initial query
             try coll.insertOne(doc1)
@@ -74,23 +74,22 @@ final class MongoCursorTests: MongoSwiftTestCase {
 
             // for each doc we insert, check that it arrives in the cursor next,
             // and that the cursor is still alive afterward
-            let checkNextResult: (Document) -> Void = { doc in
-                let results = Array(cursor)
+            let checkNextResult: (Document) throws -> Void = { doc in
+                let results = try cursor.all()
                 expect(results).to(haveCount(1))
                 expect(results[0]).to(equal(doc))
-                expect(cursor.error).to(beNil())
                 expect(cursor.isAlive).to(beTrue())
             }
-            checkNextResult(doc1)
+            try checkNextResult(doc1)
 
             try coll.insertOne(doc2)
-            checkNextResult(doc2)
+            try checkNextResult(doc2)
 
             try coll.insertOne(doc3)
-            checkNextResult(doc3)
+            try checkNextResult(doc3)
 
             // no more docs, but should still be alive
-            expect(try cursor.nextOrError()).to(beNil())
+            expect(try cursor.next()?.get()).to(beNil())
             expect(cursor.isAlive).to(beTrue())
 
             // insert 3 docs so the cursor loses track of its position
@@ -104,12 +103,34 @@ final class MongoCursorTests: MongoSwiftTestCase {
                 message: "",
                 errorLabels: nil
             )
-            expect(try cursor.nextOrError()).to(throwError(expectedError))
+            expect(try cursor.next()?.get()).to(throwError(expectedError))
             // cursor should be closed now that it errored
             expect(cursor.isAlive).to(beFalse())
 
             // iterating dead cursor should error
-            expect(try cursor.nextOrError()).to(throwError(errorType: LogicError.self))
+            expect(try cursor.next()?.get()).to(throwError(logicError))
+        }
+    }
+
+    func testNext() throws {
+        try self.withTestNamespace { _, _, coll in
+            // query empty collection
+            var cursor = try coll.find()
+            expect(cursor.next()).to(beNil())
+
+            // insert a doc so something matches initial query
+            try coll.insertOne(doc1)
+            cursor = try coll.find()
+
+            // next() returns a Result<Document, Error>?
+            if let next = cursor.next() {
+                switch next {
+                case let .success(doc):
+                    expect(doc).to(equal(doc1))
+                case let .failure(error):
+                    throw error
+                }
+            }
         }
     }
 }

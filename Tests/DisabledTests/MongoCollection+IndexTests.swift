@@ -67,9 +67,9 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         let model = IndexModel(keys: ["cat": 1])
         expect(try self.coll.createIndex(model)).to(equal("cat_1"))
         let indexes = try coll.listIndexes()
-        expect(indexes.next()?.options?.name).to(equal("_id_"))
-        expect(indexes.next()?.options?.name).to(equal("cat_1"))
-        expect(indexes.next()).to(beNil())
+        expect(try indexes.next()?.get().options?.name).to(equal("_id_"))
+        expect(try indexes.next()?.get().options?.name).to(equal("cat_1"))
+        expect(try indexes.next()?.get()).to(beNil())
     }
 
     func testIndexOptions() throws {
@@ -99,7 +99,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         let ttlModel = IndexModel(keys: ["cat": 1], options: ttlOptions)
         expect(try self.coll.createIndex(ttlModel)).to(equal("ttl"))
 
-        var indexOptions: [IndexOptions] = try self.coll.listIndexes().map { $0.options ?? IndexOptions() }
+        var indexOptions: [IndexOptions] = try self.coll.listIndexes().all().map { $0.options ?? IndexOptions() }
         indexOptions.sort { $0.name! < $1.name! }
         expect(indexOptions).to(haveCount(3))
 
@@ -122,10 +122,10 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         let model2 = IndexModel(keys: ["cat": -1])
         expect(try self.coll.createIndexes([model1, model2])).to(equal(["cat_1", "cat_-1"]))
         let indexes = try coll.listIndexes()
-        expect(indexes.next()?.options?.name).to(equal("_id_"))
-        expect(indexes.next()?.options?.name).to(equal("cat_1"))
-        expect(indexes.next()?.options?.name).to(equal("cat_-1"))
-        expect(indexes.next()).to(beNil())
+        expect(try indexes.next()?.get().options?.name).to(equal("_id_"))
+        expect(try indexes.next()?.get().options?.name).to(equal("cat_1"))
+        expect(try indexes.next()?.get().options?.name).to(equal("cat_-1"))
+        expect(try indexes.next()?.get()).to(beNil())
     }
 
     func testCreateIndexFromKeys() throws {
@@ -136,10 +136,10 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         expect(try self.coll.createIndex(model)).to(equal("blah"))
 
         let indexes = try coll.listIndexes()
-        expect(indexes.next()?.options?.name).to(equal("_id_"))
-        expect(indexes.next()?.options?.name).to(equal("cat_1"))
+        expect(try indexes.next()?.get().options?.name).to(equal("_id_"))
+        expect(try indexes.next()?.get().options?.name).to(equal("cat_1"))
 
-        let thirdIndex = indexes.next()
+        let thirdIndex = try indexes.next()?.get()
         expect(thirdIndex?.options?.name).to(equal("blah"))
         expect(thirdIndex?.options?.unique).to(equal(true))
 
@@ -153,8 +153,8 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
 
         // now there should only be _id_ left
         let indexes = try coll.listIndexes()
-        expect(indexes.next()?.options?.name).to(equal("_id_"))
-        expect(indexes.next()).to(beNil())
+        expect(try indexes.next()?.get().options?.name).to(equal("_id_"))
+        expect(try indexes.next()?.get()).to(beNil())
     }
 
     func testDropIndexByModel() throws {
@@ -167,8 +167,8 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         // now there should only be _id_ left
         let indexes = try coll.listIndexes()
         expect(indexes).toNot(beNil())
-        expect(indexes.next()?.options?.name).to(equal("_id_"))
-        expect(indexes.next()).to(beNil())
+        expect(try indexes.next()?.get().options?.name).to(equal("_id_"))
+        expect(try indexes.next()?.get()).to(beNil())
     }
 
     func testDropIndexByKeys() throws {
@@ -181,8 +181,8 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         // now there should only be _id_ left
         let indexes = try coll.listIndexes()
         expect(indexes).toNot(beNil())
-        expect(indexes.next()?.options?.name).to(equal("_id_"))
-        expect(indexes.next()).to(beNil())
+        expect(try indexes.next()?.get().options?.name).to(equal("_id_"))
+        expect(try indexes.next()?.get()).to(beNil())
     }
 
     func testDropAllIndexes() throws {
@@ -194,8 +194,8 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
 
         // now there should only be _id_ left
         let indexes = try coll.listIndexes()
-        expect(indexes.next()?.options?.name).to(equal("_id_"))
-        expect(indexes.next()).to(beNil())
+        expect(try indexes.next()?.get().options?.name).to(equal("_id_"))
+        expect(try indexes.next()?.get()).to(beNil())
     }
 
     func testListIndexNames() throws {
@@ -242,8 +242,8 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         // now there should only be _id_ left
         let indexes = try coll.listIndexes()
         expect(indexes).toNot(beNil())
-        expect(indexes.next()?.options?.name).to(equal("_id_"))
-        expect(indexes.next()).to(beNil())
+        expect(try indexes.next()?.get().options?.name).to(equal("_id_"))
+        expect(try indexes.next()?.get()).to(beNil())
 
         // test that maxTimeMS is an accepted option for createIndex and dropIndex
         expect(receivedEvents.count).to(equal(2))
