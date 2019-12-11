@@ -217,3 +217,13 @@ public struct TestError: LocalizedError {
         self.message = message
     }
 }
+
+/// Possible authentication mechanisms.
+public enum AuthMechanism: String, Decodable {
+    case scramSHA1 = "SCRAM-SHA-1"
+    case scramSHA256 = "SCRAM-SHA-256"
+    case gssAPI = "GSSAPI"
+    case mongodbCR = "MONGODB-CR"
+    case mongodbX509 = "MONGODB-X509"
+    case plain = "PLAIN"
+}
