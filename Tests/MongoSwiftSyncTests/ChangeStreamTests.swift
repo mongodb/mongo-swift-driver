@@ -1,4 +1,3 @@
-import mongoc
 import MongoSwift
 import Nimble
 import TestsCommon
