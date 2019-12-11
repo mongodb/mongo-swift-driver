@@ -1,8 +1,7 @@
 import Foundation
-@testable import MongoSwift
+import MongoSwift
 import Nimble
 import TestsCommon
-import XCTest
 
 final class OptionsTests: MongoSwiftTestCase {
     let allOptionsStructs: [Any] = [

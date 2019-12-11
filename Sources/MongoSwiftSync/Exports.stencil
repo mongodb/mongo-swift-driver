@@ -12,3 +12,7 @@
 {% for protocol in types.protocols|public %}
 @_exported import protocol MongoSwift.{{ protocol.name }}
 {% endfor %}
+
+// Manually add typealiases
+@_exported import typealias MongoSwift.InsertManyOptions
+@_exported import typealias MongoSwift.ServerErrorCode

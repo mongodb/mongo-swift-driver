@@ -220,18 +220,6 @@ public struct TopologyDescription {
         case sharded = "Sharded"
         /// A topology whose type is not yet known.
         case unknown = "Unknown"
-
-        /// Internal initializer used for translating evergreen config and spec test topologies to a `TopologyType`
-        internal init(from str: String) {
-            switch str {
-            case "sharded", "sharded_cluster":
-                self = .sharded
-            case "replicaset", "replica_set":
-                self = .replicaSetWithPrimary
-            default:
-                self = .single
-            }
-        }
     }
 
     /// The type of this topology.

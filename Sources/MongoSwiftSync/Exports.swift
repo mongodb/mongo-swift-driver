@@ -110,3 +110,7 @@
 @_exported import protocol MongoSwift.MongoCommandEvent
 @_exported import protocol MongoSwift.MongoError
 @_exported import protocol MongoSwift.MongoEvent
+
+// Manually add typealiases
+@_exported import typealias MongoSwift.InsertManyOptions
+@_exported import typealias MongoSwift.ServerErrorCode

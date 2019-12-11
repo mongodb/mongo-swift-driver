@@ -2,7 +2,6 @@ import mongoc
 @testable import MongoSwift
 import Nimble
 import TestsCommon
-import XCTest
 
 extension WriteConcern {
     /// Initialize a new `WriteConcern` from a `Document`. We can't
