@@ -208,3 +208,12 @@ extension TopologyDescription.TopologyType {
         }
     }
 }
+
+public struct TestError: LocalizedError {
+    public var message: String
+    public var errorDescription: String { return self.message }
+
+    public init(message: String) {
+        self.message = message
+    }
+}
