@@ -160,7 +160,7 @@ struct AnyTestOperation: Decodable, TestOperation {
             self.op = ListCollectionNames()
         case "watch":
             self.op = Watch()
-        case "mapReduce", "download_by_name", "findOne", "download", "count":
+        case "mapReduce", "download_by_name", "download", "count":
             self.op = NotImplemented(name: opName)
         default:
             throw UserError.logicError(message: "unsupported op name \(opName)")
