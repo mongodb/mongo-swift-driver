@@ -39,7 +39,6 @@ extension MongoCollection {
      *   - `UserError.logicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
-
     public func findOne(
         _ filter: Document = [:],
         options: FindOneOptions? = nil,
