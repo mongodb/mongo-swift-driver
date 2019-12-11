@@ -100,7 +100,7 @@ final class SDAMTests: MongoSwiftTestCase {
         let newServer = event3.newDescription
         self.checkDefaultHostPort(newServer, hostlist)
         self.checkEmptyLists(newServer)
-        expect(newServer.type).to(equal(TopologyDescription.TopologyType.standalone))
+        expect(newServer.type).to(equal(ServerDescription.ServerType.standalone))
 
         let event4 = receivedEvents[4] as! TopologyDescriptionChangedEvent
         expect(event4.topologyId).to(equal(event3.topologyId))
@@ -111,7 +111,7 @@ final class SDAMTests: MongoSwiftTestCase {
         let newTopology = event4.newDescription
         expect(newTopology.type).to(equal(TopologyDescription.TopologyType.single))
         self.checkDefaultHostPort(newTopology.servers[0], hostlist)
-        expect(newTopology.servers[0].type).to(equal(TopologyDescription.TopologyType.standalone))
+        expect(newTopology.servers[0].type).to(equal(ServerDescription.ServerType.standalone))
         self.checkEmptyLists(newTopology.servers[0])
     }
 }
