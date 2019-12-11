@@ -426,10 +426,11 @@ buildvariants:
     then:
       remove_tasks: ".3.6"
 
-- matrix_name: "atlas-connect"
-  matrix_spec: 
-    os-fully-featured: ubuntu-18.04
-    swift-version: "*"
-  display_name: "Atlas Connectivity ${swift-version} ${os-fully-featured}"
-  tasks:
-    - ".atlas-connect"
+# TODO SWIFT-703: reenable
+# - matrix_name: "atlas-connect"
+#   matrix_spec: 
+#     os-fully-featured: ubuntu-18.04
+#     swift-version: "*"
+#   display_name: "Atlas Connectivity ${swift-version} ${os-fully-featured}"
+#   tasks:
+#     - ".atlas-connect"

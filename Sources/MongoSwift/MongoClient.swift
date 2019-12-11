@@ -1,5 +1,5 @@
 import Foundation
-import mongoc
+import NIO
 
 /// Options to use when creating a `MongoClient`.
 public struct ClientOptions: CodingStrategyProvider, Decodable {
@@ -178,7 +178,10 @@ public struct TLSOptions {
 public class MongoClient {
     internal let connectionPool: ConnectionPool
 
-    private let operationExecutor: OperationExecutor = DefaultOperationExecutor()
+    private let operationExecutor: OperationExecutor
+
+    /// Indicates whether this client has been closed.
+    internal private(set) var isClosed = false
 
     /// If command and/or server monitoring is enabled, stores the NotificationCenter events are posted to.
     internal let notificationCenter: NotificationCenter
@@ -188,6 +191,9 @@ public class MongoClient {
 
     /// Counter for generating client _ids.
     internal static let clientIdGenerator = Counter(label: "MongoClient ID generator")
+
+    /// Error thrown when user attempts to use a closed client.
+    internal static let ClosedClientError = LogicError(message: "MongoClient was already closed")
 
     /// Encoder whose options are inherited by databases derived from this client.
     public let encoder: BSONEncoder
@@ -205,12 +211,15 @@ public class MongoClient {
     public let writeConcern: WriteConcern?
 
     /**
-     * Create a new client connection to a MongoDB server. For options that included in both the connection string URI
+     * Create a new client for a MongoDB deployment. For options that included in both the connection string URI
      * and the ClientOptions struct, the final value is set in descending order of priority: the value specified in
      * ClientOptions (if non-nil), the value specified in the URI, or the default value if both are unset.
      *
      * - Parameters:
      *   - connectionString: the connection string to connect to.
+     *   - eventLoopGroup: A SwiftNIO `EventLoopGroup` which the client will use for executing operations. It is the
+     *                     user's responsibility to ensure the group remains active for as long as the client does, and
+     *                     to ensure the group is properly shut down when it is no longer in use.
      *   - options: optional `ClientOptions` to use for this client
      *
      * - SeeAlso: https://docs.mongodb.com/manual/reference/connection-string/
@@ -220,12 +229,17 @@ public class MongoClient {
      *   - A `InvalidArgumentError` if the connection string specifies the use of TLS but libmongoc was not
      *     built with TLS support.
      */
-    public init(_ connectionString: String = "mongodb://localhost:27017", options: ClientOptions? = nil) throws {
+    public init(
+        _ connectionString: String = "mongodb://localhost:27017",
+        using eventLoopGroup: EventLoopGroup,
+        options: ClientOptions? = nil
+    ) throws {
         // Initialize mongoc. Repeated calls have no effect so this is safe to do every time.
         initializeMongoc()
 
         let connString = try ConnectionString(connectionString, options: options)
         self.connectionPool = try ConnectionPool(from: connString, options: options?.tlsOptions)
+        self.operationExecutor = DefaultOperationExecutor(eventLoopGroup: eventLoopGroup)
 
         let rc = connString.readConcern
         if !rc.isDefault {
@@ -251,6 +265,23 @@ public class MongoClient {
             serverMonitoring: options?.serverMonitoring ?? false,
             client: self
         )
+    }
+
+    deinit {
+        assert(self.isClosed, "MongoClient was not closed before deinitialization")
+    }
+
+    /// Closes this `MongoClient`. Call this method exactly once when you are finished using the client. You must
+    /// ensure that all operations using the client have completed before calling this. The returned future must be
+    /// fulfilled before the client goes out of scope.
+    public func close() -> EventLoopFuture<Void> {
+        return self.operationExecutor.execute {
+            self.connectionPool.close()
+            self.isClosed = true
+        }
+        .flatMap {
+            self.operationExecutor.close()
+        }
     }
 
     /**
@@ -287,7 +318,7 @@ public class MongoClient {
      *     on the "name", "sizeOnDisk", "empty", or "shards" fields of the output.
      *   - session: Optional `ClientSession` to use when executing this command.
      *
-     * - Returns: A `[DatabaseSpecification]` containing the databases matching provided criteria.
+     * - Returns: An `EventLoopFuture<[DatabaseSpecification]>` containing the databases matching provided criteria.
      *
      * - Throws:
      *   - `LogicError` if the provided session is inactive.
@@ -298,16 +329,14 @@ public class MongoClient {
     public func listDatabases(
         _ filter: Document? = nil,
         session: ClientSession? = nil
-    ) throws -> [DatabaseSpecification] {
-        let operation = ListDatabasesOperation(
-            client: self,
-            filter: filter,
-            nameOnly: nil
-        )
-        guard case let .specs(result) = try self.executeOperation(operation, session: session) else {
-            throw InternalError(message: "Invalid result")
+    ) -> EventLoopFuture<[DatabaseSpecification]> {
+        let operation = ListDatabasesOperation(client: self, filter: filter, nameOnly: nil)
+        return self.executeOperationAsync(operation, session: session).flatMapThrowing { result in
+            guard case let .specs(dbs) = result else {
+                throw InternalError(message: "Invalid result")
+            }
+            return dbs
         }
-        return result
     }
 
     /**
@@ -317,7 +346,7 @@ public class MongoClient {
      *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An Array of `MongoDatabase`s that match the provided filter.
+     * - Returns: An `EventLoopFuture<[MongoDatabase]>` containing databases that match the provided filter.
      *
      * - Throws:
      *   - `LogicError` if the provided session is inactive.
@@ -325,8 +354,8 @@ public class MongoClient {
     public func listMongoDatabases(
         _ filter: Document? = nil,
         session: ClientSession? = nil
-    ) throws -> [MongoDatabase] {
-        return try self.listDatabaseNames(filter, session: session).map { self.db($0) }
+    ) -> EventLoopFuture<[MongoDatabase]> {
+        return self.listDatabaseNames(filter, session: session).map { $0.map { self.db($0) } }
     }
 
     /**
@@ -336,21 +365,22 @@ public class MongoClient {
      *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: A `[String]` containing names of databases that match the provided filter.
+     * - Returns: An `EventLoopFuture<[String]>` containing names of databases that match the provided filter.
      *
      * - Throws:
      *   - `LogicError` if the provided session is inactive.
      */
-    public func listDatabaseNames(_ filter: Document? = nil, session: ClientSession? = nil) throws -> [String] {
-        let operation = ListDatabasesOperation(
-            client: self,
-            filter: filter,
-            nameOnly: true
-        )
-        guard case let .names(result) = try self.executeOperation(operation, session: session) else {
-            throw InternalError(message: "Invalid result")
+    public func listDatabaseNames(
+        _ filter: Document? = nil,
+        session: ClientSession? = nil
+    ) -> EventLoopFuture<[String]> {
+        let operation = ListDatabasesOperation(client: self, filter: filter, nameOnly: true)
+        return self.executeOperationAsync(operation, session: session).flatMapThrowing { result in
+            guard case let .names(names) = result else {
+                throw InternalError(message: "Invalid result")
+            }
+            return names
         }
-        return result
     }
 
     /**
@@ -491,7 +521,16 @@ public class MongoClient {
         using connection: Connection? = nil,
         session: ClientSession? = nil
     ) throws -> T.OperationResult {
-        return try self.operationExecutor.execute(operation, using: connection, client: self, session: session)
+        return try self.operationExecutor.execute(operation, using: connection, client: self, session: session).wait()
+    }
+
+    /// Executes an `Operation` asynchronously using this `MongoClient` and an optionally provided session.
+    internal func executeOperationAsync<T: Operation>(
+        _ operation: T,
+        using connection: Connection? = nil,
+        session: ClientSession? = nil
+    ) -> EventLoopFuture<T.OperationResult> {
+        return self.operationExecutor.execute(operation, using: connection, client: self, session: session)
     }
 }
 

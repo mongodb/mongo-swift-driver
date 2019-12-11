@@ -29,7 +29,7 @@ project:
 	ruby Tests/Scripts/add_json_files.rb
 
 linuxmain:
-	$(SOURCERY) --sources Tests/ --templates Tests/LinuxMain.stencil --output Tests/LinuxMain.swift
+	$(SOURCERY) --sources Tests/ --exclude-sources Tests/DisabledTests/ --templates Tests/LinuxMain.stencil --output Tests/LinuxMain.swift
 
 exports:
 	$(SOURCERY) --sources Sources/MongoSwift/ --templates Sources/MongoSwiftSync/Exports.stencil --output Sources/MongoSwiftSync/Exports.swift

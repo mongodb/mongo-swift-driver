@@ -98,9 +98,8 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
         let primaryPreferred = ReadPreference(.primaryPreferred)
         let secondary = ReadPreference(.secondary)
 
-        do {
+        try self.withTestClient { client in
             // expect that a client with an unset read preference has it default to primary
-            let client = try MongoClient()
             expect(client.readPreference).to(equal(ReadPreference(.primary)))
 
             // expect that a database created from this client inherits its read preference
@@ -113,8 +112,7 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
             expect(db2.readPreference).to(equal(ReadPreference(.secondary)))
         }
 
-        do {
-            let client = try MongoClient(options: ClientOptions(readPreference: primaryPreferred))
+        try self.withTestClient(options: ClientOptions(readPreference: primaryPreferred)) { client in
             expect(client.readPreference).to(equal(ReadPreference(.primaryPreferred)))
 
             // expect that a database created from this client inherits its read preference
@@ -131,37 +129,38 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
     func testDatabaseReadPreference() throws {
         let primary = ReadPreference(.primary)
         let secondary = ReadPreference(.secondary)
-        let client = try MongoClient()
 
-        do {
-            // expect that a database with an unset read preference defaults to primary
-            let db = client.db(type(of: self).testDatabase)
-            expect(db.readPreference).to(equal(ReadPreference(.primary)))
+        try self.withTestClient { client in
+            do {
+                // expect that a database with an unset read preference defaults to primary
+                let db = client.db(type(of: self).testDatabase)
+                expect(db.readPreference).to(equal(ReadPreference(.primary)))
 
-            // expect that a collection inherits its database default read preference
-            let coll1 = db.collection(self.getCollectionName(suffix: "1"))
-            expect(coll1.readPreference).to(equal(ReadPreference(.primary)))
+                // expect that a collection inherits its database default read preference
+                let coll1 = db.collection(self.getCollectionName(suffix: "1"))
+                expect(coll1.readPreference).to(equal(ReadPreference(.primary)))
 
-            // expect that a collection can override its inherited read preference
-            let coll2 = db.collection(
-                self.getCollectionName(suffix: "2"),
-                options: CollectionOptions(readPreference: secondary)
-            )
-            expect(coll2.readPreference).to(equal(ReadPreference(.secondary)))
-        }
+                // expect that a collection can override its inherited read preference
+                let coll2 = db.collection(
+                    self.getCollectionName(suffix: "2"),
+                    options: CollectionOptions(readPreference: secondary)
+                )
+                expect(coll2.readPreference).to(equal(ReadPreference(.secondary)))
+            }
 
-        do {
-            // expect that a collection inherits its database read preference
-            let db = client.db(type(of: self).testDatabase, options: DatabaseOptions(readPreference: secondary))
-            let coll1 = db.collection(self.getCollectionName(suffix: "1"))
-            expect(coll1.readPreference).to(equal(ReadPreference(.secondary)))
+            do {
+                // expect that a collection inherits its database read preference
+                let db = client.db(type(of: self).testDatabase, options: DatabaseOptions(readPreference: secondary))
+                let coll1 = db.collection(self.getCollectionName(suffix: "1"))
+                expect(coll1.readPreference).to(equal(ReadPreference(.secondary)))
 
-            // expect that a collection can override its database read preference
-            let coll2 = db.collection(
-                self.getCollectionName(suffix: "2"),
-                options: CollectionOptions(readPreference: primary)
-            )
-            expect(coll2.readPreference).to(equal(ReadPreference(.primary)))
+                // expect that a collection can override its database read preference
+                let coll2 = db.collection(
+                    self.getCollectionName(suffix: "2"),
+                    options: CollectionOptions(readPreference: primary)
+                )
+                expect(coll2.readPreference).to(equal(ReadPreference(.primary)))
+            }
         }
     }
 }

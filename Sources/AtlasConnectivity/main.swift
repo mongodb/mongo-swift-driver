@@ -1,5 +1,5 @@
 import Foundation
-import MongoSwift
+import MongoSwiftSync
 
 private let configs = ["ATLAS_REPL", "ATLAS_SHRD", "ATLAS_FREE", "ATLAS_TLS11", "ATLAS_TLS12"]
 
