@@ -194,31 +194,6 @@ extension Document {
         return try iter.safeCurrentValue()
     }
 
-    /**
-     * Allows retrieving and strongly typing a value at the same time. This means you can avoid
-     * having to cast and unwrap values from the `Document` when you know what type they will be.
-     * For example:
-     * ```
-     *  let d: Document = ["x": 1]
-     *  let x: Int = try d.get("x")
-     *  ```
-     *
-     *  - Parameters:
-     *      - key: The key under which the value you are looking up is stored
-     *      - `T`: Any type conforming to the `BSONValue` protocol
-     *  - Returns: The value stored under key, as type `T`
-     *  - Throws:
-     *    - `RuntimeError.internalError` if the value cannot be cast to type `T` or is not in the `Document`, or an
-     *      unexpected error occurs while decoding the `BSONValue`.
-     *
-     */
-    internal func get<T: BSONValue>(_ key: String) throws -> T {
-        guard let value = try self.getValue(for: key)?.bsonValue as? T else {
-            throw RuntimeError.internalError(message: "Could not cast value for key \(key) to type \(T.self)")
-        }
-        return value
-    }
-
     /// Appends the key/value pairs from the provided `doc` to this `Document`.
     /// Note: This function does not check for or clean away duplicate keys.
     internal mutating func merge(_ doc: Document) throws {

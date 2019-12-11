@@ -3,7 +3,6 @@ import mongoc
 @testable import MongoSwift
 import Nimble
 import TestsCommon
-import XCTest
 
 /// An extension adding accessors for a number of options that may be set on a `ConnectionString`.
 extension ConnectionString {

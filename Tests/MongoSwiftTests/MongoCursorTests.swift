@@ -2,7 +2,6 @@ import Foundation
 @testable import MongoSwift
 import Nimble
 import TestsCommon
-import XCTest
 
 private let doc1: Document = ["_id": 1, "x": 1]
 private let doc2: Document = ["_id": 2, "x": 2]

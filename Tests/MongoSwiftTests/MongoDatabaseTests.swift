@@ -1,7 +1,7 @@
+import Foundation
 @testable import MongoSwift
 import Nimble
 import TestsCommon
-import XCTest
 
 final class MongoDatabaseTests: MongoSwiftTestCase {
     override func setUp() {

@@ -2,7 +2,6 @@ import Foundation
 @testable import MongoSwift
 import Nimble
 import TestsCommon
-import XCTest
 
 final class ClientSessionTests: MongoSwiftTestCase {
     override func tearDown() {

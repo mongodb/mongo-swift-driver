@@ -3,6 +3,9 @@ import MongoSwift
 /// A MongoDB change stream.
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/
 public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
+    /// A `ResumeToken` associated with the most recent event seen by the change stream.
+    public var resumeToken: ResumeToken?{ fatalError("unimplemented") }
+    
     /// The error that occurred while iterating the change stream, if one exists. This should be used to check
     /// for errors after `next()` returns `nil`.
     public var error: Error? { fatalError("unimplemented") }
