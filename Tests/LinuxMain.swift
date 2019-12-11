@@ -10,7 +10,6 @@ import XCTest
 extension AuthTests {
     static var allTests = [
         ("testAuthConnectionStrings", testAuthConnectionStrings),
-        ("testAuthProseTests", testAuthProseTests),
     ]
 }
 
@@ -302,6 +301,12 @@ extension SDAMTests {
     ]
 }
 
+extension SyncAuthTests {
+    static var allTests = [
+        ("testAuthProseTests", testAuthProseTests),
+    ]
+}
+
 XCTMain([
     testCase(AuthTests.allTests),
     testCase(BSONCorpusTests.allTests),
@@ -328,4 +333,5 @@ XCTMain([
     testCase(RetryableReadsTests.allTests),
     testCase(RetryableWritesTests.allTests),
     testCase(SDAMTests.allTests),
+    testCase(SyncAuthTests.allTests),
 ])
