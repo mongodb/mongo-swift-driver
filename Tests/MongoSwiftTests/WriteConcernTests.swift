@@ -1,0 +1,171 @@
+import mongoc
+@testable import MongoSwift
+import Nimble
+import TestsCommon
+
+/// Indicates that a type has a write concern property, as well as a way to get a write concern from an instance of the
+/// corresponding mongoc type.
+protocol WriteConcernable {
+    var writeConcern: WriteConcern? { get }
+    func getMongocWriteConcern() throws -> WriteConcern?
+}
+
+extension MongoClient: WriteConcernable {
+    func getMongocWriteConcern() throws -> WriteConcern? {
+        return try self.connectionPool.withConnection { conn in
+            WriteConcern(from: mongoc_client_get_write_concern(conn.clientHandle))
+        }
+    }
+}
+
+extension MongoDatabase: WriteConcernable {
+    func getMongocWriteConcern() throws -> WriteConcern? {
+        return try self._client.connectionPool.withConnection { conn in
+            self.withMongocDatabase(from: conn) { dbPtr in
+                WriteConcern(from: mongoc_database_get_write_concern(dbPtr))
+            }
+        }
+    }
+}
+
+extension MongoCollection: WriteConcernable {
+    func getMongocWriteConcern() throws -> WriteConcern? {
+        return try self._client.connectionPool.withConnection { conn in
+            self.withMongocCollection(from: conn) { collPtr in
+                WriteConcern(from: mongoc_collection_get_write_concern(collPtr))
+            }
+        }
+    }
+}
+
+/// Checks that a type T, as well as pointers to corresponding libmongoc instances, has the expected write concern.
+func checkWriteConcern<T: WriteConcernable>(
+    _ instance: T,
+    _ expected: WriteConcern,
+    _ description: String
+) throws {
+    if expected.isDefault {
+        expect(instance.writeConcern).to(beNil(), description: description)
+    } else {
+        expect(instance.writeConcern).to(equal(expected), description: description)
+    }
+
+    expect(try instance.getMongocWriteConcern()).to(equal(expected))
+}
+
+final class WriteConcernTests: MongoSwiftTestCase {
+    func testWriteConcernType() throws {
+        // try creating write concerns with various valid options
+        expect(try WriteConcern(w: .number(0))).toNot(throwError())
+        expect(try WriteConcern(w: .number(3))).toNot(throwError())
+        expect(try WriteConcern(journal: true, w: .number(1))).toNot(throwError())
+        expect(try WriteConcern(w: .number(0), wtimeoutMS: 1000)).toNot(throwError())
+        expect(try WriteConcern(w: .tag("hi"))).toNot(throwError())
+        expect(try WriteConcern(w: .majority)).toNot(throwError())
+
+        // verify that this combination is considered invalid
+        expect(try WriteConcern(journal: true, w: .number(0)))
+            .to(throwError(UserError.invalidArgumentError(message: "")))
+
+        // verify that a negative value for w or for wtimeoutMS is considered invalid
+        expect(try WriteConcern(w: .number(-1)))
+            .to(throwError(UserError.invalidArgumentError(message: "")))
+        expect(try WriteConcern(wtimeoutMS: -1))
+            .to(throwError(UserError.invalidArgumentError(message: "")))
+    }
+
+    func testClientWriteConcern() throws {
+        let w1 = try WriteConcern(w: .number(1))
+        let w2 = try WriteConcern(w: .number(2))
+        let empty = WriteConcern()
+
+        // test behavior of a client with initialized with no WC
+        do {
+            let client = try MongoClient()
+            let clientDesc = "client created with no WC provided"
+            // expect the readConcern property to exist and be default
+            try checkWriteConcern(client, empty, clientDesc)
+
+            // expect that a DB created from this client inherits its default WC
+            let db1 = client.db(type(of: self).testDatabase)
+            try checkWriteConcern(db1, empty, "db created with no WC provided from \(clientDesc)")
+
+            // expect that a DB created from this client can override the client's default WC
+            let db2 = client.db(type(of: self).testDatabase, options: DatabaseOptions(writeConcern: w2))
+            try checkWriteConcern(db2, w2, "db created with w:2 from \(clientDesc)")
+        }
+
+        // test behavior of a client with w: 1
+        do {
+            let client = try MongoClient(options: ClientOptions(writeConcern: w1))
+            let clientDesc = "client created with w:1"
+            // although w:1 is default, if it is explicitly provided it should be set
+            try checkWriteConcern(client, w1, clientDesc)
+
+            // expect that a DB created from this client inherits its WC
+            let db1 = client.db(type(of: self).testDatabase)
+            try checkWriteConcern(db1, w1, "db created with no WC provided from \(clientDesc)")
+
+            // expect that a DB created from this client can override the client's WC
+            let db2 = client.db(type(of: self).testDatabase, options: DatabaseOptions(writeConcern: w2))
+            try checkWriteConcern(db2, w2, "db created with w:2 from \(clientDesc)")
+        }
+
+        // test behavior of a client with w: 2
+        do {
+            let client = try MongoClient(options: ClientOptions(writeConcern: w2))
+            let clientDesc = "client created with w:2"
+            try checkWriteConcern(client, w2, clientDesc)
+
+            // expect that a DB created from this client can override the client's WC with an unset one
+            let db = client.db(
+                type(of: self).testDatabase,
+                options: DatabaseOptions(writeConcern: empty)
+            )
+            try checkWriteConcern(db, empty, "db created with empty WC from \(clientDesc)")
+        }
+    }
+
+    func testDatabaseWriteConcern() throws {
+        let client = try MongoClient.makeTestClient()
+
+        let empty = WriteConcern()
+        let w1 = try WriteConcern(w: .number(1))
+        let w2 = try WriteConcern(w: .number(2))
+
+        let db1 = client.db(type(of: self).testDatabase)
+        defer { try? db1.drop() }
+
+        var dbDesc = "db created with no WC provided"
+
+        // expect that a collection created from a DB with default WC also has default WC
+        var coll1 = try db1.createCollection(self.getCollectionName(suffix: "1"))
+        try checkWriteConcern(coll1, empty, "collection created with no WC provided from \(dbDesc)")
+
+        // expect that a collection retrieved from a DB with default WC also has default WC
+        coll1 = db1.collection(coll1.name)
+        try checkWriteConcern(coll1, empty, "collection retrieved with no WC provided from \(dbDesc)")
+
+        // expect that a collection retrieved from a DB with default WC can override the DB's WC
+        var coll2 = db1.collection(self.getCollectionName(suffix: "2"), options: CollectionOptions(writeConcern: w1))
+        try checkWriteConcern(coll2, w1, "collection retrieved with w:1 from \(dbDesc)")
+
+        try db1.drop()
+
+        let db2 = client.db(type(of: self).testDatabase, options: DatabaseOptions(writeConcern: w1))
+        defer { try? db2.drop() }
+        dbDesc = "db created with w:1"
+
+        // expect that a collection created from a DB with w:1 also has w:1
+        var coll3 = try db2.createCollection(self.getCollectionName(suffix: "3"))
+        try checkWriteConcern(coll3, w1, "collection created with no WC provided from \(dbDesc)")
+
+        // expect that a collection retrieved from a DB with w:1 also has w:1
+        coll3 = db2.collection(coll3.name)
+        try checkWriteConcern(coll3, w1, "collection retrieved with no WC provided from \(dbDesc)")
+
+        // expect that a collection retrieved from a DB with w:1 can override the DB's WC
+        let coll4 = db2.collection(self.getCollectionName(suffix: "4"), options: CollectionOptions(writeConcern: w2))
+        try checkWriteConcern(coll4, w2, "collection retrieved with w:2 from \(dbDesc)")
+    }
+}
