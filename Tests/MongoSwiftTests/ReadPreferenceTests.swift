@@ -94,7 +94,7 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
             .to(equal(try ReadPreference(.secondaryPreferred, maxStalenessSeconds: 90)))
     }
 
-        func testClientReadPreference() throws {
+    func testClientReadPreference() throws {
         let primaryPreferred = ReadPreference(.primaryPreferred)
         let secondary = ReadPreference(.secondary)
 
