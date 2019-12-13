@@ -773,10 +773,10 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
         let db = client.db(type(of: self).testDatabase)
         defer { try? db.drop() }
-        let changeStream = try db.watch()
+        let changeStream = try db.watch(options: ChangeStreamOptions(maxAwaitTimeMS: 100))
 
         // expect the first iteration to be nil since no changes have been made to the database.
-        expect(try changeStream.nextWithTimeout()).to(beNil())
+        expect(try changeStream.nextOrError()).to(beNil())
 
         let coll = db.collection(self.getCollectionName(suffix: "1"))
         let doc1: Document = ["_id": 1, "a": 1]
