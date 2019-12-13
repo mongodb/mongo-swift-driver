@@ -39,9 +39,8 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         return false
     }
 
-    /// Returns the ID used by the server to track the cursor. `nil` until mongoc actually talks to the server by
-    /// iterating the cursor, and `nil` after mongoc has fetched all the results from the server.
-    internal var id: Int64? {
+    /// Returns the ID used by the server to track the cursor. `nil` once all results have been fetched from the server.
+    public var id: Int64? {
         guard case let .open(cursor, _, _, _) = self.state else {
             return nil
         }

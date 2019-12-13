@@ -501,8 +501,3 @@ private class UpdateTest: CrudTest {
         try self.verifyUpdateResult(result)
     }
 }
-
-internal struct TestError: LocalizedError {
-    var message: String
-    public var errorDescription: String { return self.message }
-}

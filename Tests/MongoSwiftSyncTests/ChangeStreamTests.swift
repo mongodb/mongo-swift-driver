@@ -1,5 +1,4 @@
-import mongoc
-@testable import MongoSwift
+import MongoSwift
 import Nimble
 import TestsCommon
 import XCTest
@@ -162,7 +161,7 @@ internal struct ChangeStreamTest: Decodable {
     internal func run(globalClient: MongoClient, database: String, collection: String) throws {
         let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
 
-        let center = client.notificationCenter
+        let center = NotificationCenter.default
         var events: [TestCommandStartedEvent] = []
         let observer = center.addObserver(forName: .commandStarted, object: nil, queue: nil) { notification in
             guard let event = notification.userInfo?["event"] as? CommandStartedEvent else {
@@ -174,7 +173,7 @@ internal struct ChangeStreamTest: Decodable {
             }
             events.append(TestCommandStartedEvent(from: event))
         }
-        defer { client.notificationCenter.removeObserver(observer) }
+        defer { center.removeObserver(observer) }
 
         do {
             let changeStream = try self.target.watch(
