@@ -159,3 +159,19 @@ internal func captureCommandEvents(
         try f(client)
     }
 }
+
+extension ChangeStream {
+    /// Repeatedly poll the change stream until either an event/error is returned or the timeout is hit.
+    /// The default timeout is ChangeStreamTests.TIMEOUT.
+    func nextWithTimeout(_ timeout: TimeInterval = ChangeStreamTests.TIMEOUT) throws -> T? {
+        let start = DispatchTime.now()
+        while DispatchTime.now() < start + timeout {
+            if let event = self.next() {
+                return event
+            } else if let error = self.error {
+                throw error
+            }
+        }
+        return nil
+    }
+}
