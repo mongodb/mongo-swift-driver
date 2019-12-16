@@ -220,6 +220,8 @@ public struct BulkWriteFailure: Codable {
     }
 }
 
+// swiftlint:disable cyclomatic_complexity
+
 /// Gets an appropriate error from a libmongoc error. Additional details may be provided in the form of a server reply
 /// document.
 private func parseMongocError(_ error: bson_error_t, reply: Document?) -> MongoError {
@@ -267,6 +269,8 @@ private func parseMongocError(_ error: bson_error_t, reply: Document?) -> MongoE
         return InternalError(message: message)
     }
 }
+
+// swiftlint:enable cyclomatic_complexity
 
 /// Internal function used to get an appropriate error from a libmongoc error and/or a server reply to a command.
 internal func extractMongoError(error bsonError: bson_error_t, reply: Document? = nil) -> MongoError {
