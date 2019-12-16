@@ -33,7 +33,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
     override func tearDown() {
         do {
             try self.coll.drop()
-        } catch let ServerError.commandError(code, _, _, _) where code == 26 {
+        } catch let commandError as CommandError where commandError.code == 26 {
             // ignore ns not found errors
         } catch {
             fail("encountered error when tearing down: \(error)")
@@ -49,7 +49,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
     }
 
     func testEmptyRequests() {
-        expect(try self.coll.bulkWrite([])).to(throwError(UserError.invalidArgumentError(message: "")))
+        expect(try self.coll.bulkWrite([])).to(throwError(InvalidArgumentError(message: "")))
     }
 
     func testInserts() throws {
@@ -106,9 +106,9 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         )
 
         // Expect a duplicate key error (11000)
-        let expectedError = ServerError.bulkWriteError(
-            writeErrors: [BulkWriteError(code: 11000, codeName: "DuplicateKey", message: "", index: 1)],
-            writeConcernError: nil,
+        let expectedError = BulkWriteError(
+            writeFailures: [BulkWriteFailure(code: 11000, codeName: "DuplicateKey", message: "", index: 1)],
+            writeConcernFailure: nil,
             otherError: nil,
             result: expectedResult,
             errorLabels: nil
@@ -209,7 +209,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         expect(cursor.next()).to(beNil()) // cursor ends
         expect(cursor.error).to(beNil())
         expect(cursor.next()).to(beNil()) // iterate after cursor ends
-        expect(cursor.error as? UserError).to(equal(UserError.logicError(message: "")))
+        expect(cursor.error as? LogicError).to(equal(LOGIC_ERROR))
     }
 
     func testUnacknowledgedWriteConcern() throws {

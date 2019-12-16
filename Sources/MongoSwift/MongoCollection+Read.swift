@@ -125,7 +125,7 @@ extension MongoCollection {
      * - Returns: A `[BSONValue]` containing the distinct values for the specified criteria
      *
      * - Throws:
-     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `CommandError` if an error occurs that prevents the command from executing.
      *   - `InvalidArgumentError` if the options passed in form an invalid combination.
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.

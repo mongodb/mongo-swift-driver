@@ -55,7 +55,7 @@ class ReadWriteConcernSpecTests: MongoSwiftTestCase {
                         }
                     }
                 } else {
-                    expect(try MongoClient(uri)).to(throwError(UserError.invalidArgumentError(message: "")))
+                    expect(try MongoClient(uri)).to(throwError(INVALID_ARGUMENT_ERROR))
                 }
             }
         }
@@ -105,7 +105,7 @@ class ReadWriteConcernSpecTests: MongoSwiftTestCase {
                             expect(try encoder.encode(wc)).to(sortedEqual(expected))
                         }
                     } else {
-                        expect(try WriteConcern(wcToUse)).to(throwError(UserError.invalidArgumentError(message: "")))
+                        expect(try WriteConcern(wcToUse)).to(throwError(INVALID_ARGUMENT_ERROR))
                     }
                 }
             }

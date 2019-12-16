@@ -6,7 +6,6 @@ import TestsCommon
 private let doc1: Document = ["_id": 1, "x": 1]
 private let doc2: Document = ["_id": 2, "x": 2]
 private let doc3: Document = ["_id": 3, "x": 3]
-private let logicError = UserError.logicError(message: "")
 
 final class MongoCursorTests: MongoSwiftTestCase {
     func testNonTailableCursor() throws {
@@ -17,7 +16,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
             // cursor should immediately be closed as its empty
             expect(cursor.isAlive).to(beFalse())
             // iterating dead cursor should error
-            expect(try cursor.nextOrError()).to(throwError(logicError))
+            expect(try cursor.nextOrError()).to(throwError(LOGIC_ERROR))
 
             // insert and read out one document
             try coll.insertOne(doc1)
@@ -38,14 +37,14 @@ final class MongoCursorTests: MongoSwiftTestCase {
             // cursor should be closed now that its exhausted
             expect(cursor.isAlive).to(beFalse())
             // iterating dead cursor should error
-            expect(try cursor.nextOrError()).to(throwError(logicError))
+            expect(try cursor.nextOrError()).to(throwError(LOGIC_ERROR))
 
             cursor = try coll.find(options: FindOptions(batchSize: 1))
             expect(try cursor.nextOrError()).toNot(throwError())
 
             // run killCursors so next iteration fails on the server
             try db.runCommand(["killCursors": .string(coll.name), "cursors": [.int64(cursor.id!)]])
-            let expectedError2 = ServerError.commandError(
+            let expectedError2 = CommandError.new(
                 code: 43,
                 codeName: "CursorNotFound",
                 message: "",
@@ -67,7 +66,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
             // no documents matched initial query, so cursor is dead
             expect(cursor.isAlive).to(beFalse())
             // iterating iterating dead cursor should error
-            expect(try cursor.nextOrError()).to(throwError(logicError))
+            expect(try cursor.nextOrError()).to(throwError(LOGIC_ERROR))
 
             // insert a doc so something matches initial query
             try coll.insertOne(doc1)
@@ -99,7 +98,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
                 try coll.insertOne(["_id": BSON(i), "x": BSON(i)])
             }
 
-            let expectedError = ServerError.commandError(
+            let expectedError = CommandError.new(
                 code: 136,
                 codeName: "CappedPositionLost",
                 message: "",
@@ -110,7 +109,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
             expect(cursor.isAlive).to(beFalse())
 
             // iterating dead cursor should error
-            expect(try cursor.nextOrError()).to(throwError(logicError))
+            expect(try cursor.nextOrError()).to(throwError(LOGIC_ERROR))
         }
     }
 }

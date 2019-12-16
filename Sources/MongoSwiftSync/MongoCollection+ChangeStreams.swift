@@ -14,7 +14,7 @@ extension MongoCollection {
      * - Returns: A `ChangeStream` on a specific collection.
      *
      * - Throws:
-     *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
+     *   - `CommandError` if an error occurs on the server while creating the change stream.
      *   - `InvalidArgumentError` if the options passed formed an invalid combination.
      *   - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.
@@ -47,7 +47,7 @@ extension MongoCollection {
      * - Returns: A `ChangeStream` on a specific collection.
      *
      * - Throws:
-     *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
+     *   - `CommandError` if an error occurs on the server while creating the change stream.
      *   - `InvalidArgumentError` if the options passed formed an invalid combination.
      *   - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.
@@ -81,7 +81,7 @@ extension MongoCollection {
      * - Returns: A `ChangeStream` on a specific collection.
      *
      * - Throws:
-     *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
+     *   - `CommandError` if an error occurs on the server while creating the change stream.
      *   - `InvalidArgumentError` if the options passed formed an invalid combination.
      *   - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.

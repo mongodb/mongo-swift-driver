@@ -154,7 +154,7 @@ struct Credential: Decodable, Equatable {
 final class AuthTests: MongoSwiftTestCase {
     func testAuthConnectionStrings() throws {
         let testFiles = try retrieveSpecTestFiles(specName: "auth", asType: AuthTestFile.self)
-        let invalidArgumentError = UserError.invalidArgumentError(message: "")
+        let invalidArgumentError = InvalidArgumentError(message: "")
 
         for (_, file) in testFiles {
             for testCase in file.tests {

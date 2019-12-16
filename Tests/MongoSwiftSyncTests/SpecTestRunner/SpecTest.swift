@@ -298,7 +298,7 @@ extension SpecTestFile {
         switch self.data {
         case let .single(docs):
             guard let collName = self.collectionName else {
-                throw UserError.invalidArgumentError(message: "missing collection name")
+                throw InvalidArgumentError(message: "missing collection name")
             }
 
             guard !docs.isEmpty else {

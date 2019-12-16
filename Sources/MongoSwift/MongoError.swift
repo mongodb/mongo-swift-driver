@@ -300,7 +300,7 @@ internal func extractMongoError(error bsonError: bson_error_t, reply: Document? 
     }
 }
 
-/// Internal function used to get a `ServerError.bulkWriteError` from a libmongoc error and a server reply to a
+/// Internal function used to get a `BulkWriteError` from a libmongoc error and a server reply to a
 /// `BulkWriteOperation`. If a partial result is provided, an updated result with the failed results filtered out will
 /// be returned as part of the error.
 internal func extractBulkWriteError<T: Codable>(
@@ -389,7 +389,7 @@ private func extractWriteConcernError(from reply: Document) throws -> WriteConce
 }
 
 /// Internal function used by write methods performing single writes that are implemented via the bulk API. Catches any
-/// ServerError.bulkWriteErrors thrown by the given closure and converts them to ServerError.writeErrors. All other
+/// BulkWriteErrors thrown by the given closure and converts them to WriteErrors. All other
 /// errors will be propagated as-is.
 internal func convertingBulkWriteErrors<T>(_ body: () throws -> T) throws -> T {
     do {

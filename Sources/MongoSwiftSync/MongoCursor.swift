@@ -40,7 +40,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
      * which returns `nil` and requires manually checking for an error afterward.
      * - Returns: the next `Document` in this cursor, or `nil` if at the end of the cursor
      * - Throws:
-     *   - `ServerError.commandError` if an error occurs on the server while iterating the cursor.
+     *   - `CommandError` if an error occurs on the server while iterating the cursor.
      *   - `LogicError` if this function is called after the cursor has died.
      *   - `LogicError` if this function is called and the session associated with this cursor is inactive.
      *   - `DecodingError` if an error occurs decoding the server's response.

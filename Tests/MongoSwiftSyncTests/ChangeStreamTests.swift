@@ -28,12 +28,12 @@ internal enum ChangeStreamTarget: String, Decodable {
             return try client.watch(pipeline, options: options, withEventType: Document.self)
         case .database:
             guard let database = database else {
-                throw RuntimeError.internalError(message: "missing db in watch")
+                throw TestError(message: "missing db in watch")
             }
             return try client.db(database).watch(pipeline, options: options, withEventType: Document.self)
         case .collection:
             guard let collection = collection, let database = database else {
-                throw RuntimeError.internalError(message: "missing db or collection in watch")
+                throw TestError(message: "missing db or collection in watch")
             }
             return try client.db(database)
                 .collection(collection)
@@ -97,17 +97,17 @@ internal enum ChangeStreamTestResult: Decodable {
             fail("\(description) failed: got error but result success")
             return
         }
-        guard case let ServerError.commandError(seenCode, _, _, seenLabels) = error else {
+        guard let seenError = error as? CommandError else {
             fail("\(description) failed: didn't get command error")
             return
         }
 
-        expect(code).to(equal(seenCode), description: description)
+        expect(seenError.code).to(equal(code), description: description)
         if let labels = labels {
-            expect(seenLabels).toNot(beNil(), description: description)
-            expect(seenLabels).to(equal(labels), description: description)
+            expect(seenError.errorLabels).toNot(beNil(), description: description)
+            expect(seenError.errorLabels).to(equal(labels), description: description)
         } else {
-            expect(seenLabels).to(beNil(), description: description)
+            expect(seenError.errorLabels).to(beNil(), description: description)
         }
     }
 
@@ -357,7 +357,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             }
 
             if try client.maxWireVersion() >= 8 {
-                let expectedError = ServerError.commandError(
+                let expectedError = CommandError.new(
                     code: 280,
                     codeName: "ChangeStreamFatalError",
                     message: "",
@@ -365,7 +365,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
                 )
                 expect(try changeStream.nextWithTimeout()).to(throwError(expectedError))
             } else {
-                expect(try changeStream.nextOrError()).to(throwError(UserError.logicError(message: "")))
+                expect(try changeStream.nextOrError()).to(throwError(LOGIC_ERROR))
             }
         }
     }

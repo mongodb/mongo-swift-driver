@@ -40,8 +40,8 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
 
         // Non-empty tag sets cannot be combined with primary mode
         expect(try ReadPreference(.primary, tagSets: [["dc": "east"], [:]]))
-            .to(throwError(UserError.invalidArgumentError(message: "")))
-        expect(try ReadPreference(.primary, tagSets: [[:]])).to(throwError(UserError.invalidArgumentError(message: "")))
+            .to(throwError(InvalidArgumentError(message: "")))
+        expect(try ReadPreference(.primary, tagSets: [[:]])).to(throwError(InvalidArgumentError(message: "")))
     }
 
     func testMaxStalenessSeconds() throws {
@@ -56,11 +56,11 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
 
         // maxStalenessSeconds cannot be less than 90
         expect(try ReadPreference(.nearest, maxStalenessSeconds: -1))
-            .to(throwError(UserError.invalidArgumentError(message: "")))
+            .to(throwError(InvalidArgumentError(message: "")))
         expect(try ReadPreference(.nearest, maxStalenessSeconds: 0))
-            .to(throwError(UserError.invalidArgumentError(message: "")))
+            .to(throwError(InvalidArgumentError(message: "")))
         expect(try ReadPreference(.nearest, maxStalenessSeconds: 89))
-            .to(throwError(UserError.invalidArgumentError(message: "")))
+            .to(throwError(InvalidArgumentError(message: "")))
     }
 
     func testInitFromPointer() {

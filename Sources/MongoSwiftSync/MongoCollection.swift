@@ -51,7 +51,7 @@ public struct MongoCollection<T: Codable> {
      *   - session: An optional `ClientSession` to use when executing this command
      *
      * - Throws:
-     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `CommandError` if an error occurs that prevents the command from executing.
      */
     public func drop(options: DropCollectionOptions? = nil, session: ClientSession? = nil) throws {
         fatalError("unimplemented")

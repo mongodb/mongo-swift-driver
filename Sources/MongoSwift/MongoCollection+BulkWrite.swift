@@ -15,8 +15,8 @@ extension MongoCollection {
      * - Throws:
      *   - `InvalidArgumentError` if `requests` is empty.
      *   - `LogicError` if the provided session is inactive.
-     *   - `ServerError.bulkWriteError` if any error occurs while performing the writes. This includes errors that would
-     *     typically be thrown as `RuntimeError`s or `ServerError.commandError`s elsewhere.
+     *   - `BulkWriteError` if any error occurs while performing the writes. This includes errors that would
+     *     typically be thrown as `RuntimeError`s or `CommandError`s elsewhere.
      *   - `EncodingError` if an error occurs while encoding the `CollectionType` or the options to BSON.
      */
     @discardableResult
@@ -185,8 +185,8 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
      * `nil` if the write concern is unacknowledged.
      *
      * - Throws:
-     *   - `ServerError.commandError` if an error occurs that prevents the operation from executing.
-     *   - `ServerError.bulkWriteError` if an error occurs while performing the writes.
+     *   - `CommandError` if an error occurs that prevents the operation from executing.
+     *   - `BulkWriteError` if an error occurs while performing the writes.
      */
     internal func execute(using connection: Connection, session: ClientSession?) throws -> BulkWriteResult? {
         var reply = Document()

@@ -14,8 +14,8 @@ extension MongoCollection {
      * - Returns: The name of the created index.
      *
      * - Throws:
-     *   - `ServerError.writeError` if an error occurs while performing the write.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `WriteError` if an error occurs while performing the write.
+     *   - `CommandError` if an error occurs that prevents the command from executing.
      *   - `InvalidArgumentError` if the options passed in form an invalid combination.
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the index specification or options.
@@ -41,8 +41,8 @@ extension MongoCollection {
      * - Returns: The name of the created index.
      *
      * - Throws:
-     *   - `ServerError.writeError` if an error occurs while performing the write.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `WriteError` if an error occurs while performing the write.
+     *   - `CommandError` if an error occurs that prevents the command from executing.
      *   - `InvalidArgumentError` if the options passed in form an invalid combination.
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the index specification or options.
@@ -67,8 +67,8 @@ extension MongoCollection {
      * - Returns: An `[String]` containing the names of all the indexes that were created.
      *
      * - Throws:
-     *   - `ServerError.writeError` if an error occurs while performing the write.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `WriteError` if an error occurs while performing the write.
+     *   - `CommandError` if an error occurs that prevents the command from executing.
      *   - `InvalidArgumentError` if the options passed in form an invalid combination.
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the index specifications or options.
@@ -91,8 +91,8 @@ extension MongoCollection {
      *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Throws:
-     *   - `ServerError.writeError` if an error occurs while performing the command.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `WriteError` if an error occurs while performing the command.
+     *   - `CommandError` if an error occurs that prevents the command from executing.
      *   - `InvalidArgumentError` if the options passed in form an invalid combination.
      *   - `EncodingError` if an error occurs while encoding the options.
      */
@@ -116,8 +116,8 @@ extension MongoCollection {
      * - Returns: a `Document` containing the server's response to the command.
      *
      * - Throws:
-     *   - `ServerError.writeError` if an error occurs while performing the command.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `WriteError` if an error occurs while performing the command.
+     *   - `CommandError` if an error occurs that prevents the command from executing.
      *   - `InvalidArgumentError` if the options passed in form an invalid combination.
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options.
@@ -142,8 +142,8 @@ extension MongoCollection {
      * - Returns: a `Document` containing the server's response to the command.
      *
      * - Throws:
-     *   - `ServerError.writeError` if an error occurs while performing the command.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `WriteError` if an error occurs while performing the command.
+     *   - `CommandError` if an error occurs that prevents the command from executing.
      *   - `InvalidArgumentError` if the options passed in form an invalid combination.
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options.
@@ -167,8 +167,8 @@ extension MongoCollection {
      * - Returns: a `Document` containing the server's response to the command.
      *
      * - Throws:
-     *   - `ServerError.writeError` if an error occurs while performing the command.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `WriteError` if an error occurs while performing the command.
+     *   - `CommandError` if an error occurs that prevents the command from executing.
      *   - `InvalidArgumentError` if the options passed in form an invalid combination.
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options.

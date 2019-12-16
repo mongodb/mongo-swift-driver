@@ -227,3 +227,23 @@ public enum AuthMechanism: String, Decodable {
     case mongodbX509 = "MONGODB-X509"
     case plain = "PLAIN"
 }
+
+public let INVALID_ARGUMENT_ERROR = InvalidArgumentError(message: "")
+public let AUTHENTICATION_ERROR = AuthenticationError(message: "")
+public let LOGIC_ERROR = LogicError(message: "")
+
+extension CommandError {
+    public static func new(
+        code: ServerErrorCode,
+        codeName: String,
+        message: String,
+        errorLabels: [String]?
+    ) -> CommandError {
+        return CommandError(
+            code: code,
+            codeName: codeName,
+            message: message,
+            errorLabels: errorLabels
+        )
+    }
+}

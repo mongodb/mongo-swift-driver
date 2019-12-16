@@ -15,8 +15,8 @@ extension MongoCollection {
      *            is unacknowledged, `nil` is returned.
      *
      * - Throws:
-     *   - `ServerError.writeError` if an error occurs while performing the command.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `WriteError` if an error occurs while performing the command.
+     *   - `CommandError` if an error occurs that prevents the command from executing.
      *   - `InvalidArgumentError` if the options passed in form an invalid combination.
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the `CollectionType` to BSON.
@@ -49,8 +49,8 @@ extension MongoCollection {
      * - Returns: an `InsertManyResult`, or `nil` if the write concern is unacknowledged.
      *
      * - Throws:
-     *   - `ServerError.bulkWriteError` if an error occurs while performing any of the writes.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `BulkWriteError` if an error occurs while performing any of the writes.
+     *   - `CommandError` if an error occurs that prevents the command from executing.
      *   - `InvalidArgumentError` if the options passed in form an invalid combination.
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the `CollectionType` or options to BSON.
@@ -78,8 +78,8 @@ extension MongoCollection {
      *            is unacknowledged, `nil` is returned.
      *
      * - Throws:
-     *   - `ServerError.writeError` if an error occurs while performing the command.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `WriteError` if an error occurs while performing the command.
+     *   - `CommandError` if an error occurs that prevents the command from executing.
      *   - `InvalidArgumentError` if the options passed in form an invalid combination.
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the `CollectionType` or options to BSON.
@@ -112,8 +112,8 @@ extension MongoCollection {
      *            unacknowledged, `nil` is returned.
      *
      * - Throws:
-     *   - `ServerError.writeError` if an error occurs while performing the command.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `WriteError` if an error occurs while performing the command.
+     *   - `CommandError` if an error occurs that prevents the command from executing.
      *   - `InvalidArgumentError` if the options passed in form an invalid combination.
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
@@ -150,8 +150,8 @@ extension MongoCollection {
      *            concern is unacknowledged, nil is returned
      *
      * - Throws:
-     *   - `ServerError.writeError` if an error occurs while performing the command.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `WriteError` if an error occurs while performing the command.
+     *   - `CommandError` if an error occurs that prevents the command from executing.
      *   - `InvalidArgumentError` if the options passed in form an invalid combination.
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
@@ -187,8 +187,8 @@ extension MongoCollection {
      *            unacknowledged, `nil` is returned.
      *
      * - Throws:
-     *   - `ServerError.writeError` if an error occurs while performing the command.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `WriteError` if an error occurs while performing the command.
+     *   - `CommandError` if an error occurs that prevents the command from executing.
      *   - `InvalidArgumentError` if the options passed in form an invalid combination.
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
@@ -219,8 +219,8 @@ extension MongoCollection {
      *            unacknowledged, `nil` is returned.
      *
      * - Throws:
-     *   - `ServerError.writeError` if an error occurs while performing the command.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `WriteError` if an error occurs while performing the command.
+     *   - `CommandError` if an error occurs that prevents the command from executing.
      *   - `InvalidArgumentError` if the options passed in form an invalid combination.
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.

@@ -118,7 +118,7 @@ public struct MongoDatabase {
      *   - session: An optional `ClientSession` to use for this command
      *
      * - Throws:
-     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `CommandError` if an error occurs that prevents the command from executing.
      */
     public func drop(options: DropDatabaseOptions? = nil, session: ClientSession? = nil) throws {
         let operation = DropDatabaseOperation(database: self, options: options)
@@ -174,7 +174,7 @@ public struct MongoDatabase {
      * - Returns: the newly created `MongoCollection<Document>`
      *
      * - Throws:
-     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `CommandError` if an error occurs that prevents the command from executing.
      *   - `InvalidArgumentError` if the options passed in form an invalid combination.
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
@@ -201,7 +201,7 @@ public struct MongoDatabase {
      * - Returns: the newly created `MongoCollection<T>`
      *
      * - Throws:
-     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
+     *   - `CommandError` if an error occurs that prevents the command from executing.
      *   - `InvalidArgumentError` if the options passed in form an invalid combination.
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
@@ -303,8 +303,8 @@ public struct MongoDatabase {
      * - Throws:
      *   - `InvalidArgumentError` if `requests` is empty.
      *   - `LogicError` if the provided session is inactive.
-     *   - `ServerError.writeError` if any error occurs while the command was performing a write.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from being performed.
+     *   - `WriteError` if any error occurs while the command was performing a write.
+     *   - `CommandError` if an error occurs that prevents the command from being performed.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     @discardableResult
@@ -328,7 +328,7 @@ public struct MongoDatabase {
      * - Returns: A `ChangeStream` on all collections in a database.
      *
      * - Throws:
-     *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
+     *   - `CommandError` if an error occurs on the server while creating the change stream.
      *   - `InvalidArgumentError` if the options passed formed an invalid combination.
      *   - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.
@@ -363,7 +363,7 @@ public struct MongoDatabase {
      * - Returns: A `ChangeStream` on all collections in a database.
      *
      * - Throws:
-     *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
+     *   - `CommandError` if an error occurs on the server while creating the change stream.
      *   - `InvalidArgumentError` if the options passed formed an invalid combination.
      *   - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.
@@ -404,7 +404,7 @@ public struct MongoDatabase {
      * - Returns: A `ChangeStream` on all collections in a database.
      *
      * - Throws:
-     *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
+     *   - `CommandError` if an error occurs on the server while creating the change stream.
      *   - `InvalidArgumentError` if the options passed formed an invalid combination.
      *   - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.
