@@ -6,7 +6,7 @@ public protocol MongoError: LocalizedError {}
 
 // TODO: update this link and the one below (SWIFT-319)
 /// A MongoDB server error code.
-/// - SeeAlso: https://github.com/mongodb/mongo/blob/master/src/mongo/base/error_codes.err
+/// - SeeAlso: https://github.com/mongodb/mongo/blob/master/src/mongo/base/error_codes.yml
 public typealias ServerErrorCode = Int
 
 /// Protocol conformed to by errors that may contain error labels.
@@ -18,6 +18,7 @@ public protocol LabeledError: MongoError {
 /// Protocol conformed to by errors returned from the MongoDB deployment.
 public protocol ServerError: LabeledError {}
 
+/// Thrown when commands experience errors on the server that prevent execution.
 public struct CommandError: ServerError {
     /// A numerical code identifying the error.
     public let code: ServerErrorCode
