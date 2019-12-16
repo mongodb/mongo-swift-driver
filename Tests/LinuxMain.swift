@@ -254,6 +254,20 @@ extension OptionsTests {
     ]
 }
 
+extension ReadConcernTests {
+    static var allTests = [
+        ("testReadConcernType", testReadConcernType),
+        ("testClientReadConcern", testClientReadConcern),
+        ("testDatabaseReadConcern", testDatabaseReadConcern),
+    ]
+}
+
+extension ReadPreferenceOperationTests {
+    static var allTests = [
+        ("testOperationReadPreference", testOperationReadPreference),
+    ]
+}
+
 extension ReadPreferenceTests {
     static var allTests = [
         ("testMode", testMode),
@@ -261,23 +275,21 @@ extension ReadPreferenceTests {
         ("testMaxStalenessSeconds", testMaxStalenessSeconds),
         ("testInitFromPointer", testInitFromPointer),
         ("testEquatable", testEquatable),
-        ("testOperationReadPreference", testOperationReadPreference),
         ("testClientReadPreference", testClientReadPreference),
         ("testDatabaseReadPreference", testDatabaseReadPreference),
     ]
 }
 
-extension ReadWriteConcernTests {
+extension ReadWriteConcernOperationTests {
     static var allTests = [
-        ("testReadConcernType", testReadConcernType),
-        ("testWriteConcernType", testWriteConcernType),
-        ("testClientReadConcern", testClientReadConcern),
-        ("testClientWriteConcern", testClientWriteConcern),
-        ("testDatabaseReadConcern", testDatabaseReadConcern),
-        ("testDatabaseWriteConcern", testDatabaseWriteConcern),
         ("testOperationReadConcerns", testOperationReadConcerns),
         ("testWriteConcernErrors", testWriteConcernErrors),
         ("testOperationWriteConcerns", testOperationWriteConcerns),
+    ]
+}
+
+extension ReadWriteConcernSpecTests {
+    static var allTests = [
         ("testConnectionStrings", testConnectionStrings),
         ("testDocuments", testDocuments),
     ]
@@ -307,6 +319,14 @@ extension SyncAuthTests {
     ]
 }
 
+extension WriteConcernTests {
+    static var allTests = [
+        ("testWriteConcernType", testWriteConcernType),
+        ("testClientWriteConcern", testClientWriteConcern),
+        ("testDatabaseWriteConcern", testDatabaseWriteConcern),
+    ]
+}
+
 XCTMain([
     testCase(AuthTests.allTests),
     testCase(BSONCorpusTests.allTests),
@@ -328,10 +348,14 @@ XCTMain([
     testCase(MongoCursorTests.allTests),
     testCase(MongoDatabaseTests.allTests),
     testCase(OptionsTests.allTests),
+    testCase(ReadConcernTests.allTests),
+    testCase(ReadPreferenceOperationTests.allTests),
     testCase(ReadPreferenceTests.allTests),
-    testCase(ReadWriteConcernTests.allTests),
+    testCase(ReadWriteConcernOperationTests.allTests),
+    testCase(ReadWriteConcernSpecTests.allTests),
     testCase(RetryableReadsTests.allTests),
     testCase(RetryableWritesTests.allTests),
     testCase(SDAMTests.allTests),
     testCase(SyncAuthTests.allTests),
+    testCase(WriteConcernTests.allTests),
 ])
