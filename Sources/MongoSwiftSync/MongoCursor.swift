@@ -23,7 +23,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
      * true, this initializer will force a connection to the server if one is not already established.
      *
      * - Throws:
-     *   - `UserError.invalidArgumentError` if the options passed to the command that generated this cursor formed an
+     *   - `InvalidArgumentError` if the options passed to the command that generated this cursor formed an
      *     invalid combination.
      */
     internal init(wrapping cursor: MongoSwift.MongoCursor<T>) throws {
@@ -41,8 +41,8 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
      * - Returns: the next `Document` in this cursor, or `nil` if at the end of the cursor
      * - Throws:
      *   - `ServerError.commandError` if an error occurs on the server while iterating the cursor.
-     *   - `UserError.logicError` if this function is called after the cursor has died.
-     *   - `UserError.logicError` if this function is called and the session associated with this cursor is inactive.
+     *   - `LogicError` if this function is called after the cursor has died.
+     *   - `LogicError` if this function is called and the session associated with this cursor is inactive.
      *   - `DecodingError` if an error occurs decoding the server's response.
      */
     public func nextOrError() throws -> T? {

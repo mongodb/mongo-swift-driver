@@ -112,15 +112,15 @@ public final class ReadPreference {
      * - Returns: a new `ReadPreference`
      *
      * - Throws:
-     *   - A `UserError.invalidArgumentError` if `mode` is `.primary` and `tagSets` is non-empty
-     *   - A `UserError.invalidArgumentError` if `maxStalenessSeconds` non-nil and < 90
+     *   - A `InvalidArgumentError` if `mode` is `.primary` and `tagSets` is non-empty
+     *   - A `InvalidArgumentError` if `maxStalenessSeconds` non-nil and < 90
      */
     public init(_ mode: Mode, tagSets: [Document]? = nil, maxStalenessSeconds: Int64? = nil) throws {
         self._readPreference = mongoc_read_prefs_new(mode.readMode)
 
         if let tagSets = tagSets {
             guard mode != .primary || tagSets.isEmpty else {
-                throw UserError.invalidArgumentError(message: "tagSets may not be used with primary mode")
+                throw InvalidArgumentError(message: "tagSets may not be used with primary mode")
             }
 
             let tags = try BSONEncoder().encode(Document(tagSets.map { .document($0) }))
@@ -129,7 +129,7 @@ public final class ReadPreference {
 
         if let maxStalenessSeconds = maxStalenessSeconds {
             guard maxStalenessSeconds >= MONGOC_SMALLEST_MAX_STALENESS_SECONDS else {
-                throw UserError.invalidArgumentError(
+                throw InvalidArgumentError(
                     message: "Expected maxStalenessSeconds to be >= " +
                         " \(MONGOC_SMALLEST_MAX_STALENESS_SECONDS), \(maxStalenessSeconds) given"
                 )

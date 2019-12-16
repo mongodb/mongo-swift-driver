@@ -13,8 +13,8 @@ extension MongoCollection {
      * - Returns: The deleted document, represented as a `CollectionType`, or `nil` if no document was deleted.
      *
      * - Throws:
-     *   - `UserError.invalidArgumentError` if any of the provided options are invalid.
-     *   - `UserError.logicError` if the provided session is inactive.
+     *   - `InvalidArgumentError` if any of the provided options are invalid.
+     *   - `LogicError` if the provided session is inactive.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `ServerError.writeError` if an error occurs while executing the command.
      *   - `DecodingError` if the deleted document cannot be decoded to a `CollectionType` value.
@@ -41,8 +41,8 @@ extension MongoCollection {
      *      depending on selected options, or `nil` if there was no match.
      *
      * - Throws:
-     *   - `UserError.invalidArgumentError` if any of the provided options are invalid.
-     *   - `UserError.logicError` if the provided session is inactive.
+     *   - `InvalidArgumentError` if any of the provided options are invalid.
+     *   - `LogicError` if the provided session is inactive.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `ServerError.writeError` if an error occurs while executing the command.
      *   - `DecodingError` if the replaced document cannot be decoded to a `CollectionType` value.
@@ -71,8 +71,8 @@ extension MongoCollection {
      *      depending on selected options, or `nil` if there was no match.
      *
      * - Throws:
-     *   - `UserError.invalidArgumentError` if any of the provided options are invalid.
-     *   - `UserError.logicError` if the provided session is inactive.
+     *   - `InvalidArgumentError` if any of the provided options are invalid.
+     *   - `LogicError` if the provided session is inactive.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
      *   - `ServerError.writeError` if an error occurs while executing the command.
      *   - `DecodingError` if the updated document cannot be decoded to a `CollectionType` value.

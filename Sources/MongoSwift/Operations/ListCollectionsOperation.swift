@@ -139,7 +139,7 @@ internal struct ListCollectionsOperation: Operation {
             // threads.
             while let nextDoc = try cursor.getNextDocumentFromMongocCursor() {
                 guard let name = nextDoc["name"]?.stringValue else {
-                    throw RuntimeError.internalError(message: "Invalid server response: collection has no name")
+                    throw InternalError(message: "Invalid server response: collection has no name")
                 }
                 names.append(name)
             }

@@ -69,7 +69,7 @@ internal struct DistinctOperation<T: Codable>: Operation {
         }
 
         guard let values = try reply.getValue(for: "values")?.arrayValue else {
-            throw RuntimeError.internalError(
+            throw InternalError(
                 message:
                 "expected server reply \(reply) to contain an array of distinct values"
             )

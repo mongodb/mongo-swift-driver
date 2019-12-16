@@ -117,13 +117,13 @@ extension Document {
      *      - `T`: Any type conforming to the `BSONValue` protocol
      *  - Returns: The value stored under key, as type `T`
      *  - Throws:
-     *    - `RuntimeError.internalError` if the value cannot be cast to type `T` or is not in the `Document`, or an
+     *    - `InternalError` if the value cannot be cast to type `T` or is not in the `Document`, or an
      *      unexpected error occurs while decoding the `BSONValue`.
      *
      */
     public func get<T: BSONValue>(_ key: String) throws -> T {
         guard let value = try self.getValue(for: key)?.bsonValue as? T else {
-            throw RuntimeError.internalError(message: "Could not cast value for key \(key) to type \(T.self)")
+            throw InternalError(message: "Could not cast value for key \(key) to type \(T.self)")
         }
         return value
     }
@@ -210,7 +210,7 @@ extension TopologyDescription.TopologyType {
 }
 
 public struct TestError: LocalizedError {
-    public var message: String
+    public let message: String
     public var errorDescription: String { return self.message }
 
     public init(message: String) {

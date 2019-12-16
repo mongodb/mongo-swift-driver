@@ -73,13 +73,13 @@ internal struct ListDatabasesOperation: Operation {
         }
 
         guard let databases = reply["databases"]?.arrayValue?.asArrayOf(Document.self) else {
-            throw RuntimeError.internalError(message: "Invalid server response: \(reply)")
+            throw InternalError(message: "Invalid server response: \(reply)")
         }
 
         if self.nameOnly ?? false {
             let names: [String] = try databases.map {
                 guard let name = $0["name"]?.stringValue else {
-                    throw RuntimeError.internalError(message: "Server response missing names: \(reply)")
+                    throw InternalError(message: "Server response missing names: \(reply)")
                 }
                 return name
             }

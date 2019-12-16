@@ -17,8 +17,8 @@ extension MongoCollection {
      * - Throws:
      *   - `ServerError.writeError` if an error occurs while performing the command.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
-     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
-     *   - `UserError.logicError` if the provided session is inactive.
+     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the `CollectionType` to BSON.
      */
     @discardableResult
@@ -51,8 +51,8 @@ extension MongoCollection {
      * - Throws:
      *   - `ServerError.bulkWriteError` if an error occurs while performing any of the writes.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
-     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
-     *   - `UserError.logicError` if the provided session is inactive.
+     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the `CollectionType` or options to BSON.
      */
     @discardableResult
@@ -80,8 +80,8 @@ extension MongoCollection {
      * - Throws:
      *   - `ServerError.writeError` if an error occurs while performing the command.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
-     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
-     *   - `UserError.logicError` if the provided session is inactive.
+     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the `CollectionType` or options to BSON.
      */
     @discardableResult
@@ -114,8 +114,8 @@ extension MongoCollection {
      * - Throws:
      *   - `ServerError.writeError` if an error occurs while performing the command.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
-     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
-     *   - `UserError.logicError` if the provided session is inactive.
+     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     @discardableResult
@@ -152,8 +152,8 @@ extension MongoCollection {
      * - Throws:
      *   - `ServerError.writeError` if an error occurs while performing the command.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
-     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
-     *   - `UserError.logicError` if the provided session is inactive.
+     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     @discardableResult
@@ -189,8 +189,8 @@ extension MongoCollection {
      * - Throws:
      *   - `ServerError.writeError` if an error occurs while performing the command.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
-     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
-     *   - `UserError.logicError` if the provided session is inactive.
+     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     @discardableResult
@@ -221,8 +221,8 @@ extension MongoCollection {
      * - Throws:
      *   - `ServerError.writeError` if an error occurs while performing the command.
      *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
-     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
-     *   - `UserError.logicError` if the provided session is inactive.
+     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     @discardableResult
@@ -370,7 +370,7 @@ public struct InsertOneResult: Decodable {
             return nil
         }
         guard let id = result.insertedIds[0] else {
-            throw RuntimeError.internalError(message: "BulkWriteResult missing _id for inserted document")
+            throw InternalError(message: "BulkWriteResult missing _id for inserted document")
         }
         self.insertedId = id
     }
@@ -430,7 +430,7 @@ public struct UpdateResult: Decodable {
         self.upsertedCount = result.upsertedCount
         if result.upsertedCount == 1 {
             guard let id = result.upsertedIds[0] else {
-                throw RuntimeError.internalError(message: "BulkWriteResult missing _id for upserted document")
+                throw InternalError(message: "BulkWriteResult missing _id for upserted document")
             }
             self.upsertedId = id
         } else {

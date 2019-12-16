@@ -104,10 +104,10 @@ public class DocumentIterator: IteratorProtocol {
     /// Returns the current value (equivalent to the `currentValue` property) or throws on error.
     ///
     /// - Throws:
-    ///   - `RuntimeError.internalError` if the current value of this `DocumentIterator` cannot be decoded to BSON.
+    ///   - `InternalError` if the current value of this `DocumentIterator` cannot be decoded to BSON.
     internal func safeCurrentValue() throws -> BSON {
         guard let bsonType = DocumentIterator.bsonTypeMap[currentType] else {
-            throw RuntimeError.internalError(
+            throw InternalError(
                 message: "Unknown BSONType for iterator's current value with type: \(self.currentType)"
             )
         }
@@ -155,8 +155,8 @@ public class DocumentIterator: IteratorProtocol {
      * Overwrites the current value of this `DocumentIterator` with the supplied value.
      *
      * - Throws:
-     *   - `RuntimeError.internalError` if the new value is an `Int` and cannot be written to BSON.
-     *   - `UserError.logicError` if the new value is a `Decimal128` or `ObjectId` and is improperly formatted.
+     *   - `InternalError` if the new value is an `Int` and cannot be written to BSON.
+     *   - `LogicError` if the new value is a `Decimal128` or `ObjectId` and is improperly formatted.
      */
     internal func overwriteCurrentValue(with newValue: Overwritable) throws {
         let newValueType = type(of: newValue).bsonType

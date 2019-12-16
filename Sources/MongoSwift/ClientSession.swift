@@ -31,9 +31,9 @@ import mongoc
  */
 public final class ClientSession {
     /// Error thrown when an inactive session is used.
-    internal static let SessionInactiveError = UserError.logicError(message: "Tried to use an inactive session")
+    internal static let SessionInactiveError = LogicError(message: "Tried to use an inactive session")
     /// Error thrown when a user attempts to use a session with a client it was not created from.
-    internal static let ClientMismatchError = UserError.invalidArgumentError(
+    internal static let ClientMismatchError = InvalidArgumentError(
         message: "Sessions may only be used with the client used to create them"
     )
 
@@ -197,7 +197,7 @@ public final class ClientSession {
 
     /// Appends this provided session to an options document for libmongoc interoperability.
     /// - Throws:
-    ///   - `UserError.logicError` if this session is inactive
+    ///   - `LogicError` if this session is inactive
     internal func append(to doc: inout Document) throws {
         guard case let .started(session, _) = self.state else {
             throw ClientSession.SessionInactiveError

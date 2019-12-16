@@ -13,8 +13,8 @@ extension MongoCollection {
      * - Returns: a `BulkWriteResult`, or `nil` if the write concern is unacknowledged.
      *
      * - Throws:
-     *   - `UserError.invalidArgumentError` if `requests` is empty.
-     *   - `UserError.logicError` if the provided session is inactive.
+     *   - `InvalidArgumentError` if `requests` is empty.
+     *   - `LogicError` if the provided session is inactive.
      *   - `ServerError.bulkWriteError` if any error occurs while performing the writes. This includes errors that would
      *     typically be thrown as `RuntimeError`s or `ServerError.commandError`s elsewhere.
      *   - `EncodingError` if an error occurs while encoding the `CollectionType` or the options to BSON.
@@ -26,7 +26,7 @@ extension MongoCollection {
         session: ClientSession? = nil
     ) throws -> BulkWriteResult? {
         guard !requests.isEmpty else {
-            throw UserError.invalidArgumentError(message: "requests cannot be empty")
+            throw InvalidArgumentError(message: "requests cannot be empty")
         }
 
         let operation = BulkWriteOperation(collection: self, models: requests, options: options)
@@ -334,7 +334,7 @@ public struct BulkWriteResult: Decodable {
      *   - insertedIds: Map of inserted IDs
      *
      * - Throws:
-     *   - `RuntimeError.internalError` if an unexpected error occurs reading the reply from the server.
+     *   - `InternalError` if an unexpected error occurs reading the reply from the server.
      */
     fileprivate init(reply: Document, insertedIds: [Int: BSON]) throws {
         self.deletedCount = try reply.getValue(for: "nRemoved")?.asInt() ?? 0
@@ -348,12 +348,12 @@ public struct BulkWriteResult: Decodable {
 
         if let upserted = try reply.getValue(for: "upserted")?.arrayValue {
             guard let upserted = upserted.asArrayOf(Document.self) else {
-                throw RuntimeError.internalError(message: "\"upserted\" array did not contain only documents")
+                throw InternalError(message: "\"upserted\" array did not contain only documents")
             }
 
             for upsert in upserted {
                 guard let index = try upsert.getValue(for: "index")?.asInt() else {
-                    throw RuntimeError.internalError(message: "Could not cast upserted index to `Int`")
+                    throw InternalError(message: "Could not cast upserted index to `Int`")
                 }
                 upsertedIds[index] = upsert["_id"]
             }

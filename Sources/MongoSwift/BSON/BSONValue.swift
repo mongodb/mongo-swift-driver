@@ -66,9 +66,9 @@ internal protocol BSONValue: Codable {
      *   - key: A `String`, the key under which to store the value.
      *
      * - Throws:
-     *   - `RuntimeError.internalError` if the `DocumentStorage` would exceed the maximum size by encoding this
+     *   - `InternalError` if the `DocumentStorage` would exceed the maximum size by encoding this
      *     key-value pair.
-     *   - `UserError.logicError` if the value is an `Array` and it contains a non-`BSONValue` element.
+     *   - `LogicError` if the value is an `Array` and it contains a non-`BSONValue` element.
      */
     func encode(to storage: DocumentStorage, forKey key: String) throws
 
@@ -76,7 +76,7 @@ internal protocol BSONValue: Codable {
      * Given a `DocumentIterator` known to have a next value of this type,
      * initializes the value.
      *
-     * - Throws: `UserError.logicError` if the current type of the `DocumentIterator` does not correspond to the
+     * - Throws: `LogicError` if the current type of the `DocumentIterator` does not correspond to the
      *           associated type of this `BSONValue`.
      */
     static func from(iterator iter: DocumentIterator) throws -> BSON
@@ -113,7 +113,7 @@ extension Array: BSONValue where Element == BSON {
             // since an array is a nested object with keys '0', '1', etc.,
             // create a new Document using the array data so we can recursively parse
             guard let arrayData = bson_new_from_data(array.pointee, Int(length)) else {
-                throw RuntimeError.internalError(message: "Failed to create an Array from iterator")
+                throw InternalError(message: "Failed to create an Array from iterator")
             }
 
             let arrDoc = Document(stealing: arrayData)
@@ -215,7 +215,7 @@ public struct Binary: BSONValue, Equatable, Codable, Hashable {
 
     /// Initializes a `Binary` instance from a `UUID`.
     /// - Throws:
-    ///   - `UserError.invalidArgumentError` if a `Binary` cannot be constructed from this UUID.
+    ///   - `InvalidArgumentError` if a `Binary` cannot be constructed from this UUID.
     public init(from uuid: UUID) throws {
         let uuidt = uuid.uuid
 
@@ -231,10 +231,10 @@ public struct Binary: BSONValue, Equatable, Codable, Hashable {
 
     /// Initializes a `Binary` instance from a `Data` object and a `UInt8` subtype.
     /// - Throws:
-    ///   - `UserError.invalidArgumentError` if the provided data is incompatible with the specified subtype.
+    ///   - `InvalidArgumentError` if the provided data is incompatible with the specified subtype.
     public init(data: Data, subtype: UInt8) throws {
         if [Subtype.uuid.rawValue, Subtype.uuidDeprecated.rawValue].contains(subtype) && data.count != 16 {
-            throw UserError.invalidArgumentError(
+            throw InvalidArgumentError(
                 message:
                 "Binary data with UUID subtype must be 16 bytes, but data has \(data.count) bytes"
             )
@@ -245,18 +245,18 @@ public struct Binary: BSONValue, Equatable, Codable, Hashable {
 
     /// Initializes a `Binary` instance from a `Data` object and a `Subtype`.
     /// - Throws:
-    ///   - `UserError.invalidArgumentError` if the provided data is incompatible with the specified subtype.
+    ///   - `InvalidArgumentError` if the provided data is incompatible with the specified subtype.
     public init(data: Data, subtype: Subtype) throws {
         try self.init(data: data, subtype: subtype.rawValue)
     }
 
     /// Initializes a `Binary` instance from a base64 `String` and a `UInt8` subtype.
     /// - Throws:
-    ///   - `UserError.invalidArgumentError` if the base64 `String` is invalid or if the provided data is
+    ///   - `InvalidArgumentError` if the base64 `String` is invalid or if the provided data is
     ///     incompatible with the specified subtype.
     public init(base64: String, subtype: UInt8) throws {
         guard let dataObj = Data(base64Encoded: base64) else {
-            throw UserError.invalidArgumentError(
+            throw InvalidArgumentError(
                 message:
                 "failed to create Data object from invalid base64 string \(base64)"
             )
@@ -266,7 +266,7 @@ public struct Binary: BSONValue, Equatable, Codable, Hashable {
 
     /// Initializes a `Binary` instance from a base64 `String` and a `Subtype`.
     /// - Throws:
-    ///   - `UserError.invalidArgumentError` if the base64 `String` is invalid or if the provided data is
+    ///   - `InvalidArgumentError` if the base64 `String` is invalid or if the provided data is
     ///     incompatible with the specified subtype.
     public init(base64: String, subtype: Subtype) throws {
         try self.init(base64: base64, subtype: subtype.rawValue)
@@ -306,7 +306,7 @@ public struct Binary: BSONValue, Equatable, Codable, Hashable {
             bson_iter_binary(iterPtr, &subtype, &length, dataPointer)
 
             guard let data = dataPointer.pointee else {
-                throw RuntimeError.internalError(message: "failed to retrieve data stored for binary BSON value")
+                throw InternalError(message: "failed to retrieve data stored for binary BSON value")
             }
 
             let dataObj = Data(bytes: data, count: Int(length))
@@ -483,11 +483,11 @@ public struct Decimal128: BSONValue, Equatable, Codable, CustomStringConvertible
     /// Returns the provided string as a `bson_decimal128_t`, or throws an error if initialization fails due an
     /// invalid string.
     /// - Throws:
-    ///   - `UserError.invalidArgumentError` if the parameter string does not correspond to a valid `Decimal128`.
+    ///   - `InvalidArgumentError` if the parameter string does not correspond to a valid `Decimal128`.
     internal static func toLibBSONType(_ str: String) throws -> bson_decimal128_t {
         var value = bson_decimal128_t()
         guard bson_decimal128_from_string(str, &value) else {
-            throw UserError.invalidArgumentError(message: "Invalid Decimal128 string \(str)")
+            throw InvalidArgumentError(message: "Invalid Decimal128 string \(str)")
         }
         return value
     }
@@ -633,7 +633,7 @@ public struct CodeWithScope: BSONValue, Equatable, Codable, Hashable {
 
             let code = String(cString: bson_iter_codewscope(iterPtr, &length, &scopeLength, scopePointer))
             guard let scopeData = bson_new_from_data(scopePointer.pointee, Int(scopeLength)) else {
-                throw RuntimeError.internalError(message: "Failed to create a bson_t from scope data")
+                throw InternalError(message: "Failed to create a bson_t from scope data")
             }
             let scopeDoc = Document(stealing: scopeData)
 
@@ -842,10 +842,10 @@ extension ObjectId: Hashable {
 extension UUID {
     /// Initializes a `UUID` instance from a `Binary` `BSONValue`.
     /// - Throws:
-    ///   - `UserError.invalidArgumentError` if a non-UUID subtype is set on the `Binary`.
+    ///   - `InvalidArgumentError` if a non-UUID subtype is set on the `Binary`.
     public init(from binary: Binary) throws {
         guard [Binary.Subtype.uuid.rawValue, Binary.Subtype.uuidDeprecated.rawValue].contains(binary.subtype) else {
-            throw UserError.invalidArgumentError(
+            throw InvalidArgumentError(
                 message: "Expected a UUID binary type " +
                     "(\(Binary.Subtype.uuid)), got \(binary.subtype) instead."
             )
@@ -956,7 +956,7 @@ public struct RegularExpression: BSONValue, Equatable, Codable, Hashable {
             let patternString = String(cString: pattern)
 
             guard let stringOptions = options.pointee else {
-                throw RuntimeError.internalError(message: "Failed to retrieve regular expression options")
+                throw InternalError(message: "Failed to retrieve regular expression options")
             }
             let optionsString = String(cString: stringOptions)
 
@@ -991,11 +991,11 @@ extension String: BSONValue {
             }
 
             guard bson_utf8_validate(strValue, Int(length), true) else {
-                throw RuntimeError.internalError(message: "String \(strValue) not valid UTF-8")
+                throw InternalError(message: "String \(strValue) not valid UTF-8")
             }
 
             guard let out = self.init(rawStringData: strValue, length: Int(length)) else {
-                throw RuntimeError.internalError(
+                throw InternalError(
                     message: "Underlying string data could not be parsed to a Swift String"
                 )
             }
@@ -1051,7 +1051,7 @@ public struct Symbol: BSONValue, CustomStringConvertible, Codable, Equatable, Ha
             }
 
             guard let strValue = String(rawStringData: cStr, length: Int(length)) else {
-                throw RuntimeError.internalError(message: "Cannot parse String from underlying data")
+                throw InternalError(message: "Cannot parse String from underlying data")
             }
 
             return Symbol(strValue)
