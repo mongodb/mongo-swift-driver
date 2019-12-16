@@ -16,6 +16,7 @@
 @_exported import class MongoSwift.BSONEncoder
 @_exported import enum MongoSwift.BSONType
 @_exported import struct MongoSwift.Binary
+@_exported import struct MongoSwift.BulkWriteError
 @_exported import struct MongoSwift.BulkWriteFailure
 @_exported import struct MongoSwift.BulkWriteOptions
 @_exported import struct MongoSwift.BulkWriteResult
