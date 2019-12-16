@@ -99,15 +99,6 @@ extension WriteConcernFailure: Equatable {
     }
 }
 
-/// Private function for sorting, then comparing two optional arrays.
-// TODO: remove this function and just use optional chaining once we drop Swift 4.0 support (SWIFT-283)
-private func sortAndCompareOptionalArrays<T: Equatable>(lhs: [T]?, rhs: [T]?, cmp: (T, T) -> Bool) -> Bool {
-    guard let lhsArr = lhs, let rhsArr = rhs else {
-        return lhs == nil && rhs == nil
-    }
-    return lhsArr.sorted(by: cmp) == rhsArr.sorted(by: cmp)
-}
-
 extension DecodingError: Equatable {
     public static func == (lhs: DecodingError, rhs: DecodingError) -> Bool {
         switch (lhs, rhs) {
