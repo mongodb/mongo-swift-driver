@@ -249,8 +249,10 @@ private func parseMongocError(_ error: bson_error_t, reply: Document?) -> MongoE
             message: message,
             errorLabels: errorLabels
         )
-    case (MONGOC_ERROR_STREAM, _), (MONGOC_ERROR_SERVER_SELECTION, MONGOC_ERROR_SERVER_SELECTION_FAILURE):
+    case (MONGOC_ERROR_STREAM, _):
         return ConnectionError(message: message, errorLabels: errorLabels)
+    case (MONGOC_ERROR_SERVER_SELECTION, MONGOC_ERROR_SERVER_SELECTION_FAILURE):
+        return ServerSelectionError(message: message)
     case (MONGOC_ERROR_CURSOR, MONGOC_ERROR_CURSOR_INVALID_CURSOR):
         return InvalidArgumentError(message: message)
     case (MONGOC_ERROR_CURSOR, MONGOC_ERROR_CHANGE_STREAM_NO_RESUME_TOKEN):
