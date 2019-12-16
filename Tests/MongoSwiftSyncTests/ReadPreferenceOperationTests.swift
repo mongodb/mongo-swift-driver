@@ -29,8 +29,7 @@ final class ReadPreferenceOperationTests: MongoSwiftTestCase {
         expect(try coll.aggregate(
             [["$project": ["a": 1]]],
             options: AggregateOptions(readPreference: ReadPreference(.secondaryPreferred))
-        ))
-            .toNot(throwError())
+        )).toNot(throwError())
 
         expect(try coll.countDocuments(
             options:
@@ -40,7 +39,6 @@ final class ReadPreferenceOperationTests: MongoSwiftTestCase {
         expect(try coll.distinct(
             fieldName: "a",
             options: DistinctOptions(readPreference: ReadPreference(.secondaryPreferred))
-        ))
-            .toNot(throwError())
+        )).toNot(throwError())
     }
 }
