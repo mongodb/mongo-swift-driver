@@ -80,12 +80,6 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
     }
 
     func testCreateCollection() throws {
-        // TODO: SWIFT-539: unskip
-        if MongoSwiftTestCase.ssl && MongoSwiftTestCase.isMacOS {
-            print("Skipping test, fails with SSL, see CDRIVER-3318")
-            return
-        }
-
         let client = try MongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
 

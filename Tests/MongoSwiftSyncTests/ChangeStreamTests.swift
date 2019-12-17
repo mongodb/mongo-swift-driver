@@ -246,12 +246,6 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase, FailPointConfigured {
     }
 
     func testChangeStreamSpec() throws {
-        // TODO: SWIFT-539: unskip
-        if MongoSwiftTestCase.ssl && MongoSwiftTestCase.isMacOS {
-            print("Skipping test, fails with SSL, see CDRIVER-3318")
-            return
-        }
-
         let tests = try retrieveSpecTestFiles(specName: "change-streams", asType: ChangeStreamTestFile.self)
 
         let globalClient = try MongoClient.makeTestClient()

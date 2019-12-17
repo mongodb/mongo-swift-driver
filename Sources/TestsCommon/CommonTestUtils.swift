@@ -79,16 +79,6 @@ open class MongoSwiftTestCase: XCTestCase {
     public static var sslCAFilePath: String? {
         return ProcessInfo.processInfo.environment["SSL_CA_FILE"]
     }
-
-    /// Temporary helper to assist with skipping tests due to CDRIVER-3318. Returns whether we are running on MacOS.
-    /// Remove when SWIFT-539 is completed.
-    public static var isMacOS: Bool {
-#if os(OSX)
-        return true
-#else
-        return false
-#endif
-    }
 }
 
 extension Document {
