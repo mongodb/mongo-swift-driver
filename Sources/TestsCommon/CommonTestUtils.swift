@@ -228,10 +228,6 @@ public enum AuthMechanism: String, Decodable {
     case plain = "PLAIN"
 }
 
-public let INVALID_ARGUMENT_ERROR = InvalidArgumentError(message: "")
-public let AUTHENTICATION_ERROR = AuthenticationError(message: "")
-public let LOGIC_ERROR = LogicError(message: "")
-
 extension CommandError {
     public static func new(
         code: ServerErrorCode,

@@ -52,7 +52,7 @@ final class MongoClientTests: MongoSwiftTestCase {
 
     func testFailedClientInitialization() {
         // check that we fail gracefully with an error if passing in an invalid URI
-        expect(try MongoClient("abcd")).to(throwError(INVALID_ARGUMENT_ERROR))
+        expect(try MongoClient("abcd")).to(throwError(errorType: InvalidArgumentError.self))
     }
 
     func testServerVersion() throws {

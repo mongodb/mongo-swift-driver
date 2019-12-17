@@ -16,7 +16,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
             // cursor should immediately be closed as its empty
             expect(cursor.isAlive).to(beFalse())
             // iterating dead cursor should error
-            expect(try cursor.nextOrError()).to(throwError(LOGIC_ERROR))
+            expect(try cursor.nextOrError()).to(throwError(errorType: LogicError.self))
 
             // insert and read out one document
             try coll.insertOne(doc1)
@@ -37,7 +37,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
             // cursor should be closed now that its exhausted
             expect(cursor.isAlive).to(beFalse())
             // iterating dead cursor should error
-            expect(try cursor.nextOrError()).to(throwError(LOGIC_ERROR))
+            expect(try cursor.nextOrError()).to(throwError(errorType: LogicError.self))
 
             cursor = try coll.find(options: FindOptions(batchSize: 1))
             expect(try cursor.nextOrError()).toNot(throwError())
@@ -66,7 +66,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
             // no documents matched initial query, so cursor is dead
             expect(cursor.isAlive).to(beFalse())
             // iterating iterating dead cursor should error
-            expect(try cursor.nextOrError()).to(throwError(LOGIC_ERROR))
+            expect(try cursor.nextOrError()).to(throwError(errorType: LogicError.self))
 
             // insert a doc so something matches initial query
             try coll.insertOne(doc1)
@@ -109,7 +109,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
             expect(cursor.isAlive).to(beFalse())
 
             // iterating dead cursor should error
-            expect(try cursor.nextOrError()).to(throwError(LOGIC_ERROR))
+            expect(try cursor.nextOrError()).to(throwError(errorType: LogicError.self))
         }
     }
 }

@@ -49,7 +49,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
     }
 
     func testEmptyRequests() {
-        expect(try self.coll.bulkWrite([])).to(throwError(InvalidArgumentError(message: "")))
+        expect(try self.coll.bulkWrite([])).to(throwError(errorType: InvalidArgumentError.self))
     }
 
     func testInserts() throws {
@@ -209,7 +209,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         expect(cursor.next()).to(beNil()) // cursor ends
         expect(cursor.error).to(beNil())
         expect(cursor.next()).to(beNil()) // iterate after cursor ends
-        expect(cursor.error as? LogicError).to(equal(LOGIC_ERROR))
+        expect(cursor.error).to(matchError(LogicError.self))
     }
 
     func testUnacknowledgedWriteConcern() throws {

@@ -1,33 +1,9 @@
 import Foundation
 import MongoSwift
 
-extension InternalError: Equatable {
-    public static func == (_: InternalError, _: InternalError) -> Bool {
-        return true
-    }
-}
-
-extension AuthenticationError: Equatable {
-    public static func == (_: AuthenticationError, _: AuthenticationError) -> Bool {
-        return true
-    }
-}
-
-extension CompatibilityError: Equatable {
-    public static func == (_: CompatibilityError, _: CompatibilityError) -> Bool {
-        return true
-    }
-}
-
 extension ConnectionError: Equatable {
     public static func == (lhs: ConnectionError, rhs: ConnectionError) -> Bool {
         return lhs.errorLabels?.sorted() == rhs.errorLabels?.sorted()
-    }
-}
-
-extension ServerSelectionError: Equatable {
-    public static func == (_: ServerSelectionError, _: ServerSelectionError) -> Bool {
-        return true
     }
 }
 
@@ -66,18 +42,6 @@ extension BulkWriteResult: Equatable {
             && lhs.modifiedCount == rhs.modifiedCount
             && lhs.matchedCount == rhs.matchedCount
             && lhs.insertedCount == rhs.insertedCount
-    }
-}
-
-extension LogicError: Equatable {
-    public static func == (_: LogicError, _: LogicError) -> Bool {
-        return true
-    }
-}
-
-extension InvalidArgumentError: Equatable {
-    public static func == (_: InvalidArgumentError, _: InvalidArgumentError) -> Bool {
-        return true
     }
 }
 

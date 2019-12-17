@@ -365,7 +365,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
                 )
                 expect(try changeStream.nextWithTimeout()).to(throwError(expectedError))
             } else {
-                expect(try changeStream.nextOrError()).to(throwError(LOGIC_ERROR))
+                expect(try changeStream.nextOrError()).to(throwError(errorType: LogicError.self))
             }
         }
     }

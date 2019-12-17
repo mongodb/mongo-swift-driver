@@ -90,7 +90,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         )
 
         expect(try self.coll.insertOne(["_id": 1])).to(throwError(expectedError))
-        expect(try self.coll.insertOne(["$asf": 12])).to(throwError(InvalidArgumentError(message: "")))
+        expect(try self.coll.insertOne(["$asf": 12])).to(throwError(errorType: InvalidArgumentError.self))
     }
 
     func testInsertOneWithUnacknowledgedWriteConcern() throws {
@@ -198,7 +198,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     }
 
     func testInsertManyWithEmptyValues() {
-        expect(try self.coll.insertMany([])).to(throwError(InvalidArgumentError(message: "")))
+        expect(try self.coll.insertMany([])).to(throwError(errorType: InvalidArgumentError.self))
     }
 
     func testInsertManyWithUnacknowledgedWriteConcern() throws {
@@ -423,9 +423,9 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         let invalidOpts1 = FindOneAndDeleteOptions(maxTimeMS: 0)
         let invalidOpts2 = FindOneAndDeleteOptions(maxTimeMS: -1)
         expect(try self.coll.findOneAndDelete([:], options: invalidOpts1))
-            .to(throwError(InvalidArgumentError(message: "")))
+            .to(throwError(errorType: InvalidArgumentError.self))
         expect(try self.coll.findOneAndDelete([:], options: invalidOpts2))
-            .to(throwError(InvalidArgumentError(message: "")))
+            .to(throwError(errorType: InvalidArgumentError.self))
     }
 
     func testFindOneAndReplace() throws {
@@ -463,9 +463,9 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         let invalidOpts1 = FindOneAndReplaceOptions(maxTimeMS: 0)
         let invalidOpts2 = FindOneAndReplaceOptions(maxTimeMS: -1)
         expect(try self.coll.findOneAndReplace(filter: [:], replacement: [:], options: invalidOpts1))
-            .to(throwError(InvalidArgumentError(message: "")))
+            .to(throwError(errorType: InvalidArgumentError.self))
         expect(try self.coll.findOneAndReplace(filter: [:], replacement: [:], options: invalidOpts2))
-            .to(throwError(InvalidArgumentError(message: "")))
+            .to(throwError(errorType: InvalidArgumentError.self))
     }
 
     func testFindOneAndUpdate() throws {
@@ -503,9 +503,9 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         let invalidOpts1 = FindOneAndUpdateOptions(maxTimeMS: 0)
         let invalidOpts2 = FindOneAndUpdateOptions(maxTimeMS: -1)
         expect(try self.coll.findOneAndUpdate(filter: [:], update: [:], options: invalidOpts1))
-            .to(throwError(InvalidArgumentError(message: "")))
+            .to(throwError(errorType: InvalidArgumentError.self))
         expect(try self.coll.findOneAndUpdate(filter: [:], update: [:], options: invalidOpts2))
-            .to(throwError(InvalidArgumentError(message: "")))
+            .to(throwError(errorType: InvalidArgumentError.self))
     }
 
     func testNullIds() throws {

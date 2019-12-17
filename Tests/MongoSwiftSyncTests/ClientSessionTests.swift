@@ -222,7 +222,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
         let session = try client2.startSession()
         try self.forEachSessionOp(client: client1, database: database, collection: collection) { op in
             expect(try op.body(session))
-                .to(throwError(InvalidArgumentError(message: "")), description: op.name)
+                .to(throwError(errorType: InvalidArgumentError.self), description: op.name)
         }
 
 #endif
