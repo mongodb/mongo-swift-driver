@@ -425,14 +425,6 @@ buildvariants:
       ssl: "ssl"
     then:
       remove_tasks: ".3.6"
-  # workaround for CDRIVER-3318 preventing us from doing any version checks
-  # on sharded clusters. remove in SWIFT-539
-  - if:
-      os-fully-featured: "macos-1014"
-      swift-version: "*"
-      ssl: "ssl"
-    then:
-      remove_tasks: ".sharded_cluster"
 
 - matrix_name: "atlas-connect"
   matrix_spec: 
