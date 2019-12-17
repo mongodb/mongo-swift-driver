@@ -49,7 +49,7 @@ extension MongoSwiftTestCase {
 extension MongoClient {
     internal func serverVersion() throws -> ServerVersion {
         let reply = try self.db("admin").runCommand(
-            [cmd: "buildInfo"],
+            ["buildInfo": 1],
             options: RunCommandOptions(
                 readPreference: ReadPreference(.primary)
             )
