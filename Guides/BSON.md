@@ -269,7 +269,7 @@ try collection.insert(Person(name: "New Hire", occupation: "Doctor", projects: [
 This allows applications that interact with the database to use well-defined Swift types, resulting in clearer and less error-prone code. Similar things can be done with `ChangeStream<T>` and `ChangeStreamEvent<T>`.
 
 ## Migrating from the old BSON API
-In version 1.0 of `MongoSwift`, the public API for using BSON values was changed dramatically. This section will describe the process for migrating from the old API (BSON API v1) to this new one (BSON API v2).
+In version 0.2.0 of `MongoSwift`, the public API for using BSON values was changed dramatically. This section will describe the process for migrating from the old API (BSON API v1) to this new one (BSON API v2).
 ### Overview of BSON API v1
  The previous API was based around the `BSONValue` protocol. Types that conformed to this protocol could be inserted to or read out of `Document` and could aslo be used in `Document` literals. The protocol was also used in various places around the driver as an existential type or conformance requirement. A related protocol, `BSONNumber`, inherited from `BSONValue` and provided some numeric conversion helpers for the various BSON number types (e.g. `Double`, `Int32`, `Int`). 
 ```swift
