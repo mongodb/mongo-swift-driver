@@ -7,8 +7,8 @@ private struct Kitten: Codable {
     var color: String
 }
 
-/// A single collection with type `Kitten`. This allows us to directly retrieve instances of    
-/// `Kitten` from the collection.  `MongoCollection` is safe to share across threads.   
+/// A single collection with type `Kitten`. This allows us to directly retrieve instances of
+/// `Kitten` from the collection.  `MongoCollection` is safe to share across threads.
 private let collection = try MongoClient().db("home").collection("kittens", withType: Kitten.self)
 
 private let router: Router = {

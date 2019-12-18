@@ -10,8 +10,8 @@ private struct Kitten: Content {
 private let app = try Application()
 private let router = try app.make(Router.self)
 
-/// A single collection with type `Kitten`. This allows us to directly retrieve instances of    
-/// `Kitten` from the collection.  `MongoCollection` is safe to share across threads.   
+/// A single collection with type `Kitten`. This allows us to directly retrieve instances of
+/// `Kitten` from the collection.  `MongoCollection` is safe to share across threads.
 private let collection = try MongoClient().db("home").collection("kittens", withType: Kitten.self)
 
 router.get("kittens") { _ -> [Kitten] in
