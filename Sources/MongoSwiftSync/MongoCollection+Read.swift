@@ -12,8 +12,8 @@ extension MongoCollection {
      * - Returns: A `MongoCursor` over the resulting `Document`s
      *
      * - Throws:
-     *   - `UserError.invalidArgumentError` if the options passed are an invalid combination.
-     *   - `UserError.logicError` if the provided session is inactive.
+     *   - `InvalidArgumentError` if the options passed are an invalid combination.
+     *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func find(
@@ -35,8 +35,8 @@ extension MongoCollection {
      * - Returns:  the resulting `Document`, or nil if there is no match
      *
      * - Throws:
-     *   - `UserError.invalidArgumentError` if the options passed are an invalid combination.
-     *   - `UserError.logicError` if the provided session is inactive.
+     *   - `InvalidArgumentError` if the options passed are an invalid combination.
+     *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func findOne(
@@ -58,8 +58,8 @@ extension MongoCollection {
      * - Returns: A `MongoCursor` over the resulting `Document`s
      *
      * - Throws:
-     *   - `UserError.invalidArgumentError` if the options passed are an invalid combination.
-     *   - `UserError.logicError` if the provided session is inactive.
+     *   - `InvalidArgumentError` if the options passed are an invalid combination.
+     *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func aggregate(
@@ -118,9 +118,9 @@ extension MongoCollection {
      * - Returns: A `[BSONValue]` containing the distinct values for the specified criteria
      *
      * - Throws:
-     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
-     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
-     *   - `UserError.logicError` if the provided session is inactive.
+     *   - `CommandError` if an error occurs that prevents the command from executing.
+     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func distinct(

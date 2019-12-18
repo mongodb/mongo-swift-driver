@@ -29,8 +29,8 @@ public class MongoClient {
      * - SeeAlso: https://docs.mongodb.com/manual/reference/connection-string/
      *
      * - Throws:
-     *   - A `UserError.invalidArgumentError` if the connection string passed in is improperly formatted.
-     *   - A `UserError.invalidArgumentError` if the connection string specifies the use of TLS but libmongoc was not
+     *   - A `InvalidArgumentError` if the connection string passed in is improperly formatted.
+     *   - A `InvalidArgumentError` if the connection string specifies the use of TLS but libmongoc was not
      *     built with TLS support.
      */
     public init(_ connectionString: String = "mongodb://localhost:27017", options: ClientOptions? = nil) throws {
@@ -72,7 +72,7 @@ public class MongoClient {
      * - Returns: A `[DatabaseSpecification]` containing the databases matching provided criteria.
      *
      * - Throws:
-     *   - `UserError.logicError` if the provided session is inactive.
+     *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error is encountered while encoding the options to BSON.
      *
      * - SeeAlso: https://docs.mongodb.com/manual/reference/command/listDatabases/
@@ -94,7 +94,7 @@ public class MongoClient {
      * - Returns: An Array of `MongoDatabase`s that match the provided filter.
      *
      * - Throws:
-     *   - `UserError.logicError` if the provided session is inactive.
+     *   - `LogicError` if the provided session is inactive.
      */
     public func listMongoDatabases(
         _ filter: Document? = nil,
@@ -113,7 +113,7 @@ public class MongoClient {
      * - Returns: A `[String]` containing names of databases that match the provided filter.
      *
      * - Throws:
-     *   - `UserError.logicError` if the provided session is inactive.
+     *   - `LogicError` if the provided session is inactive.
      */
     public func listDatabaseNames(_ filter: Document? = nil, session: ClientSession? = nil) throws -> [String] {
         fatalError("unimplemented")
@@ -147,9 +147,9 @@ public class MongoClient {
      * - Returns: a `ChangeStream` on all collections in all databases in a cluster.
      *
      * - Throws:
-     *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
-     *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination.
-     *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
+     *   - `CommandError` if an error occurs on the server while creating the change stream.
+     *   - `InvalidArgumentError` if the options passed formed an invalid combination.
+     *   - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.
      *
      * - SeeAlso:
@@ -183,9 +183,9 @@ public class MongoClient {
      * - Returns: A `ChangeStream` on all collections in all databases in a cluster.
      *
      * - Throws:
-     *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
-     *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination.
-     *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
+     *   - `CommandError` if an error occurs on the server while creating the change stream.
+     *   - `InvalidArgumentError` if the options passed formed an invalid combination.
+     *   - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.
      *
      * - SeeAlso:
@@ -220,9 +220,9 @@ public class MongoClient {
      * - Returns: A `ChangeStream` on all collections in all databases in a cluster.
      *
      * - Throws:
-     *   - `ServerError.commandError` if an error occurs on the server while creating the change stream.
-     *   - `UserError.invalidArgumentError` if the options passed formed an invalid combination.
-     *   - `UserError.invalidArgumentError` if the `_id` field is projected out of the change stream documents by the
+     *   - `CommandError` if an error occurs on the server while creating the change stream.
+     *   - `InvalidArgumentError` if the options passed formed an invalid combination.
+     *   - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.
      *
      * - SeeAlso:

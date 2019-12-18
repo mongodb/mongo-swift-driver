@@ -7,8 +7,8 @@ internal protocol Overwritable: BSONValue {
      * Overwrites the value at the current position of the iterator with self.
      *
      * - Throws:
-     *   - `RuntimeError.internalError` if the `BSONValue` is an `Int` and cannot be written to BSON.
-     *   - `UserError.logicError` if the `BSONValue` is a `Decimal128` or `ObjectId` and is improperly formatted.
+     *   - `InternalError` if the `BSONValue` is an `Int` and cannot be written to BSON.
+     *   - `LogicError` if the `BSONValue` is a `Decimal128` or `ObjectId` and is improperly formatted.
      */
     func writeToCurrentPosition(of iter: DocumentIterator) throws
 }

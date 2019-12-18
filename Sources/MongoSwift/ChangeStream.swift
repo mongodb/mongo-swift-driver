@@ -1,7 +1,7 @@
 import mongoc
 
 internal let ClosedChangeStreamError =
-    UserError.logicError(message: "Cannot advance a completed or failed change stream.")
+    LogicError(message: "Cannot advance a completed or failed change stream.")
 
 /// A token used for manually resuming a change stream. Pass this to the `resumeAfter` field of
 /// `ChangeStreamOptions` to resume or start a change stream where a previous one left off.
@@ -123,8 +123,8 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
      * omitted.
      * - Returns: the next `T` in this change stream, or `nil` if at the end of the change stream cursor.
      * - Throws:
-     *   - `ServerError.commandError` if an error occurs on the server while iterating the change stream cursor.
-     *   - `UserError.logicError` if this function is called and the session associated with this change stream is
+     *   - `CommandError` if an error occurs on the server while iterating the change stream cursor.
+     *   - `LogicError` if this function is called and the session associated with this change stream is
      *     inactive.
      *   - `DecodingError` if an error occurs while decoding the server's response.
      */
@@ -142,8 +142,8 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     /**
      * Initializes a `ChangeStream`.
      * - Throws:
-     *   - `ServerError.commandError` if an error occurred on the server when creating the `mongoc_change_stream_t`.
-     *   - `UserError.invalidArgumentError` if the `mongoc_change_stream_t` was created with invalid options.
+     *   - `CommandError` if an error occurred on the server when creating the `mongoc_change_stream_t`.
+     *   - `InvalidArgumentError` if the `mongoc_change_stream_t` was created with invalid options.
      */
     internal init(
         stealing changeStream: OpaquePointer,

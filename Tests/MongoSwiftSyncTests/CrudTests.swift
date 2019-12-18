@@ -52,7 +52,7 @@ final class CrudTests: MongoSwiftTestCase {
                 try test.verifyData(testCollection: collection, db: db)
                 do {
                     try collection.drop()
-                } catch let ServerError.commandError(code, _, _, _) where code == 26 {
+                } catch let commandError as CommandError where commandError.code == 26 {
                     // ignore ns not found errors
                 } catch {
                     throw error
@@ -239,8 +239,8 @@ private class BulkWriteTest: CrudTest {
                 self.verifyBulkWriteResult(result)
             }
             expect(expectError).to(beFalse())
-        } catch let ServerError.bulkWriteError(_, _, _, result, _) {
-            if let result = result {
+        } catch let bwe as BulkWriteError {
+            if let result = bwe.result {
                 verifyBulkWriteResult(result)
             }
             expect(expectError).to(beTrue())
@@ -423,8 +423,8 @@ private class InsertManyTest: CrudTest {
                 verifyInsertManyResult(result)
             }
             expect(expectError).to(beFalse())
-        } catch let ServerError.bulkWriteError(_, _, _, result, _) {
-            if let result = result {
+        } catch let bwe as BulkWriteError {
+            if let result = bwe.result {
                 verifyInsertManyResult(InsertManyResult(from: result)!)
             }
             expect(expectError).to(beTrue())

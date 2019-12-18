@@ -6,105 +6,128 @@ public protocol MongoError: LocalizedError {}
 
 // TODO: update this link and the one below (SWIFT-319)
 /// A MongoDB server error code.
-/// - SeeAlso: https://github.com/mongodb/mongo/blob/master/src/mongo/base/error_codes.err
+/// - SeeAlso: https://github.com/mongodb/mongo/blob/master/src/mongo/base/error_codes.yml
 public typealias ServerErrorCode = Int
 
-/// The possible errors corresponding to types of errors encountered in the MongoDB server.
-/// These errors may contain labels providing additional information on their origin.
-/// - SeeAlso: https://github.com/mongodb/mongo/blob/master/src/mongo/base/error_codes.err
-public enum ServerError: MongoError {
-    /// Thrown when commands experience errors on the server that prevent execution.
-    case commandError(code: ServerErrorCode, codeName: String, message: String, errorLabels: [String]?)
-
-    /// Thrown when a single write command fails on the server.
-    /// Note: Only one of `writeConcernError` or `writeError` will be populated at a time.
-    case writeError(writeError: WriteError?, writeConcernError: WriteConcernError?, errorLabels: [String]?)
-
-    /// Thrown when the server returns errors as part of an executed bulk write.
-    /// Note: `writeErrors` may not be present if the error experienced was a Write Concern related error.
-    /// Note: `otherError` may be populated if a non-write error occurs as part of one of the operations (e.g. a
-    /// connection failure occurs after already successfully performing a few inserts).
-    case bulkWriteError(
-        writeErrors: [BulkWriteError]?,
-        writeConcernError: WriteConcernError?,
-        otherError: Error?,
-        result: BulkWriteResult?,
-        errorLabels: [String]?
-    )
-
-    public var errorDescription: String? {
-        switch self {
-        case let .commandError(code: _, codeName: _, message: msg, errorLabels: _):
-            return msg
-        case let .writeError(writeError: writeErr, writeConcernError: wcErr, errorLabels: _):
-            if let writeErr = writeErr {
-                return writeErr.message
-            } else if let wcErr = wcErr {
-                return wcErr.message
-            }
-            return "" // should never get here
-        case let .bulkWriteError(writeErrs, wcErr, otherErr, _, _):
-            var messages: [String] = []
-
-            if let writeErrs = writeErrs {
-                messages += writeErrs.map { bwe in bwe.message }
-            }
-            if let wcErr = wcErr {
-                messages.append(wcErr.message)
-            }
-            if let err = otherErr {
-                messages.append(err.localizedDescription)
-            }
-            return messages.joined(separator: ", ")
-        }
-    }
+/// Protocol conformed to by errors that may contain error labels.
+public protocol LabeledError: MongoError {
+    /// Labels that may describe the context in which this error was thrown.
+    var errorLabels: [String]? { get }
 }
 
-/// The possible errors caused by improper use of the driver by the user.
-public enum UserError: MongoError {
-    /// Thrown when the driver is incorrectly used.
-    case logicError(message: String)
+/// Protocol conformed to by errors returned from the MongoDB deployment.
+public protocol ServerError: LabeledError {}
 
-    /// Thrown when the user passes in invalid arguments to a driver method.
-    case invalidArgumentError(message: String)
+/// Thrown when commands experience errors on the server that prevent execution.
+public struct CommandError: ServerError {
+    /// A numerical code identifying the error.
+    public let code: ServerErrorCode
 
-    public var errorDescription: String? {
-        switch self {
-        case let .invalidArgumentError(message: msg), let .logicError(message: msg):
-            return msg
-        }
-    }
+    /// A human-readable string identifying the error code.
+    public let codeName: String
+
+    /// A message from the server describing the error.
+    public let message: String
+
+    /// Labels that may describe the context in which this error was thrown.
+    public let errorLabels: [String]?
 }
 
-/// The possible errors that can occur unexpectedly during runtime.
-public enum RuntimeError: MongoError {
-    /// Thrown when the driver encounters a internal error not caused by the user. This is usually indicative of a bug
-    /// or system related failure (e.g. during memory allocation).
-    case internalError(message: String)
+/// An error that is thrown when a single write command fails on the server.
+public struct WriteError: ServerError {
+    /// The write error associated with this error.
+    public let writeFailure: WriteFailure?
 
-    /// Thrown when encountering a connection or socket related error.
-    /// May contain labels providing additional information on the nature of the error.
-    case connectionError(message: String, errorLabels: [String]?)
+    /// The write concern error associated with this error.
+    public let writeConcernFailure: WriteConcernFailure?
 
-    /// Thrown when encountering an authentication related error (e.g. invalid credentials).
-    case authenticationError(message: String)
-
-    /// Thrown when trying to use a feature that the deployment does not support.
-    case compatibilityError(message: String)
-
-    public var errorDescription: String? {
-        switch self {
-        case let .internalError(message: msg),
-             let .connectionError(message: msg, errorLabels: _),
-             let .authenticationError(message: msg),
-             let .compatibilityError(message: msg):
-            return msg
-        }
-    }
+    /// Labels that may describe the context in which this error was thrown.
+    public let errorLabels: [String]?
 }
 
-/// A struct to represent a single write error not resulting from an executed bulk write.
-public struct WriteError: Codable {
+/// A error that ocurred while executing a bulk write.
+public struct BulkWriteError: ServerError {
+    /// The errors that occured during individual writes as part of a bulk write.
+    /// This field might be nil if the error was a write concern related error.
+    public let writeFailures: [BulkWriteFailure]?
+
+    /// The error that occured on account of write concern failure.
+    public let writeConcernFailure: WriteConcernFailure?
+
+    /// Any other error that might have occurred during the execution of a bulk write
+    /// (e.g. a connection failure that occurred after a few inserts already succeeded)
+    public let otherError: Error?
+
+    /// The partial result of any successful operations that occurred as part of a bulk write.
+    public let result: BulkWriteResult?
+
+    /// Labels that may describe the context in which this error was thrown.
+    public let errorLabels: [String]?
+}
+
+/// A protocol describing errors caused by improper usage of the driver by the user.
+public protocol UserError: MongoError {}
+
+/// An error thrown when the driver is incorrectly used.
+public struct LogicError: UserError {
+    internal let message: String
+
+    public var errorDescription: String { return self.message }
+}
+
+/// An error thrown when the user passes in invalid arguments to a driver method.
+public struct InvalidArgumentError: UserError {
+    internal let message: String
+
+    public var errorDescription: String { return self.message }
+}
+
+/// The possible errors that can occur unexpectedly driver-side.
+public protocol RuntimeError: MongoError {}
+
+/// An error thrown when the driver encounters a internal error not caused by the user. This is usually indicative of
+/// a bug in the driver or system related failure (e.g. memory allocation failure).
+public struct InternalError: RuntimeError {
+    internal let message: String
+
+    public var errorDescription: String { return self.message }
+}
+
+/// An error thrown when encountering a connection or socket related error.
+/// May contain labels providing additional information on the nature of the error.
+public struct ConnectionError: RuntimeError, LabeledError {
+    internal let message: String
+
+    public let errorLabels: [String]?
+
+    public var errorDescription: String { return "\(self.message), errorLabels: \(self.errorLabels ?? [])" }
+}
+
+/// An error thrown when encountering an authentication related error (e.g. invalid credentials).
+public struct AuthenticationError: RuntimeError {
+    internal let message: String
+
+    public var errorDescription: String { return self.message }
+}
+
+/// An error thrown when trying to use a feature that the deployment does not support.
+public struct CompatibilityError: RuntimeError {
+    internal let message: String
+
+    public var errorDescription: String { return self.message }
+}
+
+/// An error that occured when trying to select a server (e.g. a timeout, or no server matched read preference).
+///
+/// - SeeAlso: https://docs.mongodb.com/manual/core/read-preference-mechanics/
+public struct ServerSelectionError: RuntimeError {
+    internal let message: String
+
+    public var errorDescription: String { return self.message }
+}
+
+/// A struct to represent a single write error not resulting from an executed write operation.
+public struct WriteFailure: Codable {
     /// An integer value identifying the error.
     public let code: ServerErrorCode
 
@@ -136,8 +159,8 @@ public struct WriteError: Codable {
     }
 }
 
-/// A struct to represent a write concern error resulting from an executed bulk write.
-public struct WriteConcernError: Codable {
+/// A struct to represent a write concern error resulting from an executed write operation.
+public struct WriteConcernFailure: Codable {
     /// An integer value identifying the write concern error.
     public let code: ServerErrorCode
 
@@ -159,7 +182,7 @@ public struct WriteConcernError: Codable {
 }
 
 /// A struct to represent a write error resulting from an executed bulk write.
-public struct BulkWriteError: Codable {
+public struct BulkWriteFailure: Codable {
     /// An integer value identifying the error.
     public let code: ServerErrorCode
 
@@ -197,6 +220,8 @@ public struct BulkWriteError: Codable {
     }
 }
 
+// swiftlint:disable cyclomatic_complexity
+
 /// Gets an appropriate error from a libmongoc error. Additional details may be provided in the form of a server reply
 /// document.
 private func parseMongocError(_ error: bson_error_t, reply: Document?) -> MongoError {
@@ -209,39 +234,43 @@ private func parseMongocError(_ error: bson_error_t, reply: Document?) -> MongoE
 
     switch (domain, code) {
     case (MONGOC_ERROR_CLIENT, MONGOC_ERROR_CLIENT_AUTHENTICATE):
-        return RuntimeError.authenticationError(message: message)
+        return AuthenticationError(message: message)
     case (MONGOC_ERROR_CLIENT, MONGOC_ERROR_CLIENT_SESSION_FAILURE):
         // If user attempts to start a session against a server that doesn't support it, we throw a compat error.
         if message.lowercased().contains("support sessions") {
-            return RuntimeError.compatibilityError(message: "Deployment does not support sessions")
+            return CompatibilityError(message: "Deployment does not support sessions")
         }
         // Otherwise, a generic internal error.
-        return RuntimeError.internalError(message: message)
+        return InternalError(message: message)
     case (MONGOC_ERROR_COMMAND, MONGOC_ERROR_COMMAND_INVALID_ARG):
-        return UserError.invalidArgumentError(message: message)
+        return InvalidArgumentError(message: message)
     case (MONGOC_ERROR_SERVER, _):
-        return ServerError.commandError(
+        return CommandError(
             code: ServerErrorCode(code.rawValue),
             codeName: codeName,
             message: message,
             errorLabels: errorLabels
         )
-    case (MONGOC_ERROR_STREAM, _), (MONGOC_ERROR_SERVER_SELECTION, MONGOC_ERROR_SERVER_SELECTION_FAILURE):
-        return RuntimeError.connectionError(message: message, errorLabels: errorLabels)
+    case (MONGOC_ERROR_STREAM, _):
+        return ConnectionError(message: message, errorLabels: errorLabels)
+    case (MONGOC_ERROR_SERVER_SELECTION, MONGOC_ERROR_SERVER_SELECTION_FAILURE):
+        return ServerSelectionError(message: message)
     case (MONGOC_ERROR_CURSOR, MONGOC_ERROR_CURSOR_INVALID_CURSOR):
-        return UserError.invalidArgumentError(message: message)
+        return InvalidArgumentError(message: message)
     case (MONGOC_ERROR_CURSOR, MONGOC_ERROR_CHANGE_STREAM_NO_RESUME_TOKEN):
-        return UserError.logicError(message: message)
+        return LogicError(message: message)
     case (MONGOC_ERROR_PROTOCOL, MONGOC_ERROR_PROTOCOL_BAD_WIRE_VERSION):
-        return RuntimeError.compatibilityError(message: message)
+        return CompatibilityError(message: message)
     default:
         assert(
             errorLabels == nil, "errorLabels set on error, but were not thrown as a MongoError. " +
                 "Labels: \(errorLabels ?? [])"
         )
-        return RuntimeError.internalError(message: message)
+        return InternalError(message: message)
     }
 }
+
+// swiftlint:enable cyclomatic_complexity
 
 /// Internal function used to get an appropriate error from a libmongoc error and/or a server reply to a command.
 internal func extractMongoError(error bsonError: bson_error_t, reply: Document? = nil) -> MongoError {
@@ -252,15 +281,15 @@ internal func extractMongoError(error bsonError: bson_error_t, reply: Document? 
         return parseMongocError(bsonError, reply: reply)
     }
 
-    let fallback = RuntimeError.internalError(
+    let fallback = InternalError(
         message: "Got error from the server but couldn't parse it. Message: \(toErrorString(bsonError))"
     )
 
     do {
-        var writeError: WriteError?
+        var writeError: WriteFailure?
         if let writeErrors = serverReply["writeErrors"]?.arrayValue?.compactMap({ $0.documentValue }),
             !writeErrors.isEmpty {
-            writeError = try BSONDecoder().decode(WriteError.self, from: writeErrors[0])
+            writeError = try BSONDecoder().decode(WriteFailure.self, from: writeErrors[0])
         }
         let wcError = try extractWriteConcernError(from: serverReply)
 
@@ -268,9 +297,9 @@ internal func extractMongoError(error bsonError: bson_error_t, reply: Document? 
             return fallback
         }
 
-        return ServerError.writeError(
-            writeError: writeError,
-            writeConcernError: wcError,
+        return WriteError(
+            writeFailure: writeError,
+            writeConcernFailure: wcError,
             errorLabels: serverReply["errorLabels"]?.arrayValue?.asArrayOf(String.self)
         )
     } catch {
@@ -278,7 +307,7 @@ internal func extractMongoError(error bsonError: bson_error_t, reply: Document? 
     }
 }
 
-/// Internal function used to get a `ServerError.bulkWriteError` from a libmongoc error and a server reply to a
+/// Internal function used to get a `BulkWriteError` from a libmongoc error and a server reply to a
 /// `BulkWriteOperation`. If a partial result is provided, an updated result with the failed results filtered out will
 /// be returned as part of the error.
 internal func extractBulkWriteError<T: Codable>(
@@ -287,15 +316,15 @@ internal func extractBulkWriteError<T: Codable>(
     reply: Document,
     partialResult: BulkWriteResult? = nil
 ) -> Error {
-    let fallback = RuntimeError.internalError(
+    let fallback = InternalError(
         message: "Got error from the server but couldn't parse it. " +
             "Message: \(toErrorString(error))"
     )
 
     do {
-        var bulkWriteErrors: [BulkWriteError] = []
+        var bulkWriteErrors: [BulkWriteFailure] = []
         if let writeErrors = reply["writeErrors"]?.arrayValue?.compactMap({ $0.documentValue }) {
-            bulkWriteErrors = try writeErrors.map { try BSONDecoder().decode(BulkWriteError.self, from: $0) }
+            bulkWriteErrors = try writeErrors.map { try BSONDecoder().decode(BulkWriteFailure.self, from: $0) }
         }
 
         // Need to create new result that omits the ids that failed in insertedIds.
@@ -339,15 +368,15 @@ internal func extractBulkWriteError<T: Codable>(
         // in the absence of other errors, libmongoc will simply populate the mongoc_error_t with the error code of the
         // first write error and the concatenated error messages of all the write errors. in that case, we just want to
         // omit the "other" error.
-        if case let .some(ServerError.commandError(code, _, _, _)) = other as? ServerError,
+        if let commandError = other as? CommandError,
             let wErr = bulkWriteErrors.first,
-            wErr.code == code {
+            wErr.code == commandError.code {
             other = nil
         }
 
-        return ServerError.bulkWriteError(
-            writeErrors: bulkWriteErrors,
-            writeConcernError: try extractWriteConcernError(from: reply),
+        return BulkWriteError(
+            writeFailures: bulkWriteErrors,
+            writeConcernFailure: try extractWriteConcernError(from: reply),
             otherError: other,
             result: errResult,
             errorLabels: reply["errorLabels"]?.arrayValue?.asArrayOf(String.self)
@@ -358,34 +387,42 @@ internal func extractBulkWriteError<T: Codable>(
 }
 
 /// Extracts a `WriteConcernError` from a server reply.
-private func extractWriteConcernError(from reply: Document) throws -> WriteConcernError? {
+private func extractWriteConcernError(from reply: Document) throws -> WriteConcernFailure? {
     guard let writeConcernErrors = reply["writeConcernErrors"]?.arrayValue?.compactMap({ $0.documentValue }),
         !writeConcernErrors.isEmpty else {
         return nil
     }
-    return try BSONDecoder().decode(WriteConcernError.self, from: writeConcernErrors[0])
+    return try BSONDecoder().decode(WriteConcernFailure.self, from: writeConcernErrors[0])
 }
 
 /// Internal function used by write methods performing single writes that are implemented via the bulk API. Catches any
-/// ServerError.bulkWriteErrors thrown by the given closure and converts them to ServerError.writeErrors. All other
+/// BulkWriteErrors thrown by the given closure and converts them to WriteErrors. All other
 /// errors will be propagated as-is.
 internal func convertingBulkWriteErrors<T>(_ body: () throws -> T) throws -> T {
     do {
         return try body()
-    } catch let ServerError.bulkWriteError(bulkWriteErrors, writeConcernError, other, _, errorLabels) {
-        if let bwes = bulkWriteErrors, !bwes.isEmpty {
-            let writeError = WriteError(
-                code: bwes[0].code,
-                codeName: bwes[0].codeName,
-                message: bwes[0].message
+    } catch let bwe as BulkWriteError {
+        let writeFailure: WriteFailure? = bwe.writeFailures.flatMap { failures in
+            guard let firstFailure = failures.first else {
+                return nil
+            }
+            return WriteFailure(
+                code: firstFailure.code,
+                codeName: firstFailure.codeName,
+                message: firstFailure.message
             )
-            throw ServerError.writeError(writeError: writeError, writeConcernError: nil, errorLabels: errorLabels)
-        } else if let wcErr = writeConcernError {
-            throw ServerError.writeError(writeError: nil, writeConcernError: wcErr, errorLabels: errorLabels)
-        } else if let otherErr = other {
+        }
+
+        if writeFailure != nil || bwe.writeConcernFailure != nil {
+            throw WriteError(
+                writeFailure: writeFailure,
+                writeConcernFailure: bwe.writeConcernFailure,
+                errorLabels: bwe.errorLabels
+            )
+        } else if let otherErr = bwe.otherError {
             throw otherErr
         }
-        throw RuntimeError.internalError(message: "Couldn't get error from BulkWriteError")
+        throw InternalError(message: "Couldn't get error from BulkWriteError")
     }
 }
 
@@ -400,14 +437,14 @@ internal func toErrorString(_ error: bson_error_t) -> String {
 }
 
 internal func bsonTooLargeError(value: BSONValue, forKey: String) -> MongoError {
-    return RuntimeError.internalError(
+    return InternalError(
         message:
         "Failed to set value for key \(forKey) to \(value) with BSON type \(value.bsonType): document too large"
     )
 }
 
 internal func wrongIterTypeError(_ iter: DocumentIterator, expected type: BSONValue.Type) -> MongoError {
-    return UserError.logicError(
+    return LogicError(
         message: "Tried to retreive a \(type) from an iterator whose next type " +
             "is \(iter.currentType) for key \(iter.currentKey)"
     )

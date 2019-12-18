@@ -1,6 +1,6 @@
 import mongoc
 
-internal let ClosedCursorError = UserError.logicError(message: "Cannot advance a completed or failed cursor.")
+internal let ClosedCursorError = LogicError(message: "Cannot advance a completed or failed cursor.")
 
 // sourcery: skipSyncExport
 /// A MongoDB cursor.
@@ -64,7 +64,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
      * true, this initializer will force a connection to the server if one is not already established.
      *
      * - Throws:
-     *   - `UserError.invalidArgumentError` if the options passed to the command that generated this cursor formed an
+     *   - `InvalidArgumentError` if the options passed to the command that generated this cursor formed an
      *     invalid combination.
      */
     internal init(
@@ -190,9 +190,9 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
      * which returns `nil` and requires manually checking for an error afterward.
      * - Returns: the next `Document` in this cursor, or `nil` if at the end of the cursor
      * - Throws:
-     *   - `ServerError.commandError` if an error occurs on the server while iterating the cursor.
-     *   - `UserError.logicError` if this function is called after the cursor has died.
-     *   - `UserError.logicError` if this function is called and the session associated with this cursor is inactive.
+     *   - `CommandError` if an error occurs on the server while iterating the cursor.
+     *   - `LogicError` if this function is called after the cursor has died.
+     *   - `LogicError` if this function is called and the session associated with this cursor is inactive.
      *   - `DecodingError` if an error occurs decoding the server's response.
      */
     public func nextOrError() throws -> T? {

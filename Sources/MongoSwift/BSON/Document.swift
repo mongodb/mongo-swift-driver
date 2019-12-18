@@ -129,10 +129,10 @@ extension Document {
      * presence first.
      *
      * - Throws:
-     *   - `RuntimeError.internalError` if the new value is an `Int` and cannot be written to BSON.
-     *   - `UserError.logicError` if the new value is a `Decimal128` or `ObjectId` and is improperly formatted.
-     *   - `UserError.logicError` if the new value is an `Array` and it contains a non-`BSONValue` element.
-     *   - `RuntimeError.internalError` if the `DocumentStorage` would exceed the maximum size by encoding this
+     *   - `InternalError` if the new value is an `Int` and cannot be written to BSON.
+     *   - `LogicError` if the new value is a `Decimal128` or `ObjectId` and is improperly formatted.
+     *   - `LogicError` if the new value is an `Array` and it contains a non-`BSONValue` element.
+     *   - `InternalError` if the `DocumentStorage` would exceed the maximum size by encoding this
      *     key-value pair.
      */
     internal mutating func setValue(for key: String, to newValue: BSON, checkForKey: Bool = true) throws {
@@ -181,10 +181,10 @@ extension Document {
     /// Retrieves the value associated with `for` as a `BSONValue?`, which can be nil if the key does not exist in the
     /// `Document`.
     ///
-    /// - Throws: `RuntimeError.internalError` if the BSON buffer is too small (< 5 bytes).
+    /// - Throws: `InternalError` if the BSON buffer is too small (< 5 bytes).
     internal func getValue(for key: String) throws -> BSON? {
         guard let iter = DocumentIterator(forDocument: self) else {
-            throw RuntimeError.internalError(message: "BSON buffer is unexpectedly too small (< 5 bytes)")
+            throw InternalError(message: "BSON buffer is unexpectedly too small (< 5 bytes)")
         }
 
         guard iter.move(to: key) else {
@@ -201,7 +201,7 @@ extension Document {
             bson_concat(selfPtr, doc._bson)
         }
         guard success else {
-            throw RuntimeError.internalError(
+            throw InternalError(
                 message: "Failed to merge \(doc) with \(self). This is likely due to " +
                     "the merged document being too large."
             )
@@ -327,16 +327,16 @@ extension Document {
      * - Returns: the parsed `Document`
      *
      * - Throws:
-     *   - A `UserError.invalidArgumentError` if the data passed in is invalid JSON.
+     *   - A `InvalidArgumentError` if the data passed in is invalid JSON.
      */
     public init(fromJSON: Data) throws {
         self._storage = DocumentStorage(stealing: try fromJSON.withUnsafeBytePointer { bytes in
             var error = bson_error_t()
             guard let bson = bson_new_from_json(bytes, fromJSON.count, &error) else {
                 if error.domain == BSON_ERROR_JSON {
-                    throw UserError.invalidArgumentError(message: "Invalid JSON: \(toErrorString(error))")
+                    throw InvalidArgumentError(message: "Invalid JSON: \(toErrorString(error))")
                 }
-                throw RuntimeError.internalError(message: toErrorString(error))
+                throw InternalError(message: toErrorString(error))
             }
 
             return bson
@@ -345,7 +345,7 @@ extension Document {
 
     /// Convenience initializer for constructing a `Document` from a `String`.
     /// - Throws:
-    ///   - A `UserError.invalidArgumentError` if the string passed in is invalid JSON.
+    ///   - A `InvalidArgumentError` if the string passed in is invalid JSON.
     public init(fromJSON json: String) throws {
         // `String`s are Unicode under the hood so force unwrap always succeeds.
         // see https://www.objc.io/blog/2018/02/13/string-to-data-and-back/
@@ -355,15 +355,15 @@ extension Document {
     /**
      * Constructs a `Document` from raw BSON `Data`.
      * - Throws:
-     *   - A `UserError.invalidArgumentError` if `bson` is too short or too long to be valid BSON.
-     *   - A `UserError.invalidArgumentError` if the first four bytes of `bson` do not contain `bson.count`.
-     *   - A `UserError.invalidArgumentError` if the final byte of `bson` is not a null byte.
+     *   - A `InvalidArgumentError` if `bson` is too short or too long to be valid BSON.
+     *   - A `InvalidArgumentError` if the first four bytes of `bson` do not contain `bson.count`.
+     *   - A `InvalidArgumentError` if the final byte of `bson` is not a null byte.
      * - SeeAlso: http://bsonspec.org/
      */
     public init(fromBSON bson: Data) throws {
         self._storage = DocumentStorage(stealing: try bson.withUnsafeBytePointer { bytes in
             guard let data = bson_new_from_data(bytes, bson.count) else {
-                throw UserError.invalidArgumentError(message: "Invalid BSON data")
+                throw InvalidArgumentError(message: "Invalid BSON data")
             }
             return data
         })
@@ -470,7 +470,7 @@ extension Document: BSONValue {
             bson_iter_document(iterPtr, &length, document)
 
             guard let docData = bson_new_from_data(document.pointee, Int(length)) else {
-                throw RuntimeError.internalError(message: "Failed to create a Document from iterator")
+                throw InternalError(message: "Failed to create a Document from iterator")
             }
 
             return self.init(stealing: docData)

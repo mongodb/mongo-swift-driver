@@ -8,7 +8,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
         do {
             let client = try MongoClient.makeTestClient()
             try client.db(type(of: self).testDatabase).drop()
-        } catch let ServerError.commandError(code, _, _, _) where code == 26 {
+        } catch let commandError as CommandError where commandError.code == 26 {
             // skip database not found errors
         } catch {
             fail("encountered error when tearing down: \(error)")
@@ -222,7 +222,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
         let session = try client2.startSession()
         try self.forEachSessionOp(client: client1, database: database, collection: collection) { op in
             expect(try op.body(session))
-                .to(throwError(UserError.invalidArgumentError(message: "")), description: op.name)
+                .to(throwError(errorType: InvalidArgumentError.self), description: op.name)
         }
 
 #endif
@@ -469,7 +469,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
         try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
             let collection1 = db.collection(
                 self.getCollectionName(),
-                options: CollectionOptions(readConcern: ReadConcern(.snapshot))
+                options: CollectionOptions(readConcern: ReadConcern(.local))
             )
             _ = try collection1.find(session: session).next()
             let opTime = session.operationTime
@@ -482,7 +482,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
                 let readConcern = event.command["readConcern"]?.documentValue
                 expect(readConcern).toNot(beNil())
                 expect(readConcern!["afterClusterTime"]?.timestampValue).to(equal(opTime))
-                expect(readConcern!["level"]).to(equal("snapshot"))
+                expect(readConcern!["level"]).to(equal("local"))
                 seenCommand = true
             }
             defer { center.removeObserver(observer) }

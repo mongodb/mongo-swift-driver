@@ -77,21 +77,20 @@ public struct WriteConcern: Codable {
 
     /// Initializes a new `WriteConcern`.
     /// - Throws:
-    ///   - `UserError.invalidArgumentError` if the options form an invalid combination.
+    ///   - `InvalidArgumentError` if the options form an invalid combination.
     public init(journal: Bool? = nil, w: W? = nil, wtimeoutMS: Int64? = nil) throws {
         self.journal = journal
 
         if let wtimeoutMS = wtimeoutMS {
             if wtimeoutMS < 0 {
-                throw UserError
-                    .invalidArgumentError(message: "Invalid value: wtimeoutMS=\(wtimeoutMS) cannot be negative.")
+                throw InvalidArgumentError(message: "Invalid value: wtimeoutMS=\(wtimeoutMS) cannot be negative.")
             }
         }
         self.wtimeoutMS = wtimeoutMS
 
         if let w = w, case let .number(wNumber) = w {
             if wNumber < 0 {
-                throw UserError.invalidArgumentError(message: "Invalid value: w=\(w) cannot be negative.")
+                throw InvalidArgumentError(message: "Invalid value: w=\(w) cannot be negative.")
             }
         }
         self.w = w
@@ -100,7 +99,7 @@ public struct WriteConcern: Codable {
             let journalStr = String(describing: journal)
             let wStr = String(describing: w)
             let timeoutStr = String(describing: wtimeoutMS)
-            throw UserError.invalidArgumentError(
+            throw InvalidArgumentError(
                 message:
                 "Invalid combination of options: journal=\(journalStr), w=\(wStr), wtimeoutMS=\(timeoutStr)"
             )

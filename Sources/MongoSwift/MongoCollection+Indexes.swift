@@ -169,10 +169,10 @@ extension MongoCollection {
      * - Returns: The name of the created index.
      *
      * - Throws:
-     *   - `ServerError.writeError` if an error occurs while performing the write.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
-     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
-     *   - `UserError.logicError` if the provided session is inactive.
+     *   - `WriteError` if an error occurs while performing the write.
+     *   - `CommandError` if an error occurs that prevents the command from executing.
+     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the index specification or options.
      */
     @discardableResult
@@ -200,10 +200,10 @@ extension MongoCollection {
      * - Returns: The name of the created index.
      *
      * - Throws:
-     *   - `ServerError.writeError` if an error occurs while performing the write.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
-     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
-     *   - `UserError.logicError` if the provided session is inactive.
+     *   - `WriteError` if an error occurs while performing the write.
+     *   - `CommandError` if an error occurs that prevents the command from executing.
+     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the index specification or options.
      */
     @discardableResult
@@ -226,10 +226,10 @@ extension MongoCollection {
      * - Returns: An `[String]` containing the names of all the indexes that were created.
      *
      * - Throws:
-     *   - `ServerError.writeError` if an error occurs while performing the write.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
-     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
-     *   - `UserError.logicError` if the provided session is inactive.
+     *   - `WriteError` if an error occurs while performing the write.
+     *   - `CommandError` if an error occurs that prevents the command from executing.
+     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the index specifications or options.
      */
     @discardableResult
@@ -251,9 +251,9 @@ extension MongoCollection {
      *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Throws:
-     *   - `ServerError.writeError` if an error occurs while performing the command.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
-     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
+     *   - `WriteError` if an error occurs while performing the command.
+     *   - `CommandError` if an error occurs that prevents the command from executing.
+     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
      *   - `EncodingError` if an error occurs while encoding the options.
      */
     @discardableResult
@@ -263,7 +263,7 @@ extension MongoCollection {
         session: ClientSession? = nil
     ) throws -> Document {
         guard name != "*" else {
-            throw UserError.invalidArgumentError(
+            throw InvalidArgumentError(
                 message:
                 "Invalid index name '*'; use dropIndexes() to drop all indexes"
             )
@@ -282,10 +282,10 @@ extension MongoCollection {
      * - Returns: a `Document` containing the server's response to the command.
      *
      * - Throws:
-     *   - `ServerError.writeError` if an error occurs while performing the command.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
-     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
-     *   - `UserError.logicError` if the provided session is inactive.
+     *   - `WriteError` if an error occurs while performing the command.
+     *   - `CommandError` if an error occurs that prevents the command from executing.
+     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options.
      */
     @discardableResult
@@ -308,10 +308,10 @@ extension MongoCollection {
      * - Returns: a `Document` containing the server's response to the command.
      *
      * - Throws:
-     *   - `ServerError.writeError` if an error occurs while performing the command.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
-     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
-     *   - `UserError.logicError` if the provided session is inactive.
+     *   - `WriteError` if an error occurs while performing the command.
+     *   - `CommandError` if an error occurs that prevents the command from executing.
+     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options.
      */
     @discardableResult
@@ -333,10 +333,10 @@ extension MongoCollection {
      * - Returns: a `Document` containing the server's response to the command.
      *
      * - Throws:
-     *   - `ServerError.writeError` if an error occurs while performing the command.
-     *   - `ServerError.commandError` if an error occurs that prevents the command from executing.
-     *   - `UserError.invalidArgumentError` if the options passed in form an invalid combination.
-     *   - `UserError.logicError` if the provided session is inactive.
+     *   - `WriteError` if an error occurs while performing the command.
+     *   - `CommandError` if an error occurs that prevents the command from executing.
+     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options.
      */
     @discardableResult
@@ -363,7 +363,7 @@ extension MongoCollection {
      *
      * - Returns: A `MongoCursor` over the `IndexModel`s.
      *
-     * - Throws: `UserError.logicError` if the provided session is inactive.
+     * - Throws: `LogicError` if the provided session is inactive.
      */
     public func listIndexes(session: ClientSession? = nil) throws -> MongoCursor<IndexModel> {
         let operation = ListIndexesOperation(collection: self)
@@ -378,14 +378,14 @@ extension MongoCollection {
      *
      * - Returns: A `MongoCursor` over the index names.
      *
-     * - Throws: `UserError.logicError` if the provided session is inactive.
+     * - Throws: `LogicError` if the provided session is inactive.
      */
     public func listIndexNames(session: ClientSession? = nil) throws -> [String] {
         let operation = ListIndexesOperation(collection: self)
         let models = try self._client.executeOperation(operation, session: session)
         let names: [String] = try models.map { model in
             guard let name = model.options?.name else {
-                throw RuntimeError.internalError(message: "Server response missing a 'name' field")
+                throw InternalError(message: "Server response missing a 'name' field")
             }
             return name
         }

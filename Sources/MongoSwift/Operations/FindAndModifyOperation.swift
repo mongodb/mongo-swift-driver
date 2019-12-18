@@ -20,7 +20,7 @@ internal class FindAndModifyOptions {
 
     /// Initializes a new `FindAndModifyOptions` with the given settings.
     ///
-    /// - Throws: `UserError.invalidArgumentError` if any of the options are invalid.
+    /// - Throws: `InvalidArgumentError` if any of the options are invalid.
     // swiftlint:disable:next cyclomatic_complexity
     internal init(
         arrayFilters: [Document]? = nil,
@@ -38,12 +38,12 @@ internal class FindAndModifyOptions {
 
         if let bypass = bypassDocumentValidation,
             !mongoc_find_and_modify_opts_set_bypass_document_validation(self._options, bypass) {
-            throw UserError.invalidArgumentError(message: "Error setting bypassDocumentValidation to \(bypass)")
+            throw InvalidArgumentError(message: "Error setting bypassDocumentValidation to \(bypass)")
         }
 
         if let fields = projection {
             guard mongoc_find_and_modify_opts_set_fields(self._options, fields._bson) else {
-                throw UserError.invalidArgumentError(message: "Error setting fields to \(fields)")
+                throw InvalidArgumentError(message: "Error setting fields to \(fields)")
             }
         }
 
@@ -59,7 +59,7 @@ internal class FindAndModifyOptions {
             let remStr = String(describing: remove)
             let upsStr = String(describing: upsert)
             let retStr = String(describing: returnDocument)
-            throw UserError.invalidArgumentError(
+            throw InvalidArgumentError(
                 message:
                 "Error setting flags to \(flags); remove=\(remStr), upsert=\(upsStr), returnDocument=\(retStr)"
             )
@@ -67,7 +67,7 @@ internal class FindAndModifyOptions {
 
         if let sort = sort {
             guard mongoc_find_and_modify_opts_set_sort(self._options, sort._bson) else {
-                throw UserError.invalidArgumentError(message: "Error setting sort to \(sort)")
+                throw InvalidArgumentError(message: "Error setting sort to \(sort)")
             }
         }
 
@@ -83,7 +83,7 @@ internal class FindAndModifyOptions {
         // set maxTimeMS by directly appending it instead. see CDRIVER-1329
         if let maxTime = maxTimeMS {
             guard maxTime > 0 else {
-                throw UserError.invalidArgumentError(message: "maxTimeMS must be positive, but got value \(maxTime)")
+                throw InvalidArgumentError(message: "maxTimeMS must be positive, but got value \(maxTime)")
             }
             try extra.setValue(for: "maxTimeMS", to: .int64(maxTime))
         }
@@ -92,12 +92,12 @@ internal class FindAndModifyOptions {
             do {
                 try extra.setValue(for: "writeConcern", to: .document(try BSONEncoder().encode(wc)))
             } catch {
-                throw RuntimeError.internalError(message: "Error encoding WriteConcern \(wc): \(error)")
+                throw InternalError(message: "Error encoding WriteConcern \(wc): \(error)")
             }
         }
 
         guard extra.isEmpty || mongoc_find_and_modify_opts_append(self._options, extra._bson) else {
-            throw UserError.invalidArgumentError(message: "Error appending extra fields \(extra)")
+            throw InvalidArgumentError(message: "Error appending extra fields \(extra)")
         }
     }
 
@@ -105,7 +105,7 @@ internal class FindAndModifyOptions {
     /// initializer because its value comes from the API methods rather than their options types.
     fileprivate func setUpdate(_ update: Document) throws {
         guard mongoc_find_and_modify_opts_set_update(self._options, update._bson) else {
-            throw UserError.invalidArgumentError(message: "Error setting update to \(update)")
+            throw InvalidArgumentError(message: "Error setting update to \(update)")
         }
     }
 
@@ -117,7 +117,7 @@ internal class FindAndModifyOptions {
         try session.append(to: &doc)
 
         guard mongoc_find_and_modify_opts_append(self._options, doc._bson) else {
-            throw RuntimeError.internalError(message: "Couldn't read session information")
+            throw InternalError(message: "Couldn't read session information")
         }
     }
 }

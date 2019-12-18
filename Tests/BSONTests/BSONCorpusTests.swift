@@ -218,7 +218,7 @@ final class BSONCorpusTests: MongoSwiftTestCase {
                         expect(Decimal128(test.string))
                             .to(beNil(), description: description)
                     default:
-                        throw RuntimeError.internalError(
+                        throw TestError(
                             message: "\(description): parse error tests not implemented"
                                 + "for bson type \(testFile.bsonType)"
                         )

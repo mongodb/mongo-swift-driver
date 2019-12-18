@@ -38,11 +38,11 @@ internal class ConnectionPool {
     /// Initializes the pool using the provided `ConnectionString`.
     internal init(from connString: ConnectionString, options: TLSOptions? = nil) throws {
         guard let pool = mongoc_client_pool_new(connString._uri) else {
-            throw UserError.invalidArgumentError(message: "libmongoc not built with TLS support")
+            throw InvalidArgumentError(message: "libmongoc not built with TLS support")
         }
 
         guard mongoc_client_pool_set_error_api(pool, MONGOC_ERROR_API_VERSION_2) else {
-            throw RuntimeError.internalError(message: "Could not configure error handling on client pool")
+            throw InternalError(message: "Could not configure error handling on client pool")
         }
 
         self.state = .open(pool: pool)
@@ -73,7 +73,7 @@ internal class ConnectionPool {
         case let .open(pool):
             return Connection(clientHandle: mongoc_client_pool_pop(pool), pool: self)
         case .closed:
-            throw RuntimeError.internalError(message: "ConnectionPool was already closed")
+            throw InternalError(message: "ConnectionPool was already closed")
         }
     }
 
@@ -115,7 +115,7 @@ internal class ConnectionPool {
         case let .open(pool):
             mongoc_client_pool_set_ssl_opts(pool, &opts)
         case .closed:
-            throw RuntimeError.internalError(message: "ConnectionPool was already closed")
+            throw InternalError(message: "ConnectionPool was already closed")
         }
     }
 }

@@ -36,7 +36,7 @@ extension MongoSwiftTestCase {
         let ns = ns ?? self.getNamespace()
 
         guard let collName = ns.collection else {
-            throw UserError.invalidArgumentError(message: "missing collection")
+            throw TestError(message: "missing collection")
         }
 
         let database = client.db(ns.db)
