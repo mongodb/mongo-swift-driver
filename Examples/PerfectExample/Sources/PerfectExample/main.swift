@@ -9,15 +9,19 @@ private struct Kitten: Codable {
     var color: String
 }
 
+/// A single collection with type `Kitten`. This allows us to directly retrieve instances of
+/// `Kitten` from the collection.  `MongoCollection` is safe to share across threads.
+private let collection = try MongoClient().db("home").collection("kittens", withType: Kitten.self)
+
 private var routes = Routes()
 routes.add(method: .get, uri: "/kittens") { _, response in
     response.setHeader(.contentType, value: "application/json")
     do {
-        /// A single collection with type `Kitten`. This allows us to directly retrieve instances of
-        /// `Kitten` from the collection.
-        let collection = try MongoClient().db("home").collection("kittens", withType: Kitten.self)
-        let kittens = try collection.find()
-        let json = try JSONEncoder().encode(Array(kittens))
+        let cursor = try collection.find()
+        let json = try JSONEncoder().encode(Array(cursor))
+        if let error = cursor.error {
+            throw error
+        }
         response.setBody(bytes: Array(json))
     } catch {
         print("error: \(error)")
