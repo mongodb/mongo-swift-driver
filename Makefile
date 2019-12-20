@@ -45,9 +45,10 @@ lint:
 	swiftlint autocorrect
 	swiftlint
 
+# MacOS only
 coverage:
-	make project
-	xcodebuild -project MongoSwift.xcodeproj -scheme MongoSwift-Package -enableCodeCoverage YES build test
+	swift test --enable-code-coverage
+	xcrun llvm-cov export -format="lcov" .build/debug/MongoSwiftPackageTests.xctest/Contents/MacOS/MongoSwiftPackageTests -instr-profile .build/debug/codecov/default.profdata > info.lcov
 
 clean:
 	rm -rf Packages
