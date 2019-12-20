@@ -109,7 +109,7 @@ public class MongoClient {
         _ filter: Document? = nil,
         session: ClientSession? = nil
     ) throws -> [DatabaseSpecification] {
-        return try self.asyncClient.listDatabases(filter, session: nil).wait()
+        return try self.asyncClient.listDatabases(filter, session: session?.asyncSession).wait()
     }
 
     /**
@@ -144,7 +144,7 @@ public class MongoClient {
      *   - `LogicError` if the provided session is inactive.
      */
     public func listDatabaseNames(_ filter: Document? = nil, session: ClientSession? = nil) throws -> [String] {
-        return try self.asyncClient.listDatabaseNames(filter, session: nil).wait()
+        return try self.asyncClient.listDatabaseNames(filter, session: session?.asyncSession).wait()
     }
 
     /**

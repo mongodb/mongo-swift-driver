@@ -32,6 +32,8 @@ public final class ClientSession {
     /// The client used to start this session.
     public let client: MongoClient
 
+    internal let asyncSession: MongoSwift.ClientSession
+
     /// The most recent cluster time seen by this session. This value will be nil if either of the following are true:
     /// - No operations have been executed using this session and `advanceClusterTime` has not been called.
     /// - This session has been ended.
