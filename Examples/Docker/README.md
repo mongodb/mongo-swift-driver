@@ -1,9 +1,9 @@
 # Building `libmongoc` From Source With Docker
 
 For the `mongo-swift-driver` to run, **the minimum required version of the
-C Driver is 1.13.0**. The easiest way to get the correct version
+C Driver is 1.15.3**. The easiest way to get the correct version
 of `libmongoc` and `libbson` is to checkout the correct
-[branch](https://github.com/mongodb/mongo-c-driver/tree/r1.13) from git and
+[branch](https://github.com/mongodb/mongo-c-driver/tree/r1.15) from git and
 build the sources.
 
 ## Dependencies
@@ -17,7 +17,7 @@ build the sources.
 ## Build
 
 ```Dockerfile
-RUN git clone -b r1.13 https://github.com/mongodb/mongo-c-driver /tmp/libmongoc
+RUN git clone -b r1.15 https://github.com/mongodb/mongo-c-driver /tmp/libmongoc
 WORKDIR /tmp/libmongoc
 RUN cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr
 RUN make -j8 install
