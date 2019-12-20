@@ -191,7 +191,8 @@ public class MongoClient {
 
     private let operationExecutor: OperationExecutor
 
-    /// Default size for a client's NIOThreadPool. TODO: SWIFT-705 document size justification.
+    // TODO: SWIFT-705 document size justification.
+    /// Default size for a client's NIOThreadPool.
     public static let defaultThreadPoolSize = 5
 
     /// Indicates whether this client has been closed.
