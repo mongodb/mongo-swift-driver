@@ -19,8 +19,8 @@ public protocol MongoCommandEvent: MongoEvent {
     /// as bulk write operations.
     var operationId: Int64 { get }
 
-    /// The connection id for the command.
-    var connectionId: ConnectionId { get }
+    /// The address of the server the command was run against.
+    var serverAddress: Address { get }
 }
 
 /// A protocol for monitoring events to implement, indicating that they can be initialized from an OpaquePointer
@@ -52,8 +52,8 @@ public struct CommandStartedEvent: MongoCommandEvent, InitializableFromOpaquePoi
     /// as bulk write operations.
     public let operationId: Int64
 
-    /// The connection id for the command.
-    public let connectionId: ConnectionId
+    /// The address of the server the command was run against.
+    public let serverAddress: Address
 
     /// Initializes a CommandStartedEvent from an OpaquePointer to a mongoc_apm_command_started_t
     fileprivate init(_ event: OpaquePointer) {
@@ -63,7 +63,7 @@ public struct CommandStartedEvent: MongoCommandEvent, InitializableFromOpaquePoi
         self.commandName = String(cString: mongoc_apm_command_started_get_command_name(event))
         self.requestId = mongoc_apm_command_started_get_request_id(event)
         self.operationId = mongoc_apm_command_started_get_operation_id(event)
-        self.connectionId = ConnectionId(mongoc_apm_command_started_get_host(event))
+        self.serverAddress = Address(mongoc_apm_command_started_get_host(event))
     }
 }
 
@@ -89,8 +89,8 @@ public struct CommandSucceededEvent: MongoCommandEvent, InitializableFromOpaqueP
     /// as bulk write operations.
     public let operationId: Int64
 
-    /// The connection id for the command.
-    public let connectionId: ConnectionId
+    /// The address of the server the command was run against.
+    public let serverAddress: Address
 
     /// Initializes a CommandSucceededEvent from an OpaquePointer to a mongoc_apm_command_succeeded_t
     fileprivate init(_ event: OpaquePointer) {
@@ -100,7 +100,7 @@ public struct CommandSucceededEvent: MongoCommandEvent, InitializableFromOpaqueP
         self.commandName = String(cString: mongoc_apm_command_succeeded_get_command_name(event))
         self.requestId = mongoc_apm_command_succeeded_get_request_id(event)
         self.operationId = mongoc_apm_command_succeeded_get_operation_id(event)
-        self.connectionId = ConnectionId(mongoc_apm_command_succeeded_get_host(event))
+        self.serverAddress = Address(mongoc_apm_command_succeeded_get_host(event))
     }
 }
 
@@ -127,7 +127,7 @@ public struct CommandFailedEvent: MongoCommandEvent, InitializableFromOpaquePoin
     public let operationId: Int64
 
     /// The connection id for the command.
-    public let connectionId: ConnectionId
+    public let serverAddress: Address
 
     /// Initializes a CommandFailedEvent from an OpaquePointer to a mongoc_apm_command_failed_t
     fileprivate init(_ event: OpaquePointer) {
@@ -139,7 +139,7 @@ public struct CommandFailedEvent: MongoCommandEvent, InitializableFromOpaquePoin
         self.failure = extractMongoError(error: error, reply: reply) // should always return a CommandError
         self.requestId = mongoc_apm_command_failed_get_request_id(event)
         self.operationId = mongoc_apm_command_failed_get_operation_id(event)
-        self.connectionId = ConnectionId(mongoc_apm_command_failed_get_host(event))
+        self.serverAddress = Address(mongoc_apm_command_failed_get_host(event))
     }
 }
 
@@ -149,7 +149,7 @@ public struct ServerDescriptionChangedEvent: MongoEvent, InitializableFromOpaque
     public static var eventName: Notification.Name { return .serverDescriptionChanged }
 
     /// The connection ID (host/port pair) of the server.
-    public let connectionId: ConnectionId
+    public let serverAddress: Address
 
     /// A unique identifier for the topology.
     public let topologyId: ObjectId
@@ -162,7 +162,7 @@ public struct ServerDescriptionChangedEvent: MongoEvent, InitializableFromOpaque
 
     /// Initializes a ServerDescriptionChangedEvent from an OpaquePointer to a mongoc_server_changed_t
     fileprivate init(_ event: OpaquePointer) {
-        self.connectionId = ConnectionId(mongoc_apm_server_changed_get_host(event))
+        self.serverAddress = Address(mongoc_apm_server_changed_get_host(event))
         var oid = bson_oid_t()
         withUnsafeMutablePointer(to: &oid) { oidPtr in
             mongoc_apm_server_changed_get_topology_id(event, oidPtr)
@@ -179,14 +179,14 @@ public struct ServerOpeningEvent: MongoEvent, InitializableFromOpaquePointer {
     public static var eventName: Notification.Name { return .serverOpening }
 
     /// The connection ID (host/port pair) of the server.
-    public let connectionId: ConnectionId
+    public let serverAddress: Address
 
     /// A unique identifier for the topology.
     public let topologyId: ObjectId
 
     /// Initializes a ServerOpeningEvent from an OpaquePointer to a mongoc_apm_server_opening_t
     fileprivate init(_ event: OpaquePointer) {
-        self.connectionId = ConnectionId(mongoc_apm_server_opening_get_host(event))
+        self.serverAddress = Address(mongoc_apm_server_opening_get_host(event))
         var oid = bson_oid_t()
         withUnsafeMutablePointer(to: &oid) { oidPtr in
             mongoc_apm_server_opening_get_topology_id(event, oidPtr)
@@ -201,14 +201,14 @@ public struct ServerClosedEvent: MongoEvent, InitializableFromOpaquePointer {
     public static var eventName: Notification.Name { return .serverClosed }
 
     /// The connection ID (host/port pair) of the server.
-    public let connectionId: ConnectionId
+    public let serverAddress: Address
 
     /// A unique identifier for the topology.
     public let topologyId: ObjectId
 
     /// Initializes a TopologyClosedEvent from an OpaquePointer to a mongoc_apm_topology_closed_t
     fileprivate init(_ event: OpaquePointer) {
-        self.connectionId = ConnectionId(mongoc_apm_server_closed_get_host(event))
+        self.serverAddress = Address(mongoc_apm_server_closed_get_host(event))
         var oid = bson_oid_t()
         withUnsafeMutablePointer(to: &oid) { oidPtr in
             mongoc_apm_server_closed_get_topology_id(event, oidPtr)
@@ -285,12 +285,12 @@ public struct ServerHeartbeatStartedEvent: MongoEvent, InitializableFromOpaquePo
     /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .serverHeartbeatStarted }
 
-    /// The connection ID (host/port pair) of the server.
-    public let connectionId: ConnectionId
+    /// The address of the server.
+    public let serverAddress: Address
 
     /// Initializes a ServerHeartbeatStartedEvent from an OpaquePointer to a mongoc_apm_server_heartbeat_started_t
     fileprivate init(_ event: OpaquePointer) {
-        self.connectionId = ConnectionId(mongoc_apm_server_heartbeat_started_get_host(event))
+        self.serverAddress = Address(mongoc_apm_server_heartbeat_started_get_host(event))
     }
 }
 
@@ -305,15 +305,15 @@ public struct ServerHeartbeatSucceededEvent: MongoEvent, InitializableFromOpaque
     /// The command reply.
     public let reply: Document
 
-    /// The connection ID (host/port pair) of the server.
-    public let connectionId: ConnectionId
+    /// The address of the server.
+    public let serverAddress: Address
 
     /// Initializes a ServerHeartbeatSucceededEvent from an OpaquePointer to a mongoc_apm_server_heartbeat_succeeded_t
     fileprivate init(_ event: OpaquePointer) {
         self.duration = mongoc_apm_server_heartbeat_succeeded_get_duration(event)
         // we have to copy because libmongoc owns the pointer.
         self.reply = Document(copying: mongoc_apm_server_heartbeat_succeeded_get_reply(event))
-        self.connectionId = ConnectionId(mongoc_apm_server_heartbeat_succeeded_get_host(event))
+        self.serverAddress = Address(mongoc_apm_server_heartbeat_succeeded_get_host(event))
     }
 }
 
@@ -328,8 +328,8 @@ public struct ServerHeartbeatFailedEvent: MongoEvent, InitializableFromOpaquePoi
     /// The failure.
     public let failure: MongoError
 
-    /// The connection ID (host/port pair) of the server.
-    public let connectionId: ConnectionId
+    /// The address of the server.
+    public let serverAddress: Address
 
     /// Initializes a ServerHeartbeatFailedEvent from an OpaquePointer to a mongoc_apm_server_heartbeat_failed_t
     fileprivate init(_ event: OpaquePointer) {
@@ -337,7 +337,7 @@ public struct ServerHeartbeatFailedEvent: MongoEvent, InitializableFromOpaquePoi
         var error = bson_error_t()
         mongoc_apm_server_heartbeat_failed_get_error(event, &error)
         self.failure = extractMongoError(error: error)
-        self.connectionId = ConnectionId(mongoc_apm_server_heartbeat_failed_get_host(event))
+        self.serverAddress = Address(mongoc_apm_server_heartbeat_failed_get_host(event))
     }
 }
 

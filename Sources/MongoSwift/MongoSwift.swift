@@ -1,5 +1,8 @@
 import CLibMongoC
 
+/// MongoSwift only supports MongoDB 3.6+.
+internal let MIN_SUPPORTED_WIRE_VERSION = 6
+
 private final class MongocInitializer {
     internal static let shared = MongocInitializer()
 

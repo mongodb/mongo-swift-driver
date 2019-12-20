@@ -1,14 +1,15 @@
 import CLibMongoC
 import Foundation
 
-/// A struct representing a server connection, consisting of a host and port.
-public struct ConnectionId: Equatable {
-    /// A string representing the host for this connection.
+/// A struct representing a server address, consisting of a host and port.
+public struct Address: Equatable {
+    /// The hostname or IP address.
     public let host: String
-    /// The port number for this connection.
+
+    /// The port number.
     public let port: UInt16
 
-    /// Initializes a ConnectionId from an UnsafePointer to a mongoc_host_list_t.
+    /// Initializes a Address from an UnsafePointer to a mongoc_host_list_t.
     internal init(_ hostList: UnsafePointer<mongoc_host_list_t>) {
         var hostData = hostList.pointee
         self.host = withUnsafeBytes(of: &hostData.host) { rawPtr -> String in
@@ -21,12 +22,19 @@ public struct ConnectionId: Equatable {
         self.port = hostData.port
     }
 
-    /// Initializes a ConnectionId, using the default localhost:27017 if a host/port is not provided.
-    internal init(_ hostAndPort: String = "localhost:27017") {
+    /// Initializes a Address, using the default localhost:27017 if a host/port is not provided.
+    internal init(_ hostAndPort: String = "localhost:27017") throws {
         let parts = hostAndPort.split(separator: ":")
         self.host = String(parts[0])
-        // swiftlint:disable:next force_unwrapping
-        self.port = UInt16(parts[1])! // should be valid UInt16 unless server response malformed.
+        guard let port = UInt16(parts[1]) else {
+            throw InternalError(message: "couldn't parse address from \(hostAndPort)")
+        }
+        self.port = port
+    }
+
+    internal init(host: String, port: UInt16) {
+        self.host = host
+        self.port = port
     }
 }
 
@@ -57,40 +65,32 @@ public struct ServerDescription {
     /// The hostname or IP and the port number that the client connects to. Note that this is not the
     /// server's ismaster.me field, in the case that the server reports an address different from the
     /// address the client uses.
-    public let connectionId: ConnectionId
+    public let address: Address
 
-    /// The last error related to this server.
-    public let error: MongoError? = nil // currently we will never set this
-
-    /// The duration of the server's last ismaster call.
+    /// The duration in milliseconds of the server's last ismaster call.
     public var roundTripTime: Int64?
-
-    /// The "lastWriteDate" from the server's most recent ismaster response.
-    public var lastWriteDate: Date?
-
-    /// The last opTime reported by the server. Only mongos and shard servers
-    /// record this field when monitoring config servers as replica sets.
-    public var opTime: ObjectId?
 
     /// The type of this server.
     public var type: ServerType = .unknown
 
     /// The minimum wire protocol version supported by the server.
-    public var minWireVersion: Int32 = 0
+    public var minWireVersion: Int = 0
 
     /// The maximum wire protocol version supported by the server.
-    public var maxWireVersion: Int32 = 0
+    public var maxWireVersion: Int = 0
 
     /// The hostname or IP and the port number that this server was configured with in the replica set.
-    public var me: ConnectionId?
+    public var me: Address?
 
     /// This server's opinion of the replica set's hosts, if any.
-    public var hosts: [ConnectionId] = []
+    public var hosts: [Address] = []
+
     /// This server's opinion of the replica set's arbiters, if any.
-    public var arbiters: [ConnectionId] = []
+    public var arbiters: [Address] = []
+
     /// "Passives" are priority-zero replica set members that cannot become primary.
     /// The client treats them precisely the same as other members.
-    public var passives: [ConnectionId] = []
+    public var passives: [Address] = []
 
     /// Tags for this server.
     public var tags: [String: String] = [:]
@@ -99,54 +99,44 @@ public struct ServerDescription {
     public var setName: String?
 
     /// The replica set version.
-    public var setVersion: Int64?
+    public var setVersion: Int?
 
     /// The election ID where this server was elected, if this is a replica set member that believes it is primary.
     public var electionId: ObjectId?
 
     /// This server's opinion of who the primary is.
-    public var primary: ConnectionId?
+    public var primary: Address?
 
     /// When this server was last checked.
-    public let lastUpdateTime: Date? = nil // currently, this will never be set
+    public var lastUpdateTime: Date
 
     /// The logicalSessionTimeoutMinutes value for this server.
-    public var logicalSessionTimeoutMinutes: Int64?
-
-    /// An internal initializer to create a `ServerDescription` with just a ConnectionId.
-    internal init(connectionId: ConnectionId) {
-        self.connectionId = connectionId
-    }
+    public var logicalSessionTimeoutMinutes: Int?
 
     /// An internal function to handle parsing isMaster and setting ServerDescription attributes appropriately.
     internal mutating func parseIsMaster(_ isMaster: Document) {
-        if let lastWrite = isMaster["lastWrite"]?.documentValue {
-            self.lastWriteDate = lastWrite["lastWriteDate"]?.dateValue
-            self.opTime = lastWrite["opTime"]?.objectIdValue
-        }
-
-        if let minVersion = isMaster["minWireVersion"]?.asInt32() {
+        if let minVersion = isMaster["minWireVersion"]?.asInt() {
             self.minWireVersion = minVersion
         }
 
-        if let maxVersion = isMaster["maxWireVersion"]?.asInt32() {
+        if let maxVersion = isMaster["maxWireVersion"]?.asInt() {
             self.maxWireVersion = maxVersion
         }
 
         if let me = isMaster["me"]?.stringValue {
-            self.me = ConnectionId(me)
+            self.me = try? Address(me)
         }
 
         if let hosts = isMaster["hosts"]?.arrayValue?.asArrayOf(String.self) {
-            self.hosts = hosts.map { ConnectionId($0) }
+            self.hosts = hosts.compactMap { try? Address($0) }
         }
 
         if let passives = isMaster["passives"]?.arrayValue?.asArrayOf(String.self) {
-            self.passives = passives.map { ConnectionId($0) }
+            self.passives = passives.compactMap { try? Address($0) }
         }
 
         if let arbiters = isMaster["arbiters"]?.arrayValue?.asArrayOf(String.self) {
-            self.arbiters = arbiters.map { ConnectionId($0) }
+            self.arbiters = arbiters.compactMap { try? Address($0) }
         }
 
         if let tags = isMaster["tags"]?.documentValue {
@@ -156,38 +146,36 @@ public struct ServerDescription {
         }
 
         self.setName = isMaster["setName"]?.stringValue
-        self.setVersion = isMaster["setVersion"]?.int64Value
+        self.setVersion = isMaster["setVersion"]?.asInt()
         self.electionId = isMaster["electionId"]?.objectIdValue
 
         if let primary = isMaster["primary"]?.stringValue {
-            self.primary = ConnectionId(primary)
+            self.primary = try? Address(primary)
         }
 
-        self.logicalSessionTimeoutMinutes = isMaster["logicalSessionTimeoutMinutes"]?.asInt64()
+        self.logicalSessionTimeoutMinutes = isMaster["logicalSessionTimeoutMinutes"]?.asInt()
     }
 
     /// An internal initializer to create a `ServerDescription` from an OpaquePointer to a
     /// mongoc_server_description_t.
     internal init(_ description: OpaquePointer) {
-        self.connectionId = ConnectionId(mongoc_server_description_host(description))
+        self.address = Address(mongoc_server_description_host(description))
         self.roundTripTime = mongoc_server_description_round_trip_time(description)
-        // we have to copy because libmongoc owns the pointer.
-        let isMaster = Document(copying: mongoc_server_description_ismaster(description))
-        self.parseIsMaster(isMaster)
-
+        self.lastUpdateTime = Date(msSinceEpoch: mongoc_server_description_last_update_time(description))
         let serverType = String(cString: mongoc_server_description_type(description))
         // swiftlint:disable:next force_unwrapping
         self.type = ServerType(rawValue: serverType)! // libmongoc will always give us a valid raw value.
+
+        // we have to copy because libmongoc owns the pointer.
+        let isMaster = Document(copying: mongoc_server_description_ismaster(description))
+        self.parseIsMaster(isMaster)
     }
 }
 
 extension ServerDescription: Equatable {
     public static func == (lhs: ServerDescription, rhs: ServerDescription) -> Bool {
-        // Compare everything except `error` it is always nil and `MongoError`s are not `Equatable`
-        return lhs.connectionId == rhs.connectionId &&
-            lhs.roundTripTime == rhs.roundTripTime &&
-            lhs.lastWriteDate == rhs.lastWriteDate &&
-            lhs.opTime == rhs.opTime &&
+        // As per the SDAM spec, only some fields are necessary to compare for equality.
+        return lhs.address == rhs.address &&
             lhs.type == rhs.type &&
             lhs.minWireVersion == rhs.minWireVersion &&
             lhs.maxWireVersion == rhs.maxWireVersion &&
@@ -200,14 +188,13 @@ extension ServerDescription: Equatable {
             lhs.setVersion == rhs.setVersion &&
             lhs.electionId == rhs.electionId &&
             lhs.primary == rhs.primary &&
-            lhs.lastUpdateTime == rhs.lastUpdateTime &&
             lhs.logicalSessionTimeoutMinutes == rhs.logicalSessionTimeoutMinutes
     }
 }
 
 /// A struct describing the state of a MongoDB deployment: its type (standalone, replica set, or sharded),
 /// which servers are up, what type of servers they are, which is primary, and so on.
-public struct TopologyDescription {
+public struct TopologyDescription: Equatable {
     /// The possible types for a topology.
     public enum TopologyType: String, Equatable {
         /// A single mongod server.
@@ -233,25 +220,20 @@ public struct TopologyDescription {
         return self.servers[0].setName
     }
 
-    /// The largest setVersion ever reported by a primary.
-    public var maxSetVersion: Int64?
-
-    /// The largest electionId ever reported by a primary.
-    public var maxElectionId: ObjectId?
-
-    /// The servers comprising this topology. By default, no servers.
+    /// The servers comprising this topology.
     public var servers: [ServerDescription] = []
 
-    /// For single-threaded clients, indicates whether the topology must be re-scanned.
-    public let stale: Bool = false // currently, this will never be set
-
-    /// Exists if any server's wire protocol version range is incompatible with the client's.
-    public let compatibilityError: MongoError? = nil // currently, this will never be set
+    /// Whether every server's wire protocol version range is compatible with MongoSwift's.
+    public var compatible: Bool {
+        return self.servers.allSatisfy {
+            $0.maxWireVersion >= MIN_SUPPORTED_WIRE_VERSION
+        }
+    }
 
     /// The logicalSessionTimeoutMinutes value for this topology. This value is the minimum
     /// of the `logicalSessionTimeoutMinutes` values across all the servers in `servers`,
     /// or `nil` if any of them are `nil`.
-    public var logicalSessionTimeoutMinutes: Int64? {
+    public var logicalSessionTimeoutMinutes: Int? {
         let timeoutValues = self.servers.map { $0.logicalSessionTimeoutMinutes }
         if timeoutValues.contains(where: { $0 == nil }) {
             return nil
@@ -261,7 +243,6 @@ public struct TopologyDescription {
 
     /// Returns `true` if the topology has a readable server available, and `false` otherwise.
     public func hasReadableServer() -> Bool {
-        // (this function should take in an optional ReadPreference, but we have yet to implement that type.)
         return [.single, .replicaSetWithPrimary, .sharded].contains(self.type)
     }
 
@@ -286,17 +267,5 @@ public struct TopologyDescription {
             // swiftlint:disable:next force_unwrapping
             self.servers = Array(buffer).map { ServerDescription($0!) } // documented as always returning a value.
         }
-    }
-}
-
-extension TopologyDescription: Equatable {
-    public static func == (lhs: TopologyDescription, rhs: TopologyDescription) -> Bool {
-        // Compare everything except `error` it is always nil and `MongoError`s are not `Equatable`
-        return lhs.type == rhs.type &&
-            lhs.setName == rhs.setName &&
-            lhs.maxSetVersion == rhs.maxSetVersion &&
-            lhs.maxElectionId == rhs.maxElectionId &&
-            lhs.servers == rhs.servers &&
-            lhs.stale == rhs.stale
     }
 }
