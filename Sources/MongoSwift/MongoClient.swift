@@ -103,6 +103,7 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
         self.retryWrites = retryWrites
         self.retryReads = retryReads
         self.serverMonitoring = serverMonitoring
+        self.threadPoolSize = threadPoolSize
         self.tlsOptions = tlsOptions
         self.uuidCodingStrategy = uuidCodingStrategy
         self.writeConcern = writeConcern
@@ -191,7 +192,7 @@ public class MongoClient {
     private let operationExecutor: OperationExecutor
 
     /// Default size for a client's NIOThreadPool.
-    /// TODO SWIFT-705 document size justification.
+    // TODO: SWIFT-705 document size justification.
     public static let defaultThreadPoolSize = 5
 
     /// Indicates whether this client has been closed.
