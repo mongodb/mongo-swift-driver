@@ -27,6 +27,15 @@
           "revision": "e503b50210dae2cf0220474c2f12087830150e9f",
           "version": "2.0.0"
         }
+      },
+      {
+        "package": "swift-nio",
+        "repositoryURL": "https://github.com/apple/swift-nio",
+        "state": {
+          "branch": null,
+          "revision": "3f04a5c056fa52e01b9ef43240988de792461e81",
+          "version": "2.11.1"
+        }
       }
     ]
   },

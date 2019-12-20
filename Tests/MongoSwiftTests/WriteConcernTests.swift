@@ -80,8 +80,7 @@ final class WriteConcernTests: MongoSwiftTestCase {
         let empty = WriteConcern()
 
         // test behavior of a client with initialized with no WC
-        do {
-            let client = try MongoClient()
+        try self.withTestClient { client in
             let clientDesc = "client created with no WC provided"
             // expect the readConcern property to exist and be default
             try checkWriteConcern(client, empty, clientDesc)
@@ -96,8 +95,7 @@ final class WriteConcernTests: MongoSwiftTestCase {
         }
 
         // test behavior of a client with w: 1
-        do {
-            let client = try MongoClient(options: ClientOptions(writeConcern: w1))
+        try self.withTestClient(options: ClientOptions(writeConcern: w1)) { client in
             let clientDesc = "client created with w:1"
             // although w:1 is default, if it is explicitly provided it should be set
             try checkWriteConcern(client, w1, clientDesc)
@@ -112,8 +110,7 @@ final class WriteConcernTests: MongoSwiftTestCase {
         }
 
         // test behavior of a client with w: 2
-        do {
-            let client = try MongoClient(options: ClientOptions(writeConcern: w2))
+        try self.withTestClient(options: ClientOptions(writeConcern: w2)) { client in
             let clientDesc = "client created with w:2"
             try checkWriteConcern(client, w2, clientDesc)
 
@@ -127,45 +124,47 @@ final class WriteConcernTests: MongoSwiftTestCase {
     }
 
     func testDatabaseWriteConcern() throws {
-        let client = try MongoClient.makeTestClient()
-
         let empty = WriteConcern()
         let w1 = try WriteConcern(w: .number(1))
         let w2 = try WriteConcern(w: .number(2))
 
-        let db1 = client.db(type(of: self).testDatabase)
-        defer { try? db1.drop() }
+        try self.withTestClient { client in
+            let db1 = client.db(type(of: self).testDatabase)
+            defer { try? db1.drop() }
 
-        var dbDesc = "db created with no WC provided"
+            var dbDesc = "db created with no WC provided"
 
-        // expect that a collection created from a DB with default WC also has default WC
-        var coll1 = try db1.createCollection(self.getCollectionName(suffix: "1"))
-        try checkWriteConcern(coll1, empty, "collection created with no WC provided from \(dbDesc)")
+            // expect that a collection created from a DB with default WC also has default WC
+            var coll1 = try db1.createCollection(self.getCollectionName(suffix: "1"))
+            try checkWriteConcern(coll1, empty, "collection created with no WC provided from \(dbDesc)")
 
-        // expect that a collection retrieved from a DB with default WC also has default WC
-        coll1 = db1.collection(coll1.name)
-        try checkWriteConcern(coll1, empty, "collection retrieved with no WC provided from \(dbDesc)")
+            // expect that a collection retrieved from a DB with default WC also has default WC
+            coll1 = db1.collection(coll1.name)
+            try checkWriteConcern(coll1, empty, "collection retrieved with no WC provided from \(dbDesc)")
 
-        // expect that a collection retrieved from a DB with default WC can override the DB's WC
-        var coll2 = db1.collection(self.getCollectionName(suffix: "2"), options: CollectionOptions(writeConcern: w1))
-        try checkWriteConcern(coll2, w1, "collection retrieved with w:1 from \(dbDesc)")
+            // expect that a collection retrieved from a DB with default WC can override the DB's WC
+            var coll2 =
+                db1.collection(self.getCollectionName(suffix: "2"), options: CollectionOptions(writeConcern: w1))
+            try checkWriteConcern(coll2, w1, "collection retrieved with w:1 from \(dbDesc)")
 
-        try db1.drop()
+            try db1.drop()
 
-        let db2 = client.db(type(of: self).testDatabase, options: DatabaseOptions(writeConcern: w1))
-        defer { try? db2.drop() }
-        dbDesc = "db created with w:1"
+            let db2 = client.db(type(of: self).testDatabase, options: DatabaseOptions(writeConcern: w1))
+            defer { try? db2.drop() }
+            dbDesc = "db created with w:1"
 
-        // expect that a collection created from a DB with w:1 also has w:1
-        var coll3 = try db2.createCollection(self.getCollectionName(suffix: "3"))
-        try checkWriteConcern(coll3, w1, "collection created with no WC provided from \(dbDesc)")
+            // expect that a collection created from a DB with w:1 also has w:1
+            var coll3 = try db2.createCollection(self.getCollectionName(suffix: "3"))
+            try checkWriteConcern(coll3, w1, "collection created with no WC provided from \(dbDesc)")
 
-        // expect that a collection retrieved from a DB with w:1 also has w:1
-        coll3 = db2.collection(coll3.name)
-        try checkWriteConcern(coll3, w1, "collection retrieved with no WC provided from \(dbDesc)")
+            // expect that a collection retrieved from a DB with w:1 also has w:1
+            coll3 = db2.collection(coll3.name)
+            try checkWriteConcern(coll3, w1, "collection retrieved with no WC provided from \(dbDesc)")
 
-        // expect that a collection retrieved from a DB with w:1 can override the DB's WC
-        let coll4 = db2.collection(self.getCollectionName(suffix: "4"), options: CollectionOptions(writeConcern: w2))
-        try checkWriteConcern(coll4, w2, "collection retrieved with w:2 from \(dbDesc)")
+            // expect that a collection retrieved from a DB with w:1 can override the DB's WC
+            let coll4 =
+                db2.collection(self.getCollectionName(suffix: "4"), options: CollectionOptions(writeConcern: w2))
+            try checkWriteConcern(coll4, w2, "collection retrieved with w:2 from \(dbDesc)")
+        }
     }
 }

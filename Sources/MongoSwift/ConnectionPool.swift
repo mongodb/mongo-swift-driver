@@ -51,12 +51,14 @@ internal class ConnectionPool {
         }
     }
 
-    /// Closes the pool if it has not been manually closed already.
     deinit {
-        self.close()
+        guard case .closed = self.state else {
+            assertionFailure("ConnectionPool was not closed")
+            return
+        }
     }
 
-    /// Closes the pool, cleaning up underlying resources.
+    /// Closes the pool, cleaning up underlying resources. This method blocks as it sends `endSessions` to the server.
     internal func close() {
         switch self.state {
         case let .open(pool):
@@ -68,6 +70,7 @@ internal class ConnectionPool {
     }
 
     /// Checks out a connection. This connection will return itself to the pool when its reference count drops to 0.
+    /// This method will block until a connection is available.
     internal func checkOut() throws -> Connection {
         switch self.state {
         case let .open(pool):
@@ -77,7 +80,8 @@ internal class ConnectionPool {
         }
     }
 
-    /// Executes the given closure using a connection from the pool.
+    /// Executes the given closure using a connection from the pool. This method will block until a connection is
+    /// available.
     internal func withConnection<T>(body: (Connection) throws -> T) throws -> T {
         let connection = try self.checkOut()
         return try body(connection)

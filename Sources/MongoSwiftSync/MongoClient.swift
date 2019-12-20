@@ -1,21 +1,28 @@
 import MongoSwift
+import NIO
 
-/// A MongoDB Client.
+/// A MongoDB Client providing a synchronous API.
 public class MongoClient {
     /// Encoder whose options are inherited by databases derived from this client.
-    public var encoder: BSONEncoder { fatalError("unimplemented") }
+    public var encoder: BSONEncoder { return self.asyncClient.encoder }
 
     /// Decoder whose options are inherited by databases derived from this client.
-    public var decoder: BSONDecoder { fatalError("unimplemented") }
+    public var decoder: BSONDecoder { return self.asyncClient.decoder }
 
     /// The read concern set on this client, or nil if one is not set.
-    public var readConcern: ReadConcern? { fatalError("unimplemented") }
+    public var readConcern: ReadConcern? { return self.asyncClient.readConcern }
 
     /// The `ReadPreference` set on this client.
-    public var readPreference: ReadPreference { fatalError("unimplemented") }
+    public var readPreference: ReadPreference { return self.asyncClient.readPreference }
 
     /// The write concern set on this client, or nil if one is not set.
-    public var writeConcern: WriteConcern? { fatalError("unimplemented") }
+    public var writeConcern: WriteConcern? { return self.asyncClient.writeConcern }
+
+    /// The `EventLoopGroup` being used by the underlying async client.
+    private let eventLoopGroup: MultiThreadedEventLoopGroup
+
+    /// The underlying async client.
+    private let asyncClient: MongoSwift.MongoClient
 
     /**
      * Create a new client connection to a MongoDB server. For options that included in both the connection string URI
@@ -34,7 +41,28 @@ public class MongoClient {
      *     built with TLS support.
      */
     public init(_ connectionString: String = "mongodb://localhost:27017", options: ClientOptions? = nil) throws {
-        fatalError("unimplemented")
+        let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 5)
+        do {
+            self.asyncClient = try MongoSwift.MongoClient(connectionString, using: eventLoopGroup, options: options)
+            self.eventLoopGroup = eventLoopGroup
+        } catch {
+            try eventLoopGroup.syncShutdownGracefully()
+            throw error
+        }
+    }
+
+    deinit {
+        do {
+            try self.asyncClient.close().wait()
+        } catch {
+            assertionFailure("Error closing async client: \(error)")
+        }
+
+        do {
+            try eventLoopGroup.syncShutdownGracefully()
+        } catch {
+            assertionFailure("Error shutting down event loop group: \(error)")
+        }
     }
 
     /**
@@ -81,7 +109,7 @@ public class MongoClient {
         _ filter: Document? = nil,
         session: ClientSession? = nil
     ) throws -> [DatabaseSpecification] {
-        fatalError("unimplemented")
+        return try self.asyncClient.listDatabases(filter, session: session?.asyncSession).wait()
     }
 
     /**
@@ -116,7 +144,7 @@ public class MongoClient {
      *   - `LogicError` if the provided session is inactive.
      */
     public func listDatabaseNames(_ filter: Document? = nil, session: ClientSession? = nil) throws -> [String] {
-        fatalError("unimplemented")
+        return try self.asyncClient.listDatabaseNames(filter, session: session?.asyncSession).wait()
     }
 
     /**
@@ -244,6 +272,6 @@ public class MongoClient {
 
 extension MongoClient: Equatable {
     public static func == (lhs: MongoClient, rhs: MongoClient) -> Bool {
-        fatalError("unimplemented")
+        return lhs.asyncClient == rhs.asyncClient
     }
 }

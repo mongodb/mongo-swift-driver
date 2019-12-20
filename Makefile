@@ -29,7 +29,7 @@ project:
 	ruby Tests/Scripts/add_json_files.rb
 
 linuxmain:
-	$(SOURCERY) --sources Tests/ --templates Tests/LinuxMain.stencil --output Tests/LinuxMain.swift
+	$(SOURCERY) --sources Tests/ --exclude-sources Tests/DisabledTests/ --templates Tests/LinuxMain.stencil --output Tests/LinuxMain.swift
 
 exports:
 	$(SOURCERY) --sources Sources/MongoSwift/ --templates Sources/MongoSwiftSync/Exports.stencil --output Sources/MongoSwiftSync/Exports.swift
@@ -45,9 +45,10 @@ lint:
 	swiftlint autocorrect
 	swiftlint
 
+# MacOS only
 coverage:
-	make project
-	xcodebuild -project MongoSwift.xcodeproj -scheme MongoSwift-Package -enableCodeCoverage YES build test
+	swift test --enable-code-coverage
+	xcrun llvm-cov export -format="lcov" .build/debug/MongoSwiftPackageTests.xctest/Contents/MacOS/MongoSwiftPackageTests -instr-profile .build/debug/codecov/default.profdata > info.lcov
 
 clean:
 	rm -rf Packages

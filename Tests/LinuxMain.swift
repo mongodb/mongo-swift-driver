@@ -29,48 +29,6 @@ extension BSONValueTests {
     ]
 }
 
-extension ChangeStreamSpecTests {
-    static var allTests = [
-        ("testChangeStreamSpec", testChangeStreamSpec),
-    ]
-}
-
-extension ChangeStreamTests {
-    static var allTests = [
-        ("testChangeStreamTracksResumeToken", testChangeStreamTracksResumeToken),
-        ("testChangeStreamMissingId", testChangeStreamMissingId),
-        ("testChangeStreamAutomaticResume", testChangeStreamAutomaticResume),
-        ("testChangeStreamFailedAggregate", testChangeStreamFailedAggregate),
-        ("testChangeStreamDoesntResume", testChangeStreamDoesntResume),
-        ("testChangeStreamDoesntCloseOnEmptyBatch", testChangeStreamDoesntCloseOnEmptyBatch),
-        ("testChangeStreamFailedKillCursors", testChangeStreamFailedKillCursors),
-        ("testChangeStreamResumeTokenUpdatesEmptyBatch", testChangeStreamResumeTokenUpdatesEmptyBatch),
-        ("testChangeStreamResumeTokenUpdatesNonemptyBatch", testChangeStreamResumeTokenUpdatesNonemptyBatch),
-        ("testChangeStreamOnAClient", testChangeStreamOnAClient),
-        ("testChangeStreamOnADatabase", testChangeStreamOnADatabase),
-        ("testChangeStreamOnACollection", testChangeStreamOnACollection),
-        ("testChangeStreamWithPipeline", testChangeStreamWithPipeline),
-        ("testChangeStreamResumeToken", testChangeStreamResumeToken),
-        ("testChangeStreamWithEventType", testChangeStreamWithEventType),
-        ("testChangeStreamWithFullDocumentType", testChangeStreamWithFullDocumentType),
-        ("testChangeStreamOnACollectionWithCodableType", testChangeStreamOnACollectionWithCodableType),
-    ]
-}
-
-extension ClientSessionTests {
-    static var allTests = [
-        ("testSessionCleanup", testSessionCleanup),
-        ("testSessionArguments", testSessionArguments),
-        ("testSessionClientValidation", testSessionClientValidation),
-        ("testInactiveSession", testInactiveSession),
-        ("testSessionCursor", testSessionCursor),
-        ("testClusterTime", testClusterTime),
-        ("testCausalConsistency", testCausalConsistency),
-        ("testCausalConsistencyStandalone", testCausalConsistencyStandalone),
-        ("testCausalConsistencyAnyTopology", testCausalConsistencyAnyTopology),
-    ]
-}
-
 extension CodecTests {
     static var allTests = [
         ("testStructs", testStructs),
@@ -85,26 +43,6 @@ extension CodecTests {
         ("testBSONIsBSONCodable", testBSONIsBSONCodable),
         ("testIncorrectEncodeFunction", testIncorrectEncodeFunction),
         ("testOptionsEncoding", testOptionsEncoding),
-    ]
-}
-
-extension CommandMonitoringTests {
-    static var allTests = [
-        ("testCommandMonitoring", testCommandMonitoring),
-        ("testAlternateNotificationCenters", testAlternateNotificationCenters),
-    ]
-}
-
-extension CrudTests {
-    static var allTests = [
-        ("testReads", testReads),
-        ("testWrites", testWrites),
-    ]
-}
-
-extension DNSSeedlistTests {
-    static var allTests = [
-        ("testInitialDNSSeedlistDiscovery", testInitialDNSSeedlistDiscovery),
     ]
 }
 
@@ -161,90 +99,8 @@ extension Document_SequenceTests {
 
 extension MongoClientTests {
     static var allTests = [
+        ("testUsingClosedClient", testUsingClosedClient),
         ("testListDatabases", testListDatabases),
-        ("testFailedClientInitialization", testFailedClientInitialization),
-        ("testServerVersion", testServerVersion),
-        ("testCodingStrategies", testCodingStrategies),
-    ]
-}
-
-extension MongoCollectionTests {
-    static var allTests = [
-        ("testCount", testCount),
-        ("testInsertOne", testInsertOne),
-        ("testInsertOneWithUnacknowledgedWriteConcern", testInsertOneWithUnacknowledgedWriteConcern),
-        ("testAggregate", testAggregate),
-        ("testDrop", testDrop),
-        ("testInsertMany", testInsertMany),
-        ("testInsertManyWithEmptyValues", testInsertManyWithEmptyValues),
-        ("testInsertManyWithUnacknowledgedWriteConcern", testInsertManyWithUnacknowledgedWriteConcern),
-        ("testFind", testFind),
-        ("testFindOne", testFindOne),
-        ("testFindOneMultipleMatches", testFindOneMultipleMatches),
-        ("testFindOneNoMatch", testFindOneNoMatch),
-        ("testDeleteOne", testDeleteOne),
-        ("testDeleteOneWithUnacknowledgedWriteConcern", testDeleteOneWithUnacknowledgedWriteConcern),
-        ("testDeleteMany", testDeleteMany),
-        ("testDeleteManyWithUnacknowledgedWriteConcern", testDeleteManyWithUnacknowledgedWriteConcern),
-        ("testReplaceOne", testReplaceOne),
-        ("testReplaceOneWithUnacknowledgedWriteConcern", testReplaceOneWithUnacknowledgedWriteConcern),
-        ("testUpdateOne", testUpdateOne),
-        ("testUpdateOneWithUnacknowledgedWriteConcern", testUpdateOneWithUnacknowledgedWriteConcern),
-        ("testUpdateMany", testUpdateMany),
-        ("testUpdateManyWithUnacknowledgedWriteConcern", testUpdateManyWithUnacknowledgedWriteConcern),
-        ("testDistinct", testDistinct),
-        ("testGetName", testGetName),
-        ("testCursorIteration", testCursorIteration),
-        ("testCodableCollection", testCodableCollection),
-        ("testCursorType", testCursorType),
-        ("testEncodeHint", testEncodeHint),
-        ("testFindOneAndDelete", testFindOneAndDelete),
-        ("testFindOneAndReplace", testFindOneAndReplace),
-        ("testFindOneAndUpdate", testFindOneAndUpdate),
-        ("testNullIds", testNullIds),
-    ]
-}
-
-extension MongoCollection_BulkWriteTests {
-    static var allTests = [
-        ("testEmptyRequests", testEmptyRequests),
-        ("testInserts", testInserts),
-        ("testBulkWriteErrors", testBulkWriteErrors),
-        ("testUpdates", testUpdates),
-        ("testDeletes", testDeletes),
-        ("testMixedOrderedOperations", testMixedOrderedOperations),
-        ("testUnacknowledgedWriteConcern", testUnacknowledgedWriteConcern),
-    ]
-}
-
-extension MongoCollection_IndexTests {
-    static var allTests = [
-        ("testCreateIndexFromModel", testCreateIndexFromModel),
-        ("testIndexOptions", testIndexOptions),
-        ("testCreateIndexesFromModels", testCreateIndexesFromModels),
-        ("testCreateIndexFromKeys", testCreateIndexFromKeys),
-        ("testDropIndexByName", testDropIndexByName),
-        ("testDropIndexByModel", testDropIndexByModel),
-        ("testDropIndexByKeys", testDropIndexByKeys),
-        ("testDropAllIndexes", testDropAllIndexes),
-        ("testListIndexNames", testListIndexNames),
-        ("testCreateDropIndexByModelWithMaxTimeMS", testCreateDropIndexByModelWithMaxTimeMS),
-    ]
-}
-
-extension MongoCursorTests {
-    static var allTests = [
-        ("testNonTailableCursor", testNonTailableCursor),
-        ("testTailableCursor", testTailableCursor),
-    ]
-}
-
-extension MongoDatabaseTests {
-    static var allTests = [
-        ("testMongoDatabase", testMongoDatabase),
-        ("testDropDatabase", testDropDatabase),
-        ("testCreateCollection", testCreateCollection),
-        ("testListCollections", testListCollections),
     ]
 }
 
@@ -262,12 +118,6 @@ extension ReadConcernTests {
     ]
 }
 
-extension ReadPreferenceOperationTests {
-    static var allTests = [
-        ("testOperationReadPreference", testOperationReadPreference),
-    ]
-}
-
 extension ReadPreferenceTests {
     static var allTests = [
         ("testMode", testMode),
@@ -280,42 +130,10 @@ extension ReadPreferenceTests {
     ]
 }
 
-extension ReadWriteConcernOperationTests {
-    static var allTests = [
-        ("testOperationReadConcerns", testOperationReadConcerns),
-        ("testWriteConcernErrors", testWriteConcernErrors),
-        ("testOperationWriteConcerns", testOperationWriteConcerns),
-    ]
-}
-
 extension ReadWriteConcernSpecTests {
     static var allTests = [
         ("testConnectionStrings", testConnectionStrings),
         ("testDocuments", testDocuments),
-    ]
-}
-
-extension RetryableReadsTests {
-    static var allTests = [
-        ("testRetryableReads", testRetryableReads),
-    ]
-}
-
-extension RetryableWritesTests {
-    static var allTests = [
-        ("testRetryableWrites", testRetryableWrites),
-    ]
-}
-
-extension SDAMTests {
-    static var allTests = [
-        ("testMonitoring", testMonitoring),
-    ]
-}
-
-extension SyncAuthTests {
-    static var allTests = [
-        ("testAuthProseTests", testAuthProseTests),
     ]
 }
 
@@ -331,31 +149,14 @@ XCTMain([
     testCase(AuthTests.allTests),
     testCase(BSONCorpusTests.allTests),
     testCase(BSONValueTests.allTests),
-    testCase(ChangeStreamSpecTests.allTests),
-    testCase(ChangeStreamTests.allTests),
-    testCase(ClientSessionTests.allTests),
     testCase(CodecTests.allTests),
-    testCase(CommandMonitoringTests.allTests),
-    testCase(CrudTests.allTests),
-    testCase(DNSSeedlistTests.allTests),
     testCase(DocumentTests.allTests),
     testCase(Document_CollectionTests.allTests),
     testCase(Document_SequenceTests.allTests),
     testCase(MongoClientTests.allTests),
-    testCase(MongoCollectionTests.allTests),
-    testCase(MongoCollection_BulkWriteTests.allTests),
-    testCase(MongoCollection_IndexTests.allTests),
-    testCase(MongoCursorTests.allTests),
-    testCase(MongoDatabaseTests.allTests),
     testCase(OptionsTests.allTests),
     testCase(ReadConcernTests.allTests),
-    testCase(ReadPreferenceOperationTests.allTests),
     testCase(ReadPreferenceTests.allTests),
-    testCase(ReadWriteConcernOperationTests.allTests),
     testCase(ReadWriteConcernSpecTests.allTests),
-    testCase(RetryableReadsTests.allTests),
-    testCase(RetryableWritesTests.allTests),
-    testCase(SDAMTests.allTests),
-    testCase(SyncAuthTests.allTests),
     testCase(WriteConcernTests.allTests),
 ])

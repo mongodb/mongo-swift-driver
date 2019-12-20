@@ -1,5 +1,6 @@
 import MongoSwift
 import Nimble
+import NIO
 import TestsCommon
 
 extension WriteConcern {
@@ -24,6 +25,10 @@ extension WriteConcern {
 
 class ReadWriteConcernSpecTests: MongoSwiftTestCase {
     func testConnectionStrings() throws {
+        // we have to create this directly so we can use the MongoClient initializer that takes a uri
+        let testElg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+        defer { testElg.syncShutdownOrLogError() }
+
         let testFiles = try retrieveSpecTestFiles(
             specName: "read-write-concern",
             subdirectory: "connection-string",
@@ -38,7 +43,9 @@ class ReadWriteConcernSpecTests: MongoSwiftTestCase {
                 let uri: String = try test.get("uri")
                 let valid: Bool = try test.get("valid")
                 if valid {
-                    let client = try MongoClient(uri)
+                    let client = try MongoClient(uri, using: testElg)
+                    defer { client.syncCloseOrLogError() }
+
                     if let readConcern = test["readConcern"]?.documentValue {
                         let rc = try BSONDecoder().decode(ReadConcern.self, from: readConcern)
                         if rc.isDefault {
@@ -55,7 +62,7 @@ class ReadWriteConcernSpecTests: MongoSwiftTestCase {
                         }
                     }
                 } else {
-                    expect(try MongoClient(uri)).to(throwError(errorType: InvalidArgumentError.self))
+                    expect(try MongoClient(uri, using: testElg)).to(throwError(errorType: InvalidArgumentError.self))
                 }
             }
         }

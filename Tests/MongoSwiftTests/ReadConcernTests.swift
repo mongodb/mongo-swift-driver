@@ -84,8 +84,7 @@ final class ReadConcernTests: MongoSwiftTestCase {
         let local = ReadConcern(.local)
 
         // test behavior of a client with initialized with no RC
-        do {
-            let client = try MongoClient()
+        try self.withTestClient { client in
             let clientDesc = "client created with no RC provided"
             // expect the client to have empty/server default read concern
             try checkReadConcern(client, empty, clientDesc)
@@ -100,8 +99,7 @@ final class ReadConcernTests: MongoSwiftTestCase {
         }
 
         // test behavior of a client initialized with local RC
-        do {
-            let client = try MongoClient(options: ClientOptions(readConcern: local))
+        try self.withTestClient(options: ClientOptions(readConcern: local)) { client in
             let clientDesc = "client created with local RC"
             // although local is default, if it is explicitly provided it should be set
             try checkReadConcern(client, local, clientDesc)
@@ -125,80 +123,83 @@ final class ReadConcernTests: MongoSwiftTestCase {
         }
 
         // test behavior of a client initialized with majority RC
-        do {
-            var client = try MongoClient(options: ClientOptions(readConcern: majority))
-            let clientDesc = "client created with majority RC"
-            try checkReadConcern(client, majority, clientDesc)
+        try self.withTestClient(options: ClientOptions(readConcern: majority)) { client in
+            try checkReadConcern(client, majority, "client created with majority RC")
+        }
 
-            // test with string init
-            client = try MongoClient(options: ClientOptions(readConcern: majorityString))
-            try checkReadConcern(client, majority, "\(clientDesc) string")
+        // test with string init
+        try self.withTestClient(options: ClientOptions(readConcern: majorityString)) { client in
+            let clientDesc = "client created with majority RC string"
+            try checkReadConcern(client, majority, clientDesc)
 
             // expect that a DB created from this client can override the client's majority RC with an unset one
             let db = client.db(type(of: self).testDatabase, options: DatabaseOptions(readConcern: empty))
-            try checkReadConcern(db, empty, "db created with empty RC from \(clientDesc) string")
+            try checkReadConcern(db, empty, "db created with empty RC from \(clientDesc)")
         }
     }
 
     func testDatabaseReadConcern() throws {
-        let client = try MongoClient.makeTestClient()
         let empty = ReadConcern()
         let local = ReadConcern(.local)
         let localString = ReadConcern("local")
         let unknown = ReadConcern("blah")
         let majority = ReadConcern(.majority)
 
-        let db1 = client.db(type(of: self).testDatabase)
-        defer { try? db1.drop() }
+        try self.withTestClient { client in
+            let db1 = client.db(type(of: self).testDatabase)
+            defer { try? db1.drop() }
 
-        let dbDesc = "db created with no RC provided"
+            let dbDesc = "db created with no RC provided"
 
-        let coll1Name = self.getCollectionName(suffix: "1")
-        // expect that a collection created from a DB with unset RC also has unset RC
-        var coll1 = try db1.createCollection(coll1Name)
-        try checkReadConcern(coll1, empty, "collection created with no RC provided from \(dbDesc)")
+            let coll1Name = self.getCollectionName(suffix: "1")
+            // expect that a collection created from a DB with unset RC also has unset RC
+            var coll1 = try db1.createCollection(coll1Name)
+            try checkReadConcern(coll1, empty, "collection created with no RC provided from \(dbDesc)")
 
-        // expect that a collection retrieved from a DB with unset RC also has unset RC
-        coll1 = db1.collection(coll1Name)
-        try checkReadConcern(coll1, empty, "collection retrieved with no RC provided from \(dbDesc)")
+            // expect that a collection retrieved from a DB with unset RC also has unset RC
+            coll1 = db1.collection(coll1Name)
+            try checkReadConcern(coll1, empty, "collection retrieved with no RC provided from \(dbDesc)")
 
-        // expect that a collection retrieved from a DB with unset RC can override the DB's RC
-        let coll2 = db1.collection(self.getCollectionName(suffix: "2"), options: CollectionOptions(readConcern: local))
-        try checkReadConcern(coll2, local, "collection retrieved with local RC from \(dbDesc)")
+            // expect that a collection retrieved from a DB with unset RC can override the DB's RC
+            let coll2 =
+                db1.collection(self.getCollectionName(suffix: "2"), options: CollectionOptions(readConcern: local))
+            try checkReadConcern(coll2, local, "collection retrieved with local RC from \(dbDesc)")
 
-        // test with string init
-        var coll3 = db1.collection(
-            self.getCollectionName(suffix: "3"),
-            options: CollectionOptions(readConcern: localString)
-        )
-        try checkReadConcern(coll3, local, "collection created with local RC string from \(dbDesc)")
+            // test with string init
+            var coll3 = db1.collection(
+                self.getCollectionName(suffix: "3"),
+                options: CollectionOptions(readConcern: localString)
+            )
+            try checkReadConcern(coll3, local, "collection created with local RC string from \(dbDesc)")
 
-        // test with unknown level
-        coll3 = db1.collection(self.getCollectionName(suffix: "3"), options: CollectionOptions(readConcern: unknown))
-        try checkReadConcern(coll3, unknown, "collection retrieved with unknown RC level from \(dbDesc)")
+            // test with unknown level
+            coll3 =
+                db1.collection(self.getCollectionName(suffix: "3"), options: CollectionOptions(readConcern: unknown))
+            try checkReadConcern(coll3, unknown, "collection retrieved with unknown RC level from \(dbDesc)")
 
-        try db1.drop()
+            try db1.drop()
 
-        let db2 = client.db(
-            type(of: self).testDatabase,
-            options: DatabaseOptions(readConcern: local)
-        )
-        defer { try? db2.drop() }
+            let db2 = client.db(
+                type(of: self).testDatabase,
+                options: DatabaseOptions(readConcern: local)
+            )
+            defer { try? db2.drop() }
 
-        let coll4Name = self.getCollectionName(suffix: "4")
-        // expect that a collection created from a DB with local RC also has local RC
-        var coll4 = try db2.createCollection(coll4Name)
-        try checkReadConcern(coll4, local, "collection created with no RC provided from \(dbDesc)")
+            let coll4Name = self.getCollectionName(suffix: "4")
+            // expect that a collection created from a DB with local RC also has local RC
+            var coll4 = try db2.createCollection(coll4Name)
+            try checkReadConcern(coll4, local, "collection created with no RC provided from \(dbDesc)")
 
-        // expect that a collection retrieved from a DB with local RC also has local RC
-        coll4 = db2.collection(coll4Name)
-        try checkReadConcern(coll4, local, "collection retrieved with no RC provided from \(dbDesc)")
+            // expect that a collection retrieved from a DB with local RC also has local RC
+            coll4 = db2.collection(coll4Name)
+            try checkReadConcern(coll4, local, "collection retrieved with no RC provided from \(dbDesc)")
 
-        // expect that a collection retrieved from a DB with local RC can override the DB's RC
-        let coll5 = db2.collection(
-            self.getCollectionName(suffix: "5"),
-            options: CollectionOptions(readConcern: majority)
-        )
-        try checkReadConcern(coll5, majority, "collection retrieved with majority RC from \(dbDesc)")
+            // expect that a collection retrieved from a DB with local RC can override the DB's RC
+            let coll5 = db2.collection(
+                self.getCollectionName(suffix: "5"),
+                options: CollectionOptions(readConcern: majority)
+            )
+            try checkReadConcern(coll5, majority, "collection retrieved with majority RC from \(dbDesc)")
+        }
     }
 }
