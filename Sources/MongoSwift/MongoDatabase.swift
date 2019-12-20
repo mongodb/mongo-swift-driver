@@ -1,4 +1,5 @@
 import mongoc
+import NIO
 
 /// Options to set on a retrieved `MongoCollection`.
 public struct CollectionOptions: CodingStrategyProvider {
@@ -120,9 +121,9 @@ public struct MongoDatabase {
      * - Throws:
      *   - `CommandError` if an error occurs that prevents the command from executing.
      */
-    public func drop(options: DropDatabaseOptions? = nil, session: ClientSession? = nil) throws {
+    public func drop(options: DropDatabaseOptions? = nil, session: ClientSession? = nil) -> EventLoopFuture<Void> {
         let operation = DropDatabaseOperation(database: self, options: options)
-        return try self._client.executeOperation(operation, session: session)
+        return self._client.executeOperationAsync(operation, session: session)
     }
 
     /**
@@ -183,8 +184,8 @@ public struct MongoDatabase {
         _ name: String,
         options: CreateCollectionOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> MongoCollection<Document> {
-        return try self.createCollection(name, withType: Document.self, options: options, session: session)
+    ) -> EventLoopFuture<MongoCollection<Document>> {
+        return self.createCollection(name, withType: Document.self, options: options, session: session)
     }
 
     /**
@@ -211,9 +212,9 @@ public struct MongoDatabase {
         withType type: T.Type,
         options: CreateCollectionOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> MongoCollection<T> {
+    ) -> EventLoopFuture<MongoCollection<T>> {
         let operation = CreateCollectionOperation(database: self, name: name, type: type, options: options)
-        return try self._client.executeOperation(operation, session: session)
+        return self._client.executeOperationAsync(operation, session: session)
     }
 
     /**
@@ -250,7 +251,8 @@ public struct MongoDatabase {
      *   - options: Optional `ListCollectionsOptions` to use when executing this command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An array of `MongoCollection`s that match the provided filter.
+     * - Returns: An `EventLoopFuture<[MongoCollection<Document>]>`s containing collections that match the provided
+     *            filter.
      *
      * - Throws:
      *   - `userError.invalidArgumentError` if the options passed are an invalid combination.
@@ -260,8 +262,10 @@ public struct MongoDatabase {
         _ filter: Document? = nil,
         options: ListCollectionsOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> [MongoCollection<Document>] {
-        return try self.listCollectionNames(filter, options: options, session: session).map { self.collection($0) }
+    ) throws -> EventLoopFuture<[MongoCollection<Document>]> {
+        return self.listCollectionNames(filter, options: options, session: session).map { collNames in
+            collNames.map { self.collection($0) }
+        }
     }
 
     /**
@@ -272,7 +276,7 @@ public struct MongoDatabase {
      *   - options: Optional `ListCollectionsOptions` to use when executing this command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: A `[String]` containing names of collections that match the provided filter.
+     * - Returns: An `EventLoopFuture<[String]>` containing names of collections that match the provided filter.
      *
      * - Throws:
      *   - `userError.invalidArgumentError` if the options passed are an invalid combination.
@@ -282,12 +286,14 @@ public struct MongoDatabase {
         _ filter: Document? = nil,
         options: ListCollectionsOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> [String] {
+    ) -> EventLoopFuture<[String]> {
         let operation = ListCollectionsOperation(database: self, nameOnly: true, filter: filter, options: options)
-        guard case let .names(result) = try self._client.executeOperation(operation, session: session) else {
-            throw InternalError(message: "Invalid result")
+        return self._client.executeOperationAsync(operation, session: session).flatMapThrowing { result in
+            guard case let .names(names) = result else {
+                throw InternalError(message: "Invalid result")
+            }
+            return names
         }
-        return result
     }
 
     /**
@@ -298,7 +304,7 @@ public struct MongoDatabase {
      *   - options: Optional `RunCommandOptions` to use when executing this command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: a `Document` containing the server response for the command
+     * - Returns: an `EventLoopFuture<Document>` containing the server response for the command
      *
      * - Throws:
      *   - `InvalidArgumentError` if `requests` is empty.
@@ -312,9 +318,9 @@ public struct MongoDatabase {
         _ command: Document,
         options: RunCommandOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> Document {
+    ) -> EventLoopFuture<Document> {
         let operation = RunCommandOperation(database: self, command: command, options: options)
-        return try self._client.executeOperation(operation, session: session)
+        return self._client.executeOperationAsync(operation, session: session)
     }
 
     /**

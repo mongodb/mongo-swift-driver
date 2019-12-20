@@ -46,6 +46,12 @@ extension CodecTests {
     ]
 }
 
+extension DNSSeedlistTests {
+    static var allTests = [
+        ("testInitialDNSSeedlistDiscovery", testInitialDNSSeedlistDiscovery),
+    ]
+}
+
 extension DocumentTests {
     static var allTests = [
         ("testDocument", testDocument),
@@ -137,6 +143,12 @@ extension ReadWriteConcernSpecTests {
     ]
 }
 
+extension SyncAuthTests {
+    static var allTests = [
+        ("testAuthProseTests", testAuthProseTests),
+    ]
+}
+
 extension WriteConcernTests {
     static var allTests = [
         ("testWriteConcernType", testWriteConcernType),
@@ -150,6 +162,7 @@ XCTMain([
     testCase(BSONCorpusTests.allTests),
     testCase(BSONValueTests.allTests),
     testCase(CodecTests.allTests),
+    testCase(DNSSeedlistTests.allTests),
     testCase(DocumentTests.allTests),
     testCase(Document_CollectionTests.allTests),
     testCase(Document_SequenceTests.allTests),
@@ -158,5 +171,6 @@ XCTMain([
     testCase(ReadConcernTests.allTests),
     testCase(ReadPreferenceTests.allTests),
     testCase(ReadWriteConcernSpecTests.allTests),
+    testCase(SyncAuthTests.allTests),
     testCase(WriteConcernTests.allTests),
 ])

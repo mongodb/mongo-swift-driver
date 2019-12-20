@@ -130,12 +130,12 @@ final class WriteConcernTests: MongoSwiftTestCase {
 
         try self.withTestClient { client in
             let db1 = client.db(type(of: self).testDatabase)
-            defer { try? db1.drop() }
+            defer { try? db1.drop().wait() }
 
             var dbDesc = "db created with no WC provided"
 
             // expect that a collection created from a DB with default WC also has default WC
-            var coll1 = try db1.createCollection(self.getCollectionName(suffix: "1"))
+            var coll1 = try db1.createCollection(self.getCollectionName(suffix: "1")).wait()
             try checkWriteConcern(coll1, empty, "collection created with no WC provided from \(dbDesc)")
 
             // expect that a collection retrieved from a DB with default WC also has default WC
@@ -147,14 +147,14 @@ final class WriteConcernTests: MongoSwiftTestCase {
                 db1.collection(self.getCollectionName(suffix: "2"), options: CollectionOptions(writeConcern: w1))
             try checkWriteConcern(coll2, w1, "collection retrieved with w:1 from \(dbDesc)")
 
-            try db1.drop()
+            try db1.drop().wait()
 
             let db2 = client.db(type(of: self).testDatabase, options: DatabaseOptions(writeConcern: w1))
-            defer { try? db2.drop() }
+            defer { try? db2.drop().wait() }
             dbDesc = "db created with w:1"
 
             // expect that a collection created from a DB with w:1 also has w:1
-            var coll3 = try db2.createCollection(self.getCollectionName(suffix: "3"))
+            var coll3 = try db2.createCollection(self.getCollectionName(suffix: "3")).wait()
             try checkWriteConcern(coll3, w1, "collection created with no WC provided from \(dbDesc)")
 
             // expect that a collection retrieved from a DB with w:1 also has w:1
