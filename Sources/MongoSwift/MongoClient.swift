@@ -53,6 +53,15 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
      */
     public var serverMonitoring: Bool = false
 
+    /**
+     * `MongoSwift.MongoClient` provides an asynchronous API by running all blocking operations off of their
+     * originating threads in a thread pool. `MongoSwiftSync.MongoClient` is implemented as a wrapper of the async
+     * client which waits for each corresponding asynchronous operation to complete and then returns the result.
+     * This option specifies the size of the thread pool used by the asynchronous client, and determines the max
+     * number of concurrent operations that may be performed using a single client.
+     */
+    public var threadPoolSize: Int? = MongoClient.defaultThreadPoolSize
+
     /// Specifies the TLS/SSL options to use for database connections.
     public var tlsOptions: TLSOptions? = nil
 
@@ -80,6 +89,7 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
         retryReads: Bool? = nil,
         retryWrites: Bool? = nil,
         serverMonitoring: Bool = false,
+        threadPoolSize: Int = MongoClient.defaultThreadPoolSize,
         tlsOptions: TLSOptions? = nil,
         uuidCodingStrategy: UUIDCodingStrategy? = nil,
         writeConcern: WriteConcern? = nil
@@ -174,11 +184,15 @@ public struct TLSOptions {
 }
 
 // sourcery: skipSyncExport
-/// A MongoDB Client.
+/// A MongoDB Client providing an asynchronous, SwiftNIO-based API.
 public class MongoClient {
     internal let connectionPool: ConnectionPool
 
     private let operationExecutor: OperationExecutor
+
+    /// Default size for a client's NIOThreadPool.
+    /// TODO SWIFT-705 document size justification.
+    public static let defaultThreadPoolSize = 5
 
     /// Indicates whether this client has been closed.
     internal private(set) var isClosed = false
@@ -239,7 +253,10 @@ public class MongoClient {
 
         let connString = try ConnectionString(connectionString, options: options)
         self.connectionPool = try ConnectionPool(from: connString, options: options?.tlsOptions)
-        self.operationExecutor = DefaultOperationExecutor(eventLoopGroup: eventLoopGroup)
+        self.operationExecutor = DefaultOperationExecutor(
+            eventLoopGroup: eventLoopGroup,
+            threadPoolSize: options?.threadPoolSize ?? MongoClient.defaultThreadPoolSize
+        )
 
         let rc = connString.readConcern
         if !rc.isDefault {

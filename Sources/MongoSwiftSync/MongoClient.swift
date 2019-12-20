@@ -1,7 +1,7 @@
 import MongoSwift
 import NIO
 
-/// A MongoDB Client.
+/// A MongoDB Client providing a synchronous API.
 public class MongoClient {
     /// Encoder whose options are inherited by databases derived from this client.
     public var encoder: BSONEncoder { return self.asyncClient.encoder }

@@ -33,9 +33,9 @@ internal class DefaultOperationExecutor: OperationExecutor {
     /// The thread pool to execute operations in.
     private let threadPool: NIOThreadPool
 
-    internal init(eventLoopGroup: EventLoopGroup) {
+    internal init(eventLoopGroup: EventLoopGroup, threadPoolSize: Int) {
         self.eventLoopGroup = eventLoopGroup
-        self.threadPool = NIOThreadPool(numberOfThreads: 5)
+        self.threadPool = NIOThreadPool(numberOfThreads: threadPoolSize)
         self.threadPool.start()
     }
 
