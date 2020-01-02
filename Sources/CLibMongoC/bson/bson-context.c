@@ -28,10 +28,14 @@
 #include "bson-context-private.h"
 #include "CLibMongoC_bson-memory.h"
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include "CLibMongoC_common-thread-private.h"
 =======
 #include "common-thread-private.h"
 >>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
+=======
+#include "CLibMongoC_common-thread-private.h"
+>>>>>>> remove need to search for common headers
 
 #ifdef BSON_HAVE_SYSCALL_TID
 #include <sys/syscall.h>

@@ -33,10 +33,14 @@
 #include "CLibMongoC_mongoc-stream-tls.h"
 #endif
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include "CLibMongoC_common-b64-private.h"
 =======
 #include "common-b64-private.h"
 >>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
+=======
+#include "CLibMongoC_common-b64-private.h"
+>>>>>>> remove need to search for common headers
 #include "mongoc-scram-private.h"
 #include "mongoc-set-private.h"
 #include "CLibMongoC_mongoc-socket.h"

@@ -21,10 +21,14 @@
 #include <string.h>
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include "CLibMongoC_common-md5-private.h"
 =======
 #include "common-md5-private.h"
 >>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
+=======
+#include "CLibMongoC_common-md5-private.h"
+>>>>>>> remove need to search for common headers
 #include "mongoc-util-private.h"
 #include "CLibMongoC_mongoc-client.h"
 #include "mongoc-client-session-private.h"

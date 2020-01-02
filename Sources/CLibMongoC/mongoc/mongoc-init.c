@@ -30,10 +30,14 @@
 #endif
 #include "mongoc-thread-private.h"
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include "CLibMongoC_common-b64-private.h"
 =======
 #include "common-b64-private.h"
 >>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
+=======
+#include "CLibMongoC_common-b64-private.h"
+>>>>>>> remove need to search for common headers
 #if defined(MONGOC_ENABLE_CRYPTO_CNG)
 #include "mongoc-crypto-private.h"
 #include "mongoc-crypto-cng-private.h"

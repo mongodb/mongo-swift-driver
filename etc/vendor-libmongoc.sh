@@ -64,7 +64,7 @@ echo "COPYING libmongoc"
   tar -xzf $TARBALL_NAME
 
   # common
-  cp $COMMON_SRC_PATH/*.h $COMMON_PATH
+  cp $COMMON_SRC_PATH/*.h $CLIBMONGOC_INCLUDE_PATH
   cp $COMMON_SRC_PATH/*.c $COMMON_PATH
 
   # bson
@@ -89,7 +89,8 @@ cp $ETC_DIR/generated_headers/* $CLIBMONGOC_INCLUDE_PATH
 echo "RENAMING header files"
 (
   find $CLIBMONGOC_PATH -name "*.[ch]" | \
-    xargs $sed -i -e '/private/! s+include "bson/+include "CLibMongoC_+' \
+    xargs $sed -i -e 's+include "common+include "CLibMongoC_common+' \
+                  -e '/private/! s+include "bson/+include "CLibMongoC_+' \
                   -e '/private/! s+include <bson/+include <CLibMongoC_+' \
                   -e '/private/ s+include "bson/+include "+' \
                   -e '/private/! s+include "mongoc/+include "CLibMongoC_+' \

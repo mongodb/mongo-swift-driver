@@ -53,8 +53,11 @@
 =======
 #  define MONGOC_HAVE_ASN1_STRING_GET0_DATA 0
 #endif
+<<<<<<< HEAD
 
 >>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
+=======
+>>>>>>> remove need to search for common headers
 /*
  * MONGOC_ENABLE_SSL_SECURE_CHANNEL is set from configure to determine if we are
  * compiled with Native SSL support on Windows

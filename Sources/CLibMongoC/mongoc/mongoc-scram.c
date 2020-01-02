@@ -27,10 +27,14 @@
 
 #include "mongoc-crypto-private.h"
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include "CLibMongoC_common-b64-private.h"
 =======
 #include "common-b64-private.h"
 >>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
+=======
+#include "CLibMongoC_common-b64-private.h"
+>>>>>>> remove need to search for common headers
 
 #include "mongoc-memcmp-private.h"
 
