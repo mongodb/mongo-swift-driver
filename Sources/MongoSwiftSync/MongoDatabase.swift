@@ -25,7 +25,7 @@ public struct MongoDatabase {
     internal let client: MongoClient
 
     /// The underlying asynchronous database.
-    private let asyncDB: MongoSwift.MongoDatabase 
+    private let asyncDB: MongoSwift.MongoDatabase
 
     /// Initializes a new `MongoDatabase` instance, not meant to be instantiated directly.
     internal init(name: String, client: MongoClient, options: DatabaseOptions?) {
