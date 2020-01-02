@@ -70,6 +70,9 @@ public struct ServerDescription {
     /// The duration in milliseconds of the server's last ismaster call.
     public var roundTripTime: Int64?
 
+    /// The date of the most recent write operation seen by this server.
+    public var lastWriteDate: Date?
+
     /// The type of this server.
     public var type: ServerType = .unknown
 
@@ -115,6 +118,10 @@ public struct ServerDescription {
 
     /// An internal function to handle parsing isMaster and setting ServerDescription attributes appropriately.
     internal mutating func parseIsMaster(_ isMaster: Document) {
+        if let lastWrite = isMaster["lasWrite"]?.documentValue {
+            self.lastWriteDate = lastWrite["lastWriteDate"]?.dateValue
+        }
+
         if let minVersion = isMaster["minWireVersion"]?.asInt() {
             self.minWireVersion = minVersion
         }
