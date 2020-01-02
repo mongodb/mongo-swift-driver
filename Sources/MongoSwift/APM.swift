@@ -143,8 +143,25 @@ public struct CommandFailedEvent: MongoCommandEvent, InitializableFromOpaquePoin
     }
 }
 
+/// A protocol for SDAM monitoring events to implement.
+public protocol MongoSDAMEvent: MongoEvent {}
+
+/// A protocol for SDAM monitoring events that relate to topology updates to implement, specifying the id of the
+/// topology being updated.
+public protocol MongoTopologyUpdateEvent: MongoEvent {
+    /// The id of the topology being updated.
+    var topologyId: ObjectId { get }
+}
+
+/// A protocol for topology update events that relate to specific servers to implement, specifying the address of the
+/// server being updated.
+public protocol MongoServerUpdateEvent: MongoTopologyUpdateEvent {
+    /// The address of the server being updated.
+    var serverAddress: Address { get }
+}
+
 /// Published when a server description changes. This does NOT include changes to the server's roundTripTime property.
-public struct ServerDescriptionChangedEvent: MongoEvent, InitializableFromOpaquePointer {
+public struct ServerDescriptionChangedEvent: MongoServerUpdateEvent, InitializableFromOpaquePointer {
     /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .serverDescriptionChanged }
 
@@ -174,7 +191,7 @@ public struct ServerDescriptionChangedEvent: MongoEvent, InitializableFromOpaque
 }
 
 /// Published when a server is initialized.
-public struct ServerOpeningEvent: MongoEvent, InitializableFromOpaquePointer {
+public struct ServerOpeningEvent: MongoServerUpdateEvent, InitializableFromOpaquePointer {
     /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .serverOpening }
 
@@ -196,7 +213,7 @@ public struct ServerOpeningEvent: MongoEvent, InitializableFromOpaquePointer {
 }
 
 /// Published when a server is closed.
-public struct ServerClosedEvent: MongoEvent, InitializableFromOpaquePointer {
+public struct ServerClosedEvent: MongoServerUpdateEvent, InitializableFromOpaquePointer {
     /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .serverClosed }
 
@@ -218,7 +235,7 @@ public struct ServerClosedEvent: MongoEvent, InitializableFromOpaquePointer {
 }
 
 /// Published when a topology description changes.
-public struct TopologyDescriptionChangedEvent: MongoEvent, InitializableFromOpaquePointer {
+public struct TopologyDescriptionChangedEvent: MongoTopologyUpdateEvent, InitializableFromOpaquePointer {
     /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .topologyDescriptionChanged }
 
@@ -244,7 +261,7 @@ public struct TopologyDescriptionChangedEvent: MongoEvent, InitializableFromOpaq
 }
 
 /// Published when a topology is initialized.
-public struct TopologyOpeningEvent: MongoEvent, InitializableFromOpaquePointer {
+public struct TopologyOpeningEvent: MongoTopologyUpdateEvent, InitializableFromOpaquePointer {
     /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .topologyOpening }
 
@@ -262,7 +279,7 @@ public struct TopologyOpeningEvent: MongoEvent, InitializableFromOpaquePointer {
 }
 
 /// Published when a topology is closed.
-public struct TopologyClosedEvent: MongoEvent, InitializableFromOpaquePointer {
+public struct TopologyClosedEvent: MongoTopologyUpdateEvent, InitializableFromOpaquePointer {
     /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .topologyClosed }
 
@@ -279,9 +296,16 @@ public struct TopologyClosedEvent: MongoEvent, InitializableFromOpaquePointer {
     }
 }
 
+/// A protocol for SDAM monitoring events that are related to server heartbeats to implement, specifying the address of
+/// the server being checked.
+public protocol MongoServerHeartbeatEvent: MongoSDAMEvent {
+    /// The address of the server being checked.
+    var serverAddress: Address { get }
+}
+
 /// Published when the server monitor’s ismaster command is started - immediately before
 /// the ismaster command is serialized into raw BSON and written to the socket.
-public struct ServerHeartbeatStartedEvent: MongoEvent, InitializableFromOpaquePointer {
+public struct ServerHeartbeatStartedEvent: MongoServerHeartbeatEvent, InitializableFromOpaquePointer {
     /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .serverHeartbeatStarted }
 
@@ -295,7 +319,7 @@ public struct ServerHeartbeatStartedEvent: MongoEvent, InitializableFromOpaquePo
 }
 
 /// Published when the server monitor’s ismaster succeeds.
-public struct ServerHeartbeatSucceededEvent: MongoEvent, InitializableFromOpaquePointer {
+public struct ServerHeartbeatSucceededEvent: MongoServerHeartbeatEvent, InitializableFromOpaquePointer {
     /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .serverHeartbeatSucceeded }
 
@@ -318,7 +342,7 @@ public struct ServerHeartbeatSucceededEvent: MongoEvent, InitializableFromOpaque
 }
 
 /// Published when the server monitor’s ismaster fails, either with an “ok: 0” or a socket exception.
-public struct ServerHeartbeatFailedEvent: MongoEvent, InitializableFromOpaquePointer {
+public struct ServerHeartbeatFailedEvent: MongoServerHeartbeatEvent, InitializableFromOpaquePointer {
     /// The name this event will be posted under.
     public static var eventName: Notification.Name { return .serverHeartbeatFailed }
 
