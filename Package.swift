@@ -25,8 +25,7 @@ let package = Package(
                 .define("MONGO_SWIFT_OS_LINUX", .when(platforms: [.linux])),
                 .define("MONGO_SWIFT_OS_DARWIN", .when(platforms: [.iOS, .macOS])),
                 .define("BSON_COMPILATION"),
-                .define("MONGOC_COMPILATION"),
-                .headerSearchPath("common")
+                .define("MONGOC_COMPILATION")
             ],
             linkerSettings: [
                 .linkedLibrary("resolv"),
