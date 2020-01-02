@@ -27,7 +27,7 @@ extension MongoCollection {
         options: InsertOneOptions? = nil,
         session: ClientSession? = nil
     ) throws -> InsertOneResult? {
-        fatalError("unimplemented")
+        return try self.asyncColl.insertOne(value, options: options, session: session?.asyncSession).wait()
     }
 
     /**
@@ -54,7 +54,7 @@ extension MongoCollection {
         options: InsertManyOptions? = nil,
         session: ClientSession? = nil
     ) throws -> InsertManyResult? {
-        fatalError("unimplemented")
+        return try self.asyncColl.insertMany(values, options: options, session: session?.asyncSession).wait()
     }
 
     /**
@@ -83,7 +83,11 @@ extension MongoCollection {
         options: ReplaceOptions? = nil,
         session: ClientSession? = nil
     ) throws -> UpdateResult? {
-        fatalError("unimplemented")
+        return try self.asyncColl.replaceOne(filter: filter,
+                                             replacement: replacement,
+                                             options: options,
+                                             session: session?.asyncSession)
+                                            .wait()
     }
 
     /**
@@ -112,7 +116,11 @@ extension MongoCollection {
         options: UpdateOptions? = nil,
         session: ClientSession? = nil
     ) throws -> UpdateResult? {
-        fatalError("unimplemented")
+        return try self.asyncColl.updateOne(filter: filter,
+                                            update: update,
+                                            options: options,
+                                            session: session?.asyncSession)
+                                            .wait()
     }
 
     /**
@@ -141,7 +149,11 @@ extension MongoCollection {
         options: UpdateOptions? = nil,
         session: ClientSession? = nil
     ) throws -> UpdateResult? {
-        fatalError("unimplemented")
+        return try self.asyncColl.updateMany(filter: filter,
+                                             update: update,
+                                             options: options,
+                                             session: session?.asyncSession)
+                                            .wait()
     }
 
     /**
@@ -168,7 +180,7 @@ extension MongoCollection {
         options: DeleteOptions? = nil,
         session: ClientSession? = nil
     ) throws -> DeleteResult? {
-        fatalError("unimplemented")
+        return try self.asyncColl.deleteOne(filter, options: options, session: session?.asyncSession).wait()
     }
 
     /**
@@ -195,7 +207,7 @@ extension MongoCollection {
         options: DeleteOptions? = nil,
         session: ClientSession? = nil
     ) throws -> DeleteResult? {
-        fatalError("unimplemented")
+        return try self.asyncColl.deleteMany(filter, options: options, session: session?.asyncSession).wait()
     }
 
     /**
@@ -221,6 +233,6 @@ extension MongoCollection {
         options: BulkWriteOptions? = nil,
         session: ClientSession? = nil
     ) throws -> BulkWriteResult? {
-        fatalError("unimplemented")
+        return try self.asyncColl.bulkWrite(requests, options: options, session: session?.asyncSession).wait()
     }
 }

@@ -395,35 +395,35 @@ private func extractWriteConcernError(from reply: Document) throws -> WriteConce
     return try BSONDecoder().decode(WriteConcernFailure.self, from: writeConcernErrors[0])
 }
 
-/// Internal function used by write methods performing single writes that are implemented via the bulk API. Catches any
-/// BulkWriteErrors thrown by the given closure and converts them to WriteErrors. All other
-/// errors will be propagated as-is.
-internal func convertingBulkWriteErrors<T>(_ body: () throws -> T) throws -> T {
-    do {
-        return try body()
-    } catch let bwe as BulkWriteError {
-        let writeFailure: WriteFailure? = bwe.writeFailures.flatMap { failures in
-            guard let firstFailure = failures.first else {
-                return nil
-            }
-            return WriteFailure(
-                code: firstFailure.code,
-                codeName: firstFailure.codeName,
-                message: firstFailure.message
-            )
-        }
-
-        if writeFailure != nil || bwe.writeConcernFailure != nil {
-            throw WriteError(
-                writeFailure: writeFailure,
-                writeConcernFailure: bwe.writeConcernFailure,
-                errorLabels: bwe.errorLabels
-            )
-        } else if let otherErr = bwe.otherError {
-            throw otherErr
-        }
-        throw InternalError(message: "Couldn't get error from BulkWriteError")
+/// Internal function used by write methods performing single writes that are implemented via the bulk API. If the
+/// provided error is not a `BulkWriteError`, it will be returned as-is. Otherwise, the error will be converted to a
+/// `WriteError`. If conversion fails, an `InternalError` will be returned.
+internal func convertBulkWriteError(_ error: Error) -> Error {
+    guard let bwe = error as? BulkWriteError else {
+        return error
     }
+
+    let writeFailure: WriteFailure? = bwe.writeFailures.flatMap { failures in
+        guard let firstFailure = failures.first else {
+            return nil
+        }
+        return WriteFailure(
+            code: firstFailure.code,
+            codeName: firstFailure.codeName,
+            message: firstFailure.message
+        )
+    }
+
+    if writeFailure != nil || bwe.writeConcernFailure != nil {
+        return WriteError(
+            writeFailure: writeFailure,
+            writeConcernFailure: bwe.writeConcernFailure,
+            errorLabels: bwe.errorLabels
+        )
+    } else if let otherErr = bwe.otherError {
+        return otherErr
+    }
+    return InternalError(message: "Couldn't get error from BulkWriteError")
 }
 
 internal func toErrorString(_ error: bson_error_t) -> String {

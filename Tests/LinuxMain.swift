@@ -124,6 +124,12 @@ extension ReadConcernTests {
     ]
 }
 
+extension ReadPreferenceOperationTests {
+    static var allTests = [
+        ("testOperationReadPreference", testOperationReadPreference),
+    ]
+}
+
 extension ReadPreferenceTests {
     static var allTests = [
         ("testMode", testMode),
@@ -136,6 +142,14 @@ extension ReadPreferenceTests {
     ]
 }
 
+extension ReadWriteConcernOperationTests {
+    static var allTests = [
+        ("testOperationReadConcerns", testOperationReadConcerns),
+        ("testWriteConcernErrors", testWriteConcernErrors),
+        ("testOperationWriteConcerns", testOperationWriteConcerns),
+    ]
+}
+
 extension ReadWriteConcernSpecTests {
     static var allTests = [
         ("testConnectionStrings", testConnectionStrings),
@@ -143,9 +157,24 @@ extension ReadWriteConcernSpecTests {
     ]
 }
 
+extension SDAMTests {
+    static var allTests = [
+        ("testMonitoring", testMonitoring),
+    ]
+}
+
 extension SyncAuthTests {
     static var allTests = [
         ("testAuthProseTests", testAuthProseTests),
+    ]
+}
+
+extension SyncMongoClientTests {
+    static var allTests = [
+        ("testListDatabases", testListDatabases),
+        ("testFailedClientInitialization", testFailedClientInitialization),
+        ("testServerVersion", testServerVersion),
+        ("testCodingStrategies", testCodingStrategies),
     ]
 }
 
@@ -169,8 +198,12 @@ XCTMain([
     testCase(MongoClientTests.allTests),
     testCase(OptionsTests.allTests),
     testCase(ReadConcernTests.allTests),
+    testCase(ReadPreferenceOperationTests.allTests),
     testCase(ReadPreferenceTests.allTests),
+    testCase(ReadWriteConcernOperationTests.allTests),
     testCase(ReadWriteConcernSpecTests.allTests),
+    testCase(SDAMTests.allTests),
     testCase(SyncAuthTests.allTests),
+    testCase(SyncMongoClientTests.allTests),
     testCase(WriteConcernTests.allTests),
 ])

@@ -2,15 +2,12 @@ import MongoSwift
 
 /// A MongoDB collection.
 public struct MongoCollection<T: Codable> {
-    /// The client which this collection was derived from.
-    internal let _client: MongoClient
-
     /// Encoder used by this collection for BSON conversions. (e.g. converting `CollectionType`s, indexes, and options
     /// to documents).
-    public var encoder: BSONEncoder { fatalError("unimplemented") }
+    public var encoder: BSONEncoder { return self.asyncColl.encoder }
 
     /// Decoder used by this collection for BSON conversions (e.g. converting documents to `CollectionType`s).
-    public var decoder: BSONDecoder { fatalError("unimplemented") }
+    public var decoder: BSONDecoder { return self.asyncColl.decoder }
 
     /**
      * A `Codable` type associated with this `MongoCollection` instance.
@@ -27,21 +24,23 @@ public struct MongoCollection<T: Codable> {
     public typealias CollectionType = T
 
     /// The name of this collection.
-    public var name: String { fatalError("unimplemented") }
+    public var name: String { return self.asyncColl.name }
 
     /// The `ReadConcern` set on this collection, or `nil` if one is not set.
-    public var readConcern: ReadConcern? { fatalError("unimplemented") }
+    public var readConcern: ReadConcern? { return self.asyncColl.readConcern }
 
     /// The `ReadPreference` set on this collection.
-    public var readPreference: ReadPreference { fatalError("unimplemented") }
+    public var readPreference: ReadPreference { return self.asyncColl.readPreference }
 
     /// The `WriteConcern` set on this collection, or nil if one is not set.
-    public var writeConcern: WriteConcern? { fatalError("unimplemented") }
+    public var writeConcern: WriteConcern? { return self.asyncColl.writeConcern }
 
-    /// Initializes a new `MongoCollection` instance corresponding to a collection with name `name` in database with
-    /// the provided options.
-    internal init(name: String, database: MongoDatabase, options: CollectionOptions?) {
-        fatalError("unimplemented")
+    /// The underlying asynchronous collection.
+    internal let asyncColl: MongoSwift.MongoCollection<T>
+
+    /// Initializes a new `MongoCollection` instance wrapping the provided async collection.
+    internal init(asyncCollection: MongoSwift.MongoCollection<T>) {
+        self.asyncColl = asyncCollection
     }
 
     /**
@@ -54,6 +53,6 @@ public struct MongoCollection<T: Codable> {
      *   - `CommandError` if an error occurs that prevents the command from executing.
      */
     public func drop(options: DropCollectionOptions? = nil, session: ClientSession? = nil) throws {
-        fatalError("unimplemented")
+        try self.asyncColl.drop(options: options, session: session?.asyncSession).wait()
     }
 }

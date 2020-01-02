@@ -1,4 +1,5 @@
 import CLibMongoC
+import NIO
 
 /// An extension of `MongoCollection` encapsulating bulk write operations.
 extension MongoCollection {
@@ -10,7 +11,8 @@ extension MongoCollection {
      *   - options: optional `BulkWriteOptions` to use while executing the operation.
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: a `BulkWriteResult`, or `nil` if the write concern is unacknowledged.
+     * - Returns: an `EventLoopFuture` containing the `BulkWriteResult`, or containing `nil` if the write concern is
+     *            unacknowledged.
      *
      * - Throws:
      *   - `InvalidArgumentError` if `requests` is empty.
@@ -19,18 +21,13 @@ extension MongoCollection {
      *     typically be thrown as `RuntimeError`s or `CommandError`s elsewhere.
      *   - `EncodingError` if an error occurs while encoding the `CollectionType` or the options to BSON.
      */
-    @discardableResult
     public func bulkWrite(
         _ requests: [WriteModel<T>],
         options: BulkWriteOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> BulkWriteResult? {
-        guard !requests.isEmpty else {
-            throw InvalidArgumentError(message: "requests cannot be empty")
-        }
-
+    ) -> EventLoopFuture<BulkWriteResult?> {
         let operation = BulkWriteOperation(collection: self, models: requests, options: options)
-        return try self._client.executeOperation(operation, session: session)
+        return self._client.executeOperationAsync(operation, session: session)
     }
 }
 
@@ -189,6 +186,10 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
      *   - `BulkWriteError` if an error occurs while performing the writes.
      */
     internal func execute(using connection: Connection, session: ClientSession?) throws -> BulkWriteResult? {
+        guard !self.models.isEmpty else {
+            throw InvalidArgumentError(message: "requests cannot be empty")
+        }
+
         var reply = Document()
         var error = bson_error_t()
         let opts = try encodeOptions(options: options, session: session)

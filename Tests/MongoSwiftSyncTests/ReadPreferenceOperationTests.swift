@@ -1,4 +1,4 @@
-@testable import MongoSwift
+import MongoSwiftSync
 import Nimble
 import TestsCommon
 import XCTest
@@ -22,14 +22,16 @@ final class ReadPreferenceOperationTests: MongoSwiftTestCase {
         let res = try db.runCommand(command, options: opts)
         expect(res["ok"]?.asDouble()).to(equal(1.0))
 
+        // TODO: SWIFT-672: uncomment these assertions
         // expect running other commands to not throw errors when passing in a valid read preference
-        expect(try coll.find(options: FindOptions(readPreference: ReadPreference(.primary)))).toNot(throwError())
-        expect(try coll.findOne(options: FindOneOptions(readPreference: ReadPreference(.primary)))).toNot(throwError())
+        // expect(try coll.find(options: FindOptions(readPreference: ReadPreference(.primary)))).toNot(throwError())
+        // expect(try coll.findOne(options: FindOneOptions(readPreference: ReadPreference(.primary))
+        // )).toNot(throwError())
 
-        expect(try coll.aggregate(
-            [["$project": ["a": 1]]],
-            options: AggregateOptions(readPreference: ReadPreference(.secondaryPreferred))
-        )).toNot(throwError())
+        // expect(try coll.aggregate(
+        //     [["$project": ["a": 1]]],
+        //     options: AggregateOptions(readPreference: ReadPreference(.secondaryPreferred))
+        // )).toNot(throwError())
 
         expect(try coll.countDocuments(
             options:
