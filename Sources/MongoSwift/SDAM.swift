@@ -250,6 +250,7 @@ public struct TopologyDescription: Equatable {
 
     /// Returns `true` if the topology has a readable server available, and `false` otherwise.
     public func hasReadableServer() -> Bool {
+        // TODO: SWIFT-244: amend this method to take in a read preference.
         return [.single, .replicaSetWithPrimary, .sharded].contains(self.type)
     }
 
