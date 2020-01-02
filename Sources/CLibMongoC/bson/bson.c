@@ -35,11 +35,17 @@
 #include <math.h>
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #if !defined(_MSC_VER) || (_MSC_VER >= 1800)
 #include <inttypes.h>
 #endif
 =======
 >>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
+=======
+#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
+#include <inttypes.h>
+#endif
+>>>>>>> patch libmongoc to overcome `inttypes.h` issue in umbrella header
 
 #ifndef BSON_MAX_RECURSION
 #define BSON_MAX_RECURSION 200

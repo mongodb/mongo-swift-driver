@@ -34,6 +34,7 @@
 #include <inttypes.h>
 #endif
 
+<<<<<<< HEAD
 =======
 #include "common-b64-private.h"
 =======
@@ -42,6 +43,8 @@
 #include "jsonsl.h"
 
 >>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
+=======
+>>>>>>> patch libmongoc to overcome `inttypes.h` issue in umbrella header
 #ifdef _WIN32
 #include <io.h>
 #include <share.h>

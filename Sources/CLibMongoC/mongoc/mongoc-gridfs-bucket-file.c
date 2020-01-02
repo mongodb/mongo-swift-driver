@@ -22,12 +22,18 @@
 #include "mongoc-stream-gridfs-upload-private.h"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> patch libmongoc to overcome `inttypes.h` issue in umbrella header
 #if !defined(_MSC_VER) || (_MSC_VER >= 1800)
 #include <inttypes.h>
 #endif
 
+<<<<<<< HEAD
 =======
 >>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
+=======
+>>>>>>> patch libmongoc to overcome `inttypes.h` issue in umbrella header
 /* Returns the minimum of two numbers */
 static size_t
 _mongoc_min (const size_t a, const size_t b)

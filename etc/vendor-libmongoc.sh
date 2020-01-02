@@ -69,14 +69,14 @@ echo "COPYING libmongoc"
 
   # bson
   cp $BSON_SRC_PATH/*.h $BSON_PATH
-  find $BSON_PATH -type f -not -name "*-private.h" -exec mv -t $CLIBMONGOC_INCLUDE_PATH {} \;
+  find $BSON_PATH -type f -not -name "*-private.h" -exec mv '{}' $CLIBMONGOC_INCLUDE_PATH \;
   cp $BSON_SRC_PATH/*.c $BSON_PATH
   cp $JSONSL_SRC_PATH/*.h $BSON_PATH
   cp $JSONSL_SRC_PATH/*.c $BSON_PATH
 
   # mongoc
   cp $MONGOC_SRC_PATH/*.h $MONGOC_PATH
-  find $MONGOC_PATH -type f -not -name "*-private.h" -and -not -name "utlist.h" -exec mv -t $CLIBMONGOC_INCLUDE_PATH {} \;
+  find $MONGOC_PATH -type f -not -name "*-private.h" -and -not -name "utlist.h" -exec mv '{}' $CLIBMONGOC_INCLUDE_PATH \;
   cp $MONGOC_SRC_PATH/*.def $CLIBMONGOC_INCLUDE_PATH
   cp $MONGOC_SRC_PATH/*.defs $CLIBMONGOC_INCLUDE_PATH
   cp $MONGOC_SRC_PATH/*.c $MONGOC_PATH
@@ -113,6 +113,9 @@ echo "RENAMING header files"
   find . -name "*.h" | xargs $sed -i -e 's+include "mongoc/+include "CLibMongoC_/+' -e 's/include <CLibMongoC_\(.*\)>/include "CLibMongoC_\1"/'
   popd
 )
+
+echo "PATCHING libmongoc"
+git apply "${ETC_DIR}/inttypes-non-modular-header-workaround.diff"
 
 echo "COPYING umbrella header"
 cp $ETC_DIR/CLibMongoC.h.in $CLIBMONGOC_INCLUDE_PATH/CLibMongoC.h
