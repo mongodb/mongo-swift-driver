@@ -68,100 +68,53 @@ public struct ServerDescription {
     public let address: Address
 
     /// The duration in milliseconds of the server's last ismaster call.
-    public var roundTripTime: Int64?
+    public let roundTripTime: Int64?
 
     /// The date of the most recent write operation seen by this server.
     public var lastWriteDate: Date?
 
     /// The type of this server.
-    public var type: ServerType = .unknown
+    public let type: ServerType
 
     /// The minimum wire protocol version supported by the server.
-    public var minWireVersion: Int = 0
+    public let minWireVersion: Int
 
     /// The maximum wire protocol version supported by the server.
-    public var maxWireVersion: Int = 0
+    public let maxWireVersion: Int
 
     /// The hostname or IP and the port number that this server was configured with in the replica set.
-    public var me: Address?
+    public let me: Address?
 
     /// This server's opinion of the replica set's hosts, if any.
-    public var hosts: [Address] = []
+    public let hosts: [Address]
 
     /// This server's opinion of the replica set's arbiters, if any.
-    public var arbiters: [Address] = []
+    public let arbiters: [Address]
 
     /// "Passives" are priority-zero replica set members that cannot become primary.
     /// The client treats them precisely the same as other members.
-    public var passives: [Address] = []
+    public let passives: [Address]
 
     /// Tags for this server.
-    public var tags: [String: String] = [:]
+    public let tags: [String: String]
 
     /// The replica set name.
-    public var setName: String?
+    public let setName: String?
 
     /// The replica set version.
-    public var setVersion: Int?
+    public let setVersion: Int?
 
     /// The election ID where this server was elected, if this is a replica set member that believes it is primary.
-    public var electionId: ObjectId?
+    public let electionId: ObjectId?
 
     /// This server's opinion of who the primary is.
-    public var primary: Address?
+    public let primary: Address?
 
     /// When this server was last checked.
-    public var lastUpdateTime: Date
+    public let lastUpdateTime: Date
 
     /// The logicalSessionTimeoutMinutes value for this server.
-    public var logicalSessionTimeoutMinutes: Int?
-
-    /// An internal function to handle parsing isMaster and setting ServerDescription attributes appropriately.
-    internal mutating func parseIsMaster(_ isMaster: Document) {
-        if let lastWrite = isMaster["lasWrite"]?.documentValue {
-            self.lastWriteDate = lastWrite["lastWriteDate"]?.dateValue
-        }
-
-        if let minVersion = isMaster["minWireVersion"]?.asInt() {
-            self.minWireVersion = minVersion
-        }
-
-        if let maxVersion = isMaster["maxWireVersion"]?.asInt() {
-            self.maxWireVersion = maxVersion
-        }
-
-        if let me = isMaster["me"]?.stringValue {
-            self.me = try? Address(me)
-        }
-
-        if let hosts = isMaster["hosts"]?.arrayValue?.asArrayOf(String.self) {
-            self.hosts = hosts.compactMap { try? Address($0) }
-        }
-
-        if let passives = isMaster["passives"]?.arrayValue?.asArrayOf(String.self) {
-            self.passives = passives.compactMap { try? Address($0) }
-        }
-
-        if let arbiters = isMaster["arbiters"]?.arrayValue?.asArrayOf(String.self) {
-            self.arbiters = arbiters.compactMap { try? Address($0) }
-        }
-
-        if let tags = isMaster["tags"]?.documentValue {
-            for (k, v) in tags {
-                self.tags[k] = v.stringValue
-            }
-        }
-
-        self.setName = isMaster["setName"]?.stringValue
-        self.setVersion = isMaster["setVersion"]?.asInt()
-        self.electionId = isMaster["electionId"]?.objectIdValue
-
-        if let primary = isMaster["primary"]?.stringValue {
-            self.primary = try? Address(primary)
-        }
-
-        self.logicalSessionTimeoutMinutes = isMaster["logicalSessionTimeoutMinutes"]?.asInt()
-    }
+    public let logicalSessionTimeoutMinutes: Int?
 
     /// An internal initializer to create a `ServerDescription` from an OpaquePointer to a
     /// mongoc_server_description_t.
@@ -169,13 +122,41 @@ public struct ServerDescription {
         self.address = Address(mongoc_server_description_host(description))
         self.roundTripTime = mongoc_server_description_round_trip_time(description)
         self.lastUpdateTime = Date(msSinceEpoch: mongoc_server_description_last_update_time(description))
-        let serverType = String(cString: mongoc_server_description_type(description))
-        // swiftlint:disable:next force_unwrapping
-        self.type = ServerType(rawValue: serverType)! // libmongoc will always give us a valid raw value.
+        self.type = ServerType(rawValue: String(cString: mongoc_server_description_type(description))) ?? .unknown
 
+        // initialize the rest of the values from the isMaster response.
         // we have to copy because libmongoc owns the pointer.
         let isMaster = Document(copying: mongoc_server_description_ismaster(description))
-        self.parseIsMaster(isMaster)
+
+        self.lastWriteDate = isMaster["lasWrite"]?.documentValue?["lastWriteDate"]?.dateValue
+        self.minWireVersion = isMaster["minWireVersion"]?.asInt() ?? 0
+        self.maxWireVersion = isMaster["maxWireVersion"]?.asInt() ?? 0
+        self.me = try? isMaster["me"]?.stringValue.map(Address.init)
+        self.setName = isMaster["setName"]?.stringValue
+        self.setVersion = isMaster["setVersion"]?.asInt()
+        self.electionId = isMaster["electionId"]?.objectIdValue
+        self.primary = try? isMaster["primary"]?.stringValue.map(Address.init)
+        self.logicalSessionTimeoutMinutes = isMaster["logicalSessionTimeoutMinutes"]?.asInt()
+
+        self.hosts = isMaster["hosts"]?.arrayValue?.asArrayOf(String.self)?.compactMap { host in
+            try? Address(host)
+        } ?? []
+
+        self.passives = isMaster["passives"]?.arrayValue?.asArrayOf(String.self)?.compactMap { passive in
+            try? Address(passive)
+        } ?? []
+
+        self.arbiters = isMaster["arbiters"]?.arrayValue?.asArrayOf(String.self)?.compactMap { arbiter in
+            try? Address(arbiter)
+        } ?? []
+
+        self.tags = isMaster["tags"]?.documentValue.map { tagsDoc in
+            var tags: [String: String] = [:]
+            for (k, v) in tagsDoc {
+                tags[k] = v.stringValue
+            }
+            return tags
+        } ?? [:]
     }
 }
 
