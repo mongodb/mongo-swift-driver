@@ -209,7 +209,7 @@ public struct TopologyDescription: Equatable {
     }
 
     /// The servers comprising this topology.
-    public var servers: [ServerDescription] = []
+    public let servers: [ServerDescription]
 
     /// Whether every server's wire protocol version range is compatible with MongoSwift's.
     public var compatible: Bool {
@@ -251,10 +251,12 @@ public struct TopologyDescription: Equatable {
         let serverData = mongoc_topology_description_get_servers(description, &size)
         defer { mongoc_server_descriptions_destroy_all(serverData, size) }
 
+        var servers: [ServerDescription]?
         let buffer = UnsafeBufferPointer(start: serverData, count: size)
         if size > 0 {
             // swiftlint:disable:next force_unwrapping
-            self.servers = Array(buffer).map { ServerDescription($0!) } // documented as always returning a value.
+            servers = Array(buffer).map { ServerDescription($0!) } // documented as always returning a value.
         }
+        self.servers = servers ?? []
     }
 }
