@@ -172,7 +172,7 @@ public struct MongoDatabase {
      *   - options: Optional `CreateCollectionOptions` to use for the collection
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: the newly created `MongoCollection<Document>`
+     * - Returns: an `EventLoopFuture` containing the newly created `MongoCollection<Document>`
      *
      * - Throws:
      *   - `CommandError` if an error occurs that prevents the command from executing.
@@ -199,7 +199,7 @@ public struct MongoDatabase {
      *   - options: Optional `CreateCollectionOptions` to use for the collection
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: the newly created `MongoCollection<T>`
+     * - Returns: An `EventLoopFuture` containing the newly created `MongoCollection<T>`
      *
      * - Throws:
      *   - `CommandError` if an error occurs that prevents the command from executing.
