@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script for installing various dependencies for Travis jobs.
-# Usage: ./travis_install.sh libmongoc|mongodb|sourcery|swiftlint
+# Usage: ./travis_install.sh mongodb|sourcery|swiftlint|swiftformat
 
 # usage: install_from_gh [name] [url]
 install_from_gh () {
@@ -40,5 +40,5 @@ then
 
 else
 	echo Missing/unknown install option: "$1"
-	echo Usage: "./travis_install.sh libmongoc|mongodb|sourcery|swiftlint|swiftformat"
+	echo Usage: "./travis_install.sh mongodb|sourcery|swiftlint|swiftformat"
 fi
