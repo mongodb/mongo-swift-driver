@@ -23,7 +23,7 @@ let package = Package(
             dependencies: [],
             cSettings: [
                 .define("MONGO_SWIFT_OS_LINUX", .when(platforms: [.linux])),
-                .define("MONGO_SWIFT_OS_DARWIN", .when(platforms: [.iOS, .macOS])),
+                .define("MONGO_SWIFT_OS_DARWIN", .when(platforms: [.macOS])),
                 .define("BSON_COMPILATION"),
                 .define("MONGOC_COMPILATION")
             ],
