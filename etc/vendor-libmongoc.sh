@@ -58,6 +58,9 @@ mkdir -p $MONGOC_PATH
 echo "DOWNLOADING source tarball..."
 curl -L# -o $WORK_DIR/$TARBALL_NAME $TARBALL_URL
 
+# This step copies all files from the tarball into `Sources/CLibMongoC`. It takes an extra step
+# to maintain private headers in component-specific folders (`bson`, `mongoc`, `common`), and
+# otherwise copy headers into the common clang-module expected `include` folder
 echo "COPYING libmongoc"
 (
   pushd $WORK_DIR
@@ -83,9 +86,21 @@ echo "COPYING libmongoc"
   popd
 )
 
+# These files are usually generated as part of a cmake run. Since we are building with
+# SwiftPM we don't have the benefit of being able to generate them, so we'll copy in
+# handcrafted versions of the file. Since we know a lot about the architecture from
+# SwiftPM, we are able to inject our own defines and switch on that behavior from within
+# the config files
 echo "COPYING generated files"
 cp $ETC_DIR/generated_headers/* $CLIBMONGOC_INCLUDE_PATH
 
+# This is perhaps the most complicated step of the vendoring process. In the previous step
+# we are building a single, monolithic version of `libmongoc` and `libbson` in our `CLibMongoC`
+# module, which requires moving headers around so that they can be exported properly and
+# accessible to all the source files compiled. The following lines do the work of rewriting
+# these locations in the source itself. There are a few extra goodies below the main sed
+# command which are mostly inconsistencies with naming or file location within the libmongoc
+# codebase itself
 echo "RENAMING header files"
 (
   find $CLIBMONGOC_PATH -name "*.[ch]" | \
@@ -114,9 +129,16 @@ echo "RENAMING header files"
   popd
 )
 
+# Here we apply a number of larger patches that don't fit into a single sed line, specifically
+# an inability to use the `inttypes.h` header in an umbrella header file due to limitations with
+# how clang is building the module
 echo "PATCHING libmongoc"
 git apply "${ETC_DIR}/inttypes-non-modular-header-workaround.diff"
 
+# Clang modules are build by a conventional structure with an `include` folder for public
+# includes, and an umbrella header used as the primary entry point. As part of the vendoring
+# process, we copy in our own handwritten umbrella file. Currently, there is no generated
+# data going into it, but we could conceivably do that here if needed
 echo "COPYING umbrella header"
 cp $ETC_DIR/CLibMongoC.h.in $CLIBMONGOC_INCLUDE_PATH/CLibMongoC.h
 
