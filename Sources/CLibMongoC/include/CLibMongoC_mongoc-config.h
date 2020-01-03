@@ -53,6 +53,7 @@
 #  define MONGOC_ENABLE_SSL_OPENSSL 1
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 #  define MONGOC_HAVE_ASN1_STRING_GET0_DATA 1
 #endif
 =======
@@ -60,6 +61,9 @@
 =======
 #  define MONGOC_HAVE_ASN1_STRING_GET0_DATA 1 
 >>>>>>> sanitize mongoc generated config file
+=======
+#  define MONGOC_HAVE_ASN1_STRING_GET0_DATA 1
+>>>>>>> bump libmongoc dependency to 1.15.3
 #endif
 <<<<<<< HEAD
 

@@ -299,11 +299,17 @@ _mongoc_stream_tls_secure_transport_readv (mongoc_stream_t *stream,
    int64_t now;
    int64_t expire = 0;
 <<<<<<< HEAD
+<<<<<<< HEAD
    size_t to_read;
    size_t remaining_buf_size;
    size_t remaining_to_read;
 =======
 >>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
+=======
+   size_t to_read;
+   size_t remaining_buf_size;
+   size_t remaining_to_read;
+>>>>>>> bump libmongoc dependency to 1.15.3
 
    BSON_ASSERT (iov);
    BSON_ASSERT (iovcnt);
@@ -321,6 +327,9 @@ _mongoc_stream_tls_secure_transport_readv (mongoc_stream_t *stream,
 
       while (iov_pos < iov[i].iov_len) {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> bump libmongoc dependency to 1.15.3
 
 	 remaining_buf_size = iov[i].iov_len - iov_pos;
 	 remaining_to_read = min_bytes - ret;
@@ -335,6 +344,7 @@ _mongoc_stream_tls_secure_transport_readv (mongoc_stream_t *stream,
 	    to_read = remaining_buf_size;
 	 }
 
+<<<<<<< HEAD
          OSStatus status = SSLRead (secure_transport->ssl_ctx_ref,
                                     (char *) iov[i].iov_base + iov_pos,
 				    to_read,
@@ -343,6 +353,11 @@ _mongoc_stream_tls_secure_transport_readv (mongoc_stream_t *stream,
                                     (char *) iov[i].iov_base + iov_pos,
                                     (int) (iov[i].iov_len - iov_pos),
 >>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
+=======
+         OSStatus status = SSLRead (secure_transport->ssl_ctx_ref,
+                                    (char *) iov[i].iov_base + iov_pos,
+				    to_read,
+>>>>>>> bump libmongoc dependency to 1.15.3
                                     &read_ret);
 
          if (status != noErr) {

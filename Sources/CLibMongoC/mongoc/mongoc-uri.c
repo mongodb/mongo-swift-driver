@@ -2243,13 +2243,19 @@ mongoc_uri_get_tls (const mongoc_uri_t *uri) /* IN */
        bson_has_field (&uri->options, MONGOC_URI_TLSCAFILE) ||
        bson_has_field (&uri->options, MONGOC_URI_TLSALLOWINVALIDCERTIFICATES) ||
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> bump libmongoc dependency to 1.15.3
        bson_has_field (&uri->options, MONGOC_URI_TLSALLOWINVALIDHOSTNAMES) ||
        bson_has_field (&uri->options, MONGOC_URI_TLSINSECURE) ||
        bson_has_field (&uri->options,
                        MONGOC_URI_TLSCERTIFICATEKEYFILEPASSWORD)) {
+<<<<<<< HEAD
 =======
        bson_has_field (&uri->options, MONGOC_URI_TLSALLOWINVALIDHOSTNAMES)) {
 >>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
+=======
+>>>>>>> bump libmongoc dependency to 1.15.3
       return true;
    }
 
