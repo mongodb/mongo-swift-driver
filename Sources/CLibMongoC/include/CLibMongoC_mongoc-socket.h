@@ -38,15 +38,7 @@
 #include <sys/un.h>
 #endif
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 #if defined(_AIX) && !defined(MONGOC_HAVE_SS_FAMILY)
-=======
-#if defined(_AIX) && !defined(HAVE_SA_SS_FAMILY)
->>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
-=======
-#if defined(_AIX) && !defined(MONGOC_HAVE_SS_FAMILY)
->>>>>>> bump libmongoc dependency to 1.15.3
 # define ss_family __ss_family
 #endif
 

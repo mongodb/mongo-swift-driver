@@ -9,7 +9,6 @@ OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 EXTRA_FLAGS="-Xlinker -rpath -Xlinker ${INSTALL_DIR}/lib"
 
 # enable swiftenv
-export DEVELOPER_DIR=/Applications/Xcode10.1.app
 export SWIFTENV_ROOT="${INSTALL_DIR}/swiftenv"
 export PATH="${SWIFTENV_ROOT}/bin:$PATH"
 eval "$(swiftenv init -)"

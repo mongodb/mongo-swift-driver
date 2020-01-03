@@ -82,15 +82,6 @@
 
 BSON_BEGIN_DECLS
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
-#include <inttypes.h>
-#endif
->>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
-=======
->>>>>>> patch libmongoc to overcome `inttypes.h` issue in umbrella header
 #ifdef _MSC_VER
 #ifndef __cplusplus
 /* benign redefinition of type */

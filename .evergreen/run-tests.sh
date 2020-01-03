@@ -19,7 +19,6 @@ if [ "$SSL" != "nossl" ]; then
 fi
 
 # enable swiftenv
-export DEVELOPER_DIR=/Applications/Xcode10.1.app
 export SWIFTENV_ROOT="${INSTALL_DIR}/swiftenv"
 export PATH="${SWIFTENV_ROOT}/bin:$PATH"
 eval "$(swiftenv init -)"

@@ -25,18 +25,9 @@
 #include "mongoc-compression-private.h"
 #include "mongoc-cluster-private.h"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 #if !defined(_MSC_VER) || (_MSC_VER >= 1800)
 #include <inttypes.h>
 #endif
-=======
->>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
-=======
-#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
-#include <inttypes.h>
-#endif
->>>>>>> patch libmongoc to overcome `inttypes.h` issue in umbrella header
 
 #define RPC(_name, _code)                                               \
    static void _mongoc_rpc_gather_##_name (mongoc_rpc_##_name##_t *rpc, \
@@ -812,13 +803,6 @@ _mongoc_rpc_decompress (mongoc_rpc_t *rpc_le, uint8_t *buf, size_t buflen)
                            rpc_le->compressed.compressed_message_len,
                            buf + 16,
                            &uncompressed_size);
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-   
->>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
-=======
->>>>>>> patch libmongoc to overcome `inttypes.h` issue in umbrella header
    BSON_ASSERT (original_uncompressed_size == uncompressed_size);
 
    if (ok) {

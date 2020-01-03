@@ -35,19 +35,10 @@
 #include "mongoc-trace-private.h"
 #include "CLibMongoC_mongoc-error.h"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> patch libmongoc to overcome `inttypes.h` issue in umbrella header
 #if !defined(_MSC_VER) || (_MSC_VER >= 1800)
 #include <inttypes.h>
 #endif
 
-<<<<<<< HEAD
-=======
->>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
-=======
->>>>>>> patch libmongoc to overcome `inttypes.h` issue in umbrella header
 static bool
 _mongoc_gridfs_file_refresh_page (mongoc_gridfs_file_t *file);
 

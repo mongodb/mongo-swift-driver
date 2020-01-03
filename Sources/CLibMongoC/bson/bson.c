@@ -21,31 +21,14 @@
 #include "CLibMongoC_bson-string.h"
 #include "bson-iso8601-private.h"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 #include "CLibMongoC_common-b64-private.h"
-=======
-#include "common-b64-private.h"
->>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
-=======
-#include "CLibMongoC_common-b64-private.h"
->>>>>>> remove need to search for common headers
 
 #include <string.h>
 #include <math.h>
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 #if !defined(_MSC_VER) || (_MSC_VER >= 1800)
 #include <inttypes.h>
 #endif
-=======
->>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
-=======
-#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
-#include <inttypes.h>
-#endif
->>>>>>> patch libmongoc to overcome `inttypes.h` issue in umbrella header
 
 #ifndef BSON_MAX_RECURSION
 #define BSON_MAX_RECURSION 200

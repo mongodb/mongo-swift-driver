@@ -25,8 +25,6 @@
 #include "CLibMongoC_bson-json.h"
 #include "bson-iso8601-private.h"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 #include "CLibMongoC_common-b64-private.h"
 #include "jsonsl.h"
 
@@ -34,17 +32,6 @@
 #include <inttypes.h>
 #endif
 
-<<<<<<< HEAD
-=======
-#include "common-b64-private.h"
-=======
-#include "CLibMongoC_common-b64-private.h"
->>>>>>> remove need to search for common headers
-#include "jsonsl.h"
-
->>>>>>> SWIFT-678 vendor libmongoc and build it with SwiftPM
-=======
->>>>>>> patch libmongoc to overcome `inttypes.h` issue in umbrella header
 #ifdef _WIN32
 #include <io.h>
 #include <share.h>
