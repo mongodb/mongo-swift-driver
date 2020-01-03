@@ -10,7 +10,7 @@ jobs:
     - stage: pre-tests
       name: verify Sourcery has been run
       os: osx
-      install: ./Tests/Scripts/install_dependencies.sh sourcery
+      install: ./etc/install_dependencies.sh sourcery
       before_script: skip
       script:
         - make linuxmain SOURCERY=${PWD}/sourcery/bin/sourcery
@@ -22,7 +22,7 @@ jobs:
       name: lint
       os: osx
       osx_image: xcode11.3
-      install: ./Tests/Scripts/install_dependencies.sh swiftlint && ./Tests/Scripts/install_dependencies.sh swiftformat
+      install: ./etc/install_dependencies.sh swiftlint && ./etc/install_dependencies.sh swiftformat
       before_script: skip
       script: ${PWD}/swiftlint/swiftlint --strict && ${PWD}/SwiftFormat/CommandLineTool/swiftformat --verbose --lint .
 
@@ -43,7 +43,7 @@ jobs:
       after_success: bash <(curl -s https://codecov.io/bash)
 
 install:
-  - INSTALLER=Tests/Scripts/install_dependencies.sh
+  - INSTALLER=etc/install_dependencies.sh
   - ./${INSTALLER} mongodb
   - if [[ "$TRAVIS_JOB_NAME" != "code coverage" ]]; then eval "$(curl -sL https://swiftenv.fuller.li/install.sh)"; fi
 

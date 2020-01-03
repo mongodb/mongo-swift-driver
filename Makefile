@@ -1,4 +1,4 @@
-# if provided, FILTER is used as the --filter argument to `swift test`. 
+# if provided, FILTER is used as the --filter argument to `swift test`.
 ifdef FILTER
 	FILTERARG = --filter $(FILTER)
 else
@@ -26,7 +26,7 @@ all:
 project:
 	swift package generate-xcodeproj
 	@$(call check_for_gem,xcodeproj)
-	ruby Tests/Scripts/add_json_files.rb
+	ruby etc/add_json_files.rb
 
 linuxmain:
 	$(SOURCERY) --sources Tests/ --exclude-sources Tests/DisabledTests/ --templates Tests/LinuxMain.stencil --output Tests/LinuxMain.swift
