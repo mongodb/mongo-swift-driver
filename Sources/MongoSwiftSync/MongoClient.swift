@@ -22,7 +22,7 @@ public class MongoClient {
     private let eventLoopGroup: MultiThreadedEventLoopGroup
 
     /// The underlying async client.
-    private let asyncClient: MongoSwift.MongoClient
+    internal let asyncClient: MongoSwift.MongoClient
 
     /**
      * Create a new client connection to a MongoDB server. For options that included in both the connection string URI
@@ -128,7 +128,7 @@ public class MongoClient {
         _ filter: Document? = nil,
         session: ClientSession? = nil
     ) throws -> [MongoDatabase] {
-        fatalError("unimplemented")
+        return try self.listDatabaseNames(filter, session: session).map { self.db($0) }
     }
 
     /**

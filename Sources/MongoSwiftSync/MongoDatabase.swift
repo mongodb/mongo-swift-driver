@@ -2,31 +2,35 @@ import MongoSwift
 
 /// A MongoDB Database.
 public struct MongoDatabase {
-    /// The client which this database was derived from.
-    internal let _client: MongoClient
-
     /// Encoder used by this database for BSON conversions. This encoder's options are inherited by collections derived
     /// from this database.
-    public var encoder: BSONEncoder { fatalError("unimplemented") }
+    public var encoder: BSONEncoder { return self.asyncDB.encoder }
 
     /// Decoder whose options are inherited by collections derived from this database.
-    public var decoder: BSONDecoder { fatalError("unimplemented") }
+    public var decoder: BSONDecoder { return self.asyncDB.decoder }
 
     /// The name of this database.
-    public var name: String { fatalError("unimplemented") }
+    public var name: String { return self.asyncDB.name }
 
     /// The `ReadConcern` set on this database, or `nil` if one is not set.
-    public var readConcern: ReadConcern? { fatalError("unimplemented") }
+    public var readConcern: ReadConcern? { return self.asyncDB.readConcern }
 
     /// The `ReadPreference` set on this database
-    public let readPreference: ReadPreference
+    public var readPreference: ReadPreference { return self.asyncDB.readPreference }
 
     /// The `WriteConcern` set on this database, or `nil` if one is not set.
-    public let writeConcern: WriteConcern?
+    public var writeConcern: WriteConcern? { return self.asyncDB.writeConcern }
+
+    /// The client which this database was derived from.
+    internal let client: MongoClient
+
+    /// The underlying asynchronous database.
+    private let asyncDB: MongoSwift.MongoDatabase
 
     /// Initializes a new `MongoDatabase` instance, not meant to be instantiated directly.
     internal init(name: String, client: MongoClient, options: DatabaseOptions?) {
-        fatalError("unimplemented")
+        self.client = client
+        self.asyncDB = client.asyncClient.db(name, options: options)
     }
 
     /**
@@ -39,7 +43,7 @@ public struct MongoDatabase {
      *   - `CommandError` if an error occurs that prevents the command from executing.
      */
     public func drop(options: DropDatabaseOptions? = nil, session: ClientSession? = nil) throws {
-        fatalError("unimplemented")
+        return try self.asyncDB.drop(options: options, session: session?.asyncSession).wait()
     }
 
     /**
@@ -195,7 +199,7 @@ public struct MongoDatabase {
         options: ListCollectionsOptions? = nil,
         session: ClientSession? = nil
     ) throws -> [String] {
-        fatalError("unimplemented")
+        return try self.asyncDB.listCollectionNames(filter, options: options, session: session?.asyncSession).wait()
     }
 
     /**
@@ -221,7 +225,7 @@ public struct MongoDatabase {
         options: RunCommandOptions? = nil,
         session: ClientSession? = nil
     ) throws -> Document {
-        fatalError("unimplemented")
+        return try self.asyncDB.runCommand(command, options: options, session: session?.asyncSession).wait()
     }
 
     /**

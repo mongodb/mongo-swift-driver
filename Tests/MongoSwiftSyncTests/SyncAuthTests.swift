@@ -1,5 +1,5 @@
 import Foundation
-import MongoSwift
+import MongoSwiftSync
 import Nimble
 import TestsCommon
 

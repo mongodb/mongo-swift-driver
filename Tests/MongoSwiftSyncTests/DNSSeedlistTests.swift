@@ -1,5 +1,5 @@
 import Foundation
-@testable import MongoSwift
+import MongoSwiftSync
 import Nimble
 import TestsCommon
 import XCTest
@@ -21,15 +21,6 @@ struct DNSSeedlistTestCase: Decodable {
     let error: Bool?
     /// A comment to indicate why a test would fail.
     let comment: String?
-}
-
-/// Makes `ConnectionId` `Decodable` for the sake of constructing it from the test files.
-extension ConnectionId: Decodable {
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        let hostPortPair = try container.decode(String.self)
-        self.init(hostPortPair)
-    }
 }
 
 final class DNSSeedlistTests: MongoSwiftTestCase {

@@ -147,13 +147,13 @@ final class ReadConcernTests: MongoSwiftTestCase {
 
         try self.withTestClient { client in
             let db1 = client.db(type(of: self).testDatabase)
-            defer { try? db1.drop() }
+            defer { try? db1.drop().wait() }
 
             let dbDesc = "db created with no RC provided"
 
             let coll1Name = self.getCollectionName(suffix: "1")
             // expect that a collection created from a DB with unset RC also has unset RC
-            var coll1 = try db1.createCollection(coll1Name)
+            var coll1 = try db1.createCollection(coll1Name).wait()
             try checkReadConcern(coll1, empty, "collection created with no RC provided from \(dbDesc)")
 
             // expect that a collection retrieved from a DB with unset RC also has unset RC
@@ -177,17 +177,17 @@ final class ReadConcernTests: MongoSwiftTestCase {
                 db1.collection(self.getCollectionName(suffix: "3"), options: CollectionOptions(readConcern: unknown))
             try checkReadConcern(coll3, unknown, "collection retrieved with unknown RC level from \(dbDesc)")
 
-            try db1.drop()
+            try db1.drop().wait()
 
             let db2 = client.db(
                 type(of: self).testDatabase,
                 options: DatabaseOptions(readConcern: local)
             )
-            defer { try? db2.drop() }
+            defer { try? db2.drop().wait() }
 
             let coll4Name = self.getCollectionName(suffix: "4")
             // expect that a collection created from a DB with local RC also has local RC
-            var coll4 = try db2.createCollection(coll4Name)
+            var coll4 = try db2.createCollection(coll4Name).wait()
             try checkReadConcern(coll4, local, "collection created with no RC provided from \(dbDesc)")
 
             // expect that a collection retrieved from a DB with local RC also has local RC

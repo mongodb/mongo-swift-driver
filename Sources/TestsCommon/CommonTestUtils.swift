@@ -218,6 +218,15 @@ public enum AuthMechanism: String, Decodable {
     case plain = "PLAIN"
 }
 
+/// Makes `ConnectionId` `Decodable` for the sake of constructing it from spec test files.
+extension ConnectionId: Decodable {
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let hostPortPair = try container.decode(String.self)
+        self.init(hostPortPair)
+    }
+}
+
 extension CommandError {
     public static func new(
         code: ServerErrorCode,
