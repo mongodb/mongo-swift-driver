@@ -172,6 +172,23 @@ functions:
           SWIFT_VERSION=${SWIFT_VERSION} \
             sh ${PROJECT_DIRECTORY}/.evergreen/install-dependencies.sh
 
+  "upload-mo-artifacts":
+    - command: shell.exec
+      params:
+        script: |
+          ${PREPARE_SHELL}
+          find $MONGO_ORCHESTRATION_HOME -name \*.log | xargs tar czf mongodb-logs.tar.gz
+    - command: s3.put
+      params:
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        local_file: mongodb-logs.tar.gz
+        remote_file: ${UPLOAD_BUCKET}/${build_variant}/${revision}/${version_id}/${build_id}/logs/${task_id}-${execution}-mongodb-logs.tar.gz
+        bucket: mciuploads
+        permissions: public-read
+        content_type: ${content_type|application/x-gzip}
+        display_name: "mongodb-logs.tar.gz"
+
 pre:
   - func: "fetch source"
   - func: "install dependencies"
@@ -191,6 +208,7 @@ tasks:
             TOPOLOGY: "server"
         - func: "run tests"
         - func: "stop mongo-orchestration"
+        - func: "upload-mo-artifacts"
 
     - name: "test-3.6-replica_set"
       tags: ["3.6", "replica_set"]
@@ -203,6 +221,7 @@ tasks:
             TOPOLOGY: "replica_set"
         - func: "run tests"
         - func: "stop mongo-orchestration"       
+        - func: "upload-mo-artifacts"
 
     - name: "test-3.6-sharded_cluster"
       tags: ["3.6", "sharded_cluster"]
@@ -215,6 +234,7 @@ tasks:
             TOPOLOGY: "sharded_cluster"
         - func: "run tests"
         - func: "stop mongo-orchestration"      
+        - func: "upload-mo-artifacts"
 
     - name: "test-4.0-standalone"
       tags: ["4.0", "standalone"]
@@ -227,6 +247,7 @@ tasks:
             TOPOLOGY: "server"
         - func: "run tests"
         - func: "stop mongo-orchestration"
+        - func: "upload-mo-artifacts"
 
     - name: "test-4.0-replica_set"
       tags: ["4.0", "replica_set"]
@@ -239,6 +260,7 @@ tasks:
             TOPOLOGY: "replica_set"
         - func: "run tests"
         - func: "stop mongo-orchestration"
+        - func: "upload-mo-artifacts"
 
     - name: "test-4.0-sharded_cluster"
       tags: ["4.0", "sharded_cluster"]
@@ -251,6 +273,7 @@ tasks:
             TOPOLOGY: "sharded_cluster"
         - func: "run tests"
         - func: "stop mongo-orchestration"
+        - func: "upload-mo-artifacts"
 
     - name: "test-4.2-standalone"
       tags: ["4.2", "standalone"]
@@ -263,6 +286,7 @@ tasks:
             TOPOLOGY: "server"
         - func: "run tests"
         - func: "stop mongo-orchestration"
+        - func: "upload-mo-artifacts"
 
     - name: "test-4.2-replica_set"
       tags: ["4.2", "replica_set"]
@@ -275,6 +299,7 @@ tasks:
             TOPOLOGY: "replica_set"
         - func: "run tests"
         - func: "stop mongo-orchestration"
+        - func: "upload-mo-artifacts"
 
     - name: "test-4.2-sharded_cluster"
       tags: ["4.2", "sharded_cluster"]
@@ -287,6 +312,7 @@ tasks:
             TOPOLOGY: "sharded_cluster"
         - func: "run tests"
         - func: "stop mongo-orchestration"
+        - func: "upload-mo-artifacts"
 
     - name: "test-latest-standalone"
       tags: ["latest", "standalone"]
@@ -299,6 +325,7 @@ tasks:
             TOPOLOGY: "server"
         - func: "run tests"
         - func: "stop mongo-orchestration"
+        - func: "upload-mo-artifacts"
 
     - name: "test-latest-replica_set"
       tags: ["latest", "replica_set"]
@@ -311,6 +338,7 @@ tasks:
             TOPOLOGY: "replica_set"
         - func: "run tests"
         - func: "stop mongo-orchestration"
+        - func: "upload-mo-artifacts"
 
     - name: "test-latest-sharded_cluster"
       tags: ["latest", "sharded_cluster"]
@@ -323,6 +351,7 @@ tasks:
             TOPOLOGY: "sharded_cluster"
         - func: "run tests"
         - func: "stop mongo-orchestration"
+        - func: "upload-mo-artifacts"
 
     - name: "test-atlas-connectivity"
       tags: ["atlas-connect"]
