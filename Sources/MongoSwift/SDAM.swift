@@ -1,40 +1,30 @@
 import CLibMongoC
 import Foundation
+import NIO
 
-/// A struct representing a server address, consisting of a host and port.
-public struct Address: Equatable {
-    /// The hostname or IP address.
-    public let host: String
-
-    /// The port number.
-    public let port: UInt16
-
+extension SocketAddress {
     /// Initializes a Address from an UnsafePointer to a mongoc_host_list_t.
-    internal init(_ hostList: UnsafePointer<mongoc_host_list_t>) {
+    internal init(hostList: UnsafePointer<mongoc_host_list_t>) {
         var hostData = hostList.pointee
-        self.host = withUnsafeBytes(of: &hostData.host) { rawPtr -> String in
+        let host = withUnsafeBytes(of: &hostData.host) { rawPtr -> String in
             // if baseAddress is nil, the buffer is empty.
             guard let baseAddress = rawPtr.baseAddress else {
                 return ""
             }
             return String(cString: baseAddress.assumingMemoryBound(to: CChar.self))
         }
-        self.port = hostData.port
+        // swiftlint:disable:next force_try
+        try! self.init(ipAddress: host, port: Int(hostData.port)) // the address should always be properly formatted
     }
 
     /// Initializes a Address, using the default localhost:27017 if a host/port is not provided.
-    internal init(_ hostAndPort: String = "localhost:27017") throws {
+    internal init(hostAndPort: String = "localhost:27017") throws {
         let parts = hostAndPort.split(separator: ":")
-        self.host = String(parts[0])
-        guard let port = UInt16(parts[1]) else {
+        let host = String(parts[0])
+        guard let port = Int(parts[1]) else {
             throw InternalError(message: "couldn't parse address from \(hostAndPort)")
         }
-        self.port = port
-    }
-
-    internal init(host: String, port: UInt16) {
-        self.host = host
-        self.port = port
+        try self.init(ipAddress: host, port: port)
     }
 }
 
@@ -65,7 +55,7 @@ public struct ServerDescription {
     /// The hostname or IP and the port number that the client connects to. Note that this is not the
     /// server's ismaster.me field, in the case that the server reports an address different from the
     /// address the client uses.
-    public let address: Address
+    public let address: SocketAddress
 
     /// The duration in milliseconds of the server's last ismaster call.
     public let roundTripTime: Int64?
@@ -83,17 +73,17 @@ public struct ServerDescription {
     public let maxWireVersion: Int
 
     /// The hostname or IP and the port number that this server was configured with in the replica set.
-    public let me: Address?
+    public let me: SocketAddress?
 
     /// This server's opinion of the replica set's hosts, if any.
-    public let hosts: [Address]
+    public let hosts: [SocketAddress]
 
     /// This server's opinion of the replica set's arbiters, if any.
-    public let arbiters: [Address]
+    public let arbiters: [SocketAddress]
 
     /// "Passives" are priority-zero replica set members that cannot become primary.
     /// The client treats them precisely the same as other members.
-    public let passives: [Address]
+    public let passives: [SocketAddress]
 
     /// Tags for this server.
     public let tags: [String: String]
@@ -108,7 +98,7 @@ public struct ServerDescription {
     public let electionId: ObjectId?
 
     /// This server's opinion of who the primary is.
-    public let primary: Address?
+    public let primary: SocketAddress?
 
     /// When this server was last checked.
     public let lastUpdateTime: Date
@@ -119,7 +109,7 @@ public struct ServerDescription {
     /// An internal initializer to create a `ServerDescription` from an OpaquePointer to a
     /// mongoc_server_description_t.
     internal init(_ description: OpaquePointer) {
-        self.address = Address(mongoc_server_description_host(description))
+        self.address = SocketAddress(hostList: mongoc_server_description_host(description))
         self.roundTripTime = mongoc_server_description_round_trip_time(description)
         self.lastUpdateTime = Date(msSinceEpoch: mongoc_server_description_last_update_time(description))
         self.type = ServerType(rawValue: String(cString: mongoc_server_description_type(description))) ?? .unknown
@@ -131,23 +121,23 @@ public struct ServerDescription {
         self.lastWriteDate = isMaster["lasWrite"]?.documentValue?["lastWriteDate"]?.dateValue
         self.minWireVersion = isMaster["minWireVersion"]?.asInt() ?? 0
         self.maxWireVersion = isMaster["maxWireVersion"]?.asInt() ?? 0
-        self.me = try? isMaster["me"]?.stringValue.map(Address.init)
+        self.me = isMaster["me"]?.stringValue.flatMap { try? SocketAddress(hostAndPort: $0) }
         self.setName = isMaster["setName"]?.stringValue
         self.setVersion = isMaster["setVersion"]?.asInt()
         self.electionId = isMaster["electionId"]?.objectIdValue
-        self.primary = try? isMaster["primary"]?.stringValue.map(Address.init)
+        self.primary = isMaster["primary"]?.stringValue.flatMap { try? SocketAddress(hostAndPort: $0) }
         self.logicalSessionTimeoutMinutes = isMaster["logicalSessionTimeoutMinutes"]?.asInt()
 
         self.hosts = isMaster["hosts"]?.arrayValue?.asArrayOf(String.self)?.compactMap { host in
-            try? Address(host)
+            try? SocketAddress(hostAndPort: host)
         } ?? []
 
         self.passives = isMaster["passives"]?.arrayValue?.asArrayOf(String.self)?.compactMap { passive in
-            try? Address(passive)
+            try? SocketAddress(hostAndPort: passive)
         } ?? []
 
         self.arbiters = isMaster["arbiters"]?.arrayValue?.asArrayOf(String.self)?.compactMap { arbiter in
-            try? Address(arbiter)
+            try? SocketAddress(hostAndPort: arbiter)
         } ?? []
 
         self.tags = isMaster["tags"]?.documentValue.map { tagsDoc in

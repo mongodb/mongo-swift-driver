@@ -8,7 +8,6 @@
 // other types. We don't need to explicitly re-export nested types as re-exporting their parent types will make them
 // available under their parents' namespaces, just as they are in the async module.
 
-@_exported import struct MongoSwift.Address
 @_exported import struct MongoSwift.AggregateOptions
 @_exported import struct MongoSwift.AuthenticationError
 @_exported import enum MongoSwift.BSON
