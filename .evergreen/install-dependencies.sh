@@ -4,7 +4,7 @@ set -o errexit  # Exit the script with error if any of the commands fail
 
 # variables
 PROJECT_DIRECTORY=${PROJECT_DIRECTORY:-$PWD}
-SWIFT_VERSION=${SWIFT_VERSION:-4.2.4}
+SWIFT_VERSION=${SWIFT_VERSION:-5.0}
 INSTALL_DIR="${PROJECT_DIRECTORY}/opt"
 BUILD_DIR="${PROJECT_DIRECTORY}/libmongoc-build"
 EVG_DIR=$(dirname $0)
