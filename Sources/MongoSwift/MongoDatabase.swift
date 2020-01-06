@@ -251,7 +251,7 @@ public struct MongoDatabase {
      *   - options: Optional `ListCollectionsOptions` to use when executing this command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture<[MongoCollection<Document>]>`s containing collections that match the provided
+     * - Returns: An `EventLoopFuture<[MongoCollection<Document>]>` containing collections that match the provided
      *            filter.
      *
      * - Throws:
