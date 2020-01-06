@@ -251,12 +251,9 @@ public struct TopologyDescription: Equatable {
         let serverData = mongoc_topology_description_get_servers(description, &size)
         defer { mongoc_server_descriptions_destroy_all(serverData, size) }
 
-        var servers: [ServerDescription]?
         let buffer = UnsafeBufferPointer(start: serverData, count: size)
-        if size > 0 {
-            // swiftlint:disable:next force_unwrapping
-            servers = Array(buffer).map { ServerDescription($0!) } // documented as always returning a value.
-        }
-        self.servers = servers ?? []
+        // swiftlint:disable:next force_unwrapping
+        self.servers = size > 0 ? Array(buffer).map { ServerDescription($0!) } : []
+        // the buffer is documented as always containing non-nil pointers (if non-empty).
     }
 }
