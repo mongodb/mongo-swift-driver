@@ -48,7 +48,7 @@ extension MongoCollection {
     ) throws -> T? {
         let options = options.map { FindOptions(from: $0) }
         let cursor = try self.find(filter, options: options, session: session)
-        return try cursor.nextOrError()
+        return try cursor.next()?.get()
     }
 
     /**

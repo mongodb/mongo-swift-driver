@@ -71,9 +71,9 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         expect(doc).to(equal(["x": 22]))
 
         let cursor = try coll.find()
-        expect(cursor.next()).to(equal(["_id": 1, "x": 11]))
-        expect(cursor.next()).to(equal(["_id": result.insertedIds[1]!, "x": 22]))
-        expect(cursor.next()).to(beNil())
+        expect(try cursor.next()?.get()).to(equal(["_id": 1, "x": 11]))
+        expect(try cursor.next()?.get()).to(equal(["_id": result.insertedIds[1]!, "x": 22]))
+        expect(try cursor.next()?.get()).to(beNil())
     }
 
     func testBulkWriteErrors() throws {
@@ -147,13 +147,13 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         expect(result.upsertedIds[3]!.type).to(equal(.objectId))
 
         let cursor = try coll.find()
-        expect(cursor.next()).to(equal(["_id": 1, "x": 11]))
-        expect(cursor.next()).to(equal(["_id": 2, "x": 23]))
-        expect(cursor.next()).to(equal(["_id": 3, "x": 32]))
-        expect(cursor.next()).to(equal(["_id": 4, "x": 43]))
-        expect(cursor.next()).to(equal(["_id": 5, "x": 56]))
-        expect(cursor.next()).to(equal(["_id": result.upsertedIds[3]!, "x": 67]))
-        expect(cursor.next()).to(beNil())
+        expect(try cursor.next()?.get()).to(equal(["_id": 1, "x": 11]))
+        expect(try cursor.next()?.get()).to(equal(["_id": 2, "x": 23]))
+        expect(try cursor.next()?.get()).to(equal(["_id": 3, "x": 32]))
+        expect(try cursor.next()?.get()).to(equal(["_id": 4, "x": 43]))
+        expect(try cursor.next()?.get()).to(equal(["_id": 5, "x": 56]))
+        expect(try cursor.next()?.get()).to(equal(["_id": result.upsertedIds[3]!, "x": 67]))
+        expect(try cursor.next()?.get()).to(beNil())
     }
 
     func testDeletes() throws {
@@ -169,8 +169,8 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         expect(result.deletedCount).to(equal(3))
 
         let cursor = try coll.find()
-        expect(cursor.next()).to(equal(["_id": 2, "x": 22]))
-        expect(cursor.next()).to(beNil())
+        expect(try cursor.next()?.get()).to(equal(["_id": 2, "x": 22]))
+        expect(try cursor.next()?.get()).to(beNil())
     }
 
     func testMixedOrderedOperations() throws {
@@ -203,13 +203,11 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         expect(result.deletedCount).to(equal(2))
 
         let cursor = try coll.find()
-        expect(cursor.next()).to(equal(["_id": 2, "x": 24]))
-        expect(cursor.next()).to(equal(["_id": 3, "x": 34]))
-        expect(cursor.next()).to(equal(["_id": 4, "x": 44]))
+        expect(try cursor.next()?.get()).to(equal(["_id": 2, "x": 24]))
+        expect(try cursor.next()?.get()).to(equal(["_id": 3, "x": 34]))
+        expect(try cursor.next()?.get()).to(equal(["_id": 4, "x": 44]))
         expect(cursor.next()).to(beNil()) // cursor ends
-        expect(cursor.error).to(beNil())
-        expect(cursor.next()).to(beNil()) // iterate after cursor ends
-        expect(cursor.error).to(matchError(LogicError.self))
+        expect(try cursor.next()?.get()).to(throwError(UserError.logicError(message: ""))) // iterate after cursor ends
     }
 
     func testUnacknowledgedWriteConcern() throws {

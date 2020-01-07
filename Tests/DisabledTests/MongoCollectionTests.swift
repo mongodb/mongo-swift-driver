@@ -100,7 +100,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     }
 
     func testAggregate() throws {
-        expect(Array(try self.coll.aggregate([["$project": ["_id": 0, "cat": 1]]])))
+        expect(try self.coll.aggregate([["$project": ["_id": 0, "cat": 1]]]).all())
             .to(equal([["cat": "dog"], ["cat": "cat"]] as [Document]))
     }
 
@@ -209,8 +209,8 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
     func testFind() throws {
         let findResult = try coll.find(["cat": "cat"])
-        expect(findResult.next()).to(equal(["_id": 2, "cat": "cat"]))
-        expect(findResult.next()).to(beNil())
+        expect(try findResult.next()?.get()).to(equal(["_id": 2, "cat": "cat"]))
+        expect(try findResult.next()?.get()).to(beNil())
     }
 
     func testFindOne() throws {
@@ -316,11 +316,10 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
     func testCursorIteration() throws {
         let findResult1 = try coll.find(["cat": "cat"])
-        while let _ = try findResult1.nextOrError() {}
+        while let _ = try findResult1.next()?.get() {}
 
         let findResult2 = try coll.find(["cat": "cat"])
         for _ in findResult2 {}
-        expect(findResult2.error).to(beNil())
     }
 
     struct Basic: Codable, Equatable {
@@ -345,7 +344,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         try coll1.replaceOne(filter: ["x": 2], replacement: b4)
         expect(try coll1.countDocuments()).to(equal(3))
 
-        for doc in try coll1.find() {
+        for doc in try coll1.find().all() {
             expect(doc).to(beAnInstanceOf(Basic.self))
         }
 

@@ -32,9 +32,9 @@ final class ClientSessionTests: MongoSwiftTestCase {
 
     // list of read only operations on MongoCollection that take in a session
     let collectionSessionReadOps: [CollectionSessionOp] = [
-        (name: "find", body: { _ = try $0.find([:], session: $1).nextOrError() }),
+        (name: "find", body: { _ = try $0.find([:], session: $1).next()?.get() }),
         (name: "findOne", body: { _ = try $0.findOne([:], session: $1) }),
-        (name: "aggregate", body: { _ = try $0.aggregate([], session: $1).nextOrError() }),
+        (name: "aggregate", body: { _ = try $0.aggregate([], session: $1).next()?.get() }),
         (name: "distinct", body: { _ = try $0.distinct(fieldName: "x", session: $1) }),
         (name: "countDocuments", body: { _ = try $0.countDocuments(session: $1) }),
         (name: "estimatedDocumentCount", body: { _ = try $0.estimatedDocumentCount(session: $1) })
@@ -254,7 +254,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
         let cursor = try collection.find(session: session2)
         expect(cursor.next()).toNot(beNil())
         session2.end()
-        expect(try cursor.nextOrError()).to(throwError(ClientSession.SessionInactiveError))
+        expect(try cursor.next()?.get()).to(throwError(ClientSession.SessionInactiveError))
 
 #endif
     }

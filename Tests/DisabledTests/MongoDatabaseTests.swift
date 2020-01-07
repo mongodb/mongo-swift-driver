@@ -106,12 +106,10 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
             pipeline: [["$project": ["a": 1]]],
             viewOn: "foo"
         )
-
         expect(try db.createCollection("fooView", options: viewOptions)).toNot(throwError())
 
-        var collectionInfo = try Array(db.listCollections())
+        var collectionInfo = try Array(db.listCollections().all())
         collectionInfo.sort { $0.name < $1.name }
-
         expect(collectionInfo).to(haveCount(3))
 
         let fooInfo = CollectionSpecificationInfo(readOnly: false, uuid: UUID())
