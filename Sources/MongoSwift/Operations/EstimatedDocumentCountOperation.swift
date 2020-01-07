@@ -1,4 +1,4 @@
-import mongoc
+import CLibMongoC
 
 /// Options to use when executing an `estimatedDocumentCount` command on a `MongoCollection`.
 public struct EstimatedDocumentCountOptions: Codable {

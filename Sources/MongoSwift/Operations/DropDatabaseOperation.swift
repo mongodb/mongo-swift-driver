@@ -1,4 +1,4 @@
-import mongoc
+import CLibMongoC
 
 /// An operation corresponding to a "drop" command on a database.
 internal struct DropDatabaseOperation: Operation {

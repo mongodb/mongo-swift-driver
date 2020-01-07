@@ -1,4 +1,4 @@
-import mongoc
+import CLibMongoC
 
 /// A connection to the database.
 internal class Connection {

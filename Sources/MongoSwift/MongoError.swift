@@ -1,5 +1,5 @@
+import CLibMongoC
 import Foundation
-import mongoc
 
 /// An empty protocol for encapsulating all errors that this package can throw.
 public protocol MongoError: LocalizedError {}

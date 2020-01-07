@@ -1,4 +1,4 @@
-import bson
+import CLibMongoC
 import Foundation
 
 /// A protocol indicating that a type can be overwritten in-place on a `bson_t`.

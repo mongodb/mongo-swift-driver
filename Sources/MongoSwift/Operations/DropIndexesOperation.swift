@@ -1,4 +1,4 @@
-import mongoc
+import CLibMongoC
 
 /// Options to use when dropping an index from a `MongoCollection`.
 public struct DropIndexOptions: Encodable {

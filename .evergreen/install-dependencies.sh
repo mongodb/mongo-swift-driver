@@ -12,19 +12,6 @@ EVG_DIR=$(dirname $0)
 export SWIFTENV_ROOT="${INSTALL_DIR}/swiftenv"
 export PATH=/opt/cmake/bin:${SWIFTENV_ROOT}/bin:$PATH
 
-# should be set by EVG eventuallty
-LIBMONGOC_VERSION="r1.15"
-
-# find cmake and set the path to it in $CMAKE
-. $EVG_DIR/find-cmake.sh
-
-# install libmongoc
-git clone --depth 1 -b "${LIBMONGOC_VERSION}" https://github.com/mongodb/mongo-c-driver "${BUILD_DIR}"
-cd "${BUILD_DIR}"
-$CMAKE -DCMAKE_INSTALL_PREFIX:PATH="${INSTALL_DIR}" -DENABLE_ZSTD=OFF
-make -j8 install
-cd "${PROJECT_DIRECTORY}"
-
 # install swiftenv
 git clone --depth 1 -b "osx-install-path" https://github.com/mbroadst/swiftenv.git "${SWIFTENV_ROOT}"
 

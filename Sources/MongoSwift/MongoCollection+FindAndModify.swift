@@ -1,4 +1,4 @@
-import mongoc
+import CLibMongoC
 
 /// An extension of `MongoCollection` encapsulating find and modify operations.
 extension MongoCollection {

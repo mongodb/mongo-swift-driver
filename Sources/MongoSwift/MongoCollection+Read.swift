@@ -1,4 +1,4 @@
-import mongoc
+import CLibMongoC
 
 /// An extension of `MongoCollection` encapsulating read operations.
 extension MongoCollection {

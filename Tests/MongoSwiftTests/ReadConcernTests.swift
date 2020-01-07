@@ -1,4 +1,4 @@
-import mongoc
+import CLibMongoC
 @testable import MongoSwift
 import Nimble
 import TestsCommon

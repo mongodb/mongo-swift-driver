@@ -1,4 +1,4 @@
-import mongoc
+import CLibMongoC
 
 /// Options to use when executing a `createCollection` command on a `MongoDatabase`.
 public struct CreateCollectionOptions: Codable, CodingStrategyProvider {

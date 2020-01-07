@@ -1,5 +1,5 @@
+import CLibMongoC
 import Foundation
-import mongoc
 
 /// Options to use when creating a `ClientSession`.
 public struct ClientSessionOptions {

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script for installing various dependencies for Travis jobs.
-# Usage: ./travis_install.sh libmongoc|mongodb|sourcery|swiftlint
+# Usage: ./travis_install.sh mongodb|sourcery|swiftlint|swiftformat
 
 # usage: install_from_gh [name] [url]
 install_from_gh () {
@@ -12,23 +12,7 @@ install_from_gh () {
 	unzip ${PWD}/${NAME}/${NAME}.zip -d ${PWD}/${NAME}
 }
 
-if [[ $1 == "libmongoc" ]]
-then
-	if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then INSTALL_PREFIX=/usr/local; fi
-	if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then INSTALL_PREFIX=/usr; fi
-
-	# populate cache
-	if [ ! -d ${LIBMONGOC_CACHE_DIR} ] || [ -z "$(ls -A $LIBMONGOC_CACHE_DIR)" ]; then
-		git clone -b ${LIBMONGOC_VERSION} https://github.com/mongodb/mongo-c-driver /tmp/libmongoc
-		pushd /tmp/libmongoc
-		cmake -DCMAKE_INSTALL_PREFIX:PATH=${LIBMONGOC_CACHE_DIR}
-		sudo make -j8 install
-		popd
-	fi
-
-	sudo cp -r ${LIBMONGOC_CACHE_DIR}/* ${INSTALL_PREFIX}
-
-elif [[ $1 == "mongodb" ]]
+if [[ $1 == "mongodb" ]]
 then
 	MONGODB_BASE="mongodb-linux-x86_64"
 	if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then MONGODB_BASE="mongodb-osx-ssl-x86_64"; fi
@@ -56,5 +40,5 @@ then
 
 else
 	echo Missing/unknown install option: "$1"
-	echo Usage: "./travis_install.sh libmongoc|mongodb|sourcery|swiftlint|swiftformat"
+	echo Usage: "./travis_install.sh mongodb|sourcery|swiftlint|swiftformat"
 fi

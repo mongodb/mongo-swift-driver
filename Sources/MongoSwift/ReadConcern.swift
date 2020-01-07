@@ -1,4 +1,4 @@
-import mongoc
+import CLibMongoC
 
 /// A struct to represent a MongoDB read concern.
 public struct ReadConcern: Codable {

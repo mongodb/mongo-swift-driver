@@ -1,4 +1,4 @@
-import mongoc
+import CLibMongoC
 
 /// An operation corresponding to a listIndexes command on a collection.
 internal struct ListIndexesOperation<T: Codable>: Operation {

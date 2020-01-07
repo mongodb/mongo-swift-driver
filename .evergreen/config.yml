@@ -220,7 +220,7 @@ tasks:
             MONGODB_VERSION: "3.6"
             TOPOLOGY: "replica_set"
         - func: "run tests"
-        - func: "stop mongo-orchestration"       
+        - func: "stop mongo-orchestration"
         - func: "upload-mo-artifacts"
 
     - name: "test-3.6-sharded_cluster"
@@ -233,7 +233,7 @@ tasks:
             MONGODB_VERSION: "3.6"
             TOPOLOGY: "sharded_cluster"
         - func: "run tests"
-        - func: "stop mongo-orchestration"      
+        - func: "stop mongo-orchestration"
         - func: "upload-mo-artifacts"
 
     - name: "test-4.0-standalone"
@@ -434,7 +434,7 @@ axes:
 buildvariants:
 
 - matrix_name: "tests-all"
-  matrix_spec: 
+  matrix_spec:
     os-fully-featured: "*"
     swift-version: "*"
     ssl: "*"
@@ -457,7 +457,7 @@ buildvariants:
 
 # TODO SWIFT-703: reenable
 # - matrix_name: "atlas-connect"
-#   matrix_spec: 
+#   matrix_spec:
 #     os-fully-featured: ubuntu-18.04
 #     swift-version: "*"
 #   display_name: "Atlas Connectivity ${swift-version} ${os-fully-featured}"

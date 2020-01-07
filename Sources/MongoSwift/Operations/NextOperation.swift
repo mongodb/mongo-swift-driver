@@ -1,4 +1,4 @@
-import mongoc
+import CLibMongoC
 
 /// The entity on which the `next` operation is called.
 internal enum NextOperationTarget<T: Codable> {

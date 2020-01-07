@@ -1,21 +1,18 @@
 language: generic
-sudo: required
-dist: trusty
+dist: xenial
 
 env:
   global:
     - MONGODB_VERSION=3.6.14
-    - LIBMONGOC_VERSION=r1.15
-    - LIBMONGOC_CACHE_DIR=${HOME}/libmongoc-${LIBMONGOC_VERSION}
 
 jobs:
   include:
     - stage: pre-tests
       name: verify Sourcery has been run
       os: osx
-      install: ./Tests/Scripts/install_dependencies.sh sourcery
+      install: ./etc/install_dependencies.sh sourcery
       before_script: skip
-      script: 
+      script:
         - make linuxmain SOURCERY=${PWD}/sourcery/bin/sourcery
         - git diff --exit-code Tests/LinuxMain.swift
         - make exports SOURCERY=${PWD}/sourcery/bin/sourcery
@@ -25,7 +22,7 @@ jobs:
       name: lint
       os: osx
       osx_image: xcode11.3
-      install: ./Tests/Scripts/install_dependencies.sh swiftlint && ./Tests/Scripts/install_dependencies.sh swiftformat
+      install: ./etc/install_dependencies.sh swiftlint && ./etc/install_dependencies.sh swiftformat
       before_script: skip
       script: ${PWD}/swiftlint/swiftlint --strict && ${PWD}/SwiftFormat/CommandLineTool/swiftformat --verbose --lint .
 
@@ -46,8 +43,7 @@ jobs:
       after_success: bash <(curl -s https://codecov.io/bash)
 
 install:
-  - INSTALLER=Tests/Scripts/install_dependencies.sh
-  - ./${INSTALLER} libmongoc
+  - INSTALLER=etc/install_dependencies.sh
   - ./${INSTALLER} mongodb
   - if [[ "$TRAVIS_JOB_NAME" != "code coverage" ]]; then eval "$(curl -sL https://swiftenv.fuller.li/install.sh)"; fi
 
@@ -59,7 +55,3 @@ before_script:
 script:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then make test-pretty; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then make test; fi
-
-cache:
-  directories:
-    - ${LIBMONGOC_CACHE_DIR}

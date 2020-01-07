@@ -1,4 +1,4 @@
-import mongoc
+import CLibMongoC
 
 internal let ClosedChangeStreamError =
     LogicError(message: "Cannot advance a completed or failed change stream.")

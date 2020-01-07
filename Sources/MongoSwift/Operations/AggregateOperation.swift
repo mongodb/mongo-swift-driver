@@ -1,5 +1,5 @@
+import CLibMongoC
 import Foundation
-import mongoc
 
 /// Options to use when executing an `aggregate` command on a `MongoCollection`.
 public struct AggregateOptions: Codable {

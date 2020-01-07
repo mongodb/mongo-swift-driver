@@ -1,4 +1,4 @@
-import mongoc
+import CLibMongoC
 
 /// Options to use when running a command against a `MongoDatabase`.
 public struct RunCommandOptions: Encodable {

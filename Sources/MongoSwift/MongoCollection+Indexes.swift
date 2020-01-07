@@ -1,4 +1,4 @@
-import mongoc
+import CLibMongoC
 
 /// A struct representing an index on a `MongoCollection`.
 public struct IndexModel: Codable {
