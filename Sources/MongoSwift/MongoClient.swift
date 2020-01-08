@@ -1,5 +1,6 @@
 import Foundation
 import NIO
+import NIOConcurrencyHelpers
 
 /// Options to use when creating a `MongoClient`.
 public struct ClientOptions: CodingStrategyProvider, Decodable {
@@ -201,11 +202,11 @@ public class MongoClient {
     /// If command and/or server monitoring is enabled, stores the NotificationCenter events are posted to.
     internal let notificationCenter: NotificationCenter
 
-    /// A unique identifier for this client.
-    internal let _id = clientIdGenerator.next()
-
     /// Counter for generating client _ids.
-    internal static let clientIdGenerator = Counter(label: "MongoClient ID generator")
+    internal static var clientIdGenerator = NIOAtomic<Int>.makeAtomic(value: 0)
+
+    /// A unique identifier for this client. Sets _id to the generator's current value and increments the generator.
+    internal let _id = clientIdGenerator.add(1)
 
     /// Error thrown when user attempts to use a closed client.
     internal static let ClosedClientError = LogicError(message: "MongoClient was already closed")
