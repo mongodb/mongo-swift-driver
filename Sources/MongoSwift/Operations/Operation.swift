@@ -20,8 +20,10 @@ internal protocol OperationExecutor {
         client: MongoClient,
         session: ClientSession?
     ) -> EventLoopFuture<T.OperationResult>
+
     /// Asynchronously executes a block of code.
     func execute<T>(body: @escaping () throws -> T) -> EventLoopFuture<T>
+
     /// Closes the executor.
     func close() -> EventLoopFuture<Void>
 }

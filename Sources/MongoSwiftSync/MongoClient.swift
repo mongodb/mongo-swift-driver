@@ -160,7 +160,7 @@ public class MongoClient {
      * - Returns: a `MongoDatabase` corresponding to the provided database name
      */
     public func db(_ name: String, options: DatabaseOptions? = nil) -> MongoDatabase {
-        return MongoDatabase(asyncDB: self.asyncClient.db(name, options: options))
+        return MongoDatabase(asyncDB: self.asyncClient.db(name, options: options), client: self)
     }
 
     /**
@@ -192,7 +192,12 @@ public class MongoClient {
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil
     ) throws -> ChangeStream<ChangeStreamEvent<Document>> {
-        fatalError("unimplemented")
+        return try self.watch(
+          pipeline,
+          options: options,
+          session: session,
+          withEventType: ChangeStreamEvent<Document>.self
+        )
     }
 
     /**
@@ -228,9 +233,13 @@ public class MongoClient {
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil,
         withFullDocumentType _: FullDocType.Type
-    )
-        throws -> ChangeStream<ChangeStreamEvent<FullDocType>> {
-        fatalError("unimplemented")
+    ) throws -> ChangeStream<ChangeStreamEvent<FullDocType>> {
+        return try self.watch(
+          pipeline,
+          options: options,
+          session: session,
+          withEventType: ChangeStreamEvent<FullDocType>.self
+        )
     }
 
     /**
@@ -266,7 +275,16 @@ public class MongoClient {
         session: ClientSession? = nil,
         withEventType _: EventType.Type
     ) throws -> ChangeStream<EventType> {
-        fatalError("unimplemented")
+        let asyncStream = try self.asyncClient
+          .watch(
+            pipeline,
+            options: options,
+            session: session?.asyncSession,
+            withEventType: EventType.self
+          )
+          .wait()
+
+        return ChangeStream(wrapping: asyncStream, client: self)
     }
 }
 

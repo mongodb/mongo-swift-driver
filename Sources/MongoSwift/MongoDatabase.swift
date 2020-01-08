@@ -331,7 +331,8 @@ public struct MongoDatabase {
      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
      *   - session: An optional `ClientSession` to use with this change stream.
      *
-     * - Returns: A `ChangeStream` on all collections in a database.
+     * - Returns: An `EventLoopFuture<ChangeStream>` containing a `ChangeStream` watching all collections in this
+     *            database.
      *
      * - Throws:
      *   - `CommandError` if an error occurs on the server while creating the change stream.
@@ -350,8 +351,8 @@ public struct MongoDatabase {
         _ pipeline: [Document] = [],
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> ChangeStream<ChangeStreamEvent<Document>> {
-        return try self.watch(pipeline, options: options, session: session, withFullDocumentType: Document.self)
+    ) -> EventLoopFuture<ChangeStream<ChangeStreamEvent<Document>>> {
+        return self.watch(pipeline, options: options, session: session, withFullDocumentType: Document.self)
     }
 
     /**
@@ -366,7 +367,8 @@ public struct MongoDatabase {
      *   - withFullDocumentType: The type that the `fullDocument` field of the emitted `ChangeStreamEvent`s will be
      *                           decoded to.
      *
-     * - Returns: A `ChangeStream` on all collections in a database.
+     * - Returns: An `EventLoopFuture<ChangeStream>` containing a `ChangeStream` watching all collections in this
+     *            database.
      *
      * - Throws:
      *   - `CommandError` if an error occurs on the server while creating the change stream.
@@ -386,9 +388,8 @@ public struct MongoDatabase {
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil,
         withFullDocumentType _: FullDocType.Type
-    )
-        throws -> ChangeStream<ChangeStreamEvent<FullDocType>> {
-        return try self.watch(
+    ) -> EventLoopFuture<ChangeStream<ChangeStreamEvent<FullDocType>>> {
+        return self.watch(
             pipeline,
             options: options,
             session: session,
@@ -407,7 +408,8 @@ public struct MongoDatabase {
      *   - withEventType: The type that the entire change stream response will be decoded to and that will be returned
      *                    when iterating through the change stream.
      *
-     * - Returns: A `ChangeStream` on all collections in a database.
+     * - Returns: An `EventLoopFuture<ChangeStream>` containing a `ChangeStream` watching all collections in this
+     *            database.
      *
      * - Throws:
      *   - `CommandError` if an error occurs on the server while creating the change stream.
@@ -427,13 +429,13 @@ public struct MongoDatabase {
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil,
         withEventType _: EventType.Type
-    ) throws -> ChangeStream<EventType> {
-        let operation = try WatchOperation<Document, EventType>(
+    ) -> EventLoopFuture<ChangeStream<EventType>> {
+        let operation = WatchOperation<Document, EventType>(
             target: .database(self),
             pipeline: pipeline,
             options: options
         )
-        return try self._client.executeOperation(operation, session: session)
+        return self._client.executeOperationAsync(operation, session: session)
     }
 
     /// Uses the provided `Connection` to get a pointer to a `mongoc_database_t` corresponding to this

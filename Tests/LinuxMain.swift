@@ -29,6 +29,22 @@ extension BSONValueTests {
     ]
 }
 
+extension ChangeStreamSpecTests {
+    static var allTests = [
+        ("testChangeStreamSpec", testChangeStreamSpec),
+    ]
+}
+
+extension ChangeStreamTests {
+    static var allTests = [
+        ("testChangeStreamNext", testChangeStreamNext),
+        ("testChangeStreamAll", testChangeStreamAll),
+        ("testChangeStreamForEach", testChangeStreamForEach),
+        ("testChangeStreamError", testChangeStreamError),
+        ("testChangeStreamEmpty", testChangeStreamEmpty),
+    ]
+}
+
 extension CodecTests {
     static var allTests = [
         ("testStructs", testStructs),
@@ -169,6 +185,28 @@ extension SyncAuthTests {
     ]
 }
 
+extension SyncChangeStreamTests {
+    static var allTests = [
+        ("testChangeStreamTracksResumeToken", testChangeStreamTracksResumeToken),
+        ("testChangeStreamMissingId", testChangeStreamMissingId),
+        ("testChangeStreamAutomaticResume", testChangeStreamAutomaticResume),
+        ("testChangeStreamFailedAggregate", testChangeStreamFailedAggregate),
+        ("testChangeStreamDoesntResume", testChangeStreamDoesntResume),
+        ("testChangeStreamDoesntCloseOnEmptyBatch", testChangeStreamDoesntCloseOnEmptyBatch),
+        ("testChangeStreamFailedKillCursors", testChangeStreamFailedKillCursors),
+        ("testChangeStreamResumeTokenUpdatesEmptyBatch", testChangeStreamResumeTokenUpdatesEmptyBatch),
+        ("testChangeStreamResumeTokenUpdatesNonemptyBatch", testChangeStreamResumeTokenUpdatesNonemptyBatch),
+        ("testChangeStreamOnAClient", testChangeStreamOnAClient),
+        ("testChangeStreamOnADatabase", testChangeStreamOnADatabase),
+        ("testChangeStreamOnACollection", testChangeStreamOnACollection),
+        ("testChangeStreamWithPipeline", testChangeStreamWithPipeline),
+        ("testChangeStreamResumeToken", testChangeStreamResumeToken),
+        ("testChangeStreamWithEventType", testChangeStreamWithEventType),
+        ("testChangeStreamWithFullDocumentType", testChangeStreamWithFullDocumentType),
+        ("testChangeStreamOnACollectionWithCodableType", testChangeStreamOnACollectionWithCodableType),
+    ]
+}
+
 extension SyncMongoClientTests {
     static var allTests = [
         ("testListDatabases", testListDatabases),
@@ -190,6 +228,8 @@ XCTMain([
     testCase(AuthTests.allTests),
     testCase(BSONCorpusTests.allTests),
     testCase(BSONValueTests.allTests),
+    testCase(ChangeStreamSpecTests.allTests),
+    testCase(ChangeStreamTests.allTests),
     testCase(CodecTests.allTests),
     testCase(DNSSeedlistTests.allTests),
     testCase(DocumentTests.allTests),
@@ -204,6 +244,7 @@ XCTMain([
     testCase(ReadWriteConcernSpecTests.allTests),
     testCase(SDAMTests.allTests),
     testCase(SyncAuthTests.allTests),
+    testCase(SyncChangeStreamTests.allTests),
     testCase(SyncMongoClientTests.allTests),
     testCase(WriteConcernTests.allTests),
 ])

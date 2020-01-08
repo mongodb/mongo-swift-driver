@@ -1,4 +1,5 @@
 import CLibMongoC
+import NIO
 
 internal let ClosedCursorError = LogicError(message: "Cannot advance a completed or failed cursor.")
 

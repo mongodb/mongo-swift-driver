@@ -24,9 +24,13 @@ public struct MongoDatabase {
     /// The underlying asynchronous database.
     private let asyncDB: MongoSwift.MongoDatabase
 
+    /// The client this database descended from.
+    private let client: MongoClient
+
     /// Initializes a new `MongoDatabase` instance wrapping the provided async database.
-    internal init(asyncDB: MongoSwift.MongoDatabase) {
+    internal init(asyncDB: MongoSwift.MongoDatabase, client: MongoClient) {
         self.asyncDB = asyncDB
+        self.client = client
     }
 
     /**
@@ -78,7 +82,7 @@ public struct MongoDatabase {
         options: CollectionOptions? = nil
     ) -> MongoCollection<T> {
         let asyncColl = self.asyncDB.collection(name, withType: T.self, options: options)
-        return MongoCollection(asyncCollection: asyncColl)
+        return MongoCollection(asyncCollection: asyncColl, client: self.client)
     }
 
     /**
@@ -135,7 +139,7 @@ public struct MongoDatabase {
                                                           options: options,
                                                           session: session?.asyncSession)
                                                           .wait()
-        return MongoCollection(asyncCollection: asyncColl)
+        return MongoCollection(asyncCollection: asyncColl, client: self.client)
     }
 
     /**
@@ -258,7 +262,12 @@ public struct MongoDatabase {
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil
     ) throws -> ChangeStream<ChangeStreamEvent<Document>> {
-        fatalError("unimplemented")
+        return try self.watch(
+          pipeline,
+          options: options,
+          session: session,
+          withEventType: ChangeStreamEvent<Document>.self
+        )
     }
 
     /**
@@ -293,9 +302,13 @@ public struct MongoDatabase {
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil,
         withFullDocumentType _: FullDocType.Type
-    )
-        throws -> ChangeStream<ChangeStreamEvent<FullDocType>> {
-        fatalError("unimplemented")
+    ) throws -> ChangeStream<ChangeStreamEvent<FullDocType>> {
+        return try self.watch(
+          pipeline,
+          options: options,
+          session: session,
+          withEventType: ChangeStreamEvent<FullDocType>.self
+        )
     }
 
     /**
@@ -330,6 +343,12 @@ public struct MongoDatabase {
         session: ClientSession? = nil,
         withEventType _: EventType.Type
     ) throws -> ChangeStream<EventType> {
-        fatalError("unimplemented")
+        let asyncStream = try self.asyncDB.watch(
+          pipeline,
+          options: options,
+          session: session?.asyncSession,
+          withEventType: EventType.self
+        ).wait()
+        return ChangeStream(wrapping: asyncStream, client: self.client)
     }
 }

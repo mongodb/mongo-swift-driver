@@ -4,47 +4,64 @@ import MongoSwift
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/
 public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     /// A `ResumeToken` associated with the most recent event seen by the change stream.
-    public var resumeToken: ResumeToken? { fatalError("unimplemented") }
+    public var resumeToken: ResumeToken? {
+        return self.asyncChangeStream.resumeToken
+    }
 
-    /// The error that occurred while iterating the change stream, if one exists. This should be used to check
-    /// for errors after `next()` returns `nil`.
-    public var error: Error? { fatalError("unimplemented") }
+    /// Indicates whether this change stream has the potential to return more data.
+    public var isAlive: Bool {
+        return self.asyncChangeStream.isAlive
+    }
+
+    private let asyncChangeStream: MongoSwift.ChangeStream<T>
+
+    /// The client this change strem descended from.
+    private let client: MongoClient
 
     /**
      * Initializes a `ChangeStream`.
-     * - Throws:
-     *   - `CommandError` if an error occurred on the server when creating the `mongoc_change_stream_t`.
-     *   - `InvalidArgumentError` if the `mongoc_change_stream_t` was created with invalid options.
      */
-    internal init(wrapping changeStream: MongoSwift.ChangeStream<T>) throws {
-        fatalError("unimplemented")
+    internal init(wrapping changeStream: MongoSwift.ChangeStream<T>, client: MongoClient) {
+        self.asyncChangeStream = changeStream
+        self.client = client
     }
 
     /// Closes the change stream if it hasn't been closed already.
     deinit {
-        fatalError("unimplemented")
+        try? self.asyncChangeStream.close().wait()
     }
 
     /// Returns the next `T` in the change stream or nil if there is no next value. Will block for a maximum of
     /// `maxAwaitTimeMS` milliseconds as specified in the `ChangeStreamOptions`, or for the server default timeout
     /// if omitted.
-    public func next() -> T? {
-        fatalError("unimplemented")
+    public func next() -> Result<T, Error>? {
+        do {
+            guard let result = try self.asyncChangeStream.next().wait() else {
+                return nil
+            }
+            return .success(result)
+        } catch {
+            return .failure(error)
+        }
     }
 
     /**
-     * Returns the next `T` in this change stream or `nil`, or throws an error if one occurs -- compared to `next()`,
-     * which returns `nil` and requires manually checking for an error afterward. Will block for a maximum of
-     * `maxAwaitTimeMS` milliseconds as specified in the `ChangeStreamOptions`, or for the server default timeout if
-     * omitted.
-     * - Returns: the next `T` in this change stream, or `nil` if at the end of the change stream cursor.
+     * Returns an array of type `T` from this change stream.
+     * - Returns: an array of type `T`
      * - Throws:
-     *   - `CommandError` if an error occurs on the server while iterating the change stream cursor.
-     *   - `LogicError` if this function is called and the session associated with this change stream is
-     *     inactive.
-     *   - `DecodingError` if an error occurs while decoding the server's response.
+     *   - `CommandError` if an error occurs while fetching more results from the server.
+     *   - `LogicError` if this function is called after the change stream has died.
+     *   - `LogicError` if this function is called and the session associated with this change stream is inactive.
+     *   - `DecodingError` if an error occurs decoding the server's response.
      */
-    public func nextOrError() throws -> T? {
-        fatalError("unimplemented")
+    public func all() throws -> [T] {
+        return try self.map {
+            switch $0 {
+            case let .success(t):
+                return t
+            case let .failure(error):
+                throw error
+            }
+        }
     }
 }

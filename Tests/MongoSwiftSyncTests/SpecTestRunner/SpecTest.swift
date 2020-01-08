@@ -1,5 +1,5 @@
 import Foundation
-@testable import MongoSwift
+import MongoSwiftSync
 import Nimble
 import TestsCommon
 import XCTest
@@ -95,7 +95,7 @@ internal enum TestData: Decodable {
         } else if let document = try? Document(from: decoder) {
             var mapping: [String: [Document]] = [:]
             for (k, v) in document {
-                guard let documentArray = v.arrayValue?.asArrayOf(Document.self) else {
+                guard let documentArray = v.arrayValue?.compactMap({ $0.documentValue }) else {
                     throw DecodingError.typeMismatch(
                         [Document].self,
                         DecodingError.Context(
@@ -172,7 +172,7 @@ extension SpecTestFile {
         switch self.data {
         case let .single(docs):
             guard let collName = self.collectionName else {
-                throw InvalidArgumentError(message: "missing collection name")
+                throw TestError(message: "missing collection name")
             }
 
             guard !docs.isEmpty else {

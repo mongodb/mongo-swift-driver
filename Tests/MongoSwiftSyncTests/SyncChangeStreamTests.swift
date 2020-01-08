@@ -1,4 +1,4 @@
-import MongoSwift
+import MongoSwiftSync
 import Nimble
 import TestsCommon
 import XCTest
@@ -194,7 +194,7 @@ internal struct ChangeStreamTest: Decodable {
             case let .success(events):
                 var seenEvents: [Document] = []
                 for _ in 0..<events.count {
-                    let event = try changeStream.nextOrError()
+                    let event = try changeStream.next()?.get()
                     expect(event).toNot(beNil(), description: self.description)
                     seenEvents.append(event!)
                 }
@@ -297,7 +297,7 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase, FailPointConfigured {
 }
 
 /// Class for spec prose tests and other integration tests associated with change streams.
-final class ChangeStreamTests: MongoSwiftTestCase {
+final class SyncChangeStreamTests: MongoSwiftTestCase {
     /// How long in total a change stream should poll for an event or error before returning.
     /// Used as a default value for `ChangeStream.nextWithTimeout`
     public static let TIMEOUT: TimeInterval = 10
@@ -359,7 +359,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
                 )
                 expect(try changeStream.nextWithTimeout()).to(throwError(expectedError))
             } else {
-                expect(try changeStream.nextOrError()).to(throwError(errorType: LogicError.self))
+                expect(try changeStream.next()?.get()).to(throwError(errorType: LogicError.self))
             }
         }
     }
@@ -398,7 +398,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
                 try failPoint.enable()
                 defer { failPoint.disable() }
 
-                while try changeStream.nextOrError() != nil {}
+                while try changeStream.next()?.get() != nil {}
             }
         }
         expect(events.count).to(equal(2))
@@ -476,7 +476,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
                 commandNames: ["aggregate"]
             ) {
                 // getMore failure will trigger resume process, aggregate will fail and not retry again.
-                expect(try changeStream.nextOrError()).to(throwError())
+                expect(try changeStream.next()?.get()).to(throwError())
             }
             expect(aggAttempts1.count).to(equal(1))
         }
@@ -503,7 +503,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         try interrupted.enable()
         defer { interrupted.disable() }
         let interruptedAggs = try captureCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) {
-            expect(try $0.watch().nextOrError()).to(throwError())
+            expect(try $0.watch().next()?.get()).to(throwError())
         }
         expect(interruptedAggs.count).to(equal(1))
 
@@ -511,7 +511,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         try cappedPositionLost.enable()
         defer { cappedPositionLost.disable() }
         let cappedAggs = try captureCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) {
-            expect(try $0.watch().nextOrError()).to(throwError())
+            expect(try $0.watch().next()?.get()).to(throwError())
         }
         expect(cappedAggs.count).to(equal(1))
 
@@ -519,7 +519,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         try cursorKilled.enable()
         defer { cursorKilled.disable() }
         let killedAggs = try captureCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) {
-            expect(try $0.watch().nextOrError()).to(throwError())
+            expect(try $0.watch().next()?.get()).to(throwError())
         }
         expect(killedAggs.count).to(equal(1))
 
@@ -533,7 +533,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         try nonResumableLabel.enable()
         defer { nonResumableLabel.disable() }
         let labelAggs = try captureCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) {
-            expect(try $0.watch().nextOrError()).to(throwError())
+            expect(try $0.watch().next()?.get()).to(throwError())
         }
         expect(labelAggs.count).to(equal(1))
     }
@@ -556,7 +556,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             try withTestNamespace(client: client) { _, coll in
                 changeStream =
                     try coll.watch(options: ChangeStreamOptions(maxAwaitTimeMS: 100))
-                _ = try changeStream!.nextOrError()
+                _ = try changeStream!.next()?.get()
             }
         }
         expect(events).to(beEmpty())
@@ -612,7 +612,6 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             // even if killCursors command fails, no error should be returned to the user.
             for _ in 0..<4 {
                 expect(try changeStream?.nextWithTimeout()).toNot(beNil())
-                expect(changeStream?.error).to(beNil())
             }
         }
     }
@@ -646,7 +645,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             _ = try basicStream.nextWithTimeout()
             expect(basicStream.resumeToken).to(beNil())
             try coll.insertOne(["x": 1])
-            let firstToken = try basicStream.nextOrError()!._id
+            let firstToken = try basicStream.next()?.get()._id
             expect(basicStream.resumeToken).to(equal(firstToken))
 
             let options = ChangeStreamOptions(resumeAfter: firstToken)
@@ -769,7 +768,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         let changeStream = try db.watch(options: ChangeStreamOptions(maxAwaitTimeMS: 100))
 
         // expect the first iteration to be nil since no changes have been made to the database.
-        expect(try changeStream.nextOrError()).to(beNil())
+        expect(try changeStream.next()?.get()).to(beNil())
 
         let coll = db.collection(self.getCollectionName(suffix: "1"))
         let doc1: Document = ["_id": 1, "a": 1]
@@ -830,9 +829,8 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         // expect the resumeToken to be updated to the _id field of the most recently accessed document
         expect(changeStream.resumeToken).to(equal(change2?._id))
 
-        try coll.findOneAndDelete(["x": 2])
-
-        // expect the change stream contains a change document for the `find` operation
+        try coll.deleteOne(["x": 2])
+        // expect the change stream contains a change document for the `delete` operation
         let change3 = try changeStream.nextWithTimeout()
         expect(change3).toNot(beNil())
         expect(change3?.operationType).to(equal(.delete))
@@ -886,7 +884,6 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         try coll.insertOne(["x": 1])
         try coll.insertOne(["y": 2])
         _ = try changeStream1.nextWithTimeout()
-        expect(changeStream1.error).to(beNil())
 
         // save the current resumeToken and use it as the resumeAfter in a new change stream
         let resumeToken = changeStream1.resumeToken
@@ -898,7 +895,6 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
         // expect this change stream to have more events after resuming
         expect(try changeStream2.nextWithTimeout()).toNot(beNil())
-        expect(changeStream2.error).to(beNil())
     }
 
     struct MyFullDocumentType: Codable, Equatable {
@@ -941,7 +937,6 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         try coll.insertOne(doc)
 
         let collChange = try collChangeStream.nextWithTimeout()
-        expect(collChangeStream.error).to(beNil())
         expect(collChange).toNot(beNil())
         expect(collChange?.operation).to(equal("insert"))
         expect(collChange?.fullDocument).to(equal(MyFullDocumentType(id: 1, x: 1, y: 2)))
@@ -960,13 +955,11 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         try coll.insertOne(["_id": 2, "x": 1, "y": 2])
 
         let clientChange = try clientChangeStream.nextWithTimeout()
-        expect(clientChangeStream.error).to(beNil())
         expect(clientChange).toNot(beNil())
         expect(clientChange?.operation).to(equal("insert"))
         expect(clientChange?.fullDocument).to(equal(expectedFullDocument))
 
         let dbChange = try dbChangeStream.nextWithTimeout()
-        expect(dbChangeStream.error).to(beNil())
         expect(dbChange).toNot(beNil())
         expect(dbChange?.operation).to(equal("insert"))
         expect(dbChange?.fullDocument).to(equal(expectedFullDocument))
@@ -1037,7 +1030,6 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         try coll.insertOne(myType)
 
         let change = try changeStream.nextWithTimeout()
-        expect(changeStream.error).to(beNil())
         expect(change).toNot(beNil())
         expect(change?.operationType).to(equal(.insert))
         expect(change?.fullDocument).to(equal(myType))

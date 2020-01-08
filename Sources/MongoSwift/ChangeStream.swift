@@ -1,4 +1,6 @@
 import CLibMongoC
+import Foundation
+import NIO
 
 internal let ClosedChangeStreamError =
     LogicError(message: "Cannot advance a completed or failed change stream.")
@@ -27,16 +29,17 @@ public struct ResumeToken: Codable, Equatable {
 // sourcery: skipSyncExport
 /// A MongoDB change stream.
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/
-public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
+public class ChangeStream<T: Codable>: AsyncSequence {
+    internal typealias Element = T
+
     /// Enum for tracking the state of a change stream.
     internal enum State {
         /// Indicates that the change stream is still open. Stores a pointer to the `mongoc_change_stream_t`, along
-        /// with the source connection, client, and possibly session to ensure they are kept alive as long
+        /// with the source connection and possibly session to ensure they are kept alive as long
         /// as the change stream is.
         case open(
             changeStream: OpaquePointer,
             connection: Connection,
-            client: MongoClient,
             session: ClientSession?
         )
         case closed
@@ -45,15 +48,27 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
     /// The state of this change stream.
     internal private(set) var state: State
 
-    /// A `ResumeToken` associated with the most recent event seen by the change stream.
-    public internal(set) var resumeToken: ResumeToken?
+    /// The client this change stream descended from.
+    private let client: MongoClient
 
     /// Decoder for decoding documents into type `T`.
     internal let decoder: BSONDecoder
 
-    /// The error that occurred while iterating the change stream, if one exists. This should be used to check
-    /// for errors after `next()` returns `nil`.
-    public private(set) var error: Error?
+    /// Semaphore used to synchronize between polling the change stream continually and manually closing it.
+    private var pollingSemaphore: DispatchSemaphore
+
+    /// Indicates whether this change stream has the potential to return more data.
+    public var isAlive: Bool {
+        switch self.state {
+        case .closed:
+            return false
+        case .open:
+            return true
+        }
+    }
+
+    /// A `ResumeToken` associated with the most recent event seen by the change stream.
+    public internal(set) var resumeToken: ResumeToken?
 
     /**
      * Retrieves any error that occured in mongoc or on the server while iterating the change stream. Returns nil if
@@ -61,8 +76,8 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
      *  - Errors:
      *    - `DecodingError` if an error occurs while decoding the server's response.
      */
-    private func getChangeStreamError() -> Error? {
-        guard case let .open(changeStream, _, _, _) = self.state else {
+    internal func getChangeStreamError() -> Error? {
+        guard case let .open(changeStream, _, _) = self.state else {
             return nil
         }
 
@@ -90,60 +105,101 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
         return extractMongoError(error: error)
     }
 
+    /// Poll the underlying mongoc_change_stream_t for the next change event.
+    internal func fetchNextDocument() throws -> T? {
+        guard case let .open(changeStreamPtr, _, _) = self.state else {
+            throw ClosedChangeStreamError
+        }
+
+        let out = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
+        defer {
+            out.deinitialize(count: 1)
+            out.deallocate()
+        }
+
+        guard mongoc_change_stream_next(changeStreamPtr, out) else {
+            if let error = self.getChangeStreamError() {
+                self.blockingClose()
+                throw error
+            }
+            return nil
+        }
+        guard let pointee = out.pointee else {
+            fatalError("The change stream was advanced, but the document is nil")
+        }
+
+        // We have to copy because libmongoc owns the pointer.
+        let doc = Document(copying: pointee)
+
+        // Update the resumeToken with the `_id` field from the document.
+        guard let resumeToken = doc["_id"]?.documentValue else {
+            throw InternalError(message: "_id field is missing from the change stream document.")
+        }
+        self.resumeToken = ResumeToken(resumeToken)
+        return try self.decoder.decode(T.self, from: doc)
+    }
+
+    /// Destroys the underlying mongoc change stream and closes the state in a blocking manner.
+    private func blockingClose() {
+        guard case let .open(changeStream, _, _) = self.state else {
+            return
+        }
+        self.pollingSemaphore.wait()
+        mongoc_change_stream_destroy(changeStream)
+        self.state = .closed
+        self.pollingSemaphore.signal()
+    }
+
     /// Returns the next `T` in the change stream or nil if there is no next value. Will block for a maximum of
     /// `maxAwaitTimeMS` milliseconds as specified in the `ChangeStreamOptions`, or for the server default timeout
     /// if omitted.
-    public func next() -> T? {
-        // We already closed the mongoc change stream, either because we reached the end or encountered an error.
-        guard case let .open(_, connection, client, session) = self.state else {
-            self.error = ClosedChangeStreamError
-            return nil
+    public func next() -> EventLoopFuture<T?> {
+        let operation = NextOperation(target: .changeStream(self))
+        return self.client.executeOperationAsync(operation)
+    }
+
+    /// Returns all of the events seen by this change stream so far.
+    public func all() -> EventLoopFuture<[T]> {
+        let operation = AllOperation(target: .changeStream(self))
+        return self.client.executeOperationAsync(operation)
+    }
+
+    /// Executes the provided closure against each event seen by the change stream.
+    /// This will cause the stream to continuously poll for new events in the background. Once this method has been
+    /// called, other methods that check for events (e.g. all, next, forEach) should not be used.
+    public func forEach(body: @escaping (Result<T, Error>) -> Void) {
+        self.pollingSemaphore.wait()
+
+        guard self.isAlive else {
+            self.pollingSemaphore.signal()
+            return
         }
-        do {
-            let operation = NextOperation(target: .changeStream(self))
-            guard let out = try client.executeOperation(operation, using: connection, session: session) else {
-                self.error = self.getChangeStreamError()
-                if self.error != nil {
-                    self.close()
+
+        self.next().whenComplete { result in
+            switch result {
+            case let .success(event):
+                if let event = event {
+                    body(.success(event))
                 }
-                return nil
+            case let .failure(error):
+                body(.failure(error))
+                return
             }
-            return out
-        } catch {
-            self.error = error
-            self.close()
-            return nil
+            self.pollingSemaphore.signal()
+            self.forEach(body: body)
         }
     }
 
-    /**
-     * Returns the next `T` in this change stream or `nil`, or throws an error if one occurs -- compared to `next()`,
-     * which returns `nil` and requires manually checking for an error afterward. Will block for a maximum of
-     * `maxAwaitTimeMS` milliseconds as specified in the `ChangeStreamOptions`, or for the server default timeout if
-     * omitted.
-     * - Returns: the next `T` in this change stream, or `nil` if at the end of the change stream cursor.
-     * - Throws:
-     *   - `CommandError` if an error occurs on the server while iterating the change stream cursor.
-     *   - `LogicError` if this function is called and the session associated with this change stream is
-     *     inactive.
-     *   - `DecodingError` if an error occurs while decoding the server's response.
-     */
-    public func nextOrError() throws -> T? {
-        if let next = self.next() {
-            return next
+    /// Closes this change stream.
+    /// This must be called when the change stream is no longer needed or else memory may be leaked.
+    public func close() -> EventLoopFuture<Void> {
+        return self.client.operationExecutor.execute {
+            self.blockingClose()
         }
-
-        if let error = self.error {
-            throw error
-        }
-        return nil
     }
 
     /**
      * Initializes a `ChangeStream`.
-     * - Throws:
-     *   - `CommandError` if an error occurred on the server when creating the `mongoc_change_stream_t`.
-     *   - `InvalidArgumentError` if the `mongoc_change_stream_t` was created with invalid options.
      */
     internal init(
         stealing changeStream: OpaquePointer,
@@ -152,33 +208,20 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
         session: ClientSession?,
         decoder: BSONDecoder,
         options: ChangeStreamOptions?
-    ) throws {
-        self.state = .open(changeStream: changeStream, connection: connection, client: client, session: session)
+    ) {
+        self.state = .open(changeStream: changeStream, connection: connection, session: session)
+        self.client = client
         self.decoder = decoder
+        self.pollingSemaphore = DispatchSemaphore(value: 1)
 
         // TODO: SWIFT-519 - Starting 4.2, update resumeToken to startAfter (if set).
         // startAfter takes precedence over resumeAfter.
         if let resumeAfter = options?.resumeAfter {
             self.resumeToken = resumeAfter
         }
-
-        if let err = self.getChangeStreamError() {
-            self.close()
-            throw err
-        }
     }
 
-    /// Cleans up internal state.
-    private func close() {
-        guard case let .open(changeStream, _, _, _) = self.state else {
-            return
-        }
-        mongoc_change_stream_destroy(changeStream)
-        self.state = .closed
-    }
-
-    /// Closes the cursor if it hasn't been closed already.
     deinit {
-        self.close()
+        assert(!self.isAlive, "change stream wasn't closed")
     }
 }

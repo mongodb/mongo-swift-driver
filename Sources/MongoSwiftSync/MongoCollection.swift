@@ -38,9 +38,13 @@ public struct MongoCollection<T: Codable> {
     /// The underlying asynchronous collection.
     internal let asyncColl: MongoSwift.MongoCollection<T>
 
+    /// The client this collection descended from.
+    internal let client: MongoClient
+
     /// Initializes a new `MongoCollection` instance wrapping the provided async collection.
-    internal init(asyncCollection: MongoSwift.MongoCollection<T>) {
+    internal init(asyncCollection: MongoSwift.MongoCollection<T>, client: MongoClient) {
         self.asyncColl = asyncCollection
+        self.client = client
     }
 
     /**

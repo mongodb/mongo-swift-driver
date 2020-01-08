@@ -1,7 +1,9 @@
 import CLibMongoC
 import Foundation
 @testable import MongoSwift
+@testable import MongoSwiftSync
 import Nimble
+import NIO
 import XCTest
 
 open class MongoSwiftTestCase: XCTestCase {
@@ -240,5 +242,45 @@ extension CommandError {
             message: message,
             errorLabels: errorLabels
         )
+    }
+}
+
+extension BulkWriteResult {
+    public static func new(
+        deletedCount: Int? = nil,
+        insertedCount: Int? = nil,
+        insertedIds: [Int: BSON]? = nil,
+        matchedCount: Int? = nil,
+        modifiedCount: Int? = nil,
+        upsertedCount: Int? = nil,
+        upsertedIds: [Int: BSON]? = nil
+    ) -> BulkWriteResult {
+        return BulkWriteResult(
+            deletedCount: deletedCount,
+            insertedCount: insertedCount,
+            insertedIds: insertedIds,
+            matchedCount: matchedCount,
+            modifiedCount: modifiedCount,
+            upsertedCount: upsertedCount,
+            upsertedIds: upsertedIds
+        )
+    }
+}
+
+extension MongoSwiftSync.MongoCollection {
+    public func getClient() -> MongoSwiftSync.MongoClient {
+        return self.client
+    }
+
+    public func getNamespace() -> MongoNamespace {
+        return self.asyncColl.namespace
+    }
+}
+
+extension MongoSwift.MongoClient {
+    public func wait(seconds: Int) -> EventLoopFuture<Void> {
+        return self.operationExecutor.execute {
+            sleep(UInt32(seconds))
+        }
     }
 }
