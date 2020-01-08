@@ -1,4 +1,5 @@
 import CLibMongoC
+import NIO
 
 /// Options to use when dropping a collection.
 public struct DropCollectionOptions: Codable {
@@ -92,9 +93,9 @@ public struct MongoCollection<T: Codable> {
      * - Throws:
      *   - `CommandError` if an error occurs that prevents the command from executing.
      */
-    public func drop(options: DropCollectionOptions? = nil, session: ClientSession? = nil) throws {
+    public func drop(options: DropCollectionOptions? = nil, session: ClientSession? = nil) -> EventLoopFuture<Void> {
         let operation = DropCollectionOperation(collection: self, options: options)
-        return try self._client.executeOperation(operation, session: session)
+        return self._client.executeOperationAsync(operation, session: session)
     }
 
     /// Uses the provided `Connection` to get a pointer to a `mongoc_collection_t` corresponding to this

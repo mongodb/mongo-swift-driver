@@ -1,4 +1,5 @@
 import CLibMongoC
+import NIO
 
 /// An extension of `MongoCollection` encapsulating read operations.
 extension MongoCollection {
@@ -85,15 +86,15 @@ extension MongoCollection {
      *   - options: Optional `CountDocumentsOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: The count of the documents that matched the filter
+     * - Returns: An `EventLoopFuture<Int>` containing the count of the documents that matched the filter
      */
     public func countDocuments(
         _ filter: Document = [:],
         options: CountDocumentsOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> Int {
+    ) -> EventLoopFuture<Int> {
         let operation = CountDocumentsOperation(collection: self, filter: filter, options: options)
-        return try self._client.executeOperation(operation, session: session)
+        return self._client.executeOperationAsync(operation, session: session)
     }
 
     /**
@@ -103,14 +104,14 @@ extension MongoCollection {
      *   - options: Optional `EstimatedDocumentCountOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: an estimate of the count of documents in this collection
+     * - Returns: An `EventLoopFuture<Int>` containing an estimate of the count of documents in this collection
      */
     public func estimatedDocumentCount(
         options: EstimatedDocumentCountOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> Int {
+    ) -> EventLoopFuture<Int> {
         let operation = EstimatedDocumentCountOperation(collection: self, options: options)
-        return try self._client.executeOperation(operation, session: session)
+        return self._client.executeOperationAsync(operation, session: session)
     }
 
     /**
@@ -122,7 +123,7 @@ extension MongoCollection {
      *   - options: Optional `DistinctOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: A `[BSONValue]` containing the distinct values for the specified criteria
+     * - Returns: An `EventLoopFuture<[BSON]>` containing the distinct values for the specified criteria
      *
      * - Throws:
      *   - `CommandError` if an error occurs that prevents the command from executing.
@@ -135,8 +136,8 @@ extension MongoCollection {
         filter: Document = [:],
         options: DistinctOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> [BSON] {
+    ) -> EventLoopFuture<[BSON]> {
         let operation = DistinctOperation(collection: self, fieldName: fieldName, filter: filter, options: options)
-        return try self._client.executeOperation(operation, session: session)
+        return self._client.executeOperationAsync(operation, session: session)
     }
 }

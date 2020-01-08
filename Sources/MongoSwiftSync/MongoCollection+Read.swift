@@ -87,7 +87,7 @@ extension MongoCollection {
         options: CountDocumentsOptions? = nil,
         session: ClientSession? = nil
     ) throws -> Int {
-        fatalError("unimplemented")
+        return try self.asyncColl.countDocuments(filter, options: options, session: session?.asyncSession).wait()
     }
 
     /**
@@ -103,7 +103,7 @@ extension MongoCollection {
         options: EstimatedDocumentCountOptions? = nil,
         session: ClientSession? = nil
     ) throws -> Int {
-        fatalError("unimplemented")
+        return try self.asyncColl.estimatedDocumentCount(options: options, session: session?.asyncSession).wait()
     }
 
     /**
@@ -129,6 +129,10 @@ extension MongoCollection {
         options: DistinctOptions? = nil,
         session: ClientSession? = nil
     ) throws -> [BSON] {
-        fatalError("unimplemented")
+        return try self.asyncColl.distinct(fieldName: fieldName,
+                                           filter: filter,
+                                           options: options,
+                                           session: session?.asyncSession)
+                                            .wait()
     }
 }

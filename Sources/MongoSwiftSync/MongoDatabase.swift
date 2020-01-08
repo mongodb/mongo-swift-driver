@@ -21,16 +21,12 @@ public struct MongoDatabase {
     /// The `WriteConcern` set on this database, or `nil` if one is not set.
     public var writeConcern: WriteConcern? { return self.asyncDB.writeConcern }
 
-    /// The client which this database was derived from.
-    internal let client: MongoClient
-
     /// The underlying asynchronous database.
     private let asyncDB: MongoSwift.MongoDatabase
 
-    /// Initializes a new `MongoDatabase` instance, not meant to be instantiated directly.
-    internal init(name: String, client: MongoClient, options: DatabaseOptions?) {
-        self.client = client
-        self.asyncDB = client.asyncClient.db(name, options: options)
+    /// Initializes a new `MongoDatabase` instance wrapping the provided async database.
+    internal init(asyncDB: MongoSwift.MongoDatabase) {
+        self.asyncDB = asyncDB
     }
 
     /**
@@ -59,7 +55,7 @@ public struct MongoDatabase {
      * - Returns: the requested `MongoCollection<Document>`
      */
     public func collection(_ name: String, options: CollectionOptions? = nil) -> MongoCollection<Document> {
-        fatalError("unimplemented")
+        return self.collection(name, withType: Document.self, options: options)
     }
 
     /**
@@ -81,7 +77,8 @@ public struct MongoDatabase {
         withType _: T.Type,
         options: CollectionOptions? = nil
     ) -> MongoCollection<T> {
-        return MongoCollection(name: name, database: self, options: options)
+        let asyncColl = self.asyncDB.collection(name, withType: T.self, options: options)
+        return MongoCollection(asyncCollection: asyncColl)
     }
 
     /**
@@ -105,7 +102,7 @@ public struct MongoDatabase {
         options: CreateCollectionOptions? = nil,
         session: ClientSession? = nil
     ) throws -> MongoCollection<Document> {
-        fatalError("unimplemented")
+        return try self.createCollection(name, withType: Document.self, options: options, session: session)
     }
 
     /**
@@ -133,7 +130,12 @@ public struct MongoDatabase {
         options: CreateCollectionOptions? = nil,
         session: ClientSession? = nil
     ) throws -> MongoCollection<T> {
-        fatalError("unimplemented")
+        let asyncColl = try self.asyncDB.createCollection(name,
+                                                          withType: type,
+                                                          options: options,
+                                                          session: session?.asyncSession)
+                                                          .wait()
+        return MongoCollection(asyncCollection: asyncColl)
     }
 
     /**

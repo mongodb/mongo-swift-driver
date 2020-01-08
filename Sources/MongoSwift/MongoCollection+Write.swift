@@ -1,4 +1,5 @@
 import CLibMongoC
+import NIO
 
 /// An extension of `MongoCollection` encapsulating write operations.
 extension MongoCollection {
@@ -11,8 +12,8 @@ extension MongoCollection {
      *   - options: Optional `InsertOneOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: The optional result of attempting to perform the insert. If the `WriteConcern`
-     *            is unacknowledged, `nil` is returned.
+     * - Returns: An `EventLoopFuture` containing an `InsertOneResult`, or containing `nil` if the write concern is
+     *            unacknowledged.
      *
      * - Throws:
      *   - `WriteError` if an error occurs while performing the command.
@@ -26,15 +27,10 @@ extension MongoCollection {
         _ value: CollectionType,
         options: InsertOneOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> InsertOneResult? {
-        return try convertingBulkWriteErrors {
-            let result = try self.bulkWrite(
-                [.insertOne(value)],
-                options: options?.asBulkWriteOptions(),
-                session: session
-            )
-            return try InsertOneResult(from: result)
-        }
+    ) -> EventLoopFuture<InsertOneResult?> {
+        return self.bulkWrite([.insertOne(value)], options: options?.asBulkWriteOptions(), session: session)
+            .flatMapThrowing { try InsertOneResult(from: $0) }
+            .flatMapErrorThrowing { throw convertBulkWriteError($0) }
     }
 
     /**
@@ -46,7 +42,8 @@ extension MongoCollection {
      *   - options: optional `InsertManyOptions` to use while executing the operation
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: an `InsertManyResult`, or `nil` if the write concern is unacknowledged.
+     * - Returns: An `EventLoopFuture` containing an `InsertManyResult`, or containing `nil` if the write concern is
+     *            unacknowledged.
      *
      * - Throws:
      *   - `BulkWriteError` if an error occurs while performing any of the writes.
@@ -55,14 +52,14 @@ extension MongoCollection {
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the `CollectionType` or options to BSON.
      */
-    @discardableResult
     public func insertMany(
         _ values: [CollectionType],
         options: InsertManyOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> InsertManyResult? {
-        let result = try self.bulkWrite(values.map { .insertOne($0) }, options: options, session: session)
-        return InsertManyResult(from: result)
+    ) -> EventLoopFuture<InsertManyResult?> {
+        return self.bulkWrite(values.map { .insertOne($0) }, options: options, session: session)
+            .flatMapThrowing { InsertManyResult(from: $0) }
+            .flatMapErrorThrowing { throw convertBulkWriteError($0) }
     }
 
     /**
@@ -74,8 +71,8 @@ extension MongoCollection {
      *   - options: Optional `ReplaceOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: The optional result of attempting to replace a document. If the `WriteConcern`
-     *            is unacknowledged, `nil` is returned.
+     * - Returns: An `EventLoopFuture` containing an `UpdateResult`, or containing `nil` if the write concern is
+     *            unacknowledged.
      *
      * - Throws:
      *   - `WriteError` if an error occurs while performing the command.
@@ -84,19 +81,17 @@ extension MongoCollection {
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the `CollectionType` or options to BSON.
      */
-    @discardableResult
     public func replaceOne(
         filter: Document,
         replacement: CollectionType,
         options: ReplaceOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> UpdateResult? {
-        return try convertingBulkWriteErrors {
-            let modelOptions = ReplaceOneModelOptions(collation: options?.collation, upsert: options?.upsert)
-            let model = WriteModel.replaceOne(filter: filter, replacement: replacement, options: modelOptions)
-            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
-            return try UpdateResult(from: result)
-        }
+    ) -> EventLoopFuture<UpdateResult?> {
+        let modelOptions = ReplaceOneModelOptions(collation: options?.collation, upsert: options?.upsert)
+        let model = WriteModel.replaceOne(filter: filter, replacement: replacement, options: modelOptions)
+        return self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
+            .flatMapThrowing { try UpdateResult(from: $0) }
+            .flatMapErrorThrowing { throw convertBulkWriteError($0) }
     }
 
     /**
@@ -108,8 +103,8 @@ extension MongoCollection {
      *   - options: Optional `UpdateOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: The optional result of attempting to update a document. If the `WriteConcern` is
-     *            unacknowledged, `nil` is returned.
+     * - Returns: An `EventLoopFuture` containing an `UpdateResult`, or containing `nil` if the write concern is
+     *            unacknowledged.
      *
      * - Throws:
      *   - `WriteError` if an error occurs while performing the command.
@@ -118,23 +113,21 @@ extension MongoCollection {
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
-    @discardableResult
     public func updateOne(
         filter: Document,
         update: Document,
         options: UpdateOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> UpdateResult? {
-        return try convertingBulkWriteErrors {
-            let modelOptions = UpdateModelOptions(
-                arrayFilters: options?.arrayFilters,
-                collation: options?.collation,
-                upsert: options?.upsert
-            )
-            let model: WriteModel<CollectionType> = .updateOne(filter: filter, update: update, options: modelOptions)
-            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
-            return try UpdateResult(from: result)
-        }
+    ) -> EventLoopFuture<UpdateResult?> {
+        let modelOptions = UpdateModelOptions(
+            arrayFilters: options?.arrayFilters,
+            collation: options?.collation,
+            upsert: options?.upsert
+        )
+        let model: WriteModel<CollectionType> = .updateOne(filter: filter, update: update, options: modelOptions)
+        return self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
+            .flatMapThrowing { try UpdateResult(from: $0) }
+            .flatMapErrorThrowing { throw convertBulkWriteError($0) }
     }
 
     /**
@@ -146,8 +139,8 @@ extension MongoCollection {
      *   - options: Optional `UpdateOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: The optional result of attempting to update multiple documents. If the write
-     *            concern is unacknowledged, nil is returned
+     * - Returns: An `EventLoopFuture` containing an `UpdateResult`, or containing `nil` if the write concern is
+     *            unacknowledged.
      *
      * - Throws:
      *   - `WriteError` if an error occurs while performing the command.
@@ -156,23 +149,21 @@ extension MongoCollection {
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
-    @discardableResult
     public func updateMany(
         filter: Document,
         update: Document,
         options: UpdateOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> UpdateResult? {
-        return try convertingBulkWriteErrors {
-            let modelOptions = UpdateModelOptions(
-                arrayFilters: options?.arrayFilters,
-                collation: options?.collation,
-                upsert: options?.upsert
-            )
-            let model: WriteModel<CollectionType> = .updateMany(filter: filter, update: update, options: modelOptions)
-            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
-            return try UpdateResult(from: result)
-        }
+    ) -> EventLoopFuture<UpdateResult?> {
+        let modelOptions = UpdateModelOptions(
+            arrayFilters: options?.arrayFilters,
+            collation: options?.collation,
+            upsert: options?.upsert
+        )
+        let model: WriteModel<CollectionType> = .updateMany(filter: filter, update: update, options: modelOptions)
+        return self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
+            .flatMapThrowing { try UpdateResult(from: $0) }
+            .flatMapErrorThrowing { throw convertBulkWriteError($0) }
     }
 
     /**
@@ -183,8 +174,8 @@ extension MongoCollection {
      *   - options: Optional `DeleteOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: The optional result of performing the deletion. If the `WriteConcern` is
-     *            unacknowledged, `nil` is returned.
+     * - Returns: An `EventLoopFuture` containing a `DeleteResult`, or containing `nil` if the write concern is
+     *            unacknowledged.
      *
      * - Throws:
      *   - `WriteError` if an error occurs while performing the command.
@@ -193,18 +184,16 @@ extension MongoCollection {
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
-    @discardableResult
     public func deleteOne(
         _ filter: Document,
         options: DeleteOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> DeleteResult? {
-        return try convertingBulkWriteErrors {
-            let modelOptions = DeleteModelOptions(collation: options?.collation)
-            let model: WriteModel<CollectionType> = .deleteOne(filter, options: modelOptions)
-            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
-            return try DeleteResult(from: result)
-        }
+    ) -> EventLoopFuture<DeleteResult?> {
+        let modelOptions = DeleteModelOptions(collation: options?.collation)
+        let model: WriteModel<CollectionType> = .deleteOne(filter, options: modelOptions)
+        return self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
+            .flatMapThrowing { try DeleteResult(from: $0) }
+            .flatMapErrorThrowing { throw convertBulkWriteError($0) }
     }
 
     /**
@@ -215,8 +204,8 @@ extension MongoCollection {
      *   - options: Optional `DeleteOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: The optional result of performing the deletion. If the `WriteConcern` is
-     *            unacknowledged, `nil` is returned.
+     * - Returns: An `EventLoopFuture` containing a `DeleteResult`, or containing `nil` if the write concern is
+     *            unacknowledged.
      *
      * - Throws:
      *   - `WriteError` if an error occurs while performing the command.
@@ -225,18 +214,16 @@ extension MongoCollection {
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
-    @discardableResult
     public func deleteMany(
         _ filter: Document,
         options: DeleteOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> DeleteResult? {
-        return try convertingBulkWriteErrors {
-            let modelOptions = DeleteModelOptions(collation: options?.collation)
-            let model: WriteModel<CollectionType> = .deleteMany(filter, options: modelOptions)
-            let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
-            return try DeleteResult(from: result)
-        }
+    ) -> EventLoopFuture<DeleteResult?> {
+        let modelOptions = DeleteModelOptions(collation: options?.collation)
+        let model: WriteModel<CollectionType> = .deleteMany(filter, options: modelOptions)
+        return self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
+            .flatMapThrowing { try DeleteResult(from: $0) }
+            .flatMapErrorThrowing { throw convertBulkWriteError($0) }
     }
 }
 

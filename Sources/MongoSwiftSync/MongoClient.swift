@@ -22,7 +22,7 @@ public class MongoClient {
     private let eventLoopGroup: MultiThreadedEventLoopGroup
 
     /// The underlying async client.
-    internal let asyncClient: MongoSwift.MongoClient
+    private let asyncClient: MongoSwift.MongoClient
 
     /**
      * Create a new client connection to a MongoDB server. For options that included in both the connection string URI
@@ -160,7 +160,7 @@ public class MongoClient {
      * - Returns: a `MongoDatabase` corresponding to the provided database name
      */
     public func db(_ name: String, options: DatabaseOptions? = nil) -> MongoDatabase {
-        return MongoDatabase(name: name, client: self, options: options)
+        return MongoDatabase(asyncDB: self.asyncClient.db(name, options: options))
     }
 
     /**
