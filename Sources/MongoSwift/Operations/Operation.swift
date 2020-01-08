@@ -24,6 +24,8 @@ internal protocol OperationExecutor {
     func execute<T>(body: @escaping () throws -> T) -> EventLoopFuture<T>
     /// Closes the executor.
     func close() -> EventLoopFuture<Void>
+    /// Makes a failed `EventLoopFuture` with the provided error.
+    func makeFailedFuture<T>(_ error: Error) -> EventLoopFuture<T>
 }
 
 /// Default executor type used by `MongoClient`s.
@@ -58,10 +60,6 @@ internal class DefaultOperationExecutor: OperationExecutor {
         client: MongoClient,
         session: ClientSession?
     ) -> EventLoopFuture<T.OperationResult> {
-        guard !client.isClosed else {
-            return self.eventLoopGroup.next().makeFailedFuture(MongoClient.ClosedClientError)
-        }
-
         return self.execute {
             // if a session was provided, start it if it hasn't been started already.
             try session?.startIfNeeded()
@@ -76,6 +74,10 @@ internal class DefaultOperationExecutor: OperationExecutor {
 
     internal func execute<T>(body: @escaping () throws -> T) -> EventLoopFuture<T> {
         return self.threadPool.runIfActive(eventLoop: self.eventLoopGroup.next(), body)
+    }
+
+    internal func makeFailedFuture<T>(_ error: Error) -> EventLoopFuture<T> {
+        return self.eventLoopGroup.next().makeFailedFuture(error)
     }
 }
 

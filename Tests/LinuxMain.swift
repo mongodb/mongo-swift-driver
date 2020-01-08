@@ -110,6 +110,37 @@ extension MongoClientTests {
     ]
 }
 
+extension MongoCollectionTests {
+    static var allTests = [
+        ("testCount", testCount),
+        ("testInsertOne", testInsertOne),
+        ("testInsertOneWithUnacknowledgedWriteConcern", testInsertOneWithUnacknowledgedWriteConcern),
+        ("testDrop", testDrop),
+        ("testInsertMany", testInsertMany),
+        ("testInsertManyWithEmptyValues", testInsertManyWithEmptyValues),
+        ("testInsertManyWithUnacknowledgedWriteConcern", testInsertManyWithUnacknowledgedWriteConcern),
+        ("testDeleteOne", testDeleteOne),
+        ("testDeleteOneWithUnacknowledgedWriteConcern", testDeleteOneWithUnacknowledgedWriteConcern),
+        ("testDeleteMany", testDeleteMany),
+        ("testDeleteManyWithUnacknowledgedWriteConcern", testDeleteManyWithUnacknowledgedWriteConcern),
+        ("testReplaceOne", testReplaceOne),
+        ("testReplaceOneWithUnacknowledgedWriteConcern", testReplaceOneWithUnacknowledgedWriteConcern),
+        ("testUpdateOne", testUpdateOne),
+        ("testUpdateOneWithUnacknowledgedWriteConcern", testUpdateOneWithUnacknowledgedWriteConcern),
+        ("testUpdateMany", testUpdateMany),
+        ("testUpdateManyWithUnacknowledgedWriteConcern", testUpdateManyWithUnacknowledgedWriteConcern),
+        ("testDistinct", testDistinct),
+        ("testGetName", testGetName),
+        ("testCodableCollection", testCodableCollection),
+        ("testCursorType", testCursorType),
+        ("testEncodeHint", testEncodeHint),
+        ("testFindOneAndDelete", testFindOneAndDelete),
+        ("testFindOneAndReplace", testFindOneAndReplace),
+        ("testFindOneAndUpdate", testFindOneAndUpdate),
+        ("testNullIds", testNullIds),
+    ]
+}
+
 extension OptionsTests {
     static var allTests = [
         ("testOptionsAlphabeticalOrder", testOptionsAlphabeticalOrder),
@@ -196,6 +227,7 @@ XCTMain([
     testCase(Document_CollectionTests.allTests),
     testCase(Document_SequenceTests.allTests),
     testCase(MongoClientTests.allTests),
+    testCase(MongoCollectionTests.allTests),
     testCase(OptionsTests.allTests),
     testCase(ReadConcernTests.allTests),
     testCase(ReadPreferenceOperationTests.allTests),

@@ -1,4 +1,5 @@
 import CLibMongoC
+import NIO
 
 /// An extension of `MongoCollection` encapsulating find and modify operations.
 extension MongoCollection {
@@ -10,7 +11,8 @@ extension MongoCollection {
      *   - options: Optional `FindOneAndDeleteOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: The deleted document, represented as a `CollectionType`, or `nil` if no document was deleted.
+     * - Returns: An `EventLoopFuture` containing the deleted document, represented as a `CollectionType`, or
+     *            containing `nil` if no document was deleted.
      *
      * - Throws:
      *   - `InvalidArgumentError` if any of the provided options are invalid.
@@ -19,15 +21,14 @@ extension MongoCollection {
      *   - `WriteError` if an error occurs while executing the command.
      *   - `DecodingError` if the deleted document cannot be decoded to a `CollectionType` value.
      */
-    @discardableResult
     public func findOneAndDelete(
         _ filter: Document,
         options: FindOneAndDeleteOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> CollectionType? {
+    ) -> EventLoopFuture<CollectionType?> {
         // we need to always send options here in order to ensure the `remove` flag is set
         let opts = options ?? FindOneAndDeleteOptions()
-        return try self.findAndModify(filter: filter, options: opts, session: session)
+        return self.findAndModify(filter: filter, options: opts, session: session)
     }
 
     /**
@@ -39,8 +40,8 @@ extension MongoCollection {
      *   - options: Optional `FindOneAndReplaceOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: A `CollectionType`, representing either the original document or its replacement,
-     *      depending on selected options, or `nil` if there was no match.
+     * - Returns: An `EventLoopFuture` containing a `CollectionType`, representing either the original document or its
+     *            replacement, depending on selected options, or containing `nil` if there was no match.
      *
      * - Throws:
      *   - `InvalidArgumentError` if any of the provided options are invalid.
@@ -50,15 +51,18 @@ extension MongoCollection {
      *   - `DecodingError` if the replaced document cannot be decoded to a `CollectionType` value.
      *   - `EncodingError` if `replacement` cannot be encoded to a `Document`.
      */
-    @discardableResult
     public func findOneAndReplace(
         filter: Document,
         replacement: CollectionType,
         options: FindOneAndReplaceOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> CollectionType? {
-        let update = try self.encoder.encode(replacement)
-        return try self.findAndModify(filter: filter, update: update, options: options, session: session)
+    ) -> EventLoopFuture<CollectionType?> {
+        do {
+            let update = try self.encoder.encode(replacement)
+            return self.findAndModify(filter: filter, update: update, options: options, session: session)
+        } catch {
+            return self._client.makeFailedFuture(error)
+        }
     }
 
     /**
@@ -70,8 +74,8 @@ extension MongoCollection {
      *   - options: Optional `FindOneAndUpdateOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: A `CollectionType` representing either the original or updated document,
-     *      depending on selected options, or `nil` if there was no match.
+     * - Returns: An `EventLoopFuture` containing a `CollectionType` representing either the original or updated
+     *            document, depending on selected options, or containing `nil` if there was no match.
      *
      * - Throws:
      *   - `InvalidArgumentError` if any of the provided options are invalid.
@@ -80,14 +84,13 @@ extension MongoCollection {
      *   - `WriteError` if an error occurs while executing the command.
      *   - `DecodingError` if the updated document cannot be decoded to a `CollectionType` value.
      */
-    @discardableResult
     public func findOneAndUpdate(
         filter: Document,
         update: Document,
         options: FindOneAndUpdateOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> CollectionType? {
-        return try self.findAndModify(filter: filter, update: update, options: options, session: session)
+    ) -> EventLoopFuture<CollectionType?> {
+        return self.findAndModify(filter: filter, update: update, options: options, session: session)
     }
 
     /**
@@ -105,9 +108,9 @@ extension MongoCollection {
         update: Document? = nil,
         options: FindAndModifyOptionsConvertible? = nil,
         session: ClientSession?
-    ) throws -> CollectionType? {
+    ) -> EventLoopFuture<CollectionType?> {
         let operation = FindAndModifyOperation(collection: self, filter: filter, update: update, options: options)
-        return try self._client.executeOperation(operation, session: session)
+        return self._client.executeOperationAsync(operation, session: session)
     }
 }
 

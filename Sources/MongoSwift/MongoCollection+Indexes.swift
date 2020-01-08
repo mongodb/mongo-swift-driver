@@ -1,4 +1,5 @@
 import CLibMongoC
+import NIO
 
 /// A struct representing an index on a `MongoCollection`.
 public struct IndexModel: Codable {
@@ -166,7 +167,7 @@ extension MongoCollection {
      *   - options: Optional `CreateIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: The name of the created index.
+     * - Returns: An `EventLoopFuture` containing the name of the created index.
      *
      * - Throws:
      *   - `WriteError` if an error occurs while performing the write.
@@ -175,18 +176,14 @@ extension MongoCollection {
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the index specification or options.
      */
-    @discardableResult
     public func createIndex(
         _ keys: Document,
         indexOptions: IndexOptions? = nil,
         options: CreateIndexOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> String {
-        return try self.createIndexes(
-            [IndexModel(keys: keys, options: indexOptions)],
-            options: options,
-            session: session
-        )[0]
+    ) -> EventLoopFuture<String> {
+        let model = IndexModel(keys: keys, options: indexOptions)
+        return self.createIndex(model, options: options, session: session)
     }
 
     /**
@@ -197,7 +194,7 @@ extension MongoCollection {
      *   - options: Optional `CreateIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: The name of the created index.
+     * - Returns: An `EventLoopFuture` containing the name of the created index.
      *
      * - Throws:
      *   - `WriteError` if an error occurs while performing the write.
@@ -206,13 +203,17 @@ extension MongoCollection {
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the index specification or options.
      */
-    @discardableResult
     public func createIndex(
         _ model: IndexModel,
         options: CreateIndexOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> String {
-        return try self.createIndexes([model], options: options, session: session)[0]
+    ) -> EventLoopFuture<String> {
+        return self.createIndexes([model], options: options, session: session).flatMapThrowing { result in
+            guard result.count == 1 else {
+                throw InternalError(message: "expected 1 result, got \(result.count)")
+            }
+            return result[0]
+        }
     }
 
     /**
@@ -223,23 +224,26 @@ extension MongoCollection {
      *   - options: Optional `CreateIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `[String]` containing the names of all the indexes that were created.
+     * - Returns: An `EventLoopFuture<[String]>` containing the names of all the indexes that were created.
      *
      * - Throws:
      *   - `WriteError` if an error occurs while performing the write.
      *   - `CommandError` if an error occurs that prevents the command from executing.
+     *   - `InvalidArgumentError` if `models` is empty.
      *   - `InvalidArgumentError` if the options passed in form an invalid combination.
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the index specifications or options.
      */
-    @discardableResult
     public func createIndexes(
         _ models: [IndexModel],
         options: CreateIndexOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> [String] {
+    ) -> EventLoopFuture<[String]> {
+        guard !models.isEmpty else {
+            return self._client.makeFailedFuture(InvalidArgumentError(message: "models cannot be empty"))
+        }
         let operation = CreateIndexesOperation(collection: self, models: models, options: options)
-        return try self._client.executeOperation(operation, session: session)
+        return self._client.executeOperationAsync(operation, session: session)
     }
 
     /**
@@ -250,25 +254,25 @@ extension MongoCollection {
      *   - options: Optional `DropIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
+     * - Returns: An `EventLoopFuture` containing the result of dropping the index.
+     *
      * - Throws:
      *   - `WriteError` if an error occurs while performing the command.
      *   - `CommandError` if an error occurs that prevents the command from executing.
      *   - `InvalidArgumentError` if the options passed in form an invalid combination.
      *   - `EncodingError` if an error occurs while encoding the options.
      */
-    @discardableResult
     public func dropIndex(
         _ name: String,
         options: DropIndexOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> Document {
+    ) -> EventLoopFuture<DropIndexesResult> {
         guard name != "*" else {
-            throw InvalidArgumentError(
-                message:
-                "Invalid index name '*'; use dropIndexes() to drop all indexes"
-            )
+            return self._client.makeFailedFuture(InvalidArgumentError(
+                message: "Invalid index name '*'; use dropIndexes() to drop all indexes"
+            ))
         }
-        return try self._dropIndexes(index: .string(name), options: options, session: session)
+        return self._dropIndexes(index: .string(name), options: options, session: session)
     }
 
     /**
@@ -279,7 +283,7 @@ extension MongoCollection {
      *   - options: Optional `DropIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: a `Document` containing the server's response to the command.
+     * - Returns: An `EventLoopFuture` containing the result of dropping the index.
      *
      * - Throws:
      *   - `WriteError` if an error occurs while performing the command.
@@ -288,13 +292,12 @@ extension MongoCollection {
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options.
      */
-    @discardableResult
     public func dropIndex(
         _ keys: Document,
         options: DropIndexOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> Document {
-        return try self._dropIndexes(index: .document(keys), options: options, session: session)
+    ) -> EventLoopFuture<DropIndexesResult> {
+        return self._dropIndexes(index: .document(keys), options: options, session: session)
     }
 
     /**
@@ -305,7 +308,7 @@ extension MongoCollection {
      *   - options: Optional `DropIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: a `Document` containing the server's response to the command.
+     * - Returns: An `EventLoopFuture` containing the result of dropping the index.
      *
      * - Throws:
      *   - `WriteError` if an error occurs while performing the command.
@@ -314,13 +317,12 @@ extension MongoCollection {
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options.
      */
-    @discardableResult
     public func dropIndex(
         _ model: IndexModel,
         options: DropIndexOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> Document {
-        return try self._dropIndexes(index: .document(model.keys), options: options, session: session)
+    ) -> EventLoopFuture<DropIndexesResult> {
+        return self._dropIndexes(index: .document(model.keys), options: options, session: session)
     }
 
     /**
@@ -330,7 +332,7 @@ extension MongoCollection {
      *   - options: Optional `DropIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: a `Document` containing the server's response to the command.
+     * - Returns: An `EventLoopFuture` containing the result of dropping the indexes.
      *
      * - Throws:
      *   - `WriteError` if an error occurs while performing the command.
@@ -339,9 +341,11 @@ extension MongoCollection {
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options.
      */
-    @discardableResult
-    public func dropIndexes(options: DropIndexOptions? = nil, session: ClientSession? = nil) throws -> Document {
-        return try self._dropIndexes(index: "*", options: options, session: session)
+    public func dropIndexes(
+        options: DropIndexOptions? = nil,
+        session: ClientSession? = nil
+    ) -> EventLoopFuture<DropIndexesResult> {
+        return self._dropIndexes(index: "*", options: options, session: session)
     }
 
     /// Internal helper to drop an index. `index` must either be an index specification document or a
@@ -350,9 +354,9 @@ extension MongoCollection {
         index: BSON,
         options: DropIndexOptions?,
         session: ClientSession?
-    ) throws -> Document {
+    ) -> EventLoopFuture<DropIndexesResult> {
         let operation = DropIndexesOperation(collection: self, index: index, options: options)
-        return try self._client.executeOperation(operation, session: session)
+        return self._client.executeOperationAsync(operation, session: session)
     }
 
     /**

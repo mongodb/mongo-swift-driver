@@ -27,7 +27,11 @@ extension MongoCollection {
         options: CreateIndexOptions? = nil,
         session: ClientSession? = nil
     ) throws -> String {
-        fatalError("unimplemented")
+        return try self.asyncColl.createIndex(keys,
+                                              indexOptions: indexOptions,
+                                              options: options,
+                                              session: session?.asyncSession)
+                                            .wait()
     }
 
     /**
@@ -53,7 +57,7 @@ extension MongoCollection {
         options: CreateIndexOptions? = nil,
         session: ClientSession? = nil
     ) throws -> String {
-        fatalError("unimplemented")
+        return try self.asyncColl.createIndex(model, options: options, session: session?.asyncSession).wait()
     }
 
     /**
@@ -79,7 +83,7 @@ extension MongoCollection {
         options: CreateIndexOptions? = nil,
         session: ClientSession? = nil
     ) throws -> [String] {
-        fatalError("unimplemented")
+        return try self.asyncColl.createIndexes(models, options: options, session: session?.asyncSession).wait()
     }
 
     /**
@@ -89,6 +93,8 @@ extension MongoCollection {
      *   - name: The name of the index to drop
      *   - options: Optional `DropIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
+     *
+     * - Returns: The result of dropping the index.
      *
      * - Throws:
      *   - `WriteError` if an error occurs while performing the command.
@@ -101,8 +107,8 @@ extension MongoCollection {
         _ name: String,
         options: DropIndexOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> Document {
-        fatalError("unimplemented")
+    ) throws -> DropIndexesResult {
+        return try self.asyncColl.dropIndex(name, options: options, session: session?.asyncSession).wait()
     }
 
     /**
@@ -113,7 +119,7 @@ extension MongoCollection {
      *   - options: Optional `DropIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: a `Document` containing the server's response to the command.
+     * - Returns: The result of dropping the index.
      *
      * - Throws:
      *   - `WriteError` if an error occurs while performing the command.
@@ -127,8 +133,8 @@ extension MongoCollection {
         _ keys: Document,
         options: DropIndexOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> Document {
-        fatalError("unimplemented")
+    ) throws -> DropIndexesResult {
+        return try self.asyncColl.dropIndex(keys, options: options, session: session?.asyncSession).wait()
     }
 
     /**
@@ -139,7 +145,7 @@ extension MongoCollection {
      *   - options: Optional `DropIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: a `Document` containing the server's response to the command.
+     * - Returns: The result of dropping the index.
      *
      * - Throws:
      *   - `WriteError` if an error occurs while performing the command.
@@ -153,8 +159,8 @@ extension MongoCollection {
         _ model: IndexModel,
         options: DropIndexOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> Document {
-        fatalError("unimplemented")
+    ) throws -> DropIndexesResult {
+        return try self.asyncColl.dropIndex(model, options: options, session: session?.asyncSession).wait()
     }
 
     /**
@@ -164,7 +170,7 @@ extension MongoCollection {
      *   - options: Optional `DropIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: a `Document` containing the server's response to the command.
+     * - Returns: The result of dropping the indexes.
      *
      * - Throws:
      *   - `WriteError` if an error occurs while performing the command.
@@ -174,8 +180,11 @@ extension MongoCollection {
      *   - `EncodingError` if an error occurs while encoding the options.
      */
     @discardableResult
-    public func dropIndexes(options: DropIndexOptions? = nil, session: ClientSession? = nil) throws -> Document {
-        fatalError("unimplemented")
+    public func dropIndexes(
+        options: DropIndexOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> DropIndexesResult {
+        return try self.asyncColl.dropIndexes(options: options, session: session?.asyncSession).wait()
     }
 
     /**
