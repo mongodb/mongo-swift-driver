@@ -1,7 +1,31 @@
 import CLibMongoC
+import Foundation
+import NIO
 
-internal let ClosedChangeStreamError =
-    LogicError(message: "Cannot advance a completed or failed change stream.")
+/// Direct wrapper of a `mongoc_change_stream_t`.
+private struct MongocChangeStream: MongocCursorWrapper {
+    internal let pointer: OpaquePointer
+
+    fileprivate init(stealing ptr: OpaquePointer) {
+        self.pointer = ptr
+    }
+
+    internal func errorDocument(bsonError: inout bson_error_t, replyPtr: UnsafeMutablePointer<BSONPointer?>) -> Bool {
+        return mongoc_change_stream_error_document(self.pointer, &bsonError, replyPtr)
+    }
+
+    internal func next(outPtr: UnsafeMutablePointer<BSONPointer?>) -> Bool {
+        return mongoc_change_stream_next(self.pointer, outPtr)
+    }
+
+    internal func more() -> Bool {
+        return true
+    }
+
+    internal func destroy() {
+        mongoc_change_stream_destroy(self.pointer)
+    }
+}
 
 /// A token used for manually resuming a change stream. Pass this to the `resumeAfter` field of
 /// `ChangeStreamOptions` to resume or start a change stream where a previous one left off.
@@ -27,133 +51,47 @@ public struct ResumeToken: Codable, Equatable {
 // sourcery: skipSyncExport
 /// A MongoDB change stream.
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/
-public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
-    /// Enum for tracking the state of a change stream.
-    internal enum State {
-        /// Indicates that the change stream is still open. Stores a pointer to the `mongoc_change_stream_t`, along
-        /// with the source connection, client, and possibly session to ensure they are kept alive as long
-        /// as the change stream is.
-        case open(
-            changeStream: OpaquePointer,
-            connection: Connection,
-            client: MongoClient,
-            session: ClientSession?
-        )
-        case closed
-    }
+public class ChangeStream<T: Codable>: CursorProtocol {
+    internal typealias Element = T
 
-    /// The state of this change stream.
-    internal private(set) var state: State
-
-    /// A `ResumeToken` associated with the most recent event seen by the change stream.
-    public internal(set) var resumeToken: ResumeToken?
+    /// The client this change stream descended from.
+    private let client: MongoClient
 
     /// Decoder for decoding documents into type `T`.
-    internal let decoder: BSONDecoder
+    private let decoder: BSONDecoder
 
-    /// The error that occurred while iterating the change stream, if one exists. This should be used to check
-    /// for errors after `next()` returns `nil`.
-    public private(set) var error: Error?
+    /// The cursor this change stream is wrapping.
+    private let wrappedCursor: Cursor<MongocChangeStream>
 
-    /**
-     * Retrieves any error that occured in mongoc or on the server while iterating the change stream. Returns nil if
-     * this change stream is already closed, or if no error occurred.
-     *  - Errors:
-     *    - `DecodingError` if an error occurs while decoding the server's response.
-     */
-    private func getChangeStreamError() -> Error? {
-        guard case let .open(changeStream, _, _, _) = self.state else {
+    /// Process an event before returning it to the user.
+    private func processEvent(_ event: Document?) throws -> T? {
+        guard let event = event else {
             return nil
         }
-
-        var replyPtr = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
-        defer {
-            replyPtr.deinitialize(count: 1)
-            replyPtr.deallocate()
+        // Update the resumeToken with the `_id` field from the document.
+        guard let resumeToken = event["_id"]?.documentValue else {
+            throw InternalError(message: "_id field is missing from the change stream document.")
         }
-
-        var error = bson_error_t()
-        guard mongoc_change_stream_error_document(changeStream, &error, replyPtr) else {
-            return nil
-        }
-
-        // If a reply is present, it implies the error occurred on the server. This *should* always be a commandError,
-        // but we will still parse the mongoc error to cover all cases.
-        if let docPtr = replyPtr.pointee {
-            // we have to copy because libmongoc owns the pointer.
-            let reply = Document(copying: docPtr)
-            return extractMongoError(error: error, reply: reply)
-        }
-
-        // Otherwise, the only feasible error is that the user tried to advance a dead change stream cursor,
-        // which is a logic error. We will still parse the mongoc error to cover all cases.
-        return extractMongoError(error: error)
+        self.resumeToken = ResumeToken(resumeToken)
+        return try self.decoder.decode(T.self, from: event)
     }
 
-    /// Returns the next `T` in the change stream or nil if there is no next value. Will block for a maximum of
-    /// `maxAwaitTimeMS` milliseconds as specified in the `ChangeStreamOptions`, or for the server default timeout
-    /// if omitted.
-    public func next() -> T? {
-        // We already closed the mongoc change stream, either because we reached the end or encountered an error.
-        guard case let .open(_, connection, client, session) = self.state else {
-            self.error = ClosedChangeStreamError
-            return nil
-        }
-        do {
-            let operation = NextOperation(target: .changeStream(self))
-            guard let out = try client.executeOperation(operation, using: connection, session: session) else {
-                self.error = self.getChangeStreamError()
-                if self.error != nil {
-                    self.close()
-                }
-                return nil
-            }
-            return out
-        } catch {
-            self.error = error
-            self.close()
-            return nil
-        }
-    }
-
-    /**
-     * Returns the next `T` in this change stream or `nil`, or throws an error if one occurs -- compared to `next()`,
-     * which returns `nil` and requires manually checking for an error afterward. Will block for a maximum of
-     * `maxAwaitTimeMS` milliseconds as specified in the `ChangeStreamOptions`, or for the server default timeout if
-     * omitted.
-     * - Returns: the next `T` in this change stream, or `nil` if at the end of the change stream cursor.
-     * - Throws:
-     *   - `CommandError` if an error occurs on the server while iterating the change stream cursor.
-     *   - `LogicError` if this function is called and the session associated with this change stream is
-     *     inactive.
-     *   - `DecodingError` if an error occurs while decoding the server's response.
-     */
-    public func nextOrError() throws -> T? {
-        if let next = self.next() {
-            return next
-        }
-
-        if let error = self.error {
-            throw error
-        }
-        return nil
-    }
-
-    /**
-     * Initializes a `ChangeStream`.
-     * - Throws:
-     *   - `CommandError` if an error occurred on the server when creating the `mongoc_change_stream_t`.
-     *   - `InvalidArgumentError` if the `mongoc_change_stream_t` was created with invalid options.
-     */
     internal init(
-        stealing changeStream: OpaquePointer,
+        stealing changeStreamPtr: OpaquePointer,
         connection: Connection,
         client: MongoClient,
         session: ClientSession?,
         decoder: BSONDecoder,
         options: ChangeStreamOptions?
     ) throws {
-        self.state = .open(changeStream: changeStream, connection: connection, client: client, session: session)
+        let mongocChangeStream = MongocChangeStream(stealing: changeStreamPtr)
+        self.wrappedCursor = try Cursor(
+            mongocCursor: mongocChangeStream,
+            connection: connection,
+            session: session,
+            type: .tailableAwait
+        )
+        self.client = client
         self.decoder = decoder
 
         // TODO: SWIFT-519 - Starting 4.2, update resumeToken to startAfter (if set).
@@ -161,24 +99,82 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
         if let resumeAfter = options?.resumeAfter {
             self.resumeToken = resumeAfter
         }
-
-        if let err = self.getChangeStreamError() {
-            self.close()
-            throw err
-        }
     }
 
-    /// Cleans up internal state.
-    private func close() {
-        guard case let .open(changeStream, _, _, _) = self.state else {
-            return
-        }
-        mongoc_change_stream_destroy(changeStream)
-        self.state = .closed
-    }
-
-    /// Closes the cursor if it hasn't been closed already.
     deinit {
-        self.close()
+        assert(!self.isAlive, "change stream wasn't closed")
+    }
+
+    /// Indicates whether this change stream has the potential to return more data.
+    public var isAlive: Bool {
+        return self.wrappedCursor.isAlive
+    }
+
+    /// The `ResumeToken` associated with the most recent event seen by the change stream.
+    public internal(set) var resumeToken: ResumeToken?
+
+    /**
+     * Get the next `T` from this change stream.
+     *
+     * This method will continue polling until a non-empty batch is returned from the server, an error occurs,
+     * or the change stream is killed. Each attempt to retrieve results will wait for a maximum of `maxAwaitTimeMS`
+     * (specified on the `ChangeStreamOptions` passed  to the method that created this change stream) before trying
+     * again.
+     *
+     * - Returns:
+     *   An `EventLoopFuture<T?>` evaluating to the next `T` in this change stream, `nil` if the change stream is
+     *   exhausted, or an error if one occurred. The returned future will not resolve until one of those conditions is
+     *   met, potentially after multiple requests to the server.
+     *
+     *   If the future evaluates to an error, it is likely one of the following:
+     *     - `CommandError` if an error occurs while fetching more results from the server.
+     *     - `LogicError` if this function is called after the cursor has died.
+     *     - `LogicError` if this function is called and the session associated with this cursor is inactive.
+     *     - `DecodingError` if an error occurs decoding the server's response.
+     */
+    public func next() -> EventLoopFuture<T?> {
+        return self.client.operationExecutor.execute {
+            try self.processEvent(self.wrappedCursor.next())
+        }
+    }
+
+    /**
+     * Attempt to get the next `T` from this change stream, returning `nil` if there are no results.
+     *
+     * The change stream will wait server-side for a maximum of `maxAwaitTimeMS` (specified on the `ChangeStreamOptions`
+     * passed to the method that created this change stream) before returning `nil`.
+     *
+     * This method may be called repeatedly while `isAlive` is true to retrieve new data.
+     *
+     * - Returns:
+     *    An `EventLoopFuture<T?>` containing the next `T` in this change stream, an error if one occurred, or `nil` if
+     *    there was no data.
+     *
+     *    If the future evaluates to an error, it is likely one of the following:
+     *      - `CommandError` if an error occurs while fetching more results from the server.
+     *      - `LogicError` if this function is called after the cursor has died.
+     *      - `LogicError` if this function is called and the session associated with this cursor is inactive.
+     *      - `DecodingError` if an error occurs decoding the server's response.
+     */
+    public func tryNext() -> EventLoopFuture<T?> {
+        return self.client.operationExecutor.execute {
+            try self.processEvent(self.wrappedCursor.tryNext())
+        }
+    }
+
+    /**
+     * Kill this change stream.
+     *
+     * This method MUST be called before this change stream goes out of scope to prevent leaking resources.
+     * This method may be called even if there are unresolved futures created from other `ChangeStream` methods.
+     * This method will have no effect if the change stream is already dead.
+     *
+     * - Returns:
+     *   An `EventLoopFuture` that evaluates when the cursor has completed closing. This future should not fail.
+     */
+    public func kill() -> EventLoopFuture<Void> {
+        return self.client.operationExecutor.execute {
+            self.wrappedCursor.kill()
+        }
     }
 }

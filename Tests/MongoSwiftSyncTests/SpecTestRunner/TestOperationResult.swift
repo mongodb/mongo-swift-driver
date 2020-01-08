@@ -1,4 +1,5 @@
 import MongoSwiftSync
+import TestsCommon
 
 /// Enum encapsulating the possible results returned from CRUD operations.
 enum TestOperationResult: Decodable, Equatable {

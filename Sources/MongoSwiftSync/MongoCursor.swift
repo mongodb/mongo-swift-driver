@@ -9,7 +9,7 @@ import MongoSwift
  *
  * It is safe to `kill(...)` a `MongoCursor` from another thread while it is blocked waiting on results, however.
  */
-public class MongoCursor<T: Codable>: LazySequenceProtocol, IteratorProtocol, Cursor {
+public class MongoCursor<T: Codable>: CursorProtocol {
     private let asyncCursor: MongoSwift.MongoCursor<T>
     private let client: MongoClient
 

@@ -2,49 +2,107 @@ import MongoSwift
 
 /// A MongoDB change stream.
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/
-public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
-    /// A `ResumeToken` associated with the most recent event seen by the change stream.
-    public var resumeToken: ResumeToken? { fatalError("unimplemented") }
+public class ChangeStream<T: Codable>: CursorProtocol {
+    private let asyncChangeStream: MongoSwift.ChangeStream<T>
 
-    /// The error that occurred while iterating the change stream, if one exists. This should be used to check
-    /// for errors after `next()` returns `nil`.
-    public var error: Error? { fatalError("unimplemented") }
+    /// The client this change stream descended from.
+    private let client: MongoClient
 
-    /**
-     * Initializes a `ChangeStream`.
-     * - Throws:
-     *   - `CommandError` if an error occurred on the server when creating the `mongoc_change_stream_t`.
-     *   - `InvalidArgumentError` if the `mongoc_change_stream_t` was created with invalid options.
-     */
-    internal init(wrapping changeStream: MongoSwift.ChangeStream<T>) throws {
-        fatalError("unimplemented")
+    internal init(wrapping changeStream: MongoSwift.ChangeStream<T>, client: MongoClient) {
+        self.asyncChangeStream = changeStream
+        self.client = client
     }
 
-    /// Closes the change stream if it hasn't been closed already.
+    /// Kills the change stream if it hasn't been killed already.
     deinit {
-        fatalError("unimplemented")
+        self.kill()
     }
 
-    /// Returns the next `T` in the change stream or nil if there is no next value. Will block for a maximum of
-    /// `maxAwaitTimeMS` milliseconds as specified in the `ChangeStreamOptions`, or for the server default timeout
-    /// if omitted.
-    public func next() -> T? {
-        fatalError("unimplemented")
+    /// The `ResumeToken` associated with the most recent event seen by the change stream.
+    public var resumeToken: ResumeToken? {
+        return self.asyncChangeStream.resumeToken
     }
 
     /**
-     * Returns the next `T` in this change stream or `nil`, or throws an error if one occurs -- compared to `next()`,
-     * which returns `nil` and requires manually checking for an error afterward. Will block for a maximum of
-     * `maxAwaitTimeMS` milliseconds as specified in the `ChangeStreamOptions`, or for the server default timeout if
-     * omitted.
-     * - Returns: the next `T` in this change stream, or `nil` if at the end of the change stream cursor.
-     * - Throws:
-     *   - `CommandError` if an error occurs on the server while iterating the change stream cursor.
-     *   - `LogicError` if this function is called and the session associated with this change stream is
-     *     inactive.
-     *   - `DecodingError` if an error occurs while decoding the server's response.
+     * Indicates whether this change stream has the potential to return more data.
+     *
+     * This cursor will be dead if `next` returns `nil` or an error. It will also be dead if `tryNext` returns
+     * an error, but will still be alive if `tryNext` returns `nil`.
      */
-    public func nextOrError() throws -> T? {
-        fatalError("unimplemented")
+    public var isAlive: Bool {
+        return self.asyncChangeStream.isAlive
+    }
+
+    /**
+     * Get the next `T` from this change stream.
+     *
+     * This method will block until an event is returned from the server, an error occurred, or the change stream is
+     * killed. Each attempt to retrieve results will wait server-side for a maximum of `maxAwaitTimeMS` (specified on
+     * the `ChangeStreamOptions` passed  to the method that created this change stream) before making another request.
+     *
+     * - Returns:
+     *   A `Result<T, Error>?` containing the next `T` in this change stream or an error if one occurred, or `nil` if
+     *   the change stream is exhausted. This method will block until one of those conditions is met, potentially after
+     *   multiple requests to the server.
+     *
+     *   If the result contains an error, it is likely one of the following:
+     *     - `CommandError` if an error occurs while fetching more results from the server.
+     *     - `LogicError` if this function is called after the cursor has died.
+     *     - `LogicError` if this function is called and the session associated with this cursor is inactive.
+     *     - `DecodingError` if an error occurs decoding the server's response.
+     */
+    public func next() -> Result<T, Error>? {
+        do {
+            guard let result = try self.asyncChangeStream.next().wait() else {
+                return nil
+            }
+            return .success(result)
+        } catch {
+            return .failure(error)
+        }
+    }
+
+    /**
+     * Attempt to get the next `T` from this change stream, returning `nil` if there are no results.
+     *
+     * The change stream will wait server-side for a maximum of `maxAwaitTimeMS` (specified on the
+     * `ChangeStreamOptions` passed to the method that created this change stream) before returning `nil`.
+     *
+     * This method may be called repeatedly while `isAlive` is true to retrieve new data.
+     *
+     * - Returns:
+     *    A `Result<T, Error>?` containing the next `T` in this change stream, an error if one occurred, or `nil` if
+     *    there was no data.
+     *
+     *    If the result is an error, it is likely one of the following:
+     *      - `CommandError` if an error occurs while fetching more results from the server.
+     *      - `LogicError` if this function is called after the cursor has died.
+     *      - `LogicError` if this function is called and the session associated with this cursor is inactive.
+     *      - `DecodingError` if an error occurs decoding the server's response.
+     */
+    public func tryNext() -> Result<T, Error>? {
+        do {
+            guard let result = try self.asyncChangeStream.tryNext().wait() else {
+                return nil
+            }
+            return .success(result)
+        } catch {
+            return .failure(error)
+        }
+    }
+
+    /**
+     * Kill this change stream.
+     *
+     * This method may be called from another thread safely even if this change stream is blocked retrieving results.
+     * This is mainly useful for freeing a thread that a cursor is blocking with a long running operation.
+     *
+     * This method is automatically called in the `deinit` of `ChangeStream`, so it is not necessary to call it
+     * manually.
+     *
+     * This method will have no effect if the change stream is already dead.
+     */
+    public func kill() {
+        try? self.asyncChangeStream.kill().wait()
     }
 }

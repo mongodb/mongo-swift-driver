@@ -1,8 +1,9 @@
 import CLibMongoC
+import NIO
 
 extension MongoCollection {
     /**
-     * Starts a `ChangeStream` on a collection. The `CollectionType` will be associated with the `fullDocument`
+     * Starts a `ChangeStream` on this collection. The `CollectionType` will be associated with the `fullDocument`
      * field in `ChangeStreamEvent`s emitted by the returned `ChangeStream`. The server will return an error if
      * this method is called on a system collection.
      *
@@ -11,7 +12,7 @@ extension MongoCollection {
      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
      *   - session: An optional `ClientSession` to use with this change stream.
      *
-     * - Returns: A `ChangeStream` on a specific collection.
+     * - Returns: An `EventLoopFuture<ChangeStream>` containing a `ChangeStream` watching this collection.
      *
      * - Throws:
      *   - `CommandError` if an error occurs on the server while creating the change stream.
@@ -28,12 +29,12 @@ extension MongoCollection {
         _ pipeline: [Document] = [],
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> ChangeStream<ChangeStreamEvent<CollectionType>> {
-        return try self.watch(pipeline, options: options, session: session, withFullDocumentType: CollectionType.self)
+    ) -> EventLoopFuture<ChangeStream<ChangeStreamEvent<CollectionType>>> {
+        return self.watch(pipeline, options: options, session: session, withFullDocumentType: CollectionType.self)
     }
 
     /**
-     * Starts a `ChangeStream` on a collection. Associates the specified `Codable` type `T` with the `fullDocument`
+     * Starts a `ChangeStream` on this collection. Associates the specified `Codable` type `T` with the `fullDocument`
      * field in the `ChangeStreamEvent`s emitted by the returned `ChangeStream`. The server will return an error
      * if this method is called on a system collection.
      *
@@ -44,7 +45,7 @@ extension MongoCollection {
      *   - withFullDocumentType: The type that the `fullDocument` field of the emitted `ChangeStreamEvent`s will be
      *                           decoded to.
      *
-     * - Returns: A `ChangeStream` on a specific collection.
+     * - Returns: An `EventLoopFuture<ChangeStream>` containing a `ChangeStream` watching this collection.
      *
      * - Throws:
      *   - `CommandError` if an error occurs on the server while creating the change stream.
@@ -62,9 +63,8 @@ extension MongoCollection {
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil,
         withFullDocumentType _: FullDocType.Type
-    )
-        throws -> ChangeStream<ChangeStreamEvent<FullDocType>> {
-        return try self.watch(
+    ) -> EventLoopFuture<ChangeStream<ChangeStreamEvent<FullDocType>>> {
+        return self.watch(
             pipeline,
             options: options,
             session: session,
@@ -73,7 +73,7 @@ extension MongoCollection {
     }
 
     /**
-     * Starts a `ChangeStream` on a collection. Associates the specified `Codable` type `T` with the returned
+     * Starts a `ChangeStream` on this collection. Associates the specified `Codable` type `T` with the returned
      * `ChangeStream`. The server will return an error if this method is called on a system collection.
      *
      * - Parameters:
@@ -83,7 +83,7 @@ extension MongoCollection {
      *   - withEventType: The type that the entire change stream response will be decoded to and that will be returned
      *                    when iterating through the change stream.
      *
-     * - Returns: A `ChangeStream` on a specific collection.
+     * - Returns: An `EventLoopFuture<ChangeStream>` containing a `ChangeStream` watching this collection.
      *
      * - Throws:
      *   - `CommandError` if an error occurs on the server while creating the change stream.
@@ -101,12 +101,12 @@ extension MongoCollection {
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil,
         withEventType _: EventType.Type
-    ) throws -> ChangeStream<EventType> {
-        let operation = try WatchOperation<CollectionType, EventType>(
+    ) -> EventLoopFuture<ChangeStream<EventType>> {
+        let operation = WatchOperation<CollectionType, EventType>(
             target: .collection(self),
             pipeline: pipeline,
             options: options
         )
-        return try self._client.executeOperation(operation, session: session)
+        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
     }
 }
