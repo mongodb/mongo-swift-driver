@@ -26,16 +26,11 @@ final class MongoClientTests: MongoSwiftTestCase {
     }
 
     func testClientIdGeneration() throws {
-        try self.withTestClient { client in
-            expect(client._id).to(equal(0))
+        let ids = try (0...2).map { _ in
+            try self.withTestClient { $0._id }
         }
-
-        try self.withTestClient { client in
-            expect(client._id).to(equal(1))
-        }
-
-        try self.withTestClient { client in
-            expect(client._id).to(equal(2))
-        }
+        expect(ids.sorted()).to(equal(ids))
+        expect(ids[1]).to(equal(ids[0] + 1))
+        expect(ids[2]).to(equal(ids[1] + 1))
     }
 }
