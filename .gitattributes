@@ -1,0 +1,2 @@
+# Ignore vendored code for language statistics in GitHub
+Sources/CLibMongoC/* linguist-vendored
