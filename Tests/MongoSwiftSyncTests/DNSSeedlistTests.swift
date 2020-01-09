@@ -1,7 +1,6 @@
 import Foundation
 import MongoSwiftSync
 import Nimble
-import NIO
 import TestsCommon
 import XCTest
 
@@ -12,7 +11,7 @@ struct DNSSeedlistTestCase: Decodable {
     /// The expected set of initial seeds discovered from the SRV record.
     let seeds: [String]
     /// The discovered topology's list of hosts once SDAM completes a scan.
-    let hosts: [SocketAddress]
+    let hosts: [Address]
     /// The parsed connection string options as discovered from URI and TXT records.
     let options: Document?
     /// Additional options present in the connection string URI such as Userinfo (as user and password), and Auth

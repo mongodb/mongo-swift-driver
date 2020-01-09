@@ -2,7 +2,6 @@ import CLibMongoC
 import Foundation
 @testable import MongoSwift
 import Nimble
-import NIO
 import XCTest
 
 open class MongoSwiftTestCase: XCTestCase {
@@ -219,12 +218,12 @@ public enum AuthMechanism: String, Decodable {
     case plain = "PLAIN"
 }
 
-/// Extension of SocketAddress to allow decoding from a host:port pair.
-extension SocketAddress: Decodable {
+/// Makes `ConnectionId` `Decodable` for the sake of constructing it from spec test files.
+extension ConnectionId: Decodable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let hostPortPair = try container.decode(String.self)
-        try self.init(hostAndPort: hostPortPair)
+        self.init(hostPortPair)
     }
 }
 
