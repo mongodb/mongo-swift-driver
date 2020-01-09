@@ -95,7 +95,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
                     .flatMap { _ in
                         coll.insertOne(["x": 2])
                     }.flatMap { _ -> EventLoopFuture<Void> in
-                        client.wait(seconds: 2)
+                        client.wait(seconds: 5)
                     }.flatMap { _ in
                         stream.close()
                     }
@@ -126,8 +126,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
                     }
                 future.whenComplete { result in
                     switch result {
-                    case let .failure(error):
-                        expect(error as? CommandError).toNot(beNil())
+                    case .failure:
                         expect(stream.isAlive).to(beFalse())
                     case let .success(r):
                         fail("expected failure, but got \(String(describing: r))")
