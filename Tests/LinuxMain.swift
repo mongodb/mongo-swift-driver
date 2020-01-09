@@ -107,6 +107,7 @@ extension MongoClientTests {
     static var allTests = [
         ("testUsingClosedClient", testUsingClosedClient),
         ("testListDatabases", testListDatabases),
+        ("testClientIdGeneration", testClientIdGeneration),
     ]
 }
 

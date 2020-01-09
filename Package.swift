@@ -11,7 +11,7 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-nio", .upToNextMajor(from: "2.0.0"))
     ],
     targets: [
-        .target(name: "MongoSwift", dependencies: ["CLibMongoC", "NIO"]),
+        .target(name: "MongoSwift", dependencies: ["CLibMongoC", "NIO", "NIOConcurrencyHelpers"]),
         .target(name: "MongoSwiftSync", dependencies: ["MongoSwift"]),
         .target(name: "AtlasConnectivity", dependencies: ["MongoSwiftSync"]),
         .target(name: "TestsCommon", dependencies: ["MongoSwift", "Nimble", "CLibMongoC"]),
