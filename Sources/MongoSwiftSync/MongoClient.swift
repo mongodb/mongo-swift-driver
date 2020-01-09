@@ -275,14 +275,12 @@ public class MongoClient {
         session: ClientSession? = nil,
         withEventType _: EventType.Type
     ) throws -> ChangeStream<EventType> {
-        let asyncStream = try self.asyncClient
-          .watch(
+        let asyncStream = try self.asyncClient.watch(
             pipeline,
             options: options,
             session: session?.asyncSession,
             withEventType: EventType.self
-          )
-          .wait()
+        ).wait()
 
         return ChangeStream(wrapping: asyncStream, client: self)
     }

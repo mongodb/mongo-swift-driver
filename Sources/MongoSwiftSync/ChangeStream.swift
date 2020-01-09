@@ -15,7 +15,7 @@ public class ChangeStream<T: Codable>: Sequence, IteratorProtocol {
 
     private let asyncChangeStream: MongoSwift.ChangeStream<T>
 
-    /// The client this change strem descended from.
+    /// The client this change stream descended from.
     private let client: MongoClient
 
     /**
