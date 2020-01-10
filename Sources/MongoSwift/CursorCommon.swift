@@ -18,7 +18,7 @@ internal protocol AsyncSequence {
     func next() -> EventLoopFuture<Element?>
 
     /// Executes the provided closure for each element in the cursor.
-    func forEach(body: @escaping (Result<Element, Error>) -> Void)
+    // func forEach(body: @escaping (Result<Element, Error>) -> Void)
 
     /// Returns all of the elements in this cursor.
     func all() -> EventLoopFuture<[Element]>

@@ -39,7 +39,6 @@ extension ChangeStreamTests {
     static var allTests = [
         ("testChangeStreamNext", testChangeStreamNext),
         ("testChangeStreamAll", testChangeStreamAll),
-        ("testChangeStreamForEach", testChangeStreamForEach),
         ("testChangeStreamError", testChangeStreamError),
         ("testChangeStreamEmpty", testChangeStreamEmpty),
     ]

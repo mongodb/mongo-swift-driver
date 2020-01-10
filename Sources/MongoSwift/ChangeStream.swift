@@ -54,9 +54,6 @@ public class ChangeStream<T: Codable>: AsyncSequence {
     /// Decoder for decoding documents into type `T`.
     internal let decoder: BSONDecoder
 
-    /// Semaphore used to synchronize between polling the change stream continually and manually closing it.
-    private var pollingSemaphore: DispatchSemaphore
-
     /// Indicates whether this change stream has the potential to return more data.
     public var isAlive: Bool {
         switch self.state {
@@ -144,10 +141,8 @@ public class ChangeStream<T: Codable>: AsyncSequence {
         guard case let .open(changeStream, _, _) = self.state else {
             return
         }
-        self.pollingSemaphore.wait()
         mongoc_change_stream_destroy(changeStream)
         self.state = .closed
-        self.pollingSemaphore.signal()
     }
 
     /// Returns the next `T` in the change stream or nil if there is no next value. Will block for a maximum of
@@ -167,28 +162,28 @@ public class ChangeStream<T: Codable>: AsyncSequence {
     /// Executes the provided closure against each event seen by the change stream.
     /// This will cause the stream to continuously poll for new events in the background. Once this method has been
     /// called, other methods that check for events (e.g. all, next, forEach) should not be used.
-    public func forEach(body: @escaping (Result<T, Error>) -> Void) {
-        self.pollingSemaphore.wait()
+    // public func forEach(body: @escaping (Result<T, Error>) -> Void) {
+    //     self.pollingSemaphore.wait()
 
-        guard self.isAlive else {
-            self.pollingSemaphore.signal()
-            return
-        }
+    //     guard self.isAlive else {
+    //         self.pollingSemaphore.signal()
+    //         return
+    //     }
 
-        self.next().whenComplete { result in
-            switch result {
-            case let .success(event):
-                if let event = event {
-                    body(.success(event))
-                }
-            case let .failure(error):
-                body(.failure(error))
-                return
-            }
-            self.pollingSemaphore.signal()
-            self.forEach(body: body)
-        }
-    }
+    //     self.next().whenComplete { result in
+    //         switch result {
+    //         case let .success(event):
+    //             if let event = event {
+    //                 body(.success(event))
+    //             }
+    //         case let .failure(error):
+    //             body(.failure(error))
+    //             return
+    //         }
+    //         self.pollingSemaphore.signal()
+    //         self.forEach(body: body)
+    //     }
+    // }
 
     /// Closes this change stream.
     /// This must be called when the change stream is no longer needed or else memory may be leaked.
@@ -212,7 +207,6 @@ public class ChangeStream<T: Codable>: AsyncSequence {
         self.state = .open(changeStream: changeStream, connection: connection, session: session)
         self.client = client
         self.decoder = decoder
-        self.pollingSemaphore = DispatchSemaphore(value: 1)
 
         // TODO: SWIFT-519 - Starting 4.2, update resumeToken to startAfter (if set).
         // startAfter takes precedence over resumeAfter.
