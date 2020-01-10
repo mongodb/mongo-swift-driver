@@ -79,9 +79,12 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         try self.withTestClient { client in
             let db = client.db(type(of: self).testDatabase)
             try? db.collection(self.getCollectionName()).drop().wait()
+            
             let coll = try db.createCollection(self.getCollectionName()).wait()
-
+            print("created collection")
+            
             try coll.watch().flatMap { stream -> EventLoopFuture<Void> in
+                print("watch succeeded")
                 stream.forEach { result in
                     switch result {
                     case let .success(event):
@@ -90,16 +93,21 @@ final class ChangeStreamTests: MongoSwiftTestCase {
                         fail("got an error while polling: \(error)")
                     }
                 }
-
+                print("forEach called")
+                
                 return coll.insertOne(["x": 1])
-                    .flatMap { _ in
-                        coll.insertOne(["x": 2])
+                  .flatMap { _ -> EventLoopFuture<InsertOneResult?> in
+                      print("inserting second doc")
+                      return coll.insertOne(["x": 2])
                     }.flatMap { _ -> EventLoopFuture<Void> in
-                        client.wait(seconds: 5)
-                    }.flatMap { _ in
-                        stream.close()
+                      print("now waiting")
+                      return client.wait(seconds: 5)
+                    }.flatMap { _ -> EventLoopFuture<Void> in
+                      print("closing")
+                      return stream.close()
                     }
             }.wait()
+            print("wait complete")
         }
         expect(events.count).to(equal(2))
         expect(events[0].fullDocument?["x"]).to(equal(1))
