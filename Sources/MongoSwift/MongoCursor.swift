@@ -89,7 +89,7 @@ public class MongoCursor<T: Codable> {
         // Force I/O to occur if it hasn't already by retrieving the first document from the cursor. This is useful for
         // for e.g. `find` and `aggregate` where libmongoc does not send the initial command until you iterate.
         if forceIO {
-            let next = try self.fetchNextDocument()
+            let next = try self.getNextDocument()
             self.cached = .cached(next)
         }
     }
@@ -116,7 +116,12 @@ public class MongoCursor<T: Codable> {
 
     /// Retrieves the next document from the underlying `mongoc_cursor_t`, if one exists.
     /// Will close the cursor if the end of the cursor is reached or if an error occurs.
-    internal func fetchNextDocument() throws -> T? {
+    internal func getNextDocument() throws -> T? {
+        if case let .cached(doc) = self.cached {
+            self.cached = .none
+            return doc
+        }
+
         guard case let .open(cursor, _, session) = self.state else {
             throw ClosedCursorError
         }
@@ -202,7 +207,7 @@ public class MongoCursor<T: Codable> {
     public func all() -> EventLoopFuture<[T]> {
         return self.client.operationExecutor.execute {
             var results: [T] = []
-            while self.isAlive, let result = try self.fetchNextDocument() {
+            while let result = try self.getNextDocument() {
                 results.append(result)
             }
             return results
@@ -222,13 +227,8 @@ public class MongoCursor<T: Codable> {
      *   - `DecodingError` if an error occurs decoding the server's response.
      */
     public func next() -> EventLoopFuture<T?> {
-        if case let .cached(doc) = self.cached {
-            self.cached = .none
-            return self.client.operationExecutor.makeSucceededFuture(doc)
-        }
-
         return self.client.operationExecutor.execute {
-            try self.fetchNextDocument()
+            try self.getNextDocument()
         }
     }
 }

@@ -31,8 +31,7 @@ extension MongoSwiftTestCase {
         ns: MongoNamespace? = nil,
         options: CreateCollectionOptions? = nil,
         _ f: (MongoDatabase, MongoCollection<Document>) throws -> T
-    )
-        throws -> T {
+    ) throws -> T {
         let ns = ns ?? self.getNamespace()
 
         guard let collName = ns.collection else {
