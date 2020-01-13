@@ -21,6 +21,8 @@ final class ChangeStreamTests: MongoSwiftTestCase {
                         coll.insertOne(["x": 2])
                     }.flatMap { _ in
                         coll.insertOne(["x": 3])
+                    }.flatMap { _ in
+                        client.wait(seconds: 5)
                     }.flatMap { _ -> EventLoopFuture<ChangeStreamEvent<Document>?> in
                         stream.next()
                     }.flatMap { event -> EventLoopFuture<ChangeStreamEvent<Document>?> in
@@ -56,6 +58,8 @@ final class ChangeStreamTests: MongoSwiftTestCase {
                     coll.insertOne(["x": 2])
                 }.flatMap { _ in
                     coll.insertOne(["x": 3])
+                }.flatMap { _ in
+                    client.wait(seconds: 5)
                 }.flatMap { _ in
                     stream.all()
                 }.flatMap { events -> EventLoopFuture<Void> in
@@ -128,7 +132,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             try? coll.watch([["$project": ["_id": 0]]]).flatMap { stream -> EventLoopFuture<Void> in
                 let future = coll.insertOne(["x": 1])
                     .flatMap { _ in
-                        client.wait(seconds: 2)
+                        client.wait(seconds: 5)
                     }.flatMap { _ in
                         stream.next()
                     }
