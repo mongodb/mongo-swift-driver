@@ -362,9 +362,9 @@ extension MongoCollection {
      *
      * - Throws: `LogicError` if the provided session is inactive.
      */
-    public func listIndexes(session: ClientSession? = nil) throws -> MongoCursor<IndexModel> {
+    public func listIndexes(session: ClientSession? = nil) -> EventLoopFuture<MongoCursor<IndexModel>> {
         let operation = ListIndexesOperation(collection: self)
-        return try self._client.executeOperation(operation, session: session)
+        return self._client.executeOperationAsync(operation, session: session)
     }
 
     /**
@@ -373,19 +373,20 @@ extension MongoCollection {
      * - Parameters:
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: A `MongoCursor` over the index names.
+     * - Returns: An `EventLoopFuture<[String]>` containing the index names.
      *
      * - Throws: `LogicError` if the provided session is inactive.
      */
-    public func listIndexNames(session: ClientSession? = nil) throws -> [String] {
-        let operation = ListIndexesOperation(collection: self)
-        let models = try self._client.executeOperation(operation, session: session)
-        let names: [String] = try models.all().map { model in
-            guard let name = model.options?.name else {
-                throw InternalError(message: "Server response missing a 'name' field")
+    public func listIndexNames(session _: ClientSession? = nil) throws -> EventLoopFuture<[String]> {
+        return self.listIndexes().flatMap { cursor in
+            cursor.all()
+        }.flatMapThrowing { models in
+            try models.map { model in
+                guard let name = model.options?.name else {
+                    throw InternalError(message: "Server response missing a 'name' field")
+                }
+                return name
             }
-            return name
         }
-        return names
     }
 }

@@ -1,15 +1,16 @@
 import CLibMongoC
+import NIO
 
 internal let ClosedCursorError = LogicError(message: "Cannot advance a completed or failed cursor.")
 
 // sourcery: skipSyncExport
 /// A MongoDB cursor.
-public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
+public class MongoCursor<T: Codable> {
     /// Enum for tracking the state of a cursor.
     internal enum State {
         /// Indicates that the cursor is still open. Stores a pointer to the `mongoc_cursor_t`, along with the source
-        /// connection, client, and possibly session to ensure they are kept alive as long as the cursor is.
-        case open(cursor: OpaquePointer, connection: Connection, client: MongoClient, session: ClientSession?)
+        /// connection, and possibly session to ensure they are kept alive as long as the cursor is.
+        case open(cursor: OpaquePointer, connection: Connection, session: ClientSession?)
         case closed
     }
 
@@ -18,6 +19,9 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
 
     /// Indicates whether this is a tailable cursor.
     private let cursorType: CursorType
+
+    /// The client this cursor descended from.
+    private let client: MongoClient
 
     /// Decoder from the client, database, or collection that created this cursor.
     internal let decoder: BSONDecoder
@@ -36,7 +40,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
 
     /// Returns the ID used by the server to track the cursor. `nil` once all results have been fetched from the server.
     public var id: Int64? {
-        guard case let .open(cursor, _, _, _) = self.state else {
+        guard case let .open(cursor, _, _) = self.state else {
             return nil
         }
         let id = mongoc_cursor_get_id(cursor)
@@ -71,42 +75,49 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         cursorType: CursorType? = nil,
         forceIO: Bool = false
     ) throws {
-        self.state = .open(cursor: cursor, connection: connection, client: client, session: session)
+        self.state = .open(cursor: cursor, connection: connection, session: session)
+        self.client = client
         self.cursorType = cursorType ?? .nonTailable
         self.decoder = decoder
         self.cached = .none
         // If there was an error constructing the cursor, throw it.
         if let error = self.getMongocError() {
-            self.close()
+            self.blockingClose()
             throw error
         }
 
         // Force I/O to occur if it hasn't already by retrieving the first document from the cursor. This is useful for
         // for e.g. `find` and `aggregate` where libmongoc does not send the initial command until you iterate.
         if forceIO {
-            let next = try self.getNextDocumentFromMongocCursor()
+            let next = try self.fetchNextDocument()
             self.cached = .cached(next)
         }
     }
 
-    /// Cleans up internal state.
-    private func close() {
-        guard case let .open(cursor, _, _, _) = self.state else {
+    private func blockingClose() {
+        guard case let .open(cursor, _, _) = self.state else {
             return
         }
         mongoc_cursor_destroy(cursor)
         self.state = .closed
     }
 
+    /// Cleans up internal state.
+    public func close() -> EventLoopFuture<Void> {
+        self.client.operationExecutor.execute {
+            self.blockingClose()
+        }
+    }
+
     /// Closes the cursor if it hasn't been closed already.
     deinit {
-        self.close()
+        self.blockingClose()
     }
 
     /// Retrieves the next document from the underlying `mongoc_cursor_t`, if one exists.
     /// Will close the cursor if the end of the cursor is reached or if an error occurs.
-    internal func getNextDocumentFromMongocCursor() throws -> T? {
-        guard case let .open(cursor, _, _, session) = self.state else {
+    internal func fetchNextDocument() throws -> T? {
+        guard case let .open(cursor, _, session) = self.state else {
             throw ClosedCursorError
         }
 
@@ -122,13 +133,13 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
 
         guard mongoc_cursor_next(cursor, out) else {
             if let error = self.getMongocError() {
-                self.close()
+                self.blockingClose()
                 throw error
             }
 
             // if we've reached the end of the cursor, close it.
             if !self.cursorType.isTailable || !mongoc_cursor_more(cursor) {
-                self.close()
+                self.blockingClose()
             }
 
             return nil
@@ -143,7 +154,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         do {
             return try self.decoder.decode(T.self, from: doc)
         } catch {
-            self.close()
+            self.blockingClose()
             throw error
         }
     }
@@ -151,7 +162,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     /// Retrieves any error that occurred in mongoc or on the server while iterating the cursor. Returns nil if this
     /// cursor is already closed, or if no error occurred.
     private func getMongocError() -> MongoError? {
-        guard case let .open(cursor, _, _, _) = self.state else {
+        guard case let .open(cursor, _, _) = self.state else {
             return nil
         }
 
@@ -188,14 +199,13 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
      *   - `LogicError` if this function is called and the session associated with this cursor is inactive.
      *   - `DecodingError` if an error occurs decoding the server's response.
      */
-    public func all() throws -> [T] {
-        return try self.map {
-            switch $0 {
-            case let .success(t):
-                return t
-            case let .failure(error):
-                throw error
+    public func all() -> EventLoopFuture<[T]> {
+        return self.client.operationExecutor.execute {
+            var results: [T] = []
+            while self.isAlive, let result = try self.fetchNextDocument() {
+                results.append(result)
             }
+            return results
         }
     }
 
@@ -211,28 +221,14 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
      *   - `LogicError` if this function is called and the session associated with this cursor is inactive.
      *   - `DecodingError` if an error occurs decoding the server's response.
      */
-    public func next() -> Result<T, Error>? {
+    public func next() -> EventLoopFuture<T?> {
         if case let .cached(doc) = self.cached {
             self.cached = .none
-            guard let doc = doc else {
-                return nil
-            }
-            return .success(doc)
+            return self.client.operationExecutor.makeSucceededFuture(doc)
         }
 
-        // We already closed the mongoc cursor, either because we reached the end or encountered an error.
-        guard case let .open(_, connection, client, session) = self.state else {
-            return .failure(ClosedCursorError)
-        }
-
-        let operation = NextOperation(target: .cursor(self))
-        do {
-            guard let result = try client.executeOperation(operation, using: connection, session: session) else {
-                return nil
-            }
-            return .success(result)
-        } catch {
-            return .failure(error)
+        return self.client.operationExecutor.execute {
+            try self.fetchNextDocument()
         }
     }
 }
