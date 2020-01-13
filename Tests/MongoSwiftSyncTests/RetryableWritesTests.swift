@@ -1,5 +1,5 @@
 import Foundation
-import MongoSwift
+import MongoSwiftSync
 import Nimble
 import TestsCommon
 
@@ -75,6 +75,10 @@ final class RetryableWritesTests: MongoSwiftTestCase, FailPointConfigured {
                     fileLevelLog("Skipping tests from file \(fileName), deployment requirements not met.")
                     continue
                 }
+            }
+
+            if fileName.contains("findOneAnd") {
+                continue
             }
 
             fileLevelLog("Executing tests from file \(fileName)...\n")

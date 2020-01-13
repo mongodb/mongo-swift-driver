@@ -40,14 +40,13 @@ final class ReadWriteConcernOperationTests: MongoSwiftTestCase {
             )))
 
         // try various command + read concern pairs to make sure they work
-        // TODO: SWIFT-672: uncomment these assertions
-        // expect(try coll.find(options: FindOptions(readConcern: ReadConcern(.local)))).toNot(throwError())
-        // expect(try coll.findOne(options: FindOneOptions(readConcern: ReadConcern(.local)))).toNot(throwError())
+        expect(try coll.find(options: FindOptions(readConcern: ReadConcern(.local)))).toNot(throwError())
+        expect(try coll.findOne(options: FindOneOptions(readConcern: ReadConcern(.local)))).toNot(throwError())
 
-        // expect(try coll.aggregate(
-        //     [["$project": ["a": 1]]],
-        //     options: AggregateOptions(readConcern: ReadConcern(.majority))
-        // )).toNot(throwError())
+        expect(try coll.aggregate(
+            [["$project": ["a": 1]]],
+            options: AggregateOptions(readConcern: ReadConcern(.majority))
+        )).toNot(throwError())
 
         expect(try coll.countDocuments(options: CountDocumentsOptions(readConcern: ReadConcern(.majority))))
             .toNot(throwError())
@@ -162,9 +161,9 @@ final class ReadWriteConcernOperationTests: MongoSwiftTestCase {
 
         let coll2 = try db.createCollection(self.getCollectionName(suffix: "2"))
         defer { try? coll2.drop() }
-        // TODO: SWIFT-672: uncomment these lines
-        // let pipeline: [Document] = [["$out": .string("\(db.name).\(coll2.name)")]]
-        // expect(try coll.aggregate(pipeline, options: AggregateOptions(writeConcern: wc1))).toNot(throwError())
+
+        let pipeline: [Document] = [["$out": .string("\(db.name).\(coll2.name)")]]
+        expect(try coll.aggregate(pipeline, options: AggregateOptions(writeConcern: wc1))).toNot(throwError())
 
         expect(try coll.replaceOne(
             filter: ["x": 5],

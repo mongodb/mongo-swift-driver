@@ -1,6 +1,7 @@
 import CLibMongoC
 import Foundation
 @testable import MongoSwift
+@testable import MongoSwiftSync
 import Nimble
 import XCTest
 
@@ -240,5 +241,111 @@ extension CommandError {
             message: message,
             errorLabels: errorLabels
         )
+    }
+}
+
+extension CollectionSpecificationInfo {
+    public static func new(readOnly: Bool, uuid: UUID? = nil) -> CollectionSpecificationInfo {
+        CollectionSpecificationInfo(readOnly: readOnly, uuid: uuid)
+    }
+}
+
+extension CollectionSpecification {
+    public static func new(
+        name: String,
+        type: CollectionType,
+        options: CreateCollectionOptions?,
+        info: CollectionSpecificationInfo,
+        idIndex: IndexModel?
+    ) -> CollectionSpecification {
+        CollectionSpecification(
+            name: name,
+            type: type,
+            options: options,
+            info: info,
+            idIndex: idIndex
+        )
+    }
+}
+
+extension WriteFailure {
+    public static func new(code: ServerErrorCode, codeName: String, message: String) -> WriteFailure {
+        return WriteFailure(code: code, codeName: codeName, message: message)
+    }
+}
+
+extension WriteError {
+    public static func new(
+        writeFailure: WriteFailure?,
+        writeConcernFailure: WriteConcernFailure?,
+        errorLabels: [String]?
+    ) -> WriteError {
+        return WriteError(
+            writeFailure: writeFailure,
+            writeConcernFailure: writeConcernFailure,
+            errorLabels: errorLabels
+        )
+    }
+}
+
+extension BulkWriteResult {
+    public static func new(
+        deletedCount: Int? = nil,
+        insertedCount: Int? = nil,
+        insertedIds: [Int: BSON]? = nil,
+        matchedCount: Int? = nil,
+        modifiedCount: Int? = nil,
+        upsertedCount: Int? = nil,
+        upsertedIds: [Int: BSON]? = nil
+    ) -> BulkWriteResult {
+        return BulkWriteResult(
+            deletedCount: deletedCount ?? 0,
+            insertedCount: insertedCount ?? 0,
+            insertedIds: insertedIds ?? [:],
+            matchedCount: matchedCount ?? 0,
+            modifiedCount: modifiedCount ?? 0,
+            upsertedCount: upsertedCount ?? 0,
+            upsertedIds: upsertedIds ?? [:]
+        )
+    }
+}
+
+extension BulkWriteFailure {
+    public static func new(code: ServerErrorCode, codeName: String, message: String, index: Int) -> BulkWriteFailure {
+        return BulkWriteFailure(code: code, codeName: codeName, message: message, index: index)
+    }
+}
+
+extension BulkWriteError {
+    public static func new(
+        writeFailures: [BulkWriteFailure]?,
+        writeConcernFailure: WriteConcernFailure?,
+        otherError: Error?,
+        result: BulkWriteResult?,
+        errorLabels: [String]?
+    ) -> BulkWriteError {
+        return BulkWriteError(
+            writeFailures: writeFailures,
+            writeConcernFailure: writeConcernFailure,
+            otherError: otherError,
+            result: result,
+            errorLabels: errorLabels
+        )
+    }
+}
+
+extension MongoSwiftSync.MongoCollection {
+    public var namespace: MongoNamespace {
+        return self.asyncColl.namespace
+    }
+
+    public var _client: MongoSwiftSync.MongoClient {
+        return self.client
+    }
+}
+
+extension InsertManyResult {
+    public static func fromBulkResult(_ result: BulkWriteResult) -> InsertManyResult? {
+        return InsertManyResult(from: result)
     }
 }

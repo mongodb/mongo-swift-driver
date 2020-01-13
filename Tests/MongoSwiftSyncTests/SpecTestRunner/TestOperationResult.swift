@@ -1,4 +1,4 @@
-@testable import MongoSwift
+import MongoSwiftSync
 
 /// Enum encapsulating the possible results returned from CRUD operations.
 enum TestOperationResult: Decodable, Equatable {
@@ -89,13 +89,13 @@ extension BulkWriteResult: BulkWriteResultConvertible {
 
 extension InsertManyResult: BulkWriteResultConvertible {
     internal var bulkResultValue: BulkWriteResult {
-        return BulkWriteResult(insertedCount: self.insertedCount, insertedIds: self.insertedIds)
+        return BulkWriteResult.new(insertedCount: self.insertedCount, insertedIds: self.insertedIds)
     }
 }
 
 extension InsertOneResult: BulkWriteResultConvertible {
     internal var bulkResultValue: BulkWriteResult {
-        return BulkWriteResult(insertedCount: 1, insertedIds: [0: self.insertedId])
+        return BulkWriteResult.new(insertedCount: 1, insertedIds: [0: self.insertedId])
     }
 }
 
@@ -106,7 +106,7 @@ extension UpdateResult: BulkWriteResultConvertible {
             upsertedIds = [0: upsertedId]
         }
 
-        return BulkWriteResult(
+        return BulkWriteResult.new(
             matchedCount: self.matchedCount,
             modifiedCount: self.modifiedCount,
             upsertedCount: self.upsertedCount,
@@ -117,6 +117,6 @@ extension UpdateResult: BulkWriteResultConvertible {
 
 extension DeleteResult: BulkWriteResultConvertible {
     internal var bulkResultValue: BulkWriteResult {
-        return BulkWriteResult(deletedCount: self.deletedCount)
+        return BulkWriteResult.new(deletedCount: self.deletedCount)
     }
 }

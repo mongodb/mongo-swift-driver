@@ -1,5 +1,5 @@
 import Foundation
-@testable import MongoSwift
+import MongoSwiftSync
 import Nimble
 import TestsCommon
 
@@ -37,7 +37,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
 
         // error code 59: CommandNotFound
         expect(try db.runCommand(["asdfsadf": .objectId(ObjectId())]))
-            .to(throwError(CommandError(
+            .to(throwError(CommandError.new(
                 code: 59,
                 codeName: "CommandNotFound",
                 message: "",
@@ -112,9 +112,9 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         collectionInfo.sort { $0.name < $1.name }
         expect(collectionInfo).to(haveCount(3))
 
-        let fooInfo = CollectionSpecificationInfo(readOnly: false, uuid: UUID())
+        let fooInfo = CollectionSpecificationInfo.new(readOnly: false, uuid: UUID())
         let fooIndex = IndexModel(keys: ["_id": 1] as Document, options: IndexOptions(name: "_id_"))
-        let expectedFoo = CollectionSpecification(
+        let expectedFoo = CollectionSpecification.new(
             name: "foo",
             type: .collection,
             options: fooOptions,
@@ -123,8 +123,8 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         )
         expect(collectionInfo[0]).to(equal(expectedFoo))
 
-        let viewInfo = CollectionSpecificationInfo(readOnly: true, uuid: nil)
-        let expectedView = CollectionSpecification(
+        let viewInfo = CollectionSpecificationInfo.new(readOnly: true, uuid: nil)
+        let expectedView = CollectionSpecification.new(
             name: "fooView",
             type: .view,
             options: viewOptions,

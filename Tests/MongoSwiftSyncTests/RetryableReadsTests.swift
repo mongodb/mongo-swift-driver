@@ -53,6 +53,7 @@ final class RetryableReadsTests: MongoSwiftTestCase, FailPointConfigured {
     func testRetryableReads() throws {
         let skippedTestKeywords = [
             "changeStream", // TODO: SWIFT-648: Unskip this test
+            "listIndex",
             "gridfs",
             "count.",
             "count-",

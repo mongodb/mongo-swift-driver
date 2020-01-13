@@ -1,5 +1,6 @@
-@testable import MongoSwift
+@testable import MongoSwiftSync
 import Nimble
+import TestsCommon
 
 /// A enumeration of the different objects a `TestOperation` may be performed against.
 enum TestOperationObject: String, Decodable {
@@ -46,16 +47,16 @@ struct TestOperationDescription: Decodable {
             target = .client(client)
         case .database:
             guard let database = database else {
-                throw InvalidArgumentError(message: "got database object but was not provided a database")
+                throw TestError(message: "got database object but was not provided a database")
             }
             target = .database(database)
         case .collection:
             guard let collection = collection else {
-                throw InvalidArgumentError(message: "got collection object but was not provided a collection")
+                throw TestError(message: "got collection object but was not provided a collection")
             }
             target = .collection(collection)
         case .gridfsbucket:
-            throw InvalidArgumentError(message: "gridfs tests should be skipped")
+            throw TestError(message: "gridfs tests should be skipped")
         }
 
         do {
@@ -163,7 +164,7 @@ struct AnyTestOperation: Decodable, TestOperation {
         case "mapReduce", "download_by_name", "download", "count":
             self.op = NotImplemented(name: opName)
         default:
-            throw LogicError(message: "unsupported op name \(opName)")
+            throw TestError(message: "unsupported op name \(opName)")
         }
     }
 
@@ -186,7 +187,7 @@ struct Aggregate: TestOperation {
 
     func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
-            throw InvalidArgumentError(message: "collection not provided to aggregate")
+            throw TestError(message: "collection not provided to aggregate")
         }
         return try TestOperationResult(
             from: collection.aggregate(self.pipeline, options: self.options, session: session)
@@ -208,7 +209,7 @@ struct CountDocuments: TestOperation {
 
     func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
-            throw InvalidArgumentError(message: "collection not provided to count")
+            throw TestError(message: "collection not provided to count")
         }
         return .int(try collection.countDocuments(self.filter, options: self.options, session: session))
     }
@@ -230,7 +231,7 @@ struct Distinct: TestOperation {
 
     func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
-            throw InvalidArgumentError(message: "collection not provided to distinct")
+            throw TestError(message: "collection not provided to distinct")
         }
         let result = try collection.distinct(
             fieldName: self.fieldName,
@@ -256,7 +257,7 @@ struct Find: TestOperation {
 
     func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
-            throw InvalidArgumentError(message: "collection not provided to find")
+            throw TestError(message: "collection not provided to find")
         }
         return try TestOperationResult(from: collection.find(self.filter, options: self.options, session: session))
     }
@@ -276,7 +277,7 @@ struct FindOne: TestOperation {
 
     func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
-            throw InvalidArgumentError(message: "collection not provided to findOne")
+            throw TestError(message: "collection not provided to findOne")
         }
         return try TestOperationResult(from: collection.findOne(self.filter, options: self.options, session: session))
     }
@@ -298,7 +299,7 @@ struct UpdateOne: TestOperation {
 
     func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
-            throw InvalidArgumentError(message: "collection not provided to updateOne")
+            throw TestError(message: "collection not provided to updateOne")
         }
 
         let result = try collection.updateOne(
@@ -327,7 +328,7 @@ struct UpdateMany: TestOperation {
 
     func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
-            throw InvalidArgumentError(message: "collection not provided to ")
+            throw TestError(message: "collection not provided to ")
         }
 
         let result = try collection.updateMany(
@@ -354,7 +355,7 @@ struct DeleteMany: TestOperation {
 
     func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
-            throw InvalidArgumentError(message: "collection not provided to deleteMany")
+            throw TestError(message: "collection not provided to deleteMany")
         }
         let result = try collection.deleteMany(self.filter, options: self.options, session: session)
         return TestOperationResult(from: result)
@@ -375,7 +376,7 @@ struct DeleteOne: TestOperation {
 
     func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
-            throw InvalidArgumentError(message: "collection not provided to deleteOne")
+            throw TestError(message: "collection not provided to deleteOne")
         }
         let result = try collection.deleteOne(self.filter, options: self.options, session: session)
         return TestOperationResult(from: result)
@@ -387,7 +388,7 @@ struct InsertOne: TestOperation {
 
     func execute(on target: TestOperationTarget, session _: ClientSession?) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
-            throw InvalidArgumentError(message: "collection not provided to insertOne")
+            throw TestError(message: "collection not provided to insertOne")
         }
         return TestOperationResult(from: try collection.insertOne(self.document))
     }
@@ -399,7 +400,7 @@ struct InsertMany: TestOperation {
 
     func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
-            throw InvalidArgumentError(message: "collection not provided to insertMany")
+            throw TestError(message: "collection not provided to insertMany")
         }
         let result = try collection.insertMany(self.documents, options: self.options, session: session)
         return TestOperationResult(from: result)
@@ -474,7 +475,7 @@ struct BulkWrite: TestOperation {
 
     func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
-            throw InvalidArgumentError(message: "collection not provided to bulk write")
+            throw TestError(message: "collection not provided to bulk write")
         }
         let result = try collection.bulkWrite(self.requests, options: self.options, session: session)
         return TestOperationResult(from: result)
@@ -497,7 +498,7 @@ struct FindOneAndUpdate: TestOperation {
 
     func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
-            throw InvalidArgumentError(message: "collection not provided to findOneAndUpdate")
+            throw TestError(message: "collection not provided to findOneAndUpdate")
         }
         let doc = try collection.findOneAndUpdate(
             filter: self.filter,
@@ -523,7 +524,7 @@ struct FindOneAndDelete: TestOperation {
 
     func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
-            throw InvalidArgumentError(message: "collection not provided to findOneAndDelete")
+            throw TestError(message: "collection not provided to findOneAndDelete")
         }
         let result = try collection.findOneAndDelete(self.filter, options: self.options, session: session)
         return TestOperationResult(from: result)
@@ -546,7 +547,7 @@ struct FindOneAndReplace: TestOperation {
 
     func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
-            throw InvalidArgumentError(message: "collection not provided to findOneAndReplace")
+            throw TestError(message: "collection not provided to findOneAndReplace")
         }
         let result = try collection.findOneAndReplace(
             filter: self.filter,
@@ -574,7 +575,7 @@ struct ReplaceOne: TestOperation {
 
     func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
-            throw InvalidArgumentError(message: "collection not provided to replaceOne")
+            throw TestError(message: "collection not provided to replaceOne")
         }
         return TestOperationResult(from: try collection.replaceOne(
             filter: self.filter,
@@ -590,7 +591,7 @@ struct RenameCollection: TestOperation {
 
     func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
-            throw InvalidArgumentError(message: "collection not provided to renameCollection")
+            throw TestError(message: "collection not provided to renameCollection")
         }
 
         let databaseName = collection.namespace.db
@@ -605,7 +606,7 @@ struct RenameCollection: TestOperation {
 struct DropCollection: TestOperation {
     func execute(on target: TestOperationTarget, session _: ClientSession?) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
-            throw InvalidArgumentError(message: "collection not provided to dropCollection")
+            throw TestError(message: "collection not provided to dropCollection")
         }
         try collection.drop()
         return nil
@@ -615,7 +616,7 @@ struct DropCollection: TestOperation {
 struct ListDatabaseNames: TestOperation {
     func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
         guard case let .client(client) = target else {
-            throw InvalidArgumentError(message: "client not provided to listDatabaseNames")
+            throw TestError(message: "client not provided to listDatabaseNames")
         }
         return try .array(client.listDatabaseNames(session: session).map { .string($0) })
     }
@@ -624,7 +625,7 @@ struct ListDatabaseNames: TestOperation {
 struct ListIndexes: TestOperation {
     func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
-            throw InvalidArgumentError(message: "collection not provided to listIndexes")
+            throw TestError(message: "collection not provided to listIndexes")
         }
         return try TestOperationResult(from: collection.listIndexes(session: session))
     }
@@ -633,7 +634,7 @@ struct ListIndexes: TestOperation {
 struct ListIndexNames: TestOperation {
     func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
-            throw InvalidArgumentError(message: "collection not provided to listIndexNames")
+            throw TestError(message: "collection not provided to listIndexNames")
         }
         return try .array(collection.listIndexNames(session: session).map { .string($0) })
     }
@@ -642,7 +643,7 @@ struct ListIndexNames: TestOperation {
 struct ListDatabases: TestOperation {
     func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
         guard case let .client(client) = target else {
-            throw InvalidArgumentError(message: "client not provided to listDatabases")
+            throw TestError(message: "client not provided to listDatabases")
         }
         return try TestOperationResult(from: client.listDatabases(session: session))
     }
@@ -651,7 +652,7 @@ struct ListDatabases: TestOperation {
 struct ListMongoDatabases: TestOperation {
     func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
         guard case let .client(client) = target else {
-            throw InvalidArgumentError(message: "client not provided to listDatabases")
+            throw TestError(message: "client not provided to listDatabases")
         }
         _ = try client.listMongoDatabases(session: session)
         return nil
@@ -661,7 +662,7 @@ struct ListMongoDatabases: TestOperation {
 struct ListCollections: TestOperation {
     func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
         guard case let .database(database) = target else {
-            throw InvalidArgumentError(message: "database not provided to listCollections")
+            throw TestError(message: "database not provided to listCollections")
         }
         return try TestOperationResult(from: database.listCollections(session: session))
     }
@@ -670,7 +671,7 @@ struct ListCollections: TestOperation {
 struct ListMongoCollections: TestOperation {
     func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
         guard case let .database(database) = target else {
-            throw InvalidArgumentError(message: "database not provided to listCollectionObjects")
+            throw TestError(message: "database not provided to listCollectionObjects")
         }
         _ = try database.listMongoCollections(session: session)
         return nil
@@ -680,7 +681,7 @@ struct ListMongoCollections: TestOperation {
 struct ListCollectionNames: TestOperation {
     func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
         guard case let .database(database) = target else {
-            throw InvalidArgumentError(message: "database not provided to listCollectionNames")
+            throw TestError(message: "database not provided to listCollectionNames")
         }
         return try .array(database.listCollectionNames(session: session).map { .string($0) })
     }
@@ -703,7 +704,7 @@ struct Watch: TestOperation {
 struct EstimatedDocumentCount: TestOperation {
     func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
-            throw InvalidArgumentError(message: "collection not provided to estimatedDocumentCount")
+            throw TestError(message: "collection not provided to estimatedDocumentCount")
         }
         return try .int(collection.estimatedDocumentCount(session: session))
     }
@@ -714,6 +715,6 @@ struct NotImplemented: TestOperation {
     internal let name: String
 
     func execute(on _: TestOperationTarget, session _: ClientSession?) throws -> TestOperationResult? {
-        throw LogicError(message: "\(self.name) not implemented in the driver, skip this test")
+        throw TestError(message: "\(self.name) not implemented in the driver, skip this test")
     }
 }
