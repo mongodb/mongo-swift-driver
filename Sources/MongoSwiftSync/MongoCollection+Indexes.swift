@@ -186,7 +186,8 @@ extension MongoCollection {
      * - Throws: `LogicError` if the provided session is inactive.
      */
     public func listIndexes(session: ClientSession? = nil) throws -> MongoCursor<IndexModel> {
-        fatalError("unimplemented")
+        let asyncCursor = try self.asyncColl.listIndexes(session: session?.asyncSession).wait()
+        return MongoCursor(wrapping: asyncCursor, client: self.client)
     }
 
     /**
