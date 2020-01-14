@@ -246,7 +246,7 @@ extension CommandError {
 
 extension CollectionSpecificationInfo {
     public static func new(readOnly: Bool, uuid: UUID? = nil) -> CollectionSpecificationInfo {
-        CollectionSpecificationInfo(readOnly: readOnly, uuid: uuid)
+        return CollectionSpecificationInfo(readOnly: readOnly, uuid: uuid)
     }
 }
 
@@ -258,7 +258,7 @@ extension CollectionSpecification {
         info: CollectionSpecificationInfo,
         idIndex: IndexModel?
     ) -> CollectionSpecification {
-        CollectionSpecification(
+        return CollectionSpecification(
             name: name,
             type: type,
             options: options,
