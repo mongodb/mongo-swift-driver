@@ -104,7 +104,7 @@ public class MongoCursor<T: Codable> {
 
     /// Cleans up internal state.
     public func close() -> EventLoopFuture<Void> {
-        self.client.operationExecutor.execute {
+        return self.client.operationExecutor.execute {
             self.blockingClose()
         }
     }
