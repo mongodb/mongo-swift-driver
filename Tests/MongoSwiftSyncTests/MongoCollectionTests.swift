@@ -1,13 +1,14 @@
 @testable import MongoSwift
+import MongoSwiftSync
 import Nimble
 import TestsCommon
 import XCTest
 
-private var _client: MongoClient?
+private var _client: MongoSwiftSync.MongoClient?
 
 final class MongoCollectionTests: MongoSwiftTestCase {
     var collName: String = ""
-    var coll: MongoCollection<Document>!
+    var coll: MongoSwiftSync.MongoCollection<Document>!
     let doc1: Document = ["_id": 1, "cat": "dog"]
     let doc2: Document = ["_id": 2, "cat": "cat"]
 
@@ -99,10 +100,11 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(insertOneResult).to(beNil())
     }
 
-    func testAggregate() throws {
-        expect(try self.coll.aggregate([["$project": ["_id": 0, "cat": 1]]]).all())
-            .to(equal([["cat": "dog"], ["cat": "cat"]] as [Document]))
-    }
+    // TODO: SWIFT-672: enable
+    // func testAggregate() throws {
+    //     expect(try self.coll.aggregate([["$project": ["_id": 0, "cat": 1]]]).all())
+    //         .to(equal([["cat": "dog"], ["cat": "cat"]] as [Document]))
+    // }
 
     func testDrop() throws {
         let encoder = BSONEncoder()
@@ -207,27 +209,28 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(insertManyResult).to(beNil())
     }
 
-    func testFind() throws {
-        let findResult = try coll.find(["cat": "cat"])
-        expect(try findResult.next()?.get()).to(equal(["_id": 2, "cat": "cat"]))
-        expect(try findResult.next()?.get()).to(beNil())
-    }
+    // TODO: SWIFT-672: enable next 4 tests
+    // func testFind() throws {
+    //     let findResult = try coll.find(["cat": "cat"])
+    //     expect(try findResult.next()?.get()).to(equal(["_id": 2, "cat": "cat"]))
+    //     expect(try findResult.next()?.get()).to(beNil())
+    // }
 
-    func testFindOne() throws {
-        let findOneResult = try self.coll.findOne(["cat": "dog"])
-        expect(findOneResult).to(equal(["_id": 1, "cat": "dog"]))
-    }
+    // func testFindOne() throws {
+    //     let findOneResult = try self.coll.findOne(["cat": "dog"])
+    //     expect(findOneResult).to(equal(["_id": 1, "cat": "dog"]))
+    // }
 
-    func testFindOneMultipleMatches() throws {
-        let findOneOptions = FindOneOptions(sort: ["_id": 1])
-        let findOneResult = try self.coll.findOne(options: findOneOptions)
-        expect(findOneResult).to(equal(["_id": 1, "cat": "dog"]))
-    }
+    // func testFindOneMultipleMatches() throws {
+    //     let findOneOptions = FindOneOptions(sort: ["_id": 1])
+    //     let findOneResult = try self.coll.findOne(options: findOneOptions)
+    //     expect(findOneResult).to(equal(["_id": 1, "cat": "dog"]))
+    // }
 
-    func testFindOneNoMatch() throws {
-        let findOneResult = try self.coll.findOne(["dog": "cat"])
-        expect(findOneResult).to(beNil())
-    }
+    // func testFindOneNoMatch() throws {
+    //     let findOneResult = try self.coll.findOne(["dog": "cat"])
+    //     expect(findOneResult).to(beNil())
+    // }
 
     func testDeleteOne() throws {
         expect(try self.coll.deleteOne(["cat": "cat"])?.deletedCount).to(equal(1))
@@ -314,13 +317,14 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(self.coll.name).to(equal(self.collName))
     }
 
-    func testCursorIteration() throws {
-        let findResult1 = try coll.find(["cat": "cat"])
-        while let _ = try findResult1.next()?.get() {}
+    // TODO: SWIFT-672: enable
+    // func testCursorIteration() throws {
+    //     let findResult1 = try coll.find(["cat": "cat"])
+    //     while let _ = try findResult1.next()?.get() {}
 
-        let findResult2 = try coll.find(["cat": "cat"])
-        for _ in findResult2 {}
-    }
+    //     let findResult2 = try coll.find(["cat": "cat"])
+    //     for _ in findResult2 {}
+    // }
 
     struct Basic: Codable, Equatable {
         let x: Int
@@ -344,9 +348,10 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         try coll1.replaceOne(filter: ["x": 2], replacement: b4)
         expect(try coll1.countDocuments()).to(equal(3))
 
-        for doc in try coll1.find().all() {
-            expect(doc).to(beAnInstanceOf(Basic.self))
-        }
+        // TODO: SWIFT-672: uncomment
+        // for doc in try coll1.find().all() {
+        //     expect(doc).to(beAnInstanceOf(Basic.self))
+        // }
 
         // find one and replace w/ collection type replacement
         expect(try coll1.findOneAndReplace(filter: ["x": 1], replacement: b5)).to(equal(b1))

@@ -25,7 +25,7 @@ extension MongoCollection {
         options: FindOneAndDeleteOptions? = nil,
         session: ClientSession? = nil
     ) throws -> CollectionType? {
-        fatalError("unimplemented")
+        return try self.asyncColl.findOneAndDelete(filter, options: options, session: session?.asyncSession).wait()
     }
 
     /**
@@ -55,7 +55,11 @@ extension MongoCollection {
         options: FindOneAndReplaceOptions? = nil,
         session: ClientSession? = nil
     ) throws -> CollectionType? {
-        fatalError("unimplemented")
+        return try self.asyncColl.findOneAndReplace(filter: filter,
+                                                    replacement: replacement,
+                                                    options: options,
+                                                    session: session?.asyncSession)
+                                                .wait()
     }
 
     /**
@@ -84,6 +88,10 @@ extension MongoCollection {
         options: FindOneAndUpdateOptions? = nil,
         session: ClientSession? = nil
     ) throws -> CollectionType? {
-        fatalError("unimplemented")
+        return try self.asyncColl.findOneAndUpdate(filter: filter,
+                                                   update: update,
+                                                   options: options,
+                                                   session: session?.asyncSession)
+                                                .wait()
     }
 }

@@ -26,6 +26,10 @@ extension MongoCollection {
         options: BulkWriteOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<BulkWriteResult?> {
+        guard !requests.isEmpty else {
+            return self._client.operationExecutor
+                .makeFailedFuture(InvalidArgumentError(message: "requests cannot be empty"))
+        }
         let operation = BulkWriteOperation(collection: self, models: requests, options: options)
         return self._client.executeOperationAsync(operation, session: session)
     }
@@ -186,10 +190,6 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
      *   - `BulkWriteError` if an error occurs while performing the writes.
      */
     internal func execute(using connection: Connection, session: ClientSession?) throws -> BulkWriteResult? {
-        guard !self.models.isEmpty else {
-            throw InvalidArgumentError(message: "requests cannot be empty")
-        }
-
         var reply = Document()
         var error = bson_error_t()
         let opts = try encodeOptions(options: options, session: session)

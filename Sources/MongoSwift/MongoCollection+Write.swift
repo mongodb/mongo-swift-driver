@@ -59,7 +59,6 @@ extension MongoCollection {
     ) -> EventLoopFuture<InsertManyResult?> {
         return self.bulkWrite(values.map { .insertOne($0) }, options: options, session: session)
             .flatMapThrowing { InsertManyResult(from: $0) }
-            .flatMapErrorThrowing { throw convertBulkWriteError($0) }
     }
 
     /**

@@ -190,7 +190,7 @@ public struct TLSOptions {
 public class MongoClient {
     internal let connectionPool: ConnectionPool
 
-    private let operationExecutor: OperationExecutor
+    internal let operationExecutor: OperationExecutor
 
     // TODO: SWIFT-705 document size justification.
     /// Default size for a client's NIOThreadPool.

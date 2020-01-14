@@ -58,6 +58,7 @@
 @_exported import struct MongoSwift.DropCollectionOptions
 @_exported import struct MongoSwift.DropDatabaseOptions
 @_exported import struct MongoSwift.DropIndexOptions
+@_exported import struct MongoSwift.DropIndexesResult
 @_exported import struct MongoSwift.EstimatedDocumentCountOptions
 @_exported import struct MongoSwift.FindOneAndDeleteOptions
 @_exported import struct MongoSwift.FindOneAndReplaceOptions
