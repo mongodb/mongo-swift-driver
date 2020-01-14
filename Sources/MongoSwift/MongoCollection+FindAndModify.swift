@@ -61,7 +61,7 @@ extension MongoCollection {
             let update = try self.encoder.encode(replacement)
             return self.findAndModify(filter: filter, update: update, options: options, session: session)
         } catch {
-            return self._client.makeFailedFuture(error)
+            return self._client.operationExecutor.makeFailedFuture(error)
         }
     }
 

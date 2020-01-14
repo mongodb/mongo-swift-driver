@@ -189,7 +189,7 @@ public struct TLSOptions {
 public class MongoClient {
     internal let connectionPool: ConnectionPool
 
-    private let operationExecutor: OperationExecutor
+    internal let operationExecutor: OperationExecutor
 
     // TODO: SWIFT-705 document size justification.
     /// Default size for a client's NIOThreadPool.
@@ -548,25 +548,7 @@ public class MongoClient {
         using connection: Connection? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<T.OperationResult> {
-        guard !self.isClosed else {
-            return self.makeFailedFuture(MongoClient.ClosedClientError)
-        }
-
-        if let session = session {
-            if case .ended = session.state {
-                return self.makeFailedFuture(ClientSession.SessionInactiveError)
-            }
-            guard session.client == self else {
-                return self.makeFailedFuture(ClientSession.ClientMismatchError)
-            }
-        }
-
         return self.operationExecutor.execute(operation, using: connection, client: self, session: session)
-    }
-
-    /// Creates an `EventLoopFuture<T>` that fails with the provided error.
-    internal func makeFailedFuture<T>(_ error: Error) -> EventLoopFuture<T> {
-        return self.operationExecutor.makeFailedFuture(error)
     }
 }
 

@@ -240,7 +240,7 @@ extension MongoCollection {
         session: ClientSession? = nil
     ) -> EventLoopFuture<[String]> {
         guard !models.isEmpty else {
-            return self._client.makeFailedFuture(InvalidArgumentError(message: "models cannot be empty"))
+            return self._client.operationExecutor.makeFailedFuture(InvalidArgumentError(message: "models cannot be empty"))
         }
         let operation = CreateIndexesOperation(collection: self, models: models, options: options)
         return self._client.executeOperationAsync(operation, session: session)
@@ -268,7 +268,7 @@ extension MongoCollection {
         session: ClientSession? = nil
     ) -> EventLoopFuture<DropIndexesResult> {
         guard name != "*" else {
-            return self._client.makeFailedFuture(InvalidArgumentError(
+            return self._client.operationExecutor.makeFailedFuture(InvalidArgumentError(
                 message: "Invalid index name '*'; use dropIndexes() to drop all indexes"
             ))
         }

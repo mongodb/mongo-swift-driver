@@ -60,6 +60,19 @@ internal class DefaultOperationExecutor: OperationExecutor {
         client: MongoClient,
         session: ClientSession?
     ) -> EventLoopFuture<T.OperationResult> {
+        guard !client.isClosed else {
+            return self.makeFailedFuture(MongoClient.ClosedClientError)
+        }
+
+        if let session = session {
+            if case .ended = session.state {
+                return self.makeFailedFuture(ClientSession.SessionInactiveError)
+            }
+            guard session.client == client else {
+                return self.makeFailedFuture(ClientSession.ClientMismatchError)
+            }
+        }
+
         return self.execute {
             // if a session was provided, start it if it hasn't been started already.
             try session?.startIfNeeded()
