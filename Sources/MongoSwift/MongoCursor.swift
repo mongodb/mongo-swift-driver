@@ -72,8 +72,7 @@ public class MongoCursor<T: Codable> {
         client: MongoClient,
         decoder: BSONDecoder,
         session: ClientSession?,
-        cursorType: CursorType? = nil,
-        forceIO: Bool = false
+        cursorType: CursorType? = nil
     ) throws {
         self.state = .open(cursor: cursor, connection: connection, session: session)
         self.client = client
@@ -86,12 +85,8 @@ public class MongoCursor<T: Codable> {
             throw error
         }
 
-        // Force I/O to occur if it hasn't already by retrieving the first document from the cursor. This is useful for
-        // for e.g. `find` and `aggregate` where libmongoc does not send the initial command until you iterate.
-        if forceIO {
-            let next = try self.getNextDocument()
-            self.cached = .cached(next)
-        }
+        let next = try self.getNextDocument()
+        self.cached = .cached(next)
     }
 
     private func blockingClose() {
