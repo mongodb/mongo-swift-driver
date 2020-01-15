@@ -77,10 +77,6 @@ final class RetryableWritesTests: MongoSwiftTestCase, FailPointConfigured {
                 }
             }
 
-            if fileName.contains("findOneAnd") {
-                continue
-            }
-
             fileLevelLog("Executing tests from file \(fileName)...\n")
             for test in testFile.tests {
                 print("Executing test: \(test.description)")

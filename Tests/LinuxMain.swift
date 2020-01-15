@@ -207,7 +207,6 @@ extension MongoDatabaseTests {
     ]
 }
 
->>>>>>> add async tests
 extension OptionsTests {
     static var allTests = [
         ("testOptionsAlphabeticalOrder", testOptionsAlphabeticalOrder),

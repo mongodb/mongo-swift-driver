@@ -28,10 +28,6 @@ final class CrudTests: MongoSwiftTestCase {
                 continue
             }
 
-            if filename.contains("findOneAnd") {
-                continue
-            }
-
             print("\n------------\nExecuting tests from file \(dir)/\(filename)...\n")
 
             // For each file, execute the test cases contained in it
