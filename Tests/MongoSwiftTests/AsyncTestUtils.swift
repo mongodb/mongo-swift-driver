@@ -20,7 +20,7 @@ extension MongoClient {
         return try MongoClient(uri, using: eventLoopGroup, options: opts)
     }
 
-    internal func syncCloseOrLogError() {
+    internal func syncCloseOrFail() {
         do {
             try self.close().wait()
         } catch {
@@ -29,18 +29,40 @@ extension MongoClient {
     }
 }
 
+extension MongoDatabase {
+    fileprivate func syncDropOrFail() {
+        do {
+            try self.drop().wait()
+        } catch {
+            XCTFail("Error dropping test database: \(error)")
+        }
+    }
+}
+
 extension MongoSwiftTestCase {
+    internal func withTestNamespace<T>(
+        options: ClientOptions? = nil,
+        f: (MongoClient, MongoDatabase, MongoCollection<Document>) throws -> T
+    ) throws -> T {
+        return try self.withTestClient { client in
+            let db = client.db(type(of: self).testDatabase)
+            let coll = db.collection(self.getCollectionName())
+            defer { db.syncDropOrFail() }
+            return try f(client, db, coll)
+        }
+    }
+
     internal func withTestClient<T>(options: ClientOptions? = nil, f: (MongoClient) throws -> T) throws -> T {
         let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-        defer { elg.syncShutdownOrLogError() }
+        defer { elg.syncShutdownOrFail() }
         let client = try MongoClient.makeTestClient(eventLoopGroup: elg, options: options)
-        defer { client.syncCloseOrLogError() }
+        defer { client.syncCloseOrFail() }
         return try f(client)
     }
 }
 
 extension MultiThreadedEventLoopGroup {
-    internal func syncShutdownOrLogError() {
+    internal func syncShutdownOrFail() {
         do {
             try self.syncShutdownGracefully()
         } catch {

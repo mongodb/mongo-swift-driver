@@ -6,7 +6,7 @@ import TestsCommon
 final class MongoClientTests: MongoSwiftTestCase {
     func testUsingClosedClient() throws {
         let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-        defer { elg.syncShutdownOrLogError() }
+        defer { elg.syncShutdownOrFail() }
         let client = try MongoClient(using: elg)
         try client.close().wait()
         expect(try client.listDatabases().wait()).to(throwError(MongoClient.ClosedClientError))

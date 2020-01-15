@@ -213,4 +213,39 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
 
         try defaultDb.drop()
     }
+
+    // Ensure that sync clients stay alive as long as their child objects are still in scope.
+    func testClientLifetimeManagement() throws {
+        // Use a weak reference so we can check if the object has been deallocated, but we don't prevent the object
+        // from being deallocated ourselves.
+        weak var weakClientRef: MongoClient?
+        var db: MongoDatabase?
+        do {
+            let client = try MongoClient()
+            weakClientRef = client
+            db = client.db("test")
+        }
+
+        // db is still alive, so client should be too, and should be open
+        expect(weakClientRef).toNot(beNil())
+        expect(try db!.runCommand(["isMaster": 1])).toNot(throwError())
+
+        // once the DB ref goes away, so should the client
+        db = nil
+        expect(weakClientRef).to(beNil())
+
+        var coll: MongoCollection<Document>?
+        do {
+            let client = try MongoClient()
+            weakClientRef = client
+            coll = client.db("test").collection("test")
+        }
+        // coll is still alive, so client should be too, and should be open
+        expect(weakClientRef).toNot(beNil())
+        expect(try coll!.countDocuments()).toNot(throwError())
+
+        // once the coll ref goes away, so should the client
+        coll = nil
+        expect(weakClientRef).to(beNil())
+    }
 }

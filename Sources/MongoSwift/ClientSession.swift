@@ -1,5 +1,6 @@
 import CLibMongoC
 import Foundation
+import NIO
 
 /**
  * A MongoDB client session.
@@ -111,7 +112,7 @@ public final class ClientSession {
     public let options: ClientSessionOptions?
 
     /// Initializes a new client session.
-    internal init(client: MongoClient, options: ClientSessionOptions? = nil) throws {
+    internal init(client: MongoClient, options: ClientSessionOptions? = nil) {
         self.options = options
         self.client = client
         self.state = .notStarted(opTime: nil, clusterTime: nil)
@@ -119,15 +120,15 @@ public final class ClientSession {
 
     /// Starts this session's corresponding libmongoc session, if it has not been started already. Throws an error if
     /// this session has already been ended.
-    internal func startIfNeeded() throws {
+    internal func startIfNeeded() -> EventLoopFuture<Void> {
         switch self.state {
         case .notStarted:
             let operation = StartSessionOperation(session: self)
-            try self.client.executeOperation(operation)
+            return self.client.operationExecutor.execute(operation, client: self.client, session: nil)
         case .started:
-            return
+            return self.client.operationExecutor.makeSucceededFuture(Void())
         case .ended:
-            throw ClientSession.SessionInactiveError
+            return self.client.operationExecutor.makeFailedFuture(ClientSession.SessionInactiveError)
         }
     }
 
@@ -143,18 +144,28 @@ public final class ClientSession {
         return connection
     }
 
-    /// Destroy the underlying `mongoc_client_session_t` and ends this session. Has no effect if this session is
-    /// already ended.
-    internal func end() {
-        if case let .started(session, _) = self.state {
-            mongoc_client_session_destroy(session)
+    /// Ends this `ClientSession`. Call this method when you are finished using the session. You must ensure that all
+    /// operations using this session have completed before calling this. The returned future must be fulfilled before
+    /// the session goes out of scope.
+    public func end() -> EventLoopFuture<Void> {
+        switch self.state {
+        case .notStarted, .ended:
+            self.state = .ended
+            return self.client.operationExecutor.makeSucceededFuture(Void())
+        case let .started(session, _):
+            return self.client.operationExecutor.execute {
+                mongoc_client_session_destroy(session)
+                self.state = .ended
+            }
         }
-        self.state = .ended
     }
 
     /// Cleans up internal state.
     deinit {
-        self.end()
+        guard case .ended = self.state else {
+            assertionFailure("ClientSession was not ended before going out of scope; please call ClientSession.end()")
+            return
+        }
     }
 
     /**

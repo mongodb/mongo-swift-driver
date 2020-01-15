@@ -27,7 +27,7 @@ class ReadWriteConcernSpecTests: MongoSwiftTestCase {
     func testConnectionStrings() throws {
         // we have to create this directly so we can use the MongoClient initializer that takes a uri
         let testElg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-        defer { testElg.syncShutdownOrLogError() }
+        defer { testElg.syncShutdownOrFail() }
 
         let testFiles = try retrieveSpecTestFiles(
             specName: "read-write-concern",
@@ -44,7 +44,7 @@ class ReadWriteConcernSpecTests: MongoSwiftTestCase {
                 let valid: Bool = try test.get("valid")
                 if valid {
                     let client = try MongoClient(uri, using: testElg)
-                    defer { client.syncCloseOrLogError() }
+                    defer { client.syncCloseOrFail() }
 
                     if let readConcern = test["readConcern"]?.documentValue {
                         let rc = try BSONDecoder().decode(ReadConcern.self, from: readConcern)
