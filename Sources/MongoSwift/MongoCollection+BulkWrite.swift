@@ -31,7 +31,7 @@ extension MongoCollection {
                 .makeFailedFuture(InvalidArgumentError(message: "requests cannot be empty"))
         }
         let operation = BulkWriteOperation(collection: self, models: requests, options: options)
-        return self._client.executeOperationAsync(operation, session: session)
+        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
     }
 }
 

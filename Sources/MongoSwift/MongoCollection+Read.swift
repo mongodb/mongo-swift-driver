@@ -94,7 +94,7 @@ extension MongoCollection {
         session: ClientSession? = nil
     ) -> EventLoopFuture<Int> {
         let operation = CountDocumentsOperation(collection: self, filter: filter, options: options)
-        return self._client.executeOperationAsync(operation, session: session)
+        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
     }
 
     /**
@@ -111,7 +111,7 @@ extension MongoCollection {
         session: ClientSession? = nil
     ) -> EventLoopFuture<Int> {
         let operation = EstimatedDocumentCountOperation(collection: self, options: options)
-        return self._client.executeOperationAsync(operation, session: session)
+        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
     }
 
     /**
@@ -138,6 +138,6 @@ extension MongoCollection {
         session: ClientSession? = nil
     ) -> EventLoopFuture<[BSON]> {
         let operation = DistinctOperation(collection: self, fieldName: fieldName, filter: filter, options: options)
-        return self._client.executeOperationAsync(operation, session: session)
+        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
     }
 }

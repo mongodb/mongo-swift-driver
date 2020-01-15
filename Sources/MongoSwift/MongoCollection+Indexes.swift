@@ -244,7 +244,7 @@ extension MongoCollection {
                 .makeFailedFuture(InvalidArgumentError(message: "models cannot be empty"))
         }
         let operation = CreateIndexesOperation(collection: self, models: models, options: options)
-        return self._client.executeOperationAsync(operation, session: session)
+        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
     }
 
     /**
@@ -357,7 +357,7 @@ extension MongoCollection {
         session: ClientSession?
     ) -> EventLoopFuture<DropIndexesResult> {
         let operation = DropIndexesOperation(collection: self, index: index, options: options)
-        return self._client.executeOperationAsync(operation, session: session)
+        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
     }
 
     /**

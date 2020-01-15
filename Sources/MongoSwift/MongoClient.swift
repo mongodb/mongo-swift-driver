@@ -255,7 +255,7 @@ public class MongoClient {
 
         let connString = try ConnectionString(connectionString, options: options)
         self.connectionPool = try ConnectionPool(from: connString, options: options?.tlsOptions)
-        self.operationExecutor = DefaultOperationExecutor(
+        self.operationExecutor = OperationExecutor(
             eventLoopGroup: eventLoopGroup,
             threadPoolSize: options?.threadPoolSize ?? MongoClient.defaultThreadPoolSize
         )
@@ -350,7 +350,7 @@ public class MongoClient {
         session: ClientSession? = nil
     ) -> EventLoopFuture<[DatabaseSpecification]> {
         let operation = ListDatabasesOperation(client: self, filter: filter, nameOnly: nil)
-        return self.executeOperationAsync(operation, session: session).flatMapThrowing { result in
+        return self.operationExecutor.execute(operation, client: self, session: session).flatMapThrowing { result in
             guard case let .specs(dbs) = result else {
                 throw InternalError(message: "Invalid result")
             }
@@ -394,7 +394,7 @@ public class MongoClient {
         session: ClientSession? = nil
     ) -> EventLoopFuture<[String]> {
         let operation = ListDatabasesOperation(client: self, filter: filter, nameOnly: true)
-        return self.executeOperationAsync(operation, session: session).flatMapThrowing { result in
+        return self.operationExecutor.execute(operation, client: self, session: session).flatMapThrowing { result in
             guard case let .names(names) = result else {
                 throw InternalError(message: "Invalid result")
             }
@@ -541,15 +541,6 @@ public class MongoClient {
         session: ClientSession? = nil
     ) throws -> T.OperationResult {
         return try self.operationExecutor.execute(operation, using: connection, client: self, session: session).wait()
-    }
-
-    /// Executes an `Operation` asynchronously using this `MongoClient` and an optionally provided session.
-    internal func executeOperationAsync<T: Operation>(
-        _ operation: T,
-        using connection: Connection? = nil,
-        session: ClientSession? = nil
-    ) -> EventLoopFuture<T.OperationResult> {
-        return self.operationExecutor.execute(operation, using: connection, client: self, session: session)
     }
 }
 
