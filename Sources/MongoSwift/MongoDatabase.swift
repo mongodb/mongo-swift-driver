@@ -123,7 +123,7 @@ public struct MongoDatabase {
      */
     public func drop(options: DropDatabaseOptions? = nil, session: ClientSession? = nil) -> EventLoopFuture<Void> {
         let operation = DropDatabaseOperation(database: self, options: options)
-        return self._client.executeOperationAsync(operation, session: session)
+        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
     }
 
     /**
@@ -214,7 +214,7 @@ public struct MongoDatabase {
         session: ClientSession? = nil
     ) -> EventLoopFuture<MongoCollection<T>> {
         let operation = CreateCollectionOperation(database: self, name: name, type: type, options: options)
-        return self._client.executeOperationAsync(operation, session: session)
+        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
     }
 
     /**
@@ -288,12 +288,13 @@ public struct MongoDatabase {
         session: ClientSession? = nil
     ) -> EventLoopFuture<[String]> {
         let operation = ListCollectionsOperation(database: self, nameOnly: true, filter: filter, options: options)
-        return self._client.executeOperationAsync(operation, session: session).flatMapThrowing { result in
-            guard case let .names(names) = result else {
-                throw InternalError(message: "Invalid result")
+        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
+            .flatMapThrowing { result in
+                guard case let .names(names) = result else {
+                    throw InternalError(message: "Invalid result")
+                }
+                return names
             }
-            return names
-        }
     }
 
     /**
@@ -320,7 +321,7 @@ public struct MongoDatabase {
         session: ClientSession? = nil
     ) -> EventLoopFuture<Document> {
         let operation = RunCommandOperation(database: self, command: command, options: options)
-        return self._client.executeOperationAsync(operation, session: session)
+        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
     }
 
     /**

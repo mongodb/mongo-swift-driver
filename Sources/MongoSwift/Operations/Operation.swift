@@ -11,25 +11,8 @@ internal protocol Operation {
     func execute(using connection: Connection, session: ClientSession?) throws -> OperationResult
 }
 
-/// A protocol for types that can be used to execute `Operation`s.
-internal protocol OperationExecutor {
-    /// Asynchronously executes an operation using the provided client and optionally provided session.
-    func execute<T: Operation>(
-        _ operation: T,
-        using connection: Connection?,
-        client: MongoClient,
-        session: ClientSession?
-    ) -> EventLoopFuture<T.OperationResult>
-    /// Asynchronously executes a block of code.
-    func execute<T>(body: @escaping () throws -> T) -> EventLoopFuture<T>
-    /// Closes the executor.
-    func close() -> EventLoopFuture<Void>
-    /// Makes a failed `EventLoopFuture` with the provided error.
-    func makeFailedFuture<T>(_ error: Error) -> EventLoopFuture<T>
-}
-
-/// Default executor type used by `MongoClient`s.
-internal class DefaultOperationExecutor: OperationExecutor {
+/// Operation executor used by `MongoClient`s.
+internal class OperationExecutor {
     /// A group of event loops to use for running operations in the thread pool.
     private let eventLoopGroup: EventLoopGroup
     /// The thread pool to execute operations in.
@@ -56,7 +39,7 @@ internal class DefaultOperationExecutor: OperationExecutor {
 
     internal func execute<T: Operation>(
         _ operation: T,
-        using connection: Connection?,
+        using connection: Connection? = nil,
         client: MongoClient,
         session: ClientSession?
     ) -> EventLoopFuture<T.OperationResult> {

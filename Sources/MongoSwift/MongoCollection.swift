@@ -95,7 +95,7 @@ public struct MongoCollection<T: Codable> {
      */
     public func drop(options: DropCollectionOptions? = nil, session: ClientSession? = nil) -> EventLoopFuture<Void> {
         let operation = DropCollectionOperation(collection: self, options: options)
-        return self._client.executeOperationAsync(operation, session: session)
+        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
     }
 
     /// Uses the provided `Connection` to get a pointer to a `mongoc_collection_t` corresponding to this

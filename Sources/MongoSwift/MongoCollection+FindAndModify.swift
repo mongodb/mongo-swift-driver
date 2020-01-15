@@ -110,7 +110,7 @@ extension MongoCollection {
         session: ClientSession?
     ) -> EventLoopFuture<CollectionType?> {
         let operation = FindAndModifyOperation(collection: self, filter: filter, update: update, options: options)
-        return self._client.executeOperationAsync(operation, session: session)
+        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
     }
 }
 
