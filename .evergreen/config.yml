@@ -415,7 +415,7 @@ axes:
       - id: "5.1"
         display_name: "Swift 5.1"
         variables:
-           SWIFT_VERSION: "5.1"
+           SWIFT_VERSION: "5.1.3"
 
   - id: ssl
     display_name: SSL
