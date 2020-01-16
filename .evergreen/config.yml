@@ -92,7 +92,7 @@ functions:
             # If this was a patch build, doing a fresh clone would not actually test the patch
             cp -R ${PROJECT_DIRECTORY}/ $DRIVERS_TOOLS
           else
-            git clone git://github.com/mongodb-labs/drivers-evergreen-tools.git $DRIVERS_TOOLS
+            git clone -b blocking-stop git://github.com/patrickfreed/drivers-evergreen-tools.git $DRIVERS_TOOLS
           fi
           echo "{ \"releases\": { \"default\": \"$MONGODB_BINARIES\" }}" > $MONGO_ORCHESTRATION_HOME/orchestration.config
 
@@ -120,6 +120,10 @@ functions:
       params:
         script: |
           ${PREPARE_SHELL}
+          MONGODB_VERSION=${MONGODB_VERSION} \
+            TOPOLOGY=${TOPOLOGY} \
+            SSL=${SSL} \
+            sh ${DRIVERS_TOOLS}/.evergreen/stop-cluster.sh
           sh ${DRIVERS_TOOLS}/.evergreen/stop-orchestration.sh
 
   "run tests":
@@ -177,7 +181,6 @@ functions:
       params:
         script: |
           ${PREPARE_SHELL}
-          sleep 5 # wait for existing mongod instances to finish shutting down
           find $MONGO_ORCHESTRATION_HOME -name \*.log | xargs tar czf mongodb-logs.tar.gz
     - command: s3.put
       params:
