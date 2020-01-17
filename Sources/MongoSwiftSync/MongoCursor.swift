@@ -51,7 +51,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
      */
     public func next() -> Result<T, Error>? {
         do {
-            return try self.asyncCursor.next().wait().map { .success($0) }
+            return try self.asyncCursor.tryNext().wait().map { .success($0) }
         } catch {
             return .failure(error)
         }

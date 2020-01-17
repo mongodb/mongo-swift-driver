@@ -1,5 +1,6 @@
 import CLibMongoC
 import NIO
+import Foundation
 
 internal let ClosedCursorError = LogicError(message: "Cannot advance a completed or failed cursor.")
 
@@ -14,6 +15,8 @@ public class MongoCursor<T: Codable> {
         case closed
     }
 
+    private var queue: DispatchQueue
+    
     /// The state of this cursor.
     internal private(set) var state: State
 
@@ -29,10 +32,12 @@ public class MongoCursor<T: Codable> {
     /**
      * Indicates whether this cursor has the potential to return more data. This property is mainly useful for
      * tailable cursors, where the cursor may be empty but contain more results later on. For non-tailable cursors,
-     * the cursor will always be dead as soon as `next()` returns `nil` or a failed `Result`.
+     * the cursor will always be dead as soon as `next()` returns a future that evaluates to `nil` or fails.
      */
     public var isAlive: Bool {
         if case .open = self.state {
+            return true
+        } else if case .cached = self.cached {
             return true
         }
         return false
@@ -79,6 +84,8 @@ public class MongoCursor<T: Codable> {
         self.cursorType = cursorType ?? .nonTailable
         self.decoder = decoder
         self.cached = .none
+        self.queue = DispatchQueue(label: "cursor.\(self.id)")
+        
         // If there was an error constructing the cursor, throw it.
         if let error = self.getMongocError() {
             self.blockingClose()
@@ -89,19 +96,13 @@ public class MongoCursor<T: Codable> {
         self.cached = .cached(next)
     }
 
+    /// Close this cursor
     private func blockingClose() {
         guard case let .open(cursor, _, _) = self.state else {
             return
         }
         mongoc_cursor_destroy(cursor)
         self.state = .closed
-    }
-
-    /// Cleans up internal state.
-    public func close() -> EventLoopFuture<Void> {
-        return self.client.operationExecutor.execute {
-            self.blockingClose()
-        }
     }
 
     /// Closes the cursor if it hasn't been closed already.
@@ -139,6 +140,7 @@ public class MongoCursor<T: Codable> {
 
             // if we've reached the end of the cursor, close it.
             if !self.cursorType.isTailable || !mongoc_cursor_more(cursor) {
+                print("cursor doesn't have more, closing")
                 self.blockingClose()
             }
 
@@ -191,13 +193,47 @@ public class MongoCursor<T: Codable> {
     }
 
     /**
-     * Returns an array of type `T` from this cursor.
-     * - Returns: an array of type `T`
-     * - Throws:
-     *   - `CommandError` if an error occurs while fetching more results from the server.
-     *   - `LogicError` if this function is called after the cursor has died.
-     *   - `LogicError` if this function is called and the session associated with this cursor is inactive.
-     *   - `DecodingError` if an error occurs decoding the server's response.
+     * Call the provided function with each element in this cursor's results.
+     *
+     * If this cursor is not tailable, this method will exhaust it.
+     *
+     * If this cursor is tailable, the provided method will be called with each of the the currently available
+     * results. `forEach` may be called again once the returned future resolves to iterate over new data.
+     *
+     * - Returns:
+     *    An `EventLoopFuture<Void>` that evaluates once all the currently available results have been processed or
+     *    an error ocurred.
+     *
+     *    If the future evaluates to an error, that error is likely one of the following:
+     *      - `CommandError` if an error occurs while fetching more results from the server.
+     *      - `LogicError` if this function is called after the cursor has died.
+     *      - `LogicError` if this function is called and the session associated with this cursor is inactive.
+     *      - `DecodingError` if an error occurs decoding the server's responses.
+     */
+    public func forEach(f: @escaping (T) throws -> Void) -> EventLoopFuture<Void> {
+        return self.client.operationExecutor.execute {
+            while let result = try self.getNextDocument() {
+                try f(result)
+            }
+        }
+    }
+    
+    /**
+     * Consolidate the results of the cursor into an array of type `T`.
+     *
+     * If this cursor is not tailable, this method will exhaust it.
+     *
+     * If this cursor is tailable, `all` will only fetch the currently available results, and it
+     * may return more data if it is called again while the cursor is still alive.
+     *
+     * - Returns:
+     *    An `EventLoopFuture<[T]>` evaluating to the results currently available to this cursor or an error.
+     *
+     *    If the future evaluates to an error, that error is likely one of the following:
+     *      - `CommandError` if an error occurs while fetching more results from the server.
+     *      - `LogicError` if this function is called after the cursor has died.
+     *      - `LogicError` if this function is called and the session associated with this cursor is inactive.
+     *      - `DecodingError` if an error occurs decoding the server's responses.
      */
     public func all() -> EventLoopFuture<[T]> {
         return self.client.operationExecutor.execute {
@@ -210,20 +246,84 @@ public class MongoCursor<T: Codable> {
     }
 
     /**
-     * Returns a `Result` containing the next `T` in this cursor, or an error if one occurred.
-     * Returns `nil` if the cursor is exhausted. For tailable cursors,
-     * users should also check `isAlive` after this method returns `nil`,
-     * to determine if the cursor has the potential to return any more data in the future.
-     * - Returns: `nil` if the end of the cursor has been reached, or a `Result`. On success, the
-     *   `Result` contains the next `T`, and on failure contains:
-     *   - `CommandError` if an error occurs while fetching more results from the server.
-     *   - `LogicError` if this function is called after the cursor has died.
-     *   - `LogicError` if this function is called and the session associated with this cursor is inactive.
-     *   - `DecodingError` if an error occurs decoding the server's response.
+     * Attempt to get the next `T` from the cursor.
+     *
+     * If this cursor is tailable and `isAlive` is true, this may be called multiple times to attempt to retrieve more
+     * elements.
+     *
+     * If this cursor is a tailable await cursor, the cursor will wait server side for a `maxAwaitTimeMS` before
+     * returning an empty batch. This option can be configured via whatever method generated this cursor (e.g. `watch`). 
+     *
+     * - Returns:
+     *    An `EventLoopFuture<T?>` containing the next `T` in this cursor, an error if one ocurred, or `nil` if
+     *    there was no data.
+     *
+     *    If the future evaluates to an error, it is likely one of the following: 
+     *      - `CommandError` if an error occurs while fetching more results from the server.
+     *      - `LogicError` if this function is called after the cursor has died.
+     *      - `LogicError` if this function is called and the session associated with this cursor is inactive.
+     *      - `DecodingError` if an error occurs decoding the server's response.
+     */
+    public func tryNext() -> EventLoopFuture<T?> {
+        return self.client.operationExecutor.execute {
+            return try self.getNextDocument()
+        }
+    }
+    
+    /**
+     * Get the next `T` from the cursor, retrying if an empty batch is received and this cursor is tailable.
+     *
+     * - Returns: 
+     *   An `EventLoopFuture<T?>` evaluating to the next `T` in this cursor, `nil` if the cursor is exhausted,
+     *   or an error if one ocurred. If the underlying cursor is tailable, the future will not resolve
+     *   until data is returned (potentially after multiple requests to the server), the cursor is closed, or an error
+     *   occurs.
+     *   
+     *   If the future evaluates to an error, it is likely one of the following: 
+     *     - `CommandError` if an error occurs while fetching more results from the server.
+     *     - `LogicError` if this function is called after the cursor has died.
+     *     - `LogicError` if this function is called and the session associated with this cursor is inactive.
+     *     - `DecodingError` if an error occurs decoding the server's response.
      */
     public func next() -> EventLoopFuture<T?> {
         return self.client.operationExecutor.execute {
-            try self.getNextDocument()
+            guard self.isAlive else {
+                throw ClosedCursorError
+            }
+
+            while true {
+                let result = try self.queue.sync { () -> NextResult in
+                    guard self.isAlive else {
+                        return .closed
+                    }
+                    return try .result(self.getNextDocument() )
+                }
+
+                switch result {
+                case .closed:
+                    return nil
+                case let .result(doc):
+                    if let doc = doc {
+                        return doc
+                    }
+                }
+            }
+        }
+    }
+
+    /// Enum used to disambiguate nil returns from `getNextDocument`.
+    private enum NextResult {
+        case result(T?)
+        case closed
+    }
+    
+    /// Close this cursor.
+    /// This method MUST be called before this cursor goes out of scope to prevent leaking resources.
+    public func close() -> EventLoopFuture<Void> {
+        return self.client.operationExecutor.execute {
+            // self.queue.sync {
+                self.blockingClose()
+            // }
         }
     }
 }

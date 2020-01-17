@@ -77,7 +77,15 @@ extension MongoSwiftTestCase {
         }
 
         let database = client.db(ns.db)
-        let collection = try database.createCollection(collName, options: collectionOptions).wait()
+        let collection: MongoCollection<Document>
+        do {
+            collection = try database.createCollection(collName, options: collectionOptions).wait()
+        } catch let error as CommandError where error.code == 48 {
+           _ = try database.collection(collName).drop().wait()
+            collection = try database.createCollection(collName, options: collectionOptions).wait()
+        } catch {
+            throw error
+        }
         defer { try? collection.drop().wait() }
         return try f(database, collection)
     }
@@ -94,6 +102,55 @@ extension MongoSwiftTestCase {
         return try self.withTestClient { client in
             try self.withTestNamespace(client: client, ns: ns, collectionOptions: collectionOptions) { db, coll in
                 try f(client, db, coll)
+            }
+        }
+    }
+
+    /// Captures any command monitoring events filtered by type and name that are emitted during the execution of the
+    /// provided closure. Only events emitted by the provided client will be captured.
+    internal func captureCommandEvents(
+      from _: MongoClient,
+      eventTypes: [Notification.Name]? = nil,
+      commandNames: [String]? = nil,
+      f: () throws -> Void
+    ) rethrows -> [MongoCommandEvent] {
+        let center = NotificationCenter.default
+        var events: [MongoCommandEvent] = []
+        
+        let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
+            guard let event = notif.userInfo?["event"] as? MongoCommandEvent else {
+                return
+            }
+            
+            if let eventWhitelist = eventTypes {
+                guard eventWhitelist.contains(type(of: event).eventName) else {
+                    return
+                }
+            }
+            if let whitelist = commandNames {
+                guard whitelist.contains(event.commandName) else {
+                    return
+                }
+            }
+            print("getMore")
+            events.append(event)
+        }
+        defer { center.removeObserver(observer) }
+        try f()
+        
+        return events
+    }
+
+    /// Captures any command monitoring events filtered by type and name that are emitted during the execution of the
+    /// provided closure. A client pre-configured for command monitoring is passed into the closure.
+    internal func captureCommandEvents(
+      eventTypes: [Notification.Name]? = nil,
+      commandNames: [String]? = nil,
+      f: (MongoClient) throws -> Void
+    ) throws -> [MongoCommandEvent] {
+        return try self.withTestClient(options: ClientOptions(commandMonitoring: true)) { client in
+            return try captureCommandEvents(from: client, eventTypes: eventTypes, commandNames: commandNames) {
+                try f(client)
             }
         }
     }

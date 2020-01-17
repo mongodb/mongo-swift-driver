@@ -10,7 +10,8 @@ import XCTest
 extension AsyncMongoCursorTests {
     static var allTests = [
         ("testNonTailableCursor", testNonTailableCursor),
-        ("testTailableCursor", testTailableCursor),
+        ("testTailableAsyncCursor", testTailableAsyncCursor),
+        ("testTailableAwaitAsyncCursor", testTailableAwaitAsyncCursor),
         ("testNext", testNext),
     ]
 }

@@ -2,6 +2,7 @@ import MongoSwift
 import Nimble
 import NIO
 import TestsCommon
+import Foundation
 
 private let doc1: Document = ["_id": 1, "x": 1]
 private let doc2: Document = ["_id": 2, "x": 2]
@@ -62,7 +63,31 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
         }
     }
 
-    func testTailableCursor() throws {
+    func testTailableAwaitAsyncCursor() throws {
+        let collOptions = CreateCollectionOptions(capped: true, max: 3, size: 1000)
+        try self.withTestNamespace(collectionOptions: collOptions) { _, _, coll in
+            let cursorOpts = FindOptions(batchSize: 1, cursorType: .tailableAwait, maxAwaitTimeMS: 100)
+            
+            _ = try coll.insertMany([Document()]).wait()
+            
+            let cursor = try coll.find(options: cursorOpts).wait()
+            let doc = try cursor.next().wait()
+            expect(doc).toNot(beNil())
+            
+            let future = cursor.next()
+            _ = try coll.insertMany([Document()]).wait()
+            expect(try future.wait()).toNot(beNil())
+
+            expect(try cursor.tryNext().wait()).to(beNil())
+            
+            // start polling and interrupt with close
+            let _ = cursor.next()
+            
+            try cursor.close().wait()
+        }
+    }
+    
+    func testTailableAsyncCursor() throws {
         let collOptions = CreateCollectionOptions(capped: true, max: 3, size: 1000)
         try self.withTestNamespace(collectionOptions: collOptions) { _, _, coll in
             let cursorOpts = FindOptions(cursorType: .tailable)
@@ -94,7 +119,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
             try checkNextResult(doc3)
 
             // no more docs, but should still be alive
-            expect(try cursor.next().wait()).to(beNil())
+            expect(try cursor.tryNext().wait()).to(beNil())
             expect(cursor.isAlive).to(beTrue())
 
             // insert 3 docs so the cursor loses track of its position
@@ -117,19 +142,25 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
         }
     }
 
-    func testNext() throws {
+    func testAsyncNext() throws {
         try self.withTestNamespace { _, _, coll in
             // query empty collection
             var cursor = try coll.find().wait()
             expect(try cursor.next().wait()).to(beNil())
-
+            expect(cursor.isAlive).to(beFalse())
+            
             // insert a doc so something matches initial query
             _ = try coll.insertOne(doc1).wait()
             cursor = try coll.find().wait()
 
-            if let doc = try cursor.next().wait() {
-                expect(doc).to(equal(doc1))
-            }
+            let doc = try cursor.next().wait()
+            expect(doc).toNot(beNil())
+            expect(doc).to(equal(doc1))
+
+            expect(try cursor.next().wait()).to(beNil())
+            expect(cursor.isAlive).to(beFalse())
+            
+            expect(try cursor.next().wait()).to(throwError(errorType: LogicError.self))
         }
     }
 }

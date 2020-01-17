@@ -364,7 +364,7 @@ extension MongoCollection {
      */
     public func listIndexes(session: ClientSession? = nil) -> EventLoopFuture<MongoCursor<IndexModel>> {
         let operation = ListIndexesOperation(collection: self)
-        return self._client.executeOperationAsync(operation, session: session)
+        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
     }
 
     /**
