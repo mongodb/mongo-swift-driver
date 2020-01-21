@@ -29,6 +29,21 @@ extension BSONValueTests {
     ]
 }
 
+extension ClientSessionTests {
+    static var allTests = [
+        ("testSessionCleanup", testSessionCleanup),
+        ("testSessionArguments", testSessionArguments),
+        ("testSessionClientValidation", testSessionClientValidation),
+        ("testInactiveSession", testInactiveSession),
+        ("testClusterTime", testClusterTime),
+        ("testCausalConsistency", testCausalConsistency),
+        ("testCausalConsistencyStandalone", testCausalConsistencyStandalone),
+        ("testCausalConsistencyAnyTopology", testCausalConsistencyAnyTopology),
+        ("testSession", testSession),
+        ("testWithSession", testWithSession),
+    ]
+}
+
 extension CodecTests {
     static var allTests = [
         ("testStructs", testStructs),
@@ -207,6 +222,7 @@ extension SyncMongoClientTests {
         ("testFailedClientInitialization", testFailedClientInitialization),
         ("testServerVersion", testServerVersion),
         ("testCodingStrategies", testCodingStrategies),
+        ("testClientLifetimeManagement", testClientLifetimeManagement),
     ]
 }
 
@@ -222,6 +238,7 @@ XCTMain([
     testCase(AuthTests.allTests),
     testCase(BSONCorpusTests.allTests),
     testCase(BSONValueTests.allTests),
+    testCase(ClientSessionTests.allTests),
     testCase(CodecTests.allTests),
     testCase(DNSSeedlistTests.allTests),
     testCase(DocumentTests.allTests),
