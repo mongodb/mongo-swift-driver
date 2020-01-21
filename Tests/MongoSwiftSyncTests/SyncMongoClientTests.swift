@@ -236,7 +236,7 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
 
         var coll: MongoCollection<Document>?
         do {
-            let client = try MongoClient()
+            let client = try MongoClient.makeTestClient()
             weakClientRef = client
             coll = client.db("test").collection("test")
         }
