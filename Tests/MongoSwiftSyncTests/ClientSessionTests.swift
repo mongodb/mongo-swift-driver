@@ -94,7 +94,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
     ]
 
 // This function causes the compiler to crash on older versions of swift due to a bug in the compiler.
-#if swift(>=5.1)
+#if swift(>=5.1) && os(macOS)
 
     /// iterate over all the different session op types, passing in the provided client/db/collection as needed.
     func forEachSessionOp(
@@ -208,7 +208,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
     /// explicit lsids to server.
     func testSessionArguments() throws {
 // This test causes the compiler to crash on older versions of swift due to a bug in the compiler.
-#if swift(>=5.1)
+#if swift(>=5.1) && os(macOS)
         let client1 = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
         let database = client1.db(type(of: self).testDatabase)
         let collection = try database.createCollection(self.getCollectionName())
@@ -225,7 +225,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
     /// same client.
     func testSessionClientValidation() throws {
 // This test causes the compiler to crash on older versions of swift due to a bug in the compiler.
-#if swift(>=5.1)
+#if swift(>=5.1) && os(macOS)
 
         let client1 = try MongoClient.makeTestClient()
         let client2 = try MongoClient.makeTestClient()
@@ -245,7 +245,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
     /// Sessions spec test 5: Test that inactive sessions cannot be used.
     func testInactiveSession() throws {
 // This test causes the compiler to crash on older versions of swift due to a bug in the compiler.
-#if swift(>=5.1)
+#if swift(>=5.1) && os(macOS)
 
         let client = try MongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
@@ -367,7 +367,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
     /// Test that causal consistency guarantees are met on deployments that support cluster time.
     func testCausalConsistency() throws {
 // This test causes the compiler to crash on older versions of swift due to a bug in the compiler.
-#if swift(>=5.1)
+#if swift(>=5.1) && os(macOS)
 
         guard MongoSwiftTestCase.topologyType != .single else {
             print(unsupportedTopologyMessage(testName: self.name))
