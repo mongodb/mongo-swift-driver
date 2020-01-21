@@ -31,14 +31,6 @@ extension BSONValueTests {
 
 extension ClientSessionTests {
     static var allTests = [
-        ("testSessionCleanup", testSessionCleanup),
-        ("testSessionArguments", testSessionArguments),
-        ("testSessionClientValidation", testSessionClientValidation),
-        ("testInactiveSession", testInactiveSession),
-        ("testClusterTime", testClusterTime),
-        ("testCausalConsistency", testCausalConsistency),
-        ("testCausalConsistencyStandalone", testCausalConsistencyStandalone),
-        ("testCausalConsistencyAnyTopology", testCausalConsistencyAnyTopology),
         ("testSession", testSession),
         ("testWithSession", testWithSession),
     ]
@@ -216,6 +208,19 @@ extension SyncAuthTests {
     ]
 }
 
+extension SyncClientSessionTests {
+    static var allTests = [
+        ("testSessionCleanup", testSessionCleanup),
+        ("testSessionArguments", testSessionArguments),
+        ("testSessionClientValidation", testSessionClientValidation),
+        ("testInactiveSession", testInactiveSession),
+        ("testClusterTime", testClusterTime),
+        ("testCausalConsistency", testCausalConsistency),
+        ("testCausalConsistencyStandalone", testCausalConsistencyStandalone),
+        ("testCausalConsistencyAnyTopology", testCausalConsistencyAnyTopology),
+    ]
+}
+
 extension SyncMongoClientTests {
     static var allTests = [
         ("testListDatabases", testListDatabases),
@@ -254,6 +259,7 @@ XCTMain([
     testCase(ReadWriteConcernSpecTests.allTests),
     testCase(SDAMTests.allTests),
     testCase(SyncAuthTests.allTests),
+    testCase(SyncClientSessionTests.allTests),
     testCase(SyncMongoClientTests.allTests),
     testCase(WriteConcernTests.allTests),
 ])

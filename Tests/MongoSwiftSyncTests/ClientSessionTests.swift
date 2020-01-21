@@ -14,7 +14,7 @@ extension MongoSwiftSync.ClientSession {
     }
 }
 
-final class ClientSessionTests: MongoSwiftTestCase {
+final class SyncClientSessionTests: MongoSwiftTestCase {
     override func tearDown() {
         do {
             let client = try MongoClient.makeTestClient()
