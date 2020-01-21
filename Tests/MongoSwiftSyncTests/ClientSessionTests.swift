@@ -1,7 +1,6 @@
 import Foundation
 @testable import MongoSwift
 @testable import MongoSwiftSync
-import MongoSwiftSync
 import Nimble
 import TestsCommon
 
@@ -44,7 +43,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
 
     // list of read only operations on MongoCollection that take in a session
     let collectionSessionReadOps: [CollectionSessionOp] = [
-        // TODO SWIFT-672: enable
+        // TODO: SWIFT-672: enable
         // (name: "find", body: { _ = try $0.find([:], session: $1).next()?.get() }),
         // (name: "findOne", body: { _ = try $0.findOne([:], session: $1) }),
         // (name: "aggregate", body: { _ = try $0.aggregate([], session: $1).next()?.get() }),
@@ -70,8 +69,8 @@ final class ClientSessionTests: MongoSwiftTestCase {
         (name: "dropIndex1", body: { _ = try $0.dropIndex(IndexModel(keys: ["x": 3]), session: $1) }),
         (name: "dropIndex2", body: { _ = try $0.dropIndex("x_7", session: $1) }),
         (name: "dropIndexes", body: { _ = try $0.dropIndexes(session: $1) }),
-        // TODO SWIFT-672: enable
-        //(name: "listIndexes", body: { _ = try $0.listIndexes(session: $1).next() }),
+        // TODO: SWIFT-672: enable
+        // (name: "listIndexes", body: { _ = try $0.listIndexes(session: $1).next() }),
         (name: "findOneAndDelete", body: { _ = try $0.findOneAndDelete([:], session: $1) }),
         (name: "findOneAndReplace", body: { _ = try $0.findOneAndReplace(filter: [:], replacement: [:], session: $1) }),
         (name: "findOneAndUpdate", body: { _ = try $0.findOneAndUpdate(filter: [:], update: [:], session: $1) }),
@@ -80,7 +79,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
 
     // list of operations on MongoDatabase that take in a session
     let databaseSessionOps: [DatabaseSessionOp] = [
-        // TODO SWIFT-672: test listCollections + session here
+        // TODO: SWIFT-672: test listCollections + session here
         (name: "runCommand", { try $0.runCommand(["isMaster": 0], session: $1) }),
         (name: "createCollection", body: { _ = try $0.createCollection("asdf", session: $1) }),
         (name: "createCollection1", body: { _ = try $0.createCollection("asf", withType: Document.self, session: $1) }),
@@ -260,7 +259,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
             expect(try op.body(session1)).to(throwError(ClientSession.SessionInactiveError), description: op.name)
         }
 
-        // TODO SWIFT-672: enable
+        // TODO: SWIFT-672: enable
         // let session2 = client.startSession()
         // let database = client.db(type(of: self).testDatabase)
         // let collection1 = database.collection(self.getCollectionName())
@@ -275,7 +274,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
 #endif
     }
 
-    // TODO SWIFT-672: enable
+    // TODO: SWIFT-672: enable
     /// Sessions spec test 10: Test cursors have the same lsid in the initial find command and in subsequent getMores.
     // func testSessionCursor() throws {
     //     let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
@@ -414,7 +413,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
             expect(session.operationTime).toNot(beNil())
         }
 
-        // TODO SWIFT-672: enable
+        // TODO: SWIFT-672: enable
         // Causal consistency spec test 4: A find followed by any other read operation should
         // include the operationTime returned by the server for the first operation in the afterClusterTime parameter of
         // the second operation
@@ -442,7 +441,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
         //     }
         // }
 
-        // TODO SWIFT-672: enable
+        // TODO: SWIFT-672: enable
         // Causal consistency spec test 5: Any write operation followed by a find operation should include the
         // operationTime of the first operation in the afterClusterTime parameter of the second operation, including the
         // case where the first operation returned an error

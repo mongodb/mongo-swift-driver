@@ -9,12 +9,12 @@ final class ClientSessionTests: MongoSwiftTestCase {
             let session = client.startSession()
             // chained method calls
             let res = coll.insertOne(["a": 1], session: session)
-            .flatMap { _ in
-                coll.findOneAndDelete(["a": 1], session: session)
-            }
-            .flatMap { _ in
-                coll.countDocuments()
-            }
+                .flatMap { _ in
+                    coll.findOneAndDelete(["a": 1], session: session)
+                }
+                .flatMap { _ in
+                    coll.countDocuments()
+                }
 
             expect(try res.wait()).to(equal(0))
             try session.end().wait()

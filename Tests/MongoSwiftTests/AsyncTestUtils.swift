@@ -44,7 +44,7 @@ extension MongoSwiftTestCase {
         options: ClientOptions? = nil,
         f: (MongoClient, MongoDatabase, MongoCollection<Document>) throws -> T
     ) throws -> T {
-        return try self.withTestClient { client in
+        return try self.withTestClient(options: options) { client in
             let db = client.db(type(of: self).testDatabase)
             let coll = db.collection(self.getCollectionName())
             defer { db.syncDropOrFail() }
