@@ -10,9 +10,9 @@ import XCTest
 extension AsyncMongoCursorTests {
     static var allTests = [
         ("testNonTailableCursor", testNonTailableCursor),
-        ("testTailableAsyncCursor", testTailableAsyncCursor),
         ("testTailableAwaitAsyncCursor", testTailableAwaitAsyncCursor),
-        ("testNext", testNext),
+        ("testTailableAsyncCursor", testTailableAsyncCursor),
+        ("testAsyncNext", testAsyncNext),
     ]
 }
 
@@ -148,6 +148,7 @@ extension MongoCollectionTests {
         ("testInsertOneWithUnacknowledgedWriteConcern", testInsertOneWithUnacknowledgedWriteConcern),
         ("testAggregate", testAggregate),
         ("testDrop", testDrop),
+        ("testInsertMany", testInsertMany),
         ("testInsertManyWithEmptyValues", testInsertManyWithEmptyValues),
         ("testInsertManyWithUnacknowledgedWriteConcern", testInsertManyWithUnacknowledgedWriteConcern),
         ("testFind", testFind),
@@ -166,15 +167,13 @@ extension MongoCollectionTests {
         ("testUpdateManyWithUnacknowledgedWriteConcern", testUpdateManyWithUnacknowledgedWriteConcern),
         ("testDistinct", testDistinct),
         ("testGetName", testGetName),
+        ("testCursorIteration", testCursorIteration),
         ("testCodableCollection", testCodableCollection),
         ("testCursorType", testCursorType),
         ("testEncodeHint", testEncodeHint),
         ("testFindOneAndDelete", testFindOneAndDelete),
         ("testFindOneAndReplace", testFindOneAndReplace),
         ("testFindOneAndUpdate", testFindOneAndUpdate),
-        ("testCursorIteration", testCursorIteration),
-        ("testCursorType", testCursorType),
-        ("testEncodeHint", testEncodeHint),
         ("testNullIds", testNullIds),
     ]
 }

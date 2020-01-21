@@ -81,7 +81,7 @@ extension MongoSwiftTestCase {
         do {
             collection = try database.createCollection(collName, options: collectionOptions).wait()
         } catch let error as CommandError where error.code == 48 {
-           _ = try database.collection(collName).drop().wait()
+            _ = try database.collection(collName).drop().wait()
             collection = try database.createCollection(collName, options: collectionOptions).wait()
         } catch {
             throw error
@@ -109,19 +109,19 @@ extension MongoSwiftTestCase {
     /// Captures any command monitoring events filtered by type and name that are emitted during the execution of the
     /// provided closure. Only events emitted by the provided client will be captured.
     internal func captureCommandEvents(
-      from _: MongoClient,
-      eventTypes: [Notification.Name]? = nil,
-      commandNames: [String]? = nil,
-      f: () throws -> Void
+        from _: MongoClient,
+        eventTypes: [Notification.Name]? = nil,
+        commandNames: [String]? = nil,
+        f: () throws -> Void
     ) rethrows -> [MongoCommandEvent] {
         let center = NotificationCenter.default
         var events: [MongoCommandEvent] = []
-        
+
         let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
             guard let event = notif.userInfo?["event"] as? MongoCommandEvent else {
                 return
             }
-            
+
             if let eventWhitelist = eventTypes {
                 guard eventWhitelist.contains(type(of: event).eventName) else {
                     return
@@ -137,19 +137,19 @@ extension MongoSwiftTestCase {
         }
         defer { center.removeObserver(observer) }
         try f()
-        
+
         return events
     }
 
     /// Captures any command monitoring events filtered by type and name that are emitted during the execution of the
     /// provided closure. A client pre-configured for command monitoring is passed into the closure.
     internal func captureCommandEvents(
-      eventTypes: [Notification.Name]? = nil,
-      commandNames: [String]? = nil,
-      f: (MongoClient) throws -> Void
+        eventTypes: [Notification.Name]? = nil,
+        commandNames: [String]? = nil,
+        f: (MongoClient) throws -> Void
     ) throws -> [MongoCommandEvent] {
         return try self.withTestClient(options: ClientOptions(commandMonitoring: true)) { client in
-            return try captureCommandEvents(from: client, eventTypes: eventTypes, commandNames: commandNames) {
+            try captureCommandEvents(from: client, eventTypes: eventTypes, commandNames: commandNames) {
                 try f(client)
             }
         }

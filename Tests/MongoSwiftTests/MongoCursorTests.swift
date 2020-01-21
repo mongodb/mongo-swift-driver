@@ -1,8 +1,8 @@
+import Foundation
 import MongoSwift
 import Nimble
 import NIO
 import TestsCommon
-import Foundation
 
 private let doc1: Document = ["_id": 1, "x": 1]
 private let doc2: Document = ["_id": 2, "x": 2]
@@ -67,26 +67,25 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
         let collOptions = CreateCollectionOptions(capped: true, max: 3, size: 1000)
         try self.withTestNamespace(collectionOptions: collOptions) { _, _, coll in
             let cursorOpts = FindOptions(batchSize: 1, cursorType: .tailableAwait, maxAwaitTimeMS: 100)
-            
             _ = try coll.insertMany([Document()]).wait()
-            
+
             let cursor = try coll.find(options: cursorOpts).wait()
             let doc = try cursor.next().wait()
             expect(doc).toNot(beNil())
-            
+
             let future = cursor.next()
             _ = try coll.insertMany([Document()]).wait()
             expect(try future.wait()).toNot(beNil())
 
             expect(try cursor.tryNext().wait()).to(beNil())
-            
+
             // start polling and interrupt with close
-            let _ = cursor.next()
-            
+            _ = cursor.next()
+
             try cursor.close().wait()
         }
     }
-    
+
     func testTailableAsyncCursor() throws {
         let collOptions = CreateCollectionOptions(capped: true, max: 3, size: 1000)
         try self.withTestNamespace(collectionOptions: collOptions) { _, _, coll in
@@ -148,7 +147,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
             var cursor = try coll.find().wait()
             expect(try cursor.next().wait()).to(beNil())
             expect(cursor.isAlive).to(beFalse())
-            
+
             // insert a doc so something matches initial query
             _ = try coll.insertOne(doc1).wait()
             cursor = try coll.find().wait()
@@ -159,7 +158,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
 
             expect(try cursor.next().wait()).to(beNil())
             expect(cursor.isAlive).to(beFalse())
-            
+
             expect(try cursor.next().wait()).to(throwError(errorType: LogicError.self))
         }
     }

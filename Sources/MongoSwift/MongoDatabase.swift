@@ -238,7 +238,7 @@ public struct MongoDatabase {
     ) throws -> EventLoopFuture<MongoCursor<CollectionSpecification>> {
         let operation = ListCollectionsOperation(database: self, nameOnly: false, filter: filter, options: options)
         return self._client.operationExecutor.execute(
-          operation, client: self._client, session: session
+            operation, client: self._client, session: session
         ).flatMapThrowing { result in
             guard case let .specs(result) = result else {
                 throw InternalError(message: "invalid result")

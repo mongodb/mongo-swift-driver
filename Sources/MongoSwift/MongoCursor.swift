@@ -1,12 +1,13 @@
 import CLibMongoC
-import NIO
 import Foundation
+import NIO
+import NIOConcurrencyHelpers
 
 internal let ClosedCursorError = LogicError(message: "Cannot advance a completed or failed cursor.")
 
 // sourcery: skipSyncExport
 /// A MongoDB cursor.
-public class MongoCursor<T: Codable> {
+public class MongoCursor<T: Codable>: Cursor {
     /// Enum for tracking the state of a cursor.
     internal enum State {
         /// Indicates that the cursor is still open. Stores a pointer to the `mongoc_cursor_t`, along with the source
@@ -15,8 +16,10 @@ public class MongoCursor<T: Codable> {
         case closed
     }
 
-    private var queue: DispatchQueue
-    
+    /// Lock used to synchronize usage of the internal state.
+    /// This lock should only be acquired in the bodies of public API methods.
+    private var lock: Lock
+
     /// The state of this cursor.
     internal private(set) var state: State
 
@@ -84,8 +87,8 @@ public class MongoCursor<T: Codable> {
         self.cursorType = cursorType ?? .nonTailable
         self.decoder = decoder
         self.cached = .none
-        self.queue = DispatchQueue(label: "cursor.\(self.id)")
-        
+        self.lock = Lock()
+
         // If there was an error constructing the cursor, throw it.
         if let error = self.getMongocError() {
             self.blockingClose()
@@ -98,6 +101,7 @@ public class MongoCursor<T: Codable> {
 
     /// Close this cursor
     private func blockingClose() {
+        self.cached = .none
         guard case let .open(cursor, _, _) = self.state else {
             return
         }
@@ -105,12 +109,12 @@ public class MongoCursor<T: Codable> {
         self.state = .closed
     }
 
-    /// Closes the cursor if it hasn't been closed already.
+    /// Asserts that the cursor was closed.
     deinit {
-        self.blockingClose()
+        assert(!self.isAlive, "cursor wasn't closed before it went out of scope")
     }
 
-    /// Retrieves the next document from the underlying `mongoc_cursor_t`, if one exists.
+    /// Retrieves the next document from the cache or the underlying `mongoc_cursor_t`, if it exists.
     /// Will close the cursor if the end of the cursor is reached or if an error occurs.
     internal func getNextDocument() throws -> T? {
         if case let .cached(doc) = self.cached {
@@ -140,7 +144,6 @@ public class MongoCursor<T: Codable> {
 
             // if we've reached the end of the cursor, close it.
             if !self.cursorType.isTailable || !mongoc_cursor_more(cursor) {
-                print("cursor doesn't have more, closing")
                 self.blockingClose()
             }
 
@@ -212,14 +215,16 @@ public class MongoCursor<T: Codable> {
      */
     public func forEach(f: @escaping (T) throws -> Void) -> EventLoopFuture<Void> {
         return self.client.operationExecutor.execute {
-            while let result = try self.getNextDocument() {
-                try f(result)
+            try self.lock.withLock {
+                while let result = try self.getNextDocument() {
+                    try f(result)
+                }
             }
         }
     }
-    
+
     /**
-     * Consolidate the results of the cursor into an array of type `T`.
+     * Consolidate the currently available results of the cursor into an array of type `T`.
      *
      * If this cursor is not tailable, this method will exhaust it.
      *
@@ -237,28 +242,30 @@ public class MongoCursor<T: Codable> {
      */
     public func all() -> EventLoopFuture<[T]> {
         return self.client.operationExecutor.execute {
-            var results: [T] = []
-            while let result = try self.getNextDocument() {
-                results.append(result)
+            try self.lock.withLock {
+                var results: [T] = []
+                while let result = try self.getNextDocument() {
+                    results.append(result)
+                }
+                return results
             }
-            return results
         }
     }
 
     /**
-     * Attempt to get the next `T` from the cursor.
+     * Attempt to get the next `T` from the cursor, returning nil if there are no results.
      *
      * If this cursor is tailable and `isAlive` is true, this may be called multiple times to attempt to retrieve more
      * elements.
      *
      * If this cursor is a tailable await cursor, the cursor will wait server side for a `maxAwaitTimeMS` before
-     * returning an empty batch. This option can be configured via whatever method generated this cursor (e.g. `watch`). 
+     * returning an empty batch. This option can be configured via whatever method generated this cursor (e.g. `watch`).
      *
      * - Returns:
      *    An `EventLoopFuture<T?>` containing the next `T` in this cursor, an error if one ocurred, or `nil` if
      *    there was no data.
      *
-     *    If the future evaluates to an error, it is likely one of the following: 
+     *    If the future evaluates to an error, it is likely one of the following:
      *      - `CommandError` if an error occurs while fetching more results from the server.
      *      - `LogicError` if this function is called after the cursor has died.
      *      - `LogicError` if this function is called and the session associated with this cursor is inactive.
@@ -266,20 +273,22 @@ public class MongoCursor<T: Codable> {
      */
     public func tryNext() -> EventLoopFuture<T?> {
         return self.client.operationExecutor.execute {
-            return try self.getNextDocument()
+            try self.lock.withLock {
+                try self.getNextDocument()
+            }
         }
     }
-    
+
     /**
      * Get the next `T` from the cursor, retrying if an empty batch is received and this cursor is tailable.
      *
-     * - Returns: 
+     * - Returns:
      *   An `EventLoopFuture<T?>` evaluating to the next `T` in this cursor, `nil` if the cursor is exhausted,
      *   or an error if one ocurred. If the underlying cursor is tailable, the future will not resolve
      *   until data is returned (potentially after multiple requests to the server), the cursor is closed, or an error
      *   occurs.
-     *   
-     *   If the future evaluates to an error, it is likely one of the following: 
+     *
+     *   If the future evaluates to an error, it is likely one of the following:
      *     - `CommandError` if an error occurs while fetching more results from the server.
      *     - `LogicError` if this function is called after the cursor has died.
      *     - `LogicError` if this function is called and the session associated with this cursor is inactive.
@@ -287,43 +296,47 @@ public class MongoCursor<T: Codable> {
      */
     public func next() -> EventLoopFuture<T?> {
         return self.client.operationExecutor.execute {
-            guard self.isAlive else {
-                throw ClosedCursorError
-            }
+            // Whether an attempt has been made thus far.
+            // If the cursor is closed before the first attempt was made, then the future returned should evaluate
+            // to an error. Otherwise, it should just evaluate to nil, since the cursor closed after `next` was called.
+            var hasTried = false
 
             while true {
-                let result = try self.queue.sync { () -> NextResult in
-                    guard self.isAlive else {
-                        return .closed
-                    }
-                    return try .result(self.getNextDocument() )
+                if hasTried {
+                    // sleep for 1ms to allow other threads to grab the lock.
+                    Thread.sleep(forTimeInterval: 0.001)
                 }
 
-                switch result {
-                case .closed:
+                self.lock.lock()
+                defer { self.lock.unlock() }
+
+                if hasTried && !self.isAlive {
                     return nil
-                case let .result(doc):
-                    if let doc = doc {
-                        return doc
-                    }
                 }
+
+                if let doc = try self.getNextDocument() {
+                    return doc
+                }
+
+                hasTried = true
             }
         }
     }
 
-    /// Enum used to disambiguate nil returns from `getNextDocument`.
-    private enum NextResult {
-        case result(T?)
-        case closed
-    }
-    
-    /// Close this cursor.
-    /// This method MUST be called before this cursor goes out of scope to prevent leaking resources.
+    /**
+     * Close this cursor.
+     *
+     * This method MUST be called before this cursor goes out of scope to prevent leaking resources.
+     * This method may be called even if there are unresolved futures created from other `MongoCursor` methods.
+     *
+     * - Returns:
+     *   An `EventLoopFuture` that evaluates when the cursor has completed closing. This future should not fail.
+     */
     public func close() -> EventLoopFuture<Void> {
         return self.client.operationExecutor.execute {
-            // self.queue.sync {
+            self.lock.withLock {
                 self.blockingClose()
-            // }
+            }
         }
     }
 }
