@@ -1,5 +1,5 @@
 import Foundation
-import MongoSwift
+@testable import MongoSwift
 import Nimble
 import NIO
 import TestsCommon

@@ -196,34 +196,6 @@ public class MongoCursor<T: Codable>: Cursor {
     }
 
     /**
-     * Call the provided function with each element in this cursor's results.
-     *
-     * If this cursor is not tailable, this method will exhaust it.
-     *
-     * If this cursor is tailable, the provided method will be called with each of the the currently available
-     * results. `forEach` may be called again once the returned future resolves to iterate over new data.
-     *
-     * - Returns:
-     *    An `EventLoopFuture<Void>` that evaluates once all the currently available results have been processed or
-     *    an error ocurred.
-     *
-     *    If the future evaluates to an error, that error is likely one of the following:
-     *      - `CommandError` if an error occurs while fetching more results from the server.
-     *      - `LogicError` if this function is called after the cursor has died.
-     *      - `LogicError` if this function is called and the session associated with this cursor is inactive.
-     *      - `DecodingError` if an error occurs decoding the server's responses.
-     */
-    public func forEach(f: @escaping (T) throws -> Void) -> EventLoopFuture<Void> {
-        return self.client.operationExecutor.execute {
-            try self.lock.withLock {
-                while let result = try self.getNextDocument() {
-                    try f(result)
-                }
-            }
-        }
-    }
-
-    /**
      * Consolidate the currently available results of the cursor into an array of type `T`.
      *
      * If this cursor is not tailable, this method will exhaust it.
@@ -240,7 +212,7 @@ public class MongoCursor<T: Codable>: Cursor {
      *      - `LogicError` if this function is called and the session associated with this cursor is inactive.
      *      - `DecodingError` if an error occurs decoding the server's responses.
      */
-    public func all() -> EventLoopFuture<[T]> {
+    internal func all() -> EventLoopFuture<[T]> {
         return self.client.operationExecutor.execute {
             try self.lock.withLock {
                 var results: [T] = []
@@ -280,7 +252,10 @@ public class MongoCursor<T: Codable>: Cursor {
     }
 
     /**
-     * Get the next `T` from the cursor, retrying if an empty batch is received and this cursor is tailable.
+     * Get the next `T` from the cursor.
+     *
+     * If this cursor is tailable, this method will continue retrying until a non-empty batch is returned or the cursor
+     * is closed.
      *
      * - Returns:
      *   An `EventLoopFuture<T?>` evaluating to the next `T` in this cursor, `nil` if the cursor is exhausted,
