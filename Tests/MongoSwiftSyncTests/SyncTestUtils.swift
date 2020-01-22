@@ -39,7 +39,15 @@ extension MongoSwiftTestCase {
         }
 
         let database = client.db(ns.db)
-        let collection = try database.createCollection(collName, options: options)
+        let collection: MongoCollection<Document>
+        do {
+            collection = try database.createCollection(collName, options: options)
+        } catch let error as CommandError where error.code == 48 {
+            _ = try database.collection(collName).drop()
+            collection = try database.createCollection(collName, options: options)
+        } catch {
+            throw error
+        }
         defer { try? collection.drop() }
         return try f(database, collection)
     }

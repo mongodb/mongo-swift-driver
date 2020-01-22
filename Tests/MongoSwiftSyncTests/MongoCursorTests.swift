@@ -1,7 +1,6 @@
 import Foundation
 import MongoSwift
 import Nimble
-import NIOConcurrencyHelpers
 import TestsCommon
 
 private let doc1: Document = ["_id": 1, "x": 1]
@@ -161,13 +160,11 @@ final class MongoCursorTests: MongoSwiftTestCase {
 
             var allDocs: [Document]?
             var allError: Error?
-            var done = NIOAtomic.makeAtomic(value: false)
             queue.async {
                 allDocsLock.wait()
                 defer { allDocsLock.signal() }
                 do {
                     allDocs = try cursor.all() // should block after 3 docs are found
-                    _ = done.exchange(with: true)
                 } catch {
                     allError = error
                 }
@@ -181,7 +178,6 @@ final class MongoCursorTests: MongoSwiftTestCase {
             expect(allDocsLock.wait(timeout: DispatchTime.now() + 0.25)).to(equal(.success))
             defer { allDocsLock.signal() }
 
-            expect(done.load()).to(beTrue())
             expect(allError).to(beNil())
             expect(allDocs).toNot(beNil())
             expect(allDocs).to(equal(docs))

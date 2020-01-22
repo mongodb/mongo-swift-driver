@@ -67,7 +67,7 @@ extension MongoSwiftTestCase {
     internal func withTestNamespace<T>(
         client: MongoClient,
         ns: MongoNamespace? = nil,
-        collectionOptions: CreateCollectionOptions? = nil,
+        options: CreateCollectionOptions? = nil,
         _ f: (MongoDatabase, MongoCollection<Document>) throws -> T
     ) throws -> T {
         let ns = ns ?? self.getNamespace()
@@ -79,10 +79,10 @@ extension MongoSwiftTestCase {
         let database = client.db(ns.db)
         let collection: MongoCollection<Document>
         do {
-            collection = try database.createCollection(collName, options: collectionOptions).wait()
+            collection = try database.createCollection(collName, options: options).wait()
         } catch let error as CommandError where error.code == 48 {
             _ = try database.collection(collName).drop().wait()
-            collection = try database.createCollection(collName, options: collectionOptions).wait()
+            collection = try database.createCollection(collName, options: options).wait()
         } catch {
             throw error
         }
@@ -100,7 +100,7 @@ extension MongoSwiftTestCase {
         _ f: (MongoClient, MongoDatabase, MongoCollection<Document>) throws -> T
     ) throws -> T {
         return try self.withTestClient { client in
-            try self.withTestNamespace(client: client, ns: ns, collectionOptions: collectionOptions) { db, coll in
+            try self.withTestNamespace(client: client, ns: ns, options: collectionOptions) { db, coll in
                 try f(client, db, coll)
             }
         }
@@ -132,7 +132,6 @@ extension MongoSwiftTestCase {
                     return
                 }
             }
-            print("getMore")
             events.append(event)
         }
         defer { center.removeObserver(observer) }
