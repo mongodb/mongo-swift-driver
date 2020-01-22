@@ -4,6 +4,24 @@ import Foundation
 import Nimble
 import TestsCommon
 
+/// Describes an operation run on a collection that takes in a session.
+struct CollectionSessionOp {
+    let name: String
+    let body: (MongoSwiftSync.MongoCollection<Document>, MongoSwiftSync.ClientSession?) throws -> Void
+}
+
+/// Describes an operation run on a database that takes in a session.
+struct DatabaseSessionOp {
+    let name: String
+    let body: (MongoSwiftSync.MongoDatabase, MongoSwiftSync.ClientSession?) throws -> Void
+}
+
+/// Describes an operation run on a client that takes in a session.
+struct ClientSessionOp {
+    let name: String
+    let body: (MongoSwiftSync.MongoClient, MongoSwiftSync.ClientSession?) throws -> Void
+}
+
 extension MongoSwiftSync.ClientSession {
     var active: Bool {
         return self.asyncSession.active
@@ -27,74 +45,69 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         super.tearDown()
     }
 
-    typealias CollectionSessionOp = (
-        name: String,
-        body: (MongoSwiftSync.MongoCollection<Document>, MongoSwiftSync.ClientSession?) throws -> Void
-    )
-    typealias DatabaseSessionOp = (
-        name: String,
-        body: (MongoSwiftSync.MongoDatabase, MongoSwiftSync.ClientSession?) throws -> Void
-    )
-    typealias ClientSessionOp = (
-        name: String,
-        body: (MongoSwiftSync.MongoClient, MongoSwiftSync.ClientSession?) throws -> Void
-    )
     typealias SessionOp = (name: String, body: (MongoSwiftSync.ClientSession?) throws -> Void)
 
     // list of read only operations on MongoCollection that take in a session
-    let collectionSessionReadOps: [CollectionSessionOp] = [
+    let collectionSessionReadOps = [
         // TODO: SWIFT-672: enable
-        // (name: "find", body: { _ = try $0.find([:], session: $1).next()?.get() }),
-        // (name: "findOne", body: { _ = try $0.findOne([:], session: $1) }),
-        // (name: "aggregate", body: { _ = try $0.aggregate([], session: $1).next()?.get() }),
-        (name: "distinct", body: { _ = try $0.distinct(fieldName: "x", session: $1) }),
-        (name: "countDocuments", body: { _ = try $0.countDocuments(session: $1) }),
-        (name: "estimatedDocumentCount", body: { _ = try $0.estimatedDocumentCount(session: $1) })
+        // CollectionSessionOp(name: "find") { _ = try $0.find([:], session: $1).next()?.get() },
+        // CollectionSessionOp(name: "findOne") { _ = try $0.findOne([:], session: $1) },
+        // CollectionSessionOp(name: "aggregate") { _ = try $0.aggregate([], session: $1).next()?.get() },
+        CollectionSessionOp(name: "distinct") { _ = try $0.distinct(fieldName: "x", session: $1) },
+        CollectionSessionOp(name: "countDocuments") { _ = try $0.countDocuments(session: $1) },
+        CollectionSessionOp(name: "estimatedDocumentCount") { _ = try $0.estimatedDocumentCount(session: $1) }
     ]
 
     // list of write operations on MongoCollection that take in a session
-    let collectionSessionWriteOps: [CollectionSessionOp] = [
-        (name: "bulkWrite", body: { _ = try $0.bulkWrite([.insertOne([:])], session: $1) }),
-        (name: "insertOne", body: { _ = try $0.insertOne([:], session: $1) }),
-        (name: "insertMany", body: { _ = try $0.insertMany([[:]], session: $1) }),
-        (name: "replaceOne", body: { _ = try $0.replaceOne(filter: [:], replacement: [:], session: $1) }),
-        (name: "updateOne", body: { _ = try $0.updateOne(filter: [:], update: [:], session: $1) }),
-        (name: "updateMany", body: { _ = try $0.updateMany(filter: [:], update: [:], session: $1) }),
-        (name: "deleteOne", body: { _ = try $0.deleteOne([:], session: $1) }),
-        (name: "deleteMany", body: { _ = try $0.deleteMany([:], session: $1) }),
-        (name: "createIndex", body: { _ = try $0.createIndex([:], session: $1) }),
-        (name: "createIndex1", body: { _ = try $0.createIndex(IndexModel(keys: ["x": 1]), session: $1) }),
-        (name: "createIndexes", body: { _ = try $0.createIndexes([IndexModel(keys: ["x": 1])], session: $1) }),
-        (name: "dropIndex", body: { _ = try $0.dropIndex(["x": 1], session: $1) }),
-        (name: "dropIndex1", body: { _ = try $0.dropIndex(IndexModel(keys: ["x": 3]), session: $1) }),
-        (name: "dropIndex2", body: { _ = try $0.dropIndex("x_7", session: $1) }),
-        (name: "dropIndexes", body: { _ = try $0.dropIndexes(session: $1) }),
+    let collectionSessionWriteOps = [
+        CollectionSessionOp(name: "bulkWrite") { _ = try $0.bulkWrite([.insertOne([:])], session: $1) },
+        CollectionSessionOp(name: "insertOne") { _ = try $0.insertOne([:], session: $1) },
+        CollectionSessionOp(name: "insertMany") { _ = try $0.insertMany([[:]], session: $1) },
+        CollectionSessionOp(name: "replaceOne") { _ = try $0.replaceOne(filter: [:], replacement: [:], session: $1) },
+        CollectionSessionOp(name: "updateOne") { _ = try $0.updateOne(filter: [:], update: [:], session: $1) },
+        CollectionSessionOp(name: "updateMany") { _ = try $0.updateMany(filter: [:], update: [:], session: $1) },
+        CollectionSessionOp(name: "deleteOne") { _ = try $0.deleteOne([:], session: $1) },
+        CollectionSessionOp(name: "deleteMany") { _ = try $0.deleteMany([:], session: $1) },
+        CollectionSessionOp(name: "createIndex") { _ = try $0.createIndex([:], session: $1) },
+        CollectionSessionOp(name: "createIndex1") { _ = try $0.createIndex(IndexModel(keys: ["x": 1]), session: $1) },
+        CollectionSessionOp(name: "createIndexes") {
+            _ = try $0.createIndexes([IndexModel(keys: ["x": 1])], session: $1)
+        },
+        CollectionSessionOp(name: "dropIndex") { _ = try $0.dropIndex(["x": 1], session: $1) },
+        CollectionSessionOp(name: "dropIndex1") { _ = try $0.dropIndex(IndexModel(keys: ["x": 3]), session: $1) },
+        CollectionSessionOp(name: "dropIndex2") { _ = try $0.dropIndex("x_7", session: $1) },
+        CollectionSessionOp(name: "dropIndexes") { _ = try $0.dropIndexes(session: $1) },
         // TODO: SWIFT-672: enable
-        // (name: "listIndexes", body: { _ = try $0.listIndexes(session: $1).next() }),
-        (name: "findOneAndDelete", body: { _ = try $0.findOneAndDelete([:], session: $1) }),
-        (name: "findOneAndReplace", body: { _ = try $0.findOneAndReplace(filter: [:], replacement: [:], session: $1) }),
-        (name: "findOneAndUpdate", body: { _ = try $0.findOneAndUpdate(filter: [:], update: [:], session: $1) }),
-        (name: "drop", body: { _ = try $0.drop(session: $1) })
+        // CollectionSessionOp(name: "listIndexes") { _ = try $0.listIndexes(session: $1).next() },
+        CollectionSessionOp(name: "findOneAndDelete") {
+            _ = try $0.findOneAndDelete([:], session: $1)
+        },
+        CollectionSessionOp(name: "findOneAndReplace") {
+            _ = try $0.findOneAndReplace(filter: [:], replacement: [:], session: $1)
+        },
+        CollectionSessionOp(name: "findOneAndUpdate") {
+            _ = try $0.findOneAndUpdate(filter: [:], update: [:], session: $1)
+        },
+        CollectionSessionOp(name: "drop") { _ = try $0.drop(session: $1) }
     ]
 
     // list of operations on MongoDatabase that take in a session
-    let databaseSessionOps: [DatabaseSessionOp] = [
+    let databaseSessionOps = [
         // TODO: SWIFT-672: test listCollections + session here
-        (name: "runCommand", { try $0.runCommand(["isMaster": 0], session: $1) }),
-        (name: "createCollection", body: { _ = try $0.createCollection("asdf", session: $1) }),
-        (name: "createCollection1", body: { _ = try $0.createCollection("asf", withType: Document.self, session: $1) }),
-        (name: "drop", body: { _ = try $0.drop(session: $1) })
+        DatabaseSessionOp(name: "runCommand") { try $0.runCommand(["isMaster": 0], session: $1) },
+        DatabaseSessionOp(name: "createCollection") { _ = try $0.createCollection("asdf", session: $1) },
+        DatabaseSessionOp(name: "createCollection1") {
+            _ = try $0.createCollection("asf", withType: Document.self, session: $1)
+        },
+        DatabaseSessionOp(name: "drop") { _ = try $0.drop(session: $1) }
     ]
 
     // list of operatoins on MongoClient that take in a session
-    let clientSessionOps: [ClientSessionOp] = [
-        (name: "listDatabases", { _ = try $0.listDatabases(session: $1) }),
-        (name: "listMongoDatabases", { _ = try $0.listMongoDatabases(session: $1) }),
-        (name: "listDatabaseNames", { _ = try $0.listDatabaseNames(session: $1) })
+    let clientSessionOps = [
+        ClientSessionOp(name: "listDatabases") { _ = try $0.listDatabases(session: $1) },
+        ClientSessionOp(name: "listMongoDatabases") { _ = try $0.listMongoDatabases(session: $1) },
+        ClientSessionOp(name: "listDatabaseNames") { _ = try $0.listDatabaseNames(session: $1) }
     ]
-
-// This function causes the compiler to crash on older versions of swift due to a bug in the compiler.
-#if swift(>=5.1) && os(macOS)
 
     /// iterate over all the different session op types, passing in the provided client/db/collection as needed.
     func forEachSessionOp(
@@ -113,7 +126,6 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
             try body((name: op.name, body: { try op.body(client, $0) }))
         }
     }
-#endif
 
     /// Sessions spec test 1: Test that sessions are properly returned to the pool when ended.
     func testSessionCleanup() throws {
@@ -207,8 +219,6 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
     /// Sessions spec test 3: test that every function that takes a session parameter passes the sends implicit and
     /// explicit lsids to server.
     func testSessionArguments() throws {
-// This test causes the compiler to crash on older versions of swift due to a bug in the compiler.
-#if swift(>=5.1) && os(macOS)
         let client1 = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
         let database = client1.db(type(of: self).testDatabase)
         let collection = try database.createCollection(self.getCollectionName())
@@ -217,16 +227,11 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         try self.forEachSessionOp(client: client1, database: database, collection: collection) { op in
             try runArgTest(session: session, op: op)
         }
-
-#endif
     }
 
     /// Sessions spec test 4: test that a session can only be used with db's and collections that were derived from the
     /// same client.
     func testSessionClientValidation() throws {
-// This test causes the compiler to crash on older versions of swift due to a bug in the compiler.
-#if swift(>=5.1) && os(macOS)
-
         let client1 = try MongoClient.makeTestClient()
         let client2 = try MongoClient.makeTestClient()
 
@@ -238,15 +243,10 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
             expect(try op.body(session))
                 .to(throwError(errorType: InvalidArgumentError.self), description: op.name)
         }
-
-#endif
     }
 
     /// Sessions spec test 5: Test that inactive sessions cannot be used.
     func testInactiveSession() throws {
-// This test causes the compiler to crash on older versions of swift due to a bug in the compiler.
-#if swift(>=5.1) && os(macOS)
-
         let client = try MongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
         let collection = try db.createCollection(self.getCollectionName())
@@ -270,8 +270,6 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         // expect(cursor.next()).toNot(beNil())
         // session2.end()
         // expect(try cursor.next()?.get()).to(throwError(ClientSession.SessionInactiveError))
-
-#endif
     }
 
     // TODO: SWIFT-672: enable
@@ -366,9 +364,6 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
 
     /// Test that causal consistency guarantees are met on deployments that support cluster time.
     func testCausalConsistency() throws {
-// This test causes the compiler to crash on older versions of swift due to a bug in the compiler.
-#if swift(>=5.1) && os(macOS)
-
         guard MongoSwiftTestCase.topologyType != .single else {
             print(unsupportedTopologyMessage(testName: self.name))
             return
@@ -523,7 +518,6 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
             _ = try collection.countDocuments(session: session)
             expect(seenCommand).to(beTrue())
         }
-#endif
     }
 
     /// Test causal consistent behavior on a topology that doesn't support cluster time.
