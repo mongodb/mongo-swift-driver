@@ -33,9 +33,12 @@ public class MongoCursor<T: Codable>: Cursor {
     internal let decoder: BSONDecoder
 
     /**
-     * Indicates whether this cursor has the potential to return more data. This property is mainly useful for
-     * tailable cursors, where the cursor may be empty but contain more results later on. For non-tailable cursors,
-     * the cursor will always be dead as soon as `next()` returns a future that evaluates to `nil` or fails.
+     * Indicates whether this cursor has the potential to return more data.
+     *
+     * This property is mainly useful if this cursor is tailable, since in that case `tryNext` may return more results
+     * even after returning `nil`.
+     *
+     * For non-tailable cursors, the cursor will always be dead as soon as `tryNext` returns `nil` or an error.
      */
     public var isAlive: Bool {
         if case .open = self.state {
@@ -225,13 +228,13 @@ public class MongoCursor<T: Codable>: Cursor {
     }
 
     /**
-     * Attempt to get the next `T` from the cursor, returning nil if there are no results.
+     * Attempt to get the next `T` from the cursor, returning `nil` if there are no results.
      *
-     * If this cursor is tailable and `isAlive` is true, this may be called multiple times to attempt to retrieve more
-     * elements.
+     * If this cursor is tailable, this method may be called repeatedly while `isAlive` is true to retrieve new data.
      *
-     * If this cursor is a tailable await cursor, the cursor will wait server side for a `maxAwaitTimeMS` before
-     * returning an empty batch. This option can be configured via whatever method generated this cursor (e.g. `watch`).
+     * If this cursor is a tailable await cursor, it will wait server side for a maximum of `maxAwaitTimeMS`
+     * before returning an empty batch. This option can be configured via options passed to the method that created this
+     * cursor (e.g. the `maxAwaitTimeMS` option on the `FindOptions` passed to `find`).
      *
      * - Returns:
      *    An `EventLoopFuture<T?>` containing the next `T` in this cursor, an error if one ocurred, or `nil` if
@@ -254,8 +257,8 @@ public class MongoCursor<T: Codable>: Cursor {
     /**
      * Get the next `T` from the cursor.
      *
-     * If this cursor is tailable, this method will continue retrying until a non-empty batch is returned or the cursor
-     * is closed.
+     * If this cursor is tailable, this method will continue polling until a non-empty batch is returned from the server
+     * or the cursor is closed.
      *
      * - Returns:
      *   An `EventLoopFuture<T?>` evaluating to the next `T` in this cursor, `nil` if the cursor is exhausted,

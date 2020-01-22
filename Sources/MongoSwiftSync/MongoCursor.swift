@@ -1,14 +1,23 @@
 import MongoSwift
 
-/// A MongoDB cursor.
-public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
+/**
+ * A MongoDB cursor.
+ *
+ * Note that the `next` method blocks until a result is received or the cursor is exhausted, so methods inherited from
+ * `Sequence` that iterate over the entire sequence may block indefinitely when used on tailable cursors (e.g. `map`).
+ * It is safe to `close` a `MongoCursor` from another thread while it is blocked waiting on results, however.
+ */
+public class MongoCursor<T: Codable>: Sequence, IteratorProtocol, Cursor {
     private let asyncCursor: MongoSwift.MongoCursor<T>
     private let client: MongoClient
 
     /**
-     * Indicates whether this cursor has the potential to return more data. This property is mainly useful for
-     * tailable cursors, where the cursor may be empty but contain more results later on. For non-tailable cursors,
-     * the cursor will always be dead as soon as `next()` returns `nil` or a failed `Result`.
+     * Indicates whether this cursor has the potential to return more data.
+     *
+     * This property is mainly useful if this cursor is tailable, since in that case `tryNext` may return more results
+     * even after returning `nil`.
+     *
+     * For non-tailable cursors, the cursor will always be dead as soon as `tryNext` returns `nil` or an error.
      */
     public var isAlive: Bool {
         return self.asyncCursor.isAlive
@@ -19,37 +28,57 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
         return self.asyncCursor.id
     }
 
-    /**
-     * Initializes a new `MongoCursor` instance. Not meant to be instantiated directly by a user. When `forceIO` is
-     * true, this initializer will force a connection to the server if one is not already established.
-     *
-     * - Throws:
-     *   - `InvalidArgumentError` if the options passed to the command that generated this cursor formed an
-     *     invalid combination.
-     */
+    /// Initializes a new `MongoCursor` instance from an async cursor. Not meant to be instantiated directly by a user.
     internal init(wrapping cursor: MongoSwift.MongoCursor<T>, client: MongoClient) {
         self.asyncCursor = cursor
         self.client = client
     }
 
-    /// Closes the cursor if it hasn't been closed already.
-    deinit {
-        try? self.asyncCursor.close().wait()
-    }
-
     /**
-     * Returns a `Result` containing the next `T` in this cursor, or an error if one occurred.
-     * Returns `nil` if the cursor is exhausted. For tailable cursors,
-     * users should also check `isAlive` after this method returns `nil`,
-     * to determine if the cursor has the potential to return any more data in the future.
-     * - Returns: `nil` if the end of the cursor has been reached, or a `Result`. On success, the
-     *   `Result` contains the next `T`, and on failure contains:
+     * Returns a `Result` containing the next `T` in this cursor, an error if one occurred, or `nil` if the cursor is
+     * exhausted.
+     *
+     * If this cursor is tailable, this method will continue polling until a non-empty batch is returned from the server
+     * or the cursor is closed.
+     *
+     * - Returns:
+     *   A `Result<T, Error>?` containing the next `T` in this cursor on success, an error if one occurred, or `nil`
+     *   if the cursor was exhausted.
+     *
+     *   On failure, there error returned is likely one of the following:
      *   - `CommandError` if an error occurs while fetching more results from the server.
      *   - `LogicError` if this function is called after the cursor has died.
      *   - `LogicError` if this function is called and the session associated with this cursor is inactive.
      *   - `DecodingError` if an error occurs decoding the server's response.
      */
     public func next() -> Result<T, Error>? {
+        do {
+            return try self.asyncCursor.next().wait().map { .success($0) }
+        } catch {
+            return .failure(error)
+        }
+    }
+
+    /**
+     * Attempt to get the next `T` from the cursor, returning `nil` if there are no results.
+     *
+     * If this cursor is tailable, this method may be called repeatedly while `isAlive` is true to retrieve new data.
+     *
+     * If this cursor is a tailable await cursor, it will wait server side for a maximum of `maxAwaitTimeMS`
+     * before returning an empty batch. This option can be configured via options passed to the method that created this
+     * cursor (e.g. the `maxAwaitTimeMS` option on the `FindOptions` passed to `find`).
+     *
+     * - Returns:
+     *   A `Result<T, Error>?` containing the next `T` in this cursor on success, an error if one occurred, or `nil`
+     *   if there were no results.
+     *
+     *   On failure, there error returned is likely one of the following:
+     *     - `CommandError` if an error occurs while fetching more results from the server.
+     *     - `LogicError` if this function is called after the cursor has died.
+     *     - `LogicError` if this function is called and the session associated with this cursor is inactive.
+     *     - `DecodingError` if an error occurs decoding the server's response.
+     */
+    public func tryNext() -> Result<T, Error>? {
         do {
             return try self.asyncCursor.tryNext().wait().map { .success($0) }
         } catch {
@@ -58,7 +87,10 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
     }
 
     /**
-     * Returns an array of type `T` from this cursor.
+     * Returns an array of type `T` from the results of this cursor.
+     *
+     * If this cursor is tailable, this method will block until the cursor is closed or exhausted.
+     *
      * - Returns: an array of type `T`
      * - Throws:
      *   - `CommandError` if an error occurs while fetching more results from the server.
@@ -75,5 +107,20 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol {
                 throw error
             }
         }
+    }
+
+    /**
+     * Close this cursor.
+     *
+     * This method may be called from another thread safely even if this cursor is blocked retrieving results.
+     */
+    public func close() {
+        // The asunc cursor `close` method shouldn't ever fail, so we can safely ignore the error.
+        try? self.asyncCursor.close().wait()
+    }
+
+    /// Closes the cursor if it hasn't been closed already.
+    deinit {
+        self.close()
     }
 }

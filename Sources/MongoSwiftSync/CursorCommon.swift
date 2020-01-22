@@ -1,5 +1,3 @@
-import NIO
-
 /// A protocol describing the common behavior between cursor-like objects in the driver.
 internal protocol Cursor {
     /// The decoded type iterated over by the cursor.
@@ -21,7 +19,7 @@ internal protocol Cursor {
      * If this cursor is tailable, this method will continue retrying until a non-empty batch is returned or the cursor
      * is closed
      */
-    func next() -> EventLoopFuture<T?>
+    func next() -> Result<T, Error>?
 
     /**
      * Attempt to get the next `T` from the cursor, returning `nil` if there are no results.
@@ -33,26 +31,12 @@ internal protocol Cursor {
      * before returning an empty batch. This option can be configured via options passed to the method that created this
      * cursor (e.g. the `maxAwaitTimeMS` option on the `FindOptions` passed to `find`).
      */
-    func tryNext() -> EventLoopFuture<T?>
+    func tryNext() -> Result<T, Error>?
 
     /**
      * Close this cursor.
      *
-     * This method MUST be called before this cursor goes out of scope to prevent leaking resources.
-     * This method may be called even if there are unresolved futures created from other `Cursor` methods.
-     *
-     * This method should not fail.
+     * This method may be called from another thread safely even if this cursor is blocked waiting on results.
      */
-    func close() -> EventLoopFuture<Void>
-}
-
-extension EventLoopFuture {
-    /// Run the provided callback after this future succeeds, preserving the succeeded value.
-    internal func afterSuccess(f: @escaping (Value) -> EventLoopFuture<Void>) -> EventLoopFuture<Value> {
-        return self.flatMap { value in
-            f(value).and(value: value)
-        }.map { _, value in
-            value
-        }
-    }
+    func close()
 }

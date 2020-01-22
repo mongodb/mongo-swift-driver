@@ -1,6 +1,7 @@
 import Foundation
 import MongoSwift
 import Nimble
+import NIOConcurrencyHelpers
 import TestsCommon
 
 private let doc1: Document = ["_id": 1, "x": 1]
@@ -75,9 +76,9 @@ final class MongoCursorTests: MongoSwiftTestCase {
             // for each doc we insert, check that it arrives in the cursor next,
             // and that the cursor is still alive afterward
             let checkNextResult: (Document) throws -> Void = { doc in
-                let results = try cursor.all()
-                expect(results).to(haveCount(1))
-                expect(results[0]).to(equal(doc))
+                let result = cursor.tryNext()
+                expect(result).toNot(beNil())
+                expect(try result?.get()).to(equal(doc))
                 expect(cursor.isAlive).to(beTrue())
             }
             try checkNextResult(doc1)
@@ -89,7 +90,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
             try checkNextResult(doc3)
 
             // no more docs, but should still be alive
-            expect(try cursor.next()?.get()).to(beNil())
+            expect(try cursor.tryNext()?.get()).to(beNil())
             expect(cursor.isAlive).to(beTrue())
 
             // insert 3 docs so the cursor loses track of its position
@@ -123,14 +124,67 @@ final class MongoCursorTests: MongoSwiftTestCase {
             cursor = try coll.find()
 
             // next() returns a Result<Document, Error>?
-            if let next = cursor.next() {
-                switch next {
-                case let .success(doc):
-                    expect(doc).to(equal(doc1))
-                case let .failure(error):
-                    throw error
+            let result = cursor.next()
+            expect(result).toNot(beNil())
+            expect(try result?.get()).to(equal(doc1))
+
+            expect(cursor.next()).to(beNil())
+            expect(cursor.isAlive).to(beFalse())
+
+            expect(try cursor.next()?.get()).to(throwError(errorType: LogicError.self))
+        }
+    }
+
+    func testClose() throws {
+        try self.withTestNamespace { _, _, coll in
+            _ = try coll.insertMany([[:], [:], [:]])
+            let cursor = try coll.find()
+            expect(cursor.isAlive).to(beTrue())
+
+            expect(cursor.next()).toNot(beNil())
+            expect(cursor.isAlive).to(beTrue())
+
+            cursor.close()
+            expect(cursor.isAlive).to(beFalse())
+            expect(try cursor.next()?.get()).to(throwError(errorType: LogicError.self))
+        }
+
+        let options = CreateCollectionOptions(capped: true, max: 3, size: 1000)
+        try self.withTestNamespace(ns: self.getNamespace(suffix: "tail"), collectionOptions: options) { _, _, coll in
+            let docs: [Document] = [["_id": 1], ["_id": 2], ["_id": 3]]
+            _ = try coll.insertMany(docs)
+            let cursor = try coll.find(options: FindOptions(cursorType: .tailable))
+            expect(cursor.isAlive).to(beTrue())
+
+            let queue = DispatchQueue(label: "tailable close")
+            let allDocsLock = DispatchSemaphore(value: 1)
+
+            var allDocs: [Document]?
+            var allError: Error?
+            var done = NIOAtomic.makeAtomic(value: false)
+            queue.async {
+                allDocsLock.wait()
+                defer { allDocsLock.signal() }
+                do {
+                    allDocs = try cursor.all() // should block after 3 docs are found
+                    _ = done.exchange(with: true)
+                } catch {
+                    allError = error
                 }
             }
+
+            // should be blocked on the cursor trying for more results.
+            expect(allDocsLock.wait(timeout: DispatchTime.now() + 1)).to(equal(.timedOut))
+            cursor.close() // close cursor while it's blocking
+
+            // wait for allDocs to be updated
+            expect(allDocsLock.wait(timeout: DispatchTime.now() + 0.25)).to(equal(.success))
+            defer { allDocsLock.signal() }
+
+            expect(done.load()).to(beTrue())
+            expect(allError).to(beNil())
+            expect(allDocs).toNot(beNil())
+            expect(allDocs).to(equal(docs))
         }
     }
 }
