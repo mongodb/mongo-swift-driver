@@ -100,7 +100,7 @@ public class MongoCursor<T: Codable>: Cursor {
     }
 
     /// Close this cursor
-    private func blockingClose() {
+    internal func blockingClose() {
         self.cached = .none
         guard case let .open(cursor, _, _) = self.state else {
             return

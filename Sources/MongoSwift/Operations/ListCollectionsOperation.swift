@@ -132,6 +132,7 @@ internal struct ListCollectionsOperation: Operation {
                 decoder: self.database.decoder,
                 session: session
             )
+            defer { cursor.blockingClose() }
 
             var names = [String]()
             // call the cursor method for getting the next document directly rather than just iterating through the

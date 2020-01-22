@@ -379,7 +379,7 @@ extension MongoCollection {
      */
     public func listIndexNames(session _: ClientSession? = nil) throws -> EventLoopFuture<[String]> {
         return self.listIndexes().flatMap { cursor in
-            cursor.all()
+            cursor.all().afterSuccess { cursor.close() }
         }.flatMapThrowing { models in
             try models.map { model in
                 guard let name = model.options?.name else {
