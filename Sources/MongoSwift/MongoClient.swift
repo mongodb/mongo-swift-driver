@@ -292,7 +292,7 @@ public class MongoClient {
 
     /// Closes this `MongoClient`. Call this method exactly once when you are finished using the client. You must
     /// ensure that all operations using the client have completed before calling this. The returned future must be
-    /// fulfilled before the client goes out of scope.
+    /// fulfilled before the `EventLoopGroup` provided to this client's constructor is shut down.
     public func close() -> EventLoopFuture<Void> {
         return self.operationExecutor.execute {
             self.connectionPool.close()

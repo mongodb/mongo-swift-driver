@@ -65,14 +65,14 @@ internal class OperationExecutor {
             }
 
             // start the session if needed (which generates a new operation itself), and then execute the operation.
-            return session.startIfNeeded().flatMap { self.execute { try doOperation() } }
+            return session.startIfNeeded().flatMap { self.execute(doOperation) }
         }
 
         // no session was provided, so we can just jump to executing the operation.
-        return self.execute { try doOperation() }
+        return self.execute(doOperation)
     }
 
-    internal func execute<T>(body: @escaping () throws -> T) -> EventLoopFuture<T> {
+    internal func execute<T>(_ body: @escaping () throws -> T) -> EventLoopFuture<T> {
         return self.threadPool.runIfActive(eventLoop: self.eventLoopGroup.next(), body)
     }
 

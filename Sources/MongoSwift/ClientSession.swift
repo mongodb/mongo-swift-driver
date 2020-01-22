@@ -146,7 +146,7 @@ public final class ClientSession {
 
     /// Ends this `ClientSession`. Call this method when you are finished using the session. You must ensure that all
     /// operations using this session have completed before calling this. The returned future must be fulfilled before
-    /// the session goes out of scope.
+    /// this session's parent `MongoClient` is closed.
     public func end() -> EventLoopFuture<Void> {
         switch self.state {
         case .notStarted, .ended:
