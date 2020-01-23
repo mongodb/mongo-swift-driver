@@ -155,7 +155,6 @@ extension MongoCollectionTests {
         ("testFindOne", testFindOne),
         ("testFindOneMultipleMatches", testFindOneMultipleMatches),
         ("testFindOneNoMatch", testFindOneNoMatch),
-        ("testFindSingleBatch", testFindSingleBatch),
         ("testDeleteOne", testDeleteOne),
         ("testDeleteOneWithUnacknowledgedWriteConcern", testDeleteOneWithUnacknowledgedWriteConcern),
         ("testDeleteMany", testDeleteMany),
@@ -176,6 +175,7 @@ extension MongoCollectionTests {
         ("testFindOneAndReplace", testFindOneAndReplace),
         ("testFindOneAndUpdate", testFindOneAndUpdate),
         ("testNullIds", testNullIds),
+        ("testFindSingleBatch", testFindSingleBatch),
     ]
 }
 
