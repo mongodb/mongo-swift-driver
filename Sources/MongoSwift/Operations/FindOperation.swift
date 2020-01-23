@@ -192,7 +192,7 @@ public struct FindOptions: Codable {
         self.showRecordId = findOneOptions.showRecordId
         self.skip = findOneOptions.skip
         self.sort = findOneOptions.sort
-        self.limit = 1
+        self.limit = -1
     }
 
     // Encode everything except `self.readPreference`, because this is sent to libmongoc separately
