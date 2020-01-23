@@ -309,8 +309,20 @@ internal struct FindOperation<CollectionType: Codable>: Operation {
         using connection: Connection,
         session: ClientSession?
     ) throws -> MongoCursor<CollectionType> {
-        let opts = try encodeOptions(options: self.options, session: session)
-        let rp = self.options?.readPreference?._readPreference
+        var singleBatch: Bool?
+        let options = self.options.map { (opts: FindOptions) -> FindOptions in
+            var copy = opts
+            if let limit = copy.limit, limit < 0 {
+                copy.limit = abs(limit)
+                singleBatch = true
+            }
+            return copy
+        }
+
+        var opts = try encodeOptions(options: options, session: session)
+        opts?["singleBatch"] = singleBatch.map { .bool($0) }
+
+        let rp = options?.readPreference?._readPreference
 
         let result: OpaquePointer = self.collection.withMongocCollection(from: connection) { collPtr in
             guard let result = mongoc_collection_find_with_opts(collPtr, self.filter._bson, opts?._bson, rp) else {
