@@ -94,21 +94,18 @@ extension MongoCollection {
      *   - options: Optional `DropIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: The result of dropping the index.
-     *
      * - Throws:
      *   - `WriteError` if an error occurs while performing the command.
      *   - `CommandError` if an error occurs that prevents the command from executing.
      *   - `InvalidArgumentError` if the options passed in form an invalid combination.
      *   - `EncodingError` if an error occurs while encoding the options.
      */
-    @discardableResult
     public func dropIndex(
         _ name: String,
         options: DropIndexOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> DropIndexesResult {
-        return try self.asyncColl.dropIndex(name, options: options, session: session?.asyncSession).wait()
+    ) throws {
+        try self.asyncColl.dropIndex(name, options: options, session: session?.asyncSession).wait()
     }
 
     /**
@@ -119,8 +116,6 @@ extension MongoCollection {
      *   - options: Optional `DropIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: The result of dropping the index.
-     *
      * - Throws:
      *   - `WriteError` if an error occurs while performing the command.
      *   - `CommandError` if an error occurs that prevents the command from executing.
@@ -128,13 +123,12 @@ extension MongoCollection {
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options.
      */
-    @discardableResult
     public func dropIndex(
         _ keys: Document,
         options: DropIndexOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> DropIndexesResult {
-        return try self.asyncColl.dropIndex(keys, options: options, session: session?.asyncSession).wait()
+    ) throws {
+        try self.asyncColl.dropIndex(keys, options: options, session: session?.asyncSession).wait()
     }
 
     /**
@@ -145,8 +139,6 @@ extension MongoCollection {
      *   - options: Optional `DropIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: The result of dropping the index.
-     *
      * - Throws:
      *   - `WriteError` if an error occurs while performing the command.
      *   - `CommandError` if an error occurs that prevents the command from executing.
@@ -154,13 +146,12 @@ extension MongoCollection {
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options.
      */
-    @discardableResult
     public func dropIndex(
         _ model: IndexModel,
         options: DropIndexOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> DropIndexesResult {
-        return try self.asyncColl.dropIndex(model, options: options, session: session?.asyncSession).wait()
+    ) throws {
+        try self.asyncColl.dropIndex(model, options: options, session: session?.asyncSession).wait()
     }
 
     /**
@@ -170,8 +161,6 @@ extension MongoCollection {
      *   - options: Optional `DropIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: The result of dropping the indexes.
-     *
      * - Throws:
      *   - `WriteError` if an error occurs while performing the command.
      *   - `CommandError` if an error occurs that prevents the command from executing.
@@ -179,12 +168,11 @@ extension MongoCollection {
      *   - `LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options.
      */
-    @discardableResult
     public func dropIndexes(
         options: DropIndexOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> DropIndexesResult {
-        return try self.asyncColl.dropIndexes(options: options, session: session?.asyncSession).wait()
+    ) throws {
+        try self.asyncColl.dropIndexes(options: options, session: session?.asyncSession).wait()
     }
 
     /**
