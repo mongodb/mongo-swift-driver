@@ -201,6 +201,6 @@ extension MongoCollection {
      * - Throws: `LogicError` if the provided session is inactive.
      */
     public func listIndexNames(session: ClientSession? = nil) throws -> [String] {
-        fatalError("unimplemented")
+        return try self.asyncColl.listIndexNames(session: session?.asyncSession).wait()
     }
 }
