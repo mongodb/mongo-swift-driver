@@ -38,7 +38,10 @@ internal protocol Cursor {
     /**
      * Kill this cursor.
      *
-     * This method may be called from another thread safely even if this cursor is blocked waiting on results.
+     * This method may be called from another thread safely even if this cursor is blocked retrieving results. This is
+     * mainly useful for freeing a thread that a cursor is blocking via a long running operation.
+     *
+     * This method is automatically called in the `deinit` of `MongoCursor`, so it is not necessary to call it manually.
      */
     func kill()
 }
