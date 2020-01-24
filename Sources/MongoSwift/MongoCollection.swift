@@ -90,7 +90,7 @@ public struct MongoCollection<T: Codable> {
      *   - options: An optional `DropCollectionOptions` to use when executing this command
      *   - session: An optional `ClientSession` to use when executing this command
      *
-     * - Throws:
+     * - Returns: An `EventLoopFuture<Void>`. On success, contains `Void`. On failure, contains:
      *   - `CommandError` if an error occurs that prevents the command from executing.
      */
     public func drop(options: DropCollectionOptions? = nil, session: ClientSession? = nil) -> EventLoopFuture<Void> {

@@ -167,14 +167,13 @@ extension MongoCollection {
      *   - options: Optional `CreateIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture` containing the name of the created index.
-     *
-     * - Throws:
-     *   - `WriteError` if an error occurs while performing the write.
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *   - `LogicError` if the provided session is inactive.
-     *   - `EncodingError` if an error occurs while encoding the index specification or options.
+     * - Returns: An `EventLoopFuture<String>`. On success, contains the name of the created index. On failure,
+     *            contains:
+     *            - `WriteError` if an error occurs while performing the write.
+     *            - `CommandError` if an error occurs that prevents the command from executing.
+     *            - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *            - `LogicError` if the provided session is inactive.
+     *            - `EncodingError` if an error occurs while encoding the index specification or options.
      */
     public func createIndex(
         _ keys: Document,
@@ -194,14 +193,13 @@ extension MongoCollection {
      *   - options: Optional `CreateIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture` containing the name of the created index.
-     *
-     * - Throws:
-     *   - `WriteError` if an error occurs while performing the write.
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *   - `LogicError` if the provided session is inactive.
-     *   - `EncodingError` if an error occurs while encoding the index specification or options.
+     * - Returns: An `EventLoopFuture<String>`. On success, contains the name of the created index. On failure,
+     *            contains:
+     *            - `WriteError` if an error occurs while performing the write.
+     *            - `CommandError` if an error occurs that prevents the command from executing.
+     *            - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *            - `LogicError` if the provided session is inactive.
+     *            - `EncodingError` if an error occurs while encoding the index specification or options.
      */
     public func createIndex(
         _ model: IndexModel,
@@ -224,15 +222,14 @@ extension MongoCollection {
      *   - options: Optional `CreateIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture<[String]>` containing the names of all the indexes that were created.
-     *
-     * - Throws:
-     *   - `WriteError` if an error occurs while performing the write.
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `InvalidArgumentError` if `models` is empty.
-     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *   - `LogicError` if the provided session is inactive.
-     *   - `EncodingError` if an error occurs while encoding the index specifications or options.
+     * - Returns: An `EventLoopFuture<[String]>`. On success, contains the names of the created indexes. On failure,
+     *            contains:
+     *            - `WriteError` if an error occurs while performing the write.
+     *            - `CommandError` if an error occurs that prevents the command from executing.
+     *            - `InvalidArgumentError` if `models` is empty.
+     *            - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *            - `LogicError` if the provided session is inactive.
+     *            - `EncodingError` if an error occurs while encoding the index specifications or options.
      */
     public func createIndexes(
         _ models: [IndexModel],

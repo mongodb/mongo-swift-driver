@@ -118,7 +118,7 @@ public struct MongoDatabase {
      *   - options: An optional `DropDatabaseOptions` to use when executing this command
      *   - session: An optional `ClientSession` to use for this command
      *
-     * - Throws:
+     * - Returns: An `EventLoopFuture<Void>`. On success, contains `Void`. On failure, contains:
      *   - `CommandError` if an error occurs that prevents the command from executing.
      */
     public func drop(options: DropDatabaseOptions? = nil, session: ClientSession? = nil) -> EventLoopFuture<Void> {
@@ -172,13 +172,12 @@ public struct MongoDatabase {
      *   - options: Optional `CreateCollectionOptions` to use for the collection
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: an `EventLoopFuture` containing the newly created `MongoCollection<Document>`
-     *
-     * - Throws:
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *   - `LogicError` if the provided session is inactive.
-     *   - `EncodingError` if an error occurs while encoding the options to BSON.
+     * - Returns: an `EventLoopFuture<MongoCollection<Document>>`. On success, contains the newly created collection.
+     *            On failure, contains:
+     *            - `CommandError` if an error occurs that prevents the command from executing.
+     *            - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *            - `LogicError` if the provided session is inactive.
+     *            - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func createCollection(
         _ name: String,
@@ -199,13 +198,12 @@ public struct MongoDatabase {
      *   - options: Optional `CreateCollectionOptions` to use for the collection
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture` containing the newly created `MongoCollection<T>`
-     *
-     * - Throws:
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *   - `LogicError` if the provided session is inactive.
-     *   - `EncodingError` if an error occurs while encoding the options to BSON.
+     * - Returns: An `EventLoopFuture<MongoCollection<T>>`. On success, contains the newly created collection. On
+     *            failure, contains:
+     *            - `CommandError` if an error occurs that prevents the command from executing.
+     *            - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *            - `LogicError` if the provided session is inactive.
+     *            - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func createCollection<T: Codable>(
         _ name: String,
@@ -228,7 +226,7 @@ public struct MongoDatabase {
      * - Returns: a `MongoCursor` over an array of `CollectionSpecification`s
      *
      * - Throws:
-     *   - `userError.invalidArgumentError` if the options passed are an invalid combination.
+     *   - `InvalidArgumentError` if the options passed are an invalid combination.
      *   - `LogicError` if the provided session is inactive.
      */
     public func listCollections(
@@ -248,19 +246,17 @@ public struct MongoDatabase {
     }
 
     /**
-     * Gets a list of `MongoCollection`s in this database.
+     * Gets a list of `MongoCollection`s corresponding to collections in this database.
      *
      * - Parameters:
      *   - filter: a `Document`, optional criteria to filter results by
      *   - options: Optional `ListCollectionsOptions` to use when executing this command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture<[MongoCollection<Document>]>` containing collections that match the provided
-     *            filter.
-     *
-     * - Throws:
-     *   - `userError.invalidArgumentError` if the options passed are an invalid combination.
-     *   - `LogicError` if the provided session is inactive.
+     * - Returns: An `EventLoopFuture<[MongoCollection<Document>]>`. On success, contains collections that match the
+     *            provided filter. On failure, contains:
+     *            - `InvalidArgumentError` if the options passed are an invalid combination.
+     *            - `LogicError` if the provided session is inactive.
      */
     public func listMongoCollections(
         _ filter: Document? = nil,
@@ -280,11 +276,10 @@ public struct MongoDatabase {
      *   - options: Optional `ListCollectionsOptions` to use when executing this command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture<[String]>` containing names of collections that match the provided filter.
-     *
-     * - Throws:
-     *   - `userError.invalidArgumentError` if the options passed are an invalid combination.
-     *   - `LogicError` if the provided session is inactive.
+     * - Returns: An `EventLoopFuture<[String]>`. On success, contains names of collections that match the provided
+     *            filter. On failure, contains:
+     *            - `InvalidArgumentError` if the options passed are an invalid combination.
+     *            - `LogicError` if the provided session is inactive.
      */
     public func listCollectionNames(
         _ filter: Document? = nil,
@@ -309,14 +304,13 @@ public struct MongoDatabase {
      *   - options: Optional `RunCommandOptions` to use when executing this command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: an `EventLoopFuture<Document>` containing the server response for the command
-     *
-     * - Throws:
-     *   - `InvalidArgumentError` if `requests` is empty.
-     *   - `LogicError` if the provided session is inactive.
-     *   - `WriteError` if any error occurs while the command was performing a write.
-     *   - `CommandError` if an error occurs that prevents the command from being performed.
-     *   - `EncodingError` if an error occurs while encoding the options to BSON.
+     * - Returns: an `EventLoopFuture<Document>`. On success, contains the server response to the command. On failure,
+     *            contains:
+     *            - `InvalidArgumentError` if `requests` is empty.
+     *            - `LogicError` if the provided session is inactive.
+     *            - `WriteError` if any error occurs while the command was performing a write.
+     *            - `CommandError` if an error occurs that prevents the command from being performed.
+     *            - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     @discardableResult
     public func runCommand(

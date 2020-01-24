@@ -242,8 +242,6 @@ public class MongoClient {
      *
      * - Throws:
      *   - A `InvalidArgumentError` if the connection string passed in is improperly formatted.
-     *   - A `InvalidArgumentError` if the connection string specifies the use of TLS but libmongoc was not
-     *     built with TLS support.
      */
     public init(
         _ connectionString: String = "mongodb://localhost:27017",
@@ -344,18 +342,17 @@ public class MongoClient {
     }
 
     /**
-     * Run the `listDatabases` command.
+     * Retrieves a list of databases in this client's MongoDB deployment.
      *
      * - Parameters:
      *   - filter: Optional `Document` specifying a filter that the listed databases must pass. This filter can be based
      *     on the "name", "sizeOnDisk", "empty", or "shards" fields of the output.
      *   - session: Optional `ClientSession` to use when executing this command.
      *
-     * - Returns: An `EventLoopFuture<[DatabaseSpecification]>` containing the databases matching provided criteria.
-     *
-     * - Throws:
-     *   - `LogicError` if the provided session is inactive.
-     *   - `EncodingError` if an error is encountered while encoding the options to BSON.
+     * - Returns: An `EventLoopFuture<[DatabaseSpecification]>`. On success, the future contains an array of the
+     *            specifications of databases matching the provided criteria. On failure, contains:
+     *            - `LogicError` if the provided session is inactive.
+     *            - `EncodingError` if an error is encountered while encoding the options to BSON.
      *
      * - SeeAlso: https://docs.mongodb.com/manual/reference/command/listDatabases/
      */
@@ -373,16 +370,15 @@ public class MongoClient {
     }
 
     /**
-     * Get a list of `MongoDatabase`s.
+     * Get a list of `MongoDatabase`s corresponding to the databases in this client's MongoDB deployment.
      *
      * - Parameters:
      *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture<[MongoDatabase]>` containing databases that match the provided filter.
-     *
-     * - Throws:
-     *   - `LogicError` if the provided session is inactive.
+     * - Returns: An `EventLoopFuture<[MongoDatabase]>`. On success, the future contains an array of `MongoDatabase`s
+     *            that match the provided filter. On failure, contains:
+     *            - `LogicError` if the provided session is inactive.
      */
     public func listMongoDatabases(
         _ filter: Document? = nil,
@@ -392,16 +388,15 @@ public class MongoClient {
     }
 
     /**
-     * Get a list of names of databases.
+     * Get the names of databases in this client's MongoDB deployment.
      *
      * - Parameters:
      *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture<[String]>` containing names of databases that match the provided filter.
-     *
-     * - Throws:
-     *   - `LogicError` if the provided session is inactive.
+     * - Returns: An `EventLoopFuture<[String]>`. On success, the future contains an array of names of databases that
+     *            match the provided filter. On failure, contains:
+     *            - `LogicError` if the provided session is inactive.
      */
     public func listDatabaseNames(
         _ filter: Document? = nil,

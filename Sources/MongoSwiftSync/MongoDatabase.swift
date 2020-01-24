@@ -154,7 +154,7 @@ public struct MongoDatabase {
      * - Returns: a `MongoCursor` over an array of `CollectionSpecification`s
      *
      * - Throws:
-     *   - `userError.invalidArgumentError` if the options passed are an invalid combination.
+     *   - `InvalidArgumentError` if the options passed are an invalid combination.
      *   - `LogicError` if the provided session is inactive.
      */
     public func listCollections(
@@ -178,7 +178,7 @@ public struct MongoDatabase {
      * - Returns: An array of `MongoCollection`s that match the provided filter.
      *
      * - Throws:
-     *   - `userError.invalidArgumentError` if the options passed are an invalid combination.
+     *   - `InvalidArgumentError` if the options passed are an invalid combination.
      *   - `LogicError` if the provided session is inactive.
      */
     public func listMongoCollections(
@@ -202,7 +202,7 @@ public struct MongoDatabase {
      * - Returns: A `[String]` containing names of collections that match the provided filter.
      *
      * - Throws:
-     *   - `userError.invalidArgumentError` if the options passed are an invalid combination.
+     *   - `InvalidArgumentError` if the options passed are an invalid combination.
      *   - `LogicError` if the provided session is inactive.
      */
     public func listCollectionNames(

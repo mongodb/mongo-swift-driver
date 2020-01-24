@@ -87,7 +87,12 @@ extension MongoCollection {
      *   - options: Optional `CountDocumentsOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture<Int>` containing the count of the documents that matched the filter
+     * - Returns: An `EventLoopFuture<Int>`. On success, contains the count of the documents that matched the filter.
+     *            On failure, contains:
+     *            - `CommandError` if an error occurs that prevents the command from executing.
+     *            - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *            - `LogicError` if the provided session is inactive.
+     *            - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func countDocuments(
         _ filter: Document = [:],
@@ -105,7 +110,12 @@ extension MongoCollection {
      *   - options: Optional `EstimatedDocumentCountOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture<Int>` containing an estimate of the count of documents in this collection
+     * - Returns: An `EventLoopFuture<Int>`. On success, contains an estimate of the count of documents in this
+     *            collection. On failure, contains:
+     *            - `CommandError` if an error occurs that prevents the command from executing.
+     *            - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *            - `LogicError` if the provided session is inactive.
+     *            - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func estimatedDocumentCount(
         options: EstimatedDocumentCountOptions? = nil,
@@ -124,13 +134,12 @@ extension MongoCollection {
      *   - options: Optional `DistinctOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture<[BSON]>` containing the distinct values for the specified criteria
-     *
-     * - Throws:
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *   - `LogicError` if the provided session is inactive.
-     *   - `EncodingError` if an error occurs while encoding the options to BSON.
+     * - Returns: An `EventLoopFuture<[BSON]>`. On success, contains the distinct values for the specified criteria.
+     *            on failure, contains:
+     *            - `CommandError` if an error occurs that prevents the command from executing.
+     *            - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *            - `LogicError` if the provided session is inactive.
+     *            - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func distinct(
         fieldName: String,
