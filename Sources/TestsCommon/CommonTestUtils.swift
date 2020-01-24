@@ -334,16 +334,6 @@ extension BulkWriteError {
     }
 }
 
-extension MongoSwiftSync.MongoCollection {
-    public var namespace: MongoNamespace {
-        return self.asyncColl.namespace
-    }
-
-    public var _client: MongoSwiftSync.MongoClient {
-        return self.client
-    }
-}
-
 extension InsertManyResult {
     public static func fromBulkResult(_ result: BulkWriteResult) -> InsertManyResult? {
         return InsertManyResult(from: result)

@@ -23,6 +23,9 @@ public struct MongoCollection<T: Codable> {
      */
     public typealias CollectionType = T
 
+    /// The namespace for this collection.
+    public var namespace: MongoNamespace { self.asyncColl.namespace }
+
     /// The name of this collection.
     public var name: String { return self.asyncColl.name }
 

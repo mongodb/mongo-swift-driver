@@ -1,5 +1,5 @@
 import Foundation
-import MongoSwiftSync
+@testable import MongoSwiftSync
 import TestsCommon
 
 extension MongoSwiftTestCase {
@@ -180,3 +180,9 @@ internal func captureCommandEvents(
 //         return nil
 //     }
 // }
+
+extension MongoSwiftSync.MongoCollection {
+    public var _client: MongoSwiftSync.MongoClient {
+        return self.client
+    }
+}
