@@ -239,7 +239,7 @@ public class MongoCursor<T: Codable>: Cursor {
      * cursor (e.g. the `maxAwaitTimeMS` option on the `FindOptions` passed to `find`).
      *
      * - Returns:
-     *    An `EventLoopFuture<T?>` containing the next `T` in this cursor, an error if one ocurred, or `nil` if
+     *    An `EventLoopFuture<T?>` containing the next `T` in this cursor, an error if one occurred, or `nil` if
      *    there was no data.
      *
      *    If the future evaluates to an error, it is likely one of the following:
@@ -264,7 +264,7 @@ public class MongoCursor<T: Codable>: Cursor {
      *
      * - Returns:
      *   An `EventLoopFuture<T?>` evaluating to the next `T` in this cursor, `nil` if the cursor is exhausted,
-     *   or an error if one ocurred. If the underlying cursor is tailable, the future will not resolve
+     *   or an error if one occurred. If the underlying cursor is tailable, the future will not resolve
      *   until data is returned (potentially after multiple requests to the server), the cursor is closed, or an error
      *   occurs.
      *
