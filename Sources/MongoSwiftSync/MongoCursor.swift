@@ -17,7 +17,9 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol, Cursor {
      * This property is mainly useful if this cursor is tailable, since in that case `tryNext` may return more results
      * even after returning `nil`.
      *
-     * For non-tailable cursors, the cursor will always be dead as soon as `tryNext` returns `nil` or an error.
+     * If this cursor is non-tailable, it will always be dead as soon as either `tryNext` returns `nil` or an error.
+     *
+     * This cursor will be dead as soon as `next` returns `nil` or an error, regardless of the `CursorType`.
      */
     public var isAlive: Bool {
         return self.asyncCursor.isAlive
