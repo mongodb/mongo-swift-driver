@@ -34,9 +34,9 @@ internal protocol Cursor {
     func tryNext() -> Result<T, Error>?
 
     /**
-     * Close this cursor.
+     * Kill this cursor.
      *
      * This method may be called from another thread safely even if this cursor is blocked waiting on results.
      */
-    func close()
+    func kill()
 }

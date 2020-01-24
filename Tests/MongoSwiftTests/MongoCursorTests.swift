@@ -82,7 +82,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
             // start polling and interrupt with close
             _ = cursor.next()
 
-            try cursor.close().wait()
+            try cursor.kill().wait()
         }
     }
 

@@ -276,7 +276,7 @@ public class MongoCursor<T: Codable>: Cursor {
         return self.client.operationExecutor.execute {
             // Whether an attempt has been made thus far.
             // If the cursor is closed before the first attempt was made, then the future returned should evaluate
-            // to an error. Otherwise, it should just evaluate to nil, since the cursor closed after `next` was called.
+            // to an error. Otherwise, it should just evaluate to nil, since the cursor.killd after `next` was called.
             var hasTried = false
 
             while true {
@@ -302,7 +302,7 @@ public class MongoCursor<T: Codable>: Cursor {
     }
 
     /**
-     * Close this cursor.
+     * Kill this cursor.
      *
      * This method MUST be called before this cursor goes out of scope to prevent leaking resources.
      * This method may be called even if there are unresolved futures created from other `MongoCursor` methods.
@@ -310,7 +310,7 @@ public class MongoCursor<T: Codable>: Cursor {
      * - Returns:
      *   An `EventLoopFuture` that evaluates when the cursor has completed closing. This future should not fail.
      */
-    public func close() -> EventLoopFuture<Void> {
+    public func kill() -> EventLoopFuture<Void> {
         return self.client.operationExecutor.execute {
             self.lock.withLock {
                 self.blockingClose()

@@ -143,7 +143,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
             expect(cursor.next()).toNot(beNil())
             expect(cursor.isAlive).to(beTrue())
 
-            cursor.close()
+            cursor.kill()
             expect(cursor.isAlive).to(beFalse())
             expect(try cursor.next()?.get()).to(throwError(errorType: LogicError.self))
         }
@@ -172,7 +172,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
 
             // should be blocked on the cursor trying for more results.
             expect(allDocsLock.wait(timeout: DispatchTime.now() + 1)).to(equal(.timedOut))
-            cursor.close() // close cursor while it's blocking
+            cursor.kill() // close cursor while it's blocking
 
             // wait for allDocs to be updated
             expect(allDocsLock.wait(timeout: DispatchTime.now() + 0.25)).to(equal(.success))

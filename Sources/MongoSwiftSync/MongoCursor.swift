@@ -110,17 +110,17 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol, Cursor {
     }
 
     /**
-     * Close this cursor.
+     * Kill this cursor.
      *
      * This method may be called from another thread safely even if this cursor is blocked retrieving results.
      */
-    public func close() {
+    public func kill() {
         // The asunc cursor `close` method shouldn't ever fail, so we can safely ignore the error.
-        try? self.asyncCursor.close().wait()
+        try? self.asyncCursor.kill().wait()
     }
 
     /// Closes the cursor if it hasn't been closed already.
     deinit {
-        self.close()
+        self.kill()
     }
 }

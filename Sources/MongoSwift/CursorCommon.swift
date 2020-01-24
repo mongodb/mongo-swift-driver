@@ -36,14 +36,14 @@ internal protocol Cursor {
     func tryNext() -> EventLoopFuture<T?>
 
     /**
-     * Close this cursor.
+     * Kills this cursor.
      *
      * This method MUST be called before this cursor goes out of scope to prevent leaking resources.
      * This method may be called even if there are unresolved futures created from other `Cursor` methods.
      *
      * This method should not fail.
      */
-    func close() -> EventLoopFuture<Void>
+    func kill() -> EventLoopFuture<Void>
 }
 
 extension EventLoopFuture {
