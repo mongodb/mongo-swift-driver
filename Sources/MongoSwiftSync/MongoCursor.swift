@@ -120,7 +120,7 @@ public class MongoCursor<T: Codable>: Sequence, IteratorProtocol, Cursor {
      * This method is automatically called in the `deinit` of `MongoCursor`, so it is not necessary to call it manually.
      */
     public func kill() {
-        // The asunc cursor `close` method shouldn't ever fail, so we can safely ignore the error.
+        // The async cursor `close` method shouldn't ever fail, so we can safely ignore the error.
         try? self.asyncCursor.kill().wait()
     }
 
