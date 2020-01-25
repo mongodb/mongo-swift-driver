@@ -43,7 +43,7 @@ extension MongoSwiftTestCase {
         do {
             collection = try database.createCollection(collName, options: options)
         } catch let error as CommandError where error.code == 48 {
-            _ = try database.collection(collName).drop()
+            try database.collection(collName).drop()
             collection = try database.createCollection(collName, options: options)
         } catch {
             throw error
