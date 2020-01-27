@@ -301,7 +301,8 @@ public class MongoClient {
         }
     }
 
-    /// Starts a new `ClientSession` with the provided options.
+    /// Starts a new `ClientSession` with the provided options. When you are done using this session, you must call
+    /// `ClientSession.end()` on it.
     public func startSession(options: ClientSessionOptions? = nil) -> ClientSession {
         return ClientSession(client: self, options: options)
     }
@@ -310,8 +311,13 @@ public class MongoClient {
      * Starts a new `ClientSession` with the provided options and passes it to the provided closure.
      * The session is only valid within the body of the closure and will be ended after the body completes.
      *
-     * - Throws:
-     *   - `RuntimeError.compatibilityError` if the deployment does not support sessions.
+     * - Parameters:
+     *   - options: Options to use when creating the session.
+     *   - sessionBody: A closure which takes in a `ClientSession` and returns an `EventLoopFuture<T>`.
+     *
+     * - Returns: An `EventLoopFuture<T>`. If the deployment does not support sessions, returns a failed future
+     *            containing a `CompatibilityError`. If the user-provided closure throws any other error, returns a
+     *            failed future containing that error. Otherwise, returns the future returned by `sessionBody`.
      */
     public func withSession<T>(
         options: ClientSessionOptions? = nil,
