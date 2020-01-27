@@ -37,29 +37,40 @@ public final class ClientSession {
     /// The most recent cluster time seen by this session. This value will be nil if either of the following are true:
     /// - No operations have been executed using this session and `advanceClusterTime` has not been called.
     /// - This session has been ended.
-    public var clusterTime: Document? {
-        fatalError("unimplemented")
-    }
+    public var clusterTime: Document? { return self.asyncSession.clusterTime }
 
     /// The operation time of the most recent operation performed using this session. This value will be nil if either
     /// of the following are true:
     /// - No operations have been performed using this session and `advanceOperationTime` has not been called.
     /// - This session has been ended.
-    public var operationTime: Timestamp? {
-        fatalError("unimplemented")
-    }
+    public var operationTime: Timestamp? { return self.asyncSession.operationTime }
 
     /// The options used to start this session.
-    public let options: ClientSessionOptions?
+    public var options: ClientSessionOptions? { return self.asyncSession.options }
 
     /// Initializes a new client session.
-    internal init(wrapping session: MongoSwift.ClientSession) throws {
-        fatalError("unimplemented")
+    internal init(client: MongoClient, options: ClientSessionOptions?) {
+        self.client = client
+        self.asyncSession = client.asyncClient.startSession(options: options)
+    }
+
+    /// Ends the underlying async session.
+    internal func end() {
+        // we only call this method from places that we can't throw (deinit, defers) so we handle the error here
+        // instead. the async method will only fail if the async client, thread pool, or event loop group have been
+        // closed/ended. we manage the lifetimes of all of those ourselves, so if we hit the assertionFailure it's due
+        // to a bug in our own code.
+        do {
+            try self.asyncSession.end().wait()
+        } catch {
+            assertionFailure("Error ending async session: \(error)")
+        }
     }
 
     /// Cleans up internal state.
     deinit {
-        fatalError("unimplemented")
+        // a repeated call to `end` is a no-op so it's ok to call this even if `end()` was already called explicitly.
+        self.end()
     }
 
     /**
@@ -71,7 +82,7 @@ public final class ClientSession {
      *   - clusterTime: The session's new cluster time, as a `Document` like `["cluster time": Timestamp(...)]`
      */
     public func advanceClusterTime(to clusterTime: Document) {
-        fatalError("unimplemented")
+        self.asyncSession.advanceClusterTime(to: clusterTime)
     }
 
     /**
@@ -83,6 +94,6 @@ public final class ClientSession {
      *   - operationTime: The session's new operationTime
      */
     public func advanceOperationTime(to operationTime: Timestamp) {
-        fatalError("unimplemented")
+        self.asyncSession.advanceOperationTime(to: operationTime)
     }
 }

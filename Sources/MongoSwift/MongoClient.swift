@@ -292,7 +292,7 @@ public class MongoClient {
 
     /// Closes this `MongoClient`. Call this method exactly once when you are finished using the client. You must
     /// ensure that all operations using the client have completed before calling this. The returned future must be
-    /// fulfilled before the client goes out of scope.
+    /// fulfilled before the `EventLoopGroup` provided to this client's constructor is shut down.
     public func close() -> EventLoopFuture<Void> {
         return self.operationExecutor.execute {
             self.connectionPool.close()
@@ -303,14 +303,9 @@ public class MongoClient {
         }
     }
 
-    /**
-     * Starts a new `ClientSession` with the provided options.
-     *
-     * - Throws:
-     *   - `RuntimeError.compatibilityError` if the deployment does not support sessions.
-     */
-    public func startSession(options: ClientSessionOptions? = nil) throws -> ClientSession {
-        return try ClientSession(client: self, options: options)
+    /// Starts a new `ClientSession` with the provided options.
+    public func startSession(options: ClientSessionOptions? = nil) -> ClientSession {
+        return ClientSession(client: self, options: options)
     }
 
     /**
@@ -322,11 +317,30 @@ public class MongoClient {
      */
     public func withSession<T>(
         options: ClientSessionOptions? = nil,
-        _ sessionBody: (ClientSession) throws -> T
-    ) throws -> T {
-        let session = try ClientSession(client: self, options: options)
-        defer { session.end() }
-        return try sessionBody(session)
+        _ sessionBody: (ClientSession) throws -> EventLoopFuture<T>
+    ) -> EventLoopFuture<T> {
+        let promise = self.operationExecutor.makePromise(of: T.self)
+        let session = self.startSession(options: options)
+        do {
+            let bodyFuture = try sessionBody(session)
+            // regardless of whether body's returned future succeeds we want to call session.end() once its complete.
+            // only once session.end() finishes can we fulfill the returned promise. otherwise the user can't tell if
+            // it is safe to close the parent client of this session, and they could inadvertently close it before the
+            // session is actually ended and its parent `mongoc_client_t` is returned to the pool.
+            bodyFuture.flatMap { _ in
+                session.end()
+            }.flatMapError { _ in
+                session.end()
+            }.whenComplete { _ in
+                promise.completeWith(bodyFuture)
+            }
+        } catch {
+            session.end().whenComplete { _ in
+                promise.fail(error)
+            }
+        }
+
+        return promise.futureResult
     }
 
     /**

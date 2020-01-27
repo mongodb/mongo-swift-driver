@@ -24,8 +24,13 @@ public struct MongoDatabase {
     /// The underlying asynchronous database.
     private let asyncDB: MongoSwift.MongoDatabase
 
+    /// The client this database was derived from. We store this to ensure it remains open for as long as this object
+    /// is in scope.
+    private let client: MongoClient
+
     /// Initializes a new `MongoDatabase` instance wrapping the provided async database.
-    internal init(asyncDB: MongoSwift.MongoDatabase) {
+    internal init(client: MongoClient, asyncDB: MongoSwift.MongoDatabase) {
+        self.client = client
         self.asyncDB = asyncDB
     }
 
@@ -78,7 +83,7 @@ public struct MongoDatabase {
         options: CollectionOptions? = nil
     ) -> MongoCollection<T> {
         let asyncColl = self.asyncDB.collection(name, withType: T.self, options: options)
-        return MongoCollection(asyncCollection: asyncColl)
+        return MongoCollection(client: self.client, asyncCollection: asyncColl)
     }
 
     /**
@@ -135,7 +140,7 @@ public struct MongoDatabase {
                                                           options: options,
                                                           session: session?.asyncSession)
                                                           .wait()
-        return MongoCollection(asyncCollection: asyncColl)
+        return MongoCollection(client: self.client, asyncCollection: asyncColl)
     }
 
     /**

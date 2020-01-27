@@ -22,7 +22,7 @@ public class MongoClient {
     private let eventLoopGroup: MultiThreadedEventLoopGroup
 
     /// The underlying async client.
-    private let asyncClient: MongoSwift.MongoClient
+    internal let asyncClient: MongoSwift.MongoClient
 
     /**
      * Create a new client connection to a MongoDB server. For options that included in both the connection string URI
@@ -65,14 +65,9 @@ public class MongoClient {
         }
     }
 
-    /**
-     * Starts a new `ClientSession` with the provided options.
-     *
-     * - Throws:
-     *   - `RuntimeError.compatibilityError` if the deployment does not support sessions.
-     */
-    public func startSession(options: ClientSessionOptions? = nil) throws -> ClientSession {
-        fatalError("unimplemented")
+    /// Starts a new `ClientSession` with the provided options.
+    public func startSession(options: ClientSessionOptions? = nil) -> ClientSession {
+        return ClientSession(client: self, options: options)
     }
 
     /**
@@ -85,8 +80,10 @@ public class MongoClient {
     public func withSession<T>(
         options: ClientSessionOptions? = nil,
         _ sessionBody: (ClientSession) throws -> T
-    ) throws -> T {
-        fatalError("unimplemented")
+    ) rethrows -> T {
+        let session = self.startSession(options: options)
+        defer { session.end() }
+        return try sessionBody(session)
     }
 
     /**
@@ -160,7 +157,7 @@ public class MongoClient {
      * - Returns: a `MongoDatabase` corresponding to the provided database name
      */
     public func db(_ name: String, options: DatabaseOptions? = nil) -> MongoDatabase {
-        return MongoDatabase(asyncDB: self.asyncClient.db(name, options: options))
+        return MongoDatabase(client: self, asyncDB: self.asyncClient.db(name, options: options))
     }
 
     /**
