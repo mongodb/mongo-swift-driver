@@ -81,7 +81,7 @@ extension MongoSwiftTestCase {
         do {
             collection = try database.createCollection(collName, options: options).wait()
         } catch let error as CommandError where error.code == 48 {
-            _ = try database.collection(collName).drop().wait()
+            try database.collection(collName).drop().wait()
             collection = try database.createCollection(collName, options: options).wait()
         } catch {
             throw error
