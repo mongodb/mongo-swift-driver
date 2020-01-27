@@ -327,16 +327,13 @@ public class MongoClient {
             // only once session.end() finishes can we fulfill the returned promise. otherwise the user can't tell if
             // it is safe to close the parent client of this session, and they could inadvertently close it before the
             // session is actually ended and its parent `mongoc_client_t` is returned to the pool.
-            bodyFuture
-                .flatMap { _ in
-                    session.end()
-                }
-                .flatMapError { _ in
-                    session.end()
-                }
-                .whenComplete { _ in
-                    promise.completeWith(bodyFuture)
-                }
+            bodyFuture.flatMap { _ in
+                session.end()
+            }.flatMapError { _ in
+                session.end()
+            }.whenComplete { _ in
+                promise.completeWith(bodyFuture)
+            }
         } catch {
             session.end().whenComplete { _ in
                 promise.fail(error)
