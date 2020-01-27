@@ -40,18 +40,6 @@ extension MongoDatabase {
 }
 
 extension MongoSwiftTestCase {
-    internal func withTestNamespace<T>(
-        options: ClientOptions? = nil,
-        f: (MongoClient, MongoDatabase, MongoCollection<Document>) throws -> T
-    ) throws -> T {
-        return try self.withTestClient(options: options) { client in
-            let db = client.db(type(of: self).testDatabase)
-            let coll = db.collection(self.getCollectionName())
-            defer { db.syncDropOrFail() }
-            return try f(client, db, coll)
-        }
-    }
-
     internal func withTestClient<T>(options: ClientOptions? = nil, f: (MongoClient) throws -> T) throws -> T {
         let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         defer { elg.syncShutdownOrFail() }
@@ -84,7 +72,7 @@ extension MongoSwiftTestCase {
             try database.collection(collName).drop().wait()
             collection = try database.createCollection(collName, options: options).wait()
         }
-        defer { try? collection.drop().wait() }
+        defer { database.syncDropOrFail() }
         return try f(database, collection)
     }
 
