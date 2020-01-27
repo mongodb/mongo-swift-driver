@@ -15,12 +15,6 @@ public struct DropIndexOptions: Encodable {
     }
 }
 
-/// The result of performing a "dropIndexes" command.
-public struct DropIndexesResult: Decodable {
-    /// The number of indexes that were present in the collection prior to performing the drop.
-    public let nIndexesWas: Int
-}
-
 /// An operation corresponding to a "dropIndexes" command.
 internal struct DropIndexesOperation<T: Codable>: Operation {
     private let collection: MongoCollection<T>
@@ -33,7 +27,7 @@ internal struct DropIndexesOperation<T: Codable>: Operation {
         self.options = options
     }
 
-    internal func execute(using connection: Connection, session: ClientSession?) throws -> DropIndexesResult {
+    internal func execute(using connection: Connection, session: ClientSession?) throws {
         let command: Document = ["dropIndexes": .string(self.collection.name), "index": self.index]
         let opts = try encodeOptions(options: self.options, session: session)
         var reply = Document()
@@ -46,7 +40,5 @@ internal struct DropIndexesOperation<T: Codable>: Operation {
         guard success else {
             throw extractMongoError(error: error, reply: reply)
         }
-
-        return try self.collection.decoder.decode(DropIndexesResult.self, from: reply)
     }
 }

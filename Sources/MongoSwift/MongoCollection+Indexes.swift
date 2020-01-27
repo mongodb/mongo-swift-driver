@@ -255,19 +255,17 @@ extension MongoCollection {
      *   - options: Optional `DropIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture` containing the result of dropping the index.
-     *
-     * - Throws:
-     *   - `WriteError` if an error occurs while performing the command.
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *   - `EncodingError` if an error occurs while encoding the options.
+     * - Returns: An `EventLoopFuture<Void>`. On failure, contains:
+     *            - `WriteError` if an error occurs while performing the command.
+     *            - `CommandError` if an error occurs that prevents the command from executing.
+     *            - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *            - `EncodingError` if an error occurs while encoding the options.
      */
     public func dropIndex(
         _ name: String,
         options: DropIndexOptions? = nil,
         session: ClientSession? = nil
-    ) -> EventLoopFuture<DropIndexesResult> {
+    ) -> EventLoopFuture<Void> {
         guard name != "*" else {
             return self._client.operationExecutor.makeFailedFuture(InvalidArgumentError(
                 message: "Invalid index name '*'; use dropIndexes() to drop all indexes"
@@ -284,20 +282,18 @@ extension MongoCollection {
      *   - options: Optional `DropIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture` containing the result of dropping the index.
-     *
-     * - Throws:
-     *   - `WriteError` if an error occurs while performing the command.
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *   - `LogicError` if the provided session is inactive.
-     *   - `EncodingError` if an error occurs while encoding the options.
+     * - Returns: An `EventLoopFuture<Void>`. On failure, contains:
+     *            - `WriteError` if an error occurs while performing the command.
+     *            - `CommandError` if an error occurs that prevents the command from executing.
+     *            - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *            - `LogicError` if the provided session is inactive.
+     *            - `EncodingError` if an error occurs while encoding the options.
      */
     public func dropIndex(
         _ keys: Document,
         options: DropIndexOptions? = nil,
         session: ClientSession? = nil
-    ) -> EventLoopFuture<DropIndexesResult> {
+    ) -> EventLoopFuture<Void> {
         return self._dropIndexes(index: .document(keys), options: options, session: session)
     }
 
@@ -309,20 +305,18 @@ extension MongoCollection {
      *   - options: Optional `DropIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture` containing the result of dropping the index.
-     *
-     * - Throws:
-     *   - `WriteError` if an error occurs while performing the command.
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *   - `LogicError` if the provided session is inactive.
-     *   - `EncodingError` if an error occurs while encoding the options.
+     * - Returns: An `EventLoopFuture<Void>`. On failure, contains:
+     *            - `WriteError` if an error occurs while performing the command.
+     *            - `CommandError` if an error occurs that prevents the command from executing.
+     *            - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *            - `LogicError` if the provided session is inactive.
+     *            - `EncodingError` if an error occurs while encoding the options.
      */
     public func dropIndex(
         _ model: IndexModel,
         options: DropIndexOptions? = nil,
         session: ClientSession? = nil
-    ) -> EventLoopFuture<DropIndexesResult> {
+    ) -> EventLoopFuture<Void> {
         return self._dropIndexes(index: .document(model.keys), options: options, session: session)
     }
 
@@ -333,19 +327,17 @@ extension MongoCollection {
      *   - options: Optional `DropIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture` containing the result of dropping the indexes.
-     *
-     * - Throws:
-     *   - `WriteError` if an error occurs while performing the command.
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *   - `LogicError` if the provided session is inactive.
-     *   - `EncodingError` if an error occurs while encoding the options.
+     * - Returns: An `EventLoopFuture<Void>`. On failure, contains:
+     *            - `WriteError` if an error occurs while performing the command.
+     *            - `CommandError` if an error occurs that prevents the command from executing.
+     *            - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *            - `LogicError` if the provided session is inactive.
+     *            - `EncodingError` if an error occurs while encoding the options.
      */
     public func dropIndexes(
         options: DropIndexOptions? = nil,
         session: ClientSession? = nil
-    ) -> EventLoopFuture<DropIndexesResult> {
+    ) -> EventLoopFuture<Void> {
         return self._dropIndexes(index: "*", options: options, session: session)
     }
 
@@ -355,7 +347,7 @@ extension MongoCollection {
         index: BSON,
         options: DropIndexOptions?,
         session: ClientSession?
-    ) -> EventLoopFuture<DropIndexesResult> {
+    ) -> EventLoopFuture<Void> {
         let operation = DropIndexesOperation(collection: self, index: index, options: options)
         return self._client.operationExecutor.execute(operation, client: self._client, session: session)
     }
