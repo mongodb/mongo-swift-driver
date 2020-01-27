@@ -39,6 +39,16 @@ extension MongoDatabase {
     }
 }
 
+extension MongoCollection {
+    fileprivate func syncDropOrFail() {
+        do {
+            try self.drop().wait()
+        } catch {
+            XCTFail("Error dropping test collection: \(error)")
+        }
+    }
+}
+
 extension MongoSwiftTestCase {
     internal func withTestClient<T>(options: ClientOptions? = nil, f: (MongoClient) throws -> T) throws -> T {
         let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
@@ -72,7 +82,7 @@ extension MongoSwiftTestCase {
             try database.collection(collName).drop().wait()
             collection = try database.createCollection(collName, options: options).wait()
         }
-        defer { database.syncDropOrFail() }
+        defer { collection.syncDropOrFail() }
         return try f(database, collection)
     }
 
