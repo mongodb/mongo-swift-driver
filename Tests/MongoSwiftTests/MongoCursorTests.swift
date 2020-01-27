@@ -80,9 +80,11 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
             expect(try cursor.tryNext().wait()).to(beNil())
 
             // start polling and interrupt with close
-            _ = cursor.next()
+            let interruptedFuture = cursor.next()
 
-            try cursor.kill().wait()
+            expect(try cursor.kill().wait()).toNot(throwError())
+            expect(try interruptedFuture.wait()).to(beNil())
+            expect(try cursor.next().wait()).to(throwError(errorType: LogicError.self))
         }
     }
 
