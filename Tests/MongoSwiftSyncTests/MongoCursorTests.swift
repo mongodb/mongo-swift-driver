@@ -134,7 +134,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
         }
     }
 
-    func testClose() throws {
+    func testKill() throws {
         try self.withTestNamespace { _, _, coll in
             _ = try coll.insertMany([[:], [:], [:]])
             let cursor = try coll.find()
@@ -217,6 +217,10 @@ final class MongoCursorTests: MongoSwiftTestCase {
             // verify the cursor is lazy and doesn't block indefinitely.
             let results = try executeWithTimeout(timeout: 1) { () -> [Int] in
                 var results: [Int] = []
+                // If the filter or map below eagerly exhausted the cursor, then the body of the for loop would
+                // never execute, since the tailable cursor would be blocked in a `next` call indefinitely.
+                // Because they're lazy, the for loop will execute its body 3 times for each available result then
+                // return manually when count == 3.
                 for id in cursor.filter({ $0.isSuccess }).compactMap({ try! $0.get()["_id"]?.asInt() }) {
                     results.append(id)
                     if results.count == 3 {
