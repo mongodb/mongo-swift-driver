@@ -29,8 +29,8 @@ internal protocol Cursor {
      * If this cursor is tailable and `isAlive` is true, this may be called multiple times to attempt to retrieve more
      * elements.
      *
-     * If this cursor is a tailable await cursor, it will wait server side for a maximum of `maxAwaitTimeMS`
-     * before returning an empty batch. This option can be configured via options passed to the method that created this
+     * If this cursor is a tailable await cursor, it will wait for results server side for a maximum of `maxAwaitTimeMS`
+     * before returning `nil`. This option can be configured via options passed to the method that created this
      * cursor (e.g. the `maxAwaitTimeMS` option on the `FindOptions` passed to `find`).
      */
     func tryNext() -> Result<T, Error>?

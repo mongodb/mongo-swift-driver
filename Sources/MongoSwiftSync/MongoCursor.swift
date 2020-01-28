@@ -66,8 +66,8 @@ public class MongoCursor<T: Codable>: LazySequenceProtocol, IteratorProtocol, Cu
      *
      * If this cursor is tailable, this method may be called repeatedly while `isAlive` is true to retrieve new data.
      *
-     * If this cursor is a tailable await cursor, it will wait server side for a maximum of `maxAwaitTimeMS`
-     * before returning an empty batch. This option can be configured via options passed to the method that created this
+     * If this cursor is a tailable await cursor, it will wait for results server side for a maximum of `maxAwaitTimeMS`
+     * before returning `nil`. This option can be configured via options passed to the method that created this
      * cursor (e.g. the `maxAwaitTimeMS` option on the `FindOptions` passed to `find`).
      *
      * - Returns:
