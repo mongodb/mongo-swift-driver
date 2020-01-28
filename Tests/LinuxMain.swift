@@ -195,7 +195,7 @@ extension MongoCursorTests {
         ("testNonTailableCursor", testNonTailableCursor),
         ("testTailableCursor", testTailableCursor),
         ("testNext", testNext),
-        ("testClose", testClose),
+        ("testKill", testKill),
         ("testLazySequence", testLazySequence),
     ]
 }
@@ -286,6 +286,7 @@ extension SyncClientSessionTests {
         ("testSessionArguments", testSessionArguments),
         ("testSessionClientValidation", testSessionClientValidation),
         ("testInactiveSession", testInactiveSession),
+        ("testSessionCursor", testSessionCursor),
         ("testClusterTime", testClusterTime),
         ("testCausalConsistency", testCausalConsistency),
         ("testCausalConsistencyStandalone", testCausalConsistencyStandalone),
