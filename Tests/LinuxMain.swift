@@ -175,7 +175,6 @@ extension MongoCollectionTests {
         ("testFindOneAndReplace", testFindOneAndReplace),
         ("testFindOneAndUpdate", testFindOneAndUpdate),
         ("testNullIds", testNullIds),
-        ("testFindSingleBatch", testFindSingleBatch),
     ]
 }
 
@@ -197,6 +196,7 @@ extension MongoCursorTests {
         ("testTailableCursor", testTailableCursor),
         ("testNext", testNext),
         ("testClose", testClose),
+        ("testLazySequence", testLazySequence),
     ]
 }
 
