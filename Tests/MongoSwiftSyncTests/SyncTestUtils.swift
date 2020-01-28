@@ -45,8 +45,6 @@ extension MongoSwiftTestCase {
         } catch let error as CommandError where error.code == 48 {
             try database.collection(collName).drop()
             collection = try database.createCollection(collName, options: options)
-        } catch {
-            throw error
         }
         defer { try? collection.drop() }
         return try f(database, collection)
