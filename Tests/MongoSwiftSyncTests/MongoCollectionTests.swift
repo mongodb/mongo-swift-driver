@@ -523,24 +523,4 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(result2?.insertedIds[0]).to(equal(.null))
         expect(result2?.insertedIds[1]).to(equal(20))
     }
-
-    func testFindSingleBatch() throws {
-        let clientOptions = ClientOptions(commandMonitoring: true)
-        let ns = self.getNamespace(suffix: "singleBatch")
-        try self.withTestNamespace(ns: ns, clientOptions: clientOptions) { client, _, coll in
-            let events = try captureCommandEvents(from: client, eventTypes: [.commandStarted], commandNames: ["find"]) {
-                _ = try coll.find([:], options: FindOptions(limit: 123))
-                _ = try coll.find([:], options: FindOptions(limit: -123))
-            }
-            expect(events.count).to(equal(2))
-            expect(events[0].commandName).to(equal("find"))
-
-            let positiveLimitEvent = events[0] as? CommandStartedEvent
-            expect(positiveLimitEvent?.command["singleBatch"]).to(beNil())
-
-            let negativeLimitEvent = events[1] as? CommandStartedEvent
-            expect(negativeLimitEvent?.command["singleBatch"]).to(equal(true))
-            expect(negativeLimitEvent?.command["limit"]).to(equal(123))
-        }
-    }
 }
