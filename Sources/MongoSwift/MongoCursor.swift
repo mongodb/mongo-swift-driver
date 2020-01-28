@@ -278,7 +278,8 @@ public class MongoCursor<T: Codable>: Cursor {
         return self.client.operationExecutor.execute {
             // Whether an attempt has been made thus far.
             // If the cursor is closed before the first attempt was made, then the future returned should evaluate
-            // to an error. Otherwise, it should just evaluate to nil, since the cursor.killd after `next` was called.
+            // to an error. Otherwise, it should just evaluate to nil, since the cursor was killed after `next` was
+            // called.
             var hasTried = false
 
             while true {
