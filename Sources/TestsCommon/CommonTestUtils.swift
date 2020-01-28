@@ -1,7 +1,6 @@
 import CLibMongoC
 import Foundation
 @testable import MongoSwift
-@testable import MongoSwiftSync
 import Nimble
 import XCTest
 
