@@ -186,3 +186,37 @@ extension MongoSwiftSync.MongoCollection {
         return self.client
     }
 }
+
+func executeWithTimeout<T>(timeout: TimeInterval, _ f: @escaping () throws -> T) throws -> T {
+    let queue = DispatchQueue(label: "timeoutQueue")
+    let lock = DispatchSemaphore(value: 1)
+    var result: Result<T, Error> = .failure(TestError(message: "got no result"))
+
+    lock.wait()
+    // signal lock after getting it, or signal it because `f` hasn't already
+    defer { lock.signal() }
+
+    queue.async {
+        result = Result {
+            try f()
+        }
+        lock.signal()
+    }
+    switch lock.wait(timeout: DispatchTime.now() + timeout) {
+    case .success:
+        return try result.get()
+    case .timedOut:
+        throw TestError(message: "timed out")
+    }
+}
+
+extension Result {
+    var isSuccess: Bool {
+        switch self {
+        case .success:
+            return true
+        case .failure:
+            return false
+        }
+    }
+}

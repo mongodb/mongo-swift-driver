@@ -7,7 +7,7 @@ import MongoSwift
  * `Sequence` that iterate over the entire sequence may block indefinitely when used on tailable cursors (e.g. `map`).
  * It is safe to `close` a `MongoCursor` from another thread while it is blocked waiting on results, however.
  */
-public class MongoCursor<T: Codable>: Sequence, IteratorProtocol, Cursor {
+public class MongoCursor<T: Codable>: LazySequenceProtocol, IteratorProtocol, Cursor {
     private let asyncCursor: MongoSwift.MongoCursor<T>
     private let client: MongoClient
 

@@ -183,4 +183,52 @@ final class MongoCursorTests: MongoSwiftTestCase {
             expect(allDocs).to(equal(docs))
         }
     }
+
+    func testLazySequence() throws {
+        // Verify that the sequence behavior of normal cursors is as expected.
+        try self.withTestNamespace { _, _, coll in
+            try coll.insertMany([["_id": 1], ["_id": 2], ["_id": 3]])
+
+            var cursor = try coll.find()
+            expect(Array(cursor).count).to(equal(3))
+            expect(cursor.isAlive).to(beFalse())
+
+            cursor = try coll.find()
+            let mapped = Array(cursor.map { _ in 1 })
+            expect(mapped).to(equal([1, 1, 1]))
+            expect(cursor.isAlive).to(beFalse())
+
+            cursor = try coll.find()
+            let filteredMapped = cursor.filter {
+                $0.isSuccess
+            }.map { result -> Int? in
+                let document = try! result.get() // always succeeds due to filter stage
+                return document["_id"]?.asInt()
+            }
+            expect(Array(filteredMapped)).to(equal([1, 2, 3]))
+        }
+
+        // Verify that map/filter are lazy by using a tailable cursor.
+        let options = CreateCollectionOptions(capped: true, max: 3, size: 10000)
+        try self.withTestNamespace(ns: self.getNamespace(), collectionOptions: options) { _, _, coll in
+            try coll.insertMany([["_id": 1], ["_id": 2], ["_id": 3]])
+
+            let cursor = try coll.find(options: FindOptions(cursorType: .tailable))
+            // verify the cursor is lazy and doesn't block indefinitely.
+            let results = try executeWithTimeout(timeout: 1) { () -> [Int] in
+                var results: [Int] = []
+                for id in cursor.filter({ $0.isSuccess }).compactMap({ try! $0.get()["_id"]?.asInt() }) {
+                    results.append(id)
+                    if results.count == 3 {
+                        return results
+                    }
+                }
+                return results
+            }
+            expect(results.sorted()).to(equal([1, 2, 3]))
+            expect(cursor.isAlive).to(beTrue())
+            cursor.kill()
+            expect(cursor.isAlive).to(beFalse())
+        }
+    }
 }
