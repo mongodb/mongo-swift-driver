@@ -20,6 +20,12 @@ public class MongoCursor<T: Codable>: Cursor {
     /// This lock should only be acquired in the bodies of public API methods.
     private var lock: Lock
 
+    private var condition: NSCondition
+
+    private var available: Bool
+
+    private var workQueue: [DispatchSemaphore]
+    
     /// The state of this cursor.
     internal private(set) var state: State
 
@@ -93,7 +99,10 @@ public class MongoCursor<T: Codable>: Cursor {
         self.decoder = decoder
         self.cached = .none
         self.lock = Lock()
-
+        self.available = true
+        self.condition = NSCondition()
+        self.workQueue = []
+        
         // If there was an error constructing the cursor, throw it.
         if let error = self.getMongocError() {
             self.blockingClose()
@@ -283,14 +292,50 @@ public class MongoCursor<T: Codable>: Cursor {
             var hasTried = false
 
             while true {
-                if hasTried {
+                // print("--------")
+                // if hasTried {
                     // sleep for 1ms to allow other threads to grab the lock.
-                    Thread.sleep(forTimeInterval: 0.001)
+                //    Thread.sleep(forTimeInterval: 0.001)
+                // }
+
+
+                print("locking the queue in next")
+                self.condition.lock()
+                if !self.available || !self.workQueue.isEmpty {
+                    print("adding semaphore to queue in next")
+                    let semaphore = DispatchSemaphore(value: 0)
+                    self.workQueue.append(semaphore)
+                    print("unlocking the queue in next")
+                    self.condition.unlock()
+                    print("waiting on semaphore in next")
+                    semaphore.wait()
+                    print("got semaphore in next")
+                } else {
+                    print("nothing in queue in next, unlocking and setting available to false")
+                    self.available = false
+                    self.condition.unlock()
                 }
 
-                self.lock.lock()
-                defer { self.lock.unlock() }
+                // print("done setting condition to false in next")
+                
+                defer {
+                    // print("setting condition to true in next")
+                    self.condition.lock()
 
+                    if !self.workQueue.isEmpty {
+                        let semaphore = self.workQueue.removeFirst()
+                        self.condition.unlock()
+                        print("signaling in next")
+                        semaphore.signal()
+                    } else {
+                        self.available = true
+                        self.condition.unlock()
+                    }
+                    
+                    // print("done setting conditoin to true in next")
+                    // print("----------")
+                }
+                
                 if hasTried && !self.isAlive {
                     return nil
                 }
@@ -298,8 +343,10 @@ public class MongoCursor<T: Codable>: Cursor {
                 if let doc = try self.getNextDocument() {
                     return doc
                 }
-
+                
                 hasTried = true
+
+                
             }
         }
     }
@@ -315,9 +362,38 @@ public class MongoCursor<T: Codable>: Cursor {
      */
     public func kill() -> EventLoopFuture<Void> {
         return self.client.operationExecutor.execute {
-            self.lock.withLock {
-                self.blockingClose()
+            print("locking in kill")
+            self.condition.lock()
+            if !self.available || !self.workQueue.isEmpty {
+                let semaphore = DispatchSemaphore(value: 0)
+                self.workQueue.append(semaphore)
+                self.condition.unlock()
+                print("waiting on semaphore in kill")
+                semaphore.wait()
+                print("semaphore woke up in kill")
+            } else {
+                print("nothing in the queue, just going for it in kill")
+                self.available = false
+                self.condition.unlock()
             }
+
+            defer {
+                self.condition.lock()
+                self.available = true
+
+                if !self.workQueue.isEmpty {
+                    let semaphore = self.workQueue.removeFirst()
+                    self.condition.unlock()
+                    semaphore.signal()
+                } else {
+                    self.condition.unlock()
+                }
+            }
+            
+            print("closing in kill")
+            self.blockingClose()
+            print("unlocking in kill")
+            // self.condition.unlock()
         }
     }
 }

@@ -147,7 +147,9 @@ final class MongoCursorTests: MongoSwiftTestCase {
             expect(cursor.isAlive).to(beFalse())
             expect(try cursor.next()?.get()).to(throwError(errorType: LogicError.self))
         }
+    }
 
+    func testKillTailable() throws {
         let options = CreateCollectionOptions(capped: true, max: 3, size: 1000)
         try self.withTestNamespace(ns: self.getNamespace(suffix: "tail"), collectionOptions: options) { _, _, coll in
             let docs: [Document] = [["_id": 1], ["_id": 2], ["_id": 3]]
@@ -171,7 +173,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
             }
 
             // should be blocked on the cursor trying for more results.
-            expect(allDocsLock.wait(timeout: DispatchTime.now() + 1)).to(equal(.timedOut))
+            expect(allDocsLock.wait(timeout: DispatchTime.now() + 0.25)).to(equal(.timedOut))
             cursor.kill() // close cursor while it's blocking
 
             // wait for allDocs to be updated
