@@ -211,13 +211,6 @@ public struct TopologyDescription: Equatable {
     /// The servers comprising this topology.
     public let servers: [ServerDescription]
 
-    /// Whether every server's wire protocol version range is compatible with MongoSwift's.
-    public var compatible: Bool {
-        return self.servers.allSatisfy {
-            $0.maxWireVersion >= MIN_SUPPORTED_WIRE_VERSION
-        }
-    }
-
     /// The logicalSessionTimeoutMinutes value for this topology. This value is the minimum
     /// of the `logicalSessionTimeoutMinutes` values across all the servers in `servers`,
     /// or `nil` if any of them are `nil`.
