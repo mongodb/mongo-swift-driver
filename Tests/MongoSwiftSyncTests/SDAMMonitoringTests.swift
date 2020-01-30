@@ -22,7 +22,7 @@ final class SDAMTests: MongoSwiftTestCase {
     }
 
     func checkDefaultHostPort(_ desc: ServerDescription, _ hostlist: UnsafePointer<mongoc_host_list_t>) {
-        expect(desc.connectionId).to(equal(ConnectionId(hostlist)))
+        expect(desc.address).to(equal(Address(hostlist)))
     }
 
     // Basic test based on the "standalone" spec test for SDAM monitoring:
@@ -89,7 +89,7 @@ final class SDAMTests: MongoSwiftTestCase {
 
         let event2 = receivedEvents[2] as! ServerOpeningEvent
         expect(event2.topologyId).to(equal(event1.topologyId))
-        expect(event2.connectionId).to(equal(ConnectionId(hostlist)))
+        expect(event2.serverAddress).to(equal(Address(hostlist)))
 
         let event3 = receivedEvents[3] as! ServerDescriptionChangedEvent
         expect(event3.topologyId).to(equal(event2.topologyId))

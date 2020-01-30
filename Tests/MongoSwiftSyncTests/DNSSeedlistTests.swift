@@ -11,7 +11,7 @@ struct DNSSeedlistTestCase: Decodable {
     /// The expected set of initial seeds discovered from the SRV record.
     let seeds: [String]
     /// The discovered topology's list of hosts once SDAM completes a scan.
-    let hosts: [ConnectionId]
+    let hosts: [Address]
     /// The parsed connection string options as discovered from URI and TXT records.
     let options: Document?
     /// Additional options present in the connection string URI such as Userinfo (as user and password), and Auth
@@ -89,7 +89,7 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
 
             // "You MUST verify that the set of ServerDescriptions in the client's TopologyDescription eventually
             // matches the list of hosts."
-            expect(lastTopologyDescription?.servers.map { $0.connectionId }).toEventually(equal(testCase.hosts))
+            expect(lastTopologyDescription?.servers.map { $0.address }).toEventually(equal(testCase.hosts))
 
             // "You MUST verify that each of the values of the Connection String Options under options match the
             // Client's parsed value for that option."
