@@ -281,25 +281,18 @@ public class MongoCursor<T: Codable>: Cursor {
     public func next() -> EventLoopFuture<T?> {
         return self.client.operationExecutor.execute {
             try self.lock.withLock {
-                // Whether an attempt has been made thus far.
-                // If the cursor is closed before the first attempt was made, then the future returned should evaluate
-                // to an error. Otherwise, it should just evaluate to nil, since the cursor was killed after `next` was
-                // called.
-                var hasTried = false
+                guard self.isAlive else {
+                    throw ClosedCursorError
+                }
 
                 // Keep trying until either the cursor is killed or a notification has been sent by close
                 while self.isAlive && !self.channel.receive() {
                     if let doc = try self.getNextDocument() {
                         return doc
                     }
-                    hasTried = true
                 }
 
-                if hasTried {
-                    return nil
-                } else {
-                    throw ClosedCursorError
-                }
+                return nil
             }
         }
     }
