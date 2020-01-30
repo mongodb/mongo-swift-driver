@@ -218,3 +218,9 @@ extension Result {
         }
     }
 }
+
+extension MongoCursor {
+    func all() throws -> [T] {
+        return try self._all()
+    }
+}

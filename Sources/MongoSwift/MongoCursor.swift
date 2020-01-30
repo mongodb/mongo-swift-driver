@@ -221,7 +221,7 @@ public class MongoCursor<T: Codable>: Cursor {
      *      - `LogicError` if this function is called and the session associated with this cursor is inactive.
      *      - `DecodingError` if an error occurs decoding the server's responses.
      */
-    public func all() -> EventLoopFuture<[T]> {
+    internal func all() -> EventLoopFuture<[T]> {
         return self.client.operationExecutor.execute {
             try self.lock.withLock {
                 var results: [T] = []

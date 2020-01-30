@@ -100,7 +100,7 @@ public class MongoCursor<T: Codable>: LazySequenceProtocol, IteratorProtocol, Cu
      *   - `LogicError` if this function is called and the session associated with this cursor is inactive.
      *   - `DecodingError` if an error occurs decoding the server's response.
      */
-    public func all() throws -> [T] {
+    internal func _all() throws -> [T] {
         return try self.map {
             switch $0 {
             case let .success(t):
