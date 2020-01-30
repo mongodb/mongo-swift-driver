@@ -18,14 +18,11 @@ public class MongoCursor<T: Codable>: Cursor {
 
     /// Lock used to synchronize usage of the internal state.
     /// This lock should only be acquired in the bodies of public API methods.
-    private var lock: Lock
+    private let lock: Lock
 
-    private var condition: NSCondition
+    /// Channel used to notify `next(...)` to stop retrying once `kill(...)` is called.
+    private let channel: ThreadChannel
 
-    private var available: Bool
-
-    private var workQueue: [DispatchSemaphore]
-    
     /// The state of this cursor.
     internal private(set) var state: State
 
@@ -99,13 +96,11 @@ public class MongoCursor<T: Codable>: Cursor {
         self.decoder = decoder
         self.cached = .none
         self.lock = Lock()
-        self.available = true
-        self.condition = NSCondition()
-        self.workQueue = []
-        
+        self.channel = ThreadChannel()
+
         // If there was an error constructing the cursor, throw it.
         if let error = self.getMongocError() {
-            self.blockingClose()
+            self.blockingKill()
             throw error
         }
 
@@ -114,7 +109,7 @@ public class MongoCursor<T: Codable>: Cursor {
     }
 
     /// Close this cursor
-    internal func blockingClose() {
+    internal func blockingKill() {
         self.cached = .none
         guard case let .open(cursor, _, _) = self.state else {
             return
@@ -152,13 +147,13 @@ public class MongoCursor<T: Codable>: Cursor {
 
         guard mongoc_cursor_next(cursor, out) else {
             if let error = self.getMongocError() {
-                self.blockingClose()
+                self.blockingKill()
                 throw error
             }
 
             // if we've reached the end of the cursor, close it.
             if !self.cursorType.isTailable || !mongoc_cursor_more(cursor) {
-                self.blockingClose()
+                self.blockingKill()
             }
 
             return nil
@@ -173,7 +168,7 @@ public class MongoCursor<T: Codable>: Cursor {
         do {
             return try self.decoder.decode(T.self, from: doc)
         } catch {
-            self.blockingClose()
+            self.blockingKill()
             throw error
         }
     }
@@ -226,7 +221,7 @@ public class MongoCursor<T: Codable>: Cursor {
      *      - `LogicError` if this function is called and the session associated with this cursor is inactive.
      *      - `DecodingError` if an error occurs decoding the server's responses.
      */
-    internal func all() -> EventLoopFuture<[T]> {
+    public func all() -> EventLoopFuture<[T]> {
         return self.client.operationExecutor.execute {
             try self.lock.withLock {
                 var results: [T] = []
@@ -285,68 +280,26 @@ public class MongoCursor<T: Codable>: Cursor {
      */
     public func next() -> EventLoopFuture<T?> {
         return self.client.operationExecutor.execute {
-            // Whether an attempt has been made thus far.
-            // If the cursor is closed before the first attempt was made, then the future returned should evaluate
-            // to an error. Otherwise, it should just evaluate to nil, since the cursor was killed after `next` was
-            // called.
-            var hasTried = false
+            try self.lock.withLock {
+                // Whether an attempt has been made thus far.
+                // If the cursor is closed before the first attempt was made, then the future returned should evaluate
+                // to an error. Otherwise, it should just evaluate to nil, since the cursor was killed after `next` was
+                // called.
+                var hasTried = false
 
-            while true {
-                // print("--------")
-                // if hasTried {
-                    // sleep for 1ms to allow other threads to grab the lock.
-                //    Thread.sleep(forTimeInterval: 0.001)
-                // }
-
-
-                print("locking the queue in next")
-                self.condition.lock()
-                if !self.available || !self.workQueue.isEmpty {
-                    print("adding semaphore to queue in next")
-                    let semaphore = DispatchSemaphore(value: 0)
-                    self.workQueue.append(semaphore)
-                    print("unlocking the queue in next")
-                    self.condition.unlock()
-                    print("waiting on semaphore in next")
-                    semaphore.wait()
-                    print("got semaphore in next")
-                } else {
-                    print("nothing in queue in next, unlocking and setting available to false")
-                    self.available = false
-                    self.condition.unlock()
-                }
-
-                // print("done setting condition to false in next")
-                
-                defer {
-                    // print("setting condition to true in next")
-                    self.condition.lock()
-
-                    if !self.workQueue.isEmpty {
-                        let semaphore = self.workQueue.removeFirst()
-                        self.condition.unlock()
-                        print("signaling in next")
-                        semaphore.signal()
-                    } else {
-                        self.available = true
-                        self.condition.unlock()
+                // Keep trying until either the cursor is killed or a notification has been sent by close
+                while self.isAlive && !self.channel.receive() {
+                    if let doc = try self.getNextDocument() {
+                        return doc
                     }
-                    
-                    // print("done setting conditoin to true in next")
-                    // print("----------")
+                    hasTried = true
                 }
-                
-                if hasTried && !self.isAlive {
+
+                if hasTried {
                     return nil
+                } else {
+                    throw ClosedCursorError
                 }
-
-                if let doc = try self.getNextDocument() {
-                    return doc
-                }
-                
-                hasTried = true
-
-                
             }
         }
     }
@@ -362,38 +315,30 @@ public class MongoCursor<T: Codable>: Cursor {
      */
     public func kill() -> EventLoopFuture<Void> {
         return self.client.operationExecutor.execute {
-            print("locking in kill")
-            self.condition.lock()
-            if !self.available || !self.workQueue.isEmpty {
-                let semaphore = DispatchSemaphore(value: 0)
-                self.workQueue.append(semaphore)
-                self.condition.unlock()
-                print("waiting on semaphore in kill")
-                semaphore.wait()
-                print("semaphore woke up in kill")
-            } else {
-                print("nothing in the queue, just going for it in kill")
-                self.available = false
-                self.condition.unlock()
+            self.channel.notify()
+            self.lock.withLock {
+                self.blockingKill()
             }
-
-            defer {
-                self.condition.lock()
-                self.available = true
-
-                if !self.workQueue.isEmpty {
-                    let semaphore = self.workQueue.removeFirst()
-                    self.condition.unlock()
-                    semaphore.signal()
-                } else {
-                    self.condition.unlock()
-                }
-            }
-            
-            print("closing in kill")
-            self.blockingClose()
-            print("unlocking in kill")
-            // self.condition.unlock()
         }
+    }
+}
+
+/// A channel used to notify other threads.
+private struct ThreadChannel {
+    private let lock: NSLock
+
+    fileprivate init() {
+        self.lock = NSLock()
+        self.lock.lock()
+    }
+
+    /// Return whether or not `notify(...)` has been called since the last call to `receive(...)`.
+    fileprivate func receive() -> Bool {
+        self.lock.try()
+    }
+
+    /// Send a notification over the channel. The next call to `receive(...)` will return true.
+    fileprivate func notify() {
+        self.lock.unlock()
     }
 }

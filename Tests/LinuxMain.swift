@@ -196,6 +196,7 @@ extension MongoCursorTests {
         ("testTailableCursor", testTailableCursor),
         ("testNext", testNext),
         ("testKill", testKill),
+        ("testKillTailable", testKillTailable),
         ("testLazySequence", testLazySequence),
     ]
 }
