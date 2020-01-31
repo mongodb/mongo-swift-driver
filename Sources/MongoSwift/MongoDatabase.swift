@@ -237,7 +237,7 @@ public struct MongoDatabase {
      * - Returns:
      *    An `EventLoopFuture<MongoCursor<CollectionSpecification>>` containing a cursor over the collections.
      *
-    *     If the future fails, the error is likely one of the following:
+     *    If the future fails, the error is likely one of the following:
      *    - `InvalidArgumentError` if the options passed are an invalid combination.
      *    - `LogicError` if the provided session is inactive.
      *    - `LogicError` if this databases's parent client has already been closed.
