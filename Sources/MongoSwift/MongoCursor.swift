@@ -35,34 +35,6 @@ public class MongoCursor<T: Codable>: Cursor {
     /// Decoder from the client, database, or collection that created this cursor.
     internal let decoder: BSONDecoder
 
-    /**
-     * Indicates whether this cursor has the potential to return more data.
-     *
-     * This property is mainly useful if this cursor is tailable, since in that case `tryNext` may return more results
-     * even after returning `nil`.
-     *
-     * If this cursor is non-tailable, it will always be dead as soon as either `tryNext` returns `nil` or an error.
-     *
-     * This cursor will be dead as soon as `next` returns `nil` or an error, regardless of the `CursorType`.
-     */
-    public var isAlive: Bool {
-        if case .open = self.state {
-            return true
-        } else if case .cached = self.cached {
-            return true
-        }
-        return false
-    }
-
-    /// Returns the ID used by the server to track the cursor. `nil` once all results have been fetched from the server.
-    public var id: Int64? {
-        guard case let .open(cursor, _, _) = self.state else {
-            return nil
-        }
-        let id = mongoc_cursor_get_id(cursor)
-        return id == 0 ? nil : id
-    }
-
     /// Used to store a cached next value to return, if one exists.
     private enum CachedDocument {
         /// Indicates that the associated value is the next value to return. This value may be nil.
@@ -109,6 +81,8 @@ public class MongoCursor<T: Codable>: Cursor {
     }
 
     /// Close this cursor
+    ///
+    /// This method should only be called while the lock is held.
     internal func blockingKill() {
         self.cached = .none
         guard case let .open(cursor, _, _) = self.state else {
@@ -125,6 +99,8 @@ public class MongoCursor<T: Codable>: Cursor {
 
     /// Retrieves the next document from the cache or the underlying `mongoc_cursor_t`, if it exists.
     /// Will close the cursor if the end of the cursor is reached or if an error occurs.
+    ///
+    /// This method should only be called while the lock is held.
     internal func getNextDocument() throws -> T? {
         if case let .cached(doc) = self.cached {
             self.cached = .none
@@ -175,6 +151,8 @@ public class MongoCursor<T: Codable>: Cursor {
 
     /// Retrieves any error that occurred in mongoc or on the server while iterating the cursor. Returns nil if this
     /// cursor is already closed, or if no error occurred.
+    ///
+    /// This method should only be called while the lock is held.
     private func getMongocError() -> MongoError? {
         guard case let .open(cursor, _, _) = self.state else {
             return nil
@@ -202,6 +180,34 @@ public class MongoCursor<T: Codable>: Cursor {
         // The only feasible error here is that we tried to advance a dead mongoc cursor. Due to our cursor-closing
         // logic in `next()` that should never happen, but parse the error anyway just in case we end up here.
         return extractMongoError(error: error)
+    }
+
+    /**
+     * Indicates whether this cursor has the potential to return more data.
+     *
+     * This property is mainly useful if this cursor is tailable, since in that case `tryNext` may return more results
+     * even after returning `nil`.
+     *
+     * If this cursor is non-tailable, it will always be dead as soon as either `tryNext` returns `nil` or an error.
+     *
+     * This cursor will be dead as soon as `next` returns `nil` or an error, regardless of the `CursorType`.
+     */
+    public var isAlive: Bool {
+        if case .open = self.state {
+            return true
+        } else if case .cached = self.cached {
+            return true
+        }
+        return false
+    }
+
+    /// Returns the ID used by the server to track the cursor. `nil` once all results have been fetched from the server.
+    public var id: Int64? {
+        guard case let .open(cursor, _, _) = self.state else {
+            return nil
+        }
+        let id = mongoc_cursor_get_id(cursor)
+        return id == 0 ? nil : id
     }
 
     /**

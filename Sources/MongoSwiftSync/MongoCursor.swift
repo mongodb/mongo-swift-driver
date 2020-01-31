@@ -4,8 +4,10 @@ import MongoSwift
  * A MongoDB cursor.
  *
  * Note that the `next` method blocks until a result is received or the cursor is exhausted, so methods inherited from
- * `Sequence` that iterate over the entire sequence may block indefinitely when used on tailable cursors (e.g. `map`).
- * It is safe to `close` a `MongoCursor` from another thread while it is blocked waiting on results, however.
+ * `Sequence` that iterate over the entire sequence may block indefinitely when used on tailable cursors (e.g.
+ * `reduce`).
+ *
+ * It is safe to `kill(...)` a `MongoCursor` from another thread while it is blocked waiting on results, however.
  */
 public class MongoCursor<T: Codable>: LazySequenceProtocol, IteratorProtocol, Cursor {
     private let asyncCursor: MongoSwift.MongoCursor<T>
