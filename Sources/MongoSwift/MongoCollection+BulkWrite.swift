@@ -11,13 +11,16 @@ extension MongoCollection {
      *   - options: optional `BulkWriteOptions` to use while executing the operation.
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture<BulkWriteResult?>`. On success, the future contains either a `BulkWriteResult`,
-     *            or contains `nil` if the write concern is unacknowledged. On failure, contains:
-     *            - `InvalidArgumentError` if `requests` is empty.
-     *            - `LogicError` if the provided session is inactive.
-     *            - `BulkWriteError` if any error occurs while performing the writes. This includes errors that would
-     *               typically be propagated as `RuntimeError`s or `CommandError`s elsewhere.
-     *            - `EncodingError` if an error occurs while encoding the `CollectionType` or the options to BSON.
+     * - Returns:
+     *    An `EventLoopFuture<BulkWriteResult?>`. On success, the future contains either a `BulkWriteResult`, or
+     *    contains `nil` if the write concern is unacknowledged.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `InvalidArgumentError` if `requests` is empty.
+     *    - `LogicError` if the provided session is inactive.
+     *    - `BulkWriteError` if any error occurs while performing the writes. This includes errors that would
+     *       typically be propagated as `RuntimeError`s or `CommandError`s elsewhere.
+     *    - `EncodingError` if an error occurs while encoding the `CollectionType` or the options to BSON.
      */
     public func bulkWrite(
         _ requests: [WriteModel<T>],

@@ -167,13 +167,15 @@ extension MongoCollection {
      *   - options: Optional `CreateIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture<String>`. On success, contains the name of the created index. On failure,
-     *            contains:
-     *            - `WriteError` if an error occurs while performing the write.
-     *            - `CommandError` if an error occurs that prevents the command from executing.
-     *            - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *            - `LogicError` if the provided session is inactive.
-     *            - `EncodingError` if an error occurs while encoding the index specification or options.
+     * - Returns:
+     *    An `EventLoopFuture<String>`. On success, contains the name of the created index.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `WriteError` if an error occurs while performing the write.
+     *    - `CommandError` if an error occurs that prevents the command from executing.
+     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `LogicError` if the provided session is inactive.
+     *    - `EncodingError` if an error occurs while encoding the index specification or options.
      */
     public func createIndex(
         _ keys: Document,
@@ -193,13 +195,15 @@ extension MongoCollection {
      *   - options: Optional `CreateIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture<String>`. On success, contains the name of the created index. On failure,
-     *            contains:
-     *            - `WriteError` if an error occurs while performing the write.
-     *            - `CommandError` if an error occurs that prevents the command from executing.
-     *            - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *            - `LogicError` if the provided session is inactive.
-     *            - `EncodingError` if an error occurs while encoding the index specification or options.
+     * - Returns:
+     *    An `EventLoopFuture<String>`. On success, contains the name of the created index.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `WriteError` if an error occurs while performing the write.
+     *    - `CommandError` if an error occurs that prevents the command from executing.
+     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `LogicError` if the provided session is inactive.
+     *    - `EncodingError` if an error occurs while encoding the index specification or options.
      */
     public func createIndex(
         _ model: IndexModel,
@@ -222,14 +226,16 @@ extension MongoCollection {
      *   - options: Optional `CreateIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture<[String]>`. On success, contains the names of the created indexes. On failure,
-     *            contains:
-     *            - `WriteError` if an error occurs while performing the write.
-     *            - `CommandError` if an error occurs that prevents the command from executing.
-     *            - `InvalidArgumentError` if `models` is empty.
-     *            - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *            - `LogicError` if the provided session is inactive.
-     *            - `EncodingError` if an error occurs while encoding the index specifications or options.
+     * - Returns:
+     *    An `EventLoopFuture<[String]>`. On success, contains the names of the created indexes.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `WriteError` if an error occurs while performing the write.
+     *    - `CommandError` if an error occurs that prevents the command from executing.
+     *    - `InvalidArgumentError` if `models` is empty.
+     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `LogicError` if the provided session is inactive.
+     *    - `EncodingError` if an error occurs while encoding the index specifications or options.
      */
     public func createIndexes(
         _ models: [IndexModel],
@@ -252,11 +258,14 @@ extension MongoCollection {
      *   - options: Optional `DropIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture<Void>`. On failure, contains:
-     *            - `WriteError` if an error occurs while performing the command.
-     *            - `CommandError` if an error occurs that prevents the command from executing.
-     *            - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *            - `EncodingError` if an error occurs while encoding the options.
+     * - Returns:
+     *    An `EventLoopFuture<Void>` that succeeds when the drop is successful.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `WriteError` if an error occurs while performing the command.
+     *    - `CommandError` if an error occurs that prevents the command from executing.
+     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `EncodingError` if an error occurs while encoding the options.
      */
     public func dropIndex(
         _ name: String,
@@ -279,12 +288,15 @@ extension MongoCollection {
      *   - options: Optional `DropIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture<Void>`. On failure, contains:
-     *            - `WriteError` if an error occurs while performing the command.
-     *            - `CommandError` if an error occurs that prevents the command from executing.
-     *            - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *            - `LogicError` if the provided session is inactive.
-     *            - `EncodingError` if an error occurs while encoding the options.
+     * - Returns:
+     *    An `EventLoopFuture<Void>` that succeeds when the drop is successful.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `WriteError` if an error occurs while performing the command.
+     *    - `CommandError` if an error occurs that prevents the command from executing.
+     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `LogicError` if the provided session is inactive.
+     *    - `EncodingError` if an error occurs while encoding the options.
      */
     public func dropIndex(
         _ keys: Document,
@@ -302,12 +314,15 @@ extension MongoCollection {
      *   - options: Optional `DropIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture<Void>`. On failure, contains:
-     *            - `WriteError` if an error occurs while performing the command.
-     *            - `CommandError` if an error occurs that prevents the command from executing.
-     *            - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *            - `LogicError` if the provided session is inactive.
-     *            - `EncodingError` if an error occurs while encoding the options.
+     * - Returns:
+     *    An `EventLoopFuture<Void>` that succeeds when the drop is successful.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `WriteError` if an error occurs while performing the command.
+     *    - `CommandError` if an error occurs that prevents the command from executing.
+     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `LogicError` if the provided session is inactive.
+     *    - `EncodingError` if an error occurs while encoding the options.
      */
     public func dropIndex(
         _ model: IndexModel,
@@ -324,12 +339,15 @@ extension MongoCollection {
      *   - options: Optional `DropIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture<Void>`. On failure, contains:
-     *            - `WriteError` if an error occurs while performing the command.
-     *            - `CommandError` if an error occurs that prevents the command from executing.
-     *            - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *            - `LogicError` if the provided session is inactive.
-     *            - `EncodingError` if an error occurs while encoding the options.
+     * - Returns:
+     *    An `EventLoopFuture<Void>` that succeeds when the drop is successful.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `WriteError` if an error occurs while performing the command.
+     *    - `CommandError` if an error occurs that prevents the command from executing.
+     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `LogicError` if the provided session is inactive.
+     *    - `EncodingError` if an error occurs while encoding the options.
      */
     public func dropIndexes(
         options: DropIndexOptions? = nil,
@@ -355,9 +373,12 @@ extension MongoCollection {
      * - Parameters:
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: A `MongoCursor` over the `IndexModel`s.
+     * - Returns:
+     *    An `EventLoopFuture<MongoCursor<IndexModel>>`. On success, contains a cursor over the indexes.
      *
-     * - Throws: `LogicError` if the provided session is inactive.
+     *    If the future fails, the error is likely one of the following:
+     *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
      */
     public func listIndexes(session: ClientSession? = nil) -> EventLoopFuture<MongoCursor<IndexModel>> {
         let operation = ListIndexesOperation(collection: self)
@@ -370,9 +391,11 @@ extension MongoCollection {
      * - Parameters:
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture<[String]>` containing the index names.
+     * - Returns:
+     *    An `EventLoopFuture<[String]>` containing the index names.
      *
-     * - Throws: `LogicError` if the provided session is inactive.
+     *    If the future fails, the error is likely one of the following:
+     *    - `LogicError` if the provided session is inactive.
      */
     public func listIndexNames(session _: ClientSession? = nil) throws -> EventLoopFuture<[String]> {
         return self.listIndexes().flatMap { cursor in

@@ -315,9 +315,12 @@ public class MongoClient {
      *   - options: Options to use when creating the session.
      *   - sessionBody: A closure which takes in a `ClientSession` and returns an `EventLoopFuture<T>`.
      *
-     * - Returns: An `EventLoopFuture<T>`. If the deployment does not support sessions, returns a failed future
-     *            containing a `CompatibilityError`. If the user-provided closure throws any other error, returns a
-     *            failed future containing that error. Otherwise, returns the future returned by `sessionBody`.
+     * - Returns:
+     *    An `EventLoopFuture<T>`, the return value of the user-provided closure.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `CompatibilityError` if the deployment does not support sessions.
+     *    - `LogicError` if this client has already been closed.
      */
     public func withSession<T>(
         options: ClientSessionOptions? = nil,
@@ -355,10 +358,14 @@ public class MongoClient {
      *     on the "name", "sizeOnDisk", "empty", or "shards" fields of the output.
      *   - session: Optional `ClientSession` to use when executing this command.
      *
-     * - Returns: An `EventLoopFuture<[DatabaseSpecification]>`. On success, the future contains an array of the
-     *            specifications of databases matching the provided criteria. On failure, contains:
-     *            - `LogicError` if the provided session is inactive.
-     *            - `EncodingError` if an error is encountered while encoding the options to BSON.
+     * - Returns:
+     *    An `EventLoopFuture<[DatabaseSpecification]>`. On success, the future contains an array of the specifications
+     *    of databases matching the provided criteria.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this client has already been closed.
+     *    - `EncodingError` if an error is encountered while encoding the options to BSON.
      *
      * - SeeAlso: https://docs.mongodb.com/manual/reference/command/listDatabases/
      */
@@ -382,9 +389,13 @@ public class MongoClient {
      *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture<[MongoDatabase]>`. On success, the future contains an array of `MongoDatabase`s
-     *            that match the provided filter. On failure, contains:
-     *            - `LogicError` if the provided session is inactive.
+     * - Returns:
+     *    An `EventLoopFuture<[MongoDatabase]>`. On success, the future contains an array of `MongoDatabase`s that
+     *    match the provided filter.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this client has already been closed.
      */
     public func listMongoDatabases(
         _ filter: Document? = nil,
@@ -400,9 +411,13 @@ public class MongoClient {
      *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture<[String]>`. On success, the future contains an array of names of databases that
-     *            match the provided filter. On failure, contains:
-     *            - `LogicError` if the provided session is inactive.
+     * - Returns:
+     *    An `EventLoopFuture<[String]>`. On success, the future contains an array of names of databases that
+     *    match the provided filter.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this client has already been closed.
      */
     public func listDatabaseNames(
         _ filter: Document? = nil,
@@ -427,7 +442,7 @@ public class MongoClient {
      *   - name: the name of the database to retrieve
      *   - options: Optional `DatabaseOptions` to use for the retrieved database
      *
-     * - Returns: a `MongoDatabase` corresponding to the provided database name
+     * - Returns: a `MongoDatabase` corresponding to the provided database name.
      */
     public func db(_ name: String, options: DatabaseOptions? = nil) -> MongoDatabase {
         return MongoDatabase(name: name, client: self, options: options)

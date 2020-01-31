@@ -11,13 +11,16 @@ extension MongoCollection {
      *   - options: Optional `FindOneAndDeleteOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture<CollectionType?>`. On success, contains either the deleted document, represented
-     *            as a `CollectionType`, or contains `nil` if no document was deleted. On failure, contains:
-     *            - `InvalidArgumentError` if any of the provided options are invalid.
-     *            - `LogicError` if the provided session is inactive.
-     *            - `CommandError` if an error occurs that prevents the command from executing.
-     *            - `WriteError` if an error occurs while executing the command.
-     *            - `DecodingError` if the deleted document cannot be decoded to a `CollectionType` value.
+     * - Returns:
+     *    An `EventLoopFuture<CollectionType?>`. On success, contains either the deleted document, represented as a
+     *    `CollectionType`, or contains `nil` if no document was deleted.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `InvalidArgumentError` if any of the provided options are invalid.
+     *    - `LogicError` if the provided session is inactive.
+     *    - `CommandError` if an error occurs that prevents the command from executing.
+     *    - `WriteError` if an error occurs while executing the command.
+     *    - `DecodingError` if the deleted document cannot be decoded to a `CollectionType` value.
      */
     public func findOneAndDelete(
         _ filter: Document,
@@ -38,15 +41,18 @@ extension MongoCollection {
      *   - options: Optional `FindOneAndReplaceOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture<CollectionType?>`. On success, contains a `CollectionType`, representing either
-     *            the original document or its replacement, depending on selected options; or containing `nil` if there
-     *             was no matching document. On failure, contains:
-     *             - `InvalidArgumentError` if any of the provided options are invalid.
-     *             - `LogicError` if the provided session is inactive.
-     *             - `CommandError` if an error occurs that prevents the command from executing.
-     *             - `WriteError` if an error occurs while executing the command.
-     *             - `DecodingError` if the replaced document cannot be decoded to a `CollectionType` value.
-     *             - `EncodingError` if `replacement` cannot be encoded to a `Document`.
+     * - Returns:
+     *    An `EventLoopFuture<CollectionType?>`. On success, contains a `CollectionType`, representing either the
+     *    original document or its replacement, depending on selected options; or containing `nil` if there was no
+     *    matching document.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `InvalidArgumentError` if any of the provided options are invalid.
+     *    - `LogicError` if the provided session is inactive.
+     *    - `CommandError` if an error occurs that prevents the command from executing.
+     *    - `WriteError` if an error occurs while executing the command.
+     *    - `DecodingError` if the replaced document cannot be decoded to a `CollectionType` value.
+     *    - `EncodingError` if `replacement` cannot be encoded to a `Document`.
      */
     public func findOneAndReplace(
         filter: Document,
@@ -71,13 +77,16 @@ extension MongoCollection {
      *   - options: Optional `FindOneAndUpdateOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture<CollectionType>`. On success, contains either the original or updated document,
-     *            depending on selected options, or contains `nil` if there was no match. On failure, contains:
-     *            - `InvalidArgumentError` if any of the provided options are invalid.
-     *            - `LogicError` if the provided session is inactive.
-     *            - `CommandError` if an error occurs that prevents the command from executing.
-     *            - `WriteError` if an error occurs while executing the command.
-     *            - `DecodingError` if the updated document cannot be decoded to a `CollectionType` value.
+     * - Returns:
+     *    An `EventLoopFuture<CollectionType>`. On success, contains either the original or updated document, depending
+     *    on selected options, or contains `nil` if there was no match.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `InvalidArgumentError` if any of the provided options are invalid.
+     *    - `LogicError` if the provided session is inactive.
+     *    - `CommandError` if an error occurs that prevents the command from executing.
+     *    - `WriteError` if an error occurs while executing the command.
+     *    - `DecodingError` if the updated document cannot be decoded to a `CollectionType` value.
      */
     public func findOneAndUpdate(
         filter: Document,
@@ -91,13 +100,15 @@ extension MongoCollection {
     /**
      * A private helper method for findAndModify operations to use.
      *
-     * - Returns: an `EventLoopFuture<CollectionType?>. On success, contains the document returned by the server, if
-     *            one exists. On failure, contains:
-     *            - `InvalidArgumentError` if any of the provided options are invalid.
-     *            - `LogicError` if the provided session is inactive.
-     *            - `CommandError` if an error occurs that prevents the command from executing.
-     *            - `WriteError` if an error occurs while executing the command.
-     *            - `DecodingError` if the updated document cannot be decoded to a `CollectionType` value.
+     * - Returns:
+     *    An `EventLoopFuture<CollectionType?>. On success, contains the document returned by the server, if one exists.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `InvalidArgumentError` if any of the provided options are invalid.
+     *    - `LogicError` if the provided session is inactive.
+     *    - `CommandError` if an error occurs that prevents the command from executing.
+     *    - `WriteError` if an error occurs while executing the command.
+     *    - `DecodingError` if the updated document cannot be decoded to a `CollectionType` value.
      */
     private func findAndModify(
         filter: Document,
