@@ -173,7 +173,10 @@ public class MongoCursor<T: Codable>: CursorProtocol {
             if let result = self.cached.clear(), let unwrappedResult = result {
                 results.append(unwrappedResult)
             }
-            results += try self.wrappedCursor.all().map { try self.decode(doc: $0) }
+            // If the cursor still could have more results after clearing the cache, collect them too.
+            if self.isAlive {
+                results += try self.wrappedCursor.all().map { try self.decode(doc: $0) }
+            }
             return results
         }
     }
@@ -223,9 +226,14 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      */
     public func next() -> EventLoopFuture<T?> {
         return self.client.operationExecutor.execute {
-            if let result = self.cached.clear(), let decodedResult = result {
-                return decodedResult
+            if let result = self.cached.clear() {
+                // If there are no more results forthcoming after clearing the cache, or the cache had a non-nil
+                // result in it, return that.
+                if !self.isAlive || result != nil {
+                    return result
+                }
             }
+            // Otherwise iterate until a result is received.
             return try self.decode(result: self.wrappedCursor.next())
         }
     }
