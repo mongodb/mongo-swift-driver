@@ -128,8 +128,8 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      *
      *   If the future evaluates to an error, it is likely one of the following:
      *     - `CommandError` if an error occurs while fetching more results from the server.
-     *     - `LogicError` if this function is called after the cursor has died.
-     *     - `LogicError` if this function is called and the session associated with this cursor is inactive.
+     *     - `LogicError` if this function is called after the change stream has died.
+     *     - `LogicError` if this function is called and the session associated with this change stream is inactive.
      *     - `DecodingError` if an error occurs decoding the server's response.
      */
     public func next() -> EventLoopFuture<T?> {
@@ -152,8 +152,8 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      *
      *    If the future evaluates to an error, it is likely one of the following:
      *      - `CommandError` if an error occurs while fetching more results from the server.
-     *      - `LogicError` if this function is called after the cursor has died.
-     *      - `LogicError` if this function is called and the session associated with this cursor is inactive.
+     *      - `LogicError` if this function is called after the change stream has died.
+     *      - `LogicError` if this function is called and the session associated with this change stream is inactive.
      *      - `DecodingError` if an error occurs decoding the server's response.
      */
     public func tryNext() -> EventLoopFuture<T?> {
@@ -170,7 +170,7 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      * This method will have no effect if the change stream is already dead.
      *
      * - Returns:
-     *   An `EventLoopFuture` that evaluates when the cursor has completed closing. This future should not fail.
+     *   An `EventLoopFuture` that evaluates when the change stream has completed closing. This future should not fail.
      */
     public func kill() -> EventLoopFuture<Void> {
         return self.client.operationExecutor.execute {

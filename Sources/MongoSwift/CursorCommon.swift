@@ -81,7 +81,7 @@ internal protocol MongocCursorWrapper {
 }
 
 internal let ClosedCursorError: Error = LogicError(
-    message: "Cannot advance a completed or failed cursor or change stream"
+    message: "Cannot advance a dead cursor or change stream"
 )
 
 /// Internal type representing a MongoDB cursor.

@@ -26,7 +26,7 @@ public class ChangeStream<T: Codable>: CursorProtocol {
     /**
      * Indicates whether this change stream has the potential to return more data.
      *
-     * This cursor will be dead if `next` returns `nil` or an error. It will also be dead if `tryNext` returns
+     * This change stream will be dead if `next` returns `nil` or an error. It will also be dead if `tryNext` returns
      * an error, but will still be alive if `tryNext` returns `nil`.
      */
     public var isAlive: Bool {
@@ -47,8 +47,8 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      *
      *   If the result contains an error, it is likely one of the following:
      *     - `CommandError` if an error occurs while fetching more results from the server.
-     *     - `LogicError` if this function is called after the cursor has died.
-     *     - `LogicError` if this function is called and the session associated with this cursor is inactive.
+     *     - `LogicError` if this function is called after the change stream has died.
+     *     - `LogicError` if this function is called and the session associated with this change stream is inactive.
      *     - `DecodingError` if an error occurs decoding the server's response.
      */
     public func next() -> Result<T, Error>? {
@@ -76,8 +76,8 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      *
      *    If the result is an error, it is likely one of the following:
      *      - `CommandError` if an error occurs while fetching more results from the server.
-     *      - `LogicError` if this function is called after the cursor has died.
-     *      - `LogicError` if this function is called and the session associated with this cursor is inactive.
+     *      - `LogicError` if this function is called after the change stream has died.
+     *      - `LogicError` if this function is called and the session associated with this change stream is inactive.
      *      - `DecodingError` if an error occurs decoding the server's response.
      */
     public func tryNext() -> Result<T, Error>? {
@@ -95,7 +95,7 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      * Kill this change stream.
      *
      * This method may be called from another thread safely even if this change stream is blocked retrieving results.
-     * This is mainly useful for freeing a thread that a cursor is blocking with a long running operation.
+     * This is mainly useful for freeing a thread that the change stream is blocking with a long running operation.
      *
      * This method is automatically called in the `deinit` of `ChangeStream`, so it is not necessary to call it
      * manually.
