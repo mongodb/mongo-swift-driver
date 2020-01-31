@@ -137,16 +137,16 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
         let collDefault = defaultDb.collection(self.getCollectionName(), withType: Wrapper.self)
 
         let defaultId: BSON = "default"
-        try collDefault.insertOne(wrapperWithId(defaultId.stringValue!))
+        let wrapper = wrapperWithId(defaultId.stringValue!)
+        try collDefault.insertOne(wrapper)
 
-        // TODO: SWIFT-672: enable these assertions
-        // var doc = try collDoc.find(["_id": defaultId]).nextOrError()
-        // expect(doc).toNot(beNil())
-        // expect(doc?["date"]?.dateValue).to(equal(date))
-        // expect(doc?["uuid"]?.binaryValue).to(equal(try Binary(from: uuid)))
-        // expect(doc?["data"]?.binaryValue).to(equal(try Binary(data: data, subtype: .generic)))
+        var doc = try collDoc.find(["_id": defaultId]).next()?.get()
+        expect(doc).toNot(beNil())
+        expect(doc?["date"]?.dateValue).to(equal(date))
+        expect(doc?["uuid"]?.binaryValue).to(equal(try Binary(from: uuid)))
+        expect(doc?["data"]?.binaryValue).to(equal(try Binary(data: data, subtype: .generic)))
 
-        // expect(try collDefault.find(["_id": defaultId]).nextOrError()).to(equal(wrapper))
+        expect(try collDefault.find(["_id": defaultId]).next()?.get()).to(equal(wrapper))
 
         // Customize strategies on the client
         let custom = ClientOptions(
@@ -160,14 +160,13 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
         let collClientId: BSON = "customClient"
         try collClient.insertOne(wrapperWithId(collClientId.stringValue!))
 
-        // TODO: SWIFT-672: enable these assertions
-        // doc = try collDoc.find(["_id": collClientId]).nextOrError()
-        // expect(doc).toNot(beNil())
-        // expect(doc?["date"]?.doubleValue).to(beCloseTo(date.timeIntervalSince1970, within: 0.001))
-        // expect(doc?["uuid"]?.stringValue).to(equal(uuid.uuidString))
-        // expect(doc?["data"]?.stringValue).to(equal(data.base64EncodedString()))
+        doc = try collDoc.find(["_id": collClientId]).next()?.get()
+        expect(doc).toNot(beNil())
+        expect(doc?["date"]?.doubleValue).to(beCloseTo(date.timeIntervalSince1970, within: 0.001))
+        expect(doc?["uuid"]?.stringValue).to(equal(uuid.uuidString))
+        expect(doc?["data"]?.stringValue).to(equal(data.base64EncodedString()))
 
-        // expect(try collClient.find(["_id": collClientId]).nextOrError()).to(equal(wrapper))
+        expect(try collClient.find(["_id": collClientId]).next()?.get()).to(equal(wrapper))
 
         // Construct db with differing strategies from client
         let dbOpts = DatabaseOptions(
@@ -181,14 +180,13 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
         let customDbId: BSON = "customDb"
         try collDb.insertOne(wrapperWithId(customDbId.stringValue!))
 
-        // TODO: SWIFT-672: enable these assertions
-        // doc = try collDoc.find(["_id": customDbId]).next()
-        // expect(doc).toNot(beNil())
-        // expect(doc?["date"]?.doubleValue).to(beCloseTo(date.timeIntervalSinceReferenceDate, within: 0.001))
-        // expect(doc?["uuid"]?.binaryValue).to(equal(try Binary(from: uuid)))
-        // expect(doc?["data"]?.binaryValue).to(equal(try Binary(data: data, subtype: .generic)))
+        doc = try collDoc.find(["_id": customDbId]).next()?.get()
+        expect(doc).toNot(beNil())
+        expect(doc?["date"]?.doubleValue).to(beCloseTo(date.timeIntervalSinceReferenceDate, within: 0.001))
+        expect(doc?["uuid"]?.binaryValue).to(equal(try Binary(from: uuid)))
+        expect(doc?["data"]?.binaryValue).to(equal(try Binary(data: data, subtype: .generic)))
 
-        // expect(try collDb.find(["_id": customDbId]).nextOrError()).to(equal(wrapper))
+        expect(try collDb.find(["_id": customDbId]).next()?.get()).to(equal(wrapper))
 
         // Construct collection with differing strategies from database
         let dbCollOpts = CollectionOptions(
@@ -200,16 +198,15 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
 
         let customDbCollId: BSON = "customDbColl"
         try collCustom.insertOne(wrapperWithId(customDbCollId.stringValue!))
-        // TODO: SWIFT-672: enable these assertions
-        // doc = try collDoc.find(["_id": customDbCollId]).nextOrError()
+        doc = try collDoc.find(["_id": customDbCollId]).next()?.get()
 
-        // expect(doc).toNot(beNil())
-        // expect(doc?["date"]?.int64Value).to(equal(date.msSinceEpoch))
-        // expect(doc?["uuid"]?.stringValue).to(equal(uuid.uuidString))
-        // expect(doc?["data"]?.stringValue).to(equal(data.base64EncodedString()))
+        expect(doc).toNot(beNil())
+        expect(doc?["date"]?.int64Value).to(equal(date.msSinceEpoch))
+        expect(doc?["uuid"]?.stringValue).to(equal(uuid.uuidString))
+        expect(doc?["data"]?.stringValue).to(equal(data.base64EncodedString()))
 
-        // expect(try collCustom.find(["_id": customDbCollId]).nextOrError())
-        //     .to(equal(wrapper))
+        expect(try collCustom.find(["_id": customDbCollId]).next()?.get())
+            .to(equal(wrapper))
 
         try defaultDb.drop()
     }

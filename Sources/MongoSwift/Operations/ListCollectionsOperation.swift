@@ -132,12 +132,13 @@ internal struct ListCollectionsOperation: Operation {
                 decoder: self.database.decoder,
                 session: session
             )
+            defer { cursor.blockingKill() }
 
             var names = [String]()
             // call the cursor method for getting the next document directly rather than just iterating through the
             // cursor so that we avoid generating more concurrent operations and tying up more of the executor's
             // threads.
-            while let nextDoc = try cursor.getNextDocumentFromMongocCursor() {
+            while let nextDoc = try cursor.getNextDocument() {
                 guard let name = nextDoc["name"]?.stringValue else {
                     throw InternalError(message: "Invalid server response: collection has no name")
                 }

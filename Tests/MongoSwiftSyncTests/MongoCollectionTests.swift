@@ -1,4 +1,3 @@
-@testable import MongoSwift
 import MongoSwiftSync
 import Nimble
 import TestsCommon
@@ -84,8 +83,8 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(docNoID).to(equal(["x": 1]))
 
         // error code 11000: DuplicateKey
-        let expectedError = WriteError(
-            writeFailure: WriteFailure(code: 11000, codeName: "DuplicateKey", message: ""),
+        let expectedError = WriteError.new(
+            writeFailure: WriteFailure.new(code: 11000, codeName: "DuplicateKey", message: ""),
             writeConcernFailure: nil,
             errorLabels: nil
         )
@@ -100,11 +99,10 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(insertOneResult).to(beNil())
     }
 
-    // TODO: SWIFT-672: enable
-    // func testAggregate() throws {
-    //     expect(try self.coll.aggregate([["$project": ["_id": 0, "cat": 1]]]).all())
-    //         .to(equal([["cat": "dog"], ["cat": "cat"]] as [Document]))
-    // }
+    func testAggregate() throws {
+        expect(try self.coll.aggregate([["$project": ["_id": 0, "cat": 1]]]).all())
+            .to(equal([["cat": "dog"], ["cat": "cat"]] as [Document]))
+    }
 
     func testDrop() throws {
         let encoder = BSONEncoder()
@@ -167,12 +165,12 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         let newDoc3: Document = ["_id": .objectId(ObjectId())]
         let newDoc4: Document = ["_id": .objectId(ObjectId())]
 
-        let expectedResultOrdered = BulkWriteResult(insertedCount: 1, insertedIds: [0: newDoc1["_id"]!])
+        let expectedResultOrdered = BulkWriteResult.new(insertedCount: 1, insertedIds: [0: newDoc1["_id"]!])
         let expectedErrorsOrdered = [
-            BulkWriteFailure(code: 11000, codeName: "DuplicateKey", message: "", index: 1)
+            BulkWriteFailure.new(code: 11000, codeName: "DuplicateKey", message: "", index: 1)
         ]
 
-        let expectedErrorOrdered = BulkWriteError(
+        let expectedErrorOrdered = BulkWriteError.new(
             writeFailures: expectedErrorsOrdered,
             writeConcernFailure: nil,
             otherError: nil,
@@ -183,11 +181,14 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(try self.coll.insertMany([newDoc1, docId1, newDoc2, docId2])).to(throwError(expectedErrorOrdered))
 
         let expectedErrors = [
-            BulkWriteFailure(code: 11000, codeName: "DuplicateKey", message: "", index: 1),
-            BulkWriteFailure(code: 11000, codeName: "DuplicateKey", message: "", index: 3)
+            BulkWriteFailure.new(code: 11000, codeName: "DuplicateKey", message: "", index: 1),
+            BulkWriteFailure.new(code: 11000, codeName: "DuplicateKey", message: "", index: 3)
         ]
-        let expectedResult = BulkWriteResult(insertedCount: 2, insertedIds: [0: newDoc3["_id"]!, 2: newDoc4["_id"]!])
-        let expectedError = BulkWriteError(
+        let expectedResult = BulkWriteResult.new(
+            insertedCount: 2,
+            insertedIds: [0: newDoc3["_id"]!, 2: newDoc4["_id"]!]
+        )
+        let expectedError = BulkWriteError.new(
             writeFailures: expectedErrors,
             writeConcernFailure: nil,
             otherError: nil,
@@ -195,7 +196,8 @@ final class MongoCollectionTests: MongoSwiftTestCase {
             errorLabels: nil
         )
 
-        expect(try self.coll.insertMany([newDoc3, docId1, newDoc4, docId2], options: InsertManyOptions(ordered: false)))
+        let options = InsertManyOptions(ordered: false)
+        expect(try self.coll.insertMany([newDoc3, docId1, newDoc4, docId2], options: options))
             .to(throwError(expectedError))
     }
 
@@ -209,28 +211,27 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(insertManyResult).to(beNil())
     }
 
-    // TODO: SWIFT-672: enable next 4 tests
-    // func testFind() throws {
-    //     let findResult = try coll.find(["cat": "cat"])
-    //     expect(try findResult.next()?.get()).to(equal(["_id": 2, "cat": "cat"]))
-    //     expect(try findResult.next()?.get()).to(beNil())
-    // }
+    func testFind() throws {
+        let findResult = try coll.find(["cat": "cat"])
+        expect(try findResult.next()?.get()).to(equal(["_id": 2, "cat": "cat"]))
+        expect(try findResult.next()?.get()).to(beNil())
+    }
 
-    // func testFindOne() throws {
-    //     let findOneResult = try self.coll.findOne(["cat": "dog"])
-    //     expect(findOneResult).to(equal(["_id": 1, "cat": "dog"]))
-    // }
+    func testFindOne() throws {
+        let findOneResult = try self.coll.findOne(["cat": "dog"])
+        expect(findOneResult).to(equal(["_id": 1, "cat": "dog"]))
+    }
 
-    // func testFindOneMultipleMatches() throws {
-    //     let findOneOptions = FindOneOptions(sort: ["_id": 1])
-    //     let findOneResult = try self.coll.findOne(options: findOneOptions)
-    //     expect(findOneResult).to(equal(["_id": 1, "cat": "dog"]))
-    // }
+    func testFindOneMultipleMatches() throws {
+        let findOneOptions = FindOneOptions(sort: ["_id": 1])
+        let findOneResult = try self.coll.findOne(options: findOneOptions)
+        expect(findOneResult).to(equal(["_id": 1, "cat": "dog"]))
+    }
 
-    // func testFindOneNoMatch() throws {
-    //     let findOneResult = try self.coll.findOne(["dog": "cat"])
-    //     expect(findOneResult).to(beNil())
-    // }
+    func testFindOneNoMatch() throws {
+        let findOneResult = try self.coll.findOne(["dog": "cat"])
+        expect(findOneResult).to(beNil())
+    }
 
     func testDeleteOne() throws {
         expect(try self.coll.deleteOne(["cat": "cat"])?.deletedCount).to(equal(1))
@@ -317,14 +318,13 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(self.coll.name).to(equal(self.collName))
     }
 
-    // TODO: SWIFT-672: enable
-    // func testCursorIteration() throws {
-    //     let findResult1 = try coll.find(["cat": "cat"])
-    //     while let _ = try findResult1.next()?.get() {}
+    func testCursorIteration() throws {
+        let findResult1 = try coll.find(["cat": "cat"])
+        while let _ = try findResult1.next()?.get() {}
 
-    //     let findResult2 = try coll.find(["cat": "cat"])
-    //     for _ in findResult2 {}
-    // }
+        let findResult2 = try coll.find(["cat": "cat"])
+        for _ in findResult2 {}
+    }
 
     struct Basic: Codable, Equatable {
         let x: Int
@@ -348,10 +348,9 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         try coll1.replaceOne(filter: ["x": 2], replacement: b4)
         expect(try coll1.countDocuments()).to(equal(3))
 
-        // TODO: SWIFT-672: uncomment
-        // for doc in try coll1.find().all() {
-        //     expect(doc).to(beAnInstanceOf(Basic.self))
-        // }
+        for doc in try coll1.find().all() {
+            expect(doc).to(beAnInstanceOf(Basic.self))
+        }
 
         // find one and replace w/ collection type replacement
         expect(try coll1.findOneAndReplace(filter: ["x": 1], replacement: b5)).to(equal(b1))

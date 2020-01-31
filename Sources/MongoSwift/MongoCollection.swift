@@ -19,7 +19,7 @@ public struct MongoCollection<T: Codable> {
     internal let _client: MongoClient
 
     /// The namespace for this collection.
-    internal let namespace: MongoNamespace
+    public let namespace: MongoNamespace
 
     /// Encoder used by this collection for BSON conversions. (e.g. converting `CollectionType`s, indexes, and options
     /// to documents).

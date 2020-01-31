@@ -21,7 +21,8 @@ extension MongoCollection {
         options: FindOptions? = nil,
         session: ClientSession? = nil
     ) throws -> MongoCursor<CollectionType> {
-        fatalError("unimplemented")
+        let asyncCursor = try self.asyncColl.find(filter, options: options, session: session?.asyncSession).wait()
+        return MongoCursor(wrapping: asyncCursor, client: self.client)
     }
 
     /**
@@ -44,7 +45,7 @@ extension MongoCollection {
         options: FindOneOptions? = nil,
         session: ClientSession? = nil
     ) throws -> T? {
-        fatalError("unimplemented")
+        return try self.asyncColl.findOne(filter, options: options, session: session?.asyncSession).wait()
     }
 
     /**
@@ -67,7 +68,9 @@ extension MongoCollection {
         options: AggregateOptions? = nil,
         session: ClientSession? = nil
     ) throws -> MongoCursor<Document> {
-        fatalError("unimplemented")
+        let asyncCursor = try self.asyncColl.aggregate(pipeline, options: options, session: session?.asyncSession)
+          .wait()
+        return MongoCursor(wrapping: asyncCursor, client: self.client)
     }
 
     /**

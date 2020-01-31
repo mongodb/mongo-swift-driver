@@ -162,7 +162,9 @@ public struct MongoDatabase {
         options: ListCollectionsOptions? = nil,
         session: ClientSession? = nil
     ) throws -> MongoCursor<CollectionSpecification> {
-        fatalError("unimplemented")
+        let asyncCursor =
+            try self.asyncDB.listCollections(filter, options: options, session: session?.asyncSession).wait()
+        return MongoCursor(wrapping: asyncCursor, client: self.client)
     }
 
     /**
@@ -184,7 +186,9 @@ public struct MongoDatabase {
         options: ListCollectionsOptions? = nil,
         session: ClientSession? = nil
     ) throws -> [MongoCollection<Document>] {
-        fatalError("unimplemented")
+        return try self.listCollectionNames(filter, options: options, session: session).map { name in
+            self.collection(name)
+        }
     }
 
     /**

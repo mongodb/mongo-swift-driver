@@ -16,18 +16,12 @@ public enum CursorType {
      * some point (CursorNotFound) – for example if the final object it
      * references were deleted.
      *
-     * - SeeAlso: https://docs.mongodb.com/meta-driver/latest/legacy/mongodb-wire-protocol/#op-query
+     * - SeeAlso: https://docs.mongodb.com/manual/core/tailable-cursors/
      */
     case tailable
 
     /**
-     * Combines the tailable option with awaitData, as defined below.
-     *
-     * Use with TailableCursor. If we are at the end of the data, block for a
-     * while rather than returning no data. After a timeout period, we do return
-     * as normal. The default is true.
-     *
-     * - SeeAlso: https://docs.mongodb.com/meta-driver/latest/legacy/mongodb-wire-protocol/#op-query
+     * A tailable cursor that will wait for more data for a configurable amount of time before returning an empty batch.
      */
     case tailableAwait
 
@@ -198,6 +192,7 @@ public struct FindOptions: Codable {
         self.showRecordId = findOneOptions.showRecordId
         self.skip = findOneOptions.skip
         self.sort = findOneOptions.sort
+        self.limit = 1
     }
 
     // Encode everything except `self.readPreference`, because this is sent to libmongoc separately
@@ -332,8 +327,7 @@ internal struct FindOperation<CollectionType: Codable>: Operation {
             client: self.collection._client,
             decoder: self.collection.decoder,
             session: session,
-            cursorType: self.options?.cursorType,
-            forceIO: true
+            cursorType: self.options?.cursorType
         )
     }
 }

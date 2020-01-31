@@ -235,12 +235,16 @@ public struct MongoDatabase {
         _ filter: Document? = nil,
         options: ListCollectionsOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> MongoCursor<CollectionSpecification> {
+    ) throws -> EventLoopFuture<MongoCursor<CollectionSpecification>> {
         let operation = ListCollectionsOperation(database: self, nameOnly: false, filter: filter, options: options)
-        guard case let .specs(result) = try self._client.executeOperation(operation, session: session) else {
-            throw InternalError(message: "Invalid result")
+        return self._client.operationExecutor.execute(
+            operation, client: self._client, session: session
+        ).flatMapThrowing { result in
+            guard case let .specs(result) = result else {
+                throw InternalError(message: "invalid result")
+            }
+            return result
         }
-        return result
     }
 
     /**

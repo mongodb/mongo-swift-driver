@@ -106,8 +106,7 @@ internal struct AggregateOperation<CollectionType: Codable>: Operation {
             connection: connection,
             client: self.collection._client,
             decoder: self.collection.decoder,
-            session: session,
-            forceIO: true
+            session: session
         )
     }
 }

@@ -1,4 +1,4 @@
-@testable import MongoSwift
+import MongoSwiftSync
 import Nimble
 import TestsCommon
 import XCTest
@@ -95,7 +95,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
             )
         ]
 
-        let expectedResult = BulkWriteResult(
+        let expectedResult = BulkWriteResult.new(
             deletedCount: 0,
             insertedCount: 1,
             insertedIds: [0: id2],
@@ -106,8 +106,8 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         )
 
         // Expect a duplicate key error (11000)
-        let expectedError = BulkWriteError(
-            writeFailures: [BulkWriteFailure(code: 11000, codeName: "DuplicateKey", message: "", index: 1)],
+        let expectedError = BulkWriteError.new(
+            writeFailures: [BulkWriteFailure.new(code: 11000, codeName: "DuplicateKey", message: "", index: 1)],
             writeConcernFailure: nil,
             otherError: nil,
             result: expectedResult,
@@ -207,7 +207,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         expect(try cursor.next()?.get()).to(equal(["_id": 3, "x": 34]))
         expect(try cursor.next()?.get()).to(equal(["_id": 4, "x": 44]))
         expect(cursor.next()).to(beNil()) // cursor ends
-        expect(try cursor.next()?.get()).to(throwError(UserError.logicError(message: ""))) // iterate after cursor ends
+        expect(try cursor.next()?.get()).to(throwError(errorType: LogicError.self)) // iterate after cursor ends
     }
 
     func testUnacknowledgedWriteConcern() throws {

@@ -7,6 +7,15 @@
 @testable import MongoSwiftSyncTests
 import XCTest
 
+extension AsyncMongoCursorTests {
+    static var allTests = [
+        ("testNonTailableCursor", testNonTailableCursor),
+        ("testTailableAwaitAsyncCursor", testTailableAwaitAsyncCursor),
+        ("testTailableAsyncCursor", testTailableAsyncCursor),
+        ("testAsyncNext", testAsyncNext),
+    ]
+}
+
 extension AuthTests {
     static var allTests = [
         ("testAuthConnectionStrings", testAuthConnectionStrings),
@@ -50,6 +59,20 @@ extension CodecTests {
         ("testBSONIsBSONCodable", testBSONIsBSONCodable),
         ("testIncorrectEncodeFunction", testIncorrectEncodeFunction),
         ("testOptionsEncoding", testOptionsEncoding),
+    ]
+}
+
+extension CommandMonitoringTests {
+    static var allTests = [
+        ("testCommandMonitoring", testCommandMonitoring),
+        ("testAlternateNotificationCenters", testAlternateNotificationCenters),
+    ]
+}
+
+extension CrudTests {
+    static var allTests = [
+        ("testReads", testReads),
+        ("testWrites", testWrites),
     ]
 }
 
@@ -123,10 +146,15 @@ extension MongoCollectionTests {
         ("testCount", testCount),
         ("testInsertOne", testInsertOne),
         ("testInsertOneWithUnacknowledgedWriteConcern", testInsertOneWithUnacknowledgedWriteConcern),
+        ("testAggregate", testAggregate),
         ("testDrop", testDrop),
         ("testInsertMany", testInsertMany),
         ("testInsertManyWithEmptyValues", testInsertManyWithEmptyValues),
         ("testInsertManyWithUnacknowledgedWriteConcern", testInsertManyWithUnacknowledgedWriteConcern),
+        ("testFind", testFind),
+        ("testFindOne", testFindOne),
+        ("testFindOneMultipleMatches", testFindOneMultipleMatches),
+        ("testFindOneNoMatch", testFindOneNoMatch),
         ("testDeleteOne", testDeleteOne),
         ("testDeleteOneWithUnacknowledgedWriteConcern", testDeleteOneWithUnacknowledgedWriteConcern),
         ("testDeleteMany", testDeleteMany),
@@ -139,6 +167,7 @@ extension MongoCollectionTests {
         ("testUpdateManyWithUnacknowledgedWriteConcern", testUpdateManyWithUnacknowledgedWriteConcern),
         ("testDistinct", testDistinct),
         ("testGetName", testGetName),
+        ("testCursorIteration", testCursorIteration),
         ("testCodableCollection", testCodableCollection),
         ("testCursorType", testCursorType),
         ("testEncodeHint", testEncodeHint),
@@ -146,6 +175,38 @@ extension MongoCollectionTests {
         ("testFindOneAndReplace", testFindOneAndReplace),
         ("testFindOneAndUpdate", testFindOneAndUpdate),
         ("testNullIds", testNullIds),
+    ]
+}
+
+extension MongoCollection_BulkWriteTests {
+    static var allTests = [
+        ("testEmptyRequests", testEmptyRequests),
+        ("testInserts", testInserts),
+        ("testBulkWriteErrors", testBulkWriteErrors),
+        ("testUpdates", testUpdates),
+        ("testDeletes", testDeletes),
+        ("testMixedOrderedOperations", testMixedOrderedOperations),
+        ("testUnacknowledgedWriteConcern", testUnacknowledgedWriteConcern),
+    ]
+}
+
+extension MongoCursorTests {
+    static var allTests = [
+        ("testNonTailableCursor", testNonTailableCursor),
+        ("testTailableCursor", testTailableCursor),
+        ("testNext", testNext),
+        ("testKill", testKill),
+        ("testKillTailable", testKillTailable),
+        ("testLazySequence", testLazySequence),
+    ]
+}
+
+extension MongoDatabaseTests {
+    static var allTests = [
+        ("testMongoDatabase", testMongoDatabase),
+        ("testDropDatabase", testDropDatabase),
+        ("testCreateCollection", testCreateCollection),
+        ("testListCollections", testListCollections),
     ]
 }
 
@@ -196,6 +257,18 @@ extension ReadWriteConcernSpecTests {
     ]
 }
 
+extension RetryableReadsTests {
+    static var allTests = [
+        ("testRetryableReads", testRetryableReads),
+    ]
+}
+
+extension RetryableWritesTests {
+    static var allTests = [
+        ("testRetryableWrites", testRetryableWrites),
+    ]
+}
+
 extension SDAMTests {
     static var allTests = [
         ("testMonitoring", testMonitoring),
@@ -214,6 +287,7 @@ extension SyncClientSessionTests {
         ("testSessionArguments", testSessionArguments),
         ("testSessionClientValidation", testSessionClientValidation),
         ("testInactiveSession", testInactiveSession),
+        ("testSessionCursor", testSessionCursor),
         ("testClusterTime", testClusterTime),
         ("testCausalConsistency", testCausalConsistency),
         ("testCausalConsistencyStandalone", testCausalConsistencyStandalone),
@@ -240,23 +314,31 @@ extension WriteConcernTests {
 }
 
 XCTMain([
+    testCase(AsyncMongoCursorTests.allTests),
     testCase(AuthTests.allTests),
     testCase(BSONCorpusTests.allTests),
     testCase(BSONValueTests.allTests),
     testCase(ClientSessionTests.allTests),
     testCase(CodecTests.allTests),
+    testCase(CommandMonitoringTests.allTests),
+    testCase(CrudTests.allTests),
     testCase(DNSSeedlistTests.allTests),
     testCase(DocumentTests.allTests),
     testCase(Document_CollectionTests.allTests),
     testCase(Document_SequenceTests.allTests),
     testCase(MongoClientTests.allTests),
     testCase(MongoCollectionTests.allTests),
+    testCase(MongoCollection_BulkWriteTests.allTests),
+    testCase(MongoCursorTests.allTests),
+    testCase(MongoDatabaseTests.allTests),
     testCase(OptionsTests.allTests),
     testCase(ReadConcernTests.allTests),
     testCase(ReadPreferenceOperationTests.allTests),
     testCase(ReadPreferenceTests.allTests),
     testCase(ReadWriteConcernOperationTests.allTests),
     testCase(ReadWriteConcernSpecTests.allTests),
+    testCase(RetryableReadsTests.allTests),
+    testCase(RetryableWritesTests.allTests),
     testCase(SDAMTests.allTests),
     testCase(SyncAuthTests.allTests),
     testCase(SyncClientSessionTests.allTests),

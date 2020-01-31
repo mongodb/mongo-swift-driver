@@ -1,5 +1,5 @@
 import Foundation
-@testable import MongoSwift
+import MongoSwiftSync
 import Nimble
 import TestsCommon
 import XCTest
@@ -424,7 +424,7 @@ private class InsertManyTest: CrudTest {
             expect(expectError).to(beFalse())
         } catch let bwe as BulkWriteError {
             if let result = bwe.result {
-                verifyInsertManyResult(InsertManyResult(from: result)!)
+                verifyInsertManyResult(InsertManyResult.fromBulkResult(result)!)
             }
             expect(expectError).to(beTrue())
         }

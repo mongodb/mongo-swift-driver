@@ -23,6 +23,9 @@ public struct MongoCollection<T: Codable> {
      */
     public typealias CollectionType = T
 
+    /// The namespace for this collection.
+    public var namespace: MongoNamespace { return self.asyncColl.namespace }
+
     /// The name of this collection.
     public var name: String { return self.asyncColl.name }
 
@@ -40,7 +43,7 @@ public struct MongoCollection<T: Codable> {
 
     /// The client this collection was derived from. We store this to ensure it remains open for as long as this object
     /// is in scope.
-    private let client: MongoClient
+    internal let client: MongoClient
 
     /// Initializes a new `MongoCollection` instance wrapping the provided async collection.
     internal init(client: MongoClient, asyncCollection: MongoSwift.MongoCollection<T>) {

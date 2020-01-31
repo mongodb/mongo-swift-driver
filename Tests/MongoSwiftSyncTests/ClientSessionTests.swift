@@ -49,10 +49,9 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
 
     // list of read only operations on MongoCollection that take in a session
     let collectionSessionReadOps = [
-        // TODO: SWIFT-672: enable
-        // CollectionSessionOp(name: "find") { _ = try $0.find([:], session: $1).next()?.get() },
-        // CollectionSessionOp(name: "findOne") { _ = try $0.findOne([:], session: $1) },
-        // CollectionSessionOp(name: "aggregate") { _ = try $0.aggregate([], session: $1).next()?.get() },
+        CollectionSessionOp(name: "find") { _ = try $0.find([:], session: $1).next()?.get() },
+        CollectionSessionOp(name: "findOne") { _ = try $0.findOne([:], session: $1) },
+        CollectionSessionOp(name: "aggregate") { _ = try $0.aggregate([], session: $1).next()?.get() },
         CollectionSessionOp(name: "distinct") { _ = try $0.distinct(fieldName: "x", session: $1) },
         CollectionSessionOp(name: "countDocuments") { _ = try $0.countDocuments(session: $1) },
         CollectionSessionOp(name: "estimatedDocumentCount") { _ = try $0.estimatedDocumentCount(session: $1) }
@@ -77,8 +76,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         CollectionSessionOp(name: "dropIndex1") { _ = try $0.dropIndex(IndexModel(keys: ["x": 3]), session: $1) },
         CollectionSessionOp(name: "dropIndex2") { _ = try $0.dropIndex("x_7", session: $1) },
         CollectionSessionOp(name: "dropIndexes") { _ = try $0.dropIndexes(session: $1) },
-        // TODO: SWIFT-672: enable
-        // CollectionSessionOp(name: "listIndexes") { _ = try $0.listIndexes(session: $1).next() },
+        CollectionSessionOp(name: "listIndexes") { _ = try $0.listIndexes(session: $1).next() },
         CollectionSessionOp(name: "findOneAndDelete") {
             _ = try $0.findOneAndDelete([:], session: $1)
         },
@@ -93,7 +91,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
 
     // list of operations on MongoDatabase that take in a session
     let databaseSessionOps = [
-        // TODO: SWIFT-672: test listCollections + session here
+        DatabaseSessionOp(name: "listCollections") { _ = try $0.listCollections(session: $1).next() },
         DatabaseSessionOp(name: "runCommand") { try $0.runCommand(["isMaster": 0], session: $1) },
         DatabaseSessionOp(name: "createCollection") { _ = try $0.createCollection("asdf", session: $1) },
         DatabaseSessionOp(name: "createCollection1") {
@@ -259,82 +257,80 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
             expect(try op.body(session1)).to(throwError(ClientSession.SessionInactiveError), description: op.name)
         }
 
-        // TODO: SWIFT-672: enable
-        // let session2 = client.startSession()
-        // let database = client.db(type(of: self).testDatabase)
-        // let collection1 = database.collection(self.getCollectionName())
+        let session2 = client.startSession()
+        let database = client.db(type(of: self).testDatabase)
+        let collection1 = database.collection(self.getCollectionName())
 
-        // try (1...3).forEach { try collection1.insertOne(["x": BSON($0)]) }
+        try (1...3).forEach { try collection1.insertOne(["x": BSON($0)]) }
 
-        // let cursor = try collection.find(session: session2)
-        // expect(cursor.next()).toNot(beNil())
-        // session2.end()
-        // expect(try cursor.next()?.get()).to(throwError(ClientSession.SessionInactiveError))
+        let cursor = try collection.find(session: session2)
+        expect(cursor.next()).toNot(beNil())
+        session2.end()
+        expect(try cursor.next()?.get()).to(throwError(ClientSession.SessionInactiveError))
     }
 
-    // TODO: SWIFT-672: enable
     /// Sessions spec test 10: Test cursors have the same lsid in the initial find command and in subsequent getMores.
-    // func testSessionCursor() throws {
-    //     let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
-    //     let database = client.db(type(of: self).testDatabase)
-    //     let collection = try database.createCollection(self.getCollectionName())
-    //     let session = client.startSession()
+    func testSessionCursor() throws {
+        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
+        let database = client.db(type(of: self).testDatabase)
+        let collection = try database.createCollection(self.getCollectionName())
+        let session = client.startSession()
 
-    //     for x in 1...3 {
-    //         // use the session to trigger starting the libmongoc session
-    //         try collection.insertOne(["x": BSON(x)], session: session)
-    //     }
+        for x in 1...3 {
+            // use the session to trigger starting the libmongoc session
+            try collection.insertOne(["x": BSON(x)], session: session)
+        }
 
-    //     var id: BSON?
-    //     var seenFind = false
-    //     var seenGetMore = false
+        var id: BSON?
+        var seenFind = false
+        var seenGetMore = false
 
-    //     let center = NotificationCenter.default
-    //     let observer = center.addObserver(forName: .commandStarted, object: nil, queue: nil) { notif in
-    //         guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
-    //             return
-    //         }
+        let center = NotificationCenter.default
+        let observer = center.addObserver(forName: .commandStarted, object: nil, queue: nil) { notif in
+            guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
+                return
+            }
 
-    //         if event.command["find"] != nil {
-    //             seenFind = true
-    //             if let id = id {
-    //                 expect(id).to(equal(event.command["lsid"]))
-    //             } else {
-    //                 expect(event.command["lsid"]).toNot(beNil())
-    //                 id = event.command["lsid"]
-    //             }
-    //         } else if event.command["getMore"] != nil {
-    //             seenGetMore = true
-    //             expect(id).toNot(beNil())
-    //             expect(event.command["lsid"]).toNot(beNil())
-    //             expect(event.command["lsid"]).to(equal(id))
-    //         }
-    //     }
+            if event.command["find"] != nil {
+                seenFind = true
+                if let id = id {
+                    expect(id).to(equal(event.command["lsid"]))
+                } else {
+                    expect(event.command["lsid"]).toNot(beNil())
+                    id = event.command["lsid"]
+                }
+            } else if event.command["getMore"] != nil {
+                seenGetMore = true
+                expect(id).toNot(beNil())
+                expect(event.command["lsid"]).toNot(beNil())
+                expect(event.command["lsid"]).to(equal(id))
+            }
+        }
 
-    //     // explicit
-    //     id = .document(session.id!)
-    //     seenFind = false
-    //     seenGetMore = false
-    //     let cursor = try collection.find(options: FindOptions(batchSize: 2), session: session)
-    //     expect(cursor.next()).toNot(beNil())
-    //     expect(cursor.next()).toNot(beNil())
-    //     expect(cursor.next()).toNot(beNil())
-    //     expect(seenFind).to(beTrue())
-    //     expect(seenGetMore).to(beTrue())
+        // explicit
+        id = .document(session.id!)
+        seenFind = false
+        seenGetMore = false
+        let cursor = try collection.find(options: FindOptions(batchSize: 2), session: session)
+        expect(cursor.next()).toNot(beNil())
+        expect(cursor.next()).toNot(beNil())
+        expect(cursor.next()).toNot(beNil())
+        expect(seenFind).to(beTrue())
+        expect(seenGetMore).to(beTrue())
 
-    //     // implicit
-    //     seenFind = false
-    //     seenGetMore = false
-    //     id = nil
-    //     let cursor1 = try collection.find(options: FindOptions(batchSize: 2))
-    //     expect(cursor1.next()).toNot(beNil())
-    //     expect(cursor1.next()).toNot(beNil())
-    //     expect(cursor1.next()).toNot(beNil())
-    //     expect(seenFind).to(beTrue())
-    //     expect(seenGetMore).to(beTrue())
+        // implicit
+        seenFind = false
+        seenGetMore = false
+        id = nil
+        let cursor1 = try collection.find(options: FindOptions(batchSize: 2))
+        expect(cursor1.next()).toNot(beNil())
+        expect(cursor1.next()).toNot(beNil())
+        expect(cursor1.next()).toNot(beNil())
+        expect(seenFind).to(beTrue())
+        expect(seenGetMore).to(beTrue())
 
-    //     center.removeObserver(observer)
-    // }
+        center.removeObserver(observer)
+    }
 
     /// Sessions spec test 11: Test that the clusterTime is reported properly.
     func testClusterTime() throws {
@@ -408,57 +404,55 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
             expect(session.operationTime).toNot(beNil())
         }
 
-        // TODO: SWIFT-672: enable
         // Causal consistency spec test 4: A find followed by any other read operation should
         // include the operationTime returned by the server for the first operation in the afterClusterTime parameter of
         // the second operation
         //
         // Causal consistency spec test 8: When using the default server ReadConcern the readConcern parameter in the
         // command sent to the server should not include a level field
-        // try self.collectionSessionReadOps.forEach { op in
-        //     try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
-        //         _ = try collection.find(session: session).next()
-        //         let opTime = session.operationTime
-        //         var seenCommand = false
-        //         let observer = center.addObserver(forName: .commandStarted, object: nil, queue: nil) { notif in
-        //             guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
-        //                 return
-        //             }
-        //             let readConcern = event.command["readConcern"]?.documentValue
-        //             expect(readConcern).toNot(beNil(), description: op.name)
-        //             expect(readConcern!["afterClusterTime"]?.timestampValue).to(equal(opTime), description: op.name)
-        //             expect(readConcern!["level"]).to(beNil(), description: op.name)
-        //             seenCommand = true
-        //         }
-        //         defer { center.removeObserver(observer) }
-        //         try op.body(collection, session)
-        //         expect(seenCommand).to(beTrue(), description: op.name)
-        //     }
-        // }
+        try self.collectionSessionReadOps.forEach { op in
+            try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
+                _ = try collection.find(session: session).next()
+                let opTime = session.operationTime
+                var seenCommand = false
+                let observer = center.addObserver(forName: .commandStarted, object: nil, queue: nil) { notif in
+                    guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
+                        return
+                    }
+                    let readConcern = event.command["readConcern"]?.documentValue
+                    expect(readConcern).toNot(beNil(), description: op.name)
+                    expect(readConcern!["afterClusterTime"]?.timestampValue).to(equal(opTime), description: op.name)
+                    expect(readConcern!["level"]).to(beNil(), description: op.name)
+                    seenCommand = true
+                }
+                defer { center.removeObserver(observer) }
+                try op.body(collection, session)
+                expect(seenCommand).to(beTrue(), description: op.name)
+            }
+        }
 
-        // TODO: SWIFT-672: enable
         // Causal consistency spec test 5: Any write operation followed by a find operation should include the
         // operationTime of the first operation in the afterClusterTime parameter of the second operation, including the
         // case where the first operation returned an error
-        // try self.collectionSessionWriteOps.forEach { op in
-        //     try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
-        //         try? op.body(collection, session)
-        //         let opTime = session.operationTime
+        try self.collectionSessionWriteOps.forEach { op in
+            try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
+                try? op.body(collection, session)
+                let opTime = session.operationTime
 
-        //         var seenCommand = false
-        //         let observer = center.addObserver(forName: .commandStarted, object: nil, queue: nil) { notif in
-        //             guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
-        //                 return
-        //             }
-        //             expect(event.command["readConcern"]?.documentValue?["afterClusterTime"]?.timestampValue)
-        //                 .to(equal(opTime), description: op.name)
-        //             seenCommand = true
-        //         }
-        //         defer { center.removeObserver(observer) }
-        //         _ = try collection.find(session: session).next()
-        //         expect(seenCommand).to(beTrue(), description: op.name)
-        //     }
-        // }
+                var seenCommand = false
+                let observer = center.addObserver(forName: .commandStarted, object: nil, queue: nil) { notif in
+                    guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
+                        return
+                    }
+                    expect(event.command["readConcern"]?.documentValue?["afterClusterTime"]?.timestampValue)
+                        .to(equal(opTime), description: op.name)
+                    seenCommand = true
+                }
+                defer { center.removeObserver(observer) }
+                _ = try collection.find(session: session).next()
+                expect(seenCommand).to(beTrue(), description: op.name)
+            }
+        }
 
         // Causal consistency spec test 6: A read operation in a ClientSession that is not causally consistent should
         // not include the afterClusterTime parameter in the command sent to the server

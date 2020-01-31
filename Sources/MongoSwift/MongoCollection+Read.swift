@@ -22,9 +22,9 @@ extension MongoCollection {
         _ filter: Document = [:],
         options: FindOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> MongoCursor<CollectionType> {
+    ) -> EventLoopFuture<MongoCursor<CollectionType>> {
         let operation = FindOperation(collection: self, filter: filter, options: options)
-        return try self._client.executeOperation(operation, session: session)
+        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
     }
 
     /**
@@ -46,10 +46,11 @@ extension MongoCollection {
         _ filter: Document = [:],
         options: FindOneOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> T? {
+    ) throws -> EventLoopFuture<T?> {
         let options = options.map { FindOptions(from: $0) }
-        let cursor = try self.find(filter, options: options, session: session)
-        return try cursor.next()?.get()
+        return self.find(filter, options: options, session: session).flatMap { cursor in
+            cursor.next().afterSuccess { _ in cursor.kill() }
+        }
     }
 
     /**
@@ -71,9 +72,9 @@ extension MongoCollection {
         _ pipeline: [Document],
         options: AggregateOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> MongoCursor<Document> {
+    ) -> EventLoopFuture<MongoCursor<Document>> {
         let operation = AggregateOperation(collection: self, pipeline: pipeline, options: options)
-        return try self._client.executeOperation(operation, session: session)
+        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
     }
 
     /**

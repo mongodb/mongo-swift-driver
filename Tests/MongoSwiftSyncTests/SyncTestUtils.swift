@@ -1,5 +1,5 @@
 import Foundation
-import MongoSwiftSync
+@testable import MongoSwiftSync
 import TestsCommon
 
 extension MongoSwiftTestCase {
@@ -31,8 +31,7 @@ extension MongoSwiftTestCase {
         ns: MongoNamespace? = nil,
         options: CreateCollectionOptions? = nil,
         _ f: (MongoDatabase, MongoCollection<Document>) throws -> T
-    )
-        throws -> T {
+    ) throws -> T {
         let ns = ns ?? self.getNamespace()
 
         guard let collName = ns.collection else {
@@ -40,7 +39,13 @@ extension MongoSwiftTestCase {
         }
 
         let database = client.db(ns.db)
-        let collection = try database.createCollection(collName, options: options)
+        let collection: MongoCollection<Document>
+        do {
+            collection = try database.createCollection(collName, options: options)
+        } catch let error as CommandError where error.code == 48 {
+            try database.collection(collName).drop()
+            collection = try database.createCollection(collName, options: options)
+        }
         defer { try? collection.drop() }
         return try f(database, collection)
     }
@@ -173,3 +178,49 @@ internal func captureCommandEvents(
 //         return nil
 //     }
 // }
+
+extension MongoSwiftSync.MongoCollection {
+    public var _client: MongoSwiftSync.MongoClient {
+        return self.client
+    }
+}
+
+func executeWithTimeout<T>(timeout: TimeInterval, _ f: @escaping () throws -> T) throws -> T {
+    let queue = DispatchQueue(label: "timeoutQueue")
+    let lock = DispatchSemaphore(value: 1)
+    var result: Result<T, Error> = .failure(TestError(message: "got no result"))
+
+    lock.wait()
+    // signal lock after getting it, or signal it because `f` hasn't already
+    defer { lock.signal() }
+
+    queue.async {
+        result = Result {
+            try f()
+        }
+        lock.signal()
+    }
+    switch lock.wait(timeout: DispatchTime.now() + timeout) {
+    case .success:
+        return try result.get()
+    case .timedOut:
+        throw TestError(message: "timed out")
+    }
+}
+
+extension Result {
+    var isSuccess: Bool {
+        switch self {
+        case .success:
+            return true
+        case .failure:
+            return false
+        }
+    }
+}
+
+extension MongoCursor {
+    func all() throws -> [T] {
+        return try self._all()
+    }
+}
