@@ -18,8 +18,7 @@ for config in configs {
         _ = try db.runCommand(["isMaster": 1])
         // findOne
         let coll = db.collection("test")
-        let res = try coll.find(options: FindOptions(limit: 1))
-        for _ in res {} // iterate cursor so we actually talk to server
+        _ = try coll.findOne()
     } catch {
         print("Failed: \(error)")
         exit(1)
