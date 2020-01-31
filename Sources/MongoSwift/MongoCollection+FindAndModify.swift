@@ -18,6 +18,7 @@ extension MongoCollection {
      *    If the future fails, the error is likely one of the following:
      *    - `InvalidArgumentError` if any of the provided options are invalid.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
      *    - `CommandError` if an error occurs that prevents the command from executing.
      *    - `WriteError` if an error occurs while executing the command.
      *    - `DecodingError` if the deleted document cannot be decoded to a `CollectionType` value.
@@ -49,6 +50,7 @@ extension MongoCollection {
      *    If the future fails, the error is likely one of the following:
      *    - `InvalidArgumentError` if any of the provided options are invalid.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
      *    - `CommandError` if an error occurs that prevents the command from executing.
      *    - `WriteError` if an error occurs while executing the command.
      *    - `DecodingError` if the replaced document cannot be decoded to a `CollectionType` value.
@@ -84,6 +86,7 @@ extension MongoCollection {
      *    If the future fails, the error is likely one of the following:
      *    - `InvalidArgumentError` if any of the provided options are invalid.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
      *    - `CommandError` if an error occurs that prevents the command from executing.
      *    - `WriteError` if an error occurs while executing the command.
      *    - `DecodingError` if the updated document cannot be decoded to a `CollectionType` value.
@@ -106,6 +109,7 @@ extension MongoCollection {
      *    If the future fails, the error is likely one of the following:
      *    - `InvalidArgumentError` if any of the provided options are invalid.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
      *    - `CommandError` if an error occurs that prevents the command from executing.
      *    - `WriteError` if an error occurs while executing the command.
      *    - `DecodingError` if the updated document cannot be decoded to a `CollectionType` value.

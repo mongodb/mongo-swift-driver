@@ -17,6 +17,7 @@ extension MongoCollection {
      *    If the future fails, the error is likely one of the following:
      *    - `InvalidArgumentError` if the options passed are an invalid combination.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func find(
@@ -43,6 +44,7 @@ extension MongoCollection {
      *    If the future fails, the error is likely one of the following:
      *    - `InvalidArgumentError` if the options passed are an invalid combination.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func findOne(
@@ -70,6 +72,7 @@ extension MongoCollection {
      *    If the future fails, the error is likely one of the following:
      *    - `InvalidArgumentError` if the options passed are an invalid combination.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func aggregate(
@@ -98,6 +101,7 @@ extension MongoCollection {
      *    - `CommandError` if an error occurs that prevents the command from executing.
      *    - `InvalidArgumentError` if the options passed in form an invalid combination.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func countDocuments(
@@ -123,6 +127,7 @@ extension MongoCollection {
      *    - `CommandError` if an error occurs that prevents the command from executing.
      *    - `InvalidArgumentError` if the options passed in form an invalid combination.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func estimatedDocumentCount(
@@ -149,6 +154,7 @@ extension MongoCollection {
      *    - `CommandError` if an error occurs that prevents the command from executing.
      *    - `InvalidArgumentError` if the options passed in form an invalid combination.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func distinct(

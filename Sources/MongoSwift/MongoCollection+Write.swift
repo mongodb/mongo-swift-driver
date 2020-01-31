@@ -21,6 +21,7 @@ extension MongoCollection {
      *    - `CommandError` if an error occurs that prevents the command from executing.
      *    - `InvalidArgumentError` if the options passed in form an invalid combination.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the `CollectionType` to BSON.
      */
     public func insertOne(
@@ -51,6 +52,7 @@ extension MongoCollection {
      *    - `CommandError` if an error occurs that prevents the command from executing.
      *    - `InvalidArgumentError` if the options passed in form an invalid combination.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the `CollectionType` or options to BSON.
      */
     public func insertMany(
@@ -80,6 +82,7 @@ extension MongoCollection {
      *    - `CommandError` if an error occurs that prevents the command from executing.
      *    - `InvalidArgumentError` if the options passed in form an invalid combination.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the `CollectionType` or options to BSON.
      */
     public func replaceOne(
@@ -113,6 +116,7 @@ extension MongoCollection {
      *    - `CommandError` if an error occurs that prevents the command from executing.
      *    - `InvalidArgumentError` if the options passed in form an invalid combination.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func updateOne(
@@ -150,6 +154,7 @@ extension MongoCollection {
      *    - `CommandError` if an error occurs that prevents the command from executing.
      *    - `InvalidArgumentError` if the options passed in form an invalid combination.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func updateMany(
@@ -186,6 +191,7 @@ extension MongoCollection {
      *    - `CommandError` if an error occurs that prevents the command from executing.
      *    - `InvalidArgumentError` if the options passed in form an invalid combination.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func deleteOne(
@@ -217,6 +223,7 @@ extension MongoCollection {
      *    - `CommandError` if an error occurs that prevents the command from executing.
      *    - `InvalidArgumentError` if the options passed in form an invalid combination.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func deleteMany(

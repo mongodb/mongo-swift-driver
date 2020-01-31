@@ -175,6 +175,7 @@ extension MongoCollection {
      *    - `CommandError` if an error occurs that prevents the command from executing.
      *    - `InvalidArgumentError` if the options passed in form an invalid combination.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the index specification or options.
      */
     public func createIndex(
@@ -203,6 +204,7 @@ extension MongoCollection {
      *    - `CommandError` if an error occurs that prevents the command from executing.
      *    - `InvalidArgumentError` if the options passed in form an invalid combination.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the index specification or options.
      */
     public func createIndex(
@@ -235,6 +237,7 @@ extension MongoCollection {
      *    - `InvalidArgumentError` if `models` is empty.
      *    - `InvalidArgumentError` if the options passed in form an invalid combination.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the index specifications or options.
      */
     public func createIndexes(
@@ -263,6 +266,8 @@ extension MongoCollection {
      *
      *    If the future fails, the error is likely one of the following:
      *    - `WriteError` if an error occurs while performing the command.
+     *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
      *    - `CommandError` if an error occurs that prevents the command from executing.
      *    - `InvalidArgumentError` if the options passed in form an invalid combination.
      *    - `EncodingError` if an error occurs while encoding the options.
@@ -296,6 +301,7 @@ extension MongoCollection {
      *    - `CommandError` if an error occurs that prevents the command from executing.
      *    - `InvalidArgumentError` if the options passed in form an invalid combination.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options.
      */
     public func dropIndex(
@@ -322,6 +328,7 @@ extension MongoCollection {
      *    - `CommandError` if an error occurs that prevents the command from executing.
      *    - `InvalidArgumentError` if the options passed in form an invalid combination.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options.
      */
     public func dropIndex(
@@ -347,6 +354,7 @@ extension MongoCollection {
      *    - `CommandError` if an error occurs that prevents the command from executing.
      *    - `InvalidArgumentError` if the options passed in form an invalid combination.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options.
      */
     public func dropIndexes(
@@ -396,6 +404,7 @@ extension MongoCollection {
      *
      *    If the future fails, the error is likely one of the following:
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
      */
     public func listIndexNames(session _: ClientSession? = nil) throws -> EventLoopFuture<[String]> {
         return self.listIndexes().flatMap { cursor in

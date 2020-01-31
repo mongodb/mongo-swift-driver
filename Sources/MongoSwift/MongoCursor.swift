@@ -256,6 +256,7 @@ public class MongoCursor<T: Codable>: Cursor {
      *      - `CommandError` if an error occurs while fetching more results from the server.
      *      - `LogicError` if this function is called after the cursor has died.
      *      - `LogicError` if this function is called and the session associated with this cursor is inactive.
+     *      - `LogicError` if this cursor's parent client has already been closed.
      *      - `DecodingError` if an error occurs decoding the server's response.
      */
     public func tryNext() -> EventLoopFuture<T?> {

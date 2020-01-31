@@ -123,6 +123,8 @@ public struct MongoDatabase {
      *
      *    If the future fails, the error is likely one of the following:
      *    - `CommandError` if an error occurs that prevents the command from executing.
+     *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this database's parent client has already been closed.
      */
     public func drop(options: DropDatabaseOptions? = nil, session: ClientSession? = nil) -> EventLoopFuture<Void> {
         let operation = DropDatabaseOperation(database: self, options: options)
@@ -182,6 +184,7 @@ public struct MongoDatabase {
      *    - `CommandError` if an error occurs that prevents the command from executing.
      *    - `InvalidArgumentError` if the options passed in form an invalid combination.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this databases's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func createCollection(
@@ -210,6 +213,7 @@ public struct MongoDatabase {
      *    - `CommandError` if an error occurs that prevents the command from executing.
      *    - `InvalidArgumentError` if the options passed in form an invalid combination.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this databases's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func createCollection<T: Codable>(
@@ -236,6 +240,7 @@ public struct MongoDatabase {
     *     If the future fails, the error is likely one of the following:
      *    - `InvalidArgumentError` if the options passed are an invalid combination.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this databases's parent client has already been closed.
      */
     public func listCollections(
         _ filter: Document? = nil,
@@ -268,6 +273,7 @@ public struct MongoDatabase {
      *    If the future fails, the error is likely one of the following:
      *    - `InvalidArgumentError` if the options passed are an invalid combination.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this databases's parent client has already been closed.
      */
     public func listMongoCollections(
         _ filter: Document? = nil,
@@ -293,6 +299,7 @@ public struct MongoDatabase {
      *    If the future fails, the error is likely one of the following:
      *    - `InvalidArgumentError` if the options passed are an invalid combination.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this databases's parent client has already been closed.
      */
     public func listCollectionNames(
         _ filter: Document? = nil,
@@ -323,11 +330,11 @@ public struct MongoDatabase {
      *    If the future fails, the error is likely one of the following:
      *    - `InvalidArgumentError` if `requests` is empty.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this databases's parent client has already been closed.
      *    - `WriteError` if any error occurs while the command was performing a write.
      *    - `CommandError` if an error occurs that prevents the command from being performed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
-    @discardableResult
     public func runCommand(
         _ command: Document,
         options: RunCommandOptions? = nil,

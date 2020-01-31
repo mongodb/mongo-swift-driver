@@ -18,6 +18,7 @@ extension MongoCollection {
      *    If the future fails, the error is likely one of the following:
      *    - `InvalidArgumentError` if `requests` is empty.
      *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
      *    - `BulkWriteError` if any error occurs while performing the writes. This includes errors that would
      *       typically be propagated as `RuntimeError`s or `CommandError`s elsewhere.
      *    - `EncodingError` if an error occurs while encoding the `CollectionType` or the options to BSON.
