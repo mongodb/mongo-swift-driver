@@ -20,8 +20,8 @@ public class MongoCursor<T: Codable>: Cursor {
     /// This lock should only be acquired in the bodies of public API methods.
     private let lock: Lock
 
-    /// Channel used to notify `next(...)` to stop retrying once `kill(...)` is called.
-    private let channel: ThreadChannel
+    /// Atomic variable used to signal long running operations (e.g. `next(...)`) that the cursor is closing.
+    private var isClosing: NIOAtomic<Bool>
 
     /// The state of this cursor.
     internal private(set) var state: State
@@ -96,7 +96,7 @@ public class MongoCursor<T: Codable>: Cursor {
         self.decoder = decoder
         self.cached = .none
         self.lock = Lock()
-        self.channel = ThreadChannel()
+        self.isClosing = NIOAtomic.makeAtomic(value: false)
 
         // If there was an error constructing the cursor, throw it.
         if let error = self.getMongocError() {
@@ -286,7 +286,7 @@ public class MongoCursor<T: Codable>: Cursor {
                 }
 
                 // Keep trying until either the cursor is killed or a notification has been sent by close
-                while self.isAlive && !self.channel.receive() {
+                while self.isAlive && !self.isClosing.load() {
                     if let doc = try self.getNextDocument() {
                         return doc
                     }
@@ -308,30 +308,11 @@ public class MongoCursor<T: Codable>: Cursor {
      */
     public func kill() -> EventLoopFuture<Void> {
         return self.client.operationExecutor.execute {
-            self.channel.notify()
+            self.isClosing.store(true)
             self.lock.withLock {
                 self.blockingKill()
             }
+            self.isClosing.store(false)
         }
-    }
-}
-
-/// A channel used to notify other threads.
-private struct ThreadChannel {
-    private let lock: NSLock
-
-    fileprivate init() {
-        self.lock = NSLock()
-        self.lock.lock()
-    }
-
-    /// Return whether or not `notify(...)` has been called since the last call to `receive(...)`.
-    fileprivate func receive() -> Bool {
-        self.lock.try()
-    }
-
-    /// Send a notification over the channel. The next call to `receive(...)` will return true.
-    fileprivate func notify() {
-        self.lock.unlock()
     }
 }
