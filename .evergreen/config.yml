@@ -429,7 +429,7 @@ buildvariants:
 
 - matrix_name: "atlas-connect"
   matrix_spec:
-    os-fully-featured: ubuntu-18.04
+    os-fully-featured: "*"
     swift-version: "*"
   display_name: "Atlas Connectivity ${swift-version} ${os-fully-featured}"
   tasks:
