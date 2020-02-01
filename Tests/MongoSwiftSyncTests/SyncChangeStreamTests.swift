@@ -1037,6 +1037,12 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
     }
 
     func testChangeStreamLazySequence() throws {
+        // skip sharded since this test would take longer than necessary.
+        guard MongoSwiftTestCase.topologyType == .replicaSetWithPrimary else {
+            print(unsupportedTopologyMessage(testName: self.name))
+            return
+        }
+
         // Verify that map/filter are lazy by using a change stream.
         try self.withTestNamespace { _, _, coll in
             let stream = try coll.watch()
