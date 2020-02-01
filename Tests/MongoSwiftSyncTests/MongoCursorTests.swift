@@ -158,12 +158,11 @@ final class MongoCursorTests: MongoSwiftTestCase {
             expect(cursor.isAlive).to(beTrue())
 
             let queue = DispatchQueue(label: "tailable close")
-            let allDocsLock = DispatchSemaphore(value: 1)
+            let allDocsLock = DispatchSemaphore(value: 0)
 
             var allDocs: [Document] = []
             var allError: Error?
             queue.async {
-                allDocsLock.wait()
                 defer { allDocsLock.signal() }
                 do {
                     while let result = cursor.next() { // should start blocking after the third document
