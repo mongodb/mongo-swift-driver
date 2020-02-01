@@ -300,7 +300,7 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase, FailPointConfigured {
 final class SyncChangeStreamTests: MongoSwiftTestCase {
     /// How long in total a change stream should poll for an event or error before returning.
     /// Used as a default value for `ChangeStream.nextWithTimeout`
-    public static let TIMEOUT: TimeInterval = 10
+    public static let TIMEOUT: TimeInterval = 15
 
     /// Prose test 1 of change stream spec.
     /// "ChangeStream must continuously track the last seen resumeToken"
