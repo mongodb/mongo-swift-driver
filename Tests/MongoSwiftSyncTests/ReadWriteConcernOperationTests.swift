@@ -182,17 +182,16 @@ final class ReadWriteConcernOperationTests: MongoSwiftTestCase {
         expect(try coll.deleteMany(["x": 9], options: DeleteOptions(writeConcern: wc1))).toNot(throwError())
         expect(try coll.deleteMany(["x": 10], options: DeleteOptions(writeConcern: wc3))).toNot(throwError())
 
-        // TODO: SWIFT-702: uncomment these assertions
-        // expect(try coll.createIndex(
-        //     ["x": 1],
-        //     options: CreateIndexOptions(writeConcern: wc1)
-        // )).toNot(throwError())
-        // expect(try coll.createIndexes(
-        //     [IndexModel(keys: ["x": -1])],
-        //     options: CreateIndexOptions(writeConcern: wc3)
-        // )).toNot(throwError())
+        expect(try coll.createIndex(
+            ["x": 1],
+            options: CreateIndexOptions(writeConcern: wc1)
+        )).toNot(throwError())
+        expect(try coll.createIndexes(
+            [IndexModel(keys: ["x": -1])],
+            options: CreateIndexOptions(writeConcern: wc3)
+        )).toNot(throwError())
 
-        // expect(try coll.dropIndex(["x": 1], options: DropIndexOptions(writeConcern: wc1))).toNot(throwError())
-        // expect(try coll.dropIndexes(options: DropIndexOptions(writeConcern: wc3))).toNot(throwError())
+        expect(try coll.dropIndex(["x": 1], options: DropIndexOptions(writeConcern: wc1))).toNot(throwError())
+        expect(try coll.dropIndexes(options: DropIndexOptions(writeConcern: wc3))).toNot(throwError())
     }
 }

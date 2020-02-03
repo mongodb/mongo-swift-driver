@@ -111,15 +111,29 @@ private struct CMTestFile: Decodable {
     }
 }
 
+extension ReadPreference: Decodable {
+    public convenience init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let rpDoc = try container.decode(Document.self)
+        guard let modeStr = rpDoc["mode"]?.stringValue else {
+            throw TestError(message: "Read preference document missing mode string: \(rpDoc)")
+        }
+        guard let mode = Mode(rawValue: modeStr) else {
+            throw TestError(message: "Unrecognized read preference mode \(modeStr)")
+        }
+        self.init(mode)
+    }
+}
+
 /// A struct to hold the data for a single test from a CMTestFile.
 private struct CMTest: Decodable {
     struct Operation: Decodable {
         let name: String
         let args: Document
-        let readPreference: Document?
+        let readPreference: ReadPreference?
 
         enum CodingKeys: String, CodingKey {
-            case name, args = "arguments", readPreference
+            case name, args = "arguments", readPreference = "read_preference"
         }
     }
 
@@ -148,12 +162,12 @@ private struct CMTest: Decodable {
     // events won't match up.
     // swiftlint:disable cyclomatic_complexity
     func doOperation(withCollection collection: MongoCollection<Document>) throws {
-        // TODO: SWIFT-31: use readPreferences for commands if provided
         let filter: Document = self.op.args["filter"]?.documentValue ?? [:]
 
         switch self.op.name {
         case "count":
-            _ = try? collection.countDocuments(filter)
+            let options = CountDocumentsOptions(readPreference: self.op.readPreference)
+            _ = try? collection.countDocuments(filter, options: options)
         case "deleteMany":
             _ = try? collection.deleteMany(filter)
         case "deleteOne":
@@ -173,6 +187,7 @@ private struct CMTest: Decodable {
                 max: modifiers?["$max"]?.documentValue,
                 maxTimeMS: modifiers?["$maxTimeMS"]?.asInt64(),
                 min: modifiers?["$min"]?.documentValue,
+                readPreference: self.op.readPreference,
                 returnKey: modifiers?["$returnKey"]?.boolValue,
                 showRecordId: modifiers?["$showDiskLoc"]?.boolValue,
                 skip: self.op.args["skip"]?.asInt64(),
