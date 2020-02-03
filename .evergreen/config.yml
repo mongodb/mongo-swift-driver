@@ -144,7 +144,9 @@ functions:
         working_dir: "src"
         script: |
           # DO NOT ECHO WITH XTRACE (which PREPARE_SHELL does)
-          SWIFT_VERSION=${SWIFT_VERSION} ATLAS_REPL='${ATLAS_REPL}' ATLAS_SHRD='${ATLAS_SHRD}' ATLAS_FREE='${ATLAS_FREE}' ATLAS_TLS11='${ATLAS_TLS11}' ATLAS_TLS12='${ATLAS_TLS12}'  sh ${PROJECT_DIRECTORY}/.evergreen/run-atlas-tests.sh
+          SWIFT_VERSION=${SWIFT_VERSION} ATLAS_REPL='${ATLAS_REPL}' ATLAS_SHRD='${ATLAS_SHRD}' ATLAS_FREE='${ATLAS_FREE}' ATLAS_TLS11='${ATLAS_TLS11}' ATLAS_TLS12='${ATLAS_TLS12}' \
+          ATLAS_REPL_SRV='${ATLAS_REPL_SRV}' ATLAS_SHRD_SRV='${ATLAS_SHRD_SRV}' ATLAS_FREE_SRV='${ATLAS_FREE_SRV}' ATLAS_TLS11_SRV='${ATLAS_TLS11_SRV}' ATLAS_TLS12_SRV='${ATLAS_TLS12_SRV}' \
+          sh ${PROJECT_DIRECTORY}/.evergreen/run-atlas-tests.sh
 
   "cleanup":
     - command: shell.exec
@@ -425,11 +427,10 @@ buildvariants:
     then:
       remove_tasks: ".3.6"
 
-# TODO SWIFT-703: reenable
-# - matrix_name: "atlas-connect"
-#   matrix_spec:
-#     os-fully-featured: ubuntu-18.04
-#     swift-version: "*"
-#   display_name: "Atlas Connectivity ${swift-version} ${os-fully-featured}"
-#   tasks:
-#     - ".atlas-connect"
+- matrix_name: "atlas-connect"
+  matrix_spec:
+    os-fully-featured: "*"
+    swift-version: "*"
+  display_name: "Atlas Connectivity ${swift-version} ${os-fully-featured}"
+  tasks:
+    - ".atlas-connect"
