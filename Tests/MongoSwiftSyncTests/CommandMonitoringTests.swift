@@ -111,17 +111,17 @@ private struct CMTestFile: Decodable {
     }
 }
 
+extension ReadPreference.Mode: Decodable {}
+
 extension ReadPreference: Decodable {
     public convenience init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        let rpDoc = try container.decode(Document.self)
-        guard let modeStr = rpDoc["mode"]?.stringValue else {
-            throw TestError(message: "Read preference document missing mode string: \(rpDoc)")
-        }
-        guard let mode = Mode(rawValue: modeStr) else {
-            throw TestError(message: "Unrecognized read preference mode \(modeStr)")
-        }
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let mode = try container.decode(Mode.self, forKey: .mode)
         self.init(mode)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case mode
     }
 }
 
