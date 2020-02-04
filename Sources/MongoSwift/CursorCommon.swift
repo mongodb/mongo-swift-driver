@@ -191,6 +191,7 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
         self.state = .closed
     }
 
+    /// This initializer is blocking and should only be run via the executor.
     internal init(
         mongocCursor: CursorKind,
         connection: Connection,
@@ -220,6 +221,7 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
     }
 
     /// Block until a result document is received, an error occurs, or the cursor dies.
+    /// This method is blocking and should only be run via the executor.
     internal func next() throws -> Document? {
         return try self.lock.withLock {
             guard self.isAlive else {
@@ -236,6 +238,7 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
     }
 
     /// Attempt to retrieve a single document from the server, returning nil if there are no results.
+    /// This method is blocking and should only be run via the executor.
     internal func tryNext() throws -> Document? {
         return try self.lock.withLock {
             try self.getNextDocument()
@@ -244,6 +247,7 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
 
     /// Retreive all the currently available documents in the result set.
     /// This will not exhaust the cursor.
+    /// This method is blocking and should only be run via the executor.
     internal func all() throws -> [Document] {
         return try self.lock.withLock {
             var results: [Document] = []
@@ -256,6 +260,7 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
 
     /// Kill this cursor.
     /// If this cursor is already dead, this method has no effect.
+    /// This method is blocking and should only be run via the executor.
     internal func kill() {
         self.isClosing.store(true)
         self.lock.withLock {
@@ -266,6 +271,7 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
 
     /// Access the underlying mongoc pointer.
     /// The pointer is guaranteed to be alive for the duration of the closure if it is non-nil.
+    /// This method is blocking and should only be run via the executor.
     internal func withUnsafeMongocPointer<T>(_ f: (OpaquePointer?) throws -> T) rethrows -> T {
         return try self.lock.withLock {
             guard case let .open(mongocCursor, _, _) = self.state else {
