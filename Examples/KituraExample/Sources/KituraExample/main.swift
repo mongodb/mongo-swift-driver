@@ -1,30 +1,39 @@
 import Kitura
-import MongoSwift
+@testable import MongoSwift
+import NIO
 
 /// A Codable type that matches the data in our home.kittens collection.
-private struct Kitten: Codable {
+struct Kitten: Codable {
     var name: String
     var color: String
 }
 
-/// A single collection with type `Kitten`. This allows us to directly retrieve instances of
-/// `Kitten` from the collection.  `MongoCollection` is safe to share across threads.
-private let collection = try MongoClient().db("home").collection("kittens", withType: Kitten.self)
+let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 4)
+let mongoClient = try MongoClient(using: eventLoopGroup)
+defer {
+    try? mongoClient.close().wait()
+    try? eventLoopGroup.syncShutdownGracefully()
+}
 
-private let router: Router = {
+let router: Router = {
     let router = Router()
 
-    router.get("kittens") { _, response, _ in
-        let cursor = try collection.find()
-        let results = Array(cursor)
-        if let error = cursor.error {
-            throw error
+    /// A single collection with type `Kitten`. This allows us to directly retrieve instances of
+    /// `Kitten` from the collection.  `MongoCollection` is safe to share across threads.
+    let collection = mongoClient.db("home").collection("kittens", withType: Kitten.self)
+
+    router.get("kittens") { _, response, next -> Void in
+        collection.find().flatMap { cursor in
+            cursor.all()
+        }.whenSuccess { results in
+            response.send(results)
+            next()
         }
-        response.send(results)
     }
 
     return router
 }()
 
-Kitura.addHTTPServer(onPort: 8080, with: router)
+let server = Kitura.addHTTPServer(onPort: 8080, with: router)
+try server.setEventLoopGroup(eventLoopGroup)
 Kitura.run()
