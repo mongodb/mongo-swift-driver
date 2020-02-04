@@ -47,14 +47,10 @@ public class MongoCursor<T: Codable>: CursorProtocol {
         case none
 
         /// Get the contents of the cache and clear it.
-        fileprivate mutating func clear() -> T?? {
-            switch self {
-            case let .cached(result):
-                self = .none
-                return result
-            case .none:
-                return nil
-            }
+        fileprivate mutating func clear() -> Self {
+            let copy = self
+            self = .none
+            return copy
         }
     }
 
@@ -171,7 +167,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
     internal func all() -> EventLoopFuture<[T]> {
         return self.client.operationExecutor.execute {
             var results: [T] = []
-            if let result = self.cached.clear(), let unwrappedResult = result {
+            if case let .cached(result) = self.cached.clear(), let unwrappedResult = result {
                 results.append(unwrappedResult)
             }
             // If the cursor still could have more results after clearing the cache, collect them too.
@@ -203,7 +199,10 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      */
     public func tryNext() -> EventLoopFuture<T?> {
         return self.client.operationExecutor.execute {
-            try self.cached.clear() ?? self.decode(result: self.wrappedCursor.tryNext())
+            if case let .cached(result) = self.cached.clear() {
+                return result
+            }
+            return try self.decode(result: self.wrappedCursor.tryNext())
         }
     }
 
@@ -227,7 +226,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      */
     public func next() -> EventLoopFuture<T?> {
         return self.client.operationExecutor.execute {
-            if let result = self.cached.clear() {
+            if case let .cached(result) = self.cached.clear() {
                 // If there are no more results forthcoming after clearing the cache, or the cache had a non-nil
                 // result in it, return that.
                 if !self.isAlive || result != nil {
