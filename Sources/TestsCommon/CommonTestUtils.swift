@@ -2,7 +2,6 @@ import CLibMongoC
 import Foundation
 @testable import MongoSwift
 import Nimble
-import NIO
 import XCTest
 
 open class MongoSwiftTestCase: XCTestCase {
