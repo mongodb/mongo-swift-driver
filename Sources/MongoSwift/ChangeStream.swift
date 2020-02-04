@@ -116,10 +116,15 @@ public class ChangeStream<T: Codable>: CursorProtocol {
     /**
      * Get the next `T` from this change stream.
      *
-     * This method will continue polling until a non-empty batch is returned from the server, an error occurs,
+     * This method will continue polling until an event is returned from the server, an error occurs,
      * or the change stream is killed. Each attempt to retrieve results will wait for a maximum of `maxAwaitTimeMS`
      * (specified on the `ChangeStreamOptions` passed  to the method that created this change stream) before trying
      * again.
+     *
+     * A thread from the pool will be occupied until the returned future is completed, so performance degradation
+     * is possible if the number of polling change streams is too close to the total number of threads in the thread
+     * pool. To configure the total number of threads in the pool, set the `ClientOptions.threadPoolSize` option
+     * during client creation.
      *
      * - Returns:
      *   An `EventLoopFuture<T?>` evaluating to the next `T` in this change stream, `nil` if the change stream is

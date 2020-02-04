@@ -40,6 +40,11 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      * killed. Each attempt to retrieve results will wait server-side for a maximum of `maxAwaitTimeMS` (specified on
      * the `ChangeStreamOptions` passed  to the method that created this change stream) before making another request.
      *
+     * A thread from the pool will be occupied by this method until it returns, so performance degradation is possible
+     * if the number of polling change streams is too close to the total number of threads in the thread pool. To
+     * configure the total number of threads in the pool, set the `ClientOptions.threadPoolSize` option on client
+     * creation.
+     *
      * - Returns:
      *   A `Result<T, Error>?` containing the next `T` in this change stream or an error if one occurred, or `nil` if
      *   the change stream is exhausted. This method will block until one of those conditions is met, potentially after
