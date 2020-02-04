@@ -70,7 +70,7 @@ internal protocol MongocCursorWrapper {
     /// Method wrapping the appropriate libmongoc "error" function (e.g. `mongoc_cursor_error_document`).
     func errorDocument(bsonError: inout bson_error_t, replyPtr: UnsafeMutablePointer<BSONPointer?>) -> Bool
 
-    /// Method wrapping the appropriatee libmongoc "next" function (e.g. `mongoc_cursor_next`).
+    /// Method wrapping the appropriate libmongoc "next" function (e.g. `mongoc_cursor_next`).
     func next(outPtr: UnsafeMutablePointer<BSONPointer?>) -> Bool
 
     /// Method wrapping the appropriate libmongoc "more" function (e.g. `mongoc_cursor_more`).
