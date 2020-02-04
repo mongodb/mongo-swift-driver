@@ -134,7 +134,7 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
             return extractMongoError(error: error, reply: reply)
         }
 
-        // Otherwise, the only feasible error is that the user tried to advance a dead change stream cursor,
+        // Otherwise, the only feasible error is that the user tried to advance a dead cursor,
         // which is a logic error. We will still parse the mongoc error to cover all cases.
         return extractMongoError(error: error)
     }
