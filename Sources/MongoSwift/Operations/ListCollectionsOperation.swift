@@ -125,6 +125,8 @@ internal struct ListCollectionsOperation: Operation {
         }
 
         if self.nameOnly {
+            // operate directly on the internal cursor type rather than going through the public `MongoCursor` type.
+            // this allows us to use only a single of the executor's threads instead of tying up one per iteration.
             let cursor = try Cursor(
                 mongocCursor: MongocCursor(referencing: collections),
                 connection: connection,
@@ -133,10 +135,7 @@ internal struct ListCollectionsOperation: Operation {
             )
             defer { cursor.kill() }
 
-            var names = [String]()
-            // call the cursor method for getting the next document directly rather than just iterating through the
-            // cursor so that we avoid generating more concurrent operations and tying up more of the executor's
-            // threads.
+            var names: [String] = []
             while let nextDoc = try cursor.tryNext() {
                 guard let name = nextDoc["name"]?.stringValue else {
                     throw InternalError(message: "Invalid server response: collection has no name")
