@@ -1,32 +1,35 @@
 import Foundation
-import MongoSwift
+@testable import MongoSwift
+import NIO
 import PerfectHTTP
 import PerfectHTTPServer
 
 /// A Codable type that matches the data in our home.kittens collection.
-private struct Kitten: Codable {
+struct Kitten: Codable {
     var name: String
     var color: String
 }
 
+let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
+let mongoClient = try MongoClient(using: elg)
+
 /// A single collection with type `Kitten`. This allows us to directly retrieve instances of
 /// `Kitten` from the collection.  `MongoCollection` is safe to share across threads.
-private let collection = try MongoClient().db("home").collection("kittens", withType: Kitten.self)
+let collection = mongoClient.db("home").collection("kittens", withType: Kitten.self)
 
 private var routes = Routes()
 routes.add(method: .get, uri: "/kittens") { _, response in
-    response.setHeader(.contentType, value: "application/json")
-    do {
-        let cursor = try collection.find()
-        let json = try JSONEncoder().encode(Array(cursor))
-        if let error = cursor.error {
-            throw error
-        }
+    collection.find().flatMap { cursor in
+        cursor.all()
+    }.flatMapThrowing { results in
+        response.setHeader(.contentType, value: "application/json")
+        let json = try JSONEncoder().encode(results)
         response.setBody(bytes: Array(json))
-    } catch {
-        print("error: \(error)")
+        response.completed()
+    }.whenFailure { error in
+        response.setBody(string: "Error: \(error)")
+        response.completed()
     }
-    response.completed()
 }
 
 try HTTPServer.launch(name: "localhost", port: 8080, routes: routes)
