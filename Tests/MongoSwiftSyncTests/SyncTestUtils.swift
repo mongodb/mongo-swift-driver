@@ -13,8 +13,7 @@ extension MongoSwiftTestCase {
         collectionOptions: CreateCollectionOptions? = nil,
         f: (MongoClient, MongoDatabase, MongoCollection<Document>)
             throws -> T
-    )
-        throws -> T {
+    ) throws -> T {
         let client = try MongoClient.makeTestClient(options: clientOptions)
 
         return try self.withTestNamespace(client: client, ns: ns, options: collectionOptions) { db, coll in
