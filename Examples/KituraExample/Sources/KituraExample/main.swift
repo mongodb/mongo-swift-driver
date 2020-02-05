@@ -23,10 +23,18 @@ let router: Router = {
     let collection = mongoClient.db("home").collection("kittens", withType: Kitten.self)
 
     router.get("kittens") { _, response, next -> Void in
-        collection.find().flatMap { cursor in
+        let res = collection.find().flatMap { cursor in
             cursor.all()
-        }.whenSuccess { results in
+        }
+
+        res.whenSuccess { results in
             response.send(results)
+            next()
+        }
+
+        res.whenFailure { error in
+            response.error = error
+            response.send("Error: \(error)")
             next()
         }
     }
