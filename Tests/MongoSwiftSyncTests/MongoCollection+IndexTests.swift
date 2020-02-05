@@ -1,4 +1,4 @@
-import MongoSwift
+import MongoSwiftSync
 import Nimble
 import TestsCommon
 import XCTest
@@ -161,8 +161,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         let model = IndexModel(keys: ["cat": 1])
         expect(try self.coll.createIndex(model)).to(equal("cat_1"))
 
-        let res = try self.coll.dropIndex(model)
-        expect(res["ok"]?.asDouble()).to(equal(1.0))
+        expect(try self.coll.dropIndex(model)).toNot(throwError())
 
         // now there should only be _id_ left
         let indexes = try coll.listIndexes()
@@ -175,8 +174,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         let model = IndexModel(keys: ["cat": 1])
         expect(try self.coll.createIndex(model)).to(equal("cat_1"))
 
-        let res = try self.coll.dropIndex(["cat": 1])
-        expect(res["ok"]?.asDouble()).to(equal(1.0))
+        expect(try self.coll.dropIndex(["cat": 1])).toNot(throwError())
 
         // now there should only be _id_ left
         let indexes = try coll.listIndexes()
@@ -189,8 +187,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         let model = IndexModel(keys: ["cat": 1])
         expect(try self.coll.createIndex(model)).to(equal("cat_1"))
 
-        let res = try self.coll.dropIndexes()
-        expect(res["ok"]?.asDouble()).to(equal(1.0))
+        expect(try self.coll.dropIndexes()).toNot(throwError())
 
         // now there should only be _id_ left
         let indexes = try coll.listIndexes()
@@ -236,8 +233,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         expect(try collection.createIndex(model, options: createIndexOpts)).to(equal("cat_1"))
 
         let dropIndexOpts = DropIndexOptions(maxTimeMS: maxTimeMS, writeConcern: wc)
-        let res = try collection.dropIndex(model, options: dropIndexOpts)
-        expect(res["ok"]?.asDouble()).to(equal(1.0))
+        expect(try collection.dropIndex(model, options: dropIndexOpts)).toNot(throwError())
 
         // now there should only be _id_ left
         let indexes = try coll.listIndexes()

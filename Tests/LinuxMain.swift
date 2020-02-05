@@ -190,6 +190,21 @@ extension MongoCollection_BulkWriteTests {
     ]
 }
 
+extension MongoCollection_IndexTests {
+    static var allTests = [
+        ("testCreateIndexFromModel", testCreateIndexFromModel),
+        ("testIndexOptions", testIndexOptions),
+        ("testCreateIndexesFromModels", testCreateIndexesFromModels),
+        ("testCreateIndexFromKeys", testCreateIndexFromKeys),
+        ("testDropIndexByName", testDropIndexByName),
+        ("testDropIndexByModel", testDropIndexByModel),
+        ("testDropIndexByKeys", testDropIndexByKeys),
+        ("testDropAllIndexes", testDropAllIndexes),
+        ("testListIndexNames", testListIndexNames),
+        ("testCreateDropIndexByModelWithMaxTimeMS", testCreateDropIndexByModelWithMaxTimeMS),
+    ]
+}
+
 extension MongoCursorTests {
     static var allTests = [
         ("testNonTailableCursor", testNonTailableCursor),
@@ -329,6 +344,7 @@ XCTMain([
     testCase(MongoClientTests.allTests),
     testCase(MongoCollectionTests.allTests),
     testCase(MongoCollection_BulkWriteTests.allTests),
+    testCase(MongoCollection_IndexTests.allTests),
     testCase(MongoCursorTests.allTests),
     testCase(MongoDatabaseTests.allTests),
     testCase(OptionsTests.allTests),
