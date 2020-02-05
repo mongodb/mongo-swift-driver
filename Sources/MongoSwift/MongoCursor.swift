@@ -47,7 +47,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
         case none
 
         /// Get the contents of the cache and clear it.
-        fileprivate mutating func clear() -> Self {
+        fileprivate mutating func clear() -> CachedDocument {
             let copy = self
             self = .none
             return copy
