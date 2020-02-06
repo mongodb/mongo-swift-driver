@@ -1,12 +1,13 @@
-// swift-tools-version:4.2
+// swift-tools-version:5.0
 import PackageDescription
 
 let package = Package(
     name: "DocsExamples",
     dependencies: [
-        .package(url: "https://github.com/mongodb/mongo-swift-driver", .upToNextMajor(from: "0.1.0"))
+        .package(url: "https://github.com/mongodb/mongo-swift-driver", .branch(from: "master"))
     ],
     targets: [
-        .target(name: "DocsExamples", dependencies: ["MongoSwift"])
+        .target(name: "SyncExamples", dependencies: ["MongoSwiftSync"]),
+        .target(name: "AsyncExamples", dependencies: ["MongoSwift"])
     ]
 )
