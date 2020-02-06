@@ -12,17 +12,18 @@ extension MongoCollection {
      *   - options: Optional `InsertOneOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture` containing an `InsertOneResult`, or containing `nil` if the write concern is
-     *            unacknowledged.
+     * - Returns:
+     *    An `EventLoopFuture<InsertOneResult?>`. On success, contains the result of performing the insert, or contains
+     *    `nil` if the write concern is unacknowledged.
      *
-     * - Throws:
-     *   - `WriteError` if an error occurs while performing the command.
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *   - `LogicError` if the provided session is inactive.
-     *   - `EncodingError` if an error occurs while encoding the `CollectionType` to BSON.
+     *    If the future fails, the error is likely one of the following:
+     *    - `WriteError` if an error occurs while performing the command.
+     *    - `CommandError` if an error occurs that prevents the command from executing.
+     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
+     *    - `EncodingError` if an error occurs while encoding the `CollectionType` to BSON.
      */
-    @discardableResult
     public func insertOne(
         _ value: CollectionType,
         options: InsertOneOptions? = nil,
@@ -42,15 +43,17 @@ extension MongoCollection {
      *   - options: optional `InsertManyOptions` to use while executing the operation
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture` containing an `InsertManyResult`, or containing `nil` if the write concern is
-     *            unacknowledged.
+     * - Returns:
+     *    An `EventLoopFuture<InsertManyResult?>`. On success, contains the result of performing the inserts, or
+     *    contains `nil` if the write concern is unacknowledged.
      *
-     * - Throws:
-     *   - `BulkWriteError` if an error occurs while performing any of the writes.
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *   - `LogicError` if the provided session is inactive.
-     *   - `EncodingError` if an error occurs while encoding the `CollectionType` or options to BSON.
+     *    If the future fails, the error is likely one of the following:
+     *    - `BulkWriteError` if an error occurs while performing any of the writes.
+     *    - `CommandError` if an error occurs that prevents the command from executing.
+     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
+     *    - `EncodingError` if an error occurs while encoding the `CollectionType` or options to BSON.
      */
     public func insertMany(
         _ values: [CollectionType],
@@ -70,15 +73,17 @@ extension MongoCollection {
      *   - options: Optional `ReplaceOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture` containing an `UpdateResult`, or containing `nil` if the write concern is
-     *            unacknowledged.
+     * - Returns:
+     *    An `EventLoopFuture<UpdateResult?>`. On success, contains the result of performing the replacement, or
+     *    contains `nil` if the write concern is unacknowledged.
      *
-     * - Throws:
-     *   - `WriteError` if an error occurs while performing the command.
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *   - `LogicError` if the provided session is inactive.
-     *   - `EncodingError` if an error occurs while encoding the `CollectionType` or options to BSON.
+     *    If the future fails, the error is likely one of the following:
+     *    - `WriteError` if an error occurs while performing the command.
+     *    - `CommandError` if an error occurs that prevents the command from executing.
+     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
+     *    - `EncodingError` if an error occurs while encoding the `CollectionType` or options to BSON.
      */
     public func replaceOne(
         filter: Document,
@@ -102,15 +107,17 @@ extension MongoCollection {
      *   - options: Optional `UpdateOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture` containing an `UpdateResult`, or containing `nil` if the write concern is
-     *            unacknowledged.
+     * - Returns:
+     *    An `EventLoopFuture<UpdateResult?>`. On success, contains the result of performing the update, or contains
+     *    `nil` if the write concern is unacknowledged.
      *
-     * - Throws:
-     *   - `WriteError` if an error occurs while performing the command.
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *   - `LogicError` if the provided session is inactive.
-     *   - `EncodingError` if an error occurs while encoding the options to BSON.
+     *    If the future fails, the error is likely one of the following:
+     *    - `WriteError` if an error occurs while performing the command.
+     *    - `CommandError` if an error occurs that prevents the command from executing.
+     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
+     *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func updateOne(
         filter: Document,
@@ -138,15 +145,17 @@ extension MongoCollection {
      *   - options: Optional `UpdateOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture` containing an `UpdateResult`, or containing `nil` if the write concern is
-     *            unacknowledged.
+     * - Returns:
+     *    An `EventLoopFuture<UpdateResult?>`. On success, contains the result of performing the update, or contains
+     *    `nil` if the write concern is unacknowledged.
      *
-     * - Throws:
-     *   - `WriteError` if an error occurs while performing the command.
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *   - `LogicError` if the provided session is inactive.
-     *   - `EncodingError` if an error occurs while encoding the options to BSON.
+     *    If the future fails, the error is likely one of the following:
+     *    - `WriteError` if an error occurs while performing the command.
+     *    - `CommandError` if an error occurs that prevents the command from executing.
+     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
+     *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func updateMany(
         filter: Document,
@@ -173,15 +182,17 @@ extension MongoCollection {
      *   - options: Optional `DeleteOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture` containing a `DeleteResult`, or containing `nil` if the write concern is
-     *            unacknowledged.
+     * - Returns:
+     *    An `EventLoopFuture<DeleteResult?>`. On success, contains the result of performing the deletion, or contains
+     *    `nil` if the write concern is unacknowledged.
      *
-     * - Throws:
-     *   - `WriteError` if an error occurs while performing the command.
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *   - `LogicError` if the provided session is inactive.
-     *   - `EncodingError` if an error occurs while encoding the options to BSON.
+     *    If the future fails, the error is likely one of the following:
+     *    - `WriteError` if an error occurs while performing the command.
+     *    - `CommandError` if an error occurs that prevents the command from executing.
+     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
+     *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func deleteOne(
         _ filter: Document,
@@ -196,22 +207,24 @@ extension MongoCollection {
     }
 
     /**
-     * Deletes multiple documents
+     * Deletes all matching documents from the collection.
      *
      * - Parameters:
      *   - filter: Document representing the match criteria
      *   - options: Optional `DeleteOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture` containing a `DeleteResult`, or containing `nil` if the write concern is
-     *            unacknowledged.
+     * - Returns:
+     *    An `EventLoopFuture<DeleteResult?>`. On success, contains the result of performing the deletions, or contains
+     *    `nil` if the write concern is unacknowledged.
      *
-     * - Throws:
-     *   - `WriteError` if an error occurs while performing the command.
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *   - `LogicError` if the provided session is inactive.
-     *   - `EncodingError` if an error occurs while encoding the options to BSON.
+     *    If the future fails, the error is likely one of the following:
+     *    - `WriteError` if an error occurs while performing the command.
+     *    - `CommandError` if an error occurs that prevents the command from executing.
+     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
+     *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func deleteMany(
         _ filter: Document,

@@ -195,6 +195,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      *      - `CommandError` if an error occurs while fetching more results from the server.
      *      - `LogicError` if this function is called after the cursor has died.
      *      - `LogicError` if this function is called and the session associated with this cursor is inactive.
+     *      - `LogicError` if this cursor's parent client has already been closed.
      *      - `DecodingError` if an error occurs decoding the server's response.
      */
     public func tryNext() -> EventLoopFuture<T?> {
@@ -213,12 +214,11 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      * or the cursor is closed.
      *
      * - Returns:
-     *   An `EventLoopFuture<T?>` evaluating to the next `T` in this cursor, `nil` if the cursor is exhausted,
-     *   or an error if one occurred. If the underlying cursor is tailable, the future will not resolve
-     *   until data is returned (potentially after multiple requests to the server), the cursor is closed, or an error
-     *   occurs.
+     *   An `EventLoopFuture<T?>` evaluating to the next `T` in this cursor, or `nil` if the cursor is exhausted. If
+     *   the underlying cursor is tailable, the future will not resolve until data is returned (potentially after
+     *   multiple requests to the server), the cursor is closed, or an error occurs.
      *
-     *   If the future evaluates to an error, it is likely one of the following:
+     *   If the future fails, the error is likely one of the following:
      *     - `CommandError` if an error occurs while fetching more results from the server.
      *     - `LogicError` if this function is called after the cursor has died.
      *     - `LogicError` if this function is called and the session associated with this cursor is inactive.

@@ -17,9 +17,10 @@ import NIO
  *   ```
  *   let opts = CollectionOptions(readConcern: ReadConcern(.majority), writeConcern: try WriteConcern(w: .majority))
  *   let collection = database.collection("mycoll", options: opts)
- *   try client.withSession { session in
- *       try collection.insertOne(["x": 1], session: session)
- *       try collection.find(["x": 1], session: session)
+ *   let futureCount = client.withSession { session in
+ *       collection.insertOne(["x": 1], session: session).flatMap { _ in
+ *           collection.countDocuments(session: session)
+ *       }
  *   }
  *   ```
  *

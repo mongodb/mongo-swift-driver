@@ -38,7 +38,7 @@ internal class ConnectionPool {
     /// Initializes the pool using the provided `ConnectionString`.
     internal init(from connString: ConnectionString, options: TLSOptions? = nil) throws {
         guard let pool = mongoc_client_pool_new(connString._uri) else {
-            throw InvalidArgumentError(message: "libmongoc not built with TLS support")
+            throw InternalError(message: "Failed to initialize libmongoc client pool")
         }
 
         guard mongoc_client_pool_set_error_api(pool, MONGOC_ERROR_API_VERSION_2) else {

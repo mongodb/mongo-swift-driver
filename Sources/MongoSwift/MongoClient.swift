@@ -242,8 +242,6 @@ public class MongoClient {
      *
      * - Throws:
      *   - A `InvalidArgumentError` if the connection string passed in is improperly formatted.
-     *   - A `InvalidArgumentError` if the connection string specifies the use of TLS but libmongoc was not
-     *     built with TLS support.
      */
     public init(
         _ connectionString: String = "mongodb://localhost:27017",
@@ -303,7 +301,8 @@ public class MongoClient {
         }
     }
 
-    /// Starts a new `ClientSession` with the provided options.
+    /// Starts a new `ClientSession` with the provided options. When you are done using this session, you must call
+    /// `ClientSession.end()` on it.
     public func startSession(options: ClientSessionOptions? = nil) -> ClientSession {
         return ClientSession(client: self, options: options)
     }
@@ -312,8 +311,16 @@ public class MongoClient {
      * Starts a new `ClientSession` with the provided options and passes it to the provided closure.
      * The session is only valid within the body of the closure and will be ended after the body completes.
      *
-     * - Throws:
-     *   - `RuntimeError.compatibilityError` if the deployment does not support sessions.
+     * - Parameters:
+     *   - options: Options to use when creating the session.
+     *   - sessionBody: A closure which takes in a `ClientSession` and returns an `EventLoopFuture<T>`.
+     *
+     * - Returns:
+     *    An `EventLoopFuture<T>`, the return value of the user-provided closure.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `CompatibilityError` if the deployment does not support sessions.
+     *    - `LogicError` if this client has already been closed.
      */
     public func withSession<T>(
         options: ClientSessionOptions? = nil,
@@ -344,18 +351,21 @@ public class MongoClient {
     }
 
     /**
-     * Run the `listDatabases` command.
+     * Retrieves a list of databases in this client's MongoDB deployment.
      *
      * - Parameters:
      *   - filter: Optional `Document` specifying a filter that the listed databases must pass. This filter can be based
      *     on the "name", "sizeOnDisk", "empty", or "shards" fields of the output.
      *   - session: Optional `ClientSession` to use when executing this command.
      *
-     * - Returns: An `EventLoopFuture<[DatabaseSpecification]>` containing the databases matching provided criteria.
+     * - Returns:
+     *    An `EventLoopFuture<[DatabaseSpecification]>`. On success, the future contains an array of the specifications
+     *    of databases matching the provided criteria.
      *
-     * - Throws:
-     *   - `LogicError` if the provided session is inactive.
-     *   - `EncodingError` if an error is encountered while encoding the options to BSON.
+     *    If the future fails, the error is likely one of the following:
+     *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this client has already been closed.
+     *    - `EncodingError` if an error is encountered while encoding the options to BSON.
      *
      * - SeeAlso: https://docs.mongodb.com/manual/reference/command/listDatabases/
      */
@@ -373,16 +383,19 @@ public class MongoClient {
     }
 
     /**
-     * Get a list of `MongoDatabase`s.
+     * Get a list of `MongoDatabase`s corresponding to the databases in this client's MongoDB deployment.
      *
      * - Parameters:
      *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture<[MongoDatabase]>` containing databases that match the provided filter.
+     * - Returns:
+     *    An `EventLoopFuture<[MongoDatabase]>`. On success, the future contains an array of `MongoDatabase`s that
+     *    match the provided filter.
      *
-     * - Throws:
-     *   - `LogicError` if the provided session is inactive.
+     *    If the future fails, the error is likely one of the following:
+     *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this client has already been closed.
      */
     public func listMongoDatabases(
         _ filter: Document? = nil,
@@ -392,16 +405,19 @@ public class MongoClient {
     }
 
     /**
-     * Get a list of names of databases.
+     * Get the names of databases in this client's MongoDB deployment.
      *
      * - Parameters:
      *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
      *   - session: Optional `ClientSession` to use when executing this command
      *
-     * - Returns: An `EventLoopFuture<[String]>` containing names of databases that match the provided filter.
+     * - Returns:
+     *    An `EventLoopFuture<[String]>`. On success, the future contains an array of names of databases that
+     *    match the provided filter.
      *
-     * - Throws:
-     *   - `LogicError` if the provided session is inactive.
+     *    If the future fails, the error is likely one of the following:
+     *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this client has already been closed.
      */
     public func listDatabaseNames(
         _ filter: Document? = nil,
@@ -426,7 +442,7 @@ public class MongoClient {
      *   - name: the name of the database to retrieve
      *   - options: Optional `DatabaseOptions` to use for the retrieved database
      *
-     * - Returns: a `MongoDatabase` corresponding to the provided database name
+     * - Returns: a `MongoDatabase` corresponding to the provided database name.
      */
     public func db(_ name: String, options: DatabaseOptions? = nil) -> MongoDatabase {
         return MongoDatabase(name: name, client: self, options: options)

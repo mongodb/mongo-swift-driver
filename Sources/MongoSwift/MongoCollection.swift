@@ -90,8 +90,13 @@ public struct MongoCollection<T: Codable> {
      *   - options: An optional `DropCollectionOptions` to use when executing this command
      *   - session: An optional `ClientSession` to use when executing this command
      *
-     * - Throws:
-     *   - `CommandError` if an error occurs that prevents the command from executing.
+     * - Returns:
+     *    An `EventLoopFuture<Void>` that succeeds when the drop is successful.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `CommandError` if an error occurs that prevents the command from executing.
+     *    - `LogicError` if the provided session is inactive.
+     *    - `LogicError` if this collection's parent client has already been closed.
      */
     public func drop(options: DropCollectionOptions? = nil, session: ClientSession? = nil) -> EventLoopFuture<Void> {
         let operation = DropCollectionOperation(collection: self, options: options)
