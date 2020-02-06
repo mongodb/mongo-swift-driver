@@ -13,8 +13,7 @@ extension MongoSwiftTestCase {
         collectionOptions: CreateCollectionOptions? = nil,
         f: (MongoClient, MongoDatabase, MongoCollection<Document>)
             throws -> T
-    )
-        throws -> T {
+    ) throws -> T {
         let client = try MongoClient.makeTestClient(options: clientOptions)
 
         return try self.withTestNamespace(client: client, ns: ns, options: collectionOptions) { db, coll in
@@ -163,22 +162,6 @@ internal func captureCommandEvents(
     }
 }
 
-// extension ChangeStream {
-//     /// Repeatedly poll the change stream until either an event/error is returned or the timeout is hit.
-//     /// The default timeout is ChangeStreamTests.TIMEOUT.
-//     func nextWithTimeout(_ timeout: TimeInterval = ChangeStreamTests.TIMEOUT) throws -> T? {
-//         let start = DispatchTime.now()
-//         while DispatchTime.now() < start + timeout {
-//             if let event = self.next() {
-//                 return event
-//             } else if let error = self.error {
-//                 throw error
-//             }
-//         }
-//         return nil
-//     }
-// }
-
 extension MongoSwiftSync.MongoCollection {
     public var _client: MongoSwiftSync.MongoClient {
         return self.client
@@ -222,5 +205,19 @@ extension Result {
 extension MongoCursor {
     func all() throws -> [T] {
         return try self._all()
+    }
+}
+
+extension ChangeStream {
+    /// Repeatedly poll the change stream until either an event/error is returned or the timeout is hit.
+    /// The default timeout is ChangeStreamTests.TIMEOUT.
+    func nextWithTimeout(_ timeout: TimeInterval = SyncChangeStreamTests.TIMEOUT) throws -> T? {
+        let start = DispatchTime.now()
+        while DispatchTime.now() < start + timeout {
+            if let event = self.tryNext() {
+                return try event.get()
+            }
+        }
+        return nil
     }
 }

@@ -38,6 +38,20 @@ extension BSONValueTests {
     ]
 }
 
+extension ChangeStreamSpecTests {
+    static var allTests = [
+        ("testChangeStreamSpec", testChangeStreamSpec),
+    ]
+}
+
+extension ChangeStreamTests {
+    static var allTests = [
+        ("testChangeStreamNext", testChangeStreamNext),
+        ("testChangeStreamError", testChangeStreamError),
+        ("testChangeStreamEmpty", testChangeStreamEmpty),
+    ]
+}
+
 extension ClientSessionTests {
     static var allTests = [
         ("testSession", testSession),
@@ -296,6 +310,29 @@ extension SyncAuthTests {
     ]
 }
 
+extension SyncChangeStreamTests {
+    static var allTests = [
+        ("testChangeStreamTracksResumeToken", testChangeStreamTracksResumeToken),
+        ("testChangeStreamMissingId", testChangeStreamMissingId),
+        ("testChangeStreamAutomaticResume", testChangeStreamAutomaticResume),
+        ("testChangeStreamFailedAggregate", testChangeStreamFailedAggregate),
+        ("testChangeStreamDoesntResume", testChangeStreamDoesntResume),
+        ("testChangeStreamDoesntCloseOnEmptyBatch", testChangeStreamDoesntCloseOnEmptyBatch),
+        ("testChangeStreamFailedKillCursors", testChangeStreamFailedKillCursors),
+        ("testChangeStreamResumeTokenUpdatesEmptyBatch", testChangeStreamResumeTokenUpdatesEmptyBatch),
+        ("testChangeStreamResumeTokenUpdatesNonemptyBatch", testChangeStreamResumeTokenUpdatesNonemptyBatch),
+        ("testChangeStreamOnAClient", testChangeStreamOnAClient),
+        ("testChangeStreamOnADatabase", testChangeStreamOnADatabase),
+        ("testChangeStreamOnACollection", testChangeStreamOnACollection),
+        ("testChangeStreamWithPipeline", testChangeStreamWithPipeline),
+        ("testChangeStreamResumeToken", testChangeStreamResumeToken),
+        ("testChangeStreamWithEventType", testChangeStreamWithEventType),
+        ("testChangeStreamWithFullDocumentType", testChangeStreamWithFullDocumentType),
+        ("testChangeStreamOnACollectionWithCodableType", testChangeStreamOnACollectionWithCodableType),
+        ("testChangeStreamLazySequence", testChangeStreamLazySequence),
+    ]
+}
+
 extension SyncClientSessionTests {
     static var allTests = [
         ("testSessionCleanup", testSessionCleanup),
@@ -333,6 +370,8 @@ XCTMain([
     testCase(AuthTests.allTests),
     testCase(BSONCorpusTests.allTests),
     testCase(BSONValueTests.allTests),
+    testCase(ChangeStreamSpecTests.allTests),
+    testCase(ChangeStreamTests.allTests),
     testCase(ClientSessionTests.allTests),
     testCase(CodecTests.allTests),
     testCase(CommandMonitoringTests.allTests),
@@ -357,6 +396,7 @@ XCTMain([
     testCase(RetryableWritesTests.allTests),
     testCase(SDAMTests.allTests),
     testCase(SyncAuthTests.allTests),
+    testCase(SyncChangeStreamTests.allTests),
     testCase(SyncClientSessionTests.allTests),
     testCase(SyncMongoClientTests.allTests),
     testCase(WriteConcernTests.allTests),

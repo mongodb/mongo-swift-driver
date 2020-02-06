@@ -3,34 +3,38 @@ import Foundation
 import NIO
 import NIOConcurrencyHelpers
 
-internal let ClosedCursorError = LogicError(message: "Cannot advance a completed or failed cursor.")
+/// Direct wrapper of a `mongoc_cursor_t`.
+internal struct MongocCursor: MongocCursorWrapper {
+    internal let pointer: OpaquePointer
+
+    internal init(referencing pointer: OpaquePointer) {
+        self.pointer = pointer
+    }
+
+    internal func errorDocument(bsonError: inout bson_error_t, replyPtr: UnsafeMutablePointer<BSONPointer?>) -> Bool {
+        return mongoc_cursor_error_document(self.pointer, &bsonError, replyPtr)
+    }
+
+    internal func next(outPtr: UnsafeMutablePointer<BSONPointer?>) -> Bool {
+        return mongoc_cursor_next(self.pointer, outPtr)
+    }
+
+    internal func more() -> Bool {
+        return mongoc_cursor_more(self.pointer)
+    }
+
+    internal func destroy() {
+        mongoc_cursor_destroy(self.pointer)
+    }
+}
 
 // sourcery: skipSyncExport
 /// A MongoDB cursor.
-public class MongoCursor<T: Codable>: Cursor {
-    /// Enum for tracking the state of a cursor.
-    internal enum State {
-        /// Indicates that the cursor is still open. Stores a pointer to the `mongoc_cursor_t`, along with the source
-        /// connection, and possibly session to ensure they are kept alive as long as the cursor is.
-        case open(cursor: OpaquePointer, connection: Connection, session: ClientSession?)
-        case closed
-    }
-
-    /// Lock used to synchronize usage of the internal state.
-    /// This lock should only be acquired in the bodies of public API methods.
-    private let lock: Lock
-
-    /// Atomic variable used to signal long running operations (e.g. `next(...)`) that the cursor is closing.
-    private var isClosing: NIOAtomic<Bool>
-
-    /// The state of this cursor.
-    internal private(set) var state: State
-
-    /// Indicates whether this is a tailable cursor.
-    private let cursorType: CursorType
-
+public class MongoCursor<T: Codable>: CursorProtocol {
     /// The client this cursor descended from.
     private let client: MongoClient
+
+    private let wrappedCursor: Cursor<MongocCursor>
 
     /// Decoder from the client, database, or collection that created this cursor.
     internal let decoder: BSONDecoder
@@ -41,6 +45,13 @@ public class MongoCursor<T: Codable>: Cursor {
         case cached(T?)
         /// Indicates that there is no value cached.
         case none
+
+        /// Get the contents of the cache and clear it.
+        fileprivate mutating func clear() -> CachedDocument {
+            let copy = self
+            self = .none
+            return copy
+        }
     }
 
     /// Tracks the caching status of this cursor.
@@ -55,28 +66,25 @@ public class MongoCursor<T: Codable>: Cursor {
      *     invalid combination.
      */
     internal init(
-        stealing cursor: OpaquePointer,
+        stealing cursorPtr: OpaquePointer,
         connection: Connection,
         client: MongoClient,
         decoder: BSONDecoder,
         session: ClientSession?,
         cursorType: CursorType? = nil
     ) throws {
-        self.state = .open(cursor: cursor, connection: connection, session: session)
         self.client = client
-        self.cursorType = cursorType ?? .nonTailable
         self.decoder = decoder
         self.cached = .none
-        self.lock = Lock()
-        self.isClosing = NIOAtomic.makeAtomic(value: false)
 
-        // If there was an error constructing the cursor, throw it.
-        if let error = self.getMongocError() {
-            self.blockingKill()
-            throw error
-        }
+        self.wrappedCursor = try Cursor(
+            mongocCursor: MongocCursor(referencing: cursorPtr),
+            connection: connection,
+            session: session,
+            type: cursorType ?? .nonTailable
+        )
 
-        let next = try self.getNextDocument()
+        let next = try self.decode(result: self.wrappedCursor.tryNext())
         self.cached = .cached(next)
     }
 
@@ -85,11 +93,7 @@ public class MongoCursor<T: Codable>: Cursor {
     /// This method should only be called while the lock is held.
     internal func blockingKill() {
         self.cached = .none
-        guard case let .open(cursor, _, _) = self.state else {
-            return
-        }
-        mongoc_cursor_destroy(cursor)
-        self.state = .closed
+        self.wrappedCursor.kill()
     }
 
     /// Asserts that the cursor was closed.
@@ -97,89 +101,22 @@ public class MongoCursor<T: Codable>: Cursor {
         assert(!self.isAlive, "cursor wasn't closed before it went out of scope")
     }
 
-    /// Retrieves the next document from the cache or the underlying `mongoc_cursor_t`, if it exists.
-    /// Will close the cursor if the end of the cursor is reached or if an error occurs.
-    ///
-    /// This method should only be called while the lock is held.
-    internal func getNextDocument() throws -> T? {
-        if case let .cached(doc) = self.cached {
-            self.cached = .none
-            return doc
-        }
-
-        guard case let .open(cursor, _, session) = self.state else {
-            throw ClosedCursorError
-        }
-
-        if let session = session, !session.active {
-            throw ClientSession.SessionInactiveError
-        }
-
-        let out = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
-        defer {
-            out.deinitialize(count: 1)
-            out.deallocate()
-        }
-
-        guard mongoc_cursor_next(cursor, out) else {
-            if let error = self.getMongocError() {
-                self.blockingKill()
-                throw error
-            }
-
-            // if we've reached the end of the cursor, close it.
-            if !self.cursorType.isTailable || !mongoc_cursor_more(cursor) {
-                self.blockingKill()
-            }
-
+    /// Decodes a result to the generic type or `nil` if no result were returned.
+    private func decode(result: Document?) throws -> T? {
+        guard let doc = result else {
             return nil
         }
+        return try self.decode(doc: doc)
+    }
 
-        guard let pointee = out.pointee else {
-            fatalError("The cursor was advanced, but the document is nil")
-        }
-
-        // We have to copy because libmongoc owns the pointer.
-        let doc = Document(copying: pointee)
+    /// Decodes the given document to the generic type.
+    private func decode(doc: Document) throws -> T {
         do {
             return try self.decoder.decode(T.self, from: doc)
         } catch {
             self.blockingKill()
             throw error
         }
-    }
-
-    /// Retrieves any error that occurred in mongoc or on the server while iterating the cursor. Returns nil if this
-    /// cursor is already closed, or if no error occurred.
-    ///
-    /// This method should only be called while the lock is held.
-    private func getMongocError() -> MongoError? {
-        guard case let .open(cursor, _, _) = self.state else {
-            return nil
-        }
-
-        var replyPtr = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
-        defer {
-            replyPtr.deinitialize(count: 1)
-            replyPtr.deallocate()
-        }
-
-        var error = bson_error_t()
-        guard mongoc_cursor_error_document(cursor, &error, replyPtr) else {
-            return nil
-        }
-
-        // If a reply is present, it implies the error occurred on the server. This *should* always be a commandError,
-        // but we will still parse the mongoc error to cover all cases.
-        if let docPtr = replyPtr.pointee {
-            // we have to copy because libmongoc owns the pointer.
-            let reply = Document(copying: docPtr)
-            return extractMongoError(error: error, reply: reply)
-        }
-
-        // The only feasible error here is that we tried to advance a dead mongoc cursor. Due to our cursor-closing
-        // logic in `next()` that should never happen, but parse the error anyway just in case we end up here.
-        return extractMongoError(error: error)
     }
 
     /**
@@ -193,21 +130,21 @@ public class MongoCursor<T: Codable>: Cursor {
      * This cursor will be dead as soon as `next` returns `nil` or an error, regardless of the `CursorType`.
      */
     public var isAlive: Bool {
-        if case .open = self.state {
-            return true
-        } else if case .cached = self.cached {
+        if case .cached = self.cached {
             return true
         }
-        return false
+        return self.wrappedCursor.isAlive
     }
 
     /// Returns the ID used by the server to track the cursor. `nil` once all results have been fetched from the server.
     public var id: Int64? {
-        guard case let .open(cursor, _, _) = self.state else {
-            return nil
+        return self.wrappedCursor.withUnsafeMongocPointer { ptr in
+            guard let ptr = ptr else {
+                return nil
+            }
+            let id = mongoc_cursor_get_id(ptr)
+            return id == 0 ? nil : id
         }
-        let id = mongoc_cursor_get_id(cursor)
-        return id == 0 ? nil : id
     }
 
     /**
@@ -229,13 +166,15 @@ public class MongoCursor<T: Codable>: Cursor {
      */
     internal func all() -> EventLoopFuture<[T]> {
         return self.client.operationExecutor.execute {
-            try self.lock.withLock {
-                var results: [T] = []
-                while let result = try self.getNextDocument() {
-                    results.append(result)
-                }
-                return results
+            var results: [T] = []
+            if case let .cached(result) = self.cached.clear(), let unwrappedResult = result {
+                results.append(unwrappedResult)
             }
+            // If the cursor still could have more results after clearing the cache, collect them too.
+            if self.isAlive {
+                results += try self.wrappedCursor.all().map { try self.decode(doc: $0) }
+            }
+            return results
         }
     }
 
@@ -260,9 +199,10 @@ public class MongoCursor<T: Codable>: Cursor {
      */
     public func tryNext() -> EventLoopFuture<T?> {
         return self.client.operationExecutor.execute {
-            try self.lock.withLock {
-                try self.getNextDocument()
+            if case let .cached(result) = self.cached.clear() {
+                return result
             }
+            return try self.decode(result: self.wrappedCursor.tryNext())
         }
     }
 
@@ -286,20 +226,15 @@ public class MongoCursor<T: Codable>: Cursor {
      */
     public func next() -> EventLoopFuture<T?> {
         return self.client.operationExecutor.execute {
-            try self.lock.withLock {
-                guard self.isAlive else {
-                    throw ClosedCursorError
+            if case let .cached(result) = self.cached.clear() {
+                // If there are no more results forthcoming after clearing the cache, or the cache had a non-nil
+                // result in it, return that.
+                if !self.isAlive || result != nil {
+                    return result
                 }
-
-                // Keep trying until either the cursor is killed or a notification has been sent by close
-                while self.isAlive && !self.isClosing.load() {
-                    if let doc = try self.getNextDocument() {
-                        return doc
-                    }
-                }
-
-                return nil
             }
+            // Otherwise iterate until a result is received.
+            return try self.decode(result: self.wrappedCursor.next())
         }
     }
 
@@ -314,11 +249,7 @@ public class MongoCursor<T: Codable>: Cursor {
      */
     public func kill() -> EventLoopFuture<Void> {
         return self.client.operationExecutor.execute {
-            self.isClosing.store(true)
-            self.lock.withLock {
-                self.blockingKill()
-            }
-            self.isClosing.store(false)
+            self.blockingKill()
         }
     }
 }

@@ -22,7 +22,7 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codabl
         target: ChangeStreamTarget<CollectionType>,
         pipeline: [Document],
         options: ChangeStreamOptions?
-    ) throws {
+    ) {
         self.target = target
         self.pipeline = .array(pipeline.map { .document($0) })
         self.options = options
@@ -35,7 +35,7 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codabl
         let pipeline: Document = ["pipeline": self.pipeline]
         let opts = try encodeOptions(options: self.options, session: session)
 
-        let changeStream: OpaquePointer
+        let changeStreamPtr: OpaquePointer
         let client: MongoClient
         let decoder: BSONDecoder
 
@@ -43,28 +43,30 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codabl
         case let .client(c):
             client = c
             decoder = c.decoder
-            changeStream = mongoc_client_watch(connection.clientHandle, pipeline._bson, opts?._bson)
+            changeStreamPtr = mongoc_client_watch(connection.clientHandle, pipeline._bson, opts?._bson)
         case let .database(db):
             client = db._client
             decoder = db.decoder
-            changeStream = db.withMongocDatabase(from: connection) { dbPtr in
+            changeStreamPtr = db.withMongocDatabase(from: connection) { dbPtr in
                 mongoc_database_watch(dbPtr, pipeline._bson, opts?._bson)
             }
         case let .collection(coll):
             client = coll._client
             decoder = coll.decoder
-            changeStream = coll.withMongocCollection(from: connection) { collPtr in
+            changeStreamPtr = coll.withMongocCollection(from: connection) { collPtr in
                 mongoc_collection_watch(collPtr, pipeline._bson, opts?._bson)
             }
         }
 
-        return try ChangeStream<ChangeStreamType>(
-            stealing: changeStream,
+        let changeStream = try ChangeStream<ChangeStreamType>(
+            stealing: changeStreamPtr,
             connection: connection,
             client: client,
             session: session,
             decoder: decoder,
             options: self.options
         )
+
+        return changeStream
     }
 }

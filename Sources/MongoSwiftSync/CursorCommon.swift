@@ -1,5 +1,5 @@
-/// A protocol describing the common behavior between cursor-like objects in the driver.
-internal protocol Cursor {
+/// A protocol describing the common public API between cursor-like objects in the driver.
+internal protocol CursorProtocol: LazySequenceProtocol, IteratorProtocol {
     /// The decoded type iterated over by the cursor.
     associatedtype T: Codable
 

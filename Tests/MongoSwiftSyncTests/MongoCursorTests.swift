@@ -158,15 +158,16 @@ final class MongoCursorTests: MongoSwiftTestCase {
             expect(cursor.isAlive).to(beTrue())
 
             let queue = DispatchQueue(label: "tailable close")
-            let allDocsLock = DispatchSemaphore(value: 1)
+            let allDocsLock = DispatchSemaphore(value: 0)
 
-            var allDocs: [Document]?
+            var allDocs: [Document] = []
             var allError: Error?
             queue.async {
-                allDocsLock.wait()
                 defer { allDocsLock.signal() }
                 do {
-                    allDocs = try cursor.all() // should block after 3 docs are found
+                    while let result = cursor.next() { // should start blocking after the third document
+                        allDocs.append(try result.get())
+                    }
                 } catch {
                     allError = error
                 }
@@ -212,7 +213,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
 
         // Verify that map/filter are lazy by using a tailable cursor.
         let options = CreateCollectionOptions(capped: true, max: 3, size: 10000)
-        try self.withTestNamespace(ns: self.getNamespace(), collectionOptions: options) { _, _, coll in
+        try self.withTestNamespace(collectionOptions: options) { _, _, coll in
             try coll.insertMany([["_id": 1], ["_id": 2], ["_id": 3]])
 
             let cursor = try coll.find(options: FindOptions(cursorType: .tailable))

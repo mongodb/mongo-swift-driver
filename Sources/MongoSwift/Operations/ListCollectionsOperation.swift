@@ -117,7 +117,7 @@ internal struct ListCollectionsOperation: Operation {
             }
         }
 
-        let indexes: OpaquePointer = self.database.withMongocDatabase(from: connection) { dbPtr in
+        let collections: OpaquePointer = self.database.withMongocDatabase(from: connection) { dbPtr in
             guard let collections = mongoc_database_find_collections_with_opts(dbPtr, opts._bson) else {
                 fatalError(failedToRetrieveCursorMessage)
             }
@@ -125,30 +125,27 @@ internal struct ListCollectionsOperation: Operation {
         }
 
         if self.nameOnly {
-            let cursor: MongoCursor<Document> = try MongoCursor(
-                stealing: indexes,
+            // operate directly on the internal cursor type rather than going through the public `MongoCursor` type.
+            // this allows us to use only a single of the executor's threads instead of tying up one per iteration.
+            let cursor = try Cursor(
+                mongocCursor: MongocCursor(referencing: collections),
                 connection: connection,
-                client: self.database._client,
-                decoder: self.database.decoder,
-                session: session
+                session: session,
+                type: .nonTailable
             )
-            defer { cursor.blockingKill() }
+            defer { cursor.kill() }
 
-            var names = [String]()
-            // call the cursor method for getting the next document directly rather than just iterating through the
-            // cursor so that we avoid generating more concurrent operations and tying up more of the executor's
-            // threads.
-            while let nextDoc = try cursor.getNextDocument() {
+            var names: [String] = []
+            while let nextDoc = try cursor.tryNext() {
                 guard let name = nextDoc["name"]?.stringValue else {
                     throw InternalError(message: "Invalid server response: collection has no name")
                 }
                 names.append(name)
             }
-
             return .names(names)
         }
         let cursor: MongoCursor<CollectionSpecification> = try MongoCursor(
-            stealing: indexes,
+            stealing: collections,
             connection: connection,
             client: self.database._client,
             decoder: self.database.decoder,
