@@ -457,14 +457,14 @@ public class MongoClient {
      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
      *   - session: An optional `ClientSession` to use with this change stream.
      *
-     * - Returns: An `EventLoopFuture<ChangeStream>` containing a `ChangeStream` watching all collections in this
-     *            deployment.
+     * - Returns:
+     *    An `EventLoopFuture<ChangeStream>`. On success, contains a `ChangeStream` watching all collections in this
+     *    deployment.
      *
-     * - Throws:
-     *   - `CommandError` if an error occurs on the server while creating the change stream.
-     *   - `InvalidArgumentError` if the options passed formed an invalid combination.
-     *   - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
-     *     pipeline.
+     *    If the future fails, the error is likely one of the following:
+     *    - `CommandError` if an error occurs on the server while creating the change stream.
+     *    - `InvalidArgumentError` if the options passed formed an invalid combination.
+     *    - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the pipeline.
      *
      * - SeeAlso:
      *   - https://docs.mongodb.com/manual/changeStreams/
@@ -477,7 +477,7 @@ public class MongoClient {
         _ pipeline: [Document] = [],
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> EventLoopFuture<ChangeStream<ChangeStreamEvent<Document>>> {
+    ) -> EventLoopFuture<ChangeStream<ChangeStreamEvent<Document>>> {
         return self.watch(pipeline, options: options, session: session, withFullDocumentType: Document.self)
     }
 
@@ -494,14 +494,14 @@ public class MongoClient {
      *   - withFullDocumentType: The type that the `fullDocument` field of the emitted `ChangeStreamEvent`s will be
      *                           decoded to.
      *
-     * - Returns: An `EventLoopFuture<ChangeStream>` containing a `ChangeStream` watching all collections in this
-     *            deployment.
+     * - Returns:
+     *    An `EventLoopFuture<ChangeStream>`. On success, contains a `ChangeStream` watching all collections in this
+     *    deployment.
      *
-     * - Throws:
-     *   - `CommandError` if an error occurs on the server while creating the change stream.
-     *   - `InvalidArgumentError` if the options passed formed an invalid combination.
-     *   - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
-     *     pipeline.
+     *    If the future fails, the error is likely one of the following:
+     *    - `CommandError` if an error occurs on the server while creating the change stream.
+     *    - `InvalidArgumentError` if the options passed formed an invalid combination.
+     *    - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the pipeline.
      *
      * - SeeAlso:
      *   - https://docs.mongodb.com/manual/changeStreams/
@@ -536,14 +536,14 @@ public class MongoClient {
      *   - withEventType: The type that the entire change stream response will be decoded to and that will be returned
      *                    when iterating through the change stream.
      *
-     * - Returns: An `EventLoopFuture<ChangeStream>` containing a `ChangeStream` watching all collections in this
-     *            deployment.
+     * - Returns:
+     *    An `EventLoopFuture<ChangeStream>`. On success, contains a `ChangeStream` watching all collections in this
+     *    deployment.
      *
-     * - Throws:
-     *   - `CommandError` if an error occurs on the server while creating the change stream.
-     *   - `InvalidArgumentError` if the options passed formed an invalid combination.
-     *   - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
-     *     pipeline.
+     *    If the future fails, the error is likely one of the following:
+     *    - `CommandError` if an error occurs on the server while creating the change stream.
+     *    - `InvalidArgumentError` if the options passed formed an invalid combination.
+     *    - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the pipeline.
      *
      * - SeeAlso:
      *   - https://docs.mongodb.com/manual/changeStreams/

@@ -51,7 +51,7 @@ extension MongoCollection {
         _ filter: Document = [:],
         options: FindOneOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> EventLoopFuture<T?> {
+    ) -> EventLoopFuture<T?> {
         let options = options.map { FindOptions(from: $0) }
         return self.find(filter, options: options, session: session).flatMap { cursor in
             cursor.next().afterSuccess { _ in cursor.kill() }

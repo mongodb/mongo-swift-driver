@@ -406,7 +406,7 @@ extension MongoCollection {
      *    - `LogicError` if the provided session is inactive.
      *    - `LogicError` if this collection's parent client has already been closed.
      */
-    public func listIndexNames(session _: ClientSession? = nil) throws -> EventLoopFuture<[String]> {
+    public func listIndexNames(session _: ClientSession? = nil) -> EventLoopFuture<[String]> {
         return self.listIndexes().flatMap { cursor in
             cursor.all()
         }.flatMapThrowing { models in
