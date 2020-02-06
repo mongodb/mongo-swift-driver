@@ -135,11 +135,13 @@ public struct MongoDatabase {
         options: CreateCollectionOptions? = nil,
         session: ClientSession? = nil
     ) throws -> MongoCollection<T> {
-        let asyncColl = try self.asyncDB.createCollection(name,
-                                                          withType: type,
-                                                          options: options,
-                                                          session: session?.asyncSession)
-                                                          .wait()
+        let asyncColl = try self.asyncDB.createCollection(
+            name,
+            withType: type,
+            options: options,
+            session: session?.asyncSession
+        )
+        .wait()
         return MongoCollection(client: self.client, asyncCollection: asyncColl)
     }
 

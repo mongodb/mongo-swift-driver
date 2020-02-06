@@ -83,11 +83,13 @@ extension MongoCollection {
         options: ReplaceOptions? = nil,
         session: ClientSession? = nil
     ) throws -> UpdateResult? {
-        return try self.asyncColl.replaceOne(filter: filter,
-                                             replacement: replacement,
-                                             options: options,
-                                             session: session?.asyncSession)
-                                            .wait()
+        return try self.asyncColl.replaceOne(
+            filter: filter,
+            replacement: replacement,
+            options: options,
+            session: session?.asyncSession
+        )
+        .wait()
     }
 
     /**
@@ -116,11 +118,13 @@ extension MongoCollection {
         options: UpdateOptions? = nil,
         session: ClientSession? = nil
     ) throws -> UpdateResult? {
-        return try self.asyncColl.updateOne(filter: filter,
-                                            update: update,
-                                            options: options,
-                                            session: session?.asyncSession)
-                                            .wait()
+        return try self.asyncColl.updateOne(
+            filter: filter,
+            update: update,
+            options: options,
+            session: session?.asyncSession
+        )
+        .wait()
     }
 
     /**
@@ -149,11 +153,13 @@ extension MongoCollection {
         options: UpdateOptions? = nil,
         session: ClientSession? = nil
     ) throws -> UpdateResult? {
-        return try self.asyncColl.updateMany(filter: filter,
-                                             update: update,
-                                             options: options,
-                                             session: session?.asyncSession)
-                                            .wait()
+        return try self.asyncColl.updateMany(
+            filter: filter,
+            update: update,
+            options: options,
+            session: session?.asyncSession
+        )
+        .wait()
     }
 
     /**

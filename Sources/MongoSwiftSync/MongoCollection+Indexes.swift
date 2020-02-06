@@ -27,11 +27,13 @@ extension MongoCollection {
         options: CreateIndexOptions? = nil,
         session: ClientSession? = nil
     ) throws -> String {
-        return try self.asyncColl.createIndex(keys,
-                                              indexOptions: indexOptions,
-                                              options: options,
-                                              session: session?.asyncSession)
-                                            .wait()
+        return try self.asyncColl.createIndex(
+            keys,
+            indexOptions: indexOptions,
+            options: options,
+            session: session?.asyncSession
+        )
+        .wait()
     }
 
     /**

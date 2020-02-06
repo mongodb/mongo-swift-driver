@@ -1,4 +1,4 @@
---exclude Sources/MongoSwift/MongoSwiftVersion.swift,Sources/MongoSwiftSync/*
+--exclude Sources/MongoSwift/MongoSwiftVersion.swift,Sources/MongoSwiftSync/Exports.swift
 --exclude .build/*
 
 # unnecessary

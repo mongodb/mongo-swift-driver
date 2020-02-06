@@ -69,7 +69,7 @@ extension MongoCollection {
         session: ClientSession? = nil
     ) throws -> MongoCursor<Document> {
         let asyncCursor = try self.asyncColl.aggregate(pipeline, options: options, session: session?.asyncSession)
-          .wait()
+            .wait()
         return MongoCursor(wrapping: asyncCursor, client: self.client)
     }
 
@@ -132,10 +132,12 @@ extension MongoCollection {
         options: DistinctOptions? = nil,
         session: ClientSession? = nil
     ) throws -> [BSON] {
-        return try self.asyncColl.distinct(fieldName: fieldName,
-                                           filter: filter,
-                                           options: options,
-                                           session: session?.asyncSession)
-                                            .wait()
+        return try self.asyncColl.distinct(
+            fieldName: fieldName,
+            filter: filter,
+            options: options,
+            session: session?.asyncSession
+        )
+        .wait()
     }
 }

@@ -190,10 +190,10 @@ public class MongoClient {
         session: ClientSession? = nil
     ) throws -> ChangeStream<ChangeStreamEvent<Document>> {
         return try self.watch(
-          pipeline,
-          options: options,
-          session: session,
-          withEventType: ChangeStreamEvent<Document>.self
+            pipeline,
+            options: options,
+            session: session,
+            withEventType: ChangeStreamEvent<Document>.self
         )
     }
 
@@ -232,10 +232,10 @@ public class MongoClient {
         withFullDocumentType _: FullDocType.Type
     ) throws -> ChangeStream<ChangeStreamEvent<FullDocType>> {
         return try self.watch(
-          pipeline,
-          options: options,
-          session: session,
-          withEventType: ChangeStreamEvent<FullDocType>.self
+            pipeline,
+            options: options,
+            session: session,
+            withEventType: ChangeStreamEvent<FullDocType>.self
         )
     }
 
