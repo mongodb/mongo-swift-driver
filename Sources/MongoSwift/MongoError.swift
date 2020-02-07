@@ -224,7 +224,7 @@ public struct BulkWriteFailure: Codable {
 
 /// Gets an appropriate error from a libmongoc error. Additional details may be provided in the form of a server reply
 /// document.
-private func parseMongocError(_ error: bson_error_t, reply: Document?) -> MongoError {
+internal func parseMongocError(_ error: bson_error_t, reply: Document?) -> MongoError {
     let domain = mongoc_error_domain_t(rawValue: error.domain)
     let code = mongoc_error_code_t(rawValue: error.code)
     let message = toErrorString(error)

@@ -1,4 +1,5 @@
 import Foundation
+@testable import MongoSwift
 import MongoSwiftSync
 import Nimble
 import TestsCommon
@@ -34,8 +35,11 @@ struct TestUser {
 
         // we want to split right after the // to insert the username and password.
         let splitIdx = connStr.index(firstSlash, offsetBy: 2)
+        // if the connection string already has a username, remove the portion up through the @ sign to get what should
+        // come after the username.
+        let afterUsername = MongoSwiftTestCase.auth ? connStr.drop { $0 != "@" }.dropFirst() : connStr[splitIdx...]
 
-        let joined = "\(connStr[..<splitIdx])\(self.username):\(self.password)@\(connStr[splitIdx...])"
+        let joined = "\(connStr[..<splitIdx])\(self.username):\(self.password)@\(afterUsername)"
         guard let mech = mechanism else {
             return joined
         }
@@ -72,14 +76,18 @@ final class SyncAuthTests: MongoSwiftTestCase {
         ]
 
         let admin = client.db("admin")
-        defer { _ = try? admin.runCommand(["dropAllUsersFromDatabase": 1]) }
+        defer {
+            for user in testUsers {
+                _ = try? admin.runCommand(["dropUser": .string(user.username)])
+            }
+        }
         for user in testUsers {
             try admin.runCommand(user.createCmd)
         }
 
         // 2. For each test user, verify that you can connect and run a command requiring authentication for the
         //    following cases:
-        let connString = MongoSwiftTestCase.connStr
+        let connString = MongoSwiftTestCase.getConnectionString()
         for user in testUsers {
             // - Explicitly specifying each mechanism the user supports.
             try user.mechanisms.forEach { mech in
@@ -109,6 +117,11 @@ final class SyncAuthTests: MongoSwiftTestCase {
             TestUser(username: "IX", password: "IX", mechanisms: [.scramSHA256]),
             TestUser(username: "\u{2168}", password: "\u{2163}", mechanisms: [.scramSHA256])
         ]
+        defer {
+            for user in saslPrepUsers {
+                _ = try? admin.runCommand(["dropUser": .string(user.username)])
+            }
+        }
         for user in saslPrepUsers {
             try admin.runCommand(user.createCmd)
         }
