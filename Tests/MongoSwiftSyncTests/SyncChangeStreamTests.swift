@@ -269,8 +269,14 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase, FailPointConfigured {
                 }
 
                 guard version >= test.minServerVersion else {
-                    print("Skipping tests case \"\(test.description)\": minimum required server " +
+                    print("Skipping test case \"\(test.description)\": minimum required server " +
                         "version \(test.minServerVersion) not met.")
+                    continue
+                }
+
+                guard !(test.description == "Change Stream should error when _id is projected out" &&
+                    version >= ServerVersion(major: 4, minor: 3)) else {
+                    print("Skipping test case \"\(test.description)\"; see SWIFT-722")
                     continue
                 }
 
