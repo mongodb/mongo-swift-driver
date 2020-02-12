@@ -135,7 +135,7 @@ internal class ConnectionPool {
                 readPreference?._readPreference,
                 &error
             ) else {
-                throw parseMongocError(error, reply: nil)
+                throw extractMongoError(error: error)
             }
 
             defer { mongoc_server_description_destroy(desc) }
