@@ -301,6 +301,20 @@ public class MongoClient {
         }
     }
 
+    /**
+     * Closes this `MongoClient` in a blocking fashion.
+     * Call this method exactly once when you are finished using the client. You must ensure that all operations
+     * using the client have completed before calling this.
+     *
+     * This method must complete before the `EventLoopGroup` provided to this client's constructor is shut down.
+     */
+    public func syncClose() {
+        self.connectionPool.close()
+        self.isClosed = true
+        // TODO: SWIFT-349 log any errors encountered here.
+        try? self.operationExecutor.syncClose()
+    }
+
     /// Starts a new `ClientSession` with the provided options. When you are done using this session, you must call
     /// `ClientSession.end()` on it.
     public func startSession(options: ClientSessionOptions? = nil) -> ClientSession {

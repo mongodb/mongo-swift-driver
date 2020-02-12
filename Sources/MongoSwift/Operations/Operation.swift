@@ -37,6 +37,11 @@ internal class OperationExecutor {
         return promise.futureResult
     }
 
+    /// Closes the executor's underlying thread pool synchronously.
+    internal func syncClose() throws {
+        try self.threadPool.syncShutdownGracefully()
+    }
+
     internal func execute<T: Operation>(
         _ operation: T,
         using connection: Connection? = nil,
