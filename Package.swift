@@ -14,7 +14,7 @@ let package = Package(
         .target(name: "MongoSwift", dependencies: ["CLibMongoC", "NIO", "NIOConcurrencyHelpers"]),
         .target(name: "MongoSwiftSync", dependencies: ["MongoSwift"]),
         .target(name: "AtlasConnectivity", dependencies: ["MongoSwiftSync"]),
-        .target(name: "TestsCommon", dependencies: ["MongoSwift", "Nimble", "CLibMongoC"]),
+        .target(name: "TestsCommon", dependencies: ["MongoSwift", "Nimble"]),
         .testTarget(name: "BSONTests", dependencies: ["MongoSwift", "TestsCommon", "Nimble", "CLibMongoC"]),
         .testTarget(name: "MongoSwiftTests", dependencies: ["MongoSwift", "TestsCommon", "Nimble", "NIO", "CLibMongoC"]),
         .testTarget(name: "MongoSwiftSyncTests", dependencies: ["MongoSwiftSync", "TestsCommon", "Nimble", "CLibMongoC"]),
