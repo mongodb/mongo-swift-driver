@@ -275,7 +275,7 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase, FailPointConfigured {
                 }
 
                 guard !(test.description == "Change Stream should error when _id is projected out" &&
-                    version >= ServerVersion(major: 4, minor: 3, patch: 4)) else {
+                    version >= ServerVersion(major: 4, minor: 3, patch: 3)) else {
                     print("Skipping test case \"\(test.description)\"; see SWIFT-722")
                     continue
                 }
@@ -350,7 +350,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        guard try MongoClient.makeTestClient().serverVersion() < ServerVersion(major: 4, minor: 3, patch: 4) else {
+        guard try MongoClient.makeTestClient().serverVersion() < ServerVersion(major: 4, minor: 3, patch: 3) else {
             print("Skipping test; see SWIFT-722")
             return
         }
@@ -542,8 +542,8 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        // skip on 4.3.4+ due to removal of NonResumableChangeStreamError label; see SWIFT-722
-        guard version < ServerVersion(major: 4, minor: 3, patch: 4) else {
+        // skip on 4.3.3+ due to removal of NonResumableChangeStreamError label; see SWIFT-722
+        guard version < ServerVersion(major: 4, minor: 3, patch: 3) else {
             return
         }
 
