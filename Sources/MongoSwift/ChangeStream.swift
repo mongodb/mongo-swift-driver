@@ -195,6 +195,14 @@ public class ChangeStream<T: Codable>: CursorProtocol {
         }
     }
 
+    public func forEach(_ body: @escaping (T) throws -> Void) -> EventLoopFuture<Void> {
+        return self.client.operationExecutor.execute {
+            while let next = try self.processEvent(self.wrappedCursor.next()) {
+                try body(next)
+            }
+        }
+    }
+
     /**
      * Kill this change stream.
      *

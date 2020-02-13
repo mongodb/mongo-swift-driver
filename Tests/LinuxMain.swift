@@ -14,6 +14,7 @@ extension AsyncMongoCursorTests {
         ("testTailableAsyncCursor", testTailableAsyncCursor),
         ("testAsyncNext", testAsyncNext),
         ("testCursorToArray", testCursorToArray),
+        ("testForEach", testForEach),
     ]
 }
 

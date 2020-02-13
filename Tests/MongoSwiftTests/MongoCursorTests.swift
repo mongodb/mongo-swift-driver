@@ -206,4 +206,54 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
             expect(cursor.isAlive).to(beTrue())
         }
     }
+
+    func testForEach() throws {
+        var count = 0
+        let increment: (Document) -> Void = { _ in count += 1 }
+
+        // non-tailable
+        try self.withTestNamespace { _, _, coll in
+            // empty collection
+            var cursor = try coll.find().wait()
+            _ = try cursor.forEach(increment).wait()
+            expect(count).to(equal(0))
+            expect(cursor.isAlive).to(beFalse())
+
+            _ = try coll.insertMany([doc1, doc2]).wait()
+
+            // non empty
+            cursor = try coll.find().wait()
+            _ = try cursor.forEach(increment).wait()
+            expect(count).to(equal(2))
+            expect(cursor.isAlive).to(beFalse())
+        }
+
+        count = 0
+        // tailable
+        let collOptions = CreateCollectionOptions(capped: true, max: 3, size: 1000)
+        try self.withTestNamespace(collectionOptions: collOptions) { _, _, coll in
+            let cursorOpts = FindOptions(cursorType: .tailable)
+
+            var cursor = try coll.find(options: cursorOpts).wait()
+            _ = try cursor.forEach(increment).wait()
+            expect(count).to(equal(0))
+            // no documents matched initial query, so cursor is dead
+            expect(cursor.isAlive).to(beFalse())
+
+            _ = try coll.insertMany([doc1, doc2]).wait()
+            cursor = try coll.find(options: cursorOpts).wait()
+
+            // start running forEach; future will not resolve since cursor is tailable
+            let future = cursor.forEach(increment)
+            expect(count).toEventually(equal(2))
+
+            expect(cursor.isAlive).to(beTrue())
+            // killing the cursor should resolve the future and not error
+            expect(try cursor.kill().wait()).toNot(throwError())
+            expect(try future.wait()).to(beAnInstanceOf(Void.self))
+
+            // calling forEach on a dead cursor should error
+            expect(try cursor.forEach(increment).wait()).to(throwError(errorType: LogicError.self))
+        }
+    }
 }
