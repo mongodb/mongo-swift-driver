@@ -38,6 +38,26 @@ public struct Address: Equatable {
     }
 }
 
+private struct IsMasterResponse: Decodable {
+    fileprivate struct LastWrite: Decodable {
+        public let lastWriteDate: Date?
+    }
+
+    fileprivate let lastWrite: LastWrite?
+    fileprivate let minWireVersion: Int?
+    fileprivate let maxWireVersion: Int?
+    fileprivate let me: String?
+    fileprivate let setName: String?
+    fileprivate let setVersion: Int?
+    fileprivate let electionId: ObjectId?
+    fileprivate let primary: String?
+    fileprivate let logicalSessionTimeoutMinutes: Int?
+    fileprivate let hosts: [String]?
+    fileprivate let passives: [String]?
+    fileprivate let arbiters: [String]?
+    fileprivate let tags: [String: String]?
+}
+
 /// A struct describing a mongod or mongos process.
 public struct ServerDescription {
     /// The possible types for a server.
@@ -126,37 +146,29 @@ public struct ServerDescription {
 
         // initialize the rest of the values from the isMaster response.
         // we have to copy because libmongoc owns the pointer.
-        let isMaster = Document(copying: mongoc_server_description_ismaster(description))
+        let isMasterDoc = Document(copying: mongoc_server_description_ismaster(description))
+        // TODO: SWIFT-349 log errors encountered here
+        let isMaster = try? BSONDecoder().decode(IsMasterResponse.self, from: isMasterDoc)
 
-        self.lastWriteDate = isMaster["lasWrite"]?.documentValue?["lastWriteDate"]?.dateValue
-        self.minWireVersion = isMaster["minWireVersion"]?.asInt() ?? 0
-        self.maxWireVersion = isMaster["maxWireVersion"]?.asInt() ?? 0
-        self.me = try? isMaster["me"]?.stringValue.map(Address.init)
-        self.setName = isMaster["setName"]?.stringValue
-        self.setVersion = isMaster["setVersion"]?.asInt()
-        self.electionId = isMaster["electionId"]?.objectIdValue
-        self.primary = try? isMaster["primary"]?.stringValue.map(Address.init)
-        self.logicalSessionTimeoutMinutes = isMaster["logicalSessionTimeoutMinutes"]?.asInt()
-
-        self.hosts = isMaster["hosts"]?.arrayValue?.asArrayOf(String.self)?.compactMap { host in
-            try? Address(host)
+        self.lastWriteDate = isMaster?.lastWrite?.lastWriteDate
+        self.minWireVersion = isMaster?.minWireVersion ?? 0
+        self.maxWireVersion = isMaster?.maxWireVersion ?? 0
+        self.me = try? isMaster?.me.map(Address.init) // TODO: SWIFT-349 log error
+        self.setName = isMaster?.setName
+        self.setVersion = isMaster?.setVersion
+        self.electionId = isMaster?.electionId
+        self.primary = try? isMaster?.primary.map(Address.init) // TODO: SWIFT-349 log error
+        self.logicalSessionTimeoutMinutes = isMaster?.logicalSessionTimeoutMinutes
+        self.hosts = isMaster?.hosts?.compactMap { host in
+            try? Address(host) // TODO: SWIFT-349 log error
         } ?? []
-
-        self.passives = isMaster["passives"]?.arrayValue?.asArrayOf(String.self)?.compactMap { passive in
-            try? Address(passive)
+        self.passives = isMaster?.passives?.compactMap { passive in
+            try? Address(passive) // TODO: SWIFT-349 log error
         } ?? []
-
-        self.arbiters = isMaster["arbiters"]?.arrayValue?.asArrayOf(String.self)?.compactMap { arbiter in
-            try? Address(arbiter)
+        self.arbiters = isMaster?.arbiters?.compactMap { arbiter in
+            try? Address(arbiter) // TODO: SWIFT-349 log error
         } ?? []
-
-        self.tags = isMaster["tags"]?.documentValue.map { tagsDoc in
-            var tags: [String: String] = [:]
-            for (k, v) in tagsDoc {
-                tags[k] = v.stringValue
-            }
-            return tags
-        } ?? [:]
+        self.tags = isMaster?.tags ?? [:]
     }
 }
 
