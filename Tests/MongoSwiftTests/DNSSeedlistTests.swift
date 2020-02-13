@@ -87,7 +87,7 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
             do {
                 connStr = try doTest()
             } catch {
-                expect(error).to(beNil(), description: testCase.comment ?? "")
+                XCTFail("Expected no error for test case \(testCase.comment ?? ""), got \(error)")
                 continue
             }
 
