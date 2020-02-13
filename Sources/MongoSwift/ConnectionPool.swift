@@ -59,7 +59,7 @@ internal class ConnectionPool {
     }
 
     /// Closes the pool, cleaning up underlying resources. This method blocks as it sends `endSessions` to the server.
-    internal func close() {
+    internal func shutdown() {
         switch self.state {
         case let .open(pool):
             mongoc_client_pool_destroy(pool)

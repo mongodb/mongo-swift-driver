@@ -53,7 +53,7 @@ public class MongoClient {
 
     deinit {
         do {
-            try self.asyncClient.close().wait()
+            try self.asyncClient.shutdown().wait()
         } catch {
             assertionFailure("Error closing async client: \(error)")
         }
