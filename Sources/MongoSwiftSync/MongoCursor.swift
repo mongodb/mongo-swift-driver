@@ -91,7 +91,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
     }
 
     /**
-     * Returns an array of type `T` containing the results of this cursor.
+     * Returns an array of type `T` from the results of this cursor.
      *
      * If this cursor is tailable, this method will block until the cursor is closed or exhausted.
      *
@@ -102,7 +102,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      *   - `LogicError` if this function is called and the session associated with this cursor is inactive.
      *   - `DecodingError` if an error occurs decoding the server's response.
      */
-    internal func toArray() throws -> [T] {
+    internal func _all() throws -> [T] {
         return try self.map {
             switch $0 {
             case let .success(t):

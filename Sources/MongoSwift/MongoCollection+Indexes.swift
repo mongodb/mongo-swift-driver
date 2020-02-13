@@ -408,7 +408,7 @@ extension MongoCollection {
      */
     public func listIndexNames(session _: ClientSession? = nil) -> EventLoopFuture<[String]> {
         return self.listIndexes().flatMap { cursor in
-            cursor.toArray()
+            cursor.all()
         }.flatMapThrowing { models in
             try models.map { model in
                 guard let name = model.options?.name else {
