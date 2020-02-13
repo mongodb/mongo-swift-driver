@@ -104,6 +104,7 @@ functions:
           MONGODB_VERSION=${MONGODB_VERSION} \
             TOPOLOGY=${TOPOLOGY} \
             SSL=${SSL} \
+            AUTH=${AUTH} \
             sh ${DRIVERS_TOOLS}/.evergreen/run-orchestration.sh
     # run-orchestration generates expansion file with the MONGODB_URI for the cluster
     - command: expansions.update
@@ -130,9 +131,10 @@ functions:
         script: |
           ${PREPARE_SHELL}
 
-          MONGODB_URI=${MONGODB_URI} \
+          MONGODB_URI="${MONGODB_URI}" \
           TOPOLOGY=${TOPOLOGY} \
           SSL=${SSL} \
+          AUTH=${AUTH} \
           SWIFT_VERSION=${SWIFT_VERSION} \
             sh ${PROJECT_DIRECTORY}/.evergreen/run-tests.sh
 
@@ -390,17 +392,19 @@ axes:
         variables:
            SWIFT_VERSION: "5.1.4"
 
-  - id: ssl
-    display_name: SSL
+  - id: ssl-auth
+    display_name: SSL and Auth
     values:
-      - id: ssl
-        display_name: SSL
+      - id: ssl-auth
+        display_name: SSL Auth
         variables:
           SSL: "ssl"
-      - id: nossl
-        display_name: NoSSL
+          AUTH: "auth"
+      - id: nossl-noauth
+        display_name: NoSSL NoAuth
         variables:
           SSL: "nossl"
+          AUTH: "noauth"
 
 
 buildvariants:
@@ -409,8 +413,8 @@ buildvariants:
   matrix_spec:
     os-fully-featured: "*"
     swift-version: "*"
-    ssl: "*"
-  display_name: "${swift-version} ${os-fully-featured} ${ssl}"
+    ssl-auth: "*"
+  display_name: "${swift-version} ${os-fully-featured} ${ssl-auth}"
   tasks:
      - ".latest"
      - ".4.2"
@@ -423,7 +427,7 @@ buildvariants:
   - if:
       os-fully-featured: "ubuntu-18.04"
       swift-version: "*"
-      ssl: "ssl"
+      ssl-auth: "ssl-auth"
     then:
       remove_tasks: ".3.6"
 

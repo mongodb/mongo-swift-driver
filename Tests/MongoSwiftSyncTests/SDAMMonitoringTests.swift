@@ -1,4 +1,3 @@
-import CLibMongoC
 import Foundation
 @testable import MongoSwift
 import MongoSwiftSync
@@ -19,10 +18,6 @@ final class SDAMTests: MongoSwiftTestCase {
 
     func checkUnknownServerType(_ desc: ServerDescription) {
         expect(desc.type).to(equal(ServerDescription.ServerType.unknown))
-    }
-
-    func checkDefaultHostPort(_ desc: ServerDescription, _ hostlist: UnsafePointer<mongoc_host_list_t>) {
-        expect(desc.address).to(equal(Address(hostlist)))
     }
 
     // Basic test based on the "standalone" spec test for SDAM monitoring:
@@ -60,12 +55,13 @@ final class SDAMTests: MongoSwiftTestCase {
 
         center.removeObserver(observer)
 
-        let connString = try ConnectionString(MongoSwiftTestCase.connStr)
+        let connString = try ConnectionString(MongoSwiftTestCase.getConnectionString())
 
-        guard let hostlist = mongoc_uri_get_hosts(connString._uri) else {
-            XCTFail("Could not get hostlists for uri: \(MongoSwiftTestCase.connStr)")
+        guard let host = connString.hosts?[0] else {
+            XCTFail("Could not get hosts for uri: \(MongoSwiftTestCase.getConnectionString())")
             return
         }
+        let hostAddress = try Address(host)
 
         // check event count and that events are of the expected types
         expect(receivedEvents.count).to(beGreaterThanOrEqualTo(5))
@@ -89,17 +85,17 @@ final class SDAMTests: MongoSwiftTestCase {
 
         let event2 = receivedEvents[2] as! ServerOpeningEvent
         expect(event2.topologyId).to(equal(event1.topologyId))
-        expect(event2.serverAddress).to(equal(Address(hostlist)))
+        expect(event2.serverAddress).to(equal(hostAddress))
 
         let event3 = receivedEvents[3] as! ServerDescriptionChangedEvent
         expect(event3.topologyId).to(equal(event2.topologyId))
         let prevServer = event3.previousDescription
-        self.checkDefaultHostPort(prevServer, hostlist)
+        expect(prevServer.address).to(equal(hostAddress))
         self.checkEmptyLists(prevServer)
         self.checkUnknownServerType(prevServer)
 
         let newServer = event3.newDescription
-        self.checkDefaultHostPort(newServer, hostlist)
+        expect(newServer.address).to(equal(hostAddress))
         self.checkEmptyLists(newServer)
         expect(newServer.type).to(equal(ServerDescription.ServerType.standalone))
 
@@ -111,7 +107,7 @@ final class SDAMTests: MongoSwiftTestCase {
 
         let newTopology = event4.newDescription
         expect(newTopology.type).to(equal(TopologyDescription.TopologyType.single))
-        self.checkDefaultHostPort(newTopology.servers[0], hostlist)
+        expect(newTopology.servers[0].address).to(equal(hostAddress))
         expect(newTopology.servers[0].type).to(equal(ServerDescription.ServerType.standalone))
         self.checkEmptyLists(newTopology.servers[0])
     }

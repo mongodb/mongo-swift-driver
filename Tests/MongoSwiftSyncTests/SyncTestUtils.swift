@@ -88,7 +88,7 @@ extension MongoClient {
     }
 
     static func makeTestClient(
-        _ uri: String = MongoSwiftTestCase.connStr,
+        _ uri: String = MongoSwiftTestCase.getConnectionString(),
         options: ClientOptions? = nil
     ) throws -> MongoClient {
         var opts = options ?? ClientOptions()
@@ -101,10 +101,8 @@ extension MongoClient {
         return try MongoClient(uri, options: opts)
     }
 
-    internal func supportsFailCommand() -> Bool {
-        guard let version = try? self.serverVersion() else {
-            return false
-        }
+    internal func supportsFailCommand() throws -> Bool {
+        let version = try self.serverVersion()
         switch MongoSwiftTestCase.topologyType {
         case .sharded:
             return version >= ServerVersion(major: 4, minor: 1, patch: 5)

@@ -6,12 +6,13 @@ import XCTest
 
 extension MongoClient {
     fileprivate static func makeTestClient(
-        _ uri: String = MongoSwiftTestCase.connStr,
+        _ uri: String = MongoSwiftTestCase.getConnectionString(),
         eventLoopGroup: EventLoopGroup,
         options: ClientOptions? = nil
     ) throws -> MongoClient {
         var opts = options ?? ClientOptions()
-        if MongoSwiftTestCase.ssl {
+        // if SSL is on and custom TLS options were not provided, enable them
+        if MongoSwiftTestCase.ssl && opts.tlsOptions == nil {
             opts.tlsOptions = TLSOptions(
                 caFile: URL(string: MongoSwiftTestCase.sslCAFilePath ?? ""),
                 pemFile: URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? "")
@@ -50,10 +51,14 @@ extension MongoCollection {
 }
 
 extension MongoSwiftTestCase {
-    internal func withTestClient<T>(options: ClientOptions? = nil, f: (MongoClient) throws -> T) throws -> T {
+    internal func withTestClient<T>(
+        _ uri: String = MongoSwiftTestCase.getConnectionString(),
+        options: ClientOptions? = nil,
+        f: (MongoClient) throws -> T
+    ) throws -> T {
         let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         defer { elg.syncShutdownOrFail() }
-        let client = try MongoClient.makeTestClient(eventLoopGroup: elg, options: options)
+        let client = try MongoClient.makeTestClient(uri, eventLoopGroup: elg, options: options)
         defer { client.syncCloseOrFail() }
         return try f(client)
     }

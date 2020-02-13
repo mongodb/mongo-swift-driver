@@ -442,7 +442,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         opts.retryReads = false
 
         try withTestNamespace(clientOptions: opts) { client, _, coll in
-            guard client.supportsFailCommand() else {
+            guard try client.supportsFailCommand() else {
                 print("Skipping \(self.name) because server version doesn't support failCommand")
                 return
             }
@@ -579,7 +579,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         }
 
         try withTestNamespace(clientOptions: ClientOptions(commandMonitoring: true)) { client, _, collection in
-            guard client.supportsFailCommand() else {
+            guard try client.supportsFailCommand() else {
                 print("Skipping \(self.name) because server version doesn't support failCommand")
                 return
             }

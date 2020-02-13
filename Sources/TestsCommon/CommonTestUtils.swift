@@ -1,8 +1,25 @@
-import CLibMongoC
 import Foundation
 @testable import MongoSwift
 import Nimble
 import XCTest
+
+extension String {
+    /// Removes the first occurrence of the specified substring from the string. If the substring is not present, has
+    /// no effect.
+    fileprivate mutating func removeSubstring(_ s: String) {
+        guard s.count <= self.count else {
+            return
+        }
+        for i in 0...(self.count - s.count) {
+            let startIdx = self.index(self.startIndex, offsetBy: i)
+            let endIdx = self.index(startIdx, offsetBy: s.count)
+            if self[startIdx..<endIdx] == s {
+                self.removeSubrange(startIdx..<endIdx)
+                return
+            }
+        }
+    }
+}
 
 open class MongoSwiftTestCase: XCTestCase {
     /// Gets the name of the database the test case is running against.
@@ -10,35 +27,29 @@ open class MongoSwiftTestCase: XCTestCase {
         return "test"
     }
 
-    /// Gets the connection string for the database being used for testing from the environment variable, $MONGODB_URI.
-    /// If the environment variable does not exist, this will use a default of "mongodb://127.0.0.1/".
-    public static var connStr: String {
-        if let connStr = ProcessInfo.processInfo.environment["MONGODB_URI"] {
-            if self.topologyType == .sharded {
-                guard let uri = mongoc_uri_new(connStr) else {
-                    return connStr
-                }
-
-                defer {
-                    mongoc_uri_destroy(uri)
-                }
-
-                guard let hosts = mongoc_uri_get_hosts(uri) else {
-                    return connStr
-                }
-
-                let hostAndPort = withUnsafeBytes(of: hosts.pointee.host_and_port) { rawPtr -> String in
-                    let ptr = rawPtr.baseAddress!.assumingMemoryBound(to: CChar.self)
-                    return String(cString: ptr)
-                }
-
-                return "mongodb://\(hostAndPort)/"
-            }
-
-            return connStr
+    /// Gets the connection string to use from the environment variable, $MONGODB_URI. If the variable does not exist,
+    /// will return a default of "mongodb://127.0.0.1/". If singleMongos is true and this is a sharded topology, will
+    /// edit $MONGODB_URI as needed so that it only contains a single host.
+    public static func getConnectionString(singleMongos: Bool = true) -> String {
+        guard let uri = ProcessInfo.processInfo.environment["MONGODB_URI"] else {
+            return "mongodb://127.0.0.1/"
         }
 
-        return "mongodb://127.0.0.1/"
+        // we only need to manipulate the URI if singleMongos is requested and the topology is sharded.
+        guard singleMongos && MongoSwiftTestCase.topologyType == .sharded else {
+            return uri
+        }
+
+        guard let hosts = try? ConnectionString(uri).hosts else {
+            return uri
+        }
+
+        var output = uri
+        // remove all but the first host so we connect to a single mongos.
+        for host in hosts[1...] {
+            output.removeSubstring(",\(host)")
+        }
+        return output
     }
 
     // indicates whether we are running on a 32-bit platform
@@ -78,6 +89,11 @@ open class MongoSwiftTestCase: XCTestCase {
     /// Returns the path where the SSL CA file is located, determined by the environment variable $SSL_CA_FILE..
     public static var sslCAFilePath: String? {
         return ProcessInfo.processInfo.environment["SSL_CA_FILE"]
+    }
+
+    /// Indicates that we are running the tests with auth enabled, determined by the environment variable $AUTH.
+    public static var auth: Bool {
+        return ProcessInfo.processInfo.environment["AUTH"] == "auth"
     }
 }
 
@@ -206,16 +222,6 @@ public struct TestError: LocalizedError {
     public init(message: String) {
         self.message = message
     }
-}
-
-/// Possible authentication mechanisms.
-public enum AuthMechanism: String, Decodable {
-    case scramSHA1 = "SCRAM-SHA-1"
-    case scramSHA256 = "SCRAM-SHA-256"
-    case gssAPI = "GSSAPI"
-    case mongodbCR = "MONGODB-CR"
-    case mongodbX509 = "MONGODB-X509"
-    case plain = "PLAIN"
 }
 
 /// Makes `Address` `Decodable` for the sake of constructing it from spec test files.

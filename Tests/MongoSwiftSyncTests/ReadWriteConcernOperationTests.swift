@@ -1,4 +1,3 @@
-import CLibMongoC
 @testable import MongoSwift
 import MongoSwiftSync
 import Nimble

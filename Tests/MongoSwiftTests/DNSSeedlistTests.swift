@@ -1,5 +1,5 @@
 import Foundation
-import MongoSwiftSync
+@testable import MongoSwift
 import Nimble
 import TestsCommon
 import XCTest
@@ -21,6 +21,10 @@ struct DNSSeedlistTestCase: Decodable {
     let error: Bool?
     /// A comment to indicate why a test would fail.
     let comment: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case uri, seeds, hosts, options, parsedOptions = "parsed_options", error, comment
+    }
 }
 
 final class DNSSeedlistTests: MongoSwiftTestCase {
@@ -29,6 +33,7 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
     }
 
     // Note: the file txt-record-with-overridden-uri-option.json causes a mongoc warning. This is expected.
+    // swiftlint:disable:next cyclomatic_complexity
     func testInitialDNSSeedlistDiscovery() throws {
         guard MongoSwiftTestCase.ssl else {
             print("Skipping test, requires SSL")
@@ -44,11 +49,6 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
             asType: DNSSeedlistTestCase.self
         )
         for (filename, testCase) in tests {
-            // TODO: SWIFT-593: run these tests
-            guard !["encoded-userinfo-and-db.json", "uri-with-auth.json"].contains(filename) else {
-                continue
-            }
-
             // listen for TopologyDescriptionChanged events and continually record the latest description we've seen.
             let center = NotificationCenter.default
             var lastTopologyDescription: TopologyDescription?
@@ -62,21 +62,19 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
             defer { center.removeObserver(observer) }
 
             // Enclose all of the potentially throwing code in `doTest`. Sometimes the expected errors come when
-            // parsing the URI, and other times they are not until we try to send a command.
-            func doTest() throws {
-                let opts = TLSOptions(
-                    allowInvalidHostnames: true,
+            // parsing the URI, and other times they are not until we try to select a server.
+            func doTest() throws -> ConnectionString {
+                let tlsOpts = TLSOptions(
                     caFile: URL(string: MongoSwiftTestCase.sslCAFilePath ?? ""),
-                    pemFile: URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? "")
+                    pemFile: URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? ""),
+                    weakCertValidation: true
                 )
-                let client = try MongoClient(
-                    testCase.uri,
-                    options: ClientOptions(serverMonitoring: true, tlsOptions: opts)
-                )
-
-                // mongoc connects lazily so we need to send a command.
-                let db = client.db("test")
-                _ = try db.runCommand(["isMaster": 1])
+                let opts = ClientOptions(serverMonitoring: true, tlsOptions: tlsOpts)
+                return try self.withTestClient(testCase.uri, options: opts) { client in
+                    // try selecting a server to trigger SDAM
+                    _ = try client.connectionPool.selectServer(forWrites: false)
+                    return try client.connectionPool.getConnectionString()
+                }
             }
 
             // "You MUST verify that an error has been thrown if error is present."
@@ -85,7 +83,13 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
                 continue
             }
 
-            expect(try doTest()).toNot(throwError(), description: testCase.comment ?? "")
+            let connStr: ConnectionString
+            do {
+                connStr = try doTest()
+            } catch {
+                XCTFail("Expected no error for test case \(testCase.comment ?? ""), got \(error)")
+                continue
+            }
 
             // "You MUST verify that the set of ServerDescriptions in the client's TopologyDescription eventually
             // matches the list of hosts."
@@ -93,9 +97,28 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
 
             // "You MUST verify that each of the values of the Connection String Options under options match the
             // Client's parsed value for that option."
-            // TODO: SWIFT-597: Implement these assertions. Not possible now.
+            let connStrOptions = connStr.options ?? [:]
+            for (k, v) in Array(testCase.options ?? [:]) + Array(testCase.parsedOptions ?? [:]) {
+                switch k {
+                // the test files still use SSL, but libmongoc uses TLS
+                case "ssl":
+                    expect(connStrOptions["tls"]).to(equal(v))
+                // these values are not returned as part of the options doc
+                case "authSource", "auth_database":
+                    expect(connStr.authSource).to(equal(v.stringValue))
+                case "user":
+                    expect(connStr.username).to(equal(v.stringValue))
+                case "password":
+                    expect(connStr.password).to(equal(v.stringValue))
+                case "db":
+                    expect(connStr.db).to(equal(v.stringValue))
+                default:
+                    // there are some case inconsistencies between the tests and libmongoc
+                    expect(connStrOptions[k.lowercased()]).to(equal(v))
+                }
+            }
 
-            // Note: we also skip this assertion: "You SHOULD verify that the client's initial seed list matches the
+            // Note: we skip this assertion: "You SHOULD verify that the client's initial seed list matches the
             // list of seeds." mongoc doesn't make this assertion in their test runner either.
         }
     }
