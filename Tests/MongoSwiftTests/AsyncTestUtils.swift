@@ -22,7 +22,7 @@ extension MongoClient {
 
     internal func syncCloseOrFail() {
         do {
-            try self.close().wait()
+            try self.shutdown().wait()
         } catch {
             XCTFail("Error closing test client: \(error)")
         }

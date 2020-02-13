@@ -288,17 +288,34 @@ public class MongoClient {
         assert(self.isClosed, "MongoClient was not closed before deinitialization")
     }
 
-    /// Closes this `MongoClient`. Call this method exactly once when you are finished using the client. You must
-    /// ensure that all operations using the client have completed before calling this. The returned future must be
-    /// fulfilled before the `EventLoopGroup` provided to this client's constructor is shut down.
-    public func close() -> EventLoopFuture<Void> {
+    /// Shuts this `MongoClient` down, closing all connection to the server and cleaning up internal state.
+    /// Call this method exactly once when you are finished using the client. You must ensure that all operations
+    /// using the client have completed before calling this. The returned future must be fulfilled before the
+    /// `EventLoopGroup` provided to this client's constructor is shut down.
+    public func shutdown() -> EventLoopFuture<Void> {
         return self.operationExecutor.execute {
-            self.connectionPool.close()
+            self.connectionPool.shutdown()
             self.isClosed = true
         }
         .flatMap {
             self.operationExecutor.close()
         }
+    }
+
+    /**
+     * Shuts this `MongoClient` down in a blocking fashion, closing all connections to the server and cleaning up
+     * internal state.
+     *
+     * Call this method exactly once when you are finished using the client. You must ensure that all operations
+     * using the client have completed before calling this.
+     *
+     * This method must complete before the `EventLoopGroup` provided to this client's constructor is shut down.
+     */
+    public func syncShutdown() {
+        self.connectionPool.shutdown()
+        self.isClosed = true
+        // TODO: SWIFT-349 log any errors encountered here.
+        try? self.operationExecutor.syncClose()
     }
 
     /// Starts a new `ClientSession` with the provided options. When you are done using this session, you must call
