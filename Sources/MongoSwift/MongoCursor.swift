@@ -152,11 +152,11 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      *
      * If this cursor is not tailable, this method will exhaust it.
      *
-     * If this cursor is tailable, `all` will only fetch the currently available results, and it
+     * If this cursor is tailable, `toArray` will only fetch the currently available results, and it
      * may return more data if it is called again while the cursor is still alive.
      *
      * - Returns:
-     *    An `EventLoopFuture<[T]>` evaluating to the results currently available to this cursor or an error.
+     *    An `EventLoopFuture<[T]>` evaluating to the results currently available in this cursor, or an error.
      *
      *    If the future evaluates to an error, that error is likely one of the following:
      *      - `CommandError` if an error occurs while fetching more results from the server.
@@ -164,7 +164,11 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      *      - `LogicError` if this function is called and the session associated with this cursor is inactive.
      *      - `DecodingError` if an error occurs decoding the server's responses.
      */
-    internal func all() -> EventLoopFuture<[T]> {
+    public func toArray() -> EventLoopFuture<[T]> {
+        guard self.isAlive else {
+            return self.client.operationExecutor.makeFailedFuture(ClosedCursorError)
+        }
+
         return self.client.operationExecutor.execute {
             var results: [T] = []
             if case let .cached(result) = self.cached.clear(), let unwrappedResult = result {
@@ -172,7 +176,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
             }
             // If the cursor still could have more results after clearing the cache, collect them too.
             if self.isAlive {
-                results += try self.wrappedCursor.all().map { try self.decode(doc: $0) }
+                results += try self.wrappedCursor.toArray().map { try self.decode(doc: $0) }
             }
             return results
         }

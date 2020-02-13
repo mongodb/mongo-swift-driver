@@ -64,10 +64,7 @@ public class ChangeStream<T: Codable>: CursorProtocol {
     private let wrappedCursor: Cursor<MongocChangeStream>
 
     /// Process an event before returning it to the user.
-    private func processEvent(_ event: Document?) throws -> T? {
-        guard let event = event else {
-            return nil
-        }
+    private func processEvent(_ event: Document) throws -> T {
         // Update the resumeToken with the `_id` field from the document.
         guard let resumeToken = event["_id"]?.documentValue else {
             throw InternalError(message: "_id field is missing from the change stream document.")
@@ -139,7 +136,10 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      */
     public func next() -> EventLoopFuture<T?> {
         return self.client.operationExecutor.execute {
-            try self.processEvent(self.wrappedCursor.next())
+            guard let next = try self.wrappedCursor.next() else {
+                return nil
+            }
+            return try self.processEvent(next)
         }
     }
 
@@ -163,7 +163,35 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      */
     public func tryNext() -> EventLoopFuture<T?> {
         return self.client.operationExecutor.execute {
-            try self.processEvent(self.wrappedCursor.tryNext())
+            guard let next = try self.wrappedCursor.tryNext() else {
+                return nil
+            }
+            return try self.processEvent(next)
+        }
+    }
+
+    /**
+     * Consolidate the currently available results of the change stream into an array of type `T`.
+     *
+     * Since `toArray` will only fetch the currently available results, it may return more data if it is called again
+     * while the change stream is still alive.
+     *
+     * - Returns:
+     *    An `EventLoopFuture<[T]>` evaluating to the results currently available in this change stream, or an error.
+     *
+     *    If the future evaluates to an error, that error is likely one of the following:
+     *      - `CommandError` if an error occurs while fetching more results from the server.
+     *      - `LogicError` if this function is called after the change stream has died.
+     *      - `LogicError` if this function is called and the session associated with this change stream is inactive.
+     *      - `DecodingError` if an error occurs decoding the server's responses.
+     */
+    public func toArray() -> EventLoopFuture<[T]> {
+        guard self.isAlive else {
+            return self.client.operationExecutor.makeFailedFuture(ClosedCursorError)
+        }
+
+        return self.client.operationExecutor.execute {
+            try self.wrappedCursor.toArray().map(self.processEvent)
         }
     }
 

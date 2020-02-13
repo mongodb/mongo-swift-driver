@@ -40,6 +40,11 @@ internal protocol CursorProtocol {
      */
     func tryNext() -> EventLoopFuture<T?>
 
+    /// Retrieves all the documents currently available in this cursor. If the cursor is not tailable, exhausts it. If
+    /// the cursor is tailable or is a change stream, this method may return more data if it is called again while the
+    /// cursor is still alive.
+    func toArray() -> EventLoopFuture<[T]>
+
     /**
      * Kills this cursor.
      *
@@ -248,7 +253,7 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
     /// Retreive all the currently available documents in the result set.
     /// This will not exhaust the cursor.
     /// This method is blocking and should only be run via the executor.
-    internal func all() throws -> [Document] {
+    internal func toArray() throws -> [Document] {
         return try self.lock.withLock {
             var results: [Document] = []
             while let result = try self.getNextDocument() {
