@@ -27,7 +27,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
             // insert and read out one document
             _ = try coll.insertOne(doc1).wait()
             cursor = try coll.find().wait()
-            var results = try cursor.all().wait()
+            var results = try cursor.toArray().wait()
             expect(results).to(haveCount(1))
             expect(results[0]).to(equal(doc1))
             // cursor should be closed now that its exhausted
@@ -35,16 +35,22 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
             // iterating a dead cursor should error
             expect(try cursor.next().wait()).to(throwError())
 
-            // iterating after calling all should error.
+            // iterating after calling toArray should error.
             _ = try coll.insertMany([doc2, doc3]).wait()
             cursor = try coll.find().wait()
-            results = try cursor.all().wait()
+            results = try cursor.toArray().wait()
             expect(results).to(haveCount(3))
             expect(results).to(equal([doc1, doc2, doc3]))
             // cursor should be closed now that its exhausted
             expect(cursor.isAlive).to(beFalse())
             // iterating dead cursor should error
             expect(try cursor.next().wait()).to(throwError(errorType: LogicError.self))
+
+            // calling toArray on a closed cursor should error.
+            cursor = try coll.find().wait()
+            results = try cursor.toArray().wait()
+            expect(results).to(haveCount(3))
+            expect(try cursor.toArray().wait()).to(throwError())
 
             cursor = try coll.find(options: FindOptions(batchSize: 1)).wait()
             expect(try cursor.next().wait()).toNot(throwError())
@@ -106,7 +112,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
             // for each doc we insert, check that it arrives in the cursor next,
             // and that the cursor is still alive afterward
             let checkNextResult: (Document) throws -> Void = { doc in
-                let results = try cursor.all().wait()
+                let results = try cursor.toArray().wait()
                 expect(results).to(haveCount(1))
                 expect(results[0]).to(equal(doc))
                 expect(cursor.isAlive).to(beTrue())
