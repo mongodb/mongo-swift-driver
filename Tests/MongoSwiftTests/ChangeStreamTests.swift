@@ -48,6 +48,11 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         }
 
         try self.withTestClient { client in
+            guard try client.serverVersion().wait() < ServerVersion(major: 4, minor: 3, patch: 3) else {
+                print("Skipping test; see SWIFT-722")
+                return
+            }
+
             let db = client.db(type(of: self).testDatabase)
             try? db.collection(self.getCollectionName()).drop().wait()
             let coll = try db.createCollection(self.getCollectionName()).wait()
