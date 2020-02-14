@@ -90,4 +90,34 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             expect(try nextFuture.wait()).to(beNil())
         }
     }
+
+    func testChangeStreamToArray() throws {
+        guard MongoSwiftTestCase.topologyType != .single else {
+            print(unsupportedTopologyMessage(testName: self.name))
+            return
+        }
+        try self.withTestClient { client in
+            let db = client.db(type(of: self).testDatabase)
+            try? db.collection(self.getCollectionName()).drop().wait()
+            let coll = try db.createCollection(self.getCollectionName()).wait()
+
+            let stream = try coll.watch().wait()
+            expect(stream.isAlive).to(beTrue())
+
+            expect(try stream.toArray().wait()).to(beEmpty())
+            expect(stream.isAlive).to(beTrue())
+
+            _ = try coll.insertOne(["x": 1]).wait()
+
+            let results = try stream.toArray().wait()
+            expect(results[0].fullDocument?["x"]).to(equal(1))
+            expect(stream.isAlive).to(beTrue())
+
+            expect(try stream.toArray().wait()).to(beEmpty())
+            expect(stream.isAlive).to(beTrue())
+
+            try stream.kill().wait()
+            expect(stream.isAlive).to(beFalse())
+        }
+    }
 }
