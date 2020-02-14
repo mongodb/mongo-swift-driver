@@ -28,6 +28,20 @@ extension MongoClient {
             XCTFail("Error closing test client: \(error)")
         }
     }
+
+    internal func serverVersion() -> EventLoopFuture<ServerVersion> {
+        return self.db("admin").runCommand(
+            ["buildInfo": 1],
+            options: RunCommandOptions(
+                readPreference: ReadPreference(.primary)
+            )
+        ).flatMapThrowing { reply in
+            guard let versionString = reply["version"]?.stringValue else {
+                throw TestError(message: " reply missing version string: \(reply)")
+            }
+            return try ServerVersion(versionString)
+        }
+    }
 }
 
 extension MongoDatabase {

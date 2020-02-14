@@ -269,8 +269,14 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase, FailPointConfigured {
                 }
 
                 guard version >= test.minServerVersion else {
-                    print("Skipping tests case \"\(test.description)\": minimum required server " +
+                    print("Skipping test case \"\(test.description)\": minimum required server " +
                         "version \(test.minServerVersion) not met.")
+                    continue
+                }
+
+                guard !(test.description == "Change Stream should error when _id is projected out" &&
+                    version >= ServerVersion(major: 4, minor: 3, patch: 3)) else {
+                    print("Skipping test case \"\(test.description)\"; see SWIFT-722")
                     continue
                 }
 
@@ -341,6 +347,11 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
     func testChangeStreamMissingId() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
             print(unsupportedTopologyMessage(testName: self.name))
+            return
+        }
+
+        guard try MongoClient.makeTestClient().serverVersion() < ServerVersion(major: 4, minor: 3, patch: 3) else {
+            print("Skipping test; see SWIFT-722")
             return
         }
 
@@ -524,9 +535,15 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         }
         expect(killedAggs.count).to(equal(1))
 
+        let version = try MongoClient.makeTestClient().serverVersion()
         // the next set of assertions relies on the presence of the NonResumableChangeStreamError label, which was
         // introduced in 4.1.1 via SERVER-40446.
-        guard try MongoClient.makeTestClient().serverVersion() >= ServerVersion(major: 4, minor: 1, patch: 1) else {
+        guard version >= ServerVersion(major: 4, minor: 1, patch: 1) else {
+            return
+        }
+
+        // skip on 4.3.3+ due to removal of NonResumableChangeStreamError label; see SWIFT-722
+        guard version < ServerVersion(major: 4, minor: 3, patch: 3) else {
             return
         }
 
