@@ -104,15 +104,17 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             let stream = try coll.watch().wait()
             expect(stream.isAlive).to(beTrue())
 
+            // initially, no events, but stream should stay alive
             expect(try stream.toArray().wait()).to(beEmpty())
             expect(stream.isAlive).to(beTrue())
 
+            // we should get back single event now via toArray
             _ = try coll.insertOne(["x": 1]).wait()
-
             let results = try stream.toArray().wait()
             expect(results[0].fullDocument?["x"]).to(equal(1))
             expect(stream.isAlive).to(beTrue())
 
+            // no more events, but stream should stay alive
             expect(try stream.toArray().wait()).to(beEmpty())
             expect(stream.isAlive).to(beTrue())
 
