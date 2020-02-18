@@ -1,8 +1,11 @@
-# usage: ./release/release.sh [new version string]
-# for example: ./release/release.sh 1.0.0
+# usage: ./etc/release.sh [new version string]
+# for example: ./etc/release.sh 1.0.0
 
 # exit if any command fails
 set -e
+
+# verify that the examples build
+./etc/build-examples.sh
 
 # update version string for libmongoc handshake
 sourcery --sources Sources/MongoSwift --templates Sources/MongoSwift/MongoSwiftVersion.stencil --output Sources/MongoSwift/MongoSwiftVersion.swift --args versionString=${1}
