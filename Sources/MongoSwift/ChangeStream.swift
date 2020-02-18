@@ -63,6 +63,14 @@ public class ChangeStream<T: Codable>: CursorProtocol {
     /// The cursor this change stream is wrapping.
     private let wrappedCursor: Cursor<MongocChangeStream>
 
+    /// Process an event before returning it to the user, or does nothing and returns nil if the provided event is nil.
+    private func processEvent(_ event: Document?) throws -> T? {
+        guard let event = event else {
+            return nil
+        }
+        return try self.processEvent(event)
+    }
+
     /// Process an event before returning it to the user.
     private func processEvent(_ event: Document) throws -> T {
         // Update the resumeToken with the `_id` field from the document.
@@ -136,10 +144,7 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      */
     public func next() -> EventLoopFuture<T?> {
         return self.client.operationExecutor.execute {
-            guard let next = try self.wrappedCursor.next() else {
-                return nil
-            }
-            return try self.processEvent(next)
+            try self.processEvent(self.wrappedCursor.next())
         }
     }
 
@@ -163,10 +168,7 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      */
     public func tryNext() -> EventLoopFuture<T?> {
         return self.client.operationExecutor.execute {
-            guard let next = try self.wrappedCursor.tryNext() else {
-                return nil
-            }
-            return try self.processEvent(next)
+            try self.processEvent(self.wrappedCursor.tryNext())
         }
     }
 
@@ -186,10 +188,6 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      *      - `DecodingError` if an error occurs decoding the server's responses.
      */
     public func toArray() -> EventLoopFuture<[T]> {
-        guard self.isAlive else {
-            return self.client.operationExecutor.makeFailedFuture(ClosedCursorError)
-        }
-
         return self.client.operationExecutor.execute {
             try self.wrappedCursor.toArray().map(self.processEvent)
         }
