@@ -7,6 +7,8 @@ import NIOConcurrencyHelpers
 internal struct MongocCursor: MongocCursorWrapper {
     internal let pointer: OpaquePointer
 
+    internal static var isLazy: Bool { return true }
+
     internal init(referencing pointer: OpaquePointer) {
         self.pointer = pointer
     }
@@ -39,24 +41,6 @@ public class MongoCursor<T: Codable>: CursorProtocol {
     /// Decoder from the client, database, or collection that created this cursor.
     internal let decoder: BSONDecoder
 
-    /// Used to store a cached next value to return, if one exists.
-    private enum CachedDocument {
-        /// Indicates that the associated value is the next value to return. This value may be nil.
-        case cached(T?)
-        /// Indicates that there is no value cached.
-        case none
-
-        /// Get the contents of the cache and clear it.
-        fileprivate mutating func clear() -> CachedDocument {
-            let copy = self
-            self = .none
-            return copy
-        }
-    }
-
-    /// Tracks the caching status of this cursor.
-    private var cached: CachedDocument
-
     /**
      * Initializes a new `MongoCursor` instance. Not meant to be instantiated directly by a user. When `forceIO` is
      * true, this initializer will force a connection to the server if one is not already established.
@@ -75,7 +59,6 @@ public class MongoCursor<T: Codable>: CursorProtocol {
     ) throws {
         self.client = client
         self.decoder = decoder
-        self.cached = .none
 
         self.wrappedCursor = try Cursor(
             mongocCursor: MongocCursor(referencing: cursorPtr),
@@ -83,17 +66,6 @@ public class MongoCursor<T: Codable>: CursorProtocol {
             session: session,
             type: cursorType ?? .nonTailable
         )
-
-        let next = try self.decode(result: self.wrappedCursor.tryNext())
-        self.cached = .cached(next)
-    }
-
-    /// Close this cursor
-    ///
-    /// This method should only be called while the lock is held.
-    internal func blockingKill() {
-        self.cached = .none
-        self.wrappedCursor.kill()
     }
 
     /// Asserts that the cursor was closed.
@@ -111,12 +83,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
 
     /// Decodes the given document to the generic type.
     private func decode(doc: Document) throws -> T {
-        do {
-            return try self.decoder.decode(T.self, from: doc)
-        } catch {
-            self.blockingKill()
-            throw error
-        }
+        return try self.decoder.decode(T.self, from: doc)
     }
 
     /**
@@ -130,9 +97,6 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      * This cursor will be dead as soon as `next` returns `nil` or an error, regardless of the `CursorType`.
      */
     public var isAlive: Bool {
-        if case .cached = self.cached {
-            return true
-        }
         return self.wrappedCursor.isAlive
     }
 
@@ -144,37 +108,6 @@ public class MongoCursor<T: Codable>: CursorProtocol {
             }
             let id = mongoc_cursor_get_id(ptr)
             return id == 0 ? nil : id
-        }
-    }
-
-    /**
-     * Consolidate the currently available results of the cursor into an array of type `T`.
-     *
-     * If this cursor is not tailable, this method will exhaust it.
-     *
-     * If this cursor is tailable, `all` will only fetch the currently available results, and it
-     * may return more data if it is called again while the cursor is still alive.
-     *
-     * - Returns:
-     *    An `EventLoopFuture<[T]>` evaluating to the results currently available to this cursor or an error.
-     *
-     *    If the future evaluates to an error, that error is likely one of the following:
-     *      - `CommandError` if an error occurs while fetching more results from the server.
-     *      - `LogicError` if this function is called after the cursor has died.
-     *      - `LogicError` if this function is called and the session associated with this cursor is inactive.
-     *      - `DecodingError` if an error occurs decoding the server's responses.
-     */
-    internal func all() -> EventLoopFuture<[T]> {
-        return self.client.operationExecutor.execute {
-            var results: [T] = []
-            if case let .cached(result) = self.cached.clear(), let unwrappedResult = result {
-                results.append(unwrappedResult)
-            }
-            // If the cursor still could have more results after clearing the cache, collect them too.
-            if self.isAlive {
-                results += try self.wrappedCursor.all().map { try self.decode(doc: $0) }
-            }
-            return results
         }
     }
 
@@ -200,10 +133,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      */
     public func tryNext() -> EventLoopFuture<T?> {
         return self.client.operationExecutor.execute {
-            if case let .cached(result) = self.cached.clear() {
-                return result
-            }
-            return try self.decode(result: self.wrappedCursor.tryNext())
+            try self.decode(result: self.wrappedCursor.tryNext())
         }
     }
 
@@ -226,15 +156,30 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      */
     public func next() -> EventLoopFuture<T?> {
         return self.client.operationExecutor.execute {
-            if case let .cached(result) = self.cached.clear() {
-                // If there are no more results forthcoming after clearing the cache, or the cache had a non-nil
-                // result in it, return that.
-                if !self.isAlive || result != nil {
-                    return result
-                }
-            }
-            // Otherwise iterate until a result is received.
-            return try self.decode(result: self.wrappedCursor.next())
+            try self.decode(result: self.wrappedCursor.next())
+        }
+    }
+
+    /**
+     * Consolidate the currently available results of the cursor into an array of type `T`.
+     *
+     * If this cursor is not tailable, this method will exhaust it.
+     *
+     * If this cursor is tailable, `toArray` will only fetch the currently available results, and it
+     * may return more data if it is called again while the cursor is still alive.
+     *
+     * - Returns:
+     *    An `EventLoopFuture<[T]>` evaluating to the results currently available in this cursor, or an error.
+     *
+     *    If the future evaluates to an error, that error is likely one of the following:
+     *      - `CommandError` if an error occurs while fetching more results from the server.
+     *      - `LogicError` if this function is called after the cursor has died.
+     *      - `LogicError` if this function is called and the session associated with this cursor is inactive.
+     *      - `DecodingError` if an error occurs decoding the server's responses.
+     */
+    public func toArray() -> EventLoopFuture<[T]> {
+        return self.client.operationExecutor.execute {
+            try self.wrappedCursor.toArray().map { try self.decode(doc: $0) }
         }
     }
 
@@ -249,7 +194,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      */
     public func kill() -> EventLoopFuture<Void> {
         return self.client.operationExecutor.execute {
-            self.blockingKill()
+            self.wrappedCursor.kill()
         }
     }
 }

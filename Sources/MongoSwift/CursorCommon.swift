@@ -40,6 +40,11 @@ internal protocol CursorProtocol {
      */
     func tryNext() -> EventLoopFuture<T?>
 
+    /// Retrieves all the documents currently available in this cursor. If the cursor is not tailable, exhausts it. If
+    /// the cursor is tailable or is a change stream, this method may return more data if it is called again while the
+    /// cursor is still alive.
+    func toArray() -> EventLoopFuture<[T]>
+
     /**
      * Kills this cursor.
      *
@@ -66,6 +71,9 @@ extension EventLoopFuture {
 internal protocol MongocCursorWrapper {
     /// The underlying libmongoc pointer.
     var pointer: OpaquePointer { get }
+
+    /// Indicates whether this type lazily sends its corresponding initial command to the server.
+    static var isLazy: Bool { get }
 
     /// Method wrapping the appropriate libmongoc "error" function (e.g. `mongoc_cursor_error_document`).
     func errorDocument(bsonError: inout bson_error_t, replyPtr: UnsafeMutablePointer<BSONPointer?>) -> Bool
@@ -96,10 +104,28 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
     /// The state of this cursor.
     private var state: State
 
+    /// Used to store a cached next value to return, if one exists.
+    private enum CachedDocument {
+        /// Indicates that the associated value is the next value to return. This value may be nil.
+        case cached(Document?)
+        /// Indicates that there is no value cached.
+        case none
+
+        /// Get the contents of the cache and clear it.
+        fileprivate mutating func clear() -> CachedDocument {
+            let copy = self
+            self = .none
+            return copy
+        }
+    }
+
+    /// Tracks the caching status of this cursor.
+    private var cached: CachedDocument
+
     /// The type of this cursor. Useful for indicating whether or not it is tailable.
     private let type: CursorType
 
-    /// Lock used to synchronize usage of the internal state.
+    /// Lock used to synchronize usage of the internal state: specifically the `state` and `cached` properties.
     /// This lock should only be acquired in the bodies of non-private methods.
     private let lock: Lock
 
@@ -202,16 +228,34 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
         self.type = type
         self.lock = Lock()
         self.isClosing = NIOAtomic.makeAtomic(value: false)
+        self.cached = .none
 
         // If there was an error constructing the cursor, throw it.
         if let error = self.getMongocError() {
             self.close()
             throw error
         }
+
+        // if this type lazily sends its initial command, retrieve and cache the first document so that we start I/O.
+        if CursorKind.isLazy {
+            self.cached = try .cached(self.tryNext())
+        }
     }
 
     /// Whether the cursor is alive.
     internal var isAlive: Bool {
+        return self.lock.withLock {
+            self._isAlive
+        }
+    }
+
+    /// Checks whether the cursor is alive. Meant for private use only.
+    /// This property should only be read while the lock is held.
+    private var _isAlive: Bool {
+        if case .cached = self.cached {
+            return true
+        }
+
         switch self.state {
         case .open:
             return true
@@ -224,11 +268,20 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
     /// This method is blocking and should only be run via the executor.
     internal func next() throws -> Document? {
         return try self.lock.withLock {
-            guard self.isAlive else {
+            guard self._isAlive else {
                 throw ClosedCursorError
             }
+
+            if case let .cached(result) = self.cached.clear() {
+                // If there are no more results forthcoming after clearing the cache, or the cache had a non-nil
+                // result in it, return that.
+                if !self._isAlive || result != nil {
+                    return result
+                }
+            }
+
             // Keep trying until either the cursor is killed or a notification has been sent by close
-            while self.isAlive && !self.isClosing.load() {
+            while self._isAlive && !self.isClosing.load() {
                 if let doc = try self.getNextDocument() {
                     return doc
                 }
@@ -241,16 +294,31 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
     /// This method is blocking and should only be run via the executor.
     internal func tryNext() throws -> Document? {
         return try self.lock.withLock {
-            try self.getNextDocument()
+            if case let .cached(result) = self.cached.clear() {
+                return result
+            }
+            return try self.getNextDocument()
         }
     }
 
     /// Retreive all the currently available documents in the result set.
     /// This will not exhaust the cursor.
     /// This method is blocking and should only be run via the executor.
-    internal func all() throws -> [Document] {
+    internal func toArray() throws -> [Document] {
         return try self.lock.withLock {
+            guard self._isAlive else {
+                throw ClosedCursorError
+            }
+
             var results: [Document] = []
+            if case let .cached(result) = self.cached.clear(), let unwrappedResult = result {
+                results.append(unwrappedResult)
+            }
+            // the only value left was the cached one
+            guard self._isAlive else {
+                return results
+            }
+
             while let result = try self.getNextDocument() {
                 results.append(result)
             }
@@ -264,6 +332,7 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
     internal func kill() {
         self.isClosing.store(true)
         self.lock.withLock {
+            self.cached = .none
             self.close()
         }
         self.isClosing.store(false)
