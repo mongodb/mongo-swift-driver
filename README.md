@@ -37,19 +37,12 @@ Core Server (i.e. SERVER) project are **public**.
 
 Installation is supported via [Swift Package Manager](https://swift.org/package-manager/).
 
-### Step 1: Install the MongoDB C Driver
-The driver wraps the MongoDB C driver, and using it requires having the C driver's two components, `libbson` and `libmongoc`, installed on your system. **The minimum required version of the C Driver is 1.15.3**.
+### Step 1: Install required system libraries (Linux Only)
+The driver vendors and wraps the MongoDB C driver (`libmongoc`), which depends on a number of external C libraries when built in Linux environments. As a result, these libraries must be installed on your system in order to build MongoSwift.
 
-*On a Mac*, you can install both components at once using [Homebrew](https://brew.sh/):
-`brew install mongo-c-driver`.
-
-*On Linux*: please follow the [instructions](http://mongoc.org/libmongoc/current/installing.html#building-on-unix) from `libmongoc`'s documentation. Note that the versions provided by your package manager may be too old, in which case you can follow the instructions for building and installing from source.
-
-See example installation from source on Ubuntu in [Docker](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/Docker).
+To install those libraries, please follow the [instructions](http://mongoc.org/libmongoc/current/installing.html#prerequisites-for-libmongoc) from `libmongoc`'s documentation.
 
 ### Step 2: Install MongoSwift
-*Please follow the instructions in the previous section on installing the MongoDB C Driver before proceeding.*
-
 Add MongoSwift to your dependencies in `Package.swift`:
 
 ```swift
