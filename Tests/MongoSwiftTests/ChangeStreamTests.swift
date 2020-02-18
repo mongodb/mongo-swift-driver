@@ -106,7 +106,9 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             try? db.collection(self.getCollectionName()).drop().wait()
             let coll = try db.createCollection(self.getCollectionName()).wait()
 
-            let stream = try coll.watch().wait()
+            let options = ChangeStreamOptions(maxAwaitTimeMS: 10000)
+
+            let stream = try coll.watch(options: options).wait()
             expect(stream.isAlive).to(beTrue())
 
             // initially, no events, but stream should stay alive
