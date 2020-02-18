@@ -28,21 +28,7 @@ if [[ ! "$WORK_DIR" || ! -d "$WORK_DIR" ]]; then
   exit 1
 fi
 
-case "$(uname -s)" in
-    Darwin)
-        sed=gsed
-        ;;
-    *)
-        sed=sed
-        ;;
-esac
-
-if ! hash ${sed} 2>/dev/null; then
-    echo "You need sed \"${sed}\" to run this script ..."
-    echo
-    echo "On macOS: brew install gnu-sed"
-    exit 43
-fi
+sed="$ETC_DIR/sed.sh"
 
 echo "REMOVING any previously vendored libmongoc code"
 rm -rf $CLIBMONGOC_INCLUDE_PATH
