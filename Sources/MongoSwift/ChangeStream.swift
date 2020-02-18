@@ -6,6 +6,8 @@ import NIO
 private struct MongocChangeStream: MongocCursorWrapper {
     internal let pointer: OpaquePointer
 
+    internal static var isLazy: Bool { return false }
+
     fileprivate init(stealing ptr: OpaquePointer) {
         self.pointer = ptr
     }

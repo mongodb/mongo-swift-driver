@@ -7,6 +7,8 @@ import NIOConcurrencyHelpers
 internal struct MongocCursor: MongocCursorWrapper {
     internal let pointer: OpaquePointer
 
+    internal static var isLazy: Bool { return true }
+
     internal init(referencing pointer: OpaquePointer) {
         self.pointer = pointer
     }

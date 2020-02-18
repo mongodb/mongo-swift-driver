@@ -72,6 +72,9 @@ internal protocol MongocCursorWrapper {
     /// The underlying libmongoc pointer.
     var pointer: OpaquePointer { get }
 
+    /// Indicates whether this type lazily sends its corresponding initial command to the server.
+    static var isLazy: Bool { get }
+
     /// Method wrapping the appropriate libmongoc "error" function (e.g. `mongoc_cursor_error_document`).
     func errorDocument(bsonError: inout bson_error_t, replyPtr: UnsafeMutablePointer<BSONPointer?>) -> Bool
 
@@ -233,7 +236,10 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
             throw error
         }
 
-        self.cached = try .cached(self.tryNext())
+        // if this type lazily sends its initial command, retrieve and cache the first document so that we start I/O.
+        if CursorKind.isLazy {
+            self.cached = try .cached(self.tryNext())
+        }
     }
 
     /// Whether the cursor is alive.
