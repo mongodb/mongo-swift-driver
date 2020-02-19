@@ -180,6 +180,23 @@ public class MongoCursor<T: Codable>: CursorProtocol {
         }
     }
 
+    /**
+     * Calls the provided closure with each element in the cursor.
+     *
+     * If the cursor is not tailable, this method will exhaust it, calling the closure with every document.
+     *
+     * If the cursor is tailable, the method will call the closure with each new document as it arrives.
+     *
+     * - Returns:
+     *     An `EventLoopFuture<Void>` which will succeed when the end of the cursor is reached, or in the case of a
+     *     tailable cursor, when the cursor is killed via `kill`.
+     *
+     *     If the future evaluates to an error, that error is likely one of the following:
+     *     - `CommandError` if an error occurs while fetching more results from the server.
+     *     - `LogicError` if this function is called after the cursor has died.
+     *     - `LogicError` if this function is called and the session associated with this cursor is inactive.
+     *     - `DecodingError` if an error occurs decoding the server's responses.
+     */
     public func forEach(_ body: @escaping (T) throws -> Void) -> EventLoopFuture<Void> {
         return self.client.operationExecutor.execute {
             while let next = try self.decode(result: self.wrappedCursor.next()) {

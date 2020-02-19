@@ -193,6 +193,18 @@ public class ChangeStream<T: Codable>: CursorProtocol {
         }
     }
 
+    /**
+     * Calls the provided closure with each event in the change stream as it arrives.
+     *
+     * - Returns:
+     *     An `EventLoopFuture<Void>` which will succeed once the change stream is killed via `kill`.
+     *
+     *     If the future evaluates to an error, that error is likely one of the following:
+     *     - `CommandError` if an error occurs while fetching more results from the server.
+     *     - `LogicError` if this function is called after the change stream has died.
+     *     - `LogicError` if this function is called and the session associated with this change stream is inactive.
+     *     - `DecodingError` if an error occurs decoding the server's responses.
+     */
     public func forEach(_ body: @escaping (T) throws -> Void) -> EventLoopFuture<Void> {
         return self.client.operationExecutor.execute {
             while let next = try self.processEvent(self.wrappedCursor.next()) {
