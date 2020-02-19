@@ -52,6 +52,7 @@ extension ChangeStreamTests {
         ("testChangeStreamError", testChangeStreamError),
         ("testChangeStreamEmpty", testChangeStreamEmpty),
         ("testChangeStreamToArray", testChangeStreamToArray),
+        ("testChangeStreamForEach", testChangeStreamForEach),
     ]
 }
 
