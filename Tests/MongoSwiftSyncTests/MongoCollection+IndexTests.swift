@@ -208,25 +208,16 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
     }
 
     func testCreateDropIndexByModelWithMaxTimeMS() throws {
-        let center = NotificationCenter.default
         let maxTimeMS: Int64 = 1000
 
-        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
+        let monitor = TestCommandEventHandler(eventTypes: [.commandStarted])
+        let client = try MongoClient.makeTestClient(options: ClientOptions(commandEventHandler: monitor))
         let db = client.db(type(of: self).testDatabase)
 
         let collection = db.collection("collection")
         try collection.insertOne(["test": "blahblah"])
 
-        var receivedEvents = [CommandStartedEvent]()
-        let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
-            guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
-                return
-            }
-            receivedEvents.append(event)
-        }
-
-        defer { center.removeObserver(observer) }
-
+        monitor.beginMonitoring()
         let model = IndexModel(keys: ["cat": 1])
         let wc = try WriteConcern(w: .number(1))
         let createIndexOpts = CreateIndexOptions(maxTimeMS: maxTimeMS, writeConcern: wc)
@@ -242,6 +233,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         expect(try indexes.next()?.get()).to(beNil())
 
         // test that maxTimeMS is an accepted option for createIndex and dropIndex
+        let receivedEvents = monitor.events.compactMap { $0.commandStartedValue }
         expect(receivedEvents.count).to(equal(2))
         expect(receivedEvents[0].command["createIndexes"]).toNot(beNil())
         expect(receivedEvents[0].command["maxTimeMS"]).toNot(beNil())

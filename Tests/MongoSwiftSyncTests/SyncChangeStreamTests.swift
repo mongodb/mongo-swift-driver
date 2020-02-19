@@ -159,21 +159,9 @@ internal struct ChangeStreamTest: Decodable {
     let result: ChangeStreamTestResult
 
     internal func run(globalClient: MongoClient, database: String, collection: String) throws {
-        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
-
-        let center = NotificationCenter.default
-        var events: [TestCommandStartedEvent] = []
-        let observer = center.addObserver(forName: .commandStarted, object: nil, queue: nil) { notification in
-            guard let event = notification.userInfo?["event"] as? CommandStartedEvent else {
-                fail("\(self.description) failed: bad event type")
-                return
-            }
-            guard event.commandName != "isMaster" else {
-                return
-            }
-            events.append(TestCommandStartedEvent(from: event))
-        }
-        defer { center.removeObserver(observer) }
+        let monitor = TestCommandEventHandler(eventTypes: [.commandStarted])
+        let client = try MongoClient.makeTestClient(options: ClientOptions(commandEventHandler: monitor))
+        monitor.beginMonitoring()
 
         do {
             let changeStream = try self.target.watch(
@@ -205,7 +193,10 @@ internal struct ChangeStreamTest: Decodable {
         }
 
         if let expectations = self.expectations {
-            expect(events).to(match(expectations), description: self.description)
+            let commandEvents = monitor.commandStartedEvents()
+                .filter { $0.commandName != "isMaster" }
+                .map { TestCommandStartedEvent(from: $0) }
+            expect(commandEvents).to(match(expectations), description: self.description)
         }
     }
 }
@@ -415,8 +406,8 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         }
         expect(events.count).to(equal(2))
 
-        let originalCommand = (events[0] as? CommandStartedEvent)!.command
-        let resumeCommand = (events[1] as? CommandStartedEvent)!.command
+        let originalCommand = events[0].commandStartedValue!.command
+        let resumeCommand = events[1].commandStartedValue!.command
 
         let originalPipeline = originalCommand["pipeline"]!.arrayValue!.compactMap { $0.documentValue }
         let resumePipeline = resumeCommand["pipeline"]!.arrayValue!.compactMap { $0.documentValue }
@@ -449,8 +440,8 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         }
 
         // turn off retryReads so that retry attempts can be distinguished from resume attempts.
-        var opts = ClientOptions(commandMonitoring: true)
-        opts.retryReads = false
+        let monitor = TestCommandEventHandler()
+        let opts = ClientOptions(commandEventHandler: monitor, retryReads: false)
 
         try withTestNamespace(clientOptions: opts) { client, _, coll in
             guard try client.supportsFailCommand() else {
@@ -463,7 +454,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             defer { failpoint.disable() }
 
             let aggAttempts = try captureCommandEvents(
-                from: client,
+                monitor: monitor,
                 eventTypes: [.commandStarted],
                 commandNames: ["aggregate"]
             ) {
@@ -483,7 +474,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             defer { getMoreFailpoint.disable() }
 
             let aggAttempts1 = try captureCommandEvents(
-                from: client,
+                monitor: monitor,
                 eventTypes: [.commandStarted],
                 commandNames: ["aggregate"]
             ) {
@@ -595,21 +586,18 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        try withTestNamespace(clientOptions: ClientOptions(commandMonitoring: true)) { client, _, collection in
+        let monitor = TestCommandEventHandler(eventTypes: [.commandSucceeded], commandNames: ["aggregate"])
+        try withTestNamespace(clientOptions: ClientOptions(commandEventHandler: monitor)) { client, _, collection in
             guard try client.supportsFailCommand() else {
                 print("Skipping \(self.name) because server version doesn't support failCommand")
                 return
             }
 
             var changeStream: ChangeStream<ChangeStreamEvent<Document>>?
-            let aggEvent = try captureCommandEvents(
-                from: client,
-                eventTypes: [.commandSucceeded],
-                commandNames: ["aggregate"]
-            ) {
-                let options = ChangeStreamOptions(batchSize: 1)
-                changeStream = try collection.watch(options: options)
-            }
+            let options = ChangeStreamOptions(batchSize: 1)
+            monitor.beginMonitoring()
+            changeStream = try collection.watch(options: options)
+            monitor.stopMonitoring()
 
             for i in 0..<5 {
                 try collection.insertOne(["x": 1])
@@ -618,7 +606,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             expect(try changeStream?.nextWithTimeout()).toNot(throwError())
 
             // kill the underlying cursor to trigger a resume.
-            let reply = (aggEvent[0] as! CommandSucceededEvent).reply["cursor"]!.documentValue!
+            let reply = monitor.events[0].commandSucceededValue!.reply["cursor"]!.documentValue!
             let cursorId = reply["id"]!
             try client.db("admin").runCommand(["killCursors": .string(self.getCollectionName()), "cursors": [cursorId]])
 

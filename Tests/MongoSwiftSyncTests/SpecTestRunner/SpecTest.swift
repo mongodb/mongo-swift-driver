@@ -257,8 +257,9 @@ extension SpecTest {
 
         print("Executing test: \(self.description)")
 
+        let monitor = TestCommandEventHandler()
         var clientOptions = self.clientOptions ?? ClientOptions(retryReads: true)
-        clientOptions.commandMonitoring = self.expectations != nil
+        clientOptions.commandEventHandler = monitor
 
         if let failPoint = self.failPoint {
             try parent.activateFailPoint(failPoint)
@@ -266,14 +267,14 @@ extension SpecTest {
         defer { parent.disableActiveFailPoint() }
 
         let client = try MongoClient.makeTestClient(options: clientOptions)
-        let db: MongoDatabase = client.db(dbName)
+        let db = client.db(dbName)
         var collection: MongoCollection<Document>?
 
         if let collName = collName {
             collection = db.collection(collName)
         }
 
-        let events = try captureCommandEvents(from: client, eventTypes: [.commandStarted]) {
+        let events = try captureCommandEvents(monitor: monitor, eventTypes: [.commandStarted]) {
             for operation in self.operations {
                 try operation.validateExecution(
                     client: client,
@@ -282,7 +283,7 @@ extension SpecTest {
                     session: nil
                 )
             }
-        }.map { TestCommandStartedEvent(from: $0 as! CommandStartedEvent) }
+        }.map { TestCommandStartedEvent(from: $0.commandStartedValue!) }
 
         if let expectations = self.expectations {
             expect(events).to(match(expectations), description: self.description)

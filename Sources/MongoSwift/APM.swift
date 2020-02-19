@@ -74,7 +74,10 @@ public enum CommandEvent: Publishable {
     }
 
     fileprivate func publish(to client: MongoClient) {
-        client.publishCommandEvent(self)
+        guard let handler = client.commandEventHandler else {
+            return
+        }
+        handler.handleCommandEvent(self)
     }
 
     /// The name of the command that generated this event.
@@ -302,8 +305,8 @@ public enum TopologyEvent: Publishable {
         }
     }
 
-    fileprivate func publish(to _: MongoClient) {
-        fatalError("unimplemented")
+    fileprivate func publish(to client: MongoClient) {
+        client.sdamEventHandler?.handleTopologyEvent(self)
     }
 }
 
@@ -547,8 +550,8 @@ public enum ServerHeartbeatEvent: Publishable {
         }
     }
 
-    fileprivate func publish(to _: MongoClient) {
-        fatalError("unimplemented")
+    fileprivate func publish(to client: MongoClient) {
+        client.sdamEventHandler?.handleServerHeartbeatEvent(self)
     }
 }
 

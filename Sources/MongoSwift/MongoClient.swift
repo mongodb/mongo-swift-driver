@@ -569,13 +569,6 @@ public class MongoClient {
     ) throws -> T.OperationResult {
         return try self.operationExecutor.execute(operation, using: connection, client: self, session: session).wait()
     }
-
-    internal func publishCommandEvent(_ event: CommandEvent) {
-        guard let handler = self.commandEventHandler else {
-            return
-        }
-        handler.handleCommandEvent(event)
-    }
 }
 
 extension MongoClient: Equatable {

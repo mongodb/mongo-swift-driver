@@ -32,6 +32,7 @@
 @_exported import struct MongoSwift.CollectionSpecification
 @_exported import struct MongoSwift.CollectionSpecificationInfo
 @_exported import enum MongoSwift.CollectionType
+@_exported import enum MongoSwift.CommandEvent
 @_exported import struct MongoSwift.CommandError
 @_exported import struct MongoSwift.CommandFailedEvent
 @_exported import struct MongoSwift.CommandStartedEvent

@@ -81,7 +81,6 @@ extension CodecTests {
 extension CommandMonitoringTests {
     static var allTests = [
         ("testCommandMonitoring", testCommandMonitoring),
-        ("testAlternateNotificationCenters", testAlternateNotificationCenters),
     ]
 }
 

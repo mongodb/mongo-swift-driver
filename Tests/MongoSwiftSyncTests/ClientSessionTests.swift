@@ -184,46 +184,36 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
 
     // Executes the body twice, once with the supplied session and once without, verifying that a correct lsid is
     // seen both times.
-    func runArgTest(session: MongoSwiftSync.ClientSession, op: SessionOp) throws {
-        let center = NotificationCenter.default
-
-        var seenExplicit = false
-        var seenImplicit = false
-        let observer = center.addObserver(forName: .commandStarted, object: nil, queue: nil) { notif in
-            guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
-                return
-            }
-
-            expect(event.command["lsid"]).toNot(beNil(), description: op.name)
-            if !seenExplicit {
-                expect(event.command["lsid"]).to(equal(.document(session.id!)), description: op.name)
-                seenExplicit = true
-            } else {
-                expect(seenImplicit).to(beFalse())
-                expect(event.command["lsid"]).toNot(equal(.document(session.id!)), description: op.name)
-                seenImplicit = true
-            }
+    func runArgTest(monitor: TestCommandEventHandler, session: MongoSwiftSync.ClientSession, op: SessionOp) throws {
+        defer {
+            monitor.stopMonitoring()
+            monitor.events.removeAll()
         }
+        monitor.beginMonitoring()
+
         // We don't care if they succeed (e.g. a drop index may fail if index doesn't exist)
         try? op.body(session)
         try? op.body(nil)
 
-        expect(seenImplicit).to(beTrue(), description: op.name)
-        expect(seenExplicit).to(beTrue(), description: op.name)
-
-        center.removeObserver(observer)
+        let capturedEvents = monitor.commandStartedEvents()
+        expect(capturedEvents).to(haveCount(2))
+        expect(capturedEvents[0].command["lsid"]).to(equal(.document(session.id!)), description: op.name)
+        let implicitId = capturedEvents[1].command["lsid"]
+        expect(implicitId).toNot(beNil())
+        expect(implicitId).toNot(equal(.document(session.id!)), description: op.name)
     }
 
     /// Sessions spec test 3: test that every function that takes a session parameter passes the sends implicit and
     /// explicit lsids to server.
     func testSessionArguments() throws {
-        let client1 = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
+        let monitor = TestCommandEventHandler()
+        let client1 = try MongoClient.makeTestClient(options: ClientOptions(commandEventHandler: monitor))
         let database = client1.db(type(of: self).testDatabase)
         let collection = try database.createCollection(self.getCollectionName())
         let session = client1.startSession()
 
         try self.forEachSessionOp(client: client1, database: database, collection: collection) { op in
-            try runArgTest(session: session, op: op)
+            try runArgTest(monitor: monitor, session: session, op: op)
         }
     }
 
@@ -271,7 +261,8 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
 
     /// Sessions spec test 10: Test cursors have the same lsid in the initial find command and in subsequent getMores.
     func testSessionCursor() throws {
-        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
+        let monitor = TestCommandEventHandler()
+        let client = try MongoClient.makeTestClient(options: ClientOptions(commandEventHandler: monitor))
         let database = client.db(type(of: self).testDatabase)
         let collection = try database.createCollection(self.getCollectionName())
         let session = client.startSession()
@@ -281,55 +272,37 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
             try collection.insertOne(["x": BSON(x)], session: session)
         }
 
-        var id: BSON?
-        var seenFind = false
-        var seenGetMore = false
-
-        let center = NotificationCenter.default
-        let observer = center.addObserver(forName: .commandStarted, object: nil, queue: nil) { notif in
-            guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
-                return
-            }
-
-            if event.command["find"] != nil {
-                seenFind = true
-                if let id = id {
-                    expect(id).to(equal(event.command["lsid"]))
-                } else {
-                    expect(event.command["lsid"]).toNot(beNil())
-                    id = event.command["lsid"]
-                }
-            } else if event.command["getMore"] != nil {
-                seenGetMore = true
-                expect(id).toNot(beNil())
-                expect(event.command["lsid"]).toNot(beNil())
-                expect(event.command["lsid"]).to(equal(id))
-            }
-        }
-
         // explicit
-        id = .document(session.id!)
-        seenFind = false
-        seenGetMore = false
+        monitor.beginMonitoring()
         let cursor = try collection.find(options: FindOptions(batchSize: 2), session: session)
         expect(cursor.next()).toNot(beNil())
         expect(cursor.next()).toNot(beNil())
         expect(cursor.next()).toNot(beNil())
-        expect(seenFind).to(beTrue())
-        expect(seenGetMore).to(beTrue())
+        monitor.stopMonitoring()
+
+        let explicitEvents = monitor.commandStartedEvents(withNames: ["find", "getMore"])
+        expect(explicitEvents).to(haveCount(2))
+        expect(explicitEvents[0].commandName).to(equal("find"))
+        expect(explicitEvents[0].command["lsid"]).to(equal(.document(session.id!)))
+        expect(explicitEvents[1].commandName).to(equal("getMore"))
+        expect(explicitEvents[1].command["lsid"]).to(equal(.document(session.id!)))
+        monitor.events.removeAll()
 
         // implicit
-        seenFind = false
-        seenGetMore = false
-        id = nil
+        monitor.beginMonitoring()
         let cursor1 = try collection.find(options: FindOptions(batchSize: 2))
         expect(cursor1.next()).toNot(beNil())
         expect(cursor1.next()).toNot(beNil())
         expect(cursor1.next()).toNot(beNil())
-        expect(seenFind).to(beTrue())
-        expect(seenGetMore).to(beTrue())
+        monitor.stopMonitoring()
 
-        center.removeObserver(observer)
+        let implicitEvents = monitor.commandStartedEvents(withNames: ["find", "getMore"])
+        expect(implicitEvents).to(haveCount(2))
+        expect(implicitEvents[0].commandName).to(equal("find"))
+        let id = implicitEvents[0].command["lsid"]
+        expect(id).toNot(beNil())
+        expect(implicitEvents[1].commandName).to(equal("getMore"))
+        expect(implicitEvents[1].command["lsid"]).to(equal(id))
     }
 
     /// Sessions spec test 11: Test that the clusterTime is reported properly.
@@ -365,34 +338,22 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
             return
         }
 
-        let center = NotificationCenter.default
-        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
+        let monitor = TestCommandEventHandler()
+        let client = try MongoClient.makeTestClient(options: ClientOptions(commandEventHandler: monitor))
         let db = client.db(type(of: self).testDatabase)
         let collection = try db.createCollection(self.getCollectionName())
 
         // Causal consistency spec test 3: the first read/write on a session should update the operationTime of a
         // session.
         try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
-            var seenCommands = false
-            let startObserver = center.addObserver(forName: .commandStarted, object: nil, queue: nil) { notif in
-                guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
-                    return
-                }
-                seenCommands = true
-            }
-            defer { center.removeObserver(startObserver) }
-
-            var replyOpTime: Timestamp?
-            let replyObserver = center.addObserver(forName: .commandSucceeded, object: nil, queue: nil) { notif in
-                guard let event = notif.userInfo?["event"] as? CommandSucceededEvent else {
-                    return
-                }
-                replyOpTime = event.reply["operationTime"]?.timestampValue
-            }
-            defer { center.removeObserver(replyObserver) }
-
+            monitor.beginMonitoring()
             _ = try collection.countDocuments(session: session)
-            expect(seenCommands).to(beTrue())
+            monitor.stopMonitoring()
+            defer { monitor.events.removeAll() }
+
+            let succeededEvents = monitor.commandSucceededEvents()
+            expect(succeededEvents).toNot(beEmpty())
+            let replyOpTime = succeededEvents[0].reply["operationTime"]?.timestampValue
             expect(replyOpTime).toNot(beNil())
             expect(replyOpTime).to(equal(session.operationTime))
         }
@@ -414,20 +375,20 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
             try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
                 _ = try collection.find(session: session).next()
                 let opTime = session.operationTime
-                var seenCommand = false
-                let observer = center.addObserver(forName: .commandStarted, object: nil, queue: nil) { notif in
-                    guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
-                        return
-                    }
+
+                monitor.beginMonitoring()
+                try op.body(collection, session)
+                monitor.stopMonitoring()
+                defer { monitor.events.removeAll() }
+
+                let startedEvents = monitor.commandStartedEvents()
+                expect(startedEvents).toNot(beEmpty(), description: op.name)
+                for event in startedEvents {
                     let readConcern = event.command["readConcern"]?.documentValue
                     expect(readConcern).toNot(beNil(), description: op.name)
                     expect(readConcern!["afterClusterTime"]?.timestampValue).to(equal(opTime), description: op.name)
                     expect(readConcern!["level"]).to(beNil(), description: op.name)
-                    seenCommand = true
                 }
-                defer { center.removeObserver(observer) }
-                try op.body(collection, session)
-                expect(seenCommand).to(beTrue(), description: op.name)
             }
         }
 
@@ -439,36 +400,31 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
                 try? op.body(collection, session)
                 let opTime = session.operationTime
 
-                var seenCommand = false
-                let observer = center.addObserver(forName: .commandStarted, object: nil, queue: nil) { notif in
-                    guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
-                        return
-                    }
-                    expect(event.command["readConcern"]?.documentValue?["afterClusterTime"]?.timestampValue)
-                        .to(equal(opTime), description: op.name)
-                    seenCommand = true
-                }
-                defer { center.removeObserver(observer) }
+                monitor.beginMonitoring()
                 _ = try collection.find(session: session).next()
-                expect(seenCommand).to(beTrue(), description: op.name)
+                monitor.stopMonitoring()
+                defer { monitor.events.removeAll() }
+
+                let startedEvents = monitor.commandStartedEvents(withNames: ["find"])
+                expect(startedEvents).toNot(beEmpty(), description: op.name)
+                expect(startedEvents[0].command["readConcern"]?.documentValue?["afterClusterTime"]?.timestampValue)
+                    .to(equal(opTime), description: op.name)
             }
         }
 
         // Causal consistency spec test 6: A read operation in a ClientSession that is not causally consistent should
         // not include the afterClusterTime parameter in the command sent to the server
         try client.withSession(options: ClientSessionOptions(causalConsistency: false)) { session in
-            var seenCommand = false
             _ = try collection.countDocuments(session: session)
-            let observer = center.addObserver(forName: .commandStarted, object: nil, queue: nil) { notif in
-                guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
-                    return
-                }
-                expect(event.command["readConcern"]?.documentValue?["afterClusterTime"]).to(beNil())
-                seenCommand = true
-            }
-            defer { center.removeObserver(observer) }
+
+            monitor.beginMonitoring()
             _ = try collection.countDocuments(session: session)
-            expect(seenCommand).to(beTrue())
+            monitor.stopMonitoring()
+            defer { monitor.events.removeAll() }
+
+            let startedEvents = monitor.commandStartedEvents()
+            expect(startedEvents).to(haveCount(1))
+            expect(startedEvents[0].command["readConcern"]?.documentValue?["afterClusterTime"]).to(beNil())
         }
 
         // Causal consistency spec test 9: When using a custom ReadConcern the readConcern field in the command sent to
@@ -481,36 +437,30 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
             _ = try collection1.countDocuments(session: session)
             let opTime = session.operationTime
 
-            var seenCommand = false
-            let observer = center.addObserver(forName: .commandStarted, object: nil, queue: nil) { notif in
-                guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
-                    return
-                }
-                let readConcern = event.command["readConcern"]?.documentValue
-                expect(readConcern).toNot(beNil())
-                expect(readConcern!["afterClusterTime"]?.timestampValue).to(equal(opTime))
-                expect(readConcern!["level"]).to(equal("local"))
-                seenCommand = true
-            }
-            defer { center.removeObserver(observer) }
+            monitor.beginMonitoring()
             _ = try collection1.countDocuments(session: session)
-            expect(seenCommand).to(beTrue())
+            monitor.stopMonitoring()
+            defer { monitor.events.removeAll() }
+
+            let startedEvents = monitor.commandStartedEvents()
+            expect(startedEvents).to(haveCount(1))
+            let readConcern = startedEvents[0].command["readConcern"]?.documentValue
+            expect(readConcern).toNot(beNil())
+            expect(readConcern!["afterClusterTime"]?.timestampValue).to(equal(opTime))
+            expect(readConcern!["level"]).to(equal("local"))
         }
 
         // Causal consistency spec test 12: When connected to a deployment that does support cluster times messages sent
         // to the server should include $clusterTime
         try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
-            var seenCommand = false
-            let observer = center.addObserver(forName: .commandStarted, object: nil, queue: nil) { notif in
-                guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
-                    return
-                }
-                expect(event.command["$clusterTime"]).toNot(beNil())
-                seenCommand = true
-            }
-            defer { center.removeObserver(observer) }
+            monitor.beginMonitoring()
             _ = try collection.countDocuments(session: session)
-            expect(seenCommand).to(beTrue())
+            monitor.stopMonitoring()
+            defer { monitor.events.removeAll() }
+
+            let startedEvents = monitor.commandStartedEvents()
+            expect(startedEvents).to(haveCount(1))
+            expect(startedEvents[0].command["$clusterTime"]).toNot(beNil())
         }
     }
 
@@ -521,8 +471,8 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
             return
         }
 
-        let center = NotificationCenter.default
-        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
+        let monitor = TestCommandEventHandler()
+        let client = try MongoClient.makeTestClient(options: ClientOptions(commandEventHandler: monitor))
         let db = client.db(type(of: self).testDatabase)
         let collection = db.collection(self.getCollectionName())
 
@@ -532,17 +482,14 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
             _ = try collection.countDocuments(session: session)
 
-            var seenCommand = false
-            let observer = center.addObserver(forName: .commandStarted, object: nil, queue: nil) { notif in
-                guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
-                    return
-                }
-                expect(event.command["readConcern"]?.documentValue?["afterClusterTime"]).to(beNil())
-                seenCommand = true
-            }
-            defer { center.removeObserver(observer) }
+            monitor.beginMonitoring()
             _ = try collection.countDocuments(session: session)
-            expect(seenCommand).to(beTrue())
+            monitor.stopMonitoring()
+            defer { monitor.events.removeAll() }
+
+            let startedEvents = monitor.commandStartedEvents()
+            expect(startedEvents).to(haveCount(1))
+            expect(startedEvents[0].command["readConcern"]?.documentValue?["afterClusterTime"]).to(beNil())
         }
 
         // Causal consistency spec test 11: When connected to a deployment that does not support cluster times messages
@@ -551,24 +498,21 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
             _ = try collection.insertOne([:], session: session)
             let opTime = session.operationTime
 
-            var seenCommand = false
-            let observer = center.addObserver(forName: .commandStarted, object: nil, queue: nil) { notif in
-                guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
-                    return
-                }
-                expect(event.command["$clusterTime"]).to(beNil())
-                seenCommand = true
-            }
-            defer { center.removeObserver(observer) }
+            monitor.beginMonitoring()
             _ = try collection.countDocuments(session: session)
-            expect(seenCommand).to(beTrue())
+            monitor.stopMonitoring()
+            defer { monitor.events.removeAll() }
+
+            let startedEvents = monitor.commandStartedEvents()
+            expect(startedEvents).to(haveCount(1))
+            expect(startedEvents[0].command["$clusterTime"]).to(beNil())
         }
     }
 
     /// Test causal consistent behavior that is expected on any topology, regardless of whether it supports cluster time
     func testCausalConsistencyAnyTopology() throws {
-        let center = NotificationCenter.default
-        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
+        let monitor = TestCommandEventHandler()
+        let client = try MongoClient.makeTestClient(options: ClientOptions(commandEventHandler: monitor))
         let db = client.db(type(of: self).testDatabase)
         let collection = db.collection(self.getCollectionName())
 
@@ -580,18 +524,14 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         // Causal consistency spec test 2: The first read in a causally consistent session must not send
         // afterClusterTime to the server (because the operationTime has not yet been determined)
         try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
-            var seenCommand = false
-            let startObserver = center.addObserver(forName: .commandStarted, object: nil, queue: nil) { notif in
-                guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
-                    return
-                }
-                expect(event.command["readConcern"]?.documentValue?["afterClusterTime"]).to(beNil())
-                seenCommand = true
-            }
-            defer { center.removeObserver(startObserver) }
-
+            monitor.beginMonitoring()
             _ = try collection.countDocuments(session: session)
-            expect(seenCommand).to(beTrue())
+            monitor.stopMonitoring()
+            defer { monitor.events.removeAll() }
+
+            let startedEvents = monitor.commandStartedEvents()
+            expect(startedEvents).to(haveCount(1))
+            expect(startedEvents[0].command["readConcern"]?.documentValue?["afterClusterTime"]).to(beNil())
         }
 
         // Causal consistency spec test 10: When an unacknowledged write is executed in a causally consistent

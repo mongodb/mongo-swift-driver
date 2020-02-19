@@ -16,7 +16,8 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
+        let monitor = TestCommandEventHandler()
+        let client = try MongoClient.makeTestClient(options: ClientOptions(commandEventHandler: monitor))
 
         let tests = try retrieveSpecTestFiles(specName: "command-monitoring", asType: CMTestFile.self)
         for (filename, testFile) in tests {
@@ -41,59 +42,26 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
 
                 print("Test case: \(test.description)")
 
-                // 1. Setup the specified DB and collection with provided data
+                // Setup the specified DB and collection with provided data
                 let db = client.db(testFile.databaseName)
                 try db.drop() // In case last test run failed, drop to clear out DB
                 let collection = try db.createCollection(testFile.collectionName)
                 try collection.insertMany(testFile.data)
 
-                // 2. Add an observer that looks for all events
-                var expectedEvents = test.expectations
-                let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
-                    // ignore if it doesn't match one of the names we're looking for
-                    guard ["commandStarted", "commandSucceeded", "commandFailed"].contains(notif.name.rawValue) else {
-                        return
-                    }
-
-                    // remove the next expectation for this test and verify it matches the received event
-                    if expectedEvents.isEmpty {
-                        XCTFail("Got a notification, but ran out of expected events")
-                    } else {
-                        expectedEvents.removeFirst().compare(to: notif, testContext: &test.context)
-                    }
-                }
-
-                // 3. Perform the specified operation on this collection
+                monitor.beginMonitoring()
                 try test.doOperation(withCollection: collection)
+                monitor.stopMonitoring()
 
-                // 4. Make sure there aren't any events remaining that we didn't receive
-                expect(expectedEvents).to(haveCount(0))
+                expect(monitor.events).to(haveCount(test.expectations.count))
 
-                // 5. Cleanup: remove observer and drop the DB
-                center.removeObserver(observer)
+                for (receivedEvent, expectedEvent) in zip(monitor.events, test.expectations) {
+                    expectedEvent.compare(to: receivedEvent, testContext: &test.context)
+                }
+                monitor.events.removeAll()
+
                 try db.drop()
             }
         }
-    }
-
-    func testAlternateNotificationCenters() throws {
-        let customCenter = NotificationCenter()
-        let client = try MongoClient.makeTestClient(options: ClientOptions(
-            commandMonitoring: true,
-            notificationCenter: customCenter
-        ))
-        let db = client.db(type(of: self).testDatabase)
-        let collection = try db.createCollection(self.getCollectionName())
-        var eventCount = 0
-        let observer = customCenter.addObserver(forName: nil, object: nil, queue: nil) { _ in
-            eventCount += 1
-        }
-
-        try collection.insertOne(["x": 1])
-        expect(eventCount).to(beGreaterThan(0))
-        customCenter.removeObserver(observer)
-
-        try db.drop()
     }
 }
 
@@ -227,9 +195,9 @@ private struct CMTest: Decodable {
 
 /// A protocol for the different types of expected events to implement
 private protocol ExpectationType {
-    /// Compare this expectation's data to that in a `Notification`, possibly
+    /// Compare this expectation's data to that in a `CommandEvent`, possibly
     /// using/adding to the provided test context
-    func compare(to notification: Notification, testContext: inout [String: Any])
+    func compare(to receivedEvent: CommandEvent, testContext: inout [String: Any])
 }
 
 /// Based on the name of the expectation, generate a corresponding
@@ -264,9 +232,9 @@ private struct CommandStartedExpectation: ExpectationType, Decodable {
             databaseName = "database_name"
     }
 
-    func compare(to notification: Notification, testContext: inout [String: Any]) {
-        guard let event = notification.userInfo?["event"] as? CommandStartedEvent else {
-            XCTFail("Notification \(notification) did not contain a CommandStartedEvent")
+    func compare(to receivedEvent: CommandEvent, testContext: inout [String: Any]) {
+        guard let event = receivedEvent.commandStartedValue else {
+            XCTFail("Notification \(receivedEvent) did not contain a CommandStartedEvent")
             return
         }
         // compare the command and DB names
@@ -343,9 +311,9 @@ private struct CommandFailedExpectation: ExpectationType, Decodable {
         case commandName = "command_name"
     }
 
-    func compare(to notification: Notification, testContext _: inout [String: Any]) {
-        guard let event = notification.userInfo?["event"] as? CommandFailedEvent else {
-            XCTFail("Notification \(notification) did not contain a CommandFailedEvent")
+    func compare(to receivedEvent: CommandEvent, testContext _: inout [String: Any]) {
+        guard let event = receivedEvent.commandFailedValue else {
+            XCTFail("Notification \(receivedEvent) did not contain a CommandFailedEvent")
             return
         }
         /// The only info we get here is the command name so just compare those
@@ -365,9 +333,9 @@ private struct CommandSucceededExpectation: ExpectationType, Decodable {
         case commandName = "command_name", originalReply = "reply"
     }
 
-    func compare(to notification: Notification, testContext: inout [String: Any]) {
-        guard let event = notification.userInfo?["event"] as? CommandSucceededEvent else {
-            XCTFail("Notification \(notification) did not contain a CommandSucceededEvent")
+    func compare(to receivedEvent: CommandEvent, testContext: inout [String: Any]) {
+        guard let event = receivedEvent.commandSucceededValue else {
+            XCTFail("Notification \(receivedEvent) did not contain a CommandSucceededEvent")
             return
         }
 
