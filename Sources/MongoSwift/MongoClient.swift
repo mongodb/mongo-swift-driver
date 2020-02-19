@@ -4,16 +4,11 @@ import NIOConcurrencyHelpers
 
 /// Options to use when creating a `MongoClient`.
 public struct ClientOptions: CodingStrategyProvider, Decodable {
-    /**
-     * Indicates whether this client should publish command monitoring events. If true, the following event types will
-     * be published, under the listed names (which are defined as static properties of `Notification.Name`):
-     * - `CommandStartedEvent`: `.commandStarted`
-     * - `CommandSucceededEvent`: `.commandSucceeded`
-     * - `CommandFailedEvent`: `.commandFailed`
-     */
-    public var commandMonitoring: Bool = false
-
     // swiftlint:disable redundant_optional_initialization
+
+    /// Indicates whether this client should publish command monitoring events. If non-nil, `CommandEvent`s will be
+    /// published to the provided handler.
+    public var commandEventHandler: CommandEventHandler? = nil
 
     /// Specifies the `DataCodingStrategy` to use for BSON encoding/decoding operations performed by this client and any
     /// databases or collections that derive from it.
@@ -22,10 +17,6 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
     /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this client and any
     /// databases or collections that derive from it.
     public var dateCodingStrategy: DateCodingStrategy? = nil
-
-    /// If command and/or server monitoring is enabled, indicates the `NotificationCenter` events are posted to. If one
-    /// is not specified, the application's default `NotificationCenter` will be used.
-    public var notificationCenter: NotificationCenter?
 
     /// Specifies a ReadConcern to use for the client.
     public var readConcern: ReadConcern?
@@ -39,20 +30,9 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
     /// Determines whether the client should retry supported write operations (on by default).
     public var retryWrites: Bool?
 
-    /**
-     * Indicates whether this client should publish command monitoring events. If true, the following event types will
-     * be published, under the listed names (which are defined as static properties of `Notification.Name`):
-     * - `ServerOpeningEvent`: `.serverOpening`
-     * - `ServerClosedEvent`: `.serverClosed`
-     * - `ServerDescriptionChangedEvent`: `.serverDescriptionChanged`
-     * - `TopologyOpeningEvent`: `.topologyOpening`
-     * - `TopologyClosedEvent`: `.topologyClosed`
-     * - `TopologyDescriptionChangedEvent`: `.topologyDescriptionChanged`
-     * - `ServerHeartbeatStartedEvent`: `serverHeartbeatStarted`
-     * - `ServerHeartbeatSucceededEvent`: `serverHeartbeatSucceeded`
-     * - `ServerHeartbeatFailedEvent`: `serverHeartbeatFailed`
-     */
-    public var serverMonitoring: Bool = false
+    /// Indicates whether this client should publish SDAM monitoring events. If non-nil, `TopologyEvent`s and
+    /// `ServerHeartbeatEvent`s will be published to the provided handler.
+    public var sdamEventHandler: SDAMEventHandler? = nil
 
     /**
      * `MongoSwift.MongoClient` provides an asynchronous API by running all blocking operations off of their
@@ -81,29 +61,27 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
 
     /// Convenience initializer allowing any/all to be omitted or optional.
     public init(
-        commandMonitoring: Bool = false,
+        commandEventHandler: CommandEventHandler? = nil,
         dataCodingStrategy: DataCodingStrategy? = nil,
         dateCodingStrategy: DateCodingStrategy? = nil,
-        notificationCenter: NotificationCenter? = nil,
         readConcern: ReadConcern? = nil,
         readPreference: ReadPreference? = nil,
         retryReads: Bool? = nil,
         retryWrites: Bool? = nil,
-        serverMonitoring: Bool = false,
+        sdamEventHandler: SDAMEventHandler? = nil,
         threadPoolSize: Int = MongoClient.defaultThreadPoolSize,
         tlsOptions: TLSOptions? = nil,
         uuidCodingStrategy: UUIDCodingStrategy? = nil,
         writeConcern: WriteConcern? = nil
     ) {
-        self.commandMonitoring = commandMonitoring
+        self.commandEventHandler = commandEventHandler
         self.dataCodingStrategy = dataCodingStrategy
         self.dateCodingStrategy = dateCodingStrategy
-        self.notificationCenter = notificationCenter
         self.readConcern = readConcern
         self.readPreference = readPreference
         self.retryWrites = retryWrites
         self.retryReads = retryReads
-        self.serverMonitoring = serverMonitoring
+        self.sdamEventHandler = sdamEventHandler
         self.threadPoolSize = threadPoolSize
         self.tlsOptions = tlsOptions
         self.uuidCodingStrategy = uuidCodingStrategy
@@ -199,8 +177,8 @@ public class MongoClient {
     /// Indicates whether this client has been closed.
     internal private(set) var isClosed = false
 
-    /// If command and/or server monitoring is enabled, stores the NotificationCenter events are posted to.
-    internal let notificationCenter: NotificationCenter
+    /// Handler for command monitoring events.
+    internal let commandEventHandler: CommandEventHandler?
 
     /// Counter for generating client _ids.
     internal static var clientIdGenerator = NIOAtomic<Int>.makeAtomic(value: 0)
@@ -222,6 +200,9 @@ public class MongoClient {
 
     /// The `ReadPreference` set on this client.
     public let readPreference: ReadPreference
+
+    /// Handler for SDAM monitoring events.
+    internal let sdamEventHandler: SDAMEventHandler?
 
     /// The write concern set on this client, or nil if one is not set.
     public let writeConcern: WriteConcern?
@@ -275,13 +256,10 @@ public class MongoClient {
         self.readPreference = connString.readPreference
         self.encoder = BSONEncoder(options: options)
         self.decoder = BSONDecoder(options: options)
-        self.notificationCenter = options?.notificationCenter ?? NotificationCenter.default
+        self.commandEventHandler = options?.commandEventHandler
+        self.sdamEventHandler = options?.sdamEventHandler
 
-        self.connectionPool.initializeMonitoring(
-            commandMonitoring: options?.commandMonitoring ?? false,
-            serverMonitoring: options?.serverMonitoring ?? false,
-            client: self
-        )
+        self.connectionPool.initializeMonitoring(client: self)
     }
 
     deinit {
@@ -590,6 +568,13 @@ public class MongoClient {
         session: ClientSession? = nil
     ) throws -> T.OperationResult {
         return try self.operationExecutor.execute(operation, using: connection, client: self, session: session).wait()
+    }
+
+    internal func publishCommandEvent(_ event: CommandEvent) {
+        guard let handler = self.commandEventHandler else {
+            return
+        }
+        handler.handleCommandEvent(event)
     }
 }
 

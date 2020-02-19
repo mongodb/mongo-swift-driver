@@ -115,13 +115,7 @@
 // Protocols are not included in the types list, so we list them separately here.
 @_exported import protocol MongoSwift.CodingStrategyProvider
 @_exported import protocol MongoSwift.LabeledError
-@_exported import protocol MongoSwift.MongoCommandEvent
 @_exported import protocol MongoSwift.MongoError
-@_exported import protocol MongoSwift.MongoEvent
-@_exported import protocol MongoSwift.MongoSDAMEvent
-@_exported import protocol MongoSwift.MongoServerHeartbeatEvent
-@_exported import protocol MongoSwift.MongoServerUpdateEvent
-@_exported import protocol MongoSwift.MongoTopologyUpdateEvent
 @_exported import protocol MongoSwift.RuntimeError
 @_exported import protocol MongoSwift.ServerError
 @_exported import protocol MongoSwift.UserError
