@@ -11,14 +11,14 @@ internal protocol CursorProtocol {
     /**
      * Indicates whether this cursor has the potential to return more data.
      *
-     * This property is mainly useful if this cursor is tailable, since in that case `tryNext` may return more results
+     * This method is mainly useful if this cursor is tailable, since in that case `tryNext` may return more results
      * even after returning `nil`.
      *
      * If this cursor is non-tailable, it will always be dead as soon as either `tryNext` returns `nil` or an error.
      *
      * This cursor will be dead as soon as `next` returns `nil` or an error, regardless of the `CursorType`.
      */
-    var isAlive: Bool { get }
+    func isAlive() -> EventLoopFuture<Bool>
 
     /**
      * Get the next `T` from the cursor.
@@ -242,7 +242,13 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
         }
     }
 
-    /// Whether the cursor is alive.
+    /// Asserts that the cursor was closed.
+    deinit {
+        assert(!self._isAlive, "cursor or change stream wasn't closed before it went out of scope")
+    }
+
+    /// Whether the cursor is alive. This property can block while waiting for the lock and should only be accessed
+    /// from within the executor.
     internal var isAlive: Bool {
         return self.lock.withLock {
             self._isAlive

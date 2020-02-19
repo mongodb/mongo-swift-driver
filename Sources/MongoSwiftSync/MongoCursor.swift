@@ -16,15 +16,15 @@ public class MongoCursor<T: Codable>: CursorProtocol {
     /**
      * Indicates whether this cursor has the potential to return more data.
      *
-     * This property is mainly useful if this cursor is tailable, since in that case `tryNext` may return more results
+     * This method is mainly useful if this cursor is tailable, since in that case `tryNext` may return more results
      * even after returning `nil`.
      *
      * If this cursor is non-tailable, it will always be dead as soon as either `tryNext` returns `nil` or an error.
      *
      * This cursor will be dead as soon as `next` returns `nil` or an error, regardless of the `CursorType`.
      */
-    public var isAlive: Bool {
-        return self.asyncCursor.isAlive
+    public func isAlive() throws -> Bool {
+        return try self.asyncCursor.isAlive().wait()
     }
 
     /// Returns the ID used by the server to track the cursor. `nil` once all results have been fetched from the server.

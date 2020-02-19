@@ -108,13 +108,11 @@ public class ChangeStream<T: Codable>: CursorProtocol {
         }
     }
 
-    deinit {
-        assert(!self.isAlive, "change stream wasn't closed")
-    }
-
     /// Indicates whether this change stream has the potential to return more data.
-    public var isAlive: Bool {
-        return self.wrappedCursor.isAlive
+    public func isAlive() -> EventLoopFuture<Bool> {
+        return self.client.operationExecutor.execute {
+            self.wrappedCursor.isAlive
+        }
     }
 
     /// The `ResumeToken` associated with the most recent event seen by the change stream.

@@ -17,27 +17,27 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             let coll = try db.createCollection(self.getCollectionName()).wait()
 
             let stream = try coll.watch().wait()
-            expect(stream.isAlive).to(beTrue())
+            expect(try stream.isAlive().wait()).to(beTrue())
 
             _ = try coll.insertOne(["x": 1]).wait()
             _ = try coll.insertOne(["x": 2]).wait()
             _ = try coll.insertOne(["x": 3]).wait()
 
             expect(try stream.next().wait()?.fullDocument?["x"]).to(equal(1))
-            expect(stream.isAlive).to(beTrue())
+            expect(try stream.isAlive().wait()).to(beTrue())
 
             expect(try stream.next().wait()?.fullDocument?["x"]).to(equal(2))
-            expect(stream.isAlive).to(beTrue())
+            expect(try stream.isAlive().wait()).to(beTrue())
 
             expect(try stream.next().wait()?.fullDocument?["x"]).to(equal(3))
-            expect(stream.isAlive).to(beTrue())
+            expect(try stream.isAlive().wait()).to(beTrue())
 
             // no more events, so to prevent this from blocking forever we use tryNext
             expect(try stream.tryNext().wait()).to(beNil())
-            expect(stream.isAlive).to(beTrue())
+            expect(try stream.isAlive().wait()).to(beTrue())
 
             try stream.kill().wait()
-            expect(stream.isAlive).to(beFalse())
+            expect(try stream.isAlive().wait()).to(beFalse())
         }
     }
 
@@ -64,7 +64,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
                 try? stream.kill().wait()
                 fail("expected failure, but got \(String(describing: r))")
             case .failure:
-                expect(stream.isAlive).to(beFalse())
+                expect(try stream.isAlive().wait()).to(beFalse())
             }
         }
     }
@@ -81,10 +81,10 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             let coll = try db.createCollection(self.getCollectionName()).wait()
 
             let stream = try coll.watch().wait()
-            expect(stream.isAlive).to(beTrue())
+            expect(try stream.isAlive().wait()).to(beTrue())
 
             expect(try stream.tryNext().wait()).to(beNil())
-            expect(stream.isAlive).to(beTrue())
+            expect(try stream.isAlive().wait()).to(beTrue())
 
             // This future will not resolve since there are no events to be had.
             let nextFuture = stream.next()
@@ -109,24 +109,58 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             let options = ChangeStreamOptions(maxAwaitTimeMS: 10000)
 
             let stream = try coll.watch(options: options).wait()
-            expect(stream.isAlive).to(beTrue())
+            expect(try stream.isAlive().wait()).to(beTrue())
 
             // initially, no events, but stream should stay alive
             expect(try stream.toArray().wait()).to(beEmpty())
-            expect(stream.isAlive).to(beTrue())
+            expect(try stream.isAlive().wait()).to(beTrue())
 
             // we should get back single event now via toArray
             _ = try coll.insertOne(["x": 1]).wait()
             let results = try stream.toArray().wait()
             expect(results[0].fullDocument?["x"]).to(equal(1))
-            expect(stream.isAlive).to(beTrue())
+            expect(try stream.isAlive().wait()).to(beTrue())
 
             // no more events, but stream should stay alive
             expect(try stream.toArray().wait()).to(beEmpty())
-            expect(stream.isAlive).to(beTrue())
+            expect(try stream.isAlive().wait()).to(beTrue())
 
             try stream.kill().wait()
-            expect(stream.isAlive).to(beFalse())
+            expect(try stream.isAlive().wait()).to(beFalse())
+        }
+    }
+
+    func testChangeStreamForEach() throws {
+        guard MongoSwiftTestCase.topologyType != .single else {
+            print(unsupportedTopologyMessage(testName: self.name))
+            return
+        }
+
+        var count = 0
+        let increment: (ChangeStreamEvent<Document>) -> Void = { _ in count += 1 }
+
+        try self.withTestClient { client in
+            let db = client.db(type(of: self).testDatabase)
+            try? db.collection(self.getCollectionName()).drop().wait()
+            let coll = try db.createCollection(self.getCollectionName()).wait()
+
+            let stream = try coll.watch().wait()
+            expect(try stream.isAlive().wait()).to(beTrue())
+
+            // future won't resolve until we close the stream later
+            let future = stream.forEach(increment)
+
+            _ = try coll.insertOne(["x": 1]).wait()
+            expect(count).toEventually(equal(1), timeout: 10)
+
+            _ = try coll.insertOne(["x": 2]).wait()
+            expect(count).toEventually(equal(2), timeout: 10)
+
+            try stream.kill().wait()
+            expect(try future.wait()).toNot(throwError())
+
+            // calling forEach on dead stream should error
+            expect(try stream.forEach(increment).wait()).to(throwError(errorType: LogicError.self))
         }
     }
 }

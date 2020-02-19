@@ -68,11 +68,6 @@ public class MongoCursor<T: Codable>: CursorProtocol {
         )
     }
 
-    /// Asserts that the cursor was closed.
-    deinit {
-        assert(!self.isAlive, "cursor wasn't closed before it went out of scope")
-    }
-
     /// Decodes a result to the generic type or `nil` if no result were returned.
     private func decode(result: Document?) throws -> T? {
         guard let doc = result else {
@@ -89,15 +84,17 @@ public class MongoCursor<T: Codable>: CursorProtocol {
     /**
      * Indicates whether this cursor has the potential to return more data.
      *
-     * This property is mainly useful if this cursor is tailable, since in that case `tryNext` may return more results
+     * This method is mainly useful if this cursor is tailable, since in that case `tryNext` may return more results
      * even after returning `nil`.
      *
      * If this cursor is non-tailable, it will always be dead as soon as either `tryNext` returns `nil` or an error.
      *
      * This cursor will be dead as soon as `next` returns `nil` or an error, regardless of the `CursorType`.
      */
-    public var isAlive: Bool {
-        return self.wrappedCursor.isAlive
+    public func isAlive() -> EventLoopFuture<Bool> {
+        return self.client.operationExecutor.execute {
+            self.wrappedCursor.isAlive
+        }
     }
 
     /// Returns the ID used by the server to track the cursor. `nil` once all results have been fetched from the server.
