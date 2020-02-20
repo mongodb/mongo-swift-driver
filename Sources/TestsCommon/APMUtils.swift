@@ -20,13 +20,13 @@ public class TestCommandEventHandler: CommandEventHandler {
     }
 
     /// Retrieve all the command started events seen so far, clearing the event cache.
-    public func commandStartedEvents(withNames _: [String]? = nil) -> [CommandStartedEvent] {
-        return self.events().compactMap { $0.commandStartedValue }
+    public func commandStartedEvents(withNames namesFilter: [String]? = nil) -> [CommandStartedEvent] {
+        return self.events(withNames: namesFilter).compactMap { $0.commandStartedValue }
     }
 
     /// Retrieve all the command started events seen so far, clearing the event cache.
-    public func commandSucceededEvents(withNames _: [String]? = nil) -> [CommandSucceededEvent] {
-        return self.events().compactMap { $0.commandSucceededValue }
+    public func commandSucceededEvents(withNames namesFilter: [String]? = nil) -> [CommandSucceededEvent] {
+        return self.events(withNames: namesFilter).compactMap { $0.commandSucceededValue }
     }
 
     /// Retrieve all the events seen so far that match the optionally provided filters, clearing the event cache.
