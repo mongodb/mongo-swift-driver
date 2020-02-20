@@ -14,7 +14,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
             var cursor = try coll.find()
             expect(try cursor.next()?.get()).toNot(throwError())
             // cursor should immediately be closed as its empty
-            expect(try cursor.isAlive()).to(beFalse())
+            expect(cursor.isAlive()).to(beFalse())
             // iterating dead cursor should error
             expect(try cursor.next()?.get()).to(throwError(errorType: LogicError.self))
 
@@ -25,7 +25,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
             expect(results).to(haveCount(1))
             expect(results[0]).to(equal(doc1))
             // cursor should be closed now that its exhausted
-            expect(try cursor.isAlive()).to(beFalse())
+            expect(cursor.isAlive()).to(beFalse())
             // iterating dead cursor should error
             expect(try cursor.next()?.get()).to(throwError())
 
@@ -35,7 +35,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
             expect(results).to(haveCount(3))
             expect(results).to(equal([doc1, doc2, doc3]))
             // cursor should be closed now that its exhausted
-            expect(try cursor.isAlive()).to(beFalse())
+            expect(cursor.isAlive()).to(beFalse())
             // iterating dead cursor should error
             expect(try cursor.next()?.get()).to(throwError(errorType: LogicError.self))
 
@@ -52,7 +52,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
             )
             expect(try cursor.next()?.get()).to(throwError(expectedError2))
             // cursor should be closed now that it errored
-            expect(try cursor.isAlive()).to(beFalse())
+            expect(cursor.isAlive()).to(beFalse())
         }
     }
 
@@ -64,7 +64,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
             var cursor = try coll.find(options: cursorOpts)
             expect(try cursor.next()?.get()).to(beNil())
             // no documents matched initial query, so cursor is dead
-            expect(try cursor.isAlive()).to(beFalse())
+            expect(cursor.isAlive()).to(beFalse())
             // iterating iterating dead cursor should error
             expect(try cursor.next()?.get()).to(throwError(errorType: LogicError.self))
 
@@ -78,7 +78,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
                 let result = cursor.tryNext()
                 expect(result).toNot(beNil())
                 expect(try result?.get()).to(equal(doc))
-                expect(try cursor.isAlive()).to(beTrue())
+                expect(cursor.isAlive()).to(beTrue())
             }
             try checkNextResult(doc1)
 
@@ -90,7 +90,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
 
             // no more docs, but should still be alive
             expect(try cursor.tryNext()?.get()).to(beNil())
-            expect(try cursor.isAlive()).to(beTrue())
+            expect(cursor.isAlive()).to(beTrue())
 
             // insert 3 docs so the cursor loses track of its position
             for i in 4..<7 {
@@ -105,7 +105,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
             )
             expect(try cursor.next()?.get()).to(throwError(expectedError))
             // cursor should be closed now that it errored
-            expect(try cursor.isAlive()).to(beFalse())
+            expect(cursor.isAlive()).to(beFalse())
 
             // iterating dead cursor should error
             expect(try cursor.next()?.get()).to(throwError(errorType: LogicError.self))
@@ -128,7 +128,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
             expect(try result?.get()).to(equal(doc1))
 
             expect(cursor.next()).to(beNil())
-            expect(try cursor.isAlive()).to(beFalse())
+            expect(cursor.isAlive()).to(beFalse())
 
             expect(try cursor.next()?.get()).to(throwError(errorType: LogicError.self))
         }
@@ -138,13 +138,13 @@ final class MongoCursorTests: MongoSwiftTestCase {
         try self.withTestNamespace { _, _, coll in
             _ = try coll.insertMany([[:], [:], [:]])
             let cursor = try coll.find()
-            expect(try cursor.isAlive()).to(beTrue())
+            expect(cursor.isAlive()).to(beTrue())
 
             expect(cursor.next()).toNot(beNil())
-            expect(try cursor.isAlive()).to(beTrue())
+            expect(cursor.isAlive()).to(beTrue())
 
             cursor.kill()
-            expect(try cursor.isAlive()).to(beFalse())
+            expect(cursor.isAlive()).to(beFalse())
             expect(try cursor.next()?.get()).to(throwError(errorType: LogicError.self))
         }
     }
@@ -155,7 +155,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
             let docs: [Document] = [["_id": 1], ["_id": 2], ["_id": 3]]
             _ = try coll.insertMany(docs)
             let cursor = try coll.find(options: FindOptions(cursorType: .tailable))
-            expect(try cursor.isAlive()).to(beTrue())
+            expect(cursor.isAlive()).to(beTrue())
 
             let queue = DispatchQueue(label: "tailable close")
             let allDocsLock = DispatchSemaphore(value: 0)
@@ -194,12 +194,12 @@ final class MongoCursorTests: MongoSwiftTestCase {
 
             var cursor = try coll.find()
             expect(Array(cursor).count).to(equal(3))
-            expect(try cursor.isAlive()).to(beFalse())
+            expect(cursor.isAlive()).to(beFalse())
 
             cursor = try coll.find()
             let mapped = Array(cursor.map { _ in 1 })
             expect(mapped).to(equal([1, 1, 1]))
-            expect(try cursor.isAlive()).to(beFalse())
+            expect(cursor.isAlive()).to(beFalse())
 
             cursor = try coll.find()
             let filteredMapped = cursor.filter {
@@ -233,9 +233,9 @@ final class MongoCursorTests: MongoSwiftTestCase {
                 return results
             }
             expect(results.sorted()).to(equal([1, 2, 3]))
-            expect(try cursor.isAlive()).to(beTrue())
+            expect(cursor.isAlive()).to(beTrue())
             cursor.kill()
-            expect(try cursor.isAlive()).to(beFalse())
+            expect(cursor.isAlive()).to(beFalse())
         }
     }
 }

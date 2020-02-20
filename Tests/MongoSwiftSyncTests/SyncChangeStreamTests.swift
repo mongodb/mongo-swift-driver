@@ -1082,9 +1082,9 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
                 return results
             }
             expect(results.sorted()).to(equal([1, 2, 3]))
-            expect(try stream.isAlive()).to(beTrue())
+            expect(stream.isAlive()).to(beTrue())
             stream.kill()
-            expect(try stream.isAlive()).to(beFalse())
+            expect(stream.isAlive()).to(beFalse())
         }
     }
 }

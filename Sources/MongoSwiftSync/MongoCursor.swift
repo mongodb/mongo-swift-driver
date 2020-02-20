@@ -23,8 +23,12 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      *
      * This cursor will be dead as soon as `next` returns `nil` or an error, regardless of the `CursorType`.
      */
-    public func isAlive() throws -> Bool {
-        return try self.asyncCursor.isAlive().wait()
+    public func isAlive() -> Bool {
+        do {
+            return try self.asyncCursor.isAlive().wait()
+        } catch {
+            return false
+        }
     }
 
     /// Returns the ID used by the server to track the cursor. `nil` once all results have been fetched from the server.
