@@ -717,10 +717,12 @@ private func serverHeartbeatFailed(_ eventPtr: OpaquePointer?) {
     publishEvent(type: ServerHeartbeatFailedEvent.self, eventPtr: eventPtr)
 }
 
+/// Publish an event to the client responsible for this event.
 private func publishEvent<T: MongoSwiftEvent>(type: T.Type, eventPtr: OpaquePointer?) {
     guard let eventPtr = eventPtr else {
         fatalError("Missing event pointer for \(type)")
     }
+    // The underlying pointer is only valid within the registered callback, so this event should not escape this scope.
     let mongocEvent = type.MongocEventType(eventPtr)
 
     guard let context = mongocEvent.context else {
