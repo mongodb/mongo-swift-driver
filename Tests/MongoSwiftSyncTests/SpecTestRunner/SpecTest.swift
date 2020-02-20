@@ -274,7 +274,7 @@ extension SpecTest {
             collection = db.collection(collName)
         }
 
-        let events = try captureCommandEvents(monitor: monitor, eventTypes: [.commandStarted]) {
+        try monitor.captureEvents {
             for operation in self.operations {
                 try operation.validateExecution(
                     client: client,
@@ -283,7 +283,8 @@ extension SpecTest {
                     session: nil
                 )
             }
-        }.map { TestCommandStartedEvent(from: $0.commandStartedValue!) }
+        }
+        let events = monitor.commandStartedEvents().map { TestCommandStartedEvent(from: $0) }
 
         if let expectations = self.expectations {
             expect(events).to(match(expectations), description: self.description)

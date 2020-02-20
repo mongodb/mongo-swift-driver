@@ -113,20 +113,6 @@ extension MongoClient {
 }
 
 /// Captures any command monitoring events filtered by type and name that are emitted during the execution of the
-/// provided closure. Only events emitted by the provided client will be captured.
-internal func captureCommandEvents(
-    monitor: TestCommandEventHandler,
-    eventTypes: [CommandEvent.EventType]? = nil,
-    commandNames: [String]? = nil,
-    f: () throws -> Void
-) rethrows -> [CommandEvent] {
-    try monitor.captureEvents {
-        try f()
-    }
-    return monitor.events(withEventTypes: eventTypes, withNames: commandNames)
-}
-
-/// Captures any command monitoring events filtered by type and name that are emitted during the execution of the
 /// provided closure. A client pre-configured for command monitoring is passed into the closure.
 internal func captureCommandEvents(
     eventTypes: [CommandEvent.EventType]? = nil,
@@ -135,9 +121,10 @@ internal func captureCommandEvents(
 ) throws -> [CommandEvent] {
     let monitor = TestCommandEventHandler()
     let client = try MongoClient.makeTestClient(options: ClientOptions(commandEventHandler: monitor))
-    return try captureCommandEvents(monitor: monitor, eventTypes: eventTypes, commandNames: commandNames) {
+    try monitor.captureEvents {
         try f(client)
     }
+    return monitor.events(withEventTypes: eventTypes, withNames: commandNames)
 }
 
 extension MongoSwiftSync.MongoCollection {

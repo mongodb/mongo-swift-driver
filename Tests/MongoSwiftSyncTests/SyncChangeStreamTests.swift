@@ -454,14 +454,10 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             try failpoint.enable()
             defer { failpoint.disable() }
 
-            let aggAttempts = try captureCommandEvents(
-                monitor: monitor,
-                eventTypes: [.commandStarted],
-                commandNames: ["aggregate"]
-            ) {
+            try monitor.captureEvents {
                 expect(try coll.watch()).to(throwError())
             }
-            expect(aggAttempts.count).to(equal(1))
+            expect(monitor.commandStartedEvents(withNames: ["aggregate"])).to(haveCount(1))
 
             // The above failpoint was configured to only run once, so this aggregate will succeed.
             let changeStream = try coll.watch()
@@ -474,15 +470,11 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             try getMoreFailpoint.enable()
             defer { getMoreFailpoint.disable() }
 
-            let aggAttempts1 = try captureCommandEvents(
-                monitor: monitor,
-                eventTypes: [.commandStarted],
-                commandNames: ["aggregate"]
-            ) {
+            try monitor.captureEvents {
                 // getMore failure will trigger resume process, aggregate will fail and not retry again.
                 expect(try changeStream.next()?.get()).to(throwError())
             }
-            expect(aggAttempts1.count).to(equal(1))
+            expect(monitor.commandStartedEvents(withNames: ["aggregate"])).to(haveCount(1))
         }
     }
 
