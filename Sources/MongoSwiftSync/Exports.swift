@@ -32,8 +32,8 @@
 @_exported import struct MongoSwift.CollectionSpecification
 @_exported import struct MongoSwift.CollectionSpecificationInfo
 @_exported import enum MongoSwift.CollectionType
-@_exported import enum MongoSwift.CommandEvent
 @_exported import struct MongoSwift.CommandError
+@_exported import enum MongoSwift.CommandEvent
 @_exported import struct MongoSwift.CommandFailedEvent
 @_exported import struct MongoSwift.CommandStartedEvent
 @_exported import struct MongoSwift.CommandSucceededEvent
@@ -90,6 +90,7 @@
 @_exported import struct MongoSwift.ServerClosedEvent
 @_exported import struct MongoSwift.ServerDescription
 @_exported import struct MongoSwift.ServerDescriptionChangedEvent
+@_exported import enum MongoSwift.ServerHeartbeatEvent
 @_exported import struct MongoSwift.ServerHeartbeatFailedEvent
 @_exported import struct MongoSwift.ServerHeartbeatStartedEvent
 @_exported import struct MongoSwift.ServerHeartbeatSucceededEvent
@@ -101,6 +102,7 @@
 @_exported import struct MongoSwift.TopologyClosedEvent
 @_exported import struct MongoSwift.TopologyDescription
 @_exported import struct MongoSwift.TopologyDescriptionChangedEvent
+@_exported import enum MongoSwift.TopologyEvent
 @_exported import struct MongoSwift.TopologyOpeningEvent
 @_exported import enum MongoSwift.UUIDCodingStrategy
 @_exported import struct MongoSwift.UpdateDescription
@@ -115,9 +117,11 @@
 
 // Protocols are not included in the types list, so we list them separately here.
 @_exported import protocol MongoSwift.CodingStrategyProvider
+@_exported import protocol MongoSwift.CommandEventHandler
 @_exported import protocol MongoSwift.LabeledError
 @_exported import protocol MongoSwift.MongoError
 @_exported import protocol MongoSwift.RuntimeError
+@_exported import protocol MongoSwift.SDAMEventHandler
 @_exported import protocol MongoSwift.ServerError
 @_exported import protocol MongoSwift.UserError
 
