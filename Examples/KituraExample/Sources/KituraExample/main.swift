@@ -8,10 +8,13 @@ struct Kitten: Codable {
     var color: String
 }
 
+// Create a single EventLoopGroup for Kitura and the MongoClient to share.
 let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 4)
 let mongoClient = try MongoClient(using: eventLoopGroup)
+
 defer {
     mongoClient.syncShutdown()
+    cleanupMongoSwift()
     try? eventLoopGroup.syncShutdownGracefully()
 }
 
@@ -43,5 +46,7 @@ let router: Router = {
 }()
 
 let server = Kitura.addHTTPServer(onPort: 8080, with: router)
+// Use the EventLoopGroup created above for the Kitura server. To call this method we must build with
+// `export KITURA_NIO=1 && swift build`.
 try server.setEventLoopGroup(eventLoopGroup)
 Kitura.run()
