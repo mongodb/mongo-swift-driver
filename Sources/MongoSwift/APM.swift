@@ -74,10 +74,7 @@ public enum CommandEvent: Publishable {
     }
 
     fileprivate func publish(to client: MongoClient) {
-        guard let handler = client.commandEventHandler else {
-            return
-        }
-        handler.handleCommandEvent(self)
+        client.commandEventHandler?.handleCommandEvent(self)
     }
 
     /// The name of the command that generated this event.
