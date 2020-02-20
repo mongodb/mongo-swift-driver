@@ -129,3 +129,6 @@
 // Manually add typealiases
 @_exported import typealias MongoSwift.InsertManyOptions
 @_exported import typealias MongoSwift.ServerErrorCode
+
+// Manually add cleanup method
+@_exported import func MongoSwift.cleanupMongoSwift
