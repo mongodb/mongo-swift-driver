@@ -159,37 +159,38 @@ internal struct ChangeStreamTest: Decodable {
     let result: ChangeStreamTestResult
 
     internal func run(globalClient: MongoClient, database: String, collection: String) throws {
-        let monitor = TestCommandEventHandler(eventTypes: [.commandStarted])
+        let monitor = TestCommandEventHandler()
         let client = try MongoClient.makeTestClient(options: ClientOptions(commandEventHandler: monitor))
-        monitor.beginMonitoring()
 
-        do {
-            let changeStream = try self.target.watch(
-                client,
-                database,
-                collection,
-                self.changeStreamPipeline,
-                self.changeStreamOptions
-            )
-            for operation in self.operations {
-                _ = try operation.execute(using: globalClient)
-            }
-
-            switch self.result {
-            case .error:
-                _ = try changeStream.nextWithTimeout()
-                fail("\(self.description) failed: expected error but got none while iterating")
-            case let .success(events):
-                var seenEvents: [Document] = []
-                for _ in 0..<events.count {
-                    let event = try changeStream.tryNext()?.get()
-                    expect(event).toNot(beNil(), description: self.description)
-                    seenEvents.append(event!)
+        monitor.captureEvents {
+            do {
+                let changeStream = try self.target.watch(
+                    client,
+                    database,
+                    collection,
+                    self.changeStreamPipeline,
+                    self.changeStreamOptions
+                )
+                for operation in self.operations {
+                    _ = try operation.execute(using: globalClient)
                 }
-                expect(seenEvents).to(match(events), description: self.description)
+
+                switch self.result {
+                case .error:
+                    _ = try changeStream.nextWithTimeout()
+                    fail("\(self.description) failed: expected error but got none while iterating")
+                case let .success(events):
+                    var seenEvents: [Document] = []
+                    for _ in 0..<events.count {
+                        let event = try changeStream.tryNext()?.get()
+                        expect(event).toNot(beNil(), description: self.description)
+                        seenEvents.append(event!)
+                    }
+                    expect(seenEvents).to(match(events), description: self.description)
+                }
+            } catch {
+                self.result.assertMatchesError(error: error, description: self.description)
             }
-        } catch {
-            self.result.assertMatchesError(error: error, description: self.description)
         }
 
         if let expectations = self.expectations {
@@ -586,7 +587,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let monitor = TestCommandEventHandler(eventTypes: [.commandSucceeded], commandNames: ["aggregate"])
+        let monitor = TestCommandEventHandler()
         try withTestNamespace(clientOptions: ClientOptions(commandEventHandler: monitor)) { client, _, collection in
             guard try client.supportsFailCommand() else {
                 print("Skipping \(self.name) because server version doesn't support failCommand")
@@ -595,9 +596,10 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
 
             var changeStream: ChangeStream<ChangeStreamEvent<Document>>?
             let options = ChangeStreamOptions(batchSize: 1)
-            monitor.beginMonitoring()
-            changeStream = try collection.watch(options: options)
-            monitor.stopMonitoring()
+
+            try monitor.captureEvents {
+                changeStream = try collection.watch(options: options)
+            }
 
             for i in 0..<5 {
                 try collection.insertOne(["x": 1])
@@ -606,7 +608,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             expect(try changeStream?.nextWithTimeout()).toNot(throwError())
 
             // kill the underlying cursor to trigger a resume.
-            let reply = monitor.events[0].commandSucceededValue!.reply["cursor"]!.documentValue!
+            let reply = monitor.commandSucceededEvents(withNames: ["aggregate"]).first!.reply["cursor"]!.documentValue!
             let cursorId = reply["id"]!
             try client.db("admin").runCommand(["killCursors": .string(self.getCollectionName()), "cursors": [cursorId]])
 

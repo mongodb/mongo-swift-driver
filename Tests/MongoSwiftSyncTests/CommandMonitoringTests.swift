@@ -48,16 +48,16 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
                 let collection = try db.createCollection(testFile.collectionName)
                 try collection.insertMany(testFile.data)
 
-                monitor.beginMonitoring()
-                try test.doOperation(withCollection: collection)
-                monitor.stopMonitoring()
+                try monitor.captureEvents {
+                    try test.doOperation(withCollection: collection)
+                }
 
-                expect(monitor.events).to(haveCount(test.expectations.count))
+                let receivedEvents = monitor.events()
+                expect(receivedEvents).to(haveCount(test.expectations.count))
 
-                for (receivedEvent, expectedEvent) in zip(monitor.events, test.expectations) {
+                for (receivedEvent, expectedEvent) in zip(receivedEvents, test.expectations) {
                     expectedEvent.compare(to: receivedEvent, testContext: &test.context)
                 }
-                monitor.events.removeAll()
 
                 try db.drop()
             }

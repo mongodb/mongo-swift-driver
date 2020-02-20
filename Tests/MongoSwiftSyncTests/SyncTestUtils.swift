@@ -116,46 +116,28 @@ extension MongoClient {
 /// provided closure. Only events emitted by the provided client will be captured.
 internal func captureCommandEvents(
     monitor: TestCommandEventHandler,
-    eventTypes: [CommandEventType]? = nil,
+    eventTypes: [CommandEvent.EventType]? = nil,
     commandNames: [String]? = nil,
     f: () throws -> Void
 ) rethrows -> [CommandEvent] {
-    monitor.beginMonitoring()
-    defer {
-        monitor.stopMonitoring()
-        monitor.events.removeAll()
+    try monitor.captureEvents {
+        try f()
     }
-    try f()
-    return monitor.events.filter { event in
-        if let typesFilter = eventTypes {
-            guard typesFilter.contains(event.eventType) else {
-                return false
-            }
-        }
-
-        if let namesFilter = commandNames {
-            guard namesFilter.contains(event.commandName) else {
-                return false
-            }
-        }
-
-        return true
-    }
+    return monitor.events(withEventTypes: eventTypes, withNames: commandNames)
 }
 
 /// Captures any command monitoring events filtered by type and name that are emitted during the execution of the
 /// provided closure. A client pre-configured for command monitoring is passed into the closure.
 internal func captureCommandEvents(
-    eventTypes: [CommandEventType]? = nil,
+    eventTypes: [CommandEvent.EventType]? = nil,
     commandNames: [String]? = nil,
     f: (MongoClient) throws -> Void
 ) throws -> [CommandEvent] {
-    let monitor = TestCommandEventHandler(eventTypes: eventTypes, commandNames: commandNames)
+    let monitor = TestCommandEventHandler()
     let client = try MongoClient.makeTestClient(options: ClientOptions(commandEventHandler: monitor))
-    monitor.beginMonitoring()
-    defer { monitor.stopMonitoring() }
-    try f(client)
-    return monitor.events
+    return try captureCommandEvents(monitor: monitor, eventTypes: eventTypes, commandNames: commandNames) {
+        try f(client)
+    }
 }
 
 extension MongoSwiftSync.MongoCollection {

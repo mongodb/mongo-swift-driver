@@ -185,15 +185,11 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
     // Executes the body twice, once with the supplied session and once without, verifying that a correct lsid is
     // seen both times.
     func runArgTest(monitor: TestCommandEventHandler, session: MongoSwiftSync.ClientSession, op: SessionOp) throws {
-        defer {
-            monitor.stopMonitoring()
-            monitor.events.removeAll()
+        monitor.captureEvents {
+            // We don't care if they succeed (e.g. a drop index may fail if index doesn't exist)
+            try? op.body(session)
+            try? op.body(nil)
         }
-        monitor.beginMonitoring()
-
-        // We don't care if they succeed (e.g. a drop index may fail if index doesn't exist)
-        try? op.body(session)
-        try? op.body(nil)
 
         let capturedEvents = monitor.commandStartedEvents()
         expect(capturedEvents).to(haveCount(2))
@@ -273,12 +269,12 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         }
 
         // explicit
-        monitor.beginMonitoring()
-        let cursor = try collection.find(options: FindOptions(batchSize: 2), session: session)
-        expect(cursor.next()).toNot(beNil())
-        expect(cursor.next()).toNot(beNil())
-        expect(cursor.next()).toNot(beNil())
-        monitor.stopMonitoring()
+        try monitor.captureEvents {
+            let cursor = try collection.find(options: FindOptions(batchSize: 2), session: session)
+            expect(cursor.next()).toNot(beNil())
+            expect(cursor.next()).toNot(beNil())
+            expect(cursor.next()).toNot(beNil())
+        }
 
         let explicitEvents = monitor.commandStartedEvents(withNames: ["find", "getMore"])
         expect(explicitEvents).to(haveCount(2))
@@ -286,15 +282,14 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         expect(explicitEvents[0].command["lsid"]).to(equal(.document(session.id!)))
         expect(explicitEvents[1].commandName).to(equal("getMore"))
         expect(explicitEvents[1].command["lsid"]).to(equal(.document(session.id!)))
-        monitor.events.removeAll()
 
         // implicit
-        monitor.beginMonitoring()
-        let cursor1 = try collection.find(options: FindOptions(batchSize: 2))
-        expect(cursor1.next()).toNot(beNil())
-        expect(cursor1.next()).toNot(beNil())
-        expect(cursor1.next()).toNot(beNil())
-        monitor.stopMonitoring()
+        try monitor.captureEvents {
+            let cursor1 = try collection.find(options: FindOptions(batchSize: 2))
+            expect(cursor1.next()).toNot(beNil())
+            expect(cursor1.next()).toNot(beNil())
+            expect(cursor1.next()).toNot(beNil())
+        }
 
         let implicitEvents = monitor.commandStartedEvents(withNames: ["find", "getMore"])
         expect(implicitEvents).to(haveCount(2))
@@ -346,10 +341,9 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         // Causal consistency spec test 3: the first read/write on a session should update the operationTime of a
         // session.
         try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
-            monitor.beginMonitoring()
-            _ = try collection.countDocuments(session: session)
-            monitor.stopMonitoring()
-            defer { monitor.events.removeAll() }
+            try monitor.captureEvents {
+                _ = try collection.countDocuments(session: session)
+            }
 
             let succeededEvents = monitor.commandSucceededEvents()
             expect(succeededEvents).toNot(beEmpty())
@@ -376,10 +370,9 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
                 _ = try collection.find(session: session).next()
                 let opTime = session.operationTime
 
-                monitor.beginMonitoring()
-                try op.body(collection, session)
-                monitor.stopMonitoring()
-                defer { monitor.events.removeAll() }
+                try monitor.captureEvents {
+                    try op.body(collection, session)
+                }
 
                 let startedEvents = monitor.commandStartedEvents()
                 expect(startedEvents).toNot(beEmpty(), description: op.name)
@@ -400,10 +393,9 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
                 try? op.body(collection, session)
                 let opTime = session.operationTime
 
-                monitor.beginMonitoring()
-                _ = try collection.find(session: session).next()
-                monitor.stopMonitoring()
-                defer { monitor.events.removeAll() }
+                try monitor.captureEvents {
+                    _ = try collection.find(session: session).next()
+                }
 
                 let startedEvents = monitor.commandStartedEvents(withNames: ["find"])
                 expect(startedEvents).toNot(beEmpty(), description: op.name)
@@ -417,10 +409,9 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         try client.withSession(options: ClientSessionOptions(causalConsistency: false)) { session in
             _ = try collection.countDocuments(session: session)
 
-            monitor.beginMonitoring()
-            _ = try collection.countDocuments(session: session)
-            monitor.stopMonitoring()
-            defer { monitor.events.removeAll() }
+            try monitor.captureEvents {
+                _ = try collection.countDocuments(session: session)
+            }
 
             let startedEvents = monitor.commandStartedEvents()
             expect(startedEvents).to(haveCount(1))
@@ -437,10 +428,9 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
             _ = try collection1.countDocuments(session: session)
             let opTime = session.operationTime
 
-            monitor.beginMonitoring()
-            _ = try collection1.countDocuments(session: session)
-            monitor.stopMonitoring()
-            defer { monitor.events.removeAll() }
+            try monitor.captureEvents {
+                _ = try collection1.countDocuments(session: session)
+            }
 
             let startedEvents = monitor.commandStartedEvents()
             expect(startedEvents).to(haveCount(1))
@@ -453,10 +443,9 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         // Causal consistency spec test 12: When connected to a deployment that does support cluster times messages sent
         // to the server should include $clusterTime
         try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
-            monitor.beginMonitoring()
-            _ = try collection.countDocuments(session: session)
-            monitor.stopMonitoring()
-            defer { monitor.events.removeAll() }
+            try monitor.captureEvents {
+                _ = try collection.countDocuments(session: session)
+            }
 
             let startedEvents = monitor.commandStartedEvents()
             expect(startedEvents).to(haveCount(1))
@@ -482,10 +471,9 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
             _ = try collection.countDocuments(session: session)
 
-            monitor.beginMonitoring()
-            _ = try collection.countDocuments(session: session)
-            monitor.stopMonitoring()
-            defer { monitor.events.removeAll() }
+            try monitor.captureEvents {
+                _ = try collection.countDocuments(session: session)
+            }
 
             let startedEvents = monitor.commandStartedEvents()
             expect(startedEvents).to(haveCount(1))
@@ -496,12 +484,10 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         // sent to the server should not include $clusterTime
         try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
             _ = try collection.insertOne([:], session: session)
-            let opTime = session.operationTime
 
-            monitor.beginMonitoring()
-            _ = try collection.countDocuments(session: session)
-            monitor.stopMonitoring()
-            defer { monitor.events.removeAll() }
+            try monitor.captureEvents {
+                _ = try collection.countDocuments(session: session)
+            }
 
             let startedEvents = monitor.commandStartedEvents()
             expect(startedEvents).to(haveCount(1))
@@ -524,10 +510,9 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         // Causal consistency spec test 2: The first read in a causally consistent session must not send
         // afterClusterTime to the server (because the operationTime has not yet been determined)
         try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
-            monitor.beginMonitoring()
-            _ = try collection.countDocuments(session: session)
-            monitor.stopMonitoring()
-            defer { monitor.events.removeAll() }
+            try monitor.captureEvents {
+                _ = try collection.countDocuments(session: session)
+            }
 
             let startedEvents = monitor.commandStartedEvents()
             expect(startedEvents).to(haveCount(1))

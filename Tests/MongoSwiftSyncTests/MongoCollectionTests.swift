@@ -107,7 +107,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     func testDrop() throws {
         let encoder = BSONEncoder()
 
-        let monitor = TestCommandEventHandler(eventTypes: [.commandStarted])
+        let monitor = TestCommandEventHandler()
         let client = try MongoClient.makeTestClient(options: ClientOptions(commandEventHandler: monitor))
         let db = client.db(type(of: self).testDatabase)
 
@@ -116,11 +116,12 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
         let expectedWriteConcern: WriteConcern = try WriteConcern(journal: true, w: .number(1))
 
-        monitor.beginMonitoring()
-        let opts = DropCollectionOptions(writeConcern: expectedWriteConcern)
-        expect(try collection.drop(options: opts)).toNot(throwError())
+        try monitor.captureEvents {
+            let opts = DropCollectionOptions(writeConcern: expectedWriteConcern)
+            expect(try collection.drop(options: opts)).toNot(throwError())
+        }
 
-        let event = monitor.events.first?.commandStartedValue
+        let event = monitor.commandStartedEvents().first
         expect(event).toNot(beNil())
         expect(event?.command["drop"]).toNot(beNil())
         expect(event?.command["writeConcern"]).toNot(beNil())

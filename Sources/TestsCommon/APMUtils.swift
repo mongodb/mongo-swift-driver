@@ -1,25 +1,14 @@
 import Foundation
 import MongoSwift
 
+/// A command event handler that caches the events it encounters.
+/// Note: it will only cache events that occur while closures passed to `captureEvents` are executing.
 public class TestCommandEventHandler: CommandEventHandler {
-    private let eventTypes: [CommandEventType]?
-    private let commandNames: [String]?
     private var monitoring: Bool
+    private var events: [CommandEvent]
 
-    public var events: [CommandEvent]
-
-    public init(eventTypes: [CommandEventType]? = nil, commandNames: [String]? = nil) {
-        self.eventTypes = eventTypes
-        self.commandNames = commandNames
+    public init() {
         self.events = []
-        self.monitoring = false
-    }
-
-    public func beginMonitoring() {
-        self.monitoring = true
-    }
-
-    public func stopMonitoring() {
         self.monitoring = false
     }
 
@@ -27,38 +16,30 @@ public class TestCommandEventHandler: CommandEventHandler {
         guard self.monitoring else {
             return
         }
-
-        if let typeWhitelist = self.eventTypes {
-            switch event {
-            case .started:
-                guard typeWhitelist.contains(.commandStarted) else {
-                    return
-                }
-            case .failed:
-                guard typeWhitelist.contains(.commandFailed) else {
-                    return
-                }
-
-            case .succeeded:
-                guard typeWhitelist.contains(.commandSucceeded) else {
-                    return
-                }
-            }
-        }
-
-        if let nameWhitelist = self.commandNames {
-            guard nameWhitelist.contains(event.commandName) else {
-                return
-            }
-        }
-
         self.events.append(event)
     }
 
-    public func commandStartedEvents(withNames nameFilter: [String]? = nil) -> [CommandStartedEvent] {
+    /// Retrieve all the command started events seen so far, clearing the event cache.
+    public func commandStartedEvents(withNames _: [String]? = nil) -> [CommandStartedEvent] {
+        return self.events().compactMap { $0.commandStartedValue }
+    }
+
+    /// Retrieve all the command started events seen so far, clearing the event cache.
+    public func commandSucceededEvents(withNames _: [String]? = nil) -> [CommandSucceededEvent] {
+        return self.events().compactMap { $0.commandSucceededValue }
+    }
+
+    /// Retrieve all the events seen so far that match the optionally provided filters, clearing the event cache.
+    public func events(
+        withEventTypes typeFilter: [CommandEvent.EventType]? = nil,
+        withNames nameFilter: [String]? = nil
+    ) -> [CommandEvent] {
+        defer { self.events.removeAll() }
         return self.events.compactMap { event in
-            guard case let .started(event) = event else {
-                return nil
+            if let typeFilter = typeFilter {
+                guard typeFilter.contains(event.type) else {
+                    return nil
+                }
             }
             if let nameFilter = nameFilter {
                 guard nameFilter.contains(event.commandName) else {
@@ -69,29 +50,23 @@ public class TestCommandEventHandler: CommandEventHandler {
         }
     }
 
-    public func commandSucceededEvents(withNames nameFilter: [String]? = nil) -> [CommandSucceededEvent] {
-        return self.events.compactMap { event in
-            guard case let .succeeded(event) = event else {
-                return nil
-            }
-            if let nameFilter = nameFilter {
-                guard nameFilter.contains(event.commandName) else {
-                    return nil
-                }
-            }
-            return event
-        }
+    /// Capture events that occur while the the provided closure executes.
+    public func captureEvents<T>(_ f: () throws -> T) rethrows -> T {
+        self.monitoring = true
+        defer { self.monitoring = false }
+        return try f()
     }
-}
-
-public enum CommandEventType {
-    case commandStarted
-    case commandSucceeded
-    case commandFailed
 }
 
 extension CommandEvent {
-    public var eventType: CommandEventType {
+    public enum EventType {
+        case commandStarted
+        case commandSucceeded
+        case commandFailed
+    }
+
+    /// The "type" of this event. Used for filtering events by their type.
+    public var type: EventType {
         switch self {
         case .started:
             return .commandStarted
@@ -102,6 +77,7 @@ extension CommandEvent {
         }
     }
 
+    /// Returns this event as a `CommandStartedEvent` if it is one, nil otherwise.
     public var commandStartedValue: CommandStartedEvent? {
         guard case let .started(event) = self else {
             return nil
@@ -109,6 +85,7 @@ extension CommandEvent {
         return event
     }
 
+    /// Returns this event as a `CommandSucceededEvent` if it is one, nil otherwise.
     public var commandSucceededValue: CommandSucceededEvent? {
         guard case let .succeeded(event) = self else {
             return nil
@@ -116,6 +93,7 @@ extension CommandEvent {
         return event
     }
 
+    /// Returns this event as a `CommandFailedEvent` if it is one, nil otherwise.
     public var commandFailedValue: CommandFailedEvent? {
         guard case let .failed(event) = self else {
             return nil

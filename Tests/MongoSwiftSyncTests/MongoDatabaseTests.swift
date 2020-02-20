@@ -48,7 +48,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
     func testDropDatabase() throws {
         let encoder = BSONEncoder()
 
-        let monitor = TestCommandEventHandler(eventTypes: [.commandStarted])
+        let monitor = TestCommandEventHandler()
         let client = try MongoClient.makeTestClient(options: ClientOptions(commandEventHandler: monitor))
         let db = client.db(type(of: self).testDatabase)
 
@@ -60,9 +60,10 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
             try WriteConcern(journal: true, w: .number(1), wtimeoutMS: 123)
         ]
 
-        monitor.beginMonitoring()
-        for wc in expectedWriteConcerns {
-            expect(try db.drop(options: DropDatabaseOptions(writeConcern: wc))).toNot(throwError())
+        try monitor.captureEvents {
+            for wc in expectedWriteConcerns {
+                expect(try db.drop(options: DropDatabaseOptions(writeConcern: wc))).toNot(throwError())
+            }
         }
 
         let receivedEvents = monitor.commandStartedEvents()
@@ -133,7 +134,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
     }
 
     func testListCollections() throws {
-        let monitor = TestCommandEventHandler(eventTypes: [.commandStarted], commandNames: ["listCollections"])
+        let monitor = TestCommandEventHandler()
         let client = try MongoClient.makeTestClient(options: ClientOptions(commandEventHandler: monitor))
         let db = client.db(type(of: self).testDatabase)
         try db.drop()
@@ -146,28 +147,28 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         try db.collection("capped").insertOne(["a": 1])
         try db.collection("uncapped").insertOne(["b": 2])
 
-        monitor.beginMonitoring()
+        try monitor.captureEvents {
+            var collectionNames = try db.listCollectionNames()
+            collectionNames.sort { $0 < $1 }
 
-        var collectionNames = try db.listCollectionNames()
-        collectionNames.sort { $0 < $1 }
+            expect(collectionNames).to(haveCount(2))
+            expect(collectionNames[0]).to(equal("capped"))
+            expect(collectionNames[1]).to(equal("uncapped"))
 
-        expect(collectionNames).to(haveCount(2))
-        expect(collectionNames[0]).to(equal("capped"))
-        expect(collectionNames[1]).to(equal("uncapped"))
+            let filteredCollectionNames = try db.listCollectionNames(["name": "nonexistent"])
+            expect(filteredCollectionNames).to(haveCount(0))
 
-        let filteredCollectionNames = try db.listCollectionNames(["name": "nonexistent"])
-        expect(filteredCollectionNames).to(haveCount(0))
+            let cappedNames = try db.listCollectionNames(["options.capped": true])
+            expect(cappedNames).to(haveCount(1))
+            expect(cappedNames[0]).to(equal("capped"))
 
-        let cappedNames = try db.listCollectionNames(["options.capped": true])
-        expect(cappedNames).to(haveCount(1))
-        expect(cappedNames[0]).to(equal("capped"))
-
-        let mongoCollections = try db.listMongoCollections(["options.capped": true])
-        expect(mongoCollections).to(haveCount(1))
-        expect(mongoCollections[0].name).to(equal("capped"))
+            let mongoCollections = try db.listMongoCollections(["options.capped": true])
+            expect(mongoCollections).to(haveCount(1))
+            expect(mongoCollections[0].name).to(equal("capped"))
+        }
 
         // Check nameOnly flag passed to server for respective listCollection calls.
-        let listNamesEvents = monitor.commandStartedEvents()
+        let listNamesEvents = monitor.commandStartedEvents(withNames: ["listCollections"])
         expect(listNamesEvents).to(haveCount(4))
         expect(listNamesEvents[0].command["nameOnly"]).to(equal(true))
         expect(listNamesEvents[1].command["nameOnly"]).to(equal(true))

@@ -210,30 +210,31 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
     func testCreateDropIndexByModelWithMaxTimeMS() throws {
         let maxTimeMS: Int64 = 1000
 
-        let monitor = TestCommandEventHandler(eventTypes: [.commandStarted])
+        let monitor = TestCommandEventHandler()
         let client = try MongoClient.makeTestClient(options: ClientOptions(commandEventHandler: monitor))
         let db = client.db(type(of: self).testDatabase)
 
         let collection = db.collection("collection")
         try collection.insertOne(["test": "blahblah"])
 
-        monitor.beginMonitoring()
-        let model = IndexModel(keys: ["cat": 1])
-        let wc = try WriteConcern(w: .number(1))
-        let createIndexOpts = CreateIndexOptions(maxTimeMS: maxTimeMS, writeConcern: wc)
-        expect(try collection.createIndex(model, options: createIndexOpts)).to(equal("cat_1"))
+        try monitor.captureEvents {
+            let model = IndexModel(keys: ["cat": 1])
+            let wc = try WriteConcern(w: .number(1))
+            let createIndexOpts = CreateIndexOptions(maxTimeMS: maxTimeMS, writeConcern: wc)
+            expect(try collection.createIndex(model, options: createIndexOpts)).to(equal("cat_1"))
 
-        let dropIndexOpts = DropIndexOptions(maxTimeMS: maxTimeMS, writeConcern: wc)
-        expect(try collection.dropIndex(model, options: dropIndexOpts)).toNot(throwError())
+            let dropIndexOpts = DropIndexOptions(maxTimeMS: maxTimeMS, writeConcern: wc)
+            expect(try collection.dropIndex(model, options: dropIndexOpts)).toNot(throwError())
 
-        // now there should only be _id_ left
-        let indexes = try coll.listIndexes()
-        expect(indexes).toNot(beNil())
-        expect(try indexes.next()?.get().options?.name).to(equal("_id_"))
-        expect(try indexes.next()?.get()).to(beNil())
+            // now there should only be _id_ left
+            let indexes = try coll.listIndexes()
+            expect(indexes).toNot(beNil())
+            expect(try indexes.next()?.get().options?.name).to(equal("_id_"))
+            expect(try indexes.next()?.get()).to(beNil())
+        }
 
         // test that maxTimeMS is an accepted option for createIndex and dropIndex
-        let receivedEvents = monitor.events.compactMap { $0.commandStartedValue }
+        let receivedEvents = monitor.commandStartedEvents()
         expect(receivedEvents.count).to(equal(2))
         expect(receivedEvents[0].command["createIndexes"]).toNot(beNil())
         expect(receivedEvents[0].command["maxTimeMS"]).toNot(beNil())
