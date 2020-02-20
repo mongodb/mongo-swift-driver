@@ -1,5 +1,5 @@
 import Kitura
-@testable import MongoSwift
+import MongoSwift
 import NIO
 
 /// A Codable type that matches the data in our home.kittens collection.
@@ -11,7 +11,7 @@ struct Kitten: Codable {
 let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 4)
 let mongoClient = try MongoClient(using: eventLoopGroup)
 defer {
-    try? mongoClient.close().wait()
+    mongoClient.syncShutdown()
     try? eventLoopGroup.syncShutdownGracefully()
 }
 
@@ -24,7 +24,7 @@ let router: Router = {
 
     router.get("kittens") { _, response, next -> Void in
         let res = collection.find().flatMap { cursor in
-            cursor.all()
+            cursor.toArray()
         }
 
         res.whenSuccess { results in

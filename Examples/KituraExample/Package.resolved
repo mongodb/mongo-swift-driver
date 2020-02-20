@@ -1,0 +1,124 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "Socket",
+        "repositoryURL": "https://github.com/IBM-Swift/BlueSocket.git",
+        "state": {
+          "branch": null,
+          "revision": "c46a3d41f5b2401d18bcb46d0101cdc5cd13e307",
+          "version": "1.0.52"
+        }
+      },
+      {
+        "package": "SSLService",
+        "repositoryURL": "https://github.com/IBM-Swift/BlueSSLService.git",
+        "state": {
+          "branch": null,
+          "revision": "ab2c2aa2fe574969f391c80ee87746be431dee0e",
+          "version": "1.0.52"
+        }
+      },
+      {
+        "package": "Kitura",
+        "repositoryURL": "https://github.com/IBM-Swift/Kitura",
+        "state": {
+          "branch": null,
+          "revision": "bbb7462ac3d422cad4480a57ddbd33263c381a7b",
+          "version": "2.9.1"
+        }
+      },
+      {
+        "package": "Kitura-NIO",
+        "repositoryURL": "https://github.com/IBM-Swift/Kitura-NIO.git",
+        "state": {
+          "branch": null,
+          "revision": "69bd82be54207512bee5baf374f461fe83190b2e",
+          "version": "2.4.0"
+        }
+      },
+      {
+        "package": "Kitura-TemplateEngine",
+        "repositoryURL": "https://github.com/IBM-Swift/Kitura-TemplateEngine.git",
+        "state": {
+          "branch": null,
+          "revision": "d62d74bca48c6fb76f9fc1f48eeb2d7af415e80b",
+          "version": "2.0.1"
+        }
+      },
+      {
+        "package": "KituraContracts",
+        "repositoryURL": "https://github.com/IBM-Swift/KituraContracts.git",
+        "state": {
+          "branch": null,
+          "revision": "a30e2fb79e926672776a05ec6b919c239870a221",
+          "version": "1.2.1"
+        }
+      },
+      {
+        "package": "LoggerAPI",
+        "repositoryURL": "https://github.com/IBM-Swift/LoggerAPI.git",
+        "state": {
+          "branch": null,
+          "revision": "3357dd9526cdf9436fa63bb792b669e6efdc43da",
+          "version": "1.9.0"
+        }
+      },
+      {
+        "package": "MongoSwift",
+        "repositoryURL": "https://github.com/mongodb/mongo-swift-driver",
+        "state": {
+          "branch": "master",
+          "revision": "1c72db375d9762244974a2bf64509eb514062fa9",
+          "version": null
+        }
+      },
+      {
+        "package": "Nimble",
+        "repositoryURL": "https://github.com/Quick/Nimble.git",
+        "state": {
+          "branch": null,
+          "revision": "f8657642dfdec9973efc79cc68bcef43a653a2bc",
+          "version": "8.0.2"
+        }
+      },
+      {
+        "package": "swift-log",
+        "repositoryURL": "https://github.com/apple/swift-log.git",
+        "state": {
+          "branch": null,
+          "revision": "74d7b91ceebc85daf387ebb206003f78813f71aa",
+          "version": "1.2.0"
+        }
+      },
+      {
+        "package": "swift-nio-extras",
+        "repositoryURL": "https://github.com/apple/swift-nio-extras.git",
+        "state": {
+          "branch": null,
+          "revision": "b4dbfacff47fb8d0f9e0a422d8d37935a9f10570",
+          "version": "1.4.0"
+        }
+      },
+      {
+        "package": "swift-nio-ssl",
+        "repositoryURL": "https://github.com/apple/swift-nio-ssl.git",
+        "state": {
+          "branch": null,
+          "revision": "af46d9b58fafbb76f9b01177568d435a1b024f99",
+          "version": "2.6.2"
+        }
+      },
+      {
+        "package": "TypeDecoder",
+        "repositoryURL": "https://github.com/IBM-Swift/TypeDecoder.git",
+        "state": {
+          "branch": null,
+          "revision": "a5978582981f7151594bdaf5fe0d3cd9b1d2d0c0",
+          "version": "1.3.4"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
