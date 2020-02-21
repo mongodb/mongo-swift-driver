@@ -2,7 +2,7 @@
 [![Code Coverage](https://codecov.io/gh/mongodb/mongo-swift-driver/branch/master/graph/badge.svg)](https://codecov.io/gh/mongodb/mongo-swift-driver/branch/master)
 
 # MongoSwift
-The official [MongoDB](https://www.mongodb.com/) driver for Swift.
+The official [MongoDB](https://www.mongodb.com/) driver for Swift applications on macOS and Linux.
 
 ### Index
 - [Documentation](#documentation)
@@ -43,7 +43,9 @@ The driver vendors and wraps the MongoDB C driver (`libmongoc`), which depends o
 To install those libraries, please follow the [instructions](http://mongoc.org/libmongoc/current/installing.html#prerequisites-for-libmongoc) from `libmongoc`'s documentation.
 
 ### Step 2: Install MongoSwift
-Add MongoSwift to your dependencies in `Package.swift`:
+The driver contains two modules to support a variety of use cases: an asynchronous API in `MongoSwift`, and a synchronous API in `MongoSwiftSync`. The modules share a BSON implementation and a number of core types such as options `struct`s.
+
+To install the driver, add the package and relevant module as a dependency in your project's `Package.swift` file:
 
 ```swift
 // swift-tools-version:5.0
@@ -55,7 +57,10 @@ let package = Package(
         .package(url: "https://github.com/mongodb/mongo-swift-driver.git", from: "VERSION.STRING.HERE"),
     ],
     targets: [
-        .target(name: "MyPackage", dependencies: ["MongoSwift"])
+        // Async module
+        .target(name: "MyAsyncTarget", dependencies: ["MongoSwift"]),
+        // Sync module
+        .target(name: "MySyncTarget", dependencies: ["MongoSwiftSync"])
     ]
 )
 ```
@@ -67,20 +72,59 @@ Then run `swift build` to download, compile, and link all your dependencies.
 Note: You should call `cleanupMongoSwift()` exactly once at the end of your application to release all memory and other resources allocated by `libmongoc`.
 
 ### Connect to MongoDB and Create a Collection
+
+**Async**:
 ```swift
 import MongoSwift
+import NIO
+
+let elg = MultithreadedEventLoopGroup(numberOfThreads: 4)
+let client = try MongoClient("mongodb://localhost:27017", using: elg)
+
+defer {
+    // clean up driver resources
+    client.syncShutdown()
+    cleanupMongoSwift()
+
+    // shut down EventLoopGroup
+    try? elg.syncShutdownGracefully()
+}
+
+let db = client.db("myDB")
+db.createCollection("myCollection").flatMap { collection in
+    // use collection...
+}
+```
+
+**Sync**:
+```swift
+import MongoSwiftSync
+
+defer {
+    // free driver resources
+    cleanupMongoSwift()
+}
 
 let client = try MongoClient("mongodb://localhost:27017")
+
 let db = client.db("myDB")
 let collection = try db.createCollection("myCollection")
 
-// free all resources
-cleanupMongoSwift()
+// use collection...
 ```
 
-Note: we have included the client `connectionString` parameter for clarity, but if connecting to the default `"mongodb://localhost:27017"`it may be omitted: `let client = try MongoClient()`.
+Note: we have included the client `connectionString` parameter for clarity, but if connecting to the default `"mongodb://localhost:27017"`it may be omitted.
 
 ### Create and Insert a Document
+**Async**:
+```swift
+let doc: Document = ["_id": 100, "a": 1, "b": 2, "c": 3]
+collection.insertOne(doc).whenSuccess { result in
+    print(result?.insertedId ?? "") // prints `.int64(100)`
+}
+```
+
+**Sync**:
 ```swift
 let doc: Document = ["_id": 100, "a": 1, "b": 2, "c": 3]
 let result = try collection.insertOne(doc)
