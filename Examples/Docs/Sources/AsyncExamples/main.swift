@@ -9,6 +9,10 @@ import NIO
 private func causalConsistency() throws {
     let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     let client1 = try MongoClient(using: elg)
+    defer {
+        client1.syncShutdown()
+        try? elg.syncShutdownGracefully()
+    }
 
     // Start Causal Consistency Example 1
     let s1 = client1.startSession(options: ClientSessionOptions(causalConsistency: true))
@@ -30,15 +34,19 @@ private func causalConsistency() throws {
     let client2 = try MongoClient(using: elg)
 
     // Start Causal Consistency Example 2
-    let result2 = client2.withSession(options: ClientSessionOptions(causalConsistency: true)) { s2 in
+    let result2: EventLoopFuture<Void> =
+        client2.withSession(options: ClientSessionOptions(causalConsistency: true)) { s2 in
         // The cluster and operation times are guaranteed to be non-nil since we already used s1 for operations above.
         s2.advanceClusterTime(to: s1.clusterTime!)
         s2.advanceOperationTime(to: s1.operationTime!)
 
         dbOptions.readPreference = ReadPreference(.secondary)
         let items2 = client2.db("test", options: dbOptions).collection("items")
-        for item in try items2.find(["end": .null], session: s2) {
-            print(item)
+
+        return items2.find(["end": .null], session: s2).flatMap { cursor in
+            cursor.forEach { item in
+                print(item)
+            }
         }
     }
     // End Causal Consistency Example 2
@@ -46,50 +54,91 @@ private func causalConsistency() throws {
 
 /// Examples used for the MongoDB documentation on Change Streams.
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/
-// private func changeStreams() throws {
-//     let client = try MongoClient()
-//     let db = client.db("example")
+private func changeStreams() throws {
+    let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+    let client = try MongoClient(using: elg)
+    let db = client.db("example")
 
-//     // The following examples assume that you have connected to a MongoDB replica set and have
-//     // accessed a database that contains an inventory collection.
+    // The following examples assume that you have connected to a MongoDB replica set and have
+    // accessed a database that contains an inventory collection.
 
-//     do {
-//         // Start Changestream Example 1
-//         let inventory = db.collection("inventory")
-//         let cursor = try inventory.watch()
-//         let next = cursor.next()
-//         // End Changestream Example 1
-//     }
+    do {
+        // Start Changestream Example 1
+        let inventory = db.collection("inventory")
+        let futureCursor = inventory.watch()
 
-//     do {
-//         // Start Changestream Example 2
-//         let inventory = db.collection("inventory")
-//         let cursor = try inventory.watch(options: ChangeStreamOptions(fullDocument: .updateLookup))
-//         let next = cursor.next()
-//         // End Changestream Example 2
-//     }
+        // Option 1: retrieve next document via next()
+        let next = futureCursor.flatMap { cursor in
+            cursor.next()
+        }
 
-//     do {
-//         // Start Changestream Example 3
-//         let inventory = db.collection("inventory")
-//         let cursor = try inventory.watch(options: ChangeStreamOptions(fullDocument: .updateLookup))
-//         let next = cursor.next()
+        // Option 2: register a callback to execute for each document
+        let result = futureCursor.flatMap { cursor in
+            cursor.forEach { event in
+                // process event
+            }
+        }
+        // End Changestream Example 1
+    }
 
-//         let resumeToken = cursor.resumeToken
-//         let resumedCursor = try inventory.watch(options: ChangeStreamOptions(resumeAfter: resumeToken))
-//         let nextAfterResume = resumedCursor.next()
-//         // End Changestream Example 3
-//     }
+    do {
+        // Start Changestream Example 2
+        let inventory = db.collection("inventory")
+        let futureCursor = inventory.watch(options: ChangeStreamOptions(fullDocument: .updateLookup))
 
-//     do {
-//         // Start Changestream Example 4
-//         let pipeline: [Document] = [
-//             ["$match": ["fullDocument.username": "alice"]],
-//             ["$addFields": ["newField": "this is an added field!"]]
-//         ]
-//         let inventory = db.collection("inventory")
-//         let cursor = try inventory.watch(pipeline, withEventType: Document.self)
-//         let next = cursor.next()
-//         // End Changestream Example 4
-//     }
-// }
+        // Option 1: use next() to iterate
+        let next = futureCursor.flatMap { cursor in
+            cursor.next()
+        }
+
+        // Option 2: register a callback to execute for each document
+        let result = futureCursor.flatMap { cursor in
+            cursor.forEach { event in
+                // process event
+            }
+        }
+        // End Changestream Example 2
+    }
+
+    do {
+        // Start Changestream Example 3
+        let inventory = db.collection("inventory")
+        let futureCursor = inventory.watch(options: ChangeStreamOptions(fullDocument: .updateLookup))
+        let next = futureCursor.flatMap { $0.next() }
+
+        let resumeToken = futureCursor.and(next).map { cursor, _ in
+            cursor.resumeToken
+        }
+
+        let resumedCursor = resumeToken.flatMap { token in
+            inventory.watch(options: ChangeStreamOptions(resumeAfter: token))
+        }
+        let nextAfterResume = resumedCursor.flatMap { cursor in
+            cursor.next()
+        }
+        // End Changestream Example 3
+    }
+
+    do {
+        // Start Changestream Example 4
+        let pipeline: [Document] = [
+            ["$match": ["fullDocument.username": "alice"]],
+            ["$addFields": ["newField": "this is an added field!"]]
+        ]
+        let inventory = db.collection("inventory")
+        let futureCursor = inventory.watch(pipeline, withEventType: Document.self)
+
+        // Option 1: use next() to iterate
+        let next = futureCursor.flatMap { cursor in
+            cursor.next()
+        }
+
+        // Option 2: register a callback to execute for each document
+        let result = futureCursor.flatMap { cursor in
+            cursor.forEach { event in
+                // process event
+            }
+        }
+        // End Changestream Example 4
+    }
+}
