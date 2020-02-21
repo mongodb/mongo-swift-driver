@@ -34,8 +34,8 @@ private func causalConsistency() throws {
     let client2 = try MongoClient(using: elg)
 
     // Start Causal Consistency Example 2
-    let result2: EventLoopFuture<Void> =
-        client2.withSession(options: ClientSessionOptions(causalConsistency: true)) { s2 in
+    let options = ClientSessionOptions(causalConsistency: true)
+    let result2: EventLoopFuture<Void> = client2.withSession(options: options) { s2 in
         // The cluster and operation times are guaranteed to be non-nil since we already used s1 for operations above.
         s2.advanceClusterTime(to: s1.clusterTime!)
         s2.advanceOperationTime(to: s1.operationTime!)
@@ -76,6 +76,7 @@ private func changeStreams() throws {
         let result = futureCursor.flatMap { cursor in
             cursor.forEach { event in
                 // process event
+                print(event)
             }
         }
         // End Changestream Example 1
@@ -95,6 +96,7 @@ private func changeStreams() throws {
         let result = futureCursor.flatMap { cursor in
             cursor.forEach { event in
                 // process event
+                print(event)
             }
         }
         // End Changestream Example 2
@@ -137,6 +139,7 @@ private func changeStreams() throws {
         let result = futureCursor.flatMap { cursor in
             cursor.forEach { event in
                 // process event
+                print(event)
             }
         }
         // End Changestream Example 4
