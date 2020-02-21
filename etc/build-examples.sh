@@ -15,6 +15,9 @@ for example_project in ${examples[@]}; do
 
     # don't exit on failure
     set +e
+    if [ ${example_project} == "KituraExample" ]; then
+        export KITURA_NIO=1
+    fi
     swift build
     build_success=$?
     set -e
