@@ -122,7 +122,6 @@ functions:
         script: |
           ${PREPARE_SHELL}
           sh ${DRIVERS_TOOLS}/.evergreen/stop-orchestration.sh
-  "upload-mo-artifacts":
     - command: shell.exec
       params:
         script: |
@@ -198,7 +197,6 @@ pre:
 
 post:
   - func: "stop mongo-orchestration"
-  - func: "upload-mo-artifacts"
   - func: "cleanup"
 
 tasks:
