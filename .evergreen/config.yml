@@ -122,6 +122,7 @@ functions:
         script: |
           ${PREPARE_SHELL}
           sh ${DRIVERS_TOOLS}/.evergreen/stop-orchestration.sh
+  "upload-mo-artifacts":
     - command: shell.exec
       params:
         script: |
@@ -196,6 +197,8 @@ pre:
   - func: "install dependencies"
 
 post:
+  - func: "stop mongo-orchestration"
+  - func: "upload-mo-artifacts"
   - func: "cleanup"
 
 tasks:
@@ -209,7 +212,6 @@ tasks:
             MONGODB_VERSION: "3.6"
             TOPOLOGY: "server"
         - func: "run tests"
-        - func: "stop mongo-orchestration"
 
     - name: "test-3.6-replica_set"
       tags: ["3.6", "replica_set"]
@@ -221,7 +223,6 @@ tasks:
             MONGODB_VERSION: "3.6"
             TOPOLOGY: "replica_set"
         - func: "run tests"
-        - func: "stop mongo-orchestration"
 
     - name: "test-3.6-sharded_cluster"
       tags: ["3.6", "sharded_cluster"]
@@ -233,7 +234,6 @@ tasks:
             MONGODB_VERSION: "3.6"
             TOPOLOGY: "sharded_cluster"
         - func: "run tests"
-        - func: "stop mongo-orchestration"
 
     - name: "test-4.0-standalone"
       tags: ["4.0", "standalone"]
@@ -245,7 +245,6 @@ tasks:
             MONGODB_VERSION: "4.0"
             TOPOLOGY: "server"
         - func: "run tests"
-        - func: "stop mongo-orchestration"
 
     - name: "test-4.0-replica_set"
       tags: ["4.0", "replica_set"]
@@ -257,7 +256,6 @@ tasks:
             MONGODB_VERSION: "4.0"
             TOPOLOGY: "replica_set"
         - func: "run tests"
-        - func: "stop mongo-orchestration"
 
     - name: "test-4.0-sharded_cluster"
       tags: ["4.0", "sharded_cluster"]
@@ -269,7 +267,6 @@ tasks:
             MONGODB_VERSION: "4.0"
             TOPOLOGY: "sharded_cluster"
         - func: "run tests"
-        - func: "stop mongo-orchestration"
 
     - name: "test-4.2-standalone"
       tags: ["4.2", "standalone"]
@@ -281,7 +278,6 @@ tasks:
             MONGODB_VERSION: "4.2"
             TOPOLOGY: "server"
         - func: "run tests"
-        - func: "stop mongo-orchestration"
 
     - name: "test-4.2-replica_set"
       tags: ["4.2", "replica_set"]
@@ -293,7 +289,6 @@ tasks:
             MONGODB_VERSION: "4.2"
             TOPOLOGY: "replica_set"
         - func: "run tests"
-        - func: "stop mongo-orchestration"
 
     - name: "test-4.2-sharded_cluster"
       tags: ["4.2", "sharded_cluster"]
@@ -305,7 +300,6 @@ tasks:
             MONGODB_VERSION: "4.2"
             TOPOLOGY: "sharded_cluster"
         - func: "run tests"
-        - func: "stop mongo-orchestration"
 
     - name: "test-latest-standalone"
       tags: ["latest", "standalone"]
@@ -317,7 +311,6 @@ tasks:
             MONGODB_VERSION: "latest"
             TOPOLOGY: "server"
         - func: "run tests"
-        - func: "stop mongo-orchestration"
 
     - name: "test-latest-replica_set"
       tags: ["latest", "replica_set"]
@@ -329,7 +322,6 @@ tasks:
             MONGODB_VERSION: "latest"
             TOPOLOGY: "replica_set"
         - func: "run tests"
-        - func: "stop mongo-orchestration"
 
     - name: "test-latest-sharded_cluster"
       tags: ["latest", "sharded_cluster"]
@@ -341,7 +333,6 @@ tasks:
             MONGODB_VERSION: "latest"
             TOPOLOGY: "sharded_cluster"
         - func: "run tests"
-        - func: "stop mongo-orchestration"
 
     - name: "test-atlas-connectivity"
       tags: ["atlas-connect"]
