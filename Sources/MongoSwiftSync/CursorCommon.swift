@@ -6,14 +6,14 @@ internal protocol CursorProtocol: LazySequenceProtocol, IteratorProtocol {
     /**
      * Indicates whether this cursor has the potential to return more data.
      *
-     * This property is mainly useful if this cursor is tailable, since in that case `tryNext` may return more results
+     * This method is mainly useful if this cursor is tailable, since in that case `tryNext` may return more results
      * even after returning `nil`.
      *
      * If this cursor is non-tailable, it will always be dead as soon as either `tryNext` returns `nil` or an error.
      *
      * This cursor will be dead as soon as `next` returns `nil` or an error, regardless of the `CursorType`.
      */
-    var isAlive: Bool { get }
+    func isAlive() throws -> Bool
 
     /**
      * Get the next `T` from the cursor.

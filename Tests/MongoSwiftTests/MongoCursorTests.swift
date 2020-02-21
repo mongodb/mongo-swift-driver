@@ -20,7 +20,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
             var cursor = try coll.find().wait()
             expect(try cursor.next().wait()).toNot(throwError())
             // cursor should immediately be closed as its empty
-            expect(cursor.isAlive).to(beFalse())
+            expect(try cursor.isAlive().wait()).to(beFalse())
             // iterating dead cursor should error
             expect(try cursor.next().wait()).to(throwError(errorType: LogicError.self))
 
@@ -31,7 +31,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
             expect(results).to(haveCount(1))
             expect(results[0]).to(equal(doc1))
             // cursor should be closed now that its exhausted
-            expect(cursor.isAlive).to(beFalse())
+            expect(try cursor.isAlive().wait()).to(beFalse())
             // iterating a dead cursor should error
             expect(try cursor.next().wait()).to(throwError())
 
@@ -48,7 +48,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
             )
             expect(try cursor.next().wait()).to(throwError(expectedError))
             // cursor should be closed now that it errored
-            expect(cursor.isAlive).to(beFalse())
+            expect(try cursor.isAlive().wait()).to(beFalse())
         }
     }
 
@@ -85,7 +85,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
             var cursor = try coll.find(options: cursorOpts).wait()
             expect(try cursor.next().wait()).to(beNil())
             // no documents matched initial query, so cursor is dead
-            expect(cursor.isAlive).to(beFalse())
+            expect(try cursor.isAlive().wait()).to(beFalse())
             expect(try cursor.next().wait()).to(throwError(errorType: LogicError.self))
 
             // insert a doc so something matches initial query
@@ -98,7 +98,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
                 let results = try cursor.toArray().wait()
                 expect(results).to(haveCount(1))
                 expect(results[0]).to(equal(doc))
-                expect(cursor.isAlive).to(beTrue())
+                expect(try cursor.isAlive().wait()).to(beTrue())
             }
             try checkNextResult(doc1)
 
@@ -110,7 +110,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
 
             // no more docs, but should still be alive
             expect(try cursor.tryNext().wait()).to(beNil())
-            expect(cursor.isAlive).to(beTrue())
+            expect(try cursor.isAlive().wait()).to(beTrue())
 
             // insert 3 docs so the cursor loses track of its position
             for i in 4..<7 {
@@ -125,7 +125,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
             )
             expect(try cursor.next().wait()).to(throwError(expectedError))
             // cursor should be closed now that it errored
-            expect(cursor.isAlive).to(beFalse())
+            expect(try cursor.isAlive().wait()).to(beFalse())
 
             // iterating dead cursor should error
             expect(try cursor.next().wait()).to(throwError(errorType: LogicError.self))
@@ -137,7 +137,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
             // query empty collection
             var cursor = try coll.find().wait()
             expect(try cursor.next().wait()).to(beNil())
-            expect(cursor.isAlive).to(beFalse())
+            expect(try cursor.isAlive().wait()).to(beFalse())
 
             // insert a doc so something matches initial query
             _ = try coll.insertOne(doc1).wait()
@@ -148,7 +148,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
             expect(doc).to(equal(doc1))
 
             expect(try cursor.next().wait()).to(beNil())
-            expect(cursor.isAlive).to(beFalse())
+            expect(try cursor.isAlive().wait()).to(beFalse())
 
             expect(try cursor.next().wait()).to(throwError(errorType: LogicError.self))
         }
@@ -160,7 +160,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
             // query empty collection
             var cursor = try coll.find().wait()
             expect(try cursor.toArray().wait()).to(equal([]))
-            expect(cursor.isAlive).to(beFalse())
+            expect(try cursor.isAlive().wait()).to(beFalse())
             // iterating dead cursor should error
             expect(try cursor.next().wait()).to(throwError(errorType: LogicError.self))
 
@@ -170,7 +170,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
             var results = try cursor.toArray().wait()
             expect(results).to(equal([doc1, doc2, doc3]))
             // cursor should be closed now that its exhausted
-            expect(cursor.isAlive).to(beFalse())
+            expect(try cursor.isAlive().wait()).to(beFalse())
             // iterating dead cursor should error
             expect(try cursor.next().wait()).to(throwError(errorType: LogicError.self))
 
@@ -191,19 +191,83 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
 
             expect(try cursor.toArray().wait()).to(beEmpty())
             // no documents matched initial query, so cursor is dead
-            expect(cursor.isAlive).to(beFalse())
+            expect(try cursor.isAlive().wait()).to(beFalse())
             expect(try cursor.next().wait()).to(throwError(errorType: LogicError.self))
 
             // insert a doc so something matches initial query
             _ = try coll.insertOne(doc1).wait()
             cursor = try coll.find(options: cursorOpts).wait()
             expect(try cursor.toArray().wait()).to(equal([doc1]))
-            expect(cursor.isAlive).to(beTrue())
+            expect(try cursor.isAlive().wait()).to(beTrue())
 
             // newly inserted docs will be returned by toArray
             _ = try coll.insertMany([doc2, doc3]).wait()
             expect(try cursor.toArray().wait()).to(equal([doc2, doc3]))
-            expect(cursor.isAlive).to(beTrue())
+            expect(try cursor.isAlive().wait()).to(beTrue())
+        }
+    }
+
+    func testForEach() throws {
+        var count = 0
+        let increment: (Document) -> Void = { _ in count += 1 }
+
+        // non-tailable
+        try self.withTestNamespace { _, _, coll in
+            // empty collection
+            var cursor = try coll.find().wait()
+            _ = try cursor.forEach(increment).wait()
+            expect(count).to(equal(0))
+            expect(try cursor.isAlive().wait()).to(beFalse())
+
+            _ = try coll.insertMany([doc1, doc2]).wait()
+
+            // non empty
+            cursor = try coll.find().wait()
+            _ = try cursor.forEach(increment).wait()
+            expect(count).to(equal(2))
+            expect(try cursor.isAlive().wait()).to(beFalse())
+        }
+
+        count = 0
+        // tailable
+        let collOptions = CreateCollectionOptions(capped: true, max: 3, size: 1000)
+        try self.withTestNamespace(collectionOptions: collOptions) { _, _, coll in
+            let cursorOpts = FindOptions(cursorType: .tailable)
+
+            var cursor = try coll.find(options: cursorOpts).wait()
+            _ = try cursor.forEach(increment).wait()
+            expect(count).to(equal(0))
+            // no documents matched initial query, so cursor is dead
+            expect(try cursor.isAlive().wait()).to(beFalse())
+
+            _ = try coll.insertMany([doc1, doc2]).wait()
+            cursor = try coll.find(options: cursorOpts).wait()
+
+            // start running forEach; future will not resolve since cursor is tailable
+            let future = cursor.forEach(increment)
+            expect(count).toEventually(equal(2))
+
+            // killing the cursor should resolve the future and not error
+            expect(try cursor.kill().wait()).toNot(throwError())
+            expect(try future.wait()).toNot(throwError())
+
+            // calling forEach on a dead cursor should error
+            expect(try cursor.forEach(increment).wait()).to(throwError(errorType: LogicError.self))
+        }
+    }
+
+    func testCursorId() throws {
+        try self.withTestNamespace { _, _, coll in
+            _ = try coll.insertMany([["x": 1], ["x": 2]]).wait()
+            // use batchSize of 1 so the cursor has to use multiple batches and will have an id
+            let options = FindOptions(batchSize: 1)
+            let cursorWithId = try coll.find(options: options).wait()
+            defer { try? cursorWithId.kill().wait() }
+            expect(cursorWithId.id).toNot(beNil())
+
+            let cursorNoId = try coll.find().wait()
+            defer { try? cursorNoId.kill().wait() }
+            expect(cursorNoId.id).to(beNil())
         }
     }
 }

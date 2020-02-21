@@ -14,6 +14,8 @@ extension AsyncMongoCursorTests {
         ("testTailableAsyncCursor", testTailableAsyncCursor),
         ("testAsyncNext", testAsyncNext),
         ("testCursorToArray", testCursorToArray),
+        ("testForEach", testForEach),
+        ("testCursorId", testCursorId),
     ]
 }
 
@@ -51,6 +53,7 @@ extension ChangeStreamTests {
         ("testChangeStreamError", testChangeStreamError),
         ("testChangeStreamEmpty", testChangeStreamEmpty),
         ("testChangeStreamToArray", testChangeStreamToArray),
+        ("testChangeStreamForEach", testChangeStreamForEach),
     ]
 }
 

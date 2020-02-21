@@ -29,8 +29,12 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      * This change stream will be dead if `next` returns `nil` or an error. It will also be dead if `tryNext` returns
      * an error, but will still be alive if `tryNext` returns `nil`.
      */
-    public var isAlive: Bool {
-        return self.asyncChangeStream.isAlive
+    public func isAlive() -> Bool {
+        do {
+            return try self.asyncChangeStream.isAlive().wait()
+        } catch {
+            return false
+        }
     }
 
     /**
