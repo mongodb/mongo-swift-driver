@@ -255,4 +255,19 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
             expect(try cursor.forEach(increment).wait()).to(throwError(errorType: LogicError.self))
         }
     }
+
+    func testCursorId() throws {
+        try self.withTestNamespace { _, _, coll in
+            _ = try coll.insertMany([["x": 1], ["x": 2]]).wait()
+            // use batchSize of 1 so the cursor has to use multiple batches and will have an id
+            let options = FindOptions(batchSize: 1)
+            let cursorWithId = try coll.find(options: options).wait()
+            defer { try? cursorWithId.kill().wait() }
+            expect(cursorWithId.id).toNot(beNil())
+
+            let cursorNoId = try coll.find().wait()
+            defer { try? cursorNoId.kill().wait() }
+            expect(cursorNoId.id).to(beNil())
+        }
+    }
 }

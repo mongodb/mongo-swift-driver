@@ -41,6 +41,10 @@ public class MongoCursor<T: Codable>: CursorProtocol {
     /// Decoder from the client, database, or collection that created this cursor.
     internal let decoder: BSONDecoder
 
+    /// The ID used by the server to track the cursor over time. If all of the cursor's results were returnable in a
+    /// batch, or if the cursor contained no results, this value will be nil.
+    public let id: Int64?
+
     /**
      * Initializes a new `MongoCursor` instance. Not meant to be instantiated directly by a user. When `forceIO` is
      * true, this initializer will force a connection to the server if one is not already established.
@@ -66,6 +70,14 @@ public class MongoCursor<T: Codable>: CursorProtocol {
             session: session,
             type: cursorType ?? .nonTailable
         )
+
+        self.id = self.wrappedCursor.withUnsafeMongocPointer { ptr in
+            guard let ptr = ptr else {
+                return nil
+            }
+            let id = mongoc_cursor_get_id(ptr)
+            return id == 0 ? nil : id
+        }
     }
 
     /// Decodes a result to the generic type or `nil` if no result were returned.
@@ -97,17 +109,6 @@ public class MongoCursor<T: Codable>: CursorProtocol {
         }
     }
 
-    /// Returns the ID used by the server to track the cursor. `nil` once all results have been fetched from the server.
-    public var id: Int64? {
-        return self.wrappedCursor.withUnsafeMongocPointer { ptr in
-            guard let ptr = ptr else {
-                return nil
-            }
-            let id = mongoc_cursor_get_id(ptr)
-            return id == 0 ? nil : id
-        }
-    }
-
     /**
      * Attempt to get the next `T` from the cursor, returning `nil` if there are no results.
      *
@@ -116,6 +117,9 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      * If this cursor is a tailable await cursor, it will wait for results server side for a maximum of `maxAwaitTimeMS`
      * before evaluating to `nil`. This option can be configured via options passed to the method that created this
      * cursor (e.g. the `maxAwaitTimeMS` option on the `FindOptions` passed to `find`).
+     *
+     * Note: You *must not* call any cursor methods besides `kill` and `isAlive` while the future returned from this
+     * method is unresolved. Doing so will result in undefined behavior.
      *
      * - Returns:
      *    An `EventLoopFuture<T?>` containing the next `T` in this cursor, an error if one occurred, or `nil` if
@@ -139,6 +143,14 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      *
      * If this cursor is tailable, this method will continue polling until a non-empty batch is returned from the server
      * or the cursor is closed.
+     *
+     * A thread from the driver's internal thread pool will be occupied until the returned future is completed, so
+     * performance degradation is possible if the number of polling cursors is too close to the total number of threads
+     * in the thread pool. To configure the total number of threads in the pool, set the `ClientOptions.threadPoolSize`
+     * option during client creation.
+     *
+     * Note: You *must not* call any cursor methods besides `kill` and `isAlive` while the future returned from this
+     * method is unresolved. Doing so will result in undefined behavior.
      *
      * - Returns:
      *   An `EventLoopFuture<T?>` evaluating to the next `T` in this cursor, or `nil` if the cursor is exhausted. If
@@ -165,6 +177,9 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      * If this cursor is tailable, `toArray` will only fetch the currently available results, and it
      * may return more data if it is called again while the cursor is still alive.
      *
+     * Note: You *must not* call any cursor methods besides `kill` and `isAlive` while the future returned from this
+     * method is unresolved. Doing so will result in undefined behavior.
+     *
      * - Returns:
      *    An `EventLoopFuture<[T]>` evaluating to the results currently available in this cursor, or an error.
      *
@@ -186,6 +201,14 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      * If the cursor is not tailable, this method will exhaust it, calling the closure with every document.
      *
      * If the cursor is tailable, the method will call the closure with each new document as it arrives.
+     *
+     * A thread from the driver's internal thread pool will be occupied until the returned future is completed, so
+     * performance degradation is possible if the number of polling cursors is too close to the total number of threads
+     * in the thread pool. To configure the total number of threads in the pool, set the `ClientOptions.threadPoolSize`
+     * option during client creation.
+     *
+     * Note: You *must not* call any cursor methods besides `kill` and `isAlive` while the future returned from this
+     * method is unresolved. Doing so will result in undefined behavior.
      *
      * - Returns:
      *     An `EventLoopFuture<Void>` which will succeed when the end of the cursor is reached, or in the case of a

@@ -307,7 +307,7 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
         }
     }
 
-    /// Retreive all the currently available documents in the result set.
+    /// Retrieve all the currently available documents in the result set.
     /// This will not exhaust the cursor.
     /// This method is blocking and should only be run via the executor.
     internal func toArray() throws -> [Document] {

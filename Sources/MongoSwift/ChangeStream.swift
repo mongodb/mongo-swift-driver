@@ -126,10 +126,13 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      * (specified on the `ChangeStreamOptions` passed  to the method that created this change stream) before trying
      * again.
      *
-     * A thread from the pool will be occupied until the returned future is completed, so performance degradation
-     * is possible if the number of polling change streams is too close to the total number of threads in the thread
-     * pool. To configure the total number of threads in the pool, set the `ClientOptions.threadPoolSize` option
-     * during client creation.
+     * A thread from the driver's internal thread pool will be occupied until the returned future is completed, so
+     * performance degradation is possible if the number of polling change streams is too close to the total number of
+     * threads in the thread pool. To configure the total number of threads in the pool, set the
+     * `ClientOptions.threadPoolSize` option during client creation.
+     *
+     * Note: You *must not* call any change stream methods besides `kill` and `isAlive` while the future returned from
+     * this method is unresolved. Doing so will result in undefined behavior.
      *
      * - Returns:
      *   An `EventLoopFuture<T?>` evaluating to the next `T` in this change stream, `nil` if the change stream is
@@ -156,6 +159,9 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      *
      * This method may be called repeatedly while `isAlive` is true to retrieve new data.
      *
+     * Note: You *must not* call any change stream methods besides `kill` and `isAlive` while the future returned from
+     * this method is unresolved. Doing so will result in undefined behavior.
+     *
      * - Returns:
      *    An `EventLoopFuture<T?>` containing the next `T` in this change stream, an error if one occurred, or `nil` if
      *    there was no data.
@@ -178,6 +184,9 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      * Since `toArray` will only fetch the currently available results, it may return more data if it is called again
      * while the change stream is still alive.
      *
+     * Note: You *must not* call any change stream methods besides `kill` and `isAlive` while the future returned from
+     * this method is unresolved. Doing so will result in undefined behavior.
+     *
      * - Returns:
      *    An `EventLoopFuture<[T]>` evaluating to the results currently available in this change stream, or an error.
      *
@@ -196,8 +205,17 @@ public class ChangeStream<T: Codable>: CursorProtocol {
     /**
      * Calls the provided closure with each event in the change stream as it arrives.
      *
+     * A thread from the driver's internal thread pool will be occupied until the returned future is completed, so
+     * performance degradation is possible if the number of polling change streams is too close to the total number of
+     * threads in the thread pool. To configure the total number of threads in the pool, set the
+     * `ClientOptions.threadPoolSize` option during client creation.
+     *
+     * Note: You *must not* call any change stream methods besides `kill` and `isAlive` while the future returned from
+     * this method is unresolved. Doing so will result in undefined behavior.
+     *
      * - Returns:
-     *     An `EventLoopFuture<Void>` which will succeed once the change stream is killed via `kill`.
+     *     An `EventLoopFuture<Void>` which will complete once the change stream is closed or once an error is
+     *     encountered.
      *
      *     If the future evaluates to an error, that error is likely one of the following:
      *     - `CommandError` if an error occurs while fetching more results from the server.
