@@ -42,7 +42,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
     internal let decoder: BSONDecoder
 
     /// The ID used by the server to track the cursor over time. If all of the cursor's results were returnable in a
-    /// batch, or if the cursor contained no results, this value will be nil.
+    /// single batch, or if the cursor contained no results, this value will be nil.
     public let id: Int64?
 
     /**
