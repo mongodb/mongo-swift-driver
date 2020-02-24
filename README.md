@@ -78,7 +78,7 @@ Note: You should call `cleanupMongoSwift()` exactly once at the end of your appl
 import MongoSwift
 import NIO
 
-let elg = MultithreadedEventLoopGroup(numberOfThreads: 4)
+let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
 let client = try MongoClient("mongodb://localhost:27017", using: elg)
 
 defer {
@@ -91,7 +91,7 @@ defer {
 }
 
 let db = client.db("myDB")
-db.createCollection("myCollection").flatMap { collection in
+let result = db.createCollection("myCollection").flatMap { collection in
     // use collection...
 }
 ```
@@ -132,15 +132,22 @@ print(result?.insertedId ?? "") // prints `.int64(100)`
 ```
 
 ### Find Documents
+**Async**:
+```swift
+let query: Document = ["a": 1]
+let result = collection.find(query).flatMap { cursor in
+    cursor.forEach { doc in
+        print(doc)
+    }
+}
+```
+
+**Sync**:
 ```swift
 let query: Document = ["a": 1]
 let documents = try collection.find(query)
 for d in documents {
-    print(d)
-}
-// check if an error occurred while iterating the cursor
-if let error = documents.error {
-    throw error
+    print(try d.get())
 }
 ```
 
