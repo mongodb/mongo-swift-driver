@@ -65,15 +65,15 @@ private func changeStreams() throws {
     do {
         // Start Changestream Example 1
         let inventory = db.collection("inventory")
-        let futureCursor = inventory.watch()
+        let futureChangeStream = inventory.watch()
 
         // Option 1: retrieve next document via next()
-        let next = futureCursor.flatMap { cursor in
+        let next = futureChangeStream.flatMap { cursor in
             cursor.next()
         }
 
         // Option 2: register a callback to execute for each document
-        let result = futureCursor.flatMap { cursor in
+        let result = futureChangeStream.flatMap { cursor in
             cursor.forEach { event in
                 // process event
                 print(event)
@@ -85,16 +85,16 @@ private func changeStreams() throws {
     do {
         // Start Changestream Example 2
         let inventory = db.collection("inventory")
-        let futureCursor = inventory.watch(options: ChangeStreamOptions(fullDocument: .updateLookup))
+        let futureChangeStream = inventory.watch(options: ChangeStreamOptions(fullDocument: .updateLookup))
 
         // Option 1: use next() to iterate
-        let next = futureCursor.flatMap { cursor in
-            cursor.next()
+        let next = futureChangeStream.flatMap { changeStream in
+            changeStream.next()
         }
 
         // Option 2: register a callback to execute for each document
-        let result = futureCursor.flatMap { cursor in
-            cursor.forEach { event in
+        let result = futureChangeStream.flatMap { changeStream in
+            changeStream.forEach { event in
                 // process event
                 print(event)
             }
@@ -105,18 +105,21 @@ private func changeStreams() throws {
     do {
         // Start Changestream Example 3
         let inventory = db.collection("inventory")
-        let futureCursor = inventory.watch(options: ChangeStreamOptions(fullDocument: .updateLookup))
-        let next = futureCursor.flatMap { $0.next() }
 
-        let resumeToken = futureCursor.and(next).map { cursor, _ in
-            cursor.resumeToken
-        }
-
-        let resumedCursor = resumeToken.flatMap { token in
-            inventory.watch(options: ChangeStreamOptions(resumeAfter: token))
-        }
-        let nextAfterResume = resumedCursor.flatMap { cursor in
-            cursor.next()
+        inventory.watch(options: ChangeStreamOptions(fullDocument: .updateLookup))
+        .flatMap { changeStream in
+            changeStream.next().map { _ in
+                changeStream.resumeToken
+            }.always { _ in
+                _ = changeStream.kill()
+            }
+        }.flatMap { resumeToken in
+            inventory.watch(options: ChangeStreamOptions(resumeAfter: resumeToken)).flatMap { newStream in
+                newStream.forEach { event in
+                    // process event
+                    print(event)
+                }
+            }
         }
         // End Changestream Example 3
     }
@@ -128,16 +131,16 @@ private func changeStreams() throws {
             ["$addFields": ["newField": "this is an added field!"]]
         ]
         let inventory = db.collection("inventory")
-        let futureCursor = inventory.watch(pipeline, withEventType: Document.self)
+        let futureChangeStream = inventory.watch(pipeline, withEventType: Document.self)
 
         // Option 1: use next() to iterate
-        let next = futureCursor.flatMap { cursor in
-            cursor.next()
+        let next = futureChangeStream.flatMap { changeStream in
+            changeStream.next()
         }
 
         // Option 2: register a callback to execute for each document
-        let result = futureCursor.flatMap { cursor in
-            cursor.forEach { event in
+        let result = futureChangeStream.flatMap { changeStream in
+            changeStream.forEach { event in
                 // process event
                 print(event)
             }

@@ -53,28 +53,28 @@ private func changeStreams() throws {
     do {
         // Start Changestream Example 1
         let inventory = db.collection("inventory")
-        let cursor = try inventory.watch()
-        let next = cursor.next()
+        let changeStream = try inventory.watch()
+        let next = changeStream.next()
         // End Changestream Example 1
     }
 
     do {
         // Start Changestream Example 2
         let inventory = db.collection("inventory")
-        let cursor = try inventory.watch(options: ChangeStreamOptions(fullDocument: .updateLookup))
-        let next = cursor.next()
+        let changeStream = try inventory.watch(options: ChangeStreamOptions(fullDocument: .updateLookup))
+        let next = changeStream.next()
         // End Changestream Example 2
     }
 
     do {
         // Start Changestream Example 3
         let inventory = db.collection("inventory")
-        let cursor = try inventory.watch(options: ChangeStreamOptions(fullDocument: .updateLookup))
-        let next = cursor.next()
+        let changeStream = try inventory.watch(options: ChangeStreamOptions(fullDocument: .updateLookup))
+        let next = changeStream.next()
 
-        let resumeToken = cursor.resumeToken
-        let resumedCursor = try inventory.watch(options: ChangeStreamOptions(resumeAfter: resumeToken))
-        let nextAfterResume = resumedCursor.next()
+        let resumeToken = changeStream.resumeToken
+        let resumedChangeStream = try inventory.watch(options: ChangeStreamOptions(resumeAfter: resumeToken))
+        let nextAfterResume = resumedChangeStream.next()
         // End Changestream Example 3
     }
 
@@ -85,8 +85,8 @@ private func changeStreams() throws {
             ["$addFields": ["newField": "this is an added field!"]]
         ]
         let inventory = db.collection("inventory")
-        let cursor = try inventory.watch(pipeline, withEventType: Document.self)
-        let next = cursor.next()
+        let changeStream = try inventory.watch(pipeline, withEventType: Document.self)
+        let next = changeStream.next()
         // End Changestream Example 4
     }
 }
