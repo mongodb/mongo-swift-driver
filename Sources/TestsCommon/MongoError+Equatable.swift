@@ -59,7 +59,7 @@ extension BulkWriteFailure: Equatable {
 
 extension WriteConcernFailure: Equatable {
     public static func == (lhs: WriteConcernFailure, rhs: WriteConcernFailure) -> Bool {
-        return lhs.code == rhs.code && lhs.details == rhs.details
+        return lhs.code == rhs.code
     }
 }
 
