@@ -159,8 +159,8 @@ internal struct ChangeStreamTest: Decodable {
     let result: ChangeStreamTestResult
 
     internal func run(globalClient: MongoClient, database: String, collection: String) throws {
-        let monitor = TestCommandEventHandler()
-        let client = try MongoClient.makeTestClient(options: ClientOptions(commandEventHandler: monitor))
+        let client = try MongoClient.makeTestClient()
+        let monitor = client.addCommandMonitor()
 
         monitor.captureEvents {
             do {
@@ -441,8 +441,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         }
 
         // turn off retryReads so that retry attempts can be distinguished from resume attempts.
-        let monitor = TestCommandEventHandler()
-        let opts = ClientOptions(commandEventHandler: monitor, retryReads: false)
+        let opts = ClientOptions(retryReads: false)
 
         try withTestNamespace(clientOptions: opts) { client, _, coll in
             guard try client.supportsFailCommand() else {
@@ -450,6 +449,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
                 return
             }
 
+            let monitor = client.addCommandMonitor()
             let failpoint = FailPoint.failCommand(failCommands: ["aggregate"], mode: .times(1), errorCode: 10107)
             try failpoint.enable()
             defer { failpoint.disable() }
@@ -579,13 +579,13 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let monitor = TestCommandEventHandler()
-        try withTestNamespace(clientOptions: ClientOptions(commandEventHandler: monitor)) { client, _, collection in
+        try withTestNamespace { client, _, collection in
             guard try client.supportsFailCommand() else {
                 print("Skipping \(self.name) because server version doesn't support failCommand")
                 return
             }
 
+            let monitor = client.addCommandMonitor()
             var changeStream: ChangeStream<ChangeStreamEvent<Document>>?
             let options = ChangeStreamOptions(batchSize: 1)
 

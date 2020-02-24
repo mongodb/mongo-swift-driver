@@ -36,7 +36,7 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
         fileprivate var lastTopologyDescription: TopologyDescription?
 
         // listen for TopologyDescriptionChanged events and continually record the latest description we've seen.
-        func handleTopologyEvent(_ event: TopologyEvent) {
+        func handleSDAMEvent(_ event: SDAMEvent) {
             guard case let .topologyDescriptionChanged(event) = event else {
                 return
             }
@@ -71,8 +71,9 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
                     pemFile: URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? ""),
                     weakCertValidation: true
                 )
-                let opts = ClientOptions(sdamEventHandler: topologyWatcher, tlsOptions: tlsOpts)
+                let opts = ClientOptions(tlsOptions: tlsOpts)
                 return try self.withTestClient(testCase.uri, options: opts) { client in
+                    client.addSDAMEventHandler(topologyWatcher)
                     // try selecting a server to trigger SDAM
                     _ = try client.connectionPool.selectServer(forWrites: false)
                     return try client.connectionPool.getConnectionString()

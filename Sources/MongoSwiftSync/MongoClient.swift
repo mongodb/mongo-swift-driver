@@ -281,6 +281,46 @@ public class MongoClient {
 
         return ChangeStream(wrapping: asyncStream, client: self)
     }
+
+    /**
+     * Attach a `CommandEventHandler` that will receive `CommandEvent`s emitted by this client.
+     *
+     * Note: the client stores a weak reference to this handler, so it must be kept alive separately in order for it
+     * to continue to receive events.
+     */
+    public func addCommandEventHandler<T: CommandEventHandler>(_ handler: T) {
+        self.asyncClient.addCommandEventHandler(handler)
+    }
+
+    /**
+     * Attach a callback that will receive `CommandEvent`s emitted by this client.
+     *
+     * Note: if the provided callback captures this client, it must do so weakly. Otherwise, it will constitute a
+     * strong reference cycle and potentially result in memory leaks.
+     */
+    public func addCommandEventHandler(_ handlerFunc: @escaping (CommandEvent) -> Void) {
+        self.asyncClient.addCommandEventHandler(handlerFunc)
+    }
+
+    /**
+     * Attach a `CommandEventHandler` that will receive `CommandEvent`s emitted by this client.
+     *
+     * Note: the client stores a weak reference to this handler, so it must be kept alive separately in order for it
+     * to continue to receive events.
+     */
+    public func addSDAMEventHandler<T: SDAMEventHandler>(_ handler: T) {
+        self.asyncClient.addSDAMEventHandler(handler)
+    }
+
+    /**
+     * Attach a callback that will receive `CommandEvent`s emitted by this client.
+     *
+     * Note: if the provided callback captures this client, it must do so weakly. Otherwise, it will constitute a
+     * strong reference cycle and potentially result in memory leaks.
+     */
+    public func addSDAMEventHandler(_ handlerFunc: @escaping (SDAMEvent) -> Void) {
+        self.asyncClient.addSDAMEventHandler(handlerFunc)
+    }
 }
 
 extension MongoClient: Equatable {

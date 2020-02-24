@@ -257,9 +257,7 @@ extension SpecTest {
 
         print("Executing test: \(self.description)")
 
-        let monitor = TestCommandEventHandler()
         var clientOptions = self.clientOptions ?? ClientOptions(retryReads: true)
-        clientOptions.commandEventHandler = monitor
 
         if let failPoint = self.failPoint {
             try parent.activateFailPoint(failPoint)
@@ -267,6 +265,8 @@ extension SpecTest {
         defer { parent.disableActiveFailPoint() }
 
         let client = try MongoClient.makeTestClient(options: clientOptions)
+        let monitor = client.addCommandMonitor()
+
         let db = client.db(dbName)
         var collection: MongoCollection<Document>?
 

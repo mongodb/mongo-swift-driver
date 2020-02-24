@@ -184,7 +184,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
 
     // Executes the body twice, once with the supplied session and once without, verifying that a correct lsid is
     // seen both times.
-    func runArgTest(monitor: TestCommandEventHandler, session: MongoSwiftSync.ClientSession, op: SessionOp) throws {
+    func runArgTest(monitor: TestCommandMonitor, session: MongoSwiftSync.ClientSession, op: SessionOp) throws {
         monitor.captureEvents {
             // We don't care if they succeed (e.g. a drop index may fail if index doesn't exist)
             try? op.body(session)
@@ -202,8 +202,8 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
     /// Sessions spec test 3: test that every function that takes a session parameter passes the sends implicit and
     /// explicit lsids to server.
     func testSessionArguments() throws {
-        let monitor = TestCommandEventHandler()
-        let client1 = try MongoClient.makeTestClient(options: ClientOptions(commandEventHandler: monitor))
+        let client1 = try MongoClient.makeTestClient()
+        let monitor = client1.addCommandMonitor()
         let database = client1.db(type(of: self).testDatabase)
         let collection = try database.createCollection(self.getCollectionName())
         let session = client1.startSession()
@@ -257,8 +257,9 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
 
     /// Sessions spec test 10: Test cursors have the same lsid in the initial find command and in subsequent getMores.
     func testSessionCursor() throws {
-        let monitor = TestCommandEventHandler()
-        let client = try MongoClient.makeTestClient(options: ClientOptions(commandEventHandler: monitor))
+        let client = try MongoClient.makeTestClient()
+        let monitor = client.addCommandMonitor()
+
         let database = client.db(type(of: self).testDatabase)
         let collection = try database.createCollection(self.getCollectionName())
         let session = client.startSession()
@@ -333,8 +334,8 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
             return
         }
 
-        let monitor = TestCommandEventHandler()
-        let client = try MongoClient.makeTestClient(options: ClientOptions(commandEventHandler: monitor))
+        let client = try MongoClient.makeTestClient()
+        let monitor = client.addCommandMonitor()
         let db = client.db(type(of: self).testDatabase)
         let collection = try db.createCollection(self.getCollectionName())
 
@@ -460,8 +461,8 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
             return
         }
 
-        let monitor = TestCommandEventHandler()
-        let client = try MongoClient.makeTestClient(options: ClientOptions(commandEventHandler: monitor))
+        let monitor = TestCommandMonitor()
+        let client = try MongoClient.makeTestClient()
         let db = client.db(type(of: self).testDatabase)
         let collection = db.collection(self.getCollectionName())
 
@@ -497,8 +498,8 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
 
     /// Test causal consistent behavior that is expected on any topology, regardless of whether it supports cluster time
     func testCausalConsistencyAnyTopology() throws {
-        let monitor = TestCommandEventHandler()
-        let client = try MongoClient.makeTestClient(options: ClientOptions(commandEventHandler: monitor))
+        let client = try MongoClient.makeTestClient()
+        let monitor = client.addCommandMonitor()
         let db = client.db(type(of: self).testDatabase)
         let collection = db.collection(self.getCollectionName())
 

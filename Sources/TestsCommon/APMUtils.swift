@@ -3,7 +3,7 @@ import MongoSwift
 
 /// A command event handler that caches the events it encounters.
 /// Note: it will only cache events that occur while closures passed to `captureEvents` are executing.
-public class TestCommandEventHandler: CommandEventHandler {
+public class TestCommandMonitor: CommandEventHandler {
     private var monitoring: Bool
     private var events: [CommandEvent]
 

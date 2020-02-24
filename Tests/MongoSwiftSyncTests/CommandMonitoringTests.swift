@@ -16,8 +16,8 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
             return
         }
 
-        let monitor = TestCommandEventHandler()
-        let client = try MongoClient.makeTestClient(options: ClientOptions(commandEventHandler: monitor))
+        let client = try MongoClient.makeTestClient()
+        let monitor = client.addCommandMonitor()
 
         let tests = try retrieveSpecTestFiles(specName: "command-monitoring", asType: CMTestFile.self)
         for (filename, testFile) in tests {

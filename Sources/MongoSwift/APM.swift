@@ -2,30 +2,15 @@ import CLibMongoC
 import Foundation
 
 /// A protocol for `CommandEvent` handlers to implement.
-public protocol CommandEventHandler {
+public protocol CommandEventHandler: AnyObject {
     /// Handle a `CommandEvent`.
     func handleCommandEvent(_ event: CommandEvent)
 }
 
 /// A protocol for handlers of events relating to SDAM to implement.
-public protocol SDAMEventHandler {
-    /// Handle a `TopologyEvent`.
-    /// Implementing this method is optional. If no implementation is provided, `TopologyEvent`s will be ignored.
-    func handleTopologyEvent(_ event: TopologyEvent)
-
-    /// Handle a `ServerHeartbeatEvent`.
-    /// Implementing this method is optional. If no implementation is provided, `ServerHeartbeatEvent`s will be ignored.
-    func handleServerHeartbeatEvent(_ event: ServerHeartbeatEvent)
-}
-
-public extension SDAMEventHandler {
-    /// Handle a `TopologyEvent`.
-    /// Implementing this method is optional. If no implementation is provided, `TopologyEvent`s will be ignored.
-    func handleTopologyEvent(_: TopologyEvent) {}
-
-    /// Handle a `ServerHeartbeatEvent`.
-    /// Implementing this method is optional. If no implementation is provided, `ServerHeartbeatEvent`s will be ignored.
-    func handleServerHeartbeatEvent(_: ServerHeartbeatEvent) {}
+public protocol SDAMEventHandler: AnyObject {
+    /// Handle an `SDAMEvent`.
+    func handleSDAMEvent(_ event: SDAMEvent)
 }
 
 /// A protocol for events that are directly consumable by users to implement.
@@ -74,7 +59,9 @@ public enum CommandEvent: Publishable {
     }
 
     fileprivate func publish(to client: MongoClient) {
-        client.commandEventHandler?.handleCommandEvent(self)
+        client.commandEventHandlers.forEach { handler in
+            handler.handleCommandEvent(self)
+        }
     }
 
     /// The name of the command that generated this event.
@@ -265,7 +252,7 @@ public struct CommandFailedEvent: MongoSwiftEvent, CommandEventProtocol {
 }
 
 /// An SDAM monitoring event related to topology updates.
-public enum TopologyEvent: Publishable {
+public enum SDAMEvent: Publishable {
     /// Published when a topology description changes.
     case topologyDescriptionChanged(TopologyDescriptionChangedEvent)
 
@@ -284,26 +271,20 @@ public enum TopologyEvent: Publishable {
     /// Published when a server is removed from a topology and no longer monitored.
     case serverClosed(ServerClosedEvent)
 
-    /// The id of the topology that was updated.
-    public var topologyId: ObjectId {
-        switch self {
-        case let .topologyDescriptionChanged(event):
-            return event.topologyId
-        case let .topologyOpening(event):
-            return event.topologyId
-        case let .topologyClosed(event):
-            return event.topologyId
-        case let .serverDescriptionChanged(event):
-            return event.topologyId
-        case let .serverOpening(event):
-            return event.topologyId
-        case let .serverClosed(event):
-            return event.topologyId
-        }
-    }
+    /// Published when the server monitor’s ismaster command is started - immediately before
+    /// the ismaster command is serialized into raw BSON and written to the socket.
+    case serverHeartbeatStarted(ServerHeartbeatStartedEvent)
+
+    /// Published when the server monitor’s ismaster succeeds.
+    case serverHeartbeatSucceeded(ServerHeartbeatSucceededEvent)
+
+    /// Published when the server monitor’s ismaster fails, either with an “ok: 0” or a socket exception.
+    case serverHeartbeatFailed(ServerHeartbeatFailedEvent)
 
     fileprivate func publish(to client: MongoClient) {
-        client.sdamEventHandler?.handleTopologyEvent(self)
+        client.sdamEventHandlers.forEach { handler in
+            handler.handleSDAMEvent(self)
+        }
     }
 }
 
@@ -346,7 +327,7 @@ public struct ServerDescriptionChangedEvent: MongoSwiftEvent {
         self.newDescription = ServerDescription(mongoc_apm_server_changed_get_new_description(mongocEvent.ptr))
     }
 
-    fileprivate func toPublishable() -> TopologyEvent {
+    fileprivate func toPublishable() -> SDAMEvent {
         return .serverDescriptionChanged(self)
     }
 }
@@ -381,7 +362,7 @@ public struct ServerOpeningEvent: MongoSwiftEvent {
         self.topologyId = ObjectId(bsonOid: oid)
     }
 
-    fileprivate func toPublishable() -> TopologyEvent {
+    fileprivate func toPublishable() -> SDAMEvent {
         return .serverOpening(self)
     }
 }
@@ -416,7 +397,7 @@ public struct ServerClosedEvent: MongoSwiftEvent {
         self.topologyId = ObjectId(bsonOid: oid)
     }
 
-    fileprivate func toPublishable() -> TopologyEvent {
+    fileprivate func toPublishable() -> SDAMEvent {
         return .serverClosed(self)
     }
 }
@@ -456,7 +437,7 @@ public struct TopologyDescriptionChangedEvent: MongoSwiftEvent {
         self.newDescription = TopologyDescription(mongoc_apm_topology_changed_get_new_description(mongocEvent.ptr))
     }
 
-    fileprivate func toPublishable() -> TopologyEvent {
+    fileprivate func toPublishable() -> SDAMEvent {
         return .topologyDescriptionChanged(self)
     }
 }
@@ -487,7 +468,7 @@ public struct TopologyOpeningEvent: MongoSwiftEvent {
         self.topologyId = ObjectId(bsonOid: oid)
     }
 
-    fileprivate func toPublishable() -> TopologyEvent {
+    fileprivate func toPublishable() -> SDAMEvent {
         return .topologyOpening(self)
     }
 }
@@ -518,37 +499,8 @@ public struct TopologyClosedEvent: MongoSwiftEvent {
         self.topologyId = ObjectId(bsonOid: oid)
     }
 
-    fileprivate func toPublishable() -> TopologyEvent {
+    fileprivate func toPublishable() -> SDAMEvent {
         return .topologyClosed(self)
-    }
-}
-
-/// SDAM monitoring event related to a server heartbeat.
-public enum ServerHeartbeatEvent: Publishable {
-    /// Published when the server monitor’s ismaster command is started - immediately before
-    /// the ismaster command is serialized into raw BSON and written to the socket.
-    case started(ServerHeartbeatStartedEvent)
-
-    /// Published when the server monitor’s ismaster succeeds.
-    case succeeded(ServerHeartbeatSucceededEvent)
-
-    /// Published when the server monitor’s ismaster fails, either with an “ok: 0” or a socket exception.
-    case failed(ServerHeartbeatFailedEvent)
-
-    /// The address of the server being checked.
-    public var serverAddress: Address {
-        switch self {
-        case let .started(event):
-            return event.serverAddress
-        case let .succeeded(event):
-            return event.serverAddress
-        case let .failed(event):
-            return event.serverAddress
-        }
-    }
-
-    fileprivate func publish(to client: MongoClient) {
-        client.sdamEventHandler?.handleServerHeartbeatEvent(self)
     }
 }
 
@@ -575,8 +527,8 @@ public struct ServerHeartbeatStartedEvent: MongoSwiftEvent {
         self.serverAddress = Address(mongoc_apm_server_heartbeat_started_get_host(mongocEvent.ptr))
     }
 
-    fileprivate func toPublishable() -> ServerHeartbeatEvent {
-        return .started(self)
+    fileprivate func toPublishable() -> SDAMEvent {
+        return .serverHeartbeatStarted(self)
     }
 }
 
@@ -611,8 +563,8 @@ public struct ServerHeartbeatSucceededEvent: MongoSwiftEvent {
         self.serverAddress = Address(mongoc_apm_server_heartbeat_succeeded_get_host(mongocEvent.ptr))
     }
 
-    fileprivate func toPublishable() -> ServerHeartbeatEvent {
-        return .succeeded(self)
+    fileprivate func toPublishable() -> SDAMEvent {
+        return .serverHeartbeatSucceeded(self)
     }
 }
 
@@ -648,8 +600,8 @@ public struct ServerHeartbeatFailedEvent: MongoSwiftEvent {
         self.serverAddress = Address(mongoc_apm_server_heartbeat_failed_get_host(mongocEvent.ptr))
     }
 
-    fileprivate func toPublishable() -> ServerHeartbeatEvent {
-        return .failed(self)
+    fileprivate func toPublishable() -> SDAMEvent {
+        return .serverHeartbeatFailed(self)
     }
 }
 
@@ -755,23 +707,19 @@ extension ConnectionPool {
         }
         defer { mongoc_apm_callbacks_destroy(callbacks) }
 
-        if client.commandEventHandler != nil {
-            mongoc_apm_set_command_started_cb(callbacks, commandStarted)
-            mongoc_apm_set_command_succeeded_cb(callbacks, commandSucceeded)
-            mongoc_apm_set_command_failed_cb(callbacks, commandFailed)
-        }
+        mongoc_apm_set_command_started_cb(callbacks, commandStarted)
+        mongoc_apm_set_command_succeeded_cb(callbacks, commandSucceeded)
+        mongoc_apm_set_command_failed_cb(callbacks, commandFailed)
 
-        if client.sdamEventHandler != nil {
-            mongoc_apm_set_server_changed_cb(callbacks, serverDescriptionChanged)
-            mongoc_apm_set_server_opening_cb(callbacks, serverOpening)
-            mongoc_apm_set_server_closed_cb(callbacks, serverClosed)
-            mongoc_apm_set_topology_changed_cb(callbacks, topologyDescriptionChanged)
-            mongoc_apm_set_topology_opening_cb(callbacks, topologyOpening)
-            mongoc_apm_set_topology_closed_cb(callbacks, topologyClosed)
-            mongoc_apm_set_server_heartbeat_started_cb(callbacks, serverHeartbeatStarted)
-            mongoc_apm_set_server_heartbeat_succeeded_cb(callbacks, serverHeartbeatSucceeded)
-            mongoc_apm_set_server_heartbeat_failed_cb(callbacks, serverHeartbeatFailed)
-        }
+        mongoc_apm_set_server_changed_cb(callbacks, serverDescriptionChanged)
+        mongoc_apm_set_server_opening_cb(callbacks, serverOpening)
+        mongoc_apm_set_server_closed_cb(callbacks, serverClosed)
+        mongoc_apm_set_topology_changed_cb(callbacks, topologyDescriptionChanged)
+        mongoc_apm_set_topology_opening_cb(callbacks, topologyOpening)
+        mongoc_apm_set_topology_closed_cb(callbacks, topologyClosed)
+        mongoc_apm_set_server_heartbeat_started_cb(callbacks, serverHeartbeatStarted)
+        mongoc_apm_set_server_heartbeat_succeeded_cb(callbacks, serverHeartbeatSucceeded)
+        mongoc_apm_set_server_heartbeat_failed_cb(callbacks, serverHeartbeatFailed)
 
         // we can pass the MongoClient as unretained because the callbacks are stored on clientHandle, so if the
         // callback is being executed, this pool and therefore its parent `MongoClient` must still be valid.

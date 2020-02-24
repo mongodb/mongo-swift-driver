@@ -30,8 +30,9 @@ final class SDAMTests: MongoSwiftTestCase {
             return
         }
 
-        let monitor = TestSDAMEventHandler()
-        let client = try MongoClient.makeTestClient(options: ClientOptions(sdamEventHandler: monitor))
+        let monitor = TestSDAMMonitor()
+        let client = try MongoClient.makeTestClient()
+        client.addSDAMEventHandler(monitor)
 
         try monitor.captureEvents {
             // do some basic operations
@@ -40,7 +41,7 @@ final class SDAMTests: MongoSwiftTestCase {
             try db.drop()
         }
 
-        let receivedEvents = monitor.topologyEvents()
+        let receivedEvents = monitor.events()
 
         let connString = try ConnectionString(MongoSwiftTestCase.getConnectionString())
 
@@ -100,15 +101,13 @@ final class SDAMTests: MongoSwiftTestCase {
     }
 }
 
-/// SDAM monitoring event handler that behaves similarly to the `TestCommandEventHandler`
-private class TestSDAMEventHandler: SDAMEventHandler {
-    private var topEvents: [TopologyEvent]
-    private var heartEvents: [ServerHeartbeatEvent]
+/// SDAM monitoring event handler that behaves similarly to the `TestCommandMonitor`
+private class TestSDAMMonitor: SDAMEventHandler {
+    private var topEvents: [SDAMEvent]
     private var monitoring: Bool
 
     fileprivate init() {
         self.topEvents = []
-        self.heartEvents = []
         self.monitoring = false
     }
 
@@ -118,33 +117,21 @@ private class TestSDAMEventHandler: SDAMEventHandler {
         return try f()
     }
 
-    fileprivate func topologyEvents() -> [TopologyEvent] {
+    fileprivate func events() -> [SDAMEvent] {
         defer { self.topEvents.removeAll() }
         return self.topEvents
     }
 
-    fileprivate func heartbeatEvents() -> [ServerHeartbeatEvent] {
-        defer { self.heartEvents.removeAll() }
-        return self.heartEvents
-    }
-
-    fileprivate func handleTopologyEvent(_ event: TopologyEvent) {
+    fileprivate func handleSDAMEvent(_ event: SDAMEvent) {
         guard self.monitoring else {
             return
         }
         self.topEvents.append(event)
     }
-
-    fileprivate func handleServerHeartbeatEvent(_ event: ServerHeartbeatEvent) {
-        guard self.monitoring else {
-            return
-        }
-        self.heartEvents.append(event)
-    }
 }
 
 /// Failable accessors for the different types of topology events.
-extension TopologyEvent {
+extension SDAMEvent {
     fileprivate var topologyOpeningValue: TopologyOpeningEvent? {
         guard case let .topologyOpening(event) = self else {
             return nil

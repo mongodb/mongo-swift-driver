@@ -107,8 +107,9 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     func testDrop() throws {
         let encoder = BSONEncoder()
 
-        let monitor = TestCommandEventHandler()
-        let client = try MongoClient.makeTestClient(options: ClientOptions(commandEventHandler: monitor))
+        let client = try MongoClient.makeTestClient()
+        let monitor = client.addCommandMonitor()
+
         let db = client.db(type(of: self).testDatabase)
 
         let collection = db.collection("collection")

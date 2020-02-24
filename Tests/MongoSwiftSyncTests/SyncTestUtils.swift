@@ -101,6 +101,13 @@ extension MongoClient {
         return try MongoClient(uri, options: opts)
     }
 
+    /// Attaches a `TestCommandMonitor` to the client and returns it.
+    internal func addCommandMonitor() -> TestCommandMonitor {
+        let monitor = TestCommandMonitor()
+        self.addCommandEventHandler(monitor)
+        return monitor
+    }
+
     internal func supportsFailCommand() throws -> Bool {
         let version = try self.serverVersion()
         switch MongoSwiftTestCase.topologyType {
@@ -119,8 +126,9 @@ internal func captureCommandEvents(
     commandNames: [String]? = nil,
     f: (MongoClient) throws -> Void
 ) throws -> [CommandEvent] {
-    let monitor = TestCommandEventHandler()
-    let client = try MongoClient.makeTestClient(options: ClientOptions(commandEventHandler: monitor))
+    let client = try MongoClient.makeTestClient()
+    let monitor = client.addCommandMonitor()
+
     try monitor.captureEvents {
         try f(client)
     }

@@ -6,10 +6,6 @@ import NIOConcurrencyHelpers
 public struct ClientOptions: CodingStrategyProvider, Decodable {
     // swiftlint:disable redundant_optional_initialization
 
-    /// Indicates whether this client should publish command monitoring events. If non-nil, `CommandEvent`s will be
-    /// published to the provided handler.
-    public var commandEventHandler: CommandEventHandler? = nil
-
     /// Specifies the `DataCodingStrategy` to use for BSON encoding/decoding operations performed by this client and any
     /// databases or collections that derive from it.
     public var dataCodingStrategy: DataCodingStrategy? = nil
@@ -29,10 +25,6 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
 
     /// Determines whether the client should retry supported write operations (on by default).
     public var retryWrites: Bool?
-
-    /// Indicates whether this client should publish SDAM monitoring events. If non-nil, `TopologyEvent`s and
-    /// `ServerHeartbeatEvent`s will be published to the provided handler.
-    public var sdamEventHandler: SDAMEventHandler? = nil
 
     /**
      * `MongoSwift.MongoClient` provides an asynchronous API by running all blocking operations off of their
@@ -61,27 +53,23 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
 
     /// Convenience initializer allowing any/all to be omitted or optional.
     public init(
-        commandEventHandler: CommandEventHandler? = nil,
         dataCodingStrategy: DataCodingStrategy? = nil,
         dateCodingStrategy: DateCodingStrategy? = nil,
         readConcern: ReadConcern? = nil,
         readPreference: ReadPreference? = nil,
         retryReads: Bool? = nil,
         retryWrites: Bool? = nil,
-        sdamEventHandler: SDAMEventHandler? = nil,
         threadPoolSize: Int = MongoClient.defaultThreadPoolSize,
         tlsOptions: TLSOptions? = nil,
         uuidCodingStrategy: UUIDCodingStrategy? = nil,
         writeConcern: WriteConcern? = nil
     ) {
-        self.commandEventHandler = commandEventHandler
         self.dataCodingStrategy = dataCodingStrategy
         self.dateCodingStrategy = dateCodingStrategy
         self.readConcern = readConcern
         self.readPreference = readPreference
         self.retryWrites = retryWrites
         self.retryReads = retryReads
-        self.sdamEventHandler = sdamEventHandler
         self.threadPoolSize = threadPoolSize
         self.tlsOptions = tlsOptions
         self.uuidCodingStrategy = uuidCodingStrategy
@@ -177,8 +165,11 @@ public class MongoClient {
     /// Indicates whether this client has been closed.
     internal private(set) var isClosed = false
 
-    /// Handler for command monitoring events.
-    internal let commandEventHandler: CommandEventHandler?
+    /// Handlers for command monitoring events.
+    internal var commandEventHandlers: [CommandEventHandler]
+
+    /// Handlers for SDAM monitoring events.
+    internal var sdamEventHandlers: [SDAMEventHandler]
 
     /// Counter for generating client _ids.
     internal static var clientIdGenerator = NIOAtomic<Int>.makeAtomic(value: 0)
@@ -200,9 +191,6 @@ public class MongoClient {
 
     /// The `ReadPreference` set on this client.
     public let readPreference: ReadPreference
-
-    /// Handler for SDAM monitoring events.
-    internal let sdamEventHandler: SDAMEventHandler?
 
     /// The write concern set on this client, or nil if one is not set.
     public let writeConcern: WriteConcern?
@@ -256,9 +244,8 @@ public class MongoClient {
         self.readPreference = connString.readPreference
         self.encoder = BSONEncoder(options: options)
         self.decoder = BSONDecoder(options: options)
-        self.commandEventHandler = options?.commandEventHandler
-        self.sdamEventHandler = options?.sdamEventHandler
-
+        self.sdamEventHandlers = []
+        self.commandEventHandlers = []
         self.connectionPool.initializeMonitoring(client: self)
     }
 
@@ -561,6 +548,46 @@ public class MongoClient {
         return self.operationExecutor.execute(operation, client: self, session: session)
     }
 
+    /**
+     * Attach a `CommandEventHandler` that will receive `CommandEvent`s emitted by this client.
+     *
+     * Note: the client stores a weak reference to this handler, so it must be kept alive separately in order for it
+     * to continue to receive events.
+     */
+    public func addCommandEventHandler<T: CommandEventHandler>(_ handler: T) {
+        self.commandEventHandlers.append(WeakEventHandler<T>(referencing: handler))
+    }
+
+    /**
+     * Attach a callback that will receive `CommandEvent`s emitted by this client.
+     *
+     * Note: if the provided callback captures this client, it must do so weakly. Otherwise, it will constitute a
+     * strong reference cycle and potentially result in memory leaks.
+     */
+    public func addCommandEventHandler(_ handlerFunc: @escaping (CommandEvent) -> Void) {
+        self.commandEventHandlers.append(CallbackEventHandler(handlerFunc))
+    }
+
+    /**
+     * Attach a `CommandEventHandler` that will receive `CommandEvent`s emitted by this client.
+     *
+     * Note: the client stores a weak reference to this handler, so it must be kept alive separately in order for it
+     * to continue to receive events.
+     */
+    public func addSDAMEventHandler<T: SDAMEventHandler>(_ handler: T) {
+        self.sdamEventHandlers.append(WeakEventHandler(referencing: handler))
+    }
+
+    /**
+     * Attach a callback that will receive `CommandEvent`s emitted by this client.
+     *
+     * Note: if the provided callback captures this client, it must do so weakly. Otherwise, it will constitute a
+     * strong reference cycle and potentially result in memory leaks.
+     */
+    public func addSDAMEventHandler(_ handlerFunc: @escaping (SDAMEvent) -> Void) {
+        self.sdamEventHandlers.append(CallbackEventHandler(handlerFunc))
+    }
+
     /// Executes an `Operation` using this `MongoClient` and an optionally provided session.
     internal func executeOperation<T: Operation>(
         _ operation: T,
@@ -574,5 +601,52 @@ public class MongoClient {
 extension MongoClient: Equatable {
     public static func == (lhs: MongoClient, rhs: MongoClient) -> Bool {
         return lhs._id == rhs._id
+    }
+}
+
+/// Event handler constructed from a callback.
+/// Stores a strong reference to the provided callback.
+private class CallbackEventHandler<EventType> {
+    private let handlerFunc: (EventType) -> Void
+
+    fileprivate init(_ handlerFunc: @escaping (EventType) -> Void) {
+        self.handlerFunc = handlerFunc
+    }
+}
+
+/// Extension to make `CallbackEventHandler` an `SDAMEventHandler` when the event type is an `SDAMEvent`.
+extension CallbackEventHandler: SDAMEventHandler where EventType == SDAMEvent {
+    fileprivate func handleSDAMEvent(_ event: SDAMEvent) {
+        self.handlerFunc(event)
+    }
+}
+
+/// Extension to make `CallbackEventHandler` a `CommandEventHandler` when the event type is a `CommandEvent`.
+extension CallbackEventHandler: CommandEventHandler where EventType == CommandEvent {
+    fileprivate func handleCommandEvent(_ event: CommandEvent) {
+        self.handlerFunc(event)
+    }
+}
+
+/// Event handler that stores a weak reference to the underlying handler.
+private class WeakEventHandler<T: AnyObject> {
+    private weak var handler: T?
+
+    fileprivate init(referencing handler: T) {
+        self.handler = handler
+    }
+}
+
+/// Extension to make `WeakEventHandler` a `CommandEventHandler` when the referenced handler is a `CommandEventHandler`.
+extension WeakEventHandler: CommandEventHandler where T: CommandEventHandler {
+    fileprivate func handleCommandEvent(_ event: CommandEvent) {
+        self.handler?.handleCommandEvent(event)
+    }
+}
+
+/// Extension to make `WeakEventHandler` an `SDAMEventHandler` when the referenced handler is an `SDAMEventHandler`.
+extension WeakEventHandler: SDAMEventHandler where T: SDAMEventHandler {
+    fileprivate func handleSDAMEvent(_ event: SDAMEvent) {
+        self.handler?.handleSDAMEvent(event)
     }
 }
