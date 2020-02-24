@@ -107,20 +107,20 @@ private func changeStreams() throws {
         let inventory = db.collection("inventory")
 
         inventory.watch(options: ChangeStreamOptions(fullDocument: .updateLookup))
-        .flatMap { changeStream in
-            changeStream.next().map { _ in
-                changeStream.resumeToken
-            }.always { _ in
-                _ = changeStream.kill()
-            }
-        }.flatMap { resumeToken in
-            inventory.watch(options: ChangeStreamOptions(resumeAfter: resumeToken)).flatMap { newStream in
-                newStream.forEach { event in
-                    // process event
-                    print(event)
+            .flatMap { changeStream in
+                changeStream.next().map { _ in
+                    changeStream.resumeToken
+                }.always { _ in
+                    _ = changeStream.kill()
+                }
+            }.flatMap { resumeToken in
+                inventory.watch(options: ChangeStreamOptions(resumeAfter: resumeToken)).flatMap { newStream in
+                    newStream.forEach { event in
+                        // process event
+                        print(event)
+                    }
                 }
             }
-        }
         // End Changestream Example 3
     }
 
