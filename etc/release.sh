@@ -11,8 +11,7 @@ set -e
 sourcery --sources Sources/MongoSwift --templates Sources/MongoSwift/MongoSwiftVersion.stencil --output Sources/MongoSwift/MongoSwiftVersion.swift --args versionString=${1}
 
 # regenerate documentation with new version string
-export DOCSVERSION=${1}
-make documentation
+./etc/generate-docs.sh ${1}
 
 # commit changes
 git add docs/

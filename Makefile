@@ -56,7 +56,3 @@ clean:
 	rm -rf MongoSwift.xcodeproj
 	rm Package.resolved
 
-documentation:
-	make project
-	@$(call check_for_gem,jazzy)
-	jazzy $(DOCSARG)
