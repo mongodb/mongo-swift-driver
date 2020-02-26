@@ -355,7 +355,7 @@ extension SyncMongoClientTests {
         ("testServerVersion", testServerVersion),
         ("testCodingStrategies", testCodingStrategies),
         ("testClientLifetimeManagement", testClientLifetimeManagement),
-        ("testAPMCllbacks", testAPMCallbacks),
+        ("testAPMCallbacks", testAPMCallbacks),
     ]
 }
 
