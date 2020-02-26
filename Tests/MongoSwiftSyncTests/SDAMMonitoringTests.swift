@@ -41,7 +41,7 @@ final class SDAMTests: MongoSwiftTestCase {
             try db.drop()
         }
 
-        let receivedEvents = monitor.events()
+        let receivedEvents = monitor.events().filter { !$0.isHeartbeatEvent }
 
         let connString = try ConnectionString(MongoSwiftTestCase.getConnectionString())
 
@@ -172,5 +172,14 @@ extension SDAMEvent {
             return nil
         }
         return event
+    }
+
+    fileprivate var isHeartbeatEvent: Bool {
+        switch self {
+        case .serverHeartbeatFailed, .serverHeartbeatStarted, .serverHeartbeatSucceeded:
+            return true
+        default:
+            return false
+        }
     }
 }

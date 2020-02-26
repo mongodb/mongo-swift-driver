@@ -461,8 +461,8 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
             return
         }
 
-        let monitor = TestCommandMonitor()
         let client = try MongoClient.makeTestClient()
+        let monitor = client.addCommandMonitor()
         let db = client.db(type(of: self).testDatabase)
         let collection = db.collection(self.getCollectionName())
 
