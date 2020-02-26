@@ -303,7 +303,7 @@ public class MongoClient {
     }
 
     /**
-     * Attach a `CommandEventHandler` that will receive `CommandEvent`s emitted by this client.
+     * Attach an `SDAMEventHandler` that will receive `SDAMEvent`s emitted by this client.
      *
      * Note: the client stores a weak reference to this handler, so it must be kept alive separately in order for it
      * to continue to receive events.
@@ -313,7 +313,7 @@ public class MongoClient {
     }
 
     /**
-     * Attach a callback that will receive `CommandEvent`s emitted by this client.
+     * Attach a callback that will receive `SDAMEvent`s emitted by this client.
      *
      * Note: if the provided callback captures this client, it must do so weakly. Otherwise, it will constitute a
      * strong reference cycle and potentially result in memory leaks.
