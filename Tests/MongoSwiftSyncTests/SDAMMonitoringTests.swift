@@ -30,30 +30,18 @@ final class SDAMTests: MongoSwiftTestCase {
             return
         }
 
-        let client = try MongoClient.makeTestClient(options: ClientOptions(serverMonitoring: true))
-        let center = NotificationCenter.default
-        var receivedEvents = [MongoEvent]()
+        let monitor = TestSDAMMonitor()
+        let client = try MongoClient.makeTestClient()
+        client.addSDAMEventHandler(monitor)
 
-        let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
-            guard [
-                "serverDescriptionChanged", "serverOpening", "serverClosed", "topologyDescriptionChanged",
-                "topologyOpening", "topologyClosed"
-            ].contains(notif.name.rawValue) else { return }
-
-            guard let event = notif.userInfo?["event"] as? MongoEvent else {
-                XCTFail("Notification \(notif) did not contain an event")
-                return
-            }
-
-            receivedEvents.append(event)
+        try monitor.captureEvents {
+            // do some basic operations
+            let db = client.db(type(of: self).testDatabase)
+            _ = try db.createCollection(self.getCollectionName())
+            try db.drop()
         }
 
-        // do some basic operations
-        let db = client.db(type(of: self).testDatabase)
-        _ = try db.createCollection(self.getCollectionName())
-        try db.drop()
-
-        center.removeObserver(observer)
+        let receivedEvents = monitor.events().filter { !$0.isHeartbeatEvent }
 
         let connString = try ConnectionString(MongoSwiftTestCase.getConnectionString())
 
@@ -65,17 +53,17 @@ final class SDAMTests: MongoSwiftTestCase {
 
         // check event count and that events are of the expected types
         expect(receivedEvents.count).to(beGreaterThanOrEqualTo(5))
-        expect(receivedEvents[0]).to(beAnInstanceOf(TopologyOpeningEvent.self))
-        expect(receivedEvents[1]).to(beAnInstanceOf(TopologyDescriptionChangedEvent.self))
-        expect(receivedEvents[2]).to(beAnInstanceOf(ServerOpeningEvent.self))
-        expect(receivedEvents[3]).to(beAnInstanceOf(ServerDescriptionChangedEvent.self))
-        expect(receivedEvents[4]).to(beAnInstanceOf(TopologyDescriptionChangedEvent.self))
+        expect(receivedEvents[0].topologyOpeningValue).toNot(beNil())
+        expect(receivedEvents[1].topologyDescriptionChangedValue).toNot(beNil())
+        expect(receivedEvents[2].serverOpeningValue).toNot(beNil())
+        expect(receivedEvents[3].serverDescriptionChangedValue).toNot(beNil())
+        expect(receivedEvents[4].topologyDescriptionChangedValue).toNot(beNil())
 
         // verify that data in ServerDescription and TopologyDescription looks reasonable
-        let event0 = receivedEvents[0] as! TopologyOpeningEvent
+        let event0 = receivedEvents[0].topologyOpeningValue!
         expect(event0.topologyId).toNot(beNil())
 
-        let event1 = receivedEvents[1] as! TopologyDescriptionChangedEvent
+        let event1 = receivedEvents[1].topologyDescriptionChangedValue!
         expect(event1.topologyId).to(equal(event0.topologyId))
         expect(event1.previousDescription.type).to(equal(TopologyDescription.TopologyType.unknown))
         expect(event1.newDescription.type).to(equal(TopologyDescription.TopologyType.single))
@@ -83,11 +71,11 @@ final class SDAMTests: MongoSwiftTestCase {
         // there is no other way to get around this.
         expect(event1.newDescription.servers).to(beEmpty())
 
-        let event2 = receivedEvents[2] as! ServerOpeningEvent
+        let event2 = receivedEvents[2].serverOpeningValue!
         expect(event2.topologyId).to(equal(event1.topologyId))
         expect(event2.serverAddress).to(equal(hostAddress))
 
-        let event3 = receivedEvents[3] as! ServerDescriptionChangedEvent
+        let event3 = receivedEvents[3].serverDescriptionChangedValue!
         expect(event3.topologyId).to(equal(event2.topologyId))
         let prevServer = event3.previousDescription
         expect(prevServer.address).to(equal(hostAddress))
@@ -99,7 +87,7 @@ final class SDAMTests: MongoSwiftTestCase {
         self.checkEmptyLists(newServer)
         expect(newServer.type).to(equal(ServerDescription.ServerType.standalone))
 
-        let event4 = receivedEvents[4] as! TopologyDescriptionChangedEvent
+        let event4 = receivedEvents[4].topologyDescriptionChangedValue!
         expect(event4.topologyId).to(equal(event3.topologyId))
         let prevTopology = event4.previousDescription
         expect(prevTopology.type).to(equal(TopologyDescription.TopologyType.single))
@@ -110,5 +98,88 @@ final class SDAMTests: MongoSwiftTestCase {
         expect(newTopology.servers[0].address).to(equal(hostAddress))
         expect(newTopology.servers[0].type).to(equal(ServerDescription.ServerType.standalone))
         self.checkEmptyLists(newTopology.servers[0])
+    }
+}
+
+/// SDAM monitoring event handler that behaves similarly to the `TestCommandMonitor`
+private class TestSDAMMonitor: SDAMEventHandler {
+    private var topEvents: [SDAMEvent]
+    private var monitoring: Bool
+
+    fileprivate init() {
+        self.topEvents = []
+        self.monitoring = false
+    }
+
+    fileprivate func captureEvents<T>(_ f: () throws -> T) rethrows -> T {
+        self.monitoring = true
+        defer { self.monitoring = false }
+        return try f()
+    }
+
+    fileprivate func events() -> [SDAMEvent] {
+        defer { self.topEvents.removeAll() }
+        return self.topEvents
+    }
+
+    fileprivate func handleSDAMEvent(_ event: SDAMEvent) {
+        guard self.monitoring else {
+            return
+        }
+        self.topEvents.append(event)
+    }
+}
+
+/// Failable accessors for the different types of topology events.
+extension SDAMEvent {
+    fileprivate var topologyOpeningValue: TopologyOpeningEvent? {
+        guard case let .topologyOpening(event) = self else {
+            return nil
+        }
+        return event
+    }
+
+    fileprivate var topologyClosedValue: TopologyClosedEvent? {
+        guard case let .topologyClosed(event) = self else {
+            return nil
+        }
+        return event
+    }
+
+    fileprivate var topologyDescriptionChangedValue: TopologyDescriptionChangedEvent? {
+        guard case let .topologyDescriptionChanged(event) = self else {
+            return nil
+        }
+        return event
+    }
+
+    fileprivate var serverOpeningValue: ServerOpeningEvent? {
+        guard case let .serverOpening(event) = self else {
+            return nil
+        }
+        return event
+    }
+
+    fileprivate var serverClosedValue: ServerClosedEvent? {
+        guard case let .serverClosed(event) = self else {
+            return nil
+        }
+        return event
+    }
+
+    fileprivate var serverDescriptionChangedValue: ServerDescriptionChangedEvent? {
+        guard case let .serverDescriptionChanged(event) = self else {
+            return nil
+        }
+        return event
+    }
+
+    fileprivate var isHeartbeatEvent: Bool {
+        switch self {
+        case .serverHeartbeatFailed, .serverHeartbeatStarted, .serverHeartbeatSucceeded:
+            return true
+        default:
+            return false
+        }
     }
 }

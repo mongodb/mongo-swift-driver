@@ -32,6 +32,18 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
         self.continueAfterFailure = false
     }
 
+    fileprivate class TopologyDescriptionWatcher: SDAMEventHandler {
+        fileprivate var lastTopologyDescription: TopologyDescription?
+
+        // listen for TopologyDescriptionChanged events and continually record the latest description we've seen.
+        func handleSDAMEvent(_ event: SDAMEvent) {
+            guard case let .topologyDescriptionChanged(event) = event else {
+                return
+            }
+            self.lastTopologyDescription = event.newDescription
+        }
+    }
+
     // Note: the file txt-record-with-overridden-uri-option.json causes a mongoc warning. This is expected.
     // swiftlint:disable:next cyclomatic_complexity
     func testInitialDNSSeedlistDiscovery() throws {
@@ -49,17 +61,7 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
             asType: DNSSeedlistTestCase.self
         )
         for (filename, testCase) in tests {
-            // listen for TopologyDescriptionChanged events and continually record the latest description we've seen.
-            let center = NotificationCenter.default
-            var lastTopologyDescription: TopologyDescription?
-            let observer = center.addObserver(forName: .topologyDescriptionChanged, object: nil, queue: nil) { notif in
-                guard let event = notif.userInfo?["event"] as? TopologyDescriptionChangedEvent else {
-                    XCTFail("unexpected event \(notif.userInfo?["event"] ?? "nil")")
-                    return
-                }
-                lastTopologyDescription = event.newDescription
-            }
-            defer { center.removeObserver(observer) }
+            let topologyWatcher = TopologyDescriptionWatcher()
 
             // Enclose all of the potentially throwing code in `doTest`. Sometimes the expected errors come when
             // parsing the URI, and other times they are not until we try to select a server.
@@ -69,8 +71,9 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
                     pemFile: URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? ""),
                     weakCertValidation: true
                 )
-                let opts = ClientOptions(serverMonitoring: true, tlsOptions: tlsOpts)
+                let opts = ClientOptions(tlsOptions: tlsOpts)
                 return try self.withTestClient(testCase.uri, options: opts) { client in
+                    client.addSDAMEventHandler(topologyWatcher)
                     // try selecting a server to trigger SDAM
                     _ = try client.connectionPool.selectServer(forWrites: false)
                     return try client.connectionPool.getConnectionString()
@@ -93,7 +96,8 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
 
             // "You MUST verify that the set of ServerDescriptions in the client's TopologyDescription eventually
             // matches the list of hosts."
-            expect(lastTopologyDescription?.servers.map { $0.address }).toEventually(equal(testCase.hosts))
+            expect(topologyWatcher.lastTopologyDescription?.servers.map { $0.address })
+                .toEventually(equal(testCase.hosts))
 
             // "You MUST verify that each of the values of the Connection String Options under options match the
             // Client's parsed value for that option."

@@ -106,34 +106,27 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
     func testDrop() throws {
         let encoder = BSONEncoder()
-        let center = NotificationCenter.default
 
-        let client = try MongoClient.makeTestClient(options: ClientOptions(commandMonitoring: true))
-        var db = client.db(type(of: self).testDatabase)
+        let client = try MongoClient.makeTestClient()
+        let monitor = client.addCommandMonitor()
+
+        let db = client.db(type(of: self).testDatabase)
 
         let collection = db.collection("collection")
         try collection.insertOne(["test": "blahblah"])
 
-        var expectedWriteConcern: WriteConcern = try WriteConcern(journal: true, w: .number(1))
-        var commandStarted = false
-        let observer = center.addObserver(forName: nil, object: nil, queue: nil) { notif in
-            guard let event = notif.userInfo?["event"] as? CommandStartedEvent else {
-                return
-            }
+        let expectedWriteConcern: WriteConcern = try WriteConcern(journal: true, w: .number(1))
 
-            commandStarted = true
-
-            expect(event.command["drop"]).toNot(beNil())
-            expect(event.command["writeConcern"]).toNot(beNil())
-            expect(event.command["writeConcern"]?.documentValue)
-                .to(sortedEqual(try? encoder.encode(expectedWriteConcern)))
+        try monitor.captureEvents {
+            let opts = DropCollectionOptions(writeConcern: expectedWriteConcern)
+            expect(try collection.drop(options: opts)).toNot(throwError())
         }
 
-        defer { center.removeObserver(observer) }
-
-        let opts = DropCollectionOptions(writeConcern: expectedWriteConcern)
-        expect(try collection.drop(options: opts)).toNot(throwError())
-        expect(commandStarted).to(beTrue())
+        let event = monitor.commandStartedEvents().first
+        expect(event).toNot(beNil())
+        expect(event?.command["drop"]).toNot(beNil())
+        expect(event?.command["writeConcern"]).toNot(beNil())
+        expect(event?.command["writeConcern"]?.documentValue).to(sortedEqual(try? encoder.encode(expectedWriteConcern)))
     }
 
     func testInsertMany() throws {
