@@ -606,7 +606,7 @@ extension MongoClient: Equatable {
 
 /// Event handler constructed from a callback.
 /// Stores a strong reference to the provided callback.
-fileprivate class CallbackEventHandler<EventType> {
+private class CallbackEventHandler<EventType> {
     private let handlerFunc: (EventType) -> Void
 
     fileprivate init(_ handlerFunc: @escaping (EventType) -> Void) {
@@ -629,7 +629,7 @@ extension CallbackEventHandler: CommandEventHandler where EventType == CommandEv
 }
 
 /// Event handler that stores a weak reference to the underlying handler.
-fileprivate class WeakEventHandler<T: AnyObject> {
+private class WeakEventHandler<T: AnyObject> {
     private weak var handler: T?
 
     fileprivate init(referencing handler: T) {
