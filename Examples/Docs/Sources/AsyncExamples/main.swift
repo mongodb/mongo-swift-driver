@@ -65,15 +65,14 @@ private func changeStreams() throws {
     do {
         // Start Changestream Example 1
         let inventory = db.collection("inventory")
-        let futureChangeStream = inventory.watch()
 
         // Option 1: retrieve next document via next()
-        let next = futureChangeStream.flatMap { cursor in
+        let next = inventory.watch().flatMap { cursor in
             cursor.next()
         }
 
         // Option 2: register a callback to execute for each document
-        let result = futureChangeStream.flatMap { cursor in
+        let result = inventory.watch().flatMap { cursor in
             cursor.forEach { event in
                 // process event
                 print(event)
@@ -85,20 +84,21 @@ private func changeStreams() throws {
     do {
         // Start Changestream Example 2
         let inventory = db.collection("inventory")
-        let futureChangeStream = inventory.watch(options: ChangeStreamOptions(fullDocument: .updateLookup))
 
         // Option 1: use next() to iterate
-        let next = futureChangeStream.flatMap { changeStream in
-            changeStream.next()
-        }
+        let next = inventory.watch(options: ChangeStreamOptions(fullDocument: .updateLookup))
+            .flatMap { changeStream in
+                changeStream.next()
+            }
 
         // Option 2: register a callback to execute for each document
-        let result = futureChangeStream.flatMap { changeStream in
-            changeStream.forEach { event in
-                // process event
-                print(event)
+        let result = inventory.watch(options: ChangeStreamOptions(fullDocument: .updateLookup))
+            .flatMap { changeStream in
+                changeStream.forEach { event in
+                    // process event
+                    print(event)
+                }
             }
-        }
         // End Changestream Example 2
     }
 
@@ -131,15 +131,14 @@ private func changeStreams() throws {
             ["$addFields": ["newField": "this is an added field!"]]
         ]
         let inventory = db.collection("inventory")
-        let futureChangeStream = inventory.watch(pipeline, withEventType: Document.self)
 
         // Option 1: use next() to iterate
-        let next = futureChangeStream.flatMap { changeStream in
+        let next = inventory.watch(pipeline, withEventType: Document.self).flatMap { changeStream in
             changeStream.next()
         }
 
         // Option 2: register a callback to execute for each document
-        let result = futureChangeStream.flatMap { changeStream in
+        let result = inventory.watch(pipeline, withEventType: Document.self).flatMap { changeStream in
             changeStream.forEach { event in
                 // process event
                 print(event)

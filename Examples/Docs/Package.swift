@@ -9,6 +9,6 @@ let package = Package(
     ],
     targets: [
         .target(name: "SyncExamples", dependencies: ["MongoSwiftSync"]),
-        .target(name: "AsyncExamples", dependencies: ["MongoSwift", "SwiftNIO"])
+        .target(name: "AsyncExamples", dependencies: ["MongoSwift", "NIO"])
     ]
 )
