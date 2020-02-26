@@ -245,4 +245,24 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
         coll = nil
         expect(weakClientRef).to(beNil())
     }
+
+    func testAPMCallbacks() throws {
+        let client = try MongoClient.makeTestClient()
+
+        var commandEvents: [CommandEvent] = []
+        client.addCommandEventHandler { event in
+            commandEvents.append(event)
+        }
+
+        var sdamEvents: [SDAMEvent] = []
+        client.addSDAMEventHandler { event in
+            sdamEvents.append(event)
+        }
+
+        // don't care if command fails, just testing that the events were emitted
+        _ = try? client.listDatabases()
+
+        expect(commandEvents).toEventually(haveCount(2)) // wait for started and succeeded / failed
+        expect(sdamEvents.isEmpty).toEventually(beFalse())
+    }
 }
