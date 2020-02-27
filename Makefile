@@ -48,7 +48,7 @@ lint:
 # MacOS only
 coverage:
 	swift test --enable-code-coverage
-	xcrun llvm-cov export -format="lcov" .build/debug/MongoSwiftPackageTests.xctest/Contents/MacOS/MongoSwiftPackageTests -instr-profile .build/debug/codecov/default.profdata > info.lcov
+	xcrun llvm-cov export -format="lcov" .build/debug/mongo-swift-driverPackageTests.xctest/Contents/MacOS/mongo-swift-driverPackageTests -instr-profile .build/debug/codecov/default.profdata > info.lcov
 
 clean:
 	rm -rf Packages

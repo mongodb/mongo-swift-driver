@@ -1,6 +1,6 @@
 require 'xcodeproj'
 
-project = Xcodeproj::Project.open('MongoSwift.xcodeproj')
+project = Xcodeproj::Project.open('mongo-swift-driver.xcodeproj')
 targets = project.native_targets
 
 # make a file reference for the provided project with file at dirPath (relative)
@@ -10,7 +10,7 @@ def make_reference(project, path)
     return fileRef
 end
 
-mongoswift_tests_target = targets.find { |t| t.uuid == "MongoSwift::TestsCommon" }
+mongoswift_tests_target = targets.find { |t| t.uuid == "mongo-swift-driver::TestsCommon" }
 crud = make_reference(project, "./Tests/Specs/crud")
 corpus = make_reference(project, "./Tests/Specs/bson-corpus")
 cm = make_reference(project, "./Tests/Specs/command-monitoring")
