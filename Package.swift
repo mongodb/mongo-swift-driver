@@ -1,7 +1,7 @@
 // swift-tools-version:5.0
 import PackageDescription
 let package = Package(
-    name: "MongoSwift",
+    name: "mongo-swift-driver",
     products: [
         .library(name: "MongoSwift", targets: ["MongoSwift"]),
         .library(name: "MongoSwiftSync", targets: ["MongoSwiftSync"])
@@ -12,7 +12,7 @@ let package = Package(
     ],
     targets: [
         .target(name: "MongoSwift", dependencies: ["CLibMongoC", "NIO", "NIOConcurrencyHelpers"]),
-        .target(name: "MongoSwiftSync", dependencies: ["MongoSwift"]),
+        .target(name: "MongoSwiftSync", dependencies: ["MongoSwift", "NIO"]),
         .target(name: "AtlasConnectivity", dependencies: ["MongoSwiftSync"]),
         .target(name: "TestsCommon", dependencies: ["MongoSwift", "Nimble"]),
         .testTarget(name: "BSONTests", dependencies: ["MongoSwift", "TestsCommon", "Nimble", "CLibMongoC"]),
