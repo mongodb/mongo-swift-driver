@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Development  Reference</title>
+    <link rel="stylesheet" type="text/css" href="css/jazzy.css" />
+    <link rel="stylesheet" type="text/css" href="css/highlight.css" />
+    <meta charset="utf-8">
+    <script src="js/jquery.min.js" defer></script>
+    <script src="js/jazzy.js" defer></script>
+    
+    <script src="js/lunr.min.js" defer></script>
+    <script src="js/typeahead.jquery.js" defer></script>
+    <script src="js/jazzy.search.js" defer></script>
+  </head>
+  <body>
+
+
+    <a title="Development  Reference"></a>
+
+    <header class="header">
+      <p class="header-col header-col--primary">
+        <a class="header-link" href="index.html">
+          MongoSwiftSync 1.0.0-rc0 Docs
+        </a>
+         (100% documented)
+      </p>
+    
+      <p class="header-col--secondary">
+        <form role="search" action="search.json">
+          <input type="text" placeholder="Search documentation" data-typeahead>
+        </form>
+      </p>
+    
+        <p class="header-col header-col--secondary">
+          <a class="header-link" href="https://github.com/mongodb/mongo-swift-driver">
+            <img class="header-icon" src="img/gh.png"/>
+            View on GitHub
+          </a>
+        </p>
+    
+        <p class="header-col header-col--secondary">
+          <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb%2Egithub%2Eio%2Fmongo%2Dswift%2Ddriver%2Fdocs%2FMongoSwiftSync%2Fdocsets%2FMongoSwiftSync%2Exml">
+            <img class="header-icon" src="img/dash.png"/>
+            Install in Dash
+          </a>
+        </p>
+    </header>
+
+    <p class="breadcrumbs">
+      <a class="breadcrumb" href="index.html">MongoSwiftSync Reference</a>
+      <img class="carat" src="img/carat.png" />
+      Development  Reference
+    </p>
+
+    <div class="content-wrapper">
+      <nav class="navigation">
+        <ul class="nav-groups">
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Guides.html">Guides</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="bson.html">BSON</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="change-streams.html">Change-Streams</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="development.html">Development</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="error-handling.html">Error-Handling</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="multithreaded-usage.html">Multithreaded-Usage</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Classes.html">Classes</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/ChangeStream.html">ChangeStream</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/ClientSession.html">ClientSession</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/MongoClient.html">MongoClient</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/MongoCursor.html">MongoCursor</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Structs.html">Structures</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoCollection.html">MongoCollection</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoDatabase.html">MongoDatabase</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <article class="main-content">
+
+        <section class="section">
+          <div class="section-content top-matter">
+            
+            <h1 id='swift-driver-development-guide' class='heading'>Swift Driver Development Guide</h1>
+<h2 id='index' class='heading'>Index</h2>
+
+<ul>
+<li><a href="#things-to-install">Things to Install</a></li>
+<li><a href="#the-code">The Code</a></li>
+<li><a href="#building">Building</a></li>
+<li><a href="#running-tests">Running Tests</a></li>
+<li><a href="#writing-and-generating-documentation">Writing and Generating Documentation</a></li>
+<li><a href="#linting-and-style">Linting and Style</a></li>
+<li><a href="#workflow">Workflow</a></li>
+<li><a href="#code-review">Code Review</a></li>
+<li><a href="#resources">Resources</a></li>
+</ul>
+<h2 id='things-to-install' class='heading'>Things to install</h2>
+
+<ul>
+<li><a href="https://swiftenv.fuller.li/en/latest/installation.html">swiftenv</a>: a command-line tool that allows easy installation of and switching between versions of Swift.</li>
+<li><a href="https://github.com/realm/jazzy#installation">Jazzy</a>: the tool we use to generate documentation.</li>
+<li><a href="https://github.com/nicklockwood/SwiftFormat#how-do-i-install-it">SwiftFormat</a>: the Swift formatter we use.</li>
+<li><a href="https://github.com/realm/SwiftLint#using-homebrew">SwiftLint</a>: the Swift linter we use.</li>
+<li><a href="https://github.com/krzysztofzablocki/Sourcery/#installation">Sourcery</a>: the tool we use for code generation.</li>
+<li><a href="http://mongoc.org/libmongoc/current/api.html">libmongoc</a>: the MongoDB C driver, which this library wraps. See the installation instructions provided in our <a href="https://mongodb.github.io/mongo-swift-driver/#first-install-the-mongodb-c-driver">README</a> or on the <a href="http://mongoc.org/libmongoc/current/installing.html">libmongoc docs</a>.</li>
+</ul>
+<h2 id='the-code' class='heading'>The code</h2>
+
+<p>You should clone this repository, as well as the <a href="https://github.com/mongodb/specifications">MongoDB Driver specifications</a>. 
+Since this library wraps the MongoDB C Driver, we also recommend cloning <a href="https://github.com/mongodb/mongo-c-driver">mongodb/mongo-c-driver</a> so you have the source code and documentation easily accessible. </p>
+<h2 id='building' class='heading'>Building</h2>
+<h3 id='from-the-command-line' class='heading'>From the Command line</h3>
+
+<p>Run <code>swift build</code> or simply <code>make</code> in the project&rsquo;s root directory. </p>
+<h3 id='in-xcode' class='heading'>In Xcode</h3>
+
+<p>We do not provide or maintain an already-generated <code>.xcodeproj</code> in our repository. Instead, you must generate it locally.</p>
+
+<p><strong>To generate the <code>.xcodeproj</code> file</strong>:</p>
+
+<ol>
+<li>Install the Ruby gem <code>xcodeproj</code> with <code>gem install xcodeproj</code> (you may need to <code>sudo</code>)</li>
+<li>Run <code>make project</code></li>
+<li>You&rsquo;re ready to go! Open <code>MongoSwift.xcodeproj</code> and build and test as normal.</li>
+</ol>
+
+<p>Why is this necessary? The project requires a customized &ldquo;copy resources&rdquo; build phase to include various test <code>.json</code> files. By default, this phase is not included when you run <code>swift package generate-xcodeproj</code>. So <code>make project</code> first generates the project, and then uses <code>xcodeproj</code> to manually add the files to the appropriate targets (see <code>add_json_files.rb</code>). </p>
+<h2 id='running-tests' class='heading'>Running Tests</h2>
+
+<p><strong>NOTE</strong>: Several of the tests require a mongod instance to be running on the default host/port, <code>localhost:27017</code>. You can start this by running <code>mongod --setParameter enableTestCommands=1</code>. The <code>enableTestCommands</code> parameter is required to use some test-only commands built into MongoDB that we utilize in our tests, e.g. <code>failCommand</code>.</p>
+
+<p>You can run tests from Xcode as usual. If you prefer to test from the command line, keep reading.</p>
+<h3 id='from-the-command-line' class='heading'>From the Command Line</h3>
+
+<p>We recommend installing the ruby gem <code>xcpretty</code> and running tests by executing <code>make test-pretty</code>, as this provides output in a much more readable format. (Works on MacOS only.)</p>
+
+<p>Alternatively, you can just run the tests with <code>swift test</code>, or <code>make test</code>.</p>
+
+<p>To filter tests by regular expression:</p>
+
+<ul>
+<li>If you are using <code>swift test</code>, provide the <code>--filter</code> argument: for example, <code>swift test --filter=MongoClientTests</code>.</li>
+<li>If you are using <code>make test</code> or <code>make test-pretty</code>, provide the <code>FILTER</code> environment variable: for example, <code>make test-pretty FILTER=MongoCollectionTests</code>.</li>
+</ul>
+<h3 id='diagnosing-backtraces-on-linux' class='heading'>Diagnosing Backtraces on Linux</h3>
+
+<p><a href="https://bugs.swift.org/browse/SR-755">SWIFT-755</a> documents an outstanding problem on Linux where backtraces do not contain debug symbols. As discussed in <a href="https://stackoverflow.com/a/44956167/162228">this Stack Overflow thread</a>, a <a href="https://github.com/apple/swift/blob/master/utils/symbolicate-linux-fatal"><code>symbolicate-linux-fatal</code></a> script may be used to add symbols to an existing backtrace. Consider the following:</p>
+<pre class="highlight plaintext"><code>$ swift test --filter CrashingTest &amp;&gt; crash.log
+$ symbolicate-linux-fatal /path/to/MongoSwiftPackageTests.xctest crash.log
+</code></pre>
+
+<p>This will require you to manually provide the path to the compiled test binary (e.g. <code>.build/x86_64-unknown-linux/debug/MongoSwiftPackageTests.xctest</code>).</p>
+<h2 id='writing-and-generating-documentation' class='heading'>Writing and Generating Documentation</h2>
+
+<p>We document new code as we write it. We use C-style documentation blocks (<code>/** ... */</code>) for documentation longer than 3 lines, and triple-slash (<code>///</code>) for shorter documentation. 
+Comments that are <em>not</em> documentation should use two slashes (<code>//</code>).</p>
+
+<p>Documentation comments should generally be complete sentences and should end with periods. </p>
+
+<p>Our documentation site is automatically generated from the source code using <a href="https://github.com/realm/jazzy#installation">Jazzy</a>. We regenerate it via our release script each time we release a new version of the driver.</p>
+
+<p>If you&rsquo;d like to preview how new documentation you&rsquo;ve written will look when published, you can regenerate it by running <code>./etc/generate-docs.sh</code> and then inspecting the generated HTML files in <code>/docs</code>.</p>
+<h2 id='linting-and-style' class='heading'>Linting and Style</h2>
+
+<p>We use <a href="https://github.com/realm/SwiftLint#using-homebrew">SwiftLint</a> for linting. You can see our configuration in the <code>.swiftlint.yml</code> file in the project&rsquo;s root directory.  Run <code>swiftlint</code> in the root directory to lint all of our files. Running <code>swiftlint autocorrect</code> will correct some types of violations.</p>
+
+<p>We use <a href="https://github.com/nicklockwood/SwiftFormat">SwiftFormat</a> for formatting the code. You can see our configuration in the <code>.swiftformat</code> file in the project&rsquo;s root directory. Our linter config contains a superset of the rules that our formatter does, so some manual tweaking may be necessary to satisfy both once the formatter is run (e.g. line length enforcement). Most of the time, the formatter should put the code into a format that passes the linter. You can run the formatter on all of the files by running <code>swiftformat .</code> from the root directory.</p>
+
+<p>To pass all the formatting stages of our testing matrix, both <code>swiftlint --strict</code> and <code>swiftformat --lint .</code> must finish successfully.</p>
+
+<p>For style guidance, look at Swift&rsquo;s <a href="https://swift.org/documentation/api-design-guidelines/">API design guidelines</a> and Google&rsquo;s <a href="https://google.github.io/swift/">Swift Style Guide</a>.</p>
+<h2 id='editor-setup' class='heading'>Editor Setup</h2>
+
+<p>If you have a setup for developing the driver in an editor other than the ones listed, or have found any useful tools/plugins for the listed editors, please open a pull request to add information!</p>
+<h3 id='sublime-text' class='heading'>Sublime Text</h3>
+
+<ul>
+<li>For syntax highlighting, install <a href="https://packagecontrol.io/packages/Decent%20Swift%20Syntax">Decent Swift Syntax</a> via Package Control.</li>
+<li>For linting integration with SwiftLint, install <a href="https://packagecontrol.io/packages/SublimeLinter">SublimeLinter</a> and <a href="https://packagecontrol.io/packages/SublimeLinter-contrib-swiftlint">SublimeLinter-contrib-swiftlint</a> via Package Control.</li>
+</ul>
+<h3 id='vim-neovim' class='heading'>Vim/Neovim</h3>
+
+<ul>
+<li>You can get linting support by using <a href="https://github.com/w0rp/ale"><code>ale</code></a> by <code>w0rp</code>. This will show symbols in the gutter for warnings/errors and show linter messages in the status.</li>
+<li><a href="https://github.com/Utagai/swift.vim">swift.vim</a>: A fork of Keith Smiley&rsquo;s <code>swift.vim</code> with fixed indenting rules. This adds proper indenting and syntax for Swift to Vim. This fork also provides a match rule for column width highlighting.
+
+<ul>
+<li>Please read the <a href="https://github.com/Utagai/swift.vim#notice">NOTICE</a> for proper credits.</li>
+</ul></li>
+</ul>
+<h2 id='workflow' class='heading'>Workflow</h2>
+
+<ol>
+<li>Create a feature branch, named by the corresponding JIRA ticket if exists, along with a short descriptor of the work: for example, <code>SWIFT-30/writeconcern</code>.</li>
+<li>Do your work on the branch.</li>
+<li>If you add, remove, or rename any tests, make sure to update <code>LinuxMain.swift</code> accordingly. If you are on MacOS, you can do that by running <code>make linuxmain</code>.</li>
+<li>Ensure your code passes both the linter and the formatter.</li>
+<li>Make sure your code builds and passes all tests on:
+
+<ul>
+<li><a href="https://travis-ci.org/mongodb/mongo-swift-driver">Travis</a>. Every time you push to GitHub or open a pull request, it will trigger a new build, which includes running the linter, formatter, and basic tests.</li>
+<li>(If you work at MongoDB) <a href="https://evergreen.mongodb.com/waterfall/mongo-swift-driver">Evergreen</a> - Our Evergreen matrix tests a variety of MongoDB configurations, operating systems, and Swift language versions, and provides a way to more robustly test the driver. A new Evergreen build is automatically triggered for every commit to master, but for more complex pull requests it&rsquo;s a good idea to run patches on Evergreen before merging.</li>
+</ul></li>
+<li>Open a pull request on the repository. Make sure you have rebased your branch onto the latest commits on <code>master</code>.</li>
+<li>Go through code review to get the team&rsquo;s approval on your changes. (See the next section on <a href="#code-review">Code Review</a> for more details on this process.) Once you get the required approvals and your code passes all tests:</li>
+<li>Rebase on master again if needed.</li>
+<li>Rerun tests.</li>
+<li>Squash all commits into a single, descriptive commit method, formatted as: <code>TICKET-NUMBER: Description of changes</code>. For example, <code>SWIFT-30: Implement WriteConcern type</code>.</li>
+<li>Merge it, or if you don&rsquo;t have permissions, ask someone to merge it for you.</li>
+</ol>
+<h2 id='code-review' class='heading'>Code Review</h2>
+<h3 id='giving-a-review' class='heading'>Giving a review</h3>
+
+<p>When giving a review, please batch your comments together to cut down on the number of emails sent to others involved in the pull request. You can do this by going to the &ldquo;Files Changed&rdquo; tab. When you post your first comment, press &ldquo;Start a review&rdquo;. When you&rsquo;re done commenting, click &ldquo;Finish your review&rdquo; (top right).
+Please feel free to leave reviews on your own code when you open a pull request in order add additional context, point out an aspect of the design you&rsquo;re unsure of, etc.</p>
+<h3 id='responding-to-a-review' class='heading'>Responding to a review</h3>
+
+<p>You can use the same batching approach as above to respond to review comments. Once you&rsquo;ve posted your responses and pushed new commits addressing the comments, re-request reviews from your reviewers by clicking the arrow circle icons next to their names on the list of reviewers.</p>
+
+<p><strong>Note</strong>: GitHub allows marking comment threads on pull requests as &ldquo;resolved&rdquo;, which hides them from view. Always allow the <em>original commenter</em> to resolve a conversation. This allows them to verify that your changes match what they requested before the conversation is hidden.</p>
+<h2 id='resources' class='heading'>Resources</h2>
+<h3 id='swift' class='heading'>Swift</h3>
+
+<ul>
+<li><a href="https://docs.swift.org/swift-book/LanguageGuide/TheBasics.html">Swift Language Guide</a></li>
+<li><a href="https://developer.apple.com/documentation/swift">Swift Standard Library docs</a></li>
+<li><a href="https://www.swiftbysundell.com/">Swift by Sundell</a></li>
+<li><a href="https://forums.swift.org/">Swift Forums</a></li>
+<li>Some talks by Kaitlin:
+
+<ul>
+<li><a href="https://www.youtube.com/watch?v=CcCTM1PN1N4">A Swift Introduction to Swift</a></li>
+<li><a href="https://www.youtube.com/watch?v=9GZ8Hiq-Nbc">Encoding and Decoding in Swift</a></li>
+<li><a href="https://www.youtube.com/watch?v=9-fdbG9jNt4">Maintaining a Library in a Swiftly Moving Ecosystem</a></li>
+</ul></li>
+</ul>
+<h3 id='mongodb-and-drivers' class='heading'>MongoDB and Drivers</h3>
+
+<ul>
+<li><a href="https://mongodb.github.io/mongo-swift-driver/">MongoSwift docs</a></li>
+<li><a href="http://mongoc.org/libmongoc/current/index.html">libmongoc docs</a></li>
+<li><a href="http://mongoc.org/libbson/current/index.html">libbson docs</a></li>
+<li><a href="https://docs.mongodb.com/">MongoDB docs</a></li>
+<li><a href="https://github.com/mongodb/specifications">Driver specifications</a></li>
+</ul>
+
+          </div>
+        </section>
+
+
+      </article>
+    </div>
+    <section class="footer">
+      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-02-27)</p>
+      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+    </section>
+  </body>
+</div>
+</html>

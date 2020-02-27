@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Error-Handling  Reference</title>
+    <link rel="stylesheet" type="text/css" href="css/jazzy.css" />
+    <link rel="stylesheet" type="text/css" href="css/highlight.css" />
+    <meta charset="utf-8">
+    <script src="js/jquery.min.js" defer></script>
+    <script src="js/jazzy.js" defer></script>
+    
+    <script src="js/lunr.min.js" defer></script>
+    <script src="js/typeahead.jquery.js" defer></script>
+    <script src="js/jazzy.search.js" defer></script>
+  </head>
+  <body>
+
+
+    <a title="Error-Handling  Reference"></a>
+
+    <header class="header">
+      <p class="header-col header-col--primary">
+        <a class="header-link" href="index.html">
+          MongoSwiftSync 1.0.0-rc0 Docs
+        </a>
+         (100% documented)
+      </p>
+    
+      <p class="header-col--secondary">
+        <form role="search" action="search.json">
+          <input type="text" placeholder="Search documentation" data-typeahead>
+        </form>
+      </p>
+    
+        <p class="header-col header-col--secondary">
+          <a class="header-link" href="https://github.com/mongodb/mongo-swift-driver">
+            <img class="header-icon" src="img/gh.png"/>
+            View on GitHub
+          </a>
+        </p>
+    
+        <p class="header-col header-col--secondary">
+          <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb%2Egithub%2Eio%2Fmongo%2Dswift%2Ddriver%2Fdocs%2FMongoSwiftSync%2Fdocsets%2FMongoSwiftSync%2Exml">
+            <img class="header-icon" src="img/dash.png"/>
+            Install in Dash
+          </a>
+        </p>
+    </header>
+
+    <p class="breadcrumbs">
+      <a class="breadcrumb" href="index.html">MongoSwiftSync Reference</a>
+      <img class="carat" src="img/carat.png" />
+      Error-Handling  Reference
+    </p>
+
+    <div class="content-wrapper">
+      <nav class="navigation">
+        <ul class="nav-groups">
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Guides.html">Guides</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="bson.html">BSON</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="change-streams.html">Change-Streams</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="development.html">Development</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="error-handling.html">Error-Handling</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="multithreaded-usage.html">Multithreaded-Usage</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Classes.html">Classes</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/ChangeStream.html">ChangeStream</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/ClientSession.html">ClientSession</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/MongoClient.html">MongoClient</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/MongoCursor.html">MongoCursor</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Structs.html">Structures</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoCollection.html">MongoCollection</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoDatabase.html">MongoDatabase</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <article class="main-content">
+
+        <section class="section">
+          <div class="section-content top-matter">
+            
+            <h1 id='swift-driver-error-handling-guide' class='heading'>Swift Driver Error Handling Guide</h1>
+<h2 id='index' class='heading'>Index</h2>
+
+<ul>
+<li><a href="#error-types">Error Types</a>
+
+<ul>
+<li><a href="#server-errors">Server Errors</a></li>
+<li><a href="#user-errors">User Errors</a></li>
+<li><a href="#runtime-errors">Runtime Errors</a></li>
+<li><a href="#encoding-decoding-errors">Encoding/Decoding Errors</a></li>
+</ul></li>
+<li><a href="#the-code">Examples</a>
+
+<ul>
+<li><a href="#handling-any-error-thrown-by-the-driver">All Errors</a></li>
+<li><a href="#handling-a-commanderror">CommandError</a></li>
+<li><a href="#handling-a-writeerror">WriteError</a></li>
+<li><a href="#handling-a-bulkwriteerror">BulkWriteError</a></li>
+</ul></li>
+<li><a href="#see-also">See Also</a></li>
+</ul>
+<h2 id='error-types' class='heading'>Error Types</h2>
+
+<p>The driver uses errors to communicate that an operation failed, an assumption wasn&rsquo;t met, or that the user did something incorrectly. Applications that use the driver can in turn catch these errors and respond appropriately without crashing or resulting in an otherwise inconsistent state. To correctly model the different sources of errors, the driver defines three separate caregories of errors (<code>ServerError</code>, <code>UserError</code>, <code>RuntimeError</code>), each of which are protocols that inherit from the <code>MongoError</code> protocol. These protocols are defined in <code>MongoError.swift</code>, and the structs that conform to them are outlined here. The documentation for every public function that throws lists some of the errors that could possibly be thrown and the reasons they might be. The errors listed there are not comprehensive but will generally cover the most common cases.</p>
+
+<p><strong>Error Labels:</strong> Some types of errors may contain more specific information describing the context in which they occured. Such errors conform to the <code>LabeledError</code> protocol, and the extra information is conveyed through the <code>errorLabels</code> property. Specifically, any server error or connection related error may contain labels.</p>
+<h3 id='server-errors' class='heading'>Server Errors</h3>
+
+<p>Server errors correspond to failures that occur in the database itself and are returned to the driver via some response to a command. Each error that conforms to <code>ServerError</code> contains at least one error code representing what went wrong on the server.</p>
+
+<p>For an enumeration of the possible server error codes, <a href="https://github.com/mongodb/mongo/blob/master/src/mongo/base/error_codes.yml">see this list</a>.</p>
+
+<p>The possible errors that conform to <code>ServerError</code> are as follows:</p>
+
+<ul>
+<li><code>CommandError</code>:
+
+<ul>
+<li>Thrown when commands experience errors server side that prevent execution.</li>
+<li>Example command failures include failure to parse, operation aborted by the user, and unexpected errors during execution.</li>
+</ul></li>
+<li><code>WriteError</code>
+
+<ul>
+<li>Thrown when a single write command fails on the server (e.g. insertOne, updateOne, updateMany).</li>
+</ul></li>
+<li><code>BulkWriteError</code>
+
+<ul>
+<li>Thrown when the server returns errors as part of an executed bulk write.</li>
+<li>If WriteConcernFailure is populated, writeErrors may not be.</li>
+<li><strong>Note:</strong> <code>InsertMany</code> throws a <code>BulkWriteError</code>, <em>not</em> a <code>WriteError</code>.</li>
+</ul></li>
+</ul>
+<h3 id='user-errors' class='heading'>User Errors</h3>
+
+<p>User applications can sometimes cause errors by using the driver incorrectly (e.g. by passing invalid argument combinations). This category of error covers those cases.</p>
+
+<p>The possible errors that conform to <code>UserError</code> are as follows:</p>
+
+<ul>
+<li><code>LogicError</code>
+
+<ul>
+<li>Thrown when the user uses the driver incorrectly (e.g. advancing a dead cursor).</li>
+</ul></li>
+<li><code>InvalidArgumentError</code>
+
+<ul>
+<li>Thrown when user passes invalid arguments to some driver function.</li>
+</ul></li>
+</ul>
+<h3 id='runtime-errors' class='heading'>Runtime Errors</h3>
+
+<p>The driver may experience errors that happen at runtime unexpectedly. These errors don&rsquo;t fit neatly into the categories of occurring only server-side or only as part of the user&rsquo;s fault, so they are represented by their own set of cases.</p>
+
+<p>The <code>RuntimeError</code> cases are as follows:</p>
+
+<ul>
+<li><code>InternalError</code>
+
+<ul>
+<li>Thrown when something is null when it shouldn&rsquo;t be, the driver has an internal failure, or MongoSwift cannot understand a server response.</li>
+<li>This is generally indicative of a bug somewhere in the driver stack or a system related failure (e.g. a memory allocation failure). If you experience an error that you think is the result of a bug, please file a bug report on GitHub or our Jira project.</li>
+</ul></li>
+<li><code>ConnectionError</code>
+
+<ul>
+<li>Thrown during any connection establishment / socket related errors.</li>
+<li>This error also conforms to <code>LabeledError</code>.</li>
+</ul></li>
+<li><code>AuthenticationError</code>
+
+<ul>
+<li>Thrown when the driver is not authorized to perform a requested command (e.g. due to invalid credentials)</li>
+</ul></li>
+<li><code>ServerSelectionError</code>
+
+<ul>
+<li>Thrown when the driver was unable to select a server for an operation (e.g. due to a timeout or unsatisfiable read preference)</li>
+</ul><div class="aside aside-see">
+    <p class="aside-title">See</p>
+    See <a href="https://docs.mongodb.com/manual/core/read-preference-mechanics/">the official MongoDB documentation</a> for more information.
+
+</div></li>
+</ul>
+<h3 id='encoding-decoding-errors' class='heading'>Encoding/Decoding Errors</h3>
+
+<p>As part of the driver, <code>BSONEncoder</code> and <code>BSONDecoder</code> are implemented according to the <code>Encoder</code> and <code>Decoder</code> protocols <a href="https://developer.apple.com/documentation/foundation/archives_and_serialization/encoding_and_decoding_custom_types">defined in Apple&rsquo;s Foundation</a>. User applications can use them to seamlessly convert between their Swift data structures and the BSON documents stored in the database. While this functionality is part of the public API, the driver itself also makes heavy use of it internally. During any encoding or decoding operations, errors can occur that prevent the data from being written to or read from BSON. In these cases, the driver throws an <code>EncodingError</code> or <code>DecodingError</code> as appropriate. These error types are not unique to MongoSwift and are commonly used by other encoder implementations, such as Foundation&rsquo;s <code>JSONEncoder</code>, so they do not conform to the <code>MongoError</code> protocol or any of the other error protocols defined in the driver.</p>
+
+<p>See the official documentation for both <a href="https://developer.apple.com/documentation/swift/encodingerror"><code>EncodingErrors</code></a> and <a href="https://developer.apple.com/documentation/swift/decodingerror"><code>DecodingErrors</code></a> for more information.</p>
+<h2 id='examples' class='heading'>Examples</h2>
+<h3 id='handling-any-error-thrown-by-the-driver' class='heading'>Handling any error thrown by the driver</h3>
+<pre class="highlight swift"><code><span class="k">do</span> <span class="p">{</span>
+    <span class="c1">// something involving the driver</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="k">let</span> <span class="nv">error</span> <span class="k">as</span> <span class="kt">MongoError</span> <span class="p">{</span>
+    <span class="nf">print</span><span class="p">(</span><span class="s">"Driver error!"</span><span class="p">)</span>
+    <span class="k">switch</span> <span class="n">error</span><span class="o">.</span><span class="k">self</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="k">let</span> <span class="nv">runtimeError</span> <span class="k">as</span> <span class="kt">RuntimeError</span><span class="p">:</span>
+        <span class="c1">// handle RuntimeError</span>
+    <span class="k">case</span> <span class="k">let</span> <span class="nv">serverError</span> <span class="k">as</span> <span class="kt">ServerError</span><span class="p">:</span>
+        <span class="c1">// handle ServerError</span>
+    <span class="k">case</span> <span class="k">let</span> <span class="nv">userError</span> <span class="k">as</span> <span class="kt">UserError</span><span class="p">:</span>
+        <span class="c1">// handle UserError</span>
+    <span class="k">default</span><span class="p">:</span>
+        <span class="c1">// should never get here</span>
+    <span class="p">}</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="k">let</span> <span class="nv">error</span> <span class="k">as</span> <span class="kt">DecodingError</span> <span class="p">{</span>
+    <span class="c1">// handle DecodingError</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="k">let</span> <span class="nv">error</span> <span class="k">as</span> <span class="kt">EncodingError</span> <span class="p">{</span>
+    <span class="c1">// handle EncodingError</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+</code></pre>
+<h3 id='handling-a-commanderror' class='heading'>Handling a CommandError</h3>
+<pre class="highlight swift"><code><span class="k">do</span> <span class="p">{</span>
+    <span class="k">try</span> <span class="n">db</span><span class="o">.</span><span class="nf">runCommand</span><span class="p">([</span><span class="s">"asdfasdf"</span><span class="p">:</span> <span class="s">"sadfsadfasdf"</span><span class="p">])</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="k">let</span> <span class="nv">commandError</span> <span class="k">as</span> <span class="kt">CommandError</span> <span class="p">{</span>
+    <span class="nf">print</span><span class="p">(</span><span class="s">"Command failed: code: </span><span class="se">\(</span><span class="n">commandError</span><span class="o">.</span><span class="n">code</span><span class="se">)</span><span class="s"> message: </span><span class="se">\(</span><span class="n">commandError</span><span class="o">.</span><span class="n">message</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+</code></pre>
+
+<p>Output:</p>
+<pre class="highlight plaintext"><code>Command failed: code: 59 message: no such command: 'asdfasdf'
+</code></pre>
+<h3 id='handling-a-writeerror' class='heading'>Handling a WriteError</h3>
+<pre class="highlight swift"><code><span class="c1">// if you want to ignore duplicate key errors</span>
+<span class="k">do</span> <span class="p">{</span>
+    <span class="k">try</span> <span class="n">coll</span><span class="o">.</span><span class="nf">insertOne</span><span class="p">([</span><span class="s">"_id"</span><span class="p">:</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="k">try</span> <span class="n">coll</span><span class="o">.</span><span class="nf">insertOne</span><span class="p">([</span><span class="s">"_id"</span><span class="p">:</span> <span class="mi">1</span><span class="p">])</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="k">let</span> <span class="nv">writeError</span> <span class="k">as</span> <span class="kt">WriteError</span> <span class="k">where</span> <span class="n">writeError</span><span class="o">.</span><span class="n">writeFailure</span><span class="p">?</span><span class="o">.</span><span class="n">code</span> <span class="o">==</span> <span class="mi">11000</span> <span class="p">{</span>
+    <span class="nf">print</span><span class="p">(</span><span class="s">"duplicate key error: </span><span class="se">\(</span><span class="mi">1</span><span class="se">)</span><span class="s"> </span><span class="se">\(</span><span class="n">writeError</span><span class="o">.</span><span class="n">writeFailure</span><span class="p">?</span><span class="o">.</span><span class="n">message</span> <span class="p">??</span> <span class="s">""</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre>
+
+<p>Output:</p>
+<pre class="highlight plaintext"><code>duplicate key error: 1 E11000 duplicate key error collection: mydb.mycoll1 index: _id_ dup key: { : 1 }
+</code></pre>
+<h3 id='handling-a-bulkwriteerror' class='heading'>Handling a BulkWriteError</h3>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">docs</span><span class="p">:</span> <span class="p">[</span><span class="kt">Document</span><span class="p">]</span> <span class="o">=</span> <span class="p">[[</span><span class="s">"_id"</span><span class="p">:</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="s">"_id"</span><span class="p">:</span> <span class="mi">1</span><span class="p">]]</span>
+<span class="k">do</span> <span class="p">{</span>
+    <span class="k">try</span> <span class="n">coll</span><span class="o">.</span><span class="nf">insertOne</span><span class="p">([</span><span class="s">"_id"</span><span class="p">:</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="k">try</span> <span class="n">coll</span><span class="o">.</span><span class="nf">insertMany</span><span class="p">(</span><span class="n">docs</span><span class="p">)</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="k">let</span> <span class="nv">bwe</span> <span class="k">as</span> <span class="kt">BulkWriteError</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="k">let</span> <span class="nv">writeErrors</span> <span class="o">=</span> <span class="n">bwe</span><span class="o">.</span><span class="n">writeFailures</span> <span class="p">{</span>
+        <span class="n">writeErrors</span><span class="o">.</span><span class="n">forEach</span> <span class="p">{</span> <span class="n">err</span> <span class="k">in</span> <span class="nf">print</span><span class="p">(</span><span class="s">"Write Error inserting </span><span class="se">\(</span><span class="n">docs</span><span class="p">[</span><span class="n">err</span><span class="o">.</span><span class="n">index</span><span class="p">]</span><span class="se">)</span><span class="s">, code: </span><span class="se">\(</span><span class="n">err</span><span class="o">.</span><span class="n">code</span><span class="se">)</span><span class="s">, message: </span><span class="se">\(</span><span class="n">err</span><span class="o">.</span><span class="n">message</span><span class="se">)</span><span class="s">"</span><span class="p">)</span> <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="k">let</span> <span class="nv">result</span> <span class="o">=</span> <span class="n">bwe</span><span class="o">.</span><span class="n">result</span> <span class="p">{</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"Result: "</span><span class="p">)</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"nInserted: </span><span class="se">\(</span><span class="n">result</span><span class="o">.</span><span class="n">insertedCount</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"InsertedIds: </span><span class="se">\(</span><span class="n">result</span><span class="o">.</span><span class="n">insertedIds</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+</code></pre>
+
+<p>Output:</p>
+<pre class="highlight plaintext"><code>Write Error inserting { "_id" : 1 }, code: 11000, message: E11000 duplicate key error collection: mydb.mycoll1 index: _id_ dup key: { : 1 }
+Result:
+nInserted: 1
+InsertedIds: [0: 2]
+</code></pre>
+<h2 id='see-also' class='heading'>See Also</h2>
+
+<ul>
+<li><a href="https://docs.swift.org/swift-book/LanguageGuide/ErrorHandling.html">Error handling in Swift</a></li>
+<li><a href="https://github.com/mongodb/mongo/blob/master/src/mongo/base/error_codes.err">List of server error codes</a></li>
+<li><a href="https://github.com/mongodb/specifications/blob/master/source/crud/crud.rst#error-handling">CRUD Spec error definitions</a></li>
+<li><a href="https://developer.apple.com/documentation/swift/encodingerror">EncodingError documentation</a></li>
+<li><a href="https://developer.apple.com/documentation/swift/decodingerror">DecodingError documentation</a></li>
+</ul>
+
+          </div>
+        </section>
+
+
+      </article>
+    </div>
+    <section class="footer">
+      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-02-27)</p>
+      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+    </section>
+  </body>
+</div>
+</html>

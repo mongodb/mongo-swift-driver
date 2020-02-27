@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Classes  Reference</title>
+    <link rel="stylesheet" type="text/css" href="css/jazzy.css" />
+    <link rel="stylesheet" type="text/css" href="css/highlight.css" />
+    <meta charset="utf-8">
+    <script src="js/jquery.min.js" defer></script>
+    <script src="js/jazzy.js" defer></script>
+    
+    <script src="js/lunr.min.js" defer></script>
+    <script src="js/typeahead.jquery.js" defer></script>
+    <script src="js/jazzy.search.js" defer></script>
+  </head>
+  <body>
+
+    <a name="//apple_ref/swift/Section/Classes" class="dashAnchor"></a>
+
+    <a title="Classes  Reference"></a>
+
+    <header class="header">
+      <p class="header-col header-col--primary">
+        <a class="header-link" href="index.html">
+          MongoSwiftSync 1.0.0-rc0 Docs
+        </a>
+         (100% documented)
+      </p>
+    
+      <p class="header-col--secondary">
+        <form role="search" action="search.json">
+          <input type="text" placeholder="Search documentation" data-typeahead>
+        </form>
+      </p>
+    
+        <p class="header-col header-col--secondary">
+          <a class="header-link" href="https://github.com/mongodb/mongo-swift-driver">
+            <img class="header-icon" src="img/gh.png"/>
+            View on GitHub
+          </a>
+        </p>
+    
+        <p class="header-col header-col--secondary">
+          <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb%2Egithub%2Eio%2Fmongo%2Dswift%2Ddriver%2Fdocs%2FMongoSwiftSync%2Fdocsets%2FMongoSwiftSync%2Exml">
+            <img class="header-icon" src="img/dash.png"/>
+            Install in Dash
+          </a>
+        </p>
+    </header>
+
+    <p class="breadcrumbs">
+      <a class="breadcrumb" href="index.html">MongoSwiftSync Reference</a>
+      <img class="carat" src="img/carat.png" />
+      Classes  Reference
+    </p>
+
+    <div class="content-wrapper">
+      <nav class="navigation">
+        <ul class="nav-groups">
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Guides.html">Guides</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="bson.html">BSON</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="change-streams.html">Change-Streams</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="development.html">Development</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="error-handling.html">Error-Handling</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="multithreaded-usage.html">Multithreaded-Usage</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Classes.html">Classes</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/ChangeStream.html">ChangeStream</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/ClientSession.html">ClientSession</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/MongoClient.html">MongoClient</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/MongoCursor.html">MongoCursor</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Structs.html">Structures</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoCollection.html">MongoCollection</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoDatabase.html">MongoDatabase</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <article class="main-content">
+
+        <section class="section">
+          <div class="section-content top-matter">
+            <h1>Classes</h1>
+            <p>The following classes are available globally.</p>
+
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-content">
+            <div class="task-group">
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:14MongoSwiftSync12ChangeStreamC"></a>
+                    <a name="//apple_ref/swift/Class/ChangeStream" class="dashAnchor"></a>
+                    <a class="token" href="#/s:14MongoSwiftSync12ChangeStreamC">ChangeStream</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A MongoDB change stream.</p>
+<div class="aside aside-see-also">
+    <p class="aside-title">See also</p>
+    <a href="https://docs.mongodb.com/manual/changeStreams/">https://docs.mongodb.com/manual/changeStreams/</a>
+
+</div>
+
+                        <a href="Classes/ChangeStream.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">ChangeStream</span><span class="o">&lt;</span><span class="kt">T</span><span class="o">&gt;</span> <span class="p">:</span> <span class="kt">CursorProtocol</span> <span class="k">where</span> <span class="kt">T</span> <span class="p">:</span> <span class="kt">Decodable</span><span class="p">,</span> <span class="kt">T</span> <span class="p">:</span> <span class="kt">Encodable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwiftSync/ChangeStream.swift#L5-L117">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:14MongoSwiftSync13ClientSessionC"></a>
+                    <a name="//apple_ref/swift/Class/ClientSession" class="dashAnchor"></a>
+                    <a class="token" href="#/s:14MongoSwiftSync13ClientSessionC">ClientSession</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A MongoDB client session.
+ This class represents a logical session used for ordering sequential operations.</p>
+
+<p>To create a client session, use <code>startSession</code> or <code>withSession</code> on a <code><a href="Classes/MongoClient.html">MongoClient</a></code>.</p>
+
+<p>If <code>causalConsistency</code> is not set to <code>false</code> when starting a session, read and write operations that use the session
+ will be provided causal consistency guarantees depending on the read and write concerns used. Using &ldquo;majority&rdquo;
+ read and write preferences will provide the full set of guarantees. See
+ <a href="https://docs.mongodb.com/manual/core/read-isolation-consistency-recency/#sessions">https://docs.mongodb.com/manual/core/read-isolation-consistency-recency/#sessions</a> for more details.</p>
+
+<p>e.g.</p>
+<pre class="highlight swift"><code>   <span class="k">let</span> <span class="nv">opts</span> <span class="o">=</span> <span class="kt">CollectionOptions</span><span class="p">(</span><span class="nv">readConcern</span><span class="p">:</span> <span class="kt">ReadConcern</span><span class="p">(</span><span class="o">.</span><span class="n">majority</span><span class="p">),</span> <span class="nv">writeConcern</span><span class="p">:</span> <span class="k">try</span> <span class="kt">WriteConcern</span><span class="p">(</span><span class="nv">w</span><span class="p">:</span> <span class="o">.</span><span class="n">majority</span><span class="p">))</span>
+   <span class="k">let</span> <span class="nv">collection</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="nf">collection</span><span class="p">(</span><span class="s">"mycoll"</span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="n">opts</span><span class="p">)</span>
+   <span class="k">try</span> <span class="n">client</span><span class="o">.</span><span class="n">withSession</span> <span class="p">{</span> <span class="n">session</span> <span class="k">in</span>
+       <span class="k">try</span> <span class="n">collection</span><span class="o">.</span><span class="nf">insertOne</span><span class="p">([</span><span class="s">"x"</span><span class="p">:</span> <span class="mi">1</span><span class="p">],</span> <span class="nv">session</span><span class="p">:</span> <span class="n">session</span><span class="p">)</span>
+       <span class="k">try</span> <span class="n">collection</span><span class="o">.</span><span class="nf">find</span><span class="p">([</span><span class="s">"x"</span><span class="p">:</span> <span class="mi">1</span><span class="p">],</span> <span class="nv">session</span><span class="p">:</span> <span class="n">session</span><span class="p">)</span>
+   <span class="p">}</span>
+</code></pre>
+
+<p>To disable causal consistency, set <code>causalConsistency</code> to <code>false</code> in the <code>ClientSessionOptions</code> passed in to either
+ <code>withSession</code> or <code>startSession</code>.</p>
+<div class="aside aside-see-also">
+    <p class="aside-title">See also</p>
+    <ul>
+<li><a href="https://docs.mongodb.com/manual/core/read-isolation-consistency-recency/#sessions">https://docs.mongodb.com/manual/core/read-isolation-consistency-recency/#sessions</a></li>
+<li><a href="https://docs.mongodb.com/manual/core/causal-consistency-read-write-concerns/">https://docs.mongodb.com/manual/core/causal-consistency-read-write-concerns/</a></li>
+</ul>
+
+</div>
+
+                        <a href="Classes/ClientSession.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">final</span> <span class="kd">class</span> <span class="kt">ClientSession</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwiftSync/ClientSession.swift#L31-L99">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:14MongoSwiftSync0A6ClientC"></a>
+                    <a name="//apple_ref/swift/Class/MongoClient" class="dashAnchor"></a>
+                    <a class="token" href="#/s:14MongoSwiftSync0A6ClientC">MongoClient</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A MongoDB Client providing a synchronous API.</p>
+
+                        <a href="Classes/MongoClient.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">MongoClient</span></code></pre>
+<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">MongoClient</span><span class="p">:</span> <span class="kt">Equatable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwiftSync/MongoClient.swift#L5-L324">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:14MongoSwiftSync0A6CursorC"></a>
+                    <a name="//apple_ref/swift/Class/MongoCursor" class="dashAnchor"></a>
+                    <a class="token" href="#/s:14MongoSwiftSync0A6CursorC">MongoCursor</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A MongoDB cursor.</p>
+
+<p>Note that the <code>next</code> method blocks until a result is received or the cursor is exhausted, so methods inherited from
+ <code>Sequence</code> that iterate over the entire sequence may block indefinitely when used on tailable cursors (e.g.
+ <code>reduce</code>).</p>
+
+<p>It is safe to <code>kill(...)</code> a <code>MongoCursor</code> from another thread while it is blocked waiting on results, however.</p>
+
+                        <a href="Classes/MongoCursor.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">MongoCursor</span><span class="o">&lt;</span><span class="kt">T</span><span class="o">&gt;</span> <span class="p">:</span> <span class="kt">CursorProtocol</span> <span class="k">where</span> <span class="kt">T</span> <span class="p">:</span> <span class="kt">Decodable</span><span class="p">,</span> <span class="kt">T</span> <span class="p">:</span> <span class="kt">Encodable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwiftSync/MongoCursor.swift#L12-L137">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+      </article>
+    </div>
+    <section class="footer">
+      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-02-27)</p>
+      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+    </section>
+  </body>
+</div>
+</html>
