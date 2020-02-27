@@ -2,7 +2,7 @@
 [![Code Coverage](https://codecov.io/gh/mongodb/mongo-swift-driver/branch/master/graph/badge.svg)](https://codecov.io/gh/mongodb/mongo-swift-driver/branch/master)
 
 # MongoSwift
-The official [MongoDB](https://www.mongodb.com/) driver for Swift.
+The official [MongoDB](https://www.mongodb.com/) driver for Swift applications on macOS and Linux.
 
 ### Index
 - [Documentation](#documentation)
@@ -37,20 +37,15 @@ Core Server (i.e. SERVER) project are **public**.
 
 Installation is supported via [Swift Package Manager](https://swift.org/package-manager/).
 
-### Step 1: Install the MongoDB C Driver
-The driver wraps the MongoDB C driver, and using it requires having the C driver's two components, `libbson` and `libmongoc`, installed on your system. **The minimum required version of the C Driver is 1.15.3**.
+### Step 1: Install required system libraries (Linux Only)
+The driver vendors and wraps the MongoDB C driver (`libmongoc`), which depends on a number of external C libraries when built in Linux environments. As a result, these libraries must be installed on your system in order to build MongoSwift.
 
-*On a Mac*, you can install both components at once using [Homebrew](https://brew.sh/):
-`brew install mongo-c-driver`.
-
-*On Linux*: please follow the [instructions](http://mongoc.org/libmongoc/current/installing.html#building-on-unix) from `libmongoc`'s documentation. Note that the versions provided by your package manager may be too old, in which case you can follow the instructions for building and installing from source.
-
-See example installation from source on Ubuntu in [Docker](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/Docker).
+To install those libraries, please follow the [instructions](http://mongoc.org/libmongoc/current/installing.html#prerequisites-for-libmongoc) from `libmongoc`'s documentation.
 
 ### Step 2: Install MongoSwift
-*Please follow the instructions in the previous section on installing the MongoDB C Driver before proceeding.*
+The driver contains two modules to support a variety of use cases: an asynchronous API in `MongoSwift`, and a synchronous API in `MongoSwiftSync`. The modules share a BSON implementation and a number of core types such as options `struct`s.
 
-Add MongoSwift to your dependencies in `Package.swift`:
+To install the driver, add the package and relevant module as a dependency in your project's `Package.swift` file:
 
 ```swift
 // swift-tools-version:5.0
@@ -62,7 +57,10 @@ let package = Package(
         .package(url: "https://github.com/mongodb/mongo-swift-driver.git", from: "VERSION.STRING.HERE"),
     ],
     targets: [
-        .target(name: "MyPackage", dependencies: ["MongoSwift"])
+        // Async module
+        .target(name: "MyAsyncTarget", dependencies: ["MongoSwift"]),
+        // Sync module
+        .target(name: "MySyncTarget", dependencies: ["MongoSwiftSync"])
     ]
 )
 ```
@@ -74,20 +72,59 @@ Then run `swift build` to download, compile, and link all your dependencies.
 Note: You should call `cleanupMongoSwift()` exactly once at the end of your application to release all memory and other resources allocated by `libmongoc`.
 
 ### Connect to MongoDB and Create a Collection
+
+**Async**:
 ```swift
 import MongoSwift
+import NIO
+
+let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
+let client = try MongoClient("mongodb://localhost:27017", using: elg)
+
+defer {
+    // clean up driver resources
+    client.syncShutdown()
+    cleanupMongoSwift()
+
+    // shut down EventLoopGroup
+    try? elg.syncShutdownGracefully()
+}
+
+let db = client.db("myDB")
+let result = db.createCollection("myCollection").flatMap { collection in
+    // use collection...
+}
+```
+
+**Sync**:
+```swift
+import MongoSwiftSync
+
+defer {
+    // free driver resources
+    cleanupMongoSwift()
+}
 
 let client = try MongoClient("mongodb://localhost:27017")
+
 let db = client.db("myDB")
 let collection = try db.createCollection("myCollection")
 
-// free all resources
-cleanupMongoSwift()
+// use collection...
 ```
 
-Note: we have included the client `connectionString` parameter for clarity, but if connecting to the default `"mongodb://localhost:27017"`it may be omitted: `let client = try MongoClient()`.
+Note: we have included the client `connectionString` parameter for clarity, but if connecting to the default `"mongodb://localhost:27017"`it may be omitted.
 
 ### Create and Insert a Document
+**Async**:
+```swift
+let doc: Document = ["_id": 100, "a": 1, "b": 2, "c": 3]
+collection.insertOne(doc).whenSuccess { result in
+    print(result?.insertedId ?? "") // prints `.int64(100)`
+}
+```
+
+**Sync**:
 ```swift
 let doc: Document = ["_id": 100, "a": 1, "b": 2, "c": 3]
 let result = try collection.insertOne(doc)
@@ -95,15 +132,22 @@ print(result?.insertedId ?? "") // prints `.int64(100)`
 ```
 
 ### Find Documents
+**Async**:
+```swift
+let query: Document = ["a": 1]
+let result = collection.find(query).flatMap { cursor in
+    cursor.forEach { doc in
+        print(doc)
+    }
+}
+```
+
+**Sync**:
 ```swift
 let query: Document = ["a": 1]
 let documents = try collection.find(query)
 for d in documents {
-    print(d)
-}
-// check if an error occurred while iterating the cursor
-if let error = documents.error {
-    throw error
+    print(try d.get())
 }
 ```
 
@@ -145,6 +189,8 @@ methods.
 
 ### Usage With Kitura, Vapor, and Perfect
 The `Examples/` directory contains sample projects that use the driver with [Kitura](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/Kitura), [Vapor](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/Vapor), and [Perfect](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/Perfect).
+
+Please note that the driver is built using SwiftNIO 2, and therefore is incompatible with frameworks built upon SwiftNIO 1. SwiftNIO 2 is used as of Vapor 4.0 and Kitura 2.5.
 
 ## Development Instructions
 

@@ -31,10 +31,6 @@ What does this command give you?
 ```
 $ cat Package.resolved # Applies if you are using Swift package manager
 ```
-*or*
-```
-$ cat Podfile.lock # Applies if you are using Cocoapods
-```
 
 
 ### What is the version(s) of `mongod` that you are running with the driver?
@@ -51,28 +47,6 @@ or, running this in a MongoDB shell connected to the relevant node(s):
 ### What is your server topology?
 
 How is your MongoDB deployment configured?
-
-
-### How did you install `libmongoc` and `libbson` on your system
-
-Did you use `brew`? Did you install them manually? etc.
-
-
-### Version of `libmongoc` and `libbson`
-
-What does this command give you?
-```
-$ brew list --versions mongo-c-driver # Applies if you installed via brew
-```
-*or*
-```
-$ apt list --installed | grep -E '(libmongoc|libbson)' # Applies if you installed via apt
-```
-*or*
-```
-$ pkg-config --modversion libmongoc-1.0 # Applies if you use pkg-config
-$ pkg-config --modversion libbson-1.0
-```
 
 
 ## What is the problem? 
