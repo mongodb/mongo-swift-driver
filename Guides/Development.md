@@ -70,7 +70,7 @@ Documentation comments should generally be complete sentences and should end wit
 
 Our documentation site is automatically generated from the source code using [Jazzy](https://github.com/realm/jazzy#installation). We regenerate it via our release script each time we release a new version of the driver.
 
-If you'd like to preview how new documentation you've written will look when published, you can regenerate it by running `make documentation` and then inspecting the generated HTML files in `/docs`.
+If you'd like to preview how new documentation you've written will look when published, you can regenerate it by running `./etc/generate-docs.sh` and then inspecting the generated HTML files in `/docs`.
 
 ## Linting and Style
 We use [SwiftLint](https://github.com/realm/SwiftLint#using-homebrew) for linting. You can see our configuration in the `.swiftlint.yml` file in the project's root directory.  Run `swiftlint` in the root directory to lint all of our files. Running `swiftlint autocorrect` will correct some types of violations.
