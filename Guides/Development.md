@@ -17,11 +17,9 @@
 * [SwiftFormat](https://github.com/nicklockwood/SwiftFormat#how-do-i-install-it): the Swift formatter we use.
 * [SwiftLint](https://github.com/realm/SwiftLint#using-homebrew): the Swift linter we use. 
 * [Sourcery](https://github.com/krzysztofzablocki/Sourcery/#installation): the tool we use for code generation.
-* [libmongoc](http://mongoc.org/libmongoc/current/api.html): the MongoDB C driver, which this library wraps. See the installation instructions provided in our [README](https://mongodb.github.io/mongo-swift-driver/#first-install-the-mongodb-c-driver) or on the [libmongoc docs](http://mongoc.org/libmongoc/current/installing.html).
 
 ## The code
-You should clone this repository, as well as the [MongoDB Driver specifications](https://github.com/mongodb/specifications). 
-Since this library wraps the MongoDB C Driver, we also recommend cloning [mongodb/mongo-c-driver](https://github.com/mongodb/mongo-c-driver) so you have the source code and documentation easily accessible. 
+You should clone this repository, as well as the [MongoDB Driver specifications](https://github.com/mongodb/specifications).
 
 ## Building 
 ### From the Command line
