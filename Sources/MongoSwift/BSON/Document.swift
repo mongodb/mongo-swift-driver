@@ -428,10 +428,7 @@ extension Document {
      *  ```
      * A nil return value indicates that the key does not exist in the `Document`. A true BSON null is returned as
      * `BSON.null`.
-     *
-     * Only available in Swift 4.2+.
      */
-    @available(swift 4.2)
     public subscript(dynamicMember member: String) -> BSON? {
         get {
             return self[member]
