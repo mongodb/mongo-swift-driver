@@ -70,6 +70,8 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
 
             // start polling and interrupt with close
             let interruptedFuture = cursor.next()
+            // ensure the "next" loop is scheduled before the subsequent "kill".
+            Thread.sleep(forTimeInterval: 0.25)
 
             expect(try cursor.kill().wait()).toNot(throwError())
             expect(try interruptedFuture.wait()).to(beNil())
