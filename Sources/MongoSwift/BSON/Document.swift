@@ -382,8 +382,8 @@ extension Document {
      *  d["a"] = 1
      *  print(d["a"]) // prints 1
      *  ```
-     * A nil return suggests that the subscripted key does not exist in the `Document`. A true BSON null is returned as
-     * a `BSONNull`.
+     * A nil return value indicates that the subscripted key does not exist in the `Document`. A true BSON null is
+     * returned as `BSON.null`.
      */
     public subscript(key: String) -> BSON? {
         // TODO: This `get` method _should_ guarantee constant-time O(1) access, and it is possible to make it do so.
@@ -426,12 +426,9 @@ extension Document {
      *  d.a = 1
      *  print(d.a) // prints 1
      *  ```
-     * A nil return suggests that the key does not exist in the `Document`. A true BSON null is returned as
-     * a `BSONNull`.
-     *
-     * Only available in Swift 4.2+.
+     * A nil return value indicates that the key does not exist in the `Document`. A true BSON null is returned as
+     * `BSON.null`.
      */
-    @available(swift 4.2)
     public subscript(dynamicMember member: String) -> BSON? {
         get {
             return self[member]
