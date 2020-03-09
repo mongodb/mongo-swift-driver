@@ -90,6 +90,7 @@ public struct FindOptions: Codable {
     public var maxAwaitTimeMS: Int64?
 
     /// Maximum number of documents or index keys to scan when executing the query.
+    @available(*, deprecated, message: "maxScan option has been deprecated in MonogDB 4.0")
     public var maxScan: Int64?
 
     /// The maximum amount of time to allow the query to run.
@@ -221,6 +222,7 @@ public struct FindOneOptions: Codable {
     public var max: Document?
 
     /// Maximum number of documents or index keys to scan when executing the query.
+    @available(*, deprecated, message: "maxScan option has been deprecated in MonogDB 4.0")
     public var maxScan: Int64?
 
     /// The maximum amount of time to allow the query to run.
