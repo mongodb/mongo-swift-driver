@@ -8,7 +8,7 @@ The official [MongoDB](https://www.mongodb.com/) driver for Swift applications o
 - [Documentation](#documentation)
 - [Bugs/Feature Requests](#bugs--feature-requests)
 - [Installation](#installation)
-    - [Step 1: Install the MongoDB C Driver](#step-1-install-the-mongodb-c-driver)
+    - [Step 1: Install Required System Libraries (Linux Only)](#step-1-install-required-systems-libraries)
     - [Step 2: Install MongoSwift](#step-2-install-mongoswift)
 - [Example Usage](#example-usage)
     - [Connect to MongoDB and Create a Collection](#connect-to-mongodb-and-create-a-collection)
@@ -37,7 +37,7 @@ Core Server (i.e. SERVER) project are **public**.
 
 Installation is supported via [Swift Package Manager](https://swift.org/package-manager/).
 
-### Step 1: Install required system libraries (Linux Only)
+### Step 1: Install Required System Libraries (Linux Only)
 The driver vendors and wraps the MongoDB C driver (`libmongoc`), which depends on a number of external C libraries when built in Linux environments. As a result, these libraries must be installed on your system in order to build MongoSwift.
 
 To install those libraries, please follow the [instructions](http://mongoc.org/libmongoc/current/installing.html#prerequisites-for-libmongoc) from `libmongoc`'s documentation.
@@ -188,11 +188,11 @@ all available. However, runtime guarantees are not yet met for many of these
 methods.
 
 ### Usage With Kitura, Vapor, and Perfect
-The `Examples/` directory contains sample projects that use the driver with [Kitura](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/Kitura), [Vapor](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/Vapor), and [Perfect](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/Perfect).
+The `Examples/` directory contains sample projects that use the driver with [Kitura](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/KituraExample), [Vapor](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/VaporExample), and [Perfect](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/PerfectExample).
 
 Please note that the driver is built using SwiftNIO 2, and therefore is incompatible with frameworks built upon SwiftNIO 1. SwiftNIO 2 is used as of Vapor 4.0 and Kitura 2.5.
 
 ## Development Instructions
 
-See our [development guide](https://mongodb.github.io/mongo-swift-driver/development.html) for instructions for building and testing the driver.
+See our [development guide](https://github.com/mongodb/mongo-swift-driver/blob/master/Guides/Development.md) for instructions for building and testing the driver.
 
