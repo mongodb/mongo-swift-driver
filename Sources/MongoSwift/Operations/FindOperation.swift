@@ -89,10 +89,6 @@ public struct FindOptions: Codable {
     /// query. This only applies when used with `CursorType.tailableAwait`. Otherwise, this option is ignored.
     public var maxAwaitTimeMS: Int64?
 
-    /// Maximum number of documents or index keys to scan when executing the query.
-    @available(*, deprecated, message: "maxScan option has been deprecated in MongoDB 4.0")
-    public var maxScan: Int64?
-
     /// The maximum amount of time to allow the query to run.
     public var maxTimeMS: Int64?
 
@@ -196,7 +192,7 @@ public struct FindOptions: Codable {
     // Encode everything except `self.readPreference`, because this is sent to libmongoc separately
     private enum CodingKeys: String, CodingKey {
         case allowPartialResults, awaitData, batchSize, collation, comment, hint, limit, max, maxAwaitTimeMS,
-            maxScan, maxTimeMS, min, noCursorTimeout, projection, readConcern, returnKey, showRecordId, tailable, skip,
+            maxTimeMS, min, noCursorTimeout, projection, readConcern, returnKey, showRecordId, tailable, skip,
             sort
     }
 }
@@ -217,10 +213,6 @@ public struct FindOneOptions: Codable {
 
     /// The exclusive upper bound for a specific index.
     public var max: Document?
-
-    /// Maximum number of documents or index keys to scan when executing the query.
-    @available(*, deprecated, message: "maxScan option has been deprecated in MongoDB 4.0")
-    public var maxScan: Int64?
 
     /// The maximum amount of time to allow the query to run.
     public var maxTimeMS: Int64?
@@ -286,7 +278,7 @@ public struct FindOneOptions: Codable {
     // Encode everything except `self.readPreference`, because this is sent to libmongoc separately
     private enum CodingKeys: String, CodingKey {
         case allowPartialResults, collation, comment, hint, max,
-            maxScan, maxTimeMS, min, projection, readConcern, returnKey, showRecordId, skip, sort
+            maxTimeMS, min, projection, readConcern, returnKey, showRecordId, skip, sort
     }
 }
 
