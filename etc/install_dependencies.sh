@@ -29,7 +29,7 @@ then
 
 elif [[ $1 = "swiftlint" ]]
 then
-	install_from_gh swiftlint https://github.com/realm/SwiftLint/releases/download/0.35.0/portable_swiftlint.zip
+	install_from_gh swiftlint https://github.com/realm/SwiftLint/releases/download/0.39.1/portable_swiftlint.zip
 
 elif [[ $1 = "swiftformat" ]]
 then
