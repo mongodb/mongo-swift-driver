@@ -417,7 +417,7 @@ extension MongoCollection {
         return self._client.operationExecutor.execute(operation, client: self._client, session: session)
             .flatMapThrowing { result in
                 guard case let .names(names) = result else {
-                    throw InternalError(message: "Server response missing a 'name' field")
+                    throw InternalError(message: "Invalid result")
                 }
                 return names
             }
