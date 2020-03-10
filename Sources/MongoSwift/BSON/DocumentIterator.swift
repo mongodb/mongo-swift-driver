@@ -127,23 +127,43 @@ public class DocumentIterator: IteratorProtocol {
             return [:]
         }
 
-        // skip the values preceding startIndex. this is more performant than calling next, because
-        // it doesn't pull the unneeded key/values out of the iterator
-        for _ in 0..<startIndex { _ = iter.advance() }
+        var excludedKeys: [String] = []
 
-        var output = Document()
-
-        // TODO: SWIFT-224: use va_list variant of bson_copy_to_excluding to improve performance
-        for _ in startIndex..<endIndex {
+        for _ in 0..<startIndex {
             if let next = iter.next() {
-                output[next.key] = next.value
+                excludedKeys.append(next.key)
             } else {
                 // we ran out of values
                 break
             }
         }
 
-        return output
+        // skip the values between startIndex and endIndex. this is more performant than calling next, because
+        // it doesn't pull the unneeded key/values out of the iterator
+        for _ in startIndex..<endIndex {
+            if !iter.advance() {
+                // we ran out of values
+                break
+            }
+        }
+
+        while let next = iter.next() {
+            excludedKeys.append(next.key)
+        }
+
+        let firstExclude = excludedKeys.remove(at: 0)
+        let bsonOpt = bson_new()
+        withArrayOfCStrings(excludedKeys) {
+            withVaList($0) {
+                bson_copy_to_excluding_noinit_va(doc._bson, bsonOpt, firstExclude, $0)
+            }
+        }
+
+        guard let bson = bsonOpt else {
+            fatalError("Invalid BSON data")
+        }
+
+        return Document(stealing: bson)
     }
 
     /// Returns the next value in the sequence, or `nil` if the iterator is exhausted.
@@ -188,6 +208,19 @@ public class DocumentIterator: IteratorProtocol {
 #else
         return try withUnsafeMutablePointer(to: &self._iter, body)
 #endif
+    }
+
+    /// Internal helper function for passing an array of strings from Swift to C (i.e. char **)
+    internal static func withArrayOfCStrings<Result>(
+        _ args: [String], _ body: ([UnsafeMutablePointer<CChar>])
+            -> Result
+    ) -> Result {
+        // use strdup from C standard library to copy each input string
+        var cStrings = args.compactMap { strdup($0) }
+        defer {
+            cStrings.forEach { free($0) }
+        }
+        return body(cStrings)
     }
 
     private static let bsonTypeMap: [BSONType: BSONValue.Type] = [

@@ -157,17 +157,44 @@ extension Document {
 
                 // otherwise, we just create a new document and replace this key
             } else {
-                // TODO: SWIFT-224: use va_list variant of bson_copy_to_excluding to improve performance
-                var newSelf = Document()
+                guard let iter = DocumentIterator(forDocument: self) else {
+                    throw InternalError(message: "BSON buffer is unexpectedly too small (< 5 bytes)")
+                }
+
+                var keysBefore: [String] = []
+                var keysAfter: [String] = []
                 var seen = false
-                try self.forEach { pair in
-                    if !seen && pair.key == key {
+
+                while let next = iter.next() {
+                    if next.key == key {
                         seen = true
-                        try newSelf.setValue(for: pair.key, to: newValue)
                     } else {
-                        try newSelf.setValue(for: pair.key, to: pair.value)
+                        seen ? keysAfter.append(next.key) : keysBefore.append(next.key)
                     }
                 }
+
+                // To preserve order, we construct a Document excluding keys before the key and a Document excluding
+                // keys after the key. We then merge both Documents and appropriately set the new value for the key.
+                let bsonBeforeOpt = bson_new()
+                let bsonAfterOpt = bson_new()
+                DocumentIterator.withArrayOfCStrings(keysAfter) {
+                    withVaList($0) {
+                        bson_copy_to_excluding_noinit_va(self._bson, bsonBeforeOpt, key, $0)
+                    }
+                }
+                DocumentIterator.withArrayOfCStrings(keysBefore) {
+                    withVaList($0) {
+                        bson_copy_to_excluding_noinit_va(self._bson, bsonAfterOpt, key, $0)
+                    }
+                }
+
+                guard let bsonBefore = bsonBeforeOpt, let bsonAfter = bsonAfterOpt else {
+                    throw InternalError(message: "Invalid BSON data")
+                }
+
+                var newSelf = Document(stealing: bsonBefore)
+                try newSelf.setValue(for: key, to: newValue)
+                try newSelf.merge(Document(stealing: bsonAfter))
                 self = newSelf
             }
 
@@ -395,8 +422,12 @@ extension Document {
                 if let newValue = newValue {
                     try self.setValue(for: key, to: newValue)
                 } else {
-                    // TODO: SWIFT-224: use va_list variant of bson_copy_to_excluding to improve performance
-                    self = self.filter { $0.key != key }
+                    let bsonOpt = bson_new()
+                    withVaList([]) { bson_copy_to_excluding_noinit_va(self._bson, bsonOpt, key, $0) }
+                    guard let bson = bsonOpt else {
+                        fatalError("Invalid BSON data")
+                    }
+                    self = Document(stealing: bson)
                 }
             } catch {
                 fatalError("Failed to set the value for key \(key) to \(newValue ?? "nil"): \(error)")
