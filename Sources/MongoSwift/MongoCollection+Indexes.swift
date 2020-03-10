@@ -389,8 +389,14 @@ extension MongoCollection {
      *    - `LogicError` if this collection's parent client has already been closed.
      */
     public func listIndexes(session: ClientSession? = nil) -> EventLoopFuture<MongoCursor<IndexModel>> {
-        let operation = ListIndexesOperation(collection: self)
+        let operation = ListIndexesOperation(collection: self, nameOnly: false)
         return self._client.operationExecutor.execute(operation, client: self._client, session: session)
+            .flatMapThrowing { result in
+                guard case let .models(result) = result else {
+                    throw InternalError(message: "Invalid result")
+                }
+                return result
+            }
     }
 
     /**
@@ -406,16 +412,14 @@ extension MongoCollection {
      *    - `LogicError` if the provided session is inactive.
      *    - `LogicError` if this collection's parent client has already been closed.
      */
-    public func listIndexNames(session _: ClientSession? = nil) -> EventLoopFuture<[String]> {
-        return self.listIndexes().flatMap { cursor in
-            cursor.toArray()
-        }.flatMapThrowing { models in
-            try models.map { model in
-                guard let name = model.options?.name else {
-                    throw InternalError(message: "Server response missing a 'name' field")
+    public func listIndexNames(session: ClientSession? = nil) -> EventLoopFuture<[String]> {
+        let operation = ListIndexesOperation(collection: self, nameOnly: true)
+        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
+            .flatMapThrowing { result in
+                guard case let .names(names) = result else {
+                    throw InternalError(message: "Invalid result")
                 }
-                return name
+                return names
             }
-        }
     }
 }
