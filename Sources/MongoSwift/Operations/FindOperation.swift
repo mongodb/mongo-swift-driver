@@ -90,7 +90,7 @@ public struct FindOptions: Codable {
     public var maxAwaitTimeMS: Int64?
 
     /// Maximum number of documents or index keys to scan when executing the query.
-    @available(*, deprecated, message: "maxScan option has been deprecated in MonogDB 4.0")
+    @available(*, deprecated, message: "maxScan option has been deprecated in MongoDB 4.0")
     public var maxScan: Int64?
 
     /// The maximum amount of time to allow the query to run.
@@ -143,7 +143,6 @@ public struct FindOptions: Codable {
         limit: Int64? = nil,
         max: Document? = nil,
         maxAwaitTimeMS: Int64? = nil,
-        maxScan: Int64? = nil,
         maxTimeMS: Int64? = nil,
         min: Document? = nil,
         noCursorTimeout: Bool? = nil,
@@ -164,7 +163,6 @@ public struct FindOptions: Codable {
         self.limit = limit
         self.max = max
         self.maxAwaitTimeMS = maxAwaitTimeMS
-        self.maxScan = maxScan
         self.maxTimeMS = maxTimeMS
         self.min = min
         self.noCursorTimeout = noCursorTimeout
@@ -183,7 +181,6 @@ public struct FindOptions: Codable {
         self.comment = findOneOptions.comment
         self.hint = findOneOptions.hint
         self.max = findOneOptions.max
-        self.maxScan = findOneOptions.maxScan
         self.maxTimeMS = findOneOptions.maxTimeMS
         self.min = findOneOptions.min
         self.projection = findOneOptions.projection
@@ -222,7 +219,7 @@ public struct FindOneOptions: Codable {
     public var max: Document?
 
     /// Maximum number of documents or index keys to scan when executing the query.
-    @available(*, deprecated, message: "maxScan option has been deprecated in MonogDB 4.0")
+    @available(*, deprecated, message: "maxScan option has been deprecated in MongoDB 4.0")
     public var maxScan: Int64?
 
     /// The maximum amount of time to allow the query to run.
@@ -260,7 +257,6 @@ public struct FindOneOptions: Codable {
         comment: String? = nil,
         hint: Hint? = nil,
         max: Document? = nil,
-        maxScan: Int64? = nil,
         maxTimeMS: Int64? = nil,
         min: Document? = nil,
         projection: Document? = nil,
@@ -276,7 +272,6 @@ public struct FindOneOptions: Codable {
         self.comment = comment
         self.hint = hint
         self.max = max
-        self.maxScan = maxScan
         self.maxTimeMS = maxTimeMS
         self.min = min
         self.projection = projection

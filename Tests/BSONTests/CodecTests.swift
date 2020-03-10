@@ -836,7 +836,7 @@ final class CodecTests: MongoSwiftTestCase {
             "readConcern"
         ].sorted()))
 
-        let find = FindOptions(
+        var find = FindOptions(
             allowPartialResults: false,
             batchSize: 123,
             collation: Document(),
@@ -846,7 +846,6 @@ final class CodecTests: MongoSwiftTestCase {
             limit: 123,
             max: Document(),
             maxAwaitTimeMS: 123,
-            maxScan: 23,
             maxTimeMS: 123,
             min: Document(),
             noCursorTimeout: true,
@@ -858,6 +857,7 @@ final class CodecTests: MongoSwiftTestCase {
             skip: 45,
             sort: Document()
         )
+        find.maxScan = 23
         expect(try encoder.encode(find).keys.sorted()).to(equal([
             "allowPartialResults",
             "awaitData",
