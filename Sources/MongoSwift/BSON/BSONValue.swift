@@ -1165,7 +1165,7 @@ extension BSONUndefined: Hashable {
 }
 
 /// Error thrown when a BSONValue type introduced by the driver (e.g. ObjectId) is encoded not using BSONEncoder
-private func bsonEncodingUnsupportedError<T: BSONValue>(value: T, at codingPath: [CodingKey]) -> EncodingError {
+internal func bsonEncodingUnsupportedError<T: BSONValue>(value: T, at codingPath: [CodingKey]) -> EncodingError {
     let description = "Encoding \(T.self) BSONValue type with a non-BSONEncoder is currently unsupported"
 
     return EncodingError.invalidValue(
