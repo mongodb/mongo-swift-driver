@@ -98,9 +98,8 @@ final class BSONValueTests: MongoSwiftTestCase {
     }
 
     /// Test object for ObjectIdRoundTrip
-    private struct TestObject: Codable {
+    private struct TestObject: Codable, Equatable {
         private let _id: ObjectId
-        private let foo = "bar"
 
         init(id: ObjectId) {
             self._id = id
@@ -146,6 +145,23 @@ final class BSONValueTests: MongoSwiftTestCase {
         expect(objectIdFromString).to(equal(objectId))
         expect(objectIdFromString.hex).to(equal(oid))
         expect(objectIdFromString.timestamp).to(equal(timestamp))
+    }
+
+    func testObjectIdJSONCodable() throws {
+        let id = ObjectId()
+        let obj = TestObject(id: id)
+        let output = try JSONEncoder().encode(obj)
+        let outputStr = String(decoding: output, as: UTF8.self)
+        expect(outputStr).to(equal("{\"_id\":\"\(id.hex)\"}"))
+
+        let decoded = try JSONDecoder().decode(TestObject.self, from: output)
+        expect(decoded).to(equal(obj))
+
+        // expect a decoding error when the hex string is invalid
+        let invalidHex = id.hex.dropFirst()
+        let invalidJSON = "{\"_id\":\"\(invalidHex)\"}".data(using: .utf8)!
+        expect(try JSONDecoder().decode(TestObject.self, from: invalidJSON))
+            .to(throwError(errorType: DecodingError.self))
     }
 
     struct BSONNumberTestCase {
