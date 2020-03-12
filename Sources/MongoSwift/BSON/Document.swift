@@ -175,26 +175,33 @@ extension Document {
 
                 // To preserve order, we construct a Document excluding keys before the key and a Document excluding
                 // keys after the key. We then merge both Documents and appropriately set the new value for the key.
-                let bsonBeforeOpt = bson_new()
-                let bsonAfterOpt = bson_new()
-                DocumentIterator.withArrayOfCStrings(keysAfter) {
-                    withVaList($0) {
-                        bson_copy_to_excluding_noinit_va(self._bson, bsonBeforeOpt, key, $0)
-                    }
-                }
-                DocumentIterator.withArrayOfCStrings(keysBefore) {
-                    withVaList($0) {
-                        bson_copy_to_excluding_noinit_va(self._bson, bsonAfterOpt, key, $0)
-                    }
-                }
-
-                guard let bsonBefore = bsonBeforeOpt, let bsonAfter = bsonAfterOpt else {
+                guard let bson = bson_new() else {
                     throw InternalError(message: "Invalid BSON data")
                 }
 
-                var newSelf = Document(stealing: bsonBefore)
+                DocumentIterator.withArrayOfCStrings(keysAfter) {
+                    // We must append a null pointer to the array of CVarArgs so that we know when CVaList terminates.
+                    let cVarArgs = $0.map { $0 as CVarArg }
+                    let nullPtr = unsafeBitCast(0, to: OpaquePointer.self)
+
+                    withVaList(cVarArgs + [nullPtr]) {
+                        bson_copy_to_excluding_noinit_va(self._bson, bson, key, $0)
+                    }
+                }
+
+                var newSelf = Document(stealing: bson)
                 try newSelf.setValue(for: key, to: newValue)
-                try newSelf.merge(Document(stealing: bsonAfter))
+
+                DocumentIterator.withArrayOfCStrings(keysBefore) {
+                    // We must append a null pointer to the array of CVarArgs so that we know when CVaList terminates.
+                    let cVarArgs = $0.map { $0 as CVarArg }
+                    let nullPtr = unsafeBitCast(0, to: OpaquePointer.self)
+
+                    withVaList(cVarArgs + [nullPtr]) {
+                        bson_copy_to_excluding_noinit_va(self._bson, newSelf._bson, key, $0)
+                    }
+                }
+
                 self = newSelf
             }
 
@@ -422,11 +429,10 @@ extension Document {
                 if let newValue = newValue {
                     try self.setValue(for: key, to: newValue)
                 } else {
-                    let bsonOpt = bson_new()
-                    withVaList([]) { bson_copy_to_excluding_noinit_va(self._bson, bsonOpt, key, $0) }
-                    guard let bson = bsonOpt else {
+                    guard let bson = bson_new() else {
                         fatalError("Invalid BSON data")
                     }
+                    withVaList([]) { bson_copy_to_excluding_noinit_va(self._bson, bson, key, $0) }
                     self = Document(stealing: bson)
                 }
             } catch {

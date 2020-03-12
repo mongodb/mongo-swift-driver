@@ -151,19 +151,25 @@ public class DocumentIterator: IteratorProtocol {
             excludedKeys.append(next.key)
         }
 
-        let firstExclude = excludedKeys.remove(at: 0)
-        let bsonOpt = bson_new()
-        withArrayOfCStrings(excludedKeys) {
-            withVaList($0) {
-                bson_copy_to_excluding_noinit_va(doc._bson, bsonOpt, firstExclude, $0)
+        switch excludedKeys.count {
+        case 0:
+            return [:]
+        default:
+            let firstExclude = excludedKeys.removeFirst()
+            guard let bson = bson_new() else {
+                fatalError("Invalid BSON data")
             }
-        }
+            self.withArrayOfCStrings(excludedKeys) {
+                // We must append a null pointer to the array of CVarArgs so that we know when CVaList terminates.
+                let cVarArgs = $0.map { $0 as CVarArg }
+                let nullPtr = unsafeBitCast(0, to: OpaquePointer.self)
 
-        guard let bson = bsonOpt else {
-            fatalError("Invalid BSON data")
+                withVaList(cVarArgs + [nullPtr]) {
+                    bson_copy_to_excluding_noinit_va(doc._bson, bson, firstExclude, $0)
+                }
+            }
+            return Document(stealing: bson)
         }
-
-        return Document(stealing: bson)
     }
 
     /// Returns the next value in the sequence, or `nil` if the iterator is exhausted.
