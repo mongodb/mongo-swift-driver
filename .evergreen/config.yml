@@ -301,6 +301,39 @@ tasks:
             TOPOLOGY: "sharded_cluster"
         - func: "run tests"
 
+    - name: "test-4.4-standalone"
+      tags: ["4.4", "standalone"]
+      commands:
+        - func: "prepare resources"
+        - func: "fix absolute paths"
+        - func: "bootstrap mongo-orchestration"
+          vars:
+            MONGODB_VERSION: "4.4"
+            TOPOLOGY: "server"
+        - func: "run tests"
+
+    - name: "test-4.4-replica_set"
+      tags: ["4.4", "replica_set"]
+      commands:
+        - func: "prepare resources"
+        - func: "fix absolute paths"
+        - func: "bootstrap mongo-orchestration"
+          vars:
+            MONGODB_VERSION: "4.4"
+            TOPOLOGY: "replica_set"
+        - func: "run tests"
+
+    - name: "test-4.4-sharded_cluster"
+      tags: ["4.4", "sharded_cluster"]
+      commands:
+        - func: "prepare resources"
+        - func: "fix absolute paths"
+        - func: "bootstrap mongo-orchestration"
+          vars:
+            MONGODB_VERSION: "4.4"
+            TOPOLOGY: "sharded_cluster"
+        - func: "run tests"
+
     - name: "test-latest-standalone"
       tags: ["latest", "standalone"]
       commands:
@@ -347,6 +380,10 @@ axes:
         display_name: "latest"
         variables:
            MONGODB_VERSION: "latest"
+      - id: "4.4"
+        display_name: "4.4"
+        variables:
+          MONGODB_VERSION: "4.4"      
       - id: "4.2"
         display_name: "4.2"
         variables:
@@ -423,6 +460,7 @@ buildvariants:
   display_name: "${swift-version} ${os-fully-featured} ${ssl-auth}"
   tasks:
      - ".latest"
+     - ".4.4"
      - ".4.2"
      - ".4.0"
      - ".3.6"
