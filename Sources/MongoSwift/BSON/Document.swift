@@ -43,6 +43,13 @@ public class DocumentStorage {
 /// A struct representing the BSON document type.
 @dynamicMemberLookup
 public struct Document {
+    /// Error thrown when calls to bson_new return a null pointer.
+    internal static let InvalidBsonError = InternalError(message: "Invalid BSON data")
+
+    /// Error thrown when BSON buffer is too small.
+    internal static let BsonBufferTooSmallError =
+        InternalError(message: "BSON buffer is unexpectedly too small (< 5 bytes)")
+
     /// the storage backing this document.
     internal var _storage: DocumentStorage
 }
@@ -158,7 +165,7 @@ extension Document {
                 // otherwise, we just create a new document and replace this key
             } else {
                 guard let iter = DocumentIterator(forDocument: self) else {
-                    throw InternalError(message: "BSON buffer is unexpectedly too small (< 5 bytes)")
+                    throw Document.BsonBufferTooSmallError
                 }
 
                 var keysBefore: [String] = []
@@ -176,32 +183,13 @@ extension Document {
                 // To preserve order, we construct a Document excluding keys before the key and a Document excluding
                 // keys after the key. We then merge both Documents and appropriately set the new value for the key.
                 guard let bson = bson_new() else {
-                    throw InternalError(message: "Invalid BSON data")
+                    throw Document.InvalidBsonError
                 }
 
-                DocumentIterator.withArrayOfCStrings(keysAfter) {
-                    // We must append a null pointer to the array of CVarArgs so that we know when CVaList terminates.
-                    let cVarArgs = $0.map { $0 as CVarArg }
-                    let nullPtr = unsafeBitCast(0, to: OpaquePointer.self)
-
-                    withVaList(cVarArgs + [nullPtr]) {
-                        bson_copy_to_excluding_noinit_va(self._bson, bson, key, $0)
-                    }
-                }
-
+                try DocumentIterator.withVaListOfCStrings(keysAfter, self._bson, bson, key)
                 var newSelf = Document(stealing: bson)
                 try newSelf.setValue(for: key, to: newValue)
-
-                DocumentIterator.withArrayOfCStrings(keysBefore) {
-                    // We must append a null pointer to the array of CVarArgs so that we know when CVaList terminates.
-                    let cVarArgs = $0.map { $0 as CVarArg }
-                    let nullPtr = unsafeBitCast(0, to: OpaquePointer.self)
-
-                    withVaList(cVarArgs + [nullPtr]) {
-                        bson_copy_to_excluding_noinit_va(self._bson, newSelf._bson, key, $0)
-                    }
-                }
-
+                try DocumentIterator.withVaListOfCStrings(keysBefore, self._bson, newSelf._bson, key)
                 self = newSelf
             }
 
@@ -218,7 +206,7 @@ extension Document {
     /// - Throws: `InternalError` if the BSON buffer is too small (< 5 bytes).
     internal func getValue(for key: String) throws -> BSON? {
         guard let iter = DocumentIterator(forDocument: self) else {
-            throw InternalError(message: "BSON buffer is unexpectedly too small (< 5 bytes)")
+            throw Document.BsonBufferTooSmallError
         }
 
         guard iter.move(to: key) else {

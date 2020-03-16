@@ -159,14 +159,10 @@ public class DocumentIterator: IteratorProtocol {
             guard let bson = bson_new() else {
                 fatalError("Invalid BSON data")
             }
-            self.withArrayOfCStrings(excludedKeys) {
-                // We must append a null pointer to the array of CVarArgs so that we know when CVaList terminates.
-                let cVarArgs = $0.map { $0 as CVarArg }
-                let nullPtr = unsafeBitCast(0, to: OpaquePointer.self)
-
-                withVaList(cVarArgs + [nullPtr]) {
-                    bson_copy_to_excluding_noinit_va(doc._bson, bson, firstExclude, $0)
-                }
+            do {
+                try self.withVaListOfCStrings(excludedKeys, doc._bson, bson, firstExclude)
+            } catch {
+                fatalError("Failed to copy strings")
             }
             return Document(stealing: bson)
         }
@@ -217,16 +213,28 @@ public class DocumentIterator: IteratorProtocol {
     }
 
     /// Internal helper function for passing an array of strings from Swift to C (i.e. char **)
-    internal static func withArrayOfCStrings<Result>(
-        _ args: [String], _ body: ([UnsafeMutablePointer<CChar>])
-            -> Result
-    ) -> Result {
+    internal static func withVaListOfCStrings(
+        _ args: [String],
+        _ srcBson: OpaquePointer,
+        _ dstBson: OpaquePointer,
+        _ firstExclude: String
+    ) throws {
         // use strdup from C standard library to copy each input string
-        var cStrings = args.compactMap { strdup($0) }
+        var cStrings: [UnsafeMutablePointer<CChar>] = try args.compactMap {
+            guard let argv = strdup($0) else {
+                throw InternalError(message: "Failed to copy strings")
+            }
+            return argv
+        }
         defer {
             cStrings.forEach { free($0) }
         }
-        return body(cStrings)
+        // we must append a null pointer to the array of CVarArgs so that we know when CVaList terminates
+        let cVarArgs = cStrings.map { $0 as CVarArg }
+        let nullPtr = unsafeBitCast(0, to: OpaquePointer.self)
+        withVaList(cVarArgs + [nullPtr]) {
+            bson_copy_to_excluding_noinit_va(srcBson, dstBson, firstExclude, $0)
+        }
     }
 
     private static let bsonTypeMap: [BSONType: BSONValue.Type] = [
