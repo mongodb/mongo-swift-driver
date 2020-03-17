@@ -794,11 +794,25 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
     }
 
     public init(from decoder: Decoder) throws {
-        throw getDecodingError(type: ObjectId.self, decoder: decoder)
+        // assumes that the ObjectId is stored as a valid hex string.
+        let container = try decoder.singleValueContainer()
+        let hex = try container.decode(String.self)
+        guard let oid = ObjectId(hex) else {
+            throw DecodingError.dataCorrupted(
+                DecodingError.Context(
+                    codingPath: decoder.codingPath,
+                    debugDescription: "Invalid ObjectId hex string. Got: \(hex)"
+                )
+            )
+        }
+        self = oid
     }
 
-    public func encode(to: Encoder) throws {
-        throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
+    public func encode(to encoder: Encoder) throws {
+        // encodes the hex string for the `ObjectId`. this method is only ever reached by non-BSON encoders.
+        // BSONEncoder bypasses the method and inserts the ObjectId into a document, which converts it to BSON.
+        var container = encoder.singleValueContainer()
+        try container.encode(self.hex)
     }
 
     internal func encode(to storage: DocumentStorage, forKey key: String) throws {
@@ -1151,7 +1165,7 @@ extension BSONUndefined: Hashable {
 }
 
 /// Error thrown when a BSONValue type introduced by the driver (e.g. ObjectId) is encoded not using BSONEncoder
-private func bsonEncodingUnsupportedError<T: BSONValue>(value: T, at codingPath: [CodingKey]) -> EncodingError {
+internal func bsonEncodingUnsupportedError<T: BSONValue>(value: T, at codingPath: [CodingKey]) -> EncodingError {
     let description = "Encoding \(T.self) BSONValue type with a non-BSONEncoder is currently unsupported"
 
     return EncodingError.invalidValue(

@@ -73,7 +73,7 @@ extension Document {
 
     /**
      * Initializes a `Document` from a pointer to a `bson_t`, "stealing" the `bson_t` to use for underlying storage/
-     * The `bson_t` must not be modified or freed by others after it is used here/
+     * The `bson_t` must not be modified or freed by others after it is used here.
      *
      * - Parameters:
      *   - pointer: a MutableBSONPointer
@@ -105,11 +105,11 @@ extension Document {
 
     /**
      * Initializes a `Document` using an array where the values are optional
-     * `BSONValue`s. Values are stored under a string of their index in the
+     * `BSON`s. Values are stored under a string of their index in the
      * array.
      *
      * - Parameters:
-     *   - elements: a `[BSONValue]`
+     *   - elements: a `[BSON]`
      *
      * - Returns: a new `Document`
      */
@@ -178,7 +178,7 @@ extension Document {
         }
     }
 
-    /// Retrieves the value associated with `for` as a `BSONValue?`, which can be nil if the key does not exist in the
+    /// Retrieves the value associated with `for` as a `BSON?`, which can be nil if the key does not exist in the
     /// `Document`.
     ///
     /// - Throws: `InternalError` if the BSON buffer is too small (< 5 bytes).
@@ -247,7 +247,7 @@ extension Document {
         return self.makeIterator().keys
     }
 
-    /// Returns a `[BSONValue]` containing the values stored in this `Document`.
+    /// Returns a `[BSON]` containing the values stored in this `Document`.
     public var values: [BSON] {
         return self.makeIterator().values
     }
@@ -495,11 +495,11 @@ extension Document: CustomStringConvertible {
 extension Document: ExpressibleByDictionaryLiteral {
     /**
      * Initializes a `Document` using a dictionary literal where the
-     * keys are `String`s and the values are `BSONValue`s. For example:
+     * keys are `String`s and the values are `BSON`s. For example:
      * `d: Document = ["a" : 1 ]`
      *
      * - Parameters:
-     *   - dictionaryLiteral: a [String: BSONValue]
+     *   - dictionaryLiteral: a [String: BSON]
      *
      * - Returns: a new `Document`
      */
