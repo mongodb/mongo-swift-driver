@@ -155,14 +155,13 @@ public class DocumentIterator: IteratorProtocol {
         case 0:
             return [:]
         default:
-            let firstExclude = excludedKeys.removeFirst()
             guard let bson = bson_new() else {
-                fatalError("Invalid BSON data")
+                fatalError(Document.InvalidBSONError.message)
             }
             do {
-                try self.withVaListOfCStrings(excludedKeys, doc._bson, bson, firstExclude)
+                try self.copyElements(from: doc._bson, to: bson, excluding: excludedKeys)
             } catch {
-                fatalError("Failed to copy strings")
+                fatalError("Error creating document subsequence: \(error)")
             }
             return Document(stealing: bson)
         }
@@ -212,28 +211,33 @@ public class DocumentIterator: IteratorProtocol {
 #endif
     }
 
-    /// Internal helper function for passing an array of strings from Swift to C (i.e. char **)
-    internal static func withVaListOfCStrings(
-        _ args: [String],
-        _ srcBson: OpaquePointer,
-        _ dstBson: OpaquePointer,
-        _ firstExclude: String
+    /// Internal helper function for copying elements from some source 'bson_t' to a destination 'bson_t' while
+    /// excluding a non-zero number of keys
+    internal static func copyElements(
+        from srcBSON: OpaquePointer,
+        to dstBSON: OpaquePointer,
+        excluding keys: [String]
     ) throws {
-        // use strdup from C standard library to copy each input string
-        var cStrings: [UnsafeMutablePointer<CChar>] = try args.compactMap {
-            guard let argv = strdup($0) else {
-                throw InternalError(message: "Failed to copy strings")
+        if !keys.isEmpty {
+            // use strdup from C standard library to copy each input string
+            var cStrings: [UnsafeMutablePointer<CChar>] = try keys.compactMap {
+                guard let argv = strdup($0) else {
+                    throw InternalError(message: "Failed to copy strings")
+                }
+                return argv
             }
-            return argv
-        }
-        defer {
-            cStrings.forEach { free($0) }
-        }
-        // we must append a null pointer to the array of CVarArgs so that we know when CVaList terminates
-        let cVarArgs = cStrings.map { $0 as CVarArg }
-        let nullPtr = unsafeBitCast(0, to: OpaquePointer.self)
-        withVaList(cVarArgs + [nullPtr]) {
-            bson_copy_to_excluding_noinit_va(srcBson, dstBson, firstExclude, $0)
+            defer {
+                cStrings.forEach { free($0) }
+            }
+            // we must append a null pointer to the array of CVarArgs so that we know when CVaList terminates
+            let firstExclude = cStrings.removeFirst()
+            let cVarArgs = cStrings.map { $0 as CVarArg }
+            let nullPtr = unsafeBitCast(0, to: OpaquePointer.self)
+            withVaList(cVarArgs + [nullPtr]) {
+                bson_copy_to_excluding_noinit_va(srcBSON, dstBSON, firstExclude, $0)
+            }
+        } else {
+            throw InternalError(message: "No keys to exclude, use 'bson_copy' instead")
         }
     }
 

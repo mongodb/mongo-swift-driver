@@ -44,7 +44,7 @@ public class DocumentStorage {
 @dynamicMemberLookup
 public struct Document {
     /// Error thrown when calls to bson_new return a null pointer.
-    internal static let InvalidBsonError = InternalError(message: "Invalid BSON data")
+    internal static let InvalidBSONError = InternalError(message: "Invalid BSON data")
 
     /// Error thrown when BSON buffer is too small.
     internal static let BsonBufferTooSmallError =
@@ -175,6 +175,8 @@ extension Document {
                 while let next = iter.next() {
                     if next.key == key {
                         seen = true
+                        keysBefore.append(next.key)
+                        keysAfter.append(next.key)
                     } else {
                         seen ? keysAfter.append(next.key) : keysBefore.append(next.key)
                     }
@@ -183,13 +185,13 @@ extension Document {
                 // To preserve order, we construct a Document excluding keys before the key and a Document excluding
                 // keys after the key. We then merge both Documents and appropriately set the new value for the key.
                 guard let bson = bson_new() else {
-                    throw Document.InvalidBsonError
+                    throw Document.InvalidBSONError
                 }
 
-                try DocumentIterator.withVaListOfCStrings(keysAfter, self._bson, bson, key)
+                try DocumentIterator.copyElements(from: self._bson, to: bson, excluding: keysAfter)
                 var newSelf = Document(stealing: bson)
                 try newSelf.setValue(for: key, to: newValue)
-                try DocumentIterator.withVaListOfCStrings(keysBefore, self._bson, newSelf._bson, key)
+                try DocumentIterator.copyElements(from: self._bson, to: newSelf._bson, excluding: keysBefore)
                 self = newSelf
             }
 
@@ -418,9 +420,9 @@ extension Document {
                     try self.setValue(for: key, to: newValue)
                 } else {
                     guard let bson = bson_new() else {
-                        fatalError("Invalid BSON data")
+                        fatalError(Document.InvalidBSONError.message)
                     }
-                    withVaList([]) { bson_copy_to_excluding_noinit_va(self._bson, bson, key, $0) }
+                    try DocumentIterator.copyElements(from: self._bson, to: bson, excluding: [key])
                     self = Document(stealing: bson)
                 }
             } catch {
