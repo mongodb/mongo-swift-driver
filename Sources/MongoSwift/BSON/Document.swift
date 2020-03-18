@@ -47,7 +47,7 @@ public struct Document {
     internal static let InvalidBSONError = InternalError(message: "Invalid BSON data")
 
     /// Error thrown when BSON buffer is too small.
-    internal static let BsonBufferTooSmallError =
+    internal static let BSONBufferTooSmallError =
         InternalError(message: "BSON buffer is unexpectedly too small (< 5 bytes)")
 
     /// the storage backing this document.
@@ -165,7 +165,7 @@ extension Document {
                 // otherwise, we just create a new document and replace this key
             } else {
                 guard let iter = DocumentIterator(forDocument: self) else {
-                    throw Document.BsonBufferTooSmallError
+                    throw Document.BSONBufferTooSmallError
                 }
 
                 var keysBefore: [String] = []
@@ -182,8 +182,8 @@ extension Document {
                     }
                 }
 
-                // To preserve order, we construct a Document excluding keys before the key and a Document excluding
-                // keys after the key. We then merge both Documents and appropriately set the new value for the key.
+                // To preserve order, we construct a Document excluding keys after the key, set the new value for the
+                // key, and then append all keys after the key.
                 guard let bson = bson_new() else {
                     throw Document.InvalidBSONError
                 }
@@ -208,7 +208,7 @@ extension Document {
     /// - Throws: `InternalError` if the BSON buffer is too small (< 5 bytes).
     internal func getValue(for key: String) throws -> BSON? {
         guard let iter = DocumentIterator(forDocument: self) else {
-            throw Document.BsonBufferTooSmallError
+            throw Document.BSONBufferTooSmallError
         }
 
         guard iter.move(to: key) else {

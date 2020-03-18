@@ -134,6 +134,7 @@ extension Document_CollectionTests {
         ("testIndexLogic", testIndexLogic),
         ("testMutators", testMutators),
         ("testPrefixSuffix", testPrefixSuffix),
+        ("testIndexSubscript", testIndexSubscript),
     ]
 }
 

@@ -89,4 +89,19 @@ final class Document_CollectionTests: MongoSwiftTestCase {
         // doc.suffix
         expect(suffixDoc).to(equal(["b": 2, "c": 5, "d": 4, "e": 3]))
     }
+
+    func testIndexSubscript() {
+        let doc: Document = ["hello": "world", "swift": 4.2, "null": .null]
+
+        // subscript with index position
+        expect(doc[0].value).to(equal("world"))
+        expect(doc[1].value).to(equal(4.2))
+        expect(doc[2].value).to(equal(.null))
+
+        // subscript with index bounds
+        expect(doc[0..<0]).to(equal([:]))
+        expect(doc[0..<1]).to(equal(["hello": "world"]))
+        expect(doc[0..<2]).to(equal(["hello": "world", "swift": 4.2]))
+        expect(doc[0..<3]).to(equal(doc))
+    }
 }

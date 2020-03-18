@@ -151,20 +151,21 @@ public class DocumentIterator: IteratorProtocol {
             excludedKeys.append(next.key)
         }
 
-        switch excludedKeys.count {
-        case 0:
-            return [:]
-        default:
-            guard let bson = bson_new() else {
-                fatalError(Document.InvalidBSONError.message)
-            }
-            do {
-                try self.copyElements(from: doc._bson, to: bson, excluding: excludedKeys)
-            } catch {
-                fatalError("Error creating document subsequence: \(error)")
-            }
-            return Document(stealing: bson)
+        guard !excludedKeys.isEmpty else {
+            return doc
         }
+
+        guard let bson = bson_new() else {
+            fatalError(Document.InvalidBSONError.message)
+        }
+
+        do {
+            try self.copyElements(from: doc._bson, to: bson, excluding: excludedKeys)
+        } catch {
+            fatalError("Error creating document subsequence: \(error)")
+        }
+
+        return Document(stealing: bson)
     }
 
     /// Returns the next value in the sequence, or `nil` if the iterator is exhausted.
@@ -218,26 +219,25 @@ public class DocumentIterator: IteratorProtocol {
         to dstBSON: OpaquePointer,
         excluding keys: [String]
     ) throws {
-        if !keys.isEmpty {
-            // use strdup from C standard library to copy each input string
-            var cStrings: [UnsafeMutablePointer<CChar>] = try keys.compactMap {
-                guard let argv = strdup($0) else {
-                    throw InternalError(message: "Failed to copy strings")
-                }
-                return argv
-            }
-            defer {
-                cStrings.forEach { free($0) }
-            }
-            // we must append a null pointer to the array of CVarArgs so that we know when CVaList terminates
-            let firstExclude = cStrings.removeFirst()
-            let cVarArgs = cStrings.map { $0 as CVarArg }
-            let nullPtr = unsafeBitCast(0, to: OpaquePointer.self)
-            withVaList(cVarArgs + [nullPtr]) {
-                bson_copy_to_excluding_noinit_va(srcBSON, dstBSON, firstExclude, $0)
-            }
-        } else {
+        guard !keys.isEmpty else {
             throw InternalError(message: "No keys to exclude, use 'bson_copy' instead")
+        }
+
+        // use strdup from C standard library to copy each input string
+        var cStrings: [UnsafeMutablePointer<CChar>] = try keys.compactMap {
+            guard let argv = strdup($0) else {
+                throw InternalError(message: "Failed to copy strings")
+            }
+            return argv
+        }
+        defer {
+            cStrings.forEach { free($0) }
+        }
+        // we must append a null pointer to the array of C strings so that we know when CVaList terminates
+        let firstExclude = cStrings.removeFirst()
+        let nullPtr = unsafeBitCast(0, to: OpaquePointer.self)
+        withVaList(cStrings + [nullPtr]) {
+            bson_copy_to_excluding_noinit_va(srcBSON, dstBSON, firstExclude, $0)
         }
     }
 
