@@ -43,9 +43,6 @@ public class DocumentStorage {
 /// A struct representing the BSON document type.
 @dynamicMemberLookup
 public struct Document {
-    /// Error thrown when calls to bson_new return a null pointer.
-    internal static let InvalidBSONError = InternalError(message: "Invalid BSON data")
-
     /// Error thrown when BSON buffer is too small.
     internal static let BSONBufferTooSmallError =
         InternalError(message: "BSON buffer is unexpectedly too small (< 5 bytes)")
@@ -168,8 +165,8 @@ extension Document {
                     throw Document.BSONBufferTooSmallError
                 }
 
-                var keysBefore: [String] = []
-                var keysAfter: [String] = []
+                var keysBefore: [String] = [] // keys to exclude before the key
+                var keysAfter: [String] = [] // keys to exclude after the key
                 var seen = false
 
                 while let next = iter.next() {
@@ -184,14 +181,10 @@ extension Document {
 
                 // To preserve order, we construct a Document excluding keys after the key, set the new value for the
                 // key, and then append all keys after the key.
-                guard let bson = bson_new() else {
-                    throw Document.InvalidBSONError
-                }
-
-                try DocumentIterator.copyElements(from: self._bson, to: bson, excluding: keysAfter)
-                var newSelf = Document(stealing: bson)
-                try newSelf.setValue(for: key, to: newValue)
-                try DocumentIterator.copyElements(from: self._bson, to: newSelf._bson, excluding: keysBefore)
+                var newSelf = Document()
+                try self.copyElements(to: newSelf, excluding: keysAfter)
+                try newSelf.setValue(for: key, to: newValue, checkForKey: false)
+                try self.copyElements(to: newSelf, excluding: keysBefore)
                 self = newSelf
             }
 
@@ -261,6 +254,34 @@ extension Document {
         var idDoc: Document = ["_id": .objectId(ObjectId())]
         try idDoc.merge(self)
         return idDoc
+    }
+
+    /// Helper function for copying elements from some source document to a destination document while
+    /// excluding a non-zero number of keys
+    internal func copyElements(to otherDoc: Document, excluding keys: [String]) throws {
+        guard !keys.isEmpty else {
+            throw InternalError(message: "No keys to exclude, use 'bson_copy' instead")
+        }
+
+        // use strdup from C standard library to copy each input string
+        var cStringsOpt: [UnsafeMutablePointer<CChar>?] = keys.map { strdup($0) }
+        defer {
+            cStringsOpt.forEach { free($0) }
+        }
+
+        var cStrings: [UnsafeMutablePointer<CChar>] = try cStringsOpt.compactMap {
+            guard let argv = $0 else {
+                throw InternalError(message: "Failed to copy strings")
+            }
+            return argv
+        }
+
+        // we must append a null pointer to the array of C strings so that we know when CVaList terminates
+        let firstExclude = cStrings.removeFirst()
+        let nullPtr = unsafeBitCast(0, to: OpaquePointer.self)
+        withVaList(cStrings + [nullPtr]) {
+            bson_copy_to_excluding_noinit_va(self._bson, otherDoc._bson, firstExclude, $0)
+        }
     }
 }
 
@@ -419,11 +440,9 @@ extension Document {
                 if let newValue = newValue {
                     try self.setValue(for: key, to: newValue)
                 } else {
-                    guard let bson = bson_new() else {
-                        fatalError(Document.InvalidBSONError.message)
-                    }
-                    try DocumentIterator.copyElements(from: self._bson, to: bson, excluding: [key])
-                    self = Document(stealing: bson)
+                    let newSelf = Document()
+                    try self.copyElements(to: newSelf, excluding: [key])
+                    self = newSelf
                 }
             } catch {
                 fatalError("Failed to set the value for key \(key) to \(newValue ?? "nil"): \(error)")
