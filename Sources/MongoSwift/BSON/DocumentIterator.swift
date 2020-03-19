@@ -155,10 +155,10 @@ public class DocumentIterator: IteratorProtocol {
             return doc
         }
 
-        let newDoc = Document()
+        var newDoc = Document()
 
         do {
-            try doc.copyElements(to: newDoc, excluding: excludedKeys)
+            try doc.copyElements(to: &newDoc, excluding: excludedKeys)
         } catch {
             fatalError("Error creating document subsequence: \(error)")
         }

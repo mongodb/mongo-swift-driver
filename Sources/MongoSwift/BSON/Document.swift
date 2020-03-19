@@ -182,9 +182,9 @@ extension Document {
                 // To preserve order, we construct a Document excluding keys after the key, set the new value for the
                 // key, and then append all keys after the key.
                 var newSelf = Document()
-                try self.copyElements(to: newSelf, excluding: keysAfter)
+                try self.copyElements(to: &newSelf, excluding: keysAfter)
                 try newSelf.setValue(for: key, to: newValue, checkForKey: false)
-                try self.copyElements(to: newSelf, excluding: keysBefore)
+                try self.copyElements(to: &newSelf, excluding: keysBefore)
                 self = newSelf
             }
 
@@ -258,29 +258,30 @@ extension Document {
 
     /// Helper function for copying elements from some source document to a destination document while
     /// excluding a non-zero number of keys
-    internal func copyElements(to otherDoc: Document, excluding keys: [String]) throws {
+    internal func copyElements(to otherDoc: inout Document, excluding keys: [String]) throws {
         guard !keys.isEmpty else {
             throw InternalError(message: "No keys to exclude, use 'bson_copy' instead")
         }
 
-        // use strdup from C standard library to copy each input string
-        var cStringsOpt: [UnsafeMutablePointer<CChar>?] = keys.map { strdup($0) }
-        defer {
-            cStringsOpt.forEach { free($0) }
-        }
+        let cStrings: [ContiguousArray<CChar>] = keys.map { $0.utf8CString }
+        var cPtrs: [UnsafePointer<CChar>] = []
 
-        var cStrings: [UnsafeMutablePointer<CChar>] = try cStringsOpt.compactMap {
-            guard let argv = $0 else {
+        for cString in cStrings {
+            let bufferPtr: UnsafeBufferPointer<CChar> = cString.withUnsafeBufferPointer { $0 }
+            guard let cPtr = bufferPtr.baseAddress else {
                 throw InternalError(message: "Failed to copy strings")
             }
-            return argv
+            cPtrs.append(cPtr)
         }
 
-        // we must append a null pointer to the array of C strings so that we know when CVaList terminates
-        let firstExclude = cStrings.removeFirst()
+        // we must append a null pointer to the array of C string pointers so that we know when CVaList terminates
+        let firstExclude = cPtrs.removeFirst()
         let nullPtr = unsafeBitCast(0, to: OpaquePointer.self)
-        withVaList(cStrings + [nullPtr]) {
-            bson_copy_to_excluding_noinit_va(self._bson, otherDoc._bson, firstExclude, $0)
+
+        withMutableBSONPointer(to: &otherDoc) { otherDocPtr in
+            withVaList(cPtrs + [nullPtr]) {
+                bson_copy_to_excluding_noinit_va(self._bson, otherDocPtr, firstExclude, $0)
+            }
         }
     }
 }
@@ -440,8 +441,8 @@ extension Document {
                 if let newValue = newValue {
                     try self.setValue(for: key, to: newValue)
                 } else {
-                    let newSelf = Document()
-                    try self.copyElements(to: newSelf, excluding: [key])
+                    var newSelf = Document()
+                    try self.copyElements(to: &newSelf, excluding: [key])
                     self = newSelf
                 }
             } catch {
