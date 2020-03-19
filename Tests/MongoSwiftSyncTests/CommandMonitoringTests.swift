@@ -82,7 +82,7 @@ private struct CMTestFile: Decodable {
 extension ReadPreference.Mode: Decodable {}
 
 extension ReadPreference: Decodable {
-    public convenience init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let mode = try container.decode(Mode.self, forKey: .mode)
         self.init(mode)

@@ -49,7 +49,7 @@ internal func withMongocTransactionOpts<T>(
         }
     }
 
-    if let rpPtr = options?.readPreference?._readPreference {
+    if let rpPtr = options?.readPreference?.pointer {
         mongoc_transaction_opts_set_read_prefs(optionsPtr, rpPtr)
     }
 

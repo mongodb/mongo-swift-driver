@@ -71,10 +71,10 @@ internal class ConnectionString {
     /// The `ReadPreference` for this connection string.
     internal var readPreference: ReadPreference {
         get {
-            ReadPreference(from: mongoc_uri_get_read_prefs_t(self._uri))
+            ReadPreference(copying: mongoc_uri_get_read_prefs_t(self._uri))
         }
         set(rp) {
-            mongoc_uri_set_read_prefs_t(self._uri, rp._readPreference)
+            mongoc_uri_set_read_prefs_t(self._uri, rp.pointer)
         }
     }
 

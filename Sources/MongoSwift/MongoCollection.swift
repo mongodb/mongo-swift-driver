@@ -139,7 +139,7 @@ public struct MongoCollection<T: Codable> {
 
         if self.readPreference != self._client.readPreference {
             // there is no concept of an empty read preference so we will always have a value here.
-            mongoc_collection_set_read_prefs(collection, self.readPreference._readPreference)
+            mongoc_collection_set_read_prefs(collection, self.readPreference.pointer)
         }
 
         return try body(collection)

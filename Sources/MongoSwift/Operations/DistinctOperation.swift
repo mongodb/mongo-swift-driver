@@ -56,7 +56,7 @@ internal struct DistinctOperation<T: Codable>: Operation {
         ]
 
         let opts = try encodeOptions(options: self.options, session: session)
-        let rp = self.options?.readPreference?._readPreference
+        let rp = self.options?.readPreference?.pointer
         var reply = Document()
         var error = bson_error_t()
         let success = withMutableBSONPointer(to: &reply) { replyPtr in

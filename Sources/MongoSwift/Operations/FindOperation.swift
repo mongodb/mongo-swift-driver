@@ -299,7 +299,7 @@ internal struct FindOperation<CollectionType: Codable>: Operation {
         session: ClientSession?
     ) throws -> MongoCursor<CollectionType> {
         let opts = try encodeOptions(options: self.options, session: session)
-        let rp = self.options?.readPreference?._readPreference
+        let rp = self.options?.readPreference?.pointer
 
         let result: OpaquePointer = self.collection.withMongocCollection(from: connection) { collPtr in
             guard let result = mongoc_collection_find_with_opts(collPtr, self.filter._bson, opts?._bson, rp) else {

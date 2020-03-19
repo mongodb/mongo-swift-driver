@@ -43,7 +43,7 @@ internal struct RunCommandOperation: Operation {
     }
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> Document {
-        let rp = self.options?.readPreference?._readPreference
+        let rp = self.options?.readPreference?.pointer
         let opts = try encodeOptions(options: self.options, session: session)
         var reply = Document()
         var error = bson_error_t()
