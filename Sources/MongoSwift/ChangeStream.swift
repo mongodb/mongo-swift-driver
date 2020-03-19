@@ -241,6 +241,7 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      * - Returns:
      *   An `EventLoopFuture` that evaluates when the change stream has completed closing. This future should not fail.
      */
+    @discardableResult
     public func kill() -> EventLoopFuture<Void> {
         return self.client.operationExecutor.execute {
             self.wrappedCursor.kill()
