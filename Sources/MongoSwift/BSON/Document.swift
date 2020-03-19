@@ -264,14 +264,13 @@ extension Document {
         }
 
         let cStrings: [ContiguousArray<CChar>] = keys.map { $0.utf8CString }
-        var cPtrs: [UnsafePointer<CChar>] = []
 
-        for cString in cStrings {
+        var cPtrs: [UnsafePointer<CChar>] = try cStrings.map { cString in
             let bufferPtr: UnsafeBufferPointer<CChar> = cString.withUnsafeBufferPointer { $0 }
             guard let cPtr = bufferPtr.baseAddress else {
                 throw InternalError(message: "Failed to copy strings")
             }
-            cPtrs.append(cPtr)
+            return cPtr
         }
 
         // we must append a null pointer to the array of C string pointers so that we know when CVaList terminates
