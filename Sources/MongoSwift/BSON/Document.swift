@@ -43,6 +43,10 @@ public class DocumentStorage {
 /// A struct representing the BSON document type.
 @dynamicMemberLookup
 public struct Document {
+    /// Error thrown when BSON buffer is too small.
+    internal static let BSONBufferTooSmallError =
+        InternalError(message: "BSON buffer is unexpectedly too small (< 5 bytes)")
+
     /// the storage backing this document.
     internal var _storage: DocumentStorage
 }
@@ -157,17 +161,30 @@ extension Document {
 
                 // otherwise, we just create a new document and replace this key
             } else {
-                // TODO: SWIFT-224: use va_list variant of bson_copy_to_excluding to improve performance
-                var newSelf = Document()
+                guard let iter = DocumentIterator(forDocument: self) else {
+                    throw Document.BSONBufferTooSmallError
+                }
+
+                var keysBefore: [String] = [] // keys to exclude before the key
+                var keysAfter: [String] = [] // keys to exclude after the key
                 var seen = false
-                try self.forEach { pair in
-                    if !seen && pair.key == key {
+
+                while let next = iter.next() {
+                    if next.key == key {
                         seen = true
-                        try newSelf.setValue(for: pair.key, to: newValue)
+                        keysBefore.append(next.key)
+                        keysAfter.append(next.key)
                     } else {
-                        try newSelf.setValue(for: pair.key, to: pair.value)
+                        seen ? keysAfter.append(next.key) : keysBefore.append(next.key)
                     }
                 }
+
+                // To preserve order, we construct a Document excluding keys after the key, set the new value for the
+                // key, and then append all keys after the key.
+                var newSelf = Document()
+                try self.copyElements(to: &newSelf, excluding: keysAfter)
+                try newSelf.setValue(for: key, to: newValue, checkForKey: false)
+                try self.copyElements(to: &newSelf, excluding: keysBefore)
                 self = newSelf
             }
 
@@ -184,7 +201,7 @@ extension Document {
     /// - Throws: `InternalError` if the BSON buffer is too small (< 5 bytes).
     internal func getValue(for key: String) throws -> BSON? {
         guard let iter = DocumentIterator(forDocument: self) else {
-            throw InternalError(message: "BSON buffer is unexpectedly too small (< 5 bytes)")
+            throw Document.BSONBufferTooSmallError
         }
 
         guard iter.move(to: key) else {
@@ -237,6 +254,34 @@ extension Document {
         var idDoc: Document = ["_id": .objectId(ObjectId())]
         try idDoc.merge(self)
         return idDoc
+    }
+
+    /// Helper function for copying elements from some source document to a destination document while
+    /// excluding a non-zero number of keys
+    internal func copyElements(to otherDoc: inout Document, excluding keys: [String]) throws {
+        guard !keys.isEmpty else {
+            throw InternalError(message: "No keys to exclude, use 'bson_copy' instead")
+        }
+
+        let cStrings: [ContiguousArray<CChar>] = keys.map { $0.utf8CString }
+
+        var cPtrs: [UnsafePointer<CChar>] = try cStrings.map { cString in
+            let bufferPtr: UnsafeBufferPointer<CChar> = cString.withUnsafeBufferPointer { $0 }
+            guard let cPtr = bufferPtr.baseAddress else {
+                throw InternalError(message: "Failed to copy strings")
+            }
+            return cPtr
+        }
+
+        // we must append a null pointer to the array of C string pointers so that we know when CVaList terminates
+        let firstExclude = cPtrs.removeFirst()
+        let nullPtr = unsafeBitCast(0, to: OpaquePointer.self)
+
+        withMutableBSONPointer(to: &otherDoc) { otherDocPtr in
+            withVaList(cPtrs + [nullPtr]) {
+                bson_copy_to_excluding_noinit_va(self._bson, otherDocPtr, firstExclude, $0)
+            }
+        }
     }
 }
 
@@ -395,8 +440,9 @@ extension Document {
                 if let newValue = newValue {
                     try self.setValue(for: key, to: newValue)
                 } else {
-                    // TODO: SWIFT-224: use va_list variant of bson_copy_to_excluding to improve performance
-                    self = self.filter { $0.key != key }
+                    var newSelf = Document()
+                    try self.copyElements(to: &newSelf, excluding: [key])
+                    self = newSelf
                 }
             } catch {
                 fatalError("Failed to set the value for key \(key) to \(newValue ?? "nil"): \(error)")

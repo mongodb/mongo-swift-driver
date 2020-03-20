@@ -127,23 +127,43 @@ public class DocumentIterator: IteratorProtocol {
             return [:]
         }
 
-        // skip the values preceding startIndex. this is more performant than calling next, because
-        // it doesn't pull the unneeded key/values out of the iterator
-        for _ in 0..<startIndex { _ = iter.advance() }
+        var excludedKeys: [String] = []
 
-        var output = Document()
-
-        // TODO: SWIFT-224: use va_list variant of bson_copy_to_excluding to improve performance
-        for _ in startIndex..<endIndex {
+        for _ in 0..<startIndex {
             if let next = iter.next() {
-                output[next.key] = next.value
+                excludedKeys.append(next.key)
             } else {
                 // we ran out of values
                 break
             }
         }
 
-        return output
+        // skip the values between startIndex and endIndex. this is more performant than calling next, because
+        // it doesn't pull the unneeded key/values out of the iterator
+        for _ in startIndex..<endIndex {
+            if !iter.advance() {
+                // we ran out of values
+                break
+            }
+        }
+
+        while let next = iter.next() {
+            excludedKeys.append(next.key)
+        }
+
+        guard !excludedKeys.isEmpty else {
+            return doc
+        }
+
+        var newDoc = Document()
+
+        do {
+            try doc.copyElements(to: &newDoc, excluding: excludedKeys)
+        } catch {
+            fatalError("Error creating document subsequence: \(error)")
+        }
+
+        return newDoc
     }
 
     /// Returns the next value in the sequence, or `nil` if the iterator is exhausted.
