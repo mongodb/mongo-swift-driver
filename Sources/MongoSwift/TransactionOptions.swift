@@ -5,13 +5,13 @@ public struct TransactionOptions {
     /// The maximum amount of time to allow a single `commitTransaction` command to run.
     public var maxCommitTimeMS: Int64?
 
-    /// The `readConcern` to use for this transaction.
+    /// The `ReadConcern` to use for this transaction.
     public var readConcern: ReadConcern?
 
-    /// The `readPreference` to use for this transaction.
+    /// The `ReadPreference` to use for this transaction.
     public var readPreference: ReadPreference?
 
-    /// The `writeConcern` to use for this transaction.
+    /// The `WriteConcern` to use for this transaction.
     public var writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all parameters to be omitted.
