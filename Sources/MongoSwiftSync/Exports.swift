@@ -1,4 +1,4 @@
-// Generated using Sourcery 0.16.1 — https://github.com/krzysztofzablocki/Sourcery
+// Generated using Sourcery 0.17.0 — https://github.com/krzysztofzablocki/Sourcery
 // DO NOT EDIT
 
 
@@ -103,6 +103,7 @@
 @_exported import struct MongoSwift.TopologyDescription
 @_exported import struct MongoSwift.TopologyDescriptionChangedEvent
 @_exported import struct MongoSwift.TopologyOpeningEvent
+@_exported import struct MongoSwift.TransactionOptions
 @_exported import enum MongoSwift.UUIDCodingStrategy
 @_exported import struct MongoSwift.UpdateDescription
 @_exported import struct MongoSwift.UpdateModelOptions
