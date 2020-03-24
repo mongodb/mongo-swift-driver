@@ -39,6 +39,7 @@
 @_exported import struct MongoSwift.CommandSucceededEvent
 @_exported import struct MongoSwift.CompatibilityError
 @_exported import struct MongoSwift.ConnectionError
+@_exported import struct MongoSwift.ConnectionPoolOptions
 @_exported import struct MongoSwift.CountDocumentsOptions
 @_exported import struct MongoSwift.CreateCollectionOptions
 @_exported import struct MongoSwift.CreateIndexOptions

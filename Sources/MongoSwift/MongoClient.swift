@@ -4,6 +4,9 @@ import NIOConcurrencyHelpers
 
 /// Options to use when creating a `MongoClient`.
 public struct ClientOptions: CodingStrategyProvider, Decodable {
+    /// Specifies options this client should use when creating connection pools.
+    public var connectionPoolOptions: ConnectionPoolOptions?
+
     // swiftlint:disable redundant_optional_initialization
 
     /// Specifies the `DataCodingStrategy` to use for BSON encoding/decoding operations performed by this client and any
@@ -33,7 +36,7 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
      * This option specifies the size of the thread pool used by the asynchronous client, and determines the max
      * number of concurrent operations that may be performed using a single client.
      */
-    public var threadPoolSize: Int? = MongoClient.defaultThreadPoolSize
+    public var threadPoolSize: Int = MongoClient.defaultThreadPoolSize
 
     /// Specifies the TLS/SSL options to use for database connections.
     public var tlsOptions: TLSOptions? = nil
@@ -51,8 +54,9 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
         case retryWrites, retryReads, readConcern, writeConcern
     }
 
-    /// Convenience initializer allowing any/all to be omitted or optional.
+    /// Convenience initializer allowing any/all parameters to be omitted or optional.
     public init(
+        connectionPoolOptions: ConnectionPoolOptions? = nil,
         dataCodingStrategy: DataCodingStrategy? = nil,
         dateCodingStrategy: DateCodingStrategy? = nil,
         readConcern: ReadConcern? = nil,
@@ -64,6 +68,7 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
         uuidCodingStrategy: UUIDCodingStrategy? = nil,
         writeConcern: WriteConcern? = nil
     ) {
+        self.connectionPoolOptions = connectionPoolOptions
         self.dataCodingStrategy = dataCodingStrategy
         self.dateCodingStrategy = dateCodingStrategy
         self.readConcern = readConcern
@@ -162,6 +167,9 @@ public class MongoClient {
     /// Default size for a client's NIOThreadPool.
     public static let defaultThreadPoolSize = 5
 
+    /// Default maximum size for connection pools created by this client.
+    public static let defaultMaxConnectionPoolSize = 100
+
     /// Indicates whether this client has been closed.
     internal private(set) var isClosed = false
 
@@ -221,7 +229,11 @@ public class MongoClient {
         initializeMongoc()
 
         let connString = try ConnectionString(connectionString, options: options)
-        self.connectionPool = try ConnectionPool(from: connString, options: options?.tlsOptions)
+        self.connectionPool = try ConnectionPool(
+            from: connString,
+            poolOptions: options?.connectionPoolOptions,
+            tlsOptions: options?.tlsOptions
+        )
         self.operationExecutor = OperationExecutor(
             eventLoopGroup: eventLoopGroup,
             threadPoolSize: options?.threadPoolSize ?? MongoClient.defaultThreadPoolSize

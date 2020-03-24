@@ -8,8 +8,52 @@ final class MongoClientTests: MongoSwiftTestCase {
         let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         defer { elg.syncShutdownOrFail() }
         let client = try MongoClient(using: elg)
-        try client.shutdown().wait()
+        client.syncShutdown()
         expect(try client.listDatabases().wait()).to(throwError(MongoClient.ClosedClientError))
+    }
+
+    func testConnectionPoolSize() throws {
+        guard !MongoSwiftTestCase.is32Bit else {
+            return
+        }
+
+        let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+        defer { elg.syncShutdownOrFail() }
+
+        let invalidSizes = [-1, 0, Int(UInt32.max) + 1]
+
+        for value in invalidSizes {
+            let opts = ClientOptions(connectionPoolOptions: ConnectionPoolOptions(maxPoolSize: value))
+            expect(try MongoClient(using: elg, options: opts)).to(throwError(errorType: InvalidArgumentError.self))
+        }
+
+        // verify size 100 is used by default
+        let client1 = try MongoClient(using: elg)
+        defer { client1.syncShutdown() }
+
+        var conns: [Connection]? = try (1...100)
+            .map { _ in try client1.connectionPool.tryCheckOut() }
+            .compactMap { $0 }
+        expect(conns?.count).to(equal(100))
+        // we should now be holding all connections
+        expect(try client1.connectionPool.tryCheckOut()).to(beNil())
+
+        // release connections
+        conns = nil
+
+        // try using a custom size
+        let opts = ClientOptions(connectionPoolOptions: ConnectionPoolOptions(maxPoolSize: 10))
+        let client2 = try MongoClient(using: elg, options: opts)
+        defer { client2.syncShutdown() }
+        conns = try (1...10)
+            .map { _ in try client2.connectionPool.tryCheckOut() }
+            .compactMap { $0 }
+        expect(conns?.count).to(equal(10))
+        // we should now be holding all connections
+        expect(try client2.connectionPool.tryCheckOut()).to(beNil())
+
+        // release connections
+        conns = nil
     }
 
     func testListDatabases() throws {

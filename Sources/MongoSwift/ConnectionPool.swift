@@ -22,6 +22,18 @@ internal class Connection {
     }
 }
 
+/// Options to use when the driver creates connection pools.
+public struct ConnectionPoolOptions {
+    /// The maximum number of connections that may be associated with a connection pool created by this client at a
+    /// given time. This includes in-use and available connections.
+    public var maxPoolSize: Int = MongoClient.defaultMaxConnectionPoolSize
+
+    /// Convenience initializer allowing any/all parameters to be omitted or optional.
+    public init(maxPoolSize: Int = MongoClient.defaultMaxConnectionPoolSize) {
+        self.maxPoolSize = maxPoolSize
+    }
+}
+
 /// A pool of one or more connections.
 internal class ConnectionPool {
     /// Represents the state of a `ConnectionPool`.
@@ -35,8 +47,12 @@ internal class ConnectionPool {
     /// The state of this `ConnectionPool`.
     internal private(set) var state: State
 
-    /// Initializes the pool using the provided `ConnectionString`.
-    internal init(from connString: ConnectionString, options: TLSOptions? = nil) throws {
+    /// Initializes the pool using the provided `ConnectionString` and options.
+    internal init(
+        from connString: ConnectionString,
+        poolOptions: ConnectionPoolOptions?,
+        tlsOptions: TLSOptions?
+    ) throws {
         guard let pool = mongoc_client_pool_new(connString._uri) else {
             throw InternalError(message: "Failed to initialize libmongoc client pool")
         }
@@ -45,8 +61,17 @@ internal class ConnectionPool {
             throw InternalError(message: "Could not configure error handling on client pool")
         }
 
+        if let maxPoolSize = poolOptions?.maxPoolSize {
+            guard maxPoolSize > 0 && maxPoolSize <= UInt32.max else {
+                throw InvalidArgumentError(
+                    message: "Invalid maxPoolSize \(maxPoolSize): must be between 1 and \(UInt32.max)"
+                )
+            }
+            mongoc_client_pool_max_size(pool, UInt32(maxPoolSize))
+        }
+
         self.state = .open(pool: pool)
-        if let options = options {
+        if let options = tlsOptions {
             try self.setTLSOptions(options)
         }
     }
