@@ -96,4 +96,45 @@ public final class ClientSession {
     public func advanceOperationTime(to operationTime: Timestamp) {
         self.asyncSession.advanceOperationTime(to: operationTime)
     }
+
+    /**
+     * Starts a multi-document transaction for all subsequent operations in this session. Any options provided in
+     * `options` override the default transaction options for this session and any options inherited from
+     * `MongoClient`. The transaction must be completed with `commitTransaction` or `abortTransaction`. An in-progress
+     * transaction is automatically aborted when `ClientSession` goes out of scope.
+     *
+     * - Parameters:
+     *   - options: The options to use when starting this transaction
+     *
+     * - Throws:
+     *   - `CommandError` if an error occurs that prevents the command from executing.
+     *   - `LogicError` if the session already has an in-progress transaction.
+     *   - `LogicError` if `startTransaction` is called on an ended session.
+     */
+    public func startTransaction(_ options: TransactionOptions? = nil) throws {
+        try self.asyncSession.startTransaction(options).wait()
+    }
+
+    /**
+     * Commits a multi-document transaction for this session. Server and network errors are not ignored.
+     *
+     * - Throws:
+     *   - `CommandError` if an error occurs that prevents the command from executing.
+     *   - `LogicError` if the session has no in-progress transaction.
+     *   - `LogicError` if `commitTransaction` is called on an ended session.
+     */
+    public func commitTransaction() throws {
+        try self.asyncSession.commitTransaction().wait()
+    }
+
+    /**
+     * Aborts a multi-document transaction for this session. Server and network errors are ignored.
+     *
+     * - Throws:
+     *   - `LogicError` if the session has no in-progress transaction.
+     *   - `LogicError` if `abortTransaction` is called on an ended session.
+     */
+    public func abortTransaction() throws {
+        try self.asyncSession.abortTransaction().wait()
+    }
 }
