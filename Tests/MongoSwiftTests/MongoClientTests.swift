@@ -33,4 +33,21 @@ final class MongoClientTests: MongoSwiftTestCase {
         expect(ids[1]).to(equal(ids[0] + 1))
         expect(ids[2]).to(equal(ids[1] + 1))
     }
+
+    // tests that when no connections are available operations won't block the thread pool.
+    func testResubmittingToThreadPool() throws {
+        try self.withTestNamespace { _, _, coll in
+            let docs: [Document] = (1...10).map { ["x": .int32($0)] }
+            _ = try coll.insertMany(docs).wait()
+
+            let cursors = try (1...100).map { _ in try coll.find().wait() }
+
+            // queue up more operations
+            let waitingOperations = (1...MongoClient.defaultThreadPoolSize).map { _ in coll.countDocuments() }
+            // cursors can still make progress even though operations are waiting
+            _ = try cursors.map { try $0.toArray().wait() }
+            // waiting operations can eventually finish too
+            _ = try waitingOperations.map { try $0.wait() }
+        }
+    }
 }
