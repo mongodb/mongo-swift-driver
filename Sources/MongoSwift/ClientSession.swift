@@ -222,4 +222,52 @@ public final class ClientSession {
             }
         }
     }
+
+    /**
+     * Starts a multi-document transaction for all subsequent operations in this session. Any options provided in
+     * `options` override the default transaction options for this session and any options inherited from
+     * `MongoClient`. The transaction must be completed with `commitTransaction` or `abortTransaction`. An in-progress
+     * transaction is automatically aborted when `ClientSession.end()` is called. Throws an error if the session
+     * already has an in-progress transaction. Throws a `LogicError` if the session has ended.
+     *
+     * - Parameters:
+     *   - options: The options to use when starting this transaction
+     */
+    public func startTransaction(_ options: TransactionOptions?) -> EventLoopFuture<Void> {
+        switch self.state {
+        case .notStarted, .started:
+            let operation = StartTransactionOperation(options: options)
+            return self.client.operationExecutor.execute(operation, client: self.client, session: self)
+        case .ended:
+            return self.client.operationExecutor.makeFailedFuture(ClientSession.SessionInactiveError)
+        }
+    }
+
+    /**
+     * Commits a multi-document transaction for this session. Throws an error if the session has no in-progress
+     * transaction, or if there is a server or network error. Throws a `LogicError` if the session has ended.
+     */
+    public func commitTransaction() -> EventLoopFuture<Void> {
+        switch self.state {
+        case .notStarted, .started:
+            let operation = CommitTransactionOperation()
+            return self.client.operationExecutor.execute(operation, client: self.client, session: self)
+        case .ended:
+            return self.client.operationExecutor.makeFailedFuture(ClientSession.SessionInactiveError)
+        }
+    }
+
+    /**
+     * Aborts a multi-document transaction for this session. Throws an error if the session has no in-progress
+     * transaction. Server or network errors are ignored. Throws a `LogicError` if the session has ended.
+     */
+    public func abortTransaction() -> EventLoopFuture<Void> {
+        switch self.state {
+        case .notStarted, .started:
+            let operation = AbortTransactionOperation()
+            return self.client.operationExecutor.execute(operation, client: self.client, session: self)
+        case .ended:
+            return self.client.operationExecutor.makeFailedFuture(ClientSession.SessionInactiveError)
+        }
+    }
 }
