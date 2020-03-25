@@ -261,6 +261,8 @@ private func parseMongocError(_ error: bson_error_t, reply: Document?) -> MongoE
         return LogicError(message: message)
     case (MONGOC_ERROR_PROTOCOL, MONGOC_ERROR_PROTOCOL_BAD_WIRE_VERSION):
         return CompatibilityError(message: message)
+    case (MONGOC_ERROR_TRANSACTION, MONGOC_ERROR_TRANSACTION_INVALID_STATE):
+        return LogicError(message: message)
     default:
         assert(
             errorLabels == nil, "errorLabels set on error, but were not thrown as a MongoError. " +
