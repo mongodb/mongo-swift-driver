@@ -32,7 +32,7 @@ private func withSessionOpts<T>(
         mongoc_session_opts_set_causal_consistency(opts, causalConsistency)
     }
 
-    withMongocTransactionOpts(wrapping: options?.defaultTransactionOptions) {
+    withMongocTransactionOpts(copying: options?.defaultTransactionOptions) {
         mongoc_session_opts_set_default_transaction_opts(opts, $0)
     }
 

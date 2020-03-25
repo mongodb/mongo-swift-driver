@@ -31,7 +31,7 @@ public struct TransactionOptions {
 /// Internal helper function for providing a `mongoc_transaction_opt_t` that is only valid within the body of the
 /// provided closure.
 internal func withMongocTransactionOpts<T>(
-    wrapping options: TransactionOptions?,
+    copying options: TransactionOptions?,
     _ body: (OpaquePointer) throws -> T
 ) rethrows -> T {
     let optionsPtr: OpaquePointer = mongoc_transaction_opts_new()
