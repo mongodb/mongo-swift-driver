@@ -9,7 +9,12 @@ internal struct AbortTransactionOperation: Operation {
 
         // session either was not started or ended
         guard case let .started(sessionPtr, _) = session.state else {
-            return
+            switch session.state {
+            case .notStarted:
+                throw InternalError(message: "Session not started for AbortTransactionOperation")
+            default: // session ended
+                return
+            }
         }
 
         var error = bson_error_t()

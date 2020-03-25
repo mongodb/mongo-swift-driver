@@ -9,7 +9,12 @@ internal struct CommitTransactionOperation: Operation {
 
         // session either was not started or ended
         guard case let .started(sessionPtr, _) = session.state else {
-            return
+            switch session.state {
+            case .notStarted:
+                throw InternalError(message: "Session not started for CommitTransactionOperation")
+            default: // session ended
+                return
+            }
         }
 
         var reply = Document()

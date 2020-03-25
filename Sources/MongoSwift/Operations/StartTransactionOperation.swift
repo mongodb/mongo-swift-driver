@@ -76,10 +76,15 @@ internal struct StartTransactionOperation: Operation {
 
         // session either was not started or ended
         guard case let .started(sessionPtr, _) = session.state else {
-            return
+            switch session.state {
+            case .notStarted:
+                throw InternalError(message: "Session not started for StartTransactionOperation")
+            default: // session ended
+                return
+            }
         }
 
-        try withMongocTransactionOpts(wrapping: self.options) { opts in
+        try withMongocTransactionOpts(copying: self.options) { opts in
             var error = bson_error_t()
             let success = mongoc_client_session_start_transaction(sessionPtr, opts, &error)
             guard success else {
