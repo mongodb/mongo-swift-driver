@@ -103,6 +103,7 @@
 @_exported import struct MongoSwift.TopologyDescription
 @_exported import struct MongoSwift.TopologyDescriptionChangedEvent
 @_exported import struct MongoSwift.TopologyOpeningEvent
+@_exported import struct MongoSwift.TransactionOptions
 @_exported import enum MongoSwift.UUIDCodingStrategy
 @_exported import struct MongoSwift.UpdateDescription
 @_exported import struct MongoSwift.UpdateModelOptions
