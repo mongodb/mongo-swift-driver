@@ -13,11 +13,11 @@ let client = try MongoClient(using: elg)
 let inventory = client.db("example").collection("inventory")
 
 inventory.watch().flatMap { stream in // a `ChangeStream<ChangeStreamEvent<Document>>`
-	stream.forEach { event in
-		// process `ChangeStreamEvent<Document>` here
-	}
+    stream.forEach { event in
+        // process `ChangeStreamEvent<Document>` here
+    }
 }.whenFailure { error in
-	// handle error
+    // handle error
 }
 
 // perform some operations using `inventory`...
@@ -30,11 +30,11 @@ let client = try MongoClient(using: elg)
 let inventory = client.db("example").collection("inventory", withType: MyCodableType.self)
 
 inventory.watch().flatMap { stream in // a `ChangeStream<ChangeStreamEvent<MyCodableType>>`
-	stream.forEach { event in
-		// process `ChangeStreamEvent<MyCodableType>` here
-	}
+    stream.forEach { event in
+        // process `ChangeStreamEvent<MyCodableType>` here
+    }
 }.whenFailure { error in
-	// handle error
+    // handle error
 }
 
 // perform some operations using `inventory`...
@@ -47,11 +47,11 @@ let client = try MongoClient(using: elg)
 let inventory = client.db("example").collection("inventory")
 
 inventory.watch(withFullDocumentType: MyCodableType.self).flatMap { stream in // a `ChangeStream<ChangeStreamEvent<MyCodableType>>`
-	stream.forEach { event in
-		// process `ChangeStreamEvent<MyCodableType>` here
-	}
+    stream.forEach { event in
+        // process `ChangeStreamEvent<MyCodableType>` here
+    }
 }.whenFailure { error in
-	// handle error
+    // handle error
 }
 
 // perform some operations using `inventory`...
@@ -64,11 +64,11 @@ let client = try MongoClient(using: elg)
 let inventory = client.db("example").collection("inventory")
 
 inventory.watch(withEventType: MyCodableType.self).flatMap { stream in // a `ChangeStream<MyCodableType>`
-	stream.forEach { event in
-		// process `MyCodableType` here
-	}
+    stream.forEach { event in
+        // process `MyCodableType` here
+    }
 }.whenFailure { error in
-	// handle error
+    // handle error
 }
 
 // perform some operations using `inventory`...
@@ -81,11 +81,11 @@ let client = try MongoClient(using: elg)
 let db = client.db("example")
 
 db.watch().flatMap { stream in // a `ChangeStream<ChangeStreamEvent<Document>>`
-	stream.forEach { event in
-		// process `ChangeStreamEvent<Document>` here
-	}
+    stream.forEach { event in
+        // process `ChangeStreamEvent<Document>` here
+    }
 }.whenFailure { error in
-	// handle error
+    // handle error
 }
 
 // perform some operations using `db`...
@@ -99,11 +99,11 @@ let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
 let client = try MongoClient(using: elg)
 
 client.watch().flatMap { stream in // a `ChangeStream<ChangeStreamEvent<Document>>`
-	stream.forEach { event in
-		// process `ChangeStreamEvent<Document>` here
-	}
+    stream.forEach { event in
+        // process `ChangeStreamEvent<Document>` here
+    }
 }.whenFailure { error in
-	// handle error
+    // handle error
 }
 
 // perform some operations using `client`...
@@ -118,20 +118,18 @@ let client = try MongoClient(using: elg)
 let inventory = client.db("example").collection("inventory")
 
 inventory.watch().flatMap { stream in // a `ChangeStream<ChangeStreamEvent<Document>>`
-	// read the first change event
-	stream.next().whenComplete{ _ in
-		// create a new change stream that starts after the first change event
-		let resumeToken = stream.resumeToken
-		inventory.watch(options: ChangeStreamOptions(resumeAfter: resumeToken)).flatMap { resumedStream in
-			resumedStream.forEach { event in
-				// process `ChangeStreamEvent<Document>` here
-			}
-		}.whenFailure { error in
-			// handle error
-		}
-	}
+    // read the first change event and simulate an error by killing the stream
+    stream.next().whenComplete { stream.kill() }
+
+    // create a new change stream that starts after the first change event
+    let resumeToken = stream.resumeToken
+    return inventory.watch(options: ChangeStreamOptions(resumeAfter: resumeToken))
+}.flatMap { resumedStream in
+    resumedStream.forEach { event in
+        // process `ChangeStreamEvent<Document>` here
+    }
 }.whenFailure { error in
-	// handle error
+    // handle error
 }
 
 // perform some operations using `inventory`...
@@ -145,15 +143,15 @@ let inventory = client.db("example").collection("inventory")
 
 // Only include events where the changed document's username = "alice"
 let pipeline: [Document] = [
-	["$match": ["fullDocument.username": "alice"] as Document]
+    ["$match": ["fullDocument.username": "alice"] as Document]
 ]
 
 inventory.watch(pipeline).flatMap { stream in // a `ChangeStream<ChangeStreamEvent<Document>>`
-	stream.forEach { event in
-		// process `ChangeStreamEvent<Document>` here
-	}
+    stream.forEach { event in
+        // process `ChangeStreamEvent<Document>` here
+    }
 }.whenFailure { error in
-	// handle error
+    // handle error
 }
 
 // perform some operations using `inventory`...
