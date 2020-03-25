@@ -6,11 +6,15 @@ public struct ClientSessionOptions {
     /// Whether to enable causal consistency for this session. By default, causal consistency is enabled.
     ///
     /// - SeeAlso: https://docs.mongodb.com/manual/core/read-isolation-consistency-recency/
-    public let causalConsistency: Bool?
+    public var causalConsistency: Bool?
+
+    /// The default `TransactionOptions` to use for transactions started on this session.
+    public var defaultTransactionOptions: TransactionOptions?
 
     /// Convenience initializer allowing any/all parameters to be omitted.
-    public init(causalConsistency: Bool? = nil) {
+    public init(causalConsistency: Bool? = nil, defaultTransactionOptions: TransactionOptions? = nil) {
         self.causalConsistency = causalConsistency
+        self.defaultTransactionOptions = defaultTransactionOptions
     }
 }
 
@@ -23,9 +27,15 @@ private func withSessionOpts<T>(
     // swiftlint:disable:next force_unwrapping
     var opts = mongoc_session_opts_new()! // always returns a value
     defer { mongoc_session_opts_destroy(opts) }
+
     if let causalConsistency = options?.causalConsistency {
         mongoc_session_opts_set_causal_consistency(opts, causalConsistency)
     }
+
+    withMongocTransactionOpts(copying: options?.defaultTransactionOptions) {
+        mongoc_session_opts_set_default_transaction_opts(opts, $0)
+    }
+
     return try body(opts)
 }
 
