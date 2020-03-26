@@ -18,7 +18,7 @@ final class MongoClientTests: MongoSwiftTestCase {
             .compactMap { $0 }
         expect(conns.count).to(equal(size))
         // we should now be holding all connections
-        expect(try client.connectionPool.tryCheckOut()).to(beNil()) 
+        expect(try client.connectionPool.tryCheckOut()).to(beNil())
     }
 
     func testConnectionPoolSize() throws {
