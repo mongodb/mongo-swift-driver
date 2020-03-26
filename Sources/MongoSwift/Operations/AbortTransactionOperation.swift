@@ -12,7 +12,9 @@ internal struct AbortTransactionOperation: Operation {
             switch session.state {
             case .notStarted:
                 throw InternalError(message: "Session not started for AbortTransactionOperation")
-            default: // session ended
+            case .ended:
+                throw LogicError(message: "Tried to abort transaction on an ended session")
+            default:
                 return
             }
         }

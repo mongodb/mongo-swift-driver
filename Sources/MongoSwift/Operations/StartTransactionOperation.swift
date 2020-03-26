@@ -79,7 +79,9 @@ internal struct StartTransactionOperation: Operation {
             switch session.state {
             case .notStarted:
                 throw InternalError(message: "Session not started for StartTransactionOperation")
-            default: // session ended
+            case .ended:
+                throw LogicError(message: "Tried to start transaction on an ended session")
+            default:
                 return
             }
         }

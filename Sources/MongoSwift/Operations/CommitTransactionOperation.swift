@@ -12,7 +12,9 @@ internal struct CommitTransactionOperation: Operation {
             switch session.state {
             case .notStarted:
                 throw InternalError(message: "Session not started for CommitTransactionOperation")
-            default: // session ended
+            case .ended:
+                throw LogicError(message: "Tried to commit transaction on an ended session")
+            default:
                 return
             }
         }
