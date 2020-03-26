@@ -117,13 +117,16 @@ let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
 let client = try MongoClient(using: elg)
 let inventory = client.db("example").collection("inventory")
 
-inventory.watch().flatMap { stream in // a `ChangeStream<ChangeStreamEvent<Document>>`
-    // read the first change event and simulate an error by killing the stream
-    stream.next().whenComplete { stream.kill() }
-
-    // create a new change stream that starts after the first change event
-    let resumeToken = stream.resumeToken
-    return inventory.watch(options: ChangeStreamOptions(resumeAfter: resumeToken))
+inventory.watch().flatMap { stream -> EventLoopFuture<ChangeStream<ChangeStreamEvent<Document>>> in
+    // read the first change event
+    stream.next().flatMap { _ in
+        // simulate an error by killing the stream
+        stream.kill()
+    }.flatMap { _ in
+        // create a new change stream that starts after the first change event
+        let resumeToken = stream.resumeToken
+        return inventory.watch(options: ChangeStreamOptions(resumeAfter: resumeToken))
+    }
 }.flatMap { resumedStream in
     resumedStream.forEach { event in
         // process `ChangeStreamEvent<Document>` here
