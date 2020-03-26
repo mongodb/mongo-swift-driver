@@ -214,8 +214,17 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
                     mongoc_bulk_operation_execute(bulk, replyPtr, &error)
                 }
 
-                let writeConcern = WriteConcern(from: mongoc_bulk_operation_get_write_concern(bulk))
-                return (serverId, writeConcern.isAcknowledged)
+                var writeConcernAcknowledged: Bool
+                if let transactionState = session?.transactionState, transactionState != .none {
+                    // Bulk write operations cannot have a write concern in a transaction. Default to
+                    // writeConcernAcknowledged = true.
+                    writeConcernAcknowledged = true
+                } else {
+                    let writeConcern = WriteConcern(from: mongoc_bulk_operation_get_write_concern(bulk))
+                    writeConcernAcknowledged = writeConcern.isAcknowledged
+                }
+
+                return (serverId, writeConcernAcknowledged)
             }
 
         let result = try BulkWriteResult(reply: reply, insertedIds: insertedIds)

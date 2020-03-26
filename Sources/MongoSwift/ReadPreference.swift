@@ -3,10 +3,10 @@ import CLibMongoC
 /// Represents a MongoDB read preference, indicating which member(s) of a replica set read operations should be
 /// directed to.
 /// - SeeAlso: https://docs.mongodb.com/manual/reference/read-preference/
-public struct ReadPreference {
+public struct ReadPreference: Decodable {
     /// An enumeration of possible read preference modes.
     /// - SeeAlso: https://docs.mongodb.com/manual/core/read-preference/#read-preference-modes
-    public enum Mode: String {
+    public enum Mode: String, Decodable {
         /// Default mode. All operations read from the current replica set primary.
         case primary
         /// In most situations, operations read from the primary but if it is unavailable, operations read from
@@ -91,6 +91,16 @@ public struct ReadPreference {
     /// A `ReadPreference` with mode `nearest`. With this mode, operations read from the member of the replica set with
     /// the least network latency, irrespective of the member’s type.
     public static let nearest = ReadPreference(.nearest)
+
+    private enum CodingKeys: String, CodingKey {
+        case mode
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let mode = try container.decode(Mode.self, forKey: .mode)
+        self.init(mode)
+    }
 
     /**
      * Initializes a new `ReadPreference` with the mode `primaryPreferred`. With this mode, in most situations

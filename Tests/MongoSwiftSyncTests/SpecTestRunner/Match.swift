@@ -69,8 +69,16 @@ extension Array: Matchable where Element: Matchable {
 extension Document: Matchable {
     internal func contentMatches(expected: Document) -> Bool {
         for (eK, eV) in expected {
-            guard let aV = self[eK], aV.matches(expected: eV) else {
-                return false
+            if eV != .null {
+                guard let aV = self[eK], aV.matches(expected: eV) else {
+                    return false
+                }
+            } else {
+                // If the expected document has "key": null then the actual document must either have "key": null
+                // or no reference to "key".
+                if let aV = self[eK], aV.matches(expected: eV) {
+                    return false
+                }
             }
         }
         return true

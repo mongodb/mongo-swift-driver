@@ -96,7 +96,7 @@ public struct InternalError: RuntimeError {
 /// An error thrown when encountering a connection or socket related error.
 /// May contain labels providing additional information on the nature of the error.
 public struct ConnectionError: RuntimeError, LabeledError {
-    internal let message: String
+    public let message: String
 
     public let errorLabels: [String]?
 
@@ -250,6 +250,18 @@ private func parseMongocError(_ error: bson_error_t, reply: Document?) -> MongoE
             codeName: codeName,
             message: message,
             errorLabels: errorLabels
+        )
+    case (MONGOC_ERROR_WRITE_CONCERN, _):
+        var writeConcernErrorLabels =
+            reply?["writeConcernError"]?.documentValue?["errorLabels"]?.arrayValue?.asArrayOf(String.self)
+        if let errorLabels = errorLabels {
+            writeConcernErrorLabels = Array(Set((writeConcernErrorLabels ?? []) + errorLabels))
+        }
+        return CommandError(
+            code: ServerErrorCode(code.rawValue),
+            codeName: codeName,
+            message: message,
+            errorLabels: writeConcernErrorLabels
         )
     case (MONGOC_ERROR_STREAM, _):
         return ConnectionError(message: message, errorLabels: errorLabels)

@@ -72,8 +72,19 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
     /// Specifies a WriteConcern to use for the client.
     public var writeConcern: WriteConcern?
 
-    private enum CodingKeys: CodingKey {
-        case retryWrites, retryReads, readConcern, writeConcern
+    private enum CodingKeys: String, CodingKey {
+        case retryWrites, retryReads, readConcern, writeConcern, w, readConcernLevel, mode = "readPreference"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.readConcern = (try? container.decode(ReadConcern.self, forKey: .readConcern)) ??
+            (try? ReadConcern(container.decode(String.self, forKey: .readConcernLevel)))
+        self.readPreference = try? ReadPreference(container.decode(ReadPreference.Mode.self, forKey: .mode))
+        self.retryReads = try? container.decode(Bool.self, forKey: .retryReads)
+        self.retryWrites = try? container.decode(Bool.self, forKey: .retryWrites)
+        self.writeConcern = (try? container.decode(WriteConcern.self, forKey: .writeConcern)) ??
+            (try? WriteConcern(w: container.decode(WriteConcern.W.self, forKey: .w)))
     }
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional.

@@ -366,6 +366,12 @@ extension SyncMongoClientTests {
     ]
 }
 
+extension TransactionsTests {
+    static var allTests = [
+        ("testTransactions", testTransactions),
+    ]
+}
+
 extension WriteConcernTests {
     static var allTests = [
         ("testWriteConcernType", testWriteConcernType),
@@ -408,5 +414,6 @@ XCTMain([
     testCase(SyncChangeStreamTests.allTests),
     testCase(SyncClientSessionTests.allTests),
     testCase(SyncMongoClientTests.allTests),
+    testCase(TransactionsTests.allTests),
     testCase(WriteConcernTests.allTests),
 ])
