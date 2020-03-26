@@ -80,6 +80,19 @@ internal class ConnectionPool {
         }
     }
 
+    /// Checks out a connection from the pool, or returns `nil` if none are currently available.
+    internal func tryCheckOut() throws -> Connection? {
+        switch self.state {
+        case let .open(pool):
+            guard let handle = mongoc_client_pool_try_pop(pool) else {
+                return nil
+            }
+            return Connection(clientHandle: handle, pool: self)
+        case .closed:
+            throw InternalError(message: "ConnectionPool was already closed")
+        }
+    }
+
     /// Executes the given closure using a connection from the pool. This method will block until a connection is
     /// available.
     internal func withConnection<T>(body: (Connection) throws -> T) throws -> T {

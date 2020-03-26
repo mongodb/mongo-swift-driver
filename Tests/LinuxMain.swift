@@ -158,6 +158,7 @@ extension MongoClientTests {
         ("testUsingClosedClient", testUsingClosedClient),
         ("testListDatabases", testListDatabases),
         ("testClientIdGeneration", testClientIdGeneration),
+        ("testResubmittingToThreadPool", testResubmittingToThreadPool),
     ]
 }
 
