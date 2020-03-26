@@ -7,16 +7,14 @@ internal struct CommitTransactionOperation: Operation {
             throw InternalError(message: "No session provided to CommitTransactionOperation")
         }
 
-        // session either was not started or ended
-        guard case let .started(sessionPtr, _) = session.state else {
-            switch session.state {
-            case .notStarted:
-                throw InternalError(message: "Session not started for CommitTransactionOperation")
-            case .ended:
-                throw LogicError(message: "Tried to commit transaction on an ended session")
-            default:
-                return
-            }
+        let sessionPtr: OpaquePointer
+        switch session.state {
+        case let .started(ptr, _):
+            sessionPtr = ptr
+        case .notStarted:
+            throw InternalError(message: "Session not started for CommitTransactionOperation")
+        case .ended:
+            throw LogicError(message: "Tried to commit transaction on an ended session")
         }
 
         var reply = Document()

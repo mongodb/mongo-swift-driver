@@ -74,16 +74,14 @@ internal struct StartTransactionOperation: Operation {
             throw InternalError(message: "No session provided to StartTransactionOperation")
         }
 
-        // session either was not started or ended
-        guard case let .started(sessionPtr, _) = session.state else {
-            switch session.state {
-            case .notStarted:
-                throw InternalError(message: "Session not started for StartTransactionOperation")
-            case .ended:
-                throw LogicError(message: "Tried to start transaction on an ended session")
-            default:
-                return
-            }
+        let sessionPtr: OpaquePointer
+        switch session.state {
+        case let .started(ptr, _):
+            sessionPtr = ptr
+        case .notStarted:
+            throw InternalError(message: "Session not started for StartTransactionOperation")
+        case .ended:
+            throw LogicError(message: "Tried to start transaction on an ended session")
         }
 
         try withMongocTransactionOpts(copying: self.options) { opts in

@@ -7,16 +7,14 @@ internal struct AbortTransactionOperation: Operation {
             throw InternalError(message: "No session provided to AbortTransactionOperation")
         }
 
-        // session either was not started or ended
-        guard case let .started(sessionPtr, _) = session.state else {
-            switch session.state {
-            case .notStarted:
-                throw InternalError(message: "Session not started for AbortTransactionOperation")
-            case .ended:
-                throw LogicError(message: "Tried to abort transaction on an ended session")
-            default:
-                return
-            }
+        let sessionPtr: OpaquePointer
+        switch session.state {
+        case let .started(ptr, _):
+            sessionPtr = ptr
+        case .notStarted:
+            throw InternalError(message: "Session not started for AbortTransactionOperation")
+        case .ended:
+            throw LogicError(message: "Tried to abort transaction on an ended session")
         }
 
         var error = bson_error_t()
