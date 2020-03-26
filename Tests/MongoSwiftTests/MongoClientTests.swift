@@ -12,6 +12,15 @@ final class MongoClientTests: MongoSwiftTestCase {
         expect(try client.listDatabases().wait()).to(throwError(MongoClient.ClosedClientError))
     }
 
+    func verifyPoolSize(_ client: MongoClient, size: Int) throws {
+        let conns = try (1...size)
+            .map { _ in try client.connectionPool.tryCheckOut() }
+            .compactMap { $0 }
+        expect(conns.count).to(equal(size))
+        // we should now be holding all connections
+        expect(try client.connectionPool.tryCheckOut()).to(beNil()) 
+    }
+
     func testConnectionPoolSize() throws {
         guard !MongoSwiftTestCase.is32Bit else {
             return
@@ -28,32 +37,26 @@ final class MongoClientTests: MongoSwiftTestCase {
         }
 
         // verify size 100 is used by default
-        let client1 = try MongoClient(using: elg)
-        defer { client1.syncShutdown() }
-
-        var conns: [Connection]? = try (1...100)
-            .map { _ in try client1.connectionPool.tryCheckOut() }
-            .compactMap { $0 }
-        expect(conns?.count).to(equal(100))
-        // we should now be holding all connections
-        expect(try client1.connectionPool.tryCheckOut()).to(beNil())
-
-        // release connections
-        conns = nil
+        try self.withTestClient { client in
+            try verifyPoolSize(client, size: 100)
+        }
 
         // try using a custom size
         let opts = ClientOptions(connectionPoolOptions: ConnectionPoolOptions(maxPoolSize: 10))
-        let client2 = try MongoClient(using: elg, options: opts)
-        defer { client2.syncShutdown() }
-        conns = try (1...10)
-            .map { _ in try client2.connectionPool.tryCheckOut() }
-            .compactMap { $0 }
-        expect(conns?.count).to(equal(10))
-        // we should now be holding all connections
-        expect(try client2.connectionPool.tryCheckOut()).to(beNil())
+        try self.withTestClient(options: opts) { client in
+            try verifyPoolSize(client, size: 10)
+        }
 
-        // release connections
-        conns = nil
+        // test setting custom size via URI
+        let uri = "mongodb://localhost:27017/?maxPoolSize=5"
+        try self.withTestClient(uri) { client in
+            try verifyPoolSize(client, size: 5)
+        }
+
+        // test that options struct value overrides URI value
+        try self.withTestClient(uri, options: opts) { client in
+            try verifyPoolSize(client, size: 10)
+        }
     }
 
     func testListDatabases() throws {
