@@ -59,3 +59,37 @@ internal func withMongocTransactionOpts<T>(
 
     return try body(optionsPtr)
 }
+
+/// An operation corresponding to starting a transaction.
+internal struct StartTransactionOperation: Operation {
+    /// The options to use when starting this transaction.
+    private let options: TransactionOptions?
+
+    internal init(options: TransactionOptions?) {
+        self.options = options
+    }
+
+    internal func execute(using _: Connection, session: ClientSession?) throws {
+        guard let session = session else {
+            throw InternalError(message: "No session provided to StartTransactionOperation")
+        }
+
+        let sessionPtr: OpaquePointer
+        switch session.state {
+        case let .started(ptr, _):
+            sessionPtr = ptr
+        case .notStarted:
+            throw InternalError(message: "Session not started for StartTransactionOperation")
+        case .ended:
+            throw LogicError(message: "Tried to start transaction on an ended session")
+        }
+
+        try withMongocTransactionOpts(copying: self.options) { opts in
+            var error = bson_error_t()
+            let success = mongoc_client_session_start_transaction(sessionPtr, opts, &error)
+            guard success else {
+                throw extractMongoError(error: error)
+            }
+        }
+    }
+}
