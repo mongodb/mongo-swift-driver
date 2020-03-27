@@ -10,7 +10,6 @@ final class OptionsTests: MongoSwiftTestCase {
         ClientSessionOptions(),
         ClientOptions(),
         DatabaseOptions(),
-        TLSOptions(),
         DeleteModelOptions(),
         ReplaceOneModelOptions(),
         UpdateModelOptions(),

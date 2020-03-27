@@ -22,18 +22,6 @@ internal class Connection {
     }
 }
 
-/// Options to use when the driver creates connection pools.
-public struct ConnectionPoolOptions {
-    /// The maximum number of connections that may be associated with a connection pool created by this client at a
-    /// given time. This includes in-use and available connections.
-    public var maxPoolSize: Int = MongoClient.defaultMaxConnectionPoolSize
-
-    /// Convenience initializer allowing any/all parameters to be omitted or optional.
-    public init(maxPoolSize: Int = MongoClient.defaultMaxConnectionPoolSize) {
-        self.maxPoolSize = maxPoolSize
-    }
-}
-
 /// A pool of one or more connections.
 internal class ConnectionPool {
     /// Represents the state of a `ConnectionPool`.
@@ -48,11 +36,7 @@ internal class ConnectionPool {
     internal private(set) var state: State
 
     /// Initializes the pool using the provided `ConnectionString` and options.
-    internal init(
-        from connString: ConnectionString,
-        poolOptions: ConnectionPoolOptions?,
-        tlsOptions: TLSOptions?
-    ) throws {
+    internal init(from connString: ConnectionString, options: ClientOptions?) throws {
         guard let pool = mongoc_client_pool_new(connString._uri) else {
             throw InternalError(message: "Failed to initialize libmongoc client pool")
         }
@@ -61,7 +45,7 @@ internal class ConnectionPool {
             throw InternalError(message: "Could not configure error handling on client pool")
         }
 
-        if let maxPoolSize = poolOptions?.maxPoolSize {
+        if let maxPoolSize = options?.maxPoolSize {
             guard maxPoolSize > 0 && maxPoolSize <= UInt32.max else {
                 throw InvalidArgumentError(
                     message: "Invalid maxPoolSize \(maxPoolSize): must be between 1 and \(UInt32.max)"
@@ -71,7 +55,9 @@ internal class ConnectionPool {
         }
 
         self.state = .open(pool: pool)
-        if let options = tlsOptions {
+        if let options = options {
+            print("setting ssl opts")
+            print("opts: \(options)")
             try self.setTLSOptions(options)
         }
     }
@@ -127,30 +113,38 @@ internal class ConnectionPool {
 
     // Sets TLS/SSL options that the user passes in through the client level. This must be called from
     // the ConnectionPool init before the pool is used.
-    private func setTLSOptions(_ options: TLSOptions) throws {
-        let pemFileStr = options.pemFile?.absoluteString.asCString
-        let pemPassStr = options.pemPassword?.asCString
-        let caFileStr = options.caFile?.absoluteString.asCString
+    private func setTLSOptions(_ options: ClientOptions) throws {
+        // return early so we don't set an empty options struct on the libmongoc pool. doing so will make libmongoc
+        // attempt to use TLS for connections.
+        guard options.tlsAllowInvalidCertificates != nil || options.tlsAllowInvalidHostnames != nil ||
+            options.tlsCAFile != nil || options.tlsCertificateKeyFile != nil ||
+            options.tlsCertificateKeyFilePassword != nil else {
+            return
+        }
+
+        let keyFileStr = options.tlsCertificateKeyFile?.absoluteString.asCString
+        let passStr = options.tlsCertificateKeyFilePassword?.asCString
+        let caFileStr = options.tlsCAFile?.absoluteString.asCString
         defer {
-            pemFileStr?.deallocate()
-            pemPassStr?.deallocate()
+            keyFileStr?.deallocate()
+            passStr?.deallocate()
             caFileStr?.deallocate()
         }
 
         var opts = mongoc_ssl_opt_t()
-        if let pemFileStr = pemFileStr {
-            opts.pem_file = pemFileStr
+        if let keyFileStr = keyFileStr {
+            opts.pem_file = keyFileStr
         }
-        if let pemPassStr = pemPassStr {
-            opts.pem_pwd = pemPassStr
+        if let passStr = passStr {
+            opts.pem_pwd = passStr
         }
         if let caFileStr = caFileStr {
             opts.ca_file = caFileStr
         }
-        if let weakCert = options.weakCertValidation {
+        if let weakCert = options.tlsAllowInvalidCertificates {
             opts.weak_cert_validation = weakCert
         }
-        if let invalidHosts = options.allowInvalidHostnames {
+        if let invalidHosts = options.tlsAllowInvalidHostnames {
             opts.allow_invalid_hostname = invalidHosts
         }
         switch self.state {
