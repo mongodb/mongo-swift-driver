@@ -8,142 +8,140 @@ MongoSwift 0.2.0 added support for [change streams](https://docs.mongodb.com/man
 
 ### Open a Change Stream on a `MongoCollection<Document>` (MongoDB 3.6+)
 ```swift
-let client = try MongoClient()
+let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
+let client = try MongoClient(using: elg)
 let inventory = client.db("example").collection("inventory")
-let stream = try inventory.watch() // returns a `ChangeStream<ChangeStreamEvent<Document>>`
 
-// perform some operations using `inventory`...
-
-for change in stream {
-    // process `ChangeStreamEvent<Document>` here
-}
-
-// check if any errors occurred while iterating
-if let error = stream.error {
+inventory.watch().flatMap { stream in // a `ChangeStream<ChangeStreamEvent<Document>>`
+    stream.forEach { event in
+        // process `ChangeStreamEvent<Document>` here
+    }
+}.whenFailure { error in
     // handle error
 }
+
+// perform some operations using `inventory`...
 ```
 
 ### Open a Change Stream on a `MongoCollection<MyCodableType>` (MongoDB 3.6+)
 ```swift
-let client = try MongoClient()
+let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
+let client = try MongoClient(using: elg)
 let inventory = client.db("example").collection("inventory", withType: MyCodableType.self)
-let stream = try inventory.watch() // returns a `ChangeStream<ChangeStreamEvent<MyCodableType>>`
 
-// perform some operations using `inventory`...
-
-for change in stream {
-    // process `ChangeStreamEvent<MyCodableType>` here
-}
-
-// check if any errors occurred while iterating
-if let error = stream.error {
+inventory.watch().flatMap { stream in // a `ChangeStream<ChangeStreamEvent<MyCodableType>>`
+    stream.forEach { event in
+        // process `ChangeStreamEvent<MyCodableType>` here
+    }
+}.whenFailure { error in
     // handle error
 }
+
+// perform some operations using `inventory`...
 ```
 
 ### Use a Custom `Codable` Type for the `fullDocument` Property of Returned `ChangeStreamEvent`s
 ```swift
-let client = try MongoClient()
+let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
+let client = try MongoClient(using: elg)
 let inventory = client.db("example").collection("inventory")
-let stream = try inventory.watch(withFullDocumentType: MyCodableType.self) // returns a `ChangeStream<ChangeStreamEvent<MyCodableType>>`
 
-// perform some operations using `inventory`...
-
-for change in stream {
-    // process `ChangeStreamEvent<MyCodableType>` here
-}
-
-// check if any errors occurred while iterating
-if let error = stream.error {
+inventory.watch(withFullDocumentType: MyCodableType.self).flatMap { stream in // a `ChangeStream<ChangeStreamEvent<MyCodableType>>`
+    stream.forEach { event in
+        // process `ChangeStreamEvent<MyCodableType>` here
+    }
+}.whenFailure { error in
     // handle error
 }
+
+// perform some operations using `inventory`...
 ```
 
 ### Use a Custom `Codable` Type for the Return type of `ChangeStream.next()`
 ```swift
-let client = try MongoClient()
+let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
+let client = try MongoClient(using: elg)
 let inventory = client.db("example").collection("inventory")
-let stream = try inventory.watch(withEventType: MyCodableType.self) // returns a `ChangeStream<MyCodableType>`
 
-// perform some operations using `inventory`...
-
-for change in stream {
-    // process `MyCodableType` here
-}
-
-// check if any errors occurred while iterating
-if let error = stream.error {
+inventory.watch(withEventType: MyCodableType.self).flatMap { stream in // a `ChangeStream<MyCodableType>`
+    stream.forEach { event in
+        // process `MyCodableType` here
+    }
+}.whenFailure { error in
     // handle error
 }
+
+// perform some operations using `inventory`...
 ```
 
 ### Open a Change Stream on a `MongoDatabase` (MongoDB 4.0+)
 ```swift
-let client = try MongoClient()
+let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
+let client = try MongoClient(using: elg)
 let db = client.db("example")
-let stream = try db.watch()
 
-// perform some operations using `db`...
-
-for change in stream {
-    // process `ChangeStreamEvent<Document>` here
-}
-
-// check if any errors occurred while iterating
-if let error = stream.error {
+db.watch().flatMap { stream in // a `ChangeStream<ChangeStreamEvent<Document>>`
+    stream.forEach { event in
+        // process `ChangeStreamEvent<Document>` here
+    }
+}.whenFailure { error in
     // handle error
 }
+
+// perform some operations using `db`...
 ```
 
 Note: the types of the `fullDocument` property, as well as the return type of `ChangeStream.next()`, may be customized in the same fashion as the examples using `MongoCollection` above.
 
 ### Open a Change Stream on a `MongoClient` (MongoDB 4.0+)
 ```swift
-let client = try MongoClient()
-let stream = try client.watch()
+let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
+let client = try MongoClient(using: elg)
 
-// perform some operations using `client`...
-
-for change in stream {
-    // process `ChangeStreamEvent<Document>` here
-}
-
-// check if any errors occurred while iterating
-if let error = stream.error {
+client.watch().flatMap { stream in // a `ChangeStream<ChangeStreamEvent<Document>>`
+    stream.forEach { event in
+        // process `ChangeStreamEvent<Document>` here
+    }
+}.whenFailure { error in
     // handle error
 }
+
+// perform some operations using `client`...
 ```
 
 Note: the types of the `fullDocument` property, as well as the return type of `ChangeStream.next()`, may be customized in the same fashion as the examples using `MongoCollection` above.
 
 ### Resume a Change Stream
 ```swift
-let client = try MongoClient()
+let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
+let client = try MongoClient(using: elg)
 let inventory = client.db("example").collection("inventory")
-let stream = try inventory.watch()
 
-// perform some operations using `inventory`...
-
-// read the first change event
-let next = try stream.nextOrError()
-
-// create a new change stream that starts after the first change event
-let resumeToken = stream.resumeToken
-let resumedStream = try inventory.watch(options: ChangeStreamOptions(resumeAfter: resumeToken))
-for change in resumedStream {
-    // process `ChangeStreamEvent<Document>` here
-}
-
-// check if any errors occurred while iterating
-if let error = resumedStream.error {
+inventory.watch().flatMap { stream -> EventLoopFuture<ChangeStream<ChangeStreamEvent<Document>>> in
+    // read the first change event
+    stream.next().flatMap { _ in
+        // simulate an error by killing the stream
+        stream.kill()
+    }.flatMap { _ in
+        // create a new change stream that starts after the first change event
+        let resumeToken = stream.resumeToken
+        return inventory.watch(options: ChangeStreamOptions(resumeAfter: resumeToken))
+    }
+}.flatMap { resumedStream in
+    resumedStream.forEach { event in
+        // process `ChangeStreamEvent<Document>` here
+    }
+}.whenFailure { error in
     // handle error
 }
+
+// perform some operations using `inventory`...
 ```
 
 ### Modify Change Stream Output
 ```swift
-let client = try MongoClient()
+let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
+let client = try MongoClient(using: elg)
 let inventory = client.db("example").collection("inventory")
 
 // Only include events where the changed document's username = "alice"
@@ -151,15 +149,15 @@ let pipeline: [Document] = [
     ["$match": ["fullDocument.username": "alice"] as Document]
 ]
 
-let stream = try inventory.watch(pipeline)
-for change in stream {
-    // process `ChangeStreamEvent<Document>` here
-}
-
-// check if any errors occurred while iterating
-if let error = stream.error {
+inventory.watch(pipeline).flatMap { stream in // a `ChangeStream<ChangeStreamEvent<Document>>`
+    stream.forEach { event in
+        // process `ChangeStreamEvent<Document>` here
+    }
+}.whenFailure { error in
     // handle error
 }
+
+// perform some operations using `inventory`...
 ```
 
 ## See Also
