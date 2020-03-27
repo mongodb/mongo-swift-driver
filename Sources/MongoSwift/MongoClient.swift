@@ -149,7 +149,6 @@ public struct DatabaseOptions: CodingStrategyProvider {
     }
 }
 
-        self.weakCertValidation = weakCertValidation
 // sourcery: skipSyncExport
 /// A MongoDB Client providing an asynchronous, SwiftNIO-based API.
 public class MongoClient {

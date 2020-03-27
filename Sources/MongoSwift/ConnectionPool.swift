@@ -56,8 +56,6 @@ internal class ConnectionPool {
 
         self.state = .open(pool: pool)
         if let options = options {
-            print("setting ssl opts")
-            print("opts: \(options)")
             try self.setTLSOptions(options)
         }
     }
