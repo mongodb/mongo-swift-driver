@@ -222,4 +222,81 @@ public final class ClientSession {
             }
         }
     }
+
+    /**
+     * Starts a multi-document transaction for all subsequent operations in this session. Any options provided in
+     * `options` override the default transaction options for this session and any options inherited from
+     * `MongoClient`. The transaction must be completed with `commitTransaction` or `abortTransaction`. An in-progress
+     * transaction is automatically aborted when `ClientSession.end()` is called.
+     *
+     * - Parameters:
+     *   - options: The options to use when starting this transaction
+     *
+     * - Returns:
+     *    An `EventLoopFuture<Void>` that succeeds when `startTransaction` is successful.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `CommandError` if an error occurs that prevents the command from executing.
+     *    - `LogicError` if the session already has an in-progress transaction.
+     *    - `LogicError` if `startTransaction` is called on an ended session.
+     *
+     * - SeeAlso:
+     *   - https://docs.mongodb.com/manual/core/transactions/
+     */
+    public func startTransaction(_ options: TransactionOptions?) -> EventLoopFuture<Void> {
+        switch self.state {
+        case .notStarted, .started:
+            let operation = StartTransactionOperation(options: options)
+            return self.client.operationExecutor.execute(operation, client: self.client, session: self)
+        case .ended:
+            return self.client.operationExecutor.makeFailedFuture(ClientSession.SessionInactiveError)
+        }
+    }
+
+    /**
+     * Commits a multi-document transaction for this session. Server and network errors are not ignored.
+     *
+     * - Returns:
+     *    An `EventLoopFuture<Void>` that succeeds when `commitTransaction` is successful.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `CommandError` if an error occurs that prevents the command from executing.
+     *    - `LogicError` if the session has no in-progress transaction.
+     *    - `LogicError` if `commitTransaction` is called on an ended session.
+     *
+     * - SeeAlso:
+     *   - https://docs.mongodb.com/manual/core/transactions/
+     */
+    public func commitTransaction() -> EventLoopFuture<Void> {
+        switch self.state {
+        case .notStarted, .started:
+            let operation = CommitTransactionOperation()
+            return self.client.operationExecutor.execute(operation, client: self.client, session: self)
+        case .ended:
+            return self.client.operationExecutor.makeFailedFuture(ClientSession.SessionInactiveError)
+        }
+    }
+
+    /**
+     * Aborts a multi-document transaction for this session. Server and network errors are ignored.
+     *
+     * - Returns:
+     *    An `EventLoopFuture<Void>` that succeeds when `abortTransaction` is successful.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `LogicError` if the session has no in-progress transaction.
+     *    - `LogicError` if `abortTransaction` is called on an ended session.
+     *
+     * - SeeAlso:
+     *   - https://docs.mongodb.com/manual/core/transactions/
+     */
+    public func abortTransaction() -> EventLoopFuture<Void> {
+        switch self.state {
+        case .notStarted, .started:
+            let operation = AbortTransactionOperation()
+            return self.client.operationExecutor.execute(operation, client: self.client, session: self)
+        case .ended:
+            return self.client.operationExecutor.makeFailedFuture(ClientSession.SessionInactiveError)
+        }
+    }
 }
