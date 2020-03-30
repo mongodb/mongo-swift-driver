@@ -239,6 +239,9 @@ public final class ClientSession {
      *    - `CommandError` if an error occurs that prevents the command from executing.
      *    - `LogicError` if the session already has an in-progress transaction.
      *    - `LogicError` if `startTransaction` is called on an ended session.
+     *
+     * - SeeAlso:
+     *   - https://docs.mongodb.com/manual/core/transactions/
      */
     public func startTransaction(_ options: TransactionOptions?) -> EventLoopFuture<Void> {
         switch self.state {
@@ -260,6 +263,9 @@ public final class ClientSession {
      *    - `CommandError` if an error occurs that prevents the command from executing.
      *    - `LogicError` if the session has no in-progress transaction.
      *    - `LogicError` if `commitTransaction` is called on an ended session.
+     *
+     * - SeeAlso:
+     *   - https://docs.mongodb.com/manual/core/transactions/
      */
     public func commitTransaction() -> EventLoopFuture<Void> {
         switch self.state {
@@ -280,6 +286,9 @@ public final class ClientSession {
      *    If the future fails, the error is likely one of the following:
      *    - `LogicError` if the session has no in-progress transaction.
      *    - `LogicError` if `abortTransaction` is called on an ended session.
+     *
+     * - SeeAlso:
+     *   - https://docs.mongodb.com/manual/core/transactions/
      */
     public func abortTransaction() -> EventLoopFuture<Void> {
         switch self.state {
