@@ -14,6 +14,10 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
     /// databases or collections that derive from it.
     public var dateCodingStrategy: DateCodingStrategy? = nil
 
+    /// The maximum number of connections that may be associated with a connection pool created by this client at a
+    /// given time. This includes in-use and available connections. Defaults to 100.
+    public var maxPoolSize: Int?
+
     /// Specifies a ReadConcern to use for the client.
     public var readConcern: ReadConcern?
 
@@ -26,17 +30,34 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
     /// Determines whether the client should retry supported write operations (on by default).
     public var retryWrites: Bool?
 
+    // TODO: SWIFT-705 update size
     /**
      * `MongoSwift.MongoClient` provides an asynchronous API by running all blocking operations off of their
      * originating threads in a thread pool. `MongoSwiftSync.MongoClient` is implemented as a wrapper of the async
      * client which waits for each corresponding asynchronous operation to complete and then returns the result.
      * This option specifies the size of the thread pool used by the asynchronous client, and determines the max
-     * number of concurrent operations that may be performed using a single client.
+     * number of concurrent operations that may be performed using a single client. Defaults to 5.
      */
-    public var threadPoolSize: Int? = MongoClient.defaultThreadPoolSize
+    public var threadPoolSize: Int?
 
-    /// Specifies the TLS/SSL options to use for database connections.
-    public var tlsOptions: TLSOptions? = nil
+    /// Indicates whether to bypass validation of the certificate presented by the mongod/mongos instance. By default
+    /// this is set to false.
+    public var tlsAllowInvalidCertificates: Bool?
+
+    /// Indicates whether to disable hostname validation for the certificate presented by the mongod/mongos instance.
+    /// By default this is set to false.
+    public var tlsAllowInvalidHostnames: Bool?
+
+    /// Specifies the location of a local .pem file that contains the root certificate chain from the Certificate
+    /// Authority. This file is used to validate the certificate presented by the mongod/mongos instance.
+    public var tlsCAFile: URL?
+
+    /// Specifies the location of a local .pem file that contains either the client’s TLS certificate or the client’s
+    /// TLS certificate and key. The client presents this file to the mongod/mongos instance.
+    public var tlsCertificateKeyFile: URL?
+
+    /// Specifies the password to de-crypt the `tlsCertificateKeyFile`.
+    public var tlsCertificateKeyFilePassword: String?
 
     /// Specifies the `UUIDCodingStrategy` to use for BSON encoding/decoding operations performed by this client and any
     /// databases or collections that derive from it.
@@ -51,27 +72,37 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
         case retryWrites, retryReads, readConcern, writeConcern
     }
 
-    /// Convenience initializer allowing any/all to be omitted or optional.
+    /// Convenience initializer allowing any/all parameters to be omitted or optional.
     public init(
         dataCodingStrategy: DataCodingStrategy? = nil,
         dateCodingStrategy: DateCodingStrategy? = nil,
+        maxPoolSize: Int? = nil,
         readConcern: ReadConcern? = nil,
         readPreference: ReadPreference? = nil,
         retryReads: Bool? = nil,
         retryWrites: Bool? = nil,
-        threadPoolSize: Int = MongoClient.defaultThreadPoolSize,
-        tlsOptions: TLSOptions? = nil,
+        threadPoolSize: Int? = nil,
+        tlsAllowInvalidCertificates: Bool? = nil,
+        tlsAllowInvalidHostnames: Bool? = nil,
+        tlsCAFile: URL? = nil,
+        tlsCertificateKeyFile: URL? = nil,
+        tlsCertificateKeyFilePassword: String? = nil,
         uuidCodingStrategy: UUIDCodingStrategy? = nil,
         writeConcern: WriteConcern? = nil
     ) {
         self.dataCodingStrategy = dataCodingStrategy
         self.dateCodingStrategy = dateCodingStrategy
+        self.maxPoolSize = maxPoolSize
         self.readConcern = readConcern
         self.readPreference = readPreference
         self.retryWrites = retryWrites
         self.retryReads = retryReads
         self.threadPoolSize = threadPoolSize
-        self.tlsOptions = tlsOptions
+        self.tlsAllowInvalidCertificates = tlsAllowInvalidCertificates
+        self.tlsAllowInvalidHostnames = tlsAllowInvalidHostnames
+        self.tlsCAFile = tlsCAFile
+        self.tlsCertificateKeyFile = tlsCertificateKeyFile
+        self.tlsCertificateKeyFilePassword = tlsCertificateKeyFilePassword
         self.uuidCodingStrategy = uuidCodingStrategy
         self.writeConcern = writeConcern
     }
@@ -118,39 +149,6 @@ public struct DatabaseOptions: CodingStrategyProvider {
     }
 }
 
-/// Options used to configure TLS/SSL connections to the database.
-public struct TLSOptions {
-    /// Indicates whether invalid hostnames are allowed. By default this is set to false.
-    public var allowInvalidHostnames: Bool?
-
-    /// Specifies the path to the certificate authority file.
-    public var caFile: URL?
-
-    /// Specifies the path to the client certificate key file.
-    public var pemFile: URL?
-
-    /// Specifies the client certificate key password.
-    public var pemPassword: String?
-
-    /// Indicates whether invalid certificates are allowed. By default this is set to false.
-    public var weakCertValidation: Bool?
-
-    /// Convenience initializer allowing any/all arguments to be omitted or optional.
-    public init(
-        allowInvalidHostnames: Bool? = nil,
-        caFile: URL? = nil,
-        pemFile: URL? = nil,
-        pemPassword: String? = nil,
-        weakCertValidation: Bool? = nil
-    ) {
-        self.allowInvalidHostnames = allowInvalidHostnames
-        self.caFile = caFile
-        self.pemFile = pemFile
-        self.pemPassword = pemPassword
-        self.weakCertValidation = weakCertValidation
-    }
-}
-
 // sourcery: skipSyncExport
 /// A MongoDB Client providing an asynchronous, SwiftNIO-based API.
 public class MongoClient {
@@ -160,7 +158,10 @@ public class MongoClient {
 
     // TODO: SWIFT-705 document size justification.
     /// Default size for a client's NIOThreadPool.
-    public static let defaultThreadPoolSize = 5
+    internal static let defaultThreadPoolSize = 5
+
+    /// Default maximum size for connection pools created by this client.
+    internal static let defaultMaxConnectionPoolSize = 100
 
     /// Indicates whether this client has been closed.
     internal private(set) var isClosed = false
@@ -221,7 +222,7 @@ public class MongoClient {
         initializeMongoc()
 
         let connString = try ConnectionString(connectionString, options: options)
-        self.connectionPool = try ConnectionPool(from: connString, options: options?.tlsOptions)
+        self.connectionPool = try ConnectionPool(from: connString, options: options)
         self.operationExecutor = OperationExecutor(
             eventLoopGroup: eventLoopGroup,
             threadPoolSize: options?.threadPoolSize ?? MongoClient.defaultThreadPoolSize

@@ -97,7 +97,6 @@
 @_exported import struct MongoSwift.ServerOpeningEvent
 @_exported import struct MongoSwift.ServerSelectionError
 @_exported import struct MongoSwift.Symbol
-@_exported import struct MongoSwift.TLSOptions
 @_exported import struct MongoSwift.Timestamp
 @_exported import struct MongoSwift.TopologyClosedEvent
 @_exported import struct MongoSwift.TopologyDescription

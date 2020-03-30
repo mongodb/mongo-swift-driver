@@ -156,6 +156,7 @@ extension Document_SequenceTests {
 extension MongoClientTests {
     static var allTests = [
         ("testUsingClosedClient", testUsingClosedClient),
+        ("testConnectionPoolSize", testConnectionPoolSize),
         ("testListDatabases", testListDatabases),
         ("testClientIdGeneration", testClientIdGeneration),
         ("testResubmittingToThreadPool", testResubmittingToThreadPool),

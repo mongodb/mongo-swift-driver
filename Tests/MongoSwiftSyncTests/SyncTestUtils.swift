@@ -93,10 +93,8 @@ extension MongoClient {
     ) throws -> MongoClient {
         var opts = options ?? ClientOptions()
         if MongoSwiftTestCase.ssl {
-            opts.tlsOptions = TLSOptions(
-                caFile: URL(string: MongoSwiftTestCase.sslCAFilePath ?? ""),
-                pemFile: URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? "")
-            )
+            opts.tlsCAFile = URL(string: MongoSwiftTestCase.sslCAFilePath ?? "")
+            opts.tlsCertificateKeyFile = URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? "")
         }
         return try MongoClient(uri, options: opts)
     }
