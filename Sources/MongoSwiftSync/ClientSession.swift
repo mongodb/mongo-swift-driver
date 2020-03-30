@@ -110,8 +110,11 @@ public final class ClientSession {
      *   - `CommandError` if an error occurs that prevents the command from executing.
      *   - `LogicError` if the session already has an in-progress transaction.
      *   - `LogicError` if `startTransaction` is called on an ended session.
+     *
+     * - SeeAlso:
+     *   - https://docs.mongodb.com/manual/core/transactions/
      */
-    public func startTransaction(_ options: TransactionOptions? = nil) throws {
+    public func startTransaction(options: TransactionOptions? = nil) throws {
         try self.asyncSession.startTransaction(options).wait()
     }
 
@@ -122,6 +125,9 @@ public final class ClientSession {
      *   - `CommandError` if an error occurs that prevents the command from executing.
      *   - `LogicError` if the session has no in-progress transaction.
      *   - `LogicError` if `commitTransaction` is called on an ended session.
+     *
+     * - SeeAlso:
+     *   - https://docs.mongodb.com/manual/core/transactions/
      */
     public func commitTransaction() throws {
         try self.asyncSession.commitTransaction().wait()
@@ -133,6 +139,9 @@ public final class ClientSession {
      * - Throws:
      *   - `LogicError` if the session has no in-progress transaction.
      *   - `LogicError` if `abortTransaction` is called on an ended session.
+     *
+     * - SeeAlso:
+     *   - https://docs.mongodb.com/manual/core/transactions/
      */
     public func abortTransaction() throws {
         try self.asyncSession.abortTransaction().wait()
