@@ -30,7 +30,6 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
     /// Determines whether the client should retry supported write operations (on by default).
     public var retryWrites: Bool?
 
-    // TODO: SWIFT-705 update size
     /**
      * `MongoSwift.MongoClient` provides an asynchronous API by running all blocking operations off of their
      * originating threads in a thread pool. `MongoSwiftSync.MongoClient` is implemented as a wrapper of the async
@@ -156,7 +155,6 @@ public class MongoClient {
 
     internal let operationExecutor: OperationExecutor
 
-    // TODO: SWIFT-705 document size justification.
     /// Default size for a client's NIOThreadPool.
     internal static let defaultThreadPoolSize = 5
 
