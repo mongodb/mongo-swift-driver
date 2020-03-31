@@ -474,36 +474,34 @@ final class CodecTests: MongoSwiftTestCase {
         // of doing this, one can (and should) just initialize a Document with the `init(fromJSON:)`
         // constructor, and convert to JSON using the .extendedJSON property. This test is just
         // to demonstrate that a Document can theoretically work with any encoder/decoder.
-        return
+        // let encoder = JSONEncoder()
+        // let decoder = JSONDecoder()
 
-            // let encoder = JSONEncoder()
-            // let decoder = JSONDecoder()
+        // let json = """
+        // {
+        //     "name": "Durian",
+        //     "points": 600,
+        //     "pointsDouble": 600.5,
+        //     "description": "A fruit with a distinctive scent.",
+        //     "array": ["a", "b", "c"],
+        //     "doc": { "x" : 2.0 }
+        // }
+        // """
 
-            // let json = """
-            // {
-            //     "name": "Durian",
-            //     "points": 600,
-            //     "pointsDouble": 600.5,
-            //     "description": "A fruit with a distinctive scent.",
-            //     "array": ["a", "b", "c"],
-            //     "doc": { "x" : 2.0 }
-            // }
-            // """
+        // let expected: Document = [
+        //     "name": "Durian",
+        //     "points": 600,
+        //     "pointsDouble": 600.5,
+        //     "description": "A fruit with a distinctive scent.",
+        //     "array": ["a", "b", "c"],
+        //     "doc": ["x": 2] as Document
+        // ]
 
-            // let expected: Document = [
-            //     "name": "Durian",
-            //     "points": 600,
-            //     "pointsDouble": 600.5,
-            //     "description": "A fruit with a distinctive scent.",
-            //     "array": ["a", "b", "c"],
-            //     "doc": ["x": 2] as Document
-            // ]
+        // let decoded = try decoder.decode(Document.self, from: json.data(using: .utf8)!)
+        // expect(decoded).to(sortedEqual(expected))
 
-            // let decoded = try decoder.decode(Document.self, from: json.data(using: .utf8)!)
-            // expect(decoded).to(sortedEqual(expected))
-
-            // let encoded = try String(data: encoder.encode(expected), encoding: .utf8)
-            // expect(encoded).to(cleanEqual(json))
+        // let encoded = try String(data: encoder.encode(expected), encoding: .utf8)
+        // expect(encoded).to(cleanEqual(json))
     }
 
     func testEncodeArray() throws {
