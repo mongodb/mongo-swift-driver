@@ -140,11 +140,6 @@ extension UInt: CodableNumber {
 extension Double: CodableNumber {
     internal init?(from value: BSONValue) {
         switch value {
-        case let v as Int:
-            if let exact = Double(exactly: v) {
-                self = exact
-                return
-            }
         case let v as Int32:
             if let exact = Double(exactly: v) {
                 self = exact
@@ -170,11 +165,6 @@ extension Double: CodableNumber {
 extension Float: CodableNumber {
     internal init?(from value: BSONValue) {
         switch value {
-        case let v as Int:
-            if let exact = Float(exactly: v) {
-                self = exact
-                return
-            }
         case let v as Int32:
             if let exact = Float(exactly: v) {
                 self = exact
