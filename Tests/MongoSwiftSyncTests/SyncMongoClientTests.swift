@@ -130,7 +130,7 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
         // let wrapper = wrapperWithId("baseline")
 
         let defaultClient = try MongoClient.makeTestClient()
-        let defaultDb = defaultClient.db(type(of: self).testDatabase)
+        let defaultDb = defaultClient.db(Self.testDatabase)
         let collDoc = defaultDb.collection(self.getCollectionName())
 
         // default behavior is .bsonDate, .binary, .binary

@@ -66,7 +66,7 @@ open class MongoSwiftTestCase: XCTestCase {
     }
 
     public func getNamespace(suffix: String? = nil) -> MongoNamespace {
-        MongoNamespace(db: type(of: self).testDatabase, collection: self.getCollectionName(suffix: suffix))
+        MongoNamespace(db: Self.testDatabase, collection: self.getCollectionName(suffix: suffix))
     }
 
     public static var topologyType: TopologyDescription.TopologyType {

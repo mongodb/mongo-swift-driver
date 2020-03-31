@@ -90,11 +90,11 @@ final class ReadConcernTests: MongoSwiftTestCase {
             try checkReadConcern(client, empty, clientDesc)
 
             // expect that a DB created from this client inherits its unset RC
-            let db1 = client.db(type(of: self).testDatabase)
+            let db1 = client.db(Self.testDatabase)
             try checkReadConcern(db1, empty, "db created with no RC provided from \(clientDesc)")
 
             // expect that a DB created from this client can override the client's unset RC
-            let db2 = client.db(type(of: self).testDatabase, options: DatabaseOptions(readConcern: majority))
+            let db2 = client.db(Self.testDatabase, options: DatabaseOptions(readConcern: majority))
             try checkReadConcern(db2, majority, "db created with majority RC from \(clientDesc)")
         }
 
@@ -105,20 +105,20 @@ final class ReadConcernTests: MongoSwiftTestCase {
             try checkReadConcern(client, local, clientDesc)
 
             // expect that a DB created from this client inherits its local RC
-            let db1 = client.db(type(of: self).testDatabase)
+            let db1 = client.db(Self.testDatabase)
             try checkReadConcern(db1, local, "db created with no RC provided from \(clientDesc)")
 
             // expect that a DB created from this client can override the client's local RC
-            let db2 = client.db(type(of: self).testDatabase, options: DatabaseOptions(readConcern: majority))
+            let db2 = client.db(Self.testDatabase, options: DatabaseOptions(readConcern: majority))
             try checkReadConcern(db2, majority, "db created with majority RC from \(clientDesc)")
 
             // test with string init
-            let db3 = client.db(type(of: self).testDatabase, options: DatabaseOptions(readConcern: majorityString))
+            let db3 = client.db(Self.testDatabase, options: DatabaseOptions(readConcern: majorityString))
             try checkReadConcern(db3, majority, "db created with majority string RC from \(clientDesc)")
 
             // test with unknown level
             let unknown = ReadConcern("blah")
-            let db4 = client.db(type(of: self).testDatabase, options: DatabaseOptions(readConcern: unknown))
+            let db4 = client.db(Self.testDatabase, options: DatabaseOptions(readConcern: unknown))
             try checkReadConcern(db4, unknown, "db created with unknown RC from \(clientDesc)")
         }
 
@@ -133,7 +133,7 @@ final class ReadConcernTests: MongoSwiftTestCase {
             try checkReadConcern(client, majority, clientDesc)
 
             // expect that a DB created from this client can override the client's majority RC with an unset one
-            let db = client.db(type(of: self).testDatabase, options: DatabaseOptions(readConcern: empty))
+            let db = client.db(Self.testDatabase, options: DatabaseOptions(readConcern: empty))
             try checkReadConcern(db, empty, "db created with empty RC from \(clientDesc)")
         }
     }
@@ -146,7 +146,7 @@ final class ReadConcernTests: MongoSwiftTestCase {
         let majority = ReadConcern(.majority)
 
         try self.withTestClient { client in
-            let db1 = client.db(type(of: self).testDatabase)
+            let db1 = client.db(Self.testDatabase)
             defer { try? db1.drop().wait() }
 
             let dbDesc = "db created with no RC provided"
@@ -180,7 +180,7 @@ final class ReadConcernTests: MongoSwiftTestCase {
             try db1.drop().wait()
 
             let db2 = client.db(
-                type(of: self).testDatabase,
+                Self.testDatabase,
                 options: DatabaseOptions(readConcern: local)
             )
             defer { try? db2.drop().wait() }

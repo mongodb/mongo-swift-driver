@@ -593,7 +593,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
                 changeStream = try collection.watch(options: options)
             }
 
-            for i in 0..<5 {
+            for _ in 0..<5 {
                 try collection.insertOne(["x": 1])
             }
 
@@ -763,7 +763,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let db = client.db(type(of: self).testDatabase)
+        let db = client.db(Self.testDatabase)
         defer { try? db.drop() }
         let changeStream = try db.watch(options: ChangeStreamOptions(maxAwaitTimeMS: 100))
 
@@ -800,7 +800,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         }
 
         let client = try MongoClient.makeTestClient()
-        let db = client.db(type(of: self).testDatabase)
+        let db = client.db(Self.testDatabase)
         defer { try? db.drop() }
         let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
         let options = ChangeStreamOptions(fullDocument: .updateLookup)
@@ -846,7 +846,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         }
 
         let client = try MongoClient.makeTestClient()
-        let db = client.db(type(of: self).testDatabase)
+        let db = client.db(Self.testDatabase)
         defer { try? db.drop() }
         let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
 
@@ -875,7 +875,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         }
 
         let client = try MongoClient.makeTestClient()
-        let db = client.db(type(of: self).testDatabase)
+        let db = client.db(Self.testDatabase)
         defer { try? db.drop() }
         let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
 
@@ -926,7 +926,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         }
 
         let client = try MongoClient.makeTestClient()
-        let db = client.db(type(of: self).testDatabase)
+        let db = client.db(Self.testDatabase)
         defer { try? db.drop() }
         let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
 
@@ -974,7 +974,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         let expectedDoc1 = MyFullDocumentType(id: 1, x: 1, y: 2)
 
         let client = try MongoClient.makeTestClient()
-        let db = client.db(type(of: self).testDatabase)
+        let db = client.db(Self.testDatabase)
         defer { try? db.drop() }
 
         let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
@@ -1019,7 +1019,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         }
 
         let client = try MongoClient.makeTestClient()
-        let db = client.db(type(of: self).testDatabase)
+        let db = client.db(Self.testDatabase)
         defer { try? db.drop() }
 
         let coll = try db.createCollection(self.getCollectionName(suffix: "1"), withType: MyType.self)

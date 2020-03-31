@@ -20,7 +20,7 @@ final class CrudTests: MongoSwiftTestCase {
         let files = try retrieveSpecTestFiles(specName: "crud", subdirectory: dir, asType: CrudTestFile.self)
 
         let client = try MongoClient.makeTestClient()
-        let db = client.db(type(of: self).testDatabase)
+        let db = client.db(Self.testDatabase)
 
         for (filename, file) in files {
             if try !client.serverVersionIsInRange(file.minServerVersion, file.maxServerVersion) {

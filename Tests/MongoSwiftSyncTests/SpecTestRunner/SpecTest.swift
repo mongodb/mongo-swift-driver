@@ -257,7 +257,7 @@ extension SpecTest {
 
         print("Executing test: \(self.description)")
 
-        var clientOptions = self.clientOptions ?? ClientOptions(retryReads: true)
+        let clientOptions = self.clientOptions ?? ClientOptions(retryReads: true)
 
         if let failPoint = self.failPoint {
             try parent.activateFailPoint(failPoint)

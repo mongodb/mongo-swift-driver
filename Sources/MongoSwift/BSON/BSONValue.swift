@@ -84,7 +84,7 @@ internal protocol BSONValue: Codable {
 
 extension BSONValue {
     internal var bsonType: BSONType {
-        type(of: self).bsonType
+        Self.bsonType
     }
 }
 
