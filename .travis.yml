@@ -21,24 +21,24 @@ jobs:
     - stage: pre-tests
       name: lint
       os: osx
-      osx_image: xcode11.3
+      osx_image: xcode11.4
       install: ./etc/install_dependencies.sh swiftlint && ./etc/install_dependencies.sh swiftformat
       before_script: skip
       script: ${PWD}/swiftlint/swiftlint --strict && ${PWD}/SwiftFormat/CommandLineTool/swiftformat --verbose --lint .
 
     - stage: tests
       os: osx
-      osx_image: xcode11.3
-      env: SWIFT_VERSION=5.0
+      osx_image: xcode11.4
+      env: SWIFT_VERSION=5.2
 
     - stage: tests
       os: linux
-      env: SWIFT_VERSION=5.0
+      env: SWIFT_VERSION=5.2
 
     - stage: post-tests
       name: code coverage
       os: osx
-      osx_image: xcode11.3
+      osx_image: xcode11.4
       script: make coverage
       after_success: bash <(curl -s https://codecov.io/bash)
 
