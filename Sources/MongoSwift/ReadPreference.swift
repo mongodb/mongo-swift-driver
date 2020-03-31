@@ -163,7 +163,7 @@ public final class ReadPreference {
 /// An extension of `ReadPreference` to make it `Equatable`.
 extension ReadPreference: Equatable {
     public static func == (lhs: ReadPreference, rhs: ReadPreference) -> Bool {
-        return lhs.mode == rhs.mode && lhs.tagSets == rhs.tagSets &&
+        lhs.mode == rhs.mode && lhs.tagSets == rhs.tagSets &&
             lhs.maxStalenessSeconds == rhs.maxStalenessSeconds
     }
 }

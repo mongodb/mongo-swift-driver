@@ -25,7 +25,7 @@ extension Data {
     }
 
     var hexDescription: String {
-        return reduce("") { $0 + String(format: "%02x", $1) }
+        reduce("") { $0 + String(format: "%02x", $1) }
     }
 }
 
@@ -55,7 +55,7 @@ extension Document {
     }
 
     internal func toArray() -> [DocElem] {
-        return self.map { kvp in
+        self.map { kvp in
             if let subdoc = kvp.value.documentValue {
                 return DocElem(key: kvp.key, value: .document(subdoc.toArray()))
             }

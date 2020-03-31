@@ -57,9 +57,3 @@ excluded:
 
 trailing_whitespace:
   ignores_comments: false
-
-# TODO SWIFT-618: Once we drop Swift 5.0, we can remove this section and start applying the
-# rule to all 3 possible included types: closures, functions, and getters.
-implicit_return:
-  included:
-    - closure

@@ -33,7 +33,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
 
     /// Returns the ID used by the server to track the cursor. `nil` once all results have been fetched from the server.
     public var id: Int64? {
-        return self.asyncCursor.id
+        self.asyncCursor.id
     }
 
     /// Initializes a new `MongoCursor` instance from an async cursor. Not meant to be instantiated directly by a user.
@@ -107,7 +107,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      *   - `DecodingError` if an error occurs decoding the server's response.
      */
     internal func _all() throws -> [T] {
-        return try self.map {
+        try self.map {
             switch $0 {
             case let .success(t):
                 return t

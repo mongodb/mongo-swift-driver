@@ -9,12 +9,12 @@ extension Document: Collection {
 
     /// Returns the start index of the Document.
     public var startIndex: Index {
-        return 0
+        0
     }
 
     /// Returns the end index of the Document.
     public var endIndex: Index {
-        return self.count
+        self.count
     }
 
     private func failIndexCheck(_ i: Index) {

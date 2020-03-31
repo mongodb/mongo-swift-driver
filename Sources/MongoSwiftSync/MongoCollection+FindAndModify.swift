@@ -25,7 +25,7 @@ extension MongoCollection {
         options: FindOneAndDeleteOptions? = nil,
         session: ClientSession? = nil
     ) throws -> CollectionType? {
-        return try self.asyncColl.findOneAndDelete(filter, options: options, session: session?.asyncSession).wait()
+        try self.asyncColl.findOneAndDelete(filter, options: options, session: session?.asyncSession).wait()
     }
 
     /**
@@ -55,7 +55,7 @@ extension MongoCollection {
         options: FindOneAndReplaceOptions? = nil,
         session: ClientSession? = nil
     ) throws -> CollectionType? {
-        return try self.asyncColl.findOneAndReplace(
+        try self.asyncColl.findOneAndReplace(
             filter: filter,
             replacement: replacement,
             options: options,
@@ -90,7 +90,7 @@ extension MongoCollection {
         options: FindOneAndUpdateOptions? = nil,
         session: ClientSession? = nil
     ) throws -> CollectionType? {
-        return try self.asyncColl.findOneAndUpdate(
+        try self.asyncColl.findOneAndUpdate(
             filter: filter,
             update: update,
             options: options,

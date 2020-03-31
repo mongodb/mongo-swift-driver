@@ -24,7 +24,7 @@ extension String {
 open class MongoSwiftTestCase: XCTestCase {
     /// Gets the name of the database the test case is running against.
     public class var testDatabase: String {
-        return "test"
+        "test"
     }
 
     /// Gets the connection string to use from the environment variable, $MONGODB_URI. If the variable does not exist,
@@ -66,7 +66,7 @@ open class MongoSwiftTestCase: XCTestCase {
     }
 
     public func getNamespace(suffix: String? = nil) -> MongoNamespace {
-        return MongoNamespace(db: type(of: self).testDatabase, collection: self.getCollectionName(suffix: suffix))
+        MongoNamespace(db: type(of: self).testDatabase, collection: self.getCollectionName(suffix: suffix))
     }
 
     public static var topologyType: TopologyDescription.TopologyType {
@@ -78,22 +78,22 @@ open class MongoSwiftTestCase: XCTestCase {
 
     /// Indicates that we are running the tests with SSL enabled, determined by the environment variable $SSL.
     public static var ssl: Bool {
-        return ProcessInfo.processInfo.environment["SSL"] == "ssl"
+        ProcessInfo.processInfo.environment["SSL"] == "ssl"
     }
 
     /// Returns the path where the SSL key file is located, determined by the environment variable $SSL_KEY_FILE.
     public static var sslPEMKeyFilePath: String? {
-        return ProcessInfo.processInfo.environment["SSL_KEY_FILE"]
+        ProcessInfo.processInfo.environment["SSL_KEY_FILE"]
     }
 
     /// Returns the path where the SSL CA file is located, determined by the environment variable $SSL_CA_FILE..
     public static var sslCAFilePath: String? {
-        return ProcessInfo.processInfo.environment["SSL_CA_FILE"]
+        ProcessInfo.processInfo.environment["SSL_CA_FILE"]
     }
 
     /// Indicates that we are running the tests with auth enabled, determined by the environment variable $AUTH.
     public static var auth: Bool {
-        return ProcessInfo.processInfo.environment["AUTH"] == "auth"
+        ProcessInfo.processInfo.environment["AUTH"] == "auth"
     }
 }
 
@@ -152,7 +152,7 @@ private func clean(json: String?) -> String {
 // Adds a custom "cleanEqual" predicate that compares two JSON strings for equality after normalizing
 // them with the "clean" function
 public func cleanEqual(_ expectedValue: String?) -> Predicate<String> {
-    return Predicate.define("cleanEqual <\(stringify(expectedValue))>") { actualExpression, msg in
+    Predicate.define("cleanEqual <\(stringify(expectedValue))>") { actualExpression, msg in
         let actualValue = try actualExpression.evaluate()
         let matches = clean(json: actualValue) == clean(json: expectedValue) && expectedValue != nil
         if expectedValue == nil || actualValue == nil {
@@ -171,7 +171,7 @@ public func cleanEqual(_ expectedValue: String?) -> Predicate<String> {
 // Adds a custom "sortedEqual" predicate that compares two `Document`s and returns true if they
 // have the same key/value pairs in them
 public func sortedEqual(_ expectedValue: Document?) -> Predicate<Document> {
-    return Predicate.define("sortedEqual <\(stringify(expectedValue))>") { actualExpression, msg in
+    Predicate.define("sortedEqual <\(stringify(expectedValue))>") { actualExpression, msg in
         let actualValue = try actualExpression.evaluate()
 
         guard let expected = expectedValue, let actual = actualValue else {
@@ -194,11 +194,11 @@ public func unsupportedTopologyMessage(
     topology: TopologyDescription.TopologyType = MongoSwiftTestCase.topologyType
 )
     -> String {
-    return "Skipping \(testName) due to unsupported topology type \(topology)"
+    "Skipping \(testName) due to unsupported topology type \(topology)"
 }
 
 public func unsupportedServerVersionMessage(testName: String) -> String {
-    return "Skipping \(testName) due to unsupported server version."
+    "Skipping \(testName) due to unsupported server version."
 }
 
 extension TopologyDescription.TopologyType {
@@ -217,7 +217,7 @@ extension TopologyDescription.TopologyType {
 
 public struct TestError: LocalizedError {
     public let message: String
-    public var errorDescription: String { return self.message }
+    public var errorDescription: String { self.message }
 
     public init(message: String) {
         self.message = message
@@ -240,7 +240,7 @@ extension CommandError {
         message: String,
         errorLabels: [String]?
     ) -> CommandError {
-        return CommandError(
+        CommandError(
             code: code,
             codeName: codeName,
             message: message,
@@ -251,7 +251,7 @@ extension CommandError {
 
 extension CollectionSpecificationInfo {
     public static func new(readOnly: Bool, uuid: UUID? = nil) -> CollectionSpecificationInfo {
-        return CollectionSpecificationInfo(readOnly: readOnly, uuid: uuid)
+        CollectionSpecificationInfo(readOnly: readOnly, uuid: uuid)
     }
 }
 
@@ -263,7 +263,7 @@ extension CollectionSpecification {
         info: CollectionSpecificationInfo,
         idIndex: IndexModel?
     ) -> CollectionSpecification {
-        return CollectionSpecification(
+        CollectionSpecification(
             name: name,
             type: type,
             options: options,
@@ -275,7 +275,7 @@ extension CollectionSpecification {
 
 extension WriteFailure {
     public static func new(code: ServerErrorCode, codeName: String, message: String) -> WriteFailure {
-        return WriteFailure(code: code, codeName: codeName, message: message)
+        WriteFailure(code: code, codeName: codeName, message: message)
     }
 }
 
@@ -285,7 +285,7 @@ extension WriteError {
         writeConcernFailure: WriteConcernFailure?,
         errorLabels: [String]?
     ) -> WriteError {
-        return WriteError(
+        WriteError(
             writeFailure: writeFailure,
             writeConcernFailure: writeConcernFailure,
             errorLabels: errorLabels
@@ -303,7 +303,7 @@ extension BulkWriteResult {
         upsertedCount: Int? = nil,
         upsertedIds: [Int: BSON]? = nil
     ) -> BulkWriteResult {
-        return BulkWriteResult(
+        BulkWriteResult(
             deletedCount: deletedCount ?? 0,
             insertedCount: insertedCount ?? 0,
             insertedIds: insertedIds ?? [:],
@@ -317,7 +317,7 @@ extension BulkWriteResult {
 
 extension BulkWriteFailure {
     public static func new(code: ServerErrorCode, codeName: String, message: String, index: Int) -> BulkWriteFailure {
-        return BulkWriteFailure(code: code, codeName: codeName, message: message, index: index)
+        BulkWriteFailure(code: code, codeName: codeName, message: message, index: index)
     }
 }
 
@@ -329,7 +329,7 @@ extension BulkWriteError {
         result: BulkWriteResult?,
         errorLabels: [String]?
     ) -> BulkWriteError {
-        return BulkWriteError(
+        BulkWriteError(
             writeFailures: writeFailures,
             writeConcernFailure: writeConcernFailure,
             otherError: otherError,
@@ -341,6 +341,6 @@ extension BulkWriteError {
 
 extension InsertManyResult {
     public static func fromBulkResult(_ result: BulkWriteResult) -> InsertManyResult? {
-        return InsertManyResult(from: result)
+        InsertManyResult(from: result)
     }
 }

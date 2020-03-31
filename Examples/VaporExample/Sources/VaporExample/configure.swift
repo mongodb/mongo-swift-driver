@@ -5,7 +5,7 @@ extension Application {
     /// A global `MongoClient` for use throughout the application.
     var mongoClient: MongoClient {
         get {
-            return self.storage[MongoClientKey.self]!
+            self.storage[MongoClientKey.self]!
         }
         set {
             self.storage[MongoClientKey.self] = newValue

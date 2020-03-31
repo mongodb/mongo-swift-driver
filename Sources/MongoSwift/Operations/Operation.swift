@@ -116,19 +116,19 @@ internal class OperationExecutor {
     }
 
     internal func execute<T>(_ body: @escaping () throws -> T) -> EventLoopFuture<T> {
-        return self.threadPool.runIfActive(eventLoop: self.eventLoopGroup.next(), body)
+        self.threadPool.runIfActive(eventLoop: self.eventLoopGroup.next(), body)
     }
 
     internal func makeFailedFuture<T>(_ error: Error) -> EventLoopFuture<T> {
-        return self.eventLoopGroup.next().makeFailedFuture(error)
+        self.eventLoopGroup.next().makeFailedFuture(error)
     }
 
     internal func makeSucceededFuture<T>(_ value: T) -> EventLoopFuture<T> {
-        return self.eventLoopGroup.next().makeSucceededFuture(value)
+        self.eventLoopGroup.next().makeSucceededFuture(value)
     }
 
     internal func makePromise<T>(of type: T.Type) -> EventLoopPromise<T> {
-        return self.eventLoopGroup.next().makePromise(of: type)
+        self.eventLoopGroup.next().makePromise(of: type)
     }
 }
 

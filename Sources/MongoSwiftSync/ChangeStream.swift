@@ -20,7 +20,7 @@ public class ChangeStream<T: Codable>: CursorProtocol {
 
     /// The `ResumeToken` associated with the most recent event seen by the change stream.
     public var resumeToken: ResumeToken? {
-        return self.asyncChangeStream.resumeToken
+        self.asyncChangeStream.resumeToken
     }
 
     /**

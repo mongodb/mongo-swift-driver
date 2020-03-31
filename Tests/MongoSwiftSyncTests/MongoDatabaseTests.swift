@@ -182,7 +182,7 @@ extension CreateCollectionOptions: Equatable {
     // round-tripped), along with `writeConcern`, since that is used only for the "create" command itself
     // and is not a property of the collection.
     public static func == (lhs: CreateCollectionOptions, rhs: CreateCollectionOptions) -> Bool {
-        return rhs.capped == lhs.capped &&
+        rhs.capped == lhs.capped &&
             lhs.size == rhs.size &&
             lhs.max == rhs.max &&
             lhs.storageEngine == rhs.storageEngine &&
@@ -201,7 +201,7 @@ extension CreateCollectionOptions: Equatable {
 
 extension CollectionSpecification: Equatable {
     public static func == (lhs: CollectionSpecification, rhs: CollectionSpecification) -> Bool {
-        return lhs.name == rhs.name &&
+        lhs.name == rhs.name &&
             lhs.type == rhs.type &&
             lhs.options == rhs.options &&
             lhs.info.readOnly == rhs.info.readOnly &&

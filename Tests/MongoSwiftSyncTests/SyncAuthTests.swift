@@ -12,7 +12,7 @@ struct TestUser {
 
     /// A command to create this user.
     var createCmd: Document {
-        return [
+        [
             "createUser": .string(self.username),
             "pwd": .string(self.password),
             "roles": ["root"],

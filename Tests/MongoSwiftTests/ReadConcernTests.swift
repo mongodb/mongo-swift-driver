@@ -12,7 +12,7 @@ protocol ReadConcernable {
 
 extension MongoClient: ReadConcernable {
     func getMongocReadConcern() throws -> ReadConcern? {
-        return try self.connectionPool.withConnection { conn in
+        try self.connectionPool.withConnection { conn in
             ReadConcern(from: mongoc_client_get_read_concern(conn.clientHandle))
         }
     }
@@ -20,7 +20,7 @@ extension MongoClient: ReadConcernable {
 
 extension MongoDatabase: ReadConcernable {
     func getMongocReadConcern() throws -> ReadConcern? {
-        return try self._client.connectionPool.withConnection { conn in
+        try self._client.connectionPool.withConnection { conn in
             self.withMongocDatabase(from: conn) { dbPtr in
                 ReadConcern(from: mongoc_database_get_read_concern(dbPtr))
             }
@@ -30,7 +30,7 @@ extension MongoDatabase: ReadConcernable {
 
 extension MongoCollection: ReadConcernable {
     func getMongocReadConcern() throws -> ReadConcern? {
-        return try self._client.connectionPool.withConnection { conn in
+        try self._client.connectionPool.withConnection { conn in
             self.withMongocCollection(from: conn) { collPtr in
                 ReadConcern(from: mongoc_collection_get_read_concern(collPtr))
             }

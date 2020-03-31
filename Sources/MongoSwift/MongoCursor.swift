@@ -7,22 +7,22 @@ import NIOConcurrencyHelpers
 internal struct MongocCursor: MongocCursorWrapper {
     internal let pointer: OpaquePointer
 
-    internal static var isLazy: Bool { return true }
+    internal static var isLazy: Bool { true }
 
     internal init(referencing pointer: OpaquePointer) {
         self.pointer = pointer
     }
 
     internal func errorDocument(bsonError: inout bson_error_t, replyPtr: UnsafeMutablePointer<BSONPointer?>) -> Bool {
-        return mongoc_cursor_error_document(self.pointer, &bsonError, replyPtr)
+        mongoc_cursor_error_document(self.pointer, &bsonError, replyPtr)
     }
 
     internal func next(outPtr: UnsafeMutablePointer<BSONPointer?>) -> Bool {
-        return mongoc_cursor_next(self.pointer, outPtr)
+        mongoc_cursor_next(self.pointer, outPtr)
     }
 
     internal func more() -> Bool {
-        return mongoc_cursor_more(self.pointer)
+        mongoc_cursor_more(self.pointer)
     }
 
     internal func destroy() {
@@ -90,7 +90,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
 
     /// Decodes the given document to the generic type.
     private func decode(doc: Document) throws -> T {
-        return try self.decoder.decode(T.self, from: doc)
+        try self.decoder.decode(T.self, from: doc)
     }
 
     /**
@@ -104,7 +104,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      * This cursor will be dead as soon as `next` returns `nil` or an error, regardless of the `CursorType`.
      */
     public func isAlive() -> EventLoopFuture<Bool> {
-        return self.client.operationExecutor.execute {
+        self.client.operationExecutor.execute {
             self.wrappedCursor.isAlive
         }
     }
@@ -133,7 +133,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      *      - `DecodingError` if an error occurs decoding the server's response.
      */
     public func tryNext() -> EventLoopFuture<T?> {
-        return self.client.operationExecutor.execute {
+        self.client.operationExecutor.execute {
             try self.decode(result: self.wrappedCursor.tryNext())
         }
     }
@@ -164,7 +164,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      *     - `DecodingError` if an error occurs decoding the server's response.
      */
     public func next() -> EventLoopFuture<T?> {
-        return self.client.operationExecutor.execute {
+        self.client.operationExecutor.execute {
             try self.decode(result: self.wrappedCursor.next())
         }
     }
@@ -190,7 +190,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      *      - `DecodingError` if an error occurs decoding the server's responses.
      */
     public func toArray() -> EventLoopFuture<[T]> {
-        return self.client.operationExecutor.execute {
+        self.client.operationExecutor.execute {
             try self.wrappedCursor.toArray().map { try self.decode(doc: $0) }
         }
     }
@@ -221,7 +221,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      *     - `DecodingError` if an error occurs decoding the server's responses.
      */
     public func forEach(_ body: @escaping (T) throws -> Void) -> EventLoopFuture<Void> {
-        return self.client.operationExecutor.execute {
+        self.client.operationExecutor.execute {
             while let next = try self.decode(result: self.wrappedCursor.next()) {
                 try body(next)
             }
@@ -238,7 +238,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      *   An `EventLoopFuture` that evaluates when the cursor has completed closing. This future should not fail.
      */
     public func kill() -> EventLoopFuture<Void> {
-        return self.client.operationExecutor.execute {
+        self.client.operationExecutor.execute {
             self.wrappedCursor.kill()
         }
     }

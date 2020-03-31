@@ -31,7 +31,7 @@ internal struct FailPoint: Decodable {
 
     /// The fail point being configured.
     internal var name: String {
-        return self.failPoint["configureFailPoint"]?.stringValue ?? ""
+        self.failPoint["configureFailPoint"]?.stringValue ?? ""
     }
 
     private init(_ document: Document) {

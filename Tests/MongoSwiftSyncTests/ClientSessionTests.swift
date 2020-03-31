@@ -24,11 +24,11 @@ struct ClientSessionOp {
 
 extension MongoSwiftSync.ClientSession {
     var active: Bool {
-        return self.asyncSession.active
+        self.asyncSession.active
     }
 
     var id: Document? {
-        return self.asyncSession.id
+        self.asyncSession.id
     }
 }
 

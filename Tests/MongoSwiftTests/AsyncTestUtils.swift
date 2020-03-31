@@ -28,7 +28,7 @@ extension MongoClient {
     }
 
     internal func serverVersion() -> EventLoopFuture<ServerVersion> {
-        return self.db("admin").runCommand(
+        self.db("admin").runCommand(
             ["buildInfo": 1],
             options: RunCommandOptions(
                 readPreference: ReadPreference(.primary)
@@ -112,7 +112,7 @@ extension MongoSwiftTestCase {
         collectionOptions: CreateCollectionOptions? = nil,
         _ f: (MongoClient, MongoDatabase, MongoCollection<Document>) throws -> T
     ) throws -> T {
-        return try self.withTestClient { client in
+        try self.withTestClient { client in
             try self.withTestNamespace(client: client, ns: ns, options: collectionOptions) { db, coll in
                 try f(client, db, coll)
             }

@@ -247,7 +247,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
 
 extension IndexOptions: Equatable {
     public static func == (lhs: IndexOptions, rhs: IndexOptions) -> Bool {
-        return lhs.background == rhs.background &&
+        lhs.background == rhs.background &&
             lhs.expireAfterSeconds == rhs.expireAfterSeconds &&
             lhs.name == rhs.name &&
             lhs.sparse == rhs.sparse &&

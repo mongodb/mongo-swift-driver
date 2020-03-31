@@ -29,7 +29,7 @@ extension MongoCollection {
         options: InsertOneOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<InsertOneResult?> {
-        return self.bulkWrite([.insertOne(value)], options: options?.asBulkWriteOptions(), session: session)
+        self.bulkWrite([.insertOne(value)], options: options?.asBulkWriteOptions(), session: session)
             .flatMapThrowing { try InsertOneResult(from: $0) }
             .flatMapErrorThrowing { throw convertBulkWriteError($0) }
     }
@@ -60,7 +60,7 @@ extension MongoCollection {
         options: InsertManyOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<InsertManyResult?> {
-        return self.bulkWrite(values.map { .insertOne($0) }, options: options, session: session)
+        self.bulkWrite(values.map { .insertOne($0) }, options: options, session: session)
             .flatMapThrowing { InsertManyResult(from: $0) }
     }
 
@@ -249,7 +249,7 @@ private protocol BulkWriteOptionsConvertible {
 /// Default implementation of the protocol.
 private extension BulkWriteOptionsConvertible {
     func asBulkWriteOptions() -> BulkWriteOptions {
-        return BulkWriteOptions(
+        BulkWriteOptions(
             bypassDocumentValidation: self.bypassDocumentValidation,
             writeConcern: self.writeConcern
         )
@@ -353,7 +353,7 @@ public struct DeleteOptions: Codable, BulkWriteOptionsConvertible {
 
     /// This is a requirement of the BulkWriteOptionsConvertible protocol.
     /// Since it does not apply to deletions, we just set it to nil.
-    internal var bypassDocumentValidation: Bool? { return nil }
+    internal var bypassDocumentValidation: Bool? { nil }
 }
 
 // Write command results structs

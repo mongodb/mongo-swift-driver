@@ -17,7 +17,7 @@ public struct IndexModel: Codable {
 
     /// Gets the default name for this index.
     internal var defaultName: String {
-        return self.keys.map { k, v in "\(k)_\(v.bsonValue)" }.joined(separator: "_")
+        self.keys.map { k, v in "\(k)_\(v.bsonValue)" }.joined(separator: "_")
     }
 
     // Encode own data as well as nested options data
@@ -212,7 +212,7 @@ extension MongoCollection {
         options: CreateIndexOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<String> {
-        return self.createIndexes([model], options: options, session: session).flatMapThrowing { result in
+        self.createIndexes([model], options: options, session: session).flatMapThrowing { result in
             guard result.count == 1 else {
                 throw InternalError(message: "expected 1 result, got \(result.count)")
             }
@@ -309,7 +309,7 @@ extension MongoCollection {
         options: DropIndexOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<Void> {
-        return self._dropIndexes(index: .document(keys), options: options, session: session)
+        self._dropIndexes(index: .document(keys), options: options, session: session)
     }
 
     /**
@@ -336,7 +336,7 @@ extension MongoCollection {
         options: DropIndexOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<Void> {
-        return self._dropIndexes(index: .document(model.keys), options: options, session: session)
+        self._dropIndexes(index: .document(model.keys), options: options, session: session)
     }
 
     /**
@@ -361,7 +361,7 @@ extension MongoCollection {
         options: DropIndexOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<Void> {
-        return self._dropIndexes(index: "*", options: options, session: session)
+        self._dropIndexes(index: "*", options: options, session: session)
     }
 
     /// Internal helper to drop an index. `index` must either be an index specification document or a

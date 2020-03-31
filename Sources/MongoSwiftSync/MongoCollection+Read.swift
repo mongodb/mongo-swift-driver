@@ -45,7 +45,7 @@ extension MongoCollection {
         options: FindOneOptions? = nil,
         session: ClientSession? = nil
     ) throws -> T? {
-        return try self.asyncColl.findOne(filter, options: options, session: session?.asyncSession).wait()
+        try self.asyncColl.findOne(filter, options: options, session: session?.asyncSession).wait()
     }
 
     /**
@@ -90,7 +90,7 @@ extension MongoCollection {
         options: CountDocumentsOptions? = nil,
         session: ClientSession? = nil
     ) throws -> Int {
-        return try self.asyncColl.countDocuments(filter, options: options, session: session?.asyncSession).wait()
+        try self.asyncColl.countDocuments(filter, options: options, session: session?.asyncSession).wait()
     }
 
     /**
@@ -106,7 +106,7 @@ extension MongoCollection {
         options: EstimatedDocumentCountOptions? = nil,
         session: ClientSession? = nil
     ) throws -> Int {
-        return try self.asyncColl.estimatedDocumentCount(options: options, session: session?.asyncSession).wait()
+        try self.asyncColl.estimatedDocumentCount(options: options, session: session?.asyncSession).wait()
     }
 
     /**
@@ -132,7 +132,7 @@ extension MongoCollection {
         options: DistinctOptions? = nil,
         session: ClientSession? = nil
     ) throws -> [BSON] {
-        return try self.asyncColl.distinct(
+        try self.asyncColl.distinct(
             fieldName: fieldName,
             filter: filter,
             options: options,

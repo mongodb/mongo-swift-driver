@@ -33,7 +33,7 @@ Bug reports in JIRA for all driver projects (i.e. NODE, PYTHON, CSHARP, JAVA) an
 Core Server (i.e. SERVER) project are **public**.
 
 ## Installation
-`MongoSwift` works with Swift 5.0+ on MacOS and Linux.
+The driver supports use with Swift 5.1+ on MacOS and Linux.
 
 Installation is supported via [Swift Package Manager](https://swift.org/package-manager/).
 
@@ -48,7 +48,7 @@ The driver contains two modules to support a variety of use cases: an asynchrono
 To install the driver, add the package and relevant module as a dependency in your project's `Package.swift` file:
 
 ```swift
-// swift-tools-version:5.0
+// swift-tools-version:5.1
 import PackageDescription
 
 let package = Package(

@@ -59,7 +59,7 @@ internal protocol CursorProtocol {
 extension EventLoopFuture {
     /// Run the provided callback after this future succeeds, preserving the succeeded value.
     internal func afterSuccess(f: @escaping (Value) -> EventLoopFuture<Void>) -> EventLoopFuture<Value> {
-        return self.flatMap { value in
+        self.flatMap { value in
             f(value).and(value: value)
         }.map { _, value in
             value
@@ -250,7 +250,7 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
     /// Whether the cursor is alive. This property can block while waiting for the lock and should only be accessed
     /// from within the executor.
     internal var isAlive: Bool {
-        return self.lock.withLock {
+        self.lock.withLock {
             self._isAlive
         }
     }
@@ -273,7 +273,7 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
     /// Block until a result document is received, an error occurs, or the cursor dies.
     /// This method is blocking and should only be run via the executor.
     internal func next() throws -> Document? {
-        return try self.lock.withLock {
+        try self.lock.withLock {
             guard self._isAlive else {
                 throw ClosedCursorError
             }
@@ -299,7 +299,7 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
     /// Attempt to retrieve a single document from the server, returning nil if there are no results.
     /// This method is blocking and should only be run via the executor.
     internal func tryNext() throws -> Document? {
-        return try self.lock.withLock {
+        try self.lock.withLock {
             if case let .cached(result) = self.cached.clear() {
                 return result
             }
@@ -311,7 +311,7 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
     /// This will not exhaust the cursor.
     /// This method is blocking and should only be run via the executor.
     internal func toArray() throws -> [Document] {
-        return try self.lock.withLock {
+        try self.lock.withLock {
             guard self._isAlive else {
                 throw ClosedCursorError
             }
@@ -348,7 +348,7 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
     /// The pointer is guaranteed to be alive for the duration of the closure if it is non-nil.
     /// This method is blocking and should only be run via the executor.
     internal func withUnsafeMongocPointer<T>(_ f: (OpaquePointer?) throws -> T) rethrows -> T {
-        return try self.lock.withLock {
+        try self.lock.withLock {
             guard case let .open(mongocCursor, _, _) = self.state else {
                 return try f(nil)
             }

@@ -45,13 +45,13 @@ extension CodableNumber {
     /// where that will not work provide their own implementation of the
     /// `bsonValue` computed property.
     internal var bsonValue: BSONValue? {
-        return self as? BSONValue
+        self as? BSONValue
     }
 }
 
 extension Int: CodableNumber {
     internal var bsonValue: BSONValue? {
-        return BSON(self).bsonValue
+        BSON(self).bsonValue
     }
 }
 

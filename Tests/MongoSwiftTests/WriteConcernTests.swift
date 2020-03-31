@@ -12,7 +12,7 @@ protocol WriteConcernable {
 
 extension MongoClient: WriteConcernable {
     func getMongocWriteConcern() throws -> WriteConcern? {
-        return try self.connectionPool.withConnection { conn in
+        try self.connectionPool.withConnection { conn in
             WriteConcern(from: mongoc_client_get_write_concern(conn.clientHandle))
         }
     }
@@ -20,7 +20,7 @@ extension MongoClient: WriteConcernable {
 
 extension MongoDatabase: WriteConcernable {
     func getMongocWriteConcern() throws -> WriteConcern? {
-        return try self._client.connectionPool.withConnection { conn in
+        try self._client.connectionPool.withConnection { conn in
             self.withMongocDatabase(from: conn) { dbPtr in
                 WriteConcern(from: mongoc_database_get_write_concern(dbPtr))
             }
@@ -30,7 +30,7 @@ extension MongoDatabase: WriteConcernable {
 
 extension MongoCollection: WriteConcernable {
     func getMongocWriteConcern() throws -> WriteConcern? {
-        return try self._client.connectionPool.withConnection { conn in
+        try self._client.connectionPool.withConnection { conn in
             self.withMongocCollection(from: conn) { collPtr in
                 WriteConcern(from: mongoc_collection_get_write_concern(collPtr))
             }

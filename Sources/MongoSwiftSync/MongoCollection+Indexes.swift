@@ -27,7 +27,7 @@ extension MongoCollection {
         options: CreateIndexOptions? = nil,
         session: ClientSession? = nil
     ) throws -> String {
-        return try self.asyncColl.createIndex(
+        try self.asyncColl.createIndex(
             keys,
             indexOptions: indexOptions,
             options: options,
@@ -59,7 +59,7 @@ extension MongoCollection {
         options: CreateIndexOptions? = nil,
         session: ClientSession? = nil
     ) throws -> String {
-        return try self.asyncColl.createIndex(model, options: options, session: session?.asyncSession).wait()
+        try self.asyncColl.createIndex(model, options: options, session: session?.asyncSession).wait()
     }
 
     /**
@@ -85,7 +85,7 @@ extension MongoCollection {
         options: CreateIndexOptions? = nil,
         session: ClientSession? = nil
     ) throws -> [String] {
-        return try self.asyncColl.createIndexes(models, options: options, session: session?.asyncSession).wait()
+        try self.asyncColl.createIndexes(models, options: options, session: session?.asyncSession).wait()
     }
 
     /**
@@ -203,6 +203,6 @@ extension MongoCollection {
      * - Throws: `LogicError` if the provided session is inactive.
      */
     public func listIndexNames(session: ClientSession? = nil) throws -> [String] {
-        return try self.asyncColl.listIndexNames(session: session?.asyncSession).wait()
+        try self.asyncColl.listIndexNames(session: session?.asyncSession).wait()
     }
 }
