@@ -8,7 +8,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/Quick/Nimble.git", .exact("8.0.2")),
-        .package(url: "https://github.com/apple/swift-nio", .upToNextMajor(from: "2.14.0"))
+        .package(url: "https://github.com/apple/swift-nio", .upToNextMajor(from: "2.15.0"))
     ],
     targets: [
         .target(name: "MongoSwift", dependencies: ["CLibMongoC", "NIO", "NIOConcurrencyHelpers"]),
