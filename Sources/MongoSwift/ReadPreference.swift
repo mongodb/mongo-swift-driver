@@ -72,6 +72,7 @@ public struct ReadPreference {
     public var maxStalenessSeconds: Int? {
         self.mongocReadPreference.maxStalenessSeconds
     }
+
     // swiftlint:enable line_length
 
     /// A `ReadPreference` with mode `primary`. This is the default mode. With this mode, all operations read from the
@@ -221,8 +222,8 @@ public struct ReadPreference {
 extension ReadPreference: Equatable {
     public static func == (lhs: ReadPreference, rhs: ReadPreference) -> Bool {
         lhs.mode == rhs.mode &&
-        lhs.tagSets == rhs.tagSets &&
-        lhs.maxStalenessSeconds == rhs.maxStalenessSeconds
+            lhs.tagSets == rhs.tagSets &&
+            lhs.maxStalenessSeconds == rhs.maxStalenessSeconds
     }
 }
 
