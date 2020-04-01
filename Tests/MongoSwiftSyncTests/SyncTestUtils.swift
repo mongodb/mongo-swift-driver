@@ -54,9 +54,7 @@ extension MongoClient {
     internal func serverVersion() throws -> ServerVersion {
         let reply = try self.db("admin").runCommand(
             ["buildInfo": 1],
-            options: RunCommandOptions(
-                readPreference: ReadPreference(.primary)
-            )
+            options: RunCommandOptions(readPreference: .primary)
         )
         guard let versionString = reply["version"]?.stringValue else {
             throw TestError(message: " reply missing version string: \(reply)")
@@ -66,7 +64,7 @@ extension MongoClient {
 
     /// Get the max wire version of the primary.
     internal func maxWireVersion() throws -> Int {
-        let options = RunCommandOptions(readPreference: ReadPreference(.primary))
+        let options = RunCommandOptions(readPreference: .primary)
         let isMaster = try self.db("admin").runCommand(["isMaster": 1], options: options)
         guard let max = isMaster["maxWireVersion"]?.asInt() else {
             throw TestError(message: "isMaster reply missing maxwireversion \(isMaster)")
