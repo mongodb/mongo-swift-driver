@@ -43,12 +43,12 @@ public enum WriteModel<CollectionType: Codable> {
     /// Parameters:
     /// - A `Document` representing the match criteria.
     /// - `options`: Optional `DeleteModelOptions`.
-    case deleteOne(Document, options: DeleteModelOptions?)
+    case deleteOne(Document, options: DeleteModelOptions? = nil)
     /// A `deleteMany`.
     /// Parameters:
     /// - A `Document` representing the match criteria.
     /// - `options`: Optional `DeleteModelOptions`.
-    case deleteMany(Document, options: DeleteModelOptions?)
+    case deleteMany(Document, options: DeleteModelOptions? = nil)
     /// An `insertOne`.
     /// Parameters:
     /// - A `T` to insert.
@@ -58,19 +58,19 @@ public enum WriteModel<CollectionType: Codable> {
     /// - `filter`: A `Document` representing the match criteria.
     /// - `replacement`: A `T` to use as the replacement value.
     /// - `options`: Optional `ReplaceOneModelOptions`.
-    case replaceOne(filter: Document, replacement: CollectionType, options: ReplaceOneModelOptions?)
+    case replaceOne(filter: Document, replacement: CollectionType, options: ReplaceOneModelOptions? = nil)
     /// An `updateOne`.
     /// Parameters:
     /// - `filter`: A `Document` representing the match criteria.
     /// - `update`: A `Document` containing update operators.
     /// - `options`: Optional `UpdateModelOptions`.
-    case updateOne(filter: Document, update: Document, options: UpdateModelOptions?)
+    case updateOne(filter: Document, update: Document, options: UpdateModelOptions? = nil)
     /// An `updateMany`.
     /// Parameters:
     /// - `filter`: A `Document` representing the match criteria.
     /// - `update`: A `Document` containing update operators.
     /// - `options`: Optional `UpdateModelOptions`.
-    case updateMany(filter: Document, update: Document, options: UpdateModelOptions?)
+    case updateMany(filter: Document, update: Document, options: UpdateModelOptions? = nil)
 
     /// Adds this model to the provided `mongoc_bulk_t`, using the provided encoder for encoding options and
     /// `CollectionType` values if needed. If this is an `insertOne`, returns the `_id` field of the inserted
