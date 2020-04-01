@@ -29,7 +29,7 @@ extension MongoCollection {
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil
     ) throws -> ChangeStream<ChangeStreamEvent<CollectionType>> {
-        return try self.watch(
+        try self.watch(
             pipeline,
             options: options,
             session: session,
@@ -68,7 +68,7 @@ extension MongoCollection {
         session: ClientSession? = nil,
         withFullDocumentType _: FullDocType.Type
     ) throws -> ChangeStream<ChangeStreamEvent<FullDocType>> {
-        return try self.watch(
+        try self.watch(
             pipeline,
             options: options,
             session: session,

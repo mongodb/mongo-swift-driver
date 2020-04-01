@@ -11,7 +11,7 @@ final class ReadPreferenceOperationTests: MongoSwiftTestCase {
     func testOperationReadPreference() throws {
         // setup a collection
         let client = try MongoClient.makeTestClient()
-        let db = client.db(type(of: self).testDatabase)
+        let db = client.db(Self.testDatabase)
         defer { try? db.drop() }
         let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
 

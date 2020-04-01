@@ -426,14 +426,14 @@ axes:
   - id: swift-version
     display_name: "Swift"
     values:
-      - id: "5.0"
-        display_name: "Swift 5.0"
-        variables:
-           SWIFT_VERSION: "5.0.3"
       - id: "5.1"
         display_name: "Swift 5.1"
         variables:
            SWIFT_VERSION: "5.1.4"
+      - id: "5.2"
+        display_name: "Swift 5.2"
+        variables:
+           SWIFT_VERSION: "5.2"
 
   - id: ssl-auth
     display_name: SSL and Auth

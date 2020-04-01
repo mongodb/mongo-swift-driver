@@ -47,7 +47,7 @@ public struct ServerVersion: Comparable, Decodable, CustomStringConvertible {
     }
 
     public var description: String {
-        return "\(self.major).\(self.minor).\(self.patch)"
+        "\(self.major).\(self.minor).\(self.patch)"
     }
 
     public static func < (lhs: ServerVersion, rhs: ServerVersion) -> Bool {

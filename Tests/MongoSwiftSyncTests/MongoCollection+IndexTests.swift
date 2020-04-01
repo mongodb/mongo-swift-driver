@@ -32,8 +32,8 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
                 XCTFail("Invalid client")
                 return
             }
-            self.coll = try client.db(type(of: self).testDatabase).createCollection(self.collName)
-            try self.coll.insertMany([doc1, doc2])
+            self.coll = try client.db(Self.testDatabase).createCollection(self.collName)
+            try self.coll.insertMany([self.doc1, self.doc2])
         } catch {
             XCTFail("Setup failed: \(error)")
         }
@@ -45,7 +45,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         do {
             if self.coll != nil { try self.coll.drop() }
         } catch {
-            XCTFail("Dropping test collection \(type(of: self).testDatabase).\(self.collName) failed: \(error)")
+            XCTFail("Dropping test collection \(Self.testDatabase).\(self.collName) failed: \(error)")
         }
     }
 
@@ -213,7 +213,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         let client = try MongoClient.makeTestClient()
         let monitor = client.addCommandMonitor()
 
-        let db = client.db(type(of: self).testDatabase)
+        let db = client.db(Self.testDatabase)
         let collection = db.collection("collection")
         try collection.insertOne(["test": "blahblah"])
 
@@ -247,7 +247,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
 
 extension IndexOptions: Equatable {
     public static func == (lhs: IndexOptions, rhs: IndexOptions) -> Bool {
-        return lhs.background == rhs.background &&
+        lhs.background == rhs.background &&
             lhs.expireAfterSeconds == rhs.expireAfterSeconds &&
             lhs.name == rhs.name &&
             lhs.sparse == rhs.sparse &&

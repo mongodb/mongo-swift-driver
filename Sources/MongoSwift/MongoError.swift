@@ -72,14 +72,14 @@ public protocol UserError: MongoError {}
 public struct LogicError: UserError {
     internal let message: String
 
-    public var errorDescription: String { return self.message }
+    public var errorDescription: String { self.message }
 }
 
 /// An error thrown when the user passes in invalid arguments to a driver method.
 public struct InvalidArgumentError: UserError {
     internal let message: String
 
-    public var errorDescription: String { return self.message }
+    public var errorDescription: String { self.message }
 }
 
 /// The possible errors that can occur unexpectedly driver-side.
@@ -90,7 +90,7 @@ public protocol RuntimeError: MongoError {}
 public struct InternalError: RuntimeError {
     internal let message: String
 
-    public var errorDescription: String { return self.message }
+    public var errorDescription: String { self.message }
 }
 
 /// An error thrown when encountering a connection or socket related error.
@@ -100,21 +100,21 @@ public struct ConnectionError: RuntimeError, LabeledError {
 
     public let errorLabels: [String]?
 
-    public var errorDescription: String { return "\(self.message), errorLabels: \(self.errorLabels ?? [])" }
+    public var errorDescription: String { "\(self.message), errorLabels: \(self.errorLabels ?? [])" }
 }
 
 /// An error thrown when encountering an authentication related error (e.g. invalid credentials).
 public struct AuthenticationError: RuntimeError {
     internal let message: String
 
-    public var errorDescription: String { return self.message }
+    public var errorDescription: String { self.message }
 }
 
 /// An error thrown when trying to use a feature that the deployment does not support.
 public struct CompatibilityError: RuntimeError {
     internal let message: String
 
-    public var errorDescription: String { return self.message }
+    public var errorDescription: String { self.message }
 }
 
 /// An error that occured when trying to select a server (e.g. a timeout, or no server matched read preference).
@@ -123,7 +123,7 @@ public struct CompatibilityError: RuntimeError {
 public struct ServerSelectionError: RuntimeError {
     internal let message: String
 
-    public var errorDescription: String { return self.message }
+    public var errorDescription: String { self.message }
 }
 
 /// A struct to represent a single write error not resulting from an executed write operation.
@@ -429,7 +429,7 @@ internal func convertBulkWriteError(_ error: Error) -> Error {
 }
 
 internal func toErrorString(_ error: bson_error_t) -> String {
-    return withUnsafeBytes(of: error.message) { rawPtr -> String in
+    withUnsafeBytes(of: error.message) { rawPtr -> String in
         // if baseAddress is nil, the buffer is empty.
         guard let baseAddress = rawPtr.baseAddress else {
             return ""
@@ -439,14 +439,14 @@ internal func toErrorString(_ error: bson_error_t) -> String {
 }
 
 internal func bsonTooLargeError(value: BSONValue, forKey: String) -> MongoError {
-    return InternalError(
+    InternalError(
         message:
         "Failed to set value for key \(forKey) to \(value) with BSON type \(value.bsonType): document too large"
     )
 }
 
 internal func wrongIterTypeError(_ iter: DocumentIterator, expected type: BSONValue.Type) -> MongoError {
-    return LogicError(
+    LogicError(
         message: "Tried to retreive a \(type) from an iterator whose next type " +
             "is \(iter.currentType) for key \(iter.currentKey)"
     )

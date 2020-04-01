@@ -29,11 +29,11 @@ jobs:
     - stage: tests
       os: osx
       osx_image: xcode11.3
-      env: SWIFT_VERSION=5.0
+      env: SWIFT_VERSION=5.2
 
     - stage: tests
       os: linux
-      env: SWIFT_VERSION=5.0
+      env: SWIFT_VERSION=5.2
 
     - stage: post-tests
       name: code coverage

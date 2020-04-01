@@ -66,23 +66,23 @@ public enum CommandEvent: Publishable {
 
     /// The name of the command that generated this event.
     public var commandName: String {
-        return self.event.commandName
+        self.event.commandName
     }
 
     /// The driver generated request id.
     public var requestId: Int64 {
-        return self.event.requestId
+        self.event.requestId
     }
 
     /// The driver generated operation id. This is used to link events together such
     /// as bulk write operations.
     public var operationId: Int64 {
-        return self.event.operationId
+        self.event.operationId
     }
 
     /// The address of the server the command was run against.
     public var serverAddress: Address {
-        return self.event.serverAddress
+        self.event.serverAddress
     }
 }
 
@@ -113,7 +113,7 @@ public struct CommandStartedEvent: MongoSwiftEvent, CommandEventProtocol {
         }
 
         fileprivate var context: UnsafeMutableRawPointer? {
-            return mongoc_apm_command_started_get_context(self.ptr)
+            mongoc_apm_command_started_get_context(self.ptr)
         }
     }
 
@@ -147,7 +147,7 @@ public struct CommandStartedEvent: MongoSwiftEvent, CommandEventProtocol {
     }
 
     fileprivate func toPublishable() -> CommandEvent {
-        return .started(self)
+        .started(self)
     }
 }
 
@@ -162,7 +162,7 @@ public struct CommandSucceededEvent: MongoSwiftEvent, CommandEventProtocol {
         }
 
         fileprivate var context: UnsafeMutableRawPointer? {
-            return mongoc_apm_command_succeeded_get_context(self.ptr)
+            mongoc_apm_command_succeeded_get_context(self.ptr)
         }
     }
 
@@ -196,7 +196,7 @@ public struct CommandSucceededEvent: MongoSwiftEvent, CommandEventProtocol {
     }
 
     fileprivate func toPublishable() -> CommandEvent {
-        return .succeeded(self)
+        .succeeded(self)
     }
 }
 
@@ -211,7 +211,7 @@ public struct CommandFailedEvent: MongoSwiftEvent, CommandEventProtocol {
         }
 
         fileprivate var context: UnsafeMutableRawPointer? {
-            return mongoc_apm_command_failed_get_context(self.ptr)
+            mongoc_apm_command_failed_get_context(self.ptr)
         }
     }
 
@@ -247,7 +247,7 @@ public struct CommandFailedEvent: MongoSwiftEvent, CommandEventProtocol {
     }
 
     fileprivate func toPublishable() -> CommandEvent {
-        return .failed(self)
+        .failed(self)
     }
 }
 
@@ -299,7 +299,7 @@ public struct ServerDescriptionChangedEvent: MongoSwiftEvent {
         }
 
         fileprivate var context: UnsafeMutableRawPointer? {
-            return mongoc_apm_server_changed_get_context(self.ptr)
+            mongoc_apm_server_changed_get_context(self.ptr)
         }
     }
 
@@ -328,7 +328,7 @@ public struct ServerDescriptionChangedEvent: MongoSwiftEvent {
     }
 
     fileprivate func toPublishable() -> SDAMEvent {
-        return .serverDescriptionChanged(self)
+        .serverDescriptionChanged(self)
     }
 }
 
@@ -343,7 +343,7 @@ public struct ServerOpeningEvent: MongoSwiftEvent {
         }
 
         fileprivate var context: UnsafeMutableRawPointer? {
-            return mongoc_apm_server_opening_get_context(self.ptr)
+            mongoc_apm_server_opening_get_context(self.ptr)
         }
     }
 
@@ -363,7 +363,7 @@ public struct ServerOpeningEvent: MongoSwiftEvent {
     }
 
     fileprivate func toPublishable() -> SDAMEvent {
-        return .serverOpening(self)
+        .serverOpening(self)
     }
 }
 
@@ -378,7 +378,7 @@ public struct ServerClosedEvent: MongoSwiftEvent {
         }
 
         fileprivate var context: UnsafeMutableRawPointer? {
-            return mongoc_apm_server_closed_get_context(self.ptr)
+            mongoc_apm_server_closed_get_context(self.ptr)
         }
     }
 
@@ -398,7 +398,7 @@ public struct ServerClosedEvent: MongoSwiftEvent {
     }
 
     fileprivate func toPublishable() -> SDAMEvent {
-        return .serverClosed(self)
+        .serverClosed(self)
     }
 }
 
@@ -413,7 +413,7 @@ public struct TopologyDescriptionChangedEvent: MongoSwiftEvent {
         }
 
         fileprivate var context: UnsafeMutableRawPointer? {
-            return mongoc_apm_topology_changed_get_context(self.ptr)
+            mongoc_apm_topology_changed_get_context(self.ptr)
         }
     }
 
@@ -438,7 +438,7 @@ public struct TopologyDescriptionChangedEvent: MongoSwiftEvent {
     }
 
     fileprivate func toPublishable() -> SDAMEvent {
-        return .topologyDescriptionChanged(self)
+        .topologyDescriptionChanged(self)
     }
 }
 
@@ -453,7 +453,7 @@ public struct TopologyOpeningEvent: MongoSwiftEvent {
         }
 
         fileprivate var context: UnsafeMutableRawPointer? {
-            return mongoc_apm_topology_opening_get_context(self.ptr)
+            mongoc_apm_topology_opening_get_context(self.ptr)
         }
     }
 
@@ -469,7 +469,7 @@ public struct TopologyOpeningEvent: MongoSwiftEvent {
     }
 
     fileprivate func toPublishable() -> SDAMEvent {
-        return .topologyOpening(self)
+        .topologyOpening(self)
     }
 }
 
@@ -484,7 +484,7 @@ public struct TopologyClosedEvent: MongoSwiftEvent {
         }
 
         fileprivate var context: UnsafeMutableRawPointer? {
-            return mongoc_apm_topology_closed_get_context(self.ptr)
+            mongoc_apm_topology_closed_get_context(self.ptr)
         }
     }
 
@@ -500,7 +500,7 @@ public struct TopologyClosedEvent: MongoSwiftEvent {
     }
 
     fileprivate func toPublishable() -> SDAMEvent {
-        return .topologyClosed(self)
+        .topologyClosed(self)
     }
 }
 
@@ -516,7 +516,7 @@ public struct ServerHeartbeatStartedEvent: MongoSwiftEvent {
         }
 
         fileprivate var context: UnsafeMutableRawPointer? {
-            return mongoc_apm_server_heartbeat_started_get_context(self.ptr)
+            mongoc_apm_server_heartbeat_started_get_context(self.ptr)
         }
     }
 
@@ -528,7 +528,7 @@ public struct ServerHeartbeatStartedEvent: MongoSwiftEvent {
     }
 
     fileprivate func toPublishable() -> SDAMEvent {
-        return .serverHeartbeatStarted(self)
+        .serverHeartbeatStarted(self)
     }
 }
 
@@ -543,7 +543,7 @@ public struct ServerHeartbeatSucceededEvent: MongoSwiftEvent {
         }
 
         fileprivate var context: UnsafeMutableRawPointer? {
-            return mongoc_apm_server_heartbeat_succeeded_get_context(self.ptr)
+            mongoc_apm_server_heartbeat_succeeded_get_context(self.ptr)
         }
     }
 
@@ -564,7 +564,7 @@ public struct ServerHeartbeatSucceededEvent: MongoSwiftEvent {
     }
 
     fileprivate func toPublishable() -> SDAMEvent {
-        return .serverHeartbeatSucceeded(self)
+        .serverHeartbeatSucceeded(self)
     }
 }
 
@@ -579,7 +579,7 @@ public struct ServerHeartbeatFailedEvent: MongoSwiftEvent {
         }
 
         fileprivate var context: UnsafeMutableRawPointer? {
-            return mongoc_apm_server_heartbeat_failed_get_context(self.ptr)
+            mongoc_apm_server_heartbeat_failed_get_context(self.ptr)
         }
     }
 
@@ -601,7 +601,7 @@ public struct ServerHeartbeatFailedEvent: MongoSwiftEvent {
     }
 
     fileprivate func toPublishable() -> SDAMEvent {
-        return .serverHeartbeatFailed(self)
+        .serverHeartbeatFailed(self)
     }
 }
 

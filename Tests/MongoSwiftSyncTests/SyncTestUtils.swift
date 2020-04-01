@@ -135,7 +135,7 @@ internal func captureCommandEvents(
 
 extension MongoSwiftSync.MongoCollection {
     public var _client: MongoSwiftSync.MongoClient {
-        return self.client
+        self.client
     }
 }
 
@@ -175,7 +175,7 @@ extension Result {
 
 extension MongoCursor {
     func all() throws -> [T] {
-        return try self._all()
+        try self._all()
     }
 }
 

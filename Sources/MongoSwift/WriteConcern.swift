@@ -56,7 +56,7 @@ public struct WriteConcern: Codable {
 
     /// Indicates whether this is the default write concern.
     public var isDefault: Bool {
-        return self.w == nil && self.journal == nil && self.wtimeoutMS == nil
+        self.w == nil && self.journal == nil && self.wtimeoutMS == nil
     }
 
     /// Indicates whether the combination of values set on this `WriteConcern` is valid.
@@ -185,6 +185,6 @@ extension WriteConcern: CustomStringConvertible {
 /// An extension of `WriteConcern` to make it `Equatable`.
 extension WriteConcern: Equatable {
     public static func == (lhs: WriteConcern, rhs: WriteConcern) -> Bool {
-        return lhs.description == rhs.description
+        lhs.description == rhs.description
     }
 }

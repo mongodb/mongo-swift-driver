@@ -19,7 +19,7 @@ extension Document: Sequence {
     public typealias SubSequence = Document
 
     /// Returns a `Bool` indicating whether the document is empty.
-    public var isEmpty: Bool { return !self.makeIterator().advance() }
+    public var isEmpty: Bool { !self.makeIterator().advance() }
 
     /// Returns a `DocumentIterator` over the values in this `Document`.
     public func makeIterator() -> DocumentIterator {

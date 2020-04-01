@@ -24,11 +24,11 @@ struct ClientSessionOp {
 
 extension MongoSwiftSync.ClientSession {
     var active: Bool {
-        return self.asyncSession.active
+        self.asyncSession.active
     }
 
     var id: Document? {
-        return self.asyncSession.id
+        self.asyncSession.id
     }
 }
 
@@ -36,7 +36,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
     override func tearDown() {
         do {
             let client = try MongoClient.makeTestClient()
-            try client.db(type(of: self).testDatabase).drop()
+            try client.db(Self.testDatabase).drop()
         } catch let commandError as CommandError where commandError.code == 26 {
             // skip database not found errors
         } catch {
@@ -204,7 +204,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
     func testSessionArguments() throws {
         let client1 = try MongoClient.makeTestClient()
         let monitor = client1.addCommandMonitor()
-        let database = client1.db(type(of: self).testDatabase)
+        let database = client1.db(Self.testDatabase)
         let collection = try database.createCollection(self.getCollectionName())
         let session = client1.startSession()
 
@@ -219,7 +219,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         let client1 = try MongoClient.makeTestClient()
         let client2 = try MongoClient.makeTestClient()
 
-        let database = client1.db(type(of: self).testDatabase)
+        let database = client1.db(Self.testDatabase)
         let collection = try database.createCollection(self.getCollectionName())
 
         let session = client2.startSession()
@@ -232,7 +232,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
     /// Sessions spec test 5: Test that inactive sessions cannot be used.
     func testInactiveSession() throws {
         let client = try MongoClient.makeTestClient()
-        let db = client.db(type(of: self).testDatabase)
+        let db = client.db(Self.testDatabase)
         let collection = try db.createCollection(self.getCollectionName())
         let session1 = client.startSession()
 
@@ -244,7 +244,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         }
 
         let session2 = client.startSession()
-        let database = client.db(type(of: self).testDatabase)
+        let database = client.db(Self.testDatabase)
         let collection1 = database.collection(self.getCollectionName())
 
         try (1...3).forEach { try collection1.insertOne(["x": BSON($0)]) }
@@ -260,7 +260,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         let client = try MongoClient.makeTestClient()
         let monitor = client.addCommandMonitor()
 
-        let database = client.db(type(of: self).testDatabase)
+        let database = client.db(Self.testDatabase)
         let collection = try database.createCollection(self.getCollectionName())
         let session = client.startSession()
 
@@ -336,7 +336,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
 
         let client = try MongoClient.makeTestClient()
         let monitor = client.addCommandMonitor()
-        let db = client.db(type(of: self).testDatabase)
+        let db = client.db(Self.testDatabase)
         let collection = try db.createCollection(self.getCollectionName())
 
         // Causal consistency spec test 3: the first read/write on a session should update the operationTime of a
@@ -463,7 +463,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
 
         let client = try MongoClient.makeTestClient()
         let monitor = client.addCommandMonitor()
-        let db = client.db(type(of: self).testDatabase)
+        let db = client.db(Self.testDatabase)
         let collection = db.collection(self.getCollectionName())
 
         // Causal consistency spec test 7: A read operation in a causally consistent session against a deployment that
@@ -500,7 +500,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
     func testCausalConsistencyAnyTopology() throws {
         let client = try MongoClient.makeTestClient()
         let monitor = client.addCommandMonitor()
-        let db = client.db(type(of: self).testDatabase)
+        let db = client.db(Self.testDatabase)
         let collection = db.collection(self.getCollectionName())
 
         // Causal consistency spec test 1: When a ClientSession is first created the operationTime has no value

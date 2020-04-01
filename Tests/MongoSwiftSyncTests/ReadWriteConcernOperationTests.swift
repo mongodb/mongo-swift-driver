@@ -11,7 +11,7 @@ final class ReadWriteConcernOperationTests: MongoSwiftTestCase {
     func testOperationReadConcerns() throws {
         // setup a collection
         let client = try MongoClient.makeTestClient()
-        let db = client.db(type(of: self).testDatabase)
+        let db = client.db(Self.testDatabase)
         defer { try? db.drop() }
         let coll = try db.createCollection(self.getCollectionName())
 
@@ -85,7 +85,7 @@ final class ReadWriteConcernOperationTests: MongoSwiftTestCase {
         )
 
         let client = try MongoClient.makeTestClient()
-        let database = client.db(type(of: self).testDatabase)
+        let database = client.db(Self.testDatabase)
         let collection = database.collection(self.getCollectionName())
         defer { try? collection.drop() }
 
@@ -98,7 +98,7 @@ final class ReadWriteConcernOperationTests: MongoSwiftTestCase {
 
     func testOperationWriteConcerns() throws {
         let client = try MongoClient.makeTestClient()
-        let db = client.db(type(of: self).testDatabase)
+        let db = client.db(Self.testDatabase)
         defer { try? db.drop() }
 
         var counter = 0

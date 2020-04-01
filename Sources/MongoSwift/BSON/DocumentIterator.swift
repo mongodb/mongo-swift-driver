@@ -50,21 +50,21 @@ public class DocumentIterator: IteratorProtocol {
     /// Advances the iterator forward one value. Returns false if there is an error moving forward
     /// or if at the end of the document. Returns true otherwise.
     internal func advance() -> Bool {
-        return self.withMutableBSONIterPointer { iterPtr in
+        self.withMutableBSONIterPointer { iterPtr in
             bson_iter_next(iterPtr)
         }
     }
 
     /// Moves the iterator to the specified key. Returns false if the key does not exist. Returns true otherwise.
     internal func move(to key: String) -> Bool {
-        return self.withMutableBSONIterPointer { iterPtr in
+        self.withMutableBSONIterPointer { iterPtr in
             bson_iter_find(iterPtr, key.cString(using: .utf8))
         }
     }
 
     /// Returns the current key. Assumes the iterator is in a valid position.
     internal var currentKey: String {
-        return self.withBSONIterPointer { iterPtr in
+        self.withBSONIterPointer { iterPtr in
             String(cString: bson_iter_key(iterPtr))
         }
     }
@@ -80,7 +80,7 @@ public class DocumentIterator: IteratorProtocol {
 
     /// Returns the current value's type. Assumes the iterator is in a valid position.
     internal var currentType: BSONType {
-        return self.withBSONIterPointer { iterPtr in
+        self.withBSONIterPointer { iterPtr in
             BSONType(rawValue: bson_iter_type(iterPtr).rawValue) ?? .invalid
         }
     }
@@ -168,7 +168,7 @@ public class DocumentIterator: IteratorProtocol {
 
     /// Returns the next value in the sequence, or `nil` if the iterator is exhausted.
     public func next() -> Document.KeyValuePair? {
-        return self.advance() ? (self.currentKey, self.currentValue) : nil
+        self.advance() ? (self.currentKey, self.currentValue) : nil
     }
 
     /**

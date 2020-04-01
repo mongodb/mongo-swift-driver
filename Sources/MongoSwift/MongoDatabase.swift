@@ -73,7 +73,7 @@ public struct MongoDatabase {
     public let decoder: BSONDecoder
 
     /// The name of this database.
-    public var name: String { return self.namespace.db }
+    public var name: String { self.namespace.db }
 
     /// The `ReadConcern` set on this database, or `nil` if one is not set.
     public let readConcern: ReadConcern?
@@ -144,7 +144,7 @@ public struct MongoDatabase {
      * - Returns: the requested `MongoCollection<Document>`
      */
     public func collection(_ name: String, options: CollectionOptions? = nil) -> MongoCollection<Document> {
-        return self.collection(name, withType: Document.self, options: options)
+        self.collection(name, withType: Document.self, options: options)
     }
 
     /**
@@ -166,7 +166,7 @@ public struct MongoDatabase {
         withType _: T.Type,
         options: CollectionOptions? = nil
     ) -> MongoCollection<T> {
-        return MongoCollection(name: name, database: self, options: options)
+        MongoCollection(name: name, database: self, options: options)
     }
 
     /**
@@ -192,7 +192,7 @@ public struct MongoDatabase {
         options: CreateCollectionOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<MongoCollection<Document>> {
-        return self.createCollection(name, withType: Document.self, options: options, session: session)
+        self.createCollection(name, withType: Document.self, options: options, session: session)
     }
 
     /**
@@ -280,7 +280,7 @@ public struct MongoDatabase {
         options: ListCollectionsOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<[MongoCollection<Document>]> {
-        return self.listCollectionNames(filter, options: options, session: session).map { collNames in
+        self.listCollectionNames(filter, options: options, session: session).map { collNames in
             collNames.map { self.collection($0) }
         }
     }
@@ -374,7 +374,7 @@ public struct MongoDatabase {
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<ChangeStream<ChangeStreamEvent<Document>>> {
-        return self.watch(pipeline, options: options, session: session, withFullDocumentType: Document.self)
+        self.watch(pipeline, options: options, session: session, withFullDocumentType: Document.self)
     }
 
     /**
@@ -412,7 +412,7 @@ public struct MongoDatabase {
         session: ClientSession? = nil,
         withFullDocumentType _: FullDocType.Type
     ) -> EventLoopFuture<ChangeStream<ChangeStreamEvent<FullDocType>>> {
-        return self.watch(
+        self.watch(
             pipeline,
             options: options,
             session: session,

@@ -83,7 +83,7 @@ public enum BSON {
 
     /// Get the `BSONType` of this `BSON`.
     public var type: BSONType {
-        return self.bsonValue.bsonType
+        self.bsonValue.bsonType
     }
 
     /// If this `BSON` is an `.int32`, return it as an `Int32`. Otherwise, return nil.

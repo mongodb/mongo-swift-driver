@@ -157,7 +157,7 @@ internal class ConnectionPool {
     /// Throws an error if a server cannot be selected. This method will start up SDAM in libmongoc if it hasn't been
     /// started already. This method may block.
     internal func selectServer(forWrites: Bool, readPreference: ReadPreference? = nil) throws -> ServerDescription {
-        return try self.withConnection { conn in
+        try self.withConnection { conn in
             var error = bson_error_t()
             guard let desc = mongoc_client_select_server(
                 conn.clientHandle,
@@ -177,7 +177,7 @@ internal class ConnectionPool {
     /// on the returned connection string will return any values that were retrieved from TXT records. Throws an error
     /// if the connection string cannot be retrieved.
     internal func getConnectionString() throws -> ConnectionString {
-        return try self.withConnection { conn in
+        try self.withConnection { conn in
             guard let uri = mongoc_client_get_uri(conn.clientHandle) else {
                 throw InternalError(message: "Couldn't retrieve client's connection string")
             }

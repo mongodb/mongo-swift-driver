@@ -12,12 +12,12 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         guard let client = try? MongoClient.makeTestClient() else {
             return
         }
-        try? client.db(type(of: self).testDatabase).drop()
+        try? client.db(Self.testDatabase).drop()
     }
 
     func testMongoDatabase() throws {
         let client = try MongoClient.makeTestClient()
-        let db = client.db(type(of: self).testDatabase)
+        let db = client.db(Self.testDatabase)
 
         let command: Document = ["create": .string(self.getCollectionName(suffix: "1"))]
         let res = try db.runCommand(command)
@@ -31,9 +31,9 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
 
         expect(try db.drop()).toNot(throwError())
         let names = try client.listDatabaseNames()
-        expect(names).toNot(contain([type(of: self).testDatabase]))
+        expect(names).toNot(contain([Self.testDatabase]))
 
-        expect(db.name).to(equal(type(of: self).testDatabase))
+        expect(db.name).to(equal(Self.testDatabase))
 
         // error code 59: CommandNotFound
         expect(try db.runCommand(["asdfsadf": .objectId(ObjectId())]))
@@ -50,7 +50,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
 
         let client = try MongoClient.makeTestClient()
         let monitor = client.addCommandMonitor()
-        let db = client.db(type(of: self).testDatabase)
+        let db = client.db(Self.testDatabase)
 
         let collection = db.collection("collection")
         try collection.insertOne(["test": "blahblah"])
@@ -78,7 +78,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
 
     func testCreateCollection() throws {
         let client = try MongoClient.makeTestClient()
-        let db = client.db(type(of: self).testDatabase)
+        let db = client.db(Self.testDatabase)
 
         let indexOpts: Document =
             ["storageEngine": ["wiredTiger": ["configString": "access_pattern_hint=random"]]]
@@ -136,7 +136,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
     func testListCollections() throws {
         let client = try MongoClient.makeTestClient()
         let monitor = client.addCommandMonitor()
-        let db = client.db(type(of: self).testDatabase)
+        let db = client.db(Self.testDatabase)
         try db.drop()
 
         let cappedOptions = CreateCollectionOptions(capped: true, max: 1000, size: 10240)
@@ -182,7 +182,7 @@ extension CreateCollectionOptions: Equatable {
     // round-tripped), along with `writeConcern`, since that is used only for the "create" command itself
     // and is not a property of the collection.
     public static func == (lhs: CreateCollectionOptions, rhs: CreateCollectionOptions) -> Bool {
-        return rhs.capped == lhs.capped &&
+        rhs.capped == lhs.capped &&
             lhs.size == rhs.size &&
             lhs.max == rhs.max &&
             lhs.storageEngine == rhs.storageEngine &&
@@ -201,7 +201,7 @@ extension CreateCollectionOptions: Equatable {
 
 extension CollectionSpecification: Equatable {
     public static func == (lhs: CollectionSpecification, rhs: CollectionSpecification) -> Bool {
-        return lhs.name == rhs.name &&
+        lhs.name == rhs.name &&
             lhs.type == rhs.type &&
             lhs.options == rhs.options &&
             lhs.info.readOnly == rhs.info.readOnly &&

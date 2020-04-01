@@ -60,7 +60,7 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
             specName: "initial-dns-seedlist-discovery",
             asType: DNSSeedlistTestCase.self
         )
-        for (filename, testCase) in tests {
+        for (_, testCase) in tests {
             let topologyWatcher = TopologyDescriptionWatcher()
 
             // Enclose all of the potentially throwing code in `doTest`. Sometimes the expected errors come when

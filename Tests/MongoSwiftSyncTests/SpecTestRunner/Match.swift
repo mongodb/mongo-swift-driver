@@ -20,7 +20,7 @@ internal protocol Matchable {
 
 extension Matchable {
     internal func isPlaceholder() -> Bool {
-        return false
+        false
     }
 
     /// Returns whether this MATCHES the expected value according to the function defined in the spec.
@@ -38,19 +38,19 @@ extension Matchable {
 
 extension Matchable where Self: Equatable {
     internal func contentMatches(expected: Self) -> Bool {
-        return self == expected
+        self == expected
     }
 }
 
 extension Int: Matchable {
     internal func isPlaceholder() -> Bool {
-        return self == 42
+        self == 42
     }
 }
 
 extension String: Matchable {
     internal func isPlaceholder() -> Bool {
-        return self == "42"
+        self == "42"
     }
 }
 
@@ -80,7 +80,7 @@ extension Document: Matchable {
 /// Extension that adds MATCHES functionality to `BSON`.
 extension BSON: Matchable {
     internal func isPlaceholder() -> Bool {
-        return self.asInt()?.isPlaceholder() == true || self.stringValue?.isPlaceholder() == true
+        self.asInt()?.isPlaceholder() == true || self.stringValue?.isPlaceholder() == true
     }
 
     internal func contentMatches(expected: BSON) -> Bool {
@@ -103,7 +103,7 @@ extension BSON: Matchable {
 /// https://github.com/mongodb/specifications/tree/master/source/connection-monitoring-and-pooling/tests#spec-test-match-function
 internal func match<T: Matchable, V: Matchable>(_ expectedValue: V?) -> Predicate<T> {
     // swiftlint:enable line_length
-    return Predicate.define("match <\(stringify(expectedValue))>") { actualExpression, msg in
+    Predicate.define("match <\(stringify(expectedValue))>") { actualExpression, msg in
         let actualValue = try actualExpression.evaluate()
         switch (expectedValue, actualValue) {
         case (nil, _?):

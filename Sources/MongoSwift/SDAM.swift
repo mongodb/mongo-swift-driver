@@ -175,7 +175,7 @@ public struct ServerDescription {
 extension ServerDescription: Equatable {
     public static func == (lhs: ServerDescription, rhs: ServerDescription) -> Bool {
         // As per the SDAM spec, only some fields are necessary to compare for equality.
-        return lhs.address == rhs.address &&
+        lhs.address == rhs.address &&
             lhs.type == rhs.type &&
             lhs.minWireVersion == rhs.minWireVersion &&
             lhs.maxWireVersion == rhs.maxWireVersion &&
@@ -237,12 +237,12 @@ public struct TopologyDescription: Equatable {
     /// Returns `true` if the topology has a readable server available, and `false` otherwise.
     public func hasReadableServer() -> Bool {
         // TODO: SWIFT-244: amend this method to take in a read preference.
-        return [.single, .replicaSetWithPrimary, .sharded].contains(self.type)
+        [.single, .replicaSetWithPrimary, .sharded].contains(self.type)
     }
 
     /// Returns `true` if the topology has a writable server available, and `false` otherwise.
     public func hasWritableServer() -> Bool {
-        return [.single, .replicaSetWithPrimary].contains(self.type)
+        [.single, .replicaSetWithPrimary].contains(self.type)
     }
 
     /// An internal initializer to create a `TopologyDescription` from an OpaquePointer

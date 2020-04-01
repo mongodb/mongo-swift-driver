@@ -12,7 +12,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         }
 
         try self.withTestClient { client in
-            let db = client.db(type(of: self).testDatabase)
+            let db = client.db(Self.testDatabase)
             try? db.collection(self.getCollectionName()).drop().wait()
             let coll = try db.createCollection(self.getCollectionName()).wait()
 
@@ -53,7 +53,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
                 return
             }
 
-            let db = client.db(type(of: self).testDatabase)
+            let db = client.db(Self.testDatabase)
             try? db.collection(self.getCollectionName()).drop().wait()
             let coll = try db.createCollection(self.getCollectionName()).wait()
 
@@ -76,7 +76,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         }
 
         try self.withTestClient { client in
-            let db = client.db(type(of: self).testDatabase)
+            let db = client.db(Self.testDatabase)
             try? db.collection(self.getCollectionName()).drop().wait()
             let coll = try db.createCollection(self.getCollectionName()).wait()
 
@@ -102,7 +102,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             return
         }
         try self.withTestClient { client in
-            let db = client.db(type(of: self).testDatabase)
+            let db = client.db(Self.testDatabase)
             try? db.collection(self.getCollectionName()).drop().wait()
             let coll = try db.createCollection(self.getCollectionName()).wait()
 
@@ -140,7 +140,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         let increment: (ChangeStreamEvent<Document>) -> Void = { _ in count += 1 }
 
         try self.withTestClient { client in
-            let db = client.db(type(of: self).testDatabase)
+            let db = client.db(Self.testDatabase)
             try? db.collection(self.getCollectionName()).drop().wait()
             let coll = try db.createCollection(self.getCollectionName()).wait()
 

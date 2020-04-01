@@ -3,19 +3,19 @@ import MongoSwift
 
 extension ConnectionError: Equatable {
     public static func == (lhs: ConnectionError, rhs: ConnectionError) -> Bool {
-        return lhs.errorLabels?.sorted() == rhs.errorLabels?.sorted()
+        lhs.errorLabels?.sorted() == rhs.errorLabels?.sorted()
     }
 }
 
 extension CommandError: Equatable {
     public static func == (lhs: CommandError, rhs: CommandError) -> Bool {
-        return lhs.code == rhs.code && lhs.errorLabels?.sorted() == rhs.errorLabels?.sorted()
+        lhs.code == rhs.code && lhs.errorLabels?.sorted() == rhs.errorLabels?.sorted()
     }
 }
 
 extension WriteError: Equatable {
     public static func == (lhs: WriteError, rhs: WriteError) -> Bool {
-        return lhs.writeFailure == rhs.writeFailure &&
+        lhs.writeFailure == rhs.writeFailure &&
             lhs.writeConcernFailure == rhs.writeConcernFailure &&
             lhs.errorLabels?.sorted() == rhs.errorLabels?.sorted()
     }
@@ -36,7 +36,7 @@ extension BulkWriteError: Equatable {
 
 extension BulkWriteResult: Equatable {
     public static func == (lhs: BulkWriteResult, rhs: BulkWriteResult) -> Bool {
-        return lhs.insertedIds == rhs.insertedIds
+        lhs.insertedIds == rhs.insertedIds
             && lhs.upsertedIds == rhs.upsertedIds
             && lhs.upsertedCount == rhs.upsertedCount
             && lhs.modifiedCount == rhs.modifiedCount
@@ -47,19 +47,19 @@ extension BulkWriteResult: Equatable {
 
 extension WriteFailure: Equatable {
     public static func == (lhs: WriteFailure, rhs: WriteFailure) -> Bool {
-        return lhs.code == rhs.code
+        lhs.code == rhs.code
     }
 }
 
 extension BulkWriteFailure: Equatable {
     public static func == (lhs: BulkWriteFailure, rhs: BulkWriteFailure) -> Bool {
-        return lhs.code == rhs.code && lhs.index == rhs.index
+        lhs.code == rhs.code && lhs.index == rhs.index
     }
 }
 
 extension WriteConcernFailure: Equatable {
     public static func == (lhs: WriteConcernFailure, rhs: WriteConcernFailure) -> Bool {
-        return lhs.code == rhs.code
+        lhs.code == rhs.code
     }
 }
 

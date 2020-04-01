@@ -257,7 +257,7 @@ public class MongoClient {
     /// using the client have completed before calling this. The returned future must be fulfilled before the
     /// `EventLoopGroup` provided to this client's constructor is shut down.
     public func shutdown() -> EventLoopFuture<Void> {
-        return self.operationExecutor.execute {
+        self.operationExecutor.execute {
             self.connectionPool.shutdown()
             self.isClosed = true
         }
@@ -285,7 +285,7 @@ public class MongoClient {
     /// Starts a new `ClientSession` with the provided options. When you are done using this session, you must call
     /// `ClientSession.end()` on it.
     public func startSession(options: ClientSessionOptions? = nil) -> ClientSession {
-        return ClientSession(client: self, options: options)
+        ClientSession(client: self, options: options)
     }
 
     /**
@@ -382,7 +382,7 @@ public class MongoClient {
         _ filter: Document? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<[MongoDatabase]> {
-        return self.listDatabaseNames(filter, session: session).map { $0.map { self.db($0) } }
+        self.listDatabaseNames(filter, session: session).map { $0.map { self.db($0) } }
     }
 
     /**
@@ -426,7 +426,7 @@ public class MongoClient {
      * - Returns: a `MongoDatabase` corresponding to the provided database name.
      */
     public func db(_ name: String, options: DatabaseOptions? = nil) -> MongoDatabase {
-        return MongoDatabase(name: name, client: self, options: options)
+        MongoDatabase(name: name, client: self, options: options)
     }
 
     /**
@@ -459,7 +459,7 @@ public class MongoClient {
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<ChangeStream<ChangeStreamEvent<Document>>> {
-        return self.watch(pipeline, options: options, session: session, withFullDocumentType: Document.self)
+        self.watch(pipeline, options: options, session: session, withFullDocumentType: Document.self)
     }
 
     /**
@@ -497,7 +497,7 @@ public class MongoClient {
         session: ClientSession? = nil,
         withFullDocumentType _: FullDocType.Type
     ) -> EventLoopFuture<ChangeStream<ChangeStreamEvent<FullDocType>>> {
-        return self.watch(
+        self.watch(
             pipeline,
             options: options,
             session: session,
@@ -593,13 +593,13 @@ public class MongoClient {
         using connection: Connection? = nil,
         session: ClientSession? = nil
     ) throws -> T.OperationResult {
-        return try self.operationExecutor.execute(operation, using: connection, client: self, session: session).wait()
+        try self.operationExecutor.execute(operation, using: connection, client: self, session: session).wait()
     }
 }
 
 extension MongoClient: Equatable {
     public static func == (lhs: MongoClient, rhs: MongoClient) -> Bool {
-        return lhs._id == rhs._id
+        lhs._id == rhs._id
     }
 }
 

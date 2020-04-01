@@ -26,7 +26,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
             return XCTFail("Client is not initialized")
         }
 
-        self.coll = client.db(type(of: self).testDatabase).collection(self.getCollectionName())
+        self.coll = client.db(Self.testDatabase).collection(self.getCollectionName())
     }
 
     /// Teardown a single test - run after each testX function

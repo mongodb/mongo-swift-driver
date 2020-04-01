@@ -4,22 +4,22 @@ import MongoSwift
 public struct MongoDatabase {
     /// Encoder used by this database for BSON conversions. This encoder's options are inherited by collections derived
     /// from this database.
-    public var encoder: BSONEncoder { return self.asyncDB.encoder }
+    public var encoder: BSONEncoder { self.asyncDB.encoder }
 
     /// Decoder whose options are inherited by collections derived from this database.
-    public var decoder: BSONDecoder { return self.asyncDB.decoder }
+    public var decoder: BSONDecoder { self.asyncDB.decoder }
 
     /// The name of this database.
-    public var name: String { return self.asyncDB.name }
+    public var name: String { self.asyncDB.name }
 
     /// The `ReadConcern` set on this database, or `nil` if one is not set.
-    public var readConcern: ReadConcern? { return self.asyncDB.readConcern }
+    public var readConcern: ReadConcern? { self.asyncDB.readConcern }
 
     /// The `ReadPreference` set on this database
-    public var readPreference: ReadPreference { return self.asyncDB.readPreference }
+    public var readPreference: ReadPreference { self.asyncDB.readPreference }
 
     /// The `WriteConcern` set on this database, or `nil` if one is not set.
-    public var writeConcern: WriteConcern? { return self.asyncDB.writeConcern }
+    public var writeConcern: WriteConcern? { self.asyncDB.writeConcern }
 
     /// The underlying asynchronous database.
     private let asyncDB: MongoSwift.MongoDatabase
@@ -44,7 +44,7 @@ public struct MongoDatabase {
      *   - `CommandError` if an error occurs that prevents the command from executing.
      */
     public func drop(options: DropDatabaseOptions? = nil, session: ClientSession? = nil) throws {
-        return try self.asyncDB.drop(options: options, session: session?.asyncSession).wait()
+        try self.asyncDB.drop(options: options, session: session?.asyncSession).wait()
     }
 
     /**
@@ -60,7 +60,7 @@ public struct MongoDatabase {
      * - Returns: the requested `MongoCollection<Document>`
      */
     public func collection(_ name: String, options: CollectionOptions? = nil) -> MongoCollection<Document> {
-        return self.collection(name, withType: Document.self, options: options)
+        self.collection(name, withType: Document.self, options: options)
     }
 
     /**
@@ -107,7 +107,7 @@ public struct MongoDatabase {
         options: CreateCollectionOptions? = nil,
         session: ClientSession? = nil
     ) throws -> MongoCollection<Document> {
-        return try self.createCollection(name, withType: Document.self, options: options, session: session)
+        try self.createCollection(name, withType: Document.self, options: options, session: session)
     }
 
     /**
@@ -188,7 +188,7 @@ public struct MongoDatabase {
         options: ListCollectionsOptions? = nil,
         session: ClientSession? = nil
     ) throws -> [MongoCollection<Document>] {
-        return try self.listCollectionNames(filter, options: options, session: session).map { name in
+        try self.listCollectionNames(filter, options: options, session: session).map { name in
             self.collection(name)
         }
     }
@@ -212,7 +212,7 @@ public struct MongoDatabase {
         options: ListCollectionsOptions? = nil,
         session: ClientSession? = nil
     ) throws -> [String] {
-        return try self.asyncDB.listCollectionNames(filter, options: options, session: session?.asyncSession).wait()
+        try self.asyncDB.listCollectionNames(filter, options: options, session: session?.asyncSession).wait()
     }
 
     /**
@@ -238,7 +238,7 @@ public struct MongoDatabase {
         options: RunCommandOptions? = nil,
         session: ClientSession? = nil
     ) throws -> Document {
-        return try self.asyncDB.runCommand(command, options: options, session: session?.asyncSession).wait()
+        try self.asyncDB.runCommand(command, options: options, session: session?.asyncSession).wait()
     }
 
     /**
@@ -269,7 +269,7 @@ public struct MongoDatabase {
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil
     ) throws -> ChangeStream<ChangeStreamEvent<Document>> {
-        return try self.watch(
+        try self.watch(
             pipeline,
             options: options,
             session: session,
@@ -310,7 +310,7 @@ public struct MongoDatabase {
         session: ClientSession? = nil,
         withFullDocumentType _: FullDocType.Type
     ) throws -> ChangeStream<ChangeStreamEvent<FullDocType>> {
-        return try self.watch(
+        try self.watch(
             pipeline,
             options: options,
             session: session,

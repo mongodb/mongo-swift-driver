@@ -45,7 +45,7 @@ public struct MongoCollection<T: Codable> {
     /// The name of this collection.
     public var name: String {
         // safe to force unwrap as collection name is always present for a collection namespace.
-        return self.namespace.collection! // swiftlint:disable:this force_unwrapping
+        self.namespace.collection! // swiftlint:disable:this force_unwrapping
     }
 
     /// The `ReadConcern` set on this collection, or `nil` if one is not set.

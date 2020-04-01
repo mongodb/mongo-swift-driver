@@ -45,13 +45,13 @@ extension CodableNumber {
     /// where that will not work provide their own implementation of the
     /// `bsonValue` computed property.
     internal var bsonValue: BSONValue? {
-        return self as? BSONValue
+        self as? BSONValue
     }
 }
 
 extension Int: CodableNumber {
     internal var bsonValue: BSONValue? {
-        return BSON(self).bsonValue
+        BSON(self).bsonValue
     }
 }
 
@@ -61,28 +61,28 @@ extension Int64: CodableNumber {}
 extension Int8: CodableNumber {
     internal var bsonValue: BSONValue? {
         // Int8 always fits in an Int32
-        return Int32(exactly: self)
+        Int32(exactly: self)
     }
 }
 
 extension Int16: CodableNumber {
     internal var bsonValue: BSONValue? {
         // Int16 always fits in an Int32
-        return Int32(exactly: self)
+        Int32(exactly: self)
     }
 }
 
 extension UInt8: CodableNumber {
     internal var bsonValue: BSONValue? {
         // UInt8 always fits in an Int32
-        return Int32(exactly: self)
+        Int32(exactly: self)
     }
 }
 
 extension UInt16: CodableNumber {
     internal var bsonValue: BSONValue? {
         // UInt16 always fits in an Int32
-        return Int32(exactly: self)
+        Int32(exactly: self)
     }
 }
 
@@ -140,11 +140,6 @@ extension UInt: CodableNumber {
 extension Double: CodableNumber {
     internal init?(from value: BSONValue) {
         switch value {
-        case let v as Int:
-            if let exact = Double(exactly: v) {
-                self = exact
-                return
-            }
         case let v as Int32:
             if let exact = Double(exactly: v) {
                 self = exact
@@ -170,11 +165,6 @@ extension Double: CodableNumber {
 extension Float: CodableNumber {
     internal init?(from value: BSONValue) {
         switch value {
-        case let v as Int:
-            if let exact = Float(exactly: v) {
-                self = exact
-                return
-            }
         case let v as Int32:
             if let exact = Float(exactly: v) {
                 self = exact
@@ -198,6 +188,6 @@ extension Float: CodableNumber {
 
     internal var bsonValue: BSONValue? {
         // a Float can always be represented as a Double
-        return Double(exactly: self)
+        Double(exactly: self)
     }
 }

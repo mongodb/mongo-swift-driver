@@ -37,16 +37,16 @@ public final class ClientSession {
     /// The most recent cluster time seen by this session. This value will be nil if either of the following are true:
     /// - No operations have been executed using this session and `advanceClusterTime` has not been called.
     /// - This session has been ended.
-    public var clusterTime: Document? { return self.asyncSession.clusterTime }
+    public var clusterTime: Document? { self.asyncSession.clusterTime }
 
     /// The operation time of the most recent operation performed using this session. This value will be nil if either
     /// of the following are true:
     /// - No operations have been performed using this session and `advanceOperationTime` has not been called.
     /// - This session has been ended.
-    public var operationTime: Timestamp? { return self.asyncSession.operationTime }
+    public var operationTime: Timestamp? { self.asyncSession.operationTime }
 
     /// The options used to start this session.
-    public var options: ClientSessionOptions? { return self.asyncSession.options }
+    public var options: ClientSessionOptions? { self.asyncSession.options }
 
     /// Initializes a new client session.
     internal init(client: MongoClient, options: ClientSessionOptions?) {

@@ -31,7 +31,7 @@ extension MongoCollection {
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<ChangeStream<ChangeStreamEvent<CollectionType>>> {
-        return self.watch(pipeline, options: options, session: session, withFullDocumentType: CollectionType.self)
+        self.watch(pipeline, options: options, session: session, withFullDocumentType: CollectionType.self)
     }
 
     /**
@@ -66,7 +66,7 @@ extension MongoCollection {
         session: ClientSession? = nil,
         withFullDocumentType _: FullDocType.Type
     ) -> EventLoopFuture<ChangeStream<ChangeStreamEvent<FullDocType>>> {
-        return self.watch(
+        self.watch(
             pipeline,
             options: options,
             session: session,

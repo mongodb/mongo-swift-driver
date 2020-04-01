@@ -83,7 +83,7 @@ final class RetryableWritesTests: MongoSwiftTestCase, FailPointConfigured {
 
                 let clientOptions = test.clientOptions ?? ClientOptions(retryWrites: true)
                 let client = try MongoClient.makeTestClient(options: clientOptions)
-                let db = client.db(type(of: self).testDatabase)
+                let db = client.db(Self.testDatabase)
                 let collection = db.collection(self.getCollectionName(suffix: test.description))
 
                 if !testFile.data.isEmpty {

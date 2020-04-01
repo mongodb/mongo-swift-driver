@@ -4,10 +4,10 @@ import MongoSwift
 public struct MongoCollection<T: Codable> {
     /// Encoder used by this collection for BSON conversions. (e.g. converting `CollectionType`s, indexes, and options
     /// to documents).
-    public var encoder: BSONEncoder { return self.asyncColl.encoder }
+    public var encoder: BSONEncoder { self.asyncColl.encoder }
 
     /// Decoder used by this collection for BSON conversions (e.g. converting documents to `CollectionType`s).
-    public var decoder: BSONDecoder { return self.asyncColl.decoder }
+    public var decoder: BSONDecoder { self.asyncColl.decoder }
 
     /**
      * A `Codable` type associated with this `MongoCollection` instance.
@@ -24,19 +24,19 @@ public struct MongoCollection<T: Codable> {
     public typealias CollectionType = T
 
     /// The namespace for this collection.
-    public var namespace: MongoNamespace { return self.asyncColl.namespace }
+    public var namespace: MongoNamespace { self.asyncColl.namespace }
 
     /// The name of this collection.
-    public var name: String { return self.asyncColl.name }
+    public var name: String { self.asyncColl.name }
 
     /// The `ReadConcern` set on this collection, or `nil` if one is not set.
-    public var readConcern: ReadConcern? { return self.asyncColl.readConcern }
+    public var readConcern: ReadConcern? { self.asyncColl.readConcern }
 
     /// The `ReadPreference` set on this collection.
-    public var readPreference: ReadPreference { return self.asyncColl.readPreference }
+    public var readPreference: ReadPreference { self.asyncColl.readPreference }
 
     /// The `WriteConcern` set on this collection, or nil if one is not set.
-    public var writeConcern: WriteConcern? { return self.asyncColl.writeConcern }
+    public var writeConcern: WriteConcern? { self.asyncColl.writeConcern }
 
     /// The underlying asynchronous collection.
     internal let asyncColl: MongoSwift.MongoCollection<T>

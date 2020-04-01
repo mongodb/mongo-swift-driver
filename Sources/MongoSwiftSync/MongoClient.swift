@@ -4,19 +4,19 @@ import NIO
 /// A MongoDB Client providing a synchronous API.
 public class MongoClient {
     /// Encoder whose options are inherited by databases derived from this client.
-    public var encoder: BSONEncoder { return self.asyncClient.encoder }
+    public var encoder: BSONEncoder { self.asyncClient.encoder }
 
     /// Decoder whose options are inherited by databases derived from this client.
-    public var decoder: BSONDecoder { return self.asyncClient.decoder }
+    public var decoder: BSONDecoder { self.asyncClient.decoder }
 
     /// The read concern set on this client, or nil if one is not set.
-    public var readConcern: ReadConcern? { return self.asyncClient.readConcern }
+    public var readConcern: ReadConcern? { self.asyncClient.readConcern }
 
     /// The `ReadPreference` set on this client.
-    public var readPreference: ReadPreference { return self.asyncClient.readPreference }
+    public var readPreference: ReadPreference { self.asyncClient.readPreference }
 
     /// The write concern set on this client, or nil if one is not set.
-    public var writeConcern: WriteConcern? { return self.asyncClient.writeConcern }
+    public var writeConcern: WriteConcern? { self.asyncClient.writeConcern }
 
     /// The `EventLoopGroup` being used by the underlying async client.
     private let eventLoopGroup: MultiThreadedEventLoopGroup
@@ -67,7 +67,7 @@ public class MongoClient {
 
     /// Starts a new `ClientSession` with the provided options.
     public func startSession(options: ClientSessionOptions? = nil) -> ClientSession {
-        return ClientSession(client: self, options: options)
+        ClientSession(client: self, options: options)
     }
 
     /**
@@ -106,7 +106,7 @@ public class MongoClient {
         _ filter: Document? = nil,
         session: ClientSession? = nil
     ) throws -> [DatabaseSpecification] {
-        return try self.asyncClient.listDatabases(filter, session: session?.asyncSession).wait()
+        try self.asyncClient.listDatabases(filter, session: session?.asyncSession).wait()
     }
 
     /**
@@ -125,7 +125,7 @@ public class MongoClient {
         _ filter: Document? = nil,
         session: ClientSession? = nil
     ) throws -> [MongoDatabase] {
-        return try self.listDatabaseNames(filter, session: session).map { self.db($0) }
+        try self.listDatabaseNames(filter, session: session).map { self.db($0) }
     }
 
     /**
@@ -141,7 +141,7 @@ public class MongoClient {
      *   - `LogicError` if the provided session is inactive.
      */
     public func listDatabaseNames(_ filter: Document? = nil, session: ClientSession? = nil) throws -> [String] {
-        return try self.asyncClient.listDatabaseNames(filter, session: session?.asyncSession).wait()
+        try self.asyncClient.listDatabaseNames(filter, session: session?.asyncSession).wait()
     }
 
     /**
@@ -157,7 +157,7 @@ public class MongoClient {
      * - Returns: a `MongoDatabase` corresponding to the provided database name
      */
     public func db(_ name: String, options: DatabaseOptions? = nil) -> MongoDatabase {
-        return MongoDatabase(client: self, asyncDB: self.asyncClient.db(name, options: options))
+        MongoDatabase(client: self, asyncDB: self.asyncClient.db(name, options: options))
     }
 
     /**
@@ -189,7 +189,7 @@ public class MongoClient {
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil
     ) throws -> ChangeStream<ChangeStreamEvent<Document>> {
-        return try self.watch(
+        try self.watch(
             pipeline,
             options: options,
             session: session,
@@ -231,7 +231,7 @@ public class MongoClient {
         session: ClientSession? = nil,
         withFullDocumentType _: FullDocType.Type
     ) throws -> ChangeStream<ChangeStreamEvent<FullDocType>> {
-        return try self.watch(
+        try self.watch(
             pipeline,
             options: options,
             session: session,
@@ -325,6 +325,6 @@ public class MongoClient {
 
 extension MongoClient: Equatable {
     public static func == (lhs: MongoClient, rhs: MongoClient) -> Bool {
-        return lhs.asyncClient == rhs.asyncClient
+        lhs.asyncClient == rhs.asyncClient
     }
 }
