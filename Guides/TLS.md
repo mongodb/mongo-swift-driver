@@ -29,12 +29,12 @@ macOS 10.13 (High Sierra) and newer support TLS 1.1+.
 
 To connect to MongoDB over TLS/SSL, simply specify `tls: true` in the `ClientOptions` passed to a `MongoClient`'s initializer:
 ```swift
-let client = try MongoClient("mongodb://example.com", options: ClientOptions(tls: true))
+let client = try MongoClient("mongodb://example.com", using: elg, options: ClientOptions(tls: true))
 ```
 
 Alternatively, `tls=true` can be specified in the [MongoDB Connection String]() passed to the initializer:
 ```swift
-let client = try MongoClient("mongodb://example.com/?tls=true")
+let client = try MongoClient("mongodb://example.com/?tls=true", using: elg)
 ```
 **Note:** Specifying any `tls` prefixed option in the connection string or `ClientOptions` will cause MongoSwift to attempt to connect using TLS.
 
@@ -44,25 +44,26 @@ MongoSwift can be configured to use a specific set of CA certificates. This is m
 
 A path to a file with either a single or bundle of certificate authorities to be considered trusted when making a TLS connection can be specified via the `tlsCAFile` option on `ClientOptions`:
 ```swift
-let client = try MongoClient("mongodb://example.com", options: ClientOptions(tlsCAFile: "/path/to/ca.pem"))
+let client = try MongoClient("mongodb://example.com", using: elg, options: ClientOptions(tlsCAFile: URL(string: "/path/to/ca.pem")))
 ```
 
 Alternatively, the path can be specified via the `tlsCAFile` option in the [MongoDB Connection String]() passed to the client's initializer:
 ```swift
-let client = try MongoClient("mongodb://example.com/?tlsCAFile=/path/to/ca.pem")
+let client = try MongoClient("mongodb://example.com/?tlsCAFile=/path/to/ca.pem", using: elg)
 ```
 
 ## Specifying a Client Certificate or Private Key File
 
 MongoSwift can be configured to present the client certificate file or the client private key file via the `tlsCertificateKeyFile` option on `ClientOptions`:
 ```swift
-let client = try MongoClient("mongodb://example.com", options: ClientOptions(tlsCertificateKeyFile: "/path/to/cert.pem"))
+let client = try MongoClient("mongodb://example.com", using: elg, options: ClientOptions(tlsCertificateKeyFile: URL(string: "/path/to/cert.pem")))
 ```
 If the private key is password protected, a password can be supplied via `tlsCertificateKeyFilePassword` on `ClientOptions`:
 ```swift
 let client = try MongoClient(
-    "mongodb://example.com", 
-    options: ClientOptions(tlsCertificateKeyFile: "/path/to/cert.pem", tlsCertificateKeyFilePassword: <password>)
+    "mongodb://example.com",
+    using: elg,
+    options: ClientOptions(tlsCertificateKeyFile: URL(string: "/path/to/cert.pem"), tlsCertificateKeyFilePassword: <password>)
 )
 ```
 
@@ -70,6 +71,7 @@ Alternatively, these options can be set via the `tlsCertificateKeyFile` and `tls
 ```swift
 let client = try MongoClient(
     "mongodb://example.com/?tlsCertificateKeyFile=/path/to/cert.pem&tlsCertificateKeyFilePassword=<password>"
+    using: elg
 )
 ```
 **Note**: In both cases, if both a client certificate and a client private key are needed, the files should be concatenated into a single file which is specified by `tlsCertificateKeyFile`.
