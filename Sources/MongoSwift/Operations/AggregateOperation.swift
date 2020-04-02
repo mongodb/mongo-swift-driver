@@ -83,7 +83,7 @@ internal struct AggregateOperation<CollectionType: Codable>: Operation {
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> MongoCursor<Document> {
         let opts = try encodeOptions(options: self.options, session: session)
-        let rp = self.options?.readPreference?._readPreference
+        let rp = self.options?.readPreference?.pointer
         let pipeline: Document = ["pipeline": .array(self.pipeline.map { .document($0) })]
 
         let result: OpaquePointer = self.collection.withMongocCollection(from: connection) { collPtr in

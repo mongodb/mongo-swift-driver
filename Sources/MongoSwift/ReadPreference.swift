@@ -1,28 +1,27 @@
 import CLibMongoC
 
-/**
- * A class to represent a MongoDB read preference.
- *
- * - SeeAlso: https://docs.mongodb.com/manual/reference/read-preference/
- */
-public final class ReadPreference {
-    /// An enumeration of possible ReadPreference modes.
+/// Represents a MongoDB read preference, indicating which member(s) of a replica set read operations should be
+/// directed to.
+/// - SeeAlso: https://docs.mongodb.com/manual/reference/read-preference/
+public struct ReadPreference {
+    /// An enumeration of possible read preference modes.
+    /// - SeeAlso: https://docs.mongodb.com/manual/core/read-preference/#read-preference-modes
     public enum Mode: String {
         /// Default mode. All operations read from the current replica set primary.
         case primary
-        /// In most situations, operations read from the primary but if it is
-        /// unavailable, operations read from secondary members.
+        /// In most situations, operations read from the primary but if it is unavailable, operations read from
+        /// secondary members.
         case primaryPreferred
         /// All operations read from the secondary members of the replica set.
         case secondary
-        /// In most situations, operations read from secondary members but if no
-        /// secondary members are available, operations read from the primary.
+        /// In most situations, operations read from secondary members but if no secondary members are available,
+        /// operations read from the primary.
         case secondaryPreferred
-        /// Operations read from member of the replica set with the least network
-        /// latency, irrespective of the member’s type.
+        /// Operations read from the member of the replica set with the least network latency, irrespective of the
+        /// member's type.
         case nearest
 
-        internal var readMode: mongoc_read_mode_t {
+        fileprivate var mongocMode: mongoc_read_mode_t {
             switch self {
             case .primary:
                 return MONGOC_READ_PRIMARY
@@ -37,8 +36,8 @@ public final class ReadPreference {
             }
         }
 
-        internal init(readMode: mongoc_read_mode_t) {
-            switch readMode {
+        fileprivate init(mongocMode: mongoc_read_mode_t) {
+            switch mongocMode {
             case MONGOC_READ_PRIMARY:
                 self = .primary
             case MONGOC_READ_PRIMARY_PREFERRED:
@@ -50,81 +49,208 @@ public final class ReadPreference {
             case MONGOC_READ_NEAREST:
                 self = .nearest
             default:
-                fatalError("Unexpected read preference mode: \(readMode)")
+                fatalError("Unexpected read preference mode: \(mongocMode)")
             }
         }
     }
 
-    /// A pointer to a `mongoc_read_prefs_t`.
-    internal var _readPreference: OpaquePointer?
-
-    /// The mode of this `ReadPreference`
+    /// The mode specified for this read preference.
+    /// - SeeAlso: https://docs.mongodb.com/manual/core/read-preference/#read-preference-modes
     public var mode: Mode {
-        let readMode = mongoc_read_prefs_get_mode(self._readPreference)
-
-        return Mode(readMode: readMode)
+        self.mongocReadPreference.mode
     }
 
-    /// The tags of this `ReadPreference`
-    public var tagSets: [Document] {
-        guard let bson = mongoc_read_prefs_get_tags(self._readPreference) else {
-            fatalError("Failed to retrieve read preference tags")
-        }
-        // we have to copy because libmongoc owns the pointer.
-        let wrapped = Document(copying: bson)
-
-        // swiftlint:disable:next force_unwrapping
-        return wrapped.values.map { $0.documentValue! }
+    /// Optionally specified ordered array of tag sets. If provided, a server will only be considered suitable if its
+    /// tags are a superset of at least one of the tag sets.
+    /// - SeeAlso: https://docs.mongodb.com/manual/core/read-preference-tags/#replica-set-read-preference-tag-sets
+    public var tagSets: [Document]? {
+        self.mongocReadPreference.tagSets
     }
 
-    /// The maxStalenessSeconds of this `ReadPreference`
-    public var maxStalenessSeconds: Int64? {
-        let maxStalenessSeconds = mongoc_read_prefs_get_max_staleness_seconds(self._readPreference)
-
-        return maxStalenessSeconds == MONGOC_NO_MAX_STALENESS ? nil : maxStalenessSeconds
+    // swiftlint:disable line_length
+    /// An optionally specified value indicating a maximum replication lag, or "staleness", for reads from secondaries.
+    /// - SeeAlso: https://docs.mongodb.com/manual/core/read-preference-staleness/#replica-set-read-preference-max-staleness
+    public var maxStalenessSeconds: Int? {
+        self.mongocReadPreference.maxStalenessSeconds
     }
+
+    // swiftlint:enable line_length
+
+    /// A `ReadPreference` with mode `primary`. This is the default mode. With this mode, all operations read from the
+    /// current replica set primary.
+    public static let primary = ReadPreference(.primary)
+    /// A `ReadPreference` with mode `primaryPreferred`. With this mode, in most situations operations read from the
+    /// primary, but if it is unavailable, operations read from secondary members.
+    public static let primaryPreferred = ReadPreference(.primaryPreferred)
+    /// A `ReadPreference` with mode `secondary`. With this mode, all operations read from secondary members of the
+    /// replica set.
+    public static let secondary = ReadPreference(.secondary)
+    /// A `ReadPreference` with mode `secondaryPreferred`. With this mode, in most situations operations read from
+    /// secondary members, but if no secondary members are available, operations read from the primary.
+    public static let secondaryPreferred = ReadPreference(.secondaryPreferred)
+    /// A `ReadPreference` with mode `nearest`. With this mode, operations read from the member of the replica set with
+    /// the least network latency, irrespective of the member’s type.
+    public static let nearest = ReadPreference(.nearest)
 
     /**
-     * Initializes a `ReadPreference` from a `Mode`.
+     * Initializes a new `ReadPreference` with the mode `primaryPreferred`. With this mode, in most situations
+     * operations read from the primary, but if it is unavailable, operations read from secondary members.
      *
      * - Parameters:
-     *   - mode: a `Mode`
-     *
-     * - Returns: a new `ReadPreference`
-     */
-    public init(_ mode: Mode) {
-        self._readPreference = mongoc_read_prefs_new(mode.readMode)
-    }
-
-    /// Initializes a new ReadPreference with the default mode (primary).
-    public convenience init() {
-        self.init(.primary)
-    }
-
-    /**
-     * Initializes a `ReadPreference`.
-     *
-     * - Parameters:
-     *   - mode: a `Mode`
-     *   - tagSets: an optional `[Document]`
-     *   - maxStalenessSeconds: an optional `Int64`
-     *
-     * - Returns: a new `ReadPreference`
+     *   - tagSets: an optional `[Document]`, containing an ordered array of tag sets. If provided, a server will only
+     *     be considered suitable if its tags are a superset of at least one of the tag sets.
+     *   - maxStalenessSeconds: an optional `Int`, indicating a maximum replication lag, or "staleness", for reads from
+     *     secondaries.
      *
      * - Throws:
-     *   - A `InvalidArgumentError` if `mode` is `.primary` and `tagSets` is non-empty
-     *   - A `InvalidArgumentError` if `maxStalenessSeconds` non-nil and < 90
+     *   - `InvalidArgumentError` if `maxStalenessSeconds` is non-nil and < 90.
+     *
+     * - SeeAlso:
+     *   - https://docs.mongodb.com/manual/core/read-preference/#primaryPreferred
+     *   - https://docs.mongodb.com/manual/core/read-preference-tags/#replica-set-read-preference-tag-sets
+     *   - https://docs.mongodb.com/manual/core/read-preference-staleness/#replica-set-read-preference-max-staleness
      */
-    public init(_ mode: Mode, tagSets: [Document]? = nil, maxStalenessSeconds: Int64? = nil) throws {
-        self._readPreference = mongoc_read_prefs_new(mode.readMode)
+    public static func primaryPreferred(
+        tagSets: [Document]? = nil,
+        maxStalenessSeconds: Int? = nil
+    ) throws -> ReadPreference {
+        try ReadPreference(.primaryPreferred, tagSets: tagSets, maxStalenessSeconds: maxStalenessSeconds)
+    }
 
-        if let tagSets = tagSets {
-            guard mode != .primary || tagSets.isEmpty else {
-                throw InvalidArgumentError(message: "tagSets may not be used with primary mode")
-            }
+    /**
+     * Initializes a new `ReadPreference` with the mode `secondary`. With this mode, all operations read from the
+     * secondary members of the replica set.
+     *
+     * - Parameters:
+     *   - tagSets: an optional `[Document]`, containing an ordered array of tag sets. If provided, a server will only
+     *     be considered suitable if its tags are a superset of at least one of the tag sets.
+     *   - maxStalenessSeconds: an optional `Int`, indicating a maximum replication lag, or "staleness", for reads from
+     *     secondaries.
+     *
+     * - Throws:
+     *   - `InvalidArgumentError` if `maxStalenessSeconds` is non-nil and < 90.
+     *
+     * - SeeAlso:
+     *   - https://docs.mongodb.com/manual/core/read-preference/#secondary
+     *   - https://docs.mongodb.com/manual/core/read-preference-tags/#replica-set-read-preference-tag-sets
+     *   - https://docs.mongodb.com/manual/core/read-preference-staleness/#replica-set-read-preference-max-staleness
+     */
+    public static func secondary(
+        tagSets: [Document]? = nil,
+        maxStalenessSeconds: Int? = nil
+    ) throws -> ReadPreference {
+        try ReadPreference(.secondary, tagSets: tagSets, maxStalenessSeconds: maxStalenessSeconds)
+    }
 
-            let tags = try BSONEncoder().encode(Document(tagSets.map { .document($0) }))
-            mongoc_read_prefs_set_tags(self._readPreference, tags._bson)
+    /**
+     * Initializes a new `ReadPreference` with the mode `secondaryPreferred`. With this mode, in most situations,
+     * operations read from secondary members but if no secondary members are available, operations read from the
+     * primary.
+     *
+     * - Parameters:
+     *   - tagSets: an optional `[Document]`, containing an ordered array of tag sets. If provided, a server will only
+     *     be considered suitable if its tags are a superset of at least one of the tag sets.
+     *   - maxStalenessSeconds: an optional `Int`, indicating a maximum replication lag, or "staleness", for reads from
+     *     secondaries.
+     *
+     * - Throws:
+     *   - `InvalidArgumentError` if `maxStalenessSeconds` is non-nil and < 90.
+     *
+     * - SeeAlso:
+     *   - https://docs.mongodb.com/manual/core/read-preference/#secondaryPreferred
+     *   - https://docs.mongodb.com/manual/core/read-preference-tags/#replica-set-read-preference-tag-sets
+     *   - https://docs.mongodb.com/manual/core/read-preference-staleness/#replica-set-read-preference-max-staleness
+     */
+    public static func secondaryPreferred(
+        tagSets: [Document]? = nil,
+        maxStalenessSeconds: Int? = nil
+    ) throws -> ReadPreference {
+        try ReadPreference(.secondaryPreferred, tagSets: tagSets, maxStalenessSeconds: maxStalenessSeconds)
+    }
+
+    /**
+     * Initializes a new `ReadPreference` with the mode `nearest`. With this mode, operations read from the member of
+     * the replica set with the least network latency, irrespective of the member’s type.
+     *
+     * - Parameters:
+     *   - tagSets: an optional `[Document]`, containing an ordered array of tag sets. If provided, a server will only
+     *     be considered suitable if its tags are a superset of at least one of the tag sets.
+     *   - maxStalenessSeconds: an optional `Int`, indicating a maximum replication lag, or "staleness", for reads from
+     *     secondaries.
+     *
+     * - Throws:
+     *   - `InvalidArgumentError` if `maxStalenessSeconds` is non-nil and < 90.
+     *
+     * - SeeAlso:
+     *   - https://docs.mongodb.com/manual/core/read-preference/#nearest
+     *   - https://docs.mongodb.com/manual/core/read-preference-tags/#replica-set-read-preference-tag-sets
+     *   - https://docs.mongodb.com/manual/core/read-preference-staleness/#replica-set-read-preference-max-staleness
+     */
+    public static func nearest(
+        tagSets: [Document]? = nil,
+        maxStalenessSeconds: Int? = nil
+    ) throws -> ReadPreference {
+        try ReadPreference(.nearest, tagSets: tagSets, maxStalenessSeconds: maxStalenessSeconds)
+    }
+
+    /// An equivalent libmongoc read preference used for libmongoc interop. NOTE: If we were ever to allow mutating the
+    /// properties of `ReadPreference` after initialization, we would need to implement copy-on-write semantics for
+    /// this type to prevent multiple `ReadPreference`s from being backed by the same `MongocReadPreference`. Since
+    /// this type is currently immutable it's ok that copies may share the same libmongoc type.
+    private let mongocReadPreference: MongocReadPreference
+
+    /// Provides internal access to the underlying libmongoc object.
+    internal var pointer: OpaquePointer {
+        self.mongocReadPreference.readPref
+    }
+
+    /// Initializes a `ReadPreference` from a `Mode`.
+    internal init(_ mode: Mode) {
+        self.mongocReadPreference = MongocReadPreference(mode)
+    }
+
+    internal init(_ mode: Mode, tagSets: [Document]?, maxStalenessSeconds: Int?) throws {
+        self.mongocReadPreference = try MongocReadPreference(
+            mode: mode,
+            tagSets: tagSets,
+            maxStalenessSeconds: maxStalenessSeconds
+        )
+    }
+
+    /// Initializes a new `ReadPreference` by copying a `mongoc_read_prefs_t`. Does not free the original.
+    internal init(copying pointer: OpaquePointer) {
+        self.mongocReadPreference = MongocReadPreference(copying: pointer)
+    }
+}
+
+/// An extension of `ReadPreference` to make it `Equatable`.
+extension ReadPreference: Equatable {
+    public static func == (lhs: ReadPreference, rhs: ReadPreference) -> Bool {
+        lhs.mode == rhs.mode &&
+            lhs.tagSets == rhs.tagSets &&
+            lhs.maxStalenessSeconds == rhs.maxStalenessSeconds
+    }
+}
+
+/// A class wrapping a `mongoc_read_prefs_t`.
+private class MongocReadPreference {
+    /// Pointer to underlying `mongoc_read_prefs_t`.
+    fileprivate let readPref: OpaquePointer
+
+    fileprivate init(_ mode: ReadPreference.Mode) {
+        self.readPref = mongoc_read_prefs_new(mode.mongocMode)
+    }
+
+    fileprivate init(copying pointer: OpaquePointer) {
+        self.readPref = mongoc_read_prefs_copy(pointer)
+    }
+
+    fileprivate convenience init(mode: ReadPreference.Mode, tagSets: [Document]?, maxStalenessSeconds: Int?) throws {
+        self.init(mode)
+
+        if let tagSets = tagSets, !tagSets.isEmpty {
+            let tags = Document(tagSets.map { .document($0) })
+            mongoc_read_prefs_set_tags(self.readPref, tags._bson)
         }
 
         if let maxStalenessSeconds = maxStalenessSeconds {
@@ -134,36 +260,35 @@ public final class ReadPreference {
                         " \(MONGOC_SMALLEST_MAX_STALENESS_SECONDS), \(maxStalenessSeconds) given"
                 )
             }
-
-            mongoc_read_prefs_set_max_staleness_seconds(self._readPreference, maxStalenessSeconds)
+            mongoc_read_prefs_set_max_staleness_seconds(self.readPref, Int64(maxStalenessSeconds))
         }
     }
 
-    /// Initializes a new `ReadPreference` by copying an existing `ReadPreference`.
-    public init(from readPreference: ReadPreference) {
-        self._readPreference = mongoc_read_prefs_copy(readPreference._readPreference)
+    fileprivate var mode: ReadPreference.Mode {
+        ReadPreference.Mode(mongocMode: mongoc_read_prefs_get_mode(self.readPref))
     }
 
-    /// Initializes a new `ReadPreference` by copying a `mongoc_read_prefs_t`.
-    /// The caller is responsible for freeing the original `mongoc_read_prefs_t`.
-    internal init(from readPreference: OpaquePointer?) {
-        self._readPreference = mongoc_read_prefs_copy(readPreference)
+    fileprivate var tagSets: [Document]? {
+        guard let bson = mongoc_read_prefs_get_tags(self.readPref) else {
+            fatalError("Failed to retrieve read preference tags")
+        }
+        // we have to copy because libmongoc owns the pointer.
+        let wrapped = Document(copying: bson)
+
+        guard !wrapped.isEmpty else {
+            return nil
+        }
+
+        // swiftlint:disable:next force_unwrapping
+        return wrapped.values.map { $0.documentValue! } // libmongoc will always give us an array of documents
     }
 
-    /// Cleans up internal state.
+    fileprivate var maxStalenessSeconds: Int? {
+        let maxStaleness = mongoc_read_prefs_get_max_staleness_seconds(self.readPref)
+        return maxStaleness == MONGOC_NO_MAX_STALENESS ? nil : Int(exactly: maxStaleness)
+    }
+
     deinit {
-        guard let readPreference = self._readPreference else {
-            return
-        }
-        mongoc_read_prefs_destroy(readPreference)
-        self._readPreference = nil
-    }
-}
-
-/// An extension of `ReadPreference` to make it `Equatable`.
-extension ReadPreference: Equatable {
-    public static func == (lhs: ReadPreference, rhs: ReadPreference) -> Bool {
-        lhs.mode == rhs.mode && lhs.tagSets == rhs.tagSets &&
-            lhs.maxStalenessSeconds == rhs.maxStalenessSeconds
+        mongoc_read_prefs_destroy(readPref)
     }
 }

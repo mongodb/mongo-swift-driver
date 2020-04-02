@@ -30,9 +30,7 @@ extension MongoClient {
     internal func serverVersion() -> EventLoopFuture<ServerVersion> {
         self.db("admin").runCommand(
             ["buildInfo": 1],
-            options: RunCommandOptions(
-                readPreference: ReadPreference(.primary)
-            )
+            options: RunCommandOptions(readPreference: .primary)
         ).flatMapThrowing { reply in
             guard let versionString = reply["version"]?.stringValue else {
                 throw TestError(message: " reply missing version string: \(reply)")

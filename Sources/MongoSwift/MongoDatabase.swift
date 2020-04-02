@@ -491,7 +491,7 @@ public struct MongoDatabase {
 
         if self.readPreference != self._client.readPreference {
             // there is no concept of an empty read preference so we will always have a value here.
-            mongoc_database_set_read_prefs(db, self.readPreference._readPreference)
+            mongoc_database_set_read_prefs(db, self.readPreference.pointer)
         }
 
         return try body(db)

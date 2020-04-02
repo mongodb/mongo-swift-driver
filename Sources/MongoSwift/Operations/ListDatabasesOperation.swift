@@ -61,7 +61,7 @@ internal struct ListDatabasesOperation: Operation {
                 connection.clientHandle,
                 "admin",
                 cmd._bson,
-                readPref._readPreference,
+                readPref.pointer,
                 opts?._bson,
                 replyPtr,
                 &error
