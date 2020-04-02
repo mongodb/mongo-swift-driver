@@ -1,16 +1,16 @@
 # TLS/SSL and MongoSwift
 
-MongoSwift supports connecting to MongoDB over TLS/SSL. This guide covers the installation requirements and configuration options for enabling this functionality in MongoSwift. See the [server documentation](https://docs.mongodb.com/manual/tutorial/configure-ssl/) to configure MongoDB to use TLS/SSL.
+This guide covers the installation requirements and configuration options for connecting to MongoDB over TLS/SSL in the driver. See the [server documentation](https://docs.mongodb.com/manual/tutorial/configure-ssl/) to configure MongoDB to use TLS/SSL.
 
 ## Dependencies
 
-MongoSwift relies on the the TLS/SSL library installed on your system for making secure connections to the database. 
+The driver relies on the the TLS/SSL library installed on your system for making secure connections to the database. 
  - On macOS, the driver depends on SecureTransport, the native TLS library for macOS, so no additional installation is required.
  - On Linux, the driver depends on OpenSSL, which is usually bundled with your OS but may require specific installation. The driver also supports LibreSSL through the use of OpenSSL compatibility checks.
  
 ### Ensuring TLS 1.1+
 
-Industry best practices recommend, and some regulations require, the use of TLS 1.1 or newer. Though no application changes are required for MongoSwift to make use of the newest protocols, some operating systems or versions may not provide a TLS library version new enough to support them.
+Industry best practices recommend, and some regulations require, the use of TLS 1.1 or newer. Though no application changes are required for the driver to make use of the newest protocols, some operating systems or versions may not provide a TLS library version new enough to support them.
 
 #### ...on Linux
 
@@ -36,11 +36,11 @@ Alternatively, `tls=true` can be specified in the [MongoDB Connection String]() 
 ```swift
 let client = try MongoClient("mongodb://example.com/?tls=true", using: elg)
 ```
-**Note:** Specifying any `tls` prefixed option in the connection string or `ClientOptions` will cause MongoSwift to attempt to connect using TLS.
+**Note:** Specifying any `tls` prefixed option in the connection string or `ClientOptions` will cause the driver to attempt to connect using TLS.
 
 ## Specifying a CA File
 
-MongoSwift can be configured to use a specific set of CA certificates. This is most often used with “self-signed” server certificates. 
+The driver can be configured to use a specific set of CA certificates. This is most often used with “self-signed” server certificates. 
 
 A path to a file with either a single or bundle of certificate authorities to be considered trusted when making a TLS connection can be specified via the `tlsCAFile` option on `ClientOptions`:
 ```swift
@@ -54,7 +54,7 @@ let client = try MongoClient("mongodb://example.com/?tlsCAFile=/path/to/ca.pem",
 
 ## Specifying a Client Certificate or Private Key File
 
-MongoSwift can be configured to present the client certificate file or the client private key file via the `tlsCertificateKeyFile` option on `ClientOptions`:
+The driver can be configured to present the client certificate file or the client private key file via the `tlsCertificateKeyFile` option on `ClientOptions`:
 ```swift
 let client = try MongoClient("mongodb://example.com", using: elg, options: ClientOptions(tlsCertificateKeyFile: URL(string: "/path/to/cert.pem")))
 ```
