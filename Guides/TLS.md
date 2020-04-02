@@ -1,4 +1,4 @@
-# TLS/SSL and MongoSwift
+# Swift Driver TLS/SSL Guide
 
 This guide covers the installation requirements and configuration options for connecting to MongoDB over TLS/SSL in the driver. See the [server documentation](https://docs.mongodb.com/manual/tutorial/configure-ssl/) to configure MongoDB to use TLS/SSL.
 
