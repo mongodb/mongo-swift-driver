@@ -32,7 +32,7 @@ To require that connections to MongoDB made by the driver use TLS/SSL, simply sp
 let client = try MongoClient("mongodb://example.com", using: elg, options: ClientOptions(tls: true))
 ```
 
-Alternatively, `tls=true` can be specified in the [MongoDB Connection String]() passed to the initializer:
+Alternatively, `tls=true` can be specified in the [MongoDB Connection String](https://docs.mongodb.com/manual/reference/connection-string/) passed to the initializer:
 ```swift
 let client = try MongoClient("mongodb://example.com/?tls=true", using: elg)
 ```
@@ -47,7 +47,7 @@ A path to a file with either a single or bundle of certificate authorities to be
 let client = try MongoClient("mongodb://example.com", using: elg, options: ClientOptions(tlsCAFile: URL(string: "/path/to/ca.pem")))
 ```
 
-Alternatively, the path can be specified via the `tlsCAFile` option in the [MongoDB Connection String]() passed to the client's initializer:
+Alternatively, the path can be specified via the `tlsCAFile` option in the [MongoDB Connection String](https://docs.mongodb.com/manual/reference/connection-string/) passed to the client's initializer:
 ```swift
 let client = try MongoClient("mongodb://example.com/?tlsCAFile=/path/to/ca.pem", using: elg)
 ```
@@ -67,7 +67,7 @@ let client = try MongoClient(
 )
 ```
 
-Alternatively, these options can be set via the `tlsCertificateKeyFile` and `tlsCertificateKeyFilePassword` options in the [MongoDB Connection String]() passed into the initializer:
+Alternatively, these options can be set via the `tlsCertificateKeyFile` and `tlsCertificateKeyFilePassword` options in the [MongoDB Connection String](https://docs.mongodb.com/manual/reference/connection-string/) passed into the initializer:
 ```swift
 let client = try MongoClient(
     "mongodb://example.com/?tlsCertificateKeyFile=/path/to/cert.pem&tlsCertificateKeyFilePassword=<password>"
