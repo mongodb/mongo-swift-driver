@@ -36,7 +36,7 @@ Alternatively, `tls=true` can be specified in the [MongoDB Connection String](ht
 ```swift
 let client = try MongoClient("mongodb://example.com/?tls=true", using: elg)
 ```
-**Note:** Specifying any `tls` prefixed option in the connection string or `ClientOptions` will cause the driver to attempt to connect using TLS.
+**Note:** Specifying any `tls`-prefixed option in the connection string or `ClientOptions` will require all connections made by the driver to use TLS/SSL.
 
 ## Specifying a CA File
 
