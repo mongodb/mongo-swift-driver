@@ -27,7 +27,7 @@ macOS 10.13 (High Sierra) and newer support TLS 1.1+.
 
 ## Basic Configuration
 
-To connect to MongoDB over TLS/SSL, simply specify `tls: true` in the `ClientOptions` passed to a `MongoClient`'s initializer:
+To require that connections to MongoDB made by the driver use TLS/SSL, simply specify `tls: true` in the `ClientOptions` passed to a `MongoClient`'s initializer:
 ```swift
 let client = try MongoClient("mongodb://example.com", using: elg, options: ClientOptions(tls: true))
 ```
