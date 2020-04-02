@@ -60,7 +60,8 @@ public struct ReadPreference {
         self.mongocReadPreference.mode
     }
 
-    /// Optionally specified tag sets, indicating a member or members of a replica set to target.
+    /// Optionally specified ordered array of tag sets. If provided, a server will only be considered suitable if its
+    /// tags are a superset of at least one of the tag sets.
     /// - SeeAlso: https://docs.mongodb.com/manual/core/read-preference-tags/#replica-set-read-preference-tag-sets
     public var tagSets: [Document]? {
         self.mongocReadPreference.tagSets
@@ -78,13 +79,13 @@ public struct ReadPreference {
     /// A `ReadPreference` with mode `primary`. This is the default mode. With this mode, all operations read from the
     /// current replica set primary.
     public static let primary = ReadPreference(.primary)
-    /// A `ReadPreference` with mode `primaryPreferred`. With this mode, in most situations, operations read from the
-    /// primary but if it is unavailable, operations read from secondary members.
+    /// A `ReadPreference` with mode `primaryPreferred`. With this mode, in most situations operations read from the
+    /// primary, but if it is unavailable, operations read from secondary members.
     public static let primaryPreferred = ReadPreference(.primaryPreferred)
     /// A `ReadPreference` with mode `secondary`. With this mode, all operations read from secondary members of the
     /// replica set.
     public static let secondary = ReadPreference(.secondary)
-    /// A `ReadPreference` with mode `secondaryPreferred`. With this mode, in most situations, operations read from
+    /// A `ReadPreference` with mode `secondaryPreferred`. With this mode, in most situations operations read from
     /// secondary members, but if no secondary members are available, operations read from the primary.
     public static let secondaryPreferred = ReadPreference(.secondaryPreferred)
     /// A `ReadPreference` with mode `nearest`. With this mode, operations read from the member of the replica set with
@@ -92,11 +93,12 @@ public struct ReadPreference {
     public static let nearest = ReadPreference(.nearest)
 
     /**
-     * Initializes a new `ReadPreference` with the mode `primaryPreferred`. With this mode, in most situations,
-     * operations read from the primary but if it is unavailable, operations read from secondary members.
+     * Initializes a new `ReadPreference` with the mode `primaryPreferred`. With this mode, in most situations
+     * operations read from the primary, but if it is unavailable, operations read from secondary members.
      *
      * - Parameters:
-     *   - tagSets: an optional `[Document]`, indicating a member or members of a replica set to target.
+     *   - tagSets: an optional `[Document]`, containing an ordered array of tag sets. If provided, a server will only
+     *     be considered suitable if its tags are a superset of at least one of the tag sets.
      *   - maxStalenessSeconds: an optional `Int`, indicating a maximum replication lag, or "staleness", for reads from
      *     secondaries.
      *
@@ -120,7 +122,8 @@ public struct ReadPreference {
      * secondary members of the replica set.
      *
      * - Parameters:
-     *   - tagSets: an optional `[Document]`, indicating a member or members of a replica set to target.
+     *   - tagSets: an optional `[Document]`, containing an ordered array of tag sets. If provided, a server will only
+     *     be considered suitable if its tags are a superset of at least one of the tag sets.
      *   - maxStalenessSeconds: an optional `Int`, indicating a maximum replication lag, or "staleness", for reads from
      *     secondaries.
      *
@@ -145,7 +148,8 @@ public struct ReadPreference {
      * primary.
      *
      * - Parameters:
-     *   - tagSets: an optional `[Document]`, indicating a member or members of a replica set to target.
+     *   - tagSets: an optional `[Document]`, containing an ordered array of tag sets. If provided, a server will only
+     *     be considered suitable if its tags are a superset of at least one of the tag sets.
      *   - maxStalenessSeconds: an optional `Int`, indicating a maximum replication lag, or "staleness", for reads from
      *     secondaries.
      *
@@ -169,7 +173,8 @@ public struct ReadPreference {
      * the replica set with the least network latency, irrespective of the member’s type.
      *
      * - Parameters:
-     *   - tagSets: an optional `[Document]`, indicating a member or members of a replica set to target.
+     *   - tagSets: an optional `[Document]`, containing an ordered array of tag sets. If provided, a server will only
+     *     be considered suitable if its tags are a superset of at least one of the tag sets.
      *   - maxStalenessSeconds: an optional `Int`, indicating a maximum replication lag, or "staleness", for reads from
      *     secondaries.
      *
