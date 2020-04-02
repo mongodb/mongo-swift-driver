@@ -123,8 +123,8 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         try self.createFixtures(4)
 
         let requests: [WriteModel<Document>] = [
-            .updateOne(filter: ["_id": 2], update: ["$inc": ["x": 1]], options: nil),
-            .updateMany(filter: ["_id": ["$gt": 2]], update: ["$inc": ["x": -1]], options: nil),
+            .updateOne(filter: ["_id": 2], update: ["$inc": ["x": 1]]),
+            .updateMany(filter: ["_id": ["$gt": 2]], update: ["$inc": ["x": -1]]),
             .updateOne(
                 filter: ["_id": 5],
                 update: ["$set": ["x": 55]],
@@ -135,7 +135,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
                 update: ["$set": ["x": 66]],
                 options: UpdateModelOptions(upsert: true)
             ),
-            .updateMany(filter: ["x": ["$gt": 50]], update: ["$inc": ["x": 1]], options: nil)
+            .updateMany(filter: ["x": ["$gt": 50]], update: ["$inc": ["x": 1]])
         ]
 
         let result: BulkWriteResult! = try self.coll.bulkWrite(requests)
@@ -160,8 +160,8 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         try self.createFixtures(4)
 
         let requests: [WriteModel<Document>] = [
-            .deleteOne(["_id": 1], options: nil),
-            .deleteMany(["_id": ["$gt": 2]], options: nil)
+            .deleteOne(["_id": 1]),
+            .deleteMany(["_id": ["$gt": 2]])
         ]
 
         let result: BulkWriteResult! = try self.coll.bulkWrite(requests)
@@ -182,9 +182,9 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
                 update: ["$inc": ["x": 1]],
                 options: nil
             ),
-            .updateMany(filter: ["_id": ["$gt": 1]], update: ["$inc": ["x": 1]], options: nil),
+            .updateMany(filter: ["_id": ["$gt": 1]], update: ["$inc": ["x": 1]]),
             .insertOne(["_id": 4]),
-            .deleteMany(["x": ["$nin": [24, 34]]], options: nil),
+            .deleteMany(["x": ["$nin": [24, 34]]]),
             .replaceOne(
                 filter: ["_id": 4],
                 replacement: ["_id": 4, "x": 44],
