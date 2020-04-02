@@ -49,7 +49,7 @@ let client = try MongoClient("mongodb://example.com", using: elg, options: Clien
 
 Alternatively, the path can be specified via the `tlsCAFile` option in the [MongoDB Connection String](https://docs.mongodb.com/manual/reference/connection-string/) passed to the client's initializer:
 ```swift
-let caFile = "/path/to/ca.pem".addingPercentEncoding(withAllowedCharacters: .urlFragmentAllowed)!
+let caFile = "/path/to/ca.pem".addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
 let client = try MongoClient("mongodb://example.com/?tlsCAFile=\(caFile)", using: elg)
 ```
 
@@ -70,8 +70,8 @@ let client = try MongoClient(
 
 Alternatively, these options can be set via the `tlsCertificateKeyFile` and `tlsCertificateKeyFilePassword` options in the [MongoDB Connection String](https://docs.mongodb.com/manual/reference/connection-string/) passed into the initializer:
 ```swift
-let certificatePath = "/path/to/cert.pem".addingPercentEncoding(withAllowedCharacters: .urlFragmentAllowed)!
-let password = "not a secure password".addingPercentEncoding(withAllowedCharacters: .urlFragmentAllowed)!
+let certificatePath = "/path/to/cert.pem".addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
+let password = "not a secure password".addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
 let client = try MongoClient(
     "mongodb://example.com/?tlsCertificateKeyFile=\(certificatePath)&tlsCertificateKeyFilePassword=\(password)"
     using: elg
