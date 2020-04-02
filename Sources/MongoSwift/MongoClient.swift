@@ -39,7 +39,7 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
      */
     public var threadPoolSize: Int?
 
-    /// Whether or not to require TLS for connections to the server
+    /// Whether or not to require TLS for connections to the server. By default this is set to false.
     ///
     /// - Note: Specifying any other "tls"-prefixed option will require TLS for connections to the server.
     public var tls: Bool?
