@@ -16,40 +16,6 @@ internal struct Credential: Decodable, Equatable {
     private enum CodingKeys: String, CodingKey {
         case username, password, source, mechanism, mechanismProperties = "mechanism_properties"
     }
-
-    // TODO: SWIFT-636: remove this initializer and the one below it.
-    internal init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.username = try container.decodeIfPresent(String.self, forKey: .username)
-        self.password = try container.decodeIfPresent(String.self, forKey: .password)
-        self.source = try container.decodeIfPresent(String.self, forKey: .source)
-        self.mechanism = try container.decodeIfPresent(AuthMechanism.self, forKey: .mechanism)
-
-        // libmongoc does not return the service name if it's the default, but it is contained in the spec test files,
-        // so filter it out here if it's present.
-        let properties = try container.decodeIfPresent(Document.self, forKey: .mechanismProperties)
-        let filteredProperties = properties?.filter { !($0.0 == "SERVICE_NAME" && $0.1 == "mongodb") }
-        // if SERVICE_NAME was the only key then don't return an empty document.
-        if filteredProperties?.isEmpty == true {
-            self.mechanismProperties = nil
-        } else {
-            self.mechanismProperties = filteredProperties
-        }
-    }
-
-    internal init(
-        username: String?,
-        password: String?,
-        source: String?,
-        mechanism: AuthMechanism?,
-        mechanismProperties: Document?
-    ) {
-        self.mechanism = mechanism
-        self.mechanismProperties = mechanismProperties
-        self.password = password
-        self.source = source
-        self.username = username
-    }
 }
 
 /// Possible authentication mechanisms.
