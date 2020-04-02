@@ -3,7 +3,7 @@
 set -eou pipefail
 
 PWD=`pwd`
-LIBMONGOC_VERSION=1.15.3
+LIBMONGOC_VERSION=1.16.2
 TARBALL_URL=https://github.com/mongodb/mongo-c-driver/releases/download/$LIBMONGOC_VERSION/mongo-c-driver-$LIBMONGOC_VERSION.tar.gz
 TARBALL_NAME=`basename $TARBALL_URL`
 TARBALL_DIR=`basename -s .tar.gz $TARBALL_NAME`
@@ -89,15 +89,25 @@ cp $ETC_DIR/generated_headers/* $CLIBMONGOC_INCLUDE_PATH
 # codebase itself
 echo "RENAMING header files"
 (
+  # NOTE: the below sed syntax uses addresses to include or ingore lines including the word `private`
   find $CLIBMONGOC_PATH -name "*.[ch]" | \
     xargs $sed -i -e 's+include "common+include "CLibMongoC_common+' \
+                  \
+                  -e '/private/! s+include "bson.h"+include "CLibMongoC_bson.h"+' \
+                  -e '/private/! s+include "bcon.h"+include "CLibMongoC_bcon.h"+' \
+                  -e '/private/! s+include "bson-+include "CLibMongoC_bson-+' \
+                  -e '/private/! s+include <bson-+include <CLibMongoC_bson-+' \
                   -e '/private/! s+include "bson/+include "CLibMongoC_+' \
                   -e '/private/! s+include <bson/+include <CLibMongoC_+' \
                   -e '/private/ s+include "bson/+include "+' \
-                  -e '/private/! s+include "mongoc/+include "CLibMongoC_+' \
-                  -e '/private/! s+include <mongoc/+include <CLibMongoC_+' \
+                  \
+                  -e '/private/! s+include "mongoc.h"+include "CLibMongoC_mongoc.h"+' \
+                  -e '/private\|defs/! s+include "mongoc-+include "CLibMongoC_mongoc-+' \
+                  -e '/private/! s+include <mongoc-+include <CLibMongoC_mongoc-+' \
                   -e '/private/ s+include "mongoc/+include "+' \
-                  -e 's+CLibMongoC_utlist.h+utlist.h+'
+                  \
+                  -e 's+CLibMongoC_utlist.h+utlist.h+' \
+                  -e 's+PRId64+\"lld\"+'
 
   # fix jsonsl references
   $sed -i -e 's+include "jsonsl/+include "+' $BSON_PATH/bson-json.c

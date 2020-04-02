@@ -20,7 +20,7 @@
 #ifndef MONGOC_HANDSHAKE_PRIVATE_H
 #define MONGOC_HANDSHAKE_PRIVATE_H
 
-#include <CLibMongoC_mongoc.h>
+#include "CLibMongoC_mongoc.h"
 
 BSON_BEGIN_DECLS
 
@@ -73,6 +73,7 @@ typedef enum {
    MONGOC_MD_FLAG_ENABLE_SHM_COUNTERS,
    MONGOC_MD_FLAG_TRACE,
    MONGOC_MD_FLAG_ENABLE_ICU,
+   MONGOC_MD_FLAG_ENABLE_CLIENT_SIDE_ENCRYPTION,
    /* Add additional config flags here, above LAST_MONGOC_MD_FLAG. */
    LAST_MONGOC_MD_FLAG
 } mongoc_handshake_config_flag_bit_t;

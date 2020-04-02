@@ -340,9 +340,15 @@ _bson_append_va (bson_t *bson,              /* IN */
 
    do {
       n_pairs--;
-      memcpy (buf, data, data_len);
-      bson->len += data_len;
-      buf += data_len;
+      /* data may be NULL if data_len is 0. memcpy is not safe to call with NULL. */
+      if (BSON_LIKELY (data_len != 0 && data != NULL)) {
+         memcpy (buf, data, data_len);
+         bson->len += data_len;
+         buf += data_len;
+      } else if (BSON_UNLIKELY (data_len != 0 && data == NULL)) {
+         /* error, user appending NULL with non-zero length. */
+         return false;
+      }
 
       if (n_pairs) {
          data_len = va_arg (args, uint32_t);
@@ -816,7 +822,6 @@ bson_append_binary (bson_t *bson,           /* IN */
 
    BSON_ASSERT (bson);
    BSON_ASSERT (key);
-   BSON_ASSERT (binary);
 
    if (key_length < 0) {
       key_length = (int) strlen (key);
@@ -2580,9 +2585,9 @@ _bson_as_json_visit_int64 (const bson_iter_t *iter,
 
    if (state->mode == BSON_JSON_MODE_CANONICAL) {
       bson_string_append_printf (
-         state->str, "{ \"$numberLong\" : \"%" PRId64 "\"}", v_int64);
+         state->str, "{ \"$numberLong\" : \"%" "lld" "\"}", v_int64);
    } else {
-      bson_string_append_printf (state->str, "%" PRId64, v_int64);
+      bson_string_append_printf (state->str, "%" "lld", v_int64);
    }
 
    return false;
@@ -2760,7 +2765,7 @@ _bson_as_json_visit_date_time (const bson_iter_t *iter,
    if (state->mode == BSON_JSON_MODE_CANONICAL ||
        (state->mode == BSON_JSON_MODE_RELAXED && msec_since_epoch < 0)) {
       bson_string_append (state->str, "{ \"$date\" : { \"$numberLong\" : \"");
-      bson_string_append_printf (state->str, "%" PRId64, msec_since_epoch);
+      bson_string_append_printf (state->str, "%" "lld", msec_since_epoch);
       bson_string_append (state->str, "\" } }");
    } else if (state->mode == BSON_JSON_MODE_RELAXED) {
       bson_string_append (state->str, "{ \"$date\" : \"");
@@ -2768,7 +2773,7 @@ _bson_as_json_visit_date_time (const bson_iter_t *iter,
       bson_string_append (state->str, "\" }");
    } else {
       bson_string_append (state->str, "{ \"$date\" : ");
-      bson_string_append_printf (state->str, "%" PRId64, msec_since_epoch);
+      bson_string_append_printf (state->str, "%" "lld", msec_since_epoch);
       bson_string_append (state->str, " }");
    }
 

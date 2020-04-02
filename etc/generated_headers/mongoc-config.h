@@ -46,6 +46,11 @@
 #  define MONGOC_ENABLE_SSL_OPENSSL 1
 #  define MONGOC_HAVE_ASN1_STRING_GET0_DATA 1
 #endif
+
+#if MONGOC_ENABLE_SSL_OPENSSL && OPENSSL_VERSION_NUMBER < 0x10100000L
+#  define MONGOC_HAVE_ASN1_STRING_GET0_DATA 0
+#endif
+
 /*
  * MONGOC_ENABLE_SSL_SECURE_CHANNEL is set from configure to determine if we are
  * compiled with Native SSL support on Windows
@@ -378,7 +383,7 @@
  * Set if we have Client Side Encryption support.
  */
 
-#define MONGOC_ENABLE_CLIENT_SIDE_ENCRYPTION 1
+#define MONGOC_ENABLE_CLIENT_SIDE_ENCRYPTION 0
 
 #if MONGOC_ENABLE_CLIENT_SIDE_ENCRYPTION != 1
 #  undef MONGOC_ENABLE_CLIENT_SIDE_ENCRYPTION

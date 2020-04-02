@@ -33,9 +33,11 @@
 #ifdef MONGOC_ENABLE_SSL
 #include "CLibMongoC_mongoc-ssl.h"
 #endif
+
 #include "CLibMongoC_mongoc-stream.h"
 #include "mongoc-topology-private.h"
 #include "CLibMongoC_mongoc-write-concern.h"
+#include "mongoc-crypt-private.h"
 
 BSON_BEGIN_DECLS
 
@@ -67,8 +69,14 @@ BSON_BEGIN_DECLS
 #define WIRE_VERSION_RETRY_WRITES 6
 /* version corresponding to server 4.0 release */
 #define WIRE_VERSION_4_0 7
+/* first version to support hint for "update" command */
+#define WIRE_VERSION_UPDATE_HINT 8
 /* version corresponding to server 4.2 release */
 #define WIRE_VERSION_4_2 8
+/* version corresponding to client side field level encryption support. */
+#define WIRE_VERSION_CSE 8
+
+struct _mongoc_collection_t;
 
 struct _mongoc_client_t {
    mongoc_uri_t *uri;
@@ -205,6 +213,11 @@ _mongoc_client_push_server_session (mongoc_client_t *client,
                                     mongoc_server_session_t *server_session);
 void
 _mongoc_client_end_sessions (mongoc_client_t *client);
+
+mongoc_stream_t *
+mongoc_client_connect_tcp (int32_t connecttimeoutms,
+                           const mongoc_host_list_t *host,
+                           bson_error_t *error);
 BSON_END_DECLS
 
 #endif /* MONGOC_CLIENT_PRIVATE_H */

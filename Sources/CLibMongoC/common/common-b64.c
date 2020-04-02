@@ -287,7 +287,7 @@ static MONGOC_COMMON_ONCE_FUN (bson_b64_initialize_rmap)
    for (i = 1; i < 256; ++i) {
       ch = (unsigned char) i;
       /* Whitespaces */
-      if (isspace (ch))
+      if (bson_isspace (ch))
          mongoc_b64rmap[i] = mongoc_b64rmap_space;
       /* Padding: stop parsing */
       else if (ch == Pad64)
@@ -307,8 +307,8 @@ static MONGOC_COMMON_ONCE_FUN (bson_b64_initialize_rmap)
 static int
 mongoc_b64_pton_do (char const *src, uint8_t *target, size_t targsize)
 {
-   int tarindex, state, ch;
-   uint8_t ofs;
+   int tarindex, state;
+   uint8_t ch, ofs;
 
    state = 0;
    tarindex = 0;
@@ -423,8 +423,8 @@ mongoc_b64_pton_do (char const *src, uint8_t *target, size_t targsize)
 static int
 mongoc_b64_pton_len (char const *src)
 {
-   int tarindex, state, ch;
-   uint8_t ofs;
+   int tarindex, state;
+   uint8_t ch, ofs;
 
    state = 0;
    tarindex = 0;

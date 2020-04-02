@@ -380,7 +380,7 @@ _mongoc_gridfs_bucket_read_chunk (mongoc_gridfs_bucket_file_t *file)
       bson_set_error (&file->err,
                       MONGOC_ERROR_GRIDFS,
                       MONGOC_ERROR_GRIDFS_CORRUPT,
-                      "Chunk %d expected to have size %" PRId64
+                      "Chunk %d expected to have size %" "lld"
                       " but is size %d.",
                       file->curr_chunk,
                       expected_size,

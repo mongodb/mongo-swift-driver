@@ -152,7 +152,7 @@ _mongoc_convert_int64_positive (mongoc_client_t *client,
    i = bson_iter_as_int64 (iter);
    if (i <= 0) {
       CONVERSION_ERR ("Invalid field \"%s\" in opts, should be greater than 0,"
-                      " not %" PRId64,
+                      " not %" "lld",
                       bson_iter_key (iter),
                       i);
    }
@@ -175,7 +175,7 @@ _mongoc_convert_int32_t (mongoc_client_t *client,
 
    i = bson_iter_as_int64 (iter);
    if (i > INT32_MAX || i < INT32_MIN) {
-      CONVERSION_ERR ("Invalid field \"%s\" in opts: %" PRId64
+      CONVERSION_ERR ("Invalid field \"%s\" in opts: %" "lld"
                       " out of range for int32",
                       bson_iter_key (iter),
                       i);
@@ -347,4 +347,18 @@ _mongoc_convert_read_concern (mongoc_client_t *client,
       return false;
    }
    return true;
+}
+
+bool
+_mongoc_convert_hint (mongoc_client_t *client,
+                      const bson_iter_t *iter,
+                      bson_value_t *value,
+                      bson_error_t *error)
+{
+   if (BSON_ITER_HOLDS_UTF8 (iter) || BSON_ITER_HOLDS_DOCUMENT (iter)) {
+      bson_value_copy (bson_iter_value ((bson_iter_t *) iter), value);
+      return true;
+   }
+
+   CONVERSION_ERR ("The hint option must be a string or document");
 }

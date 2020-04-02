@@ -415,6 +415,16 @@ mongoc_topology_destroy (mongoc_topology_t *topology)
       return;
    }
 
+#ifdef MONGOC_ENABLE_CLIENT_SIDE_ENCRYPTION
+   bson_free (topology->keyvault_db);
+   bson_free (topology->keyvault_coll);
+   mongoc_client_destroy (topology->mongocryptd_client);
+   mongoc_client_pool_destroy (topology->mongocryptd_client_pool);
+   _mongoc_crypt_destroy (topology->crypt);
+   bson_destroy (topology->mongocryptd_spawn_args);
+   bson_free (topology->mongocryptd_spawn_path);
+#endif
+
    _mongoc_topology_background_thread_stop (topology);
    _mongoc_topology_description_monitor_closed (&topology->description);
 
@@ -460,6 +470,7 @@ _mongoc_topology_clear_session_pool (mongoc_topology_t *topology)
    {
       _mongoc_server_session_destroy (ss);
    }
+   topology->session_pool = NULL;
 }
 
 
@@ -1549,7 +1560,10 @@ _mongoc_topology_push_server_session (mongoc_topology_t *topology,
       }
    }
 
-   if (_mongoc_server_session_timed_out (server_session, timeout)) {
+   /* If session is expiring or "dirty" (a network error occurred on it), do not
+    * return it to the pool. */
+   if (_mongoc_server_session_timed_out (server_session, timeout) ||
+       server_session->dirty) {
       _mongoc_server_session_destroy (server_session);
    } else {
       /* silences clang scan-build */
@@ -1635,4 +1649,11 @@ _mongoc_topology_get_ismaster (mongoc_topology_t *topology)
    cmd = _mongoc_topology_scanner_get_ismaster (topology->scanner);
    bson_mutex_unlock (&topology->mutex);
    return cmd;
+}
+
+void
+_mongoc_topology_bypass_cooldown (mongoc_topology_t *topology)
+{
+   BSON_ASSERT (topology->single_threaded);
+   topology->scanner->bypass_cooldown = true;
 }

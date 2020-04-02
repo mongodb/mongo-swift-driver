@@ -28,6 +28,7 @@
 #include "CLibMongoC_mongoc-change-stream.h"
 #include "CLibMongoC_mongoc-client.h"
 #include "CLibMongoC_mongoc-client-pool.h"
+#include "CLibMongoC_mongoc-client-side-encryption.h"
 #include "CLibMongoC_mongoc-collection.h"
 #include "CLibMongoC_mongoc-config.h"
 #include "CLibMongoC_mongoc-cursor.h"

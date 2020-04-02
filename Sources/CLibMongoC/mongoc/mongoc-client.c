@@ -36,6 +36,7 @@
 #endif
 
 #include "mongoc-client-private.h"
+#include "mongoc-client-side-encryption-private.h"
 #include "mongoc-collection-private.h"
 #include "mongoc-counters-private.h"
 #include "mongoc-database-private.h"
@@ -411,8 +412,9 @@ _mongoc_get_rr_search (const char *service,
 #ifdef MONGOC_HAVE_RES_NSEARCH
    struct __res_state state = {0};
 #endif
-   int size;
-   unsigned char search_buf[1024];
+   int size = 0;
+   unsigned char *search_buf = NULL;
+   size_t buffer_size = 1024;
    ns_msg ns_answer;
    int n;
    int i;
@@ -439,21 +441,35 @@ _mongoc_get_rr_search (const char *service,
       callback = txt_callback;
    }
 
+   do {
+      if (search_buf) {
+         bson_free (search_buf);
+
+         /* increase buffer size by the previous response size. This ensures
+          * that even if a subsequent response is larger, we'll still be able
+          * to fit it in the response buffer */
+         buffer_size = buffer_size + size;
+      }
+
+      search_buf = (unsigned char *) bson_malloc (buffer_size);
+      BSON_ASSERT (search_buf);
+
 #ifdef MONGOC_HAVE_RES_NSEARCH
-   /* thread-safe */
-   res_ninit (&state);
-   size = res_nsearch (
-      &state, service, ns_c_in, nst, search_buf, sizeof (search_buf));
+      /* thread-safe */
+      res_ninit (&state);
+      size =
+         res_nsearch (&state, service, ns_c_in, nst, search_buf, buffer_size);
 #elif defined(MONGOC_HAVE_RES_SEARCH)
-   size = res_search (service, ns_c_in, nst, search_buf, sizeof (search_buf));
+      size = res_search (service, ns_c_in, nst, search_buf, buffer_size);
 #endif
 
-   if (size < 0) {
-      DNS_ERROR ("Failed to look up %s record \"%s\": %s",
-                 rr_type_name,
-                 service,
-                 strerror (h_errno));
-   }
+      if (size < 0) {
+         DNS_ERROR ("Failed to look up %s record \"%s\": %s",
+                    rr_type_name,
+                    service,
+                    strerror (h_errno));
+      }
+   } while (size > buffer_size);
 
    if (ns_initparse (search_buf, size, &ns_answer)) {
       DNS_ERROR ("Invalid %s answer for \"%s\"", rr_type_name, service);
@@ -503,6 +519,8 @@ _mongoc_get_rr_search (const char *service,
    dns_success = true;
 
 done:
+
+   bson_free (search_buf);
 
 #ifdef MONGOC_HAVE_RES_NDESTROY
    /* defined on BSD/Darwin, and only if MONGOC_HAVE_RES_NSEARCH is defined */
@@ -574,28 +592,22 @@ _mongoc_client_get_rr (const char *service,
  *--------------------------------------------------------------------------
  */
 
-static mongoc_stream_t *
-mongoc_client_connect_tcp (const mongoc_uri_t *uri,
+mongoc_stream_t *
+mongoc_client_connect_tcp (int32_t connecttimeoutms,
                            const mongoc_host_list_t *host,
                            bson_error_t *error)
 {
    mongoc_socket_t *sock = NULL;
    struct addrinfo hints;
    struct addrinfo *result, *rp;
-   int32_t connecttimeoutms;
    int64_t expire_at;
    char portstr[8];
    int s;
 
    ENTRY;
 
-   BSON_ASSERT (uri);
-   BSON_ASSERT (host);
-
-   connecttimeoutms = mongoc_uri_get_option_as_int32 (
-      uri, MONGOC_URI_CONNECTTIMEOUTMS, MONGOC_DEFAULT_CONNECTTIMEOUTMS);
-
    BSON_ASSERT (connecttimeoutms);
+   BSON_ASSERT (host);
 
    bson_snprintf (portstr, sizeof portstr, "%hu", host->port);
 
@@ -677,9 +689,7 @@ mongoc_client_connect_tcp (const mongoc_uri_t *uri,
  */
 
 static mongoc_stream_t *
-mongoc_client_connect_unix (const mongoc_uri_t *uri,
-                            const mongoc_host_list_t *host,
-                            bson_error_t *error)
+mongoc_client_connect_unix (const mongoc_host_list_t *host, bson_error_t *error)
 {
 #ifdef _WIN32
    ENTRY;
@@ -695,7 +705,6 @@ mongoc_client_connect_unix (const mongoc_uri_t *uri,
 
    ENTRY;
 
-   BSON_ASSERT (uri);
    BSON_ASSERT (host);
 
    memset (&saddr, 0, sizeof saddr);
@@ -756,10 +765,10 @@ mongoc_client_default_stream_initiator (const mongoc_uri_t *uri,
                                         bson_error_t *error)
 {
    mongoc_stream_t *base_stream = NULL;
+   int32_t connecttimeoutms;
 #ifdef MONGOC_ENABLE_SSL
    mongoc_client_t *client = (mongoc_client_t *) user_data;
    const char *mechanism;
-   int32_t connecttimeoutms;
 #endif
 
    BSON_ASSERT (uri);
@@ -775,6 +784,8 @@ mongoc_client_default_stream_initiator (const mongoc_uri_t *uri,
    }
 #endif
 
+   connecttimeoutms = mongoc_uri_get_option_as_int32 (
+      uri, MONGOC_URI_CONNECTTIMEOUTMS, MONGOC_DEFAULT_CONNECTTIMEOUTMS);
 
    switch (host->family) {
    case AF_UNSPEC:
@@ -782,10 +793,10 @@ mongoc_client_default_stream_initiator (const mongoc_uri_t *uri,
    case AF_INET6:
 #endif
    case AF_INET:
-      base_stream = mongoc_client_connect_tcp (uri, host, error);
+      base_stream = mongoc_client_connect_tcp (connecttimeoutms, host, error);
       break;
    case AF_UNIX:
-      base_stream = mongoc_client_connect_unix (uri, host, error);
+      base_stream = mongoc_client_connect_unix (host, error);
       break;
    default:
       bson_set_error (error,
@@ -815,9 +826,6 @@ mongoc_client_default_stream_initiator (const mongoc_uri_t *uri,
                             "Failed initialize TLS state.");
             return NULL;
          }
-
-         connecttimeoutms = mongoc_uri_get_option_as_int32 (
-            uri, MONGOC_URI_CONNECTTIMEOUTMS, MONGOC_DEFAULT_CONNECTTIMEOUTMS);
 
          if (!mongoc_stream_tls_handshake_block (
                 base_stream, host->host, connecttimeoutms, error)) {
@@ -1643,6 +1651,11 @@ retry:
       mongoc_server_stream_cleanup (retry_server_stream);
    }
 
+   if (ret && error) {
+      /* if a retry succeeded, clear the initial error */
+      memset (error, 0, sizeof (bson_error_t));
+   }
+
    RETURN (ret);
 }
 
@@ -1706,6 +1719,11 @@ retry:
 
    if (retry_server_stream) {
       mongoc_server_stream_cleanup (retry_server_stream);
+   }
+
+   if (ret && error) {
+      /* if a retry succeeded, clear the initial error */
+      memset (error, 0, sizeof (bson_error_t));
    }
 
    RETURN (ret);
@@ -2953,8 +2971,6 @@ mongoc_client_reset (mongoc_client_t *client)
 
    /* Server sessions are owned by us, so we clear the pool on reset. */
    _mongoc_topology_clear_session_pool (client->topology);
-
-   mongoc_cluster_disconnect (&(client->cluster));
 }
 
 mongoc_change_stream_t *
@@ -2963,4 +2979,20 @@ mongoc_client_watch (mongoc_client_t *client,
                      const bson_t *opts)
 {
    return _mongoc_change_stream_new_from_client (client, pipeline, opts);
+}
+
+bool
+mongoc_client_enable_auto_encryption (mongoc_client_t *client,
+                                      mongoc_auto_encryption_opts_t *opts,
+                                      bson_error_t *error)
+{
+   if (!client->topology->single_threaded) {
+      bson_set_error (error,
+                      MONGOC_ERROR_CLIENT,
+                      MONGOC_ERROR_CLIENT_INVALID_ENCRYPTION_ARG,
+                      "Cannot enable auto encryption on a pooled client, use "
+                      "mongoc_client_pool_enable_auto_encryption");
+      return false;
+   }
+   return _mongoc_cse_client_enable_auto_encryption (client, opts, error);
 }

@@ -15,12 +15,14 @@
  */
 
 
+
 #include "CLibMongoC_mongoc.h"
 #include "mongoc-apm-private.h"
 #include "mongoc-counters-private.h"
 #include "mongoc-client-pool-private.h"
 #include "CLibMongoC_mongoc-client-pool.h"
 #include "mongoc-client-private.h"
+#include "mongoc-client-side-encryption-private.h"
 #include "mongoc-queue-private.h"
 #include "mongoc-thread-private.h"
 #include "mongoc-topology-private.h"
@@ -456,4 +458,13 @@ mongoc_client_pool_set_appname (mongoc_client_pool_t *pool, const char *appname)
    bson_mutex_unlock (&pool->mutex);
 
    return ret;
+}
+
+bool
+mongoc_client_pool_enable_auto_encryption (mongoc_client_pool_t *pool,
+                                           mongoc_auto_encryption_opts_t *opts,
+                                           bson_error_t *error)
+{
+   return _mongoc_cse_client_pool_enable_auto_encryption (
+      pool->topology, opts, error);
 }

@@ -552,8 +552,8 @@ _mongoc_topology_description_validate_max_staleness (
       bson_set_error (error,
                       MONGOC_ERROR_COMMAND,
                       MONGOC_ERROR_COMMAND_INVALID_ARG,
-                      "maxStalenessSeconds is set to %" PRId64
-                      ", it must be at least heartbeatFrequencyMS (%" PRId64
+                      "maxStalenessSeconds is set to %" "lld"
+                      ", it must be at least heartbeatFrequencyMS (%" "lld"
                       ") + server's idle write period (%d seconds)",
                       max_staleness_seconds,
                       td->heartbeat_msec,
@@ -565,7 +565,7 @@ _mongoc_topology_description_validate_max_staleness (
       bson_set_error (error,
                       MONGOC_ERROR_COMMAND,
                       MONGOC_ERROR_COMMAND_INVALID_ARG,
-                      "maxStalenessSeconds is set to %" PRId64
+                      "maxStalenessSeconds is set to %" "lld"
                       ", it must be at least %d seconds",
                       max_staleness_seconds,
                       MONGOC_SMALLEST_MAX_STALENESS_SECONDS);
