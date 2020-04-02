@@ -806,6 +806,19 @@ mongoc_cmd_parts_assemble (mongoc_cmd_parts_t *parts,
    server_type = server_stream->sd->type;
    cs = parts->prohibit_lsid ? NULL : parts->assembled.session;
 
+   /* Assembling the command depends on the type of server. If the server has
+    * been invalidated, error. */
+   if (server_type == MONGOC_SERVER_UNKNOWN) {
+      if (error) {
+         bson_set_error (error,
+                         MONGOC_ERROR_COMMAND,
+                         MONGOC_ERROR_COMMAND_INVALID_ARG,
+                         "Cannot assemble command for invalidated server: %s",
+                         server_stream->sd->error.message);
+      }
+      RETURN (false);
+   }
+
    /* must not be assembled already */
    BSON_ASSERT (!parts->assembled.command);
    BSON_ASSERT (bson_empty (&parts->assembled_body));
@@ -846,9 +859,8 @@ mongoc_cmd_parts_assemble (mongoc_cmd_parts_t *parts,
          BSON_APPEND_UTF8 (&parts->extra, "$db", parts->assembled.db_name);
       }
 
-      if (_mongoc_client_session_in_txn (cs)) {
-         if (!IS_PREF_PRIMARY (cs->txn.opts.read_prefs) &&
-             !parts->is_write_command) {
+      if (cs && _mongoc_client_session_in_txn (cs)) {
+         if (!IS_PREF_PRIMARY (cs->txn.opts.read_prefs) && !parts->is_write_command) {
             bson_set_error (error,
                             MONGOC_ERROR_TRANSACTION,
                             MONGOC_ERROR_TRANSACTION_INVALID_STATE,
@@ -1017,4 +1029,61 @@ mongoc_cmd_is_compressible (mongoc_cmd_t *cmd)
           !!strcasecmp (cmd->command_name, "saslcontinue") &&
           !!strcasecmp (cmd->command_name, "createuser") &&
           !!strcasecmp (cmd->command_name, "updateuser");
+}
+
+/*--------------------------------------------------------------------------
+ *
+ * _mongoc_cmd_append_payload_as_array --
+ *    Append a write command payload as an array in a BSON document.
+ *    Used by APM and Client-Side Encryption
+ *
+ * Arguments:
+ *    cmd The mongoc_cmd_t, which may contain a payload to be appended.
+ *    out A bson_t, which will be appended to if @cmd->payload is set.
+ *
+ * Pre-conditions:
+ *    - @out is initialized.
+ *    - cmd has a payload (i.e. is a write command).
+ *
+ * Post-conditions:
+ *    - If @cmd->payload is set, then @out is appended to with the payload
+ *      field's name ("documents" if insert, "updates" if update,
+ *      "deletes" if delete) an the payload as a BSON array.
+ *
+ *--------------------------------------------------------------------------
+ */
+void
+_mongoc_cmd_append_payload_as_array (const mongoc_cmd_t *cmd, bson_t *out)
+{
+   int32_t doc_len;
+   bson_t doc;
+   const uint8_t *pos;
+   const char *field_name;
+   bson_t bson;
+   char str[16];
+   const char *key;
+   uint32_t i;
+
+   BSON_ASSERT (cmd->payload && cmd->payload_size);
+
+   /* make array from outgoing OP_MSG payload type 1 on an "insert",
+    * "update", or "delete" command. */
+   field_name = _mongoc_get_documents_field_name (cmd->command_name);
+   BSON_ASSERT (field_name);
+   BSON_ASSERT (BSON_APPEND_ARRAY_BEGIN (out, field_name, &bson));
+
+   pos = cmd->payload;
+   i = 0;
+   while (pos < cmd->payload + cmd->payload_size) {
+      memcpy (&doc_len, pos, sizeof (doc_len));
+      doc_len = BSON_UINT32_FROM_LE (doc_len);
+      BSON_ASSERT (bson_init_static (&doc, pos, (size_t) doc_len));
+      bson_uint32_to_string (i, &key, str, sizeof (str));
+      BSON_APPEND_DOCUMENT (&bson, key, &doc);
+
+      pos += doc_len;
+      i++;
+   }
+
+   bson_append_array_end (out, &bson);
 }

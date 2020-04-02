@@ -48,6 +48,7 @@ struct _mongoc_bulk_write_flags_t {
    bool has_collation;
    bool has_multi_write;
    bool has_array_filters;
+   bool has_update_hint;
 };
 
 
@@ -58,11 +59,6 @@ typedef struct {
    mongoc_bulk_write_flags_t flags;
    int64_t operation_id;
    bson_t cmd_opts;
-   union {
-      struct {
-         bool allow_bulk_op_insert;
-      } insert;
-   } u;
 } mongoc_write_command_t;
 
 
@@ -85,6 +81,10 @@ typedef struct {
    bool must_stop; /* The stream may have been disconnected */
    bson_error_t error;
    uint32_t upsert_append_count;
+   /* If the command initially failed with a retryable write, and selected a new
+    * primary, this contains the server id of the newly selected primary. Only
+    * applies to OP_MSG. Is left at 0 if no retry occurs. */
+   uint32_t retry_server_id;
 } mongoc_write_result_t;
 
 
@@ -112,14 +112,12 @@ _mongoc_write_command_init_insert (mongoc_write_command_t *command,
                                    const bson_t *document,
                                    const bson_t *cmd_opts,
                                    mongoc_bulk_write_flags_t flags,
-                                   int64_t operation_id,
-                                   bool allow_bulk_op_insert);
+                                   int64_t operation_id);
 void
 _mongoc_write_command_init_insert_idl (mongoc_write_command_t *command,
                                        const bson_t *document,
                                        const bson_t *cmd_opts,
-                                       int64_t operation_id,
-                                       bool allow_bulk_op_insert);
+                                       int64_t operation_id);
 void
 _mongoc_write_command_init_delete (mongoc_write_command_t *command,
                                    const bson_t *selectors,

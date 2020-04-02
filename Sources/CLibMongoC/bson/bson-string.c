@@ -19,6 +19,7 @@
 #include <stdarg.h>
 
 #include "CLibMongoC_bson-compat.h"
+#include "CLibMongoC_bson-config.h"
 #include "CLibMongoC_bson-string.h"
 #include "CLibMongoC_bson-memory.h"
 #include "CLibMongoC_bson-utf8.h"
@@ -545,8 +546,12 @@ bson_strncpy (char *dst,       /* IN */
       return;
    }
 
+/* Prefer strncpy_s for MSVC, or strlcpy, which has additional checks and only
+ * adds one trailing \0 */
 #ifdef _MSC_VER
    strncpy_s (dst, size, src, _TRUNCATE);
+#elif defined(BSON_HAVE_STRLCPY)
+   strlcpy (dst, src, size);
 #else
    strncpy (dst, src, size);
    dst[size - 1] = '\0';
@@ -707,7 +712,7 @@ bson_ascii_strtoll (const char *s, char **e, int base)
 
    c = *tok;
 
-   while (isspace (c)) {
+   while (bson_isspace (c)) {
       c = *++tok;
    }
 
@@ -805,4 +810,11 @@ bson_strcasecmp (const char *s1, const char *s2)
 #else
    return strcasecmp (s1, s2);
 #endif
+}
+
+
+bool
+bson_isspace (int c)
+{
+   return c >= -1 && c <= 255 && isspace (c);
 }

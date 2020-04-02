@@ -21,14 +21,15 @@
 
 #include "CLibMongoC_bson.h"
 
-#include "CLibMongoC_mongoc-macros.h"
 #include "CLibMongoC_mongoc-apm.h"
+#include "CLibMongoC_mongoc-client-side-encryption.h"
 #include "CLibMongoC_mongoc-collection.h"
 #include "CLibMongoC_mongoc-config.h"
 #include "CLibMongoC_mongoc-cursor.h"
 #include "CLibMongoC_mongoc-database.h"
 #include "CLibMongoC_mongoc-gridfs.h"
 #include "CLibMongoC_mongoc-index.h"
+#include "CLibMongoC_mongoc-macros.h"
 #include "CLibMongoC_mongoc-read-prefs.h"
 #ifdef MONGOC_ENABLE_SSL
 #include "CLibMongoC_mongoc-ssl.h"
@@ -260,6 +261,12 @@ mongoc_client_watch (mongoc_client_t *client,
                      const bson_t *opts);
 MONGOC_EXPORT (void)
 mongoc_client_reset (mongoc_client_t *client);
+
+MONGOC_EXPORT (bool)
+mongoc_client_enable_auto_encryption (mongoc_client_t *client,
+                                      mongoc_auto_encryption_opts_t *opts,
+                                      bson_error_t *error);
+
 BSON_END_DECLS
 
 

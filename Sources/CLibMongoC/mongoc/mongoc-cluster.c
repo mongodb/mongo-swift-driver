@@ -21,6 +21,7 @@
 
 #include "mongoc-cluster-private.h"
 #include "mongoc-client-private.h"
+#include "mongoc-client-side-encryption-private.h"
 #include "mongoc-counters-private.h"
 #include "CLibMongoC_mongoc-config.h"
 #include "CLibMongoC_mongoc-error.h"
@@ -549,6 +550,9 @@ mongoc_cluster_run_command_monitored (mongoc_cluster_t *cluster,
    bson_error_t error_local;
    int32_t compressor_id;
    bson_iter_t iter;
+   bson_t encrypted = BSON_INITIALIZER;
+   bson_t decrypted = BSON_INITIALIZER;
+   mongoc_cmd_t encrypted_cmd;
 
    server_stream = cmd->server_stream;
    server_id = server_stream->sd->id;
@@ -560,6 +564,18 @@ mongoc_cluster_run_command_monitored (mongoc_cluster_t *cluster,
    }
    if (!error) {
       error = &error_local;
+   }
+
+   if (_mongoc_cse_is_enabled (cluster->client)) {
+      bson_destroy (&encrypted);
+
+      retval = _mongoc_cse_auto_encrypt (
+         cluster->client, cmd, &encrypted_cmd, &encrypted, error);
+      cmd = &encrypted_cmd;
+      if (!retval) {
+         bson_init (reply);
+         goto fail_no_events;
+      }
    }
 
    if (callbacks->started) {
@@ -576,6 +592,19 @@ mongoc_cluster_run_command_monitored (mongoc_cluster_t *cluster,
       retval = mongoc_cluster_run_command_opquery (
          cluster, cmd, server_stream->stream, compressor_id, reply, error);
    }
+
+   if (_mongoc_cse_is_enabled (cluster->client)) {
+      bson_destroy (&decrypted);
+      retval = _mongoc_cse_auto_decrypt (
+         cluster->client, cmd->db_name, reply, &decrypted, error);
+      bson_destroy (reply);
+      bson_steal (reply, &decrypted);
+      bson_init (&decrypted);
+      if (!retval) {
+         goto fail_no_events;
+      }
+   }
+
    if (retval && callbacks->succeeded) {
       bson_t fake_reply = BSON_INITIALIZER;
       /*
@@ -632,9 +661,13 @@ mongoc_cluster_run_command_monitored (mongoc_cluster_t *cluster,
       }
    }
 
+fail_no_events:
    if (reply == &reply_local) {
       bson_destroy (&reply_local);
    }
+
+   bson_destroy (&encrypted);
+   bson_destroy (&decrypted);
 
    _mongoc_topology_update_last_used (cluster->client->topology, server_id);
 
@@ -650,6 +683,7 @@ mongoc_cluster_run_command_monitored (mongoc_cluster_t *cluster,
  *       Internal function to run a command on a given stream.
  *       @error and @reply are optional out-pointers.
  *       The client's APM callbacks are not executed.
+ *       Automatic encryption/decryption is not performed.
  *
  * Returns:
  *       true if successful; otherwise false and @error is set.
@@ -761,7 +795,7 @@ _mongoc_stream_run_ismaster (mongoc_cluster_t *cluster,
                              bson_error_t *error)
 {
    const bson_t *command;
-   mongoc_cmd_parts_t parts;
+   mongoc_cmd_t ismaster_cmd;
    bson_t reply;
    int64_t start;
    int64_t rtt_msec;
@@ -793,11 +827,19 @@ _mongoc_stream_run_ismaster (mongoc_cluster_t *cluster,
       RETURN (NULL);
    }
 
-   mongoc_cmd_parts_init (
-      &parts, cluster->client, "admin", MONGOC_QUERY_SLAVE_OK, command);
-   parts.prohibit_lsid = true;
-   if (!mongoc_cluster_run_command_parts (
-          cluster, server_stream, &parts, &reply, error)) {
+   /* Always use OP_QUERY for the isMaster handshake, regardless of whether the
+    * last known ismaster indicates the server supports a newer wire protocol.
+    */
+   server_stream->sd->max_wire_version = WIRE_VERSION_MIN;
+   memset (&ismaster_cmd, 0, sizeof (ismaster_cmd));
+   ismaster_cmd.db_name = "admin";
+   ismaster_cmd.command = command;
+   ismaster_cmd.command_name = _mongoc_get_command_name (command);
+   ismaster_cmd.query_flags = MONGOC_QUERY_SLAVE_OK;
+   ismaster_cmd.server_stream = server_stream;
+
+   if (!mongoc_cluster_run_command_private (
+          cluster, &ismaster_cmd, &reply, error)) {
       if (negotiate_sasl_supported_mechs) {
          if (bson_iter_init_find (&iter, &reply, "ok") &&
              !bson_iter_as_bool (&iter)) {
@@ -1277,6 +1319,7 @@ _mongoc_cluster_auth_node_scram (mongoc_cluster_t *cluster,
    int conv_id = 0;
    bson_subtype_t btype;
    mongoc_server_stream_t *server_stream;
+   bool done = false;
 
    BSON_ASSERT (cluster);
    BSON_ASSERT (stream);
@@ -1300,6 +1343,10 @@ _mongoc_cluster_auth_node_scram (mongoc_cluster_t *cluster,
       if (!_mongoc_scram_step (
              &scram, buf, buflen, buf, sizeof buf, &buflen, error)) {
          goto failure;
+      }
+
+      if (done && (scram.step >= 3)) {
+         break;
       }
 
       bson_init (&cmd);
@@ -1347,8 +1394,20 @@ _mongoc_cluster_auth_node_scram (mongoc_cluster_t *cluster,
 
       if (bson_iter_init_find (&iter, &reply, "done") &&
           bson_iter_as_bool (&iter)) {
-         bson_destroy (&reply);
-         break;
+         if (scram.step < 2) {
+            /* Prior to step 2, we haven't even received server proof. */
+            bson_destroy (&reply);
+            bson_set_error (error,
+                            MONGOC_ERROR_CLIENT,
+                            MONGOC_ERROR_CLIENT_AUTHENTICATE,
+                            "Incorrect step for 'done'");
+            goto failure;
+         }
+         done = true;
+         if (scram.step >= 3) {
+            bson_destroy (&reply);
+            break;
+         }
       }
 
       if (!bson_iter_init_find (&iter, &reply, "conversationId") ||
@@ -1527,48 +1586,6 @@ _mongoc_cluster_auth_node (
    RETURN (ret);
 }
 
-static bool
-_mongoc_cluster_disconnect_node_in_set (uint32_t id, void *item, void *ctx)
-{
-   mongoc_cluster_t *cluster = (mongoc_cluster_t *) ctx;
-
-   mongoc_cluster_disconnect_node (cluster, id, false, NULL);
-
-   return true;
-}
-
-/*
- *--------------------------------------------------------------------------
- *
- * mongoc_cluster_disconnect --
- *
- *       Disconnects all nodes in this cluster.
- *
- * Returns:
- *       None.
- *
- * Side effects:
- *       Clears the cluster's set of nodes and frees them if pooled.
- *
- *--------------------------------------------------------------------------
- */
-
-void
-mongoc_cluster_disconnect (mongoc_cluster_t *cluster)
-{
-   mongoc_topology_t *topology;
-
-   BSON_ASSERT (cluster);
-
-   topology = cluster->client->topology;
-   /* in the single-threaded use case we share topology's streams */
-   if (topology->single_threaded) {
-      mongoc_topology_scanner_disconnect (topology->scanner);
-   } else {
-      mongoc_set_for_each_with_id (
-         cluster->nodes, _mongoc_cluster_disconnect_node_in_set, cluster);
-   }
-}
 
 /*
  *--------------------------------------------------------------------------
@@ -1945,7 +1962,26 @@ mongoc_cluster_fetch_stream_single (mongoc_cluster_t *cluster,
    topology = cluster->client->topology;
    scanner_node =
       mongoc_topology_scanner_get_node (topology->scanner, server_id);
-   BSON_ASSERT (scanner_node && !scanner_node->retired);
+   /* This could happen if a user explicitly passes a bad server id. */
+   if (!scanner_node) {
+      bson_set_error (error,
+                      MONGOC_ERROR_COMMAND,
+                      MONGOC_ERROR_COMMAND_INVALID_ARG,
+                      "Could not find server with id: %d",
+                      server_id);
+      return NULL;
+   }
+
+   /* Retired scanner nodes are removed at the end of a scan. If the node was
+    * retired, that would indicate a bug. */
+   if (scanner_node->retired) {
+      bson_set_error (error,
+                      MONGOC_ERROR_COMMAND,
+                      MONGOC_ERROR_COMMAND_INVALID_ARG,
+                      "Unexpected, selecting server marked for removal: %s",
+                      scanner_node->host.host_and_port);
+      return NULL;
+   }
 
    if (scanner_node->stream) {
       sd = mongoc_topology_server_by_id (topology, server_id, error);
@@ -2796,27 +2832,33 @@ network_error_reply (bson_t *reply, mongoc_cmd_t *cmd)
    if (reply) {
       bson_init (reply);
    }
-   /* Transactions Spec defines TransientTransactionError: "Any
-    * network error or server selection error encountered running any
-    * command besides commitTransaction in a transaction. In the case
-    * of command errors, the server adds the label; in the case of
-    * network errors or server selection errors where the client
-    * receives no server reply, the client adds the label." */
-   if (_mongoc_client_session_in_txn (cmd->session) && !cmd->is_txn_finish) {
-      /* Transaction Spec: "Drivers MUST unpin a ClientSession when a command
-       * within a transaction, including commitTransaction and abortTransaction,
-       * fails with a TransientTransactionError". If we're about to add
-       * a TransientTransactionError label due to a client side error then we
-       * unpin. If commitTransaction/abortTransation includes a label in the
-       * server reply, we unpin in _mongoc_client_session_handle_reply. */
-      cmd->session->server_id = 0;
-      if (!reply) {
-         return;
-      }
 
-      BSON_APPEND_ARRAY_BEGIN (reply, "errorLabels", &labels);
-      BSON_APPEND_UTF8 (&labels, "0", TRANSIENT_TXN_ERR);
-      bson_append_array_end (reply, &labels);
+   if (cmd->session) {
+      if (cmd->session->server_session) {
+         cmd->session->server_session->dirty = true;
+      }
+      /* Transactions Spec defines TransientTransactionError: "Any
+      * network error or server selection error encountered running any
+      * command besides commitTransaction in a transaction. In the case
+      * of command errors, the server adds the label; in the case of
+      * network errors or server selection errors where the client
+      * receives no server reply, the client adds the label." */
+      if (_mongoc_client_session_in_txn (cmd->session) && !cmd->is_txn_finish) {
+         /* Transaction Spec: "Drivers MUST unpin a ClientSession when a command
+         * within a transaction, including commitTransaction and abortTransaction,
+         * fails with a TransientTransactionError". If we're about to add
+         * a TransientTransactionError label due to a client side error then we
+         * unpin. If commitTransaction/abortTransation includes a label in the
+         * server reply, we unpin in _mongoc_client_session_handle_reply. */
+         cmd->session->server_id = 0;
+         if (!reply) {
+            return;
+         }
+
+         BSON_APPEND_ARRAY_BEGIN (reply, "errorLabels", &labels);
+         BSON_APPEND_UTF8 (&labels, "0", TRANSIENT_TXN_ERR);
+         bson_append_array_end (reply, &labels);
+      }
    }
 }
 

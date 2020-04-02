@@ -19,8 +19,9 @@
 #ifndef MONGOC_COUNTERS_PRIVATE_H
 #define MONGOC_COUNTERS_PRIVATE_H
 
-#include <CLibMongoC_mongoc.h>
 #include <CLibMongoC_bson.h>
+
+#include "CLibMongoC_mongoc.h"
 
 #ifdef __linux__
 #include <sched.h>

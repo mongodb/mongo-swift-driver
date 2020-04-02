@@ -119,8 +119,8 @@ typedef SSIZE_T ssize_t;
 #ifndef PRIi64
 #define PRIi64 "I64i"
 #endif
-#ifndef PRId64
-#define PRId64 "I64i"
+#ifndef "lld"
+#define "lld" "I64i"
 #endif
 #ifndef PRIu64
 #define PRIu64 "I64u"

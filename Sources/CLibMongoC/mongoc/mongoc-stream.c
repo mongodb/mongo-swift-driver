@@ -467,7 +467,7 @@ _mongoc_stream_writev_full (mongoc_stream_t *stream,
                       MONGOC_ERROR_STREAM,
                       MONGOC_ERROR_STREAM_SOCKET,
                       "Failure to send all requested bytes (only sent: %" PRIu64
-                      "/%" PRId64 " in %dms) during socket delivery",
+                      "/%" "lld" " in %dms) during socket delivery",
                       (uint64_t) r,
                       (int64_t) total_bytes,
                       timeout_msec);

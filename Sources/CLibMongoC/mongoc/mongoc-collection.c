@@ -1128,7 +1128,7 @@ mongoc_collection_keys_to_index_string (const bson_t *keys)
                                     bson_iter_int32 (&iter));
       } else if (type == BSON_TYPE_INT64) {
          bson_string_append_printf (s,
-                                    (i++ ? "_%s_%" PRId64 : "%s_%" PRId64),
+                                    (i++ ? "_%s_%" "lld" : "%s_%" PRId64),
                                     bson_iter_key (&iter),
                                     bson_iter_int64 (&iter));
       } else {
@@ -1521,8 +1521,7 @@ mongoc_collection_insert_bulk (mongoc_collection_t *collection,
       NULL,
       NULL,
       write_flags,
-      ++collection->client->cluster.operation_id,
-      true);
+      ++collection->client->cluster.operation_id);
 
    for (i = 0; i < n_documents; i++) {
       _mongoc_write_command_insert_append (&command, documents[i]);
@@ -1638,8 +1637,7 @@ mongoc_collection_insert_one (mongoc_collection_t *collection,
       &command,
       document,
       &insert_one_opts.extra,
-      ++collection->client->cluster.operation_id,
-      false);
+      ++collection->client->cluster.operation_id);
 
    command.flags.bypass_document_validation = insert_one_opts.bypass;
    _mongoc_collection_write_command_execute_idl (
@@ -1721,8 +1719,7 @@ mongoc_collection_insert_many (mongoc_collection_t *collection,
       &command,
       NULL,
       &insert_many_opts.extra,
-      ++collection->client->cluster.operation_id,
-      false);
+      ++collection->client->cluster.operation_id);
 
    command.flags.ordered = insert_many_opts.ordered;
    command.flags.bypass_document_validation = insert_many_opts.bypass;
@@ -1892,6 +1889,10 @@ _mongoc_collection_update_or_replace (mongoc_collection_t *collection,
       bson_append_document (extra, "collation", 9, &update_opts->collation);
    }
 
+   if (update_opts->hint.value_type) {
+      bson_append_value (extra, "hint", 4, &update_opts->hint);
+   }
+
    if (!bson_empty0 (array_filters)) {
       bson_append_array (extra, "arrayFilters", 12, array_filters);
    }
@@ -1912,6 +1913,9 @@ _mongoc_collection_update_or_replace (mongoc_collection_t *collection,
    command.flags.bypass_document_validation = bypass;
    if (!bson_empty (&update_opts->collation)) {
       command.flags.has_collation = true;
+   }
+   if (update_opts->hint.value_type) {
+      command.flags.has_update_hint = true;
    }
 
    server_stream =

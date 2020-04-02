@@ -18,6 +18,7 @@
 
 #include "mongoc-client-private.h"
 #include "mongoc-client-session-private.h"
+#include "mongoc-client-side-encryption-private.h"
 #include "CLibMongoC_mongoc-error.h"
 #include "mongoc-trace-private.h"
 #include "mongoc-write-command-private.h"
@@ -198,8 +199,7 @@ _mongoc_write_command_init_insert (mongoc_write_command_t *command, /* IN */
                                    const bson_t *document,          /* IN */
                                    const bson_t *cmd_opts,          /* IN */
                                    mongoc_bulk_write_flags_t flags, /* IN */
-                                   int64_t operation_id,            /* IN */
-                                   bool allow_bulk_op_insert)       /* IN */
+                                   int64_t operation_id)            /* IN */
 {
    ENTRY;
 
@@ -208,7 +208,6 @@ _mongoc_write_command_init_insert (mongoc_write_command_t *command, /* IN */
    _mongoc_write_command_init_bulk (
       command, MONGOC_WRITE_COMMAND_INSERT, flags, operation_id, cmd_opts);
 
-   command->u.insert.allow_bulk_op_insert = (uint8_t) allow_bulk_op_insert;
    /* must handle NULL document from mongoc_collection_insert_bulk */
    if (document) {
       _mongoc_write_command_insert_append (command, document);
@@ -222,8 +221,7 @@ void
 _mongoc_write_command_init_insert_idl (mongoc_write_command_t *command,
                                        const bson_t *document,
                                        const bson_t *cmd_opts,
-                                       int64_t operation_id,
-                                       bool allow_bulk_op_insert)
+                                       int64_t operation_id)
 {
    mongoc_bulk_write_flags_t flags = MONGOC_BULK_WRITE_FLAGS_INIT;
 
@@ -234,7 +232,6 @@ _mongoc_write_command_init_insert_idl (mongoc_write_command_t *command,
    _mongoc_write_command_init_bulk (
       command, MONGOC_WRITE_COMMAND_INSERT, flags, operation_id, cmd_opts);
 
-   command->u.insert.allow_bulk_op_insert = (uint8_t) allow_bulk_op_insert;
    /* must handle NULL document from mongoc_collection_insert_bulk */
    if (document) {
       _mongoc_write_command_insert_append (command, document);
@@ -471,6 +468,9 @@ _mongoc_write_opmsg (mongoc_write_command_t *command,
 
    max_bson_obj_size = mongoc_server_stream_max_bson_obj_size (server_stream);
    max_msg_size = mongoc_server_stream_max_msg_size (server_stream);
+   if (_mongoc_cse_is_enabled (client)) {
+      max_msg_size = MONGOC_REDUCED_MAX_MSG_SIZE_FOR_FLE;
+   }
    max_document_count =
       mongoc_server_stream_max_write_batch_size (server_stream);
 
@@ -539,7 +539,8 @@ _mongoc_write_opmsg (mongoc_write_command_t *command,
          result->failed = true;
          break;
 
-      } else if ((payload_batch_size + header) + len <= max_msg_size) {
+      } else if ((payload_batch_size + header) + len <= max_msg_size ||
+                 document_count == 0) {
          /* The current batch is still under max batch size in bytes */
          payload_batch_size += len;
 
@@ -640,6 +641,12 @@ _mongoc_write_opmsg (mongoc_write_command_t *command,
    mongoc_cmd_parts_cleanup (&parts);
 
    if (retry_server_stream) {
+      if (ret) {
+         /* if a retry succeeded, report that in the result so bulk write can
+          * use the newly selected server. */
+         result->retry_server_id =
+            mongoc_server_description_id (retry_server_stream->sd);
+      }
       mongoc_server_stream_cleanup (retry_server_stream);
    }
 
@@ -971,6 +978,18 @@ _mongoc_write_command_execute_idl (mongoc_write_command_t *command,
                          MONGOC_ERROR_COMMAND,
                          MONGOC_ERROR_PROTOCOL_BAD_WIRE_VERSION,
                          "The selected server does not support array filters");
+         result->failed = true;
+         EXIT;
+      }
+   }
+
+   if (command->flags.has_update_hint) {
+      if (server_stream->sd->max_wire_version < WIRE_VERSION_UPDATE_HINT) {
+         bson_set_error (
+            &result->error,
+            MONGOC_ERROR_COMMAND,
+            MONGOC_ERROR_PROTOCOL_BAD_WIRE_VERSION,
+            "The selected server does not support hint for update");
          result->failed = true;
          EXIT;
       }
