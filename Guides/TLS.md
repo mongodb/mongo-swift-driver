@@ -40,7 +40,7 @@ let client = try MongoClient("mongodb://example.com/?tls=true", using: elg)
 
 ## Specifying a CA File
 
-The driver can be configured to use a specific set of CA certificates. This is most often used with “self-signed” server certificates. 
+The driver can be configured to use a specific set of CA certificates. This is most often used with "self-signed" server certificates. 
 
 A path to a file with either a single or bundle of certificate authorities to be considered trusted when making a TLS connection can be specified via the `tlsCAFile` option on `ClientOptions`:
 ```swift
