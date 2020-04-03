@@ -39,6 +39,11 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
      */
     public var threadPoolSize: Int?
 
+    /// Whether or not to require TLS for connections to the server. By default this is set to false.
+    ///
+    /// - Note: Specifying any other "tls"-prefixed option will require TLS for connections to the server.
+    public var tls: Bool?
+
     /// Indicates whether to bypass validation of the certificate presented by the mongod/mongos instance. By default
     /// this is set to false.
     public var tlsAllowInvalidCertificates: Bool?
@@ -81,6 +86,7 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
         retryReads: Bool? = nil,
         retryWrites: Bool? = nil,
         threadPoolSize: Int? = nil,
+        tls: Bool? = nil,
         tlsAllowInvalidCertificates: Bool? = nil,
         tlsAllowInvalidHostnames: Bool? = nil,
         tlsCAFile: URL? = nil,
@@ -97,6 +103,7 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
         self.retryWrites = retryWrites
         self.retryReads = retryReads
         self.threadPoolSize = threadPoolSize
+        self.tls = tls
         self.tlsAllowInvalidCertificates = tlsAllowInvalidCertificates
         self.tlsAllowInvalidHostnames = tlsAllowInvalidHostnames
         self.tlsCAFile = tlsCAFile

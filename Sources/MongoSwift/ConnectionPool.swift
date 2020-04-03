@@ -114,7 +114,9 @@ internal class ConnectionPool {
     private func setTLSOptions(_ options: ClientOptions) throws {
         // return early so we don't set an empty options struct on the libmongoc pool. doing so will make libmongoc
         // attempt to use TLS for connections.
-        guard options.tlsAllowInvalidCertificates != nil || options.tlsAllowInvalidHostnames != nil ||
+        guard options.tls == true ||
+            options.tlsAllowInvalidCertificates != nil ||
+            options.tlsAllowInvalidHostnames != nil ||
             options.tlsCAFile != nil || options.tlsCertificateKeyFile != nil ||
             options.tlsCertificateKeyFilePassword != nil else {
             return
