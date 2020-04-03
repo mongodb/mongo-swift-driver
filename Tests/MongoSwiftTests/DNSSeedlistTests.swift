@@ -60,8 +60,13 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
             specName: "initial-dns-seedlist-discovery",
             asType: DNSSeedlistTestCase.self
         )
-        for (_, testCase) in tests {
+        for (fileName, testCase) in tests {
             let topologyWatcher = TopologyDescriptionWatcher()
+
+            // TODO: DRIVERS-796 or DRIVERS-990: unskip this test
+            guard fileName != "txt-record-with-overridden-uri-option.json" else {
+                return
+            }
 
             // Enclose all of the potentially throwing code in `doTest`. Sometimes the expected errors come when
             // parsing the URI, and other times they are not until we try to select a server.
