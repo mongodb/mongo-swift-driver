@@ -404,6 +404,10 @@ axes:
         display_name: "Ubuntu 18.04"
         run_on: ubuntu1804-test
 
+      - id: ubuntu-16.04
+        display_name: "Ubuntu 16.04"
+        run_on: ubuntu1604-test
+
       - id: macos-1014
         display_name: "macOS 10.14"
         run_on: macos-1014
