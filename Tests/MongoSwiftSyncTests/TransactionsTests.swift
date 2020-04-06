@@ -60,8 +60,8 @@ final class TransactionsTests: MongoSwiftTestCase, FailPointConfigured {
             "mongos-pin-auto", // useMultipleMongoses, targetedFailPoint not implemented
             "mongos-recovery-token", // useMultipleMongoses, targetedFailPoint not implemented
             "pin-mongos", // useMultipleMongoses, targetedFailPoint not implemented
-            "retryable-abort-errorLabels", // requires libmongoc v1.17 (see CDRIVER-3462)
-            "retryable-commit-errorLabels" // requires libmongoc v1.17 (see CDRIVER-3462)
+            "retryable-abort-errorLabels", // requires libmongoc v1.17 (see SWIFT-762)
+            "retryable-commit-errorLabels" // requires libmongoc v1.17 (see SWIFT-762)
         ]
 
         let tests = try retrieveSpecTestFiles(specName: "transactions", asType: TransactionsTestFile.self)

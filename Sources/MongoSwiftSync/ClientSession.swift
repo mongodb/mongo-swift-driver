@@ -127,7 +127,7 @@ public final class ClientSession {
      *   - https://docs.mongodb.com/manual/core/transactions/
      */
     public func startTransaction(options: TransactionOptions? = nil) throws {
-        try self.asyncSession.startTransaction(options).wait()
+        try self.asyncSession.startTransaction(options: options).wait()
     }
 
     /**

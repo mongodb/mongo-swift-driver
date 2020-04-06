@@ -308,7 +308,7 @@ public final class ClientSession {
      * - SeeAlso:
      *   - https://docs.mongodb.com/manual/core/transactions/
      */
-    public func startTransaction(_ options: TransactionOptions?) -> EventLoopFuture<Void> {
+    public func startTransaction(options: TransactionOptions? = nil) -> EventLoopFuture<Void> {
         switch self.state {
         case .notStarted, .started:
             let operation = StartTransactionOperation(options: options)
