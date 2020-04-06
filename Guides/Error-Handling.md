@@ -5,6 +5,7 @@
     * [Server Errors](#server-errors)
     * [User Errors](#user-errors)
     * [Runtime Errors](#runtime-errors)
+    * [Error Labels](#error-labels)
     * [Encoding/Decoding Errors](#encoding-decoding-errors)
 * [Examples](#the-code)
     * [All Errors](#handling-any-error-thrown-by-the-driver)
@@ -16,7 +17,6 @@
 ## Error Types
 The driver uses errors to communicate that an operation failed, an assumption wasn't met, or that the user did something incorrectly. Applications that use the driver can in turn catch these errors and respond appropriately without crashing or resulting in an otherwise inconsistent state. To correctly model the different sources of errors, the driver defines three separate caregories of errors (`ServerError`, `UserError`, `RuntimeError`), each of which are protocols that inherit from the `MongoError` protocol. These protocols are defined in `MongoError.swift`, and the structs that conform to them are outlined here. The documentation for every public function that throws lists some of the errors that could possibly be thrown and the reasons they might be. The errors listed there are not comprehensive but will generally cover the most common cases.
 
-**Error Labels:** Some types of errors may contain more specific information describing the context in which they occured. Such errors conform to the `LabeledError` protocol, and the extra information is conveyed through the `errorLabels` property. Specifically, any server error or connection related error may contain labels.
 
 ### Server Errors
 Server errors correspond to failures that occur in the database itself and are returned to the driver via some response to a command. Each error that conforms to `ServerError` contains at least one error code representing what went wrong on the server.
@@ -60,6 +60,16 @@ The `RuntimeError` cases are as follows:
 - `ServerSelectionError`
     - Thrown when the driver was unable to select a server for an operation (e.g. due to a timeout or unsatisfiable read preference)
     - See [the official MongoDB documentation](https://docs.mongodb.com/manual/core/read-preference-mechanics/) for more information.
+
+
+### Error Labels
+Some types of errors may contain more specific information describing the context in which they occured. Such errors conform to the `LabeledError` protocol, and the extra information is conveyed through the `errorLabels` property. Specifically, any server error or connection related error may contain labels.
+
+The following error labels are currently defined. Future versions of MongoDB may introduce new labels:
+- `TransientTransactionError`:
+    - Within a multi-document transaction, certain errors can leave the transaction in an unknown or aborted state. These include write conflicts, primary stepdowns, and network errors. In response, the application should abort the transaction and try the same sequence of operations again in a new transaction.
+- `UnknownTransactionCommitResult`:
+    - When `commitTransaction()` encounters a network error or certain server errors, it is not known whether the transaction was committed. Applications should attempt to commit the transaction again until (i) the commit succeeds, (ii) the commit fails with an error *not* labeled `UnknownTransactionCommitResult`, or (iii) the application chooses to give up.
 
 
 ### Encoding/Decoding Errors
