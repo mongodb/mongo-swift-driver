@@ -165,7 +165,7 @@ public struct WriteConcernFailure: Codable {
     public let code: ServerErrorCode
 
     /// A human-readable string identifying write concern error.
-    public let codeName: String
+    public let codeName: String?
 
     /// A document identifying the write concern setting related to the error.
     public let details: Document?
@@ -173,11 +173,15 @@ public struct WriteConcernFailure: Codable {
     /// A description of the error.
     public let message: String
 
+    /// Labels that may describe the context in which this error was thrown.
+    public let errorLabels: [String]? = nil
+
     private enum CodingKeys: String, CodingKey {
         case code
         case codeName
         case details = "errInfo"
         case message = "errmsg"
+        case errorLabels
     }
 }
 
@@ -251,18 +255,6 @@ private func parseMongocError(_ error: bson_error_t, reply: Document?) -> MongoE
             message: message,
             errorLabels: errorLabels
         )
-    case (MONGOC_ERROR_WRITE_CONCERN, _):
-        var writeConcernErrorLabels =
-            reply?["writeConcernError"]?.documentValue?["errorLabels"]?.arrayValue?.asArrayOf(String.self)
-        if let errorLabels = errorLabels {
-            writeConcernErrorLabels = Array(Set((writeConcernErrorLabels ?? []) + errorLabels))
-        }
-        return CommandError(
-            code: ServerErrorCode(code.rawValue),
-            codeName: codeName,
-            message: message,
-            errorLabels: writeConcernErrorLabels
-        )
     case (MONGOC_ERROR_STREAM, _):
         return ConnectionError(message: message, errorLabels: errorLabels)
     case (MONGOC_ERROR_SERVER_SELECTION, MONGOC_ERROR_SERVER_SELECTION_FAILURE):
@@ -291,6 +283,7 @@ internal func extractMongoError(error bsonError: bson_error_t, reply: Document? 
     // if the reply is nil or writeErrors or writeConcernErrors aren't present, then this is likely a commandError.
     guard let serverReply: Document = reply,
         !(serverReply["writeErrors"]?.arrayValue ?? []).isEmpty ||
+        !(serverReply["writeConcernError"]?.documentValue?.keys ?? []).isEmpty ||
         !(serverReply["writeConcernErrors"]?.arrayValue ?? []).isEmpty else {
         return parseMongocError(bsonError, reply: reply)
     }
@@ -402,11 +395,14 @@ internal func extractBulkWriteError<T: Codable>(
 
 /// Extracts a `WriteConcernError` from a server reply.
 private func extractWriteConcernError(from reply: Document) throws -> WriteConcernFailure? {
-    guard let writeConcernErrors = reply["writeConcernErrors"]?.arrayValue?.compactMap({ $0.documentValue }),
-        !writeConcernErrors.isEmpty else {
+    if let writeConcernErrors = reply["writeConcernErrors"]?.arrayValue?.compactMap({ $0.documentValue }),
+        !writeConcernErrors.isEmpty {
+        return try BSONDecoder().decode(WriteConcernFailure.self, from: writeConcernErrors[0])
+    } else if let writeConcernError = reply["writeConcernError"]?.documentValue {
+        return try BSONDecoder().decode(WriteConcernFailure.self, from: writeConcernError)
+    } else {
         return nil
     }
-    return try BSONDecoder().decode(WriteConcernFailure.self, from: writeConcernErrors[0])
 }
 
 /// Internal function used by write methods performing single writes that are implemented via the bulk API. If the

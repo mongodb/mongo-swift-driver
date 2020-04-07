@@ -67,10 +67,10 @@ public final class ClientSession {
     public let client: MongoClient
 
     /// The session ID of this session. We only have a value available after we've started the libmongoc session.
-    public var id: Document?
+    internal var id: Document?
 
     /// The server ID of the mongos this session is pinned to. A server ID of 0 indicates that the session is unpinned.
-    public var serverId: Int? {
+    internal var serverId: Int? {
         switch self.state {
         case .notStarted, .ended:
             return nil
@@ -80,7 +80,7 @@ public final class ClientSession {
     }
 
     /// Enum tracking the state of the transaction associated with this session.
-    public enum TransactionState: String, Decodable {
+    internal enum TransactionState: String, Decodable {
         /// There is no transaction in progress.
         case none
         /// A transaction has been started, but no operation has been sent to the server.
@@ -126,7 +126,7 @@ public final class ClientSession {
     }
 
     /// The transaction state of this session.
-    public var transactionState: TransactionState? {
+    internal var transactionState: TransactionState? {
         switch self.state {
         case .notStarted, .ended:
             return nil

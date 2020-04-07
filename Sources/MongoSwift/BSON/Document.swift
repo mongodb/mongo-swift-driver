@@ -258,7 +258,7 @@ extension Document {
 
     /// Helper function for copying elements from some source document to a destination document while
     /// excluding a non-zero number of keys
-    public func copyElements(to otherDoc: inout Document, excluding keys: [String]) throws {
+    internal func copyElements(to otherDoc: inout Document, excluding keys: [String]) throws {
         guard !keys.isEmpty else {
             throw InternalError(message: "No keys to exclude, use 'bson_copy' instead")
         }

@@ -1,4 +1,5 @@
 import Foundation
+@testable import struct MongoSwift.ReadPreference
 import MongoSwiftSync
 import Nimble
 import TestsCommon
@@ -20,8 +21,23 @@ internal struct TestCommandStartedEvent: Decodable, Matchable {
         case type = "command_started_event"
     }
 
-    internal init(from event: CommandStartedEvent) {
-        self.command = event.command
+    internal init(from event: CommandStartedEvent, sessionIds: [String: Document]? = nil) {
+        var command = event.command
+
+        // If command started event has "lsid": Document(...), change the value to correpond to "session0",
+        // "session1", etc.
+        if let sessionIds = sessionIds, let sessionDoc = command["lsid"]?.documentValue {
+            for (sessionName, sessionId) in sessionIds where sessionId == sessionDoc {
+                command["lsid"] = .string(sessionName)
+            }
+        }
+        // If command is "findAndModify" and does not have key "new", add the default value "new": false.
+        // This is necessary because `libmongoc` only sends a value for "new" in a command if "new": true.
+        if event.commandName == "findAndModify" && command["new"] == nil {
+            command["new"] = .bool(false)
+        }
+
+        self.command = command
         self.databaseName = event.databaseName
         self.commandName = event.commandName
     }
@@ -51,12 +67,6 @@ internal struct TestCommandStartedEvent: Decodable, Matchable {
         }
         return self.commandName.matches(expected: expected.commandName)
             && self.command.matches(expected: expected.command)
-    }
-
-    internal mutating func excludeKeys(keys: [String]) throws {
-        var newCommand = Document()
-        try self.command.copyElements(to: &newCommand, excluding: keys)
-        self.command = newCommand
     }
 }
 
@@ -119,6 +129,41 @@ internal enum TestData: Decodable {
                 DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Could not decode `TestData`")
             )
         }
+    }
+}
+
+public struct TestClientOptions: Decodable {
+    var readConcern: ReadConcern?
+
+    var readPreference: ReadPreference?
+
+    var retryReads: Bool?
+
+    var retryWrites: Bool?
+
+    var writeConcern: WriteConcern?
+
+    private enum CodingKeys: String, CodingKey {
+        case retryReads, retryWrites, w, readConcernLevel, mode = "readPreference"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.readConcern = try? ReadConcern(container.decode(String.self, forKey: .readConcernLevel))
+        self.readPreference = try? ReadPreference(container.decode(ReadPreference.Mode.self, forKey: .mode))
+        self.retryReads = try? container.decode(Bool.self, forKey: .retryReads)
+        self.retryWrites = try? container.decode(Bool.self, forKey: .retryWrites)
+        self.writeConcern = try? WriteConcern(w: container.decode(WriteConcern.W.self, forKey: .w))
+    }
+
+    public func toClientOptions() -> ClientOptions {
+        ClientOptions(
+            readConcern: self.readConcern,
+            readPreference: self.readPreference,
+            retryReads: self.retryReads,
+            retryWrites: self.retryWrites,
+            writeConcern: self.writeConcern
+        )
     }
 }
 
@@ -231,7 +276,7 @@ internal protocol SpecTest: Decodable {
     var description: String { get }
 
     /// Options used to configure the `MongoClient` used for this test.
-    var clientOptions: ClientOptions? { get }
+    var clientOptions: TestClientOptions? { get }
 
     /// If true, the `MongoClient` for this test should be initialized with multiple mongos seed addresses.
     /// If false or omitted, only a single mongos address should be specified.
@@ -257,6 +302,10 @@ internal protocol SpecTest: Decodable {
     /// Map of session names (e.g. "session0") to parameters to pass to `MongoClient.startSession()` when creating that
     /// session.
     var sessionOptions: [String: ClientSessionOptions]? { get }
+
+    /// Array of session names (e.g. "session0", "session1") that the test refers to. Each session is proactively
+    /// started in `run()`.
+    static var sessionNames: [String] { get }
 }
 
 /// Default implementation of a test execution.
@@ -264,6 +313,8 @@ extension SpecTest {
     var outcome: TestOutcome? { nil }
 
     var sessionOptions: [String: ClientSessionOptions]? { nil }
+
+    static var sessionNames: [String] { [] }
 
     internal func run(
         parent: FailPointConfigured,
@@ -277,7 +328,7 @@ extension SpecTest {
 
         print("Executing test: \(self.description)")
 
-        let clientOptions = self.clientOptions ?? ClientOptions(retryReads: true)
+        let clientOptions = self.clientOptions?.toClientOptions() ?? ClientOptions(retryReads: true)
 
         let client = try MongoClient.makeTestClient(options: clientOptions)
         let monitor = client.addCommandMonitor()
@@ -294,12 +345,9 @@ extension SpecTest {
         }
         defer { parent.disableActiveFailPoint() }
 
-        // The spec tests refer to the sessions below. Proactively start them in case this spec test requires one.
-        let sessionsToStart = ["session0", "session1"]
-
-        var sessionDict = [String: ClientSession]()
-        for session in sessionsToStart {
-            sessionDict[session] = client.startSession(options: self.sessionOptions?[session])
+        var sessions = [String: ClientSession]()
+        for session in Self.sessionNames {
+            sessions[session] = client.startSession(options: self.sessionOptions?[session])
         }
 
         var sessionIds = [String: Document]()
@@ -310,19 +358,19 @@ extension SpecTest {
                     client: client,
                     dbName: dbName,
                     collName: collName,
-                    sessionDict: sessionDict
+                    sessions: sessions
                 )
             }
             // Keep track of the session IDs assigned to each session.
             // Deinitialize each session thereby implicitly ending them.
-            for session in sessionDict.keys {
-                sessionIds[session] = sessionDict[session]?.id
-                sessionDict[session] = nil
+            for session in sessions.keys {
+                sessionIds[session] = sessions[session]?.id
+                sessions[session] = nil
             }
         }
 
-        let events = try monitor.commandStartedEvents().map { commandStartedEvent in
-            try processCommandStartedEvent(commandStartedEvent: commandStartedEvent, sessionIds: sessionIds)
+        let events = monitor.commandStartedEvents().map { commandStartedEvent in
+            TestCommandStartedEvent(from: commandStartedEvent, sessionIds: sessionIds)
         }
 
         if let expectations = self.expectations {
@@ -332,31 +380,6 @@ extension SpecTest {
         if let outcome = self.outcome {
             try self.checkOutcome(outcome: outcome, dbName: dbName, collName: collName!)
         }
-    }
-
-    internal func processCommandStartedEvent(
-        commandStartedEvent: CommandStartedEvent,
-        sessionIds: [String: Document]
-    )
-        throws -> TestCommandStartedEvent {
-        var event = TestCommandStartedEvent(from: commandStartedEvent)
-        try event.excludeKeys(keys: ["$db", "$clusterTime"])
-
-        // If command started event has "lsid": Document(...), change the value to correpond to "session0",
-        // "session1", etc.
-        if let sessionDoc = event.command["lsid"]?.documentValue {
-            for session in sessionIds.keys {
-                if let sessionId = sessionIds[session], sessionId == sessionDoc {
-                    event.command["lsid"] = .string(session)
-                }
-            }
-        }
-        // If command is "findAndModify" and does not have key "new", add the default value "new": false.
-        if event.commandName == "findAndModify" && event.command["new"] == nil {
-            event.command["new"] = .bool(false)
-        }
-
-        return event
     }
 
     internal func checkOutcome(outcome: TestOutcome, dbName: String, collName: String) throws {

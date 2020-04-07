@@ -218,6 +218,9 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
                 if let transactionState = session?.transactionState, transactionState != .none {
                     // Bulk write operations cannot have a write concern in a transaction. Default to
                     // writeConcernAcknowledged = true.
+                    if self.options?.writeConcern != nil {
+                        throw LogicError(message: "Bulk write operations cannot have a write concern in a transaction")
+                    }
                     writeConcernAcknowledged = true
                 } else {
                     let writeConcern = WriteConcern(from: mongoc_bulk_operation_get_write_concern(bulk))

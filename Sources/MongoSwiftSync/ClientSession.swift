@@ -48,18 +48,6 @@ public final class ClientSession {
     /// The options used to start this session.
     public var options: ClientSessionOptions? { self.asyncSession.options }
 
-    /// The session ID of this session. We only have a value available after we've started the libmongoc session.
-    public var id: Document? { self.asyncSession.id }
-
-    /// The server ID of the mongos this session is pinned to. A server ID of 0 indicates that the session is unpinned.
-    public var serverId: Int? { self.asyncSession.serverId }
-
-    /// Enum tracking the state of the transaction associated with this session.
-    public typealias TransactionState = MongoSwift.ClientSession.TransactionState
-
-    /// The transaction state of this session.
-    public var transactionState: TransactionState? { self.asyncSession.transactionState }
-
     /// Initializes a new client session.
     internal init(client: MongoClient, options: ClientSessionOptions?) {
         self.client = client

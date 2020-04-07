@@ -23,13 +23,15 @@ struct ClientSessionOp {
 }
 
 extension MongoSwiftSync.ClientSession {
-    var active: Bool {
-        self.asyncSession.active
-    }
+    internal var active: Bool { self.asyncSession.active }
 
-    var id: Document? {
-        self.asyncSession.id
-    }
+    internal var id: Document? { self.asyncSession.id }
+
+    internal var serverId: Int? { self.asyncSession.serverId }
+
+    internal typealias TransactionState = MongoSwift.ClientSession.TransactionState
+
+    internal var transactionState: TransactionState? { self.asyncSession.transactionState }
 }
 
 final class SyncClientSessionTests: MongoSwiftTestCase {
