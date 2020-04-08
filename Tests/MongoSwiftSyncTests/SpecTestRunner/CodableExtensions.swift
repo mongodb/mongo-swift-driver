@@ -1,3 +1,4 @@
+@testable import struct MongoSwift.ReadPreference
 import MongoSwiftSync
 
 extension DatabaseOptions: Decodable {
@@ -60,5 +61,19 @@ extension TransactionOptions: Decodable {
 
     private enum CodingKeys: CodingKey {
         case maxCommitTimeMS, readConcern, readPreference, writeConcern
+    }
+}
+
+extension ReadPreference.Mode: Decodable {}
+
+extension ReadPreference: Decodable {
+    private enum CodingKeys: String, CodingKey {
+        case mode
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let mode = try container.decode(Mode.self, forKey: .mode)
+        self.init(mode)
     }
 }
