@@ -481,4 +481,28 @@ internal func wrongIterTypeError(_ iter: DocumentIterator, expected type: BSONVa
     )
 }
 
+internal func isMaxTimeMSExpiredError(_ error: Error) -> Bool {
+    let maxTimeMSExpiredErrorCode = 50
+
+    if let commandError = error as? CommandError, commandError.code == maxTimeMSExpiredErrorCode {
+        return true
+    } else if let writeError = error as? WriteError {
+        if writeError.writeFailure?.code == maxTimeMSExpiredErrorCode ||
+            writeError.writeConcernFailure?.code == maxTimeMSExpiredErrorCode {
+            return true
+        }
+    } else if let bulkWriteError = error as? BulkWriteError {
+        if let writeFailures = bulkWriteError.writeFailures {
+            for writeFailure in writeFailures where writeFailure.code == maxTimeMSExpiredErrorCode {
+                return true
+            }
+        }
+        if bulkWriteError.writeConcernFailure?.code == maxTimeMSExpiredErrorCode {
+            return true
+        }
+    }
+
+    return false
+}
+
 internal let failedToRetrieveCursorMessage = "Couldn't get cursor from the server"

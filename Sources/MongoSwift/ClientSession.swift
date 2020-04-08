@@ -373,4 +373,146 @@ public final class ClientSession {
             return self.client.operationExecutor.makeFailedFuture(ClientSession.SessionInactiveError)
         }
     }
+
+    /**
+     * Starts a multi-document transaction and executes the provided closure. The transaction is only valid within the
+     * body of the closure and will be committed after the body completes. Any options provided in `options` override
+     * the default transaction options for this session and any options inherited from `MongoClient`.
+     *
+     * If an error occurs, `withTransaction` includes logic to retry transactions and commits, whenever possible. Note
+     * that the function has an retry time limit of 120 seconds that is not configurable.
+     *
+     * The provided closure should not attempt to start a new transaction, commit or abort the current transaction,
+     * and/or end the session. If the closure commits or aborts the current transaction and/or ends the session,
+     * however, `withTransaction` will return without taking further action.
+     *
+     * - Parameters:
+     *   - options: The options to use when starting the transaction.
+     *
+     * - Returns:
+     *   - An `EventLoopFuture<T>`, the return value of the user-provided closure.
+     *
+     *   If the future fails, the error is likely one of the following:
+     *   - `CommandError` if an error prevents a command from executing.
+     *   - `LogicError` if the session already has an in-progress transaction.
+     *   - `LogicError` if `withTransaction` is called on an ended session.
+     *
+     * - SeeAlso:
+     *   - https://docs.mongodb.com/manual/core/transactions/
+     */
+    public func withTransaction<T>(
+        options: TransactionOptions? = nil,
+        _ transactionBody: @escaping (ClientSession) throws -> EventLoopFuture<T>
+    ) -> EventLoopFuture<T> {
+        switch self.state {
+        case .notStarted, .started:
+            // Enforce a 120-second timeout to limit transaction retry behavior.
+            let retryTimeoutTime = Date(timeIntervalSinceNow: 120)
+            return self.attemptTransaction(
+                retryTimeoutTime: retryTimeoutTime,
+                options: options,
+                transactionBody
+            )
+        case .ended:
+            return self.client.operationExecutor.makeFailedFuture(ClientSession.SessionInactiveError)
+        }
+    }
+
+    // Private helper function that attempts to start a multi-document transaction, execute the provided closure, and
+    // commit the transaction. If an error occurs, the function attempts to retry the transaction, whenever possible.
+    // - Note: This function should not be used outside the context of `withTransaction`.
+    private func attemptTransaction<T>(
+        retryTimeoutTime: Date,
+        options: TransactionOptions?,
+        _ transactionBody: @escaping (ClientSession) throws -> EventLoopFuture<T>
+    ) -> EventLoopFuture<T> {
+        self.startTransaction(options: options).flatMap { _ in
+            do {
+                let transactionBodyFuture = try transactionBody(self)
+                return transactionBodyFuture.flatMap { value in
+                    if [.none, .committed, .aborted].contains(self.transactionState ?? .none) {
+                        return self.client.operationExecutor.makeSucceededFuture(value)
+                    }
+                    return self.attemptTransactionCommit(
+                        value: value,
+                        retryTimeoutTime: retryTimeoutTime,
+                        options: options,
+                        transactionBody
+                    )
+                }.flatMapError { error in
+                    if [.starting, .inProgress].contains(self.transactionState ?? .none) {
+                        return self.abortTransaction().flatMap { _ in
+                            self.maybeRetryOrFail(
+                                error: error,
+                                retryTimeoutTime: retryTimeoutTime,
+                                options: options,
+                                transactionBody
+                            )
+                        }
+                    }
+                    return self.maybeRetryOrFail(
+                        error: error,
+                        retryTimeoutTime: retryTimeoutTime,
+                        options: options,
+                        transactionBody
+                    )
+                }
+            } catch {
+                return self.client.operationExecutor.makeFailedFuture(error)
+            }
+        }
+    }
+
+    // Private helper function that attempts to commit a multi-document transaction. If an error occurs, the function
+    // attempts to retry either the commit or the transaction, whenever possible.
+    // - Note: This function should not be used outside the context of `withTransaction`.
+    private func attemptTransactionCommit<T>(
+        value: T,
+        retryTimeoutTime: Date,
+        options: TransactionOptions?,
+        _ transactionBody: @escaping (ClientSession) throws -> EventLoopFuture<T>
+    ) -> EventLoopFuture<T> {
+        self.commitTransaction().flatMap { _ in
+            self.client.operationExecutor.makeSucceededFuture(value)
+        }.flatMapError { error in
+            if let labeledError = error as? LabeledError, let errorLabels = labeledError.errorLabels,
+                retryTimeoutTime.timeIntervalSinceNow > 0 {
+                if !isMaxTimeMSExpiredError(error) && errorLabels.contains("UnknownTransactionCommitResult") {
+                    return self.attemptTransactionCommit(
+                        value: value,
+                        retryTimeoutTime: retryTimeoutTime,
+                        options: options,
+                        transactionBody
+                    )
+                }
+                if errorLabels.contains("TransientTransactionError") {
+                    return self.attemptTransaction(
+                        retryTimeoutTime: retryTimeoutTime,
+                        options: options,
+                        transactionBody
+                    )
+                }
+            }
+            return self.client.operationExecutor.makeFailedFuture(error)
+        }
+    }
+
+    // Private helper function that attempts to retry a multi-document transaction, whenever possible.
+    // - Note: This function should not be used outside the context of `withTransaction`.
+    private func maybeRetryOrFail<T>(
+        error: Error,
+        retryTimeoutTime: Date,
+        options: TransactionOptions?,
+        _ transactionBody: @escaping (ClientSession) throws -> EventLoopFuture<T>
+    ) -> EventLoopFuture<T> {
+        if let labeledError = error as? LabeledError, let errorLabels = labeledError.errorLabels,
+            retryTimeoutTime.timeIntervalSinceNow > 0 && errorLabels.contains("TransientTransactionError") {
+            return self.attemptTransaction(
+                retryTimeoutTime: retryTimeoutTime,
+                options: options,
+                transactionBody
+            )
+        }
+        return self.client.operationExecutor.makeFailedFuture(error)
+    }
 }
