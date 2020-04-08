@@ -217,9 +217,12 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
                 var writeConcernAcknowledged: Bool
                 if let transactionState = session?.transactionState, transactionState != .none {
                     // Bulk write operations cannot have a write concern in a transaction. Default to
-                    // writeConcernAcknowledged = true.
+                    // writeConcernAcknowledged = true. Since `libmongoc` returns a null write concern from bulk write
+                    // operations in a transaction, we cannot call `mongoc_bulk_operation_get_write_concern`.
                     if self.options?.writeConcern != nil {
-                        throw LogicError(message: "Bulk write operations cannot have a write concern in a transaction")
+                        throw InvalidArgumentError(
+                            message: "Bulk write operations cannot have a write concern in atransaction"
+                        )
                     }
                     writeConcernAcknowledged = true
                 } else {

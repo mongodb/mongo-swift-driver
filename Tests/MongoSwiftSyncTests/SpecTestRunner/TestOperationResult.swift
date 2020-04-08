@@ -1,6 +1,7 @@
 import MongoSwiftSync
 import Nimble
 import TestsCommon
+import XCTest
 
 /// Enum encapsulating the possible results returned from test operations.
 enum TestOperationResult: Decodable, Equatable, Matchable {
@@ -23,11 +24,7 @@ enum TestOperationResult: Decodable, Equatable, Matchable {
         guard let doc = doc else {
             return nil
         }
-        if !ErrorResult.errorKeys.isDisjoint(with: doc.keys) {
-            self = .error(ErrorResult(from: doc))
-        } else {
-            self = .document(doc)
-        }
+        self = .document(doc)
     }
 
     public init?(from result: BulkWriteResultConvertible?) {
@@ -57,12 +54,10 @@ enum TestOperationResult: Decodable, Equatable, Matchable {
             self = .int(int)
         } else if let array = try? [BSON](from: decoder) {
             self = .array(array)
+        } else if let error = try? ErrorResult(from: decoder) {
+            self = .error(error)
         } else if let doc = try? Document(from: decoder) {
-            if !ErrorResult.errorKeys.isDisjoint(with: doc.keys) {
-                self = .error(ErrorResult(from: doc))
-            } else {
-                self = .document(doc)
-            }
+            self = .document(doc)
         } else {
             throw DecodingError.valueNotFound(
                 TestOperationResult.self,
@@ -101,8 +96,8 @@ enum TestOperationResult: Decodable, Equatable, Matchable {
             return array.matches(expected: expectedArray)
         case let (.document(doc), .document(expectedDoc)):
             return doc.matches(expected: expectedDoc)
-        case let (.error(error), .error(expectedError)):
-            return error.matches(expected: expectedError)
+        case (.error, .error):
+            return false
         default:
             return false
         }
@@ -155,9 +150,7 @@ extension DeleteResult: BulkWriteResultConvertible {
     }
 }
 
-struct ErrorResult: Equatable, Matchable {
-    internal static let errorKeys: Set = ["errorContains", "errorCodeName", "errorLabelsContain", "errorLabelsOmit"]
-
+struct ErrorResult: Equatable, Decodable {
     internal var errorContains: String?
 
     internal var errorCodeName: String?
@@ -166,14 +159,28 @@ struct ErrorResult: Equatable, Matchable {
 
     internal var errorLabelsOmit: [String]?
 
-    public init(from doc: Document) {
-        let errorLabelsContain = doc["errorLabelsContain"]?.arrayValue?.compactMap { $0.stringValue }
-        let errorLabelsOmit = doc["errorLabelsOmit"]?.arrayValue?.compactMap { $0.stringValue }
+    private enum CodingKeys: CodingKey {
+        case errorContains, errorCodeName, errorLabelsContain, errorLabelsOmit
+    }
 
-        self.errorContains = doc["errorContains"]?.stringValue
-        self.errorCodeName = doc["errorCodeName"]?.stringValue
-        self.errorLabelsContain = errorLabelsContain?.sorted()
-        self.errorLabelsOmit = errorLabelsOmit?.sorted()
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        // None of the error keys must be present themselves, but at least one must.
+        guard !container.allKeys.isEmpty else {
+            throw DecodingError.valueNotFound(
+                ErrorResult.self,
+                DecodingError.Context(
+                    codingPath: decoder.codingPath,
+                    debugDescription: "No results found"
+                )
+            )
+        }
+
+        self.errorContains = try container.decodeIfPresent(String.self, forKey: .errorContains)
+        self.errorCodeName = try container.decodeIfPresent(String.self, forKey: .errorCodeName)
+        self.errorLabelsContain = try container.decodeIfPresent([String].self, forKey: .errorLabelsContain)
+        self.errorLabelsOmit = try container.decodeIfPresent([String].self, forKey: .errorLabelsOmit)
     }
 
     internal static func == (lhs: ErrorResult, rhs: ErrorResult) -> Bool {
@@ -184,98 +191,99 @@ struct ErrorResult: Equatable, Matchable {
     }
 
     public func checkErrorResult(_ error: Error) throws {
-        if let commandError = error as? CommandError {
-            try self.checkCommandError(commandError)
-        } else if let writeError = error as? WriteError {
-            try self.checkWriteError(writeError)
-        } else if let bulkWriteError = error as? BulkWriteError {
-            try self.checkBulkWriteError(bulkWriteError)
-        } else if let logicError = error as? LogicError {
-            try self.checkLogicError(logicError)
-        } else if let invalidArgumentError = error as? InvalidArgumentError {
-            try self.checkInvalidArgumentError(invalidArgumentError)
-        } else if let connectionError = error as? ConnectionError {
-            try self.checkConnectionError(connectionError)
-        } else {
-            throw TestError(message: "checked ErrorResult with unhandled error \(error)")
+        try self.checkErrorContains(error)
+        try self.checkCodeName(error)
+        try self.checkErrorLabels(error)
+    }
+
+    // swiftlint:disable cyclomatic_complexity
+
+    internal func checkErrorContains(_ error: Error) throws {
+        if let errorContains = self.errorContains?.lowercased() {
+            if let commandError = error as? CommandError {
+                expect(commandError.message.lowercased()).to(contain(errorContains))
+            } else if let writeError = error as? WriteError {
+                if let writeFailure = writeError.writeFailure {
+                    expect(writeFailure.message.lowercased()).to(contain(errorContains))
+                }
+                if let writeConcernFailure = writeError.writeConcernFailure {
+                    expect(writeConcernFailure.message.lowercased()).to(contain(errorContains))
+                }
+            } else if let bulkWriteError = error as? BulkWriteError {
+                if let writeFailures = bulkWriteError.writeFailures {
+                    for writeFailure in writeFailures {
+                        expect(writeFailure.message.lowercased()).to(contain(errorContains))
+                    }
+                }
+                if let writeConcernFailure = bulkWriteError.writeConcernFailure {
+                    expect(writeConcernFailure.message.lowercased()).to(contain(errorContains))
+                }
+            } else if let logicError = error as? LogicError {
+                expect(logicError.errorDescription.lowercased()).to(contain(errorContains))
+            } else if let invalidArgumentError = error as? InvalidArgumentError {
+                expect(invalidArgumentError.errorDescription.lowercased()).to(contain(errorContains))
+            } else if let connectionError = error as? ConnectionError {
+                expect(connectionError.message.lowercased()).to(contain(errorContains))
+            } else {
+                XCTFail("\(error) does not contain message")
+            }
         }
     }
 
-    internal func checkErrorContains(errorDescription: String) throws {
-        if let errorContains = self.errorContains {
-            expect(errorDescription.lowercased()).to(contain(errorContains.lowercased()))
+    // swiftlint:enable cyclomatic_complexity
+
+    internal func checkCodeName(_ error: Error) throws {
+        if let errorCodeName = self.errorCodeName {
+            if let commandError = error as? CommandError {
+                expect(commandError.codeName).to(satisfyAnyOf(equal(errorCodeName), equal("")))
+            } else if let writeError = error as? WriteError {
+                if let writeFailure = writeError.writeFailure {
+                    expect(writeFailure.codeName).to(satisfyAnyOf(equal(errorCodeName), equal("")))
+                }
+                if let writeConcernFailure = writeError.writeConcernFailure {
+                    expect(writeConcernFailure.codeName).to(satisfyAnyOf(equal(errorCodeName), equal("")))
+                }
+            } else if let bulkWriteError = error as? BulkWriteError {
+                if let writeFailures = bulkWriteError.writeFailures {
+                    for writeFailure in writeFailures {
+                        expect(writeFailure.codeName).to(satisfyAnyOf(equal(errorCodeName), equal("")))
+                    }
+                }
+                if let writeConcernFailure = bulkWriteError.writeConcernFailure {
+                    expect(writeConcernFailure.codeName).to(satisfyAnyOf(equal(errorCodeName), equal("")))
+                }
+            } else {
+                XCTFail("\(error) does not contain codeName")
+            }
         }
     }
 
-    internal func checkCodeName(codeName: String?) throws {
-        if let errorCodeName = self.errorCodeName, let codeName = codeName, !codeName.isEmpty {
-            expect(codeName).to(equal(errorCodeName))
-        }
-    }
-
-    internal func checkErrorLabels(errorLabels: [String]?) throws {
+    internal func checkErrorLabels(_ error: Error) throws {
         // `configureFailPoint` command correctly handles error labels in MongoDB v4.3.1+ (see SERVER-43941).
         // Do not check the "RetryableWriteError" error label until the spec test requirements are updated.
         let skippedErrorLabels = ["RetryableWriteError"]
 
-        if let errorLabelsContain = self.errorLabelsContain, let errorLabels = errorLabels {
-            errorLabelsContain.forEach { label in
-                if !skippedErrorLabels.contains(label) {
-                    expect(errorLabels).to(contain(label))
-                }
+        if let errorLabelsContain = self.errorLabelsContain {
+            guard let labeledError = error as? LabeledError else {
+                XCTFail("\(error) does not contain errorLabels")
+                return
+            }
+            for label in errorLabelsContain where !skippedErrorLabels.contains(label) {
+                expect(labeledError.errorLabels).to(contain(label))
             }
         }
-        if let errorLabelsOmit = self.errorLabelsOmit, let errorLabels = errorLabels {
-            errorLabelsOmit.forEach { label in
-                expect(errorLabels).toNot(contain(label))
+
+        if let errorLabelsOmit = self.errorLabelsOmit {
+            guard let labeledError = error as? LabeledError else {
+                XCTFail("\(error) does not contain errorLabels")
+                return
+            }
+            if labeledError.errorLabels == nil {
+                return
+            }
+            for label in errorLabelsOmit {
+                expect(labeledError.errorLabels).toNot(contain(label))
             }
         }
-    }
-
-    internal func checkCommandError(_ error: CommandError) throws {
-        try self.checkErrorContains(errorDescription: error.message)
-        try self.checkCodeName(codeName: error.codeName)
-        try self.checkErrorLabels(errorLabels: error.errorLabels)
-    }
-
-    internal func checkWriteError(_ error: WriteError) throws {
-        if let writeFailure = error.writeFailure {
-            try self.checkErrorContains(errorDescription: writeFailure.message)
-            try self.checkCodeName(codeName: writeFailure.codeName)
-        }
-        if let writeConcernFailure = error.writeConcernFailure {
-            try self.checkErrorContains(errorDescription: writeConcernFailure.message)
-            try self.checkCodeName(codeName: writeConcernFailure.codeName)
-        }
-        try self.checkErrorLabels(errorLabels: error.errorLabels)
-    }
-
-    internal func checkBulkWriteError(_ error: BulkWriteError) throws {
-        if let writeFailures = error.writeFailures {
-            try writeFailures.forEach { writeFailure in
-                try checkErrorContains(errorDescription: writeFailure.message)
-                try checkCodeName(codeName: writeFailure.codeName)
-            }
-        }
-        if let writeConcernFailure = error.writeConcernFailure {
-            try self.checkErrorContains(errorDescription: writeConcernFailure.message)
-            try self.checkCodeName(codeName: writeConcernFailure.codeName)
-        }
-    }
-
-    internal func checkLogicError(_ error: LogicError) throws {
-        try self.checkErrorContains(errorDescription: error.errorDescription)
-        // `LogicError` does not have error labels or a code name so there is no need to check them.
-    }
-
-    internal func checkInvalidArgumentError(_ error: InvalidArgumentError) throws {
-        try self.checkErrorContains(errorDescription: error.errorDescription)
-        // `InvalidArgumentError` does not have error labels or a code name so there is no need to check them.
-    }
-
-    internal func checkConnectionError(_ error: ConnectionError) throws {
-        try self.checkErrorContains(errorDescription: error.message)
-        try self.checkErrorLabels(errorLabels: error.errorLabels)
-        // `ConnectionError` does not have a code name so there is no need to check it.
     }
 }

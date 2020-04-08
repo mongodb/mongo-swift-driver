@@ -328,7 +328,7 @@ extension SpecTest {
 
         print("Executing test: \(self.description)")
 
-        let clientOptions = self.clientOptions?.toClientOptions() ?? ClientOptions(retryReads: true)
+        let clientOptions = self.clientOptions?.toClientOptions()
 
         let client = try MongoClient.makeTestClient(options: clientOptions)
         let monitor = client.addCommandMonitor()
@@ -377,18 +377,21 @@ extension SpecTest {
             expect(events).to(match(expectations), description: self.description)
         }
 
-        if let outcome = self.outcome {
-            try self.checkOutcome(outcome: outcome, dbName: dbName, collName: collName!)
-        }
+        try self.checkOutcome(dbName: dbName, collName: collName)
     }
 
-    internal func checkOutcome(outcome: TestOutcome, dbName: String, collName: String) throws {
-        let client = try MongoClient.makeTestClient()
-        let verifyColl = client.db(dbName).collection(collName)
-        let foundDocs = try Array(verifyColl.find().all())
-        expect(foundDocs.count).to(equal(outcome.collection.data.count))
-        zip(foundDocs, outcome.collection.data).forEach {
-            expect($0).to(sortedEqual($1), description: self.description)
+    internal func checkOutcome(dbName: String, collName: String?) throws {
+        if let outcome = self.outcome {
+            guard let collName = collName else {
+                throw TestError(message: "outcome specifies a collection but spec test omits collection name")
+            }
+            let client = try MongoClient.makeTestClient()
+            let verifyColl = client.db(dbName).collection(collName)
+            let foundDocs = try verifyColl.find().all()
+            expect(foundDocs.count).to(equal(outcome.collection.data.count))
+            zip(foundDocs, outcome.collection.data).forEach {
+                expect($0).to(sortedEqual($1), description: self.description)
+            }
         }
     }
 }

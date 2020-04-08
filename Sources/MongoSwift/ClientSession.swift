@@ -66,7 +66,8 @@ public final class ClientSession {
     /// The client used to start this session.
     public let client: MongoClient
 
-    /// The session ID of this session. We only have a value available after we've started the libmongoc session.
+    /// The session ID of this session. This is internal for now because we only have a value available after we've
+    /// started the libmongoc session.
     internal var id: Document?
 
     /// The server ID of the mongos this session is pinned to. A server ID of 0 indicates that the session is unpinned.

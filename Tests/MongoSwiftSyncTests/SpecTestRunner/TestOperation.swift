@@ -133,6 +133,8 @@ struct TestOperationDescription: Decodable {
             }
         }
     }
+
+    // swiftlint:enable cyclomatic_complexity
 }
 
 /// Object in which an operation should be executed on.
@@ -211,7 +213,7 @@ struct AnyTestOperation: Decodable, TestOperation {
         case "rename":
             self.op = try container.decode(RenameCollection.self, forKey: .arguments)
         case "startTransaction":
-            self.op = (try? container.decode(StartTransaction.self, forKey: .arguments)) ?? StartTransaction()
+            self.op = (try container.decodeIfPresent(StartTransaction.self, forKey: .arguments)) ?? StartTransaction()
         case "createCollection":
             self.op = try container.decode(CreateCollection.self, forKey: .arguments)
         case "dropCollection":
@@ -358,7 +360,7 @@ struct Find: TestOperation {
         self.options = try FindOptions(from: decoder)
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
-        self.filter = (try? container.decode(Document.self, forKey: .filter)) ?? Document()
+        self.filter = (try container.decodeIfPresent(Document.self, forKey: .filter)) ?? Document()
     }
 
     func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
@@ -757,14 +759,6 @@ struct RenameCollection: TestOperation {
     let session: String?
     let to: String
 
-    private enum CodingKeys: String, CodingKey { case session, to }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.session = try container.decodeIfPresent(String.self, forKey: .session)
-        self.to = try container.decode(String.self, forKey: .to)
-    }
-
     func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
             throw TestError(message: "collection not provided to renameCollection")
@@ -904,17 +898,8 @@ struct EstimatedDocumentCount: TestOperation {
 struct StartTransaction: TestOperation {
     let options: TransactionOptions
 
-    private enum CodingKeys: CodingKey {
-        case options
-    }
-
     init() {
         self.options = TransactionOptions()
-    }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.options = try container.decode(TransactionOptions.self, forKey: .options)
     }
 
     func execute(on target: TestOperationTarget, sessions _: [String: ClientSession])
@@ -953,14 +938,6 @@ struct CreateCollection: TestOperation {
     let session: String?
     let collection: String
 
-    private enum CodingKeys: String, CodingKey { case session, collection }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.session = try container.decodeIfPresent(String.self, forKey: .session)
-        self.collection = try container.decode(String.self, forKey: .collection)
-    }
-
     func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard case let .database(database) = target else {
             throw TestError(message: "database not provided to createCollection")
@@ -973,14 +950,6 @@ struct CreateCollection: TestOperation {
 struct DropCollection: TestOperation {
     let session: String?
     let collection: String
-
-    private enum CodingKeys: String, CodingKey { case session, collection }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.session = try container.decodeIfPresent(String.self, forKey: .session)
-        self.collection = try container.decode(String.self, forKey: .collection)
-    }
 
     func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard case let .database(database) = target else {
@@ -996,15 +965,6 @@ struct CreateIndex: TestOperation {
     let name: String
     let keys: Document
 
-    private enum CodingKeys: String, CodingKey { case session, name, keys }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.session = try container.decodeIfPresent(String.self, forKey: .session)
-        self.name = try container.decode(String.self, forKey: .name)
-        self.keys = try container.decode(Document.self, forKey: .keys)
-    }
-
     func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
             throw TestError(message: "collection not provided to createIndex")
@@ -1018,17 +978,7 @@ struct CreateIndex: TestOperation {
 struct RunCommand: TestOperation {
     let session: String?
     let command: Document
-    let readPreference: ReadPreference
-
-    private enum CodingKeys: String, CodingKey { case session, command, readPreference }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.session = try container.decodeIfPresent(String.self, forKey: .session)
-        self.command = try container.decode(Document.self, forKey: .command)
-        self.readPreference = (try? container.decode(ReadPreference.self, forKey: .readPreference)) ??
-            ReadPreference.primary
-    }
+    let readPreference: ReadPreference?
 
     func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard case let .database(database) = target else {
@@ -1113,13 +1063,6 @@ struct AssertIndexNotExists: TestOperation {
 struct AssertSessionPinned: TestOperation {
     let session: String?
 
-    private enum CodingKeys: String, CodingKey { case session }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.session = try container.decodeIfPresent(String.self, forKey: .session)
-    }
-
     func execute(on _: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard let serverId = sessions[self.session ?? ""]?.serverId else {
             throw TestError(message: "active session not provided to assertSessionPinned")
@@ -1131,13 +1074,6 @@ struct AssertSessionPinned: TestOperation {
 
 struct AssertSessionUnpinned: TestOperation {
     let session: String?
-
-    private enum CodingKeys: String, CodingKey { case session }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.session = try container.decodeIfPresent(String.self, forKey: .session)
-    }
 
     func execute(on _: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard let serverId = sessions[self.session ?? ""]?.serverId else {
@@ -1151,14 +1087,6 @@ struct AssertSessionUnpinned: TestOperation {
 struct AssertSessionTransactionState: TestOperation {
     let session: String?
     let state: ClientSession.TransactionState
-
-    private enum CodingKeys: String, CodingKey { case session, state }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.session = try container.decodeIfPresent(String.self, forKey: .session)
-        self.state = try container.decode(ClientSession.TransactionState.self, forKey: .state)
-    }
 
     func execute(on _: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard let transactionState = sessions[self.session ?? ""]?.transactionState else {
