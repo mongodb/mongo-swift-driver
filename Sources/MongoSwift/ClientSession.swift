@@ -136,6 +136,14 @@ public final class ClientSession {
         }
     }
 
+    /// Indicates whether or not the session is in a transaction.
+    internal var inTransaction: Bool {
+        if let transactionState = self.transactionState {
+            return transactionState != .none
+        }
+        return false
+    }
+
     /// The most recent cluster time seen by this session. This value will be nil if either of the following are true:
     /// - No operations have been executed using this session and `advanceClusterTime` has not been called.
     /// - This session has been ended.

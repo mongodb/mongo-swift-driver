@@ -197,8 +197,7 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
         let opts = try encodeOptions(options: options, session: session)
         var insertedIds: [Int: BSON] = [:]
 
-        if let transactionState = session?.transactionState, transactionState != .none,
-            self.options?.writeConcern != nil {
+        if session?.inTransaction == true && self.options?.writeConcern != nil {
             throw InvalidArgumentError(
                 message: "Cannot specify a write concern on an individual helper in a " +
                     "transaction. Instead specify it when starting the transaction."
@@ -223,7 +222,7 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
                 }
 
                 var writeConcernAcknowledged: Bool
-                if let transactionState = session?.transactionState, transactionState != .none {
+                if session?.inTransaction == true {
                     // Bulk write operations in transactions must get their write concern from the session, not from
                     // the `BulkWriteOptions` passed to the `bulkWrite` helper. `libmongoc` surfaces this
                     // implementation detail by nulling out the write concern stored on the bulk write. To sidestep

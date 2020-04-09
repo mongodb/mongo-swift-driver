@@ -165,7 +165,7 @@ public struct WriteConcernFailure: Codable {
     public let code: ServerErrorCode
 
     /// A human-readable string identifying write concern error.
-    public let codeName: String?
+    public let codeName: String
 
     /// A document identifying the write concern setting related to the error.
     public let details: Document?
@@ -174,7 +174,7 @@ public struct WriteConcernFailure: Codable {
     public let message: String
 
     /// Labels that may describe the context in which this error was thrown.
-    public let errorLabels: [String]? = nil
+    public let errorLabels: [String]?
 
     private enum CodingKeys: String, CodingKey {
         case code
@@ -182,6 +182,27 @@ public struct WriteConcernFailure: Codable {
         case details = "errInfo"
         case message = "errmsg"
         case errorLabels
+    }
+
+    // TODO: can remove this once SERVER-36755 is resolved
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.code = try container.decode(ServerErrorCode.self, forKey: .code)
+        self.message = try container.decode(String.self, forKey: .message)
+        self.codeName = try container.decodeIfPresent(String.self, forKey: .codeName) ?? ""
+        self.details = try container.decodeIfPresent(Document.self, forKey: .details)
+        self.errorLabels = try container.decodeIfPresent([String].self, forKey: .errorLabels)
+    }
+
+    // TODO: can remove this once SERVER-36755 is resolved
+    internal init(
+        code: ServerErrorCode, codeName: String, details: Document?, message: String, errorLabels: [String]? = nil
+    ) {
+        self.code = code
+        self.codeName = codeName
+        self.message = message
+        self.details = details
+        self.errorLabels = errorLabels
     }
 }
 

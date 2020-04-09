@@ -7,7 +7,7 @@ import XCTest
 
 /// A struct containing the portions of a `CommandStartedEvent` the spec tests use for testing.
 internal struct TestCommandStartedEvent: Decodable, Matchable {
-    var command: Document
+    let command: Document
 
     let commandName: String
 
