@@ -71,12 +71,12 @@ public final class ClientSession {
     internal var id: Document?
 
     /// The server ID of the mongos this session is pinned to. A server ID of 0 indicates that the session is unpinned.
-    internal var serverId: Int? {
+    internal var serverId: UInt32? {
         switch self.state {
         case .notStarted, .ended:
             return nil
         case let .started(session, _):
-            return Int(mongoc_client_session_get_server_id(session))
+            return UInt32(mongoc_client_session_get_server_id(session))
         }
     }
 

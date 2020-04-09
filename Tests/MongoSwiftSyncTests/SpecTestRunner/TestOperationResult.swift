@@ -233,6 +233,7 @@ struct ErrorResult: Equatable, Decodable {
     // swiftlint:enable cyclomatic_complexity
 
     internal func checkCodeName(_ error: Error) throws {
+        // TODO: can remove `equal("")` references once SERVER-36755 is resolved
         if let errorCodeName = self.errorCodeName {
             if let commandError = error as? CommandError {
                 expect(commandError.codeName).to(satisfyAnyOf(equal(errorCodeName), equal("")))
@@ -278,11 +279,11 @@ struct ErrorResult: Equatable, Decodable {
                 XCTFail("\(error) does not contain errorLabels")
                 return
             }
-            if labeledError.errorLabels == nil {
+            guard let errorLabels = labeledError.errorLabels else {
                 return
             }
             for label in errorLabelsOmit {
-                expect(labeledError.errorLabels).toNot(contain(label))
+                expect(errorLabels).toNot(contain(label))
             }
         }
     }

@@ -197,7 +197,7 @@ extension MongoSwiftSync.ClientSession {
 
     internal var id: Document? { self.asyncSession.id }
 
-    internal var serverId: Int? { self.asyncSession.serverId }
+    internal var serverId: UInt32? { self.asyncSession.serverId }
 
     internal typealias TransactionState = MongoSwift.ClientSession.TransactionState
 
