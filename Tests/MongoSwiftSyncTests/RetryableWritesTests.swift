@@ -101,7 +101,7 @@ final class RetryableWritesTests: MongoSwiftTestCase, FailPointConfigured {
                 do {
                     result = try test.operation.execute(
                         on: .collection(collection),
-                        sessions: [String: ClientSession]()
+                        sessions: [:]
                     )
                 } catch {
                     if let bulkError = error as? BulkWriteError {

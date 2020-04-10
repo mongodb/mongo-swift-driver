@@ -115,7 +115,7 @@ struct TestOperationDescription: Decodable {
             }
             target = .session(session)
         case .testRunner:
-            target = .testRunner(database)
+            target = .testRunner
         }
 
         do {
@@ -152,8 +152,9 @@ enum TestOperationTarget {
     /// Execute against the provided session.
     case session(ClientSession)
 
-    /// Execute against the provided test runner.
-    case testRunner(MongoDatabase)
+    /// Execute against the provided test runner. Operations that execute on the test runner do not correspond to API
+    /// methods but instead represent special test operations such as asserts.
+    case testRunner
 }
 
 /// Protocol describing the behavior of a spec test "operation"
@@ -236,6 +237,8 @@ struct AnyTestOperation: Decodable, TestOperation {
             self.op = try container.decode(AssertSessionUnpinned.self, forKey: .arguments)
         case "assertSessionTransactionState":
             self.op = try container.decode(AssertSessionTransactionState.self, forKey: .arguments)
+        case "targetedFailPoint":
+            self.op = try container.decode(TargetedFailPoint.self, forKey: .arguments)
         case "drop":
             self.op = Drop()
         case "listDatabaseNames":
@@ -260,7 +263,7 @@ struct AnyTestOperation: Decodable, TestOperation {
             self.op = CommitTransaction()
         case "abortTransaction":
             self.op = AbortTransaction()
-        case "mapReduce", "download_by_name", "download", "count", "targetedFailPoint":
+        case "mapReduce", "download_by_name", "download", "count":
             self.op = NotImplemented(name: opName)
         default:
             throw TestError(message: "unsupported op name \(opName)")
@@ -792,7 +795,7 @@ struct ListDatabaseNames: TestOperation {
         guard case let .client(client) = target else {
             throw TestError(message: "client not provided to listDatabaseNames")
         }
-        return try .array(client.listDatabaseNames(session: nil).map { .string($0) })
+        return try .array(client.listDatabaseNames().map { .string($0) })
     }
 }
 
@@ -802,7 +805,7 @@ struct ListIndexes: TestOperation {
         guard case let .collection(collection) = target else {
             throw TestError(message: "collection not provided to listIndexes")
         }
-        return try TestOperationResult(from: collection.listIndexes(session: nil))
+        return try TestOperationResult(from: collection.listIndexes())
     }
 }
 
@@ -812,7 +815,7 @@ struct ListIndexNames: TestOperation {
         guard case let .collection(collection) = target else {
             throw TestError(message: "collection not provided to listIndexNames")
         }
-        return try .array(collection.listIndexNames(session: nil).map { .string($0) })
+        return try .array(collection.listIndexNames().map { .string($0) })
     }
 }
 
@@ -822,7 +825,7 @@ struct ListDatabases: TestOperation {
         guard case let .client(client) = target else {
             throw TestError(message: "client not provided to listDatabases")
         }
-        return try TestOperationResult(from: client.listDatabases(session: nil))
+        return try TestOperationResult(from: client.listDatabases())
     }
 }
 
@@ -832,7 +835,7 @@ struct ListMongoDatabases: TestOperation {
         guard case let .client(client) = target else {
             throw TestError(message: "client not provided to listDatabases")
         }
-        _ = try client.listMongoDatabases(session: nil)
+        _ = try client.listMongoDatabases()
         return nil
     }
 }
@@ -843,7 +846,7 @@ struct ListCollections: TestOperation {
         guard case let .database(database) = target else {
             throw TestError(message: "database not provided to listCollections")
         }
-        return try TestOperationResult(from: database.listCollections(session: nil))
+        return try TestOperationResult(from: database.listCollections())
     }
 }
 
@@ -853,7 +856,7 @@ struct ListMongoCollections: TestOperation {
         guard case let .database(database) = target else {
             throw TestError(message: "database not provided to listCollectionObjects")
         }
-        _ = try database.listMongoCollections(session: nil)
+        _ = try database.listMongoCollections()
         return nil
     }
 }
@@ -864,7 +867,7 @@ struct ListCollectionNames: TestOperation {
         guard case let .database(database) = target else {
             throw TestError(message: "database not provided to listCollectionNames")
         }
-        return try .array(database.listCollectionNames(session: nil).map { .string($0) })
+        return try .array(database.listCollectionNames().map { .string($0) })
     }
 }
 
@@ -873,13 +876,15 @@ struct Watch: TestOperation {
         throws -> TestOperationResult? {
         switch target {
         case let .client(client):
-            _ = try client.watch(session: nil)
+            _ = try client.watch()
         case let .database(database):
-            _ = try database.watch(session: nil)
+            _ = try database.watch()
         case let .collection(collection):
-            _ = try collection.watch(session: nil)
-        case .session, .testRunner:
-            break
+            _ = try collection.watch()
+        case .session:
+            throw TestError(message: "watch cannot be executed on a session")
+        case .testRunner:
+            throw TestError(message: "watch cannot be executed on the test runner")
         }
         return nil
     }
@@ -891,7 +896,7 @@ struct EstimatedDocumentCount: TestOperation {
         guard case let .collection(collection) = target else {
             throw TestError(message: "collection not provided to estimatedDocumentCount")
         }
-        return try .int(collection.estimatedDocumentCount(session: nil))
+        return try .int(collection.estimatedDocumentCount())
     }
 }
 
@@ -907,7 +912,7 @@ struct StartTransaction: TestOperation {
         guard case let .session(session) = target else {
             throw TestError(message: "session not provided to startTransaction")
         }
-        _ = try session.startTransaction(options: self.options)
+        try session.startTransaction(options: self.options)
         return nil
     }
 }
@@ -1000,11 +1005,11 @@ struct AssertCollectionExists: TestOperation {
 
     func execute(on target: TestOperationTarget, sessions _: [String: ClientSession])
         throws -> TestOperationResult? {
-        guard case let .testRunner(database) = target else {
-            throw TestError(message: "database not provided to assertCollectionExists")
+        guard case .testRunner = target else {
+            throw TestError(message: "test runner not provided to assertCollectionExists")
         }
         let client = try MongoClient.makeTestClient()
-        let collectionNames = try client.db(database.name).listCollectionNames(session: nil)
+        let collectionNames = try client.db(self.database).listCollectionNames()
         expect(collectionNames).to(contain(self.collection))
         return nil
     }
@@ -1016,11 +1021,11 @@ struct AssertCollectionNotExists: TestOperation {
 
     func execute(on target: TestOperationTarget, sessions _: [String: ClientSession])
         throws -> TestOperationResult? {
-        guard case let .testRunner(database) = target else {
-            throw TestError(message: "database not provided to assertCollectionNotExists")
+        guard case .testRunner = target else {
+            throw TestError(message: "test runner not provided to assertCollectionNotExists")
         }
         let client = try MongoClient.makeTestClient()
-        let collectionNames = try client.db(database.name).listCollectionNames(session: nil)
+        let collectionNames = try client.db(self.database).listCollectionNames()
         expect(collectionNames).toNot(contain(self.collection))
         return nil
     }
@@ -1033,11 +1038,11 @@ struct AssertIndexExists: TestOperation {
 
     func execute(on target: TestOperationTarget, sessions _: [String: ClientSession])
         throws -> TestOperationResult? {
-        guard case let .testRunner(database) = target else {
-            throw TestError(message: "database not provided to assertIndexExists")
+        guard case .testRunner = target else {
+            throw TestError(message: "test runner not provided to assertIndexExists")
         }
         let client = try MongoClient.makeTestClient()
-        let indexNames = try client.db(database.name).collection(self.collection).listIndexNames(session: nil)
+        let indexNames = try client.db(self.database).collection(self.collection).listIndexNames()
         expect(indexNames).to(contain(self.index))
         return nil
     }
@@ -1050,11 +1055,11 @@ struct AssertIndexNotExists: TestOperation {
 
     func execute(on target: TestOperationTarget, sessions _: [String: ClientSession])
         throws -> TestOperationResult? {
-        guard case let .testRunner(database) = target else {
-            throw TestError(message: "database not provided to assertIndexNotExists")
+        guard case .testRunner = target else {
+            throw TestError(message: "test runner not provided to assertIndexNotExists")
         }
         let client = try MongoClient.makeTestClient()
-        let indexNames = try client.db(database.name).collection(self.collection).listIndexNames(session: nil)
+        let indexNames = try client.db(self.database).collection(self.collection).listIndexNames()
         expect(indexNames).toNot(contain(self.index))
         return nil
     }
@@ -1063,19 +1068,10 @@ struct AssertIndexNotExists: TestOperation {
 struct AssertSessionPinned: TestOperation {
     let session: String?
 
-    func execute(on _: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
-        guard let serverId = sessions[self.session ?? ""]?.serverId else {
-            throw TestError(message: "active session not provided to assertSessionPinned")
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
+        guard case .testRunner = target else {
+            throw TestError(message: "test runner not provided to assertSessionPinned")
         }
-        expect(serverId).to(equal(0))
-        return nil
-    }
-}
-
-struct AssertSessionUnpinned: TestOperation {
-    let session: String?
-
-    func execute(on _: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard let serverId = sessions[self.session ?? ""]?.serverId else {
             throw TestError(message: "active session not provided to assertSessionPinned")
         }
@@ -1084,15 +1080,47 @@ struct AssertSessionUnpinned: TestOperation {
     }
 }
 
+struct AssertSessionUnpinned: TestOperation {
+    let session: String?
+
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
+        guard case .testRunner = target else {
+            throw TestError(message: "test runner not provided to assertSessionUnpinned")
+        }
+        guard let serverId = sessions[self.session ?? ""]?.serverId else {
+            throw TestError(message: "active session not provided to assertSessionPinned")
+        }
+        expect(serverId).to(equal(0))
+        return nil
+    }
+}
+
 struct AssertSessionTransactionState: TestOperation {
     let session: String?
     let state: ClientSession.TransactionState
 
-    func execute(on _: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
+        guard case .testRunner = target else {
+            throw TestError(message: "test runner not provided to assertSessionTransactionState")
+        }
         guard let transactionState = sessions[self.session ?? ""]?.transactionState else {
             throw TestError(message: "active session not provided to assertSessionTransactionState")
         }
         expect(transactionState).to(equal(self.state))
+        return nil
+    }
+}
+
+struct TargetedFailPoint: TestOperation {
+    let session: String?
+    let failPoint: Document
+
+    func execute(on target: TestOperationTarget, sessions _: [String: ClientSession]) throws -> TestOperationResult? {
+        guard case .testRunner = target else {
+            throw TestError(message: "test runner not provided to targetedFailPoint")
+        }
+        let client = try MongoClient.makeTestClient()
+        try client.db("admin").runCommand(self.failPoint)
         return nil
     }
 }

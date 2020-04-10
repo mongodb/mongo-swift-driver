@@ -58,10 +58,10 @@ final class TransactionsTests: MongoSwiftTestCase, FailPointConfigured {
 
     func testTransactions() throws {
         let skippedTestKeywords = [
-            "count", // skipped in RetryableReadsTests.swift
-            "mongos-pin-auto", // useMultipleMongoses, targetedFailPoint not implemented
-            "mongos-recovery-token", // useMultipleMongoses, targetedFailPoint not implemented
-            "pin-mongos", // useMultipleMongoses, targetedFailPoint not implemented
+            "count", // old count API was deprecated before MongoDB 4.0 and is not supported by the driver
+            "mongos-pin-auto", // TODO: see SWIFT-774
+            "mongos-recovery-token", // TODO: see SWIFT-774
+            "pin-mongos", // TODO: see SWIFT-774
             "retryable-abort-errorLabels", // requires libmongoc v1.17 (see SWIFT-762)
             "retryable-commit-errorLabels" // requires libmongoc v1.17 (see SWIFT-762)
         ]

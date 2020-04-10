@@ -330,7 +330,14 @@ extension SpecTest {
 
         let clientOptions = self.clientOptions?.toClientOptions()
 
-        let client = try MongoClient.makeTestClient(options: clientOptions)
+        var singleMongos = true
+        if let useMultipleMongoses = self.useMultipleMongoses, useMultipleMongoses == true {
+            singleMongos = false
+        }
+
+        let client = try MongoClient.makeTestClient(
+            MongoSwiftTestCase.getConnectionString(singleMongos: singleMongos), options: clientOptions
+        )
         let monitor = client.addCommandMonitor()
 
         if let collName = collName {

@@ -76,7 +76,7 @@ public final class ClientSession {
         case .notStarted, .ended:
             return nil
         case let .started(session, _):
-            return UInt32(mongoc_client_session_get_server_id(session))
+            return mongoc_client_session_get_server_id(session)
         }
     }
 

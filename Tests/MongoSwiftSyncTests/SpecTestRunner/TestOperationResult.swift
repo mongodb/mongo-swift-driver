@@ -183,13 +183,6 @@ struct ErrorResult: Equatable, Decodable {
         self.errorLabelsOmit = try container.decodeIfPresent([String].self, forKey: .errorLabelsOmit)
     }
 
-    internal static func == (lhs: ErrorResult, rhs: ErrorResult) -> Bool {
-        lhs.errorContains == rhs.errorContains &&
-            lhs.errorCodeName == rhs.errorCodeName &&
-            lhs.errorLabelsContain == rhs.errorLabelsContain &&
-            lhs.errorLabelsOmit == rhs.errorLabelsOmit
-    }
-
     public func checkErrorResult(_ error: Error) throws {
         try self.checkErrorContains(error)
         try self.checkCodeName(error)
