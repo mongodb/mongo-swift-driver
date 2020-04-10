@@ -334,7 +334,7 @@ extension SpecTest {
             // Keep track of the session IDs assigned to each session.
             // Deinitialize each session thereby implicitly ending them.
             for session in sessions.keys {
-                sessionIds[sessions[session]?.id ?? Document()] = session
+                if let sessionId = sessions[session]?.id { sessionIds[sessionId] = session }
                 sessions[session] = nil
             }
         }
