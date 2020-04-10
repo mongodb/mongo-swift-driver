@@ -426,11 +426,23 @@ public final class ClientSession {
         options: TransactionOptions?,
         _ transactionBody: @escaping (ClientSession) throws -> EventLoopFuture<T>
     ) -> EventLoopFuture<T> {
-        self.startTransaction(options: options).flatMap { _ in
+        let maybeRetryOrFail = { (error: Error) -> EventLoopFuture<T> in
+            if let labeledError = error as? LabeledError, let errorLabels = labeledError.errorLabels,
+                retryTimeoutTime.timeIntervalSinceNow > 0 && errorLabels.contains("TransientTransactionError") {
+                return self.attemptTransaction(
+                    retryTimeoutTime: retryTimeoutTime,
+                    options: options,
+                    transactionBody
+                )
+            }
+            return self.client.operationExecutor.makeFailedFuture(error)
+        }
+
+        return self.startTransaction(options: options).flatMap { _ in
             do {
                 let transactionBodyFuture = try transactionBody(self)
                 return transactionBodyFuture.flatMap { value in
-                    if [.none, .committed, .aborted].contains(self.transactionState ?? .none) {
+                    if let state = self.transactionState, [.none, .committed, .aborted].contains(state) {
                         return self.client.operationExecutor.makeSucceededFuture(value)
                     }
                     return self.attemptTransactionCommit(
@@ -440,22 +452,12 @@ public final class ClientSession {
                         transactionBody
                     )
                 }.flatMapError { error in
-                    if [.starting, .inProgress].contains(self.transactionState ?? .none) {
+                    if let state = self.transactionState, [.starting, .inProgress].contains(state) {
                         return self.abortTransaction().flatMap { _ in
-                            self.maybeRetryOrFail(
-                                error: error,
-                                retryTimeoutTime: retryTimeoutTime,
-                                options: options,
-                                transactionBody
-                            )
+                            maybeRetryOrFail(error)
                         }
                     }
-                    return self.maybeRetryOrFail(
-                        error: error,
-                        retryTimeoutTime: retryTimeoutTime,
-                        options: options,
-                        transactionBody
-                    )
+                    return maybeRetryOrFail(error)
                 }
             } catch {
                 return self.client.operationExecutor.makeFailedFuture(error)
@@ -495,24 +497,5 @@ public final class ClientSession {
             }
             return self.client.operationExecutor.makeFailedFuture(error)
         }
-    }
-
-    // Private helper function that attempts to retry a multi-document transaction, whenever possible.
-    // - Note: This function should not be used outside the context of `withTransaction`.
-    private func maybeRetryOrFail<T>(
-        error: Error,
-        retryTimeoutTime: Date,
-        options: TransactionOptions?,
-        _ transactionBody: @escaping (ClientSession) throws -> EventLoopFuture<T>
-    ) -> EventLoopFuture<T> {
-        if let labeledError = error as? LabeledError, let errorLabels = labeledError.errorLabels,
-            retryTimeoutTime.timeIntervalSinceNow > 0 && errorLabels.contains("TransientTransactionError") {
-            return self.attemptTransaction(
-                retryTimeoutTime: retryTimeoutTime,
-                options: options,
-                transactionBody
-            )
-        }
-        return self.client.operationExecutor.makeFailedFuture(error)
     }
 }
