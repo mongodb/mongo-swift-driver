@@ -4,8 +4,6 @@ import NIOConcurrencyHelpers
 
 /// Options to use when creating a `MongoClient`.
 public struct ClientOptions: CodingStrategyProvider {
-    // swiftlint:disable redundant_optional_initialization
-
     /// Specifies the `DataCodingStrategy` to use for BSON encoding/decoding operations performed by this client and any
     /// databases or collections that derive from it.
     public var dataCodingStrategy: DataCodingStrategy?
