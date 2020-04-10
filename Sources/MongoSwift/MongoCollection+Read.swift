@@ -114,11 +114,11 @@ extension MongoCollection {
     }
 
     /**
-     * Gets an estimate of the count of documents in this collection using collection metadata.
+     * Gets an estimate of the count of documents in this collection using collection metadata. This operation cannot
+     * be used in a transaction.
      *
      * - Parameters:
      *   - options: Optional `EstimatedDocumentCountOptions` to use when executing the command
-     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns:
      *    An `EventLoopFuture<Int>`. On success, contains an estimate of the count of documents in this collection.
@@ -126,16 +126,12 @@ extension MongoCollection {
      *    If the future fails, the error is likely one of the following:
      *    - `CommandError` if an error occurs that prevents the command from executing.
      *    - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *    - `LogicError` if the provided session is inactive.
      *    - `LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
-    public func estimatedDocumentCount(
-        options: EstimatedDocumentCountOptions? = nil,
-        session: ClientSession? = nil
-    ) -> EventLoopFuture<Int> {
+    public func estimatedDocumentCount(options: EstimatedDocumentCountOptions? = nil) -> EventLoopFuture<Int> {
         let operation = EstimatedDocumentCountOperation(collection: self, options: options)
-        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
+        return self._client.operationExecutor.execute(operation, client: self._client, session: nil)
     }
 
     /**

@@ -69,7 +69,7 @@ internal struct ChangeStreamTestOperation: Decodable {
     internal func execute(using client: MongoClient) throws -> TestOperationResult? {
         let db = client.db(self.database)
         let coll = db.collection(self.collection)
-        return try self.operation.execute(on: .collection(coll), session: nil)
+        return try self.operation.execute(on: .collection(coll), sessions: [:])
     }
 }
 

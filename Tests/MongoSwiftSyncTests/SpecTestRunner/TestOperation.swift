@@ -3,8 +3,42 @@ import Nimble
 import TestsCommon
 
 /// A enumeration of the different objects a `TestOperation` may be performed against.
-enum TestOperationObject: String, Decodable {
-    case client, database, collection, gridfsbucket
+enum TestOperationObject: RawRepresentable, Decodable {
+    case client, database, collection, gridfsbucket, testRunner, session(String)
+
+    public var rawValue: String {
+        switch self {
+        case .client:
+            return "client"
+        case .database:
+            return "database"
+        case .collection:
+            return "collection"
+        case .gridfsbucket:
+            return "gridfsbucket"
+        case .testRunner:
+            return "testRunner"
+        case let .session(sessionName):
+            return sessionName
+        }
+    }
+
+    public init(rawValue: String) {
+        switch rawValue {
+        case "client":
+            self = .client
+        case "database":
+            self = .database
+        case "collection":
+            self = .collection
+        case "gridfsbucket":
+            self = .gridfsbucket
+        case "testRunner":
+            self = .testRunner
+        default:
+            self = .session(rawValue)
+        }
+    }
 }
 
 /// Struct containing an operation and an expected outcome.
@@ -21,8 +55,17 @@ struct TestOperationDescription: Decodable {
     /// Whether the operation should expect an error.
     let error: Bool?
 
-    public enum CodingKeys: CodingKey {
-        case object, result, error
+    /// The parameters to pass to the database used for this operation.
+    let databaseOptions: DatabaseOptions?
+
+    /// The parameters to pass to the collection used for this operation.
+    let collectionOptions: CollectionOptions?
+
+    /// Present only when the operation is `runCommand`. The name of the command to run.
+    let commandName: String?
+
+    public enum CodingKeys: String, CodingKey {
+        case object, result, error, databaseOptions, collectionOptions, commandName = "command_name"
     }
 
     public init(from decoder: Decoder) throws {
@@ -32,23 +75,32 @@ struct TestOperationDescription: Decodable {
         self.object = try container.decode(TestOperationObject.self, forKey: .object)
         self.result = try container.decodeIfPresent(TestOperationResult.self, forKey: .result)
         self.error = try container.decodeIfPresent(Bool.self, forKey: .error)
+        self.databaseOptions = try container.decodeIfPresent(DatabaseOptions.self, forKey: .databaseOptions)
+        self.collectionOptions = try container.decodeIfPresent(CollectionOptions.self, forKey: .collectionOptions)
+        self.commandName = try container.decodeIfPresent(String.self, forKey: .commandName)
     }
+
+    // swiftlint:disable cyclomatic_complexity
 
     /// Runs the operation and asserts its results meet the expectation.
     func validateExecution(
         client: MongoClient,
-        database: MongoDatabase?,
-        collection: MongoCollection<Document>?,
-        session: ClientSession?
+        dbName: String,
+        collName: String?,
+        sessions: [String: ClientSession]
     ) throws {
+        let database = client.db(dbName, options: self.databaseOptions)
+        var collection: MongoCollection<Document>?
+
+        if let collName = collName {
+            collection = database.collection(collName, options: self.collectionOptions)
+        }
+
         let target: TestOperationTarget
         switch self.object {
         case .client:
             target = .client(client)
         case .database:
-            guard let database = database else {
-                throw TestError(message: "got database object but was not provided a database")
-            }
             target = .database(database)
         case .collection:
             guard let collection = collection else {
@@ -57,19 +109,32 @@ struct TestOperationDescription: Decodable {
             target = .collection(collection)
         case .gridfsbucket:
             throw TestError(message: "gridfs tests should be skipped")
+        case let .session(sessionName):
+            guard let session = sessions[sessionName] else {
+                throw TestError(message: "got session object but was not provided a session")
+            }
+            target = .session(session)
+        case .testRunner:
+            target = .testRunner
         }
 
         do {
-            let result = try self.operation.execute(on: target, session: session)
+            let result = try self.operation.execute(on: target, sessions: sessions)
             expect(self.error ?? false)
                 .to(beFalse(), description: "expected to fail but succeeded with result \(String(describing: result))")
             if let expectedResult = self.result {
-                expect(result).to(equal(expectedResult))
+                expect(result?.matches(expected: expectedResult)).to(beTrue())
             }
         } catch {
-            expect(self.error ?? false).to(beTrue(), description: "expected no error, got \(error)")
+            if case let .error(expectedErrorResult) = self.result {
+                try expectedErrorResult.checkErrorResult(error)
+            } else {
+                expect(self.error ?? false).to(beTrue(), description: "expected no error, got \(error)")
+            }
         }
     }
+
+    // swiftlint:enable cyclomatic_complexity
 }
 
 /// Object in which an operation should be executed on.
@@ -83,12 +148,19 @@ enum TestOperationTarget {
 
     /// Execute against the provided collection.
     case collection(MongoCollection<Document>)
+
+    /// Execute against the provided session.
+    case session(ClientSession)
+
+    /// Execute against the provided test runner. Operations that execute on the test runner do not correspond to API
+    /// methods but instead represent special test operations such as asserts.
+    case testRunner
 }
 
 /// Protocol describing the behavior of a spec test "operation"
 protocol TestOperation: Decodable {
     /// Execute the operation given the context.
-    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult?
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult?
 }
 
 /// Wrapper around a `TestOperation.swift` allowing it to be decoded from a spec test.
@@ -141,8 +213,34 @@ struct AnyTestOperation: Decodable, TestOperation {
             self.op = try container.decode(ReplaceOne.self, forKey: .arguments)
         case "rename":
             self.op = try container.decode(RenameCollection.self, forKey: .arguments)
+        case "startTransaction":
+            self.op = (try container.decodeIfPresent(StartTransaction.self, forKey: .arguments)) ?? StartTransaction()
+        case "createCollection":
+            self.op = try container.decode(CreateCollection.self, forKey: .arguments)
+        case "dropCollection":
+            self.op = try container.decode(DropCollection.self, forKey: .arguments)
+        case "createIndex":
+            self.op = try container.decode(CreateIndex.self, forKey: .arguments)
+        case "runCommand":
+            self.op = try container.decode(RunCommand.self, forKey: .arguments)
+        case "assertCollectionExists":
+            self.op = try container.decode(AssertCollectionExists.self, forKey: .arguments)
+        case "assertCollectionNotExists":
+            self.op = try container.decode(AssertCollectionNotExists.self, forKey: .arguments)
+        case "assertIndexExists":
+            self.op = try container.decode(AssertIndexExists.self, forKey: .arguments)
+        case "assertIndexNotExists":
+            self.op = try container.decode(AssertIndexNotExists.self, forKey: .arguments)
+        case "assertSessionPinned":
+            self.op = try container.decode(AssertSessionPinned.self, forKey: .arguments)
+        case "assertSessionUnpinned":
+            self.op = try container.decode(AssertSessionUnpinned.self, forKey: .arguments)
+        case "assertSessionTransactionState":
+            self.op = try container.decode(AssertSessionTransactionState.self, forKey: .arguments)
+        case "targetedFailPoint":
+            self.op = try container.decode(TargetedFailPoint.self, forKey: .arguments)
         case "drop":
-            self.op = DropCollection()
+            self.op = Drop()
         case "listDatabaseNames":
             self.op = ListDatabaseNames()
         case "listDatabases":
@@ -161,6 +259,10 @@ struct AnyTestOperation: Decodable, TestOperation {
             self.op = ListCollectionNames()
         case "watch":
             self.op = Watch()
+        case "commitTransaction":
+            self.op = CommitTransaction()
+        case "abortTransaction":
+            self.op = AbortTransaction()
         case "mapReduce", "download_by_name", "download", "count":
             self.op = NotImplemented(name: opName)
         default:
@@ -168,68 +270,75 @@ struct AnyTestOperation: Decodable, TestOperation {
         }
     }
 
-    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
-        try self.op.execute(on: target, session: session)
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
+        try self.op.execute(on: target, sessions: sessions)
     }
 }
 
 struct Aggregate: TestOperation {
+    let session: String?
     let pipeline: [Document]
     let options: AggregateOptions
 
-    private enum CodingKeys: String, CodingKey { case pipeline }
+    private enum CodingKeys: String, CodingKey { case session, pipeline }
 
     init(from decoder: Decoder) throws {
         self.options = try AggregateOptions(from: decoder)
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.session = try container.decodeIfPresent(String.self, forKey: .session)
         self.pipeline = try container.decode([Document].self, forKey: .pipeline)
     }
 
-    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
             throw TestError(message: "collection not provided to aggregate")
         }
         return try TestOperationResult(
-            from: collection.aggregate(self.pipeline, options: self.options, session: session)
+            from: collection.aggregate(self.pipeline, options: self.options, session: sessions[self.session ?? ""])
         )
     }
 }
 
 struct CountDocuments: TestOperation {
+    let session: String?
     let filter: Document
     let options: CountDocumentsOptions
 
-    private enum CodingKeys: String, CodingKey { case filter }
+    private enum CodingKeys: String, CodingKey { case session, filter }
 
     init(from decoder: Decoder) throws {
         self.options = try CountDocumentsOptions(from: decoder)
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.session = try container.decodeIfPresent(String.self, forKey: .session)
         self.filter = try container.decode(Document.self, forKey: .filter)
     }
 
-    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
             throw TestError(message: "collection not provided to count")
         }
-        return .int(try collection.countDocuments(self.filter, options: self.options, session: session))
+        return .int(
+            try collection.countDocuments(self.filter, options: self.options, session: sessions[self.session ?? ""]))
     }
 }
 
 struct Distinct: TestOperation {
+    let session: String?
     let fieldName: String
     let filter: Document?
     let options: DistinctOptions
 
-    private enum CodingKeys: String, CodingKey { case fieldName, filter }
+    private enum CodingKeys: String, CodingKey { case session, fieldName, filter }
 
     init(from decoder: Decoder) throws {
         self.options = try DistinctOptions(from: decoder)
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.session = try container.decodeIfPresent(String.self, forKey: .session)
         self.fieldName = try container.decode(String.self, forKey: .fieldName)
         self.filter = try container.decodeIfPresent(Document.self, forKey: .filter)
     }
 
-    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
             throw TestError(message: "collection not provided to distinct")
         }
@@ -237,67 +346,77 @@ struct Distinct: TestOperation {
             fieldName: self.fieldName,
             filter: self.filter ?? [:],
             options: self.options,
-            session: session
+            session: sessions[self.session ?? ""]
         )
         return .array(result)
     }
 }
 
 struct Find: TestOperation {
+    let session: String?
     let filter: Document
     let options: FindOptions
 
-    private enum CodingKeys: String, CodingKey { case filter }
+    private enum CodingKeys: String, CodingKey { case session, filter }
 
     init(from decoder: Decoder) throws {
         self.options = try FindOptions(from: decoder)
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.filter = try container.decode(Document.self, forKey: .filter)
+        self.session = try container.decodeIfPresent(String.self, forKey: .session)
+        self.filter = (try container.decodeIfPresent(Document.self, forKey: .filter)) ?? Document()
     }
 
-    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
             throw TestError(message: "collection not provided to find")
         }
-        return try TestOperationResult(from: collection.find(self.filter, options: self.options, session: session))
+        return try TestOperationResult(
+            from: collection.find(self.filter, options: self.options, session: sessions[self.session ?? ""])
+        )
     }
 }
 
 struct FindOne: TestOperation {
+    let session: String?
     let filter: Document
     let options: FindOneOptions
 
-    private enum CodingKeys: String, CodingKey { case filter }
+    private enum CodingKeys: String, CodingKey { case session, filter }
 
     init(from decoder: Decoder) throws {
         self.options = try FindOneOptions(from: decoder)
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.session = try container.decodeIfPresent(String.self, forKey: .session)
         self.filter = try container.decode(Document.self, forKey: .filter)
     }
 
-    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
             throw TestError(message: "collection not provided to findOne")
         }
-        return try TestOperationResult(from: collection.findOne(self.filter, options: self.options, session: session))
+        return try TestOperationResult(
+            from: collection.findOne(self.filter, options: self.options, session: sessions[self.session ?? ""])
+        )
     }
 }
 
 struct UpdateOne: TestOperation {
+    let session: String?
     let filter: Document
     let update: Document
     let options: UpdateOptions
 
-    private enum CodingKeys: String, CodingKey { case filter, update }
+    private enum CodingKeys: String, CodingKey { case session, filter, update }
 
     init(from decoder: Decoder) throws {
         self.options = try UpdateOptions(from: decoder)
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.session = try container.decodeIfPresent(String.self, forKey: .session)
         self.filter = try container.decode(Document.self, forKey: .filter)
         self.update = try container.decode(Document.self, forKey: .update)
     }
 
-    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
             throw TestError(message: "collection not provided to updateOne")
         }
@@ -306,27 +425,29 @@ struct UpdateOne: TestOperation {
             filter: self.filter,
             update: self.update,
             options: self.options,
-            session: session
+            session: sessions[self.session ?? ""]
         )
         return TestOperationResult(from: result)
     }
 }
 
 struct UpdateMany: TestOperation {
+    let session: String?
     let filter: Document
     let update: Document
     let options: UpdateOptions
 
-    private enum CodingKeys: String, CodingKey { case filter, update }
+    private enum CodingKeys: String, CodingKey { case session, filter, update }
 
     init(from decoder: Decoder) throws {
         self.options = try UpdateOptions(from: decoder)
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.session = try container.decodeIfPresent(String.self, forKey: .session)
         self.filter = try container.decode(Document.self, forKey: .filter)
         self.update = try container.decode(Document.self, forKey: .update)
     }
 
-    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
             throw TestError(message: "collection not provided to ")
         }
@@ -335,74 +456,85 @@ struct UpdateMany: TestOperation {
             filter: self.filter,
             update: self.update,
             options: self.options,
-            session: session
+            session: sessions[self.session ?? ""]
         )
         return TestOperationResult(from: result)
     }
 }
 
 struct DeleteMany: TestOperation {
+    let session: String?
     let filter: Document
     let options: DeleteOptions
 
-    private enum CodingKeys: String, CodingKey { case filter }
+    private enum CodingKeys: String, CodingKey { case session, filter }
 
     init(from decoder: Decoder) throws {
         self.options = try DeleteOptions(from: decoder)
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.session = try container.decodeIfPresent(String.self, forKey: .session)
         self.filter = try container.decode(Document.self, forKey: .filter)
     }
 
-    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
             throw TestError(message: "collection not provided to deleteMany")
         }
-        let result = try collection.deleteMany(self.filter, options: self.options, session: session)
+        let result =
+            try collection.deleteMany(self.filter, options: self.options, session: sessions[self.session ?? ""])
         return TestOperationResult(from: result)
     }
 }
 
 struct DeleteOne: TestOperation {
+    let session: String?
     let filter: Document
     let options: DeleteOptions
 
-    private enum CodingKeys: String, CodingKey { case filter }
+    private enum CodingKeys: String, CodingKey { case session, filter }
 
     init(from decoder: Decoder) throws {
         self.options = try DeleteOptions(from: decoder)
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.session = try container.decodeIfPresent(String.self, forKey: .session)
         self.filter = try container.decode(Document.self, forKey: .filter)
     }
 
-    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
             throw TestError(message: "collection not provided to deleteOne")
         }
-        let result = try collection.deleteOne(self.filter, options: self.options, session: session)
+        let result = try collection.deleteOne(self.filter, options: self.options, session: sessions[self.session ?? ""])
         return TestOperationResult(from: result)
     }
 }
 
 struct InsertOne: TestOperation {
+    let session: String?
     let document: Document
 
-    func execute(on target: TestOperationTarget, session _: ClientSession?) throws -> TestOperationResult? {
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
             throw TestError(message: "collection not provided to insertOne")
         }
-        return TestOperationResult(from: try collection.insertOne(self.document))
+        return TestOperationResult(from: try collection.insertOne(self.document, session: sessions[self.session ?? ""]))
     }
 }
 
 struct InsertMany: TestOperation {
+    let session: String?
     let documents: [Document]
-    let options: InsertManyOptions
+    let options: InsertManyOptions?
 
-    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
             throw TestError(message: "collection not provided to insertMany")
         }
-        let result = try collection.insertMany(self.documents, options: self.options, session: session)
+        let result = try collection.insertMany(
+            self.documents,
+            options: self.options,
+            session: sessions[self.session ?? ""]
+        )
         return TestOperationResult(from: result)
     }
 }
@@ -414,19 +546,19 @@ extension WriteModel: Decodable {
     }
 
     private enum InsertOneKeys: CodingKey {
-        case document
+        case session, document
     }
 
     private enum DeleteKeys: CodingKey {
-        case filter
+        case session, filter
     }
 
     private enum ReplaceOneKeys: CodingKey {
-        case filter, replacement
+        case session, filter, replacement
     }
 
     private enum UpdateKeys: CodingKey {
-        case filter, update
+        case session, filter, update
     }
 
     public init(from decoder: Decoder) throws {
@@ -470,33 +602,37 @@ extension WriteModel: Decodable {
 }
 
 struct BulkWrite: TestOperation {
+    let session: String?
     let requests: [WriteModel<Document>]
-    let options: BulkWriteOptions
+    let options: BulkWriteOptions?
 
-    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
             throw TestError(message: "collection not provided to bulk write")
         }
-        let result = try collection.bulkWrite(self.requests, options: self.options, session: session)
+        let result =
+            try collection.bulkWrite(self.requests, options: self.options, session: sessions[self.session ?? ""])
         return TestOperationResult(from: result)
     }
 }
 
 struct FindOneAndUpdate: TestOperation {
+    let session: String?
     let filter: Document
     let update: Document
     let options: FindOneAndUpdateOptions
 
-    private enum CodingKeys: String, CodingKey { case filter, update }
+    private enum CodingKeys: String, CodingKey { case session, filter, update }
 
     init(from decoder: Decoder) throws {
         self.options = try FindOneAndUpdateOptions(from: decoder)
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.session = try container.decodeIfPresent(String.self, forKey: .session)
         self.filter = try container.decode(Document.self, forKey: .filter)
         self.update = try container.decode(Document.self, forKey: .update)
     }
 
-    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
             throw TestError(message: "collection not provided to findOneAndUpdate")
         }
@@ -504,48 +640,56 @@ struct FindOneAndUpdate: TestOperation {
             filter: self.filter,
             update: self.update,
             options: self.options,
-            session: session
+            session: sessions[self.session ?? ""]
         )
         return TestOperationResult(from: doc)
     }
 }
 
 struct FindOneAndDelete: TestOperation {
+    let session: String?
     let filter: Document
     let options: FindOneAndDeleteOptions
 
-    private enum CodingKeys: String, CodingKey { case filter }
+    private enum CodingKeys: String, CodingKey { case session, filter }
 
     init(from decoder: Decoder) throws {
         self.options = try FindOneAndDeleteOptions(from: decoder)
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.session = try container.decodeIfPresent(String.self, forKey: .session)
         self.filter = try container.decode(Document.self, forKey: .filter)
     }
 
-    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
             throw TestError(message: "collection not provided to findOneAndDelete")
         }
-        let result = try collection.findOneAndDelete(self.filter, options: self.options, session: session)
+        let result = try collection.findOneAndDelete(
+            self.filter,
+            options: self.options,
+            session: sessions[self.session ?? ""]
+        )
         return TestOperationResult(from: result)
     }
 }
 
 struct FindOneAndReplace: TestOperation {
+    let session: String?
     let filter: Document
     let replacement: Document
     let options: FindOneAndReplaceOptions
 
-    private enum CodingKeys: String, CodingKey { case filter, replacement }
+    private enum CodingKeys: String, CodingKey { case session, filter, replacement }
 
     init(from decoder: Decoder) throws {
         self.options = try FindOneAndReplaceOptions(from: decoder)
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.session = try container.decodeIfPresent(String.self, forKey: .session)
         self.filter = try container.decode(Document.self, forKey: .filter)
         self.replacement = try container.decode(Document.self, forKey: .replacement)
     }
 
-    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
             throw TestError(message: "collection not provided to findOneAndReplace")
         }
@@ -553,27 +697,29 @@ struct FindOneAndReplace: TestOperation {
             filter: self.filter,
             replacement: self.replacement,
             options: self.options,
-            session: session
+            session: sessions[self.session ?? ""]
         )
         return TestOperationResult(from: result)
     }
 }
 
 struct ReplaceOne: TestOperation {
+    let session: String?
     let filter: Document
     let replacement: Document
     let options: ReplaceOptions
 
-    private enum CodingKeys: String, CodingKey { case filter, replacement }
+    private enum CodingKeys: String, CodingKey { case session, filter, replacement }
 
     init(from decoder: Decoder) throws {
         self.options = try ReplaceOptions(from: decoder)
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.session = try container.decodeIfPresent(String.self, forKey: .session)
         self.filter = try container.decode(Document.self, forKey: .filter)
         self.replacement = try container.decode(Document.self, forKey: .replacement)
     }
 
-    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
             throw TestError(message: "collection not provided to replaceOne")
         }
@@ -581,15 +727,16 @@ struct ReplaceOne: TestOperation {
             filter: self.filter,
             replacement: self.replacement,
             options: self.options,
-            session: session
+            session: sessions[self.session ?? ""]
         ))
     }
 }
 
 struct RenameCollection: TestOperation {
+    let session: String?
     let to: String
 
-    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
             throw TestError(message: "collection not provided to renameCollection")
         }
@@ -599,14 +746,17 @@ struct RenameCollection: TestOperation {
             "renameCollection": .string(databaseName + "." + collection.name),
             "to": .string(databaseName + "." + self.to)
         ]
-        return try TestOperationResult(from: collection._client.db("admin").runCommand(cmd, session: session))
+        return try TestOperationResult(
+            from: collection._client.db("admin").runCommand(cmd, session: sessions[self.session ?? ""])
+        )
     }
 }
 
-struct DropCollection: TestOperation {
-    func execute(on target: TestOperationTarget, session _: ClientSession?) throws -> TestOperationResult? {
+struct Drop: TestOperation {
+    func execute(on target: TestOperationTarget, sessions _: [String: ClientSession])
+        throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
-            throw TestError(message: "collection not provided to dropCollection")
+            throw TestError(message: "collection not provided to drop")
         }
         try collection.drop()
         return nil
@@ -614,99 +764,338 @@ struct DropCollection: TestOperation {
 }
 
 struct ListDatabaseNames: TestOperation {
-    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
+    func execute(on target: TestOperationTarget, sessions _: [String: ClientSession])
+        throws -> TestOperationResult? {
         guard case let .client(client) = target else {
             throw TestError(message: "client not provided to listDatabaseNames")
         }
-        return try .array(client.listDatabaseNames(session: session).map { .string($0) })
+        return try .array(client.listDatabaseNames().map { .string($0) })
     }
 }
 
 struct ListIndexes: TestOperation {
-    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
+    func execute(on target: TestOperationTarget, sessions _: [String: ClientSession])
+        throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
             throw TestError(message: "collection not provided to listIndexes")
         }
-        return try TestOperationResult(from: collection.listIndexes(session: session))
+        return try TestOperationResult(from: collection.listIndexes())
     }
 }
 
 struct ListIndexNames: TestOperation {
-    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
+    func execute(on target: TestOperationTarget, sessions _: [String: ClientSession])
+        throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
             throw TestError(message: "collection not provided to listIndexNames")
         }
-        return try .array(collection.listIndexNames(session: session).map { .string($0) })
+        return try .array(collection.listIndexNames().map { .string($0) })
     }
 }
 
 struct ListDatabases: TestOperation {
-    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
+    func execute(on target: TestOperationTarget, sessions _: [String: ClientSession])
+        throws -> TestOperationResult? {
         guard case let .client(client) = target else {
             throw TestError(message: "client not provided to listDatabases")
         }
-        return try TestOperationResult(from: client.listDatabases(session: session))
+        return try TestOperationResult(from: client.listDatabases())
     }
 }
 
 struct ListMongoDatabases: TestOperation {
-    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
+    func execute(on target: TestOperationTarget, sessions _: [String: ClientSession])
+        throws -> TestOperationResult? {
         guard case let .client(client) = target else {
             throw TestError(message: "client not provided to listDatabases")
         }
-        _ = try client.listMongoDatabases(session: session)
+        _ = try client.listMongoDatabases()
         return nil
     }
 }
 
 struct ListCollections: TestOperation {
-    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
+    func execute(on target: TestOperationTarget, sessions _: [String: ClientSession])
+        throws -> TestOperationResult? {
         guard case let .database(database) = target else {
             throw TestError(message: "database not provided to listCollections")
         }
-        return try TestOperationResult(from: database.listCollections(session: session))
+        return try TestOperationResult(from: database.listCollections())
     }
 }
 
 struct ListMongoCollections: TestOperation {
-    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
+    func execute(on target: TestOperationTarget, sessions _: [String: ClientSession])
+        throws -> TestOperationResult? {
         guard case let .database(database) = target else {
             throw TestError(message: "database not provided to listCollectionObjects")
         }
-        _ = try database.listMongoCollections(session: session)
+        _ = try database.listMongoCollections()
         return nil
     }
 }
 
 struct ListCollectionNames: TestOperation {
-    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
+    func execute(on target: TestOperationTarget, sessions _: [String: ClientSession])
+        throws -> TestOperationResult? {
         guard case let .database(database) = target else {
             throw TestError(message: "database not provided to listCollectionNames")
         }
-        return try .array(database.listCollectionNames(session: session).map { .string($0) })
+        return try .array(database.listCollectionNames().map { .string($0) })
     }
 }
 
 struct Watch: TestOperation {
-    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
+    func execute(on target: TestOperationTarget, sessions _: [String: ClientSession])
+        throws -> TestOperationResult? {
         switch target {
         case let .client(client):
-            _ = try client.watch(session: session)
+            _ = try client.watch()
         case let .database(database):
-            _ = try database.watch(session: session)
+            _ = try database.watch()
         case let .collection(collection):
-            _ = try collection.watch(session: session)
+            _ = try collection.watch()
+        case .session:
+            throw TestError(message: "watch cannot be executed on a session")
+        case .testRunner:
+            throw TestError(message: "watch cannot be executed on the test runner")
         }
         return nil
     }
 }
 
 struct EstimatedDocumentCount: TestOperation {
-    func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
+    func execute(on target: TestOperationTarget, sessions _: [String: ClientSession])
+        throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
             throw TestError(message: "collection not provided to estimatedDocumentCount")
         }
-        return try .int(collection.estimatedDocumentCount(session: session))
+        return try .int(collection.estimatedDocumentCount())
+    }
+}
+
+struct StartTransaction: TestOperation {
+    let options: TransactionOptions
+
+    init() {
+        self.options = TransactionOptions()
+    }
+
+    func execute(on target: TestOperationTarget, sessions _: [String: ClientSession])
+        throws -> TestOperationResult? {
+        guard case let .session(session) = target else {
+            throw TestError(message: "session not provided to startTransaction")
+        }
+        try session.startTransaction(options: self.options)
+        return nil
+    }
+}
+
+struct CommitTransaction: TestOperation {
+    func execute(on target: TestOperationTarget, sessions _: [String: ClientSession])
+        throws -> TestOperationResult? {
+        guard case let .session(session) = target else {
+            throw TestError(message: "session not provided to commitTransaction")
+        }
+        try session.commitTransaction()
+        return nil
+    }
+}
+
+struct AbortTransaction: TestOperation {
+    func execute(on target: TestOperationTarget, sessions _: [String: ClientSession])
+        throws -> TestOperationResult? {
+        guard case let .session(session) = target else {
+            throw TestError(message: "session not provided to abortTransaction")
+        }
+        try session.abortTransaction()
+        return nil
+    }
+}
+
+struct CreateCollection: TestOperation {
+    let session: String?
+    let collection: String
+
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
+        guard case let .database(database) = target else {
+            throw TestError(message: "database not provided to createCollection")
+        }
+        _ = try database.createCollection(self.collection, session: sessions[self.session ?? ""])
+        return nil
+    }
+}
+
+struct DropCollection: TestOperation {
+    let session: String?
+    let collection: String
+
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
+        guard case let .database(database) = target else {
+            throw TestError(message: "database not provided to dropCollection")
+        }
+        _ = try database.collection(self.collection).drop(session: sessions[self.session ?? ""])
+        return nil
+    }
+}
+
+struct CreateIndex: TestOperation {
+    let session: String?
+    let name: String
+    let keys: Document
+
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
+        guard case let .collection(collection) = target else {
+            throw TestError(message: "collection not provided to createIndex")
+        }
+        let indexOptions = IndexOptions(name: self.name)
+        _ = try collection.createIndex(self.keys, indexOptions: indexOptions, session: sessions[self.session ?? ""])
+        return nil
+    }
+}
+
+struct RunCommand: TestOperation {
+    let session: String?
+    let command: Document
+    let readPreference: ReadPreference?
+
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
+        guard case let .database(database) = target else {
+            throw TestError(message: "database not provided to runCommand")
+        }
+        let runCommandOptions = RunCommandOptions(readPreference: self.readPreference)
+        let result = try database.runCommand(
+            self.command,
+            options: runCommandOptions,
+            session: sessions[self.session ?? ""]
+        )
+        return TestOperationResult(from: result)
+    }
+}
+
+struct AssertCollectionExists: TestOperation {
+    let database: String
+    let collection: String
+
+    func execute(on target: TestOperationTarget, sessions _: [String: ClientSession])
+        throws -> TestOperationResult? {
+        guard case .testRunner = target else {
+            throw TestError(message: "test runner not provided to assertCollectionExists")
+        }
+        let client = try MongoClient.makeTestClient()
+        let collectionNames = try client.db(self.database).listCollectionNames()
+        expect(collectionNames).to(contain(self.collection))
+        return nil
+    }
+}
+
+struct AssertCollectionNotExists: TestOperation {
+    let database: String
+    let collection: String
+
+    func execute(on target: TestOperationTarget, sessions _: [String: ClientSession])
+        throws -> TestOperationResult? {
+        guard case .testRunner = target else {
+            throw TestError(message: "test runner not provided to assertCollectionNotExists")
+        }
+        let client = try MongoClient.makeTestClient()
+        let collectionNames = try client.db(self.database).listCollectionNames()
+        expect(collectionNames).toNot(contain(self.collection))
+        return nil
+    }
+}
+
+struct AssertIndexExists: TestOperation {
+    let database: String
+    let collection: String
+    let index: String
+
+    func execute(on target: TestOperationTarget, sessions _: [String: ClientSession])
+        throws -> TestOperationResult? {
+        guard case .testRunner = target else {
+            throw TestError(message: "test runner not provided to assertIndexExists")
+        }
+        let client = try MongoClient.makeTestClient()
+        let indexNames = try client.db(self.database).collection(self.collection).listIndexNames()
+        expect(indexNames).to(contain(self.index))
+        return nil
+    }
+}
+
+struct AssertIndexNotExists: TestOperation {
+    let database: String
+    let collection: String
+    let index: String
+
+    func execute(on target: TestOperationTarget, sessions _: [String: ClientSession])
+        throws -> TestOperationResult? {
+        guard case .testRunner = target else {
+            throw TestError(message: "test runner not provided to assertIndexNotExists")
+        }
+        let client = try MongoClient.makeTestClient()
+        let indexNames = try client.db(self.database).collection(self.collection).listIndexNames()
+        expect(indexNames).toNot(contain(self.index))
+        return nil
+    }
+}
+
+struct AssertSessionPinned: TestOperation {
+    let session: String?
+
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
+        guard case .testRunner = target else {
+            throw TestError(message: "test runner not provided to assertSessionPinned")
+        }
+        guard let serverId = sessions[self.session ?? ""]?.serverId else {
+            throw TestError(message: "active session not provided to assertSessionPinned")
+        }
+        expect(serverId).toNot(equal(0))
+        return nil
+    }
+}
+
+struct AssertSessionUnpinned: TestOperation {
+    let session: String?
+
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
+        guard case .testRunner = target else {
+            throw TestError(message: "test runner not provided to assertSessionUnpinned")
+        }
+        guard let serverId = sessions[self.session ?? ""]?.serverId else {
+            throw TestError(message: "active session not provided to assertSessionPinned")
+        }
+        expect(serverId).to(equal(0))
+        return nil
+    }
+}
+
+struct AssertSessionTransactionState: TestOperation {
+    let session: String?
+    let state: ClientSession.TransactionState
+
+    func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
+        guard case .testRunner = target else {
+            throw TestError(message: "test runner not provided to assertSessionTransactionState")
+        }
+        guard let transactionState = sessions[self.session ?? ""]?.transactionState else {
+            throw TestError(message: "active session not provided to assertSessionTransactionState")
+        }
+        expect(transactionState).to(equal(self.state))
+        return nil
+    }
+}
+
+struct TargetedFailPoint: TestOperation {
+    let session: String?
+    let failPoint: Document
+
+    func execute(on target: TestOperationTarget, sessions _: [String: ClientSession]) throws -> TestOperationResult? {
+        guard case .testRunner = target else {
+            throw TestError(message: "test runner not provided to targetedFailPoint")
+        }
+        let client = try MongoClient.makeTestClient()
+        try client.db("admin").runCommand(self.failPoint)
+        return nil
     }
 }
 
@@ -714,7 +1103,7 @@ struct EstimatedDocumentCount: TestOperation {
 struct NotImplemented: TestOperation {
     internal let name: String
 
-    func execute(on _: TestOperationTarget, session _: ClientSession?) throws -> TestOperationResult? {
+    func execute(on _: TestOperationTarget, sessions _: [String: ClientSession]) throws -> TestOperationResult? {
         throw TestError(message: "\(self.name) not implemented in the driver, skip this test")
     }
 }

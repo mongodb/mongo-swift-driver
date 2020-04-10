@@ -94,19 +94,16 @@ extension MongoCollection {
     }
 
     /**
-     * Gets an estimate of the count of documents in this collection using collection metadata.
+     * Gets an estimate of the count of documents in this collection using collection metadata. This operation cannot
+     * be used in a transaction.
      *
      * - Parameters:
      *   - options: Optional `EstimatedDocumentCountOptions` to use when executing the command
-     *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: an estimate of the count of documents in this collection
      */
-    public func estimatedDocumentCount(
-        options: EstimatedDocumentCountOptions? = nil,
-        session: ClientSession? = nil
-    ) throws -> Int {
-        try self.asyncColl.estimatedDocumentCount(options: options, session: session?.asyncSession).wait()
+    public func estimatedDocumentCount(options: EstimatedDocumentCountOptions? = nil) throws -> Int {
+        try self.asyncColl.estimatedDocumentCount(options: options).wait()
     }
 
     /**

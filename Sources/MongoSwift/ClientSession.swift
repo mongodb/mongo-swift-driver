@@ -70,6 +70,80 @@ public final class ClientSession {
     /// started the libmongoc session.
     internal var id: Document?
 
+    /// The server ID of the mongos this session is pinned to. A server ID of 0 indicates that the session is unpinned.
+    internal var serverId: UInt32? {
+        switch self.state {
+        case .notStarted, .ended:
+            return nil
+        case let .started(session, _):
+            return mongoc_client_session_get_server_id(session)
+        }
+    }
+
+    /// Enum tracking the state of the transaction associated with this session.
+    internal enum TransactionState: String, Decodable {
+        /// There is no transaction in progress.
+        case none
+        /// A transaction has been started, but no operation has been sent to the server.
+        case starting
+        /// A transaction is in progress.
+        case inProgress
+        /// The transaction was committed.
+        case committed
+        /// The transaction was aborted.
+        case aborted
+
+        fileprivate var mongocTransactionState: mongoc_transaction_state_t {
+            switch self {
+            case .none:
+                return MONGOC_TRANSACTION_NONE
+            case .starting:
+                return MONGOC_TRANSACTION_STARTING
+            case .inProgress:
+                return MONGOC_TRANSACTION_IN_PROGRESS
+            case .committed:
+                return MONGOC_TRANSACTION_COMMITTED
+            case .aborted:
+                return MONGOC_TRANSACTION_ABORTED
+            }
+        }
+
+        fileprivate init(mongocTransactionState: mongoc_transaction_state_t) {
+            switch mongocTransactionState {
+            case MONGOC_TRANSACTION_NONE:
+                self = .none
+            case MONGOC_TRANSACTION_STARTING:
+                self = .starting
+            case MONGOC_TRANSACTION_IN_PROGRESS:
+                self = .inProgress
+            case MONGOC_TRANSACTION_COMMITTED:
+                self = .committed
+            case MONGOC_TRANSACTION_ABORTED:
+                self = .aborted
+            default:
+                fatalError("Unexpected transaction state: \(mongocTransactionState)")
+            }
+        }
+    }
+
+    /// The transaction state of this session.
+    internal var transactionState: TransactionState? {
+        switch self.state {
+        case .notStarted, .ended:
+            return nil
+        case let .started(session, _):
+            return TransactionState(mongocTransactionState: mongoc_client_session_get_transaction_state(session))
+        }
+    }
+
+    /// Indicates whether or not the session is in a transaction.
+    internal var inTransaction: Bool {
+        if let transactionState = self.transactionState {
+            return transactionState != .none
+        }
+        return false
+    }
+
     /// The most recent cluster time seen by this session. This value will be nil if either of the following are true:
     /// - No operations have been executed using this session and `advanceClusterTime` has not been called.
     /// - This session has been ended.
@@ -243,7 +317,7 @@ public final class ClientSession {
      * - SeeAlso:
      *   - https://docs.mongodb.com/manual/core/transactions/
      */
-    public func startTransaction(_ options: TransactionOptions?) -> EventLoopFuture<Void> {
+    public func startTransaction(options: TransactionOptions? = nil) -> EventLoopFuture<Void> {
         switch self.state {
         case .notStarted, .started:
             let operation = StartTransactionOperation(options: options)

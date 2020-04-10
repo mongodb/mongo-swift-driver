@@ -197,6 +197,13 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
         let opts = try encodeOptions(options: options, session: session)
         var insertedIds: [Int: BSON] = [:]
 
+        if session?.inTransaction == true && self.options?.writeConcern != nil {
+            throw InvalidArgumentError(
+                message: "Cannot specify a write concern on an individual helper in a " +
+                    "transaction. Instead specify it when starting the transaction."
+            )
+        }
+
         let (serverId, isAcknowledged): (UInt32, Bool) =
             try self.collection.withMongocCollection(from: connection) { collPtr in
                 guard let bulk = mongoc_collection_create_bulk_operation_with_opts(collPtr, opts?._bson) else {
@@ -214,8 +221,22 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
                     mongoc_bulk_operation_execute(bulk, replyPtr, &error)
                 }
 
-                let writeConcern = WriteConcern(from: mongoc_bulk_operation_get_write_concern(bulk))
-                return (serverId, writeConcern.isAcknowledged)
+                var writeConcernAcknowledged: Bool
+                if session?.inTransaction == true {
+                    // Bulk write operations in transactions must get their write concern from the session, not from
+                    // the `BulkWriteOptions` passed to the `bulkWrite` helper. `libmongoc` surfaces this
+                    // implementation detail by nulling out the write concern stored on the bulk write. To sidestep
+                    // this, we can only call `mongoc_bulk_operation_get_write_concern` out of a transaction.
+                    //
+                    // In a transaction, default to writeConcernAcknowledged = true. This is acceptable because
+                    // transactions do not support unacknowledged writes.
+                    writeConcernAcknowledged = true
+                } else {
+                    let writeConcern = WriteConcern(from: mongoc_bulk_operation_get_write_concern(bulk))
+                    writeConcernAcknowledged = writeConcern.isAcknowledged
+                }
+
+                return (serverId, writeConcernAcknowledged)
             }
 
         let result = try BulkWriteResult(reply: reply, insertedIds: insertedIds)

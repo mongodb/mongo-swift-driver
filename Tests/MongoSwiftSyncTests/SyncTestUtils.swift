@@ -1,4 +1,5 @@
 import Foundation
+@testable import class MongoSwift.ClientSession
 @testable import MongoSwiftSync
 import TestsCommon
 
@@ -189,4 +190,16 @@ extension ChangeStream {
         }
         return nil
     }
+}
+
+extension MongoSwiftSync.ClientSession {
+    internal var active: Bool { self.asyncSession.active }
+
+    internal var id: Document? { self.asyncSession.id }
+
+    internal var serverId: UInt32? { self.asyncSession.serverId }
+
+    internal typealias TransactionState = MongoSwift.ClientSession.TransactionState
+
+    internal var transactionState: TransactionState? { self.asyncSession.transactionState }
 }

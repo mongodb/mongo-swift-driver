@@ -1,5 +1,5 @@
 import Foundation
-@testable import MongoSwift
+@testable import class MongoSwift.ClientSession
 @testable import MongoSwiftSync
 import Nimble
 import TestsCommon
@@ -7,29 +7,19 @@ import TestsCommon
 /// Describes an operation run on a collection that takes in a session.
 struct CollectionSessionOp {
     let name: String
-    let body: (MongoSwiftSync.MongoCollection<Document>, MongoSwiftSync.ClientSession?) throws -> Void
+    let body: (MongoCollection<Document>, MongoSwiftSync.ClientSession?) throws -> Void
 }
 
 /// Describes an operation run on a database that takes in a session.
 struct DatabaseSessionOp {
     let name: String
-    let body: (MongoSwiftSync.MongoDatabase, MongoSwiftSync.ClientSession?) throws -> Void
+    let body: (MongoDatabase, MongoSwiftSync.ClientSession?) throws -> Void
 }
 
 /// Describes an operation run on a client that takes in a session.
 struct ClientSessionOp {
     let name: String
-    let body: (MongoSwiftSync.MongoClient, MongoSwiftSync.ClientSession?) throws -> Void
-}
-
-extension MongoSwiftSync.ClientSession {
-    var active: Bool {
-        self.asyncSession.active
-    }
-
-    var id: Document? {
-        self.asyncSession.id
-    }
+    let body: (MongoClient, MongoSwiftSync.ClientSession?) throws -> Void
 }
 
 final class SyncClientSessionTests: MongoSwiftTestCase {
@@ -53,8 +43,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         CollectionSessionOp(name: "findOne") { _ = try $0.findOne([:], session: $1) },
         CollectionSessionOp(name: "aggregate") { _ = try $0.aggregate([], session: $1).next()?.get() },
         CollectionSessionOp(name: "distinct") { _ = try $0.distinct(fieldName: "x", session: $1) },
-        CollectionSessionOp(name: "countDocuments") { _ = try $0.countDocuments(session: $1) },
-        CollectionSessionOp(name: "estimatedDocumentCount") { _ = try $0.estimatedDocumentCount(session: $1) }
+        CollectionSessionOp(name: "countDocuments") { _ = try $0.countDocuments(session: $1) }
     ]
 
     // list of write operations on MongoCollection that take in a session
@@ -109,9 +98,9 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
 
     /// iterate over all the different session op types, passing in the provided client/db/collection as needed.
     func forEachSessionOp(
-        client: MongoSwiftSync.MongoClient,
-        database: MongoSwiftSync.MongoDatabase,
-        collection: MongoSwiftSync.MongoCollection<Document>,
+        client: MongoClient,
+        database: MongoDatabase,
+        collection: MongoCollection<Document>,
         _ body: (SessionOp) throws -> Void
     ) rethrows {
         try (self.collectionSessionReadOps + self.collectionSessionWriteOps).forEach { op in
@@ -240,7 +229,11 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         expect(session1.active).to(beFalse())
 
         try self.forEachSessionOp(client: client, database: db, collection: collection) { op in
-            expect(try op.body(session1)).to(throwError(ClientSession.SessionInactiveError), description: op.name)
+            expect(try op.body(session1)).to(
+                throwError(
+                    MongoSwift.ClientSession.SessionInactiveError),
+                description: op.name
+            )
         }
 
         let session2 = client.startSession()
@@ -252,7 +245,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         let cursor = try collection.find(session: session2)
         expect(cursor.next()).toNot(beNil())
         session2.end()
-        expect(try cursor.next()?.get()).to(throwError(ClientSession.SessionInactiveError))
+        expect(try cursor.next()?.get()).to(throwError(MongoSwift.ClientSession.SessionInactiveError))
     }
 
     /// Sessions spec test 10: Test cursors have the same lsid in the initial find command and in subsequent getMores.

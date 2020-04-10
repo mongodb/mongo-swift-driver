@@ -1,4 +1,5 @@
 import Foundation
+@testable import struct MongoSwift.ReadPreference
 import MongoSwiftSync
 import Nimble
 import TestsCommon
@@ -20,8 +21,23 @@ internal struct TestCommandStartedEvent: Decodable, Matchable {
         case type = "command_started_event"
     }
 
-    internal init(from event: CommandStartedEvent) {
-        self.command = event.command
+    internal init(from event: CommandStartedEvent, sessionIds: [Document: String]? = nil) {
+        var command = event.command
+
+        // If command started event has "lsid": Document(...), change the value to correpond to "session0",
+        // "session1", etc.
+        if let sessionIds = sessionIds, let sessionDoc = command["lsid"]?.documentValue {
+            for (sessionId, sessionName) in sessionIds where sessionId == sessionDoc {
+                command["lsid"] = .string(sessionName)
+            }
+        }
+        // If command is "findAndModify" and does not have key "new", add the default value "new": false.
+        // This is necessary because `libmongoc` only sends a value for "new" in a command if "new": true.
+        if event.commandName == "findAndModify" && command["new"] == nil {
+            command["new"] = .bool(false)
+        }
+
+        self.command = command
         self.databaseName = event.databaseName
         self.commandName = event.commandName
     }
@@ -167,6 +183,10 @@ extension SpecTestFile {
     internal func populateData(using client: MongoClient) throws {
         let database = client.db(self.databaseName)
 
+        // Majority write concern ensures that initial data is propagated to all nodes in a replica set or sharded
+        // cluster.
+        let collectionOptions = CollectionOptions(writeConcern: try WriteConcern(w: .majority))
+
         try? database.drop()
 
         switch self.data {
@@ -179,13 +199,13 @@ extension SpecTestFile {
                 return
             }
 
-            try database.collection(collName).insertMany(docs)
+            try database.collection(collName, options: collectionOptions).insertMany(docs)
         case let .multiple(mapping):
             for (k, v) in mapping {
                 guard !v.isEmpty else {
                     continue
                 }
-                try database.collection(k).insertMany(v)
+                try database.collection(k, options: collectionOptions).insertMany(v)
             }
         }
     }
@@ -203,14 +223,13 @@ extension SpecTestFile {
             }
         }
 
-        try self.populateData(using: setupClient)
-
         fileLevelLog("Executing tests from file \(self.name)...")
         for test in self.tests {
             guard skippedTestKeywords.allSatisfy({ !test.description.contains($0) }) else {
                 print("Skipping test \(test.description)")
                 return
             }
+            try self.populateData(using: setupClient)
             try test.run(parent: parent, dbName: self.databaseName, collName: self.collectionName)
         }
     }
@@ -241,10 +260,27 @@ internal protocol SpecTest: Decodable {
 
     /// List of expected CommandStartedEvents.
     var expectations: [TestCommandStartedEvent]? { get }
+
+    /// Document describing the return value and/or expected state of the collection after the operation is executed.
+    var outcome: TestOutcome? { get }
+
+    /// Map of session names (e.g. "session0") to parameters to pass to `MongoClient.startSession()` when creating that
+    /// session.
+    var sessionOptions: [String: ClientSessionOptions]? { get }
+
+    /// Array of session names (e.g. "session0", "session1") that the test refers to. Each session is proactively
+    /// started in `run()`.
+    static var sessionNames: [String] { get }
 }
 
 /// Default implementation of a test execution.
 extension SpecTest {
+    var outcome: TestOutcome? { nil }
+
+    var sessionOptions: [String: ClientSessionOptions]? { nil }
+
+    static var sessionNames: [String] { [] }
+
     internal func run(
         parent: FailPointConfigured,
         dbName: String,
@@ -257,37 +293,76 @@ extension SpecTest {
 
         print("Executing test: \(self.description)")
 
-        let clientOptions = self.clientOptions ?? ClientOptions(retryReads: true)
+        var singleMongos = true
+        if let useMultipleMongoses = self.useMultipleMongoses, useMultipleMongoses == true {
+            singleMongos = false
+        }
+
+        let client = try MongoClient.makeTestClient(
+            MongoSwiftTestCase.getConnectionString(singleMongos: singleMongos), options: self.clientOptions
+        )
+        let monitor = client.addCommandMonitor()
+
+        if let collName = collName {
+            _ = try? client.db(dbName).createCollection(collName)
+            // Run the distinct command before every test to prevent `StableDbVersion` error in sharded cluster
+            // transactions. This workaround can be removed once SERVER-39704 is resolved.
+            _ = try? client.db(dbName).collection(collName).distinct(fieldName: "_id")
+        }
 
         if let failPoint = self.failPoint {
             try parent.activateFailPoint(failPoint)
         }
         defer { parent.disableActiveFailPoint() }
 
-        let client = try MongoClient.makeTestClient(options: clientOptions)
-        let monitor = client.addCommandMonitor()
-
-        let db = client.db(dbName)
-        var collection: MongoCollection<Document>?
-
-        if let collName = collName {
-            collection = db.collection(collName)
+        var sessions = [String: ClientSession]()
+        for session in Self.sessionNames {
+            sessions[session] = client.startSession(options: self.sessionOptions?[session])
         }
+
+        var sessionIds = [Document: String]()
 
         try monitor.captureEvents {
             for operation in self.operations {
                 try operation.validateExecution(
                     client: client,
-                    database: db,
-                    collection: collection,
-                    session: nil
+                    dbName: dbName,
+                    collName: collName,
+                    sessions: sessions
                 )
             }
+            // Keep track of the session IDs assigned to each session.
+            // Deinitialize each session thereby implicitly ending them.
+            for session in sessions.keys {
+                if let sessionId = sessions[session]?.id { sessionIds[sessionId] = session }
+                sessions[session] = nil
+            }
         }
-        let events = monitor.commandStartedEvents().map { TestCommandStartedEvent(from: $0) }
+
+        let events = monitor.commandStartedEvents().map { commandStartedEvent in
+            TestCommandStartedEvent(from: commandStartedEvent, sessionIds: sessionIds)
+        }
 
         if let expectations = self.expectations {
             expect(events).to(match(expectations), description: self.description)
+        }
+
+        try self.checkOutcome(dbName: dbName, collName: collName)
+    }
+
+    internal func checkOutcome(dbName: String, collName: String?) throws {
+        guard let outcome = self.outcome else {
+            return
+        }
+        guard let collName = collName else {
+            throw TestError(message: "outcome specifies a collection but spec test omits collection name")
+        }
+        let client = try MongoClient.makeTestClient()
+        let verifyColl = client.db(dbName).collection(collName)
+        let foundDocs = try verifyColl.find().all()
+        expect(foundDocs.count).to(equal(outcome.collection.data.count))
+        zip(foundDocs, outcome.collection.data).forEach {
+            expect($0).to(sortedEqual($1), description: self.description)
         }
     }
 }

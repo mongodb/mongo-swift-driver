@@ -102,6 +102,7 @@ internal struct FailPoint: Decodable {
         mode: Mode,
         closeConnection: Bool? = nil,
         errorCode: Int? = nil,
+        errorLabels: [String]? = nil,
         writeConcernError: Document? = nil
     ) -> FailPoint {
         var data: Document = [
@@ -112,6 +113,9 @@ internal struct FailPoint: Decodable {
         }
         if let code = errorCode {
             data["errorCode"] = BSON(code)
+        }
+        if let labels = errorLabels {
+            data["errorLabels"] = .array(labels.map { .string($0) })
         }
         if let writeConcernError = writeConcernError {
             data["writeConcernError"] = .document(writeConcernError)

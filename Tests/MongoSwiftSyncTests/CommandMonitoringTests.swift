@@ -79,31 +79,6 @@ private struct CMTestFile: Decodable {
     }
 }
 
-extension ReadPreference.Mode: Decodable {}
-
-extension ReadPreference: Decodable {
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        let mode = try container.decode(Mode.self, forKey: .mode)
-        switch mode {
-        case .primary:
-            self = .primary
-        case .primaryPreferred:
-            self = .primaryPreferred
-        case .secondary:
-            self = .secondary
-        case .secondaryPreferred:
-            self = .secondaryPreferred
-        case .nearest:
-            self = .nearest
-        }
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case mode
-    }
-}
-
 /// A struct to hold the data for a single test from a CMTestFile.
 private struct CMTest: Decodable {
     struct Operation: Decodable {
