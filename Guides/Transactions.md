@@ -1,30 +1,27 @@
 # Swift Driver Transactions Guide
 
-`MongoSwift` 1.0.0 added support for [transactions](https://docs.mongodb.com/manual/core/transactions/), which allow applications to use multi-statement transactions that guarantee the atomicity of reads and writes to multiple documents (in a single or multiple collections). Applications can use transactions instead of implementing complex and error-prone ACID-compliant logic themselves, simplifying development and allowing developers to focus on the new features that really matter.
+`MongoSwift` 1.0.0 added support for [transactions](https://docs.mongodb.com/manual/core/transactions/), which allow applications to use to execute multiple read and write operations atomically across multiple documents and/or collections. Transactions reduce the need for complicated application logic when operating on several different documents simultaneously; however, because operations on single documents are always atomic, transactions are often not necessary.
+
+Transactions in the driver must be started on a `ClientSession` using `startTransaction()`. The session must then be passed to each operation in the transaction. If the session is not passed to an operation, said operation will be executed outside the context of the transaction. Transactions must be committed or aborted using `commitTransaction()` or `abortTransaction()`, respectively. Ending a session *aborts* all in-progress transactions.
 
 **Note**: Transactions only work with MongoDB replica sets (v4.0+) and sharded clusters (v4.2+).
 
 ## Examples
 
 ### Transaction that Atomically Moves a `Document` from One `MongoCollection` to Another
+
+The transaction below atomically deletes the document `{ "hello": "world" }` from the collection `test.src` and inserts the document in the collection `test.dest`. This ensures that the document exists in either `test.src` or `test.dest`, but not both or neither. Exectuting the delete and insert non-atomically raises the following issues:
+- A race between `deleteOne()` and `insertOne()` where the document does not exist in either collection.
+- If `deleteOne()` fails and `insertOne()` succeeds, the document exists in both collections.
+- If `deleteOne()` succeeds and `insertOne()` fails, the document does not exist in either collection.
+
 ```swift
-let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
-
-defer {
-    // free driver resources
-    client.syncShutdown()
-    cleanupMongoSwift()
-
-    // shut down EventLoopGroup
-    try? elg.syncShutdownGracefully()
-}
-
 let client = try MongoClient(using: elg)
 let session = client.startSession()
 
 let db = client.db("test")
 let srcColl = db.collection("src")
-let destColl = db.collection("coll")
+let destColl = db.collection("dest")
 let docToMove: Document = ["hello": "world"]
 
 session.startTransaction().flatMap { _ in
@@ -39,56 +36,12 @@ session.startTransaction().flatMap { _ in
 }
 ```
 
-### Transaction with Custom Transaction Options
-```swift
-let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
-
-defer {
-    // free driver resources
-    client.syncShutdown()
-    cleanupMongoSwift()
-
-    // shut down EventLoopGroup
-    try? elg.syncShutdownGracefully()
-}
-
-let client = try MongoClient(using: elg)
-let session = client.startSession()
-
-let txnOpts = TransactionOptions(
-    maxCommitTimeMS: 30,
-    readConcern: ReadConcern(.local),
-    readPreference: ReadPreference.primaryPreferred,
-    writeConcern: try WriteConcern(w: .majority)
-)
-
-session.startTransaction(options: txnOpts).flatMap { _ in
-    // do something
-}.flatMap { _ in
-    session.commitTransaction()
-}.whenFailure { error in
-    session.abortTransaction()
-    // handle error
-}
-```
-
 ### Transaction with Default Transaction Options
 ```swift
-let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
-
-defer {
-    // free driver resources
-    client.syncShutdown()
-    cleanupMongoSwift()
-
-    // shut down EventLoopGroup
-    try? elg.syncShutdownGracefully()
-}
-
 let txnOpts = TransactionOptions(
     maxCommitTimeMS: 30,
     readConcern: ReadConcern(.local),
-    readPreference: ReadPreference.primaryPreferred,
+    readPreference: .primaryPreferred,
     writeConcern: try WriteConcern(w: .majority)
 )
 
@@ -105,7 +58,30 @@ session.startTransaction().flatMap { _ in
 }
 ```
 
-Note: Any transaction options provided directly to `startTransaction()` override the default transaction options for the session. More so, the default transaction options for the session override any options inherited from the client.
+### Transaction with Custom Transaction Options
+
+**Note**:: Any transaction options provided directly to `startTransaction()` override the default transaction options for the session. More so, the default transaction options for the session override any options inherited from the client.
+
+```swift
+let client = try MongoClient(using: elg)
+let session = client.startSession()
+
+let txnOpts = TransactionOptions(
+    maxCommitTimeMS: 30,
+    readConcern: ReadConcern(.local),
+    readPreference: .primaryPreferred,
+    writeConcern: try WriteConcern(w: .majority)
+)
+
+session.startTransaction(options: txnOpts).flatMap { _ in
+    // do something
+}.flatMap { _ in
+    session.commitTransaction()
+}.whenFailure { error in
+    session.abortTransaction()
+    // handle error
+}
+```
 
 ## See Also
 - [MongoDB Transactions documentation](https://docs.mongodb.com/manual/core/transactions/)
