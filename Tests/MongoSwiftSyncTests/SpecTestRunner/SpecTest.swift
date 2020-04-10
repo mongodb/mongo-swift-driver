@@ -21,13 +21,13 @@ internal struct TestCommandStartedEvent: Decodable, Matchable {
         case type = "command_started_event"
     }
 
-    internal init(from event: CommandStartedEvent, sessionIds: [String: Document]? = nil) {
+    internal init(from event: CommandStartedEvent, sessionIds: [Document: String]? = nil) {
         var command = event.command
 
         // If command started event has "lsid": Document(...), change the value to correpond to "session0",
         // "session1", etc.
         if let sessionIds = sessionIds, let sessionDoc = command["lsid"]?.documentValue {
-            for (sessionName, sessionId) in sessionIds where sessionId == sessionDoc {
+            for (sessionId, sessionName) in sessionIds where sessionId == sessionDoc {
                 command["lsid"] = .string(sessionName)
             }
         }
@@ -129,41 +129,6 @@ internal enum TestData: Decodable {
                 DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Could not decode `TestData`")
             )
         }
-    }
-}
-
-public struct TestClientOptions: Decodable {
-    var readConcern: ReadConcern?
-
-    var readPreference: ReadPreference?
-
-    var retryReads: Bool?
-
-    var retryWrites: Bool?
-
-    var writeConcern: WriteConcern?
-
-    private enum CodingKeys: String, CodingKey {
-        case retryReads, retryWrites, w, readConcernLevel, mode = "readPreference"
-    }
-
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.readConcern = try? ReadConcern(container.decode(String.self, forKey: .readConcernLevel))
-        self.readPreference = try? ReadPreference(container.decode(ReadPreference.Mode.self, forKey: .mode))
-        self.retryReads = try? container.decode(Bool.self, forKey: .retryReads)
-        self.retryWrites = try? container.decode(Bool.self, forKey: .retryWrites)
-        self.writeConcern = try? WriteConcern(w: container.decode(WriteConcern.W.self, forKey: .w))
-    }
-
-    public func toClientOptions() -> ClientOptions {
-        ClientOptions(
-            readConcern: self.readConcern,
-            readPreference: self.readPreference,
-            retryReads: self.retryReads,
-            retryWrites: self.retryWrites,
-            writeConcern: self.writeConcern
-        )
     }
 }
 
@@ -276,7 +241,7 @@ internal protocol SpecTest: Decodable {
     var description: String { get }
 
     /// Options used to configure the `MongoClient` used for this test.
-    var clientOptions: TestClientOptions? { get }
+    var clientOptions: ClientOptions? { get }
 
     /// If true, the `MongoClient` for this test should be initialized with multiple mongos seed addresses.
     /// If false or omitted, only a single mongos address should be specified.
@@ -328,15 +293,13 @@ extension SpecTest {
 
         print("Executing test: \(self.description)")
 
-        let clientOptions = self.clientOptions?.toClientOptions()
-
         var singleMongos = true
         if let useMultipleMongoses = self.useMultipleMongoses, useMultipleMongoses == true {
             singleMongos = false
         }
 
         let client = try MongoClient.makeTestClient(
-            MongoSwiftTestCase.getConnectionString(singleMongos: singleMongos), options: clientOptions
+            MongoSwiftTestCase.getConnectionString(singleMongos: singleMongos), options: self.clientOptions
         )
         let monitor = client.addCommandMonitor()
 
@@ -357,7 +320,7 @@ extension SpecTest {
             sessions[session] = client.startSession(options: self.sessionOptions?[session])
         }
 
-        var sessionIds = [String: Document]()
+        var sessionIds = [Document: String]()
 
         try monitor.captureEvents {
             for operation in self.operations {
@@ -371,7 +334,7 @@ extension SpecTest {
             // Keep track of the session IDs assigned to each session.
             // Deinitialize each session thereby implicitly ending them.
             for session in sessions.keys {
-                sessionIds[session] = sessions[session]?.id
+                sessionIds[sessions[session]?.id ?? Document()] = session
                 sessions[session] = nil
             }
         }

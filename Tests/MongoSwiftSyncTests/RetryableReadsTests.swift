@@ -9,7 +9,7 @@ private struct RetryableReadsTest: SpecTest {
 
     let operations: [TestOperationDescription]
 
-    let clientOptions: TestClientOptions?
+    let clientOptions: ClientOptions?
 
     let useMultipleMongoses: Bool?
 

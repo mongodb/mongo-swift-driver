@@ -513,14 +513,6 @@ struct InsertOne: TestOperation {
     let session: String?
     let document: Document
 
-    private enum CodingKeys: String, CodingKey { case session, document }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.session = try container.decodeIfPresent(String.self, forKey: .session)
-        self.document = try container.decode(Document.self, forKey: .document)
-    }
-
     func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
             throw TestError(message: "collection not provided to insertOne")
@@ -532,16 +524,7 @@ struct InsertOne: TestOperation {
 struct InsertMany: TestOperation {
     let session: String?
     let documents: [Document]
-    let options: InsertManyOptions
-
-    private enum CodingKeys: String, CodingKey { case session, documents }
-
-    init(from decoder: Decoder) throws {
-        self.options = (try? InsertManyOptions(from: decoder)) ?? InsertManyOptions()
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.session = try container.decodeIfPresent(String.self, forKey: .session)
-        self.documents = try container.decode([Document].self, forKey: .documents)
-    }
+    let options: InsertManyOptions?
 
     func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {
@@ -621,16 +604,7 @@ extension WriteModel: Decodable {
 struct BulkWrite: TestOperation {
     let session: String?
     let requests: [WriteModel<Document>]
-    let options: BulkWriteOptions
-
-    private enum CodingKeys: CodingKey { case session, requests }
-
-    init(from decoder: Decoder) throws {
-        self.options = (try? BulkWriteOptions(from: decoder)) ?? BulkWriteOptions()
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.session = try container.decodeIfPresent(String.self, forKey: .session)
-        self.requests = try container.decode([WriteModel<Document>].self, forKey: .requests)
-    }
+    let options: BulkWriteOptions?
 
     func execute(on target: TestOperationTarget, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         guard case let .collection(collection) = target else {

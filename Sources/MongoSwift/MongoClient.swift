@@ -3,16 +3,16 @@ import NIO
 import NIOConcurrencyHelpers
 
 /// Options to use when creating a `MongoClient`.
-public struct ClientOptions: CodingStrategyProvider, Decodable {
+public struct ClientOptions: CodingStrategyProvider {
     // swiftlint:disable redundant_optional_initialization
 
     /// Specifies the `DataCodingStrategy` to use for BSON encoding/decoding operations performed by this client and any
     /// databases or collections that derive from it.
-    public var dataCodingStrategy: DataCodingStrategy? = nil
+    public var dataCodingStrategy: DataCodingStrategy?
 
     /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this client and any
     /// databases or collections that derive from it.
-    public var dateCodingStrategy: DateCodingStrategy? = nil
+    public var dateCodingStrategy: DateCodingStrategy?
 
     /// The maximum number of connections that may be associated with a connection pool created by this client at a
     /// given time. This includes in-use and available connections. Defaults to 100.
@@ -22,7 +22,7 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
     public var readConcern: ReadConcern?
 
     /// Specifies a ReadPreference to use for the client.
-    public var readPreference: ReadPreference? = nil
+    public var readPreference: ReadPreference?
 
     /// Determines whether the client should retry supported read operations (on by default).
     public var retryReads: Bool?
@@ -65,7 +65,7 @@ public struct ClientOptions: CodingStrategyProvider, Decodable {
 
     /// Specifies the `UUIDCodingStrategy` to use for BSON encoding/decoding operations performed by this client and any
     /// databases or collections that derive from it.
-    public var uuidCodingStrategy: UUIDCodingStrategy? = nil
+    public var uuidCodingStrategy: UUIDCodingStrategy?
 
     // swiftlint:enable redundant_optional_initialization
 

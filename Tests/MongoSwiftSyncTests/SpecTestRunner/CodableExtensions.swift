@@ -77,3 +77,25 @@ extension ReadPreference: Decodable {
         self.init(mode)
     }
 }
+
+extension ClientOptions: Decodable {
+    private enum CodingKeys: String, CodingKey {
+        case retryReads, retryWrites, w, readConcernLevel, mode = "readPreference"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let readConcern = try? ReadConcern(container.decode(String.self, forKey: .readConcernLevel))
+        let readPreference = try? ReadPreference(container.decode(ReadPreference.Mode.self, forKey: .mode))
+        let retryReads = try container.decodeIfPresent(Bool.self, forKey: .retryReads)
+        let retryWrites = try container.decodeIfPresent(Bool.self, forKey: .retryWrites)
+        let writeConcern = try? WriteConcern(w: container.decode(WriteConcern.W.self, forKey: .w))
+        self.init(
+            readConcern: readConcern,
+            readPreference: readPreference,
+            retryReads: retryReads,
+            retryWrites: retryWrites,
+            writeConcern: writeConcern
+        )
+    }
+}

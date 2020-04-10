@@ -15,7 +15,7 @@ private struct TransactionsTest: SpecTest {
 
     let useMultipleMongoses: Bool?
 
-    let clientOptions: TestClientOptions?
+    let clientOptions: ClientOptions?
 
     let failPoint: FailPoint?
 

@@ -44,7 +44,9 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         CollectionSessionOp(name: "aggregate") { _ = try $0.aggregate([], session: $1).next()?.get() },
         CollectionSessionOp(name: "distinct") { _ = try $0.distinct(fieldName: "x", session: $1) },
         CollectionSessionOp(name: "countDocuments") { _ = try $0.countDocuments(session: $1) },
-        CollectionSessionOp(name: "estimatedDocumentCount") { _ = try $0.estimatedDocumentCount(session: $1) }
+        CollectionSessionOp(name: "estimatedDocumentCount") { collection, _ in
+            _ = try collection.estimatedDocumentCount()
+        }
     ]
 
     // list of write operations on MongoCollection that take in a session
