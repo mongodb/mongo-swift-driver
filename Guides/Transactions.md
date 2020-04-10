@@ -10,7 +10,7 @@ Transactions in the driver must be started on a `ClientSession` using `startTran
 
 ### Transaction that Atomically Moves a `Document` from One `MongoCollection` to Another
 
-The transaction below atomically deletes the document `{ "hello": "world" }` from the collection `test.src` and inserts the document in the collection `test.dest`. This ensures that the document exists in either `test.src` or `test.dest`, but not both or neither. Exectuting the delete and insert non-atomically raises the following issues:
+The transaction below atomically deletes the document `{ "hello": "world" }` from the collection `test.src` and inserts the document in the collection `test.dest`. This ensures that the document exists in either `test.src` or `test.dest`, but not both or neither. Executing the delete and insert non-atomically raises the following issues:
 - A race between `deleteOne()` and `insertOne()` where the document does not exist in either collection.
 - If `deleteOne()` fails and `insertOne()` succeeds, the document exists in both collections.
 - If `deleteOne()` succeeds and `insertOne()` fails, the document does not exist in either collection.
@@ -37,6 +37,9 @@ session.startTransaction().flatMap { _ in
 ```
 
 ### Transaction with Default Transaction Options
+
+The default transaction options specified below apply to any transaction started on the session.
+
 ```swift
 let txnOpts = TransactionOptions(
     maxCommitTimeMS: 30,

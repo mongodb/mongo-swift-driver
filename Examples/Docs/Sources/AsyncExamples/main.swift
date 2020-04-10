@@ -174,7 +174,7 @@ private func transactions() throws {
             destColl.insertOne(docToMove, session: session)
         }.flatMap { _ in
             session.commitTransaction()
-        }.whenFailure { error in
+        }.whenFailure { _ in
             session.abortTransaction()
             // handle error
         }
@@ -194,7 +194,7 @@ private func transactions() throws {
             // do something
         }.flatMap { _ in
             session.commitTransaction()
-        }.whenFailure { error in
+        }.whenFailure { _ in
             session.abortTransaction()
             // handle error
         }
@@ -217,7 +217,7 @@ private func transactions() throws {
             // do something
         }.flatMap { _ in
             session.commitTransaction()
-        }.whenFailure { error in
+        }.whenFailure { _ in
             session.abortTransaction()
             // handle error
         }
