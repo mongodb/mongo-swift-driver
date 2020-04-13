@@ -32,6 +32,9 @@ public enum CursorType {
 
 /// Options to use when executing a `find` command on a `MongoCollection`.
 public struct FindOptions: Codable {
+    /// Enables writing to temporary files on the server.
+    public var allowDiskUse: Bool?
+
     /// Get partial results from a mongos if some shards are down (instead of throwing an error).
     public var allowPartialResults: Bool?
 
@@ -130,6 +133,7 @@ public struct FindOptions: Codable {
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional.
     public init(
+        allowDiskUse: Bool? = nil,
         allowPartialResults: Bool? = nil,
         batchSize: Int32? = nil,
         collation: Document? = nil,
@@ -150,6 +154,7 @@ public struct FindOptions: Codable {
         skip: Int64? = nil,
         sort: Document? = nil
     ) {
+        self.allowDiskUse = allowDiskUse
         self.allowPartialResults = allowPartialResults
         self.batchSize = batchSize
         self.collation = collation
@@ -191,9 +196,9 @@ public struct FindOptions: Codable {
 
     // Encode everything except `self.readPreference`, because this is sent to libmongoc separately
     private enum CodingKeys: String, CodingKey {
-        case allowPartialResults, awaitData, batchSize, collation, comment, hint, limit, max, maxAwaitTimeMS,
-            maxTimeMS, min, noCursorTimeout, projection, readConcern, returnKey, showRecordId, tailable, skip,
-            sort
+        case allowDiskUse, allowPartialResults, awaitData, batchSize, collation, comment, hint, limit, max,
+        maxAwaitTimeMS, maxTimeMS, min, noCursorTimeout, projection, readConcern, returnKey, showRecordId,
+        tailable, skip, sort
     }
 }
 
