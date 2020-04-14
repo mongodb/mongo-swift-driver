@@ -4,7 +4,8 @@ import Nimble
 import TestsCommon
 import XCTest
 
-/// A place for CrudV2 Tests until the swift crud v2 runner is shipped (SWIFT-780)
+// TODO: remove with SWIFT-780
+/// A place for CrudV2 Tests until the swift crud v2 runner is shipped
 final class MongoCrudV2Tests: MongoSwiftTestCase {
     func testFindOptionsAllowDiskUse() throws {
         let client = try MongoClient.makeTestClient()
