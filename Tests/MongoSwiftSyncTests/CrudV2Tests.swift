@@ -4,67 +4,43 @@ import Nimble
 import TestsCommon
 import XCTest
 
-private var _client: MongoSwiftSync.MongoClient?
-
-/// A place for CrudV2 Tests until the swift crud v2 runner is shipped
+/// A place for CrudV2 Tests until the swift crud v2 runner is shipped (SWIFT-780)
 final class MongoCrudV2Tests: MongoSwiftTestCase {
-    func testFindOptionsAllowDiskUseNotSpecified() throws {
+    func testFindOptionsAllowDiskUse() throws {
         let client = try MongoClient.makeTestClient()
         let monitor = client.addCommandMonitor()
 
-        let db = client.db(Self.testDatabase)
+        try self.withTestNamespace { _, _, coll in
+            try coll.insertOne(["dog": "notCat"])
 
-        let collection = db.collection("collection")
-        try collection.insertOne(["test": "blahblah"])
+            try monitor.captureEvents {
+                let optionAllowDiskUseNil = FindOptions()
+                expect(try coll.find(["dog": "notCat"], options: optionAllowDiskUseNil)).toNot(throwError())
 
-        try monitor.captureEvents {
-            let options = FindOptions()
-            expect(try collection.find(["test": "blahblah"], options: options)).toNot(throwError())
+                let optionAllowDiskUseFalse = FindOptions(allowDiskUse: false)
+                expect(try coll.find(["dog": "notCat"], options: optionAllowDiskUseFalse)).toNot(throwError())
+
+                let optionAllowDiskUseTrue = FindOptions(allowDiskUse: true)
+                expect(try coll.find(["dog": "notCat"], options: optionAllowDiskUseTrue)).toNot(throwError())
+            }
+
+            let events = monitor.commandStartedEvents()
+            expect(events).to(haveCount(3))
+
+            let eventAllowDiskUseNil = events[0]
+            expect(eventAllowDiskUseNil).toNot(beNil())
+            expect(eventAllowDiskUseNil.command["find"]).toNot(beNil())
+            expect(eventAllowDiskUseNil.command["allowDiskUse"]).to(beNil())
+
+            let eventAllowDiskUseFalse = events[1]
+            expect(eventAllowDiskUseFalse).toNot(beNil())
+            expect(eventAllowDiskUseFalse.command["find"]).toNot(beNil())
+            expect(eventAllowDiskUseFalse.command["allowDiskUse"]?.boolValue).to(beFalse())
+
+            let eventAllowDiskUseTrue = events[2]
+            expect(eventAllowDiskUseTrue).toNot(beNil())
+            expect(eventAllowDiskUseTrue.command["find"]).toNot(beNil())
+            expect(eventAllowDiskUseTrue.command["allowDiskUse"]?.boolValue).to(beTrue())
         }
-
-        let event = monitor.commandStartedEvents().first
-        expect(event).toNot(beNil())
-        expect(event?.command["find"]).toNot(beNil())
-        expect(event?.command["allowDiskUse"]).to(beNil())
-    }
-
-    func testFindOptionsAllowDiskUseFalse() throws {
-        let client = try MongoClient.makeTestClient()
-        let monitor = client.addCommandMonitor()
-
-        let db = client.db(Self.testDatabase)
-
-        let collection = db.collection("collection")
-        try collection.insertOne(["test": "blahblah"])
-
-        try monitor.captureEvents {
-            let options = FindOptions(allowDiskUse: false)
-            expect(try collection.find(["test": "blahblah"], options: options)).toNot(throwError())
-        }
-
-        let event = monitor.commandStartedEvents().first
-        expect(event).toNot(beNil())
-        expect(event?.command["find"]).toNot(beNil())
-        expect(event?.command["allowDiskUse"]?.boolValue).to(beFalse())
-    }
-
-    func testFindOptionsAllowDiskUseTrue() throws {
-        let client = try MongoClient.makeTestClient()
-        let monitor = client.addCommandMonitor()
-
-        let db = client.db(Self.testDatabase)
-
-        let collection = db.collection("collection")
-        try collection.insertOne(["test": "blahblah"])
-
-        try monitor.captureEvents {
-            let options = FindOptions(allowDiskUse: true)
-            expect(try collection.find(["test": "blahblah"], options: options)).toNot(throwError())
-        }
-
-        let event = monitor.commandStartedEvents().first
-        expect(event).toNot(beNil())
-        expect(event?.command["find"]).toNot(beNil())
-        expect(event?.command["allowDiskUse"]?.boolValue).to(beTrue())
     }
 }

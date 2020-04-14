@@ -229,9 +229,7 @@ extension MongoCollection_IndexTests {
 
 extension MongoCrudV2Tests {
     static var allTests = [
-        ("testFindOptionsAllowDiskUseNotSpecified", testFindOptionsAllowDiskUseNotSpecified),
-        ("testFindOptionsAllowDiskUseFalse", testFindOptionsAllowDiskUseFalse),
-        ("testFindOptionsAllowDiskUseTrue", testFindOptionsAllowDiskUseTrue),
+        ("testFindOptionsAllowDiskUse", testFindOptionsAllowDiskUse),
     ]
 }
 
