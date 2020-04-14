@@ -1,4 +1,4 @@
-// Generated using Sourcery 0.16.1 — https://github.com/krzysztofzablocki/Sourcery
+// Generated using Sourcery 0.17.0 — https://github.com/krzysztofzablocki/Sourcery
 // DO NOT EDIT
 
 
@@ -227,6 +227,14 @@ extension MongoCollection_IndexTests {
     ]
 }
 
+extension MongoCrudV2Tests {
+    static var allTests = [
+        ("testFindOptionsAllowDiskUseNotSpecified", testFindOptionsAllowDiskUseNotSpecified),
+        ("testFindOptionsAllowDiskUseFalse", testFindOptionsAllowDiskUseFalse),
+        ("testFindOptionsAllowDiskUseTrue", testFindOptionsAllowDiskUseTrue),
+    ]
+}
+
 extension MongoCursorTests {
     static var allTests = [
         ("testNonTailableCursor", testNonTailableCursor),
@@ -399,6 +407,7 @@ XCTMain([
     testCase(MongoCollectionTests.allTests),
     testCase(MongoCollection_BulkWriteTests.allTests),
     testCase(MongoCollection_IndexTests.allTests),
+    testCase(MongoCrudV2Tests.allTests),
     testCase(MongoCursorTests.allTests),
     testCase(MongoDatabaseTests.allTests),
     testCase(OptionsTests.allTests),
