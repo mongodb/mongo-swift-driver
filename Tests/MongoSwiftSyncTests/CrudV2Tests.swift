@@ -13,7 +13,7 @@ final class MongoCrudV2Tests: MongoSwiftTestCase {
                 print("Skipping test; MongoDB 4.3.5+ feature")
                 return
             }
-            
+
             let monitor = client.addCommandMonitor()
             try coll.insertOne(["dog": "notCat"])
 
