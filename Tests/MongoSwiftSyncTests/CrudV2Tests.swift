@@ -12,7 +12,7 @@ final class MongoCrudV2Tests: MongoSwiftTestCase {
             let monitor = client.addCommandMonitor()
             try coll.insertOne(["dog": "notCat"])
 
-            try monitor.captureEvents({
+            try monitor.captureEvents {
                 let optionAllowDiskUseNil = FindOptions()
                 expect(try coll.find(["dog": "notCat"], options: optionAllowDiskUseNil)).toNot(throwError())
 
@@ -21,7 +21,7 @@ final class MongoCrudV2Tests: MongoSwiftTestCase {
 
                 let optionAllowDiskUseTrue = FindOptions(allowDiskUse: true)
                 expect(try coll.find(["dog": "notCat"], options: optionAllowDiskUseTrue)).toNot(throwError())
-            })
+            }
 
             let events = monitor.commandStartedEvents()
             expect(events).to(haveCount(3))
