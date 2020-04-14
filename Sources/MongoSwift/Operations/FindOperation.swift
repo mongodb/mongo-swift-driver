@@ -32,7 +32,8 @@ public enum CursorType {
 
 /// Options to use when executing a `find` command on a `MongoCollection`.
 public struct FindOptions: Codable {
-    /// Enables writing to temporary files on the server.
+    /// Enables writing to temporary files. When set to true, the find operation
+    /// can write data to the _tmp subdirectory in the dbPath directory.
     public var allowDiskUse: Bool?
 
     /// Get partial results from a mongos if some shards are down (instead of throwing an error).

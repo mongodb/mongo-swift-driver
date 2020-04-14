@@ -27,17 +27,14 @@ final class MongoCrudV2Tests: MongoSwiftTestCase {
             expect(events).to(haveCount(3))
 
             let eventAllowDiskUseNil = events[0]
-            expect(eventAllowDiskUseNil).toNot(beNil())
             expect(eventAllowDiskUseNil.command["find"]).toNot(beNil())
             expect(eventAllowDiskUseNil.command["allowDiskUse"]).to(beNil())
 
             let eventAllowDiskUseFalse = events[1]
-            expect(eventAllowDiskUseFalse).toNot(beNil())
             expect(eventAllowDiskUseFalse.command["find"]).toNot(beNil())
             expect(eventAllowDiskUseFalse.command["allowDiskUse"]?.boolValue).to(beFalse())
 
             let eventAllowDiskUseTrue = events[2]
-            expect(eventAllowDiskUseTrue).toNot(beNil())
             expect(eventAllowDiskUseTrue.command["find"]).toNot(beNil())
             expect(eventAllowDiskUseTrue.command["allowDiskUse"]?.boolValue).to(beTrue())
         }
