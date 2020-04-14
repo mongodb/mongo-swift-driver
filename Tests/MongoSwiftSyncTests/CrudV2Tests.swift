@@ -8,11 +8,12 @@ import XCTest
 /// A place for CrudV2 Tests until the swift crud v2 runner is shipped
 final class MongoCrudV2Tests: MongoSwiftTestCase {
     func testFindOptionsAllowDiskUse() throws {
-        guard try MongoClient.makeTestClient().serverVersion() < ServerVersion(major: 4, minor: 3, patch: 5) else {
-            print("Skipping test; MongoDB 4.3.5+ feature")
-            return
-        }
         try self.withTestNamespace { client, _, coll in
+            guard try client.serverVersion() >= ServerVersion(major: 4, minor: 3, patch: 5) else {
+                print("Skipping test; MongoDB 4.3.5+ feature")
+                return
+            }
+            
             let monitor = client.addCommandMonitor()
             try coll.insertOne(["dog": "notCat"])
 
