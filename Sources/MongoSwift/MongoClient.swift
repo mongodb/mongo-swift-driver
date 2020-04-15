@@ -343,6 +343,7 @@ public class MongoClient {
      *   - filter: Optional `Document` specifying a filter that the listed databases must pass. This filter can be based
      *     on the "name", "sizeOnDisk", "empty", or "shards" fields of the output.
      *   - session: Optional `ClientSession` to use when executing this command.
+     *   - authorizedDatabases: Optional `Bool` disabling will have mongodb return an error if user in unauthorized to list databases.
      *
      * - Returns:
      *    An `EventLoopFuture<[DatabaseSpecification]>`. On success, the future contains an array of the specifications
@@ -357,9 +358,10 @@ public class MongoClient {
      */
     public func listDatabases(
         _ filter: Document? = nil,
-        session: ClientSession? = nil
+        session: ClientSession? = nil,
+        authorizedDatabases: Bool? = nil
     ) -> EventLoopFuture<[DatabaseSpecification]> {
-        let operation = ListDatabasesOperation(client: self, filter: filter, nameOnly: nil)
+        let operation = ListDatabasesOperation(client: self, filter: filter, nameOnly: nil, authorizedDatabases: authorizedDatabases)
         return self.operationExecutor.execute(operation, client: self, session: session).flatMapThrowing { result in
             guard case let .specs(dbs) = result else {
                 throw InternalError(message: "Invalid result")
@@ -374,6 +376,7 @@ public class MongoClient {
      * - Parameters:
      *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
      *   - session: Optional `ClientSession` to use when executing this command
+     *   - authorizedDatabases: Optional `Bool` disabling will have mongodb return an error if user in unauthorized to list databases.
      *
      * - Returns:
      *    An `EventLoopFuture<[MongoDatabase]>`. On success, the future contains an array of `MongoDatabase`s that
@@ -385,9 +388,10 @@ public class MongoClient {
      */
     public func listMongoDatabases(
         _ filter: Document? = nil,
-        session: ClientSession? = nil
+        session: ClientSession? = nil,
+        authorizedDatabases: Bool? = nil
     ) -> EventLoopFuture<[MongoDatabase]> {
-        self.listDatabaseNames(filter, session: session).map { $0.map { self.db($0) } }
+        self.listDatabaseNames(filter, session: session, authorizedDatabases: authorizedDatabases).map { $0.map { self.db($0) } }
     }
 
     /**
@@ -396,6 +400,7 @@ public class MongoClient {
      * - Parameters:
      *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
      *   - session: Optional `ClientSession` to use when executing this command
+     *   - authorizedDatabases: Optional `Bool` disabling will have mongodb return an error if user in unauthorized to list databases.
      *
      * - Returns:
      *    An `EventLoopFuture<[String]>`. On success, the future contains an array of names of databases that
@@ -407,9 +412,10 @@ public class MongoClient {
      */
     public func listDatabaseNames(
         _ filter: Document? = nil,
-        session: ClientSession? = nil
+        session: ClientSession? = nil,
+        authorizedDatabases: Bool? = nil
     ) -> EventLoopFuture<[String]> {
-        let operation = ListDatabasesOperation(client: self, filter: filter, nameOnly: true)
+        let operation = ListDatabasesOperation(client: self, filter: filter, nameOnly: true, authorizedDatabases: authorizedDatabases)
         return self.operationExecutor.execute(operation, client: self, session: session).flatMapThrowing { result in
             guard case let .names(names) = result else {
                 throw InternalError(message: "Invalid result")
