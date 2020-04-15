@@ -30,15 +30,18 @@ internal struct ListDatabasesOperation: Operation {
     private let client: MongoClient
     private let filter: Document?
     private let nameOnly: Bool?
+    private let authorizedDatabases: Bool?
 
     internal init(
         client: MongoClient,
         filter: Document?,
-        nameOnly: Bool?
+        nameOnly: Bool?,
+        authorizedDatabases: Bool? = nil
     ) {
         self.client = client
         self.filter = filter
         self.nameOnly = nameOnly
+        self.authorizedDatabases = authorizedDatabases
     }
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> ListDatabasesResults {
@@ -50,6 +53,9 @@ internal struct ListDatabasesOperation: Operation {
         }
         if let nameOnly = self.nameOnly {
             cmd["nameOnly"] = .bool(nameOnly)
+        }
+        if let authorizedDatabases = self.authorizedDatabases {
+            cmd["authorizedDatabases"] = .bool(authorizedDatabases)
         }
 
         let opts = try encodeOptions(options: nil as Document?, session: session)
