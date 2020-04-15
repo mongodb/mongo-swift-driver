@@ -50,7 +50,7 @@ public struct Document {
 extension Document {
     /// Read-only access to the storage's underlying bson_t.
     internal var _bson: BSONPointer {
-        return UnsafePointer(self._storage._bson)
+        UnsafePointer(self._storage._bson)
     }
 
     /**
