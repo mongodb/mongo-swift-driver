@@ -3,7 +3,7 @@ import Foundation
 
 /// Options to use when executing an `aggregate` command on a `MongoCollection`.
 public struct AggregateOptions: Codable {
-    /// Enables writing to temporary files. When set to true, aggregation stages
+    /// Enables the server to write to temporary files. When set to true, the aggregate operation
     /// can write data to the _tmp subdirectory in the dbPath directory.
     public var allowDiskUse: Bool?
 
