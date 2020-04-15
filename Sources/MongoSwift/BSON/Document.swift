@@ -1,13 +1,8 @@
 import CLibMongoC
 import Foundation
 
-#if compiler(>=5.0)
-internal typealias BSONPointer = OpaquePointer
-internal typealias MutableBSONPointer = OpaquePointer
-#else
 internal typealias BSONPointer = UnsafePointer<bson_t>
 internal typealias MutableBSONPointer = UnsafeMutablePointer<bson_t>
-#endif
 
 /// The storage backing a MongoSwift `Document`.
 public class DocumentStorage {
@@ -55,11 +50,7 @@ public struct Document {
 extension Document {
     /// Read-only access to the storage's underlying bson_t.
     internal var _bson: BSONPointer {
-#if compiler(>=5.0)
-        return self._storage._bson
-#else
         return UnsafePointer(self._storage._bson)
-#endif
     }
 
     /**
