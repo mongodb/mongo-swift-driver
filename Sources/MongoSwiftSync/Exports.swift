@@ -1,4 +1,4 @@
-// Generated using Sourcery 0.16.1 — https://github.com/krzysztofzablocki/Sourcery
+// Generated using Sourcery 0.17.0 — https://github.com/krzysztofzablocki/Sourcery
 // DO NOT EDIT
 
 
@@ -75,6 +75,7 @@
 @_exported import struct MongoSwift.InternalError
 @_exported import struct MongoSwift.InvalidArgumentError
 @_exported import struct MongoSwift.ListCollectionsOptions
+@_exported import struct MongoSwift.ListDatabasesOptions
 @_exported import struct MongoSwift.LogicError
 @_exported import struct MongoSwift.MongoNamespace
 @_exported import struct MongoSwift.ObjectId

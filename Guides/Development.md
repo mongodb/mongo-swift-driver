@@ -1,7 +1,7 @@
 # Swift Driver Development Guide
 
 ## Index
-* [Things to Install](#things-to-install) 
+* [Things to Install](#things-to-install)
 * [The Code](#the-code)
 * [Building](#building)
 * [Running Tests](#running-tests)
@@ -15,15 +15,17 @@
 * [swiftenv](https://swiftenv.fuller.li/en/latest/installation.html): a command-line tool that allows easy installation of and switching between versions of Swift.
 * [Jazzy](https://github.com/realm/jazzy#installation): the tool we use to generate documentation.
 * [SwiftFormat](https://github.com/nicklockwood/SwiftFormat#how-do-i-install-it): the Swift formatter we use.
-* [SwiftLint](https://github.com/realm/SwiftLint#using-homebrew): the Swift linter we use. 
+* [SwiftLint](https://github.com/realm/SwiftLint#using-homebrew): the Swift linter we use.
 * [Sourcery](https://github.com/krzysztofzablocki/Sourcery/#installation): the tool we use for code generation.
 
 ## The code
 You should clone this repository, as well as the [MongoDB Driver specifications](https://github.com/mongodb/specifications).
 
-## Building 
+## Building
 ### From the Command line
-Run `swift build` or simply `make` in the project's root directory. 
+Run `swift build` or simply `make` in the project's root directory.
+
+If you add symbols you may need to run `make exports` which will generate [Sources/MongoSwiftSync/Exports.swift](Sources/MongoSwiftSync/Exports.swift). This makes things declared in `MongoSwift` available to `MongoSwiftSync`.
 
 ### In Xcode
 We do not provide or maintain an already-generated `.xcodeproj` in our repository. Instead, you must generate it locally.
@@ -33,21 +35,21 @@ We do not provide or maintain an already-generated `.xcodeproj` in our repositor
 2. Run `make project`
 3. You're ready to go! Open `MongoSwift.xcodeproj` and build and test as normal.
 
-Why is this necessary? The project requires a customized "copy resources" build phase to include various test `.json` files. By default, this phase is not included when you run `swift package generate-xcodeproj`. So `make project` first generates the project, and then uses `xcodeproj` to manually add the files to the appropriate targets (see `add_json_files.rb`). 
+Why is this necessary? The project requires a customized "copy resources" build phase to include various test `.json` files. By default, this phase is not included when you run `swift package generate-xcodeproj`. So `make project` first generates the project, and then uses `xcodeproj` to manually add the files to the appropriate targets (see `add_json_files.rb`).
 
 ## Running Tests
 **NOTE**: Several of the tests require a mongod instance to be running on the default host/port, `localhost:27017`. You can start this by running `mongod --setParameter enableTestCommands=1`. The `enableTestCommands` parameter is required to use some test-only commands built into MongoDB that we utilize in our tests, e.g. `failCommand`.
 
 You can run tests from Xcode as usual. If you prefer to test from the command line, keep reading.
 
-### From the Command Line 
+### From the Command Line
 We recommend installing the ruby gem `xcpretty` and running tests by executing `make test-pretty`, as this provides output in a much more readable format. (Works on MacOS only.)
 
 Alternatively, you can just run the tests with `swift test`, or `make test`.
 
 To filter tests by regular expression:
-- If you are using `swift test`, provide the `--filter` argument: for example, `swift test --filter=MongoClientTests`. 
-- If you are using `make test` or `make test-pretty`, provide the `FILTER` environment variable: for example, `make test-pretty FILTER=MongoCollectionTests`. 
+- If you are using `swift test`, provide the `--filter` argument: for example, `swift test --filter=MongoClientTests`.
+- If you are using `make test` or `make test-pretty`, provide the `FILTER` environment variable: for example, `make test-pretty FILTER=MongoCollectionTests`.
 
 ### Diagnosing Backtraces on Linux
 
@@ -61,10 +63,10 @@ $ symbolicate-linux-fatal /path/to/MongoSwiftPackageTests.xctest crash.log
 This will require you to manually provide the path to the compiled test binary (e.g. `.build/x86_64-unknown-linux/debug/MongoSwiftPackageTests.xctest`).
 
 ## Writing and Generating Documentation
-We document new code as we write it. We use C-style documentation blocks (`/** ... */`) for documentation longer than 3 lines, and triple-slash (`///`) for shorter documentation. 
+We document new code as we write it. We use C-style documentation blocks (`/** ... */`) for documentation longer than 3 lines, and triple-slash (`///`) for shorter documentation.
 Comments that are _not_ documentation should use two slashes (`//`).
 
-Documentation comments should generally be complete sentences and should end with periods. 
+Documentation comments should generally be complete sentences and should end with periods.
 
 Our documentation site is automatically generated from the source code using [Jazzy](https://github.com/realm/jazzy#installation). We regenerate it via our release script each time we release a new version of the driver.
 
@@ -93,7 +95,7 @@ If you have a setup for developing the driver in an editor other than the ones l
   * Please read the [NOTICE](https://github.com/Utagai/swift.vim#notice) for proper credits.
 
 ## Workflow
-1. Create a feature branch, named by the corresponding JIRA ticket if exists, along with a short descriptor of the work: for example, `SWIFT-30/writeconcern`. 
+1. Create a feature branch, named by the corresponding JIRA ticket if exists, along with a short descriptor of the work: for example, `SWIFT-30/writeconcern`.
 1. Do your work on the branch.
 1. If you add, remove, or rename any tests, make sure to update `LinuxMain.swift` accordingly. If you are on MacOS, you can do that by running `make linuxmain`.
 1. Ensure your code passes both the linter and the formatter.
@@ -103,8 +105,8 @@ If you have a setup for developing the driver in an editor other than the ones l
 1. Open a pull request on the repository. Make sure you have rebased your branch onto the latest commits on `master`.
 1. Go through code review to get the team's approval on your changes. (See the next section on [Code Review](#code-review) for more details on this process.) Once you get the required approvals and your code passes all tests:
 1. Rebase on master again if needed.
-1. Rerun tests. 
-1. Squash all commits into a single, descriptive commit method, formatted as: `TICKET-NUMBER: Description of changes`. For example, `SWIFT-30: Implement WriteConcern type`. 
+1. Rerun tests.
+1. Squash all commits into a single, descriptive commit method, formatted as: `TICKET-NUMBER: Description of changes`. For example, `SWIFT-30: Implement WriteConcern type`.
 1. Merge it, or if you don't have permissions, ask someone to merge it for you.
 
 ## Code Review

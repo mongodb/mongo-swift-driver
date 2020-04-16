@@ -30,6 +30,11 @@ public struct ListDatabasesOptions {
     /// Specifies whether to only return databases for which the user has privileges,
     /// if false MongoDB will return an error for unauthorized users.
     public var authorizedDatabases: Bool?
+
+    /// Convenience initializer allowing any/all parameters to be omitted or optional.
+    public init(authorizedDatabases: Bool?) {
+        self.authorizedDatabases = authorizedDatabases
+    }
 }
 
 /// An operation corresponding to a "listDatabases" command on a collection.

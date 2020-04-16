@@ -92,6 +92,7 @@ public class MongoClient {
      * - Parameters:
      *   - filter: Optional `Document` specifying a filter that the listed databases must pass. This filter can be based
      *     on the "name", "sizeOnDisk", "empty", or "shards" fields of the output.
+     *   - options: Optional `ListDatabasesOptions` specifying options for listing databases.
      *   - session: Optional `ClientSession` to use when executing this command.
      *
      * - Returns: A `[DatabaseSpecification]` containing the databases matching provided criteria.
@@ -104,9 +105,10 @@ public class MongoClient {
      */
     public func listDatabases(
         _ filter: Document? = nil,
+        options: ListDatabasesOptions? = nil,
         session: ClientSession? = nil
     ) throws -> [DatabaseSpecification] {
-        try self.asyncClient.listDatabases(filter, session: session?.asyncSession).wait()
+        try self.asyncClient.listDatabases(filter, options: options, session: session?.asyncSession).wait()
     }
 
     /**
@@ -114,6 +116,7 @@ public class MongoClient {
      *
      * - Parameters:
      *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
+     *   - options: Optional `ListDatabasesOptions` specifying options for listing databases.
      *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: An Array of `MongoDatabase`s that match the provided filter.
@@ -123,9 +126,10 @@ public class MongoClient {
      */
     public func listMongoDatabases(
         _ filter: Document? = nil,
+        options: ListDatabasesOptions? = nil,
         session: ClientSession? = nil
     ) throws -> [MongoDatabase] {
-        try self.listDatabaseNames(filter, session: session).map { self.db($0) }
+        try self.listDatabaseNames(filter, options: options, session: session).map { self.db($0) }
     }
 
     /**
@@ -133,6 +137,7 @@ public class MongoClient {
      *
      * - Parameters:
      *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
+     *   - options: Optional `ListDatabasesOptions` specifying options for listing databases.
      *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: A `[String]` containing names of databases that match the provided filter.
@@ -140,8 +145,12 @@ public class MongoClient {
      * - Throws:
      *   - `LogicError` if the provided session is inactive.
      */
-    public func listDatabaseNames(_ filter: Document? = nil, session: ClientSession? = nil) throws -> [String] {
-        try self.asyncClient.listDatabaseNames(filter, session: session?.asyncSession).wait()
+    public func listDatabaseNames(
+        _ filter: Document? = nil,
+        options: ListDatabasesOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> [String] {
+        try self.asyncClient.listDatabaseNames(filter, options: options, session: session?.asyncSession).wait()
     }
 
     /**
