@@ -358,10 +358,10 @@ public class MongoClient {
      */
     public func listDatabases(
         _ filter: Document? = nil,
-        _ options: ListDatabasesOptions = ListDatabasesOptions(),
+        options: ListDatabasesOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<[DatabaseSpecification]> {
-        let operation = ListDatabasesOperation(client: self, filter: filter, nameOnly: false, options: options)
+        let operation = ListDatabasesOperation(client: self, filter: filter, nameOnly: nil, options: options)
         return self.operationExecutor.execute(operation, client: self, session: session).flatMapThrowing { result in
             guard case let .specs(dbs) = result else {
                 throw InternalError(message: "Invalid result")
@@ -388,10 +388,10 @@ public class MongoClient {
      */
     public func listMongoDatabases(
         _ filter: Document? = nil,
-        _ options: ListDatabasesOptions = ListDatabasesOptions(),
+        options: ListDatabasesOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<[MongoDatabase]> {
-        self.listDatabaseNames(filter, options, session: session).map { $0.map { self.db($0) } }
+        self.listDatabaseNames(filter, options: options, session: session).map { $0.map { self.db($0) } }
     }
 
     /**
@@ -412,7 +412,7 @@ public class MongoClient {
      */
     public func listDatabaseNames(
         _ filter: Document? = nil,
-        _ options: ListDatabasesOptions = ListDatabasesOptions(),
+        options: ListDatabasesOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<[String]> {
         let operation = ListDatabasesOperation(client: self, filter: filter, nameOnly: true, options: options)

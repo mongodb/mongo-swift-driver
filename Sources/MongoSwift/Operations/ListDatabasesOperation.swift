@@ -17,7 +17,7 @@ public struct DatabaseSpecification: Codable {
 }
 
 /// Internal intermediate result of a ListDatabases command.
-public enum ListDatabasesResults {
+internal enum ListDatabasesResults {
     /// Includes the names and sizes.
     case specs([DatabaseSpecification])
 
@@ -26,29 +26,24 @@ public enum ListDatabasesResults {
 }
 
 /// Options for "listDatabases" operations
-public struct ListDatabasesOptions: Encodable {
+public struct ListDatabasesOptions {
     /// Specifies whether to only return databases for which the user has privileges,
     /// if false MongoDB will return an error for unauthorized users.
-    public let authorizedDatabases: Bool
-
-    public init(_ authorizedDatabases: Bool = true) {
-        self.authorizedDatabases = Bool(authorizedDatabases)
-    }
+    public var authorizedDatabases: Bool?
 }
 
 /// An operation corresponding to a "listDatabases" command on a collection.
 internal struct ListDatabasesOperation: Operation {
     private let client: MongoClient
     private let filter: Document?
+    private let nameOnly: Bool?
     private let options: ListDatabasesOptions?
-    /// Specifies whether to only return the list of database names
-    public let nameOnly: Bool?
 
     internal init(
         client: MongoClient,
         filter: Document?,
         nameOnly: Bool?,
-        options: ListDatabasesOptions? = nil
+        options: ListDatabasesOptions?
     ) {
         self.client = client
         self.filter = filter
