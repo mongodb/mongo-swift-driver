@@ -17,7 +17,7 @@ public struct DatabaseSpecification: Codable {
 }
 
 /// Internal intermediate result of a ListDatabases command.
-internal enum ListDatabasesResults {
+public enum ListDatabasesResults {
     /// Includes the names and sizes.
     case specs([DatabaseSpecification])
 
@@ -25,23 +25,35 @@ internal enum ListDatabasesResults {
     case names([String])
 }
 
+/// Options for "listDatabases" operations
+public struct ListDatabasesOptions: Encodable {
+    /// Specifies whether to only return databases for which the user has privileges,
+    /// if false MongoDB will return an error for unauthorized users.
+    public let authorizedDatabases: Bool
+
+    public init(_ authorizedDatabases: Bool = true) {
+        self.authorizedDatabases = Bool(authorizedDatabases)
+    }
+}
+
 /// An operation corresponding to a "listDatabases" command on a collection.
 internal struct ListDatabasesOperation: Operation {
     private let client: MongoClient
     private let filter: Document?
-    private let nameOnly: Bool?
-    private let authorizedDatabases: Bool?
+    private let options: ListDatabasesOptions?
+    /// Specifies whether to only return the list of database names
+    public let nameOnly: Bool?
 
     internal init(
         client: MongoClient,
         filter: Document?,
         nameOnly: Bool?,
-        authorizedDatabases: Bool? = nil
+        options: ListDatabasesOptions? = nil
     ) {
         self.client = client
         self.filter = filter
         self.nameOnly = nameOnly
-        self.authorizedDatabases = authorizedDatabases
+        self.options = options
     }
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> ListDatabasesResults {
@@ -54,7 +66,7 @@ internal struct ListDatabasesOperation: Operation {
         if let nameOnly = self.nameOnly {
             cmd["nameOnly"] = .bool(nameOnly)
         }
-        if let authorizedDatabases = self.authorizedDatabases {
+        if let authorizedDatabases = self.options?.authorizedDatabases {
             cmd["authorizedDatabases"] = .bool(authorizedDatabases)
         }
 
