@@ -115,14 +115,13 @@ internal class ConnectionString {
     internal var authMechanismProperties: Document? {
         var props = bson_t()
         return withUnsafeMutablePointer(to: &props) { propsPtr in
-            let opaquePtr = OpaquePointer(propsPtr)
-            guard mongoc_uri_get_mechanism_properties(self._uri, opaquePtr) else {
+            guard mongoc_uri_get_mechanism_properties(self._uri, propsPtr) else {
                 return nil
             }
             /// This copy should not be returned directly as its only guaranteed valid for as long as the
             /// `mongoc_uri_t`, as `props` was statically initialized from data stored in the URI and may contain
             /// pointers that will be invalidated once the URI is.
-            let copy = Document(copying: opaquePtr)
+            let copy = Document(copying: propsPtr)
 
             return copy.mapValues { value in
                 // mongoc returns boolean options e.g. CANONICALIZE_HOSTNAME as strings, but they are boolean values.

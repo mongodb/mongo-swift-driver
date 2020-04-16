@@ -1,13 +1,8 @@
 import CLibMongoC
 import Foundation
 
-#if compiler(>=5.0)
-internal typealias BSONIterPointer = OpaquePointer
-internal typealias MutableBSONIterPointer = OpaquePointer
-#else
 internal typealias BSONIterPointer = UnsafePointer<bson_iter_t>
 internal typealias MutableBSONIterPointer = UnsafeMutablePointer<bson_iter_t>
-#endif
 
 /// An iterator over the values in a `Document`.
 public class DocumentIterator: IteratorProtocol {
