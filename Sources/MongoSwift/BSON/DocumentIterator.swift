@@ -7,9 +7,9 @@ internal typealias MutableBSONIterPointer = UnsafeMutablePointer<bson_iter_t>
 /// An iterator over the values in a `Document`.
 public class DocumentIterator: IteratorProtocol {
     /// the libbson iterator. it must be a `var` because we use it as an inout argument.
-    internal var _iter: bson_iter_t
+    private var _iter: bson_iter_t
     /// a reference to the document we're iterating over
-    internal let document: Document
+    private let document: Document
 
     /// Initializes a new iterator over the contents of `doc`. Returns `nil` if the key is not
     /// found, or if an iterator cannot be created over `doc` due to an error from e.g. corrupt data.
