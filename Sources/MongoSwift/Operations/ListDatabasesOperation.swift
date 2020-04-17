@@ -25,14 +25,13 @@ internal enum ListDatabasesResults {
     case names([String])
 }
 
-/// Options for "listDatabases" operations
+/// Options for "listDatabases" operations.
 public struct ListDatabasesOptions {
-    /// Specifies whether to only return databases for which the user has privileges,
-    /// if false MongoDB will return an error for unauthorized users.
+    /// Specifies whether to only return databases for which the user has privileges.
     public var authorizedDatabases: Bool?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional.
-    public init(authorizedDatabases: Bool?) {
+    public init(authorizedDatabases: Bool? = nil) {
         self.authorizedDatabases = authorizedDatabases
     }
 }

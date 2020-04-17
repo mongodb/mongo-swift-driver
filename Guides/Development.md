@@ -25,7 +25,7 @@ You should clone this repository, as well as the [MongoDB Driver specifications]
 ### From the Command line
 Run `swift build` or simply `make` in the project's root directory.
 
-If you add symbols you may need to run `make exports` which will generate [Sources/MongoSwiftSync/Exports.swift](Sources/MongoSwiftSync/Exports.swift). This makes things declared in `MongoSwift` available to `MongoSwiftSync`.
+If you add symbols you may need to run `make exports` which will generate [Sources/MongoSwiftSync/Exports.swift](Sources/MongoSwiftSync/Exports.swift). This makes symbols declared in `MongoSwift` available to importers of `MongoSwiftSync`.
 
 ### In Xcode
 We do not provide or maintain an already-generated `.xcodeproj` in our repository. Instead, you must generate it locally.
