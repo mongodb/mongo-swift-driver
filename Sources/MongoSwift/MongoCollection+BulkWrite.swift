@@ -82,15 +82,25 @@ public enum WriteModel<CollectionType: Codable> {
         switch self {
         case let .deleteOne(filter, options):
             let opts = try encoder.encode(options)
-            success = mongoc_bulk_operation_remove_one_with_opts(bulk, filter._bson, opts?._bson, &error)
+            success = withBSONPointer(to: filter) { filterPtr in
+                withOptionalBSONPointer(to: opts) { optsPtr in
+                    mongoc_bulk_operation_remove_one_with_opts(bulk, filterPtr, optsPtr, &error)
+                }
+            }
 
         case let .deleteMany(filter, options):
             let opts = try encoder.encode(options)
-            success = mongoc_bulk_operation_remove_many_with_opts(bulk, filter._bson, opts?._bson, &error)
+            success = withBSONPointer(to: filter) { filterPtr in
+                withOptionalBSONPointer(to: opts) { optsPtr in
+                    mongoc_bulk_operation_remove_many_with_opts(bulk, filterPtr, optsPtr, &error)
+                }
+            }
 
         case let .insertOne(value):
             let document = try encoder.encode(value).withID()
-            success = mongoc_bulk_operation_insert_with_opts(bulk, document._bson, nil, &error)
+            success = withBSONPointer(to: document) { docPtr in
+                mongoc_bulk_operation_insert_with_opts(bulk, docPtr, nil, &error)
+            }
 
             guard let insertedId = try document.getValue(for: "_id") else {
                 // we called `withID()`, so this should be present.
@@ -101,21 +111,33 @@ public enum WriteModel<CollectionType: Codable> {
         case let .replaceOne(filter, replacement, options):
             let replacement = try encoder.encode(replacement)
             let opts = try encoder.encode(options)
-            success = mongoc_bulk_operation_replace_one_with_opts(
-                bulk,
-                filter._bson,
-                replacement._bson,
-                opts?._bson,
-                &error
-            )
+            success = withBSONPointer(to: filter) { filterPtr in
+                withBSONPointer(to: replacement) { replacementPtr in
+                    withOptionalBSONPointer(to: opts) { optsPtr in
+                        mongoc_bulk_operation_replace_one_with_opts(bulk, filterPtr, replacementPtr, optsPtr, &error)
+                    }
+                }
+            }
 
         case let .updateOne(filter, update, options):
             let opts = try encoder.encode(options)
-            success = mongoc_bulk_operation_update_one_with_opts(bulk, filter._bson, update._bson, opts?._bson, &error)
+            success = withBSONPointer(to: filter) { filterPtr in
+                withBSONPointer(to: update) { updatePtr in
+                    withOptionalBSONPointer(to: opts) { optsPtr in
+                        mongoc_bulk_operation_update_one_with_opts(bulk, filterPtr, updatePtr, optsPtr, &error)
+                    }
+                }
+            }
 
         case let .updateMany(filter, update, options):
             let opts = try encoder.encode(options)
-            success = mongoc_bulk_operation_update_many_with_opts(bulk, filter._bson, update._bson, opts?._bson, &error)
+            success = withBSONPointer(to: filter) { filterPtr in
+                withBSONPointer(to: update) { updatePtr in
+                    withOptionalBSONPointer(to: opts) { optsPtr in
+                        mongoc_bulk_operation_update_many_with_opts(bulk, filterPtr, updatePtr, optsPtr, &error)
+                    }
+                }
+            }
         }
 
         guard success else {
@@ -206,8 +228,11 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
 
         let (serverId, isAcknowledged): (UInt32, Bool) =
             try self.collection.withMongocCollection(from: connection) { collPtr in
-                guard let bulk = mongoc_collection_create_bulk_operation_with_opts(collPtr, opts?._bson) else {
-                    fatalError("failed to initialize mongoc_bulk_operation_t")
+                let bulk: OpaquePointer = withOptionalBSONPointer(to: opts) { optsPtr in
+                    guard let bulk = mongoc_collection_create_bulk_operation_with_opts(collPtr, optsPtr) else {
+                        fatalError("failed to initialize mongoc_bulk_operation_t")
+                    }
+                    return bulk
                 }
                 defer { mongoc_bulk_operation_destroy(bulk) }
 

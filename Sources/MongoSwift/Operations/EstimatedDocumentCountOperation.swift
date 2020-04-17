@@ -44,7 +44,9 @@ internal struct EstimatedDocumentCountOperation<T: Codable>: Operation {
         let rp = self.options?.readPreference?.pointer
         var error = bson_error_t()
         let count = self.collection.withMongocCollection(from: connection) { collPtr in
-            mongoc_collection_estimated_document_count(collPtr, opts?._bson, rp, nil, &error)
+            withOptionalBSONPointer(to: opts) { optsPtr in
+                mongoc_collection_estimated_document_count(collPtr, optsPtr, rp, nil, &error)
+            }
         }
 
         guard count != -1 else { throw extractMongoError(error: error) }

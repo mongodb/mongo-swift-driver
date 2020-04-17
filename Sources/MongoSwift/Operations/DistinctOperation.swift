@@ -59,9 +59,13 @@ internal struct DistinctOperation<T: Codable>: Operation {
         let rp = self.options?.readPreference?.pointer
         var reply = Document()
         var error = bson_error_t()
-        let success = withMutableBSONPointer(to: &reply) { replyPtr in
-            self.collection.withMongocCollection(from: connection) { collPtr in
-                mongoc_collection_read_command_with_opts(collPtr, command._bson, rp, opts?._bson, replyPtr, &error)
+        let success = self.collection.withMongocCollection(from: connection) { collPtr in
+            withBSONPointer(to: command) { cmdPtr in
+                withOptionalBSONPointer(to: opts) { optsPtr in
+                    withMutableBSONPointer(to: &reply) { replyPtr in
+                        mongoc_collection_read_command_with_opts(collPtr, cmdPtr, rp, optsPtr, replyPtr, &error)
+                    }
+                }
             }
         }
         guard success else {

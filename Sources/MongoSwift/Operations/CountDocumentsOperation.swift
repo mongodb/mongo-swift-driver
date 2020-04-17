@@ -66,7 +66,11 @@ internal struct CountDocumentsOperation<T: Codable>: Operation {
         let rp = self.options?.readPreference?.pointer
         var error = bson_error_t()
         let count = self.collection.withMongocCollection(from: connection) { collPtr in
-            mongoc_collection_count_documents(collPtr, self.filter._bson, opts?._bson, rp, nil, &error)
+            withBSONPointer(to: self.filter) { filterPtr in
+                withOptionalBSONPointer(to: opts) { optsPtr in
+                    mongoc_collection_count_documents(collPtr, filterPtr, optsPtr, rp, nil, &error)
+                }
+            }
         }
 
         guard count != -1 else { throw extractMongoError(error: error) }

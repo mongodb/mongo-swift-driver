@@ -26,10 +26,12 @@ internal struct ListIndexesOperation<T: Codable>: Operation {
         let opts = try encodeOptions(options: nil as Document?, session: session)
 
         let indexes: OpaquePointer = self.collection.withMongocCollection(from: connection) { collPtr in
-            guard let indexes = mongoc_collection_find_indexes_with_opts(collPtr, opts?._bson) else {
-                fatalError(failedToRetrieveCursorMessage)
+            withOptionalBSONPointer(to: opts) { optsPtr in
+                guard let indexes = mongoc_collection_find_indexes_with_opts(collPtr, optsPtr) else {
+                    fatalError(failedToRetrieveCursorMessage)
+                }
+                return indexes
             }
-            return indexes
         }
 
         if self.nameOnly {

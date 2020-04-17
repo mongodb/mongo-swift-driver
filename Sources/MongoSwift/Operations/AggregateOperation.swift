@@ -87,16 +87,20 @@ internal struct AggregateOperation<CollectionType: Codable>: Operation {
         let pipeline: Document = ["pipeline": .array(self.pipeline.map { .document($0) })]
 
         let result: OpaquePointer = self.collection.withMongocCollection(from: connection) { collPtr in
-            guard let result = mongoc_collection_aggregate(
-                collPtr,
-                MONGOC_QUERY_NONE,
-                pipeline._bson,
-                opts?._bson,
-                rp
-            ) else {
-                fatalError(failedToRetrieveCursorMessage)
+            withBSONPointer(to: pipeline) { pipelinePtr in
+                withOptionalBSONPointer(to: opts) { optsPtr in
+                    guard let result = mongoc_collection_aggregate(
+                        collPtr,
+                        MONGOC_QUERY_NONE,
+                        pipelinePtr,
+                        optsPtr,
+                        rp
+                    ) else {
+                        fatalError(failedToRetrieveCursorMessage)
+                    }
+                    return result
+                }
             }
-            return result
         }
 
         // since mongoc_collection_aggregate doesn't do any I/O, use forceIO to ensure this operation fails if we

@@ -6,20 +6,21 @@ internal typealias MutableBSONIterPointer = UnsafeMutablePointer<bson_iter_t>
 
 /// An iterator over the values in a `Document`.
 public class DocumentIterator: IteratorProtocol {
-    /// the libbson iterator. it must be a `var` because we use it as
-    /// an inout argument
+    /// the libbson iterator. it must be a `var` because we use it as an inout argument.
     internal var _iter: bson_iter_t
-    /// a reference to the storage for the document we're iterating
-    internal let _storage: DocumentStorage
+    /// a reference to the document we're iterating over
+    internal let document: Document
 
     /// Initializes a new iterator over the contents of `doc`. Returns `nil` if the key is not
     /// found, or if an iterator cannot be created over `doc` due to an error from e.g. corrupt data.
-    internal init?(forDocument doc: Document) {
+    internal init?(over document: Document) {
         self._iter = bson_iter_t()
-        self._storage = doc._storage
+        self.document = document
 
         let initialized = self.withMutableBSONIterPointer { iterPtr in
-            bson_iter_init(iterPtr, doc._bson)
+            withBSONPointer(to: self.document) { docPtr in
+                bson_iter_init(iterPtr, docPtr)
+            }
         }
 
         guard initialized else {
@@ -29,12 +30,14 @@ public class DocumentIterator: IteratorProtocol {
 
     /// Initializes a new iterator over the contents of `doc`. Returns `nil` if an iterator cannot
     /// be created over `doc` due to an error from e.g. corrupt data, or if the key is not found.
-    internal init?(forDocument doc: Document, advancedTo key: String) {
+    internal init?(over document: Document, advancedTo key: String) {
         self._iter = bson_iter_t()
-        self._storage = doc._storage
+        self.document = document
 
         let initialized = self.withMutableBSONIterPointer { iterPtr in
-            bson_iter_init_find(iterPtr, doc._bson, key.cString(using: .utf8))
+            withBSONPointer(to: self.document) { docPtr in
+                bson_iter_init_find(iterPtr, docPtr, key.cString(using: .utf8))
+            }
         }
 
         guard initialized else {
@@ -118,7 +121,7 @@ public class DocumentIterator: IteratorProtocol {
             fatalError("endIndex must be >= startIndex")
         }
 
-        guard let iter = DocumentIterator(forDocument: doc) else {
+        guard let iter = DocumentIterator(over: doc) else {
             return [:]
         }
 
@@ -183,26 +186,14 @@ public class DocumentIterator: IteratorProtocol {
 
     /// Internal helper function for explicitly accessing the `bson_iter_t` as an unsafe pointer
     internal func withBSONIterPointer<Result>(_ body: (BSONIterPointer) throws -> Result) rethrows -> Result {
-#if compiler(>=5.0)
-        return try withUnsafePointer(to: self._iter) { iterPtr in
-            try body(BSONIterPointer(iterPtr))
-        }
-#else
-        return try withUnsafePointer(to: self._iter, body)
-#endif
+        try withUnsafePointer(to: self._iter, body)
     }
 
     /// Internal helper function for explicitly accessing the `bson_iter_t` as an unsafe mutable pointer
     internal func withMutableBSONIterPointer<Result>(
         _ body: (MutableBSONIterPointer) throws -> Result
     ) rethrows -> Result {
-#if compiler(>=5.0)
-        return try withUnsafeMutablePointer(to: &self._iter) { iterPtr in
-            try body(MutableBSONIterPointer(iterPtr))
-        }
-#else
-        return try withUnsafeMutablePointer(to: &self._iter, body)
-#endif
+        try withUnsafeMutablePointer(to: &self._iter, body)
     }
 
     private static let bsonTypeMap: [BSONType: BSONValue.Type] = [

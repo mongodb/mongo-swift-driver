@@ -754,8 +754,8 @@ private class MutableArray: BSONValue {
 
     /// methods required by the BSONValue protocol that we don't actually need/use. MutableArray
     /// is just a BSONValue to simplify usage alongside true BSONValues within the encoder.
-    fileprivate func encode(to _: DocumentStorage, forKey _: String) throws {
-        fatalError("`MutableArray` is not meant to be encoded to a `DocumentStorage`")
+    fileprivate func encode(to _: inout Document, forKey _: String) throws {
+        fatalError("`MutableArray` is not meant to be encoded to a `Document`")
     }
 
     internal static func from(iterator _: DocumentIterator) -> BSON {
@@ -818,8 +818,8 @@ private class MutableDictionary: BSONValue {
 
     /// methods required by the BSONValue protocol that we don't actually need/use. MutableDictionary
     /// is just a BSONValue to simplify usage alongside true BSONValues within the encoder.
-    fileprivate func encode(to _: DocumentStorage, forKey _: String) throws {
-        fatalError("`MutableDictionary` is not meant to be encoded to a `DocumentStorage`")
+    fileprivate func encode(to _: inout Document, forKey _: String) throws {
+        fatalError("`MutableDictionary` is not meant to be encoded to a `Document`")
     }
 
     internal static func from(iterator _: DocumentIterator) -> BSON {

@@ -256,7 +256,9 @@ public final class ClientSession {
         case let .notStarted(opTime, _):
             self.state = .notStarted(opTime: opTime, clusterTime: clusterTime)
         case let .started(session, _):
-            mongoc_client_session_advance_cluster_time(session, clusterTime._bson)
+            withBSONPointer(to: clusterTime) { ptr in
+                mongoc_client_session_advance_cluster_time(session, ptr)
+            }
         case .ended:
             return
         }

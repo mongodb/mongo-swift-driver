@@ -38,7 +38,7 @@ extension Document: Collection {
         // criticism also applies to key-based subscripting via `String`.
         // See SWIFT-250.
         self.failIndexCheck(position)
-        guard let iter = DocumentIterator(forDocument: self) else {
+        guard let iter = DocumentIterator(over: self) else {
             fatalError("Failed to initialize an iterator over document \(self)")
         }
 

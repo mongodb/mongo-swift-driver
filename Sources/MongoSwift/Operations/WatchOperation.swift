@@ -35,38 +35,40 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codabl
         let pipeline: Document = ["pipeline": self.pipeline]
         let opts = try encodeOptions(options: self.options, session: session)
 
-        let changeStreamPtr: OpaquePointer
-        let client: MongoClient
-        let decoder: BSONDecoder
+        return try withBSONPointer(to: pipeline) { pipelinePtr in
+            try withOptionalBSONPointer(to: opts) { optsPtr in
+                let changeStreamPtr: OpaquePointer
+                let client: MongoClient
+                let decoder: BSONDecoder
 
-        switch self.target {
-        case let .client(c):
-            client = c
-            decoder = c.decoder
-            changeStreamPtr = mongoc_client_watch(connection.clientHandle, pipeline._bson, opts?._bson)
-        case let .database(db):
-            client = db._client
-            decoder = db.decoder
-            changeStreamPtr = db.withMongocDatabase(from: connection) { dbPtr in
-                mongoc_database_watch(dbPtr, pipeline._bson, opts?._bson)
-            }
-        case let .collection(coll):
-            client = coll._client
-            decoder = coll.decoder
-            changeStreamPtr = coll.withMongocCollection(from: connection) { collPtr in
-                mongoc_collection_watch(collPtr, pipeline._bson, opts?._bson)
+                switch self.target {
+                case let .client(c):
+                    client = c
+                    decoder = c.decoder
+                    changeStreamPtr = mongoc_client_watch(connection.clientHandle, pipelinePtr, optsPtr)
+                case let .database(db):
+                    client = db._client
+                    decoder = db.decoder
+                    changeStreamPtr = db.withMongocDatabase(from: connection) { dbPtr in
+                        mongoc_database_watch(dbPtr, pipelinePtr, optsPtr)
+                    }
+                case let .collection(coll):
+                    client = coll._client
+                    decoder = coll.decoder
+                    changeStreamPtr = coll.withMongocCollection(from: connection) { collPtr in
+                        mongoc_collection_watch(collPtr, pipelinePtr, optsPtr)
+                    }
+                }
+
+                return try ChangeStream<ChangeStreamType>(
+                    stealing: changeStreamPtr,
+                    connection: connection,
+                    client: client,
+                    session: session,
+                    decoder: decoder,
+                    options: self.options
+                )
             }
         }
-
-        let changeStream = try ChangeStream<ChangeStreamType>(
-            stealing: changeStreamPtr,
-            connection: connection,
-            client: client,
-            session: session,
-            decoder: decoder,
-            options: self.options
-        )
-
-        return changeStream
     }
 }

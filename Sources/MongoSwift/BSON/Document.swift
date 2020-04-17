@@ -4,9 +4,9 @@ import Foundation
 internal typealias BSONPointer = UnsafePointer<bson_t>
 internal typealias MutableBSONPointer = UnsafeMutablePointer<bson_t>
 
-/// The storage backing a MongoSwift `Document`.
-public class DocumentStorage {
-    internal var _bson: MutableBSONPointer!
+/// The storage backing a `Document`.
+private class DocumentStorage {
+    fileprivate let _bson: MutableBSONPointer!
 
     /// Initializes a new, empty `DocumentStorage`.
     internal init() {
@@ -26,12 +26,7 @@ public class DocumentStorage {
 
     /// Cleans up internal state.
     deinit {
-        guard let bson = self._bson else {
-            return
-        }
-
-        bson_destroy(bson)
-        self._bson = nil
+        bson_destroy(self._bson)
     }
 }
 
@@ -43,16 +38,11 @@ public struct Document {
         InternalError(message: "BSON buffer is unexpectedly too small (< 5 bytes)")
 
     /// the storage backing this document.
-    internal var _storage: DocumentStorage
+    fileprivate var _storage: DocumentStorage
 }
 
 /// An extension of `Document` containing its private/internal functionality.
 extension Document {
-    /// Read-only access to the storage's underlying bson_t.
-    internal var _bson: BSONPointer {
-        UnsafePointer(self._storage._bson)
-    }
-
     /**
      * Initializes a `Document` from a pointer to a `bson_t` by making a copy of the data. The `bson_t`'s owner is
      * responsible for freeing the original.
@@ -134,7 +124,7 @@ extension Document {
         let newBSONValue = newValue.bsonValue
 
         // if the key already exists in the `Document`, we need to replace it
-        if checkForKey, let existingType = DocumentIterator(forDocument: self, advancedTo: key)?.currentType {
+        if checkForKey, let existingType = DocumentIterator(over: self, advancedTo: key)?.currentType {
             let newBSONType = newBSONValue.bsonType
             let sameTypes = newBSONType == existingType
 
@@ -148,11 +138,11 @@ extension Document {
                 self.copyStorageIfRequired()
                 // key is guaranteed present so initialization will succeed.
                 // swiftlint:disable:next force_unwrapping
-                try DocumentIterator(forDocument: self, advancedTo: key)!.overwriteCurrentValue(with: ov)
+                try DocumentIterator(over: self, advancedTo: key)!.overwriteCurrentValue(with: ov)
 
                 // otherwise, we just create a new document and replace this key
             } else {
-                guard let iter = DocumentIterator(forDocument: self) else {
+                guard let iter = DocumentIterator(over: self) else {
                     throw Document.BSONBufferTooSmallError
                 }
 
@@ -182,7 +172,7 @@ extension Document {
             // otherwise, it's a new key
         } else {
             self.copyStorageIfRequired()
-            try newBSONValue.encode(to: self._storage, forKey: key)
+            try newBSONValue.encode(to: &self, forKey: key)
         }
     }
 
@@ -191,7 +181,7 @@ extension Document {
     ///
     /// - Throws: `InternalError` if the BSON buffer is too small (< 5 bytes).
     internal func getValue(for key: String) throws -> BSON? {
-        guard let iter = DocumentIterator(forDocument: self) else {
+        guard let iter = DocumentIterator(over: self) else {
             throw Document.BSONBufferTooSmallError
         }
 
@@ -206,7 +196,9 @@ extension Document {
     /// Note: This function does not check for or clean away duplicate keys.
     internal mutating func merge(_ doc: Document) throws {
         let success = withMutableBSONPointer(to: &self) { selfPtr in
-            bson_concat(selfPtr, doc._bson)
+            withBSONPointer(to: doc) { docPtr in
+                bson_concat(selfPtr, docPtr)
+            }
         }
         guard success else {
             throw InternalError(
@@ -231,7 +223,9 @@ extension Document {
      */
     fileprivate mutating func copyStorageIfRequired() {
         if !isKnownUniquelyReferenced(&self._storage) {
-            self._storage = DocumentStorage(copying: self._bson)
+            self._storage = withBSONPointer(to: self) { ptr in
+                DocumentStorage(copying: ptr)
+            }
         }
     }
 
@@ -268,9 +262,11 @@ extension Document {
         let firstExclude = cPtrs.removeFirst()
         let nullPtr = unsafeBitCast(0, to: OpaquePointer.self)
 
-        withMutableBSONPointer(to: &otherDoc) { otherDocPtr in
-            withVaList(cPtrs + [nullPtr]) {
-                bson_copy_to_excluding_noinit_va(self._bson, otherDocPtr, firstExclude, $0)
+        withBSONPointer(to: self) { selfPtr in
+            withMutableBSONPointer(to: &otherDoc) { otherDocPtr in
+                withVaList(cPtrs + [nullPtr]) {
+                    bson_copy_to_excluding_noinit_va(selfPtr, otherDocPtr, firstExclude, $0)
+                }
             }
         }
     }
@@ -290,41 +286,45 @@ extension Document {
 
     /// Returns the number of (key, value) pairs stored at the top level of this `Document`.
     public var count: Int {
-        Int(bson_count_keys(self._bson))
+        withBSONPointer(to: self) { ptr in
+            Int(bson_count_keys(ptr))
+        }
     }
 
     /// Returns the relaxed extended JSON representation of this `Document`.
     /// On error, an empty string will be returned.
     public var extendedJSON: String {
-        guard let json = bson_as_relaxed_extended_json(self._bson, nil) else {
+        let result = withBSONPointer(to: self) { ptr in
+            bson_as_relaxed_extended_json(ptr, nil)
+        }
+        guard let json = result else {
             return ""
         }
 
-        defer {
-            bson_free(json)
-        }
-
+        defer { bson_free(json) }
         return String(cString: json)
     }
 
     /// Returns the canonical extended JSON representation of this `Document`.
     /// On error, an empty string will be returned.
     public var canonicalExtendedJSON: String {
-        guard let json = bson_as_canonical_extended_json(self._bson, nil) else {
+        let result = withBSONPointer(to: self) { ptr in
+            bson_as_canonical_extended_json(ptr, nil)
+        }
+        guard let json = result else {
             return ""
         }
 
-        defer {
-            bson_free(json)
-        }
-
+        defer { bson_free(json) }
         return String(cString: json)
     }
 
     /// Returns a copy of the raw BSON data for this `Document`, represented as `Data`.
     public var rawBSON: Data {
-        // swiftlint:disable:next force_unwrapping
-        let data = bson_get_data(self._bson)! // documented as always returning a value.
+        let data = withBSONPointer(to: self) { ptr in
+            // swiftlint:disable:next force_unwrapping
+            bson_get_data(ptr)! // documented as always returning a value.
+        }
 
         /// BSON encodes the length in the first four bytes, so we can read it in from the
         /// raw data without needing to access the `len` field of the `bson_t`.
@@ -407,7 +407,9 @@ extension Document {
 
     /// Returns a `Boolean` indicating whether this `Document` contains the provided key.
     public func hasKey(_ key: String) -> Bool {
-        bson_has_field(self._bson, key)
+        withBSONPointer(to: self) { ptr in
+            bson_has_field(ptr, key)
+        }
     }
 
     /**
@@ -425,7 +427,7 @@ extension Document {
         // TODO: This `get` method _should_ guarantee constant-time O(1) access, and it is possible to make it do so.
         // This criticism also applies to indexed-based subscripting via `Int`.
         // See SWIFT-250.
-        get { DocumentIterator(forDocument: self, advancedTo: key)?.currentValue }
+        get { DocumentIterator(over: self, advancedTo: key)?.currentValue }
         set(newValue) {
             do {
                 if let newValue = newValue {
@@ -482,9 +484,13 @@ extension Document: BSONValue {
 
     internal var bson: BSON { .document(self) }
 
-    internal func encode(to storage: DocumentStorage, forKey key: String) throws {
-        guard bson_append_document(storage._bson, key, Int32(key.utf8.count), self._bson) else {
-            throw bsonTooLargeError(value: self, forKey: key)
+    internal func encode(to document: inout Document, forKey key: String) throws {
+        try withMutableBSONPointer(to: &document) { docPtr in
+            try withBSONPointer(to: self) { nestedDocPtr in
+                guard bson_append_document(docPtr, key, Int32(key.utf8.count), nestedDocPtr) else {
+                    throw bsonTooLargeError(value: self, forKey: key)
+                }
+            }
         }
     }
 
@@ -515,7 +521,11 @@ extension Document: BSONValue {
 /// An extension of `Document` to make it `Equatable`.
 extension Document: Equatable {
     public static func == (lhs: Document, rhs: Document) -> Bool {
-        bson_compare(lhs._bson, rhs._bson) == 0
+        withBSONPointer(to: lhs) { lhsPtr in
+            withBSONPointer(to: rhs) { rhsPtr in
+                bson_compare(lhsPtr, rhsPtr) == 0
+            }
+        }
     }
 }
 
@@ -545,13 +555,35 @@ extension Document: ExpressibleByDictionaryLiteral {
     }
 }
 
-/// Executes the provided closure using a mutable pointer to the document's underlying storage.
+/// Executes the provided closure using a mutable pointer to the document's underlying data.
 internal func withMutableBSONPointer<T>(
     to document: inout Document,
     body: (MutableBSONPointer) throws -> T
 ) rethrows -> T {
     document.copyStorageIfRequired()
-    return try body(document._storage._bson)
+    return try withExtendedLifetime(document) {
+        try body(document._storage._bson)
+    }
+}
+
+/// Executes the provided closure using an immutable pointer to the document's underlying data.
+internal func withBSONPointer<T>(
+    to document: Document,
+    body: (BSONPointer) throws -> T
+) rethrows -> T {
+    try withExtendedLifetime(document) {
+        try body(BSONPointer(document._storage._bson))
+    }
+}
+
+internal func withOptionalBSONPointer<T>(
+    to document: Document?,
+    body: (BSONPointer?) throws -> T
+) rethrows -> T {
+    guard let doc = document else {
+        return try body(nil)
+    }
+    return try withBSONPointer(to: doc, body: body)
 }
 
 // An extension of `Document` to add the capability to be hashed
