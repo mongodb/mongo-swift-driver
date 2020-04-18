@@ -119,7 +119,6 @@ extension Document {
         return try body(self._storage._bson)
     }
 
-    
     /**
      * Checks if the document is uniquely referenced. If not, makes a copy of the underlying `bson_t`
      * and lets the copy/copies keep the original. This allows us to provide value semantics for `Document`s.
