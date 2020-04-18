@@ -70,13 +70,29 @@ public final class ClientSession {
     /// started the libmongoc session.
     internal var id: Document?
 
-    /// The server ID of the mongos this session is pinned to. A server ID of 0 indicates that the session is unpinned.
-    internal var serverId: UInt32? {
+    /// The server ID of the mongos this session is pinned to.
+    private var serverId: UInt32? {
         switch self.state {
         case .notStarted, .ended:
             return nil
         case let .started(session, _):
-            return mongoc_client_session_get_server_id(session)
+            let id = mongoc_client_session_get_server_id(session)
+            guard id != 0 else {
+                return nil
+            }
+            return id
+        }
+    }
+
+    /// The address of the mongos this session is pinned to, if any.
+    internal var pinnedServerAddress: Address? {
+        guard let serverId = self.serverId, case let .started(_, connection) = self.state else {
+            return nil
+        }
+        return connection.withMongocConnection { client in
+            let serverDescription =
+                ServerDescription(mongoc_client_get_server_description(client, serverId))
+            return serverDescription.address
         }
     }
 

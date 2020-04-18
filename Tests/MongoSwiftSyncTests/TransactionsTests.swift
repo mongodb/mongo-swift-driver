@@ -23,7 +23,16 @@ private struct TransactionsTest: SpecTest {
 
     let expectations: [TestCommandStartedEvent]?
 
+    var activeFailPoint: FailPoint?
+
     static let sessionNames: [String] = ["session0", "session1"]
+
+    static let skippedTestKeywords: [String] = [
+        // TODO: SWIFT-762 the following 3 require libmongoc v1.17
+        "add RetryableWriteError",
+        "commitTransaction fails after two errors",
+        "commitTransaction applies majority write concern on retries"
+    ]
 }
 
 /// Struct representing a single transactions spec test JSON file.
@@ -43,36 +52,21 @@ private struct TransactionsTestFile: Decodable, SpecTestFile {
     let data: TestData
 
     let tests: [TransactionsTest]
+
+    static let skippedTestFileNameKeywords: [String] = [
+        "count" // old count API was deprecated before MongoDB 4.0 and is not supported by the driver
+    ]
 }
 
-final class TransactionsTests: MongoSwiftTestCase, FailPointConfigured {
-    var activeFailPoint: FailPoint?
-
-    override func tearDown() {
-        self.disableActiveFailPoint()
-    }
-
+final class TransactionsTests: MongoSwiftTestCase {
     override func setUp() {
         self.continueAfterFailure = false
     }
 
     func testTransactions() throws {
-        let skippedTestKeywords = [
-            "count", // old count API was deprecated before MongoDB 4.0 and is not supported by the driver
-            "mongos-pin-auto", // TODO: see SWIFT-774
-            "mongos-recovery-token", // TODO: see SWIFT-774
-            "pin-mongos", // TODO: see SWIFT-774
-            "retryable-abort-errorLabels", // requires libmongoc v1.17 (see SWIFT-762)
-            "retryable-commit-errorLabels" // requires libmongoc v1.17 (see SWIFT-762)
-        ]
-
         let tests = try retrieveSpecTestFiles(specName: "transactions", asType: TransactionsTestFile.self)
         for (_, testFile) in tests {
-            guard skippedTestKeywords.allSatisfy({ !testFile.name.contains($0) }) else {
-                fileLevelLog("Skipping tests from file \(testFile.name)...")
-                continue
-            }
-            try testFile.runTests(parent: self)
+            try testFile.runTests()
         }
     }
 }

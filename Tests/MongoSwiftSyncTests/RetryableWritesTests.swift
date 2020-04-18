@@ -4,7 +4,7 @@ import Nimble
 import TestsCommon
 
 /// Struct representing a single test within a retryable-writes spec test JSON file.
-private struct RetryableWritesTest: Decodable {
+private struct RetryableWritesTest: Decodable, FailPointConfigured {
     /// Description of the test.
     let description: String
 
@@ -25,6 +25,8 @@ private struct RetryableWritesTest: Decodable {
     /// The optional fail point to configure before running this test.
     /// This option and useMultipleMongoses: true are mutually exclusive.
     let failPoint: FailPoint?
+
+    var activeFailPoint: FailPoint?
 }
 
 /// Struct representing a single retryable-writes spec test JSON file.
@@ -43,13 +45,7 @@ private struct RetryableWritesTestFile: Decodable {
     let tests: [RetryableWritesTest]
 }
 
-final class RetryableWritesTests: MongoSwiftTestCase, FailPointConfigured {
-    var activeFailPoint: FailPoint?
-
-    override func tearDown() {
-        self.disableActiveFailPoint()
-    }
-
+final class RetryableWritesTests: MongoSwiftTestCase {
     override func setUp() {
         self.continueAfterFailure = false
     }
@@ -78,7 +74,7 @@ final class RetryableWritesTests: MongoSwiftTestCase, FailPointConfigured {
             }
 
             fileLevelLog("Executing tests from file \(fileName)...\n")
-            for test in testFile.tests {
+            for var test in testFile.tests {
                 print("Executing test: \(test.description)")
 
                 let clientOptions = test.clientOptions ?? ClientOptions(retryWrites: true)
@@ -91,9 +87,9 @@ final class RetryableWritesTests: MongoSwiftTestCase, FailPointConfigured {
                 }
 
                 if let failPoint = test.failPoint {
-                    try self.activateFailPoint(failPoint)
+                    try test.activateFailPoint(failPoint)
                 }
-                defer { self.disableActiveFailPoint() }
+                defer { test.disableActiveFailPoint() }
 
                 var result: TestOperationResult?
                 var seenError: Error?
@@ -105,7 +101,7 @@ final class RetryableWritesTests: MongoSwiftTestCase, FailPointConfigured {
                     )
                 } catch {
                     if let bulkError = error as? BulkWriteError {
-                        result = TestOperationResult(from: bulkError.result)
+                        result = bulkError.result.map(TestOperationResult.bulkWrite)
                     }
                     seenError = error
                 }

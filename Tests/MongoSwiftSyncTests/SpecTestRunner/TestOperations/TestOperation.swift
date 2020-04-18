@@ -16,6 +16,9 @@ protocol TestOperation: Decodable {
     func execute(on session: ClientSession) throws -> TestOperationResult?
 
     func execute<T: SpecTest>(on runner: inout T, sessions: [String: ClientSession]) throws -> TestOperationResult?
+
+    /// The name of the session this operation should execute against, if any.
+    var session: String? { get }
 }
 
 extension TestOperation {
@@ -40,6 +43,20 @@ extension TestOperation {
 
     func execute<T: SpecTest>(on _: inout T, sessions _: [String: ClientSession]) throws -> TestOperationResult? {
         throw TestError(message: "\(type(of: self)) cannot execute on a test runner")
+    }
+
+    var session: String? { nil }
+
+    func getSession(from sessions: [String: ClientSession]) throws -> ClientSession? {
+        guard let sessionName = self.session else {
+            return nil
+        }
+
+        guard let session = sessions[sessionName] else {
+            throw TestError(message: "\(sessionName) not included in sessions map \(sessions)")
+        }
+
+        return session
     }
 }
 
@@ -164,7 +181,6 @@ struct TestOperationDescription: Decodable {
             }
         }
     }
-
     // swiftlint:enable cyclomatic_complexity
 }
 
@@ -242,6 +258,8 @@ struct AnyTestOperation: Decodable {
             self.op = try container.decode(AssertSessionUnpinned.self, forKey: .arguments)
         case "assertSessionTransactionState":
             self.op = try container.decode(AssertSessionTransactionState.self, forKey: .arguments)
+        case "targetedFailPoint":
+            self.op = try container.decode(TargetedFailPoint.self, forKey: .arguments)
         case "drop":
             self.op = Drop()
         case "listDatabaseNames":
@@ -266,7 +284,7 @@ struct AnyTestOperation: Decodable {
             self.op = CommitTransaction()
         case "abortTransaction":
             self.op = AbortTransaction()
-        case "mapReduce", "download_by_name", "download", "count", "targetedFailPoint":
+        case "mapReduce", "download_by_name", "download", "count":
             self.op = NotImplemented(name: opName)
         default:
             throw TestError(message: "unsupported op name \(opName)")

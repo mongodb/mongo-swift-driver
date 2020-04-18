@@ -18,6 +18,8 @@ private struct RetryableReadsTest: SpecTest {
     let failPoint: FailPoint?
 
     let expectations: [TestCommandStartedEvent]?
+
+    var activeFailPoint: FailPoint?
 }
 
 /// Struct representing a single retryable-writes spec test JSON file.
@@ -37,35 +39,25 @@ private struct RetryableReadsTestFile: Decodable, SpecTestFile {
     let data: TestData
 
     let tests: [RetryableReadsTest]
+
+    let skippedTestFileNameKeywords = [
+        "changeStream", // TODO: SWIFT-648: Unskip this test
+        "gridfs",
+        "count.",
+        "count-",
+        "mapReduce"
+    ]
 }
 
-final class RetryableReadsTests: MongoSwiftTestCase, FailPointConfigured {
-    var activeFailPoint: FailPoint?
-
-    override func tearDown() {
-        self.disableActiveFailPoint()
-    }
-
+final class RetryableReadsTests: MongoSwiftTestCase {
     override func setUp() {
         self.continueAfterFailure = false
     }
 
     func testRetryableReads() throws {
-        let skippedTestKeywords = [
-            "changeStream", // TODO: SWIFT-648: Unskip this test
-            "gridfs",
-            "count.",
-            "count-",
-            "mapReduce"
-        ]
-
         let tests = try retrieveSpecTestFiles(specName: "retryable-reads", asType: RetryableReadsTestFile.self)
         for (_, testFile) in tests {
-            guard skippedTestKeywords.allSatisfy({ !testFile.name.contains($0) }) else {
-                fileLevelLog("Skipping tests from file \(testFile.name)...")
-                continue
-            }
-            try testFile.runTests(parent: self)
+            try testFile.runTests()
         }
     }
 }

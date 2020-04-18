@@ -223,16 +223,12 @@ struct ErrorResult: Equatable, Decodable {
     }
 
     internal func checkErrorLabels(_ error: Error) throws {
-        // `configureFailPoint` command correctly handles error labels in MongoDB v4.3.1+ (see SERVER-43941).
-        // Do not check the "RetryableWriteError" error label until the spec test requirements are updated.
-        let skippedErrorLabels = ["RetryableWriteError"]
-
         if let errorLabelsContain = self.errorLabelsContain {
             guard let labeledError = error as? LabeledError else {
                 XCTFail("\(error) does not contain errorLabels")
                 return
             }
-            for label in errorLabelsContain where !skippedErrorLabels.contains(label) {
+            for label in errorLabelsContain {
                 expect(labeledError.errorLabels).to(contain(label))
             }
         }

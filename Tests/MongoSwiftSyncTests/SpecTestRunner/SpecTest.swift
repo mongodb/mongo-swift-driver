@@ -1,4 +1,5 @@
 import Foundation
+@testable import MongoSwift
 @testable import struct MongoSwift.ReadPreference
 import MongoSwiftSync
 import Nimble
@@ -176,43 +177,52 @@ internal protocol SpecTestFile: Decodable {
 
     /// List of tests to run in this file.
     var tests: [TestType] { get }
+
+    /// Keywords that will cause the tests in the file to be skipped if contained in the test file's name.
+    static var skippedTestFileNameKeywords: [String] { get }
 }
 
 extension SpecTestFile {
+    static var skippedTestFileNameKeywords: [String] { [] }
+
     /// Populate the database and collection specified by this test file using the provided client.
-    internal func populateData(using client: MongoClient) throws {
-        let database = client.db(self.databaseName)
-
-        // Majority write concern ensures that initial data is propagated to all nodes in a replica set or sharded
-        // cluster.
-        let collectionOptions = CollectionOptions(writeConcern: .majority)
-
+    internal func populateData(using client: MongoSwiftSync.MongoClient) throws {
+        let database = client.db(
+            self.databaseName,
+            options: DatabaseOptions(writeConcern: try WriteConcern(w: .majority))
+        )
         try? database.drop()
+
+        func populateCollection(name: String, docs: [Document]) throws {
+            let collection = try database.createCollection(name)
+
+            guard !docs.isEmpty else {
+                return
+            }
+            try collection.insertMany(docs)
+        }
 
         switch self.data {
         case let .single(docs):
             guard let collName = self.collectionName else {
                 throw TestError(message: "missing collection name")
             }
-
-            guard !docs.isEmpty else {
-                return
-            }
-
-            try database.collection(collName, options: collectionOptions).insertMany(docs)
+            try populateCollection(name: collName, docs: docs)
         case let .multiple(mapping):
             for (k, v) in mapping {
-                guard !v.isEmpty else {
-                    continue
-                }
-                try database.collection(k, options: collectionOptions).insertMany(v)
+                try populateCollection(name: k, docs: v)
             }
         }
     }
 
     /// Run all the tests specified in this file, optionally specifying keywords that, if included in a test's
     /// description, will cause certain tests to be skipped.
-    internal func runTests(parent: FailPointConfigured, skippedTestKeywords: [String] = []) throws {
+    internal func runTests() throws {
+        guard !Self.skippedTestFileNameKeywords.contains(where: { self.name.contains($0) }) else {
+            fileLevelLog("Skipping tests from file \(self.name), matched skipped keyword.")
+            return
+        }
+
         let setupClient = try MongoClient.makeTestClient()
         let version = try setupClient.serverVersion()
 
@@ -225,18 +235,29 @@ extension SpecTestFile {
 
         fileLevelLog("Executing tests from file \(self.name)...")
         for var test in self.tests {
-            guard skippedTestKeywords.allSatisfy({ !test.description.contains($0) }) else {
+            guard !Self.TestType.skippedTestKeywords.contains(where: { test.description.contains($0) }) else {
                 print("Skipping test \(test.description)")
-                return
+                continue
             }
+
             try self.populateData(using: setupClient)
-            try test.run(parent: parent, dbName: self.databaseName, collName: self.collectionName)
+
+            // Due to strange behavior in mongos, a "distinct" command needs to be run against each mongos
+            // before the tests run to prevent certain errors from ocurring. (SERVER-39704)
+            if MongoSwiftTestCase.topologyType == .sharded, let collName = self.collectionName {
+                for host in try ConnectionString(MongoSwiftTestCase.uri).hosts! {
+                    let client = try MongoClient("mongodb://\(host)")
+                    _ = try client.db(self.databaseName).collection(collName).distinct(fieldName: "_id")
+                }
+            }
+
+            try test.run(dbName: self.databaseName, collName: self.collectionName)
         }
     }
 }
 
 /// Protocol defining the behavior of an individual spec test.
-internal protocol SpecTest: Decodable {
+internal protocol SpecTest: Decodable, FailPointConfigured {
     /// The name of the test.
     var description: String { get }
 
@@ -271,6 +292,9 @@ internal protocol SpecTest: Decodable {
     /// Array of session names (e.g. "session0", "session1") that the test refers to. Each session is proactively
     /// started in `run()`.
     static var sessionNames: [String] { get }
+
+    /// Keywords that will cause a test to be skipped if contained in the test's description.
+    static var skippedTestKeywords: [String] { get }
 }
 
 /// Default implementation of a test execution.
@@ -281,8 +305,9 @@ extension SpecTest {
 
     static var sessionNames: [String] { [] }
 
+    static var skippedTestKeywords: [String] { [] }
+
     internal mutating func run(
-        parent: FailPointConfigured,
         dbName: String,
         collName: String?
     ) throws {
@@ -293,29 +318,21 @@ extension SpecTest {
 
         print("Executing test: \(self.description)")
 
-        var singleMongos = true
-        if let useMultipleMongoses = self.useMultipleMongoses, useMultipleMongoses == true {
-            singleMongos = false
-        }
-
+        let connectionString = MongoSwiftTestCase.getConnectionString(singleMongos: self.useMultipleMongoses != true)
         let client = try MongoClient.makeTestClient(
-            MongoSwiftTestCase.getConnectionString(singleMongos: singleMongos), options: self.clientOptions
+            connectionString, options: self.clientOptions
         )
         let monitor = client.addCommandMonitor()
 
-        if let collName = collName {
-            _ = try? client.db(dbName).createCollection(collName)
-            // Run the distinct command before every test to prevent `StableDbVersion` error in sharded cluster
-            // transactions. This workaround can be removed once SERVER-39704 is resolved.
-            _ = try? client.db(dbName).collection(collName).distinct(fieldName: "_id")
-        }
-
         if let failPoint = self.failPoint {
-            try parent.activateFailPoint(failPoint)
+            try self.activateFailPoint(failPoint)
         }
-        defer { parent.disableActiveFailPoint() }
+        // this defer will cover any failpoints set in `validateExecution` as well.
+        defer {
+            self.disableActiveFailPoint()
+        }
 
-        var sessions = [String: ClientSession]()
+        var sessions = [String: MongoSwiftSync.ClientSession]()
         for session in Self.sessionNames {
             sessions[session] = client.startSession(options: self.sessionOptions?[session])
         }
@@ -340,7 +357,7 @@ extension SpecTest {
             }
         }
 
-        let events = monitor.commandStartedEvents().map { commandStartedEvent in
+        let events = monitor.commandStartedEvents().map { commandStartedEvent -> TestCommandStartedEvent in
             TestCommandStartedEvent(from: commandStartedEvent, sessionIds: sessionIds)
         }
 

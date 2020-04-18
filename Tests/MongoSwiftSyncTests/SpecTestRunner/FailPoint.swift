@@ -1,24 +1,26 @@
 import MongoSwiftSync
+import TestsCommon
 
 /// Protocol that test cases which configure fail points during their execution conform to.
-internal protocol FailPointConfigured: AnyObject {
+internal protocol FailPointConfigured {
     /// The fail point currently set, if one exists.
     var activeFailPoint: FailPoint? { get set }
 }
 
 extension FailPointConfigured {
     /// Sets the active fail point to the provided fail point and enables it.
-    internal func activateFailPoint(_ failPoint: FailPoint) throws {
+    internal mutating func activateFailPoint(_ failPoint: FailPoint, on serverAddress: Address? = nil) throws {
         self.activeFailPoint = failPoint
-        try self.activeFailPoint?.enable()
+        try self.activeFailPoint?.enable(on: serverAddress)
     }
 
     /// If a fail point is active, it is disabled and cleared.
-    internal func disableActiveFailPoint() {
-        if let failPoint = self.activeFailPoint {
-            failPoint.disable()
-            self.activeFailPoint = nil
+    internal mutating func disableActiveFailPoint() {
+        guard let failPoint = self.activeFailPoint else {
+            return
         }
+        failPoint.disable()
+        self.activeFailPoint = nil
     }
 }
 
@@ -42,7 +44,7 @@ internal struct FailPoint: Decodable {
         self.failPoint = try Document(from: decoder)
     }
 
-    internal func enable() throws {
+    internal func enable(on serverAddress: Address? = nil) throws {
         var commandDoc = ["configureFailPoint": self.failPoint["configureFailPoint"]!] as Document
         for (k, v) in self.failPoint {
             guard k != "configureFailPoint" else {
@@ -61,8 +63,14 @@ internal struct FailPoint: Decodable {
                 commandDoc[k] = v
             }
         }
-        let client = try MongoClient.makeTestClient()
-        try client.db("admin").runCommand(commandDoc)
+        if let serverAddress = serverAddress {
+            let connectionString = "mongodb://\(serverAddress)"
+            let client = try MongoClient.makeTestClient(connectionString)
+            try client.db("admin").runCommand(commandDoc)
+        } else {
+            let client = try MongoClient.makeTestClient()
+            try client.db("admin").runCommand(commandDoc)
+        }
     }
 
     internal func disable() {

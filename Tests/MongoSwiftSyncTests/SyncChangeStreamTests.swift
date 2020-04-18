@@ -125,7 +125,7 @@ internal enum ChangeStreamTestResult: Decodable {
 }
 
 /// Struct representing a single test within a spec test JSON file.
-internal struct ChangeStreamTest: Decodable {
+internal struct ChangeStreamTest: Decodable, FailPointConfigured {
     /// The title of this test.
     let description: String
 
@@ -158,9 +158,16 @@ internal struct ChangeStreamTest: Decodable {
     // The expected result of running this test.
     let result: ChangeStreamTestResult
 
-    internal func run(globalClient: MongoClient, database: String, collection: String) throws {
+    var activeFailPoint: FailPoint?
+
+    internal mutating func run(globalClient: MongoClient, database: String, collection: String) throws {
         let client = try MongoClient.makeTestClient()
         let monitor = client.addCommandMonitor()
+
+        if let failPoint = self.failPoint {
+            try self.activateFailPoint(failPoint)
+        }
+        defer { self.disableActiveFailPoint() }
 
         monitor.captureEvents {
             do {
@@ -229,14 +236,7 @@ private struct ChangeStreamTestFile: Decodable {
 }
 
 /// Class covering the JSON spec tests associated with change streams.
-final class ChangeStreamSpecTests: MongoSwiftTestCase, FailPointConfigured {
-    var activeFailPoint: FailPoint?
-
-    override func tearDown() {
-        // This is included here to clear any fail points left over after a test failure.
-        self.disableActiveFailPoint()
-    }
-
+final class ChangeStreamSpecTests: MongoSwiftTestCase {
     func testChangeStreamSpec() throws {
         let tests = try retrieveSpecTestFiles(specName: "change-streams", asType: ChangeStreamTestFile.self)
 
@@ -253,7 +253,7 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase, FailPointConfigured {
                 try? db2.drop()
             }
             print("\n------------\nExecuting tests from file \(testName)...\n")
-            for test in testFile.tests {
+            for var test in testFile.tests {
                 let testTopologies = test.topology.map { TopologyDescription.TopologyType(from: $0) }
                 guard testTopologies.contains(topology) else {
                     print(unsupportedTopologyMessage(testName: test.description, topology: topology))
@@ -278,11 +278,6 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase, FailPointConfigured {
                 try db2.drop()
                 _ = try db1.createCollection(testFile.collectionName)
                 _ = try db2.createCollection(testFile.collection2Name)
-
-                if let failPoint = test.failPoint {
-                    try self.activateFailPoint(failPoint)
-                }
-                defer { self.disableActiveFailPoint() }
 
                 try test.run(
                     globalClient: globalClient,

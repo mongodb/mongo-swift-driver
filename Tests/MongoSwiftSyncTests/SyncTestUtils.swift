@@ -197,9 +197,11 @@ extension MongoSwiftSync.ClientSession {
 
     internal var id: Document? { self.asyncSession.id }
 
-    internal var serverId: UInt32? { self.asyncSession.serverId }
+    internal var pinnedServerAddress: Address? { self.asyncSession.pinnedServerAddress }
 
     internal typealias TransactionState = MongoSwift.ClientSession.TransactionState
 
     internal var transactionState: TransactionState? { self.asyncSession.transactionState }
+
+    internal var isPinned: Bool { self.pinnedServerAddress != nil }
 }
