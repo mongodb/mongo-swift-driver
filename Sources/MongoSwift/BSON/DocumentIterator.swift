@@ -18,7 +18,7 @@ public class DocumentIterator: IteratorProtocol {
         self.document = document
 
         let initialized = self.withMutableBSONIterPointer { iterPtr in
-            withBSONPointer(to: self.document) { docPtr in
+            self.document.withBSONPointer { docPtr in
                 bson_iter_init(iterPtr, docPtr)
             }
         }
@@ -35,7 +35,7 @@ public class DocumentIterator: IteratorProtocol {
         self.document = document
 
         let initialized = self.withMutableBSONIterPointer { iterPtr in
-            withBSONPointer(to: self.document) { docPtr in
+            self.document.withBSONPointer { docPtr in
                 bson_iter_init_find(iterPtr, docPtr, key.cString(using: .utf8))
             }
         }

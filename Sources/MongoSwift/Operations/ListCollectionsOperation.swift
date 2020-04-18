@@ -118,7 +118,7 @@ internal struct ListCollectionsOperation: Operation {
         }
 
         let collections: OpaquePointer = self.database.withMongocDatabase(from: connection) { dbPtr in
-            withBSONPointer(to: opts) { optsPtr in
+            opts.withBSONPointer { optsPtr in
                 guard let collections = mongoc_database_find_collections_with_opts(dbPtr, optsPtr) else {
                     fatalError(failedToRetrieveCursorMessage)
                 }

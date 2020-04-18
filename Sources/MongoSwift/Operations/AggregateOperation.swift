@@ -87,7 +87,7 @@ internal struct AggregateOperation<CollectionType: Codable>: Operation {
         let pipeline: Document = ["pipeline": .array(self.pipeline.map { .document($0) })]
 
         let result: OpaquePointer = self.collection.withMongocCollection(from: connection) { collPtr in
-            withBSONPointer(to: pipeline) { pipelinePtr in
+            pipeline.withBSONPointer { pipelinePtr in
                 withOptionalBSONPointer(to: opts) { optsPtr in
                     guard let result = mongoc_collection_aggregate(
                         collPtr,

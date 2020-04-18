@@ -42,7 +42,7 @@ internal class FindAndModifyOptions {
         }
 
         if let fields = projection {
-            try withBSONPointer(to: fields) { fieldsPtr in
+            try fields.withBSONPointer { fieldsPtr in
                 guard mongoc_find_and_modify_opts_set_fields(self._options, fieldsPtr) else {
                     throw InvalidArgumentError(message: "Error setting fields to \(fields)")
                 }
@@ -68,7 +68,7 @@ internal class FindAndModifyOptions {
         }
 
         if let sort = sort {
-            try withBSONPointer(to: sort) { sortPtr in
+            try sort.withBSONPointer { sortPtr in
                 guard mongoc_find_and_modify_opts_set_sort(self._options, sortPtr) else {
                     throw InvalidArgumentError(message: "Error setting sort to \(sort)")
                 }
@@ -101,7 +101,7 @@ internal class FindAndModifyOptions {
         }
 
         if !extra.isEmpty {
-            try withBSONPointer(to: extra) { extraPtr in
+            try extra.withBSONPointer { extraPtr in
                 guard mongoc_find_and_modify_opts_append(self._options, extraPtr) else {
                     throw InvalidArgumentError(message: "Error appending extra fields \(extra)")
                 }
@@ -112,7 +112,7 @@ internal class FindAndModifyOptions {
     /// Sets the `update` value on a `mongoc_find_and_modify_opts_t`. We need to have this separate from the
     /// initializer because its value comes from the API methods rather than their options types.
     fileprivate func setUpdate(_ update: Document) throws {
-        try withBSONPointer(to: update) { updatePtr in
+        try update.withBSONPointer { updatePtr in
             guard mongoc_find_and_modify_opts_set_update(self._options, updatePtr) else {
                 throw InvalidArgumentError(message: "Error setting update to \(update)")
             }
@@ -126,7 +126,7 @@ internal class FindAndModifyOptions {
         var doc = Document()
         try session.append(to: &doc)
 
-        try withBSONPointer(to: doc) { docPtr in
+        try doc.withBSONPointer { docPtr in
             guard mongoc_find_and_modify_opts_append(self._options, docPtr) else {
                 throw InternalError(message: "Couldn't read session information")
             }
@@ -162,8 +162,8 @@ internal struct FindAndModifyOperation<T: Codable>: Operation {
 
         var reply = Document()
         var error = bson_error_t()
-        let success = withBSONPointer(to: filter) { filterPtr in
-            withMutableBSONPointer(to: &reply) { replyPtr in
+        let success = self.filter.withBSONPointer { filterPtr in
+            reply.withMutableBSONPointer { replyPtr in
                 self.collection.withMongocCollection(from: connection) { collPtr in
                     mongoc_collection_find_and_modify_with_opts(collPtr, filterPtr, opts._options, replyPtr, &error)
                 }

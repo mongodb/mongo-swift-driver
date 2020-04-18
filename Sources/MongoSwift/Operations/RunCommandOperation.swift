@@ -47,9 +47,9 @@ internal struct RunCommandOperation: Operation {
         let opts = try encodeOptions(options: self.options, session: session)
         var reply = Document()
         var error = bson_error_t()
-        let success = withBSONPointer(to: self.command) { cmdPtr in
+        let success = self.command.withBSONPointer { cmdPtr in
             withOptionalBSONPointer(to: opts) { optsPtr in
-                withMutableBSONPointer(to: &reply) { replyPtr in
+                reply.withMutableBSONPointer { replyPtr in
                     self.database.withMongocDatabase(from: connection) { dbPtr in
                         mongoc_database_command_with_opts(dbPtr, cmdPtr, rp, optsPtr, replyPtr, &error)
                     }

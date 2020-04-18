@@ -65,7 +65,7 @@ extension Document {
 
     /// Gets a string representation of the address of this document's underlying pointer.
     internal var pointerAddress: String {
-        withBSONPointer(to: self) { ptr in
+        self.withBSONPointer { ptr in
             ptr.debugDescription
         }
     }
@@ -262,13 +262,39 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(doc).to(equal(fromRawBSON))
     }
 
-    func testValueBehavior() {
-        let doc1: Document = ["a": 1]
-        var doc2 = doc1
+    func testCopyOnWriteBehavior() {
+        var doc1: Document? = ["a": 1]
+        let originalAddress = doc1?.pointerAddress
+        var doc2 = doc1!
+        // no mutation has happened, so addresses should be the same
+        expect(doc2.pointerAddress).to(equal(originalAddress))
+
         doc2["b"] = 2
+
+        // only should have mutated doc2
+        expect(doc1?["b"]).to(beNil())
         expect(doc2["b"]).to(equal(2))
-        expect(doc1["b"]).to(beNil())
-        expect(doc1).toNot(equal(doc2))
+
+        // doc1 should have kept original storage, doc2 has a copy
+        expect(doc1?.pointerAddress).to(equal(originalAddress))
+        expect(doc2.pointerAddress).toNot(equal(originalAddress))
+
+        doc1!["c"] = 3
+
+        // mutating doc1 should not mutate doc2
+        expect(doc1?["c"]).to(equal(3))
+        expect(doc2["c"]).to(beNil())
+
+        // doc1 keeps same same storage, since no other references
+        expect(doc1?.pointerAddress).to(equal(originalAddress))
+
+        var doc3 = doc1!
+        expect(doc3.pointerAddress).to(equal(originalAddress))
+
+        doc1 = nil // now doc3 has the only reference to originalAddress
+        doc3["d"] = 5
+        // since the storage is uniquely referenced, doc3 keeps it
+        expect(doc3.pointerAddress).to(equal(originalAddress))
     }
 
     func testIntEncodesAsInt32OrInt64() {
@@ -341,7 +367,7 @@ final class DocumentTests: MongoSwiftTestCase {
     // test replacing `Overwritable` types with values of their own type
     func testOverwritable() throws {
         // make a deep copy so we start off with uniquely referenced storage
-        var doc = withBSONPointer(to: DocumentTests.overwritables) { ptr in
+        var doc = DocumentTests.overwritables.withBSONPointer { ptr in
             Document(copying: ptr)
         }
 
@@ -419,7 +445,7 @@ final class DocumentTests: MongoSwiftTestCase {
     // test replacing some of the non-Overwritable types with values of their own types
     func testNonOverwritable() throws {
         // make a deep copy so we start off with uniquely referenced storage
-        var doc = withBSONPointer(to: DocumentTests.nonOverwritables) { ptr in
+        var doc = DocumentTests.nonOverwritables.withBSONPointer { ptr in
             Document(copying: ptr)
         }
 
@@ -444,7 +470,7 @@ final class DocumentTests: MongoSwiftTestCase {
     // test replacing both overwritable and nonoverwritable values with values of different types
     func testReplaceValueWithNewType() throws {
         // make a deep copy so we start off with uniquely referenced storage
-        var overwritableDoc = withBSONPointer(to: DocumentTests.overwritables) { ptr in
+        var overwritableDoc = DocumentTests.overwritables.withBSONPointer { ptr in
             Document(copying: ptr)
         }
 
@@ -481,7 +507,7 @@ final class DocumentTests: MongoSwiftTestCase {
         ]))
 
         // make a deep copy so we start off with uniquely referenced storage
-        var nonOverwritableDoc = withBSONPointer(to: DocumentTests.nonOverwritables) { ptr in
+        var nonOverwritableDoc = DocumentTests.nonOverwritables.withBSONPointer { ptr in
             Document(copying: ptr)
         }
 
@@ -501,7 +527,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
     // test setting both overwritable and nonoverwritable values to nil
     func testReplaceValueWithNil() throws {
-        var overwritableDoc = withBSONPointer(to: DocumentTests.overwritables) { ptr in
+        var overwritableDoc = DocumentTests.overwritables.withBSONPointer { ptr in
             Document(copying: ptr)
         }
         var overwritablePointer = overwritableDoc.pointerAddress
@@ -513,7 +539,7 @@ final class DocumentTests: MongoSwiftTestCase {
             overwritablePointer = overwritableDoc.pointerAddress
         }
 
-        var nonOverwritableDoc = withBSONPointer(to: DocumentTests.nonOverwritables) { ptr in
+        var nonOverwritableDoc = DocumentTests.nonOverwritables.withBSONPointer { ptr in
             Document(copying: ptr)
         }
         var nonOverwritablePointer = nonOverwritableDoc.pointerAddress

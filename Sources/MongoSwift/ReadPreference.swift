@@ -250,7 +250,7 @@ private class MongocReadPreference {
 
         if let tagSets = tagSets, !tagSets.isEmpty {
             let tags = Document(tagSets.map { .document($0) })
-            withBSONPointer(to: tags) { tagsPtr in
+            tags.withBSONPointer { tagsPtr in
                 mongoc_read_prefs_set_tags(self.readPref, tagsPtr)
             }
         }

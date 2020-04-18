@@ -33,9 +33,9 @@ internal struct DropIndexesOperation<T: Codable>: Operation {
         var reply = Document()
         var error = bson_error_t()
         let success = self.collection.withMongocCollection(from: connection) { collPtr in
-            withBSONPointer(to: command) { cmdPtr in
+            command.withBSONPointer { cmdPtr in
                 withOptionalBSONPointer(to: opts) { optsPtr in
-                    withMutableBSONPointer(to: &reply) { replyPtr in
+                    reply.withMutableBSONPointer { replyPtr in
                         mongoc_collection_write_command_with_opts(collPtr, cmdPtr, optsPtr, replyPtr, &error)
                     }
                 }

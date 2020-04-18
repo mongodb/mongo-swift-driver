@@ -82,7 +82,7 @@ public enum WriteModel<CollectionType: Codable> {
         switch self {
         case let .deleteOne(filter, options):
             let opts = try encoder.encode(options)
-            success = withBSONPointer(to: filter) { filterPtr in
+            success = filter.withBSONPointer { filterPtr in
                 withOptionalBSONPointer(to: opts) { optsPtr in
                     mongoc_bulk_operation_remove_one_with_opts(bulk, filterPtr, optsPtr, &error)
                 }
@@ -90,7 +90,7 @@ public enum WriteModel<CollectionType: Codable> {
 
         case let .deleteMany(filter, options):
             let opts = try encoder.encode(options)
-            success = withBSONPointer(to: filter) { filterPtr in
+            success = filter.withBSONPointer { filterPtr in
                 withOptionalBSONPointer(to: opts) { optsPtr in
                     mongoc_bulk_operation_remove_many_with_opts(bulk, filterPtr, optsPtr, &error)
                 }
@@ -98,7 +98,7 @@ public enum WriteModel<CollectionType: Codable> {
 
         case let .insertOne(value):
             let document = try encoder.encode(value).withID()
-            success = withBSONPointer(to: document) { docPtr in
+            success = document.withBSONPointer { docPtr in
                 mongoc_bulk_operation_insert_with_opts(bulk, docPtr, nil, &error)
             }
 
@@ -111,8 +111,8 @@ public enum WriteModel<CollectionType: Codable> {
         case let .replaceOne(filter, replacement, options):
             let replacement = try encoder.encode(replacement)
             let opts = try encoder.encode(options)
-            success = withBSONPointer(to: filter) { filterPtr in
-                withBSONPointer(to: replacement) { replacementPtr in
+            success = filter.withBSONPointer { filterPtr in
+                replacement.withBSONPointer { replacementPtr in
                     withOptionalBSONPointer(to: opts) { optsPtr in
                         mongoc_bulk_operation_replace_one_with_opts(bulk, filterPtr, replacementPtr, optsPtr, &error)
                     }
@@ -121,8 +121,8 @@ public enum WriteModel<CollectionType: Codable> {
 
         case let .updateOne(filter, update, options):
             let opts = try encoder.encode(options)
-            success = withBSONPointer(to: filter) { filterPtr in
-                withBSONPointer(to: update) { updatePtr in
+            success = filter.withBSONPointer { filterPtr in
+                update.withBSONPointer { updatePtr in
                     withOptionalBSONPointer(to: opts) { optsPtr in
                         mongoc_bulk_operation_update_one_with_opts(bulk, filterPtr, updatePtr, optsPtr, &error)
                     }
@@ -131,8 +131,8 @@ public enum WriteModel<CollectionType: Codable> {
 
         case let .updateMany(filter, update, options):
             let opts = try encoder.encode(options)
-            success = withBSONPointer(to: filter) { filterPtr in
-                withBSONPointer(to: update) { updatePtr in
+            success = filter.withBSONPointer { filterPtr in
+                update.withBSONPointer { updatePtr in
                     withOptionalBSONPointer(to: opts) { optsPtr in
                         mongoc_bulk_operation_update_many_with_opts(bulk, filterPtr, updatePtr, optsPtr, &error)
                     }
@@ -242,7 +242,7 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
                     }
                 }
 
-                let serverId = withMutableBSONPointer(to: &reply) { replyPtr in
+                let serverId = reply.withMutableBSONPointer { replyPtr in
                     mongoc_bulk_operation_execute(bulk, replyPtr, &error)
                 }
 

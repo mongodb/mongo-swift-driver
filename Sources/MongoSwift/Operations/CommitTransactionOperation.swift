@@ -19,7 +19,7 @@ internal struct CommitTransactionOperation: Operation {
 
         var reply = Document()
         var error = bson_error_t()
-        let success = withMutableBSONPointer(to: &reply) { replyPtr in
+        let success = reply.withMutableBSONPointer { replyPtr in
             mongoc_client_session_commit_transaction(sessionPtr, replyPtr, &error)
         }
         guard success else {

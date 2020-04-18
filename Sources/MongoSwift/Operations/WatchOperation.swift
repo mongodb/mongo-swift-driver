@@ -35,7 +35,7 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codabl
         let pipeline: Document = ["pipeline": self.pipeline]
         let opts = try encodeOptions(options: self.options, session: session)
 
-        return try withBSONPointer(to: pipeline) { pipelinePtr in
+        return try pipeline.withBSONPointer { pipelinePtr in
             try withOptionalBSONPointer(to: opts) { optsPtr in
                 let changeStreamPtr: OpaquePointer
                 let client: MongoClient
