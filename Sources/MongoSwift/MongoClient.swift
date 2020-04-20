@@ -353,8 +353,7 @@ public class MongoClient {
      *    - `LogicError` if the provided session is inactive.
      *    - `LogicError` if this client has already been closed.
      *    - `EncodingError` if an error is encountered while encoding the options to BSON.
-     *    - `CommandError` when options.authorizedDatabases is false:
-     *      will occur if the user does not have listDatabase permissions
+     *    - `CommandError` if options.authorizedDatabases is false and the user does not have listDatabases permissions.
      *
      * - SeeAlso: https://docs.mongodb.com/manual/reference/command/listDatabases/
      */
@@ -387,8 +386,7 @@ public class MongoClient {
      *    If the future fails, the error is likely one of the following:
      *    - `LogicError` if the provided session is inactive.
      *    - `LogicError` if this client has already been closed.
-     *    - `CommandError` when options.authorizedDatabases is false:
-     *      will occur if the user does not have listDatabase permissions
+     *    - `CommandError` if options.authorizedDatabases is false and the user does not have listDatabases permissions.
      */
     public func listMongoDatabases(
         _ filter: Document? = nil,
@@ -413,8 +411,7 @@ public class MongoClient {
      *    If the future fails, the error is likely one of the following:
      *    - `LogicError` if the provided session is inactive.
      *    - `LogicError` if this client has already been closed.
-     *    - `CommandError` when options.authorizedDatabases is false:
-     *      will occur if the user does not have listDatabase permissions
+     *    - `CommandError` if options.authorizedDatabases is false and the user does not have listDatabases permissions.
      */
     public func listDatabaseNames(
         _ filter: Document? = nil,
