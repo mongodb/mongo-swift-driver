@@ -342,6 +342,7 @@ public class MongoClient {
      * - Parameters:
      *   - filter: Optional `Document` specifying a filter that the listed databases must pass. This filter can be based
      *     on the "name", "sizeOnDisk", "empty", or "shards" fields of the output.
+     *   - options: Optional `ListDatabasesOptions` specifying options for listing databases.
      *   - session: Optional `ClientSession` to use when executing this command.
      *
      * - Returns:
@@ -352,14 +353,16 @@ public class MongoClient {
      *    - `LogicError` if the provided session is inactive.
      *    - `LogicError` if this client has already been closed.
      *    - `EncodingError` if an error is encountered while encoding the options to BSON.
+     *    - `CommandError` if options.authorizedDatabases is false and the user does not have listDatabases permissions.
      *
      * - SeeAlso: https://docs.mongodb.com/manual/reference/command/listDatabases/
      */
     public func listDatabases(
         _ filter: Document? = nil,
+        options: ListDatabasesOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<[DatabaseSpecification]> {
-        let operation = ListDatabasesOperation(client: self, filter: filter, nameOnly: nil)
+        let operation = ListDatabasesOperation(client: self, filter: filter, nameOnly: nil, options: options)
         return self.operationExecutor.execute(operation, client: self, session: session).flatMapThrowing { result in
             guard case let .specs(dbs) = result else {
                 throw InternalError(message: "Invalid result")
@@ -373,6 +376,7 @@ public class MongoClient {
      *
      * - Parameters:
      *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
+     *   - options: Optional `ListDatabasesOptions` specifying options for listing databases.
      *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns:
@@ -382,12 +386,14 @@ public class MongoClient {
      *    If the future fails, the error is likely one of the following:
      *    - `LogicError` if the provided session is inactive.
      *    - `LogicError` if this client has already been closed.
+     *    - `CommandError` if options.authorizedDatabases is false and the user does not have listDatabases permissions.
      */
     public func listMongoDatabases(
         _ filter: Document? = nil,
+        options: ListDatabasesOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<[MongoDatabase]> {
-        self.listDatabaseNames(filter, session: session).map { $0.map { self.db($0) } }
+        self.listDatabaseNames(filter, options: options, session: session).map { $0.map { self.db($0) } }
     }
 
     /**
@@ -395,6 +401,7 @@ public class MongoClient {
      *
      * - Parameters:
      *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
+     *   - options: Optional `ListDatabasesOptions` specifying options for listing databases.
      *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns:
@@ -404,12 +411,14 @@ public class MongoClient {
      *    If the future fails, the error is likely one of the following:
      *    - `LogicError` if the provided session is inactive.
      *    - `LogicError` if this client has already been closed.
+     *    - `CommandError` if options.authorizedDatabases is false and the user does not have listDatabases permissions.
      */
     public func listDatabaseNames(
         _ filter: Document? = nil,
+        options: ListDatabasesOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<[String]> {
-        let operation = ListDatabasesOperation(client: self, filter: filter, nameOnly: true)
+        let operation = ListDatabasesOperation(client: self, filter: filter, nameOnly: true, options: options)
         return self.operationExecutor.execute(operation, client: self, session: session).flatMapThrowing { result in
             guard case let .names(names) = result else {
                 throw InternalError(message: "Invalid result")

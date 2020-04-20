@@ -25,20 +25,34 @@ internal enum ListDatabasesResults {
     case names([String])
 }
 
+/// Options for "listDatabases" operations.
+public struct ListDatabasesOptions {
+    /// Specifies whether to only return databases for which the user has privileges.
+    public var authorizedDatabases: Bool?
+
+    /// Convenience initializer allowing any/all parameters to be omitted or optional.
+    public init(authorizedDatabases: Bool? = nil) {
+        self.authorizedDatabases = authorizedDatabases
+    }
+}
+
 /// An operation corresponding to a "listDatabases" command on a collection.
 internal struct ListDatabasesOperation: Operation {
     private let client: MongoClient
     private let filter: Document?
     private let nameOnly: Bool?
+    private let options: ListDatabasesOptions?
 
     internal init(
         client: MongoClient,
         filter: Document?,
-        nameOnly: Bool?
+        nameOnly: Bool?,
+        options: ListDatabasesOptions?
     ) {
         self.client = client
         self.filter = filter
         self.nameOnly = nameOnly
+        self.options = options
     }
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> ListDatabasesResults {
@@ -50,6 +64,9 @@ internal struct ListDatabasesOperation: Operation {
         }
         if let nameOnly = self.nameOnly {
             cmd["nameOnly"] = .bool(nameOnly)
+        }
+        if let authorizedDatabases = self.options?.authorizedDatabases {
+            cmd["authorizedDatabases"] = .bool(authorizedDatabases)
         }
 
         let opts = try encodeOptions(options: nil as Document?, session: session)

@@ -75,6 +75,7 @@
 @_exported import struct MongoSwift.InternalError
 @_exported import struct MongoSwift.InvalidArgumentError
 @_exported import struct MongoSwift.ListCollectionsOptions
+@_exported import struct MongoSwift.ListDatabasesOptions
 @_exported import struct MongoSwift.LogicError
 @_exported import struct MongoSwift.MongoNamespace
 @_exported import struct MongoSwift.ObjectId

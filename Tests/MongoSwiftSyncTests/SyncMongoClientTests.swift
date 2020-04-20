@@ -48,6 +48,29 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
         if MongoSwiftTestCase.topologyType == .sharded {
             expect(dbInfo.first?.shards).toNot(beNil())
         }
+
+        let monitor = client.addCommandMonitor()
+
+        try monitor.captureEvents {
+            var opts = ListDatabasesOptions(authorizedDatabases: true)
+            _ = try client.listDatabaseNames(nil, options: opts, session: nil)
+            opts.authorizedDatabases = false
+            _ = try client.listDatabaseNames(nil, options: opts, session: nil)
+            _ = try client.listDatabaseNames()
+        }
+
+        let events = monitor.commandStartedEvents()
+        expect(events).to(haveCount(3))
+
+        let listDbsAuthTrue = events[0]
+        expect(listDbsAuthTrue.command["listDatabases"]).toNot(beNil())
+        expect(listDbsAuthTrue.command["authorizedDatabases"]?.boolValue).to(beTrue())
+        let listDbsAuthFalse = events[1]
+        expect(listDbsAuthFalse.command["listDatabases"]).toNot(beNil())
+        expect(listDbsAuthFalse.command["authorizedDatabases"]?.boolValue).to(beFalse())
+        let listDbsAuthNil = events[2]
+        expect(listDbsAuthNil.command["listDatabases"]).toNot(beNil())
+        expect(listDbsAuthNil.command["authorizedDatabases"]).to(beNil())
     }
 
     func testFailedClientInitialization() {
