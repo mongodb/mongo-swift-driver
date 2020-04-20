@@ -8,7 +8,7 @@ public struct AggregateOptions: Codable {
     public var allowDiskUse: Bool?
 
     /// The number of `Document`s to return per batch.
-    public var batchSize: Int32?
+    public var batchSize: Int?
 
     /// If true, allows the write to opt-out of document level validation. This only applies
     /// when the $out stage is specified.
@@ -25,7 +25,7 @@ public struct AggregateOptions: Codable {
     public var hint: Hint?
 
     /// The maximum amount of time to allow the query to run.
-    public var maxTimeMS: Int64?
+    public var maxTimeMS: Int?
 
     /// A `ReadConcern` to use in read stages of this operation.
     public var readConcern: ReadConcern?
@@ -41,12 +41,12 @@ public struct AggregateOptions: Codable {
     /// Convenience initializer allowing any/all parameters to be omitted or optional.
     public init(
         allowDiskUse: Bool? = nil,
-        batchSize: Int32? = nil,
+        batchSize: Int? = nil,
         bypassDocumentValidation: Bool? = nil,
         collation: Document? = nil,
         comment: String? = nil,
         hint: Hint? = nil,
-        maxTimeMS: Int64? = nil,
+        maxTimeMS: Int? = nil,
         readConcern: ReadConcern? = nil,
         readPreference: ReadPreference? = nil,
         writeConcern: WriteConcern? = nil

@@ -6,7 +6,7 @@ public struct DistinctOptions: Codable {
     public var collation: Document?
 
     /// The maximum amount of time to allow the query to run.
-    public var maxTimeMS: Int64?
+    public var maxTimeMS: Int?
 
     /// A ReadConcern to use for this operation.
     public var readConcern: ReadConcern?
@@ -19,7 +19,7 @@ public struct DistinctOptions: Codable {
     /// Convenience initializer allowing any/all parameters to be optional
     public init(
         collation: Document? = nil,
-        maxTimeMS: Int64? = nil,
+        maxTimeMS: Int? = nil,
         readConcern: ReadConcern? = nil,
         readPreference: ReadPreference? = nil
     ) {

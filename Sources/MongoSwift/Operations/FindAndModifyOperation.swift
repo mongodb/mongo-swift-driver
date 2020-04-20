@@ -26,7 +26,7 @@ internal class FindAndModifyOptions {
         arrayFilters: [Document]? = nil,
         bypassDocumentValidation: Bool? = nil,
         collation: Document?,
-        maxTimeMS: Int64?,
+        maxTimeMS: Int?,
         projection: Document?,
         remove: Bool? = nil,
         returnDocument: ReturnDocument? = nil,
@@ -85,7 +85,7 @@ internal class FindAndModifyOptions {
             guard maxTime > 0 else {
                 throw InvalidArgumentError(message: "maxTimeMS must be positive, but got value \(maxTime)")
             }
-            try extra.setValue(for: "maxTimeMS", to: .int64(maxTime))
+            try extra.setValue(for: "maxTimeMS", to: .int64(Int64(maxTime)))
         }
 
         if let wc = writeConcern {

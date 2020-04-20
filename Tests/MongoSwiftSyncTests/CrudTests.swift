@@ -132,11 +132,11 @@ private class CrudTest {
     let collection: Document?
 
     var arrayFilters: [Document]? { self.args["arrayFilters"]?.arrayValue?.compactMap { $0.documentValue } }
-    var batchSize: Int32? { self.args["batchSize"]?.int32Value }
+    var batchSize: Int? { self.args["batchSize"]?.asInt() }
     var collation: Document? { self.args["collation"]?.documentValue }
     var sort: Document? { self.args["sort"]?.documentValue }
-    var skip: Int64? { self.args["skip"]?.asInt64() }
-    var limit: Int64? { self.args["limit"]?.asInt64() }
+    var skip: Int? { self.args["skip"]?.asInt() }
+    var limit: Int? { self.args["limit"]?.asInt() }
     var projection: Document? { self.args["projection"]?.documentValue }
     var returnDoc: ReturnDocument? {
         if let ret = self.args["returnDocument"]?.stringValue {

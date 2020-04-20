@@ -208,7 +208,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
     }
 
     func testCreateDropIndexByModelWithMaxTimeMS() throws {
-        let maxTimeMS: Int64 = 1000
+        let maxTimeMS: Int = 1000
 
         let client = try MongoClient.makeTestClient()
         let monitor = client.addCommandMonitor()
@@ -238,10 +238,10 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         expect(receivedEvents.count).to(equal(2))
         expect(receivedEvents[0].command["createIndexes"]).toNot(beNil())
         expect(receivedEvents[0].command["maxTimeMS"]).toNot(beNil())
-        expect(receivedEvents[0].command["maxTimeMS"]).to(equal(.int64(maxTimeMS)))
+        expect(receivedEvents[0].command["maxTimeMS"]?.asInt()).to(equal(maxTimeMS))
         expect(receivedEvents[1].command["dropIndexes"]).toNot(beNil())
         expect(receivedEvents[1].command["maxTimeMS"]).toNot(beNil())
-        expect(receivedEvents[1].command["maxTimeMS"]).to(equal(.int64(maxTimeMS)))
+        expect(receivedEvents[1].command["maxTimeMS"]?.asInt()).to(equal(maxTimeMS))
     }
 }
 

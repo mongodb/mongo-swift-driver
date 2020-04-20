@@ -47,7 +47,7 @@ extension ClientSessionOptions: Decodable {
 extension TransactionOptions: Decodable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        let maxCommitTimeMS = try container.decodeIfPresent(Int64.self, forKey: .maxCommitTimeMS)
+        let maxCommitTimeMS = try container.decodeIfPresent(Int.self, forKey: .maxCommitTimeMS)
         let readConcern = try container.decodeIfPresent(ReadConcern.self, forKey: .readConcern)
         let readPreference = try container.decodeIfPresent(ReadPreference.self, forKey: .readPreference)
         let writeConcern = try container.decodeIfPresent(WriteConcern.self, forKey: .writeConcern)

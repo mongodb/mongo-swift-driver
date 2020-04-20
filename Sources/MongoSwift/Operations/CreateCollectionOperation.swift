@@ -25,14 +25,14 @@ public struct CreateCollectionOptions: Codable, CodingStrategyProvider {
     public var indexOptionDefaults: Document?
 
     /// Maximum number of documents allowed in the collection (if capped).
-    public var max: Int64?
+    public var max: Int?
 
     /// An array consisting of aggregation pipeline stages. When used with `viewOn`, will create the view by applying
     /// this pipeline to the source collection or view.
     public var pipeline: [Document]?
 
     /// Maximum size, in bytes, of this collection (if capped).
-    public var size: Int64?
+    public var size: Int?
 
     /// Specifies storage engine configuration for this collection.
     public var storageEngine: Document?
@@ -73,9 +73,9 @@ public struct CreateCollectionOptions: Codable, CodingStrategyProvider {
         dataCodingStrategy: DataCodingStrategy? = nil,
         dateCodingStrategy: DateCodingStrategy? = nil,
         indexOptionDefaults: Document? = nil,
-        max: Int64? = nil,
+        max: Int? = nil,
         pipeline: [Document]? = nil,
-        size: Int64? = nil,
+        size: Int? = nil,
         storageEngine: Document? = nil,
         uuidCodingStrategy: UUIDCodingStrategy? = nil,
         validationAction: String? = nil,
