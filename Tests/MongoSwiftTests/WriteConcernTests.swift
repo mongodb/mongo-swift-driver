@@ -142,4 +142,22 @@ final class WriteConcernTests: MongoSwiftTestCase {
             try checkWriteConcern(coll4, w2, "collection retrieved with w:2 from \(dbDesc)")
         }
     }
+
+    func testRoundTripThroughLibmongoc() throws {
+        let wcs: [WriteConcern] = [
+            WriteConcern(),
+            try WriteConcern(w: .number(2)),
+            try WriteConcern(w: .tag("hi")),
+            try WriteConcern(w: .majority),
+            try WriteConcern(journal: true),
+            try WriteConcern(wtimeoutMS: 200)
+        ]
+
+        for original in wcs {
+            let copy = original.withMongocWriteConcern { wcPtr in
+                WriteConcern(copying: wcPtr)
+            }
+            expect(copy).to(equal(original))
+        }
+    }
 }

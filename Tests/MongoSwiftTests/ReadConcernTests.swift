@@ -177,4 +177,23 @@ final class ReadConcernTests: MongoSwiftTestCase {
             try checkReadConcern(coll5, majority, "collection retrieved with majority RC from \(dbDesc)")
         }
     }
+
+    func testRoundTripThroughLibmongoc() throws {
+        let rcs: [ReadConcern] = [
+            ReadConcern(),
+            ReadConcern(.local),
+            ReadConcern(.available),
+            ReadConcern(.majority),
+            ReadConcern(.linearizable),
+            ReadConcern(.snapshot),
+            ReadConcern(.other(level: "a"))
+        ]
+
+        for original in rcs {
+            let copy = original.withMongocReadConcern { rcPtr in
+                ReadConcern(copying: rcPtr)
+            }
+            expect(copy).to(equal(original))
+        }
+    }
 }

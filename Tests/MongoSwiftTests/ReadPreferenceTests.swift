@@ -65,12 +65,23 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
             .to(throwError(errorType: InvalidArgumentError.self))
     }
 
-    func testInitFromPointer() {
-        let rpOrig = ReadPreference.primaryPreferred
-        let rpCopy = rpOrig.withMongocReadPreference { origPtr in
-            ReadPreference(copying: origPtr)
+    func testRoundTripThroughLibmongoc() throws {
+        let rps: [ReadPreference] = [
+            .primary,
+            .primaryPreferred,
+            .secondary,
+            .secondaryPreferred,
+            .nearest,
+            try .secondary(tagSets: [["dc": "east"], [:]]),
+            try .secondary(maxStalenessSeconds: 100)
+        ]
+
+        for original in rps {
+            let copy = original.withMongocReadPreference { origPtr in
+                ReadPreference(copying: origPtr)
+            }
+            expect(copy).to(equal(original))
         }
-        expect(rpCopy).to(equal(rpOrig))
     }
 
     func testEquatable() throws {
@@ -160,7 +171,7 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
                     self.getCollectionName(suffix: "2"),
                     options: CollectionOptions(readPreference: .primary)
                 )
-                try checkReadPreference(coll1, .secondary, "coll created with secondary RP from \(dbDesc)")
+                try checkReadPreference(coll2, .primary, "coll created with primary RP from \(dbDesc)")
             }
         }
     }

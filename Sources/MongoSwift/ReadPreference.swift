@@ -232,7 +232,7 @@ public struct ReadPreference: Equatable {
         let rp = mongoc_read_prefs_new(self.mode.mongocMode)! // never returns nil
         defer { mongoc_read_prefs_destroy(rp) }
 
-        if let tagSets = self.tagSets, tagSets.isEmpty {
+        if let tagSets = self.tagSets, !tagSets.isEmpty {
             let tags = Document(tagSets.map { .document($0) })
             tags.withBSONPointer { tagsPtr in
                 mongoc_read_prefs_set_tags(rp, tagsPtr)
