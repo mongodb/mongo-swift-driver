@@ -26,7 +26,14 @@ public struct WriteConcern: Codable {
             var container = encoder.singleValueContainer()
             switch self {
             case let .number(wNumber):
-                try container.encode(Int32(wNumber))
+                if let wNumber = Int32(exactly: wNumber) {
+                    // Int size check is required by libmongoc
+                    try container.encode(wNumber)
+                } else {
+                    throw InvalidArgumentError(
+                        message: "Invalid WriteConcern.w \(wNumber): must be between \(Int32.min) and \(Int32.max)"
+                    )
+                }
             case let .tag(wTag):
                 try container.encode(wTag)
             case .majority:

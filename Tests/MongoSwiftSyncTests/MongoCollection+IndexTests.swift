@@ -208,7 +208,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
     }
 
     func testCreateDropIndexByModelWithMaxTimeMS() throws {
-        let maxTimeMS: Int = 1000
+        let maxTimeMS = 1000
 
         let client = try MongoClient.makeTestClient()
         let monitor = client.addCommandMonitor()

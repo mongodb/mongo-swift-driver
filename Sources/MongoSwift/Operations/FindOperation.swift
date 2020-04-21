@@ -89,8 +89,8 @@ public struct FindOptions: Codable {
     /// The exclusive upper bound for a specific index.
     public var max: Document?
 
-    /// The maximum amount of time for the server to wait on new documents to satisfy a tailable cursor
-    /// query. This only applies when used with `CursorType.tailableAwait`. Otherwise, this option is ignored.
+    /// The maximum amount of time, in milliseconds, for the server to wait on new documents to satisfy a tailable
+    /// cursor query. This only applies when used with `CursorType.tailableAwait`. Otherwise, this option is ignored.
     public var maxAwaitTimeMS: Int?
 
     /// The maximum amount of time to allow the query to run.
