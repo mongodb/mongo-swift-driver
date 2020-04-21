@@ -498,4 +498,34 @@ public struct MongoDatabase {
 
         return try body(db)
     }
+
+    /// Internal method to check the `ReadConcern` that is set on `mongoc_database_t`s via `withMongocDatabase`.
+    /// **This method may block and is for testing purposes only**.
+    internal func getMongocReadConcern() throws -> ReadConcern? {
+        try self._client.connectionPool.withConnection { conn in
+            self.withMongocDatabase(from: conn) { dbPtr in
+                ReadConcern(copying: mongoc_database_get_read_concern(dbPtr))
+            }
+        }
+    }
+
+    /// Internal method to check the `ReadPreference` that is set on `mongoc_database_t`s via `withMongocDatabase`.
+    /// **This method may block and is for testing purposes only**.
+    internal func getMongocReadPreference() throws -> ReadPreference {
+        try self._client.connectionPool.withConnection { conn in
+            self.withMongocDatabase(from: conn) { dbPtr in
+                ReadPreference(copying: mongoc_database_get_read_prefs(dbPtr))
+            }
+        }
+    }
+
+    /// Internal method to check the `WriteConcern` that is set on `mongoc_database_t`s via `withMongocDatabase`.
+    /// **This method may block and is for testing purposes only**.
+    internal func getMongocWriteConcern() throws -> WriteConcern? {
+        try self._client.connectionPool.withConnection { conn in
+            self.withMongocDatabase(from: conn) { dbPtr in
+                WriteConcern(copying: mongoc_database_get_write_concern(dbPtr))
+            }
+        }
+    }
 }

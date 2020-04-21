@@ -108,7 +108,7 @@ public struct WriteConcern: Codable {
 
     /// Initializes a new `WriteConcern` with the same values as the provided `mongoc_write_concern_t`.
     /// The caller is responsible for freeing the original `mongoc_write_concern_t`.
-    internal init(from writeConcern: OpaquePointer?) {
+    internal init(copying writeConcern: OpaquePointer) {
         if mongoc_write_concern_journal_is_set(writeConcern) {
             self.journal = mongoc_write_concern_get_journal(writeConcern)
         } else {

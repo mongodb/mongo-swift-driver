@@ -146,4 +146,34 @@ public struct MongoCollection<T: Codable> {
 
         return try body(collection)
     }
+
+    /// Internal method to check the `ReadConcern` that is set on `mongoc_collection_t`s via `withMongocCollection`.
+    /// **This method may block and is for testing purposes only**.
+    internal func getMongocReadConcern() throws -> ReadConcern? {
+        try self._client.connectionPool.withConnection { conn in
+            self.withMongocCollection(from: conn) { collPtr in
+                ReadConcern(copying: mongoc_collection_get_read_concern(collPtr))
+            }
+        }
+    }
+
+    /// Internal method to check the `ReadPreference` that is set on `mongoc_collection_t`s via `withMongocCollection`.
+    /// **This method may block and is for testing purposes only**.
+    internal func getMongocReadPreference() throws -> ReadPreference {
+        try self._client.connectionPool.withConnection { conn in
+            self.withMongocCollection(from: conn) { collPtr in
+                ReadPreference(copying: mongoc_collection_get_read_prefs(collPtr))
+            }
+        }
+    }
+
+    /// Internal method to check the `WriteConcern` that is set on `mongoc_collection_t`s via `withMongocCollection`.
+    /// **This method may block and is for testing purposes only**.
+    internal func getMongocWriteConcern() throws -> WriteConcern? {
+        try self._client.connectionPool.withConnection { conn in
+            self.withMongocCollection(from: conn) { collPtr in
+                WriteConcern(copying: mongoc_collection_get_write_concern(collPtr))
+            }
+        }
+    }
 }

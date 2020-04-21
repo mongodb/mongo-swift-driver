@@ -3,6 +3,27 @@ import Nimble
 import TestsCommon
 import XCTest
 
+/// Indicates that a type has a read preference property, as well as a way to get a read preference from an instance
+/// of the corresponding mongoc type.
+private protocol ReadPreferenceable {
+    var readPreference: ReadPreference { get }
+    func getMongocReadPreference() throws -> ReadPreference
+}
+
+extension MongoClient: ReadPreferenceable {}
+extension MongoDatabase: ReadPreferenceable {}
+extension MongoCollection: ReadPreferenceable {}
+
+/// Checks that a type T, as well as pointers to corresponding libmongoc instances, has the expected read preference.
+private func checkReadPreference<T: ReadPreferenceable>(
+    _ instance: T,
+    _ expected: ReadPreference,
+    _ description: String
+) throws {
+    expect(instance.readPreference).to(equal(expected), description: description)
+    expect(try instance.getMongocReadPreference()).to(equal(expected))
+}
+
 final class ReadPreferenceTests: MongoSwiftTestCase {
     override func setUp() {
         self.continueAfterFailure = false
@@ -78,30 +99,32 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
 
     func testClientReadPreference() throws {
         try self.withTestClient { client in
+            let clientDesc = "client created with no RP provided"
             // expect that a client with an unset read preference has it default to primary
-            expect(client.readPreference).to(equal(.primary))
+            try checkReadPreference(client, .primary, clientDesc)
 
             // expect that a database created from this client inherits its read preference
             let db1 = client.db(Self.testDatabase)
-            expect(db1.readPreference).to(equal(.primary))
+            try checkReadPreference(db1, .primary, "db created with no RP provided from \(clientDesc)")
 
             // expect that a database can override the readPreference it inherited from a client
             let opts = DatabaseOptions(readPreference: .secondary)
             let db2 = client.db(Self.testDatabase, options: opts)
-            expect(db2.readPreference).to(equal(.secondary))
+            try checkReadPreference(db2, .secondary, "db created with secondary RP from \(clientDesc)")
         }
 
         try self.withTestClient(options: ClientOptions(readPreference: .primaryPreferred)) { client in
-            expect(client.readPreference).to(equal(.primaryPreferred))
+            let clientDesc = "client created with RP primaryPreferred"
+            try checkReadPreference(client, .primaryPreferred, clientDesc)
 
             // expect that a database created from this client inherits its read preference
             let db1 = client.db(Self.testDatabase)
-            expect(db1.readPreference).to(equal(.primaryPreferred))
+            try checkReadPreference(db1, .primaryPreferred, "db created with no RP provided from \(clientDesc)")
 
             // expect that a database can override the readPreference it inherited from a client
             let opts = DatabaseOptions(readPreference: .secondary)
             let db2 = client.db(Self.testDatabase, options: opts)
-            expect(db2.readPreference).to(equal(.secondary))
+            try checkReadPreference(db2, .secondary, "db created with secondary RP from \(clientDesc)")
         }
     }
 
@@ -109,33 +132,35 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
         try self.withTestClient { client in
             do {
                 // expect that a database with an unset read preference defaults to primary
+                let dbDesc = "db created with no RP provided"
                 let db = client.db(Self.testDatabase)
-                expect(db.readPreference).to(equal(.primary))
+                try checkReadPreference(db, .primary, dbDesc)
 
                 // expect that a collection inherits its database default read preference
                 let coll1 = db.collection(self.getCollectionName(suffix: "1"))
-                expect(coll1.readPreference).to(equal(.primary))
+                try checkReadPreference(coll1, .primary, "coll created with no RP provided from \(dbDesc)")
 
                 // expect that a collection can override its inherited read preference
                 let coll2 = db.collection(
                     self.getCollectionName(suffix: "2"),
                     options: CollectionOptions(readPreference: .secondary)
                 )
-                expect(coll2.readPreference).to(equal(.secondary))
+                try checkReadPreference(coll2, .secondary, "coll created with secondary RP from \(dbDesc)")
             }
 
             do {
                 // expect that a collection inherits its database read preference
+                let dbDesc = "db created with secondary RP"
                 let db = client.db(Self.testDatabase, options: DatabaseOptions(readPreference: .secondary))
                 let coll1 = db.collection(self.getCollectionName(suffix: "1"))
-                expect(coll1.readPreference).to(equal(.secondary))
+                try checkReadPreference(coll1, .secondary, "coll created with no RP provided from \(dbDesc)")
 
                 // expect that a collection can override its database read preference
                 let coll2 = db.collection(
                     self.getCollectionName(suffix: "2"),
                     options: CollectionOptions(readPreference: .primary)
                 )
-                expect(coll2.readPreference).to(equal(.primary))
+                try checkReadPreference(coll1, .secondary, "coll created with secondary RP from \(dbDesc)")
             }
         }
     }

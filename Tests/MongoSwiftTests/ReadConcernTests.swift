@@ -5,41 +5,17 @@ import TestsCommon
 
 /// Indicates that a type has a read concern property, as well as a way to get a read concern from an instance of the
 /// corresponding mongoc type.
-protocol ReadConcernable {
+private protocol ReadConcernable {
     var readConcern: ReadConcern? { get }
     func getMongocReadConcern() throws -> ReadConcern?
 }
 
-extension MongoClient: ReadConcernable {
-    func getMongocReadConcern() throws -> ReadConcern? {
-        try self.connectionPool.withConnection { conn in
-            ReadConcern(from: mongoc_client_get_read_concern(conn.clientHandle))
-        }
-    }
-}
-
-extension MongoDatabase: ReadConcernable {
-    func getMongocReadConcern() throws -> ReadConcern? {
-        try self._client.connectionPool.withConnection { conn in
-            self.withMongocDatabase(from: conn) { dbPtr in
-                ReadConcern(from: mongoc_database_get_read_concern(dbPtr))
-            }
-        }
-    }
-}
-
-extension MongoCollection: ReadConcernable {
-    func getMongocReadConcern() throws -> ReadConcern? {
-        try self._client.connectionPool.withConnection { conn in
-            self.withMongocCollection(from: conn) { collPtr in
-                ReadConcern(from: mongoc_collection_get_read_concern(collPtr))
-            }
-        }
-    }
-}
+extension MongoClient: ReadConcernable {}
+extension MongoDatabase: ReadConcernable {}
+extension MongoCollection: ReadConcernable {}
 
 /// Checks that a type T, as well as pointers to corresponding libmongoc instances, has the expected read concern.
-func checkReadConcern<T: ReadConcernable>(
+private func checkReadConcern<T: ReadConcernable>(
     _ instance: T,
     _ expected: ReadConcern,
     _ description: String

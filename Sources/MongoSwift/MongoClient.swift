@@ -1,3 +1,4 @@
+import CLibMongoC
 import Foundation
 import NIO
 import NIOConcurrencyHelpers
@@ -608,6 +609,30 @@ public class MongoClient {
         session: ClientSession? = nil
     ) throws -> T.OperationResult {
         try self.operationExecutor.execute(operation, using: connection, client: self, session: session).wait()
+    }
+
+    /// Internal method to check the `ReadConcern` that was ultimately set on this client. **This method may block
+    /// and is for testing purposes only**.
+    internal func getMongocReadConcern() throws -> ReadConcern? {
+        try self.connectionPool.withConnection { conn in
+            ReadConcern(copying: mongoc_client_get_read_concern(conn.clientHandle))
+        }
+    }
+
+    /// Internal method to check the `ReadPreference` that was ultimately set on this client. **This method may block
+    /// and is for testing purposes only**.
+    internal func getMongocReadPreference() throws -> ReadPreference {
+        try self.connectionPool.withConnection { conn in
+            ReadPreference(copying: mongoc_client_get_read_prefs(conn.clientHandle))
+        }
+    }
+
+    /// Internal method to check the `WriteConcern` that was ultimately set on this client. **This method may block
+    /// and is for testing purposes only**.
+    internal func getMongocWriteConcern() throws -> WriteConcern? {
+        try self.connectionPool.withConnection { conn in
+            WriteConcern(copying: mongoc_client_get_write_concern(conn.clientHandle))
+        }
     }
 }
 

@@ -62,7 +62,7 @@ public struct ReadConcern: Codable {
 
     // Initializes a new `ReadConcern` with the same level as the provided `mongoc_read_concern_t`.
     // The caller is responsible for freeing the original `mongoc_read_concern_t`.
-    internal init(from readConcern: OpaquePointer) {
+    internal init(copying readConcern: OpaquePointer) {
         if let level = mongoc_read_concern_get_level(readConcern) {
             self.level = Level(rawValue: String(cString: level))
         }
