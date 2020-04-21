@@ -256,7 +256,9 @@ public final class ClientSession {
         case let .notStarted(opTime, _):
             self.state = .notStarted(opTime: opTime, clusterTime: clusterTime)
         case let .started(session, _):
-            mongoc_client_session_advance_cluster_time(session, clusterTime._bson)
+            clusterTime.withBSONPointer { ptr in
+                mongoc_client_session_advance_cluster_time(session, ptr)
+            }
         case .ended:
             return
         }
@@ -290,7 +292,7 @@ public final class ClientSession {
         }
 
         var error = bson_error_t()
-        try withMutableBSONPointer(to: &doc) { docPtr in
+        try doc.withMutableBSONPointer { docPtr in
             guard mongoc_client_session_append(session, docPtr, &error) else {
                 throw extractMongoError(error: error)
             }

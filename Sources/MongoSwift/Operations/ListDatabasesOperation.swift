@@ -73,16 +73,20 @@ internal struct ListDatabasesOperation: Operation {
         var reply = Document()
         var error = bson_error_t()
 
-        let success = withMutableBSONPointer(to: &reply) { replyPtr in
-            mongoc_client_read_command_with_opts(
-                connection.clientHandle,
-                "admin",
-                cmd._bson,
-                readPref.pointer,
-                opts?._bson,
-                replyPtr,
-                &error
-            )
+        let success = cmd.withBSONPointer { cmdPtr in
+            withOptionalBSONPointer(to: opts) { optsPtr in
+                reply.withMutableBSONPointer { replyPtr in
+                    mongoc_client_read_command_with_opts(
+                        connection.clientHandle,
+                        "admin",
+                        cmdPtr,
+                        readPref.pointer,
+                        optsPtr,
+                        replyPtr,
+                        &error
+                    )
+                }
+            }
         }
 
         guard success else {

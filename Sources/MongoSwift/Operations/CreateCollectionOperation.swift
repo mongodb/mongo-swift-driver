@@ -121,10 +121,12 @@ internal struct CreateCollectionOperation<T: Codable>: Operation {
         var error = bson_error_t()
 
         try self.database.withMongocDatabase(from: connection) { dbPtr in
-            guard let collection = mongoc_database_create_collection(dbPtr, self.name, opts?._bson, &error) else {
-                throw extractMongoError(error: error)
+            try withOptionalBSONPointer(to: opts) { optsPtr in
+                guard let collection = mongoc_database_create_collection(dbPtr, self.name, optsPtr, &error) else {
+                    throw extractMongoError(error: error)
+                }
+                mongoc_collection_destroy(collection)
             }
-            mongoc_collection_destroy(collection)
         }
 
         let collectionOptions = CollectionOptions(

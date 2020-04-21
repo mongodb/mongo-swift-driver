@@ -107,7 +107,7 @@ extension DocumentTests {
         ("testDocumentDynamicMemberLookup", testDocumentDynamicMemberLookup),
         ("testEquatable", testEquatable),
         ("testRawBSON", testRawBSON),
-        ("testValueBehavior", testValueBehavior),
+        ("testCopyOnWriteBehavior", testCopyOnWriteBehavior),
         ("testIntEncodesAsInt32OrInt64", testIntEncodesAsInt32OrInt64),
         ("testMerge", testMerge),
         ("testNilInNestedArray", testNilInNestedArray),

@@ -16,9 +16,13 @@ internal struct DropDatabaseOperation: Operation {
 
         var reply = Document()
         var error = bson_error_t()
-        let success = withMutableBSONPointer(to: &reply) { replyPtr in
-            self.database.withMongocDatabase(from: connection) { dbPtr in
-                mongoc_database_write_command_with_opts(dbPtr, command._bson, opts?._bson, replyPtr, &error)
+        let success = self.database.withMongocDatabase(from: connection) { dbPtr in
+            command.withBSONPointer { cmdPtr in
+                withOptionalBSONPointer(to: opts) { optsPtr in
+                    reply.withMutableBSONPointer { replyPtr in
+                        mongoc_database_write_command_with_opts(dbPtr, cmdPtr, optsPtr, replyPtr, &error)
+                    }
+                }
             }
         }
         guard success else {

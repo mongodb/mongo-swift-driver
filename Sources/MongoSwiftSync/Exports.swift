@@ -55,7 +55,6 @@
 @_exported import struct MongoSwift.DistinctOptions
 @_exported import struct MongoSwift.Document
 @_exported import class MongoSwift.DocumentIterator
-@_exported import class MongoSwift.DocumentStorage
 @_exported import struct MongoSwift.DropCollectionOptions
 @_exported import struct MongoSwift.DropDatabaseOptions
 @_exported import struct MongoSwift.DropIndexOptions

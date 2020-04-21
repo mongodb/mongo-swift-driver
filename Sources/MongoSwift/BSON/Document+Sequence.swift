@@ -23,7 +23,7 @@ extension Document: Sequence {
 
     /// Returns a `DocumentIterator` over the values in this `Document`.
     public func makeIterator() -> DocumentIterator {
-        guard let iter = DocumentIterator(forDocument: self) else {
+        guard let iter = DocumentIterator(over: self) else {
             fatalError("Failed to initialize an iterator over document \(self)")
         }
         return iter
