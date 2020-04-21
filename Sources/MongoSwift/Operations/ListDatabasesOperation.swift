@@ -57,7 +57,7 @@ internal struct ListDatabasesOperation: Operation {
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> ListDatabasesResults {
         // spec requires that this command be run against the primary.
-        let readPref = ReadPreference(.primary)
+        let readPref = ReadPreference.primary
         var cmd: Document = ["listDatabases": 1]
         if let filter = self.filter {
             cmd["filter"] = .document(filter)
@@ -74,17 +74,19 @@ internal struct ListDatabasesOperation: Operation {
         var error = bson_error_t()
 
         let success = cmd.withBSONPointer { cmdPtr in
-            withOptionalBSONPointer(to: opts) { optsPtr in
-                reply.withMutableBSONPointer { replyPtr in
-                    mongoc_client_read_command_with_opts(
-                        connection.clientHandle,
-                        "admin",
-                        cmdPtr,
-                        readPref.pointer,
-                        optsPtr,
-                        replyPtr,
-                        &error
-                    )
+            readPref.withMongocReadPreference { rpPtr in
+                withOptionalBSONPointer(to: opts) { optsPtr in
+                    reply.withMutableBSONPointer { replyPtr in
+                        mongoc_client_read_command_with_opts(
+                            connection.clientHandle,
+                            "admin",
+                            cmdPtr,
+                            rpPtr,
+                            optsPtr,
+                            replyPtr,
+                            &error
+                        )
+                    }
                 }
             }
         }

@@ -74,7 +74,9 @@ internal class ConnectionString {
             ReadPreference(copying: mongoc_uri_get_read_prefs_t(self._uri))
         }
         set(rp) {
-            mongoc_uri_set_read_prefs_t(self._uri, rp.pointer)
+            rp.withMongocReadPreference { rpPtr in
+                mongoc_uri_set_read_prefs_t(self._uri, rpPtr)
+            }
         }
     }
 

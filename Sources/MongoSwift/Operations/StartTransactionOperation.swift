@@ -49,8 +49,10 @@ internal func withMongocTransactionOpts<T>(
         }
     }
 
-    if let rpPtr = options?.readPreference?.pointer {
-        mongoc_transaction_opts_set_read_prefs(optionsPtr, rpPtr)
+    if let rp = options?.readPreference {
+        rp.withMongocReadPreference { rpPtr in
+            mongoc_transaction_opts_set_read_prefs(optionsPtr, rpPtr)
+        }
     }
 
     if let maxCommitTimeMS = options?.maxCommitTimeMS {

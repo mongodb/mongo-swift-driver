@@ -83,22 +83,23 @@ internal struct AggregateOperation<CollectionType: Codable>: Operation {
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> MongoCursor<Document> {
         let opts = try encodeOptions(options: self.options, session: session)
-        let rp = self.options?.readPreference?.pointer
         let pipeline: Document = ["pipeline": .array(self.pipeline.map { .document($0) })]
 
         let result: OpaquePointer = self.collection.withMongocCollection(from: connection) { collPtr in
             pipeline.withBSONPointer { pipelinePtr in
                 withOptionalBSONPointer(to: opts) { optsPtr in
-                    guard let result = mongoc_collection_aggregate(
-                        collPtr,
-                        MONGOC_QUERY_NONE,
-                        pipelinePtr,
-                        optsPtr,
-                        rp
-                    ) else {
-                        fatalError(failedToRetrieveCursorMessage)
+                    withOptionalMongocReadPreference(from: self.options?.readPreference) { rpPtr in
+                        guard let result = mongoc_collection_aggregate(
+                            collPtr,
+                            MONGOC_QUERY_NONE,
+                            pipelinePtr,
+                            optsPtr,
+                            rpPtr
+                        ) else {
+                            fatalError(failedToRetrieveCursorMessage)
+                        }
+                        return result
                     }
-                    return result
                 }
             }
         }

@@ -3,7 +3,7 @@ import CLibMongoC
 /// Represents a MongoDB read preference, indicating which member(s) of a replica set read operations should be
 /// directed to.
 /// - SeeAlso: https://docs.mongodb.com/manual/reference/read-preference/
-public struct ReadPreference {
+public struct ReadPreference: Equatable {
     /// An enumeration of possible read preference modes.
     /// - SeeAlso: https://docs.mongodb.com/manual/core/read-preference/#read-preference-modes
     public enum Mode: String {
@@ -56,24 +56,17 @@ public struct ReadPreference {
 
     /// The mode specified for this read preference.
     /// - SeeAlso: https://docs.mongodb.com/manual/core/read-preference/#read-preference-modes
-    public var mode: Mode {
-        self.mongocReadPreference.mode
-    }
+    public var mode: Mode
 
     /// Optionally specified ordered array of tag sets. If provided, a server will only be considered suitable if its
     /// tags are a superset of at least one of the tag sets.
     /// - SeeAlso: https://docs.mongodb.com/manual/core/read-preference-tags/#replica-set-read-preference-tag-sets
-    public var tagSets: [Document]? {
-        self.mongocReadPreference.tagSets
-    }
+    public var tagSets: [Document]?
 
     // swiftlint:disable line_length
     /// An optionally specified value indicating a maximum replication lag, or "staleness", for reads from secondaries.
     /// - SeeAlso: https://docs.mongodb.com/manual/core/read-preference-staleness/#replica-set-read-preference-max-staleness
-    public var maxStalenessSeconds: Int? {
-        self.mongocReadPreference.maxStalenessSeconds
-    }
-
+    public var maxStalenessSeconds: Int?
     // swiftlint:enable line_length
 
     /// A `ReadPreference` with mode `primary`. This is the default mode. With this mode, all operations read from the
@@ -193,104 +186,73 @@ public struct ReadPreference {
         try ReadPreference(.nearest, tagSets: tagSets, maxStalenessSeconds: maxStalenessSeconds)
     }
 
-    /// An equivalent libmongoc read preference used for libmongoc interop. NOTE: If we were ever to allow mutating the
-    /// properties of `ReadPreference` after initialization, we would need to implement copy-on-write semantics for
-    /// this type to prevent multiple `ReadPreference`s from being backed by the same `MongocReadPreference`. Since
-    /// this type is currently immutable it's ok that copies may share the same libmongoc type.
-    private let mongocReadPreference: MongocReadPreference
-
-    /// Provides internal access to the underlying libmongoc object.
-    internal var pointer: OpaquePointer {
-        self.mongocReadPreference.readPref
-    }
-
     /// Initializes a `ReadPreference` from a `Mode`.
     internal init(_ mode: Mode) {
-        self.mongocReadPreference = MongocReadPreference(mode)
+        self.mode = mode
+        self.tagSets = nil
+        self.maxStalenessSeconds = nil
     }
 
-    internal init(_ mode: Mode, tagSets: [Document]?, maxStalenessSeconds: Int?) throws {
-        self.mongocReadPreference = try MongocReadPreference(
-            mode: mode,
-            tagSets: tagSets,
-            maxStalenessSeconds: maxStalenessSeconds
-        )
+    private init(_ mode: Mode, tagSets: [Document]?, maxStalenessSeconds: Int?) throws {
+        if let maxStaleness = maxStalenessSeconds {
+            guard maxStaleness >= MONGOC_SMALLEST_MAX_STALENESS_SECONDS else {
+                throw InvalidArgumentError(
+                    message: "Expected maxStalenessSeconds to be >= " +
+                        " \(MONGOC_SMALLEST_MAX_STALENESS_SECONDS), \(maxStaleness) given"
+                )
+            }
+        }
+        self.mode = mode
+        self.tagSets = tagSets
+        self.maxStalenessSeconds = maxStalenessSeconds
     }
 
     /// Initializes a new `ReadPreference` by copying a `mongoc_read_prefs_t`. Does not free the original.
     internal init(copying pointer: OpaquePointer) {
-        self.mongocReadPreference = MongocReadPreference(copying: pointer)
-    }
-}
+        self.mode = Mode(mongocMode: mongoc_read_prefs_get_mode(pointer))
 
-/// An extension of `ReadPreference` to make it `Equatable`.
-extension ReadPreference: Equatable {
-    public static func == (lhs: ReadPreference, rhs: ReadPreference) -> Bool {
-        lhs.mode == rhs.mode &&
-            lhs.tagSets == rhs.tagSets &&
-            lhs.maxStalenessSeconds == rhs.maxStalenessSeconds
-    }
-}
-
-/// A class wrapping a `mongoc_read_prefs_t`.
-private class MongocReadPreference {
-    /// Pointer to underlying `mongoc_read_prefs_t`.
-    fileprivate let readPref: OpaquePointer
-
-    fileprivate init(_ mode: ReadPreference.Mode) {
-        self.readPref = mongoc_read_prefs_new(mode.mongocMode)
-    }
-
-    fileprivate init(copying pointer: OpaquePointer) {
-        self.readPref = mongoc_read_prefs_copy(pointer)
-    }
-
-    fileprivate convenience init(mode: ReadPreference.Mode, tagSets: [Document]?, maxStalenessSeconds: Int?) throws {
-        self.init(mode)
-
-        if let tagSets = tagSets, !tagSets.isEmpty {
-            let tags = Document(tagSets.map { .document($0) })
-            tags.withBSONPointer { tagsPtr in
-                mongoc_read_prefs_set_tags(self.readPref, tagsPtr)
-            }
-        }
-
-        if let maxStalenessSeconds = maxStalenessSeconds {
-            guard maxStalenessSeconds >= MONGOC_SMALLEST_MAX_STALENESS_SECONDS else {
-                throw InvalidArgumentError(
-                    message: "Expected maxStalenessSeconds to be >= " +
-                        " \(MONGOC_SMALLEST_MAX_STALENESS_SECONDS), \(maxStalenessSeconds) given"
-                )
-            }
-            mongoc_read_prefs_set_max_staleness_seconds(self.readPref, Int64(maxStalenessSeconds))
-        }
-    }
-
-    fileprivate var mode: ReadPreference.Mode {
-        ReadPreference.Mode(mongocMode: mongoc_read_prefs_get_mode(self.readPref))
-    }
-
-    fileprivate var tagSets: [Document]? {
-        guard let bson = mongoc_read_prefs_get_tags(self.readPref) else {
+        guard let tagsPointer = mongoc_read_prefs_get_tags(pointer) else {
             fatalError("Failed to retrieve read preference tags")
         }
         // we have to copy because libmongoc owns the pointer.
-        let wrapped = Document(copying: bson)
-
-        guard !wrapped.isEmpty else {
-            return nil
+        let wrappedTags = Document(copying: tagsPointer)
+        if !wrappedTags.isEmpty {
+            // swiftlint:disable:next force_unwrapping
+            self.tagSets = wrappedTags.values.map { $0.documentValue! } // libmongoc will always return array of docs
         }
 
+        let maxStalenessValue = mongoc_read_prefs_get_max_staleness_seconds(pointer)
+        if maxStalenessValue != MONGOC_NO_MAX_STALENESS {
+            self.maxStalenessSeconds = Int(exactly: maxStalenessValue)
+        }
+    }
+
+    internal func withMongocReadPreference<T>(body: (OpaquePointer) throws -> T) rethrows -> T {
         // swiftlint:disable:next force_unwrapping
-        return wrapped.values.map { $0.documentValue! } // libmongoc will always give us an array of documents
-    }
+        let rp = mongoc_read_prefs_new(self.mode.mongocMode)! // never returns nil
+        defer { mongoc_read_prefs_destroy(rp) }
 
-    fileprivate var maxStalenessSeconds: Int? {
-        let maxStaleness = mongoc_read_prefs_get_max_staleness_seconds(self.readPref)
-        return maxStaleness == MONGOC_NO_MAX_STALENESS ? nil : Int(exactly: maxStaleness)
-    }
+        if let tagSets = self.tagSets, tagSets.isEmpty {
+            let tags = Document(tagSets.map { .document($0) })
+            tags.withBSONPointer { tagsPtr in
+                mongoc_read_prefs_set_tags(rp, tagsPtr)
+            }
+        }
 
-    deinit {
-        mongoc_read_prefs_destroy(readPref)
+        if let maxStaleness = self.maxStalenessSeconds {
+            mongoc_read_prefs_set_max_staleness_seconds(rp, Int64(maxStaleness))
+        }
+
+        return try body(rp)
     }
+}
+
+internal func withOptionalMongocReadPreference<T>(
+    from rp: ReadPreference?,
+    body: (OpaquePointer?) throws -> T
+) rethrows -> T {
+    guard let rp = rp else {
+        return try body(nil)
+    }
+    return try rp.withMongocReadPreference(body: body)
 }

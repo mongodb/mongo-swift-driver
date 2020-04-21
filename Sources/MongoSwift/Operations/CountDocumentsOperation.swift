@@ -63,12 +63,13 @@ internal struct CountDocumentsOperation<T: Codable>: Operation {
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> Int {
         let opts = try encodeOptions(options: options, session: session)
-        let rp = self.options?.readPreference?.pointer
         var error = bson_error_t()
         let count = self.collection.withMongocCollection(from: connection) { collPtr in
             self.filter.withBSONPointer { filterPtr in
                 withOptionalBSONPointer(to: opts) { optsPtr in
-                    mongoc_collection_count_documents(collPtr, filterPtr, optsPtr, rp, nil, &error)
+                    withOptionalMongocReadPreference(from: self.options?.readPreference) { rpPtr in
+                        mongoc_collection_count_documents(collPtr, filterPtr, optsPtr, rpPtr, nil, &error)
+                    }
                 }
             }
         }

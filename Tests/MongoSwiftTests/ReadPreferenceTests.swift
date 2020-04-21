@@ -44,11 +44,11 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
             .to(throwError(errorType: InvalidArgumentError.self))
     }
 
-    func testInitFromPointer() {
-        let rpOrig = ReadPreference.primaryPreferred
-        let rpCopy = ReadPreference(copying: rpOrig.pointer)
-        expect(rpCopy).to(equal(rpOrig))
-    }
+    // func testInitFromPointer() {
+    //     let rpOrig = ReadPreference.primaryPreferred
+    //     let rpCopy = ReadPreference(copying: rpOrig.pointer)
+    //     expect(rpCopy).to(equal(rpOrig))
+    // }
 
     func testEquatable() throws {
         expect(ReadPreference.primary).to(equal(.primary))

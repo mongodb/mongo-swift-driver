@@ -43,15 +43,16 @@ internal struct RunCommandOperation: Operation {
     }
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> Document {
-        let rp = self.options?.readPreference?.pointer
         let opts = try encodeOptions(options: self.options, session: session)
         var reply = Document()
         var error = bson_error_t()
-        let success = self.command.withBSONPointer { cmdPtr in
-            withOptionalBSONPointer(to: opts) { optsPtr in
-                reply.withMutableBSONPointer { replyPtr in
-                    self.database.withMongocDatabase(from: connection) { dbPtr in
-                        mongoc_database_command_with_opts(dbPtr, cmdPtr, rp, optsPtr, replyPtr, &error)
+        let success = self.database.withMongocDatabase(from: connection) { dbPtr in
+            self.command.withBSONPointer { cmdPtr in
+                withOptionalMongocReadPreference(from: self.options?.readPreference) { rpPtr in
+                    withOptionalBSONPointer(to: opts) { optsPtr in
+                        reply.withMutableBSONPointer { replyPtr in
+                            mongoc_database_command_with_opts(dbPtr, cmdPtr, rpPtr, optsPtr, replyPtr, &error)
+                        }
                     }
                 }
             }
