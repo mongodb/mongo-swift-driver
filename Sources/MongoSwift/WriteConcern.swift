@@ -31,7 +31,7 @@ public struct WriteConcern: Codable {
                     try container.encode(wNumber)
                 } else {
                     throw InvalidArgumentError(
-                        message: "Invalid WriteConcern.w \(wNumber): must be between \(Int32.min) and \(Int32.max)"
+                        message: "Invalid WriteConcern.w \(wNumber): must be between 0 and \(Int32.max)"
                     )
                 }
             case let .tag(wTag):
