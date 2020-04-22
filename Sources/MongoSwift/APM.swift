@@ -186,6 +186,7 @@ public struct CommandSucceededEvent: MongoSwiftEvent, CommandEventProtocol {
     public let serverAddress: Address
 
     fileprivate init(mongocEvent: MongocCommandSucceededEvent) {
+        // TODO: SWIFT-349 add logging to check and warn of unlikely int size issues
         self.duration = Int(mongoc_apm_command_succeeded_get_duration(mongocEvent.ptr))
         // we have to copy because libmongoc owns the pointer.
         self.reply = Document(copying: mongoc_apm_command_succeeded_get_reply(mongocEvent.ptr))
