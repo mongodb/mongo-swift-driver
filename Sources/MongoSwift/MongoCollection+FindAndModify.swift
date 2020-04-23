@@ -147,7 +147,7 @@ public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible, Decodabl
     public var collation: Document?
 
     /// The maximum amount of time to allow the query to run.
-    public var maxTimeMS: Int64?
+    public var maxTimeMS: Int?
 
     /// Limits the fields to return for the matching document.
     public var projection: Document?
@@ -172,7 +172,7 @@ public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible, Decodabl
     /// Convenience initializer allowing any/all parameters to be omitted/optional
     public init(
         collation: Document? = nil,
-        maxTimeMS: Int64? = nil,
+        maxTimeMS: Int? = nil,
         projection: Document? = nil,
         sort: Document? = nil,
         writeConcern: WriteConcern? = nil
@@ -194,7 +194,7 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible, Decodab
     public var collation: Document?
 
     /// The maximum amount of time to allow the query to run.
-    public var maxTimeMS: Int64?
+    public var maxTimeMS: Int?
 
     /// Limits the fields to return for the matching document.
     public var projection: Document?
@@ -228,7 +228,7 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible, Decodab
     public init(
         bypassDocumentValidation: Bool? = nil,
         collation: Document? = nil,
-        maxTimeMS: Int64? = nil,
+        maxTimeMS: Int? = nil,
         projection: Document? = nil,
         returnDocument: ReturnDocument? = nil,
         sort: Document? = nil,
@@ -258,7 +258,7 @@ public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible, Decodabl
     public var collation: Document?
 
     /// The maximum amount of time to allow the query to run.
-    public var maxTimeMS: Int64?
+    public var maxTimeMS: Int?
 
     /// Limits the fields to return for the matching document.
     public var projection: Document?
@@ -294,7 +294,7 @@ public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible, Decodabl
         arrayFilters: [Document]? = nil,
         bypassDocumentValidation: Bool? = nil,
         collation: Document? = nil,
-        maxTimeMS: Int64? = nil,
+        maxTimeMS: Int? = nil,
         projection: Document? = nil,
         returnDocument: ReturnDocument? = nil,
         sort: Document? = nil,

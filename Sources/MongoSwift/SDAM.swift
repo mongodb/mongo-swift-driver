@@ -88,7 +88,7 @@ public struct ServerDescription {
     public let address: Address
 
     /// The duration in milliseconds of the server's last ismaster call.
-    public let roundTripTime: Int64?
+    public let roundTripTime: Int?
 
     /// The date of the most recent write operation seen by this server.
     public var lastWriteDate: Date?
@@ -140,7 +140,7 @@ public struct ServerDescription {
     /// mongoc_server_description_t.
     internal init(_ description: OpaquePointer) {
         self.address = Address(mongoc_server_description_host(description))
-        self.roundTripTime = mongoc_server_description_round_trip_time(description)
+        self.roundTripTime = Int(mongoc_server_description_round_trip_time(description))
         self.lastUpdateTime = Date(msSinceEpoch: mongoc_server_description_last_update_time(description))
         self.type = ServerType(rawValue: String(cString: mongoc_server_description_type(description))) ?? .unknown
 

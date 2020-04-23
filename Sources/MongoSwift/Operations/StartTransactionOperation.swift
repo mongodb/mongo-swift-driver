@@ -3,7 +3,7 @@ import CLibMongoC
 /// Options to use when starting a transaction.
 public struct TransactionOptions {
     /// The maximum amount of time to allow a single `commitTransaction` command to run.
-    public var maxCommitTimeMS: Int64?
+    public var maxCommitTimeMS: Int?
 
     /// The `ReadConcern` to use for this transaction.
     public var readConcern: ReadConcern?
@@ -16,7 +16,7 @@ public struct TransactionOptions {
 
     /// Convenience initializer allowing any/all parameters to be omitted.
     public init(
-        maxCommitTimeMS: Int64? = nil,
+        maxCommitTimeMS: Int? = nil,
         readConcern: ReadConcern? = nil,
         readPreference: ReadPreference? = nil,
         writeConcern: WriteConcern? = nil
@@ -54,7 +54,7 @@ internal func withMongocTransactionOpts<T>(
     }
 
     if let maxCommitTimeMS = options?.maxCommitTimeMS {
-        mongoc_transaction_opts_set_max_commit_time_ms(optionsPtr, maxCommitTimeMS)
+        mongoc_transaction_opts_set_max_commit_time_ms(optionsPtr, Int64(maxCommitTimeMS))
     }
 
     return try body(optionsPtr)

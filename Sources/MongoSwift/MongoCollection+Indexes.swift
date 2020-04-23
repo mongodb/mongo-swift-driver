@@ -44,10 +44,10 @@ public struct IndexOptions: Codable {
     public var background: Bool?
 
     /// Optionally specifies the precision of the stored geo hash in the 2d index, from 1 to 32.
-    public var bits: Int32?
+    public var bits: Int?
 
     /// Optionally specifies the number of units within which to group the location values in a geo haystack index.
-    public var bucketSize: Int32?
+    public var bucketSize: Int?
 
     /// Optionally specifies a collation to use for the index in MongoDB 3.4 and higher. If not specified, no collation
     /// is sent and the default collation of the collection server-side is used.
@@ -57,7 +57,7 @@ public struct IndexOptions: Codable {
     public var defaultLanguage: String?
 
     /// Optionally specifies the length in time, in seconds, for documents to remain in a collection.
-    public var expireAfterSeconds: Int32?
+    public var expireAfterSeconds: Int?
 
     /// Optionally specifies the field in the document to override the language.
     public var languageOverride: String?
@@ -88,7 +88,7 @@ public struct IndexOptions: Codable {
 
     /// Optionally specifies the 2dsphere index version number. MongoDB 2.4 can only support version 1. MongoDB 2.6 and
     /// higher may support version 1 or 2.
-    public var sphereIndexVersion: Int32?
+    public var sphereIndexVersion: Int?
 
     /// Optionally used only in MongoDB 3.0.0 and higher. Allows users to configure the storage engine on a per-index
     /// basis when creating an index.
@@ -96,13 +96,13 @@ public struct IndexOptions: Codable {
 
     /// Optionally provides the text index version number. MongoDB 2.4 can only support version 1. MongoDB 2.6 and
     /// higher may support version 1 or 2.
-    public var textIndexVersion: Int32?
+    public var textIndexVersion: Int?
 
     /// Optionally forces the index to be unique.
     public var unique: Bool?
 
     /// Optionally specifies the index version number, either 0 or 1.
-    public var version: Int32?
+    public var version: Int?
 
     /// Optionally specifies fields in the index and their corresponding weight values.
     public var weights: Document?
@@ -110,22 +110,22 @@ public struct IndexOptions: Codable {
     /// Convenience initializer allowing any/all parameters to be omitted.
     public init(
         background: Bool? = nil,
-        bits: Int32? = nil,
-        bucketSize: Int32? = nil,
+        bits: Int? = nil,
+        bucketSize: Int? = nil,
         collation: Document? = nil,
         defaultLanguage: String? = nil,
-        expireAfterSeconds: Int32? = nil,
+        expireAfterSeconds: Int? = nil,
         languageOverride: String? = nil,
         max: Double? = nil,
         min: Double? = nil,
         name: String? = nil,
         partialFilterExpression: Document? = nil,
         sparse: Bool? = nil,
-        sphereIndexVersion: Int32? = nil,
+        sphereIndexVersion: Int? = nil,
         storageEngine: Document? = nil,
-        textIndexVersion: Int32? = nil,
+        textIndexVersion: Int? = nil,
         unique: Bool? = nil,
-        version: Int32? = nil,
+        version: Int? = nil,
         weights: Document? = nil
     ) {
         self.background = background

@@ -43,7 +43,7 @@ public struct FindOptions: Codable {
     private var awaitData: Bool?
 
     /// The number of documents to return per batch.
-    public var batchSize: Int32?
+    public var batchSize: Int?
 
     /// Specifies a collation.
     public var collation: Document?
@@ -84,17 +84,17 @@ public struct FindOptions: Codable {
     public var hint: Hint?
 
     /// The maximum number of documents to return.
-    public var limit: Int64?
+    public var limit: Int?
 
     /// The exclusive upper bound for a specific index.
     public var max: Document?
 
-    /// The maximum amount of time for the server to wait on new documents to satisfy a tailable cursor
-    /// query. This only applies when used with `CursorType.tailableAwait`. Otherwise, this option is ignored.
-    public var maxAwaitTimeMS: Int64?
+    /// The maximum amount of time, in milliseconds, for the server to wait on new documents to satisfy a tailable
+    /// cursor query. This only applies when used with `CursorType.tailableAwait`. Otherwise, this option is ignored.
+    public var maxAwaitTimeMS: Int?
 
     /// The maximum amount of time to allow the query to run.
-    public var maxTimeMS: Int64?
+    public var maxTimeMS: Int?
 
     /// The inclusive lower bound for a specific index.
     public var min: Document?
@@ -122,7 +122,7 @@ public struct FindOptions: Codable {
     public var showRecordId: Bool?
 
     /// The number of documents to skip before returning.
-    public var skip: Int64?
+    public var skip: Int?
 
     /// The order in which to return matching documents.
     public var sort: Document?
@@ -136,15 +136,15 @@ public struct FindOptions: Codable {
     public init(
         allowDiskUse: Bool? = nil,
         allowPartialResults: Bool? = nil,
-        batchSize: Int32? = nil,
+        batchSize: Int? = nil,
         collation: Document? = nil,
         comment: String? = nil,
         cursorType: CursorType? = nil,
         hint: Hint? = nil,
-        limit: Int64? = nil,
+        limit: Int? = nil,
         max: Document? = nil,
-        maxAwaitTimeMS: Int64? = nil,
-        maxTimeMS: Int64? = nil,
+        maxAwaitTimeMS: Int? = nil,
+        maxTimeMS: Int? = nil,
         min: Document? = nil,
         noCursorTimeout: Bool? = nil,
         projection: Document? = nil,
@@ -152,7 +152,7 @@ public struct FindOptions: Codable {
         readPreference: ReadPreference? = nil,
         returnKey: Bool? = nil,
         showRecordId: Bool? = nil,
-        skip: Int64? = nil,
+        skip: Int? = nil,
         sort: Document? = nil
     ) {
         self.allowDiskUse = allowDiskUse
@@ -221,7 +221,7 @@ public struct FindOneOptions: Codable {
     public var max: Document?
 
     /// The maximum amount of time to allow the query to run.
-    public var maxTimeMS: Int64?
+    public var maxTimeMS: Int?
 
     /// The inclusive lower bound for a specific index.
     public var min: Document?
@@ -243,7 +243,7 @@ public struct FindOneOptions: Codable {
     public var showRecordId: Bool?
 
     /// The number of documents to skip before returning.
-    public var skip: Int64?
+    public var skip: Int?
 
     /// The order in which to return matching documents.
     public var sort: Document?
@@ -255,14 +255,14 @@ public struct FindOneOptions: Codable {
         comment: String? = nil,
         hint: Hint? = nil,
         max: Document? = nil,
-        maxTimeMS: Int64? = nil,
+        maxTimeMS: Int? = nil,
         min: Document? = nil,
         projection: Document? = nil,
         readConcern: ReadConcern? = nil,
         readPreference: ReadPreference? = nil,
         returnKey: Bool? = nil,
         showRecordId: Bool? = nil,
-        skip: Int64? = nil,
+        skip: Int? = nil,
         sort: Document? = nil
     ) {
         self.allowPartialResults = allowPartialResults

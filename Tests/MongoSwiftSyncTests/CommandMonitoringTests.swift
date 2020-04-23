@@ -134,17 +134,17 @@ private struct CMTest: Decodable {
                 hint = .indexSpec(hintDoc)
             }
             let options = FindOptions(
-                batchSize: self.op.args["batchSize"]?.asInt32(),
+                batchSize: self.op.args["batchSize"]?.asInt(),
                 comment: modifiers?["$comment"]?.stringValue,
                 hint: hint,
-                limit: self.op.args["limit"]?.asInt64(),
+                limit: self.op.args["limit"]?.asInt(),
                 max: modifiers?["$max"]?.documentValue,
-                maxTimeMS: modifiers?["$maxTimeMS"]?.asInt64(),
+                maxTimeMS: modifiers?["$maxTimeMS"]?.asInt(),
                 min: modifiers?["$min"]?.documentValue,
                 readPreference: self.op.readPreference,
                 returnKey: modifiers?["$returnKey"]?.boolValue,
                 showRecordId: modifiers?["$showDiskLoc"]?.boolValue,
-                skip: self.op.args["skip"]?.asInt64(),
+                skip: self.op.args["skip"]?.asInt(),
                 sort: self.op.args["sort"]?.documentValue
             )
 
@@ -260,12 +260,6 @@ private func normalizeCommand(_ input: Document) -> Document {
             // the server in our actual commands.
         } else if k == "maxTimeMS", let iV = v.asInt64() {
             output[k] = .int64(iV)
-
-            // The expected batch sizes are always Int64s, however, find command
-            // events actually have Int32 batch sizes... (as the spec says...)
-            // but getMores have Int64s. so only convert if it's a find command...
-        } else if k == "batchSize" && input["find"] != nil {
-            output[k] = .int32(v.asInt32()!)
 
             // recursively normalize if it's a document
         } else if let docVal = v.documentValue {

@@ -30,7 +30,7 @@ public enum FullDocument: RawRepresentable, Codable {
 public struct ChangeStreamOptions: Codable {
     /// The number of documents to return per batch. If omitted, the server will use its default batch size.
     /// - SeeAlso: https://docs.mongodb.com/manual/reference/command/aggregate
-    public var batchSize: Int32?
+    public var batchSize: Int?
 
     /// Specifies a collation.
     /// - SeeAlso: https://docs.mongodb.com/manual/reference/command/aggregate
@@ -46,7 +46,7 @@ public struct ChangeStreamOptions: Codable {
 
     /// The maximum amount of time in milliseconds for the server to wait on new documents to satisfy a
     /// change stream query. If omitted, the server will use its default timeout.
-    public var maxAwaitTimeMS: Int64?
+    public var maxAwaitTimeMS: Int?
 
     /**
      * A `ResumeToken` that manually specifies the logical starting point for the new change stream.
@@ -75,10 +75,10 @@ public struct ChangeStreamOptions: Codable {
 
     /// Initializes a `ChangeStreamOptions`.
     public init(
-        batchSize: Int32? = nil,
+        batchSize: Int? = nil,
         collation: Document? = nil,
         fullDocument: FullDocument? = nil,
-        maxAwaitTimeMS: Int64? = nil,
+        maxAwaitTimeMS: Int? = nil,
         resumeAfter: ResumeToken? = nil,
         startAtOperationTime: Timestamp? = nil
     ) {

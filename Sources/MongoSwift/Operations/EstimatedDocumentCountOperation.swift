@@ -3,7 +3,7 @@ import CLibMongoC
 /// Options to use when executing an `estimatedDocumentCount` command on a `MongoCollection`.
 public struct EstimatedDocumentCountOptions: Codable {
     /// The maximum amount of time to allow the query to run.
-    public var maxTimeMS: Int64?
+    public var maxTimeMS: Int?
 
     /// A ReadConcern to use for this operation.
     public var readConcern: ReadConcern?
@@ -15,7 +15,7 @@ public struct EstimatedDocumentCountOptions: Codable {
 
     /// Convenience initializer allowing any/all parameters to be optional
     public init(
-        maxTimeMS: Int64? = nil,
+        maxTimeMS: Int? = nil,
         readConcern: ReadConcern? = nil,
         readPreference: ReadPreference? = nil
     ) {

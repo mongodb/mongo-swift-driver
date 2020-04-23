@@ -6,7 +6,7 @@ public struct WriteConcern: Codable {
     /// An option to request acknowledgement that the write operation has propagated to specified mongod instances.
     public enum W: Codable, Equatable {
         /// Specifies the number of nodes that should acknowledge the write. MUST be greater than or equal to 0.
-        case number(Int32)
+        case number(Int)
         /// Indicates a tag for nodes that should acknowledge the write.
         case tag(String)
         /// Specifies that a majority of nodes should acknowledge the write.
@@ -17,7 +17,7 @@ public struct WriteConcern: Codable {
             if let string = try? container.decode(String.self) {
                 self = string == "majority" ? .majority : .tag(string)
             } else {
-                let wNumber = try container.decode(Int32.self)
+                let wNumber = try container.decode(Int.self)
                 self = .number(wNumber)
             }
         }
@@ -26,7 +26,14 @@ public struct WriteConcern: Codable {
             var container = encoder.singleValueContainer()
             switch self {
             case let .number(wNumber):
-                try container.encode(wNumber)
+                if let wNumber = Int32(exactly: wNumber) {
+                    // Int size check is required by libmongoc
+                    try container.encode(wNumber)
+                } else {
+                    throw InvalidArgumentError(
+                        message: "Invalid WriteConcern.w \(wNumber): must be between 0 and \(Int32.max)"
+                    )
+                }
             case let .tag(wTag):
                 try container.encode(wTag)
             case .majority:
@@ -43,7 +50,7 @@ public struct WriteConcern: Codable {
 
     /// If the write concern is not satisfied within this timeout (in milliseconds),
     /// the operation will return an error. The value MUST be greater than or equal to 0.
-    public let wtimeoutMS: Int64?
+    public let wtimeoutMS: Int?
 
     /// Indicates whether this is an acknowledged write concern.
     public var isAcknowledged: Bool {
@@ -78,7 +85,7 @@ public struct WriteConcern: Codable {
     /// Initializes a new `WriteConcern`.
     /// - Throws:
     ///   - `InvalidArgumentError` if the options form an invalid combination.
-    public init(journal: Bool? = nil, w: W? = nil, wtimeoutMS: Int64? = nil) throws {
+    public init(journal: Bool? = nil, w: W? = nil, wtimeoutMS: Int? = nil) throws {
         self.journal = journal
 
         if let wtimeoutMS = wtimeoutMS {
@@ -128,10 +135,10 @@ public struct WriteConcern: Codable {
                 self.w = nil
             }
         default:
-            self.w = .number(number)
+            self.w = .number(Int(number))
         }
 
-        let wtimeout = mongoc_write_concern_get_wtimeout_int64(writeConcern)
+        let wtimeout = Int(mongoc_write_concern_get_wtimeout_int64(writeConcern))
         if wtimeout != 0 {
             self.wtimeoutMS = wtimeout
         } else {
@@ -156,7 +163,7 @@ public struct WriteConcern: Codable {
         if let w = self.w {
             switch w {
             case let .number(wNumber):
-                mongoc_write_concern_set_w(writeConcern, wNumber)
+                mongoc_write_concern_set_w(writeConcern, Int32(wNumber))
             case let .tag(wTag):
                 mongoc_write_concern_set_wtag(writeConcern, wTag)
             case .majority:
@@ -164,7 +171,7 @@ public struct WriteConcern: Codable {
             }
         }
         if let wtimeoutMS = self.wtimeoutMS {
-            mongoc_write_concern_set_wtimeout_int64(writeConcern, wtimeoutMS)
+            mongoc_write_concern_set_wtimeout_int64(writeConcern, Int64(wtimeoutMS))
         }
         return try body(writeConcern)
     }

@@ -9,10 +9,10 @@ public struct CountDocumentsOptions: Codable {
     public var hint: Hint?
 
     /// The maximum number of documents to count.
-    public var limit: Int64?
+    public var limit: Int?
 
     /// The maximum amount of time to allow the query to run.
-    public var maxTimeMS: Int64?
+    public var maxTimeMS: Int?
 
     /// A ReadConcern to use for this operation.
     public var readConcern: ReadConcern?
@@ -23,17 +23,17 @@ public struct CountDocumentsOptions: Codable {
     // swiftlint:enable redundant_optional_initialization
 
     /// The number of documents to skip before counting.
-    public var skip: Int64?
+    public var skip: Int?
 
     /// Convenience initializer allowing any/all parameters to be optional
     public init(
         collation: Document? = nil,
         hint: Hint? = nil,
-        limit: Int64? = nil,
-        maxTimeMS: Int64? = nil,
+        limit: Int? = nil,
+        maxTimeMS: Int? = nil,
         readConcern: ReadConcern? = nil,
         readPreference: ReadPreference? = nil,
-        skip: Int64? = nil
+        skip: Int? = nil
     ) {
         self.collation = collation
         self.hint = hint
