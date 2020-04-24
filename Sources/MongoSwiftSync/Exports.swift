@@ -10,6 +10,7 @@
 
 @_exported import struct MongoSwift.Address
 @_exported import struct MongoSwift.AggregateOptions
+@_exported import enum MongoSwift.AuthMechanism
 @_exported import struct MongoSwift.AuthenticationError
 @_exported import enum MongoSwift.BSON
 @_exported import struct MongoSwift.BSONCoderOptions
@@ -42,6 +43,7 @@
 @_exported import struct MongoSwift.CountDocumentsOptions
 @_exported import struct MongoSwift.CreateCollectionOptions
 @_exported import struct MongoSwift.CreateIndexOptions
+@_exported import struct MongoSwift.Credential
 @_exported import enum MongoSwift.CursorType
 @_exported import struct MongoSwift.DBPointer
 @_exported import enum MongoSwift.DataCodingStrategy

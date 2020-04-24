@@ -1,5 +1,5 @@
 /// Represents an authentication credential.
-internal struct Credential: Decodable, Equatable {
+public struct Credential: Decodable, Equatable {
     /// A string containing the username. For auth mechanisms that do not utilize a password, this may be the entire
     /// `userinfo` token from the connection string.
     internal let username: String?
@@ -19,7 +19,7 @@ internal struct Credential: Decodable, Equatable {
 }
 
 /// Possible authentication mechanisms.
-internal enum AuthMechanism: String, Decodable {
+public enum AuthMechanism: String, Decodable {
     case scramSHA1 = "SCRAM-SHA-1"
     case scramSHA256 = "SCRAM-SHA-256"
     case gssAPI = "GSSAPI"
