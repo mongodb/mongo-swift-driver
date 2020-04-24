@@ -88,7 +88,7 @@ internal struct AggregateOperation<CollectionType: Codable>: Operation {
         let result: OpaquePointer = self.collection.withMongocCollection(from: connection) { collPtr in
             pipeline.withBSONPointer { pipelinePtr in
                 withOptionalBSONPointer(to: opts) { optsPtr in
-                    withOptionalMongocReadPreference(from: self.options?.readPreference) { rpPtr in
+                    ReadPreference.withOptionalMongocReadPreference(from: self.options?.readPreference) { rpPtr in
                         guard let result = mongoc_collection_aggregate(
                             collPtr,
                             MONGOC_QUERY_NONE,

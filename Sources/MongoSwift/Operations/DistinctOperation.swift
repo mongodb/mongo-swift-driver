@@ -60,7 +60,7 @@ internal struct DistinctOperation<T: Codable>: Operation {
         var error = bson_error_t()
         let success = self.collection.withMongocCollection(from: connection) { collPtr in
             command.withBSONPointer { cmdPtr in
-                withOptionalMongocReadPreference(from: self.options?.readPreference) { rpPtr in
+                ReadPreference.withOptionalMongocReadPreference(from: self.options?.readPreference) { rpPtr in
                     withOptionalBSONPointer(to: opts) { optsPtr in
                         reply.withMutableBSONPointer { replyPtr in
                             mongoc_collection_read_command_with_opts(collPtr, cmdPtr, rpPtr, optsPtr, replyPtr, &error)

@@ -309,7 +309,7 @@ internal struct FindOperation<CollectionType: Codable>: Operation {
         let result: OpaquePointer = self.collection.withMongocCollection(from: connection) { collPtr in
             self.filter.withBSONPointer { filterPtr in
                 withOptionalBSONPointer(to: opts) { optsPtr in
-                    withOptionalMongocReadPreference(from: self.options?.readPreference) { rpPtr in
+                    ReadPreference.withOptionalMongocReadPreference(from: self.options?.readPreference) { rpPtr in
                         guard let result = mongoc_collection_find_with_opts(collPtr, filterPtr, optsPtr, rpPtr) else {
                             fatalError(failedToRetrieveCursorMessage)
                         }

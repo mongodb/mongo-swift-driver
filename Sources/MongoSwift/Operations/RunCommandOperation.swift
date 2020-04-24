@@ -48,7 +48,7 @@ internal struct RunCommandOperation: Operation {
         var error = bson_error_t()
         let success = self.database.withMongocDatabase(from: connection) { dbPtr in
             self.command.withBSONPointer { cmdPtr in
-                withOptionalMongocReadPreference(from: self.options?.readPreference) { rpPtr in
+                ReadPreference.withOptionalMongocReadPreference(from: self.options?.readPreference) { rpPtr in
                     withOptionalBSONPointer(to: opts) { optsPtr in
                         reply.withMutableBSONPointer { replyPtr in
                             mongoc_database_command_with_opts(dbPtr, cmdPtr, rpPtr, optsPtr, replyPtr, &error)

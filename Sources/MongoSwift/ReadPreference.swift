@@ -227,6 +227,9 @@ public struct ReadPreference: Equatable {
         }
     }
 
+    /// Executes the provided closure using a pointer to an equivalent `mongoc_read_prefs_t`. The pointer is only valid
+    /// within the closure and must not escape. If you need to use the pointed-to struct after the closure completes
+    /// you must make a copy via `mongoc_read_prefs_copy`.
     internal func withMongocReadPreference<T>(body: (OpaquePointer) throws -> T) rethrows -> T {
         // swiftlint:disable:next force_unwrapping
         let rp = mongoc_read_prefs_new(self.mode.mongocMode)! // never returns nil
@@ -245,14 +248,16 @@ public struct ReadPreference: Equatable {
 
         return try body(rp)
     }
-}
 
-internal func withOptionalMongocReadPreference<T>(
-    from rp: ReadPreference?,
-    body: (OpaquePointer?) throws -> T
-) rethrows -> T {
-    guard let rp = rp else {
-        return try body(nil)
+    /// If the provided ReadPreference is non-nil, executes the provided closure via `withMongocReadPreference`.
+    /// Otherwise, executes the provided closure, passing in nil as its single argument.
+    internal static func withOptionalMongocReadPreference<T>(
+        from rp: ReadPreference?,
+        body: (OpaquePointer?) throws -> T
+    ) rethrows -> T {
+        guard let rp = rp else {
+            return try body(nil)
+        }
+        return try rp.withMongocReadPreference(body: body)
     }
-    return try rp.withMongocReadPreference(body: body)
 }

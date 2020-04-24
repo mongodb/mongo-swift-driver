@@ -160,7 +160,7 @@ internal class ConnectionPool {
     /// started already. This method may block.
     internal func selectServer(forWrites: Bool, readPreference: ReadPreference? = nil) throws -> ServerDescription {
         try self.withConnection { conn in
-            try withOptionalMongocReadPreference(from: readPreference) { rpPtr in
+            try ReadPreference.withOptionalMongocReadPreference(from: readPreference) { rpPtr in
                 var error = bson_error_t()
                 guard let desc = mongoc_client_select_server(
                     conn.clientHandle,
