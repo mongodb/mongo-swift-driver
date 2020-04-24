@@ -305,15 +305,16 @@ internal struct FindOperation<CollectionType: Codable>: Operation {
         session: ClientSession?
     ) throws -> MongoCursor<CollectionType> {
         let opts = try encodeOptions(options: self.options, session: session)
-        let rp = self.options?.readPreference?.pointer
 
         let result: OpaquePointer = self.collection.withMongocCollection(from: connection) { collPtr in
             self.filter.withBSONPointer { filterPtr in
                 withOptionalBSONPointer(to: opts) { optsPtr in
-                    guard let result = mongoc_collection_find_with_opts(collPtr, filterPtr, optsPtr, rp) else {
-                        fatalError(failedToRetrieveCursorMessage)
+                    ReadPreference.withOptionalMongocReadPreference(from: self.options?.readPreference) { rpPtr in
+                        guard let result = mongoc_collection_find_with_opts(collPtr, filterPtr, optsPtr, rpPtr) else {
+                            fatalError(failedToRetrieveCursorMessage)
+                        }
+                        return result
                     }
-                    return result
                 }
             }
         }

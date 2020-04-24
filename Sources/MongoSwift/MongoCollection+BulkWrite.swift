@@ -257,7 +257,7 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
                     // transactions do not support unacknowledged writes.
                     writeConcernAcknowledged = true
                 } else {
-                    let writeConcern = WriteConcern(from: mongoc_bulk_operation_get_write_concern(bulk))
+                    let writeConcern = WriteConcern(copying: mongoc_bulk_operation_get_write_concern(bulk))
                     writeConcernAcknowledged = writeConcern.isAcknowledged
                 }
 

@@ -264,6 +264,7 @@ extension ReadConcernTests {
         ("testReadConcernType", testReadConcernType),
         ("testClientReadConcern", testClientReadConcern),
         ("testDatabaseReadConcern", testDatabaseReadConcern),
+        ("testRoundTripThroughLibmongoc", testRoundTripThroughLibmongoc),
     ]
 }
 
@@ -278,7 +279,7 @@ extension ReadPreferenceTests {
         ("testMode", testMode),
         ("testTagSets", testTagSets),
         ("testMaxStalenessSeconds", testMaxStalenessSeconds),
-        ("testInitFromPointer", testInitFromPointer),
+        ("testRoundTripThroughLibmongoc", testRoundTripThroughLibmongoc),
         ("testEquatable", testEquatable),
         ("testClientReadPreference", testClientReadPreference),
         ("testDatabaseReadPreference", testDatabaseReadPreference),
@@ -383,6 +384,7 @@ extension WriteConcernTests {
         ("testWriteConcernType", testWriteConcernType),
         ("testClientWriteConcern", testClientWriteConcern),
         ("testDatabaseWriteConcern", testDatabaseWriteConcern),
+        ("testRoundTripThroughLibmongoc", testRoundTripThroughLibmongoc),
     ]
 }
 

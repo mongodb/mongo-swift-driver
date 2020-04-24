@@ -56,14 +56,15 @@ internal struct DistinctOperation<T: Codable>: Operation {
         ]
 
         let opts = try encodeOptions(options: self.options, session: session)
-        let rp = self.options?.readPreference?.pointer
         var reply = Document()
         var error = bson_error_t()
         let success = self.collection.withMongocCollection(from: connection) { collPtr in
             command.withBSONPointer { cmdPtr in
-                withOptionalBSONPointer(to: opts) { optsPtr in
-                    reply.withMutableBSONPointer { replyPtr in
-                        mongoc_collection_read_command_with_opts(collPtr, cmdPtr, rp, optsPtr, replyPtr, &error)
+                ReadPreference.withOptionalMongocReadPreference(from: self.options?.readPreference) { rpPtr in
+                    withOptionalBSONPointer(to: opts) { optsPtr in
+                        reply.withMutableBSONPointer { replyPtr in
+                            mongoc_collection_read_command_with_opts(collPtr, cmdPtr, rpPtr, optsPtr, replyPtr, &error)
+                        }
                     }
                 }
             }

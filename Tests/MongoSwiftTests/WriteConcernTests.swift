@@ -1,45 +1,20 @@
-import CLibMongoC
 @testable import MongoSwift
 import Nimble
 import TestsCommon
 
 /// Indicates that a type has a write concern property, as well as a way to get a write concern from an instance of the
 /// corresponding mongoc type.
-protocol WriteConcernable {
+private protocol WriteConcernable {
     var writeConcern: WriteConcern? { get }
     func getMongocWriteConcern() throws -> WriteConcern?
 }
 
-extension MongoClient: WriteConcernable {
-    func getMongocWriteConcern() throws -> WriteConcern? {
-        try self.connectionPool.withConnection { conn in
-            WriteConcern(from: mongoc_client_get_write_concern(conn.clientHandle))
-        }
-    }
-}
-
-extension MongoDatabase: WriteConcernable {
-    func getMongocWriteConcern() throws -> WriteConcern? {
-        try self._client.connectionPool.withConnection { conn in
-            self.withMongocDatabase(from: conn) { dbPtr in
-                WriteConcern(from: mongoc_database_get_write_concern(dbPtr))
-            }
-        }
-    }
-}
-
-extension MongoCollection: WriteConcernable {
-    func getMongocWriteConcern() throws -> WriteConcern? {
-        try self._client.connectionPool.withConnection { conn in
-            self.withMongocCollection(from: conn) { collPtr in
-                WriteConcern(from: mongoc_collection_get_write_concern(collPtr))
-            }
-        }
-    }
-}
+extension MongoClient: WriteConcernable {}
+extension MongoDatabase: WriteConcernable {}
+extension MongoCollection: WriteConcernable {}
 
 /// Checks that a type T, as well as pointers to corresponding libmongoc instances, has the expected write concern.
-func checkWriteConcern<T: WriteConcernable>(
+private func checkWriteConcern<T: WriteConcernable>(
     _ instance: T,
     _ expected: WriteConcern,
     _ description: String
@@ -165,6 +140,24 @@ final class WriteConcernTests: MongoSwiftTestCase {
             let coll4 =
                 db2.collection(self.getCollectionName(suffix: "4"), options: CollectionOptions(writeConcern: w2))
             try checkWriteConcern(coll4, w2, "collection retrieved with w:2 from \(dbDesc)")
+        }
+    }
+
+    func testRoundTripThroughLibmongoc() throws {
+        let wcs: [WriteConcern] = [
+            WriteConcern(),
+            try WriteConcern(w: .number(2)),
+            try WriteConcern(w: .tag("hi")),
+            try WriteConcern(w: .majority),
+            try WriteConcern(journal: true),
+            try WriteConcern(wtimeoutMS: 200)
+        ]
+
+        for original in wcs {
+            let copy = original.withMongocWriteConcern { wcPtr in
+                WriteConcern(copying: wcPtr)
+            }
+            expect(copy).to(equal(original))
         }
     }
 }

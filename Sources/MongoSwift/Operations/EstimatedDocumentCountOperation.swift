@@ -41,11 +41,12 @@ internal struct EstimatedDocumentCountOperation<T: Codable>: Operation {
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> Int {
         let opts = try encodeOptions(options: options, session: session)
-        let rp = self.options?.readPreference?.pointer
         var error = bson_error_t()
         let count = self.collection.withMongocCollection(from: connection) { collPtr in
             withOptionalBSONPointer(to: opts) { optsPtr in
-                mongoc_collection_estimated_document_count(collPtr, optsPtr, rp, nil, &error)
+                ReadPreference.withOptionalMongocReadPreference(from: self.options?.readPreference) { rpPtr in
+                    mongoc_collection_estimated_document_count(collPtr, optsPtr, rpPtr, nil, &error)
+                }
             }
         }
 
