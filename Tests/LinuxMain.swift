@@ -160,6 +160,7 @@ extension MongoClientTests {
         ("testListDatabases", testListDatabases),
         ("testClientIdGeneration", testClientIdGeneration),
         ("testResubmittingToThreadPool", testResubmittingToThreadPool),
+        ("testConnectionPoolClose", testConnectionPoolClose),
     ]
 }
 

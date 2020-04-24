@@ -701,7 +701,8 @@ private func publishEvent<T: MongoSwiftEvent>(type: T.Type, eventPtr: OpaquePoin
 
 /// An extension of `ConnectionPool` to add monitoring capability for commands and server discovery and monitoring.
 extension ConnectionPool {
-    /// Internal function to install monitoring callbacks for this pool.
+    /// Internal function to install monitoring callbacks for this pool. **This method may only be called before any
+    /// connections are checked out from the pool.**
     internal func initializeMonitoring(client: MongoClient) {
         guard let callbacks = mongoc_apm_callbacks_new() else {
             fatalError("failed to initialize new mongoc_apm_callbacks_t")
@@ -722,13 +723,6 @@ extension ConnectionPool {
         mongoc_apm_set_server_heartbeat_succeeded_cb(callbacks, serverHeartbeatSucceeded)
         mongoc_apm_set_server_heartbeat_failed_cb(callbacks, serverHeartbeatFailed)
 
-        // we can pass the MongoClient as unretained because the callbacks are stored on clientHandle, so if the
-        // callback is being executed, this pool and therefore its parent `MongoClient` must still be valid.
-        switch self.state {
-        case let .open(pool):
-            mongoc_client_pool_set_apm_callbacks(pool, callbacks, Unmanaged.passUnretained(client).toOpaque())
-        case .closed:
-            fatalError("ConnectionPool was already closed")
-        }
+        self.setAPMCallbacks(callbacks: callbacks, client: client)
     }
 }

@@ -5,7 +5,7 @@ import TestsCommon
 import XCTest
 
 extension MongoClient {
-    fileprivate static func makeTestClient(
+    internal static func makeTestClient(
         _ uri: String = MongoSwiftTestCase.getConnectionString(),
         eventLoopGroup: EventLoopGroup,
         options: ClientOptions? = nil
@@ -21,7 +21,7 @@ extension MongoClient {
 
     internal func syncCloseOrFail() {
         do {
-            try self.shutdown().wait()
+            try self.syncClose()
         } catch {
             XCTFail("Error closing test client: \(error)")
         }
