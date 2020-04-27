@@ -32,6 +32,10 @@ internal class ConnectionString {
         if let rr = options?.retryReads {
             mongoc_uri_set_option_as_bool(self._uri, MONGOC_URI_RETRYREADS, rr)
         }
+
+        if let credential = options?.credential {
+            try self.setCredential(from: credential)
+        }
     }
 
     /// Initializes a new connection string that wraps a copy of the provided URI. Does not destroy the input URI.
@@ -194,5 +198,28 @@ internal class ConnectionString {
     /// Executes the provided closure using a pointer to the underlying `mongoc_uri_t`.
     internal func withMongocURI<T>(_ body: (OpaquePointer) throws -> T) rethrows -> T {
         try body(self._uri)
+    }
+
+    /// Sets credential properties in the URI string
+    internal func setCredential(from credential: Credential) throws {
+        guard mongoc_uri_set_username(self._uri, credential.username) else {
+            throw InvalidArgumentError(message: "Cannot set username to \(String(describing: credential.username))")
+        }
+        guard mongoc_uri_set_password(self._uri, credential.password) else {
+            throw InvalidArgumentError(message: "Cannot set password")
+        }
+        guard mongoc_uri_set_auth_source(self._uri, credential.source) else {
+            throw InvalidArgumentError(message: "Cannot set authSource to \(String(describing: credential.source))")
+        }
+        guard mongoc_uri_set_auth_mechanism(self._uri, credential.mechanism?.rawValue) else {
+            throw InvalidArgumentError(message: "Cannot set mechanism to \(String(describing: credential.mechanism))")
+        }
+        try credential.mechanismProperties?.withBSONPointer { mechanismPropertiesPtr in
+            guard mongoc_uri_set_mechanism_properties(self._uri, mechanismPropertiesPtr) else {
+                throw InvalidArgumentError(
+                    message: "Cannot set mechanismProperties to \(String(describing: credential.mechanismProperties))"
+                )
+            }
+        }
     }
 }
