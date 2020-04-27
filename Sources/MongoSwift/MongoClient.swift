@@ -5,7 +5,7 @@ import NIOConcurrencyHelpers
 
 /// Options to use when creating a `MongoClient`.
 public struct ClientOptions: CodingStrategyProvider {
-    /// Authentication Credential
+    /// Specifies authentication options for use with the client.
     public var credential: Credential?
 
     /// Specifies the `DataCodingStrategy` to use for BSON encoding/decoding operations performed by this client and any

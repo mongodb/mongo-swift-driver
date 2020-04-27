@@ -10,7 +10,6 @@
 
 @_exported import struct MongoSwift.Address
 @_exported import struct MongoSwift.AggregateOptions
-@_exported import enum MongoSwift.AuthMechanism
 @_exported import struct MongoSwift.AuthenticationError
 @_exported import enum MongoSwift.BSON
 @_exported import struct MongoSwift.BSONCoderOptions

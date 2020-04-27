@@ -8,7 +8,7 @@ import TestsCommon
 struct TestUser {
     let username: String
     let password: String
-    let mechanisms: [AuthMechanism]
+    let mechanisms: [MongoSwift.Credential.Mechanism]
 
     /// A command to create this user.
     var createCmd: Document {
@@ -22,7 +22,7 @@ struct TestUser {
 
     func createCredential(
         authSource: String = "admin",
-        mechanism: AuthMechanism? = nil,
+        mechanism: Credential.Mechanism? = nil,
         mechanismProperties: Document? = nil
     ) -> Credential {
         Credential(
@@ -35,7 +35,7 @@ struct TestUser {
     }
 
     /// Adds this user's username and password, and an optionally provided auth mechanism, to the connection string.
-    func addToConnString(_ connStr: String, mechanism: AuthMechanism? = nil) throws -> String {
+    func addToConnString(_ connStr: String, mechanism: Credential.Mechanism? = nil) throws -> String {
         // find where the first / is.
         guard let firstSlash = connStr.firstIndex(of: "/") else {
             throw TestError(message: "expected connection string to contain slash")
@@ -118,7 +118,7 @@ final class SyncAuthTests: MongoSwiftTestCase {
             // 3. For test users that support only one mechanism, verify that explicitly specifying the other mechanism
             //    fails.
             if user.mechanisms.count == 1 {
-                let wrongMech: AuthMechanism = user.mechanisms[0] == .scramSHA1 ? .scramSHA256 : .scramSHA1
+                let wrongMech: Credential.Mechanism = user.mechanisms[0] == .scramSHA1 ? .scramSHA256 : .scramSHA1
                 let connStrWrongMech = try user.addToConnString(connString, mechanism: wrongMech)
                 let clientWrongMech = try MongoClient.makeTestClient(connStrWrongMech)
                 expect(try clientWrongMech.db("admin").runCommand(["dbstats": 1]))
@@ -144,7 +144,7 @@ final class SyncAuthTests: MongoSwiftTestCase {
             // 3. For test users that support only one mechanism, verify that explicitly specifying the other mechanism
             //    fails.
             if user.mechanisms.count == 1 {
-                let wrongMech: AuthMechanism = user.mechanisms[0] == .scramSHA1 ? .scramSHA256 : .scramSHA1
+                let wrongMech: Credential.Mechanism = user.mechanisms[0] == .scramSHA1 ? .scramSHA256 : .scramSHA1
                 let options = ClientOptions(credential: user.createCredential(mechanism: wrongMech))
                 let clientWrongMech = try MongoClient.makeTestClient(connString, options: options)
                 expect(try clientWrongMech.db("admin").runCommand(["dbstats": 1]))
