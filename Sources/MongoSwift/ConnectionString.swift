@@ -202,18 +202,32 @@ internal class ConnectionString {
 
     /// Sets credential properties in the URI string
     internal func setCredential(from credential: Credential) throws {
-        guard mongoc_uri_set_username(self._uri, credential.username) else {
-            throw InvalidArgumentError(message: "Cannot set username to \(String(describing: credential.username))")
+        if let username = credential.username {
+            guard mongoc_uri_set_username(self._uri, username) else {
+                throw InvalidArgumentError(message: "Cannot set username to \(username).")
+            }
+        } else {
+            throw InvalidArgumentError(message: "Credential must specify username.")
         }
-        guard mongoc_uri_set_password(self._uri, credential.password) else {
-            throw InvalidArgumentError(message: "Cannot set password")
+
+        if let password = credential.password {
+            guard mongoc_uri_set_password(self._uri, password) else {
+                throw InvalidArgumentError(message: "Cannot set password")
+            }
         }
-        guard mongoc_uri_set_auth_source(self._uri, credential.source) else {
-            throw InvalidArgumentError(message: "Cannot set authSource to \(String(describing: credential.source))")
+
+        if let authSource = credential.source {
+            guard mongoc_uri_set_auth_source(self._uri, authSource) else {
+                throw InvalidArgumentError(message: "Cannot set authSource to \(authSource)")
+            }
         }
-        guard mongoc_uri_set_auth_mechanism(self._uri, credential.mechanism?.rawValue) else {
-            throw InvalidArgumentError(message: "Cannot set mechanism to \(String(describing: credential.mechanism))")
+
+        if let mechanism = credential.mechanism {
+            guard mongoc_uri_set_auth_mechanism(self._uri, mechanism.rawValue) else {
+                throw InvalidArgumentError(message: "Cannot set mechanism to \(mechanism))")
+            }
         }
+
         try credential.mechanismProperties?.withBSONPointer { mechanismPropertiesPtr in
             guard mongoc_uri_set_mechanism_properties(self._uri, mechanismPropertiesPtr) else {
                 throw InvalidArgumentError(
