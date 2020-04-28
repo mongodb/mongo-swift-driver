@@ -102,7 +102,7 @@ final class MongoClientTests: MongoSwiftTestCase {
         let ns = MongoNamespace(db: "connPoolTest", collection: "foo")
 
         // clean up this test's namespace after we're done
-        // defer { try? self.withTestNamespace(ns: ns) { _, _, _ in } }
+        defer { try? self.withTestNamespace(ns: ns) { _, _, _ in } }
 
         let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         defer { elg.syncShutdownOrFail() }
