@@ -2,6 +2,17 @@ import CLibMongoC
 
 /// A struct to represent a MongoDB read concern.
 public struct ReadConcern: Codable {
+    /// Local ReadConcern.
+    public static let local = ReadConcern(.local)
+    /// Available ReadConcern.
+    public static let available = ReadConcern(.available)
+    /// Linearizable ReadConcern.
+    public static let linearizable = ReadConcern(.linearizable)
+    /// Majority ReadConcern.
+    public static let majority = ReadConcern(.majority)
+    /// Snapshot ReadConcern.
+    public static let snapshot = ReadConcern(.snapshot)
+
     /// An enumeration of possible ReadConcern levels.
     public enum Level: RawRepresentable, Codable, Equatable {
         /// See https://docs.mongodb.com/manual/reference/read-concern-local/
