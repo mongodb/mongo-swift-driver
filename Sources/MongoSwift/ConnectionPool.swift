@@ -113,7 +113,7 @@ internal class ConnectionPool {
                 if self.connCount == 0 {
                     switch self.state {
                     case .open, .closed:
-                        throw InternalError(message: "ConnectionPool in unexpected state during close()")
+                        throw InternalError(message: "ConnectionPool in unexpected state \(self.state) during close()")
                     case let .closing(pool):
                         mongoc_client_pool_destroy(pool)
                         self.state = .closed
@@ -218,7 +218,7 @@ internal class ConnectionPool {
                 mongoc_client_pool_set_ssl_opts(pool, &opts)
             case .closing, .closed:
                 // if we get here, we must have called this method outside of `ConnectionPool.init`.
-                fatalError("ConnectionPool unexpectedly in .closing or .closed state")
+                fatalError("ConnectionPool in unexpected state \(self.state) while setting TLS options")
             }
         }
     }
@@ -266,7 +266,7 @@ internal class ConnectionPool {
             case .closing, .closed:
                 // this method is called via `initializeMonitoring()`, which is called from `MongoClient.init`.
                 // unless we have a bug it's impossible that the pool is already closed.
-                fatalError("ConnectionPool unexpectedly in .closed state")
+                fatalError("ConnectionPool in unexpected state \(self.state) while setting APM callbacks")
             }
         }
     }
