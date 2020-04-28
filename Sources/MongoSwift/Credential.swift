@@ -35,7 +35,7 @@ public struct Credential: Decodable, Equatable {
     public enum Mechanism: RawRepresentable, Decodable, Equatable {
         /// See https://docs.mongodb.com/manual/core/kerberos/
         case gssAPI
-        /// See https://docs.mongodb.com/v3.0/core/security-mongodb-cr/#authentication-mongodb-cr
+        /// Deprecated: see https://docs.mongodb.com/manual/release-notes/3.0-scram/
         case mongodbCR
         /// See https://docs.mongodb.com/manual/core/security-x.509/#security-auth-x509
         case mongodbX509
