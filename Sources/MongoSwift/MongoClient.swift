@@ -283,10 +283,18 @@ public class MongoClient {
         )
     }
 
-    /// Closes this `MongoClient`, closing all connections to the server and cleaning up internal state.
-    /// Call this method exactly once when you are finished using the client. You must ensure that all operations
-    /// using the client have completed before calling this. The returned future must be fulfilled before the
-    /// `EventLoopGroup` provided to this client's constructor is shut down.
+    /**
+     * Closes this `MongoClient`, closing all connections to the server and cleaning up internal state.
+     *
+     * Call this method exactly once when you are finished using the client. You must ensure that all operations using
+     * the client have completed before calling this.
+     *
+     * The returned future will not be fulfilled until all cursors and change streams created from this client have been
+     * been killed, and all sessions created from this client have been ended.
+     *
+     * The returned future must be fulfilled before the `EventLoopGroup` provided to this client's constructor is shut
+     * down.
+     */
     public func close() -> EventLoopFuture<Void> {
         let stateError: Error? = self.stateLock.withLock {
             switch self.state {
@@ -323,7 +331,8 @@ public class MongoClient {
      * internal state.
      *
      * Call this method exactly once when you are finished using the client. You must ensure that all operations
-     * using the client have completed before calling this.
+     * using the client have completed before calling this. This method will block until all cursors and change streams
+     * created from this client have been killed, and all sessions created from this client have been ended.
      *
      * This method must complete before the `EventLoopGroup` provided to this client's constructor is shut down.
      */
