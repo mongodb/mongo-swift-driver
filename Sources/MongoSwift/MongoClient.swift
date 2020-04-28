@@ -169,7 +169,9 @@ public class MongoClient {
     /// Default maximum size for connection pools created by this client.
     internal static let defaultMaxConnectionPoolSize = 100
 
-    /// Indicates whether this client has been closed.
+    /// Indicates whether this client has been closed. We don't need a lock because:
+    /// - This value is only modified on success of `ConnectionPool.close()`. That method will succeed exactly once.
+    /// - This value is only read in `deinit`. That occurs exactly once after the above modification is complete.
     private var wasClosed = false
 
     /// Handlers for command monitoring events.
