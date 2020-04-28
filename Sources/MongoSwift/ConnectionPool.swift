@@ -125,7 +125,8 @@ internal class ConnectionPool {
     }
 
     /// Checks out a connection. This connection will return itself to the pool when its reference count drops to 0.
-    /// This method will block until a connection is available.
+    /// This method will block until a connection is available. Throws an error if the pool is in the process of
+    /// closing or has finished closing.
     internal func checkOut() throws -> Connection {
         try self.stateLock.withLock {
             switch self.state {
@@ -138,7 +139,8 @@ internal class ConnectionPool {
         }
     }
 
-    /// Checks out a connection from the pool, or returns `nil` if none are currently available.
+    /// Checks out a connection from the pool, or returns `nil` if none are currently available. Throws an error if the
+    /// pool is not open.
     internal func tryCheckOut() throws -> Connection? {
         try self.stateLock.withLock {
             switch self.state {
@@ -154,6 +156,8 @@ internal class ConnectionPool {
         }
     }
 
+    /// Checks  a connection into the pool. Accepts the connection if the pool is still open or in the process of
+    /// closing; throws an error if the pool has already finished closing.
     fileprivate func checkIn(_ connection: Connection) throws {
         try self.stateLock.withLock {
             switch self.state {
