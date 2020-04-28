@@ -125,6 +125,9 @@ final class MongoClientTests: MongoSwiftTestCase {
         expect(client.connectionPool.isClosing).toEventually(beTrue())
         expect(client.connectionPool.checkedOutConnections).to(equal(2))
 
+        // calling a method that will request a new connection errors
+        expect(try client.listDatabases().wait()).to(throwError(MongoClient.ClosedClientError))
+
         // cursor can still be used and successfully killed while closing occurs
         expect(try cursor.next().wait()).toNot(throwError())
         try cursor.kill().wait()
