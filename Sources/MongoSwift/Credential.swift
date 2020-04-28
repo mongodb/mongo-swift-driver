@@ -32,12 +32,60 @@ public struct Credential: Decodable, Equatable {
     }
 
     /// Possible authentication mechanisms.
-    public enum Mechanism: String, Decodable {
-        case scramSHA1 = "SCRAM-SHA-1"
-        case scramSHA256 = "SCRAM-SHA-256"
-        case gssAPI = "GSSAPI"
-        case mongodbCR = "MONGODB-CR"
-        case mongodbX509 = "MONGODB-X509"
-        case plain = "PLAIN"
+    public enum Mechanism: RawRepresentable, Decodable, Equatable {
+        /// See https://docs.mongodb.com/manual/core/kerberos/
+        case gssAPI
+        /// See https://docs.mongodb.com/v3.0/core/security-mongodb-cr/#authentication-mongodb-cr
+        case mongodbCR
+        /// See https://docs.mongodb.com/manual/core/security-x.509/#security-auth-x509
+        case mongodbX509
+        /// See https://docs.mongodb.com/manual/core/security-ldap/
+        case plain
+        /// See https://docs.mongodb.com/manual/core/security-scram/#authentication-scram
+        case scramSHA1
+        /// See https://docs.mongodb.com/manual/core/security-scram/#authentication-scram
+        case scramSHA256
+        /// Any other authentication mechanism not covered by the other cases.
+        /// This case is present to provide forwards compatibility with any
+        /// future authentication mechanism which may be added to new versions of MongoDB.
+        case other(mechanism: String)
+
+        public var rawValue: String {
+            switch self {
+            case .gssAPI:
+                return "GSSAPI"
+            case .mongodbCR:
+                return "MONGODB-CR"
+            case .mongodbX509:
+                return "MONGODB-X509"
+            case .plain:
+                return "PLAIN"
+            case .scramSHA1:
+                return "SCRAM-SHA-1"
+            case .scramSHA256:
+                return "SCRAM-SHA-256"
+            case let .other(mechanism: mechanism):
+                return mechanism
+            }
+        }
+
+        public init?(rawValue: String) {
+            switch rawValue {
+            case "GSSAPI":
+                self = .gssAPI
+            case "MONGODB-CR":
+                self = .mongodbCR
+            case "MONGODB-X509":
+                self = .mongodbX509
+            case "PLAIN":
+                self = .plain
+            case "SCRAM-SHA-1":
+                self = .scramSHA1
+            case "SCRAM-SHA-256":
+                self = .scramSHA256
+            default:
+                self = .other(mechanism: rawValue)
+            }
+        }
     }
 }
