@@ -257,7 +257,9 @@ internal class ConnectionPool {
     }
 
     /// Sets the provided APM callbacks on this pool, using the provided client as the "context" value. **This method
-    /// may only be called before any connections are checked out of the pool.**
+    /// may only be called before any connections are checked out of the pool.** Ideally this code would just live in
+    /// `ConnectionPool.init`. However, the client we accept here has to be fully initialized before we can pass it
+    /// as the context. In order for it to be fully initialized its pool must exist already.
     internal func setAPMCallbacks(callbacks: OpaquePointer, client: MongoClient) {
         self.stateLock.withLock {
             switch self.state {
