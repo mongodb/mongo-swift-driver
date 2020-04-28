@@ -55,19 +55,8 @@ internal class OperationExecutor {
         client: MongoClient,
         session: ClientSession?
     ) -> EventLoopFuture<T.OperationResult> {
-        // early exit and don't attempt to use the thread pool if we've already closed the client.
-        guard client.isOpen else {
-            return self.makeFailedFuture(MongoClient.ClosedClientError)
-        }
-
         // closure containing the work to run in the thread pool: obtain a connection and execute the operation.
         let doOperation = { () -> ExecuteResult<T.OperationResult> in
-            // it's possible that the client was closed in between submitting this task and it being executed, so we
-            // check again here.
-            guard client.isOpen else {
-                throw MongoClient.ClosedClientError
-            }
-
             // select a connection in following order of priority:
             // 1. connection specifically provided for use with this operation
             // 2. if a session was provided, use its underlying connection

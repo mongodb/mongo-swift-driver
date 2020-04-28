@@ -59,7 +59,7 @@ internal class ConnectionPool {
         }
     }
 
-    private static let PoolClosedError = LogicError(message: "ConnectionPool was already closed")
+    internal static let PoolClosedError = LogicError(message: "ConnectionPool was already closed")
 
     /// Initializes the pool using the provided `ConnectionString` and options.
     internal init(from connString: ConnectionString, options: ClientOptions?) throws {

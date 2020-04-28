@@ -169,27 +169,8 @@ public class MongoClient {
     /// Default maximum size for connection pools created by this client.
     internal static let defaultMaxConnectionPoolSize = 100
 
-    /// Indicates the state of this `MongoClient`.
-    private enum State {
-        /// The client is open.
-        case open
-        /// The client is in the process of closing.
-        case closing
-        /// The client has finished closing.
-        case closed
-    }
-
     /// Indicates whether this client has been closed.
-    private var state = State.open
-
-    /// Lock over `state`.
-    private var stateLock = Lock()
-
-    internal var isOpen: Bool {
-        self.stateLock.withLock {
-            self.state == .open
-        }
-    }
+    private var wasClosed = false
 
     /// Handlers for command monitoring events.
     internal var commandEventHandlers: [CommandEventHandler]
@@ -202,9 +183,6 @@ public class MongoClient {
 
     /// A unique identifier for this client. Sets _id to the generator's current value and increments the generator.
     internal let _id = clientIdGenerator.add(1)
-
-    /// Error thrown when user attempts to use a closed client.
-    internal static let ClosedClientError = LogicError(message: "MongoClient was already closed")
 
     /// Encoder whose options are inherited by databases derived from this client.
     public let encoder: BSONEncoder
@@ -277,7 +255,7 @@ public class MongoClient {
 
     deinit {
         assert(
-            self.state == .closed,
+            self.wasClosed,
             "MongoClient was not closed before deinitialization. " +
                 "Please call `close()` or `syncClose()` when the client is no longer needed."
         )
@@ -296,31 +274,14 @@ public class MongoClient {
      * down.
      */
     public func close() -> EventLoopFuture<Void> {
-        let stateError: Error? = self.stateLock.withLock {
-            switch self.state {
-            case .closing, .closed:
-                return Self.ClosedClientError
-            case .open:
-                self.state = .closing
-                return nil
-            }
-        }
-
-        if let stateError = stateError {
-            return self.operationExecutor.makeFailedFuture(stateError)
-        }
-
         let closeResult = self.operationExecutor.execute {
             try self.connectionPool.close()
         }
         .flatMap {
             self.operationExecutor.shutdown()
         }
-
         closeResult.whenComplete { _ in
-            self.stateLock.withLock {
-                self.state = .closed
-            }
+            self.wasClosed = true
         }
 
         return closeResult
@@ -337,20 +298,9 @@ public class MongoClient {
      * This method must complete before the `EventLoopGroup` provided to this client's constructor is shut down.
      */
     public func syncClose() throws {
-        try self.stateLock.withLock {
-            switch self.state {
-            case .closing, .closed:
-                throw Self.ClosedClientError
-            case .open:
-                self.state = .closing
-            }
-        }
         try self.connectionPool.close()
         try self.operationExecutor.syncShutdown()
-
-        self.stateLock.withLock {
-            self.state = .closed
-        }
+        self.wasClosed = true
     }
 
     /// Starts a new `ClientSession` with the provided options. When you are done using this session, you must call
