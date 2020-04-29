@@ -156,7 +156,7 @@ internal class ConnectionPool {
         }
     }
 
-    /// Checks  a connection into the pool. Accepts the connection if the pool is still open or in the process of
+    /// Checks a connection into the pool. Accepts the connection if the pool is still open or in the process of
     /// closing; throws an error if the pool has already finished closing.
     fileprivate func checkIn(_ connection: Connection) throws {
         try self.stateLock.withLock {
@@ -216,14 +216,13 @@ internal class ConnectionPool {
             opts.allow_invalid_hostname = invalidHosts
         }
 
-        self.stateLock.withLock {
-            switch self.state {
-            case let .open(pool):
-                mongoc_client_pool_set_ssl_opts(pool, &opts)
-            case .closing, .closed:
-                // if we get here, we must have called this method outside of `ConnectionPool.init`.
-                fatalError("ConnectionPool in unexpected state \(self.state) while setting TLS options")
-            }
+        // lock isn't needed as this is called before pool is in use.
+        switch self.state {
+        case let .open(pool):
+            mongoc_client_pool_set_ssl_opts(pool, &opts)
+        case .closing, .closed:
+            // if we get here, we must have called this method outside of `ConnectionPool.init`.
+            fatalError("ConnectionPool in unexpected state \(self.state) while setting TLS options")
         }
     }
 
@@ -265,15 +264,14 @@ internal class ConnectionPool {
     /// `ConnectionPool.init`. However, the client we accept here has to be fully initialized before we can pass it
     /// as the context. In order for it to be fully initialized its pool must exist already.
     internal func setAPMCallbacks(callbacks: OpaquePointer, client: MongoClient) {
-        self.stateLock.withLock {
-            switch self.state {
-            case let .open(pool):
-                mongoc_client_pool_set_apm_callbacks(pool, callbacks, Unmanaged.passUnretained(client).toOpaque())
-            case .closing, .closed:
-                // this method is called via `initializeMonitoring()`, which is called from `MongoClient.init`.
-                // unless we have a bug it's impossible that the pool is already closed.
-                fatalError("ConnectionPool in unexpected state \(self.state) while setting APM callbacks")
-            }
+        // lock isn't needed as this is called before pool is in use.
+        switch self.state {
+        case let .open(pool):
+            mongoc_client_pool_set_apm_callbacks(pool, callbacks, Unmanaged.passUnretained(client).toOpaque())
+        case .closing, .closed:
+            // this method is called via `initializeMonitoring()`, which is called from `MongoClient.init`.
+            // unless we have a bug it's impossible that the pool is already closed.
+            fatalError("ConnectionPool in unexpected state \(self.state) while setting APM callbacks")
         }
     }
 }
