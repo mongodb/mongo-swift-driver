@@ -49,7 +49,7 @@ final class ReadConcernTests: MongoSwiftTestCase {
 
         // test init with unknown level
         let rc5 = ReadConcern.other("blah")
-        expect(rc5.level).to(equal(.other(level: "blah")))
+        expect(rc5.level).to(equal(ReadConcern.other("blah").level))
     }
 
     func testClientReadConcern() throws {
