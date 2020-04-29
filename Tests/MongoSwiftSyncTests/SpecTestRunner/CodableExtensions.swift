@@ -85,7 +85,7 @@ extension ClientOptions: Decodable {
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        let readConcern = try? ReadConcern(container.decode(String.self, forKey: .readConcernLevel))
+        let readConcern = try? ReadConcern.other(container.decode(String.self, forKey: .readConcernLevel))
         let readPreference = try? ReadPreference(container.decode(ReadPreference.Mode.self, forKey: .mode))
         let retryReads = try container.decodeIfPresent(Bool.self, forKey: .retryReads)
         let retryWrites = try container.decodeIfPresent(Bool.self, forKey: .retryWrites)

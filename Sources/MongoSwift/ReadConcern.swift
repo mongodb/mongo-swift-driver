@@ -12,6 +12,12 @@ public struct ReadConcern: Codable {
     public static let majority = ReadConcern(.majority)
     /// Snapshot ReadConcern.
     public static let snapshot = ReadConcern(.snapshot)
+    /// Empty ReadConcern.
+    public static let empty = ReadConcern(nil)
+
+    public static func other(_ level: String) -> ReadConcern {
+        ReadConcern(level)
+    }
 
     /// An enumeration of possible ReadConcern levels.
     public enum Level: RawRepresentable, Codable, Equatable {
@@ -80,18 +86,13 @@ public struct ReadConcern: Codable {
     }
 
     /// Initialize a new `ReadConcern` with a `Level`.
-    public init(_ level: Level) {
+    fileprivate init(_ level: Level?) {
         self.level = level
     }
 
     /// Initialize a new `ReadConcern` from a `String` corresponding to a read concern level.
-    public init(_ level: String) {
+    fileprivate init(_ level: String) {
         self.level = Level(rawValue: level)
-    }
-
-    /// Initialize a new empty `ReadConcern`.
-    public init() {
-        self.level = nil
     }
 
     /**

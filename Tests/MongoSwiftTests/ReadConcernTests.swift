@@ -31,11 +31,11 @@ private func checkReadConcern<T: ReadConcernable>(
 final class ReadConcernTests: MongoSwiftTestCase {
     func testReadConcernType() throws {
         // check level var works as expected
-        let rc = ReadConcern(.majority)
+        let rc = ReadConcern.majority
         expect(rc.level).to(equal(.majority))
 
         // test empty init
-        let rc2 = ReadConcern()
+        let rc2 = ReadConcern.empty
         expect(rc2.level).to(beNil())
         expect(rc2.isDefault).to(beTrue())
 
@@ -44,19 +44,19 @@ final class ReadConcernTests: MongoSwiftTestCase {
         expect(rc3.level).to(equal(.majority))
 
         // test string init
-        let rc4 = ReadConcern("majority")
+        let rc4 = ReadConcern.other("majority")
         expect(rc4.level).to(equal(.majority))
 
         // test init with unknown level
-        let rc5 = ReadConcern("blah")
+        let rc5 = ReadConcern.other("blah")
         expect(rc5.level).to(equal(.other(level: "blah")))
     }
 
     func testClientReadConcern() throws {
-        let empty = ReadConcern()
-        let majority = ReadConcern(.majority)
-        let majorityString = ReadConcern("majority")
-        let local = ReadConcern(.local)
+        let empty = ReadConcern.empty
+        let majority = ReadConcern.majority
+        let majorityString = ReadConcern.other("majority")
+        let local = ReadConcern.local
 
         // test behavior of a client with initialized with no RC
         try self.withTestClient { client in
@@ -92,7 +92,7 @@ final class ReadConcernTests: MongoSwiftTestCase {
             try checkReadConcern(db3, majority, "db created with majority string RC from \(clientDesc)")
 
             // test with unknown level
-            let unknown = ReadConcern("blah")
+            let unknown = ReadConcern.other("blah")
             let db4 = client.db(Self.testDatabase, options: DatabaseOptions(readConcern: unknown))
             try checkReadConcern(db4, unknown, "db created with unknown RC from \(clientDesc)")
         }
@@ -114,11 +114,11 @@ final class ReadConcernTests: MongoSwiftTestCase {
     }
 
     func testDatabaseReadConcern() throws {
-        let empty = ReadConcern()
-        let local = ReadConcern(.local)
-        let localString = ReadConcern("local")
-        let unknown = ReadConcern("blah")
-        let majority = ReadConcern(.majority)
+        let empty = ReadConcern.empty
+        let local = ReadConcern.local
+        let localString = ReadConcern.other("local")
+        let unknown = ReadConcern.other("blah")
+        let majority = ReadConcern.majority
 
         try self.withTestClient { client in
             let db1 = client.db(Self.testDatabase)
@@ -180,13 +180,13 @@ final class ReadConcernTests: MongoSwiftTestCase {
 
     func testRoundTripThroughLibmongoc() throws {
         let rcs: [ReadConcern] = [
-            ReadConcern(),
-            ReadConcern(.local),
-            ReadConcern(.available),
-            ReadConcern(.majority),
-            ReadConcern(.linearizable),
-            ReadConcern(.snapshot),
-            ReadConcern(.other(level: "a"))
+            ReadConcern.empty,
+            ReadConcern.local,
+            ReadConcern.available,
+            ReadConcern.majority,
+            ReadConcern.linearizable,
+            ReadConcern.snapshot,
+            ReadConcern.other("a")
         ]
 
         for original in rcs {

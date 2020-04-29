@@ -4,7 +4,7 @@ import Foundation
 /// A class to represent a MongoDB write concern.
 public struct WriteConcern: Codable {
     /// Majority WriteConcern.
-    public static let majority = WriteConcern(journal: false, w: W.majority, wtimeoutMS: 0)
+    public static let majority = WriteConcern(journal: nil, w: .majority, wtimeoutMS: nil)
 
     /// An option to request acknowledgement that the write operation has propagated to specified mongod instances.
     public enum W: Codable, Equatable {
@@ -117,7 +117,7 @@ public struct WriteConcern: Codable {
     }
 
     /// Initializes a new `WriteConcern` without throwing any errors.
-    fileprivate init(journal: Bool, w: W, wtimeoutMS: Int) {
+    fileprivate init(journal: Bool?, w: W, wtimeoutMS: Int?) {
         self.journal = journal
         self.w = w
         self.wtimeoutMS = wtimeoutMS

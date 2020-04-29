@@ -417,7 +417,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
             let collection1 = db.collection(
                 self.getCollectionName(),
-                options: CollectionOptions(readConcern: ReadConcern(.local))
+                options: CollectionOptions(readConcern: ReadConcern.local)
             )
             _ = try collection1.countDocuments(session: session)
             let opTime = session.operationTime

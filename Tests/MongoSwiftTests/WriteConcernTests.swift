@@ -148,7 +148,7 @@ final class WriteConcernTests: MongoSwiftTestCase {
             WriteConcern(),
             try WriteConcern(w: .number(2)),
             try WriteConcern(w: .tag("hi")),
-            try WriteConcern(w: .majority),
+            WriteConcern.majority,
             try WriteConcern(journal: true),
             try WriteConcern(wtimeoutMS: 200)
         ]
