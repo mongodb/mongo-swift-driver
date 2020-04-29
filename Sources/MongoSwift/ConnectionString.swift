@@ -34,7 +34,7 @@ internal class ConnectionString {
         }
 
         if let credential = options?.credential {
-            try self.setCredential(credential)
+            try self.setMongoCredential(credential)
         }
     }
 
@@ -109,12 +109,12 @@ internal class ConnectionString {
     }
 
     /// Returns the auth mechanism if one was provided, otherwise nil.
-    internal var authMechanism: Credential.Mechanism? {
+    internal var authMechanism: MongoCredential.Mechanism? {
         guard let mechanism = mongoc_uri_get_auth_mechanism(self._uri) else {
             return nil
         }
         let str = String(cString: mechanism)
-        return Credential.Mechanism(rawValue: str)
+        return MongoCredential.Mechanism(name: str)
     }
 
     /// Returns a document containing the auth mechanism properties if any were provided, otherwise nil.
@@ -144,8 +144,8 @@ internal class ConnectionString {
     }
 
     /// Returns the credential configured on this URI. Will be empty if no options are set.
-    internal var credential: Credential {
-        Credential(
+    internal var credential: MongoCredential {
+        MongoCredential(
             username: self.username,
             password: self.password,
             source: self.authSource,
@@ -221,7 +221,7 @@ internal class ConnectionString {
         }
 
         if let mechanism = credential.mechanism {
-            guard mongoc_uri_set_auth_mechanism(self._uri, mechanism.rawValue) else {
+            guard mongoc_uri_set_auth_mechanism(self._uri, mechanism.name) else {
                 throw InvalidArgumentError(message: "Cannot set mechanism to \(mechanism)).")
             }
         }

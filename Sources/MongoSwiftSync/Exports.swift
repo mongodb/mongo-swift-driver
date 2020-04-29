@@ -1,4 +1,4 @@
-// Generated using Sourcery 0.16.1 — https://github.com/krzysztofzablocki/Sourcery
+// Generated using Sourcery 0.17.0 — https://github.com/krzysztofzablocki/Sourcery
 // DO NOT EDIT
 
 
@@ -42,7 +42,6 @@
 @_exported import struct MongoSwift.CountDocumentsOptions
 @_exported import struct MongoSwift.CreateCollectionOptions
 @_exported import struct MongoSwift.CreateIndexOptions
-@_exported import struct MongoSwift.Credential
 @_exported import enum MongoSwift.CursorType
 @_exported import struct MongoSwift.DBPointer
 @_exported import enum MongoSwift.DataCodingStrategy
@@ -77,6 +76,7 @@
 @_exported import struct MongoSwift.ListCollectionsOptions
 @_exported import struct MongoSwift.ListDatabasesOptions
 @_exported import struct MongoSwift.LogicError
+@_exported import struct MongoSwift.MongoCredential
 @_exported import struct MongoSwift.MongoNamespace
 @_exported import struct MongoSwift.ObjectId
 @_exported import enum MongoSwift.OperationType

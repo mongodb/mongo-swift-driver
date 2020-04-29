@@ -1,5 +1,5 @@
 /// Represents an authentication credential.
-public struct Credential: Decodable, Equatable {
+public struct MongoCredential: Decodable, Equatable {
     /// A string containing the username. For auth mechanisms that do not utilize a password, this may be the entire
     /// `userinfo` token from the connection string.
     public var username: String?
@@ -32,60 +32,36 @@ public struct Credential: Decodable, Equatable {
     }
 
     /// Possible authentication mechanisms.
-    public enum Mechanism: RawRepresentable, Decodable, Equatable {
+    public struct Mechanism: Codable, Equatable {
         /// See https://docs.mongodb.com/manual/core/kerberos/
-        case gssAPI
+        public static let gssAPI = Mechanism(name: "GSSAPI")
         /// Deprecated: see https://docs.mongodb.com/manual/release-notes/3.0-scram/
-        case mongodbCR
+        public static let mongodbCR = Mechanism(name: "MONGODB-CR")
         /// See https://docs.mongodb.com/manual/core/security-x.509/#security-auth-x509
-        case mongodbX509
+        public static let mongodbX509 = Mechanism(name: "MONGODB-X509")
         /// See https://docs.mongodb.com/manual/core/security-ldap/
-        case plain
+        public static let plain = Mechanism(name: "PLAIN")
         /// See https://docs.mongodb.com/manual/core/security-scram/#authentication-scram
-        case scramSHA1
+        public static let scramSHA1 = Mechanism(name: "SCRAM-SHA-1")
         /// See https://docs.mongodb.com/manual/core/security-scram/#authentication-scram
-        case scramSHA256
-        /// Any other authentication mechanism not covered by the other cases.
-        /// This case is present to provide forwards compatibility with any
-        /// future authentication mechanism which may be added to new versions of MongoDB.
-        case other(mechanism: String)
+        public static let scramSHA256 = Mechanism(name: "SCRAM-SHA-256")
 
-        public var rawValue: String {
-            switch self {
-            case .gssAPI:
-                return "GSSAPI"
-            case .mongodbCR:
-                return "MONGODB-CR"
-            case .mongodbX509:
-                return "MONGODB-X509"
-            case .plain:
-                return "PLAIN"
-            case .scramSHA1:
-                return "SCRAM-SHA-1"
-            case .scramSHA256:
-                return "SCRAM-SHA-256"
-            case let .other(mechanism: mechanism):
-                return mechanism
-            }
+        /// Name of the authentication mechanism.
+        public var name: String
+
+        public init(name: String) {
+            self.name = name
         }
 
-        public init?(rawValue: String) {
-            switch rawValue {
-            case "GSSAPI":
-                self = .gssAPI
-            case "MONGODB-CR":
-                self = .mongodbCR
-            case "MONGODB-X509":
-                self = .mongodbX509
-            case "PLAIN":
-                self = .plain
-            case "SCRAM-SHA-1":
-                self = .scramSHA1
-            case "SCRAM-SHA-256":
-                self = .scramSHA256
-            default:
-                self = .other(mechanism: rawValue)
-            }
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            let string = try container.decode(String.self)
+            self.name = string
+        }
+
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.singleValueContainer()
+            try container.encode(self.name)
         }
     }
 }

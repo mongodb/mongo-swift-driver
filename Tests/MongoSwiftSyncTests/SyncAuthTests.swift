@@ -8,7 +8,7 @@ import TestsCommon
 struct TestUser {
     let username: String
     let password: String
-    let mechanisms: [MongoSwift.Credential.Mechanism]
+    let mechanisms: [MongoSwift.MongoCredential.Mechanism]
 
     /// A command to create this user.
     var createCmd: Document {
@@ -16,16 +16,16 @@ struct TestUser {
             "createUser": .string(self.username),
             "pwd": .string(self.password),
             "roles": ["root"],
-            "mechanisms": .array(self.mechanisms.map { .string($0.rawValue) })
+            "mechanisms": .array(self.mechanisms.map { .string($0.name) })
         ]
     }
 
     func createCredential(
         authSource: String = "admin",
-        mechanism: Credential.Mechanism? = nil,
+        mechanism: MongoCredential.Mechanism? = nil,
         mechanismProperties: Document? = nil
-    ) -> Credential {
-        Credential(
+    ) -> MongoCredential {
+        MongoCredential(
             username: self.username,
             password: self.password,
             source: authSource,
@@ -35,7 +35,7 @@ struct TestUser {
     }
 
     /// Adds this user's username and password, and an optionally provided auth mechanism, to the connection string.
-    func addToConnString(_ connStr: String, mechanism: Credential.Mechanism? = nil) throws -> String {
+    func addToConnString(_ connStr: String, mechanism: MongoCredential.Mechanism? = nil) throws -> String {
         // find where the first / is.
         guard let firstSlash = connStr.firstIndex(of: "/") else {
             throw TestError(message: "expected connection string to contain slash")
@@ -60,14 +60,14 @@ struct TestUser {
 
         // assume there are already URL parameters if there's a ?, e.g. mongodb://...../?replset=replset0
         if connStr.contains("?") {
-            return "\(joined)&authMechanism=\(mech.rawValue)"
+            return "\(joined)&authMechanism=\(mech.name)"
         }
         // assume it is a URI that ends with a / and has no params, e.g. mongodb://localhost:27017/
         else if connStr.hasSuffix("/") {
-            return "\(joined)?authMechanism=\(mech.rawValue)"
+            return "\(joined)?authMechanism=\(mech.name)"
         }
         // assume the URI does not end with a / and also has no params, e.g. mongodb://localhost:27017
-        return "\(joined)/?authMechanism=\(mech.rawValue)"
+        return "\(joined)/?authMechanism=\(mech.name)"
     }
 }
 
@@ -118,7 +118,7 @@ final class SyncAuthTests: MongoSwiftTestCase {
             // 3. For test users that support only one mechanism, verify that explicitly specifying the other mechanism
             //    fails.
             if user.mechanisms.count == 1 {
-                let wrongMech: Credential.Mechanism = user.mechanisms[0] == .scramSHA1 ? .scramSHA256 : .scramSHA1
+                let wrongMech: MongoCredential.Mechanism = user.mechanisms[0] == .scramSHA1 ? .scramSHA256 : .scramSHA1
                 let connStrWrongMech = try user.addToConnString(connString, mechanism: wrongMech)
                 let clientWrongMech = try MongoClient.makeTestClient(connStrWrongMech)
                 expect(try clientWrongMech.db("admin").runCommand(["dbstats": 1]))
@@ -144,7 +144,7 @@ final class SyncAuthTests: MongoSwiftTestCase {
             // 3. For test users that support only one mechanism, verify that explicitly specifying the other mechanism
             //    fails.
             if user.mechanisms.count == 1 {
-                let wrongMech: Credential.Mechanism = user.mechanisms[0] == .scramSHA1 ? .scramSHA256 : .scramSHA1
+                let wrongMech: MongoCredential.Mechanism = user.mechanisms[0] == .scramSHA1 ? .scramSHA256 : .scramSHA1
                 let options = ClientOptions(credential: user.createCredential(mechanism: wrongMech))
                 let clientWrongMech = try MongoClient.makeTestClient(connString, options: options)
                 expect(try clientWrongMech.db("admin").runCommand(["dbstats": 1]))
