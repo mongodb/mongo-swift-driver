@@ -180,13 +180,13 @@ final class ReadConcernTests: MongoSwiftTestCase {
 
     func testRoundTripThroughLibmongoc() throws {
         let rcs: [ReadConcern] = [
-            ReadConcern.empty,
-            ReadConcern.local,
-            ReadConcern.available,
-            ReadConcern.majority,
-            ReadConcern.linearizable,
-            ReadConcern.snapshot,
-            ReadConcern.other("a")
+            .empty,
+            .local,
+            .available,
+            .majority,
+            .linearizable,
+            .snapshot,
+            .other("a")
         ]
 
         for original in rcs {

@@ -478,7 +478,7 @@ public struct MongoDatabase {
 
         if self.readConcern != self._client.readConcern {
             // a nil value for self.readConcern corresponds to the empty read concern.
-            (self.readConcern ?? ReadConcern.empty).withMongocReadConcern { rcPtr in
+            (self.readConcern ?? .empty).withMongocReadConcern { rcPtr in
                 mongoc_database_set_read_concern(db, rcPtr)
             }
 
