@@ -1,4 +1,5 @@
 import CLibMongoC
+import Foundation
 import NIOConcurrencyHelpers
 
 /// A connection to the database.
@@ -22,6 +23,14 @@ internal class Connection {
     }
 }
 
+extension NSCondition {
+    fileprivate func withLock<T>(_ body: () throws -> T) rethrows -> T {
+        self.lock()
+        defer { self.unlock() }
+        return try body()
+    }
+}
+
 /// A pool of one or more connections.
 internal class ConnectionPool {
     /// Represents the state of a `ConnectionPool`.
@@ -40,7 +49,7 @@ internal class ConnectionPool {
     /// The number of connections currently checked out of the pool.
     private var connCount = 0
     /// Lock over `state` and `connCount`.
-    private let stateLock = Lock()
+    private let stateLock = NSCondition()
 
     /// Internal helper for testing purposes that returns whether the pool is in the `closing` state.
     internal var isClosing: Bool {
@@ -103,23 +112,18 @@ internal class ConnectionPool {
             case .closing, .closed:
                 throw Self.PoolClosedError
             }
-        }
 
-        // continually loop and wait to get all connections back before destroying the pool. release the lock on each
-        // iteration to allow other methods to acquire the lock.
-        var done = false
-        while !done {
-            try self.stateLock.withLock {
-                if self.connCount == 0 {
-                    switch self.state {
-                    case .open, .closed:
-                        throw InternalError(message: "ConnectionPool in unexpected state \(self.state) during close()")
-                    case let .closing(pool):
-                        mongoc_client_pool_destroy(pool)
-                        self.state = .closed
-                    }
-                    done = true
-                }
+            while self.connCount > 0 {
+                // wait for signal from checkIn().
+                self.stateLock.wait()
+            }
+
+            switch self.state {
+            case .open, .closed:
+                throw InternalError(message: "ConnectionPool in unexpected state \(self.state) during close()")
+            case let .closing(pool):
+                mongoc_client_pool_destroy(pool)
+                self.state = .closed
             }
         }
     }
@@ -140,7 +144,8 @@ internal class ConnectionPool {
     }
 
     /// Checks out a connection from the pool, or returns `nil` if none are currently available. Throws an error if the
-    /// pool is not open.
+    /// pool is not open. This method may block waiting on the state lock as well as libmongoc's locks and thus must be
+    // run within the thread pool.
     internal func tryCheckOut() throws -> Connection? {
         try self.stateLock.withLock {
             switch self.state {
@@ -157,13 +162,16 @@ internal class ConnectionPool {
     }
 
     /// Checks a connection into the pool. Accepts the connection if the pool is still open or in the process of
-    /// closing; throws an error if the pool has already finished closing.
+    /// closing; throws an error if the pool has already finished closing. This method may block waiting on the state
+    /// lock as well as libmongoc's locks, and thus must be run within the thread pool.
     fileprivate func checkIn(_ connection: Connection) throws {
         try self.stateLock.withLock {
             switch self.state {
             case let .open(pool), let .closing(pool):
                 mongoc_client_pool_push(pool, connection.clientHandle)
                 self.connCount -= 1
+                // signal to close() that we are updating the count.
+                self.stateLock.signal()
             case .closed:
                 throw Self.PoolClosedError
             }
