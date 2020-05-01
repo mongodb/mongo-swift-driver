@@ -33,7 +33,7 @@ internal class OperationExecutor {
     }
 
     /// Closes the executor's underlying thread pool.
-    internal func close() -> EventLoopFuture<Void> {
+    internal func shutdown() -> EventLoopFuture<Void> {
         let promise = self.eventLoopGroup.next().makePromise(of: Void.self)
         self.threadPool.shutdownGracefully { error in
             if let error = error {
@@ -46,35 +46,23 @@ internal class OperationExecutor {
     }
 
     /// Closes the executor's underlying thread pool synchronously.
-    internal func syncClose() throws {
+    internal func syncShutdown() throws {
         try self.threadPool.syncShutdownGracefully()
     }
 
     internal func execute<T: Operation>(
         _ operation: T,
-        using connection: Connection? = nil,
         client: MongoClient,
         session: ClientSession?
     ) -> EventLoopFuture<T.OperationResult> {
-        // early exit and don't attempt to use the thread pool if we've already closed the client.
-        guard !client.isClosed else {
-            return self.makeFailedFuture(MongoClient.ClosedClientError)
-        }
-
         // closure containing the work to run in the thread pool: obtain a connection and execute the operation.
         let doOperation = { () -> ExecuteResult<T.OperationResult> in
-            // it's possible that the client was closed in between submitting this task and it being executed, so we
-            // check again here.
-            guard !client.isClosed else {
-                throw MongoClient.ClosedClientError
-            }
-
             // select a connection in following order of priority:
             // 1. connection specifically provided for use with this operation
             // 2. if a session was provided, use its underlying connection
             // 3. a new connection from the pool, if available
-            guard let connection = try connection ??
-                session?.getConnection(forUseWith: client) ??
+            guard let connection =
+                try session?.getConnection(forUseWith: client) ??
                 client.connectionPool.tryCheckOut() else {
                 return .resubmit
             }
@@ -93,7 +81,7 @@ internal class OperationExecutor {
             case let .success(res):
                 return self.makeSucceededFuture(res)
             case .resubmit:
-                return self.execute(operation, using: connection, client: client, session: session)
+                return self.execute(operation, client: client, session: session)
             }
         }
 

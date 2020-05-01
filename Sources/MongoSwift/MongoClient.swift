@@ -157,8 +157,10 @@ public struct DatabaseOptions: CodingStrategyProvider {
 // sourcery: skipSyncExport
 /// A MongoDB Client providing an asynchronous, SwiftNIO-based API.
 public class MongoClient {
+    /// The pool of connections backing this client.
     internal let connectionPool: ConnectionPool
 
+    /// Executor responsible for executing operations on behalf of this client and its child objects.
     internal let operationExecutor: OperationExecutor
 
     /// Default size for a client's NIOThreadPool.
@@ -167,8 +169,10 @@ public class MongoClient {
     /// Default maximum size for connection pools created by this client.
     internal static let defaultMaxConnectionPoolSize = 100
 
-    /// Indicates whether this client has been closed.
-    internal private(set) var isClosed = false
+    /// Indicates whether this client has been closed. A lock around this variable is not needed because:
+    /// - This value is only modified on success of `ConnectionPool.close()`. That method will succeed exactly once.
+    /// - This value is only read in `deinit`. That occurs exactly once after the above modification is complete.
+    private var wasClosed = false
 
     /// Handlers for command monitoring events.
     internal var commandEventHandlers: [CommandEventHandler]
@@ -181,9 +185,6 @@ public class MongoClient {
 
     /// A unique identifier for this client. Sets _id to the generator's current value and increments the generator.
     internal let _id = clientIdGenerator.add(1)
-
-    /// Error thrown when user attempts to use a closed client.
-    internal static let ClosedClientError = LogicError(message: "MongoClient was already closed")
 
     /// Encoder whose options are inherited by databases derived from this client.
     public let encoder: BSONEncoder
@@ -255,21 +256,37 @@ public class MongoClient {
     }
 
     deinit {
-        assert(self.isClosed, "MongoClient was not closed before deinitialization")
+        assert(
+            self.wasClosed,
+            "MongoClient was not closed before deinitialization. " +
+                "Please call `close()` or `syncClose()` when the client is no longer needed."
+        )
     }
 
-    /// Shuts this `MongoClient` down, closing all connection to the server and cleaning up internal state.
-    /// Call this method exactly once when you are finished using the client. You must ensure that all operations
-    /// using the client have completed before calling this. The returned future must be fulfilled before the
-    /// `EventLoopGroup` provided to this client's constructor is shut down.
-    public func shutdown() -> EventLoopFuture<Void> {
-        self.operationExecutor.execute {
-            self.connectionPool.shutdown()
-            self.isClosed = true
+    /**
+     * Closes this `MongoClient`, closing all connections to the server and cleaning up internal state.
+     *
+     * Call this method exactly once when you are finished using the client. You must ensure that all operations using
+     * the client have completed before calling this.
+     *
+     * The returned future will not be fulfilled until all cursors and change streams created from this client have been
+     * been killed, and all sessions created from this client have been ended.
+     *
+     * The returned future must be fulfilled before the `EventLoopGroup` provided to this client's constructor is shut
+     * down.
+     */
+    public func close() -> EventLoopFuture<Void> {
+        let closeResult = self.operationExecutor.execute {
+            try self.connectionPool.close()
         }
         .flatMap {
-            self.operationExecutor.close()
+            self.operationExecutor.shutdown()
         }
+        closeResult.whenComplete { _ in
+            self.wasClosed = true
+        }
+
+        return closeResult
     }
 
     /**
@@ -277,15 +294,15 @@ public class MongoClient {
      * internal state.
      *
      * Call this method exactly once when you are finished using the client. You must ensure that all operations
-     * using the client have completed before calling this.
+     * using the client have completed before calling this. This method will block until all cursors and change streams
+     * created from this client have been killed, and all sessions created from this client have been ended.
      *
      * This method must complete before the `EventLoopGroup` provided to this client's constructor is shut down.
      */
-    public func syncShutdown() {
-        self.connectionPool.shutdown()
-        self.isClosed = true
-        // TODO: SWIFT-349 log any errors encountered here.
-        try? self.operationExecutor.syncClose()
+    public func syncClose() throws {
+        try self.connectionPool.close()
+        try self.operationExecutor.syncShutdown()
+        self.wasClosed = true
     }
 
     /// Starts a new `ClientSession` with the provided options. When you are done using this session, you must call
@@ -600,15 +617,6 @@ public class MongoClient {
      */
     public func addSDAMEventHandler(_ handlerFunc: @escaping (SDAMEvent) -> Void) {
         self.sdamEventHandlers.append(CallbackEventHandler(handlerFunc))
-    }
-
-    /// Executes an `Operation` using this `MongoClient` and an optionally provided session.
-    internal func executeOperation<T: Operation>(
-        _ operation: T,
-        using connection: Connection? = nil,
-        session: ClientSession? = nil
-    ) throws -> T.OperationResult {
-        try self.operationExecutor.execute(operation, using: connection, client: self, session: session).wait()
     }
 
     /// Internal method to check the `ReadConcern` that was ultimately set on this client. **This method may block

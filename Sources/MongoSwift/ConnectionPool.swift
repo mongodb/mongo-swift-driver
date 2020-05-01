@@ -1,4 +1,6 @@
 import CLibMongoC
+import Foundation
+import NIOConcurrencyHelpers
 
 /// A connection to the database.
 internal class Connection {
@@ -13,12 +15,19 @@ internal class Connection {
     }
 
     deinit {
-        switch self.pool.state {
-        case let .open(pool):
-            mongoc_client_pool_push(pool, self.clientHandle)
-        case .closed:
-            assertionFailure("ConnectionPool was already closed")
+        do {
+            try self.pool.checkIn(self)
+        } catch {
+            assertionFailure("Failed to check connection back in: \(error)")
         }
+    }
+}
+
+extension NSCondition {
+    fileprivate func withLock<T>(_ body: () throws -> T) rethrows -> T {
+        self.lock()
+        defer { self.unlock() }
+        return try body()
     }
 }
 
@@ -28,12 +37,38 @@ internal class ConnectionPool {
     internal enum State {
         /// Indicates that the `ConnectionPool` is open and using the associated pointer to a `mongoc_client_pool_t`.
         case open(pool: OpaquePointer)
+        /// Indicates that the `ConnectionPool` is in the process of closing. Connections can be checked back in, but
+        /// no new connections can be checked out.
+        case closing(pool: OpaquePointer)
         /// Indicates that the `ConnectionPool` has been closed and contains no connections.
         case closed
     }
 
     /// The state of this `ConnectionPool`.
-    internal private(set) var state: State
+    private var state: State
+    /// The number of connections currently checked out of the pool.
+    private var connCount = 0
+    /// Lock over `state` and `connCount`.
+    private let stateLock = NSCondition()
+
+    /// Internal helper for testing purposes that returns whether the pool is in the `closing` state.
+    internal var isClosing: Bool {
+        self.stateLock.withLock {
+            guard case .closing = self.state else {
+                return false
+            }
+            return true
+        }
+    }
+
+    /// Internal helper for testing purposes that returns the number of connections currently checked out from the pool.
+    internal var checkedOutConnections: Int {
+        self.stateLock.withLock {
+            self.connCount
+        }
+    }
+
+    internal static let PoolClosedError = LogicError(message: "ConnectionPool was already closed")
 
     /// Initializes the pool using the provided `ConnectionString` and options.
     internal init(from connString: ConnectionString, options: ClientOptions?) throws {
@@ -56,7 +91,7 @@ internal class ConnectionPool {
 
         self.state = .open(pool: pool)
         if let options = options {
-            try self.setTLSOptions(options)
+            self.setTLSOptions(options)
         }
     }
 
@@ -67,38 +102,79 @@ internal class ConnectionPool {
         }
     }
 
-    /// Closes the pool, cleaning up underlying resources. This method blocks as it sends `endSessions` to the server.
-    internal func shutdown() {
-        switch self.state {
-        case let .open(pool):
-            mongoc_client_pool_destroy(pool)
-        case .closed:
-            return
+    /// Closes the pool, cleaning up underlying resources. **This method blocks until all connections are returned to
+    /// the pool.**
+    internal func close() throws {
+        try self.stateLock.withLock {
+            switch self.state {
+            case let .open(pool):
+                self.state = .closing(pool: pool)
+            case .closing, .closed:
+                throw Self.PoolClosedError
+            }
+
+            while self.connCount > 0 {
+                // wait for signal from checkIn().
+                self.stateLock.wait()
+            }
+
+            switch self.state {
+            case .open, .closed:
+                throw InternalError(message: "ConnectionPool in unexpected state \(self.state) during close()")
+            case let .closing(pool):
+                mongoc_client_pool_destroy(pool)
+                self.state = .closed
+            }
         }
-        self.state = .closed
     }
 
     /// Checks out a connection. This connection will return itself to the pool when its reference count drops to 0.
-    /// This method will block until a connection is available.
+    /// This method will block until a connection is available. Throws an error if the pool is in the process of
+    /// closing or has finished closing.
     internal func checkOut() throws -> Connection {
-        switch self.state {
-        case let .open(pool):
-            return Connection(clientHandle: mongoc_client_pool_pop(pool), pool: self)
-        case .closed:
-            throw InternalError(message: "ConnectionPool was already closed")
+        try self.stateLock.withLock {
+            switch self.state {
+            case let .open(pool):
+                self.connCount += 1
+                return Connection(clientHandle: mongoc_client_pool_pop(pool), pool: self)
+            case .closing, .closed:
+                throw Self.PoolClosedError
+            }
         }
     }
 
-    /// Checks out a connection from the pool, or returns `nil` if none are currently available.
+    /// Checks out a connection from the pool, or returns `nil` if none are currently available. Throws an error if the
+    /// pool is not open. This method may block waiting on the state lock as well as libmongoc's locks and thus must be
+    // run within the thread pool.
     internal func tryCheckOut() throws -> Connection? {
-        switch self.state {
-        case let .open(pool):
-            guard let handle = mongoc_client_pool_try_pop(pool) else {
-                return nil
+        try self.stateLock.withLock {
+            switch self.state {
+            case let .open(pool):
+                guard let handle = mongoc_client_pool_try_pop(pool) else {
+                    return nil
+                }
+                self.connCount += 1
+                return Connection(clientHandle: handle, pool: self)
+            case .closing, .closed:
+                throw Self.PoolClosedError
             }
-            return Connection(clientHandle: handle, pool: self)
-        case .closed:
-            throw InternalError(message: "ConnectionPool was already closed")
+        }
+    }
+
+    /// Checks a connection into the pool. Accepts the connection if the pool is still open or in the process of
+    /// closing; throws an error if the pool has already finished closing. This method may block waiting on the state
+    /// lock as well as libmongoc's locks, and thus must be run within the thread pool.
+    fileprivate func checkIn(_ connection: Connection) throws {
+        try self.stateLock.withLock {
+            switch self.state {
+            case let .open(pool), let .closing(pool):
+                mongoc_client_pool_push(pool, connection.clientHandle)
+                self.connCount -= 1
+                // signal to close() that we are updating the count.
+                self.stateLock.signal()
+            case .closed:
+                throw Self.PoolClosedError
+            }
         }
     }
 
@@ -109,9 +185,9 @@ internal class ConnectionPool {
         return try body(connection)
     }
 
-    // Sets TLS/SSL options that the user passes in through the client level. This must be called from
-    // the ConnectionPool init before the pool is used.
-    private func setTLSOptions(_ options: ClientOptions) throws {
+    // Sets TLS/SSL options that the user passes in through the client level. **This must only be called from
+    // the ConnectionPool initializer**.
+    private func setTLSOptions(_ options: ClientOptions) {
         // return early so we don't set an empty options struct on the libmongoc pool. doing so will make libmongoc
         // attempt to use TLS for connections.
         guard options.tls == true ||
@@ -147,11 +223,14 @@ internal class ConnectionPool {
         if let invalidHosts = options.tlsAllowInvalidHostnames {
             opts.allow_invalid_hostname = invalidHosts
         }
+
+        // lock isn't needed as this is called before pool is in use.
         switch self.state {
         case let .open(pool):
             mongoc_client_pool_set_ssl_opts(pool, &opts)
-        case .closed:
-            throw InternalError(message: "ConnectionPool was already closed")
+        case .closing, .closed:
+            // if we get here, we must have called this method outside of `ConnectionPool.init`.
+            fatalError("ConnectionPool in unexpected state \(self.state) while setting TLS options")
         }
     }
 
@@ -185,6 +264,22 @@ internal class ConnectionPool {
                 throw InternalError(message: "Couldn't retrieve client's connection string")
             }
             return ConnectionString(copying: uri)
+        }
+    }
+
+    /// Sets the provided APM callbacks on this pool, using the provided client as the "context" value. **This method
+    /// may only be called before any connections are checked out of the pool.** Ideally this code would just live in
+    /// `ConnectionPool.init`. However, the client we accept here has to be fully initialized before we can pass it
+    /// as the context. In order for it to be fully initialized its pool must exist already.
+    internal func setAPMCallbacks(callbacks: OpaquePointer, client: MongoClient) {
+        // lock isn't needed as this is called before pool is in use.
+        switch self.state {
+        case let .open(pool):
+            mongoc_client_pool_set_apm_callbacks(pool, callbacks, Unmanaged.passUnretained(client).toOpaque())
+        case .closing, .closed:
+            // this method is called via `initializeMonitoring()`, which is called from `MongoClient.init`.
+            // unless we have a bug it's impossible that the pool is already closed.
+            fatalError("ConnectionPool in unexpected state \(self.state) while setting APM callbacks")
         }
     }
 }

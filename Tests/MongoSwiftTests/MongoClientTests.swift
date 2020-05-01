@@ -8,8 +8,8 @@ final class MongoClientTests: MongoSwiftTestCase {
         let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         defer { elg.syncShutdownOrFail() }
         let client = try MongoClient(using: elg)
-        client.syncShutdown()
-        expect(try client.listDatabases().wait()).to(throwError(MongoClient.ClosedClientError))
+        try client.syncClose()
+        expect(try client.listDatabases().wait()).to(throwError(errorType: ChannelError.self))
     }
 
     func verifyPoolSize(_ client: MongoClient, size: Int) throws {
@@ -96,5 +96,56 @@ final class MongoClientTests: MongoSwiftTestCase {
             // waiting operations can eventually finish too
             _ = try waitingOperations.map { try $0.wait() }
         }
+    }
+
+    func testConnectionPoolClose() throws {
+        let ns = MongoNamespace(db: "connPoolTest", collection: "foo")
+
+        // clean up this test's namespace after we're done
+        defer { try? self.withTestNamespace(ns: ns) { _, _, _ in } }
+
+        let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+        defer { elg.syncShutdownOrFail() }
+        let client = try MongoClient.makeTestClient(eventLoopGroup: elg)
+
+        // create a cursor
+        let collection = client.db(ns.db).collection(ns.collection!)
+        _ = try collection.insertMany([["x": 1], ["x": 2]]).wait()
+        let cursor = try collection.find().wait()
+
+        // create a session
+        let session = client.startSession()
+        // run a command to trigger starting libmongoc session
+        _ = try client.listDatabases(session: session).wait()
+
+        // start the client's closing process
+        let closeFuture = client.close()
+
+        // the pool should enter the closing state, with 2 connections out
+        expect(client.connectionPool.isClosing).toEventually(beTrue())
+        expect(client.connectionPool.checkedOutConnections).to(equal(2))
+
+        // calling a method that will request a new connection errors
+        expect(try client.listDatabases().wait()).to(throwError(errorType: LogicError.self))
+
+        // cursor can still be used and successfully killed while closing occurs
+        expect(try cursor.next().wait()).toNot(throwError())
+        try cursor.kill().wait()
+
+        // still in closing state; got connection back from cursor
+        expect(client.connectionPool.isClosing).to(beTrue())
+        expect(client.connectionPool.checkedOutConnections).to(equal(1))
+
+        // attempting to use session succeeds
+        expect(try client.listDatabases(session: session).wait()).toNot(throwError())
+        // ending session succeeds
+        expect(try session.end().wait()).toNot(throwError())
+
+        // once session releases connection, the pool can close
+        expect(client.connectionPool.isClosing).toEventually(beFalse())
+        expect(client.connectionPool.checkedOutConnections).to(equal(0))
+
+        // wait to ensure all resource cleanup happens correctly
+        try closeFuture.wait()
     }
 }
