@@ -35,7 +35,7 @@ final class ReadConcernTests: MongoSwiftTestCase {
         expect(rc.level).to(equal(.majority))
 
         // test empty init
-        let rc2 = ReadConcern.empty
+        let rc2 = ReadConcern.serverDefault
         expect(rc2.level).to(beNil())
         expect(rc2.isDefault).to(beTrue())
 
@@ -53,7 +53,7 @@ final class ReadConcernTests: MongoSwiftTestCase {
     }
 
     func testClientReadConcern() throws {
-        let empty = ReadConcern.empty
+        let empty = ReadConcern.serverDefault
         let majority = ReadConcern.majority
         let majorityString = ReadConcern.other("majority")
         let local = ReadConcern.local
@@ -114,7 +114,7 @@ final class ReadConcernTests: MongoSwiftTestCase {
     }
 
     func testDatabaseReadConcern() throws {
-        let empty = ReadConcern.empty
+        let empty = ReadConcern.serverDefault
         let local = ReadConcern.local
         let localString = ReadConcern.other("local")
         let unknown = ReadConcern.other("blah")
@@ -180,7 +180,7 @@ final class ReadConcernTests: MongoSwiftTestCase {
 
     func testRoundTripThroughLibmongoc() throws {
         let rcs: [ReadConcern] = [
-            .empty,
+            .serverDefault,
             .local,
             .available,
             .majority,

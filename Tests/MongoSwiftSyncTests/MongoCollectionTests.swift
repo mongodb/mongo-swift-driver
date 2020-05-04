@@ -410,7 +410,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(try self.coll.countDocuments()).to(equal(1))
 
         // test using a write concern
-        let opts2 = FindOneAndDeleteOptions(writeConcern: WriteConcern.majority)
+        let opts2 = FindOneAndDeleteOptions(writeConcern: .majority)
         let result2 = try self.coll.findOneAndDelete([:], options: opts2)
         expect(result2).to(equal(self.doc1))
         expect(try self.coll.countDocuments()).to(equal(0))
@@ -446,7 +446,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(try self.coll.countDocuments()).to(equal(2))
 
         // test using a write concern
-        let opts3 = FindOneAndReplaceOptions(writeConcern: WriteConcern.majority)
+        let opts3 = FindOneAndReplaceOptions(writeConcern: .majority)
         let result3 = try self.coll.findOneAndReplace(
             filter: ["cat": "blah"],
             replacement: ["cat": "cat"],
@@ -486,7 +486,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(try self.coll.countDocuments()).to(equal(2))
 
         // test using a write concern
-        let opts3 = FindOneAndUpdateOptions(writeConcern: WriteConcern.majority)
+        let opts3 = FindOneAndUpdateOptions(writeConcern: .majority)
         let result3 = try self.coll.findOneAndUpdate(
             filter: ["cat": "blah"],
             update: ["$set": ["cat": "cat"]],

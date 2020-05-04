@@ -126,15 +126,14 @@ public struct MongoCollection<T: Codable> {
 
         if self.readConcern != self._client.readConcern {
             // a nil value for self.readConcern corresponds to the empty read concern.
-            (self.readConcern ?? .empty).withMongocReadConcern { rcPtr in
+            (self.readConcern ?? .serverDefault).withMongocReadConcern { rcPtr in
                 mongoc_collection_set_read_concern(collection, rcPtr)
             }
 
-            if self.writeConcern != self._client.writeConcern {
-                // a nil value for self.writeConcern corresponds to the empty write concern.
-                (self.writeConcern ?? WriteConcern()).withMongocWriteConcern { wcPtr in
-                    mongoc_collection_set_write_concern(collection, wcPtr)
-                }
+        if self.writeConcern != self._client.writeConcern {
+            // a nil value for self.writeConcern corresponds to the empty write concern.
+            (self.writeConcern ?? .serverDefault).withMongocWriteConcern { wcPtr in
+                mongoc_collection_set_write_concern(collection, wcPtr)
             }
 
             if self.readPreference != self._client.readPreference {

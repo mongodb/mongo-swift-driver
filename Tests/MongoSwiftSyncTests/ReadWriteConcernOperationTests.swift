@@ -23,7 +23,7 @@ final class ReadWriteConcernOperationTests: MongoSwiftTestCase {
         expect(res1["ok"]?.asDouble()).to(equal(1.0))
 
         // run command with an empty readConcern
-        let options2 = RunCommandOptions(readConcern: .empty)
+        let options2 = RunCommandOptions(readConcern: .serverDefault)
         let res2 = try db.runCommand(command, options: options2)
         expect(res2["ok"]?.asDouble()).to(equal(1.0))
 
@@ -109,7 +109,7 @@ final class ReadWriteConcernOperationTests: MongoSwiftTestCase {
 
         let coll = try db.createCollection(self.getCollectionName())
         let wc1 = try WriteConcern(w: .number(1))
-        let wc2 = WriteConcern()
+        let wc2 = WriteConcern.serverDefault
         let wc3 = try WriteConcern(journal: true)
 
         let command: Document = ["insert": .string(coll.name), "documents": [.document(nextDoc())]]

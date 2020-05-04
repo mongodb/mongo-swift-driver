@@ -3,8 +3,14 @@ import Foundation
 
 /// A class to represent a MongoDB write concern.
 public struct WriteConcern: Codable {
-    /// Majority WriteConcern.
-    public static let majority = WriteConcern(journal: nil, w: .majority, wtimeoutMS: nil)
+    /// Majority WriteConcern,
+    /// see https://docs.mongodb.com/manual/reference/write-concern/#writeconcern._dq_majority_dq_.
+    // swiftlint:disable force_try
+    public static let majority = try! WriteConcern(w: .majority)
+    // swiftlint:enable force_try
+
+    /// Server default WriteConcern.
+    public static let serverDefault = WriteConcern()
 
     /// An option to request acknowledgement that the write operation has propagated to specified mongod instances.
     public enum W: Codable, Equatable {
@@ -114,13 +120,6 @@ public struct WriteConcern: Codable {
                 "Invalid combination of options: journal=\(journalStr), w=\(wStr), wtimeoutMS=\(timeoutStr)"
             )
         }
-    }
-
-    /// Initializes a new `WriteConcern` without throwing any errors.
-    fileprivate init(journal: Bool?, w: W, wtimeoutMS: Int?) {
-        self.journal = journal
-        self.w = w
-        self.wtimeoutMS = wtimeoutMS
     }
 
     /// Initializes a new `WriteConcern` with the same values as the provided `mongoc_write_concern_t`.

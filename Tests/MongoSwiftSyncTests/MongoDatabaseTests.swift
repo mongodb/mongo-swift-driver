@@ -94,7 +94,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
             validationAction: "warn",
             validationLevel: "moderate",
             validator: ["phone": ["$type": "string"]],
-            writeConcern: WriteConcern.majority
+            writeConcern: .majority
         )
         expect(try db.createCollection("foo", options: fooOptions)).toNot(throwError())
 

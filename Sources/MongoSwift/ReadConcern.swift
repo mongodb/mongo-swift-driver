@@ -4,16 +4,21 @@ import CLibMongoC
 public struct ReadConcern: Codable {
     /// Local ReadConcern, see https://docs.mongodb.com/manual/reference/read-concern-local/.
     public static let local = ReadConcern(.local)
+
     /// Available ReadConcern, see https://docs.mongodb.com/manual/reference/read-concern-available/.
     public static let available = ReadConcern(.available)
+
     /// Linearizable ReadConcern, see https://docs.mongodb.com/manual/reference/read-concern-majority/.
     public static let linearizable = ReadConcern(.linearizable)
+
     /// Majority ReadConcern, see https://docs.mongodb.com/manual/reference/read-concern-linearizable/.
     public static let majority = ReadConcern(.majority)
+
     /// Snapshot ReadConcern, see https://docs.mongodb.com/master/reference/read-concern-snapshot/.
     public static let snapshot = ReadConcern(.snapshot)
-    /// Empty ReadConcern.
-    public static let empty = ReadConcern(nil)
+
+    /// Server default ReadConcern.
+    public static let serverDefault = ReadConcern(nil)
 
     public static func other(_ level: Level) -> ReadConcern {
         ReadConcern(level)
@@ -24,20 +29,29 @@ public struct ReadConcern: Codable {
     }
 
     /// An enumeration of possible ReadConcern levels.
-    public struct Level: Codable, Equatable {
+    public struct Level: Codable, Equatable, LosslessStringConvertible {
         /// See https://docs.mongodb.com/manual/reference/read-concern-local/
         public static let local = Level("local")
+
         /// See https://docs.mongodb.com/manual/reference/read-concern-available/
         public static let available = Level("available")
+
         /// See https://docs.mongodb.com/manual/reference/read-concern-majority/
         public static let majority = Level("majority")
+
         /// See https://docs.mongodb.com/manual/reference/read-concern-linearizable/
         public static let linearizable = Level("linearizable")
+
         /// See https://docs.mongodb.com/master/reference/read-concern-snapshot/
         public static let snapshot = Level("snapshot")
 
-        public var name: String
+        private var name: String
 
+        /// Returns the string value of the Level for convenient conversion.
+        public var description: String { "\(self.name)" }
+
+        /// Initialize a new `Level` from `String`
+        /// This initializer allows any `String` for forward compatabilty.
         public init(_ name: String) {
             self.name = name
         }
@@ -83,7 +97,7 @@ public struct ReadConcern: Codable {
         let readConcern: OpaquePointer = mongoc_read_concern_new()
         defer { mongoc_read_concern_destroy(readConcern) }
         if let level = self.level {
-            mongoc_read_concern_set_level(readConcern, level.name)
+            mongoc_read_concern_set_level(readConcern, String(level))
         }
         return try body(readConcern)
     }
