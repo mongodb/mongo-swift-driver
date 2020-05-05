@@ -40,7 +40,7 @@ private struct RetryableReadsTestFile: Decodable, SpecTestFile {
 
     let tests: [RetryableReadsTest]
 
-    let skippedTestFileNameKeywords = [
+    static let skippedTestFileNameKeywords = [
         "changeStream", // TODO: SWIFT-648: Unskip this test
         "gridfs",
         "count.",
