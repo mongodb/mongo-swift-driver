@@ -29,7 +29,7 @@ private struct TransactionsTest: SpecTest {
 
     static let skippedTestKeywords: [String] = [
         // TODO: SWIFT-762 the following 3 require libmongoc v1.17
-        "add RetryableWriteError",
+        "RetryableWriteError",
         "commitTransaction fails after two errors",
         "commitTransaction applies majority write concern on retries"
     ]

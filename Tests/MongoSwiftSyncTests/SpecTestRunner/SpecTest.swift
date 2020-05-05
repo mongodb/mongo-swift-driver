@@ -246,7 +246,7 @@ extension SpecTestFile {
             // before the tests run to prevent certain errors from ocurring. (SERVER-39704)
             if MongoSwiftTestCase.topologyType == .sharded, let collName = self.collectionName {
                 for connStr in MongoSwiftTestCase.getConnectionStringPerHost() {
-                    let client = try MongoClient(connStr)
+                    let client = try MongoClient.makeTestClient(connStr)
                     _ = try client.db(self.databaseName).collection(collName).distinct(fieldName: "_id")
                 }
             }
