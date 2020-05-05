@@ -64,7 +64,7 @@ internal struct FailPoint: Decodable {
             }
         }
         if let serverAddress = serverAddress {
-            let connectionString = "mongodb://\(serverAddress)"
+            let connectionString = MongoSwiftTestCase.getConnectionString(forHost: serverAddress)
             let client = try MongoClient.makeTestClient(connectionString)
             try client.db("admin").runCommand(commandDoc)
         } else {

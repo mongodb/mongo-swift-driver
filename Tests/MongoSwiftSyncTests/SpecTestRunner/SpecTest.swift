@@ -245,8 +245,8 @@ extension SpecTestFile {
             // Due to strange behavior in mongos, a "distinct" command needs to be run against each mongos
             // before the tests run to prevent certain errors from ocurring. (SERVER-39704)
             if MongoSwiftTestCase.topologyType == .sharded, let collName = self.collectionName {
-                for host in try ConnectionString(MongoSwiftTestCase.uri).hosts! {
-                    let client = try MongoClient("mongodb://\(host)")
+                for connStr in MongoSwiftTestCase.getConnectionStringPerHost() {
+                    let client = try MongoClient(connStr)
                     _ = try client.db(self.databaseName).collection(collName).distinct(fieldName: "_id")
                 }
             }

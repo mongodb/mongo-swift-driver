@@ -50,6 +50,26 @@ open class MongoSwiftTestCase: XCTestCase {
         return output
     }
 
+    /// Get a connection string for the specified host only.
+    public static func getConnectionString(forHost serverAddress: Address) -> String {
+        Self.getConnectionStringPerHost().first { $0.contains(String(describing: serverAddress)) }!
+    }
+
+    /// Returns a different connection string per host specified in MONGODB_URI.
+    public static func getConnectionStringPerHost() -> [String] {
+        let uri = Self.uri
+
+        let regex = try! NSRegularExpression(pattern: #"mongodb:\/\/(?:.*@)?([^\/]+)(?:\/|$)"#)
+        let range = NSRange(uri.startIndex..<uri.endIndex, in: uri)
+        let match = regex.firstMatch(in: uri, range: range)!
+
+        let hostsRange = Range(match.range(at: 1), in: uri)!
+
+        return try! ConnectionString(uri).hosts!.map { host in
+            uri.replacingCharacters(in: hostsRange, with: host)
+        }
+    }
+
     // indicates whether we are running on a 32-bit platform
     public static let is32Bit = MemoryLayout<Int>.size == 4
 
