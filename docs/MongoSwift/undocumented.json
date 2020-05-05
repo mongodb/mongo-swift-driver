@@ -23,6 +23,13 @@
     },
     {
       "file": "/Users/km/mongo-swift-driver/Sources/MongoSwift/MongoError.swift",
+      "line": 99,
+      "symbol": "ConnectionError.message",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/km/mongo-swift-driver/Sources/MongoSwift/MongoError.swift",
       "line": 103,
       "symbol": "ConnectionError.errorDescription",
       "symbol_kind": "source.lang.swift.decl.var.instance",

@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../../index.html">
-          MongoSwift 1.0.0-rc0 Docs
+          MongoSwift 1.0.0-rc1 Docs
         </a>
          (99% documented)
       </p>
@@ -74,6 +74,12 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../../multithreaded-usage.html">Multithreaded-Usage</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../../tls.html">TLS</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../../transactions.html">Transactions</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -113,19 +119,10 @@
                 <a class="nav-group-task-link" href="../../Classes/DocumentIterator.html">DocumentIterator</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../../Classes.html#/s:10MongoSwift15DocumentStorageC">DocumentStorage</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../../Classes/MongoClient.html">MongoClient</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../../Classes/MongoCursor.html">MongoCursor</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../../Classes/ReadPreference.html">ReadPreference</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../../Classes/ReadPreference/Mode.html">– Mode</a>
               </li>
             </ul>
           </li>
@@ -393,6 +390,9 @@
                 <a class="nav-group-task-link" href="../../Structs/ListCollectionsOptions.html">ListCollectionsOptions</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../../Structs/ListDatabasesOptions.html">ListDatabasesOptions</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../../Structs/LogicError.html">LogicError</a>
               </li>
               <li class="nav-group-task">
@@ -412,6 +412,12 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../../Structs/ReadConcern/Level.html">– Level</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../../Structs/ReadPreference.html">ReadPreference</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../../Structs/ReadPreference/Mode.html">– Mode</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../../Structs/RegularExpression.html">RegularExpression</a>
@@ -459,9 +465,6 @@
                 <a class="nav-group-task-link" href="../../Structs/Symbol.html">Symbol</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../../Structs/TLSOptions.html">TLSOptions</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../../Structs/Timestamp.html">Timestamp</a>
               </li>
               <li class="nav-group-task">
@@ -478,6 +481,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../../Structs/TopologyOpeningEvent.html">TopologyOpeningEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../../Structs/TransactionOptions.html">TransactionOptions</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../../Structs/UpdateDescription.html">UpdateDescription</a>
@@ -532,7 +538,12 @@
 
                 </div>
               </div>
-            <p>An enumeration of possible ReadPreference modes.</p>
+            <p>An enumeration of possible read preference modes.</p>
+<div class="aside aside-see-also">
+    <p class="aside-title">See also</p>
+    <a href="https://docs.mongodb.com/manual/core/read-preference/#read-preference-modes">https://docs.mongodb.com/manual/core/read-preference/#read-preference-modes</a>
+
+</div>
 
           </div>
         </section>
@@ -544,9 +555,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift14ReadPreferenceC4ModeO7primaryyA2EmF"></a>
+                    <a name="/s:10MongoSwift14ReadPreferenceV4ModeO7primaryyA2EmF"></a>
                     <a name="//apple_ref/swift/Element/primary" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift14ReadPreferenceC4ModeO7primaryyA2EmF">primary</a>
+                    <a class="token" href="#/s:10MongoSwift14ReadPreferenceV4ModeO7primaryyA2EmF">primary</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -566,7 +577,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/ReadPreference.swift#L12">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/ReadPreference.swift#L11">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -574,9 +585,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift14ReadPreferenceC4ModeO16primaryPreferredyA2EmF"></a>
+                    <a name="/s:10MongoSwift14ReadPreferenceV4ModeO16primaryPreferredyA2EmF"></a>
                     <a name="//apple_ref/swift/Element/primaryPreferred" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift14ReadPreferenceC4ModeO16primaryPreferredyA2EmF">primaryPreferred</a>
+                    <a class="token" href="#/s:10MongoSwift14ReadPreferenceV4ModeO16primaryPreferredyA2EmF">primaryPreferred</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -584,8 +595,8 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>In most situations, operations read from the primary but if it is
-unavailable, operations read from secondary members.</p>
+                        <p>In most situations, operations read from the primary but if it is unavailable, operations read from
+secondary members.</p>
 
                       </div>
                       <div class="declaration">
@@ -597,7 +608,7 @@ unavailable, operations read from secondary members.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/ReadPreference.swift#L15">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/ReadPreference.swift#L14">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -605,9 +616,9 @@ unavailable, operations read from secondary members.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift14ReadPreferenceC4ModeO9secondaryyA2EmF"></a>
+                    <a name="/s:10MongoSwift14ReadPreferenceV4ModeO9secondaryyA2EmF"></a>
                     <a name="//apple_ref/swift/Element/secondary" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift14ReadPreferenceC4ModeO9secondaryyA2EmF">secondary</a>
+                    <a class="token" href="#/s:10MongoSwift14ReadPreferenceV4ModeO9secondaryyA2EmF">secondary</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -627,7 +638,7 @@ unavailable, operations read from secondary members.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/ReadPreference.swift#L17">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/ReadPreference.swift#L16">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -635,9 +646,9 @@ unavailable, operations read from secondary members.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift14ReadPreferenceC4ModeO18secondaryPreferredyA2EmF"></a>
+                    <a name="/s:10MongoSwift14ReadPreferenceV4ModeO18secondaryPreferredyA2EmF"></a>
                     <a name="//apple_ref/swift/Element/secondaryPreferred" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift14ReadPreferenceC4ModeO18secondaryPreferredyA2EmF">secondaryPreferred</a>
+                    <a class="token" href="#/s:10MongoSwift14ReadPreferenceV4ModeO18secondaryPreferredyA2EmF">secondaryPreferred</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -645,8 +656,8 @@ unavailable, operations read from secondary members.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>In most situations, operations read from secondary members but if no
-secondary members are available, operations read from the primary.</p>
+                        <p>In most situations, operations read from secondary members but if no secondary members are available,
+operations read from the primary.</p>
 
                       </div>
                       <div class="declaration">
@@ -658,7 +669,7 @@ secondary members are available, operations read from the primary.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/ReadPreference.swift#L20">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/ReadPreference.swift#L19">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -666,9 +677,9 @@ secondary members are available, operations read from the primary.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift14ReadPreferenceC4ModeO7nearestyA2EmF"></a>
+                    <a name="/s:10MongoSwift14ReadPreferenceV4ModeO7nearestyA2EmF"></a>
                     <a name="//apple_ref/swift/Element/nearest" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift14ReadPreferenceC4ModeO7nearestyA2EmF">nearest</a>
+                    <a class="token" href="#/s:10MongoSwift14ReadPreferenceV4ModeO7nearestyA2EmF">nearest</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -676,8 +687,8 @@ secondary members are available, operations read from the primary.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Operations read from member of the replica set with the least network
-latency, irrespective of the member’s type.</p>
+                        <p>Operations read from the member of the replica set with the least network latency, irrespective of the
+member&rsquo;s type.</p>
 
                       </div>
                       <div class="declaration">
@@ -689,7 +700,7 @@ latency, irrespective of the member’s type.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/ReadPreference.swift#L23">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/ReadPreference.swift#L22">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -702,7 +713,7 @@ latency, irrespective of the member’s type.</p>
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-02-27)</p>
+      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-05-05)</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>

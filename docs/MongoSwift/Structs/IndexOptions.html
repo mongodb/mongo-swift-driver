@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          MongoSwift 1.0.0-rc0 Docs
+          MongoSwift 1.0.0-rc1 Docs
         </a>
          (99% documented)
       </p>
@@ -74,6 +74,12 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../multithreaded-usage.html">Multithreaded-Usage</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../tls.html">TLS</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../transactions.html">Transactions</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -113,19 +119,10 @@
                 <a class="nav-group-task-link" href="../Classes/DocumentIterator.html">DocumentIterator</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Classes.html#/s:10MongoSwift15DocumentStorageC">DocumentStorage</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/MongoClient.html">MongoClient</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/MongoCursor.html">MongoCursor</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Classes/ReadPreference.html">ReadPreference</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Classes/ReadPreference/Mode.html">– Mode</a>
               </li>
             </ul>
           </li>
@@ -393,6 +390,9 @@
                 <a class="nav-group-task-link" href="../Structs/ListCollectionsOptions.html">ListCollectionsOptions</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ListDatabasesOptions.html">ListDatabasesOptions</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/LogicError.html">LogicError</a>
               </li>
               <li class="nav-group-task">
@@ -412,6 +412,12 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/ReadConcern/Level.html">– Level</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReadPreference.html">ReadPreference</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReadPreference/Mode.html">– Mode</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/RegularExpression.html">RegularExpression</a>
@@ -459,9 +465,6 @@
                 <a class="nav-group-task-link" href="../Structs/Symbol.html">Symbol</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/TLSOptions.html">TLSOptions</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/Timestamp.html">Timestamp</a>
               </li>
               <li class="nav-group-task">
@@ -478,6 +481,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/TopologyOpeningEvent.html">TopologyOpeningEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/TransactionOptions.html">TransactionOptions</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/UpdateDescription.html">UpdateDescription</a>
@@ -566,7 +572,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoCollection+Indexes.swift#L44">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Indexes.swift#L44">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -574,9 +580,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift12IndexOptionsV4bitss5Int32VSgvp"></a>
+                    <a name="/s:10MongoSwift12IndexOptionsV4bitsSiSgvp"></a>
                     <a name="//apple_ref/swift/Property/bits" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift12IndexOptionsV4bitss5Int32VSgvp">bits</a>
+                    <a class="token" href="#/s:10MongoSwift12IndexOptionsV4bitsSiSgvp">bits</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -591,12 +597,12 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">bits</span><span class="p">:</span> <span class="kt">Int32</span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">bits</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoCollection+Indexes.swift#L47">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Indexes.swift#L47">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -604,9 +610,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift12IndexOptionsV10bucketSizes5Int32VSgvp"></a>
+                    <a name="/s:10MongoSwift12IndexOptionsV10bucketSizeSiSgvp"></a>
                     <a name="//apple_ref/swift/Property/bucketSize" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift12IndexOptionsV10bucketSizes5Int32VSgvp">bucketSize</a>
+                    <a class="token" href="#/s:10MongoSwift12IndexOptionsV10bucketSizeSiSgvp">bucketSize</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -621,12 +627,12 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">bucketSize</span><span class="p">:</span> <span class="kt">Int32</span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">bucketSize</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoCollection+Indexes.swift#L50">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Indexes.swift#L50">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -657,7 +663,7 @@ is sent and the default collation of the collection server-side is used.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoCollection+Indexes.swift#L54">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Indexes.swift#L54">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -687,7 +693,7 @@ is sent and the default collation of the collection server-side is used.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoCollection+Indexes.swift#L57">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Indexes.swift#L57">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -695,9 +701,9 @@ is sent and the default collation of the collection server-side is used.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift12IndexOptionsV18expireAfterSecondss5Int32VSgvp"></a>
+                    <a name="/s:10MongoSwift12IndexOptionsV18expireAfterSecondsSiSgvp"></a>
                     <a name="//apple_ref/swift/Property/expireAfterSeconds" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift12IndexOptionsV18expireAfterSecondss5Int32VSgvp">expireAfterSeconds</a>
+                    <a class="token" href="#/s:10MongoSwift12IndexOptionsV18expireAfterSecondsSiSgvp">expireAfterSeconds</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -712,12 +718,12 @@ is sent and the default collation of the collection server-side is used.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">expireAfterSeconds</span><span class="p">:</span> <span class="kt">Int32</span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">expireAfterSeconds</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoCollection+Indexes.swift#L60">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Indexes.swift#L60">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -747,7 +753,7 @@ is sent and the default collation of the collection server-side is used.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoCollection+Indexes.swift#L63">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Indexes.swift#L63">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -777,7 +783,7 @@ is sent and the default collation of the collection server-side is used.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoCollection+Indexes.swift#L66">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Indexes.swift#L66">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -807,7 +813,7 @@ is sent and the default collation of the collection server-side is used.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoCollection+Indexes.swift#L69">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Indexes.swift#L69">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -845,7 +851,7 @@ is sent and the default collation of the collection server-side is used.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoCollection+Indexes.swift#L80">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Indexes.swift#L80">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -876,7 +882,7 @@ included in the index. New in MongoDB 3.2.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoCollection+Indexes.swift#L84">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Indexes.swift#L84">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -906,7 +912,7 @@ included in the index. New in MongoDB 3.2.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoCollection+Indexes.swift#L87">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Indexes.swift#L87">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -914,9 +920,9 @@ included in the index. New in MongoDB 3.2.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift12IndexOptionsV06sphereC7Versions5Int32VSgvp"></a>
+                    <a name="/s:10MongoSwift12IndexOptionsV06sphereC7VersionSiSgvp"></a>
                     <a name="//apple_ref/swift/Property/sphereIndexVersion" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift12IndexOptionsV06sphereC7Versions5Int32VSgvp">sphereIndexVersion</a>
+                    <a class="token" href="#/s:10MongoSwift12IndexOptionsV06sphereC7VersionSiSgvp">sphereIndexVersion</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -932,12 +938,12 @@ higher may support version 1 or 2.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">sphereIndexVersion</span><span class="p">:</span> <span class="kt">Int32</span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">sphereIndexVersion</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoCollection+Indexes.swift#L91">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Indexes.swift#L91">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -968,7 +974,7 @@ basis when creating an index.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoCollection+Indexes.swift#L95">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Indexes.swift#L95">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -976,9 +982,9 @@ basis when creating an index.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift12IndexOptionsV04textC7Versions5Int32VSgvp"></a>
+                    <a name="/s:10MongoSwift12IndexOptionsV04textC7VersionSiSgvp"></a>
                     <a name="//apple_ref/swift/Property/textIndexVersion" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift12IndexOptionsV04textC7Versions5Int32VSgvp">textIndexVersion</a>
+                    <a class="token" href="#/s:10MongoSwift12IndexOptionsV04textC7VersionSiSgvp">textIndexVersion</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -994,12 +1000,12 @@ higher may support version 1 or 2.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">textIndexVersion</span><span class="p">:</span> <span class="kt">Int32</span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">textIndexVersion</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoCollection+Indexes.swift#L99">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Indexes.swift#L99">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1029,7 +1035,7 @@ higher may support version 1 or 2.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoCollection+Indexes.swift#L102">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Indexes.swift#L102">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1037,9 +1043,9 @@ higher may support version 1 or 2.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift12IndexOptionsV7versions5Int32VSgvp"></a>
+                    <a name="/s:10MongoSwift12IndexOptionsV7versionSiSgvp"></a>
                     <a name="//apple_ref/swift/Property/version" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift12IndexOptionsV7versions5Int32VSgvp">version</a>
+                    <a class="token" href="#/s:10MongoSwift12IndexOptionsV7versionSiSgvp">version</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1054,12 +1060,12 @@ higher may support version 1 or 2.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">version</span><span class="p">:</span> <span class="kt">Int32</span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">version</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoCollection+Indexes.swift#L105">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Indexes.swift#L105">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1089,7 +1095,7 @@ higher may support version 1 or 2.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoCollection+Indexes.swift#L108">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Indexes.swift#L108">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1097,9 +1103,9 @@ higher may support version 1 or 2.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift12IndexOptionsV10background4bits10bucketSize9collation15defaultLanguage18expireAfterSeconds16languageOverride3max3min4name23partialFilterExpression6sparse06sphereC7Version13storageEngine04textcY06unique7version7weightsACSbSg_s5Int32VSgAyA8DocumentVSgSSSgAYA1_SdSgA2_A1_A0_AvYA0_AyvYA0_tcfc"></a>
+                    <a name="/s:10MongoSwift12IndexOptionsV10background4bits10bucketSize9collation15defaultLanguage18expireAfterSeconds16languageOverride3max3min4name23partialFilterExpression6sparse06sphereC7Version13storageEngine04textcY06unique7version7weightsACSbSg_SiSgAwA8DocumentVSgSSSgAWA_SdSgA0_A_AzvwzwvwZtcfc"></a>
                     <a name="//apple_ref/swift/Method/init(background:bits:bucketSize:collation:defaultLanguage:expireAfterSeconds:languageOverride:max:min:name:partialFilterExpression:sparse:sphereIndexVersion:storageEngine:textIndexVersion:unique:version:weights:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift12IndexOptionsV10background4bits10bucketSize9collation15defaultLanguage18expireAfterSeconds16languageOverride3max3min4name23partialFilterExpression6sparse06sphereC7Version13storageEngine04textcY06unique7version7weightsACSbSg_s5Int32VSgAyA8DocumentVSgSSSgAYA1_SdSgA2_A1_A0_AvYA0_AyvYA0_tcfc">init(background:bits:bucketSize:collation:defaultLanguage:expireAfterSeconds:languageOverride:max:min:name:partialFilterExpression:sparse:sphereIndexVersion:storageEngine:textIndexVersion:unique:version:weights:)</a>
+                    <a class="token" href="#/s:10MongoSwift12IndexOptionsV10background4bits10bucketSize9collation15defaultLanguage18expireAfterSeconds16languageOverride3max3min4name23partialFilterExpression6sparse06sphereC7Version13storageEngine04textcY06unique7version7weightsACSbSg_SiSgAwA8DocumentVSgSSSgAWA_SdSgA0_A_AzvwzwvwZtcfc">init(background:bits:bucketSize:collation:defaultLanguage:expireAfterSeconds:languageOverride:max:min:name:partialFilterExpression:sparse:sphereIndexVersion:storageEngine:textIndexVersion:unique:version:weights:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1116,29 +1122,29 @@ higher may support version 1 or 2.</p>
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span>
     <span class="nv">background</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">bits</span><span class="p">:</span> <span class="kt">Int32</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">bucketSize</span><span class="p">:</span> <span class="kt">Int32</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">bits</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">bucketSize</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">collation</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="n"><a href="../Structs/IndexOptions.html#/s:10MongoSwift12IndexOptionsV15defaultLanguageSSSgvp">defaultLanguage</a></span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">expireAfterSeconds</span><span class="p">:</span> <span class="kt">Int32</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">expireAfterSeconds</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">languageOverride</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">max</span><span class="p">:</span> <span class="kt">Double</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">min</span><span class="p">:</span> <span class="kt">Double</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">name</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">partialFilterExpression</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">sparse</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">sphereIndexVersion</span><span class="p">:</span> <span class="kt">Int32</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">sphereIndexVersion</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">storageEngine</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">textIndexVersion</span><span class="p">:</span> <span class="kt">Int32</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">textIndexVersion</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">unique</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">version</span><span class="p">:</span> <span class="kt">Int32</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">version</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">weights</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
 <span class="p">)</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoCollection+Indexes.swift#L111-L149">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Indexes.swift#L111-L149">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1151,7 +1157,7 @@ higher may support version 1 or 2.</p>
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-02-27)</p>
+      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-05-05)</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>

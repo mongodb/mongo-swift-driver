@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          MongoSwift 1.0.0-rc0 Docs
+          MongoSwift 1.0.0-rc1 Docs
         </a>
          (99% documented)
       </p>
@@ -74,6 +74,12 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../multithreaded-usage.html">Multithreaded-Usage</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../tls.html">TLS</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../transactions.html">Transactions</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -113,19 +119,10 @@
                 <a class="nav-group-task-link" href="../Classes/DocumentIterator.html">DocumentIterator</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Classes.html#/s:10MongoSwift15DocumentStorageC">DocumentStorage</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/MongoClient.html">MongoClient</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/MongoCursor.html">MongoCursor</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Classes/ReadPreference.html">ReadPreference</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Classes/ReadPreference/Mode.html">– Mode</a>
               </li>
             </ul>
           </li>
@@ -393,6 +390,9 @@
                 <a class="nav-group-task-link" href="../Structs/ListCollectionsOptions.html">ListCollectionsOptions</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ListDatabasesOptions.html">ListDatabasesOptions</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/LogicError.html">LogicError</a>
               </li>
               <li class="nav-group-task">
@@ -412,6 +412,12 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/ReadConcern/Level.html">– Level</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReadPreference.html">ReadPreference</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReadPreference/Mode.html">– Mode</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/RegularExpression.html">RegularExpression</a>
@@ -459,9 +465,6 @@
                 <a class="nav-group-task-link" href="../Structs/Symbol.html">Symbol</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/TLSOptions.html">TLSOptions</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/Timestamp.html">Timestamp</a>
               </li>
               <li class="nav-group-task">
@@ -478,6 +481,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/TopologyOpeningEvent.html">TopologyOpeningEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/TransactionOptions.html">TransactionOptions</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/UpdateDescription.html">UpdateDescription</a>
@@ -544,9 +550,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift19ChangeStreamOptionsV9batchSizes5Int32VSgvp"></a>
+                    <a name="/s:10MongoSwift19ChangeStreamOptionsV9batchSizeSiSgvp"></a>
                     <a name="//apple_ref/swift/Property/batchSize" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift19ChangeStreamOptionsV9batchSizes5Int32VSgvp">batchSize</a>
+                    <a class="token" href="#/s:10MongoSwift19ChangeStreamOptionsV9batchSizeSiSgvp">batchSize</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -566,12 +572,12 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">batchSize</span><span class="p">:</span> <span class="kt">Int32</span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">batchSize</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/ChangeStreamOptions.swift#L33">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/ChangeStreamOptions.swift#L33">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -606,7 +612,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/ChangeStreamOptions.swift#L37">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/ChangeStreamOptions.swift#L37">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -639,7 +645,7 @@ and will be nil for all other operations.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/ChangeStreamOptions.swift#L45">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/ChangeStreamOptions.swift#L45">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -647,9 +653,9 @@ and will be nil for all other operations.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift19ChangeStreamOptionsV14maxAwaitTimeMSs5Int64VSgvp"></a>
+                    <a name="/s:10MongoSwift19ChangeStreamOptionsV14maxAwaitTimeMSSiSgvp"></a>
                     <a name="//apple_ref/swift/Property/maxAwaitTimeMS" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift19ChangeStreamOptionsV14maxAwaitTimeMSs5Int64VSgvp">maxAwaitTimeMS</a>
+                    <a class="token" href="#/s:10MongoSwift19ChangeStreamOptionsV14maxAwaitTimeMSSiSgvp">maxAwaitTimeMS</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -665,12 +671,12 @@ change stream query. If omitted, the server will use its default timeout.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">maxAwaitTimeMS</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">maxAwaitTimeMS</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/ChangeStreamOptions.swift#L49">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/ChangeStreamOptions.swift#L49">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -711,7 +717,7 @@ the provided token.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/ChangeStreamOptions.swift#L58">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/ChangeStreamOptions.swift#L58">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -747,7 +753,7 @@ Any command run against the server will return an operation time that can be use
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/ChangeStreamOptions.swift#L74">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/ChangeStreamOptions.swift#L74">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -755,9 +761,9 @@ Any command run against the server will return an operation time that can be use
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift19ChangeStreamOptionsV9batchSize9collation12fullDocument14maxAwaitTimeMS11resumeAfter016startAtOperationM0ACs5Int32VSg_AA0J0VSgAA04FullJ0OSgs5Int64VSgAA11ResumeTokenVSgAA9TimestampVSgtcfc"></a>
+                    <a name="/s:10MongoSwift19ChangeStreamOptionsV9batchSize9collation12fullDocument14maxAwaitTimeMS11resumeAfter016startAtOperationM0ACSiSg_AA0J0VSgAA04FullJ0OSgAjA11ResumeTokenVSgAA9TimestampVSgtcfc"></a>
                     <a name="//apple_ref/swift/Method/init(batchSize:collation:fullDocument:maxAwaitTimeMS:resumeAfter:startAtOperationTime:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift19ChangeStreamOptionsV9batchSize9collation12fullDocument14maxAwaitTimeMS11resumeAfter016startAtOperationM0ACs5Int32VSg_AA0J0VSgAA04FullJ0OSgs5Int64VSgAA11ResumeTokenVSgAA9TimestampVSgtcfc">init(batchSize:collation:fullDocument:maxAwaitTimeMS:resumeAfter:startAtOperationTime:)</a>
+                    <a class="token" href="#/s:10MongoSwift19ChangeStreamOptionsV9batchSize9collation12fullDocument14maxAwaitTimeMS11resumeAfter016startAtOperationM0ACSiSg_AA0J0VSgAA04FullJ0OSgAjA11ResumeTokenVSgAA9TimestampVSgtcfc">init(batchSize:collation:fullDocument:maxAwaitTimeMS:resumeAfter:startAtOperationTime:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -773,10 +779,10 @@ Any command run against the server will return an operation time that can be use
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span>
-    <span class="nv">batchSize</span><span class="p">:</span> <span class="kt">Int32</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">batchSize</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">collation</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">fullDocument</span><span class="p">:</span> <span class="kt"><a href="../Enums/FullDocument.html">FullDocument</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">maxAwaitTimeMS</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">maxAwaitTimeMS</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">resumeAfter</span><span class="p">:</span> <span class="kt"><a href="../Structs/ResumeToken.html">ResumeToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">startAtOperationTime</span><span class="p">:</span> <span class="kt"><a href="../Structs/Timestamp.html">Timestamp</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
 <span class="p">)</span></code></pre>
@@ -784,7 +790,7 @@ Any command run against the server will return an operation time that can be use
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/ChangeStreamOptions.swift#L77-L92">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/ChangeStreamOptions.swift#L77-L92">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -797,7 +803,7 @@ Any command run against the server will return an operation time that can be use
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-02-27)</p>
+      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-05-05)</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>

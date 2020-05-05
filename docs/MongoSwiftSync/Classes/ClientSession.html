@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          MongoSwiftSync 1.0.0-rc0 Docs
+          MongoSwiftSync 1.0.0-rc1 Docs
         </a>
          (100% documented)
       </p>
@@ -73,6 +73,12 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../multithreaded-usage.html">Multithreaded-Usage</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../tls.html">TLS</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../transactions.html">Transactions</a>
               </li>
             </ul>
           </li>
@@ -179,7 +185,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwiftSync/ClientSession.swift#L33">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwiftSync/ClientSession.swift#L33">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -214,7 +220,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwiftSync/ClientSession.swift#L40">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwiftSync/ClientSession.swift#L40">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -250,7 +256,7 @@ of the following are true:</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwiftSync/ClientSession.swift#L46">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwiftSync/ClientSession.swift#L46">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -280,7 +286,7 @@ of the following are true:</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwiftSync/ClientSession.swift#L49">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwiftSync/ClientSession.swift#L49">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -331,7 +337,7 @@ of the following are true:</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwiftSync/ClientSession.swift#L84-L86">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwiftSync/ClientSession.swift#L84-L86">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -382,7 +388,175 @@ of the following are true:</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwiftSync/ClientSession.swift#L96-L98">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwiftSync/ClientSession.swift#L96-L98">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:14MongoSwiftSync13ClientSessionC16startTransaction7optionsy0aB00G7OptionsVSg_tKF"></a>
+                    <a name="//apple_ref/swift/Method/startTransaction(options:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:14MongoSwiftSync13ClientSessionC16startTransaction7optionsy0aB00G7OptionsVSg_tKF">startTransaction(options:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Starts a multi-document transaction for all subsequent operations in this session. Any options provided in
+ <code><a href="../Classes/ClientSession.html#/s:14MongoSwiftSync13ClientSessionC7options0aB00dE7OptionsVSgvp">options</a></code> override the default transaction options for this session and any options inherited from
+ <code><a href="../Classes/MongoClient.html">MongoClient</a></code>. The transaction must be completed with <code>commitTransaction</code> or <code>abortTransaction</code>. An in-progress
+ transaction is automatically aborted when <code>ClientSession</code> goes out of scope.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p>Throws:</p>
+
+<ul>
+<li><code>CommandError</code> if an error occurs that prevents the command from executing.</li>
+<li><code>LogicError</code> if the session already has an in-progress transaction.</li>
+<li><code>LogicError</code> if <code>startTransaction</code> is called on an ended session.</li>
+</ul>
+
+</div><div class="aside aside-see-also">
+    <p class="aside-title">See also</p>
+    <p>SeeAlso:</p>
+
+<ul>
+<li><a href="https://docs.mongodb.com/manual/core/transactions/">https://docs.mongodb.com/manual/core/transactions/</a></li>
+</ul>
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">startTransaction</span><span class="p">(</span><span class="nv">options</span><span class="p">:</span> <span class="kt">TransactionOptions</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>options</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The options to use when starting this transaction</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwiftSync/ClientSession.swift#L117-L119">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:14MongoSwiftSync13ClientSessionC17commitTransactionyyKF"></a>
+                    <a name="//apple_ref/swift/Method/commitTransaction()" class="dashAnchor"></a>
+                    <a class="token" href="#/s:14MongoSwiftSync13ClientSessionC17commitTransactionyyKF">commitTransaction()</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Commits a multi-document transaction for this session. Server and network errors are not ignored.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p>Throws:</p>
+
+<ul>
+<li><code>CommandError</code> if an error occurs that prevents the command from executing.</li>
+<li><code>LogicError</code> if the session has no in-progress transaction.</li>
+<li><code>LogicError</code> if <code>commitTransaction</code> is called on an ended session.</li>
+</ul>
+
+</div><div class="aside aside-see-also">
+    <p class="aside-title">See also</p>
+    <p>SeeAlso:</p>
+
+<ul>
+<li><a href="https://docs.mongodb.com/manual/core/transactions/">https://docs.mongodb.com/manual/core/transactions/</a></li>
+</ul>
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">commitTransaction</span><span class="p">()</span> <span class="k">throws</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwiftSync/ClientSession.swift#L132-L134">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:14MongoSwiftSync13ClientSessionC16abortTransactionyyKF"></a>
+                    <a name="//apple_ref/swift/Method/abortTransaction()" class="dashAnchor"></a>
+                    <a class="token" href="#/s:14MongoSwiftSync13ClientSessionC16abortTransactionyyKF">abortTransaction()</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Aborts a multi-document transaction for this session. Server and network errors are ignored.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p>Throws:</p>
+
+<ul>
+<li><code>LogicError</code> if the session has no in-progress transaction.</li>
+<li><code>LogicError</code> if <code>abortTransaction</code> is called on an ended session.</li>
+</ul>
+
+</div><div class="aside aside-see-also">
+    <p class="aside-title">See also</p>
+    <p>SeeAlso:</p>
+
+<ul>
+<li><a href="https://docs.mongodb.com/manual/core/transactions/">https://docs.mongodb.com/manual/core/transactions/</a></li>
+</ul>
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">abortTransaction</span><span class="p">()</span> <span class="k">throws</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwiftSync/ClientSession.swift#L146-L148">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -395,7 +569,7 @@ of the following are true:</p>
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-02-27)</p>
+      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-05-05)</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>

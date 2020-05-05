@@ -20,7 +20,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          MongoSwiftSync 1.0.0-rc0 Docs
+          MongoSwiftSync 1.0.0-rc1 Docs
         </a>
          (100% documented)
       </p>
@@ -73,6 +73,12 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="multithreaded-usage.html">Multithreaded-Usage</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="tls.html">TLS</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="transactions.html">Transactions</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -117,128 +123,126 @@
 <p><strong>Note</strong>: Change streams only work with MongoDB replica sets and sharded clusters.</p>
 <h2 id='examples' class='heading'>Examples</h2>
 <h3 id='open-a-change-stream-on-a-code-mongocollection-lt-document-gt-code-mongodb-3-6' class='heading'>Open a Change Stream on a <code><a href="Structs/MongoCollection.html">MongoCollection&lt;Document&gt;</a></code> (MongoDB 3.6+)</h3>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">()</span>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">elg</span> <span class="o">=</span> <span class="kt">MultiThreadedEventLoopGroup</span><span class="p">(</span><span class="nv">numberOfThreads</span><span class="p">:</span> <span class="mi">4</span><span class="p">)</span>
+<span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="nv">using</span><span class="p">:</span> <span class="n">elg</span><span class="p">)</span>
 <span class="k">let</span> <span class="nv">inventory</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="nf">db</span><span class="p">(</span><span class="s">"example"</span><span class="p">)</span><span class="o">.</span><span class="nf">collection</span><span class="p">(</span><span class="s">"inventory"</span><span class="p">)</span>
-<span class="k">let</span> <span class="nv">stream</span> <span class="o">=</span> <span class="k">try</span> <span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">()</span> <span class="c1">// returns a `ChangeStream&lt;ChangeStreamEvent&lt;Document&gt;&gt;`</span>
 
-<span class="c1">// perform some operations using `inventory`...</span>
-
-<span class="k">for</span> <span class="n">change</span> <span class="k">in</span> <span class="n">stream</span> <span class="p">{</span>
-    <span class="c1">// process `ChangeStreamEvent&lt;Document&gt;` here</span>
-<span class="p">}</span>
-
-<span class="c1">// check if any errors occurred while iterating</span>
-<span class="k">if</span> <span class="k">let</span> <span class="nv">error</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">error</span> <span class="p">{</span>
+<span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">()</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">stream</span> <span class="k">in</span> <span class="c1">// a `ChangeStream&lt;ChangeStreamEvent&lt;Document&gt;&gt;`</span>
+    <span class="n">stream</span><span class="o">.</span><span class="n">forEach</span> <span class="p">{</span> <span class="n">event</span> <span class="k">in</span>
+        <span class="c1">// process `ChangeStreamEvent&lt;Document&gt;` here</span>
+    <span class="p">}</span>
+<span class="p">}</span><span class="o">.</span><span class="n">whenFailure</span> <span class="p">{</span> <span class="n">error</span> <span class="k">in</span>
     <span class="c1">// handle error</span>
 <span class="p">}</span>
+
+<span class="c1">// perform some operations using `inventory`...</span>
 </code></pre>
 <h3 id='open-a-change-stream-on-a-code-mongocollection-lt-mycodabletype-gt-code-mongodb-3-6' class='heading'>Open a Change Stream on a <code><a href="Structs/MongoCollection.html">MongoCollection&lt;MyCodableType&gt;</a></code> (MongoDB 3.6+)</h3>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">()</span>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">elg</span> <span class="o">=</span> <span class="kt">MultiThreadedEventLoopGroup</span><span class="p">(</span><span class="nv">numberOfThreads</span><span class="p">:</span> <span class="mi">4</span><span class="p">)</span>
+<span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="nv">using</span><span class="p">:</span> <span class="n">elg</span><span class="p">)</span>
 <span class="k">let</span> <span class="nv">inventory</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="nf">db</span><span class="p">(</span><span class="s">"example"</span><span class="p">)</span><span class="o">.</span><span class="nf">collection</span><span class="p">(</span><span class="s">"inventory"</span><span class="p">,</span> <span class="nv">withType</span><span class="p">:</span> <span class="kt">MyCodableType</span><span class="o">.</span><span class="k">self</span><span class="p">)</span>
-<span class="k">let</span> <span class="nv">stream</span> <span class="o">=</span> <span class="k">try</span> <span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">()</span> <span class="c1">// returns a `ChangeStream&lt;ChangeStreamEvent&lt;MyCodableType&gt;&gt;`</span>
 
-<span class="c1">// perform some operations using `inventory`...</span>
-
-<span class="k">for</span> <span class="n">change</span> <span class="k">in</span> <span class="n">stream</span> <span class="p">{</span>
-    <span class="c1">// process `ChangeStreamEvent&lt;MyCodableType&gt;` here</span>
-<span class="p">}</span>
-
-<span class="c1">// check if any errors occurred while iterating</span>
-<span class="k">if</span> <span class="k">let</span> <span class="nv">error</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">error</span> <span class="p">{</span>
+<span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">()</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">stream</span> <span class="k">in</span> <span class="c1">// a `ChangeStream&lt;ChangeStreamEvent&lt;MyCodableType&gt;&gt;`</span>
+    <span class="n">stream</span><span class="o">.</span><span class="n">forEach</span> <span class="p">{</span> <span class="n">event</span> <span class="k">in</span>
+        <span class="c1">// process `ChangeStreamEvent&lt;MyCodableType&gt;` here</span>
+    <span class="p">}</span>
+<span class="p">}</span><span class="o">.</span><span class="n">whenFailure</span> <span class="p">{</span> <span class="n">error</span> <span class="k">in</span>
     <span class="c1">// handle error</span>
 <span class="p">}</span>
+
+<span class="c1">// perform some operations using `inventory`...</span>
 </code></pre>
 <h3 id='use-a-custom-code-codable-code-type-for-the-code-fulldocument-code-property-of-returned-code-changestreamevent-code-s' class='heading'>Use a Custom <code>Codable</code> Type for the <code>fullDocument</code> Property of Returned <code>ChangeStreamEvent</code>s</h3>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">()</span>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">elg</span> <span class="o">=</span> <span class="kt">MultiThreadedEventLoopGroup</span><span class="p">(</span><span class="nv">numberOfThreads</span><span class="p">:</span> <span class="mi">4</span><span class="p">)</span>
+<span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="nv">using</span><span class="p">:</span> <span class="n">elg</span><span class="p">)</span>
 <span class="k">let</span> <span class="nv">inventory</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="nf">db</span><span class="p">(</span><span class="s">"example"</span><span class="p">)</span><span class="o">.</span><span class="nf">collection</span><span class="p">(</span><span class="s">"inventory"</span><span class="p">)</span>
-<span class="k">let</span> <span class="nv">stream</span> <span class="o">=</span> <span class="k">try</span> <span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">(</span><span class="nv">withFullDocumentType</span><span class="p">:</span> <span class="kt">MyCodableType</span><span class="o">.</span><span class="k">self</span><span class="p">)</span> <span class="c1">// returns a `ChangeStream&lt;ChangeStreamEvent&lt;MyCodableType&gt;&gt;`</span>
 
-<span class="c1">// perform some operations using `inventory`...</span>
-
-<span class="k">for</span> <span class="n">change</span> <span class="k">in</span> <span class="n">stream</span> <span class="p">{</span>
-    <span class="c1">// process `ChangeStreamEvent&lt;MyCodableType&gt;` here</span>
-<span class="p">}</span>
-
-<span class="c1">// check if any errors occurred while iterating</span>
-<span class="k">if</span> <span class="k">let</span> <span class="nv">error</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">error</span> <span class="p">{</span>
+<span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">(</span><span class="nv">withFullDocumentType</span><span class="p">:</span> <span class="kt">MyCodableType</span><span class="o">.</span><span class="k">self</span><span class="p">)</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">stream</span> <span class="k">in</span> <span class="c1">// a `ChangeStream&lt;ChangeStreamEvent&lt;MyCodableType&gt;&gt;`</span>
+    <span class="n">stream</span><span class="o">.</span><span class="n">forEach</span> <span class="p">{</span> <span class="n">event</span> <span class="k">in</span>
+        <span class="c1">// process `ChangeStreamEvent&lt;MyCodableType&gt;` here</span>
+    <span class="p">}</span>
+<span class="p">}</span><span class="o">.</span><span class="n">whenFailure</span> <span class="p">{</span> <span class="n">error</span> <span class="k">in</span>
     <span class="c1">// handle error</span>
 <span class="p">}</span>
+
+<span class="c1">// perform some operations using `inventory`...</span>
 </code></pre>
 <h3 id='use-a-custom-code-codable-code-type-for-the-return-type-of-code-changestream-next-code' class='heading'>Use a Custom <code>Codable</code> Type for the Return type of <code><a href="Classes/ChangeStream.html#/s:14MongoSwiftSync12ChangeStreamC4nexts6ResultOyxs5Error_pGSgyF">ChangeStream.next()</a></code></h3>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">()</span>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">elg</span> <span class="o">=</span> <span class="kt">MultiThreadedEventLoopGroup</span><span class="p">(</span><span class="nv">numberOfThreads</span><span class="p">:</span> <span class="mi">4</span><span class="p">)</span>
+<span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="nv">using</span><span class="p">:</span> <span class="n">elg</span><span class="p">)</span>
 <span class="k">let</span> <span class="nv">inventory</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="nf">db</span><span class="p">(</span><span class="s">"example"</span><span class="p">)</span><span class="o">.</span><span class="nf">collection</span><span class="p">(</span><span class="s">"inventory"</span><span class="p">)</span>
-<span class="k">let</span> <span class="nv">stream</span> <span class="o">=</span> <span class="k">try</span> <span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">(</span><span class="nv">withEventType</span><span class="p">:</span> <span class="kt">MyCodableType</span><span class="o">.</span><span class="k">self</span><span class="p">)</span> <span class="c1">// returns a `ChangeStream&lt;MyCodableType&gt;`</span>
+
+<span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">(</span><span class="nv">withEventType</span><span class="p">:</span> <span class="kt">MyCodableType</span><span class="o">.</span><span class="k">self</span><span class="p">)</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">stream</span> <span class="k">in</span> <span class="c1">// a `ChangeStream&lt;MyCodableType&gt;`</span>
+    <span class="n">stream</span><span class="o">.</span><span class="n">forEach</span> <span class="p">{</span> <span class="n">event</span> <span class="k">in</span>
+        <span class="c1">// process `MyCodableType` here</span>
+    <span class="p">}</span>
+<span class="p">}</span><span class="o">.</span><span class="n">whenFailure</span> <span class="p">{</span> <span class="n">error</span> <span class="k">in</span>
+    <span class="c1">// handle error</span>
+<span class="p">}</span>
 
 <span class="c1">// perform some operations using `inventory`...</span>
-
-<span class="k">for</span> <span class="n">change</span> <span class="k">in</span> <span class="n">stream</span> <span class="p">{</span>
-    <span class="c1">// process `MyCodableType` here</span>
-<span class="p">}</span>
-
-<span class="c1">// check if any errors occurred while iterating</span>
-<span class="k">if</span> <span class="k">let</span> <span class="nv">error</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">error</span> <span class="p">{</span>
-    <span class="c1">// handle error</span>
-<span class="p">}</span>
 </code></pre>
 <h3 id='open-a-change-stream-on-a-code-mongodatabase-code-mongodb-4-0' class='heading'>Open a Change Stream on a <code><a href="Structs/MongoDatabase.html">MongoDatabase</a></code> (MongoDB 4.0+)</h3>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">()</span>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">elg</span> <span class="o">=</span> <span class="kt">MultiThreadedEventLoopGroup</span><span class="p">(</span><span class="nv">numberOfThreads</span><span class="p">:</span> <span class="mi">4</span><span class="p">)</span>
+<span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="nv">using</span><span class="p">:</span> <span class="n">elg</span><span class="p">)</span>
 <span class="k">let</span> <span class="nv">db</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="nf">db</span><span class="p">(</span><span class="s">"example"</span><span class="p">)</span>
-<span class="k">let</span> <span class="nv">stream</span> <span class="o">=</span> <span class="k">try</span> <span class="n">db</span><span class="o">.</span><span class="nf">watch</span><span class="p">()</span>
 
-<span class="c1">// perform some operations using `db`...</span>
-
-<span class="k">for</span> <span class="n">change</span> <span class="k">in</span> <span class="n">stream</span> <span class="p">{</span>
-    <span class="c1">// process `ChangeStreamEvent&lt;Document&gt;` here</span>
-<span class="p">}</span>
-
-<span class="c1">// check if any errors occurred while iterating</span>
-<span class="k">if</span> <span class="k">let</span> <span class="nv">error</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">error</span> <span class="p">{</span>
+<span class="n">db</span><span class="o">.</span><span class="nf">watch</span><span class="p">()</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">stream</span> <span class="k">in</span> <span class="c1">// a `ChangeStream&lt;ChangeStreamEvent&lt;Document&gt;&gt;`</span>
+    <span class="n">stream</span><span class="o">.</span><span class="n">forEach</span> <span class="p">{</span> <span class="n">event</span> <span class="k">in</span>
+        <span class="c1">// process `ChangeStreamEvent&lt;Document&gt;` here</span>
+    <span class="p">}</span>
+<span class="p">}</span><span class="o">.</span><span class="n">whenFailure</span> <span class="p">{</span> <span class="n">error</span> <span class="k">in</span>
     <span class="c1">// handle error</span>
 <span class="p">}</span>
+
+<span class="c1">// perform some operations using `db`...</span>
 </code></pre>
 
 <p>Note: the types of the <code>fullDocument</code> property, as well as the return type of <code><a href="Classes/ChangeStream.html#/s:14MongoSwiftSync12ChangeStreamC4nexts6ResultOyxs5Error_pGSgyF">ChangeStream.next()</a></code>, may be customized in the same fashion as the examples using <code><a href="Structs/MongoCollection.html">MongoCollection</a></code> above.</p>
 <h3 id='open-a-change-stream-on-a-code-mongoclient-code-mongodb-4-0' class='heading'>Open a Change Stream on a <code><a href="Classes/MongoClient.html">MongoClient</a></code> (MongoDB 4.0+)</h3>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">()</span>
-<span class="k">let</span> <span class="nv">stream</span> <span class="o">=</span> <span class="k">try</span> <span class="n">client</span><span class="o">.</span><span class="nf">watch</span><span class="p">()</span>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">elg</span> <span class="o">=</span> <span class="kt">MultiThreadedEventLoopGroup</span><span class="p">(</span><span class="nv">numberOfThreads</span><span class="p">:</span> <span class="mi">4</span><span class="p">)</span>
+<span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="nv">using</span><span class="p">:</span> <span class="n">elg</span><span class="p">)</span>
 
-<span class="c1">// perform some operations using `client`...</span>
-
-<span class="k">for</span> <span class="n">change</span> <span class="k">in</span> <span class="n">stream</span> <span class="p">{</span>
-    <span class="c1">// process `ChangeStreamEvent&lt;Document&gt;` here</span>
-<span class="p">}</span>
-
-<span class="c1">// check if any errors occurred while iterating</span>
-<span class="k">if</span> <span class="k">let</span> <span class="nv">error</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">error</span> <span class="p">{</span>
+<span class="n">client</span><span class="o">.</span><span class="nf">watch</span><span class="p">()</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">stream</span> <span class="k">in</span> <span class="c1">// a `ChangeStream&lt;ChangeStreamEvent&lt;Document&gt;&gt;`</span>
+    <span class="n">stream</span><span class="o">.</span><span class="n">forEach</span> <span class="p">{</span> <span class="n">event</span> <span class="k">in</span>
+        <span class="c1">// process `ChangeStreamEvent&lt;Document&gt;` here</span>
+    <span class="p">}</span>
+<span class="p">}</span><span class="o">.</span><span class="n">whenFailure</span> <span class="p">{</span> <span class="n">error</span> <span class="k">in</span>
     <span class="c1">// handle error</span>
 <span class="p">}</span>
+
+<span class="c1">// perform some operations using `client`...</span>
 </code></pre>
 
 <p>Note: the types of the <code>fullDocument</code> property, as well as the return type of <code><a href="Classes/ChangeStream.html#/s:14MongoSwiftSync12ChangeStreamC4nexts6ResultOyxs5Error_pGSgyF">ChangeStream.next()</a></code>, may be customized in the same fashion as the examples using <code><a href="Structs/MongoCollection.html">MongoCollection</a></code> above.</p>
 <h3 id='resume-a-change-stream' class='heading'>Resume a Change Stream</h3>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">()</span>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">elg</span> <span class="o">=</span> <span class="kt">MultiThreadedEventLoopGroup</span><span class="p">(</span><span class="nv">numberOfThreads</span><span class="p">:</span> <span class="mi">4</span><span class="p">)</span>
+<span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="nv">using</span><span class="p">:</span> <span class="n">elg</span><span class="p">)</span>
 <span class="k">let</span> <span class="nv">inventory</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="nf">db</span><span class="p">(</span><span class="s">"example"</span><span class="p">)</span><span class="o">.</span><span class="nf">collection</span><span class="p">(</span><span class="s">"inventory"</span><span class="p">)</span>
-<span class="k">let</span> <span class="nv">stream</span> <span class="o">=</span> <span class="k">try</span> <span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">()</span>
 
-<span class="c1">// perform some operations using `inventory`...</span>
-
-<span class="c1">// read the first change event</span>
-<span class="k">let</span> <span class="nv">next</span> <span class="o">=</span> <span class="k">try</span> <span class="n">stream</span><span class="o">.</span><span class="nf">nextOrError</span><span class="p">()</span>
-
-<span class="c1">// create a new change stream that starts after the first change event</span>
-<span class="k">let</span> <span class="nv">resumeToken</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">resumeToken</span>
-<span class="k">let</span> <span class="nv">resumedStream</span> <span class="o">=</span> <span class="k">try</span> <span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">(</span><span class="nv">options</span><span class="p">:</span> <span class="kt">ChangeStreamOptions</span><span class="p">(</span><span class="nv">resumeAfter</span><span class="p">:</span> <span class="n">resumeToken</span><span class="p">))</span>
-<span class="k">for</span> <span class="n">change</span> <span class="k">in</span> <span class="n">resumedStream</span> <span class="p">{</span>
-    <span class="c1">// process `ChangeStreamEvent&lt;Document&gt;` here</span>
-<span class="p">}</span>
-
-<span class="c1">// check if any errors occurred while iterating</span>
-<span class="k">if</span> <span class="k">let</span> <span class="nv">error</span> <span class="o">=</span> <span class="n">resumedStream</span><span class="o">.</span><span class="n">error</span> <span class="p">{</span>
+<span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">()</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">stream</span> <span class="o">-&gt;</span> <span class="kt">EventLoopFuture</span><span class="o">&lt;</span><span class="kt">ChangeStream</span><span class="o">&lt;</span><span class="kt">ChangeStreamEvent</span><span class="o">&lt;</span><span class="kt">Document</span><span class="o">&gt;&gt;&gt;</span> <span class="k">in</span>
+    <span class="c1">// read the first change event</span>
+    <span class="n">stream</span><span class="o">.</span><span class="nf">next</span><span class="p">()</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">_</span> <span class="k">in</span>
+        <span class="c1">// simulate an error by killing the stream</span>
+        <span class="n">stream</span><span class="o">.</span><span class="nf">kill</span><span class="p">()</span>
+    <span class="p">}</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">_</span> <span class="k">in</span>
+        <span class="c1">// create a new change stream that starts after the first change event</span>
+        <span class="k">let</span> <span class="nv">resumeToken</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">resumeToken</span>
+        <span class="k">return</span> <span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">(</span><span class="nv">options</span><span class="p">:</span> <span class="kt">ChangeStreamOptions</span><span class="p">(</span><span class="nv">resumeAfter</span><span class="p">:</span> <span class="n">resumeToken</span><span class="p">))</span>
+    <span class="p">}</span>
+<span class="p">}</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">resumedStream</span> <span class="k">in</span>
+    <span class="n">resumedStream</span><span class="o">.</span><span class="n">forEach</span> <span class="p">{</span> <span class="n">event</span> <span class="k">in</span>
+        <span class="c1">// process `ChangeStreamEvent&lt;Document&gt;` here</span>
+    <span class="p">}</span>
+<span class="p">}</span><span class="o">.</span><span class="n">whenFailure</span> <span class="p">{</span> <span class="n">error</span> <span class="k">in</span>
     <span class="c1">// handle error</span>
 <span class="p">}</span>
+
+<span class="c1">// perform some operations using `inventory`...</span>
 </code></pre>
 <h3 id='modify-change-stream-output' class='heading'>Modify Change Stream Output</h3>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">()</span>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">elg</span> <span class="o">=</span> <span class="kt">MultiThreadedEventLoopGroup</span><span class="p">(</span><span class="nv">numberOfThreads</span><span class="p">:</span> <span class="mi">4</span><span class="p">)</span>
+<span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="nv">using</span><span class="p">:</span> <span class="n">elg</span><span class="p">)</span>
 <span class="k">let</span> <span class="nv">inventory</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="nf">db</span><span class="p">(</span><span class="s">"example"</span><span class="p">)</span><span class="o">.</span><span class="nf">collection</span><span class="p">(</span><span class="s">"inventory"</span><span class="p">)</span>
 
 <span class="c1">// Only include events where the changed document's username = "alice"</span>
@@ -246,15 +250,15 @@
     <span class="p">[</span><span class="s">"$match"</span><span class="p">:</span> <span class="p">[</span><span class="s">"fullDocument.username"</span><span class="p">:</span> <span class="s">"alice"</span><span class="p">]</span> <span class="k">as</span> <span class="kt">Document</span><span class="p">]</span>
 <span class="p">]</span>
 
-<span class="k">let</span> <span class="nv">stream</span> <span class="o">=</span> <span class="k">try</span> <span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">(</span><span class="n">pipeline</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">change</span> <span class="k">in</span> <span class="n">stream</span> <span class="p">{</span>
-    <span class="c1">// process `ChangeStreamEvent&lt;Document&gt;` here</span>
-<span class="p">}</span>
-
-<span class="c1">// check if any errors occurred while iterating</span>
-<span class="k">if</span> <span class="k">let</span> <span class="nv">error</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">error</span> <span class="p">{</span>
+<span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">(</span><span class="n">pipeline</span><span class="p">)</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">stream</span> <span class="k">in</span> <span class="c1">// a `ChangeStream&lt;ChangeStreamEvent&lt;Document&gt;&gt;`</span>
+    <span class="n">stream</span><span class="o">.</span><span class="n">forEach</span> <span class="p">{</span> <span class="n">event</span> <span class="k">in</span>
+        <span class="c1">// process `ChangeStreamEvent&lt;Document&gt;` here</span>
+    <span class="p">}</span>
+<span class="p">}</span><span class="o">.</span><span class="n">whenFailure</span> <span class="p">{</span> <span class="n">error</span> <span class="k">in</span>
     <span class="c1">// handle error</span>
 <span class="p">}</span>
+
+<span class="c1">// perform some operations using `inventory`...</span>
 </code></pre>
 <h2 id='see-also' class='heading'>See Also</h2>
 
@@ -269,7 +273,7 @@
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-02-27)</p>
+      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-05-05)</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>

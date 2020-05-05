@@ -20,7 +20,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          MongoSwiftSync 1.0.0-rc0 Docs
+          MongoSwiftSync 1.0.0-rc1 Docs
         </a>
          (100% documented)
       </p>
@@ -73,6 +73,12 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="multithreaded-usage.html">Multithreaded-Usage</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="tls.html">TLS</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="transactions.html">Transactions</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -120,6 +126,7 @@
 <li><a href="#server-errors">Server Errors</a></li>
 <li><a href="#user-errors">User Errors</a></li>
 <li><a href="#runtime-errors">Runtime Errors</a></li>
+<li><a href="#error-labels">Error Labels</a></li>
 <li><a href="#encoding-decoding-errors">Encoding/Decoding Errors</a></li>
 </ul></li>
 <li><a href="#the-code">Examples</a>
@@ -135,8 +142,6 @@
 <h2 id='error-types' class='heading'>Error Types</h2>
 
 <p>The driver uses errors to communicate that an operation failed, an assumption wasn&rsquo;t met, or that the user did something incorrectly. Applications that use the driver can in turn catch these errors and respond appropriately without crashing or resulting in an otherwise inconsistent state. To correctly model the different sources of errors, the driver defines three separate caregories of errors (<code>ServerError</code>, <code>UserError</code>, <code>RuntimeError</code>), each of which are protocols that inherit from the <code>MongoError</code> protocol. These protocols are defined in <code>MongoError.swift</code>, and the structs that conform to them are outlined here. The documentation for every public function that throws lists some of the errors that could possibly be thrown and the reasons they might be. The errors listed there are not comprehensive but will generally cover the most common cases.</p>
-
-<p><strong>Error Labels:</strong> Some types of errors may contain more specific information describing the context in which they occured. Such errors conform to the <code>LabeledError</code> protocol, and the extra information is conveyed through the <code>errorLabels</code> property. Specifically, any server error or connection related error may contain labels.</p>
 <h3 id='server-errors' class='heading'>Server Errors</h3>
 
 <p>Server errors correspond to failures that occur in the database itself and are returned to the driver via some response to a command. Each error that conforms to <code>ServerError</code> contains at least one error code representing what went wrong on the server.</p>
@@ -216,6 +221,24 @@
     See <a href="https://docs.mongodb.com/manual/core/read-preference-mechanics/">the official MongoDB documentation</a> for more information.
 
 </div></li>
+</ul>
+<h3 id='error-labels' class='heading'>Error Labels</h3>
+
+<p>Some types of errors may contain more specific information describing the context in which they occured. Such errors conform to the <code>LabeledError</code> protocol, and the extra information is conveyed through the <code>errorLabels</code> property. Specifically, any server error or connection related error may contain labels.</p>
+
+<p>The following error labels are currently defined. Future versions of MongoDB may introduce new labels:</p>
+
+<ul>
+<li><code>TransientTransactionError</code>:
+
+<ul>
+<li>Within a multi-document transaction, certain errors can leave the transaction in an unknown or aborted state. These include write conflicts, primary stepdowns, and network errors. In response, the application should abort the transaction and try the same sequence of operations again in a new transaction.</li>
+</ul></li>
+<li><code>UnknownTransactionCommitResult</code>:
+
+<ul>
+<li>When <code>commitTransaction()</code> encounters a network error or certain server errors, it is not known whether the transaction was committed. Applications should attempt to commit the transaction again until (i) the commit succeeds, (ii) the commit fails with an error <em>not</em> labeled <code>UnknownTransactionCommitResult</code>, or (iii) the application chooses to give up.</li>
+</ul></li>
 </ul>
 <h3 id='encoding-decoding-errors' class='heading'>Encoding/Decoding Errors</h3>
 
@@ -308,7 +331,7 @@ InsertedIds: [0: 2]
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-02-27)</p>
+      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-05-05)</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>

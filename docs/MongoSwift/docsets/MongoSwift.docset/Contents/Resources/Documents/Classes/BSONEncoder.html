@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          MongoSwift 1.0.0-rc0 Docs
+          MongoSwift 1.0.0-rc1 Docs
         </a>
          (99% documented)
       </p>
@@ -74,6 +74,12 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../multithreaded-usage.html">Multithreaded-Usage</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../tls.html">TLS</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../transactions.html">Transactions</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -113,19 +119,10 @@
                 <a class="nav-group-task-link" href="../Classes/DocumentIterator.html">DocumentIterator</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Classes.html#/s:10MongoSwift15DocumentStorageC">DocumentStorage</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/MongoClient.html">MongoClient</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/MongoCursor.html">MongoCursor</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Classes/ReadPreference.html">ReadPreference</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Classes/ReadPreference/Mode.html">– Mode</a>
               </li>
             </ul>
           </li>
@@ -393,6 +390,9 @@
                 <a class="nav-group-task-link" href="../Structs/ListCollectionsOptions.html">ListCollectionsOptions</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ListDatabasesOptions.html">ListDatabasesOptions</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/LogicError.html">LogicError</a>
               </li>
               <li class="nav-group-task">
@@ -412,6 +412,12 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/ReadConcern/Level.html">– Level</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReadPreference.html">ReadPreference</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReadPreference/Mode.html">– Mode</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/RegularExpression.html">RegularExpression</a>
@@ -459,9 +465,6 @@
                 <a class="nav-group-task-link" href="../Structs/Symbol.html">Symbol</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/TLSOptions.html">TLSOptions</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/Timestamp.html">Timestamp</a>
               </li>
               <li class="nav-group-task">
@@ -478,6 +481,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/TopologyOpeningEvent.html">TopologyOpeningEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/TransactionOptions.html">TransactionOptions</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/UpdateDescription.html">UpdateDescription</a>
@@ -574,7 +580,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/BSON/BSONEncoder.swift#L13-L36">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/BSON/BSONEncoder.swift#L13-L36">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -613,7 +619,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/BSON/BSONEncoder.swift#L46-L52">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/BSON/BSONEncoder.swift#L46-L52">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -652,7 +658,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/BSON/BSONEncoder.swift#L62-L81">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/BSON/BSONEncoder.swift#L62-L81">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -677,12 +683,12 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">dateEncodingStrategy</span><span class="p">:</span> <span class="kt">BSONEncoder</span><span class="o">.</span><span class="kt"><a href="../Classes/BSONEncoder/DateEncodingStrategy.html">DateEncodingStrategy</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">dateEncodingStrategy</span><span class="p">:</span> <span class="kt"><a href="../Classes/BSONEncoder/DateEncodingStrategy.html">DateEncodingStrategy</a></span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/BSON/BSONEncoder.swift#L84">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/BSON/BSONEncoder.swift#L84">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -707,12 +713,12 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">uuidEncodingStrategy</span><span class="p">:</span> <span class="kt">BSONEncoder</span><span class="o">.</span><span class="kt"><a href="../Classes/BSONEncoder/UUIDEncodingStrategy.html">UUIDEncodingStrategy</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">uuidEncodingStrategy</span><span class="p">:</span> <span class="kt"><a href="../Classes/BSONEncoder/UUIDEncodingStrategy.html">UUIDEncodingStrategy</a></span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/BSON/BSONEncoder.swift#L87">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/BSON/BSONEncoder.swift#L87">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -737,12 +743,12 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">dataEncodingStrategy</span><span class="p">:</span> <span class="kt">BSONEncoder</span><span class="o">.</span><span class="kt"><a href="../Classes/BSONEncoder/DataEncodingStrategy.html">DataEncodingStrategy</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">dataEncodingStrategy</span><span class="p">:</span> <span class="kt"><a href="../Classes/BSONEncoder/DataEncodingStrategy.html">DataEncodingStrategy</a></span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/BSON/BSONEncoder.swift#L90">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/BSON/BSONEncoder.swift#L90">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -772,7 +778,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/BSON/BSONEncoder.swift#L93">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/BSON/BSONEncoder.swift#L93">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -802,7 +808,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/BSON/BSONEncoder.swift#L114-L116">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/BSON/BSONEncoder.swift#L114-L116">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -860,7 +866,7 @@
                         <p>A new <code><a href="../Structs/Document.html">Document</a></code> containing the encoded BSON data.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/BSON/BSONEncoder.swift#L142-L173">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/BSON/BSONEncoder.swift#L142-L173">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -919,7 +925,7 @@
                         <p>A new <code><a href="../Structs/Document.html">Document</a></code> containing the encoded BSON data, or nil if there is no data to encode.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/BSON/BSONEncoder.swift#L183-L189">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/BSON/BSONEncoder.swift#L183-L189">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -977,7 +983,7 @@
                         <p>A new <code>[Document]</code> containing the encoded BSON data.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/BSON/BSONEncoder.swift#L198-L200">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/BSON/BSONEncoder.swift#L198-L200">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1037,7 +1043,7 @@
         contains no data will be mapped to nil.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/BSON/BSONEncoder.swift#L211-L213">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/BSON/BSONEncoder.swift#L211-L213">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1050,7 +1056,7 @@
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-02-27)</p>
+      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-05-05)</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>

@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          MongoSwift 1.0.0-rc0 Docs
+          MongoSwift 1.0.0-rc1 Docs
         </a>
          (99% documented)
       </p>
@@ -74,6 +74,12 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../multithreaded-usage.html">Multithreaded-Usage</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../tls.html">TLS</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../transactions.html">Transactions</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -113,19 +119,10 @@
                 <a class="nav-group-task-link" href="../Classes/DocumentIterator.html">DocumentIterator</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Classes.html#/s:10MongoSwift15DocumentStorageC">DocumentStorage</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/MongoClient.html">MongoClient</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/MongoCursor.html">MongoCursor</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Classes/ReadPreference.html">ReadPreference</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Classes/ReadPreference/Mode.html">– Mode</a>
               </li>
             </ul>
           </li>
@@ -393,6 +390,9 @@
                 <a class="nav-group-task-link" href="../Structs/ListCollectionsOptions.html">ListCollectionsOptions</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ListDatabasesOptions.html">ListDatabasesOptions</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/LogicError.html">LogicError</a>
               </li>
               <li class="nav-group-task">
@@ -412,6 +412,12 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/ReadConcern/Level.html">– Level</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReadPreference.html">ReadPreference</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReadPreference/Mode.html">– Mode</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/RegularExpression.html">RegularExpression</a>
@@ -459,9 +465,6 @@
                 <a class="nav-group-task-link" href="../Structs/Symbol.html">Symbol</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/TLSOptions.html">TLSOptions</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/Timestamp.html">Timestamp</a>
               </li>
               <li class="nav-group-task">
@@ -478,6 +481,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/TopologyOpeningEvent.html">TopologyOpeningEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/TransactionOptions.html">TransactionOptions</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/UpdateDescription.html">UpdateDescription</a>
@@ -545,36 +551,6 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A6ClientC21defaultThreadPoolSizeSivpZ"></a>
-                    <a name="//apple_ref/swift/Variable/defaultThreadPoolSize" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A6ClientC21defaultThreadPoolSizeSivpZ">defaultThreadPoolSize</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Default size for a client&rsquo;s NIOThreadPool.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">defaultThreadPoolSize</span><span class="p">:</span> <span class="kt">Int</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L163">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
                     <a name="/s:10MongoSwift0A6ClientC7encoderAA11BSONEncoderCvp"></a>
                     <a name="//apple_ref/swift/Property/encoder" class="dashAnchor"></a>
                     <a class="token" href="#/s:10MongoSwift0A6ClientC7encoderAA11BSONEncoderCvp">encoder</a>
@@ -597,7 +573,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L184">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoClient.swift#L190">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -627,7 +603,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L187">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoClient.swift#L193">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -657,7 +633,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L190">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoClient.swift#L196">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -665,9 +641,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A6ClientC14readPreferenceAA04ReadE0Cvp"></a>
+                    <a name="/s:10MongoSwift0A6ClientC14readPreferenceAA04ReadE0Vvp"></a>
                     <a name="//apple_ref/swift/Property/readPreference" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A6ClientC14readPreferenceAA04ReadE0Cvp">readPreference</a>
+                    <a class="token" href="#/s:10MongoSwift0A6ClientC14readPreferenceAA04ReadE0Vvp">readPreference</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -675,19 +651,19 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>The <code><a href="../Classes/ReadPreference.html">ReadPreference</a></code> set on this client.</p>
+                        <p>The <code><a href="../Structs/ReadPreference.html">ReadPreference</a></code> set on this client.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">readPreference</span><span class="p">:</span> <span class="kt"><a href="../Classes/ReadPreference.html">ReadPreference</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">readPreference</span><span class="p">:</span> <span class="kt"><a href="../Structs/ReadPreference.html">ReadPreference</a></span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L193">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoClient.swift#L199">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -717,7 +693,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L196">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoClient.swift#L202">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -811,7 +787,7 @@
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L215-L250">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoClient.swift#L221-L256">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -819,9 +795,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A6ClientC8shutdown3NIO15EventLoopFutureCyytGyF"></a>
-                    <a name="//apple_ref/swift/Method/shutdown()" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A6ClientC8shutdown3NIO15EventLoopFutureCyytGyF">shutdown()</a>
+                    <a name="/s:10MongoSwift0A6ClientC5close3NIO15EventLoopFutureCyytGyF"></a>
+                    <a name="//apple_ref/swift/Method/close()" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A6ClientC5close3NIO15EventLoopFutureCyytGyF">close()</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -829,22 +805,28 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Shuts this <code>MongoClient</code> down, closing all connection to the server and cleaning up internal state.
-Call this method exactly once when you are finished using the client. You must ensure that all operations
-using the client have completed before calling this. The returned future must be fulfilled before the
-<code>EventLoopGroup</code> provided to this client&rsquo;s constructor is shut down.</p>
+                        <p>Closes this <code>MongoClient</code>, closing all connections to the server and cleaning up internal state.</p>
+
+<p>Call this method exactly once when you are finished using the client. You must ensure that all operations using
+ the client have completed before calling this.</p>
+
+<p>The returned future will not be fulfilled until all cursors and change streams created from this client have been
+ been killed, and all sessions created from this client have been ended.</p>
+
+<p>The returned future must be fulfilled before the <code>EventLoopGroup</code> provided to this client&rsquo;s constructor is shut
+ down.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">shutdown</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">EventLoopFuture</span><span class="o">&lt;</span><span class="kt">Void</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">close</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">EventLoopFuture</span><span class="o">&lt;</span><span class="kt">Void</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L260-L268">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoClient.swift#L278-L290">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -852,9 +834,9 @@ using the client have completed before calling this. The returned future must be
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A6ClientC12syncShutdownyyF"></a>
-                    <a name="//apple_ref/swift/Method/syncShutdown()" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A6ClientC12syncShutdownyyF">syncShutdown()</a>
+                    <a name="/s:10MongoSwift0A6ClientC9syncCloseyyKF"></a>
+                    <a name="//apple_ref/swift/Method/syncClose()" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A6ClientC9syncCloseyyKF">syncClose()</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -866,7 +848,8 @@ using the client have completed before calling this. The returned future must be
  internal state.</p>
 
 <p>Call this method exactly once when you are finished using the client. You must ensure that all operations
- using the client have completed before calling this.</p>
+ using the client have completed before calling this. This method will block until all cursors and change streams
+ created from this client have been killed, and all sessions created from this client have been ended.</p>
 
 <p>This method must complete before the <code>EventLoopGroup</code> provided to this client&rsquo;s constructor is shut down.</p>
 
@@ -875,12 +858,12 @@ using the client have completed before calling this. The returned future must be
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">syncShutdown</span><span class="p">()</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">syncClose</span><span class="p">()</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L279-L284">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoClient.swift#L302-L306">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -911,7 +894,7 @@ using the client have completed before calling this. The returned future must be
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L288-L290">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoClient.swift#L310-L312">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -987,7 +970,7 @@ using the client have completed before calling this. The returned future must be
 </ul>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L307-L333">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoClient.swift#L329-L355">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -995,9 +978,9 @@ using the client have completed before calling this. The returned future must be
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A6ClientC13listDatabases_7session3NIO15EventLoopFutureCySayAA21DatabaseSpecificationVGGAA8DocumentVSg_AA0C7SessionCSgtF"></a>
-                    <a name="//apple_ref/swift/Method/listDatabases(_:session:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A6ClientC13listDatabases_7session3NIO15EventLoopFutureCySayAA21DatabaseSpecificationVGGAA8DocumentVSg_AA0C7SessionCSgtF">listDatabases(_:session:)</a>
+                    <a name="/s:10MongoSwift0A6ClientC13listDatabases_7options7session3NIO15EventLoopFutureCySayAA21DatabaseSpecificationVGGAA8DocumentVSg_AA04ListE7OptionsVSgAA0C7SessionCSgtF"></a>
+                    <a name="//apple_ref/swift/Method/listDatabases(_:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A6ClientC13listDatabases_7options7session3NIO15EventLoopFutureCySayAA21DatabaseSpecificationVGGAA8DocumentVSg_AA04ListE7OptionsVSgAA0C7SessionCSgtF">listDatabases(_:options:session:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1019,6 +1002,7 @@ using the client have completed before calling this. The returned future must be
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">listDatabases</span><span class="p">(</span>
     <span class="n">_</span> <span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/ListDatabasesOptions.html">ListDatabasesOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">EventLoopFuture</span><span class="o">&lt;</span><span class="p">[</span><span class="kt"><a href="../Structs/DatabaseSpecification.html">DatabaseSpecification</a></span><span class="p">]</span><span class="o">&gt;</span></code></pre>
 
@@ -1038,6 +1022,18 @@ using the client have completed before calling this. The returned future must be
                                 <div>
                                   <p>Optional <code><a href="../Structs/Document.html">Document</a></code> specifying a filter that the listed databases must pass. This filter can be based
 on the &ldquo;name&rdquo;, &ldquo;sizeOnDisk&rdquo;, &ldquo;empty&rdquo;, or &ldquo;shards&rdquo; fields of the output.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>options</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional <code><a href="../Structs/ListDatabasesOptions.html">ListDatabasesOptions</a></code> specifying options for listing databases.</p>
                                 </div>
                               </td>
                             </tr>
@@ -1067,10 +1063,11 @@ of databases matching the provided criteria.</p>
 <li><code><a href="../Structs/LogicError.html">LogicError</a></code> if the provided session is inactive.</li>
 <li><code><a href="../Structs/LogicError.html">LogicError</a></code> if this client has already been closed.</li>
 <li><code>EncodingError</code> if an error is encountered while encoding the options to BSON.</li>
+<li><code><a href="../Structs/CommandError.html">CommandError</a></code> if options.authorizedDatabases is false and the user does not have listDatabases permissions.</li>
 </ul>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L354-L365">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoClient.swift#L378-L390">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1078,9 +1075,9 @@ of databases matching the provided criteria.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A6ClientC04listA9Databases_7session3NIO15EventLoopFutureCySayAA0A8DatabaseVGGAA8DocumentVSg_AA0C7SessionCSgtF"></a>
-                    <a name="//apple_ref/swift/Method/listMongoDatabases(_:session:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A6ClientC04listA9Databases_7session3NIO15EventLoopFutureCySayAA0A8DatabaseVGGAA8DocumentVSg_AA0C7SessionCSgtF">listMongoDatabases(_:session:)</a>
+                    <a name="/s:10MongoSwift0A6ClientC04listA9Databases_7options7session3NIO15EventLoopFutureCySayAA0A8DatabaseVGGAA8DocumentVSg_AA04ListE7OptionsVSgAA0C7SessionCSgtF"></a>
+                    <a name="//apple_ref/swift/Method/listMongoDatabases(_:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A6ClientC04listA9Databases_7options7session3NIO15EventLoopFutureCySayAA0A8DatabaseVGGAA8DocumentVSg_AA04ListE7OptionsVSgAA0C7SessionCSgtF">listMongoDatabases(_:options:session:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1097,6 +1094,7 @@ of databases matching the provided criteria.</p>
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">listMongoDatabases</span><span class="p">(</span>
     <span class="n">_</span> <span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/ListDatabasesOptions.html">ListDatabasesOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">EventLoopFuture</span><span class="o">&lt;</span><span class="p">[</span><span class="kt"><a href="../Structs/MongoDatabase.html">MongoDatabase</a></span><span class="p">]</span><span class="o">&gt;</span></code></pre>
 
@@ -1115,6 +1113,18 @@ of databases matching the provided criteria.</p>
                               <td>
                                 <div>
                                   <p>Optional <code><a href="../Structs/Document.html">Document</a></code> specifying a filter on the names of the returned databases.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>options</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional <code><a href="../Structs/ListDatabasesOptions.html">ListDatabasesOptions</a></code> specifying options for listing databases.</p>
                                 </div>
                               </td>
                             </tr>
@@ -1143,10 +1153,11 @@ match the provided filter.</p>
 <ul>
 <li><code><a href="../Structs/LogicError.html">LogicError</a></code> if the provided session is inactive.</li>
 <li><code><a href="../Structs/LogicError.html">LogicError</a></code> if this client has already been closed.</li>
+<li><code><a href="../Structs/CommandError.html">CommandError</a></code> if options.authorizedDatabases is false and the user does not have listDatabases permissions.</li>
 </ul>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L382-L387">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoClient.swift#L409-L415">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1154,9 +1165,9 @@ match the provided filter.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A6ClientC17listDatabaseNames_7session3NIO15EventLoopFutureCySaySSGGAA8DocumentVSg_AA0C7SessionCSgtF"></a>
-                    <a name="//apple_ref/swift/Method/listDatabaseNames(_:session:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A6ClientC17listDatabaseNames_7session3NIO15EventLoopFutureCySaySSGGAA8DocumentVSg_AA0C7SessionCSgtF">listDatabaseNames(_:session:)</a>
+                    <a name="/s:10MongoSwift0A6ClientC17listDatabaseNames_7options7session3NIO15EventLoopFutureCySaySSGGAA8DocumentVSg_AA20ListDatabasesOptionsVSgAA0C7SessionCSgtF"></a>
+                    <a name="//apple_ref/swift/Method/listDatabaseNames(_:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A6ClientC17listDatabaseNames_7options7session3NIO15EventLoopFutureCySaySSGGAA8DocumentVSg_AA20ListDatabasesOptionsVSgAA0C7SessionCSgtF">listDatabaseNames(_:options:session:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1173,6 +1184,7 @@ match the provided filter.</p>
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">listDatabaseNames</span><span class="p">(</span>
     <span class="n">_</span> <span class="nv">filter</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/ListDatabasesOptions.html">ListDatabasesOptions</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">EventLoopFuture</span><span class="o">&lt;</span><span class="p">[</span><span class="kt">String</span><span class="p">]</span><span class="o">&gt;</span></code></pre>
 
@@ -1191,6 +1203,18 @@ match the provided filter.</p>
                               <td>
                                 <div>
                                   <p>Optional <code><a href="../Structs/Document.html">Document</a></code> specifying a filter on the names of the returned databases.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>options</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional <code><a href="../Structs/ListDatabasesOptions.html">ListDatabasesOptions</a></code> specifying options for listing databases.</p>
                                 </div>
                               </td>
                             </tr>
@@ -1219,10 +1243,11 @@ match the provided filter.</p>
 <ul>
 <li><code><a href="../Structs/LogicError.html">LogicError</a></code> if the provided session is inactive.</li>
 <li><code><a href="../Structs/LogicError.html">LogicError</a></code> if this client has already been closed.</li>
+<li><code><a href="../Structs/CommandError.html">CommandError</a></code> if options.authorizedDatabases is false and the user does not have listDatabases permissions.</li>
 </ul>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L404-L415">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoClient.swift#L434-L446">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1290,7 +1315,7 @@ match the provided filter.</p>
                         <p>a <code><a href="../Structs/MongoDatabase.html">MongoDatabase</a></code> corresponding to the provided database name.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L429-L431">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoClient.swift#L460-L462">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1396,7 +1421,7 @@ deployment.</p>
 </ul>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L458-L464">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoClient.swift#L489-L495">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1518,7 +1543,7 @@ deployment.</p>
 </ul>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L495-L507">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoClient.swift#L526-L538">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1639,7 +1664,7 @@ deployment.</p>
 </ul>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L537-L549">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoClient.swift#L568-L580">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1672,7 +1697,7 @@ deployment.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L557-L559">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoClient.swift#L588-L590">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1705,7 +1730,7 @@ deployment.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L567-L569">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoClient.swift#L598-L600">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1738,7 +1763,7 @@ deployment.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L577-L579">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoClient.swift#L608-L610">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1771,7 +1796,7 @@ deployment.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L587-L589">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoClient.swift#L618-L620">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1800,7 +1825,7 @@ deployment.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L602-L604">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoClient.swift#L648-L650">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1813,7 +1838,7 @@ deployment.</p>
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-02-27)</p>
+      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-05-05)</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>

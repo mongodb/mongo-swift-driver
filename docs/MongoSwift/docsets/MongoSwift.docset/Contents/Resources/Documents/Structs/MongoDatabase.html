@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          MongoSwift 1.0.0-rc0 Docs
+          MongoSwift 1.0.0-rc1 Docs
         </a>
          (99% documented)
       </p>
@@ -74,6 +74,12 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../multithreaded-usage.html">Multithreaded-Usage</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../tls.html">TLS</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../transactions.html">Transactions</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -113,19 +119,10 @@
                 <a class="nav-group-task-link" href="../Classes/DocumentIterator.html">DocumentIterator</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Classes.html#/s:10MongoSwift15DocumentStorageC">DocumentStorage</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/MongoClient.html">MongoClient</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/MongoCursor.html">MongoCursor</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Classes/ReadPreference.html">ReadPreference</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Classes/ReadPreference/Mode.html">– Mode</a>
               </li>
             </ul>
           </li>
@@ -393,6 +390,9 @@
                 <a class="nav-group-task-link" href="../Structs/ListCollectionsOptions.html">ListCollectionsOptions</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ListDatabasesOptions.html">ListDatabasesOptions</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/LogicError.html">LogicError</a>
               </li>
               <li class="nav-group-task">
@@ -412,6 +412,12 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/ReadConcern/Level.html">– Level</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReadPreference.html">ReadPreference</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReadPreference/Mode.html">– Mode</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/RegularExpression.html">RegularExpression</a>
@@ -459,9 +465,6 @@
                 <a class="nav-group-task-link" href="../Structs/Symbol.html">Symbol</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/TLSOptions.html">TLSOptions</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/Timestamp.html">Timestamp</a>
               </li>
               <li class="nav-group-task">
@@ -478,6 +481,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/TopologyOpeningEvent.html">TopologyOpeningEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/TransactionOptions.html">TransactionOptions</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/UpdateDescription.html">UpdateDescription</a>
@@ -567,7 +573,7 @@ from this database.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoDatabase.swift#L70">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoDatabase.swift#L70">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -597,7 +603,7 @@ from this database.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoDatabase.swift#L73">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoDatabase.swift#L73">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -627,7 +633,7 @@ from this database.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoDatabase.swift#L76">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoDatabase.swift#L76">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -657,7 +663,7 @@ from this database.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoDatabase.swift#L79">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoDatabase.swift#L79">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -665,9 +671,9 @@ from this database.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A8DatabaseV14readPreferenceAA04ReadE0Cvp"></a>
+                    <a name="/s:10MongoSwift0A8DatabaseV14readPreferenceAA04ReadE0Vvp"></a>
                     <a name="//apple_ref/swift/Property/readPreference" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A8DatabaseV14readPreferenceAA04ReadE0Cvp">readPreference</a>
+                    <a class="token" href="#/s:10MongoSwift0A8DatabaseV14readPreferenceAA04ReadE0Vvp">readPreference</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -675,19 +681,19 @@ from this database.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>The <code><a href="../Classes/ReadPreference.html">ReadPreference</a></code> set on this database</p>
+                        <p>The <code><a href="../Structs/ReadPreference.html">ReadPreference</a></code> set on this database</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">readPreference</span><span class="p">:</span> <span class="kt"><a href="../Classes/ReadPreference.html">ReadPreference</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">readPreference</span><span class="p">:</span> <span class="kt"><a href="../Structs/ReadPreference.html">ReadPreference</a></span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoDatabase.swift#L82">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoDatabase.swift#L82">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -717,7 +723,7 @@ from this database.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoDatabase.swift#L85">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoDatabase.swift#L85">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -759,7 +765,7 @@ from this database.</p>
 </ul>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoDatabase.swift#L129-L132">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoDatabase.swift#L129-L132">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -827,7 +833,7 @@ from this database.</p>
                         <p>the requested <code><a href="../Structs/MongoCollection.html">MongoCollection&lt;Document&gt;</a></code></p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoDatabase.swift#L146-L148">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoDatabase.swift#L146-L148">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -901,7 +907,7 @@ from this database.</p>
                         <p>the requested <code><a href="../Structs/MongoCollection.html">MongoCollection&lt;T&gt;</a></code></p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoDatabase.swift#L164-L170">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoDatabase.swift#L164-L170">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -992,7 +998,7 @@ from this database.</p>
 </ul>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoDatabase.swift#L190-L196">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoDatabase.swift#L190-L196">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1086,7 +1092,7 @@ from this database.</p>
 </ul>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoDatabase.swift#L219-L227">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoDatabase.swift#L219-L227">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1175,7 +1181,7 @@ from this database.</p>
 </ul>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoDatabase.swift#L245-L259">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoDatabase.swift#L245-L259">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1265,7 +1271,7 @@ provided filter.</p>
 </ul>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoDatabase.swift#L278-L286">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoDatabase.swift#L278-L286">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1354,7 +1360,7 @@ provided filter.</p>
 </ul>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoDatabase.swift#L304-L317">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoDatabase.swift#L304-L317">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1446,7 +1452,7 @@ provided filter.</p>
 </ul>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoDatabase.swift#L338-L345">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoDatabase.swift#L338-L345">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1552,7 +1558,7 @@ pipeline.</li>
 </ul>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoDatabase.swift#L372-L378">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoDatabase.swift#L372-L378">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1674,7 +1680,7 @@ pipeline.</li>
 </ul>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoDatabase.swift#L409-L421">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoDatabase.swift#L409-L421">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1795,7 +1801,7 @@ pipeline.</li>
 </ul>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoDatabase.swift#L451-L463">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoDatabase.swift#L451-L463">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1808,7 +1814,7 @@ pipeline.</li>
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-02-27)</p>
+      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-05-05)</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>

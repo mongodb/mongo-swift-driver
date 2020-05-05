@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>TLSOptions Structure Reference</title>
+    <title>TransactionOptions Structure Reference</title>
     <link rel="stylesheet" type="text/css" href="../css/jazzy.css" />
     <link rel="stylesheet" type="text/css" href="../css/highlight.css" />
     <meta charset="utf-8">
@@ -14,14 +14,14 @@
   </head>
   <body>
 
-    <a name="//apple_ref/swift/Struct/TLSOptions" class="dashAnchor"></a>
+    <a name="//apple_ref/swift/Struct/TransactionOptions" class="dashAnchor"></a>
 
-    <a title="TLSOptions Structure Reference"></a>
+    <a title="TransactionOptions Structure Reference"></a>
 
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          MongoSwift 1.0.0-rc0 Docs
+          MongoSwift 1.0.0-rc1 Docs
         </a>
          (99% documented)
       </p>
@@ -50,7 +50,7 @@
     <p class="breadcrumbs">
       <a class="breadcrumb" href="../index.html">MongoSwift Reference</a>
       <img class="carat" src="../img/carat.png" />
-      TLSOptions Structure Reference
+      TransactionOptions Structure Reference
     </p>
 
     <div class="content-wrapper">
@@ -73,6 +73,12 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../multithreaded-usage.html">Multithreaded-Usage</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../tls.html">TLS</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../transactions.html">Transactions</a>
               </li>
             </ul>
           </li>
@@ -113,19 +119,10 @@
                 <a class="nav-group-task-link" href="../Classes/DocumentIterator.html">DocumentIterator</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Classes.html#/s:10MongoSwift15DocumentStorageC">DocumentStorage</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/MongoClient.html">MongoClient</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/MongoCursor.html">MongoCursor</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Classes/ReadPreference.html">ReadPreference</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Classes/ReadPreference/Mode.html">– Mode</a>
               </li>
             </ul>
           </li>
@@ -393,6 +390,9 @@
                 <a class="nav-group-task-link" href="../Structs/ListCollectionsOptions.html">ListCollectionsOptions</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ListDatabasesOptions.html">ListDatabasesOptions</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/LogicError.html">LogicError</a>
               </li>
               <li class="nav-group-task">
@@ -412,6 +412,12 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/ReadConcern/Level.html">– Level</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReadPreference.html">ReadPreference</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReadPreference/Mode.html">– Mode</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/RegularExpression.html">RegularExpression</a>
@@ -459,9 +465,6 @@
                 <a class="nav-group-task-link" href="../Structs/Symbol.html">Symbol</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/TLSOptions.html">TLSOptions</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/Timestamp.html">Timestamp</a>
               </li>
               <li class="nav-group-task">
@@ -478,6 +481,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/TopologyOpeningEvent.html">TopologyOpeningEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/TransactionOptions.html">TransactionOptions</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/UpdateDescription.html">UpdateDescription</a>
@@ -525,14 +531,14 @@
 
         <section class="section">
           <div class="section-content top-matter">
-            <h1>TLSOptions</h1>
+            <h1>TransactionOptions</h1>
               <div class="declaration">
                 <div class="language">
-                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">TLSOptions</span></code></pre>
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">TransactionOptions</span></code></pre>
 
                 </div>
               </div>
-            <p>Options used to configure TLS/SSL connections to the database.</p>
+            <p>Options to use when starting a transaction.</p>
 
           </div>
         </section>
@@ -544,9 +550,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift10TLSOptionsV21allowInvalidHostnamesSbSgvp"></a>
-                    <a name="//apple_ref/swift/Property/allowInvalidHostnames" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift10TLSOptionsV21allowInvalidHostnamesSbSgvp">allowInvalidHostnames</a>
+                    <a name="/s:10MongoSwift18TransactionOptionsV15maxCommitTimeMSSiSgvp"></a>
+                    <a name="//apple_ref/swift/Property/maxCommitTimeMS" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift18TransactionOptionsV15maxCommitTimeMSSiSgvp">maxCommitTimeMS</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -554,19 +560,19 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Indicates whether invalid hostnames are allowed. By default this is set to false.</p>
+                        <p>The maximum amount of time to allow a single <code>commitTransaction</code> command to run.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">allowInvalidHostnames</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">maxCommitTimeMS</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L124">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/StartTransactionOperation.swift#L6">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -574,9 +580,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift10TLSOptionsV6caFile10Foundation3URLVSgvp"></a>
-                    <a name="//apple_ref/swift/Property/caFile" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift10TLSOptionsV6caFile10Foundation3URLVSgvp">caFile</a>
+                    <a name="/s:10MongoSwift18TransactionOptionsV11readConcernAA04ReadF0VSgvp"></a>
+                    <a name="//apple_ref/swift/Property/readConcern" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift18TransactionOptionsV11readConcernAA04ReadF0VSgvp">readConcern</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -584,19 +590,19 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Specifies the path to the certificate authority file.</p>
+                        <p>The <code><a href="../Structs/ReadConcern.html">ReadConcern</a></code> to use for this transaction.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">caFile</span><span class="p">:</span> <span class="kt">URL</span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">readConcern</span><span class="p">:</span> <span class="kt"><a href="../Structs/ReadConcern.html">ReadConcern</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L127">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/StartTransactionOperation.swift#L9">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -604,9 +610,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift10TLSOptionsV7pemFile10Foundation3URLVSgvp"></a>
-                    <a name="//apple_ref/swift/Property/pemFile" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift10TLSOptionsV7pemFile10Foundation3URLVSgvp">pemFile</a>
+                    <a name="/s:10MongoSwift18TransactionOptionsV14readPreferenceAA04ReadF0VSgvp"></a>
+                    <a name="//apple_ref/swift/Property/readPreference" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift18TransactionOptionsV14readPreferenceAA04ReadF0VSgvp">readPreference</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -614,19 +620,19 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Specifies the path to the client certificate key file.</p>
+                        <p>The <code><a href="../Structs/ReadPreference.html">ReadPreference</a></code> to use for this transaction.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">pemFile</span><span class="p">:</span> <span class="kt">URL</span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">readPreference</span><span class="p">:</span> <span class="kt"><a href="../Structs/ReadPreference.html">ReadPreference</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L130">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/StartTransactionOperation.swift#L12">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -634,9 +640,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift10TLSOptionsV11pemPasswordSSSgvp"></a>
-                    <a name="//apple_ref/swift/Property/pemPassword" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift10TLSOptionsV11pemPasswordSSSgvp">pemPassword</a>
+                    <a name="/s:10MongoSwift18TransactionOptionsV12writeConcernAA05WriteF0VSgvp"></a>
+                    <a name="//apple_ref/swift/Property/writeConcern" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift18TransactionOptionsV12writeConcernAA05WriteF0VSgvp">writeConcern</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -644,19 +650,19 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Specifies the client certificate key password.</p>
+                        <p>The <code><a href="../Structs/WriteConcern.html">WriteConcern</a></code> to use for this transaction.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">pemPassword</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">writeConcern</span><span class="p">:</span> <span class="kt"><a href="../Structs/WriteConcern.html">WriteConcern</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L133">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/StartTransactionOperation.swift#L15">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -664,9 +670,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift10TLSOptionsV18weakCertValidationSbSgvp"></a>
-                    <a name="//apple_ref/swift/Property/weakCertValidation" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift10TLSOptionsV18weakCertValidationSbSgvp">weakCertValidation</a>
+                    <a name="/s:10MongoSwift18TransactionOptionsV15maxCommitTimeMS11readConcern0I10Preference05writeJ0ACSiSg_AA04ReadJ0VSgAA0mK0VSgAA05WriteJ0VSgtcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(maxCommitTimeMS:readConcern:readPreference:writeConcern:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift18TransactionOptionsV15maxCommitTimeMS11readConcern0I10Preference05writeJ0ACSiSg_AA04ReadJ0VSgAA0mK0VSgAA05WriteJ0VSgtcfc">init(maxCommitTimeMS:readConcern:readPreference:writeConcern:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -674,37 +680,7 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Indicates whether invalid certificates are allowed. By default this is set to false.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">weakCertValidation</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L136">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift10TLSOptionsV21allowInvalidHostnames6caFile03pemH00I8Password18weakCertValidationACSbSg_10Foundation3URLVSgAMSSSgAItcfc"></a>
-                    <a name="//apple_ref/swift/Method/init(allowInvalidHostnames:caFile:pemFile:pemPassword:weakCertValidation:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift10TLSOptionsV21allowInvalidHostnames6caFile03pemH00I8Password18weakCertValidationACSbSg_10Foundation3URLVSgAMSSSgAItcfc">init(allowInvalidHostnames:caFile:pemFile:pemPassword:weakCertValidation:)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Convenience initializer allowing any/all arguments to be omitted or optional.</p>
+                        <p>Convenience initializer allowing any/all parameters to be omitted.</p>
 
                       </div>
                       <div class="declaration">
@@ -712,17 +688,16 @@
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span>
-    <span class="nv">allowInvalidHostnames</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">caFile</span><span class="p">:</span> <span class="kt">URL</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">pemFile</span><span class="p">:</span> <span class="kt">URL</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">pemPassword</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">weakCertValidation</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+    <span class="nv">maxCommitTimeMS</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">readConcern</span><span class="p">:</span> <span class="kt"><a href="../Structs/ReadConcern.html">ReadConcern</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">readPreference</span><span class="p">:</span> <span class="kt"><a href="../Structs/ReadPreference.html">ReadPreference</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">writeConcern</span><span class="p">:</span> <span class="kt"><a href="../Structs/WriteConcern.html">WriteConcern</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
 <span class="p">)</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/MongoClient.swift#L139-L151">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/StartTransactionOperation.swift#L18-L28">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -735,7 +710,7 @@
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-02-27)</p>
+      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-05-05)</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>

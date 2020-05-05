@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          MongoSwift 1.0.0-rc0 Docs
+          MongoSwift 1.0.0-rc1 Docs
         </a>
          (99% documented)
       </p>
@@ -74,6 +74,12 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../multithreaded-usage.html">Multithreaded-Usage</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../tls.html">TLS</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../transactions.html">Transactions</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -113,19 +119,10 @@
                 <a class="nav-group-task-link" href="../Classes/DocumentIterator.html">DocumentIterator</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Classes.html#/s:10MongoSwift15DocumentStorageC">DocumentStorage</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/MongoClient.html">MongoClient</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/MongoCursor.html">MongoCursor</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Classes/ReadPreference.html">ReadPreference</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Classes/ReadPreference/Mode.html">– Mode</a>
               </li>
             </ul>
           </li>
@@ -393,6 +390,9 @@
                 <a class="nav-group-task-link" href="../Structs/ListCollectionsOptions.html">ListCollectionsOptions</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ListDatabasesOptions.html">ListDatabasesOptions</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/LogicError.html">LogicError</a>
               </li>
               <li class="nav-group-task">
@@ -412,6 +412,12 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/ReadConcern/Level.html">– Level</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReadPreference.html">ReadPreference</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReadPreference/Mode.html">– Mode</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/RegularExpression.html">RegularExpression</a>
@@ -459,9 +465,6 @@
                 <a class="nav-group-task-link" href="../Structs/Symbol.html">Symbol</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/TLSOptions.html">TLSOptions</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/Timestamp.html">Timestamp</a>
               </li>
               <li class="nav-group-task">
@@ -478,6 +481,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/TopologyOpeningEvent.html">TopologyOpeningEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/TransactionOptions.html">TransactionOptions</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/UpdateDescription.html">UpdateDescription</a>
@@ -554,7 +560,7 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Enables writing to temporary files. When set to true, aggregation stages
+                        <p>Enables the server to write to temporary files. When set to true, the aggregate operation
 can write data to the _tmp subdirectory in the dbPath directory.</p>
 
                       </div>
@@ -567,7 +573,7 @@ can write data to the _tmp subdirectory in the dbPath directory.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/Operations/AggregateOperation.swift#L8">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/AggregateOperation.swift#L8">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -575,9 +581,9 @@ can write data to the _tmp subdirectory in the dbPath directory.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift16AggregateOptionsV9batchSizes5Int32VSgvp"></a>
+                    <a name="/s:10MongoSwift16AggregateOptionsV9batchSizeSiSgvp"></a>
                     <a name="//apple_ref/swift/Property/batchSize" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift16AggregateOptionsV9batchSizes5Int32VSgvp">batchSize</a>
+                    <a class="token" href="#/s:10MongoSwift16AggregateOptionsV9batchSizeSiSgvp">batchSize</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -592,12 +598,12 @@ can write data to the _tmp subdirectory in the dbPath directory.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">batchSize</span><span class="p">:</span> <span class="kt">Int32</span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">batchSize</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/Operations/AggregateOperation.swift#L11">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/AggregateOperation.swift#L11">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -628,7 +634,7 @@ when the $out stage is specified.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/Operations/AggregateOperation.swift#L15">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/AggregateOperation.swift#L15">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -658,7 +664,7 @@ when the $out stage is specified.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/Operations/AggregateOperation.swift#L18">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/AggregateOperation.swift#L18">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -689,7 +695,7 @@ the database profiler, currentOp and logs. The default is to not send a value.</
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/Operations/AggregateOperation.swift#L22">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/AggregateOperation.swift#L22">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -719,7 +725,7 @@ the database profiler, currentOp and logs. The default is to not send a value.</
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/Operations/AggregateOperation.swift#L25">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/AggregateOperation.swift#L25">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -727,9 +733,9 @@ the database profiler, currentOp and logs. The default is to not send a value.</
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift16AggregateOptionsV9maxTimeMSs5Int64VSgvp"></a>
+                    <a name="/s:10MongoSwift16AggregateOptionsV9maxTimeMSSiSgvp"></a>
                     <a name="//apple_ref/swift/Property/maxTimeMS" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift16AggregateOptionsV9maxTimeMSs5Int64VSgvp">maxTimeMS</a>
+                    <a class="token" href="#/s:10MongoSwift16AggregateOptionsV9maxTimeMSSiSgvp">maxTimeMS</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -744,12 +750,12 @@ the database profiler, currentOp and logs. The default is to not send a value.</
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">maxTimeMS</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">maxTimeMS</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/Operations/AggregateOperation.swift#L28">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/AggregateOperation.swift#L28">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -779,7 +785,7 @@ the database profiler, currentOp and logs. The default is to not send a value.</
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/Operations/AggregateOperation.swift#L31">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/AggregateOperation.swift#L31">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -787,9 +793,9 @@ the database profiler, currentOp and logs. The default is to not send a value.</
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift16AggregateOptionsV14readPreferenceAA04ReadF0CSgvp"></a>
+                    <a name="/s:10MongoSwift16AggregateOptionsV14readPreferenceAA04ReadF0VSgvp"></a>
                     <a name="//apple_ref/swift/Property/readPreference" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift16AggregateOptionsV14readPreferenceAA04ReadF0CSgvp">readPreference</a>
+                    <a class="token" href="#/s:10MongoSwift16AggregateOptionsV14readPreferenceAA04ReadF0VSgvp">readPreference</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -804,12 +810,12 @@ the database profiler, currentOp and logs. The default is to not send a value.</
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">readPreference</span><span class="p">:</span> <span class="kt"><a href="../Classes/ReadPreference.html">ReadPreference</a></span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">readPreference</span><span class="p">:</span> <span class="kt"><a href="../Structs/ReadPreference.html">ReadPreference</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/Operations/AggregateOperation.swift#L35">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/AggregateOperation.swift#L35">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -839,7 +845,7 @@ the database profiler, currentOp and logs. The default is to not send a value.</
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/Operations/AggregateOperation.swift#L39">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/AggregateOperation.swift#L39">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -847,9 +853,9 @@ the database profiler, currentOp and logs. The default is to not send a value.</
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift16AggregateOptionsV12allowDiskUse9batchSize24bypassDocumentValidation9collation7comment4hint9maxTimeMS11readConcern0S10Preference05writeT0ACSbSg_s5Int32VSgAnA0K0VSgSSSgAA4HintOSgs5Int64VSgAA04ReadT0VSgAA0zU0CSgAA05WriteT0VSgtcfc"></a>
+                    <a name="/s:10MongoSwift16AggregateOptionsV12allowDiskUse9batchSize24bypassDocumentValidation9collation7comment4hint9maxTimeMS11readConcern0S10Preference05writeT0ACSbSg_SiSgAnA0K0VSgSSSgAA4HintOSgAoA04ReadT0VSgAA0xU0VSgAA05WriteT0VSgtcfc"></a>
                     <a name="//apple_ref/swift/Method/init(allowDiskUse:batchSize:bypassDocumentValidation:collation:comment:hint:maxTimeMS:readConcern:readPreference:writeConcern:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift16AggregateOptionsV12allowDiskUse9batchSize24bypassDocumentValidation9collation7comment4hint9maxTimeMS11readConcern0S10Preference05writeT0ACSbSg_s5Int32VSgAnA0K0VSgSSSgAA4HintOSgs5Int64VSgAA04ReadT0VSgAA0zU0CSgAA05WriteT0VSgtcfc">init(allowDiskUse:batchSize:bypassDocumentValidation:collation:comment:hint:maxTimeMS:readConcern:readPreference:writeConcern:)</a>
+                    <a class="token" href="#/s:10MongoSwift16AggregateOptionsV12allowDiskUse9batchSize24bypassDocumentValidation9collation7comment4hint9maxTimeMS11readConcern0S10Preference05writeT0ACSbSg_SiSgAnA0K0VSgSSSgAA4HintOSgAoA04ReadT0VSgAA0xU0VSgAA05WriteT0VSgtcfc">init(allowDiskUse:batchSize:bypassDocumentValidation:collation:comment:hint:maxTimeMS:readConcern:readPreference:writeConcern:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -866,21 +872,21 @@ the database profiler, currentOp and logs. The default is to not send a value.</
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span>
     <span class="nv">allowDiskUse</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">batchSize</span><span class="p">:</span> <span class="kt">Int32</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">batchSize</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">bypassDocumentValidation</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">collation</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">comment</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">hint</span><span class="p">:</span> <span class="kt"><a href="../Enums/Hint.html">Hint</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">maxTimeMS</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">maxTimeMS</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">readConcern</span><span class="p">:</span> <span class="kt"><a href="../Structs/ReadConcern.html">ReadConcern</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">readPreference</span><span class="p">:</span> <span class="kt"><a href="../Classes/ReadPreference.html">ReadPreference</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">readPreference</span><span class="p">:</span> <span class="kt"><a href="../Structs/ReadPreference.html">ReadPreference</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">writeConcern</span><span class="p">:</span> <span class="kt"><a href="../Structs/WriteConcern.html">WriteConcern</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
 <span class="p">)</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/Operations/AggregateOperation.swift#L42-L64">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/AggregateOperation.swift#L42-L64">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -893,7 +899,7 @@ the database profiler, currentOp and logs. The default is to not send a value.</
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-02-27)</p>
+      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-05-05)</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>

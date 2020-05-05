@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          MongoSwift 1.0.0-rc0 Docs
+          MongoSwift 1.0.0-rc1 Docs
         </a>
          (99% documented)
       </p>
@@ -74,6 +74,12 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../multithreaded-usage.html">Multithreaded-Usage</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../tls.html">TLS</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../transactions.html">Transactions</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -113,19 +119,10 @@
                 <a class="nav-group-task-link" href="../Classes/DocumentIterator.html">DocumentIterator</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Classes.html#/s:10MongoSwift15DocumentStorageC">DocumentStorage</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/MongoClient.html">MongoClient</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/MongoCursor.html">MongoCursor</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Classes/ReadPreference.html">ReadPreference</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Classes/ReadPreference/Mode.html">– Mode</a>
               </li>
             </ul>
           </li>
@@ -393,6 +390,9 @@
                 <a class="nav-group-task-link" href="../Structs/ListCollectionsOptions.html">ListCollectionsOptions</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ListDatabasesOptions.html">ListDatabasesOptions</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/LogicError.html">LogicError</a>
               </li>
               <li class="nav-group-task">
@@ -412,6 +412,12 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/ReadConcern/Level.html">– Level</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReadPreference.html">ReadPreference</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReadPreference/Mode.html">– Mode</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/RegularExpression.html">RegularExpression</a>
@@ -459,9 +465,6 @@
                 <a class="nav-group-task-link" href="../Structs/Symbol.html">Symbol</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/TLSOptions.html">TLSOptions</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/Timestamp.html">Timestamp</a>
               </li>
               <li class="nav-group-task">
@@ -478,6 +481,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/TopologyOpeningEvent.html">TopologyOpeningEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/TransactionOptions.html">TransactionOptions</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/UpdateDescription.html">UpdateDescription</a>
@@ -566,7 +572,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/Operations/CountDocumentsOperation.swift#L6">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/CountDocumentsOperation.swift#L6">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -596,7 +602,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/Operations/CountDocumentsOperation.swift#L9">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/CountDocumentsOperation.swift#L9">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -604,9 +610,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift21CountDocumentsOptionsV5limits5Int64VSgvp"></a>
+                    <a name="/s:10MongoSwift21CountDocumentsOptionsV5limitSiSgvp"></a>
                     <a name="//apple_ref/swift/Property/limit" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift21CountDocumentsOptionsV5limits5Int64VSgvp">limit</a>
+                    <a class="token" href="#/s:10MongoSwift21CountDocumentsOptionsV5limitSiSgvp">limit</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -621,12 +627,12 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/Operations/CountDocumentsOperation.swift#L12">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/CountDocumentsOperation.swift#L12">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -634,9 +640,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift21CountDocumentsOptionsV9maxTimeMSs5Int64VSgvp"></a>
+                    <a name="/s:10MongoSwift21CountDocumentsOptionsV9maxTimeMSSiSgvp"></a>
                     <a name="//apple_ref/swift/Property/maxTimeMS" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift21CountDocumentsOptionsV9maxTimeMSs5Int64VSgvp">maxTimeMS</a>
+                    <a class="token" href="#/s:10MongoSwift21CountDocumentsOptionsV9maxTimeMSSiSgvp">maxTimeMS</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -651,12 +657,12 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">maxTimeMS</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">maxTimeMS</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/Operations/CountDocumentsOperation.swift#L15">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/CountDocumentsOperation.swift#L15">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -686,7 +692,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/Operations/CountDocumentsOperation.swift#L18">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/CountDocumentsOperation.swift#L18">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -694,9 +700,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift21CountDocumentsOptionsV14readPreferenceAA04ReadG0CSgvp"></a>
+                    <a name="/s:10MongoSwift21CountDocumentsOptionsV14readPreferenceAA04ReadG0VSgvp"></a>
                     <a name="//apple_ref/swift/Property/readPreference" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift21CountDocumentsOptionsV14readPreferenceAA04ReadG0CSgvp">readPreference</a>
+                    <a class="token" href="#/s:10MongoSwift21CountDocumentsOptionsV14readPreferenceAA04ReadG0VSgvp">readPreference</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -711,12 +717,12 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">readPreference</span><span class="p">:</span> <span class="kt"><a href="../Classes/ReadPreference.html">ReadPreference</a></span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">readPreference</span><span class="p">:</span> <span class="kt"><a href="../Structs/ReadPreference.html">ReadPreference</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/Operations/CountDocumentsOperation.swift#L22">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/CountDocumentsOperation.swift#L22">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -724,9 +730,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift21CountDocumentsOptionsV4skips5Int64VSgvp"></a>
+                    <a name="/s:10MongoSwift21CountDocumentsOptionsV4skipSiSgvp"></a>
                     <a name="//apple_ref/swift/Property/skip" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift21CountDocumentsOptionsV4skips5Int64VSgvp">skip</a>
+                    <a class="token" href="#/s:10MongoSwift21CountDocumentsOptionsV4skipSiSgvp">skip</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -741,12 +747,12 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">skip</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">skip</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/Operations/CountDocumentsOperation.swift#L26">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/CountDocumentsOperation.swift#L26">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -754,9 +760,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift21CountDocumentsOptionsV9collation4hint5limit9maxTimeMS11readConcern0L10Preference4skipAcA8DocumentVSg_AA4HintOSgs5Int64VSgAsA04ReadM0VSgAA0sN0CSgAStcfc"></a>
+                    <a name="/s:10MongoSwift21CountDocumentsOptionsV9collation4hint5limit9maxTimeMS11readConcern0L10Preference4skipAcA8DocumentVSg_AA4HintOSgSiSgAqA04ReadM0VSgAA0rN0VSgAQtcfc"></a>
                     <a name="//apple_ref/swift/Method/init(collation:hint:limit:maxTimeMS:readConcern:readPreference:skip:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift21CountDocumentsOptionsV9collation4hint5limit9maxTimeMS11readConcern0L10Preference4skipAcA8DocumentVSg_AA4HintOSgs5Int64VSgAsA04ReadM0VSgAA0sN0CSgAStcfc">init(collation:hint:limit:maxTimeMS:readConcern:readPreference:skip:)</a>
+                    <a class="token" href="#/s:10MongoSwift21CountDocumentsOptionsV9collation4hint5limit9maxTimeMS11readConcern0L10Preference4skipAcA8DocumentVSg_AA4HintOSgSiSgAqA04ReadM0VSgAA0rN0VSgAQtcfc">init(collation:hint:limit:maxTimeMS:readConcern:readPreference:skip:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -774,17 +780,17 @@
                           <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span>
     <span class="nv">collation</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">hint</span><span class="p">:</span> <span class="kt"><a href="../Enums/Hint.html">Hint</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">maxTimeMS</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">maxTimeMS</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">readConcern</span><span class="p">:</span> <span class="kt"><a href="../Structs/ReadConcern.html">ReadConcern</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">readPreference</span><span class="p">:</span> <span class="kt"><a href="../Classes/ReadPreference.html">ReadPreference</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">skip</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+    <span class="nv">readPreference</span><span class="p">:</span> <span class="kt"><a href="../Structs/ReadPreference.html">ReadPreference</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">skip</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
 <span class="p">)</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc0/Sources/MongoSwift/Operations/CountDocumentsOperation.swift#L29-L45">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/CountDocumentsOperation.swift#L29-L45">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -797,7 +803,7 @@
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-02-27)</p>
+      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-05-05)</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>
