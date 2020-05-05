@@ -16,7 +16,7 @@ let mongoClient = try MongoClient(using: elg)
 
 defer {
     // Close the client and clean up global driver resources.
-    mongoClient.syncShutdown()
+    try? mongoClient.syncClose()
     cleanupMongoSwift()
     // Shut down the EventLoopGroup.
     try? elg.syncShutdownGracefully()

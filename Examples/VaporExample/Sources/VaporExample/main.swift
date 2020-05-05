@@ -8,7 +8,7 @@ let app = Application(env)
 
 defer {
     // shut down the client and clean up the driver's global resources.
-    app.mongoClient.syncShutdown()
+    try? app.mongoClient.syncClose()
     cleanupMongoSwift()
     app.shutdown()
 }

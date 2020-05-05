@@ -13,7 +13,7 @@ let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 4)
 let mongoClient = try MongoClient(using: eventLoopGroup)
 
 defer {
-    mongoClient.syncShutdown()
+    try? mongoClient.syncClose()
     cleanupMongoSwift()
     try? eventLoopGroup.syncShutdownGracefully()
 }

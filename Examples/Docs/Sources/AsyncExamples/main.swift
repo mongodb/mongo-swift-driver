@@ -10,7 +10,7 @@ private func causalConsistency() throws {
     let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     let client1 = try MongoClient(using: elg)
     defer {
-        client1.syncShutdown()
+        try? client1.syncClose()
         try? elg.syncShutdownGracefully()
     }
 
@@ -40,7 +40,7 @@ private func causalConsistency() throws {
         s2.advanceClusterTime(to: s1.clusterTime!)
         s2.advanceOperationTime(to: s1.operationTime!)
 
-        dbOptions.readPreference = ReadPreference(.secondary)
+        dbOptions.readPreference = .secondary
         let items2 = client2.db("test", options: dbOptions).collection("items")
 
         return items2.find(["end": .null], session: s2).flatMap { cursor in
@@ -145,82 +145,5 @@ private func changeStreams() throws {
             }
         }
         // End Changestream Example 4
-    }
-}
-
-/// Examples used for the MongoDB documentation on Transactions.
-/// - SeeAlso: https://docs.mongodb.com/manual/core/transactions/
-private func transactions() throws {
-    let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-    let client = try MongoClient(using: elg)
-    let session = client.startSession()
-
-    defer {
-        client.syncShutdown()
-        cleanupMongoSwift()
-        try? elg.syncShutdownGracefully()
-    }
-
-    do {
-        // Start Transactions Example 1
-        let db = client.db("test")
-        let srcColl = db.collection("src")
-        let destColl = db.collection("coll")
-        let docToMove: Document = ["hello": "world"]
-
-        session.startTransaction().flatMap { _ in
-            srcColl.deleteOne(docToMove, session: session)
-        }.flatMap { _ in
-            destColl.insertOne(docToMove, session: session)
-        }.flatMap { _ in
-            session.commitTransaction()
-        }.whenFailure { _ in
-            session.abortTransaction()
-            // handle error
-        }
-        // End Transactions Example 1
-    }
-
-    do {
-        // Start Transactions Example 2
-        let txnOpts = TransactionOptions(
-            maxCommitTimeMS: 30,
-            readConcern: ReadConcern(.local),
-            readPreference: .primaryPreferred,
-            writeConcern: try WriteConcern(w: .majority)
-        )
-
-        session.startTransaction(options: txnOpts).flatMap { _ in
-            // do something
-        }.flatMap { _ in
-            session.commitTransaction()
-        }.whenFailure { _ in
-            session.abortTransaction()
-            // handle error
-        }
-        // End Transactions Example 2
-    }
-
-    do {
-        // Start Transactions Example 3
-        let txnOpts = TransactionOptions(
-            maxCommitTimeMS: 30,
-            readConcern: ReadConcern(.local),
-            readPreference: .primaryPreferred,
-            writeConcern: try WriteConcern(w: .majority)
-        )
-
-        let client = try MongoClient(using: elg)
-        let session = client.startSession(options: ClientSessionOptions(defaultTransactionOptions: txnOpts))
-
-        session.startTransaction().flatMap { _ in
-            // do something
-        }.flatMap { _ in
-            session.commitTransaction()
-        }.whenFailure { _ in
-            session.abortTransaction()
-            // handle error
-        }
-        // End Transactions Example 3
     }
 }

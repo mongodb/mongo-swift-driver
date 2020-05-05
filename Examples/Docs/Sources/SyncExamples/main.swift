@@ -32,7 +32,7 @@ private func causalConsistency() throws {
         s2.advanceClusterTime(to: s1.clusterTime!)
         s2.advanceOperationTime(to: s1.operationTime!)
 
-        dbOptions.readPreference = ReadPreference(.secondary)
+        dbOptions.readPreference = .secondary
         let items2 = client2.db("test", options: dbOptions).collection("items")
         for item in try items2.find(["end": .null], session: s2) {
             print(item)
