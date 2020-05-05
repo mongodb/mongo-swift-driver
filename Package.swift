@@ -7,7 +7,7 @@ let package = Package(
         .library(name: "MongoSwiftSync", targets: ["MongoSwiftSync"])
     ],
     dependencies: [
-        .package(url: "https://github.com/Quick/Nimble.git", .exact("8.0.2")),
+        .package(url: "https://github.com/Quick/Nimble.git", .upToNextMajor(from: "8.0.0")),
         .package(url: "https://github.com/apple/swift-nio", .upToNextMajor(from: "2.15.0"))
     ],
     targets: [
