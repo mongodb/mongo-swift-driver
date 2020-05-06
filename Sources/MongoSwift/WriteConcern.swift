@@ -3,11 +3,17 @@ import Foundation
 
 /// A class to represent a MongoDB write concern.
 public struct WriteConcern: Codable {
-    /// Majority WriteConcern,
-    /// see https://docs.mongodb.com/manual/reference/write-concern/#writeconcern._dq_majority_dq_.
+    /// Majority WriteConcern
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/write-concern/#writeconcern._dq_majority_dq_
     // swiftlint:disable force_try
     public static let majority = try! WriteConcern(w: .majority)
     // swiftlint:enable force_try
+
+    /// Returns Majority WriteConcern.
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/write-concern/#writeconcern._dq_majority_dq_
+    public static func majority(wtimeoutMS: Int? = nil, journal: Bool? = nil) throws -> WriteConcern {
+        try WriteConcern(journal: journal, w: .majority, wtimeoutMS: wtimeoutMS)
+    }
 
     /// Server default WriteConcern.
     public static let serverDefault = WriteConcern()
