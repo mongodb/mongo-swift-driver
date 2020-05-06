@@ -114,7 +114,7 @@ internal class ConnectionString {
             return nil
         }
         let str = String(cString: mechanism)
-        return MongoCredential.Mechanism(name: str)
+        return MongoCredential.Mechanism(str)
     }
 
     /// Returns a document containing the auth mechanism properties if any were provided, otherwise nil.

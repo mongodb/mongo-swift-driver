@@ -36,24 +36,28 @@ public struct MongoCredential: Decodable, Equatable {
     }
 
     /// Possible authentication mechanisms.
-    public struct Mechanism: Codable, Equatable {
+    public struct Mechanism: Decodable, Equatable, CustomStringConvertible {
         /// See https://docs.mongodb.com/manual/core/kerberos/
-        public static let gssAPI = Mechanism(name: "GSSAPI")
-        /// Deprecated: see https://docs.mongodb.com/manual/release-notes/3.0-scram/
-        public static let mongodbCR = Mechanism(name: "MONGODB-CR")
+        public static let gssAPI = Mechanism("GSSAPI")
+
         /// See https://docs.mongodb.com/manual/core/security-x.509/#security-auth-x509
-        public static let mongodbX509 = Mechanism(name: "MONGODB-X509")
+        public static let mongodbX509 = Mechanism("MONGODB-X509")
+
         /// See https://docs.mongodb.com/manual/core/security-ldap/
-        public static let plain = Mechanism(name: "PLAIN")
+        public static let plain = Mechanism("PLAIN")
+
         /// See https://docs.mongodb.com/manual/core/security-scram/#authentication-scram
-        public static let scramSHA1 = Mechanism(name: "SCRAM-SHA-1")
+        public static let scramSHA1 = Mechanism("SCRAM-SHA-1")
+
         /// See https://docs.mongodb.com/manual/core/security-scram/#authentication-scram
-        public static let scramSHA256 = Mechanism(name: "SCRAM-SHA-256")
+        public static let scramSHA256 = Mechanism("SCRAM-SHA-256")
 
         /// Name of the authentication mechanism.
-        public var name: String
+        internal var name: String
 
-        public init(name: String) {
+        public var description: String { "\(self.name)" }
+
+        internal init(_ name: String) {
             self.name = name
         }
 
@@ -61,11 +65,6 @@ public struct MongoCredential: Decodable, Equatable {
             let container = try decoder.singleValueContainer()
             let string = try container.decode(String.self)
             self.name = string
-        }
-
-        public func encode(to encoder: Encoder) throws {
-            var container = encoder.singleValueContainer()
-            try container.encode(self.name)
         }
     }
 }
