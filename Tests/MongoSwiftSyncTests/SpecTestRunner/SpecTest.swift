@@ -218,8 +218,8 @@ extension SpecTestFile {
     /// Run all the tests specified in this file, optionally specifying keywords that, if included in a test's
     /// description, will cause certain tests to be skipped.
     internal func runTests() throws {
-        guard !Self.skippedTestFileNameKeywords.contains(where: { self.name.contains($0) }) else {
-            fileLevelLog("Skipping tests from file \(self.name), matched skipped keyword.")
+        if let keyword = Self.skippedTestFileNameKeywords.first(where: { self.name.contains($0) }) {
+            fileLevelLog("Skipping tests from file \(self.name), matched skipped keyword \"\(keyword)\".")
             return
         }
 
@@ -235,8 +235,8 @@ extension SpecTestFile {
 
         fileLevelLog("Executing tests from file \(self.name)...")
         for var test in self.tests {
-            guard !Self.TestType.skippedTestKeywords.contains(where: { test.description.contains($0) }) else {
-                print("Skipping test \(test.description)")
+            if let keyword = Self.TestType.skippedTestKeywords.first(where: { test.description.contains($0) }) {
+                print("Skipping test \(test.description) due to matched keyword \"\(keyword)\".")
                 continue
             }
 
