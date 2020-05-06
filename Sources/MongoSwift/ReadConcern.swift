@@ -2,74 +2,37 @@ import CLibMongoC
 
 /// A struct to represent a MongoDB read concern.
 public struct ReadConcern: Codable {
-    /// Local ReadConcern, see https://docs.mongodb.com/manual/reference/read-concern-local/.
-    public static let local = ReadConcern(.local)
+    /// Local ReadConcern.
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/read-concern-local/
+    public static let local = ReadConcern("local")
 
-    /// Available ReadConcern, see https://docs.mongodb.com/manual/reference/read-concern-available/.
-    public static let available = ReadConcern(.available)
+    /// Available ReadConcern.
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/read-concern-available/
+    public static let available = ReadConcern("available")
 
-    /// Linearizable ReadConcern, see https://docs.mongodb.com/manual/reference/read-concern-majority/.
-    public static let linearizable = ReadConcern(.linearizable)
+    /// Linearizable ReadConcern.
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/read-concern-majority/
+    public static let linearizable = ReadConcern("linearizable")
 
-    /// Majority ReadConcern, see https://docs.mongodb.com/manual/reference/read-concern-linearizable/.
-    public static let majority = ReadConcern(.majority)
+    /// Majority ReadConcern.
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/read-concern-linearizable/
+    public static let majority = ReadConcern("majority")
 
-    /// Snapshot ReadConcern, see https://docs.mongodb.com/master/reference/read-concern-snapshot/.
-    public static let snapshot = ReadConcern(.snapshot)
+    /// Snapshot ReadConcern.
+    /// - SeeAlso: https://docs.mongodb.com/master/reference/read-concern-snapshot/
+    public static let snapshot = ReadConcern("snapshot")
 
     /// Server default ReadConcern.
     public static let serverDefault = ReadConcern(nil)
 
-    public static func other(_ level: Level) -> ReadConcern {
+    /// For an unknown ReadConcern.
+    /// For forwards compatibility, no error will be thrown when an unknown value is provided.
+    public static func other(_ level: String) -> ReadConcern {
         ReadConcern(level)
     }
 
-    public static func other(_ level: String) -> ReadConcern {
-        ReadConcern(Level(level))
-    }
-
-    /// An enumeration of possible ReadConcern levels.
-    public struct Level: Codable, Equatable, LosslessStringConvertible {
-        /// See https://docs.mongodb.com/manual/reference/read-concern-local/
-        public static let local = Level("local")
-
-        /// See https://docs.mongodb.com/manual/reference/read-concern-available/
-        public static let available = Level("available")
-
-        /// See https://docs.mongodb.com/manual/reference/read-concern-majority/
-        public static let majority = Level("majority")
-
-        /// See https://docs.mongodb.com/manual/reference/read-concern-linearizable/
-        public static let linearizable = Level("linearizable")
-
-        /// See https://docs.mongodb.com/master/reference/read-concern-snapshot/
-        public static let snapshot = Level("snapshot")
-
-        private var name: String
-
-        /// Returns the string value of the Level for convenient conversion.
-        public var description: String { "\(self.name)" }
-
-        /// Initialize a new `Level` from `String`
-        /// This initializer allows any `String` for forward compatabilty.
-        public init(_ name: String) {
-            self.name = name
-        }
-
-        public init(from decoder: Decoder) throws {
-            let container = try decoder.singleValueContainer()
-            let string = try container.decode(String.self)
-            self.name = string
-        }
-
-        public func encode(to encoder: Encoder) throws {
-            var container = encoder.singleValueContainer()
-            try container.encode(self.name)
-        }
-    }
-
     /// The level of this `ReadConcern`, or `nil` if the level is not set.
-    public var level: Level?
+    internal var level: String?
 
     /// Indicates whether this `ReadConcern` is the server default.
     public var isDefault: Bool {
@@ -80,12 +43,12 @@ public struct ReadConcern: Codable {
     // The caller is responsible for freeing the original `mongoc_read_concern_t`.
     internal init(copying readConcern: OpaquePointer) {
         if let level = mongoc_read_concern_get_level(readConcern) {
-            self.level = Level(String(cString: level))
+            self.level = String(cString: level)
         }
     }
 
-    /// Initialize a new `ReadConcern` with a `Level`.
-    fileprivate init(_ level: Level?) {
+    /// Initialize a new `ReadConcern` with a `String`.
+    fileprivate init(_ level: String?) {
         self.level = level
     }
 
@@ -97,7 +60,7 @@ public struct ReadConcern: Codable {
         let readConcern: OpaquePointer = mongoc_read_concern_new()
         defer { mongoc_read_concern_destroy(readConcern) }
         if let level = self.level {
-            mongoc_read_concern_set_level(readConcern, String(level))
+            mongoc_read_concern_set_level(readConcern, level)
         }
         return try body(readConcern)
     }

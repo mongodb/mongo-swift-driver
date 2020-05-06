@@ -32,7 +32,7 @@ final class ReadConcernTests: MongoSwiftTestCase {
     func testReadConcernType() throws {
         // check level var works as expected
         let rc = ReadConcern.majority
-        expect(rc.level).to(equal(.majority))
+        expect(rc).to(equal(.majority))
 
         // test empty init
         let rc2 = ReadConcern.serverDefault
@@ -41,15 +41,15 @@ final class ReadConcernTests: MongoSwiftTestCase {
 
         // test init from doc
         let rc3 = try BSONDecoder().decode(ReadConcern.self, from: ["level": "majority"])
-        expect(rc3.level).to(equal(.majority))
+        expect(rc3).to(equal(.majority))
 
         // test string init
         let rc4 = ReadConcern.other("majority")
-        expect(rc4.level).to(equal(.majority))
+        expect(rc4).to(equal(.majority))
 
         // test init with unknown level
         let rc5 = ReadConcern.other("blah")
-        expect(rc5.level).to(equal(ReadConcern.other("blah").level))
+        expect(rc5).to(equal(ReadConcern.other("blah")))
     }
 
     func testClientReadConcern() throws {
