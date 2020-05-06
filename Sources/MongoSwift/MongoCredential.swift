@@ -55,7 +55,7 @@ public struct MongoCredential: Decodable, Equatable {
         /// Name of the authentication mechanism.
         internal var name: String
 
-        public var description: String { "\(self.name)" }
+        public var description: String { self.name }
 
         internal init(_ name: String) {
             self.name = name
