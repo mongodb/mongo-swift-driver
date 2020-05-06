@@ -516,4 +516,12 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(result2?.insertedIds[0]).to(equal(.null))
         expect(result2?.insertedIds[1]).to(equal(20))
     }
+
+    func testNSNotFoundSuppression() throws {
+        let client = try MongoClient.makeTestClient()
+        let collection = client.db(Self.testDatabase).collection(self.getCollectionName())
+        expect(try collection.drop()).toNot(throwError())
+        expect(try collection.drop()).toNot(throwError())
+        expect(try collection.dropIndex("ljasdfjlkasdjf")).toNot(throwError())
+    }
 }

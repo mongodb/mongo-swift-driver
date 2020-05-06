@@ -482,3 +482,13 @@ internal func wrongIterTypeError(_ iter: DocumentIterator, expected type: BSONVa
 }
 
 internal let failedToRetrieveCursorMessage = "Couldn't get cursor from the server"
+
+extension MongoError {
+    /// Determines whether this error is an "ns not found" error.
+    internal var isNsNotFound: Bool {
+        guard let commandError = self as? CommandError else {
+            return false
+        }
+        return commandError.code == 26
+    }
+}
