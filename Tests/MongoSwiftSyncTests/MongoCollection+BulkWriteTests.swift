@@ -33,8 +33,6 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
     override func tearDown() {
         do {
             try self.coll.drop()
-        } catch let commandError as CommandError where commandError.code == 26 {
-            // ignore ns not found errors
         } catch {
             fail("encountered error when tearing down: \(error)")
         }

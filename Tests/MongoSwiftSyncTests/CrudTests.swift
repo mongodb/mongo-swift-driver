@@ -50,13 +50,7 @@ final class CrudTests: MongoSwiftTestCase {
                 }
                 try test.execute(usingCollection: collection)
                 try test.verifyData(testCollection: collection, db: db)
-                do {
-                    try collection.drop()
-                } catch let commandError as CommandError where commandError.code == 26 {
-                    // ignore ns not found errors
-                } catch {
-                    throw error
-                }
+                try collection.drop()
             }
         }
         print() // for readability of results
