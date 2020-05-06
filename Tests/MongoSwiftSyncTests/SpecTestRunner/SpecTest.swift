@@ -1,5 +1,4 @@
 import Foundation
-@testable import MongoSwift
 @testable import struct MongoSwift.ReadPreference
 import MongoSwiftSync
 import Nimble
