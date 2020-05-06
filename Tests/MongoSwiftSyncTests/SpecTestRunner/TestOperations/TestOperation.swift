@@ -181,6 +181,7 @@ struct TestOperationDescription: Decodable {
             }
         }
     }
+
     // swiftlint:enable cyclomatic_complexity
 }
 
