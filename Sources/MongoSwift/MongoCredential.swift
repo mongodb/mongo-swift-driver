@@ -37,19 +37,24 @@ public struct MongoCredential: Decodable, Equatable {
 
     /// Possible authentication mechanisms.
     public struct Mechanism: Decodable, Equatable, CustomStringConvertible {
-        /// See https://docs.mongodb.com/manual/core/kerberos/
+        /// GSSAPI authentication.
+        /// - SeeAlso: https://docs.mongodb.com/manual/core/kerberos/
         public static let gssAPI = Mechanism("GSSAPI")
 
-        /// See https://docs.mongodb.com/manual/core/security-x.509/#security-auth-x509
+        /// X509 authentication.
+        /// - SeeAlso: https://docs.mongodb.com/manual/core/security-x.509/#security-auth-x509
         public static let mongodbX509 = Mechanism("MONGODB-X509")
 
-        /// See https://docs.mongodb.com/manual/core/security-ldap/
+        /// PLAIN authentication.
+        /// - SeeAlso: https://docs.mongodb.com/manual/core/security-ldap/
         public static let plain = Mechanism("PLAIN")
 
-        /// See https://docs.mongodb.com/manual/core/security-scram/#authentication-scram
+        /// SCRAM-SHA-1 authentication.
+        /// - SeeAlso: https://docs.mongodb.com/manual/core/security-scram/#authentication-scram
         public static let scramSHA1 = Mechanism("SCRAM-SHA-1")
 
-        /// See https://docs.mongodb.com/manual/core/security-scram/#authentication-scram
+        /// SCRAM-SHA-256 authentication.
+        /// - SeeAlso: https://docs.mongodb.com/manual/core/security-scram/#authentication-scram
         public static let scramSHA256 = Mechanism("SCRAM-SHA-256")
 
         /// Name of the authentication mechanism.
