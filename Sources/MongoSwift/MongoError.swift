@@ -320,7 +320,8 @@ private func parseMongocError(_ error: bson_error_t, reply: Document?) -> MongoE
 
 /// Internal function used to get an appropriate error from a libmongoc error and/or a server reply to a command.
 internal func extractMongoError(error bsonError: bson_error_t, reply: Document? = nil) -> MongoError {
-    // if the reply is nil or writeErrors or writeConcernErrors aren't present, then this is likely a commandError.
+    // if the reply is nil or writeErrors or writeConcernErrors aren't present, use the mongoc error to determine
+    // what to throw.
     guard let serverReply: Document = reply,
         !(serverReply["writeErrors"]?.arrayValue ?? []).isEmpty ||
         !(serverReply["writeConcernError"]?.documentValue?.keys ?? []).isEmpty ||
@@ -363,6 +364,14 @@ internal func extractBulkWriteError<T: Codable>(
     reply: Document,
     partialResult: BulkWriteResult? = nil
 ) -> Error {
+    // if the reply is nil or writeErrors or writeConcernErrors aren't present, use the mongoc error to determine
+    // what to throw.
+    guard !(reply["writeErrors"]?.arrayValue ?? []).isEmpty ||
+        !(reply["writeConcernError"]?.documentValue?.keys ?? []).isEmpty ||
+        !(reply["writeConcernErrors"]?.arrayValue ?? []).isEmpty else {
+        return parseMongocError(error, reply: reply)
+    }
+
     let fallback = InternalError(
         message: "Got error from the server but couldn't parse it. " +
             "Message: \(toErrorString(error))"
