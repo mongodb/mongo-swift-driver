@@ -31,6 +31,8 @@ public struct CommandError: ServerError {
 
     /// Labels that may describe the context in which this error was thrown.
     public let errorLabels: [String]?
+
+    public var errorDescription: String? { self.message }
 }
 
 /// An error that is thrown when a single write command fails on the server.
@@ -43,6 +45,10 @@ public struct WriteError: ServerError {
 
     /// Labels that may describe the context in which this error was thrown.
     public let errorLabels: [String]?
+
+    public var errorDescription: String? {
+        self.writeFailure?.message ?? self.writeConcernFailure?.message ?? ""
+    }
 }
 
 /// A error that ocurred while executing a bulk write.
@@ -63,6 +69,19 @@ public struct BulkWriteError: ServerError {
 
     /// Labels that may describe the context in which this error was thrown.
     public let errorLabels: [String]?
+
+    public var errorDescription: String? {
+        var descriptions: [String] = []
+        if let messages = self.writeFailures?.map({ $0.message }) {
+            descriptions.append("Write errors: \(messages)")
+        }
+
+        if let message = self.writeConcernFailure?.message {
+            descriptions.append("Write concern error: \(message)")
+        }
+
+        return descriptions.joined(separator: ", ")
+    }
 }
 
 /// A protocol describing errors caused by improper usage of the driver by the user.
@@ -72,14 +91,14 @@ public protocol UserError: MongoError {}
 public struct LogicError: UserError {
     internal let message: String
 
-    public var errorDescription: String { self.message }
+    public var errorDescription: String? { self.message }
 }
 
 /// An error thrown when the user passes in invalid arguments to a driver method.
 public struct InvalidArgumentError: UserError {
     internal let message: String
 
-    public var errorDescription: String { self.message }
+    public var errorDescription: String? { self.message }
 }
 
 /// The possible errors that can occur unexpectedly driver-side.
@@ -90,7 +109,7 @@ public protocol RuntimeError: MongoError {}
 public struct InternalError: RuntimeError {
     internal let message: String
 
-    public var errorDescription: String { self.message }
+    public var errorDescription: String? { self.message }
 }
 
 /// An error thrown when encountering a connection or socket related error.
@@ -100,21 +119,21 @@ public struct ConnectionError: RuntimeError, LabeledError {
 
     public let errorLabels: [String]?
 
-    public var errorDescription: String { "\(self.message), errorLabels: \(self.errorLabels ?? [])" }
+    public var errorDescription: String? { self.message }
 }
 
 /// An error thrown when encountering an authentication related error (e.g. invalid credentials).
 public struct AuthenticationError: RuntimeError {
     internal let message: String
 
-    public var errorDescription: String { self.message }
+    public var errorDescription: String? { self.message }
 }
 
 /// An error thrown when trying to use a feature that the deployment does not support.
 public struct CompatibilityError: RuntimeError {
     internal let message: String
 
-    public var errorDescription: String { self.message }
+    public var errorDescription: String? { self.message }
 }
 
 /// An error that occured when trying to select a server (e.g. a timeout, or no server matched read preference).
@@ -123,7 +142,7 @@ public struct CompatibilityError: RuntimeError {
 public struct ServerSelectionError: RuntimeError {
     internal let message: String
 
-    public var errorDescription: String { self.message }
+    public var errorDescription: String? { self.message }
 }
 
 /// A struct to represent a single write error not resulting from an executed write operation.
