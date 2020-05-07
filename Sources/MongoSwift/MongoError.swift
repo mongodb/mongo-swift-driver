@@ -80,6 +80,10 @@ public struct BulkWriteError: ServerError {
             descriptions.append("Write concern error: \(message)")
         }
 
+        if let otherError = self.otherError {
+            descriptions.append("Other error: \(otherError.localizedDescription)")
+        }
+
         return descriptions.joined(separator: ", ")
     }
 }
@@ -323,9 +327,9 @@ internal func extractMongoError(error bsonError: bson_error_t, reply: Document? 
     // if the reply is nil or writeErrors or writeConcernErrors aren't present, use the mongoc error to determine
     // what to throw.
     guard let serverReply: Document = reply,
-        !(serverReply["writeErrors"]?.arrayValue ?? []).isEmpty ||
-        !(serverReply["writeConcernError"]?.documentValue?.keys ?? []).isEmpty ||
-        !(serverReply["writeConcernErrors"]?.arrayValue ?? []).isEmpty else {
+        serverReply["writeErrors"] != nil ||
+        serverReply["writeConcernError"] != nil ||
+        serverReply["writeConcernErrors"] != nil else {
         return parseMongocError(bsonError, reply: reply)
     }
 
@@ -366,9 +370,9 @@ internal func extractBulkWriteError<T: Codable>(
 ) -> Error {
     // if the reply is nil or writeErrors or writeConcernErrors aren't present, use the mongoc error to determine
     // what to throw.
-    guard !(reply["writeErrors"]?.arrayValue ?? []).isEmpty ||
-        !(reply["writeConcernError"]?.documentValue?.keys ?? []).isEmpty ||
-        !(reply["writeConcernErrors"]?.arrayValue ?? []).isEmpty else {
+    guard reply["writeErrors"] != nil ||
+        reply["writeConcernError"] != nil ||
+        reply["writeConcernErrors"] != nil else {
         return parseMongocError(error, reply: reply)
     }
 
