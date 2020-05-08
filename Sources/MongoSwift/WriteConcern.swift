@@ -9,8 +9,15 @@ public struct WriteConcern: Codable {
     public static let majority = try! WriteConcern(w: .majority)
     // swiftlint:enable force_try
 
-    /// Returns Majority WriteConcern.
-    /// - SeeAlso: https://docs.mongodb.com/manual/reference/write-concern/#writeconcern._dq_majority_dq_
+    /**
+     * Returns a customized Majority WriteConcern.
+     *
+     * - Parameters:
+     *   - wtimeoutMS: This option specifies a time limit, in milliseconds, for the write concern.
+     *   - journal: requests acknowledgment that the mongod instances, have written to the on-disk journal.
+     *
+     * - SeeAlso: https://docs.mongodb.com/manual/reference/write-concern/#writeconcern._dq_majority_dq_
+     */
     public static func majority(wtimeoutMS: Int? = nil, journal: Bool? = nil) throws -> WriteConcern {
         try WriteConcern(journal: journal, w: .majority, wtimeoutMS: wtimeoutMS)
     }
