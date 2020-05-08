@@ -42,7 +42,11 @@ internal struct DropIndexesOperation<T: Codable>: Operation {
             }
         }
         guard success else {
-            throw extractMongoError(error: error, reply: reply)
+            let error = extractMongoError(error: error, reply: reply)
+            guard !error.isNsNotFound else {
+                return
+            }
+            throw error
         }
     }
 }
