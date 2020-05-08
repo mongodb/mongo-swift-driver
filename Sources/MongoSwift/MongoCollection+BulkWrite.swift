@@ -264,18 +264,23 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
                 return (serverId, writeConcernAcknowledged)
             }
 
-        let result = try BulkWriteResult(reply: reply, insertedIds: insertedIds)
+        var result: BulkWriteResult?
+        if isAcknowledged {
+            // This may return nil if an error prevented the write from executing, since
+            // none of the results fields would be populated in that case.
+            result = try BulkWriteResult(reply: reply, insertedIds: insertedIds)
+        }
 
         guard serverId != 0 else {
             throw extractBulkWriteError(
                 for: self,
                 error: error,
                 reply: reply,
-                partialResult: isAcknowledged ? result : nil
+                partialResult: result
             )
         }
 
-        return isAcknowledged ? result : nil
+        return result
     }
 }
 
@@ -342,6 +347,16 @@ public struct BulkWriteResult: Decodable {
         case deletedCount, insertedCount, insertedIds, matchedCount, modifiedCount, upsertedCount, upsertedIds
     }
 
+    // The key names libmongoc uses for its bulk write results.
+    private enum MongocKeys: String {
+        case deletedCount = "nRemoved"
+        case insertedCount = "nInserted"
+        case matchedCount = "nMatched"
+        case modifiedCount = "nModified"
+        case upsertedCount = "nUpserted"
+        case upserted
+    }
+
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
@@ -373,8 +388,10 @@ public struct BulkWriteResult: Decodable {
      * Create a `BulkWriteResult` from a reply and map of inserted IDs.
      *
      * Note: we forgo using a Decodable initializer because we still need to
-     * build a map for `upsertedIds` and explicitly add `insertedIds`. While
-     * `mongoc_bulk_operation_execute()` guarantees that `reply` will be
+     * build a map for `upsertedIds` and explicitly add `insertedIds`, and because
+     * libmongoc uses a different naming convention for the field names than is expected.
+     *
+     * While `mongoc_bulk_operation_execute()` guarantees that `reply` will be
      * initialized, it doesn't guarantee that all fields will be set. On error,
      * we should expect fields to be missing and handle that gracefully.
      *
@@ -385,17 +402,21 @@ public struct BulkWriteResult: Decodable {
      * - Throws:
      *   - `InternalError` if an unexpected error occurs reading the reply from the server.
      */
-    fileprivate init(reply: Document, insertedIds: [Int: BSON]) throws {
-        self.deletedCount = try reply.getValue(for: "nRemoved")?.asInt() ?? 0
-        self.insertedCount = try reply.getValue(for: "nInserted")?.asInt() ?? 0
+    fileprivate init?(reply: Document, insertedIds: [Int: BSON]) throws {
+        guard reply.keys.contains(where: { MongocKeys(rawValue: $0) != nil }) else {
+            return nil
+        }
+
+        self.deletedCount = try reply.getValue(for: MongocKeys.deletedCount.rawValue)?.asInt() ?? 0
+        self.insertedCount = try reply.getValue(for: MongocKeys.insertedCount.rawValue)?.asInt() ?? 0
         self.insertedIds = insertedIds
-        self.matchedCount = try reply.getValue(for: "nMatched")?.asInt() ?? 0
-        self.modifiedCount = try reply.getValue(for: "nModified")?.asInt() ?? 0
-        self.upsertedCount = try reply.getValue(for: "nUpserted")?.asInt() ?? 0
+        self.matchedCount = try reply.getValue(for: MongocKeys.matchedCount.rawValue)?.asInt() ?? 0
+        self.modifiedCount = try reply.getValue(for: MongocKeys.modifiedCount.rawValue)?.asInt() ?? 0
+        self.upsertedCount = try reply.getValue(for: MongocKeys.upsertedCount.rawValue)?.asInt() ?? 0
 
         var upsertedIds = [Int: BSON]()
 
-        if let upserted = try reply.getValue(for: "upserted")?.arrayValue {
+        if let upserted = try reply.getValue(for: MongocKeys.upserted.rawValue)?.arrayValue {
             guard let upserted = upserted.asArrayOf(Document.self) else {
                 throw InternalError(message: "\"upserted\" array did not contain only documents")
             }

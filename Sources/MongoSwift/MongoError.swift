@@ -327,9 +327,9 @@ internal func extractMongoError(error bsonError: bson_error_t, reply: Document? 
     // if the reply is nil or writeErrors or writeConcernErrors aren't present, use the mongoc error to determine
     // what to throw.
     guard let serverReply: Document = reply,
-        serverReply["writeErrors"] != nil ||
-        serverReply["writeConcernError"] != nil ||
-        serverReply["writeConcernErrors"] != nil else {
+        !(serverReply["writeErrors"]?.arrayValue ?? []).isEmpty ||
+        !(serverReply["writeConcernError"]?.documentValue?.keys ?? []).isEmpty ||
+        !(serverReply["writeConcernErrors"]?.arrayValue ?? []).isEmpty else {
         return parseMongocError(bsonError, reply: reply)
     }
 
@@ -366,13 +366,15 @@ internal func extractBulkWriteError<T: Codable>(
     for op: BulkWriteOperation<T>,
     error: bson_error_t,
     reply: Document,
-    partialResult: BulkWriteResult? = nil
+    partialResult: BulkWriteResult?
 ) -> Error {
-    // if the reply is nil or writeErrors or writeConcernErrors aren't present, use the mongoc error to determine
-    // what to throw.
-    guard reply["writeErrors"] != nil ||
-        reply["writeConcernError"] != nil ||
-        reply["writeConcernErrors"] != nil else {
+    // If the result is nil, that meains either the write was unacknowledged (so the error is likely coming
+    // from libmongoc) or an error occurred that prevented the write from executing (e.g. command error, connection
+    // error). In either case, we need to throw the error on its own, since the bulk write likely didn't occur.
+    //
+    // If the result is non-nil, the bulk write must have executed at least partially, so this error should be
+    // returned as a BulkWriteError.
+    guard let result = partialResult else {
         return parseMongocError(error, reply: reply)
     }
 
@@ -389,33 +391,31 @@ internal func extractBulkWriteError<T: Codable>(
 
         // Need to create new result that omits the ids that failed in insertedIds.
         var errResult: BulkWriteResult?
-        if let result = partialResult {
-            let ordered = op.options?.ordered ?? true
+        let ordered = op.options?.ordered ?? true
 
-            // remove the unsuccessful inserts from the insertedIds map
-            let filteredIds: [Int: BSON]
-            if result.insertedCount == 0 {
-                filteredIds = [:]
-            } else {
-                if ordered { // remove all after the last index that succeeded
-                    let maxIndex = result.insertedIds.keys.sorted()[result.insertedCount - 1]
-                    filteredIds = result.insertedIds.filter { $0.key <= maxIndex }
-                } else { // if unordered, just remove those that have write errors associated with them
-                    let errs = Set(bulkWriteErrors.map { $0.index })
-                    filteredIds = result.insertedIds.filter { !errs.contains($0.key) }
-                }
+        // remove the unsuccessful inserts from the insertedIds map
+        let filteredIds: [Int: BSON]
+        if result.insertedCount == 0 {
+            filteredIds = [:]
+        } else {
+            if ordered { // remove all after the last index that succeeded
+                let maxIndex = result.insertedIds.keys.sorted()[result.insertedCount - 1]
+                filteredIds = result.insertedIds.filter { $0.key <= maxIndex }
+            } else { // if unordered, just remove those that have write errors associated with them
+                let errs = Set(bulkWriteErrors.map { $0.index })
+                filteredIds = result.insertedIds.filter { !errs.contains($0.key) }
             }
-
-            errResult = BulkWriteResult(
-                deletedCount: result.deletedCount,
-                insertedCount: result.insertedCount,
-                insertedIds: filteredIds,
-                matchedCount: result.matchedCount,
-                modifiedCount: result.modifiedCount,
-                upsertedCount: result.upsertedCount,
-                upsertedIds: result.upsertedIds
-            )
         }
+
+        errResult = BulkWriteResult(
+            deletedCount: result.deletedCount,
+            insertedCount: result.insertedCount,
+            insertedIds: filteredIds,
+            matchedCount: result.matchedCount,
+            modifiedCount: result.modifiedCount,
+            upsertedCount: result.upsertedCount,
+            upsertedIds: result.upsertedIds
+        )
 
         // extract any other error that might have occurred outside of the write/write concern errors. (e.g. connection)
         var other: Error?
