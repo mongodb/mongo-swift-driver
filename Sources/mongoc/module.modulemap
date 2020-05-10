@@ -1,0 +1,5 @@
+module mongoc [system] {
+    header "libmongoc.h"
+    link "mongoc-1.0"
+    export *
+}
