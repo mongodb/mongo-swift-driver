@@ -623,7 +623,9 @@ public class MongoClient {
     /// and is for testing purposes only**.
     internal func getMongocReadConcern() throws -> ReadConcern? {
         try self.connectionPool.withConnection { conn in
-            ReadConcern(copying: mongoc_client_get_read_concern(conn.clientHandle))
+            conn.withMongocConnection { connPtr in
+                ReadConcern(copying: mongoc_client_get_read_concern(connPtr))
+            }
         }
     }
 
@@ -631,7 +633,9 @@ public class MongoClient {
     /// and is for testing purposes only**.
     internal func getMongocReadPreference() throws -> ReadPreference {
         try self.connectionPool.withConnection { conn in
-            ReadPreference(copying: mongoc_client_get_read_prefs(conn.clientHandle))
+            conn.withMongocConnection { connPtr in
+                ReadPreference(copying: mongoc_client_get_read_prefs(connPtr))
+            }
         }
     }
 
@@ -639,7 +643,9 @@ public class MongoClient {
     /// and is for testing purposes only**.
     internal func getMongocWriteConcern() throws -> WriteConcern? {
         try self.connectionPool.withConnection { conn in
-            WriteConcern(copying: mongoc_client_get_write_concern(conn.clientHandle))
+            conn.withMongocConnection { connPtr in
+                WriteConcern(copying: mongoc_client_get_write_concern(connPtr))
+            }
         }
     }
 }

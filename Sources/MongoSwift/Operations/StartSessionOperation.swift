@@ -56,10 +56,12 @@ internal struct StartSessionOperation: Operation {
 
         let sessionPtr: OpaquePointer = try withSessionOpts(wrapping: self.session.options) { opts in
             var error = bson_error_t()
-            guard let sessionPtr = mongoc_client_start_session(connection.clientHandle, opts, &error) else {
-                throw extractMongoError(error: error)
+            return try connection.withMongocConnection { connPtr in
+                guard let sessionPtr = mongoc_client_start_session(connPtr, opts, &error) else {
+                    throw extractMongoError(error: error)
+                }
+                return sessionPtr
             }
-            return sessionPtr
         }
         self.session.state = .started(session: sessionPtr, connection: connection)
         // if we cached opTime or clusterTime, set them now

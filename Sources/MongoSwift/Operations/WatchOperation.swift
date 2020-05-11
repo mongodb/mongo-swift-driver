@@ -45,7 +45,10 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codabl
                 case let .client(c):
                     client = c
                     decoder = c.decoder
-                    changeStreamPtr = mongoc_client_watch(connection.clientHandle, pipelinePtr, optsPtr)
+                    changeStreamPtr = connection.withMongocConnection { connPtr in
+                        mongoc_client_watch(connPtr, pipelinePtr, optsPtr)
+                    }
+
                 case let .database(db):
                     client = db._client
                     decoder = db.decoder

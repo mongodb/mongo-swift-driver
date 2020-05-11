@@ -466,37 +466,39 @@ public struct MongoDatabase {
     /// `MongoDatabase`, and uses it to execute the given closure. The `mongoc_database_t` is only valid for the
     /// body of the closure. The caller is *not responsible* for cleaning up the `mongoc_database_t`.
     internal func withMongocDatabase<T>(from connection: Connection, body: (OpaquePointer) throws -> T) rethrows -> T {
-        guard let db = mongoc_client_get_database(connection.clientHandle, self.name) else {
-            fatalError("Couldn't get database '\(self.name)'")
-        }
-        defer { mongoc_database_destroy(db) }
-
-        // `db` will automatically inherit read concern, write concern, and read preference from the parent client. If
-        // this database's value for any of those settings is different than the parent, we need to explicitly set it
-        // here.
-
-        if self.readConcern != self._client.readConcern {
-            // a nil value for self.readConcern corresponds to the empty read concern.
-            (self.readConcern ?? ReadConcern()).withMongocReadConcern { rcPtr in
-                mongoc_database_set_read_concern(db, rcPtr)
+        try connection.withMongocConnection { connPtr in
+            guard let db = mongoc_client_get_database(connPtr, self.name) else {
+                fatalError("Couldn't get database '\(self.name)'")
             }
-        }
+            defer { mongoc_database_destroy(db) }
 
-        if self.writeConcern != self._client.writeConcern {
-            // a nil value for self.writeConcern corresponds to the empty write concern.
-            (self.writeConcern ?? WriteConcern()).withMongocWriteConcern { wcPtr in
-                mongoc_database_set_write_concern(db, wcPtr)
+            // `db` will automatically inherit read concern, write concern, and read preference from the parent client.
+            // If this database's value for any of those settings is different than the parent, we need to explicitly
+            // set it here.
+
+            if self.readConcern != self._client.readConcern {
+                // a nil value for self.readConcern corresponds to the empty read concern.
+                (self.readConcern ?? ReadConcern()).withMongocReadConcern { rcPtr in
+                    mongoc_database_set_read_concern(db, rcPtr)
+                }
             }
-        }
 
-        if self.readPreference != self._client.readPreference {
-            // there is no concept of an empty read preference so we will always have a value here.
-            self.readPreference.withMongocReadPreference { rpPtr in
-                mongoc_database_set_read_prefs(db, rpPtr)
+            if self.writeConcern != self._client.writeConcern {
+                // a nil value for self.writeConcern corresponds to the empty write concern.
+                (self.writeConcern ?? WriteConcern()).withMongocWriteConcern { wcPtr in
+                    mongoc_database_set_write_concern(db, wcPtr)
+                }
             }
-        }
 
-        return try body(db)
+            if self.readPreference != self._client.readPreference {
+                // there is no concept of an empty read preference so we will always have a value here.
+                self.readPreference.withMongocReadPreference { rpPtr in
+                    mongoc_database_set_read_prefs(db, rpPtr)
+                }
+            }
+
+            return try body(db)
+        }
     }
 
     /// Internal method to check the `ReadConcern` that is set on `mongoc_database_t`s via `withMongocDatabase`.
