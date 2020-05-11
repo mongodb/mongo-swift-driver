@@ -5,13 +5,17 @@ import NIOConcurrencyHelpers
 /// A connection to the database.
 internal class Connection {
     /// Pointer to the underlying `mongoc_client_t`.
-    internal let clientHandle: OpaquePointer
+    private let clientHandle: OpaquePointer
     /// The pool this connection belongs to.
     private let pool: ConnectionPool
 
     internal init(clientHandle: OpaquePointer, pool: ConnectionPool) {
         self.clientHandle = clientHandle
         self.pool = pool
+    }
+
+    internal func withMongocConnection<T>(_ body: (OpaquePointer) throws -> T) rethrows -> T {
+        try body(self.clientHandle)
     }
 
     deinit {
@@ -168,7 +172,10 @@ internal class ConnectionPool {
         try self.stateLock.withLock {
             switch self.state {
             case let .open(pool), let .closing(pool):
-                mongoc_client_pool_push(pool, connection.clientHandle)
+                connection.withMongocConnection { connPtr in
+                    mongoc_client_pool_push(pool, connPtr)
+                }
+
                 self.connCount -= 1
                 // signal to close() that we are updating the count.
                 self.stateLock.signal()
@@ -239,18 +246,20 @@ internal class ConnectionPool {
     /// started already. This method may block.
     internal func selectServer(forWrites: Bool, readPreference: ReadPreference? = nil) throws -> ServerDescription {
         try self.withConnection { conn in
-            try ReadPreference.withOptionalMongocReadPreference(from: readPreference) { rpPtr in
-                var error = bson_error_t()
-                guard let desc = mongoc_client_select_server(
-                    conn.clientHandle,
-                    forWrites,
-                    rpPtr,
-                    &error
-                ) else {
-                    throw extractMongoError(error: error)
+            try conn.withMongocConnection { connPtr in
+                try ReadPreference.withOptionalMongocReadPreference(from: readPreference) { rpPtr in
+                    var error = bson_error_t()
+                    guard let desc = mongoc_client_select_server(
+                        connPtr,
+                        forWrites,
+                        rpPtr,
+                        &error
+                    ) else {
+                        throw extractMongoError(error: error)
+                    }
+                    defer { mongoc_server_description_destroy(desc) }
+                    return ServerDescription(desc)
                 }
-                defer { mongoc_server_description_destroy(desc) }
-                return ServerDescription(desc)
             }
         }
     }
@@ -259,11 +268,13 @@ internal class ConnectionPool {
     /// on the returned connection string will return any values that were retrieved from TXT records. Throws an error
     /// if the connection string cannot be retrieved.
     internal func getConnectionString() throws -> ConnectionString {
-        try self.withConnection { conn in
-            guard let uri = mongoc_client_get_uri(conn.clientHandle) else {
-                throw InternalError(message: "Couldn't retrieve client's connection string")
+        try self.withConnection { connection in
+            try connection.withMongocConnection { connPtr in
+                guard let uri = mongoc_client_get_uri(connPtr) else {
+                    throw InternalError(message: "Couldn't retrieve client's connection string")
+                }
+                return ConnectionString(copying: uri)
             }
-            return ConnectionString(copying: uri)
         }
     }
 

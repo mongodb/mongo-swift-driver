@@ -110,41 +110,43 @@ public struct MongoCollection<T: Codable> {
         from connection: Connection,
         body: (OpaquePointer) throws -> T
     ) rethrows -> T {
-        guard let collection = mongoc_client_get_collection(
-            connection.clientHandle,
-            self.namespace.db,
-            self.namespace.collection
-        ) else {
-            fatalError("Couldn't get collection '\(self.namespace)'")
-        }
-        defer { mongoc_collection_destroy(collection) }
-
-        // `collection` will automatically inherit read concern, write concern, and read preference from the parent
-        // client. If this `MongoCollection`'s value for any of those settings is different than the parent, we
-        //  need to explicitly set it here.
-
-        if self.readConcern != self._client.readConcern {
-            // a nil value for self.readConcern corresponds to the empty read concern.
-            (self.readConcern ?? ReadConcern()).withMongocReadConcern { rcPtr in
-                mongoc_collection_set_read_concern(collection, rcPtr)
+        try connection.withMongocConnection { connPtr in
+            guard let collection = mongoc_client_get_collection(
+                connPtr,
+                self.namespace.db,
+                self.namespace.collection
+            ) else {
+                fatalError("Couldn't get collection '\(self.namespace)'")
             }
-        }
+            defer { mongoc_collection_destroy(collection) }
 
-        if self.writeConcern != self._client.writeConcern {
-            // a nil value for self.writeConcern corresponds to the empty write concern.
-            (self.writeConcern ?? WriteConcern()).withMongocWriteConcern { wcPtr in
-                mongoc_collection_set_write_concern(collection, wcPtr)
+            // `collection` will automatically inherit read concern, write concern, and read preference from the parent
+            // client. If this `MongoCollection`'s value for any of those settings is different than the parent, we
+            //  need to explicitly set it here.
+
+            if self.readConcern != self._client.readConcern {
+                // a nil value for self.readConcern corresponds to the empty read concern.
+                (self.readConcern ?? ReadConcern()).withMongocReadConcern { rcPtr in
+                    mongoc_collection_set_read_concern(collection, rcPtr)
+                }
             }
-        }
 
-        if self.readPreference != self._client.readPreference {
-            // there is no concept of an empty read preference so we will always have a value here.
-            self.readPreference.withMongocReadPreference { rpPtr in
-                mongoc_collection_set_read_prefs(collection, rpPtr)
+            if self.writeConcern != self._client.writeConcern {
+                // a nil value for self.writeConcern corresponds to the empty write concern.
+                (self.writeConcern ?? WriteConcern()).withMongocWriteConcern { wcPtr in
+                    mongoc_collection_set_write_concern(collection, wcPtr)
+                }
             }
-        }
 
-        return try body(collection)
+            if self.readPreference != self._client.readPreference {
+                // there is no concept of an empty read preference so we will always have a value here.
+                self.readPreference.withMongocReadPreference { rpPtr in
+                    mongoc_collection_set_read_prefs(collection, rpPtr)
+                }
+            }
+
+            return try body(collection)
+        }
     }
 
     /// Internal method to check the `ReadConcern` that is set on `mongoc_collection_t`s via `withMongocCollection`.
