@@ -356,12 +356,12 @@ extension Date: BSONValue {
 
     /// Initializes a new `Date` representing the instance `msSinceEpoch` milliseconds
     /// since the Unix epoch.
-    public init(msSinceEpoch: Int64) {
+    internal init(msSinceEpoch: Int64) {
         self.init(timeIntervalSince1970: TimeInterval(msSinceEpoch) / 1000.0)
     }
 
     /// The number of milliseconds after the Unix epoch that this `Date` occurs.
-    public var msSinceEpoch: Int64 { Int64((self.timeIntervalSince1970 * 1000.0).rounded()) }
+    internal var msSinceEpoch: Int64 { Int64((self.timeIntervalSince1970 * 1000.0).rounded()) }
 
     internal func encode(to document: inout Document, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
