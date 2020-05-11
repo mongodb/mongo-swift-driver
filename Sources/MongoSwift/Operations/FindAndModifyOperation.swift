@@ -2,16 +2,12 @@ import CLibMongoC
 
 /// A class wrapping a `mongoc_find_and_modify_opts_t`, for use with `MongoCollection.findAndModify`.
 internal class FindAndModifyOptions {
-    /// an `OpaquePointer` to a `mongoc_find_and_modify_opts_t`
-    fileprivate var _options: OpaquePointer?
+    /// an `OpaquePointer` to a `mongoc_find_and_modify_opts_t`.
+    private let _options: OpaquePointer
 
     /// Cleans up internal state.
     deinit {
-        guard let options = self._options else {
-            return
-        }
-        mongoc_find_and_modify_opts_destroy(options)
-        self._options = nil
+        mongoc_find_and_modify_opts_destroy(self._options)
     }
 
     fileprivate init() {
@@ -132,6 +128,11 @@ internal class FindAndModifyOptions {
             }
         }
     }
+
+    /// Executes the provided closure using a pointer to the underlying libmongoc options.
+    fileprivate func withMongocOptions<T>(_ body: (OpaquePointer) throws -> T) rethrows -> T {
+        try body(self._options)
+    }
 }
 
 /// An operation corresponding to a "findAndModify" command.
@@ -162,10 +163,18 @@ internal struct FindAndModifyOperation<T: Codable>: Operation {
 
         var reply = Document()
         var error = bson_error_t()
-        let success = self.filter.withBSONPointer { filterPtr in
-            reply.withMutableBSONPointer { replyPtr in
-                self.collection.withMongocCollection(from: connection) { collPtr in
-                    mongoc_collection_find_and_modify_with_opts(collPtr, filterPtr, opts._options, replyPtr, &error)
+        let success = self.collection.withMongocCollection(from: connection) { collPtr in
+            self.filter.withBSONPointer { filterPtr in
+                opts.withMongocOptions { optsPtr in
+                    reply.withMutableBSONPointer { replyPtr in
+                        mongoc_collection_find_and_modify_with_opts(
+                            collPtr,
+                            filterPtr,
+                            optsPtr,
+                            replyPtr,
+                            &error
+                        )
+                    }
                 }
             }
         }
