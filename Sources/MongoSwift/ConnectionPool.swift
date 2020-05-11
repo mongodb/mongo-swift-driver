@@ -34,7 +34,7 @@ extension NSCondition {
 /// A pool of one or more connections.
 internal class ConnectionPool {
     /// Represents the state of a `ConnectionPool`.
-    internal enum State {
+    private enum State {
         /// Indicates that the `ConnectionPool` is open and using the associated pointer to a `mongoc_client_pool_t`.
         case open(pool: OpaquePointer)
         /// Indicates that the `ConnectionPool` is in the process of closing. Connections can be checked back in, but
