@@ -72,8 +72,11 @@ internal class ConnectionPool {
 
     /// Initializes the pool using the provided `ConnectionString` and options.
     internal init(from connString: ConnectionString, options: ClientOptions?) throws {
-        guard let pool = mongoc_client_pool_new(connString._uri) else {
-            throw InternalError(message: "Failed to initialize libmongoc client pool")
+        let pool: OpaquePointer = try connString.withMongocURI { uriPtr in
+            guard let pool = mongoc_client_pool_new(uriPtr) else {
+                throw InternalError(message: "Failed to initialize libmongoc client pool")
+            }
+            return pool
         }
 
         guard mongoc_client_pool_set_error_api(pool, MONGOC_ERROR_API_VERSION_2) else {
