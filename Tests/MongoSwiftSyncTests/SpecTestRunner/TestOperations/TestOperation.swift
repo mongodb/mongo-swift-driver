@@ -131,6 +131,9 @@ struct TestOperationDescription: Decodable {
     // swiftlint:disable cyclomatic_complexity
 
     /// Runs the operation and asserts its results meet the expectation.
+    ///
+    /// The operation may be mutated over the course of this execution (e.g. by enabling a failpoint), so it
+    /// must be passed as an `inout` parameter.
     func validateExecution<T: SpecTest>(
         test: inout T,
         client: MongoClient,
