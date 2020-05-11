@@ -135,7 +135,7 @@ public struct MongoDatabase {
      * Access a collection within this database. If an option is not specified in the `CollectionOptions` param, the
      * collection will inherit the value from the parent database or the default if the db's option is not set.
      * To override an option inherited from the db (e.g. a read concern) with the default value, it must be explicitly
-     * specified in the options param (e.g. ReadConcern.serverDefault, not nil).
+     * specified in the options param (e.g. .serverDefault, not nil).
      *
      * - Parameters:
      *   - name: the name of the collection to get
@@ -153,7 +153,7 @@ public struct MongoDatabase {
      * `MongoCollection` instance. If an option is not specified in the `CollectionOptions` param, the
      * collection will inherit the value from the parent database or the default if the db's option is not set.
      * To override an option inherited from the db (e.g. a read concern) with the default value, it must be explicitly
-     * specified in the options param (e.g. ReadConcern.serverDefault, not nil).
+     * specified in the options param (e.g. .serverDefault, not nil).
      *
      * - Parameters:
      *   - name: the name of the collection to get
@@ -476,16 +476,18 @@ public struct MongoDatabase {
             // If this database's value for any of those settings is different than the parent, we need to explicitly
             // set it here.
 
-        if self.readConcern != self._client.readConcern {
-            // a nil value for self.readConcern corresponds to the empty read concern.
-            (self.readConcern ?? .serverDefault).withMongocReadConcern { rcPtr in
-                mongoc_database_set_read_concern(db, rcPtr)
+            if self.readConcern != self._client.readConcern {
+                // a nil value for self.readConcern corresponds to the empty read concern.
+                (self.readConcern ?? .serverDefault).withMongocReadConcern { rcPtr in
+                    mongoc_database_set_read_concern(db, rcPtr)
+                }
             }
 
-        if self.writeConcern != self._client.writeConcern {
-            // a nil value for self.writeConcern corresponds to the empty write concern.
-            (self.writeConcern ?? .serverDefault).withMongocWriteConcern { wcPtr in
-                mongoc_database_set_write_concern(db, wcPtr)
+            if self.writeConcern != self._client.writeConcern {
+                // a nil value for self.writeConcern corresponds to the empty write concern.
+                (self.writeConcern ?? WriteConcern()).withMongocWriteConcern { wcPtr in
+                    mongoc_database_set_write_concern(db, wcPtr)
+                }
             }
 
             if self.readPreference != self._client.readPreference {

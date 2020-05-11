@@ -124,16 +124,18 @@ public struct MongoCollection<T: Codable> {
             // client. If this `MongoCollection`'s value for any of those settings is different than the parent, we
             //  need to explicitly set it here.
 
-        if self.readConcern != self._client.readConcern {
-            // a nil value for self.readConcern corresponds to the empty read concern.
-            (self.readConcern ?? .serverDefault).withMongocReadConcern { rcPtr in
-                mongoc_collection_set_read_concern(collection, rcPtr)
+            if self.readConcern != self._client.readConcern {
+                // a nil value for self.readConcern corresponds to the empty read concern.
+                (self.readConcern ?? .serverDefault).withMongocReadConcern { rcPtr in
+                    mongoc_collection_set_read_concern(collection, rcPtr)
+                }
             }
 
-        if self.writeConcern != self._client.writeConcern {
-            // a nil value for self.writeConcern corresponds to the empty write concern.
-            (self.writeConcern ?? .serverDefault).withMongocWriteConcern { wcPtr in
-                mongoc_collection_set_write_concern(collection, wcPtr)
+            if self.writeConcern != self._client.writeConcern {
+                // a nil value for self.writeConcern corresponds to the empty write concern.
+                (self.writeConcern ?? .serverDefault).withMongocWriteConcern { wcPtr in
+                    mongoc_collection_set_write_concern(collection, wcPtr)
+                }
             }
 
             if self.readPreference != self._client.readPreference {
