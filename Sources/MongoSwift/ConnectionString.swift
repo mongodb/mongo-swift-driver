@@ -3,7 +3,7 @@ import CLibMongoC
 /// Class representing a connection string for connecting to MongoDB.
 internal class ConnectionString {
     /// Pointer to the underlying `mongoc_uri_t`.
-    internal let _uri: OpaquePointer
+    private let _uri: OpaquePointer
 
     /// Initializes a new `ConnectionString` with the provided options.
     internal init(_ connectionString: String, options: ClientOptions? = nil) throws {
@@ -189,5 +189,10 @@ internal class ConnectionString {
         }
 
         return hosts
+    }
+
+    /// Executes the provided closure using a pointer to the underlying `mongoc_uri_t`.
+    internal func withMongocURI<T>(_ body: (OpaquePointer) throws -> T) rethrows -> T {
+        try body(self._uri)
     }
 }
