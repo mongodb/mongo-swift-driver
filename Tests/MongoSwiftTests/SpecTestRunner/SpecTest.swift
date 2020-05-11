@@ -84,7 +84,7 @@ internal struct FailPoint: Decodable {
 
     /// The fail point being configured.
     internal var name: String {
-        return self.failPoint["configureFailPoint"]?.stringValue ?? ""
+        self.failPoint["configureFailPoint"]?.stringValue ?? ""
     }
 
     private init(_ document: Document) {
@@ -226,7 +226,7 @@ internal struct ServerVersion: Comparable, Decodable, CustomStringConvertible {
     }
 
     var description: String {
-        return "\(self.major).\(self.minor).\(self.patch)"
+        "\(self.major).\(self.minor).\(self.patch)"
     }
 
     static func < (lhs: ServerVersion, rhs: ServerVersion) -> Bool {

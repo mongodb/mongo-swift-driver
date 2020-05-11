@@ -66,7 +66,7 @@ extension ServerError: Equatable {
 
 extension BulkWriteResult: Equatable {
     public static func == (lhs: BulkWriteResult, rhs: BulkWriteResult) -> Bool {
-        return lhs.insertedIds == rhs.insertedIds
+        lhs.insertedIds == rhs.insertedIds
             && lhs.upsertedIds == rhs.upsertedIds
             && lhs.upsertedCount == rhs.upsertedCount
             && lhs.modifiedCount == rhs.modifiedCount
@@ -89,19 +89,19 @@ extension UserError: Equatable {
 
 extension WriteError: Equatable {
     public static func == (lhs: WriteError, rhs: WriteError) -> Bool {
-        return lhs.code == rhs.code
+        lhs.code == rhs.code
     }
 }
 
 extension BulkWriteError: Equatable {
     public static func == (lhs: BulkWriteError, rhs: BulkWriteError) -> Bool {
-        return lhs.code == rhs.code && lhs.index == rhs.index
+        lhs.code == rhs.code && lhs.index == rhs.index
     }
 }
 
 extension WriteConcernError: Equatable {
     public static func == (lhs: WriteConcernError, rhs: WriteConcernError) -> Bool {
-        return lhs.code == rhs.code && lhs.details == rhs.details
+        lhs.code == rhs.code && lhs.details == rhs.details
     }
 }
 

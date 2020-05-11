@@ -57,7 +57,7 @@ public struct ReadConcern: Codable {
 
     /// Indicates whether this `ReadConcern` is the server default.
     public var isDefault: Bool {
-        return self.level == nil
+        self.level == nil
     }
 
     // Initializes a new `ReadConcern` with the same level as the provided `mongoc_read_concern_t`.
@@ -112,6 +112,6 @@ extension ReadConcern: CustomStringConvertible {
 /// An extension of `ReadConcern` to make it `Equatable`.
 extension ReadConcern: Equatable {
     public static func == (lhs: ReadConcern, rhs: ReadConcern) -> Bool {
-        return lhs.level == rhs.level
+        lhs.level == rhs.level
     }
 }

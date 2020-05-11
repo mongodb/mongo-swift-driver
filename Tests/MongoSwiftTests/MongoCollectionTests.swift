@@ -32,7 +32,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
                 return
             }
             self.coll = try client.db(type(of: self).testDatabase).createCollection(self.collName)
-            try self.coll.insertMany([doc1, doc2])
+            try self.coll.insertMany([self.doc1, self.doc2])
         } catch {
             XCTFail("Setup failed: \(error)")
         }

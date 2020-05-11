@@ -34,7 +34,7 @@ private protocol InitializableFromOpaquePointer {
 /// in the `userInfo` property of `Notification`s posted under the name .commandStarted.
 public struct CommandStartedEvent: MongoCommandEvent, InitializableFromOpaquePointer {
     /// The name this event will be posted under.
-    public static var eventName: Notification.Name { return .commandStarted }
+    public static var eventName: Notification.Name { .commandStarted }
 
     /// The command.
     public let command: Document
@@ -71,7 +71,7 @@ public struct CommandStartedEvent: MongoCommandEvent, InitializableFromOpaquePoi
 /// in the `userInfo` property of `Notification`s posted under the name .commandSucceeded.
 public struct CommandSucceededEvent: MongoCommandEvent, InitializableFromOpaquePointer {
     /// The name this event will be posted under.
-    public static var eventName: Notification.Name { return .commandSucceeded }
+    public static var eventName: Notification.Name { .commandSucceeded }
 
     /// The execution time of the event, in microseconds.
     public let duration: Int64
@@ -108,7 +108,7 @@ public struct CommandSucceededEvent: MongoCommandEvent, InitializableFromOpaqueP
 /// in the `userInfo` property of `Notification`s posted under the name .commandFailed.
 public struct CommandFailedEvent: MongoCommandEvent, InitializableFromOpaquePointer {
     /// The name this event will be posted under.
-    public static var eventName: Notification.Name { return .commandFailed }
+    public static var eventName: Notification.Name { .commandFailed }
 
     /// The execution time of the event, in microseconds.
     public let duration: Int64
@@ -146,7 +146,7 @@ public struct CommandFailedEvent: MongoCommandEvent, InitializableFromOpaquePoin
 /// Published when a server description changes. This does NOT include changes to the server's roundTripTime property.
 public struct ServerDescriptionChangedEvent: MongoEvent, InitializableFromOpaquePointer {
     /// The name this event will be posted under.
-    public static var eventName: Notification.Name { return .serverDescriptionChanged }
+    public static var eventName: Notification.Name { .serverDescriptionChanged }
 
     /// The connection ID (host/port pair) of the server.
     public let connectionId: ConnectionId
@@ -176,7 +176,7 @@ public struct ServerDescriptionChangedEvent: MongoEvent, InitializableFromOpaque
 /// Published when a server is initialized.
 public struct ServerOpeningEvent: MongoEvent, InitializableFromOpaquePointer {
     /// The name this event will be posted under.
-    public static var eventName: Notification.Name { return .serverOpening }
+    public static var eventName: Notification.Name { .serverOpening }
 
     /// The connection ID (host/port pair) of the server.
     public let connectionId: ConnectionId
@@ -198,7 +198,7 @@ public struct ServerOpeningEvent: MongoEvent, InitializableFromOpaquePointer {
 /// Published when a server is closed.
 public struct ServerClosedEvent: MongoEvent, InitializableFromOpaquePointer {
     /// The name this event will be posted under.
-    public static var eventName: Notification.Name { return .serverClosed }
+    public static var eventName: Notification.Name { .serverClosed }
 
     /// The connection ID (host/port pair) of the server.
     public let connectionId: ConnectionId
@@ -220,7 +220,7 @@ public struct ServerClosedEvent: MongoEvent, InitializableFromOpaquePointer {
 /// Published when a topology description changes.
 public struct TopologyDescriptionChangedEvent: MongoEvent, InitializableFromOpaquePointer {
     /// The name this event will be posted under.
-    public static var eventName: Notification.Name { return .topologyDescriptionChanged }
+    public static var eventName: Notification.Name { .topologyDescriptionChanged }
 
     /// A unique identifier for the topology.
     public let topologyId: ObjectId
@@ -246,7 +246,7 @@ public struct TopologyDescriptionChangedEvent: MongoEvent, InitializableFromOpaq
 /// Published when a topology is initialized.
 public struct TopologyOpeningEvent: MongoEvent, InitializableFromOpaquePointer {
     /// The name this event will be posted under.
-    public static var eventName: Notification.Name { return .topologyOpening }
+    public static var eventName: Notification.Name { .topologyOpening }
 
     /// A unique identifier for the topology.
     public let topologyId: ObjectId
@@ -264,7 +264,7 @@ public struct TopologyOpeningEvent: MongoEvent, InitializableFromOpaquePointer {
 /// Published when a topology is closed.
 public struct TopologyClosedEvent: MongoEvent, InitializableFromOpaquePointer {
     /// The name this event will be posted under.
-    public static var eventName: Notification.Name { return .topologyClosed }
+    public static var eventName: Notification.Name { .topologyClosed }
 
     /// A unique identifier for the topology.
     public let topologyId: ObjectId
@@ -283,7 +283,7 @@ public struct TopologyClosedEvent: MongoEvent, InitializableFromOpaquePointer {
 /// the ismaster command is serialized into raw BSON and written to the socket.
 public struct ServerHeartbeatStartedEvent: MongoEvent, InitializableFromOpaquePointer {
     /// The name this event will be posted under.
-    public static var eventName: Notification.Name { return .serverHeartbeatStarted }
+    public static var eventName: Notification.Name { .serverHeartbeatStarted }
 
     /// The connection ID (host/port pair) of the server.
     public let connectionId: ConnectionId
@@ -297,7 +297,7 @@ public struct ServerHeartbeatStartedEvent: MongoEvent, InitializableFromOpaquePo
 /// Published when the server monitor’s ismaster succeeds.
 public struct ServerHeartbeatSucceededEvent: MongoEvent, InitializableFromOpaquePointer {
     /// The name this event will be posted under.
-    public static var eventName: Notification.Name { return .serverHeartbeatSucceeded }
+    public static var eventName: Notification.Name { .serverHeartbeatSucceeded }
 
     /// The execution time of the event, in microseconds.
     public let duration: Int64
@@ -320,7 +320,7 @@ public struct ServerHeartbeatSucceededEvent: MongoEvent, InitializableFromOpaque
 /// Published when the server monitor’s ismaster fails, either with an “ok: 0” or a socket exception.
 public struct ServerHeartbeatFailedEvent: MongoEvent, InitializableFromOpaquePointer {
     /// The name this event will be posted under.
-    public static var eventName: Notification.Name { return .serverHeartbeatFailed }
+    public static var eventName: Notification.Name { .serverHeartbeatFailed }
 
     /// The execution time of the event, in microseconds.
     public let duration: Int64

@@ -87,18 +87,18 @@ protocol BulkWriteResultConvertible {
 }
 
 extension BulkWriteResult: BulkWriteResultConvertible {
-    internal var bulkResultValue: BulkWriteResult { return self }
+    internal var bulkResultValue: BulkWriteResult { self }
 }
 
 extension InsertManyResult: BulkWriteResultConvertible {
     internal var bulkResultValue: BulkWriteResult {
-        return BulkWriteResult(insertedCount: self.insertedCount, insertedIds: self.insertedIds)
+        BulkWriteResult(insertedCount: self.insertedCount, insertedIds: self.insertedIds)
     }
 }
 
 extension InsertOneResult: BulkWriteResultConvertible {
     internal var bulkResultValue: BulkWriteResult {
-        return BulkWriteResult(insertedCount: 1, insertedIds: [0: self.insertedId])
+        BulkWriteResult(insertedCount: 1, insertedIds: [0: self.insertedId])
     }
 }
 
@@ -120,6 +120,6 @@ extension UpdateResult: BulkWriteResultConvertible {
 
 extension DeleteResult: BulkWriteResultConvertible {
     internal var bulkResultValue: BulkWriteResult {
-        return BulkWriteResult(deletedCount: self.deletedCount)
+        BulkWriteResult(deletedCount: self.deletedCount)
     }
 }

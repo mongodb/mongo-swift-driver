@@ -166,7 +166,7 @@ struct AnyTestOperation: Decodable, TestOperation {
     }
 
     func execute(on target: TestOperationTarget, session: ClientSession?) throws -> TestOperationResult? {
-        return try self.op.execute(on: target, session: session)
+        try self.op.execute(on: target, session: session)
     }
 }
 

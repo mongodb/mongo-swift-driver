@@ -269,17 +269,17 @@ extension Document {
 extension Document {
     /// Returns a `[String]` containing the keys in this `Document`.
     public var keys: [String] {
-        return self.makeIterator().keys
+        self.makeIterator().keys
     }
 
     /// Returns a `[BSONValue]` containing the values stored in this `Document`.
     public var values: [BSON] {
-        return self.makeIterator().values
+        self.makeIterator().values
     }
 
     /// Returns the number of (key, value) pairs stored at the top level of this `Document`.
     public var count: Int {
-        return Int(bson_count_keys(self._bson))
+        Int(bson_count_keys(self._bson))
     }
 
     /// Returns the relaxed extended JSON representation of this `Document`.
@@ -396,7 +396,7 @@ extension Document {
 
     /// Returns a `Boolean` indicating whether this `Document` contains the provided key.
     public func hasKey(_ key: String) -> Bool {
-        return bson_has_field(self._bson, key)
+        bson_has_field(self._bson, key)
     }
 
     /**
@@ -414,7 +414,7 @@ extension Document {
         // TODO: This `get` method _should_ guarantee constant-time O(1) access, and it is possible to make it do so.
         // This criticism also applies to indexed-based subscripting via `Int`.
         // See SWIFT-250.
-        get { return DocumentIterator(forDocument: self, advancedTo: key)?.currentValue }
+        get { DocumentIterator(forDocument: self, advancedTo: key)?.currentValue }
         set(newValue) {
             do {
                 if let newValue = newValue {
@@ -440,7 +440,7 @@ extension Document {
      *  ```
      */
     public subscript(key: String, default defaultValue: @autoclosure () -> BSON) -> BSON {
-        return self[key] ?? defaultValue()
+        self[key] ?? defaultValue()
     }
 
     /**
@@ -459,7 +459,7 @@ extension Document {
     @available(swift 4.2)
     public subscript(dynamicMember member: String) -> BSON? {
         get {
-            return self[member]
+            self[member]
         }
         set(newValue) {
             self[member] = newValue
@@ -469,9 +469,9 @@ extension Document {
 
 /// An extension of `Document` to make it a `BSONValue`.
 extension Document: BSONValue {
-    internal static var bsonType: BSONType { return .document }
+    internal static var bsonType: BSONType { .document }
 
-    internal var bson: BSON { return .document(self) }
+    internal var bson: BSON { .document(self) }
 
     internal func encode(to storage: DocumentStorage, forKey key: String) throws {
         guard bson_append_document(storage._bson, key, Int32(key.utf8.count), self._bson) else {
@@ -506,7 +506,7 @@ extension Document: BSONValue {
 /// An extension of `Document` to make it `Equatable`.
 extension Document: Equatable {
     public static func == (lhs: Document, rhs: Document) -> Bool {
-        return bson_compare(lhs._bson, rhs._bson) == 0
+        bson_compare(lhs._bson, rhs._bson) == 0
     }
 }
 
@@ -515,7 +515,7 @@ extension Document: CustomStringConvertible {
     /// Returns the relaxed extended JSON representation of this `Document`.
     /// On error, an empty string will be returned.
     public var description: String {
-        return self.extendedJSON
+        self.extendedJSON
     }
 }
 
@@ -558,7 +558,7 @@ extension Data {
     /// count == 0.
     /// Based on https://mjtsai.com/blog/2019/03/27/swift-5-released/
     fileprivate func withUnsafeBytePointer<T>(body: (UnsafePointer<UInt8>?) throws -> T) rethrows -> T {
-        return try self.withUnsafeBytes { (rawPtr: UnsafeRawBufferPointer) in
+        try self.withUnsafeBytes { (rawPtr: UnsafeRawBufferPointer) in
             let bufferPtr = rawPtr.bindMemory(to: UInt8.self)
             let bytesPtr = bufferPtr.baseAddress
             return try body(bytesPtr)

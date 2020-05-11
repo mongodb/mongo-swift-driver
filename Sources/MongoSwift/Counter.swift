@@ -12,7 +12,7 @@ internal class Counter {
 
     /// Returns the next value in the counter.
     internal func next() -> Int {
-        return self.queue.sync {
+        self.queue.sync {
             self.count += 1
             return self.count
         }

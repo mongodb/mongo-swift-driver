@@ -42,7 +42,7 @@ internal class ConnectionString {
     /// The `ReadConcern` for this connection string.
     internal var readConcern: ReadConcern {
         get {
-            return ReadConcern(from: mongoc_uri_get_read_concern(self._uri))
+            ReadConcern(from: mongoc_uri_get_read_concern(self._uri))
         }
         set(rc) {
             rc.withMongocReadConcern { rcPtr in
@@ -54,7 +54,7 @@ internal class ConnectionString {
     /// The `WriteConcern` for this connection string.
     internal var writeConcern: WriteConcern {
         get {
-            return WriteConcern(from: mongoc_uri_get_write_concern(self._uri))
+            WriteConcern(from: mongoc_uri_get_write_concern(self._uri))
         }
         set(wc) {
             wc.withMongocWriteConcern { wcPtr in
@@ -66,7 +66,7 @@ internal class ConnectionString {
     /// The `ReadPreference` for this connection string.
     internal var readPreference: ReadPreference {
         get {
-            return ReadPreference(from: mongoc_uri_get_read_prefs_t(self._uri))
+            ReadPreference(from: mongoc_uri_get_read_prefs_t(self._uri))
         }
         set(rp) {
             mongoc_uri_set_read_prefs_t(self._uri, rp._readPreference)

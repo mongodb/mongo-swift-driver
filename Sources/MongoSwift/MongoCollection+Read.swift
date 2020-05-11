@@ -271,7 +271,7 @@ public enum CursorType {
     case tailableAwait
 
     internal var isTailable: Bool {
-        return self != .nonTailable
+        self != .nonTailable
     }
 }
 

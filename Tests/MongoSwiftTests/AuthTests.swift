@@ -69,7 +69,7 @@ extension ConnectionString {
 
     /// Returns the credential configured on this URI. Will be empty if no options are set.
     fileprivate var credential: Credential {
-        return Credential(
+        Credential(
             username: self.username,
             password: self.password,
             source: self.authSource,
@@ -188,7 +188,7 @@ final class AuthTests: MongoSwiftTestCase {
 
         /// A command to create this user.
         var createCmd: Document {
-            return [
+            [
                 "createUser": .string(self.username),
                 "pwd": .string(self.password),
                 "roles": ["root"],

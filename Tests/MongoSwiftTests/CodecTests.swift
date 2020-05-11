@@ -290,7 +290,7 @@ final class CodecTests: MongoSwiftTestCase {
         let null: BSONNull
 
         public static func factory() throws -> AllBSONTypes {
-            return AllBSONTypes(
+            AllBSONTypes(
                 double: Double(2),
                 string: "hi",
                 doc: ["x": 1],
@@ -317,7 +317,7 @@ final class CodecTests: MongoSwiftTestCase {
 
         // Manually construct a document from this instance for comparision with encoder output.
         public func toDocument() -> Document {
-            return [
+            [
                 "double": .double(self.double),
                 "string": .string(self.string),
                 "doc": .document(self.doc),

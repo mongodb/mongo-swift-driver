@@ -133,7 +133,7 @@ private struct CMTest: Decodable {
     // `context` dictionary so we can access it in future events for the same test
     var context = [String: Any]()
 
-    var expectations: [ExpectationType] { return try! expectationDocs.map { try makeExpectation($0) } }
+    var expectations: [ExpectationType] { try! expectationDocs.map { try makeExpectation($0) } }
 
     enum CodingKeys: String, CodingKey {
         case description, op = "operation", expectationDocs = "expectations",
@@ -339,9 +339,9 @@ private struct CommandSucceededExpectation: ExpectationType, Decodable {
     let originalReply: Document
     let commandName: String
 
-    var reply: Document { return normalizeExpectedReply(originalReply) }
-    var writeErrors: [Document]? { return originalReply["writeErrors"]?.arrayValue?.compactMap { $0.documentValue } }
-    var cursor: Document? { return originalReply["cursor"]?.documentValue }
+    var reply: Document { normalizeExpectedReply(originalReply) }
+    var writeErrors: [Document]? { originalReply["writeErrors"]?.arrayValue?.compactMap { $0.documentValue } }
+    var cursor: Document? { originalReply["cursor"]?.documentValue }
 
     enum CodingKeys: String, CodingKey {
         case commandName = "command_name", originalReply = "reply"

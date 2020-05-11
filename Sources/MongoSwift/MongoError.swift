@@ -388,7 +388,7 @@ internal func convertingBulkWriteErrors<T>(_ body: () throws -> T) throws -> T {
 }
 
 internal func toErrorString(_ error: bson_error_t) -> String {
-    return withUnsafeBytes(of: error.message) { rawPtr -> String in
+    withUnsafeBytes(of: error.message) { rawPtr -> String in
         // if baseAddress is nil, the buffer is empty.
         guard let baseAddress = rawPtr.baseAddress else {
             return ""
@@ -398,14 +398,14 @@ internal func toErrorString(_ error: bson_error_t) -> String {
 }
 
 internal func bsonTooLargeError(value: BSONValue, forKey: String) -> MongoError {
-    return RuntimeError.internalError(
+    RuntimeError.internalError(
         message:
         "Failed to set value for key \(forKey) to \(value) with BSON type \(value.bsonType): document too large"
     )
 }
 
 internal func wrongIterTypeError(_ iter: DocumentIterator, expected type: BSONValue.Type) -> MongoError {
-    return UserError.logicError(
+    UserError.logicError(
         message: "Tried to retreive a \(type) from an iterator whose next type " +
             "is \(iter.currentType) for key \(iter.currentKey)"
     )

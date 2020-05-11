@@ -117,7 +117,7 @@ final class MongoClientTests: MongoSwiftTestCase {
         let data: Data
 
         static func == (lhs: Wrapper, rhs: Wrapper) -> Bool {
-            return lhs.date == rhs.date && lhs.data == rhs.data && lhs.uuid == rhs.uuid
+            lhs.date == rhs.date && lhs.data == rhs.data && lhs.uuid == rhs.uuid
         }
     }
 

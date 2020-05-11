@@ -127,8 +127,8 @@ final class Document_SequenceTests: MongoSwiftTestCase {
     let doc: Document = ["a": 1, "b": "hi", "c": [1, 2], "d": false, "e": .null, "f": .minKey, "g": 10]
 
     // shared predicates for subsequence tests
-    func isInt(_ pair: Document.KeyValuePair) -> Bool { return pair.value.asInt() != nil }
-    func isNotNil(_ pair: Document.KeyValuePair) -> Bool { return pair.value != .null }
+    func isInt(_ pair: Document.KeyValuePair) -> Bool { pair.value.asInt() != nil }
+    func isNotNil(_ pair: Document.KeyValuePair) -> Bool { pair.value != .null }
     func is10(_ pair: Document.KeyValuePair) -> Bool {
         if let int = pair.value.asInt() {
             return int == 10
@@ -136,7 +136,7 @@ final class Document_SequenceTests: MongoSwiftTestCase {
         return false
     }
 
-    func isNot10(_ pair: Document.KeyValuePair) -> Bool { return !self.is10(pair) }
+    func isNot10(_ pair: Document.KeyValuePair) -> Bool { !self.is10(pair) }
 
     func testDropFirst() throws {
         expect(self.emptyDoc.dropFirst(0)).to(equal([:]))

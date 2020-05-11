@@ -16,7 +16,7 @@ public struct IndexModel: Codable {
 
     /// Gets the default name for this index.
     internal var defaultName: String {
-        return self.keys.map { k, v in "\(k)_\(v.bsonValue)" }.joined(separator: "_")
+        self.keys.map { k, v in "\(k)_\(v.bsonValue)" }.joined(separator: "_")
     }
 
     // Encode own data as well as nested options data
@@ -182,7 +182,7 @@ extension MongoCollection {
         options: CreateIndexOptions? = nil,
         session: ClientSession? = nil
     ) throws -> String {
-        return try self.createIndexes(
+        try self.createIndexes(
             [IndexModel(keys: keys, options: indexOptions)],
             options: options,
             session: session
@@ -212,7 +212,7 @@ extension MongoCollection {
         options: CreateIndexOptions? = nil,
         session: ClientSession? = nil
     ) throws -> String {
-        return try self.createIndexes([model], options: options, session: session)[0]
+        try self.createIndexes([model], options: options, session: session)[0]
     }
 
     /**
@@ -294,7 +294,7 @@ extension MongoCollection {
         options: DropIndexOptions? = nil,
         session: ClientSession? = nil
     ) throws -> Document {
-        return try self._dropIndexes(index: .document(keys), options: options, session: session)
+        try self._dropIndexes(index: .document(keys), options: options, session: session)
     }
 
     /**
@@ -320,7 +320,7 @@ extension MongoCollection {
         options: DropIndexOptions? = nil,
         session: ClientSession? = nil
     ) throws -> Document {
-        return try self._dropIndexes(index: .document(model.keys), options: options, session: session)
+        try self._dropIndexes(index: .document(model.keys), options: options, session: session)
     }
 
     /**
@@ -341,7 +341,7 @@ extension MongoCollection {
      */
     @discardableResult
     public func dropIndexes(options: DropIndexOptions? = nil, session: ClientSession? = nil) throws -> Document {
-        return try self._dropIndexes(index: "*", options: options, session: session)
+        try self._dropIndexes(index: "*", options: options, session: session)
     }
 
     /// Internal helper to drop an index. `index` must either be an index specification document or a

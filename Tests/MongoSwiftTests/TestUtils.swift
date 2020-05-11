@@ -8,7 +8,7 @@ import XCTest
 class MongoSwiftTestCase: XCTestCase {
     /// Gets the name of the database the test case is running against.
     internal class var testDatabase: String {
-        return "test"
+        "test"
     }
 
     /// Gets the connection string for the database being used for testing from the environment variable, $MONGODB_URI.
@@ -56,7 +56,7 @@ class MongoSwiftTestCase: XCTestCase {
     }
 
     internal func getNamespace(suffix: String? = nil) -> MongoNamespace {
-        return MongoNamespace(db: type(of: self).testDatabase, collection: self.getCollectionName(suffix: suffix))
+        MongoNamespace(db: type(of: self).testDatabase, collection: self.getCollectionName(suffix: suffix))
     }
 
     static var topologyType: TopologyDescription.TopologyType {
@@ -68,17 +68,17 @@ class MongoSwiftTestCase: XCTestCase {
 
     /// Indicates that we are running the tests with SSL enabled, determined by the environment variable $SSL.
     static var ssl: Bool {
-        return ProcessInfo.processInfo.environment["SSL"] == "ssl"
+        ProcessInfo.processInfo.environment["SSL"] == "ssl"
     }
 
     /// Returns the path where the SSL key file is located, determined by the environment variable $SSL_KEY_FILE.
     static var sslPEMKeyFilePath: String? {
-        return ProcessInfo.processInfo.environment["SSL_KEY_FILE"]
+        ProcessInfo.processInfo.environment["SSL_KEY_FILE"]
     }
 
     /// Returns the path where the SSL CA file is located, determined by the environment variable $SSL_CA_FILE..
     static var sslCAFilePath: String? {
-        return ProcessInfo.processInfo.environment["SSL_CA_FILE"]
+        ProcessInfo.processInfo.environment["SSL_CA_FILE"]
     }
 
     /// Temporary helper to assist with skipping tests due to CDRIVER-3318. Returns whether we are running on MacOS.
@@ -230,7 +230,7 @@ func clean(json: String?) -> String {
 // Adds a custom "cleanEqual" predicate that compares two JSON strings for equality after normalizing
 // them with the "clean" function
 internal func cleanEqual(_ expectedValue: String?) -> Predicate<String> {
-    return Predicate.define("cleanEqual <\(stringify(expectedValue))>") { actualExpression, msg in
+    Predicate.define("cleanEqual <\(stringify(expectedValue))>") { actualExpression, msg in
         let actualValue = try actualExpression.evaluate()
         let matches = clean(json: actualValue) == clean(json: expectedValue) && expectedValue != nil
         if expectedValue == nil || actualValue == nil {
@@ -249,7 +249,7 @@ internal func cleanEqual(_ expectedValue: String?) -> Predicate<String> {
 // Adds a custom "sortedEqual" predicate that compares two `Document`s and returns true if they
 // have the same key/value pairs in them
 internal func sortedEqual(_ expectedValue: Document?) -> Predicate<Document> {
-    return Predicate.define("sortedEqual <\(stringify(expectedValue))>") { actualExpression, msg in
+    Predicate.define("sortedEqual <\(stringify(expectedValue))>") { actualExpression, msg in
         let actualValue = try actualExpression.evaluate()
 
         guard let expected = expectedValue, let actual = actualValue else {
@@ -320,9 +320,9 @@ internal func unsupportedTopologyMessage(
     topology: TopologyDescription.TopologyType = MongoSwiftTestCase.topologyType
 )
     -> String {
-    return "Skipping \(testName) due to unsupported topology type \(topology)"
+    "Skipping \(testName) due to unsupported topology type \(topology)"
 }
 
 internal func unsupportedServerVersionMessage(testName: String) -> String {
-    return "Skipping \(testName) due to unsupported server version."
+    "Skipping \(testName) due to unsupported server version."
 }

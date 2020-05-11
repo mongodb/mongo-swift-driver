@@ -78,7 +78,7 @@ private struct CrudTestFile: Decodable {
     let testDocs: [Document]
 
     func makeTests() throws -> [CrudTest] {
-        return try self.testDocs.map { try makeCrudTest($0) }
+        try self.testDocs.map { try makeCrudTest($0) }
     }
 
     let minServerVersion: String?
@@ -130,13 +130,13 @@ private class CrudTest {
     let result: BSON?
     let collection: Document?
 
-    var arrayFilters: [Document]? { return self.args["arrayFilters"]?.arrayValue?.compactMap { $0.documentValue } }
-    var batchSize: Int32? { return self.args["batchSize"]?.int32Value }
-    var collation: Document? { return self.args["collation"]?.documentValue }
-    var sort: Document? { return self.args["sort"]?.documentValue }
-    var skip: Int64? { return self.args["skip"]?.asInt64() }
-    var limit: Int64? { return self.args["limit"]?.asInt64() }
-    var projection: Document? { return self.args["projection"]?.documentValue }
+    var arrayFilters: [Document]? { self.args["arrayFilters"]?.arrayValue?.compactMap { $0.documentValue } }
+    var batchSize: Int32? { self.args["batchSize"]?.int32Value }
+    var collation: Document? { self.args["collation"]?.documentValue }
+    var sort: Document? { self.args["sort"]?.documentValue }
+    var skip: Int64? { self.args["skip"]?.asInt64() }
+    var limit: Int64? { self.args["limit"]?.asInt64() }
+    var projection: Document? { self.args["projection"]?.documentValue }
     var returnDoc: ReturnDocument? {
         if let ret = self.args["returnDocument"]?.stringValue {
             return ret == "After" ? .after : .before
@@ -144,7 +144,7 @@ private class CrudTest {
         return nil
     }
 
-    var upsert: Bool? { return self.args["upsert"]?.boolValue }
+    var upsert: Bool? { self.args["upsert"]?.boolValue }
 
     /// Initializes a new `CrudTest` from a `Document`.
     required init(_ test: Document) throws {
@@ -503,5 +503,5 @@ private class UpdateTest: CrudTest {
 
 internal struct TestError: LocalizedError {
     var message: String
-    public var errorDescription: String { return self.message }
+    public var errorDescription: String { self.message }
 }

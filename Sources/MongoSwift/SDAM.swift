@@ -279,7 +279,7 @@ public struct TopologyDescription {
 
     /// Returns `true` if the topology has a writable server available, and `false` otherwise.
     public func hasWritableServer() -> Bool {
-        return [.single, .replicaSetWithPrimary].contains(self.type)
+        [.single, .replicaSetWithPrimary].contains(self.type)
     }
 
     /// An internal initializer to create a `TopologyDescription` from an OpaquePointer

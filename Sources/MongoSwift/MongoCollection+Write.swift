@@ -27,7 +27,7 @@ extension MongoCollection {
         options: InsertOneOptions? = nil,
         session: ClientSession? = nil
     ) throws -> InsertOneResult? {
-        return try convertingBulkWriteErrors {
+        try convertingBulkWriteErrors {
             let result = try self.bulkWrite(
                 [.insertOne(value)],
                 options: options?.asBulkWriteOptions(),
@@ -91,7 +91,7 @@ extension MongoCollection {
         options: ReplaceOptions? = nil,
         session: ClientSession? = nil
     ) throws -> UpdateResult? {
-        return try convertingBulkWriteErrors {
+        try convertingBulkWriteErrors {
             let modelOptions = ReplaceOneModelOptions(collation: options?.collation, upsert: options?.upsert)
             let model = WriteModel.replaceOne(filter: filter, replacement: replacement, options: modelOptions)
             let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
@@ -125,7 +125,7 @@ extension MongoCollection {
         options: UpdateOptions? = nil,
         session: ClientSession? = nil
     ) throws -> UpdateResult? {
-        return try convertingBulkWriteErrors {
+        try convertingBulkWriteErrors {
             let modelOptions = UpdateModelOptions(
                 arrayFilters: options?.arrayFilters,
                 collation: options?.collation,
@@ -163,7 +163,7 @@ extension MongoCollection {
         options: UpdateOptions? = nil,
         session: ClientSession? = nil
     ) throws -> UpdateResult? {
-        return try convertingBulkWriteErrors {
+        try convertingBulkWriteErrors {
             let modelOptions = UpdateModelOptions(
                 arrayFilters: options?.arrayFilters,
                 collation: options?.collation,
@@ -199,7 +199,7 @@ extension MongoCollection {
         options: DeleteOptions? = nil,
         session: ClientSession? = nil
     ) throws -> DeleteResult? {
-        return try convertingBulkWriteErrors {
+        try convertingBulkWriteErrors {
             let modelOptions = DeleteModelOptions(collation: options?.collation)
             let model: WriteModel<CollectionType> = .deleteOne(filter, options: modelOptions)
             let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
@@ -231,7 +231,7 @@ extension MongoCollection {
         options: DeleteOptions? = nil,
         session: ClientSession? = nil
     ) throws -> DeleteResult? {
-        return try convertingBulkWriteErrors {
+        try convertingBulkWriteErrors {
             let modelOptions = DeleteModelOptions(collation: options?.collation)
             let model: WriteModel<CollectionType> = .deleteMany(filter, options: modelOptions)
             let result = try self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
@@ -250,7 +250,7 @@ private protocol BulkWriteOptionsConvertible {
 /// Default implementation of the protocol.
 private extension BulkWriteOptionsConvertible {
     func asBulkWriteOptions() -> BulkWriteOptions {
-        return BulkWriteOptions(
+        BulkWriteOptions(
             bypassDocumentValidation: self.bypassDocumentValidation,
             writeConcern: self.writeConcern
         )
@@ -354,7 +354,7 @@ public struct DeleteOptions: Codable, BulkWriteOptionsConvertible {
 
     /// This is a requirement of the BulkWriteOptionsConvertible protocol.
     /// Since it does not apply to deletions, we just set it to nil.
-    internal var bypassDocumentValidation: Bool? { return nil }
+    internal var bypassDocumentValidation: Bool? { nil }
 }
 
 // Write command results structs

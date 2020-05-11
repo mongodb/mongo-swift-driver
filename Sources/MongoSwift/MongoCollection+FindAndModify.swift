@@ -87,7 +87,7 @@ extension MongoCollection {
         options: FindOneAndUpdateOptions? = nil,
         session: ClientSession? = nil
     ) throws -> CollectionType? {
-        return try self.findAndModify(filter: filter, update: update, options: options, session: session)
+        try self.findAndModify(filter: filter, update: update, options: options, session: session)
     }
 
     /**
@@ -145,7 +145,7 @@ public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible, Decodabl
     public var writeConcern: WriteConcern?
 
     internal func asFindAndModifyOptions() throws -> FindAndModifyOptions {
-        return try FindAndModifyOptions(
+        try FindAndModifyOptions(
             collation: self.collation,
             maxTimeMS: self.maxTimeMS,
             projection: self.projection,
@@ -198,7 +198,7 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible, Decodab
     public var writeConcern: WriteConcern?
 
     internal func asFindAndModifyOptions() throws -> FindAndModifyOptions {
-        return try FindAndModifyOptions(
+        try FindAndModifyOptions(
             bypassDocumentValidation: self.bypassDocumentValidation,
             collation: self.collation,
             maxTimeMS: self.maxTimeMS,
@@ -262,7 +262,7 @@ public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible, Decodabl
     public var writeConcern: WriteConcern?
 
     internal func asFindAndModifyOptions() throws -> FindAndModifyOptions {
-        return try FindAndModifyOptions(
+        try FindAndModifyOptions(
             arrayFilters: self.arrayFilters,
             bypassDocumentValidation: self.bypassDocumentValidation,
             collation: self.collation,

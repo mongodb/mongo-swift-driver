@@ -13,7 +13,7 @@ internal protocol Operation {
 
 extension Operation {
     /// This is the behavior of most operations, so default to this.
-    internal var connectionStrategy: ConnectionStrategy { return .unbound }
+    internal var connectionStrategy: ConnectionStrategy { .unbound }
 }
 
 /// Uses to indicate how an `Operation` type uses `Connection`s passed to its execute method.
@@ -66,7 +66,7 @@ internal struct DefaultOperationExecutor: OperationExecutor {
 /// connection for the operation to use. After the connection is no longer in use, it should be returned by
 /// passing it to `returnConnection` along with the same client and session that were passed into this method.
 internal func resolveConnection(client: MongoClient, session: ClientSession?) throws -> Connection {
-    return try session?.getConnection(forUseWith: client) ?? client.connectionPool.checkOut()
+    try session?.getConnection(forUseWith: client) ?? client.connectionPool.checkOut()
 }
 
 /// Handles releasing a connection that was returned by `resolveConnection`. Must be called with the same client and

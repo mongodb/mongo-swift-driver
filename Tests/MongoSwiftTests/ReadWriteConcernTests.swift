@@ -39,13 +39,13 @@ protocol WriteConcernable {
 
 extension MongoClient: ReadConcernable, WriteConcernable {
     func getMongocReadConcern() throws -> ReadConcern? {
-        return try self.connectionPool.withConnection { conn in
+        try self.connectionPool.withConnection { conn in
             ReadConcern(from: mongoc_client_get_read_concern(conn.clientHandle))
         }
     }
 
     func getMongocWriteConcern() throws -> WriteConcern? {
-        return try self.connectionPool.withConnection { conn in
+        try self.connectionPool.withConnection { conn in
             WriteConcern(from: mongoc_client_get_write_concern(conn.clientHandle))
         }
     }
@@ -53,7 +53,7 @@ extension MongoClient: ReadConcernable, WriteConcernable {
 
 extension MongoDatabase: ReadConcernable, WriteConcernable {
     func getMongocReadConcern() throws -> ReadConcern? {
-        return try self._client.connectionPool.withConnection { conn in
+        try self._client.connectionPool.withConnection { conn in
             self.withMongocDatabase(from: conn) { dbPtr in
                 ReadConcern(from: mongoc_database_get_read_concern(dbPtr))
             }
@@ -61,7 +61,7 @@ extension MongoDatabase: ReadConcernable, WriteConcernable {
     }
 
     func getMongocWriteConcern() throws -> WriteConcern? {
-        return try self._client.connectionPool.withConnection { conn in
+        try self._client.connectionPool.withConnection { conn in
             self.withMongocDatabase(from: conn) { dbPtr in
                 WriteConcern(from: mongoc_database_get_write_concern(dbPtr))
             }
@@ -71,7 +71,7 @@ extension MongoDatabase: ReadConcernable, WriteConcernable {
 
 extension MongoCollection: ReadConcernable, WriteConcernable {
     func getMongocReadConcern() throws -> ReadConcern? {
-        return try self._client.connectionPool.withConnection { conn in
+        try self._client.connectionPool.withConnection { conn in
             self.withMongocCollection(from: conn) { collPtr in
                 ReadConcern(from: mongoc_collection_get_read_concern(collPtr))
             }
@@ -79,7 +79,7 @@ extension MongoCollection: ReadConcernable, WriteConcernable {
     }
 
     func getMongocWriteConcern() throws -> WriteConcern? {
-        return try self._client.connectionPool.withConnection { conn in
+        try self._client.connectionPool.withConnection { conn in
             self.withMongocCollection(from: conn) { collPtr in
                 WriteConcern(from: mongoc_collection_get_write_concern(collPtr))
             }

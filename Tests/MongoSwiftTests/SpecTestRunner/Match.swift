@@ -20,7 +20,7 @@ internal protocol Matchable {
 
 extension Matchable {
     internal func isPlaceholder() -> Bool {
-        return false
+        false
     }
 
     /// Returns whether this MATCHES the expected value according to the function defined in the spec.
@@ -38,19 +38,19 @@ extension Matchable {
 
 extension Matchable where Self: Equatable {
     internal func contentMatches(expected: Self) -> Bool {
-        return self == expected
+        self == expected
     }
 }
 
 extension Int: Matchable {
     internal func isPlaceholder() -> Bool {
-        return self == 42
+        self == 42
     }
 }
 
 extension String: Matchable {
     internal func isPlaceholder() -> Bool {
-        return self == "42"
+        self == "42"
     }
 }
 
@@ -80,7 +80,7 @@ extension Document: Matchable {
 /// Extension that adds MATCHES functionality to `BSON`.
 extension BSON: Matchable {
     internal func isPlaceholder() -> Bool {
-        return self.asInt()?.isPlaceholder() == true || self.stringValue?.isPlaceholder() == true
+        self.asInt()?.isPlaceholder() == true || self.stringValue?.isPlaceholder() == true
     }
 
     internal func contentMatches(expected: BSON) -> Bool {

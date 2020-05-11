@@ -259,7 +259,7 @@ public class MongoClient {
      *   - `RuntimeError.compatibilityError` if the deployment does not support sessions.
      */
     public func startSession(options: ClientSessionOptions? = nil) throws -> ClientSession {
-        return try ClientSession(client: self, options: options)
+        try ClientSession(client: self, options: options)
     }
 
     /**
@@ -325,7 +325,7 @@ public class MongoClient {
         _ filter: Document? = nil,
         session: ClientSession? = nil
     ) throws -> [MongoDatabase] {
-        return try self.listDatabaseNames(filter, session: session).map { self.db($0) }
+        try self.listDatabaseNames(filter, session: session).map { self.db($0) }
     }
 
     /**
@@ -365,7 +365,7 @@ public class MongoClient {
      * - Returns: a `MongoDatabase` corresponding to the provided database name
      */
     public func db(_ name: String, options: DatabaseOptions? = nil) -> MongoDatabase {
-        return MongoDatabase(name: name, client: self, options: options)
+        MongoDatabase(name: name, client: self, options: options)
     }
 
     /**
@@ -397,7 +397,7 @@ public class MongoClient {
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil
     ) throws -> ChangeStream<ChangeStreamEvent<Document>> {
-        return try self.watch(pipeline, options: options, session: session, withFullDocumentType: Document.self)
+        try self.watch(pipeline, options: options, session: session, withFullDocumentType: Document.self)
     }
 
     /**
@@ -435,7 +435,7 @@ public class MongoClient {
         withFullDocumentType _: FullDocType.Type
     )
         throws -> ChangeStream<ChangeStreamEvent<FullDocType>> {
-        return try self.watch(
+        try self.watch(
             pipeline,
             options: options,
             session: session,
@@ -491,12 +491,12 @@ public class MongoClient {
         _ operation: T,
         session: ClientSession? = nil
     ) throws -> T.OperationResult {
-        return try self.operationExecutor.execute(operation, client: self, session: session)
+        try self.operationExecutor.execute(operation, client: self, session: session)
     }
 }
 
 extension MongoClient: Equatable {
     public static func == (lhs: MongoClient, rhs: MongoClient) -> Bool {
-        return lhs._id == rhs._id
+        lhs._id == rhs._id
     }
 }
