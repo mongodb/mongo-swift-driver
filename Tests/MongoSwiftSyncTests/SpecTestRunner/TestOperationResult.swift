@@ -189,41 +189,11 @@ struct ErrorResult: Equatable, Decodable {
         try self.checkErrorLabels(error)
     }
 
-    // swiftlint:disable cyclomatic_complexity
-
     internal func checkErrorContains(_ error: Error) throws {
         if let errorContains = self.errorContains?.lowercased() {
-            if let commandError = error as? CommandError {
-                expect(commandError.message.lowercased()).to(contain(errorContains))
-            } else if let writeError = error as? WriteError {
-                if let writeFailure = writeError.writeFailure {
-                    expect(writeFailure.message.lowercased()).to(contain(errorContains))
-                }
-                if let writeConcernFailure = writeError.writeConcernFailure {
-                    expect(writeConcernFailure.message.lowercased()).to(contain(errorContains))
-                }
-            } else if let bulkWriteError = error as? BulkWriteError {
-                if let writeFailures = bulkWriteError.writeFailures {
-                    for writeFailure in writeFailures {
-                        expect(writeFailure.message.lowercased()).to(contain(errorContains))
-                    }
-                }
-                if let writeConcernFailure = bulkWriteError.writeConcernFailure {
-                    expect(writeConcernFailure.message.lowercased()).to(contain(errorContains))
-                }
-            } else if let logicError = error as? LogicError {
-                expect(logicError.errorDescription.lowercased()).to(contain(errorContains))
-            } else if let invalidArgumentError = error as? InvalidArgumentError {
-                expect(invalidArgumentError.errorDescription.lowercased()).to(contain(errorContains))
-            } else if let connectionError = error as? ConnectionError {
-                expect(connectionError.message.lowercased()).to(contain(errorContains))
-            } else {
-                XCTFail("\(error) does not contain message")
-            }
+            expect(error.localizedDescription.lowercased()).to(contain(errorContains))
         }
     }
-
-    // swiftlint:enable cyclomatic_complexity
 
     internal func checkCodeName(_ error: Error) throws {
         // TODO: can remove `equal("")` references once SERVER-36755 is resolved

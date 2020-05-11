@@ -31,6 +31,8 @@ public struct CommandError: ServerError {
 
     /// Labels that may describe the context in which this error was thrown.
     public let errorLabels: [String]?
+
+    public var errorDescription: String? { self.message }
 }
 
 /// An error that is thrown when a single write command fails on the server.
@@ -43,6 +45,10 @@ public struct WriteError: ServerError {
 
     /// Labels that may describe the context in which this error was thrown.
     public let errorLabels: [String]?
+
+    public var errorDescription: String? {
+        self.writeFailure?.message ?? self.writeConcernFailure?.message ?? ""
+    }
 }
 
 /// A error that ocurred while executing a bulk write.
@@ -63,6 +69,23 @@ public struct BulkWriteError: ServerError {
 
     /// Labels that may describe the context in which this error was thrown.
     public let errorLabels: [String]?
+
+    public var errorDescription: String? {
+        var descriptions: [String] = []
+        if let messages = self.writeFailures?.map({ $0.message }) {
+            descriptions.append("Write errors: \(messages)")
+        }
+
+        if let message = self.writeConcernFailure?.message {
+            descriptions.append("Write concern error: \(message)")
+        }
+
+        if let otherError = self.otherError {
+            descriptions.append("Other error: \(otherError.localizedDescription)")
+        }
+
+        return descriptions.joined(separator: ", ")
+    }
 }
 
 /// A protocol describing errors caused by improper usage of the driver by the user.
@@ -72,14 +95,14 @@ public protocol UserError: MongoError {}
 public struct LogicError: UserError {
     internal let message: String
 
-    public var errorDescription: String { self.message }
+    public var errorDescription: String? { self.message }
 }
 
 /// An error thrown when the user passes in invalid arguments to a driver method.
 public struct InvalidArgumentError: UserError {
     internal let message: String
 
-    public var errorDescription: String { self.message }
+    public var errorDescription: String? { self.message }
 }
 
 /// The possible errors that can occur unexpectedly driver-side.
@@ -90,7 +113,7 @@ public protocol RuntimeError: MongoError {}
 public struct InternalError: RuntimeError {
     internal let message: String
 
-    public var errorDescription: String { self.message }
+    public var errorDescription: String? { self.message }
 }
 
 /// An error thrown when encountering a connection or socket related error.
@@ -100,21 +123,21 @@ public struct ConnectionError: RuntimeError, LabeledError {
 
     public let errorLabels: [String]?
 
-    public var errorDescription: String { "\(self.message), errorLabels: \(self.errorLabels ?? [])" }
+    public var errorDescription: String? { self.message }
 }
 
 /// An error thrown when encountering an authentication related error (e.g. invalid credentials).
 public struct AuthenticationError: RuntimeError {
     internal let message: String
 
-    public var errorDescription: String { self.message }
+    public var errorDescription: String? { self.message }
 }
 
 /// An error thrown when trying to use a feature that the deployment does not support.
 public struct CompatibilityError: RuntimeError {
     internal let message: String
 
-    public var errorDescription: String { self.message }
+    public var errorDescription: String? { self.message }
 }
 
 /// An error that occured when trying to select a server (e.g. a timeout, or no server matched read preference).
@@ -123,7 +146,7 @@ public struct CompatibilityError: RuntimeError {
 public struct ServerSelectionError: RuntimeError {
     internal let message: String
 
-    public var errorDescription: String { self.message }
+    public var errorDescription: String? { self.message }
 }
 
 /// A struct to represent a single write error not resulting from an executed write operation.
@@ -301,7 +324,8 @@ private func parseMongocError(_ error: bson_error_t, reply: Document?) -> MongoE
 
 /// Internal function used to get an appropriate error from a libmongoc error and/or a server reply to a command.
 internal func extractMongoError(error bsonError: bson_error_t, reply: Document? = nil) -> MongoError {
-    // if the reply is nil or writeErrors or writeConcernErrors aren't present, then this is likely a commandError.
+    // if the reply is nil or writeErrors or writeConcernErrors aren't present, use the mongoc error to determine
+    // what to throw.
     guard let serverReply: Document = reply,
         !(serverReply["writeErrors"]?.arrayValue ?? []).isEmpty ||
         !(serverReply["writeConcernError"]?.documentValue?.keys ?? []).isEmpty ||
@@ -342,8 +366,18 @@ internal func extractBulkWriteError<T: Codable>(
     for op: BulkWriteOperation<T>,
     error: bson_error_t,
     reply: Document,
-    partialResult: BulkWriteResult? = nil
+    partialResult: BulkWriteResult?
 ) -> Error {
+    // If the result is nil, that meains either the write was unacknowledged (so the error is likely coming
+    // from libmongoc) or an error occurred that prevented the write from executing (e.g. command error, connection
+    // error). In either case, we need to throw the error on its own, since the bulk write likely didn't occur.
+    //
+    // If the result is non-nil, the bulk write must have executed at least partially, so this error should be
+    // returned as a BulkWriteError.
+    guard let result = partialResult else {
+        return parseMongocError(error, reply: reply)
+    }
+
     let fallback = InternalError(
         message: "Got error from the server but couldn't parse it. " +
             "Message: \(toErrorString(error))"
@@ -357,33 +391,31 @@ internal func extractBulkWriteError<T: Codable>(
 
         // Need to create new result that omits the ids that failed in insertedIds.
         var errResult: BulkWriteResult?
-        if let result = partialResult {
-            let ordered = op.options?.ordered ?? true
+        let ordered = op.options?.ordered ?? true
 
-            // remove the unsuccessful inserts from the insertedIds map
-            let filteredIds: [Int: BSON]
-            if result.insertedCount == 0 {
-                filteredIds = [:]
-            } else {
-                if ordered { // remove all after the last index that succeeded
-                    let maxIndex = result.insertedIds.keys.sorted()[result.insertedCount - 1]
-                    filteredIds = result.insertedIds.filter { $0.key <= maxIndex }
-                } else { // if unordered, just remove those that have write errors associated with them
-                    let errs = Set(bulkWriteErrors.map { $0.index })
-                    filteredIds = result.insertedIds.filter { !errs.contains($0.key) }
-                }
+        // remove the unsuccessful inserts from the insertedIds map
+        let filteredIds: [Int: BSON]
+        if result.insertedCount == 0 {
+            filteredIds = [:]
+        } else {
+            if ordered { // remove all after the last index that succeeded
+                let maxIndex = result.insertedIds.keys.sorted()[result.insertedCount - 1]
+                filteredIds = result.insertedIds.filter { $0.key <= maxIndex }
+            } else { // if unordered, just remove those that have write errors associated with them
+                let errs = Set(bulkWriteErrors.map { $0.index })
+                filteredIds = result.insertedIds.filter { !errs.contains($0.key) }
             }
-
-            errResult = BulkWriteResult(
-                deletedCount: result.deletedCount,
-                insertedCount: result.insertedCount,
-                insertedIds: filteredIds,
-                matchedCount: result.matchedCount,
-                modifiedCount: result.modifiedCount,
-                upsertedCount: result.upsertedCount,
-                upsertedIds: result.upsertedIds
-            )
         }
+
+        errResult = BulkWriteResult(
+            deletedCount: result.deletedCount,
+            insertedCount: result.insertedCount,
+            insertedIds: filteredIds,
+            matchedCount: result.matchedCount,
+            modifiedCount: result.modifiedCount,
+            upsertedCount: result.upsertedCount,
+            upsertedIds: result.upsertedIds
+        )
 
         // extract any other error that might have occurred outside of the write/write concern errors. (e.g. connection)
         var other: Error?
