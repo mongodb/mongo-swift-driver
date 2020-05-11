@@ -3,18 +3,19 @@ import Foundation
 
 /// A class to represent a MongoDB write concern.
 public struct WriteConcern: Codable {
-    /// Majority WriteConcern
+    /// Majority WriteConcern with journal and wtimeoutMS unset.
     /// - SeeAlso: https://docs.mongodb.com/manual/reference/write-concern/#writeconcern._dq_majority_dq_
-    // swiftlint:disable force_try
     public static let majority = try! WriteConcern(w: .majority)
-    // swiftlint:enable force_try
+    // swiftlint:disable:previous force_try
+    // lint disabled since the force try will throw during testing given its static
 
     /**
      * Returns a customized Majority WriteConcern.
      *
      * - Parameters:
-     *   - wtimeoutMS: This option specifies a time limit, in milliseconds, for the write concern.
-     *   - journal: requests acknowledgment that the mongod instances, have written to the on-disk journal.
+     *   - wtimeoutMS: The maximum amount of time, in milliseconds, that the primary will wait for the write concern
+     *   to be satisfied before returning a WriteConcernError.
+     *   - journal: requests acknowledgment that the mongod instances have written to the on-disk journal.
      *
      * - SeeAlso: https://docs.mongodb.com/manual/reference/write-concern/#writeconcern._dq_majority_dq_
      */
