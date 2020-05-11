@@ -52,7 +52,7 @@ final class WriteConcernTests: MongoSwiftTestCase {
     func testClientWriteConcern() throws {
         let w1 = try WriteConcern(w: .number(1))
         let w2 = try WriteConcern(w: .number(2))
-        let empty = WriteConcern()
+        let empty = WriteConcern.serverDefault
 
         // test behavior of a client with initialized with no WC
         try self.withTestClient { client in
@@ -99,7 +99,7 @@ final class WriteConcernTests: MongoSwiftTestCase {
     }
 
     func testDatabaseWriteConcern() throws {
-        let empty = WriteConcern()
+        let empty = WriteConcern.serverDefault
         let w1 = try WriteConcern(w: .number(1))
         let w2 = try WriteConcern(w: .number(2))
 
@@ -145,10 +145,10 @@ final class WriteConcernTests: MongoSwiftTestCase {
 
     func testRoundTripThroughLibmongoc() throws {
         let wcs: [WriteConcern] = [
-            WriteConcern(),
+            .serverDefault,
             try WriteConcern(w: .number(2)),
             try WriteConcern(w: .tag("hi")),
-            try WriteConcern(w: .majority),
+            .majority,
             try WriteConcern(journal: true),
             try WriteConcern(wtimeoutMS: 200)
         ]

@@ -775,7 +775,7 @@ final class CodecTests: MongoSwiftTestCase {
     func testOptionsEncoding() throws {
         let encoder = BSONEncoder()
 
-        let rc = ReadConcern(.majority)
+        let rc = ReadConcern.majority
         let wc = try WriteConcern(wtimeoutMS: 123)
         let rp = ReadPreference.primary
 

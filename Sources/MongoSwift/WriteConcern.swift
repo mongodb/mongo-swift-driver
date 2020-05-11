@@ -3,6 +3,29 @@ import Foundation
 
 /// A class to represent a MongoDB write concern.
 public struct WriteConcern: Codable {
+    /// Majority WriteConcern with journal and wtimeoutMS unset.
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/write-concern/#writeconcern._dq_majority_dq_
+    public static let majority = try! WriteConcern(w: .majority)
+    // swiftlint:disable:previous force_try
+    // lint disabled since the force try will throw during testing given its static
+
+    /**
+     * Returns a customized Majority WriteConcern.
+     *
+     * - Parameters:
+     *   - wtimeoutMS: The maximum amount of time, in milliseconds, that the primary will wait for the write concern
+     *   to be satisfied before returning a WriteConcernError.
+     *   - journal: requests acknowledgment that the mongod instances have written to the on-disk journal.
+     *
+     * - SeeAlso: https://docs.mongodb.com/manual/reference/write-concern/#writeconcern._dq_majority_dq_
+     */
+    public static func majority(wtimeoutMS: Int? = nil, journal: Bool? = nil) throws -> WriteConcern {
+        try WriteConcern(journal: journal, w: .majority, wtimeoutMS: wtimeoutMS)
+    }
+
+    /// Server default WriteConcern.
+    public static let serverDefault = WriteConcern()
+
     /// An option to request acknowledgement that the write operation has propagated to specified mongod instances.
     public enum W: Codable, Equatable {
         /// Specifies the number of nodes that should acknowledge the write. MUST be greater than or equal to 0.

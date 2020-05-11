@@ -135,7 +135,7 @@ public struct MongoDatabase {
      * Access a collection within this database. If an option is not specified in the `CollectionOptions` param, the
      * collection will inherit the value from the parent database or the default if the db's option is not set.
      * To override an option inherited from the db (e.g. a read concern) with the default value, it must be explicitly
-     * specified in the options param (e.g. ReadConcern(), not nil).
+     * specified in the options param (e.g. ReadConcern.serverDefault, not nil).
      *
      * - Parameters:
      *   - name: the name of the collection to get
@@ -153,7 +153,7 @@ public struct MongoDatabase {
      * `MongoCollection` instance. If an option is not specified in the `CollectionOptions` param, the
      * collection will inherit the value from the parent database or the default if the db's option is not set.
      * To override an option inherited from the db (e.g. a read concern) with the default value, it must be explicitly
-     * specified in the options param (e.g. ReadConcern(), not nil).
+     * specified in the options param (e.g. ReadConcern.serverDefault, not nil).
      *
      * - Parameters:
      *   - name: the name of the collection to get
@@ -478,7 +478,7 @@ public struct MongoDatabase {
 
             if self.readConcern != self._client.readConcern {
                 // a nil value for self.readConcern corresponds to the empty read concern.
-                (self.readConcern ?? ReadConcern()).withMongocReadConcern { rcPtr in
+                (self.readConcern ?? .serverDefault).withMongocReadConcern { rcPtr in
                     mongoc_database_set_read_concern(db, rcPtr)
                 }
             }

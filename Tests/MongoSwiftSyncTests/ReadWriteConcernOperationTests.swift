@@ -18,17 +18,17 @@ final class ReadWriteConcernOperationTests: MongoSwiftTestCase {
         let command: Document = ["count": .string(coll.name)]
 
         // run command with a valid readConcern
-        let options1 = RunCommandOptions(readConcern: ReadConcern(.local))
+        let options1 = RunCommandOptions(readConcern: .local)
         let res1 = try db.runCommand(command, options: options1)
         expect(res1["ok"]?.asDouble()).to(equal(1.0))
 
         // run command with an empty readConcern
-        let options2 = RunCommandOptions(readConcern: ReadConcern())
+        let options2 = RunCommandOptions(readConcern: .serverDefault)
         let res2 = try db.runCommand(command, options: options2)
         expect(res2["ok"]?.asDouble()).to(equal(1.0))
 
         // running command with an invalid RC level should throw
-        let options3 = RunCommandOptions(readConcern: ReadConcern("blah"))
+        let options3 = RunCommandOptions(readConcern: .other("blah"))
         // error code 9: FailedToParse
         expect(try db.runCommand(command, options: options3))
             .to(throwError(CommandError(
@@ -39,25 +39,25 @@ final class ReadWriteConcernOperationTests: MongoSwiftTestCase {
             )))
 
         // try various command + read concern pairs to make sure they work
-        expect(try coll.find(options: FindOptions(readConcern: ReadConcern(.local)))).toNot(throwError())
-        expect(try coll.findOne(options: FindOneOptions(readConcern: ReadConcern(.local)))).toNot(throwError())
+        expect(try coll.find(options: FindOptions(readConcern: .local))).toNot(throwError())
+        expect(try coll.findOne(options: FindOneOptions(readConcern: .local))).toNot(throwError())
 
         expect(try coll.aggregate(
             [["$project": ["a": 1]]],
-            options: AggregateOptions(readConcern: ReadConcern(.majority))
+            options: AggregateOptions(readConcern: .majority)
         )).toNot(throwError())
 
-        expect(try coll.countDocuments(options: CountDocumentsOptions(readConcern: ReadConcern(.majority))))
+        expect(try coll.countDocuments(options: CountDocumentsOptions(readConcern: .majority)))
             .toNot(throwError())
 
         expect(try coll.estimatedDocumentCount(
             options:
-            EstimatedDocumentCountOptions(readConcern: ReadConcern(.majority))
+            EstimatedDocumentCountOptions(readConcern: .majority)
         )).toNot(throwError())
 
         expect(try coll.distinct(
             fieldName: "a",
-            options: DistinctOptions(readConcern: ReadConcern(.local))
+            options: DistinctOptions(readConcern: .local)
         )).toNot(throwError())
     }
 
@@ -109,7 +109,7 @@ final class ReadWriteConcernOperationTests: MongoSwiftTestCase {
 
         let coll = try db.createCollection(self.getCollectionName())
         let wc1 = try WriteConcern(w: .number(1))
-        let wc2 = WriteConcern()
+        let wc2 = WriteConcern.serverDefault
         let wc3 = try WriteConcern(journal: true)
 
         let command: Document = ["insert": .string(coll.name), "documents": [.document(nextDoc())]]

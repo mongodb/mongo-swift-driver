@@ -160,7 +160,7 @@ public class MongoClient {
      * Gets a `MongoDatabase` instance for the given database name. If an option is not specified in the optional
      * `DatabaseOptions` param, the database will inherit the value from the parent client or the default if
      * the client’s option is not set. To override an option inherited from the client (e.g. a read concern) with the
-     * default value, it must be explicitly specified in the options param (e.g. ReadConcern(), not nil).
+     * default value, it must be explicitly specified in the options param (e.g. ReadConcern.serverDefault, not nil).
      *
      * - Parameters:
      *   - name: the name of the database to retrieve

@@ -18,8 +18,8 @@ private func causalConsistency() throws {
     let s1 = client1.startSession(options: ClientSessionOptions(causalConsistency: true))
     let currentDate = Date()
     var dbOptions = DatabaseOptions(
-        readConcern: ReadConcern(.majority),
-        writeConcern: try WriteConcern(w: .majority, wtimeoutMS: 1000)
+        readConcern: .majority,
+        writeConcern: try .majority(wtimeoutMS: 1000)
     )
     let items = client1.db("test", options: dbOptions).collection("items")
     let result1 = items.updateOne(

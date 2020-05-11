@@ -185,7 +185,7 @@ extension SpecTestFile {
 
         // Majority write concern ensures that initial data is propagated to all nodes in a replica set or sharded
         // cluster.
-        let collectionOptions = CollectionOptions(writeConcern: try WriteConcern(w: .majority))
+        let collectionOptions = CollectionOptions(writeConcern: .majority)
 
         try? database.drop()
 
