@@ -224,7 +224,7 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
         doc = try collDoc.find(["_id": customDbCollId]).next()?.get()
 
         expect(doc).toNot(beNil())
-        expect(doc?["date"]?.int64Value).to(equal(date.msSinceEpoch))
+        expect(doc?["date"]?.int64Value).to(equal(Int64((date.timeIntervalSince1970 * 1000.0).rounded())))
         expect(doc?["uuid"]?.stringValue).to(equal(uuid.uuidString))
         expect(doc?["data"]?.stringValue).to(equal(data.base64EncodedString()))
 
