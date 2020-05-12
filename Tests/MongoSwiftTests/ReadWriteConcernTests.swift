@@ -446,7 +446,7 @@ final class ReadWriteConcernTests: MongoSwiftTestCase {
             return
         }
 
-        let wc = try WriteConcern(w: .number(100))
+        let wc = try WriteConcern(w: .number(45))
         let expectedWCError =
             WriteConcernError(code: 100, codeName: "", details: nil, message: "")
         let expectedWriteError =

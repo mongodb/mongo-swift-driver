@@ -103,7 +103,7 @@ extension BSON: Matchable {
 /// https://github.com/mongodb/specifications/tree/master/source/connection-monitoring-and-pooling/tests#spec-test-match-function
 internal func match<T: Matchable, V: Matchable>(_ expectedValue: V?) -> Predicate<T> {
     // swiftlint:enable line_length
-    return Predicate.define("match <\(stringify(expectedValue))>") { actualExpression, msg in
+    Predicate.define("match <\(stringify(expectedValue))>") { actualExpression, msg in
         let actualValue = try actualExpression.evaluate()
         switch (expectedValue, actualValue) {
         case (nil, _?):
