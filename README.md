@@ -83,7 +83,7 @@ let client = try MongoClient("mongodb://localhost:27017", using: elg)
 
 defer {
     // clean up driver resources
-    client.syncShutdown()
+    try? client.syncClose()
     cleanupMongoSwift()
 
     // shut down EventLoopGroup
