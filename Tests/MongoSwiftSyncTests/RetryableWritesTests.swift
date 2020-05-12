@@ -99,8 +99,8 @@ final class RetryableWritesTests: MongoSwiftTestCase, FailPointConfigured {
                 var seenError: Error?
 
                 do {
-                    result = try test.operation.execute(
-                        on: .collection(collection),
+                    result = try test.operation.op.execute(
+                        on: collection,
                         sessions: [:]
                     )
                 } catch {

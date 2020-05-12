@@ -224,7 +224,7 @@ extension SpecTestFile {
         }
 
         fileLevelLog("Executing tests from file \(self.name)...")
-        for test in self.tests {
+        for var test in self.tests {
             guard skippedTestKeywords.allSatisfy({ !test.description.contains($0) }) else {
                 print("Skipping test \(test.description)")
                 return
@@ -281,7 +281,7 @@ extension SpecTest {
 
     static var sessionNames: [String] { [] }
 
-    internal func run(
+    internal mutating func run(
         parent: FailPointConfigured,
         dbName: String,
         collName: String?
@@ -325,6 +325,7 @@ extension SpecTest {
         try monitor.captureEvents {
             for operation in self.operations {
                 try operation.validateExecution(
+                    test: &self,
                     client: client,
                     dbName: dbName,
                     collName: collName,
