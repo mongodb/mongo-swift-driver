@@ -362,7 +362,7 @@ private class _BSONReferencingEncoder: _BSONEncoder {
         // With a regular encoder, the storage and coding path grow together.
         // A referencing encoder, however, inherits its parents coding path, as well as the key it was created for.
         // We have to take this into account.
-        return self.storage.count == self.codingPath.count - self.encoder.codingPath.count - 1
+        self.storage.count == self.codingPath.count - self.encoder.codingPath.count - 1
     }
 
     /// Finalizes `self` by writing the contents of our storage to the referenced encoder's storage.

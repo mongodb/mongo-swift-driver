@@ -61,28 +61,28 @@ extension Int64: CodableNumber {}
 extension Int8: CodableNumber {
     internal var bsonValue: BSONValue? {
         // Int8 always fits in an Int32
-        return Int32(exactly: self)
+        Int32(exactly: self)
     }
 }
 
 extension Int16: CodableNumber {
     internal var bsonValue: BSONValue? {
         // Int16 always fits in an Int32
-        return Int32(exactly: self)
+        Int32(exactly: self)
     }
 }
 
 extension UInt8: CodableNumber {
     internal var bsonValue: BSONValue? {
         // UInt8 always fits in an Int32
-        return Int32(exactly: self)
+        Int32(exactly: self)
     }
 }
 
 extension UInt16: CodableNumber {
     internal var bsonValue: BSONValue? {
         // UInt16 always fits in an Int32
-        return Int32(exactly: self)
+        Int32(exactly: self)
     }
 }
 
@@ -198,6 +198,6 @@ extension Float: CodableNumber {
 
     internal var bsonValue: BSONValue? {
         // a Float can always be represented as a Double
-        return Double(exactly: self)
+        Double(exactly: self)
     }
 }

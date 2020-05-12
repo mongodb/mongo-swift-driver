@@ -55,6 +55,6 @@ extension Document: Collection {
     /// held within. This method does not guarantee constant-time (O(1)) access.
     public subscript(bounds: Range<Index>) -> Document {
         // TODO: SWIFT-252 should provide a more efficient implementation for this.
-        return DocumentIterator.subsequence(of: self, startIndex: bounds.lowerBound, endIndex: bounds.upperBound)
+        DocumentIterator.subsequence(of: self, startIndex: bounds.lowerBound, endIndex: bounds.upperBound)
     }
 }

@@ -184,7 +184,7 @@ public struct ServerDescription {
 extension ServerDescription: Equatable {
     public static func == (lhs: ServerDescription, rhs: ServerDescription) -> Bool {
         // Compare everything except `error` it is always nil and `MongoError`s are not `Equatable`
-        return lhs.connectionId == rhs.connectionId &&
+        lhs.connectionId == rhs.connectionId &&
             lhs.roundTripTime == rhs.roundTripTime &&
             lhs.lastWriteDate == rhs.lastWriteDate &&
             lhs.opTime == rhs.opTime &&
@@ -274,7 +274,7 @@ public struct TopologyDescription {
     /// Returns `true` if the topology has a readable server available, and `false` otherwise.
     public func hasReadableServer() -> Bool {
         // (this function should take in an optional ReadPreference, but we have yet to implement that type.)
-        return [.single, .replicaSetWithPrimary, .sharded].contains(self.type)
+        [.single, .replicaSetWithPrimary, .sharded].contains(self.type)
     }
 
     /// Returns `true` if the topology has a writable server available, and `false` otherwise.
@@ -304,7 +304,7 @@ public struct TopologyDescription {
 extension TopologyDescription: Equatable {
     public static func == (lhs: TopologyDescription, rhs: TopologyDescription) -> Bool {
         // Compare everything except `error` it is always nil and `MongoError`s are not `Equatable`
-        return lhs.type == rhs.type &&
+        lhs.type == rhs.type &&
             lhs.setName == rhs.setName &&
             lhs.maxSetVersion == rhs.maxSetVersion &&
             lhs.maxElectionId == rhs.maxElectionId &&
