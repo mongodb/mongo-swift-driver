@@ -7,20 +7,12 @@ internal struct CommitTransactionOperation: Operation {
             throw InternalError(message: "No session provided to CommitTransactionOperation")
         }
 
-        let sessionPtr: OpaquePointer
-        switch session.state {
-        case let .started(ptr, _):
-            sessionPtr = ptr
-        case .notStarted:
-            throw InternalError(message: "Session not started for CommitTransactionOperation")
-        case .ended:
-            throw LogicError(message: "Tried to commit transaction on an ended session")
-        }
-
         var reply = Document()
         var error = bson_error_t()
-        let success = reply.withMutableBSONPointer { replyPtr in
-            mongoc_client_session_commit_transaction(sessionPtr, replyPtr, &error)
+        let success = try session.withMongocSession { sessionPtr in
+            reply.withMutableBSONPointer { replyPtr in
+                mongoc_client_session_commit_transaction(sessionPtr, replyPtr, &error)
+            }
         }
         guard success else {
             throw extractMongoError(error: error, reply: reply)

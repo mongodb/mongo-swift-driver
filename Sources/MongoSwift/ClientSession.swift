@@ -40,7 +40,7 @@ public final class ClientSession {
     )
 
     /// Enum for tracking the state of a session.
-    internal enum State {
+    private enum State {
         /// Indicates that this session has not been used yet and a corresponding `mongoc_client_session_t` has not
         /// yet been created. If the user sets operation time or cluster time prior to using the session, those values
         /// are stored here so they can be set upon starting the session.
@@ -53,7 +53,7 @@ public final class ClientSession {
     }
 
     /// Indicates the state of this session.
-    internal var state: State
+    private var state: State
 
     /// Returns whether this session is in the `started` state.
     internal var active: Bool {
@@ -197,9 +197,22 @@ public final class ClientSession {
     /// this session has already been ended.
     internal func startIfNeeded() -> EventLoopFuture<Void> {
         switch self.state {
-        case .notStarted:
+        case let .notStarted(opTime, clusterTime):
             let operation = StartSessionOperation(session: self)
             return self.client.operationExecutor.execute(operation, client: self.client, session: nil)
+                .map { sessionPtr, connection in
+                    self.state = .started(session: sessionPtr, connection: connection)
+                    // if we cached opTime or clusterTime, set them now
+                    if let opTime = opTime {
+                        self.advanceOperationTime(to: opTime)
+                    }
+                    if let clusterTime = clusterTime {
+                        self.advanceClusterTime(to: clusterTime)
+                    }
+
+                    // swiftlint:disable:next force_unwrapping
+                    self.id = Document(copying: mongoc_client_session_get_lsid(sessionPtr)!) // always returns a value
+                }
         case .started:
             return self.client.operationExecutor.makeSucceededFuture(Void())
         case .ended:
@@ -217,6 +230,17 @@ public final class ClientSession {
             throw ClientSession.ClientMismatchError
         }
         return connection
+    }
+
+    internal func withMongocSession<T>(body: (OpaquePointer) throws -> T) throws -> T {
+        switch self.state {
+        case .notStarted:
+            throw InternalError(message: "mongoc session was unexpectedly not started")
+        case let .started(session, _):
+            return try body(session)
+        case .ended:
+            throw ClientSession.SessionInactiveError
+        }
     }
 
     /// Ends this `ClientSession`. Call this method when you are finished using the session. You must ensure that all

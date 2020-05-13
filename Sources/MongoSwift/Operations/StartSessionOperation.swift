@@ -48,12 +48,10 @@ internal struct StartSessionOperation: Operation {
         self.session = session
     }
 
-    internal func execute(using connection: Connection, session _: ClientSession?) throws {
-        // session was already started
-        guard case let .notStarted(opTime, clusterTime) = self.session.state else {
-            return
-        }
-
+    internal func execute(
+        using connection: Connection,
+        session _: ClientSession?
+    ) throws -> (session: OpaquePointer, connection: Connection) {
         let sessionPtr: OpaquePointer = try withSessionOpts(wrapping: self.session.options) { opts in
             var error = bson_error_t()
             return try connection.withMongocConnection { connPtr in
@@ -63,16 +61,6 @@ internal struct StartSessionOperation: Operation {
                 return sessionPtr
             }
         }
-        self.session.state = .started(session: sessionPtr, connection: connection)
-        // if we cached opTime or clusterTime, set them now
-        if let opTime = opTime {
-            self.session.advanceOperationTime(to: opTime)
-        }
-        if let clusterTime = clusterTime {
-            self.session.advanceClusterTime(to: clusterTime)
-        }
-
-        // swiftlint:disable:next force_unwrapping
-        self.session.id = Document(copying: mongoc_client_session_get_lsid(sessionPtr)!) // always returns a value
+        return (sessionPtr, connection)
     }
 }
