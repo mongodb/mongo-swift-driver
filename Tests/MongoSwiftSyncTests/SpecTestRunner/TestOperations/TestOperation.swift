@@ -16,9 +16,6 @@ protocol TestOperation: Decodable {
     func execute(on session: ClientSession) throws -> TestOperationResult?
 
     func execute<T: SpecTest>(on runner: inout T, sessions: [String: ClientSession]) throws -> TestOperationResult?
-
-    /// The name of the session this operation should execute against, if any.
-    var session: String? { get }
 }
 
 extension TestOperation {
@@ -43,20 +40,6 @@ extension TestOperation {
 
     func execute<T: SpecTest>(on _: inout T, sessions _: [String: ClientSession]) throws -> TestOperationResult? {
         throw TestError(message: "\(type(of: self)) cannot execute on a test runner")
-    }
-
-    var session: String? { nil }
-
-    func getSession(from sessions: [String: ClientSession]) throws -> ClientSession? {
-        guard let sessionName = self.session else {
-            return nil
-        }
-
-        guard let session = sessions[sessionName] else {
-            throw TestError(message: "\(sessionName) not included in sessions map \(sessions)")
-        }
-
-        return session
     }
 }
 

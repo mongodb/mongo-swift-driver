@@ -77,11 +77,11 @@ struct AssertSessionUnpinned: TestOperation {
 }
 
 struct AssertSessionTransactionState: TestOperation {
-    let session: String?
+    let session: String
     let state: ClientSession.TransactionState
 
     func execute<T: SpecTest>(on _: inout T, sessions: [String: ClientSession]) throws -> TestOperationResult? {
-        guard let transactionState = sessions[self.session ?? ""]?.transactionState else {
+        guard let transactionState = sessions[self.session]?.transactionState else {
             throw TestError(message: "active session not provided to assertSessionTransactionState")
         }
         expect(transactionState).to(equal(self.state))
