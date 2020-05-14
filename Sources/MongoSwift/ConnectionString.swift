@@ -115,8 +115,7 @@ internal class ConnectionString {
 
     /// Returns a document containing the auth mechanism properties if any were provided, otherwise nil.
     internal var authMechanismProperties: Document? {
-        var props = bson_t()
-        return withUnsafeMutablePointer(to: &props) { propsPtr in
+        withStackAllocatedMutableBSONPointer { propsPtr in
             guard mongoc_uri_get_mechanism_properties(self._uri, propsPtr) else {
                 return nil
             }
