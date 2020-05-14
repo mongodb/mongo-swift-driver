@@ -76,22 +76,15 @@ internal struct StartTransactionOperation: Operation {
             throw InternalError(message: "No session provided to StartTransactionOperation")
         }
 
-        let sessionPtr: OpaquePointer
-        switch session.state {
-        case let .started(ptr, _):
-            sessionPtr = ptr
-        case .notStarted:
-            throw InternalError(message: "Session not started for StartTransactionOperation")
-        case .ended:
-            throw LogicError(message: "Tried to start transaction on an ended session")
+        var error = bson_error_t()
+        let success = try session.withMongocSession { sessionPtr in
+            withMongocTransactionOpts(copying: self.options) { opts in
+                mongoc_client_session_start_transaction(sessionPtr, opts, &error)
+            }
         }
 
-        try withMongocTransactionOpts(copying: self.options) { opts in
-            var error = bson_error_t()
-            let success = mongoc_client_session_start_transaction(sessionPtr, opts, &error)
-            guard success else {
-                throw extractMongoError(error: error)
-            }
+        guard success else {
+            throw extractMongoError(error: error)
         }
     }
 }

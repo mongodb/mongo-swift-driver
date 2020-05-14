@@ -57,10 +57,8 @@ internal class OperationExecutor {
     ) -> EventLoopFuture<T.OperationResult> {
         // closure containing the work to run in the thread pool: obtain a connection and execute the operation.
         let doOperation = { () -> ExecuteResult<T.OperationResult> in
-            // select a connection in following order of priority:
-            // 1. connection specifically provided for use with this operation
-            // 2. if a session was provided, use its underlying connection
-            // 3. a new connection from the pool, if available
+            // if a session was provided, use its underlying connection. otherwise, use a new connection from the pool
+            // if available.
             guard let connection =
                 try session?.getConnection(forUseWith: client) ??
                 client.connectionPool.tryCheckOut() else {
@@ -86,13 +84,6 @@ internal class OperationExecutor {
         }
 
         if let session = session {
-            if case .ended = session.state {
-                return self.makeFailedFuture(ClientSession.SessionInactiveError)
-            }
-            guard session.client == client else {
-                return self.makeFailedFuture(ClientSession.ClientMismatchError)
-            }
-
             // start the session if needed (which generates a new operation itself), and then execute the operation.
             return session.startIfNeeded()
                 .flatMap { self.execute(doOperation) }
