@@ -161,19 +161,20 @@ internal struct FindAndModifyOperation<T: Codable>: Operation {
         if let session = session { try opts.setSession(session) }
         if let update = self.update { try opts.setUpdate(update) }
 
-        var reply = Document()
         var error = bson_error_t()
-        let success = self.collection.withMongocCollection(from: connection) { collPtr in
+
+        let (success, reply) = self.collection.withMongocCollection(from: connection) { collPtr -> (Bool, Document) in
             self.filter.withBSONPointer { filterPtr in
                 opts.withMongocOptions { optsPtr in
-                    reply.withMutableBSONPointer { replyPtr in
-                        mongoc_collection_find_and_modify_with_opts(
+                    withStackAllocatedMutableBSONPointer { replyPtr in
+                        let success = mongoc_collection_find_and_modify_with_opts(
                             collPtr,
                             filterPtr,
                             optsPtr,
                             replyPtr,
                             &error
                         )
+                        return (success, Document(copying: replyPtr))
                     }
                 }
             }

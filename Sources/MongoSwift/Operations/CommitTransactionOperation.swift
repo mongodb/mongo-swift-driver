@@ -7,15 +7,13 @@ internal struct CommitTransactionOperation: Operation {
             throw InternalError(message: "No session provided to CommitTransactionOperation")
         }
 
-        var reply = Document()
-        var error = bson_error_t()
-        let success = try session.withMongocSession { sessionPtr in
-            reply.withMutableBSONPointer { replyPtr in
-                mongoc_client_session_commit_transaction(sessionPtr, replyPtr, &error)
+        try session.withMongocSession { sessionPtr in
+            try withStackAllocatedMutableBSONPointer { replyPtr in
+                var error = bson_error_t()
+                guard mongoc_client_session_commit_transaction(sessionPtr, replyPtr, &error) else {
+                    throw extractMongoError(error: error, reply: Document(copying: replyPtr))
+                }
             }
-        }
-        guard success else {
-            throw extractMongoError(error: error, reply: reply)
         }
     }
 }

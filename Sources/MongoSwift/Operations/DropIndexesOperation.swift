@@ -30,19 +30,14 @@ internal struct DropIndexesOperation<T: Codable>: Operation {
     internal func execute(using connection: Connection, session: ClientSession?) throws {
         let command: Document = ["dropIndexes": .string(self.collection.name), "index": self.index]
         let opts = try encodeOptions(options: self.options, session: session)
-        var reply = Document()
-        var error = bson_error_t()
-        let success = self.collection.withMongocCollection(from: connection) { collPtr in
-            command.withBSONPointer { cmdPtr in
-                withOptionalBSONPointer(to: opts) { optsPtr in
-                    reply.withMutableBSONPointer { replyPtr in
-                        mongoc_collection_write_command_with_opts(collPtr, cmdPtr, optsPtr, replyPtr, &error)
-                    }
+
+        do {
+            try self.collection.withMongocCollection(from: connection) { collPtr in
+                try runMongocCommand(command: command, options: opts) { cmdPtr, optsPtr, replyPtr, error in
+                    mongoc_collection_write_command_with_opts(collPtr, cmdPtr, optsPtr, replyPtr, &error)
                 }
             }
-        }
-        guard success else {
-            let error = extractMongoError(error: error, reply: reply)
+        } catch let error as MongoError {
             guard !error.isNsNotFound else {
                 return
             }
