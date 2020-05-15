@@ -579,8 +579,14 @@ internal func withOptionalBSONPointer<T>(
 /// closure and must be copied if you wish to use it later on.
 internal func withStackAllocatedMutableBSONPointer<T>(body: (MutableBSONPointer) throws -> T) rethrows -> T {
     var bson = bson_t()
-    defer { bson_destroy(&bson) }
-    return try body(&bson)
+    defer {
+        withUnsafeMutablePointer(to: &bson) { ptr in
+            bson_destroy(ptr)
+        }
+    }
+    return try withUnsafeMutablePointer(to: &bson) { ptr in
+        try body(ptr)
+    }
 }
 
 // An extension of `Document` to add the capability to be hashed
