@@ -1,5 +1,19 @@
 import CLibMongoC
 
+/// Executes the provided closure using a stack-allocated, mutable bson_t. The bson_t is only valid for the body of the
+/// closure and must be copied if you wish to use it later on.
+internal func withStackAllocatedMutableBSONPointer<T>(body: (MutableBSONPointer) throws -> T) rethrows -> T {
+    var bson = bson_t()
+    defer {
+        withUnsafeMutablePointer(to: &bson) { ptr in
+            bson_destroy(ptr)
+        }
+    }
+    return try withUnsafeMutablePointer(to: &bson) { ptr in
+        try body(ptr)
+    }
+}
+
 /// Signature for a Swift closure that wraps a mongoc run_command variant.
 internal typealias MongocCommandFunc =
     (_ command: BSONPointer, _ opts: BSONPointer?, _ reply: MutableBSONPointer, _ error: inout bson_error_t) -> (Bool)

@@ -575,20 +575,6 @@ internal func withOptionalBSONPointer<T>(
     return try doc.withBSONPointer(body: body)
 }
 
-/// Executes the provided closure using a stack-allocated, mutable bson_t. The bson_t is only valid for the body of the
-/// closure and must be copied if you wish to use it later on.
-internal func withStackAllocatedMutableBSONPointer<T>(body: (MutableBSONPointer) throws -> T) rethrows -> T {
-    var bson = bson_t()
-    defer {
-        withUnsafeMutablePointer(to: &bson) { ptr in
-            bson_destroy(ptr)
-        }
-    }
-    return try withUnsafeMutablePointer(to: &bson) { ptr in
-        try body(ptr)
-    }
-}
-
 // An extension of `Document` to add the capability to be hashed
 extension Document: Hashable {
     public func hash(into hasher: inout Hasher) {
