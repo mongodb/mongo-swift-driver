@@ -114,6 +114,9 @@ struct TestOperationDescription: Decodable {
     // swiftlint:disable cyclomatic_complexity
 
     /// Runs the operation and asserts its results meet the expectation.
+    ///
+    /// The operation may be mutated over the course of this execution (e.g. by enabling a failpoint), so it
+    /// must be passed as an `inout` parameter.
     func validateExecution<T: SpecTest>(
         test: inout T,
         client: MongoClient,
@@ -242,6 +245,8 @@ struct AnyTestOperation: Decodable {
             self.op = try container.decode(AssertSessionUnpinned.self, forKey: .arguments)
         case "assertSessionTransactionState":
             self.op = try container.decode(AssertSessionTransactionState.self, forKey: .arguments)
+        case "targetedFailPoint":
+            self.op = try container.decode(TargetedFailPoint.self, forKey: .arguments)
         case "drop":
             self.op = Drop()
         case "listDatabaseNames":
@@ -266,7 +271,7 @@ struct AnyTestOperation: Decodable {
             self.op = CommitTransaction()
         case "abortTransaction":
             self.op = AbortTransaction()
-        case "mapReduce", "download_by_name", "download", "count", "targetedFailPoint":
+        case "mapReduce", "download_by_name", "download", "count":
             self.op = NotImplemented(name: opName)
         default:
             throw TestError(message: "unsupported op name \(opName)")

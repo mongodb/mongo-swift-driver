@@ -38,6 +38,12 @@ public struct Address: Equatable {
     }
 }
 
+extension Address: CustomStringConvertible {
+    public var description: String {
+        "\(self.host):\(self.port)"
+    }
+}
+
 private struct IsMasterResponse: Decodable {
     fileprivate struct LastWrite: Decodable {
         public let lastWriteDate: Date?

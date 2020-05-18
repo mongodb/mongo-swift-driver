@@ -31,9 +31,7 @@ open class MongoSwiftTestCase: XCTestCase {
     /// will return a default of "mongodb://127.0.0.1/". If singleMongos is true and this is a sharded topology, will
     /// edit $MONGODB_URI as needed so that it only contains a single host.
     public static func getConnectionString(singleMongos: Bool = true) -> String {
-        guard let uri = ProcessInfo.processInfo.environment["MONGODB_URI"] else {
-            return "mongodb://127.0.0.1/"
-        }
+        let uri = Self.uri
 
         // we only need to manipulate the URI if singleMongos is requested and the topology is sharded.
         guard singleMongos && MongoSwiftTestCase.topologyType == .sharded else {
@@ -50,6 +48,26 @@ open class MongoSwiftTestCase: XCTestCase {
             output.removeSubstring(",\(host)")
         }
         return output
+    }
+
+    /// Get a connection string for the specified host only.
+    public static func getConnectionString(forHost serverAddress: Address) -> String {
+        Self.getConnectionStringPerHost().first { $0.contains(String(describing: serverAddress)) }!
+    }
+
+    /// Returns a different connection string per host specified in MONGODB_URI.
+    public static func getConnectionStringPerHost() -> [String] {
+        let uri = Self.uri
+
+        let regex = try! NSRegularExpression(pattern: #"mongodb:\/\/(?:.*@)?([^\/]+)(?:\/|$)"#)
+        let range = NSRange(uri.startIndex..<uri.endIndex, in: uri)
+        let match = regex.firstMatch(in: uri, range: range)!
+
+        let hostsRange = Range(match.range(at: 1), in: uri)!
+
+        return try! ConnectionString(uri).hosts!.map { host in
+            uri.replacingCharacters(in: hostsRange, with: host)
+        }
     }
 
     // indicates whether we are running on a 32-bit platform
@@ -74,6 +92,13 @@ open class MongoSwiftTestCase: XCTestCase {
             return .single
         }
         return TopologyDescription.TopologyType(from: topology)
+    }
+
+    public static var uri: String {
+        guard let uri = ProcessInfo.processInfo.environment["MONGODB_URI"] else {
+            return "mongodb://127.0.0.1/"
+        }
+        return uri
     }
 
     /// Indicates that we are running the tests with SSL enabled, determined by the environment variable $SSL.

@@ -59,7 +59,7 @@ struct AssertSessionPinned: TestOperation {
         guard let session = sessions[self.session] else {
             throw TestError(message: "active session not provided to assertSessionPinned")
         }
-        expect(session.serverId).toNot(equal(0))
+        expect(session.isPinned).to(beTrue(), description: "expected \(self.session) to be pinned but it wasn't")
         return nil
     }
 }
@@ -71,20 +71,33 @@ struct AssertSessionUnpinned: TestOperation {
         guard let session = sessions[self.session] else {
             throw TestError(message: "active session not provided to assertSessionUnpinned")
         }
-        expect(session.serverId).to(equal(0))
+        expect(session.isPinned).to(beFalse(), description: "expected \(self.session) to be unpinned but it wasn't")
         return nil
     }
 }
 
 struct AssertSessionTransactionState: TestOperation {
-    let session: String?
+    let session: String
     let state: ClientSession.TransactionState
 
     func execute<T: SpecTest>(on _: inout T, sessions: [String: ClientSession]) throws -> TestOperationResult? {
-        guard let transactionState = sessions[self.session ?? ""]?.transactionState else {
+        guard let transactionState = sessions[self.session]?.transactionState else {
             throw TestError(message: "active session not provided to assertSessionTransactionState")
         }
         expect(transactionState).to(equal(self.state))
+        return nil
+    }
+}
+
+struct TargetedFailPoint: TestOperation {
+    let session: String
+    let failPoint: FailPoint
+
+    func execute<T: SpecTest>(on runner: inout T, sessions: [String: ClientSession]) throws -> TestOperationResult? {
+        guard let session = sessions[self.session], let server = session.pinnedServerAddress else {
+            throw TestError(message: "could not get session or session not pinned to mongos")
+        }
+        try runner.activateFailPoint(self.failPoint, on: server)
         return nil
     }
 }
