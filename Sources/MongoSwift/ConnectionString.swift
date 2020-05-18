@@ -201,7 +201,7 @@ internal class ConnectionString {
     }
 
     /// Sets credential properties in the URI string
-    internal func setCredential(from credential: Credential) throws {
+    internal func setMongoCredential(_ credential: MongoCredential) throws {
         if let username = credential.username {
             guard mongoc_uri_set_username(self._uri, username) else {
                 throw InvalidArgumentError(message: "Cannot set username to \(username).")
