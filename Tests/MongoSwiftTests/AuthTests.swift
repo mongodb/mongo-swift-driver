@@ -18,7 +18,7 @@ struct AuthTestCase: Decodable {
     let valid: Bool
     /// An authentication credential. If nil, the credential must not be considered configured for the purpose of
     /// deciding if the driver should authenticate to the topology.
-    let credential: Credential?
+    let credential: MongoCredential?
 }
 
 final class AuthTests: MongoSwiftTestCase {
