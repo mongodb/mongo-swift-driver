@@ -214,8 +214,6 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
      *   - `BulkWriteError` if an error occurs while performing the writes.
      */
     internal func execute(using connection: Connection, session: ClientSession?) throws -> BulkWriteResult? {
-        var reply = Document()
-        var error = bson_error_t()
         let opts = try encodeOptions(options: options, session: session)
         var insertedIds: [Int: BSON] = [:]
 
@@ -226,61 +224,58 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
             )
         }
 
-        let (serverId, isAcknowledged): (UInt32, Bool) =
-            try self.collection.withMongocCollection(from: connection) { collPtr in
-                let bulk: OpaquePointer = withOptionalBSONPointer(to: opts) { optsPtr in
-                    guard let bulk = mongoc_collection_create_bulk_operation_with_opts(collPtr, optsPtr) else {
-                        fatalError("failed to initialize mongoc_bulk_operation_t")
-                    }
-                    return bulk
+        return try self.collection.withMongocCollection(from: connection) { collPtr in
+            let bulk: OpaquePointer = withOptionalBSONPointer(to: opts) { optsPtr in
+                guard let bulk = mongoc_collection_create_bulk_operation_with_opts(collPtr, optsPtr) else {
+                    fatalError("failed to initialize mongoc_bulk_operation_t")
                 }
-                defer { mongoc_bulk_operation_destroy(bulk) }
+                return bulk
+            }
+            defer { mongoc_bulk_operation_destroy(bulk) }
 
-                try self.models.enumerated().forEach { index, model in
-                    if let res = try model.addToBulkWrite(bulk, encoder: self.encoder) {
-                        insertedIds[index] = res
-                    }
+            try self.models.enumerated().forEach { index, model in
+                if let res = try model.addToBulkWrite(bulk, encoder: self.encoder) {
+                    insertedIds[index] = res
                 }
-
-                let serverId = reply.withMutableBSONPointer { replyPtr in
-                    mongoc_bulk_operation_execute(bulk, replyPtr, &error)
-                }
-
-                var writeConcernAcknowledged: Bool
-                if session?.inTransaction == true {
-                    // Bulk write operations in transactions must get their write concern from the session, not from
-                    // the `BulkWriteOptions` passed to the `bulkWrite` helper. `libmongoc` surfaces this
-                    // implementation detail by nulling out the write concern stored on the bulk write. To sidestep
-                    // this, we can only call `mongoc_bulk_operation_get_write_concern` out of a transaction.
-                    //
-                    // In a transaction, default to writeConcernAcknowledged = true. This is acceptable because
-                    // transactions do not support unacknowledged writes.
-                    writeConcernAcknowledged = true
-                } else {
-                    let writeConcern = WriteConcern(copying: mongoc_bulk_operation_get_write_concern(bulk))
-                    writeConcernAcknowledged = writeConcern.isAcknowledged
-                }
-
-                return (serverId, writeConcernAcknowledged)
             }
 
-        var result: BulkWriteResult?
-        if isAcknowledged {
-            // This may return nil if an error prevented the write from executing, since
-            // none of the results fields would be populated in that case.
-            result = try BulkWriteResult(reply: reply, insertedIds: insertedIds)
-        }
+            var error = bson_error_t()
+            let (serverId, reply) = withStackAllocatedMutableBSONPointer { replyPtr -> (UInt32, Document) in
+                let serverId = mongoc_bulk_operation_execute(bulk, replyPtr, &error)
+                let reply = Document(copying: replyPtr)
+                return (serverId, reply)
+            }
 
-        guard serverId != 0 else {
-            throw extractBulkWriteError(
-                for: self,
-                error: error,
-                reply: reply,
-                partialResult: result
-            )
-        }
+            var writeConcernAcknowledged: Bool
+            if session?.inTransaction == true {
+                // Bulk write operations in transactions must get their write concern from the session, not from
+                // the `BulkWriteOptions` passed to the `bulkWrite` helper. `libmongoc` surfaces this
+                // implementation detail by nulling out the write concern stored on the bulk write. To sidestep
+                // this, we can only call `mongoc_bulk_operation_get_write_concern` out of a transaction.
+                //
+                // In a transaction, default to writeConcernAcknowledged = true. This is acceptable because
+                // transactions do not support unacknowledged writes.
+                writeConcernAcknowledged = true
+            } else {
+                let writeConcern = WriteConcern(copying: mongoc_bulk_operation_get_write_concern(bulk))
+                writeConcernAcknowledged = writeConcern.isAcknowledged
+            }
 
-        return result
+            let result: BulkWriteResult? = writeConcernAcknowledged
+                ? try BulkWriteResult(reply: reply, insertedIds: insertedIds)
+                : nil
+
+            guard serverId != 0 else {
+                throw extractBulkWriteError(
+                    for: self,
+                    error: error,
+                    reply: reply,
+                    partialResult: result
+                )
+            }
+
+            return result
+        }
     }
 }
 

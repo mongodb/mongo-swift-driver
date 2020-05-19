@@ -56,21 +56,13 @@ internal struct DistinctOperation<T: Codable>: Operation {
         ]
 
         let opts = try encodeOptions(options: self.options, session: session)
-        var reply = Document()
-        var error = bson_error_t()
-        let success = self.collection.withMongocCollection(from: connection) { collPtr in
-            command.withBSONPointer { cmdPtr in
-                ReadPreference.withOptionalMongocReadPreference(from: self.options?.readPreference) { rpPtr in
-                    withOptionalBSONPointer(to: opts) { optsPtr in
-                        reply.withMutableBSONPointer { replyPtr in
-                            mongoc_collection_read_command_with_opts(collPtr, cmdPtr, rpPtr, optsPtr, replyPtr, &error)
-                        }
-                    }
+
+        let reply = try self.collection.withMongocCollection(from: connection) { collPtr in
+            try ReadPreference.withOptionalMongocReadPreference(from: self.options?.readPreference) { rpPtr in
+                try runMongocCommandWithReply(command: command, options: opts) { cmdPtr, optsPtr, replyPtr, error in
+                    mongoc_collection_read_command_with_opts(collPtr, cmdPtr, rpPtr, optsPtr, replyPtr, &error)
                 }
             }
-        }
-        guard success else {
-            throw extractMongoError(error: error, reply: reply)
         }
 
         guard let values = try reply.getValue(for: "values")?.arrayValue else {

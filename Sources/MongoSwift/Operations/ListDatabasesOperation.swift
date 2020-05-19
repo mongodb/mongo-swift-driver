@@ -70,31 +70,13 @@ internal struct ListDatabasesOperation: Operation {
         }
 
         let opts = try encodeOptions(options: nil as Document?, session: session)
-        var reply = Document()
-        var error = bson_error_t()
 
-        let success = connection.withMongocConnection { connPtr in
-            cmd.withBSONPointer { cmdPtr in
-                readPref.withMongocReadPreference { rpPtr in
-                    withOptionalBSONPointer(to: opts) { optsPtr in
-                        reply.withMutableBSONPointer { replyPtr in
-                            mongoc_client_read_command_with_opts(
-                                connPtr,
-                                "admin",
-                                cmdPtr,
-                                rpPtr,
-                                optsPtr,
-                                replyPtr,
-                                &error
-                            )
-                        }
-                    }
+        let reply = try connection.withMongocConnection { connPtr in
+            try readPref.withMongocReadPreference { rpPtr in
+                try runMongocCommandWithReply(command: cmd, options: opts) { cmdPtr, optsPtr, replyPtr, error in
+                    mongoc_client_read_command_with_opts(connPtr, "admin", cmdPtr, rpPtr, optsPtr, replyPtr, &error)
                 }
             }
-        }
-
-        guard success else {
-            throw extractMongoError(error: error, reply: reply)
         }
 
         guard let databases = reply["databases"]?.arrayValue?.asArrayOf(Document.self) else {
