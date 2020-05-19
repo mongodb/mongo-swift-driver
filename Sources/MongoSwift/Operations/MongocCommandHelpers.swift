@@ -1,7 +1,8 @@
 import CLibMongoC
 
-/// Executes the provided closure using a stack-allocated, mutable bson_t. The bson_t is only valid for the body of the
-/// closure and must be copied if you wish to use it later on.
+/// Executes the provided closure using a stack-allocated, uninitialized, mutable bson_t. The bson_t is only valid for
+/// the body of the closure and must be copied if you wish to use it later on. The closure *must* initialize the
+/// bson_t, or else the deferred call to `bson_destroy` will access uninitialized memory.
 internal func withStackAllocatedMutableBSONPointer<T>(body: (MutableBSONPointer) throws -> T) rethrows -> T {
     var bson = bson_t()
     defer {
