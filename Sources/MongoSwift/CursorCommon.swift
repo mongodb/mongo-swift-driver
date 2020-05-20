@@ -16,7 +16,7 @@ internal protocol CursorProtocol {
      *
      * If this cursor is non-tailable, it will always be dead as soon as either `tryNext` returns `nil` or an error.
      *
-     * This cursor will be dead as soon as `next` returns `nil` or an error, regardless of the `CursorType`.
+     * This cursor will be dead as soon as `next` returns `nil` or an error, regardless of the `MongoCursorType`.
      */
     func isAlive() -> EventLoopFuture<Bool>
 
@@ -123,7 +123,7 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
     private var cached: CachedDocument
 
     /// The type of this cursor. Useful for indicating whether or not it is tailable.
-    private let type: CursorType
+    private let type: MongoCursorType
 
     /// Lock used to synchronize usage of the internal state: specifically the `state` and `cached` properties.
     /// This lock should only be acquired in the bodies of non-private methods.
@@ -222,7 +222,7 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
         mongocCursor: CursorKind,
         connection: Connection,
         session: ClientSession?,
-        type: CursorType
+        type: MongoCursorType
     ) throws {
         self.state = .open(cursor: mongocCursor, connection: connection, session: session)
         self.type = type

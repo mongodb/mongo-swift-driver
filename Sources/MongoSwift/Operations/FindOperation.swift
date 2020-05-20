@@ -2,7 +2,7 @@ import CLibMongoC
 import Foundation
 
 /// The possible types of `MongoCursor` or `MongoCursor` an operation can return.
-public enum CursorType {
+public enum MongoCursorType {
     /**
      * The default value. A vast majority of cursors will be of this type.
      */
@@ -39,7 +39,7 @@ public struct FindOptions: Codable {
     /// Get partial results from a mongos if some shards are down (instead of throwing an error).
     public var allowPartialResults: Bool?
 
-    /// If a `CursorType` is provided, indicates whether it is `.tailableAwait`.
+    /// If a `MongoCursorType` is provided, indicates whether it is `.tailableAwait`.
     private var awaitData: Bool?
 
     /// The number of documents to return per batch.
@@ -52,7 +52,7 @@ public struct FindOptions: Codable {
     public var comment: String?
 
     /// Indicates the type of cursor to use. This value includes both the tailable and awaitData options.
-    public var cursorType: CursorType? {
+    public var cursorType: MongoCursorType? {
         get {
             if self.tailable == nil && self.awaitData == nil {
                 return nil
@@ -69,13 +69,13 @@ public struct FindOptions: Codable {
             return .nonTailable
         }
 
-        set(newCursorType) {
-            if newCursorType == nil {
+        set(newMongoCursorType) {
+            if newMongoCursorType == nil {
                 self.tailable = nil
                 self.awaitData = nil
             } else {
-                self.tailable = newCursorType == .tailable || newCursorType == .tailableAwait
-                self.awaitData = newCursorType == .tailableAwait
+                self.tailable = newMongoCursorType == .tailable || newMongoCursorType == .tailableAwait
+                self.awaitData = newMongoCursorType == .tailableAwait
             }
         }
     }
@@ -90,7 +90,7 @@ public struct FindOptions: Codable {
     public var max: Document?
 
     /// The maximum amount of time, in milliseconds, for the server to wait on new documents to satisfy a tailable
-    /// cursor query. This only applies when used with `CursorType.tailableAwait`. Otherwise, this option is ignored.
+    /// cursor query. This only applies when used with `MongoCursorType.tailableAwait`. Otherwise, this option is ignored.
     public var maxAwaitTimeMS: Int?
 
     /// The maximum amount of time to allow the query to run.
@@ -127,7 +127,7 @@ public struct FindOptions: Codable {
     /// The order in which to return matching documents.
     public var sort: Document?
 
-    /// If a `CursorType` is provided, indicates whether it is `.tailable` or .`tailableAwait`.
+    /// If a `MongoCursorType` is provided, indicates whether it is `.tailable` or .`tailableAwait`.
     private var tailable: Bool?
 
     // swiftlint:enable redundant_optional_initialization
@@ -139,7 +139,7 @@ public struct FindOptions: Codable {
         batchSize: Int? = nil,
         collation: Document? = nil,
         comment: String? = nil,
-        cursorType: CursorType? = nil,
+        cursorType: MongoCursorType? = nil,
         hint: IndexHint? = nil,
         limit: Int? = nil,
         max: Document? = nil,
