@@ -364,6 +364,10 @@ public struct InsertOneResult: Decodable {
     /// will be generated and added to the document before insertion.
     public let insertedID: BSON
 
+    private enum CodingKeys: String, CodingKey {
+        case insertedID = "insertedId"
+    }
+
     internal init?(from result: BulkWriteResult?) throws {
         guard let result = result else {
             return nil
