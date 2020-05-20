@@ -131,8 +131,10 @@ final class ReadConcernTests: MongoSwiftTestCase {
             try checkReadConcern(coll1, .serverDefault, "collection retrieved with no RC provided from \(dbDesc)")
 
             // expect that a collection retrieved from a DB with unset RC can override the DB's RC
-            let coll2 =
-                db1.collection(self.getCollectionName(suffix: "2"), options: MongoCollectionOptions(readConcern: .local))
+            let coll2 = db1.collection(
+                self.getCollectionName(suffix: "2"),
+                options: MongoCollectionOptions(readConcern: .local)
+            )
             try checkReadConcern(coll2, .local, "collection retrieved with local RC from \(dbDesc)")
 
             // test with string init
@@ -143,8 +145,10 @@ final class ReadConcernTests: MongoSwiftTestCase {
             try checkReadConcern(coll3, .local, "collection created with local RC string from \(dbDesc)")
 
             // test with unknown level
-            coll3 =
-                db1.collection(self.getCollectionName(suffix: "3"), options: MongoCollectionOptions(readConcern: unknown))
+            coll3 = db1.collection(
+                self.getCollectionName(suffix: "3"),
+                options: MongoCollectionOptions(readConcern: unknown)
+            )
             try checkReadConcern(coll3, unknown, "collection retrieved with unknown RC level from \(dbDesc)")
 
             try db1.drop().wait()

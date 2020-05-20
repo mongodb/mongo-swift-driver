@@ -126,7 +126,7 @@ final class SyncAuthTests: MongoSwiftTestCase {
             }
         }
 
-        // 2. (again) For each test user, verify that you can connect by specifying credentials in MongoMongoClientOptions
+        // 2. (again) For each test user, verify that you can connect by specifying credentials in MongoClientOptions
         //    following cases:
         for user in testUsers {
             // - Explicitly specifying each mechanism the user supports.

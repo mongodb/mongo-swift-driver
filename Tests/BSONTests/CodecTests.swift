@@ -447,7 +447,8 @@ final class CodecTests: MongoSwiftTestCase {
         expect(try decoder.decode(Document.self, from: "{\"x\": 1}")).to(equal(["x": .int32(1)]))
 
         let ts = BSONTimestamp(timestamp: 1, inc: 2)
-        expect(try decoder.decode(BSONTimestamp.self, from: "{ \"$timestamp\" : { \"t\" : 1, \"i\" : 2 } }")).to(equal(ts))
+        expect(try decoder.decode(BSONTimestamp.self, from: "{ \"$timestamp\" : { \"t\" : 1, \"i\" : 2 } }"))
+            .to(equal(ts))
 
         let regex = BSONRegularExpression(pattern: "^abc", options: "imx")
         expect(

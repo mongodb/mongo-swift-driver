@@ -48,8 +48,8 @@ public struct MongoDatabase {
     }
 
     /**
-     * Access a collection within this database. If an option is not specified in the `MongoCollectionOptions` param, the
-     * collection will inherit the value from the parent database or the default if the db's option is not set.
+     * Access a collection within this database. If an option is not specified in the `MongoCollectionOptions` param,
+     * the collection will inherit the value from the parent database or the default if the db's option is not set.
      * To override an option inherited from the db (e.g. a read concern) with the default value, it must be explicitly
      * specified in the options param (e.g. ReadConcern.serverDefault, not nil).
      *

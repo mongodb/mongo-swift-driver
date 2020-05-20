@@ -810,7 +810,8 @@ public struct BSONObjectID: BSONValue, Equatable, CustomStringConvertible, Codab
         self.oid = oid
     }
 
-    /// Initializes an `BSONObjectID` from the provided hex `String`. Returns `nil` if the string is not a valid BSONObjectID.
+    /// Initializes an `BSONObjectID` from the provided hex `String`. Returns `nil` if the string is not a valid
+    /// ObjectID.
     /// - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/objectid.rst
     public init?(_ hex: String) {
         guard bson_oid_is_valid(hex, hex.utf8.count) else {
@@ -891,7 +892,10 @@ extension UUID {
     /// - Throws:
     ///   - `InvalidArgumentError` if a non-UUID subtype is set on the `BSONBinary`.
     public init(from binary: BSONBinary) throws {
-        guard [BSONBinary.Subtype.uuid.rawValue, BSONBinary.Subtype.uuidDeprecated.rawValue].contains(binary.subtype) else {
+        guard [
+            BSONBinary.Subtype.uuid.rawValue,
+            BSONBinary.Subtype.uuidDeprecated.rawValue
+        ].contains(binary.subtype) else {
             throw InvalidArgumentError(
                 message: "Expected a UUID binary type " +
                     "(\(BSONBinary.Subtype.uuid)), got \(binary.subtype) instead."
@@ -1228,8 +1232,8 @@ private func bsonDecodingUnsupportedError<T: BSONValue>(type _: T.Type, at codin
 }
 
 /**
- * Error thrown when a `BSONValue` type introduced by the driver (e.g. BSONObjectID) is decoded directly via the top-level
- * `BSONDecoder`.
+ * Error thrown when a `BSONValue` type introduced by the driver (e.g. BSONObjectID) is decoded directly via the
+ * top-level `BSONDecoder`.
  */
 private func bsonDecodingDirectlyError<T: BSONValue>(type _: T.Type, at codingPath: [CodingKey]) -> DecodingError {
     let description = "Cannot initialize BSONValue type \(T.self) directly from BSONDecoder. It must be decoded as " +
