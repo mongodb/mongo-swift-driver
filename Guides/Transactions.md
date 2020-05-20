@@ -8,6 +8,8 @@ Transactions in the driver must be started on a `ClientSession` using `startTran
 
 ## Examples
 
+Below are some basic examples of using transactions in `MongoSwift`. In realistic use cases, transactions would ideally be retried when facing transient errors. For more detailed examples featuring retry logic, see the [official MongoDB documentation's examples](https://docs.mongodb.com/manual/core/transactions-in-applications/#txn-core-api). 
+
 ### Transaction that Atomically Moves a `Document` from One `MongoCollection` to Another
 
 The transaction below atomically deletes the document `{ "hello": "world" }` from the collection `test.src` and inserts the document in the collection `test.dest`. This ensures that the document exists in either `test.src` or `test.dest`, but not both or neither. Executing the delete and insert non-atomically raises the following issues:
@@ -88,3 +90,4 @@ session.startTransaction(options: txnOpts).flatMap { _ in
 
 ## See Also
 - [MongoDB Transactions documentation](https://docs.mongodb.com/manual/core/transactions/)
+- [MongoDB Driver Transactions Core API](https://docs.mongodb.com/manual/core/transactions-in-applications/#txn-core-api)
