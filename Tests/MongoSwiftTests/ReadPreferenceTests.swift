@@ -124,7 +124,7 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
             try checkReadPreference(db2, .secondary, "db created with secondary RP from \(clientDesc)")
         }
 
-        try self.withTestClient(options: ClientOptions(readPreference: .primaryPreferred)) { client in
+        try self.withTestClient(options: MongoClientOptions(readPreference: .primaryPreferred)) { client in
             let clientDesc = "client created with RP primaryPreferred"
             try checkReadPreference(client, .primaryPreferred, clientDesc)
 

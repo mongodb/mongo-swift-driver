@@ -172,7 +172,7 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
         expect(try collDefault.find(["_id": defaultId]).next()?.get()).to(equal(wrapper))
 
         // Customize strategies on the client
-        let custom = ClientOptions(
+        let custom = MongoClientOptions(
             dataCodingStrategy: .base64,
             dateCodingStrategy: .secondsSince1970,
             uuidCodingStrategy: .deferredToUUID

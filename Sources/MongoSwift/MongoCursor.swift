@@ -146,7 +146,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      *
      * A thread from the driver's internal thread pool will be occupied until the returned future is completed, so
      * performance degradation is possible if the number of polling cursors is too close to the total number of threads
-     * in the thread pool. To configure the total number of threads in the pool, set the `ClientOptions.threadPoolSize`
+     * in the thread pool. To configure the total number of threads in the pool, set the `MongoClientOptions.threadPoolSize`
      * option during client creation.
      *
      * Note: You *must not* call any cursor methods besides `kill` and `isAlive` while the future returned from this
@@ -204,7 +204,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      *
      * A thread from the driver's internal thread pool will be occupied until the returned future is completed, so
      * performance degradation is possible if the number of polling cursors is too close to the total number of threads
-     * in the thread pool. To configure the total number of threads in the pool, set the `ClientOptions.threadPoolSize`
+     * in the thread pool. To configure the total number of threads in the pool, set the `MongoClientOptions.threadPoolSize`
      * option during client creation.
      *
      * Note: You *must not* call any cursor methods besides `kill` and `isAlive` while the future returned from this

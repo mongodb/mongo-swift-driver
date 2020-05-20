@@ -78,7 +78,7 @@ extension ReadPreference: Decodable {
     }
 }
 
-extension ClientOptions: Decodable {
+extension MongoClientOptions: Decodable {
     private enum CodingKeys: String, CodingKey {
         case retryReads, retryWrites, w, readConcernLevel, mode = "readPreference"
     }

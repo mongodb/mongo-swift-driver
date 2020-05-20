@@ -46,7 +46,7 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      *
      * A thread from the pool will be occupied by this method until it returns, so performance degradation is possible
      * if the number of polling change streams is too close to the total number of threads in the thread pool. To
-     * configure the total number of threads in the pool, set the `ClientOptions.threadPoolSize` option on client
+     * configure the total number of threads in the pool, set the `MongoClientOptions.threadPoolSize` option on client
      * creation.
      *
      * - Returns:

@@ -75,7 +75,7 @@ internal class ConnectionPool {
     internal static let PoolClosedError = LogicError(message: "ConnectionPool was already closed")
 
     /// Initializes the pool using the provided `ConnectionString` and options.
-    internal init(from connString: ConnectionString, options: ClientOptions?) throws {
+    internal init(from connString: ConnectionString, options: MongoClientOptions?) throws {
         // validate option before we bother creating pool, so we don't have to destroy the pool on error. destroying it
         // would require calling the blocking method `mongoc_client_pool_destroy` from this initializer, which we don't
         // want to do as it would block the event loop.
@@ -204,7 +204,7 @@ internal class ConnectionPool {
 
     // Sets TLS/SSL options that the user passes in through the client level. **This must only be called from
     // the ConnectionPool initializer**.
-    private func setTLSOptions(_ options: ClientOptions) {
+    private func setTLSOptions(_ options: MongoClientOptions) {
         // return early so we don't set an empty options struct on the libmongoc pool. doing so will make libmongoc
         // attempt to use TLS for connections.
         guard options.tls == true ||

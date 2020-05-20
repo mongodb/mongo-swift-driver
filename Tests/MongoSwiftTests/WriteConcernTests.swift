@@ -70,7 +70,7 @@ final class WriteConcernTests: MongoSwiftTestCase {
         }
 
         // test behavior of a client with w: 1
-        try self.withTestClient(options: ClientOptions(writeConcern: w1)) { client in
+        try self.withTestClient(options: MongoClientOptions(writeConcern: w1)) { client in
             let clientDesc = "client created with w:1"
             // although w:1 is default, if it is explicitly provided it should be set
             try checkWriteConcern(client, w1, clientDesc)
@@ -85,7 +85,7 @@ final class WriteConcernTests: MongoSwiftTestCase {
         }
 
         // test behavior of a client with w: 2
-        try self.withTestClient(options: ClientOptions(writeConcern: w2)) { client in
+        try self.withTestClient(options: MongoClientOptions(writeConcern: w2)) { client in
             let clientDesc = "client created with w:2"
             try checkWriteConcern(client, w2, clientDesc)
 

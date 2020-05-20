@@ -8,7 +8,7 @@ final class OptionsTests: MongoSwiftTestCase {
         BSONCoderOptions(),
         ChangeStreamOptions(),
         ClientSessionOptions(),
-        ClientOptions(),
+        MongoClientOptions(),
         DatabaseOptions(),
         DeleteModelOptions(),
         ReplaceOneModelOptions(),

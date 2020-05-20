@@ -15,7 +15,7 @@ private struct RetryableWritesTest: Decodable, FailPointConfigured {
     let operation: AnyTestOperation
 
     /// Options used to configure the `MongoClient` used for this test.
-    let clientOptions: ClientOptions?
+    let clientOptions: MongoClientOptions?
 
     /// If true, the `MongoClient` for this test should be initialized with multiple mongos seed addresses.
     /// If false or omitted, only a single mongos address should be specified.
@@ -77,7 +77,7 @@ final class RetryableWritesTests: MongoSwiftTestCase {
             for var test in testFile.tests {
                 print("Executing test: \(test.description)")
 
-                let clientOptions = test.clientOptions ?? ClientOptions(retryWrites: true)
+                let clientOptions = test.clientOptions ?? MongoClientOptions(retryWrites: true)
                 let client = try MongoClient.makeTestClient(options: clientOptions)
                 let db = client.db(Self.testDatabase)
                 let collection = db.collection(self.getCollectionName(suffix: test.description))

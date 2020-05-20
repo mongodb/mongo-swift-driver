@@ -72,7 +72,7 @@ final class ReadConcernTests: MongoSwiftTestCase {
         }
 
         // test behavior of a client initialized with local RC
-        try self.withTestClient(options: ClientOptions(readConcern: local)) { client in
+        try self.withTestClient(options: MongoClientOptions(readConcern: local)) { client in
             let clientDesc = "client created with local RC"
             // although local is default, if it is explicitly provided it should be set
             try checkReadConcern(client, local, clientDesc)
@@ -96,12 +96,12 @@ final class ReadConcernTests: MongoSwiftTestCase {
         }
 
         // test behavior of a client initialized with majority RC
-        try self.withTestClient(options: ClientOptions(readConcern: .majority)) { client in
+        try self.withTestClient(options: MongoClientOptions(readConcern: .majority)) { client in
             try checkReadConcern(client, .majority, "client created with majority RC")
         }
 
         // test with string init
-        try self.withTestClient(options: ClientOptions(readConcern: majorityString)) { client in
+        try self.withTestClient(options: MongoClientOptions(readConcern: majorityString)) { client in
             let clientDesc = "client created with majority RC string"
             try checkReadConcern(client, .majority, clientDesc)
 

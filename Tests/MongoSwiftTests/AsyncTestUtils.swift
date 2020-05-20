@@ -8,9 +8,9 @@ extension MongoClient {
     internal static func makeTestClient(
         _ uri: String = MongoSwiftTestCase.getConnectionString(),
         eventLoopGroup: EventLoopGroup,
-        options: ClientOptions? = nil
+        options: MongoClientOptions? = nil
     ) throws -> MongoClient {
-        var opts = options ?? ClientOptions()
+        var opts = options ?? MongoClientOptions()
         // if SSL is on and custom TLS options were not provided, enable them
         if MongoSwiftTestCase.ssl && opts.tlsCAFile == nil && opts.tlsCertificateKeyFile == nil {
             opts.tlsCAFile = URL(string: MongoSwiftTestCase.sslCAFilePath ?? "")
@@ -63,7 +63,7 @@ extension MongoCollection {
 extension MongoSwiftTestCase {
     internal func withTestClient<T>(
         _ uri: String = MongoSwiftTestCase.getConnectionString(),
-        options: ClientOptions? = nil,
+        options: MongoClientOptions? = nil,
         f: (MongoClient) throws -> T
     ) throws -> T {
         let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)

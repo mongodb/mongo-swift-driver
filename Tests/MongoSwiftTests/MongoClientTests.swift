@@ -32,7 +32,7 @@ final class MongoClientTests: MongoSwiftTestCase {
         let invalidSizes = [-1, 0, Int(UInt32.max) + 1]
 
         for value in invalidSizes {
-            let opts = ClientOptions(maxPoolSize: value)
+            let opts = MongoClientOptions(maxPoolSize: value)
             expect(try MongoClient(using: elg, options: opts)).to(throwError(errorType: InvalidArgumentError.self))
         }
 
@@ -42,7 +42,7 @@ final class MongoClientTests: MongoSwiftTestCase {
         }
 
         // try using a custom size
-        let opts = ClientOptions(maxPoolSize: 10)
+        let opts = MongoClientOptions(maxPoolSize: 10)
         try self.withTestClient(options: opts) { client in
             try verifyPoolSize(client, size: 10)
         }
