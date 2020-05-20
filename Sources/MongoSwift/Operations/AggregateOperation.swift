@@ -22,7 +22,7 @@ public struct AggregateOptions: Codable {
     public var comment: String?
 
     /// The index hint to use for the aggregation. The hint does not apply to $lookup and $graphLookup stages.
-    public var hint: Hint?
+    public var hint: IndexHint?
 
     /// The maximum amount of time to allow the query to run.
     public var maxTimeMS: Int?
@@ -45,7 +45,7 @@ public struct AggregateOptions: Codable {
         bypassDocumentValidation: Bool? = nil,
         collation: Document? = nil,
         comment: String? = nil,
-        hint: Hint? = nil,
+        hint: IndexHint? = nil,
         maxTimeMS: Int? = nil,
         readConcern: ReadConcern? = nil,
         readPreference: ReadPreference? = nil,

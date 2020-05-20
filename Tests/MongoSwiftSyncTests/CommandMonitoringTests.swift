@@ -129,7 +129,7 @@ private struct CMTest: Decodable {
 
         case "find":
             let modifiers = self.op.args["modifiers"]?.documentValue
-            var hint: Hint?
+            var hint: IndexHint?
             if let hintDoc = modifiers?["$hint"]?.documentValue {
                 hint = .indexSpec(hintDoc)
             }

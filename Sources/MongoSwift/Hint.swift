@@ -1,7 +1,7 @@
 import Foundation
 
 /// An index to "hint" or force MongoDB to use when performing a query.
-public enum Hint: Codable {
+public enum IndexHint: Codable {
     /// Specifies an index to use by its name.
     case indexName(String)
     /// Specifies an index to use by a specification `Document` containing the index key(s).

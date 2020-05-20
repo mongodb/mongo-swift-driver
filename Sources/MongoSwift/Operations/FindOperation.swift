@@ -81,7 +81,7 @@ public struct FindOptions: Codable {
     }
 
     /// A hint for the index to use.
-    public var hint: Hint?
+    public var hint: IndexHint?
 
     /// The maximum number of documents to return.
     public var limit: Int?
@@ -140,7 +140,7 @@ public struct FindOptions: Codable {
         collation: Document? = nil,
         comment: String? = nil,
         cursorType: CursorType? = nil,
-        hint: Hint? = nil,
+        hint: IndexHint? = nil,
         limit: Int? = nil,
         max: Document? = nil,
         maxAwaitTimeMS: Int? = nil,
@@ -215,7 +215,7 @@ public struct FindOneOptions: Codable {
     public var comment: String?
 
     /// A hint for the index to use.
-    public var hint: Hint?
+    public var hint: IndexHint?
 
     /// The exclusive upper bound for a specific index.
     public var max: Document?
@@ -253,7 +253,7 @@ public struct FindOneOptions: Codable {
         allowPartialResults: Bool? = nil,
         collation: Document? = nil,
         comment: String? = nil,
-        hint: Hint? = nil,
+        hint: IndexHint? = nil,
         max: Document? = nil,
         maxTimeMS: Int? = nil,
         min: Document? = nil,
