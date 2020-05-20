@@ -102,11 +102,11 @@ public enum WriteModel<CollectionType: Codable> {
                 mongoc_bulk_operation_insert_with_opts(bulk, docPtr, nil, &error)
             }
 
-            guard let insertedId = try document.getValue(for: "_id") else {
+            guard let insertedID = try document.getValue(for: "_id") else {
                 // we called `withID()`, so this should be present.
                 fatalError("Failed to get value for _id from document")
             }
-            res = insertedId
+            res = insertedID
 
         case let .replaceOne(filter, replacement, options):
             let replacement = try encoder.encode(replacement)
@@ -215,7 +215,7 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
      */
     internal func execute(using connection: Connection, session: ClientSession?) throws -> BulkWriteResult? {
         let opts = try encodeOptions(options: options, session: session)
-        var insertedIds: [Int: BSON] = [:]
+        var insertedIDs: [Int: BSON] = [:]
 
         if session?.inTransaction == true && self.options?.writeConcern != nil {
             throw InvalidArgumentError(
@@ -235,15 +235,15 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
 
             try self.models.enumerated().forEach { index, model in
                 if let res = try model.addToBulkWrite(bulk, encoder: self.encoder) {
-                    insertedIds[index] = res
+                    insertedIDs[index] = res
                 }
             }
 
             var error = bson_error_t()
-            let (serverId, reply) = withStackAllocatedMutableBSONPointer { replyPtr -> (UInt32, Document) in
-                let serverId = mongoc_bulk_operation_execute(bulk, replyPtr, &error)
+            let (serverID, reply) = withStackAllocatedMutableBSONPointer { replyPtr -> (UInt32, Document) in
+                let serverID = mongoc_bulk_operation_execute(bulk, replyPtr, &error)
                 let reply = Document(copying: replyPtr)
-                return (serverId, reply)
+                return (serverID, reply)
             }
 
             var writeConcernAcknowledged: Bool
@@ -262,10 +262,10 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
             }
 
             let result: BulkWriteResult? = writeConcernAcknowledged
-                ? try BulkWriteResult(reply: reply, insertedIds: insertedIds)
+                ? try BulkWriteResult(reply: reply, insertedIDs: insertedIDs)
                 : nil
 
-            guard serverId != 0 else {
+            guard serverID != 0 else {
                 throw extractBulkWriteError(
                     for: self,
                     error: error,
@@ -324,7 +324,7 @@ public struct BulkWriteResult: Decodable {
     public let insertedCount: Int
 
     /// Map of the index of the operation to the id of the inserted document.
-    public let insertedIds: [Int: BSON]
+    public let insertedIDs: [Int: BSON]
 
     /// Number of documents matched for update.
     public let matchedCount: Int
@@ -336,10 +336,16 @@ public struct BulkWriteResult: Decodable {
     public let upsertedCount: Int
 
     /// Map of the index of the operation to the id of the upserted document.
-    public let upsertedIds: [Int: BSON]
+    public let upsertedIDs: [Int: BSON]
 
-    private enum CodingKeys: CodingKey {
-        case deletedCount, insertedCount, insertedIds, matchedCount, modifiedCount, upsertedCount, upsertedIds
+    private enum CodingKeys: String, CodingKey {
+        case deletedCount,
+            insertedCount,
+            insertedIDs = "insertedIds",
+            matchedCount,
+            modifiedCount,
+            upsertedCount,
+            upsertedIDs = "upsertedIds"
     }
 
     // The key names libmongoc uses for its bulk write results.
@@ -370,20 +376,20 @@ public struct BulkWriteResult: Decodable {
         self.matchedCount = try container.decodeIfPresent(Int.self, forKey: .matchedCount) ?? 0
         self.modifiedCount = try container.decodeIfPresent(Int.self, forKey: .modifiedCount) ?? 0
 
-        let insertedIds = try container.decodeIfPresent([Int: BSON].self, forKey: .insertedIds) ?? [:]
-        self.insertedIds = insertedIds
-        self.insertedCount = try container.decodeIfPresent(Int.self, forKey: .insertedCount) ?? insertedIds.count
+        let insertedIDs = try container.decodeIfPresent([Int: BSON].self, forKey: .insertedIDs) ?? [:]
+        self.insertedIDs = insertedIDs
+        self.insertedCount = try container.decodeIfPresent(Int.self, forKey: .insertedCount) ?? insertedIDs.count
 
-        let upsertedIds = try container.decodeIfPresent([Int: BSON].self, forKey: .upsertedIds) ?? [:]
-        self.upsertedIds = upsertedIds
-        self.upsertedCount = try container.decodeIfPresent(Int.self, forKey: .upsertedCount) ?? upsertedIds.count
+        let upsertedIDs = try container.decodeIfPresent([Int: BSON].self, forKey: .upsertedIDs) ?? [:]
+        self.upsertedIDs = upsertedIDs
+        self.upsertedCount = try container.decodeIfPresent(Int.self, forKey: .upsertedCount) ?? upsertedIDs.count
     }
 
     /**
      * Create a `BulkWriteResult` from a reply and map of inserted IDs.
      *
      * Note: we forgo using a Decodable initializer because we still need to
-     * build a map for `upsertedIds` and explicitly add `insertedIds`, and because
+     * build a map for `upsertedIDs` and explicitly add `insertedIDs`, and because
      * libmongoc uses a different naming convention for the field names than is expected.
      *
      * While `mongoc_bulk_operation_execute()` guarantees that `reply` will be
@@ -392,24 +398,24 @@ public struct BulkWriteResult: Decodable {
      *
      * - Parameters:
      *   - reply: A `Document` result from `mongoc_bulk_operation_execute()`
-     *   - insertedIds: Map of inserted IDs
+     *   - insertedIDs: Map of inserted IDs
      *
      * - Throws:
      *   - `InternalError` if an unexpected error occurs reading the reply from the server.
      */
-    fileprivate init?(reply: Document, insertedIds: [Int: BSON]) throws {
+    fileprivate init?(reply: Document, insertedIDs: [Int: BSON]) throws {
         guard reply.keys.contains(where: { MongocKeys(rawValue: $0) != nil }) else {
             return nil
         }
 
         self.deletedCount = try reply.getValue(for: MongocKeys.deletedCount.rawValue)?.asInt() ?? 0
         self.insertedCount = try reply.getValue(for: MongocKeys.insertedCount.rawValue)?.asInt() ?? 0
-        self.insertedIds = insertedIds
+        self.insertedIDs = insertedIDs
         self.matchedCount = try reply.getValue(for: MongocKeys.matchedCount.rawValue)?.asInt() ?? 0
         self.modifiedCount = try reply.getValue(for: MongocKeys.modifiedCount.rawValue)?.asInt() ?? 0
         self.upsertedCount = try reply.getValue(for: MongocKeys.upsertedCount.rawValue)?.asInt() ?? 0
 
-        var upsertedIds = [Int: BSON]()
+        var upsertedIDs = [Int: BSON]()
 
         if let upserted = try reply.getValue(for: MongocKeys.upserted.rawValue)?.arrayValue {
             guard let upserted = upserted.asArrayOf(Document.self) else {
@@ -420,29 +426,29 @@ public struct BulkWriteResult: Decodable {
                 guard let index = try upsert.getValue(for: "index")?.asInt() else {
                     throw InternalError(message: "Could not cast upserted index to `Int`")
                 }
-                upsertedIds[index] = upsert["_id"]
+                upsertedIDs[index] = upsert["_id"]
             }
         }
 
-        self.upsertedIds = upsertedIds
+        self.upsertedIDs = upsertedIDs
     }
 
     /// Internal initializer used for testing purposes and error handling.
     internal init(
         deletedCount: Int? = nil,
         insertedCount: Int? = nil,
-        insertedIds: [Int: BSON]? = nil,
+        insertedIDs: [Int: BSON]? = nil,
         matchedCount: Int? = nil,
         modifiedCount: Int? = nil,
         upsertedCount: Int? = nil,
-        upsertedIds: [Int: BSON]? = nil
+        upsertedIDs: [Int: BSON]? = nil
     ) {
         self.deletedCount = deletedCount ?? 0
         self.insertedCount = insertedCount ?? 0
-        self.insertedIds = insertedIds ?? [:]
+        self.insertedIDs = insertedIDs ?? [:]
         self.matchedCount = matchedCount ?? 0
         self.modifiedCount = modifiedCount ?? 0
         self.upsertedCount = upsertedCount ?? 0
-        self.upsertedIds = upsertedIds ?? [:]
+        self.upsertedIDs = upsertedIDs ?? [:]
     }
 }

@@ -389,32 +389,32 @@ internal func extractBulkWriteError<T: Codable>(
             bulkWriteErrors = try writeErrors.map { try BSONDecoder().decode(BulkWriteFailure.self, from: $0) }
         }
 
-        // Need to create new result that omits the ids that failed in insertedIds.
+        // Need to create new result that omits the ids that failed in insertedIDs.
         var errResult: BulkWriteResult?
         let ordered = op.options?.ordered ?? true
 
-        // remove the unsuccessful inserts from the insertedIds map
-        let filteredIds: [Int: BSON]
+        // remove the unsuccessful inserts from the insertedIDs map
+        let filteredIDs: [Int: BSON]
         if result.insertedCount == 0 {
-            filteredIds = [:]
+            filteredIDs = [:]
         } else {
             if ordered { // remove all after the last index that succeeded
-                let maxIndex = result.insertedIds.keys.sorted()[result.insertedCount - 1]
-                filteredIds = result.insertedIds.filter { $0.key <= maxIndex }
+                let maxIndex = result.insertedIDs.keys.sorted()[result.insertedCount - 1]
+                filteredIDs = result.insertedIDs.filter { $0.key <= maxIndex }
             } else { // if unordered, just remove those that have write errors associated with them
                 let errs = Set(bulkWriteErrors.map { $0.index })
-                filteredIds = result.insertedIds.filter { !errs.contains($0.key) }
+                filteredIDs = result.insertedIDs.filter { !errs.contains($0.key) }
             }
         }
 
         errResult = BulkWriteResult(
             deletedCount: result.deletedCount,
             insertedCount: result.insertedCount,
-            insertedIds: filteredIds,
+            insertedIDs: filteredIDs,
             matchedCount: result.matchedCount,
             modifiedCount: result.modifiedCount,
             upsertedCount: result.upsertedCount,
-            upsertedIds: result.upsertedIds
+            upsertedIDs: result.upsertedIDs
         )
 
         // extract any other error that might have occurred outside of the write/write concern errors. (e.g. connection)

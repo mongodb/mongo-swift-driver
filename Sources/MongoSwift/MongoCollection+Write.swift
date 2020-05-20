@@ -362,16 +362,16 @@ public struct DeleteOptions: Codable, BulkWriteOptionsConvertible {
 public struct InsertOneResult: Decodable {
     /// The identifier that was inserted. If the document doesn't have an identifier, this value
     /// will be generated and added to the document before insertion.
-    public let insertedId: BSON
+    public let insertedID: BSON
 
     internal init?(from result: BulkWriteResult?) throws {
         guard let result = result else {
             return nil
         }
-        guard let id = result.insertedIds[0] else {
+        guard let id = result.insertedIDs[0] else {
             throw InternalError(message: "BulkWriteResult missing _id for inserted document")
         }
-        self.insertedId = id
+        self.insertedID = id
     }
 }
 
@@ -381,7 +381,7 @@ public struct InsertManyResult {
     public let insertedCount: Int
 
     /// Map of the index of the document in `values` to the value of its ID
-    public let insertedIds: [Int: BSON]
+    public let insertedIDs: [Int: BSON]
 
     /// Internal initializer used for converting from a `BulkWriteResult` optional to an `InsertManyResult` optional.
     internal init?(from result: BulkWriteResult?) {
@@ -389,7 +389,7 @@ public struct InsertManyResult {
             return nil
         }
         self.insertedCount = result.insertedCount
-        self.insertedIds = result.insertedIds
+        self.insertedIDs = result.insertedIDs
     }
 }
 
@@ -415,7 +415,7 @@ public struct UpdateResult: Decodable {
     public let modifiedCount: Int
 
     /// The identifier of the inserted document if an upsert took place.
-    public let upsertedId: BSON?
+    public let upsertedID: BSON?
 
     /// The number of documents that were upserted.
     public let upsertedCount: Int
@@ -428,16 +428,16 @@ public struct UpdateResult: Decodable {
         self.modifiedCount = result.modifiedCount
         self.upsertedCount = result.upsertedCount
         if result.upsertedCount == 1 {
-            guard let id = result.upsertedIds[0] else {
+            guard let id = result.upsertedIDs[0] else {
                 throw InternalError(message: "BulkWriteResult missing _id for upserted document")
             }
-            self.upsertedId = id
+            self.upsertedID = id
         } else {
-            self.upsertedId = nil
+            self.upsertedID = nil
         }
     }
 
     private enum CodingKeys: String, CodingKey {
-        case matchedCount, modifiedCount, upsertedId, upsertedCount
+        case matchedCount, modifiedCount, upsertedID = "upsertedId", upsertedCount
     }
 }

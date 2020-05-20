@@ -36,8 +36,8 @@ extension BulkWriteError: Equatable {
 
 extension BulkWriteResult: Equatable {
     public static func == (lhs: BulkWriteResult, rhs: BulkWriteResult) -> Bool {
-        lhs.insertedIds == rhs.insertedIds
-            && lhs.upsertedIds == rhs.upsertedIds
+        lhs.insertedIDs == rhs.insertedIDs
+            && lhs.upsertedIDs == rhs.upsertedIDs
             && lhs.upsertedCount == rhs.upsertedCount
             && lhs.modifiedCount == rhs.modifiedCount
             && lhs.matchedCount == rhs.matchedCount

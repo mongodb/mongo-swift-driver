@@ -88,7 +88,7 @@ final class DocumentTests: MongoSwiftTestCase {
         "timestamp": .timestamp(Timestamp(timestamp: 5, inc: 10)),
         "nestedarray": [[1, 2], [.int32(3), .int32(4)]],
         "nesteddoc": ["a": 1, "b": 2, "c": false, "d": [3, 4]],
-        "oid": .objectId(ObjectId("507f1f77bcf86cd799439011")!),
+        "oid": .objectID(ObjectID("507f1f77bcf86cd799439011")!),
         "regex": .regex(RegularExpression(pattern: "^abc", options: "imx")),
         "array1": [1, 2],
         "array2": ["string1", "string2"],
@@ -153,7 +153,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(doc["maxkey"]).to(equal(.maxKey))
         expect(doc["date"]).to(equal(.datetime(Date(timeIntervalSince1970: 500.004))))
         expect(doc["timestamp"]).to(equal(.timestamp(Timestamp(timestamp: 5, inc: 10))))
-        expect(doc["oid"]).to(equal(.objectId(ObjectId("507f1f77bcf86cd799439011")!)))
+        expect(doc["oid"]).to(equal(.objectID(ObjectID("507f1f77bcf86cd799439011")!)))
 
         let regex = doc["regex"]?.regexValue
         expect(regex).to(equal(RegularExpression(pattern: "^abc", options: "imx")))
@@ -203,7 +203,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(DocumentTests.testDoc.maxkey).to(equal(.maxKey))
         expect(DocumentTests.testDoc.date).to(equal(.datetime(Date(timeIntervalSince1970: 500.004))))
         expect(DocumentTests.testDoc.timestamp).to(equal(.timestamp(Timestamp(timestamp: 5, inc: 10))))
-        expect(DocumentTests.testDoc.oid).to(equal(.objectId(ObjectId("507f1f77bcf86cd799439011")!)))
+        expect(DocumentTests.testDoc.oid).to(equal(.objectID(ObjectID("507f1f77bcf86cd799439011")!)))
 
         let codewscope = DocumentTests.testDoc.codewscope?.codeWithScopeValue
         expect(codewscope?.code).to(equal("console.log(x);"))
@@ -352,7 +352,7 @@ final class DocumentTests: MongoSwiftTestCase {
         "int64": .int64(Int64.max),
         "bool": false,
         "decimal": .decimal128(Decimal128("1.2E+10")!),
-        "oid": .objectId(ObjectId()),
+        "oid": .objectID(ObjectID()),
         "timestamp": .timestamp(Timestamp(timestamp: 1, inc: 2)),
         "datetime": .datetime(Date(msSinceEpoch: 1000))
     ]
@@ -394,8 +394,8 @@ final class DocumentTests: MongoSwiftTestCase {
         doc["int64"] = .int64(Int64.min)
         expect(doc.pointerAddress).to(equal(pointer))
 
-        let newOid = ObjectId()
-        doc["oid"] = .objectId(newOid)
+        let newOid = ObjectID()
+        doc["oid"] = .objectID(newOid)
         expect(doc.pointerAddress).to(equal(pointer))
 
         doc["timestamp"] = .timestamp(Timestamp(timestamp: 5, inc: 10))
@@ -410,7 +410,7 @@ final class DocumentTests: MongoSwiftTestCase {
             "int64": .int64(Int64.min),
             "bool": true,
             "decimal": .decimal128(Decimal128("100")!),
-            "oid": .objectId(newOid),
+            "oid": .objectID(newOid),
             "timestamp": .timestamp(Timestamp(timestamp: 5, inc: 10)),
             "datetime": .datetime(Date(msSinceEpoch: 2000))
         ]))
@@ -431,7 +431,7 @@ final class DocumentTests: MongoSwiftTestCase {
             "int64": BSON(integerLiteral: bigInt),
             "bool": true,
             "decimal": .decimal128(Decimal128("100")!),
-            "oid": .objectId(newOid),
+            "oid": .objectID(newOid),
             "timestamp": .timestamp(Timestamp(timestamp: 5, inc: 10)),
             "datetime": .datetime(Date(msSinceEpoch: 2000))
         ]))
@@ -477,7 +477,7 @@ final class DocumentTests: MongoSwiftTestCase {
         // save a reference to original bson_t so we can verify it changes
         var overwritablePointer = overwritableDoc.pointerAddress
 
-        let newOid = ObjectId()
+        let newOid = ObjectID()
         let overwritablePairs: [(String, BSON)] = [
             ("double", BSON(10)),
             ("int32", "hi"),
@@ -485,7 +485,7 @@ final class DocumentTests: MongoSwiftTestCase {
             ("bool", [1, 2, 3]),
             ("decimal", 100),
             ("oid", 25.5),
-            ("timestamp", .objectId(newOid)),
+            ("timestamp", .objectID(newOid)),
             ("datetime", .timestamp(Timestamp(timestamp: 1, inc: 2)))
         ]
 
@@ -502,7 +502,7 @@ final class DocumentTests: MongoSwiftTestCase {
             "bool": [1, 2, 3],
             "decimal": 100,
             "oid": 25.5,
-            "timestamp": .objectId(newOid),
+            "timestamp": .objectID(newOid),
             "datetime": .timestamp(Timestamp(timestamp: 1, inc: 2))
         ]))
 

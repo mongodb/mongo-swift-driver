@@ -36,8 +36,8 @@ extension BSONValueTests {
         ("testInvalidDecimal128", testInvalidDecimal128),
         ("testUUIDBytes", testUUIDBytes),
         ("testBSONEquatable", testBSONEquatable),
-        ("testObjectIdRoundTrip", testObjectIdRoundTrip),
-        ("testObjectIdJSONCodable", testObjectIdJSONCodable),
+        ("testObjectIDRoundTrip", testObjectIDRoundTrip),
+        ("testObjectIDJSONCodable", testObjectIDJSONCodable),
         ("testBSONNumber", testBSONNumber),
     ]
 }
