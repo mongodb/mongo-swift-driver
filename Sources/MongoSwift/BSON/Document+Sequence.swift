@@ -33,8 +33,8 @@ extension Document: Sequence {
      * Returns a new document containing the keys of this document with the values transformed by the given closure.
      *
      * - Parameters:
-     *   - transform: A closure that transforms a `BSONValue`. `transform` accepts each value of the document as its
-     *                parameter and returns a transformed `BSONValue` of the same or of a different type.
+     *   - transform: A closure that transforms a `BSON`. `transform` accepts each value of the document as its
+     *                parameter and returns a transformed `BSON`.
      *
      * - Returns: A document containing the keys and transformed values of this document.
      *
