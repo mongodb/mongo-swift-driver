@@ -106,7 +106,7 @@ final class BSONValueTests: MongoSwiftTestCase {
         }
     }
 
-    func testBSONObjectIDRoundTrip() throws {
+    func testObjectIDRoundTrip() throws {
         // alloc new bson_oid_t
         var oid_t = bson_oid_t()
         bson_oid_init(&oid_t, nil)
@@ -147,7 +147,7 @@ final class BSONValueTests: MongoSwiftTestCase {
         expect(objectIdFromString.timestamp).to(equal(timestamp))
     }
 
-    func testBSONObjectIDJSONCodable() throws {
+    func testObjectIDJSONCodable() throws {
         let id = BSONObjectID()
         let obj = TestObject(id: id)
         let output = try JSONEncoder().encode(obj)
