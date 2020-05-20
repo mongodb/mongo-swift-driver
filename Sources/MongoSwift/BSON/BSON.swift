@@ -22,8 +22,8 @@ public enum BSON {
     /// A BSON undefined.
     case undefined
 
-    /// A BSON BSONObjectID.
-    /// - SeeAlso: https://docs.mongodb.com/manual/reference/bson-types/#BSONObjectID
+    /// A BSON ObjectID.
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/bson-types/#ObjectID
     case objectID(BSONObjectID)
 
     /// A BSON boolean.

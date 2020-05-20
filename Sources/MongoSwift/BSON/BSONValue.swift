@@ -17,8 +17,8 @@ public enum BSONType: UInt32 {
     case binary = 0x05
     /// Undefined value - deprecated
     case undefined = 0x06
-    /// A MongoDB BSONObjectID.
-    /// - SeeAlso: https://docs.mongodb.com/manual/reference/method/BSONObjectID/
+    /// A MongoDB  ObjectID.
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/method/ObjectId/
     case objectID = 0x07
     /// A boolean
     case bool = 0x08
@@ -775,7 +775,7 @@ internal struct MinKey: BSONValue, Equatable, Codable, Hashable {
     }
 }
 
-/// A struct to represent the BSON BSONObjectID type.
+/// A struct to represent the BSON ObjectID type.
 public struct BSONObjectID: BSONValue, Equatable, CustomStringConvertible, Codable {
     internal var bson: BSON { .objectID(self) }
 
@@ -834,7 +834,7 @@ public struct BSONObjectID: BSONValue, Equatable, CustomStringConvertible, Codab
             throw DecodingError.dataCorrupted(
                 DecodingError.Context(
                     codingPath: decoder.codingPath,
-                    debugDescription: "Invalid BSONObjectID hex string. Got: \(hex)"
+                    debugDescription: "Invalid ObjectID hex string. Got: \(hex)"
                 )
             )
         }
