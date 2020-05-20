@@ -14,7 +14,7 @@ final class Document_SequenceTests: MongoSwiftTestCase {
             "int32": .int32(5),
             "int64": .int64(123),
             "double": .double(15),
-            "decimal128": .decimal128(BSONDecimal128("1.2E+10")!),
+            "decimal128": .decimal128(try BSONDecimal128("1.2E+10")),
             "minkey": .minKey,
             "maxkey": .maxKey,
             "date": .datetime(Date(timeIntervalSince1970: 5000)),
@@ -54,7 +54,7 @@ final class Document_SequenceTests: MongoSwiftTestCase {
 
         let decimalTup = iter.next()!
         expect(decimalTup.key).to(equal("decimal128"))
-        expect(decimalTup.value).to(equal(.decimal128(BSONDecimal128("1.2E+10")!)))
+        expect(decimalTup.value).to(equal(.decimal128(try BSONDecimal128("1.2E+10"))))
 
         let minTup = iter.next()!
         expect(minTup.key).to(equal("minkey"))
@@ -81,8 +81,8 @@ final class Document_SequenceTests: MongoSwiftTestCase {
         ]
         var expectedValues: [BSON] = [
             "test string", true, false, 25, .int32(5), .int64(123), .double(15),
-            .decimal128(BSONDecimal128("1.2E+10")!), .minKey, .maxKey, .datetime(Date(timeIntervalSince1970: 5000)),
-            .timestamp(BSONTimestamp(timestamp: 5, inc: 10))
+            .decimal128(try BSONDecimal128("1.2E+10")), .minKey, .maxKey, .datetime(Date(timeIntervalSince1970: 5000)),
+            .timestamp(Timestamp(timestamp: 5, inc: 10))
         ]
         for (k, v) in doc {
             expect(k).to(equal(expectedKeys.removeFirst()))

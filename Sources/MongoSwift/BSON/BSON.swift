@@ -288,11 +288,11 @@ public enum BSON {
         case let .decimal128(d):
             return d
         case let .int64(i):
-            return BSONDecimal128(String(i))
+            return try? BSONDecimal128(String(i))
         case let .int32(i):
-            return BSONDecimal128(String(i))
+            return try? BSONDecimal128(String(i))
         case let .double(d):
-            return BSONDecimal128(String(d))
+            return try? BSONDecimal128(String(d))
         default:
             return nil
         }

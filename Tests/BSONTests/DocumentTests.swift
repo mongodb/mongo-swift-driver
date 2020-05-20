@@ -81,7 +81,7 @@ final class DocumentTests: MongoSwiftTestCase {
         "int32": .int32(5),
         "int64": .int64(10),
         "double": .double(15),
-        "decimal128": .decimal128(BSONDecimal128("1.2E+10")!),
+        "decimal128": .decimal128(try! BSONDecimal128("1.2E+10")),
         "minkey": .minKey,
         "maxkey": .maxKey,
         "date": .datetime(Date(timeIntervalSince1970: 500.004)),
@@ -121,8 +121,8 @@ final class DocumentTests: MongoSwiftTestCase {
             "binary3": .binary(try BSONBinary(data: uuidData, subtype: .uuidDeprecated)),
             "binary4": .binary(try BSONBinary(data: uuidData, subtype: .uuid)),
             "binary5": .binary(try BSONBinary(data: testData, subtype: .md5)),
-            "binary6": .binary(try BSONBinary(data: testData, subtype: .userDefined)),
-            "binary7": .binary(try BSONBinary(data: testData, subtype: 200))
+            "binary6": .binary(try BSONBinary(data: testData, subtype: .userDefined(0x80))),
+            "binary7": .binary(try BSONBinary(data: testData, subtype: .userDefined(0xFF)))
         ]
         try doc.merge(binaryData)
 
@@ -148,7 +148,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(doc["int32"]).to(equal(.int32(5)))
         expect(doc["int64"]).to(equal(.int64(10)))
         expect(doc["double"]).to(equal(15.0))
-        expect(doc["decimal128"]).to(equal(.decimal128(BSONDecimal128("1.2E+10")!)))
+        expect(doc["decimal128"]).to(equal(.decimal128(try BSONDecimal128("1.2E+10"))))
         expect(doc["minkey"]).to(equal(.minKey))
         expect(doc["maxkey"]).to(equal(.maxKey))
         expect(doc["date"]).to(equal(.datetime(Date(timeIntervalSince1970: 500.004))))
@@ -179,8 +179,8 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(doc["binary3"]).to(equal(.binary(try BSONBinary(data: uuidData, subtype: .uuidDeprecated))))
         expect(doc["binary4"]).to(equal(.binary(try BSONBinary(data: uuidData, subtype: .uuid))))
         expect(doc["binary5"]).to(equal(.binary(try BSONBinary(data: testData, subtype: .md5))))
-        expect(doc["binary6"]).to(equal(.binary(try BSONBinary(data: testData, subtype: .userDefined))))
-        expect(doc["binary7"]).to(equal(.binary(try BSONBinary(data: testData, subtype: 200))))
+        expect(doc["binary6"]).to(equal(.binary(try BSONBinary(data: testData, subtype: .other(0x80)))))
+        expect(doc["binary7"]).to(equal(.binary(try BSONBinary(data: testData, subtype: .other(0xFF)))))
 
         let nestedArray = doc["nestedarray"]?.arrayValue?.compactMap { $0.arrayValue?.compactMap { $0.toInt() } }
         expect(nestedArray?[0]).to(equal([1, 2]))
@@ -198,7 +198,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(DocumentTests.testDoc.int32).to(equal(.int32(5)))
         expect(DocumentTests.testDoc.int64).to(equal(.int64(10)))
         expect(DocumentTests.testDoc.double).to(equal(15.0))
-        expect(DocumentTests.testDoc.decimal128).to(equal(.decimal128(BSONDecimal128("1.2E+10")!)))
+        expect(DocumentTests.testDoc.decimal128).to(equal(.decimal128(try BSONDecimal128("1.2E+10"))))
         expect(DocumentTests.testDoc.minkey).to(equal(.minKey))
         expect(DocumentTests.testDoc.maxkey).to(equal(.maxKey))
         expect(DocumentTests.testDoc.date).to(equal(.datetime(Date(timeIntervalSince1970: 500.004))))
@@ -258,7 +258,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
     func testRawBSON() throws {
         let doc = try BSONDocument(fromJSON: "{\"a\" : [{\"$numberInt\": \"10\"}]}")
-        let fromRawBSON = try BSONDocument(fromBSON: doc.rawBSON)
+        let fromRawBSON = try BSONDocument(fromBSON: doc.toData())
         expect(doc).to(equal(fromRawBSON))
     }
 
@@ -351,8 +351,8 @@ final class DocumentTests: MongoSwiftTestCase {
         "int32": .int32(32),
         "int64": .int64(Int64.max),
         "bool": false,
-        "decimal": .decimal128(BSONDecimal128("1.2E+10")!),
-        "oid": .objectID(),
+        "decimal": .decimal128(try BSONDecimal128("1.2E+10")),
+        "oid": .objectID(BSONObjectID()),
         "timestamp": .timestamp(BSONTimestamp(timestamp: 1, inc: 2)),
         "datetime": .datetime(Date(msSinceEpoch: 1000))
     ]
@@ -387,7 +387,7 @@ final class DocumentTests: MongoSwiftTestCase {
         doc["double"] = 3.0
         expect(doc.pointerAddress).to(equal(pointer))
 
-        doc["decimal"] = .decimal128(BSONDecimal128("100")!)
+        doc["decimal"] = .decimal128(try BSONDecimal128("100"))
         expect(doc.pointerAddress).to(equal(pointer))
 
         // overwrite int64 with int64
@@ -409,7 +409,7 @@ final class DocumentTests: MongoSwiftTestCase {
             "int32": .int32(15),
             "int64": .int64(Int64.min),
             "bool": true,
-            "decimal": .decimal128(BSONDecimal128("100")!),
+            "decimal": .decimal128(try BSONDecimal128("100")),
             "oid": .objectID(newOid),
             "timestamp": .timestamp(BSONTimestamp(timestamp: 5, inc: 10)),
             "datetime": .datetime(Date(msSinceEpoch: 2000))
@@ -430,7 +430,7 @@ final class DocumentTests: MongoSwiftTestCase {
             "int32": .int32(15),
             "int64": BSON(integerLiteral: bigInt),
             "bool": true,
-            "decimal": .decimal128(BSONDecimal128("100")!),
+            "decimal": .decimal128(try BSONDecimal128("100")),
             "oid": .objectID(newOid),
             "timestamp": .timestamp(BSONTimestamp(timestamp: 5, inc: 10)),
             "datetime": .datetime(Date(msSinceEpoch: 2000))
@@ -481,7 +481,7 @@ final class DocumentTests: MongoSwiftTestCase {
         let overwritablePairs: [(String, BSON)] = [
             ("double", BSON(10)),
             ("int32", "hi"),
-            ("int64", .decimal128(BSONDecimal128("1.0")!)),
+            ("int64", .decimal128(try BSONDecimal128("1.0"))),
             ("bool", [1, 2, 3]),
             ("decimal", 100),
             ("oid", 25.5),
@@ -498,7 +498,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(overwritableDoc).to(equal([
             "double": BSON(10),
             "int32": "hi",
-            "int64": .decimal128(BSONDecimal128("1.0")!),
+            "int64": .decimal128(try BSONDecimal128("1.0")),
             "bool": [1, 2, 3],
             "decimal": 100,
             "oid": 25.5,
