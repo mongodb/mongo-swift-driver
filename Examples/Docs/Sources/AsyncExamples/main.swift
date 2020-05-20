@@ -147,3 +147,81 @@ private func changeStreams() throws {
         // End Changestream Example 4
     }
 }
+
+/// Examples used for the MongoDB documentation on transactions.
+/// - SeeAlso: https://docs.mongodb.com/manual/core/transactions-in-applications/
+private func transactions() throws {
+    let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+    let client = try MongoClient(using: elg)
+
+    // Start Transactions Into Example 1
+    func updateEmployeeInfo(session: ClientSession) -> EventLoopFuture<Void> {
+        let employees = client.db("hr").collection("employees")
+        let events = client.db("reporting").collection("events")
+
+        let options = TransactionOptions(readConcern: .snapshot, writeConcern: .majority)
+        return session.startTransaction(options: options).flatMap {
+            employees.updateOne(
+                filter: ["employee": 3],
+                update: ["$set": ["status": "Inactive"]],
+                session: session
+            ).flatMap { _ in
+                events.insertOne(["employee": 3, "status": ["new": "Inactive", "old": "Active"]])
+            }.flatMapError { error in
+                print("Caught error during transaction, aborting")
+                return session.abortTransaction().flatMapThrowing { _ in
+                    throw error
+                }
+            }
+        }.flatMap { _ in
+            commitWithRetry(session: session)
+        }
+    }
+    // End Transactions Intro Example 1
+
+    // Start Transactions Retry Example 1
+    func runTransactionWithRetry(
+        session: ClientSession,
+        txnFunc: @escaping (ClientSession) -> EventLoopFuture<Void>
+    ) -> EventLoopFuture<Void> {
+        let txnFuture = txnFunc(session)
+        let eventLoop = txnFuture.eventLoop
+        return txnFuture.flatMapError { error in
+            guard
+                let labeledError = error as? LabeledError,
+                labeledError.errorLabels?.contains("TransientTransactionError") == true
+            else {
+                return eventLoop.makeFailedFuture(error)
+            }
+            print("TransientTransactionError, retrying transaction...")
+            return runTransactionWithRetry(session: session, txnFunc: txnFunc)
+        }
+    }
+    // End Transactions Retry Example 1
+
+    // Start Transactions Retry Example 2
+    func commitWithRetry(session: ClientSession) -> EventLoopFuture<Void> {
+        let commitFuture = session.commitTransaction()
+        let eventLoop = commitFuture.eventLoop
+        return commitFuture.flatMapError { error in
+            guard
+                let labeledError = error as? LabeledError,
+                labeledError.errorLabels?.contains("UnknownTransactioncommitResult") == true
+            else {
+                print("Error during commit...")
+                return eventLoop.makeFailedFuture(error)
+            }
+            print("UnknownTransactioncommitResult, retrying commit operation...")
+            return commitWithRetry(session: session)
+        }
+    }
+    // End Transactions Retry Example 2
+
+    // Start Transactions Retry Example 3
+    try client.withSession { session in
+        runTransactionWithRetry(session: session, txnFunc: updateEmployeeInfo).flatMapErrorThrowing { _ in
+            // do something with error
+        }
+    }.wait()
+    // End Transactions Retry Example 3
+}
