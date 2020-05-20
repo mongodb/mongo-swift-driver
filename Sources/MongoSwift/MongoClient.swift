@@ -119,7 +119,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
 }
 
 /// Options to use when retrieving a `MongoDatabase` from a `MongoClient`.
-public struct DatabaseOptions: CodingStrategyProvider {
+public struct MongoDatabaseOptions: CodingStrategyProvider {
     /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this database and
     /// any collections that derive from it.
     public var dataCodingStrategy: DataCodingStrategy?
@@ -452,17 +452,17 @@ public class MongoClient {
 
     /**
      * Gets a `MongoDatabase` instance for the given database name. If an option is not specified in the optional
-     * `DatabaseOptions` param, the database will inherit the value from the parent client or the default if
+     * `MongoDatabaseOptions` param, the database will inherit the value from the parent client or the default if
      * the client’s option is not set. To override an option inherited from the client (e.g. a read concern) with the
      * default value, it must be explicitly specified in the options param (e.g. ReadConcern.serverDefault, not nil).
      *
      * - Parameters:
      *   - name: the name of the database to retrieve
-     *   - options: Optional `DatabaseOptions` to use for the retrieved database
+     *   - options: Optional `MongoDatabaseOptions` to use for the retrieved database
      *
      * - Returns: a `MongoDatabase` corresponding to the provided database name.
      */
-    public func db(_ name: String, options: DatabaseOptions? = nil) -> MongoDatabase {
+    public func db(_ name: String, options: MongoDatabaseOptions? = nil) -> MongoDatabase {
         MongoDatabase(name: name, client: self, options: options)
     }
 

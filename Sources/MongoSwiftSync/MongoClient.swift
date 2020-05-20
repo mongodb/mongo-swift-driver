@@ -158,17 +158,17 @@ public class MongoClient {
 
     /**
      * Gets a `MongoDatabase` instance for the given database name. If an option is not specified in the optional
-     * `DatabaseOptions` param, the database will inherit the value from the parent client or the default if
+     * `MongoDatabaseOptions` param, the database will inherit the value from the parent client or the default if
      * the client’s option is not set. To override an option inherited from the client (e.g. a read concern) with the
      * default value, it must be explicitly specified in the options param (e.g. ReadConcern.serverDefault, not nil).
      *
      * - Parameters:
      *   - name: the name of the database to retrieve
-     *   - options: Optional `DatabaseOptions` to use for the retrieved database
+     *   - options: Optional `MongoDatabaseOptions` to use for the retrieved database
      *
      * - Returns: a `MongoDatabase` corresponding to the provided database name
      */
-    public func db(_ name: String, options: DatabaseOptions? = nil) -> MongoDatabase {
+    public func db(_ name: String, options: MongoDatabaseOptions? = nil) -> MongoDatabase {
         MongoDatabase(client: self, asyncDB: self.asyncClient.db(name, options: options))
     }
 

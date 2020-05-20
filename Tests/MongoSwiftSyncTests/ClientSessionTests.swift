@@ -417,7 +417,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
             let collection1 = db.collection(
                 self.getCollectionName(),
-                options: CollectionOptions(readConcern: .local)
+                options: MongoCollectionOptions(readConcern: .local)
             )
             _ = try collection1.countDocuments(session: session)
             let opTime = session.operationTime
@@ -518,7 +518,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
             let collection1 = db.collection(
                 self.getCollectionName(),
-                options: CollectionOptions(writeConcern: try WriteConcern(w: .number(0)))
+                options: MongoCollectionOptions(writeConcern: try WriteConcern(w: .number(0)))
             )
             try collection1.insertOne(["x": 3])
             expect(session.operationTime).to(beNil())

@@ -188,7 +188,7 @@ extension SpecTestFile {
     internal func populateData(using client: MongoSwiftSync.MongoClient) throws {
         let database = client.db(
             self.databaseName,
-            options: DatabaseOptions(writeConcern: try WriteConcern(w: .majority))
+            options: MongoDatabaseOptions(writeConcern: try WriteConcern(w: .majority))
         )
         try? database.drop()
 

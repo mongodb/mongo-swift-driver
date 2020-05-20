@@ -129,7 +129,7 @@ internal struct CreateCollectionOperation<T: Codable>: Operation {
             }
         }
 
-        let collectionOptions = CollectionOptions(
+        let collectionOptions = MongoCollectionOptions(
             dataCodingStrategy: self.options?.dataCodingStrategy,
             dateCodingStrategy: self.options?.dateCodingStrategy,
             uuidCodingStrategy: self.options?.uuidCodingStrategy

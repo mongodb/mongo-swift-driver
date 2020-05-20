@@ -119,7 +119,7 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
             try checkReadPreference(db1, .primary, "db created with no RP provided from \(clientDesc)")
 
             // expect that a database can override the readPreference it inherited from a client
-            let opts = DatabaseOptions(readPreference: .secondary)
+            let opts = MongoDatabaseOptions(readPreference: .secondary)
             let db2 = client.db(Self.testDatabase, options: opts)
             try checkReadPreference(db2, .secondary, "db created with secondary RP from \(clientDesc)")
         }
@@ -133,7 +133,7 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
             try checkReadPreference(db1, .primaryPreferred, "db created with no RP provided from \(clientDesc)")
 
             // expect that a database can override the readPreference it inherited from a client
-            let opts = DatabaseOptions(readPreference: .secondary)
+            let opts = MongoDatabaseOptions(readPreference: .secondary)
             let db2 = client.db(Self.testDatabase, options: opts)
             try checkReadPreference(db2, .secondary, "db created with secondary RP from \(clientDesc)")
         }
@@ -154,7 +154,7 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
                 // expect that a collection can override its inherited read preference
                 let coll2 = db.collection(
                     self.getCollectionName(suffix: "2"),
-                    options: CollectionOptions(readPreference: .secondary)
+                    options: MongoCollectionOptions(readPreference: .secondary)
                 )
                 try checkReadPreference(coll2, .secondary, "coll created with secondary RP from \(dbDesc)")
             }
@@ -162,14 +162,14 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
             do {
                 // expect that a collection inherits its database read preference
                 let dbDesc = "db created with secondary RP"
-                let db = client.db(Self.testDatabase, options: DatabaseOptions(readPreference: .secondary))
+                let db = client.db(Self.testDatabase, options: MongoDatabaseOptions(readPreference: .secondary))
                 let coll1 = db.collection(self.getCollectionName(suffix: "1"))
                 try checkReadPreference(coll1, .secondary, "coll created with no RP provided from \(dbDesc)")
 
                 // expect that a collection can override its database read preference
                 let coll2 = db.collection(
                     self.getCollectionName(suffix: "2"),
-                    options: CollectionOptions(readPreference: .primary)
+                    options: MongoCollectionOptions(readPreference: .primary)
                 )
                 try checkReadPreference(coll2, .primary, "coll created with primary RP from \(dbDesc)")
             }

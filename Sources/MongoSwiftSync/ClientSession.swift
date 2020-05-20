@@ -13,7 +13,7 @@ import MongoSwift
  *
  * e.g.
  *   ```
- *   let opts = CollectionOptions(readConcern: .majority, writeConcern: .majority)
+ *   let opts = MongoCollectionOptions(readConcern: .majority, writeConcern: .majority)
  *   let collection = database.collection("mycoll", options: opts)
  *   try client.withSession { session in
  *       try collection.insertOne(["x": 1], session: session)

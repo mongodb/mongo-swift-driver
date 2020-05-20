@@ -192,7 +192,7 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
         expect(try collClient.find(["_id": collClientId]).next()?.get()).to(equal(wrapper))
 
         // Construct db with differing strategies from client
-        let dbOpts = DatabaseOptions(
+        let dbOpts = MongoDatabaseOptions(
             dataCodingStrategy: .binary,
             dateCodingStrategy: .deferredToDate,
             uuidCodingStrategy: .binary
@@ -212,7 +212,7 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
         expect(try collDb.find(["_id": customDbId]).next()?.get()).to(equal(wrapper))
 
         // Construct collection with differing strategies from database
-        let dbCollOpts = CollectionOptions(
+        let dbCollOpts = MongoCollectionOptions(
             dataCodingStrategy: .base64,
             dateCodingStrategy: .millisecondsSince1970,
             uuidCodingStrategy: .deferredToUUID

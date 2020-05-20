@@ -48,7 +48,7 @@ public struct MongoDatabase {
     }
 
     /**
-     * Access a collection within this database. If an option is not specified in the `CollectionOptions` param, the
+     * Access a collection within this database. If an option is not specified in the `MongoCollectionOptions` param, the
      * collection will inherit the value from the parent database or the default if the db's option is not set.
      * To override an option inherited from the db (e.g. a read concern) with the default value, it must be explicitly
      * specified in the options param (e.g. ReadConcern.serverDefault, not nil).
@@ -59,14 +59,14 @@ public struct MongoDatabase {
      *
      * - Returns: the requested `MongoCollection<Document>`
      */
-    public func collection(_ name: String, options: CollectionOptions? = nil) -> MongoCollection<Document> {
+    public func collection(_ name: String, options: MongoCollectionOptions? = nil) -> MongoCollection<Document> {
         self.collection(name, withType: Document.self, options: options)
     }
 
     /**
      * Access a collection within this database, and associates the specified `Codable` type `T` with the
      * returned `MongoCollection`. This association only exists in the context of this particular
-     * `MongoCollection` instance. If an option is not specified in the `CollectionOptions` param, the
+     * `MongoCollection` instance. If an option is not specified in the `MongoCollectionOptions` param, the
      * collection will inherit the value from the parent database or the default if the db's option is not set.
      * To override an option inherited from the db (e.g. a read concern) with the default value, it must be explicitly
      * specified in the options param (e.g. ReadConcern.serverDefault, not nil).
@@ -80,7 +80,7 @@ public struct MongoDatabase {
     public func collection<T: Codable>(
         _ name: String,
         withType _: T.Type,
-        options: CollectionOptions? = nil
+        options: MongoCollectionOptions? = nil
     ) -> MongoCollection<T> {
         let asyncColl = self.asyncDB.collection(name, withType: T.self, options: options)
         return MongoCollection(client: self.client, asyncCollection: asyncColl)
