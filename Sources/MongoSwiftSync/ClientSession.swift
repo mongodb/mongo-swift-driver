@@ -43,7 +43,7 @@ public final class ClientSession {
     /// of the following are true:
     /// - No operations have been performed using this session and `advanceOperationTime` has not been called.
     /// - This session has been ended.
-    public var operationTime: Timestamp? { self.asyncSession.operationTime }
+    public var operationTime: BSONTimestamp? { self.asyncSession.operationTime }
 
     /// The options used to start this session.
     public var options: ClientSessionOptions? { self.asyncSession.options }
@@ -93,7 +93,7 @@ public final class ClientSession {
      * - Parameters:
      *   - operationTime: The session's new operationTime
      */
-    public func advanceOperationTime(to operationTime: Timestamp) {
+    public func advanceOperationTime(to operationTime: BSONTimestamp) {
         self.asyncSession.advanceOperationTime(to: operationTime)
     }
 

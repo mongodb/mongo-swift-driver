@@ -55,7 +55,7 @@ extension ObjectID: Overwritable {
     }
 }
 
-extension Timestamp: Overwritable {
+extension BSONTimestamp: Overwritable {
     internal func writeToCurrentPosition(of iter: DocumentIterator) {
         iter.withMutableBSONIterPointer { iterPtr in
             bson_iter_overwrite_timestamp(iterPtr, self.timestamp, self.increment)

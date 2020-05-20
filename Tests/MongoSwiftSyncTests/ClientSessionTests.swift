@@ -313,7 +313,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
             let date = Date()
             expect(session.clusterTime).to(beNil())
             let newTime: Document = [
-                "clusterTime": .timestamp(Timestamp(timestamp: Int(date.timeIntervalSince1970), inc: 100))
+                "clusterTime": .timestamp(BSONTimestamp(timestamp: Int(date.timeIntervalSince1970), inc: 100))
             ]
             session.advanceClusterTime(to: newTime)
             expect(session.clusterTime).to(equal(newTime))

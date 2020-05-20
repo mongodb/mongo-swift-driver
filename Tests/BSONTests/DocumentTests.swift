@@ -85,16 +85,16 @@ final class DocumentTests: MongoSwiftTestCase {
         "minkey": .minKey,
         "maxkey": .maxKey,
         "date": .datetime(Date(timeIntervalSince1970: 500.004)),
-        "timestamp": .timestamp(Timestamp(timestamp: 5, inc: 10)),
+        "timestamp": .timestamp(BSONTimestamp(timestamp: 5, inc: 10)),
         "nestedarray": [[1, 2], [.int32(3), .int32(4)]],
         "nesteddoc": ["a": 1, "b": 2, "c": false, "d": [3, 4]],
         "oid": .objectID(ObjectID("507f1f77bcf86cd799439011")!),
-        "regex": .regex(RegularExpression(pattern: "^abc", options: "imx")),
+        "regex": .regex(BSONRegularExpression(pattern: "^abc", options: "imx")),
         "array1": [1, 2],
         "array2": ["string1", "string2"],
         "null": .null,
-        "code": .code(Code(code: "console.log('hi');")),
-        "codewscope": .codeWithScope(CodeWithScope(code: "console.log(x);", scope: ["x": 2]))
+        "code": .code(BSONCode(code: "console.log('hi');")),
+        "codewscope": .codeWithScope(BSONCodeWithScope(code: "console.log(x);", scope: ["x": 2]))
     ]
 
     func testDocument() throws {
@@ -115,21 +115,21 @@ final class DocumentTests: MongoSwiftTestCase {
         // can't handle all the keys being declared together
 
         let binaryData: Document = [
-            "binary0": .binary(try Binary(data: testData, subtype: .generic)),
-            "binary1": .binary(try Binary(data: testData, subtype: .function)),
-            "binary2": .binary(try Binary(data: testData, subtype: .binaryDeprecated)),
-            "binary3": .binary(try Binary(data: uuidData, subtype: .uuidDeprecated)),
-            "binary4": .binary(try Binary(data: uuidData, subtype: .uuid)),
-            "binary5": .binary(try Binary(data: testData, subtype: .md5)),
-            "binary6": .binary(try Binary(data: testData, subtype: .userDefined)),
-            "binary7": .binary(try Binary(data: testData, subtype: 200))
+            "binary0": .binary(try BSONBinary(data: testData, subtype: .generic)),
+            "binary1": .binary(try BSONBinary(data: testData, subtype: .function)),
+            "binary2": .binary(try BSONBinary(data: testData, subtype: .binaryDeprecated)),
+            "binary3": .binary(try BSONBinary(data: uuidData, subtype: .uuidDeprecated)),
+            "binary4": .binary(try BSONBinary(data: uuidData, subtype: .uuid)),
+            "binary5": .binary(try BSONBinary(data: testData, subtype: .md5)),
+            "binary6": .binary(try BSONBinary(data: testData, subtype: .userDefined)),
+            "binary7": .binary(try BSONBinary(data: testData, subtype: 200))
         ]
         try doc.merge(binaryData)
 
         // UUIDs must have 16 bytes
-        expect(try Binary(data: testData, subtype: .uuidDeprecated))
+        expect(try BSONBinary(data: testData, subtype: .uuidDeprecated))
             .to(throwError(errorType: InvalidArgumentError.self))
-        expect(try Binary(data: testData, subtype: .uuid))
+        expect(try BSONBinary(data: testData, subtype: .uuid))
             .to(throwError(errorType: InvalidArgumentError.self))
 
         let expectedKeys = [
@@ -152,11 +152,11 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(doc["minkey"]).to(equal(.minKey))
         expect(doc["maxkey"]).to(equal(.maxKey))
         expect(doc["date"]).to(equal(.datetime(Date(timeIntervalSince1970: 500.004))))
-        expect(doc["timestamp"]).to(equal(.timestamp(Timestamp(timestamp: 5, inc: 10))))
+        expect(doc["timestamp"]).to(equal(.timestamp(BSONTimestamp(timestamp: 5, inc: 10))))
         expect(doc["oid"]).to(equal(.objectID(ObjectID("507f1f77bcf86cd799439011")!)))
 
         let regex = doc["regex"]?.regexValue
-        expect(regex).to(equal(RegularExpression(pattern: "^abc", options: "imx")))
+        expect(regex).to(equal(BSONRegularExpression(pattern: "^abc", options: "imx")))
         expect(try NSRegularExpression(from: regex!)).to(equal(try NSRegularExpression(
             pattern: "^abc",
             options: NSRegularExpression.optionsFromString("imx")
@@ -173,14 +173,14 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(codewscope?.code).to(equal("console.log(x);"))
         expect(codewscope?.scope).to(equal(["x": 2]))
 
-        expect(doc["binary0"]).to(equal(.binary(try Binary(data: testData, subtype: .generic))))
-        expect(doc["binary1"]).to(equal(.binary(try Binary(data: testData, subtype: .function))))
-        expect(doc["binary2"]).to(equal(.binary(try Binary(data: testData, subtype: .binaryDeprecated))))
-        expect(doc["binary3"]).to(equal(.binary(try Binary(data: uuidData, subtype: .uuidDeprecated))))
-        expect(doc["binary4"]).to(equal(.binary(try Binary(data: uuidData, subtype: .uuid))))
-        expect(doc["binary5"]).to(equal(.binary(try Binary(data: testData, subtype: .md5))))
-        expect(doc["binary6"]).to(equal(.binary(try Binary(data: testData, subtype: .userDefined))))
-        expect(doc["binary7"]).to(equal(.binary(try Binary(data: testData, subtype: 200))))
+        expect(doc["binary0"]).to(equal(.binary(try BSONBinary(data: testData, subtype: .generic))))
+        expect(doc["binary1"]).to(equal(.binary(try BSONBinary(data: testData, subtype: .function))))
+        expect(doc["binary2"]).to(equal(.binary(try BSONBinary(data: testData, subtype: .binaryDeprecated))))
+        expect(doc["binary3"]).to(equal(.binary(try BSONBinary(data: uuidData, subtype: .uuidDeprecated))))
+        expect(doc["binary4"]).to(equal(.binary(try BSONBinary(data: uuidData, subtype: .uuid))))
+        expect(doc["binary5"]).to(equal(.binary(try BSONBinary(data: testData, subtype: .md5))))
+        expect(doc["binary6"]).to(equal(.binary(try BSONBinary(data: testData, subtype: .userDefined))))
+        expect(doc["binary7"]).to(equal(.binary(try BSONBinary(data: testData, subtype: 200))))
 
         let nestedArray = doc["nestedarray"]?.arrayValue?.compactMap { $0.arrayValue?.compactMap { $0.asInt() } }
         expect(nestedArray?[0]).to(equal([1, 2]))
@@ -202,7 +202,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(DocumentTests.testDoc.minkey).to(equal(.minKey))
         expect(DocumentTests.testDoc.maxkey).to(equal(.maxKey))
         expect(DocumentTests.testDoc.date).to(equal(.datetime(Date(timeIntervalSince1970: 500.004))))
-        expect(DocumentTests.testDoc.timestamp).to(equal(.timestamp(Timestamp(timestamp: 5, inc: 10))))
+        expect(DocumentTests.testDoc.timestamp).to(equal(.timestamp(BSONTimestamp(timestamp: 5, inc: 10))))
         expect(DocumentTests.testDoc.oid).to(equal(.objectID(ObjectID("507f1f77bcf86cd799439011")!)))
 
         let codewscope = DocumentTests.testDoc.codewscope?.codeWithScopeValue
@@ -217,7 +217,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(DocumentTests.testDoc.null).to(equal(.null))
 
         let regex = DocumentTests.testDoc.regex?.regexValue
-        expect(regex).to(equal(RegularExpression(pattern: "^abc", options: "imx")))
+        expect(regex).to(equal(BSONRegularExpression(pattern: "^abc", options: "imx")))
         expect(try NSRegularExpression(from: regex!)).to(equal(try NSRegularExpression(
             pattern: "^abc",
             options: NSRegularExpression.optionsFromString("imx")
@@ -353,7 +353,7 @@ final class DocumentTests: MongoSwiftTestCase {
         "bool": false,
         "decimal": .decimal128(Decimal128("1.2E+10")!),
         "oid": .objectID(ObjectID()),
-        "timestamp": .timestamp(Timestamp(timestamp: 1, inc: 2)),
+        "timestamp": .timestamp(BSONTimestamp(timestamp: 1, inc: 2)),
         "datetime": .datetime(Date(msSinceEpoch: 1000))
     ]
 
@@ -398,7 +398,7 @@ final class DocumentTests: MongoSwiftTestCase {
         doc["oid"] = .objectID(newOid)
         expect(doc.pointerAddress).to(equal(pointer))
 
-        doc["timestamp"] = .timestamp(Timestamp(timestamp: 5, inc: 10))
+        doc["timestamp"] = .timestamp(BSONTimestamp(timestamp: 5, inc: 10))
         expect(doc.pointerAddress).to(equal(pointer))
 
         doc["datetime"] = .datetime(Date(msSinceEpoch: 2000))
@@ -411,7 +411,7 @@ final class DocumentTests: MongoSwiftTestCase {
             "bool": true,
             "decimal": .decimal128(Decimal128("100")!),
             "oid": .objectID(newOid),
-            "timestamp": .timestamp(Timestamp(timestamp: 5, inc: 10)),
+            "timestamp": .timestamp(BSONTimestamp(timestamp: 5, inc: 10)),
             "datetime": .datetime(Date(msSinceEpoch: 2000))
         ]))
 
@@ -432,7 +432,7 @@ final class DocumentTests: MongoSwiftTestCase {
             "bool": true,
             "decimal": .decimal128(Decimal128("100")!),
             "oid": .objectID(newOid),
-            "timestamp": .timestamp(Timestamp(timestamp: 5, inc: 10)),
+            "timestamp": .timestamp(BSONTimestamp(timestamp: 5, inc: 10)),
             "datetime": .datetime(Date(msSinceEpoch: 2000))
         ]))
 
@@ -486,7 +486,7 @@ final class DocumentTests: MongoSwiftTestCase {
             ("decimal", 100),
             ("oid", 25.5),
             ("timestamp", .objectID(newOid)),
-            ("datetime", .timestamp(Timestamp(timestamp: 1, inc: 2)))
+            ("datetime", .timestamp(BSONTimestamp(timestamp: 1, inc: 2)))
         ]
 
         overwritablePairs.forEach { k, v in
@@ -503,7 +503,7 @@ final class DocumentTests: MongoSwiftTestCase {
             "decimal": 100,
             "oid": 25.5,
             "timestamp": .objectID(newOid),
-            "datetime": .timestamp(Timestamp(timestamp: 1, inc: 2))
+            "datetime": .timestamp(BSONTimestamp(timestamp: 1, inc: 2))
         ]))
 
         // make a deep copy so we start off with uniquely referenced storage
@@ -638,7 +638,7 @@ final class DocumentTests: MongoSwiftTestCase {
     func testUUIDEncodingStrategies() throws {
         let uuid = UUID(uuidString: "26cd7610-fd5a-4253-94b7-e8c4ea97b6cb")!
 
-        let binary = try Binary(from: uuid)
+        let binary = try BSONBinary(from: uuid)
         let uuidStruct = UUIDWrapper(uuid: uuid)
         let encoder = BSONEncoder()
 
@@ -676,11 +676,11 @@ final class DocumentTests: MongoSwiftTestCase {
             uuidt.8, uuidt.9, uuidt.10, uuidt.11,
             uuidt.12, uuidt.13, uuidt.14, uuidt.15
         ])
-        let binaryDoc: Document = ["uuid": .binary(try Binary(data: bytes, subtype: .uuid))]
+        let binaryDoc: Document = ["uuid": .binary(try BSONBinary(data: bytes, subtype: .uuid))]
         let binaryStruct = try decoder.decode(UUIDWrapper.self, from: binaryDoc)
         expect(binaryStruct.uuid).to(equal(uuid))
 
-        let badBinary: Document = ["uuid": .binary(try Binary(data: bytes, subtype: .generic))]
+        let badBinary: Document = ["uuid": .binary(try BSONBinary(data: bytes, subtype: .generic))]
         expect(try decoder.decode(UUIDWrapper.self, from: badBinary)).to(throwError(CodecTests.dataCorruptedErr))
 
         expect(try decoder.decode(UUIDWrapper.self, from: stringDoc)).to(throwError(CodecTests.typeMismatchErr))
@@ -850,7 +850,7 @@ final class DocumentTests: MongoSwiftTestCase {
         let decoder = BSONDecoder()
 
         let data = Data(base64Encoded: "dGhlIHF1aWNrIGJyb3duIGZveCBqdW1wZWQgb3ZlciB0aGUgbGF6eSBzaGVlcCBkb2cu")!
-        let binaryData = try Binary(data: data, subtype: .generic)
+        let binaryData = try BSONBinary(data: data, subtype: .generic)
         let arrData = data.map { byte in Int32(byte) }
         let dataStruct = DataWrapper(data: data)
 

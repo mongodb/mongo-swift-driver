@@ -272,20 +272,20 @@ final class CodecTests: MongoSwiftTestCase {
         let string: String
         let doc: Document
         let arr: [BSON]
-        let binary: Binary
+        let binary: BSONBinary
         let oid: ObjectID
         let bool: Bool
         let date: Date
-        let code: Code
-        let codeWithScope: CodeWithScope
-        let ts: Timestamp
+        let code: BSONCode
+        let codeWithScope: BSONCodeWithScope
+        let ts: BSONTimestamp
         let int32: Int32
         let int64: Int64
         let dec: Decimal128
         let minkey: MinKey
         let maxkey: MaxKey
-        let regex: RegularExpression
-        let symbol: Symbol
+        let regex: BSONRegularExpression
+        let symbol: BSONSymbol
         let undefined: BSONUndefined
         let dbpointer: DBPointer
         let null: BSONNull
@@ -296,20 +296,20 @@ final class CodecTests: MongoSwiftTestCase {
                 string: "hi",
                 doc: ["x": 1],
                 arr: [.int32(1), .int32(2)],
-                binary: try Binary(base64: "//8=", subtype: .generic),
+                binary: try BSONBinary(base64: "//8=", subtype: .generic),
                 oid: ObjectID("507f1f77bcf86cd799439011")!,
                 bool: true,
                 date: Date(timeIntervalSinceReferenceDate: 5000),
-                code: Code(code: "hi"),
-                codeWithScope: CodeWithScope(code: "hi", scope: ["x": .int64(1)]),
-                ts: Timestamp(timestamp: 1, inc: 2),
+                code: BSONCode(code: "hi"),
+                codeWithScope: BSONCodeWithScope(code: "hi", scope: ["x": .int64(1)]),
+                ts: BSONTimestamp(timestamp: 1, inc: 2),
                 int32: 5,
                 int64: 6,
                 dec: Decimal128("1.2E+10")!,
                 minkey: MinKey(),
                 maxkey: MaxKey(),
-                regex: RegularExpression(pattern: "^abc", options: "imx"),
-                symbol: Symbol("i am a symbol"),
+                regex: BSONRegularExpression(pattern: "^abc", options: "imx"),
+                symbol: BSONSymbol("i am a symbol"),
                 undefined: BSONUndefined(),
                 dbpointer: DBPointer(ref: "some.namespace", id: ObjectID("507f1f77bcf86cd799439011")!),
                 null: BSONNull()
@@ -414,45 +414,45 @@ final class CodecTests: MongoSwiftTestCase {
             from: "{\"$numberDecimal\": \"1.2E+10\"}"
         )).to(equal(Decimal128("1.2E+10")!))
 
-        let binary = try Binary(base64: "//8=", subtype: .generic)
+        let binary = try BSONBinary(base64: "//8=", subtype: .generic)
         expect(
             try decoder.decode(
-                Binary.self,
+                BSONBinary.self,
                 from: "{\"$binary\" : {\"base64\": \"//8=\", \"subType\" : \"00\"}}"
             )
         ).to(equal(binary))
 
         expect(try decoder.decode(
-            Code.self,
+            BSONCode.self,
             from: "{\"$code\": \"hi\" }"
-        )).to(equal(Code(code: "hi")))
-        let code = Code(code: "hi")
+        )).to(equal(BSONCode(code: "hi")))
+        let code = BSONCode(code: "hi")
         expect(try decoder.decode(
-            Code.self,
+            BSONCode.self,
             from: "{\"$code\": \"hi\", \"$scope\": {\"x\" : { \"$numberLong\": \"1\" }} }"
         )
         ).to(throwError())
-        expect(try decoder.decode(Code.self, from: "{\"$code\": \"hi\" }")).to(equal(code))
+        expect(try decoder.decode(BSONCode.self, from: "{\"$code\": \"hi\" }")).to(equal(code))
 
         expect(try decoder.decode(
-            CodeWithScope.self,
+            BSONCodeWithScope.self,
             from: "{\"$code\": \"hi\" }"
         )).to(throwError())
-        let cws = CodeWithScope(code: "hi", scope: ["x": 1])
+        let cws = BSONCodeWithScope(code: "hi", scope: ["x": 1])
         expect(try decoder.decode(
-            CodeWithScope.self,
+            BSONCodeWithScope.self,
             from: "{\"$code\": \"hi\", \"$scope\": {\"x\" : { \"$numberLong\": \"1\" }} }"
         )
         ).to(equal(cws))
         expect(try decoder.decode(Document.self, from: "{\"x\": 1}")).to(equal(["x": .int32(1)]))
 
-        let ts = Timestamp(timestamp: 1, inc: 2)
-        expect(try decoder.decode(Timestamp.self, from: "{ \"$timestamp\" : { \"t\" : 1, \"i\" : 2 } }")).to(equal(ts))
+        let ts = BSONTimestamp(timestamp: 1, inc: 2)
+        expect(try decoder.decode(BSONTimestamp.self, from: "{ \"$timestamp\" : { \"t\" : 1, \"i\" : 2 } }")).to(equal(ts))
 
-        let regex = RegularExpression(pattern: "^abc", options: "imx")
+        let regex = BSONRegularExpression(pattern: "^abc", options: "imx")
         expect(
             try decoder.decode(
-                RegularExpression.self,
+                BSONRegularExpression.self,
                 from: "{ \"$regularExpression\" : { \"pattern\" :\"^abc\", \"options\" : \"imx\" } }"
             )
         ).to(equal(regex))
@@ -581,7 +581,7 @@ final class CodecTests: MongoSwiftTestCase {
         expect(decodedWrapped?[2]).to(equal("hello"))
 
         // binary
-        let binary = BSON.binary(try Binary(base64: "//8=", subtype: .generic))
+        let binary = BSON.binary(try BSONBinary(base64: "//8=", subtype: .generic))
 
         expect(
             try decoder.decode(
@@ -638,7 +638,7 @@ final class CodecTests: MongoSwiftTestCase {
         expect(try dateDecoder.decode(AnyBSONStruct.self, from: wrappedDate)).to(throwError(CodecTests.typeMismatchErr))
 
         // regex
-        let regex = BSON.regex(RegularExpression(pattern: "abc", options: "imx"))
+        let regex = BSON.regex(BSONRegularExpression(pattern: "abc", options: "imx"))
 
         expect(try decoder.decode(
             BSON.self,
@@ -652,7 +652,7 @@ final class CodecTests: MongoSwiftTestCase {
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedRegex.canonicalExtendedJSON).x).to(equal(regex))
 
         // codewithscope
-        let code = BSON.codeWithScope(CodeWithScope(code: "console.log(x);", scope: ["x": 1]))
+        let code = BSON.codeWithScope(BSONCodeWithScope(code: "console.log(x);", scope: ["x": 1]))
 
         expect(
             try decoder.decode(

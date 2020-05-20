@@ -44,7 +44,7 @@ public final class ClientSession {
         /// Indicates that this session has not been used yet and a corresponding `mongoc_client_session_t` has not
         /// yet been created. If the user sets operation time or cluster time prior to using the session, those values
         /// are stored here so they can be set upon starting the session.
-        case notStarted(opTime: Timestamp?, clusterTime: Document?)
+        case notStarted(opTime: BSONTimestamp?, clusterTime: Document?)
         /// Indicates that the session has been started and a corresponding `mongoc_client_session_t` exists. Stores a
         /// pointer to the underlying `mongoc_client_session_t` and the source `Connection` for this session.
         case started(session: OpaquePointer, connection: Connection)
@@ -181,7 +181,7 @@ public final class ClientSession {
     /// of the following are true:
     /// - No operations have been performed using this session and `advanceOperationTime` has not been called.
     /// - This session has been ended.
-    public var operationTime: Timestamp? {
+    public var operationTime: BSONTimestamp? {
         switch self.state {
         case let .notStarted(opTime, _):
             return opTime
@@ -193,7 +193,7 @@ public final class ClientSession {
             guard timestamp != 0 && increment != 0 else {
                 return nil
             }
-            return Timestamp(timestamp: timestamp, inc: increment)
+            return BSONTimestamp(timestamp: timestamp, inc: increment)
         case .ended:
             return nil
         }
@@ -312,7 +312,7 @@ public final class ClientSession {
      * - Parameters:
      *   - operationTime: The session's new operationTime
      */
-    public func advanceOperationTime(to operationTime: Timestamp) {
+    public func advanceOperationTime(to operationTime: BSONTimestamp) {
         switch self.state {
         case let .notStarted(_, clusterTime):
             self.state = .notStarted(opTime: operationTime, clusterTime: clusterTime)

@@ -190,7 +190,7 @@ extension BSONNull: Hashable {
 }
 
 /// A struct to represent the BSON Binary type.
-public struct Binary: BSONValue, Equatable, Codable, Hashable {
+public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
     internal static var bsonType: BSONType { .binary }
 
     internal var bson: BSON { .binary(self) }
@@ -232,7 +232,7 @@ public struct Binary: BSONValue, Equatable, Codable, Hashable {
             uuidt.12, uuidt.13, uuidt.14, uuidt.15
         ])
 
-        try self.init(data: uuidData, subtype: Binary.Subtype.uuid)
+        try self.init(data: uuidData, subtype: BSONBinary.Subtype.uuid)
     }
 
     /// Initializes a `Binary` instance from a `Data` object and a `UInt8` subtype.
@@ -279,7 +279,7 @@ public struct Binary: BSONValue, Equatable, Codable, Hashable {
     }
 
     public init(from decoder: Decoder) throws {
-        throw getDecodingError(type: Binary.self, decoder: decoder)
+        throw getDecodingError(type: BSONBinary.self, decoder: decoder)
     }
 
     public func encode(to: Encoder) throws {
@@ -299,7 +299,7 @@ public struct Binary: BSONValue, Equatable, Codable, Hashable {
 
     internal static func from(iterator iter: DocumentIterator) throws -> BSON {
         guard iter.currentType == .binary else {
-            throw wrongIterTypeError(iter, expected: Binary.self)
+            throw wrongIterTypeError(iter, expected: BSONBinary.self)
         }
 
         return .binary(try iter.withBSONIterPointer { iterPtr in
@@ -607,7 +607,7 @@ extension Int64: BSONValue {
 }
 
 /// A struct to represent BSON CodeWithScope.
-public struct CodeWithScope: BSONValue, Equatable, Codable, Hashable {
+public struct BSONCodeWithScope: BSONValue, Equatable, Codable, Hashable {
     internal static var bsonType: BSONType { .codeWithScope }
 
     internal var bson: BSON { .codeWithScope(self) }
@@ -626,7 +626,7 @@ public struct CodeWithScope: BSONValue, Equatable, Codable, Hashable {
     }
 
     public init(from decoder: Decoder) throws {
-        throw getDecodingError(type: CodeWithScope.self, decoder: decoder)
+        throw getDecodingError(type: BSONCodeWithScope.self, decoder: decoder)
     }
 
     public func encode(to: Encoder) throws {
@@ -647,7 +647,7 @@ public struct CodeWithScope: BSONValue, Equatable, Codable, Hashable {
         .codeWithScope(try iter.withBSONIterPointer { iterPtr in
             var length: UInt32 = 0
             guard iter.currentType == .codeWithScope else {
-                throw wrongIterTypeError(iter, expected: CodeWithScope.self)
+                throw wrongIterTypeError(iter, expected: BSONCodeWithScope.self)
             }
 
             var scopeLength: UInt32 = 0
@@ -669,7 +669,7 @@ public struct CodeWithScope: BSONValue, Equatable, Codable, Hashable {
 }
 
 /// A struct to represent the BSON Code type.
-public struct Code: BSONValue, Equatable, Codable, Hashable {
+public struct BSONCode: BSONValue, Equatable, Codable, Hashable {
     internal static var bsonType: BSONType { .code }
 
     internal var bson: BSON { .code(self) }
@@ -683,7 +683,7 @@ public struct Code: BSONValue, Equatable, Codable, Hashable {
     }
 
     public init(from decoder: Decoder) throws {
-        throw getDecodingError(type: CodeWithScope.self, decoder: decoder)
+        throw getDecodingError(type: BSONCodeWithScope.self, decoder: decoder)
     }
 
     public func encode(to: Encoder) throws {
@@ -701,7 +701,7 @@ public struct Code: BSONValue, Equatable, Codable, Hashable {
     internal static func from(iterator iter: DocumentIterator) throws -> BSON {
         .code(try iter.withBSONIterPointer { iterPtr in
             guard iter.currentType == .code else {
-                throw wrongIterTypeError(iter, expected: Code.self)
+                throw wrongIterTypeError(iter, expected: BSONCode.self)
             }
             let code = String(cString: bson_iter_code(iterPtr, nil))
             return self.init(code: code)
@@ -890,11 +890,11 @@ extension UUID {
     /// Initializes a `UUID` instance from a `Binary` `BSONValue`.
     /// - Throws:
     ///   - `InvalidArgumentError` if a non-UUID subtype is set on the `Binary`.
-    public init(from binary: Binary) throws {
-        guard [Binary.Subtype.uuid.rawValue, Binary.Subtype.uuidDeprecated.rawValue].contains(binary.subtype) else {
+    public init(from binary: BSONBinary) throws {
+        guard [BSONBinary.Subtype.uuid.rawValue, BSONBinary.Subtype.uuidDeprecated.rawValue].contains(binary.subtype) else {
             throw InvalidArgumentError(
                 message: "Expected a UUID binary type " +
-                    "(\(Binary.Subtype.uuid)), got \(binary.subtype) instead."
+                    "(\(BSONBinary.Subtype.uuid)), got \(binary.subtype) instead."
             )
         }
 
@@ -945,14 +945,14 @@ extension NSRegularExpression {
     /// Initializes a new `NSRegularExpression` with the pattern and options of the provided `RegularExpression`.
     /// Note: `NSRegularExpression` does not support the `l` locale dependence option, so it will
     /// be omitted if set on the provided `RegularExpression`.
-    public convenience init(from regex: RegularExpression) throws {
+    public convenience init(from regex: BSONRegularExpression) throws {
         let opts = NSRegularExpression.optionsFromString(regex.options)
         try self.init(pattern: regex.pattern, options: opts)
     }
 }
 
 /// A struct to represent a BSON regular expression.
-public struct RegularExpression: BSONValue, Equatable, Codable, Hashable {
+public struct BSONRegularExpression: BSONValue, Equatable, Codable, Hashable {
     internal static var bsonType: BSONType { .regex }
 
     internal var bson: BSON { .regex(self) }
@@ -976,7 +976,7 @@ public struct RegularExpression: BSONValue, Equatable, Codable, Hashable {
     }
 
     public init(from decoder: Decoder) throws {
-        throw getDecodingError(type: RegularExpression.self, decoder: decoder)
+        throw getDecodingError(type: BSONRegularExpression.self, decoder: decoder)
     }
 
     public func encode(to: Encoder) throws {
@@ -1000,7 +1000,7 @@ public struct RegularExpression: BSONValue, Equatable, Codable, Hashable {
             }
 
             guard let pattern = bson_iter_regex(iterPtr, options) else {
-                throw wrongIterTypeError(iter, expected: RegularExpression.self)
+                throw wrongIterTypeError(iter, expected: BSONRegularExpression.self)
             }
             let patternString = String(cString: pattern)
 
@@ -1058,7 +1058,7 @@ extension String: BSONValue {
 
 /// A struct to represent the deprecated Symbol type.
 /// Symbols cannot be instantiated, but they can be read from existing documents that contain them.
-public struct Symbol: BSONValue, CustomStringConvertible, Codable, Equatable, Hashable {
+public struct BSONSymbol: BSONValue, CustomStringConvertible, Codable, Equatable, Hashable {
     internal static var bsonType: BSONType { .symbol }
 
     internal var bson: BSON { .symbol(self) }
@@ -1071,7 +1071,7 @@ public struct Symbol: BSONValue, CustomStringConvertible, Codable, Equatable, Ha
     public let stringValue: String
 
     public init(from decoder: Decoder) throws {
-        throw getDecodingError(type: Symbol.self, decoder: decoder)
+        throw getDecodingError(type: BSONSymbol.self, decoder: decoder)
     }
 
     internal init(_ stringValue: String) {
@@ -1100,20 +1100,20 @@ public struct Symbol: BSONValue, CustomStringConvertible, Codable, Equatable, Ha
         .symbol(try iter.withBSONIterPointer { iterPtr in
             var length: UInt32 = 0
             guard iter.currentType == .symbol, let cStr = bson_iter_symbol(iterPtr, &length) else {
-                throw wrongIterTypeError(iter, expected: Symbol.self)
+                throw wrongIterTypeError(iter, expected: BSONSymbol.self)
             }
 
             guard let strValue = String(rawStringData: cStr, length: Int(length)) else {
                 throw InternalError(message: "Cannot parse String from underlying data")
             }
 
-            return Symbol(strValue)
+            return BSONSymbol(strValue)
         })
     }
 }
 
 /// A struct to represent the BSON Timestamp type.
-public struct Timestamp: BSONValue, Equatable, Codable, Hashable {
+public struct BSONTimestamp: BSONValue, Equatable, Codable, Hashable {
     internal static var bsonType: BSONType { .timestamp }
 
     internal var bson: BSON { .timestamp(self) }
@@ -1137,7 +1137,7 @@ public struct Timestamp: BSONValue, Equatable, Codable, Hashable {
     }
 
     public init(from decoder: Decoder) throws {
-        throw getDecodingError(type: Timestamp.self, decoder: decoder)
+        throw getDecodingError(type: BSONTimestamp.self, decoder: decoder)
     }
 
     public func encode(to: Encoder) throws {
@@ -1154,7 +1154,7 @@ public struct Timestamp: BSONValue, Equatable, Codable, Hashable {
 
     internal static func from(iterator iter: DocumentIterator) throws -> BSON {
         guard iter.currentType == .timestamp else {
-            throw wrongIterTypeError(iter, expected: Timestamp.self)
+            throw wrongIterTypeError(iter, expected: BSONTimestamp.self)
         }
 
         return .timestamp(iter.withBSONIterPointer { iterPtr in

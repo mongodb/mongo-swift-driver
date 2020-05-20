@@ -18,7 +18,7 @@ final class Document_SequenceTests: MongoSwiftTestCase {
             "minkey": .minKey,
             "maxkey": .maxKey,
             "date": .datetime(Date(timeIntervalSince1970: 5000)),
-            "timestamp": .timestamp(Timestamp(timestamp: 5, inc: 10))
+            "timestamp": .timestamp(BSONTimestamp(timestamp: 5, inc: 10))
         ]
 
         // create and use iter manually
@@ -70,7 +70,7 @@ final class Document_SequenceTests: MongoSwiftTestCase {
 
         let timeTup = iter.next()!
         expect(timeTup.key).to(equal("timestamp"))
-        expect(timeTup.value).to(equal(.timestamp(Timestamp(timestamp: 5, inc: 10))))
+        expect(timeTup.value).to(equal(.timestamp(BSONTimestamp(timestamp: 5, inc: 10))))
 
         expect(iter.next()).to(beNil())
 
@@ -82,7 +82,7 @@ final class Document_SequenceTests: MongoSwiftTestCase {
         var expectedValues: [BSON] = [
             "test string", true, false, 25, .int32(5), .int64(123), .double(15),
             .decimal128(Decimal128("1.2E+10")!), .minKey, .maxKey, .datetime(Date(timeIntervalSince1970: 5000)),
-            .timestamp(Timestamp(timestamp: 5, inc: 10))
+            .timestamp(BSONTimestamp(timestamp: 5, inc: 10))
         ]
         for (k, v) in doc {
             expect(k).to(equal(expectedKeys.removeFirst()))

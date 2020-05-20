@@ -17,7 +17,7 @@ public enum BSON {
     indirect case array([BSON])
 
     /// A BSON binary.
-    case binary(Binary)
+    case binary(BSONBinary)
 
     /// A BSON undefined.
     case undefined
@@ -37,26 +37,26 @@ public enum BSON {
     case null
 
     /// A BSON regular expression.
-    case regex(RegularExpression)
+    case regex(BSONRegularExpression)
 
     /// A BSON dbPointer.
     case dbPointer(DBPointer)
 
     /// A BSON symbol.
-    case symbol(Symbol)
+    case symbol(BSONSymbol)
 
     /// A BSON JavaScript code.
-    case code(Code)
+    case code(BSONCode)
 
     /// A BSON JavaScript code with scope.
-    case codeWithScope(CodeWithScope)
+    case codeWithScope(BSONCodeWithScope)
 
     /// A BSON int32.
     case int32(Int32)
 
     /// A BSON timestamp.
     /// - SeeAlso: https://docs.mongodb.com/manual/reference/bson-types/#timestamps
-    case timestamp(Timestamp)
+    case timestamp(BSONTimestamp)
 
     /// A BSON int64.
     case int64(Int64)
@@ -95,7 +95,7 @@ public enum BSON {
     }
 
     /// If this `BSON` is a `.regex`, return it as a `RegularExpression`. Otherwise, return nil.
-    public var regexValue: RegularExpression? {
+    public var regexValue: BSONRegularExpression? {
         guard case let .regex(r) = self else {
             return nil
         }
@@ -103,7 +103,7 @@ public enum BSON {
     }
 
     /// If this `BSON` is a `.codeWithScope`, return it as a `CodeWithScope`. Otherwise, return nil.
-    public var codeWithScopeValue: CodeWithScope? {
+    public var codeWithScopeValue: BSONCodeWithScope? {
         guard case let .codeWithScope(cws) = self else {
             return nil
         }
@@ -111,7 +111,7 @@ public enum BSON {
     }
 
     /// If this `BSON` is a `.code`, return it as a `Code`. Otherwise, return nil.
-    public var codeValue: Code? {
+    public var codeValue: BSONCode? {
         guard case let .code(c) = self else {
             return nil
         }
@@ -175,7 +175,7 @@ public enum BSON {
     }
 
     /// If this `BSON` is a `.binary`, return it as a `Binary`. Otherwise, return nil.
-    public var binaryValue: Binary? {
+    public var binaryValue: BSONBinary? {
         guard case let .binary(b) = self else {
             return nil
         }
@@ -199,7 +199,7 @@ public enum BSON {
     }
 
     /// If this `BSON` is a `.symbol`, return it as a `Symbol`. Otherwise, return nil.
-    public var symbolValue: Symbol? {
+    public var symbolValue: BSONSymbol? {
         guard case let .symbol(s) = self else {
             return nil
         }
@@ -215,7 +215,7 @@ public enum BSON {
     }
 
     /// If this `BSON` is a `.timestamp`, return it as a `Timestamp`. Otherwise, return nil.
-    public var timestampValue: Timestamp? {
+    public var timestampValue: BSONTimestamp? {
         guard case let .timestamp(t) = self else {
             return nil
         }
@@ -307,20 +307,20 @@ extension BSON {
         BSONUndefined.self,
         MinKey.self,
         MaxKey.self,
-        Symbol.self,
+        BSONSymbol.self,
         Double.self,
         String.self,
         Document.self,
-        Binary.self,
+        BSONBinary.self,
         ObjectID.self,
         Bool.self,
         Date.self,
-        RegularExpression.self,
+        BSONRegularExpression.self,
         DBPointer.self,
-        Code.self,
-        CodeWithScope.self,
+        BSONCode.self,
+        BSONCodeWithScope.self,
         Int32.self,
-        Timestamp.self,
+        BSONTimestamp.self,
         Int64.self,
         [BSON].self,
         Decimal128.self

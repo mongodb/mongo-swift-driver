@@ -166,8 +166,8 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
         var doc = try collDoc.find(["_id": defaultId]).next()?.get()
         expect(doc).toNot(beNil())
         expect(doc?["date"]?.dateValue).to(equal(date))
-        expect(doc?["uuid"]?.binaryValue).to(equal(try Binary(from: uuid)))
-        expect(doc?["data"]?.binaryValue).to(equal(try Binary(data: data, subtype: .generic)))
+        expect(doc?["uuid"]?.binaryValue).to(equal(try BSONBinary(from: uuid)))
+        expect(doc?["data"]?.binaryValue).to(equal(try BSONBinary(data: data, subtype: .generic)))
 
         expect(try collDefault.find(["_id": defaultId]).next()?.get()).to(equal(wrapper))
 
@@ -206,8 +206,8 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
         doc = try collDoc.find(["_id": customDbId]).next()?.get()
         expect(doc).toNot(beNil())
         expect(doc?["date"]?.doubleValue).to(beCloseTo(date.timeIntervalSinceReferenceDate, within: 0.001))
-        expect(doc?["uuid"]?.binaryValue).to(equal(try Binary(from: uuid)))
-        expect(doc?["data"]?.binaryValue).to(equal(try Binary(data: data, subtype: .generic)))
+        expect(doc?["uuid"]?.binaryValue).to(equal(try BSONBinary(from: uuid)))
+        expect(doc?["data"]?.binaryValue).to(equal(try BSONBinary(data: data, subtype: .generic)))
 
         expect(try collDb.find(["_id": customDbId]).next()?.get()).to(equal(wrapper))
 

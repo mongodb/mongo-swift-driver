@@ -17,11 +17,11 @@ final class BSONValueTests: MongoSwiftTestCase {
         let sixteenBytes = Data(base64Encoded: "c//SZESzTGmQ6OfR38A11A==")!
 
         // UUIDs must have 16 bytes
-        expect(try Binary(data: twoBytes, subtype: .uuidDeprecated))
+        expect(try BSONBinary(data: twoBytes, subtype: .uuidDeprecated))
             .to(throwError(errorType: InvalidArgumentError.self))
-        expect(try Binary(data: twoBytes, subtype: .uuid)).to(throwError(errorType: InvalidArgumentError.self))
-        expect(try Binary(data: sixteenBytes, subtype: .uuidDeprecated)).toNot(throwError())
-        expect(try Binary(data: sixteenBytes, subtype: .uuid)).toNot(throwError())
+        expect(try BSONBinary(data: twoBytes, subtype: .uuid)).to(throwError(errorType: InvalidArgumentError.self))
+        expect(try BSONBinary(data: sixteenBytes, subtype: .uuidDeprecated)).toNot(throwError())
+        expect(try BSONBinary(data: sixteenBytes, subtype: .uuid)).toNot(throwError())
     }
 
     fileprivate func checkTrueAndFalse(val: BSON, alternate: BSON) {
@@ -46,13 +46,13 @@ final class BSONValueTests: MongoSwiftTestCase {
         self.checkTrueAndFalse(val: "some", alternate: "not some")
         // RegularExpression
         self.checkTrueAndFalse(
-            val: .regex(RegularExpression(pattern: ".*", options: "")),
-            alternate: .regex(RegularExpression(pattern: ".+", options: ""))
+            val: .regex(BSONRegularExpression(pattern: ".*", options: "")),
+            alternate: .regex(BSONRegularExpression(pattern: ".+", options: ""))
         )
         // Timestamp
         self.checkTrueAndFalse(
-            val: .timestamp(Timestamp(timestamp: 1, inc: 2)),
-            alternate: .timestamp(Timestamp(timestamp: 5, inc: 10))
+            val: .timestamp(BSONTimestamp(timestamp: 1, inc: 2)),
+            alternate: .timestamp(BSONTimestamp(timestamp: 5, inc: 10))
         )
         // Date
         self.checkTrueAndFalse(
@@ -66,13 +66,13 @@ final class BSONValueTests: MongoSwiftTestCase {
         self.checkTrueAndFalse(val: .objectID(ObjectID()), alternate: .objectID(ObjectID()))
         // CodeWithScope
         self.checkTrueAndFalse(
-            val: .codeWithScope(CodeWithScope(code: "console.log('foo');", scope: [:])),
-            alternate: .codeWithScope(CodeWithScope(code: "console.log(x);", scope: ["x": 2]))
+            val: .codeWithScope(BSONCodeWithScope(code: "console.log('foo');", scope: [:])),
+            alternate: .codeWithScope(BSONCodeWithScope(code: "console.log(x);", scope: ["x": 2]))
         )
         // Binary
         self.checkTrueAndFalse(
-            val: .binary(try Binary(data: Data(base64Encoded: "c//SZESzTGmQ6OfR38A11A==")!, subtype: .uuid)),
-            alternate: .binary(try Binary(data: Data(base64Encoded: "c//88KLnfdfefOfR33ddFA==")!, subtype: .uuid))
+            val: .binary(try BSONBinary(data: Data(base64Encoded: "c//SZESzTGmQ6OfR38A11A==")!, subtype: .uuid)),
+            alternate: .binary(try BSONBinary(data: Data(base64Encoded: "c//88KLnfdfefOfR33ddFA==")!, subtype: .uuid))
         )
         // Document
         self.checkTrueAndFalse(
