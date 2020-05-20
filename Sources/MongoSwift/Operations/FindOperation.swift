@@ -119,7 +119,7 @@ public struct FindOptions: Codable {
 
     /// Determines whether to return the record identifier for each document. If true, adds a field $recordId
     /// to the returned documents.
-    public var showRecordId: Bool?
+    public var showRecordID: Bool?
 
     /// The number of documents to skip before returning.
     public var skip: Int?
@@ -151,7 +151,7 @@ public struct FindOptions: Codable {
         readConcern: ReadConcern? = nil,
         readPreference: ReadPreference? = nil,
         returnKey: Bool? = nil,
-        showRecordId: Bool? = nil,
+        showRecordID: Bool? = nil,
         skip: Int? = nil,
         sort: Document? = nil
     ) {
@@ -172,7 +172,7 @@ public struct FindOptions: Codable {
         self.readConcern = readConcern
         self.readPreference = readPreference
         self.returnKey = returnKey
-        self.showRecordId = showRecordId
+        self.showRecordID = showRecordID
         self.skip = skip
         self.sort = sort
     }
@@ -189,7 +189,7 @@ public struct FindOptions: Codable {
         self.readConcern = findOneOptions.readConcern
         self.readPreference = findOneOptions.readPreference
         self.returnKey = findOneOptions.returnKey
-        self.showRecordId = findOneOptions.showRecordId
+        self.showRecordID = findOneOptions.showRecordID
         self.skip = findOneOptions.skip
         self.sort = findOneOptions.sort
         self.limit = 1
@@ -198,8 +198,8 @@ public struct FindOptions: Codable {
     // Encode everything except `self.readPreference`, because this is sent to libmongoc separately
     private enum CodingKeys: String, CodingKey {
         case allowDiskUse, allowPartialResults, awaitData, batchSize, collation, comment, hint, limit, max,
-            maxAwaitTimeMS, maxTimeMS, min, noCursorTimeout, projection, readConcern, returnKey, showRecordId,
-            tailable, skip, sort
+            maxAwaitTimeMS, maxTimeMS, min, noCursorTimeout, projection, readConcern, returnKey,
+            showRecordID = "showRecordId", tailable, skip, sort
     }
 }
 
@@ -240,7 +240,7 @@ public struct FindOneOptions: Codable {
 
     /// Determines whether to return the record identifier for each document. If true, adds a field $recordId
     /// to the returned documents.
-    public var showRecordId: Bool?
+    public var showRecordID: Bool?
 
     /// The number of documents to skip before returning.
     public var skip: Int?
@@ -261,7 +261,7 @@ public struct FindOneOptions: Codable {
         readConcern: ReadConcern? = nil,
         readPreference: ReadPreference? = nil,
         returnKey: Bool? = nil,
-        showRecordId: Bool? = nil,
+        showRecordID: Bool? = nil,
         skip: Int? = nil,
         sort: Document? = nil
     ) {
@@ -276,15 +276,15 @@ public struct FindOneOptions: Codable {
         self.readConcern = readConcern
         self.readPreference = readPreference
         self.returnKey = returnKey
-        self.showRecordId = showRecordId
+        self.showRecordID = showRecordID
         self.skip = skip
         self.sort = sort
     }
 
     // Encode everything except `self.readPreference`, because this is sent to libmongoc separately
     private enum CodingKeys: String, CodingKey {
-        case allowPartialResults, collation, comment, hint, max,
-            maxTimeMS, min, projection, readConcern, returnKey, showRecordId, skip, sort
+        case allowPartialResults, collation, comment, hint, max, maxTimeMS, min, projection, readConcern, returnKey,
+            showRecordID = "showRecordId", skip, sort
     }
 }
 

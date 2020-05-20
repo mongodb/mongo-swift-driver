@@ -59,8 +59,8 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         let result: BulkWriteResult! = try self.coll.bulkWrite(requests)
 
         expect(result.insertedCount).to(equal(2))
-        expect(result.insertedIds[0]!).to(equal(1))
-        expect(result.insertedIds[1]!.type).to(equal(.objectId))
+        expect(result.insertedIDs[0]!).to(equal(1))
+        expect(result.insertedIDs[1]!.type).to(equal(.objectID))
 
         // verify inserted doc without _id was not modified.
         guard case let .insertOne(doc) = requests[1] else {
@@ -70,14 +70,14 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
 
         let cursor = try coll.find()
         expect(try cursor.next()?.get()).to(equal(["_id": 1, "x": 11]))
-        expect(try cursor.next()?.get()).to(equal(["_id": result.insertedIds[1]!, "x": 22]))
+        expect(try cursor.next()?.get()).to(equal(["_id": result.insertedIDs[1]!, "x": 22]))
         expect(try cursor.next()?.get()).to(beNil())
     }
 
     func testBulkWriteErrors() throws {
-        let id = BSON.objectId(ObjectId())
-        let id2 = BSON.objectId(ObjectId())
-        let id3 = BSON.objectId(ObjectId())
+        let id = BSON.objectID(ObjectID())
+        let id2 = BSON.objectID(ObjectID())
+        let id3 = BSON.objectID(ObjectID())
 
         let doc = ["_id": id] as Document
 
@@ -96,11 +96,11 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         let expectedResult = BulkWriteResult.new(
             deletedCount: 0,
             insertedCount: 1,
-            insertedIds: [0: id2],
+            insertedIDs: [0: id2],
             matchedCount: 0,
             modifiedCount: 0,
             upsertedCount: 1,
-            upsertedIds: [2: id3]
+            upsertedIDs: [2: id3]
         )
 
         // Expect a duplicate key error (11000)
@@ -141,8 +141,8 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         expect(result.matchedCount).to(equal(5))
         expect(result.modifiedCount).to(equal(5))
         expect(result.upsertedCount).to(equal(2))
-        expect(result.upsertedIds[2]!).to(equal(5))
-        expect(result.upsertedIds[3]!.type).to(equal(.objectId))
+        expect(result.upsertedIDs[2]!).to(equal(5))
+        expect(result.upsertedIDs[3]!.type).to(equal(.objectID))
 
         let cursor = try coll.find()
         expect(try cursor.next()?.get()).to(equal(["_id": 1, "x": 11]))
@@ -150,7 +150,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         expect(try cursor.next()?.get()).to(equal(["_id": 3, "x": 32]))
         expect(try cursor.next()?.get()).to(equal(["_id": 4, "x": 43]))
         expect(try cursor.next()?.get()).to(equal(["_id": 5, "x": 56]))
-        expect(try cursor.next()?.get()).to(equal(["_id": result.upsertedIds[3]!, "x": 67]))
+        expect(try cursor.next()?.get()).to(equal(["_id": result.upsertedIDs[3]!, "x": 67]))
         expect(try cursor.next()?.get()).to(beNil())
     }
 
@@ -193,11 +193,11 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         let result: BulkWriteResult! = try self.coll.bulkWrite(requests)
 
         expect(result.insertedCount).to(equal(1))
-        expect(result.insertedIds[2]!).to(equal(4))
+        expect(result.insertedIDs[2]!).to(equal(4))
         expect(result.matchedCount).to(equal(3))
         expect(result.modifiedCount).to(equal(3))
         expect(result.upsertedCount).to(equal(1))
-        expect(result.upsertedIds[4]!).to(equal(4))
+        expect(result.upsertedIDs[4]!).to(equal(4))
         expect(result.deletedCount).to(equal(2))
 
         let cursor = try coll.find()

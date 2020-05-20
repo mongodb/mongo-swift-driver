@@ -62,8 +62,8 @@ final class BSONValueTests: MongoSwiftTestCase {
         // MinKey & MaxKey
         expect(BSON.minKey).to(equal(.minKey))
         expect(BSON.maxKey).to(equal(.maxKey))
-        // ObjectId
-        self.checkTrueAndFalse(val: .objectId(ObjectId()), alternate: .objectId(ObjectId()))
+        // ObjectID
+        self.checkTrueAndFalse(val: .objectID(ObjectID()), alternate: .objectID(ObjectID()))
         // CodeWithScope
         self.checkTrueAndFalse(
             val: .codeWithScope(CodeWithScope(code: "console.log('foo');", scope: [:])),
@@ -97,16 +97,16 @@ final class BSONValueTests: MongoSwiftTestCase {
         expect(b0).toNot(equal(b1))
     }
 
-    /// Test object for ObjectIdRoundTrip
+    /// Test object for ObjectIDRoundTrip
     private struct TestObject: Codable, Equatable {
-        private let _id: ObjectId
+        private let _id: ObjectID
 
-        init(id: ObjectId) {
+        init(id: ObjectID) {
             self._id = id
         }
     }
 
-    func testObjectIdRoundTrip() throws {
+    func testObjectIDRoundTrip() throws {
         // alloc new bson_oid_t
         var oid_t = bson_oid_t()
         bson_oid_init(&oid_t, nil)
@@ -121,7 +121,7 @@ final class BSONValueTests: MongoSwiftTestCase {
 
         // initialize a new oid with the oid_t ptr
         // expect the values to be equal
-        let objectId = ObjectId(bsonOid: oid_t)
+        let objectId = ObjectID(bsonOid: oid_t)
         expect(objectId.hex).to(equal(oid))
         expect(objectId.timestamp).to(equal(timestamp))
 
@@ -130,7 +130,7 @@ final class BSONValueTests: MongoSwiftTestCase {
         let testObject = TestObject(id: objectId)
         let encodedTestObject = try BSONEncoder().encode(testObject)
 
-        guard let _id = encodedTestObject["_id"]?.objectIdValue else {
+        guard let _id = encodedTestObject["_id"]?.objectIDValue else {
             fail("encoded document did not contain objectId _id")
             return
         }
@@ -141,14 +141,14 @@ final class BSONValueTests: MongoSwiftTestCase {
 
         // expect that we can pull the correct timestamp if
         // initialized from the original string
-        let objectIdFromString = ObjectId(oid)!
+        let objectIdFromString = ObjectID(oid)!
         expect(objectIdFromString).to(equal(objectId))
         expect(objectIdFromString.hex).to(equal(oid))
         expect(objectIdFromString.timestamp).to(equal(timestamp))
     }
 
-    func testObjectIdJSONCodable() throws {
-        let id = ObjectId()
+    func testObjectIDJSONCodable() throws {
+        let id = ObjectID()
         let obj = TestObject(id: id)
         let output = try JSONEncoder().encode(obj)
         let outputStr = String(decoding: output, as: UTF8.self)

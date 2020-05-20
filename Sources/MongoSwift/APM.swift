@@ -70,14 +70,14 @@ public enum CommandEvent: Publishable {
     }
 
     /// The driver generated request id.
-    public var requestId: Int64 {
-        self.event.requestId
+    public var requestID: Int64 {
+        self.event.requestID
     }
 
     /// The driver generated operation id. This is used to link events together such
     /// as bulk write operations.
-    public var operationId: Int64 {
-        self.event.operationId
+    public var operationID: Int64 {
+        self.event.operationID
     }
 
     /// The address of the server the command was run against.
@@ -92,11 +92,11 @@ private protocol CommandEventProtocol {
     var commandName: String { get }
 
     /// The driver generated request id.
-    var requestId: Int64 { get }
+    var requestID: Int64 { get }
 
     /// The driver generated operation id. This is used to link events together such
     /// as bulk write operations.
-    var operationId: Int64 { get }
+    var operationID: Int64 { get }
 
     /// The address of the server the command was run against.
     var serverAddress: Address { get }
@@ -127,11 +127,11 @@ public struct CommandStartedEvent: MongoSwiftEvent, CommandEventProtocol {
     public let commandName: String
 
     /// The driver generated request id.
-    public let requestId: Int64
+    public let requestID: Int64
 
     /// The driver generated operation id. This is used to link events together such
     /// as bulk write operations.
-    public let operationId: Int64
+    public let operationID: Int64
 
     /// The address of the server the command was run against.
     public let serverAddress: Address
@@ -141,8 +141,8 @@ public struct CommandStartedEvent: MongoSwiftEvent, CommandEventProtocol {
         self.command = Document(copying: mongoc_apm_command_started_get_command(mongocEvent.ptr))
         self.databaseName = String(cString: mongoc_apm_command_started_get_database_name(mongocEvent.ptr))
         self.commandName = String(cString: mongoc_apm_command_started_get_command_name(mongocEvent.ptr))
-        self.requestId = mongoc_apm_command_started_get_request_id(mongocEvent.ptr)
-        self.operationId = mongoc_apm_command_started_get_operation_id(mongocEvent.ptr)
+        self.requestID = mongoc_apm_command_started_get_request_id(mongocEvent.ptr)
+        self.operationID = mongoc_apm_command_started_get_operation_id(mongocEvent.ptr)
         self.serverAddress = Address(mongoc_apm_command_started_get_host(mongocEvent.ptr))
     }
 
@@ -176,11 +176,11 @@ public struct CommandSucceededEvent: MongoSwiftEvent, CommandEventProtocol {
     public let commandName: String
 
     /// The driver generated request id.
-    public let requestId: Int64
+    public let requestID: Int64
 
     /// The driver generated operation id. This is used to link events together such
     /// as bulk write operations.
-    public let operationId: Int64
+    public let operationID: Int64
 
     /// The address of the server the command was run against.
     public let serverAddress: Address
@@ -191,8 +191,8 @@ public struct CommandSucceededEvent: MongoSwiftEvent, CommandEventProtocol {
         // we have to copy because libmongoc owns the pointer.
         self.reply = Document(copying: mongoc_apm_command_succeeded_get_reply(mongocEvent.ptr))
         self.commandName = String(cString: mongoc_apm_command_succeeded_get_command_name(mongocEvent.ptr))
-        self.requestId = mongoc_apm_command_succeeded_get_request_id(mongocEvent.ptr)
-        self.operationId = mongoc_apm_command_succeeded_get_operation_id(mongocEvent.ptr)
+        self.requestID = mongoc_apm_command_succeeded_get_request_id(mongocEvent.ptr)
+        self.operationID = mongoc_apm_command_succeeded_get_operation_id(mongocEvent.ptr)
         self.serverAddress = Address(mongoc_apm_command_succeeded_get_host(mongocEvent.ptr))
     }
 
@@ -226,11 +226,11 @@ public struct CommandFailedEvent: MongoSwiftEvent, CommandEventProtocol {
     public let failure: MongoError
 
     /// The client generated request id.
-    public let requestId: Int64
+    public let requestID: Int64
 
     /// The driver generated operation id. This is used to link events together such
     /// as bulk write operations.
-    public let operationId: Int64
+    public let operationID: Int64
 
     /// The connection id for the command.
     public let serverAddress: Address
@@ -242,8 +242,8 @@ public struct CommandFailedEvent: MongoSwiftEvent, CommandEventProtocol {
         mongoc_apm_command_failed_get_error(mongocEvent.ptr, &error)
         let reply = Document(copying: mongoc_apm_command_failed_get_reply(mongocEvent.ptr))
         self.failure = extractMongoError(error: error, reply: reply) // should always return a CommandError
-        self.requestId = mongoc_apm_command_failed_get_request_id(mongocEvent.ptr)
-        self.operationId = mongoc_apm_command_failed_get_operation_id(mongocEvent.ptr)
+        self.requestID = mongoc_apm_command_failed_get_request_id(mongocEvent.ptr)
+        self.operationID = mongoc_apm_command_failed_get_operation_id(mongocEvent.ptr)
         self.serverAddress = Address(mongoc_apm_command_failed_get_host(mongocEvent.ptr))
     }
 
@@ -308,7 +308,7 @@ public struct ServerDescriptionChangedEvent: MongoSwiftEvent {
     public let serverAddress: Address
 
     /// A unique identifier for the topology.
-    public let topologyId: ObjectId
+    public let topologyID: ObjectID
 
     /// The previous server description.
     public let previousDescription: ServerDescription
@@ -322,7 +322,7 @@ public struct ServerDescriptionChangedEvent: MongoSwiftEvent {
         withUnsafeMutablePointer(to: &oid) { oidPtr in
             mongoc_apm_server_changed_get_topology_id(mongocEvent.ptr, oidPtr)
         }
-        self.topologyId = ObjectId(bsonOid: oid)
+        self.topologyID = ObjectID(bsonOid: oid)
         self.previousDescription =
             ServerDescription(mongoc_apm_server_changed_get_previous_description(mongocEvent.ptr))
         self.newDescription = ServerDescription(mongoc_apm_server_changed_get_new_description(mongocEvent.ptr))
@@ -352,7 +352,7 @@ public struct ServerOpeningEvent: MongoSwiftEvent {
     public let serverAddress: Address
 
     /// A unique identifier for the topology.
-    public let topologyId: ObjectId
+    public let topologyID: ObjectID
 
     fileprivate init(mongocEvent: MongocServerOpeningEvent) {
         self.serverAddress = Address(mongoc_apm_server_opening_get_host(mongocEvent.ptr))
@@ -360,7 +360,7 @@ public struct ServerOpeningEvent: MongoSwiftEvent {
         withUnsafeMutablePointer(to: &oid) { oidPtr in
             mongoc_apm_server_opening_get_topology_id(mongocEvent.ptr, oidPtr)
         }
-        self.topologyId = ObjectId(bsonOid: oid)
+        self.topologyID = ObjectID(bsonOid: oid)
     }
 
     fileprivate func toPublishable() -> SDAMEvent {
@@ -387,7 +387,7 @@ public struct ServerClosedEvent: MongoSwiftEvent {
     public let serverAddress: Address
 
     /// A unique identifier for the topology.
-    public let topologyId: ObjectId
+    public let topologyID: ObjectID
 
     fileprivate init(mongocEvent: MongocServerClosedEvent) {
         self.serverAddress = Address(mongoc_apm_server_closed_get_host(mongocEvent.ptr))
@@ -395,7 +395,7 @@ public struct ServerClosedEvent: MongoSwiftEvent {
         withUnsafeMutablePointer(to: &oid) { oidPtr in
             mongoc_apm_server_closed_get_topology_id(mongocEvent.ptr, oidPtr)
         }
-        self.topologyId = ObjectId(bsonOid: oid)
+        self.topologyID = ObjectID(bsonOid: oid)
     }
 
     fileprivate func toPublishable() -> SDAMEvent {
@@ -419,7 +419,7 @@ public struct TopologyDescriptionChangedEvent: MongoSwiftEvent {
     }
 
     /// A unique identifier for the topology.
-    public let topologyId: ObjectId
+    public let topologyID: ObjectID
 
     /// The old topology description.
     public let previousDescription: TopologyDescription
@@ -432,7 +432,7 @@ public struct TopologyDescriptionChangedEvent: MongoSwiftEvent {
         withUnsafeMutablePointer(to: &oid) { oidPtr in
             mongoc_apm_topology_changed_get_topology_id(mongocEvent.ptr, oidPtr)
         }
-        self.topologyId = ObjectId(bsonOid: oid)
+        self.topologyID = ObjectID(bsonOid: oid)
         self.previousDescription =
             TopologyDescription(mongoc_apm_topology_changed_get_previous_description(mongocEvent.ptr))
         self.newDescription = TopologyDescription(mongoc_apm_topology_changed_get_new_description(mongocEvent.ptr))
@@ -459,14 +459,14 @@ public struct TopologyOpeningEvent: MongoSwiftEvent {
     }
 
     /// A unique identifier for the topology.
-    public let topologyId: ObjectId
+    public let topologyID: ObjectID
 
     fileprivate init(mongocEvent: MongocTopologyOpeningEvent) {
         var oid = bson_oid_t()
         withUnsafeMutablePointer(to: &oid) { oidPtr in
             mongoc_apm_topology_opening_get_topology_id(mongocEvent.ptr, oidPtr)
         }
-        self.topologyId = ObjectId(bsonOid: oid)
+        self.topologyID = ObjectID(bsonOid: oid)
     }
 
     fileprivate func toPublishable() -> SDAMEvent {
@@ -490,14 +490,14 @@ public struct TopologyClosedEvent: MongoSwiftEvent {
     }
 
     /// A unique identifier for the topology.
-    public let topologyId: ObjectId
+    public let topologyID: ObjectID
 
     fileprivate init(mongocEvent: MongocTopologyClosedEvent) {
         var oid = bson_oid_t()
         withUnsafeMutablePointer(to: &oid) { oidPtr in
             mongoc_apm_topology_closed_get_topology_id(mongocEvent.ptr, oidPtr)
         }
-        self.topologyId = ObjectId(bsonOid: oid)
+        self.topologyID = ObjectID(bsonOid: oid)
     }
 
     fileprivate func toPublishable() -> SDAMEvent {

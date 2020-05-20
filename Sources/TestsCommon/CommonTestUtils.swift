@@ -322,20 +322,20 @@ extension BulkWriteResult {
     public static func new(
         deletedCount: Int? = nil,
         insertedCount: Int? = nil,
-        insertedIds: [Int: BSON]? = nil,
+        insertedIDs: [Int: BSON]? = nil,
         matchedCount: Int? = nil,
         modifiedCount: Int? = nil,
         upsertedCount: Int? = nil,
-        upsertedIds: [Int: BSON]? = nil
+        upsertedIDs: [Int: BSON]? = nil
     ) -> BulkWriteResult {
         BulkWriteResult(
             deletedCount: deletedCount ?? 0,
             insertedCount: insertedCount ?? 0,
-            insertedIds: insertedIds ?? [:],
+            insertedIDs: insertedIDs ?? [:],
             matchedCount: matchedCount ?? 0,
             modifiedCount: modifiedCount ?? 0,
             upsertedCount: upsertedCount ?? 0,
-            upsertedIds: upsertedIds ?? [:]
+            upsertedIDs: upsertedIDs ?? [:]
         )
     }
 }

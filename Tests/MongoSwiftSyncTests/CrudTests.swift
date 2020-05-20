@@ -180,10 +180,10 @@ private class CrudTest {
         expect(result?.modifiedCount).to(equal(expected.modifiedCount))
         expect(result?.upsertedCount).to(equal(expected.upsertedCount))
 
-        if let upsertedId = result?.upsertedId {
-            expect(upsertedId).to(equal(expected.upsertedId))
+        if let upsertedID = result?.upsertedID {
+            expect(upsertedID).to(equal(expected.upsertedID))
         } else {
-            expect(expected.upsertedId).to(beNil())
+            expect(expected.upsertedID).to(beNil())
         }
     }
 
@@ -262,8 +262,8 @@ private class BulkWriteTest: CrudTest {
         if let expectedInsertedCount = expected["insertedCount"]?.asInt() {
             expect(result.insertedCount).to(equal(expectedInsertedCount))
         }
-        if let expectedInsertedIds = expected["insertedIds"]?.documentValue {
-            expect(BulkWriteTest.prepareIds(result.insertedIds)).to(equal(expectedInsertedIds))
+        if let expectedInsertedIds = expected["insertedIDs"]?.documentValue {
+            expect(BulkWriteTest.prepareIds(result.insertedIDs)).to(equal(expectedInsertedIds))
         }
         if let expectedMatchedCount = expected["matchedCount"]?.asInt() {
             expect(result.matchedCount).to(equal(expectedMatchedCount))
@@ -274,8 +274,8 @@ private class BulkWriteTest: CrudTest {
         if let expectedUpsertedCount = expected["upsertedCount"]?.asInt() {
             expect(result.upsertedCount).to(equal(expectedUpsertedCount))
         }
-        if let expectedUpsertedIds = expected["upsertedIds"]?.documentValue {
-            expect(BulkWriteTest.prepareIds(result.upsertedIds)).to(equal(expectedUpsertedIds))
+        if let expectedUpsertedIds = expected["upsertedIDs"]?.documentValue {
+            expect(BulkWriteTest.prepareIds(result.upsertedIDs)).to(equal(expectedUpsertedIds))
         }
     }
 }
@@ -453,8 +453,8 @@ private class InsertManyTest: CrudTest {
         if let expectedInsertedCount = expected["insertedCount"]?.asInt() {
             expect(result.insertedCount).to(equal(expectedInsertedCount))
         }
-        if let expectedInsertedIds = expected["insertedIds"]?.documentValue {
-            expect(InsertManyTest.prepareIds(result.insertedIds)).to(equal(expectedInsertedIds))
+        if let expectedInsertedIds = expected["insertedIDs"]?.documentValue {
+            expect(InsertManyTest.prepareIds(result.insertedIDs)).to(equal(expectedInsertedIds))
         }
     }
 }
@@ -464,7 +464,7 @@ private class InsertOneTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let doc: Document = try self.args.get("document")
         let result = try coll.insertOne(doc)
-        expect(doc["_id"]).to(equal(result?.insertedId))
+        expect(doc["_id"]).to(equal(result?.insertedID))
     }
 }
 

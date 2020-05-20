@@ -17,9 +17,9 @@ public enum BSONType: UInt32 {
     case binary = 0x05
     /// Undefined value - deprecated
     case undefined = 0x06
-    /// A MongoDB ObjectId.
-    /// - SeeAlso: https://docs.mongodb.com/manual/reference/method/ObjectId/
-    case objectId = 0x07
+    /// A MongoDB ObjectID.
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/method/ObjectID/
+    case objectID = 0x07
     /// A boolean
     case bool = 0x08
     /// UTC datetime, stored as UTC milliseconds since the Unix epoch
@@ -392,10 +392,10 @@ public struct DBPointer: BSONValue, Codable, Equatable, Hashable {
     /// Destination namespace of the pointer.
     public let ref: String
 
-    /// Destination _id (assumed to be an `ObjectId`) of the pointed-to document.
-    public let id: ObjectId
+    /// Destination _id (assumed to be an `ObjectID`) of the pointed-to document.
+    public let id: ObjectID
 
-    internal init(ref: String, id: ObjectId) {
+    internal init(ref: String, id: ObjectID) {
         self.ref = ref
         self.id = id
     }
@@ -439,7 +439,7 @@ public struct DBPointer: BSONValue, Codable, Equatable, Hashable {
                 throw wrongIterTypeError(iter, expected: DBPointer.self)
             }
 
-            return .dbPointer(DBPointer(ref: String(cString: collectionP), id: ObjectId(bsonOid: oidP.pointee)))
+            return .dbPointer(DBPointer(ref: String(cString: collectionP), id: ObjectID(bsonOid: oidP.pointee)))
         }
     }
 }
@@ -775,13 +775,13 @@ internal struct MinKey: BSONValue, Equatable, Codable, Hashable {
     }
 }
 
-/// A struct to represent the BSON ObjectId type.
-public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
-    internal var bson: BSON { .objectId(self) }
+/// A struct to represent the BSON ObjectID type.
+public struct ObjectID: BSONValue, Equatable, CustomStringConvertible, Codable {
+    internal var bson: BSON { .objectID(self) }
 
-    internal static var bsonType: BSONType { .objectId }
+    internal static var bsonType: BSONType { .objectID }
 
-    /// This `ObjectId`'s data represented as a `String`.
+    /// This `ObjectID`'s data represented as a `String`.
     public var hex: String {
         var str = Data(count: 25)
         return str.withUnsafeMutableCStringPointer { strPtr in
@@ -792,7 +792,7 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
         }
     }
 
-    /// The timestamp used to create this `ObjectId`
+    /// The timestamp used to create this `ObjectID`
     public var timestamp: UInt32 {
         withUnsafePointer(to: self.oid) { oidPtr in UInt32(bson_oid_get_time_t(oidPtr)) }
     }
@@ -803,14 +803,14 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
 
     internal let oid: bson_oid_t
 
-    /// Initializes a new `ObjectId`.
+    /// Initializes a new `ObjectID`.
     public init() {
         var oid = bson_oid_t()
         bson_oid_init(&oid, nil)
         self.oid = oid
     }
 
-    /// Initializes an `ObjectId` from the provided hex `String`. Returns `nil` if the string is not a valid ObjectId.
+    /// Initializes an `ObjectID` from the provided hex `String`. Returns `nil` if the string is not a valid ObjectID.
     /// - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/objectid.rst
     public init?(_ hex: String) {
         guard bson_oid_is_valid(hex, hex.utf8.count) else {
@@ -826,14 +826,14 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
     }
 
     public init(from decoder: Decoder) throws {
-        // assumes that the ObjectId is stored as a valid hex string.
+        // assumes that the ObjectID is stored as a valid hex string.
         let container = try decoder.singleValueContainer()
         let hex = try container.decode(String.self)
-        guard let oid = ObjectId(hex) else {
+        guard let oid = ObjectID(hex) else {
             throw DecodingError.dataCorrupted(
                 DecodingError.Context(
                     codingPath: decoder.codingPath,
-                    debugDescription: "Invalid ObjectId hex string. Got: \(hex)"
+                    debugDescription: "Invalid ObjectID hex string. Got: \(hex)"
                 )
             )
         }
@@ -841,8 +841,8 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
     }
 
     public func encode(to encoder: Encoder) throws {
-        // encodes the hex string for the `ObjectId`. this method is only ever reached by non-BSON encoders.
-        // BSONEncoder bypasses the method and inserts the ObjectId into a document, which converts it to BSON.
+        // encodes the hex string for the `ObjectID`. this method is only ever reached by non-BSON encoders.
+        // BSONEncoder bypasses the method and inserts the ObjectID into a document, which converts it to BSON.
         var container = encoder.singleValueContainer()
         try container.encode(self.hex)
     }
@@ -858,15 +858,15 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
     }
 
     internal static func from(iterator iter: DocumentIterator) throws -> BSON {
-        .objectId(try iter.withBSONIterPointer { iterPtr in
+        .objectID(try iter.withBSONIterPointer { iterPtr in
             guard let oid = bson_iter_oid(iterPtr) else {
-                throw wrongIterTypeError(iter, expected: ObjectId.self)
+                throw wrongIterTypeError(iter, expected: ObjectID.self)
             }
             return self.init(bsonOid: oid.pointee)
         })
     }
 
-    public static func == (lhs: ObjectId, rhs: ObjectId) -> Bool {
+    public static func == (lhs: ObjectID, rhs: ObjectID) -> Bool {
         withUnsafePointer(to: lhs.oid) { lhsOidPtr in
             withUnsafePointer(to: rhs.oid) { rhsOidPtr in
                 bson_oid_equal(lhsOidPtr, rhsOidPtr)
@@ -875,8 +875,8 @@ public struct ObjectId: BSONValue, Equatable, CustomStringConvertible, Codable {
     }
 }
 
-// An extension of `ObjectId` to add the capability to be hashed
-extension ObjectId: Hashable {
+// An extension of `ObjectID` to add the capability to be hashed
+extension ObjectID: Hashable {
     public func hash(into hasher: inout Hasher) {
         let hashedOid = withUnsafePointer(to: self.oid) { oid in
             bson_oid_hash(oid)
@@ -1207,7 +1207,7 @@ extension BSONUndefined: Hashable {
     }
 }
 
-/// Error thrown when a BSONValue type introduced by the driver (e.g. ObjectId) is encoded not using BSONEncoder
+/// Error thrown when a BSONValue type introduced by the driver (e.g. ObjectID) is encoded not using BSONEncoder
 internal func bsonEncodingUnsupportedError<T: BSONValue>(value: T, at codingPath: [CodingKey]) -> EncodingError {
     let description = "Encoding \(T.self) BSONValue type with a non-BSONEncoder is currently unsupported"
 
@@ -1217,7 +1217,7 @@ internal func bsonEncodingUnsupportedError<T: BSONValue>(value: T, at codingPath
     )
 }
 
-/// Error thrown when a BSONValue type introduced by the driver (e.g. ObjectId) is decoded not using BSONDecoder
+/// Error thrown when a BSONValue type introduced by the driver (e.g. ObjectID) is decoded not using BSONDecoder
 private func bsonDecodingUnsupportedError<T: BSONValue>(type _: T.Type, at codingPath: [CodingKey]) -> DecodingError {
     let description = "Initializing a \(T.self) BSONValue type with a non-BSONDecoder is currently unsupported"
 
@@ -1228,7 +1228,7 @@ private func bsonDecodingUnsupportedError<T: BSONValue>(type _: T.Type, at codin
 }
 
 /**
- * Error thrown when a `BSONValue` type introduced by the driver (e.g. ObjectId) is decoded directly via the top-level
+ * Error thrown when a `BSONValue` type introduced by the driver (e.g. ObjectID) is decoded directly via the top-level
  * `BSONDecoder`.
  */
 private func bsonDecodingDirectlyError<T: BSONValue>(type _: T.Type, at codingPath: [CodingKey]) -> DecodingError {
@@ -1248,8 +1248,8 @@ private func bsonDecodingDirectlyError<T: BSONValue>(type _: T.Type, at codingPa
  * error to throw for each possible case.
  *
  * Some example cases:
- *   - Decoding directly from the BSONDecoder top-level (e.g. BSONDecoder().decode(ObjectId.self, from: ...))
- *   - Encountering the wrong type of BSONValue (e.g. expected "_id" to be an `ObjectId`, got a `Document` instead)
+ *   - Decoding directly from the BSONDecoder top-level (e.g. BSONDecoder().decode(ObjectID.self, from: ...))
+ *   - Encountering the wrong type of BSONValue (e.g. expected "_id" to be an `ObjectID`, got a `Document` instead)
  *   - Attempting to decode a driver-introduced BSONValue with a non-BSONDecoder
  */
 internal func getDecodingError<T: BSONValue>(type _: T.Type, decoder: Decoder) -> DecodingError {

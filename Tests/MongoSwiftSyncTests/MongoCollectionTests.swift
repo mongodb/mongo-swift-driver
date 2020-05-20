@@ -71,14 +71,14 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
     func testInsertOne() throws {
         expect(try self.coll.deleteMany([:])).toNot(beNil())
-        expect(try self.coll.insertOne(self.doc1)?.insertedId).to(equal(1))
-        expect(try self.coll.insertOne(self.doc2)?.insertedId).to(equal(2))
+        expect(try self.coll.insertOne(self.doc1)?.insertedID).to(equal(1))
+        expect(try self.coll.insertOne(self.doc2)?.insertedID).to(equal(2))
         expect(try self.coll.countDocuments()).to(equal(2))
 
         // try inserting a document without an ID
         let docNoID: Document = ["x": 1]
         // verify that an _id is returned in the InsertOneResult
-        expect(try self.coll.insertOne(docNoID)?.insertedId).toNot(beNil())
+        expect(try self.coll.insertOne(docNoID)?.insertedID).toNot(beNil())
         // verify that the original document was not modified
         expect(docNoID).to(equal(["x": 1]))
 
@@ -140,12 +140,12 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         let res = try coll.insertMany([docNoId1, docNoId2, docId1, docId2])
 
         // the inserted IDs should either be the ones we set,
-        // or newly created ObjectIds
-        for (_, v) in res!.insertedIds {
+        // or newly created ObjectIDs
+        for (_, v) in res!.insertedIDs {
             if let val = v.asInt() {
                 expect([10, 11]).to(contain(val))
             } else {
-                expect(v.type).to(equal(.objectId))
+                expect(v.type).to(equal(.objectID))
             }
         }
 
@@ -153,12 +153,12 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(docNoId1).to(equal(["x": 1]))
         expect(docNoId2).to(equal(["x": 2]))
 
-        let newDoc1: Document = ["_id": .objectId(ObjectId())]
-        let newDoc2: Document = ["_id": .objectId(ObjectId())]
-        let newDoc3: Document = ["_id": .objectId(ObjectId())]
-        let newDoc4: Document = ["_id": .objectId(ObjectId())]
+        let newDoc1: Document = ["_id": .objectID(ObjectID())]
+        let newDoc2: Document = ["_id": .objectID(ObjectID())]
+        let newDoc3: Document = ["_id": .objectID(ObjectID())]
+        let newDoc4: Document = ["_id": .objectID(ObjectID())]
 
-        let expectedResultOrdered = BulkWriteResult.new(insertedCount: 1, insertedIds: [0: newDoc1["_id"]!])
+        let expectedResultOrdered = BulkWriteResult.new(insertedCount: 1, insertedIDs: [0: newDoc1["_id"]!])
         let expectedErrorsOrdered = [
             BulkWriteFailure.new(code: 11000, codeName: "DuplicateKey", message: "", index: 1)
         ]
@@ -179,7 +179,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         ]
         let expectedResult = BulkWriteResult.new(
             insertedCount: 2,
-            insertedIds: [0: newDoc3["_id"]!, 2: newDoc4["_id"]!]
+            insertedIDs: [0: newDoc3["_id"]!, 2: newDoc4["_id"]!]
         )
         let expectedError = BulkWriteError.new(
             writeFailures: expectedErrors,
@@ -507,14 +507,14 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     func testNullIds() throws {
         let result1 = try self.coll.insertOne(["_id": .null, "hi": "hello"])
         expect(result1).toNot(beNil())
-        expect(result1?.insertedId).to(equal(.null))
+        expect(result1?.insertedID).to(equal(.null))
 
         try self.coll.deleteOne(["_id": .null])
 
         let result2 = try self.coll.insertMany([["_id": .null], ["_id": 20]])
         expect(result2).toNot(beNil())
-        expect(result2?.insertedIds[0]).to(equal(.null))
-        expect(result2?.insertedIds[1]).to(equal(20))
+        expect(result2?.insertedIDs[0]).to(equal(.null))
+        expect(result2?.insertedIDs[1]).to(equal(20))
     }
 
     func testNSNotFoundSuppression() throws {

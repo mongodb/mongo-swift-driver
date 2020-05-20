@@ -71,7 +71,7 @@ public final class ClientSession {
     internal var id: Document?
 
     /// The server ID of the mongos this session is pinned to.
-    private var serverId: UInt32? {
+    private var serverID: UInt32? {
         switch self.state {
         case .notStarted, .ended:
             return nil
@@ -86,12 +86,12 @@ public final class ClientSession {
 
     /// The address of the mongos this session is pinned to, if any.
     internal var pinnedServerAddress: Address? {
-        guard let serverId = self.serverId, case let .started(_, connection) = self.state else {
+        guard let serverID = self.serverID, case let .started(_, connection) = self.state else {
             return nil
         }
         return connection.withMongocConnection { client in
             let serverDescription =
-                ServerDescription(mongoc_client_get_server_description(client, serverId))
+                ServerDescription(mongoc_client_get_server_description(client, serverID))
             return serverDescription.address
         }
     }

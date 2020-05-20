@@ -55,7 +55,7 @@ private struct IsMasterResponse: Decodable {
     fileprivate let me: String?
     fileprivate let setName: String?
     fileprivate let setVersion: Int?
-    fileprivate let electionId: ObjectId?
+    fileprivate let electionID: ObjectID?
     fileprivate let primary: String?
     fileprivate let logicalSessionTimeoutMinutes: Int?
     fileprivate let hosts: [String]?
@@ -131,7 +131,7 @@ public struct ServerDescription {
     public let setVersion: Int?
 
     /// The election ID where this server was elected, if this is a replica set member that believes it is primary.
-    public let electionId: ObjectId?
+    public let electionID: ObjectID?
 
     /// This server's opinion of who the primary is.
     public let primary: Address?
@@ -162,7 +162,7 @@ public struct ServerDescription {
         self.me = try? isMaster?.me.map(Address.init) // TODO: SWIFT-349 log error
         self.setName = isMaster?.setName
         self.setVersion = isMaster?.setVersion
-        self.electionId = isMaster?.electionId
+        self.electionID = isMaster?.electionID
         self.primary = try? isMaster?.primary.map(Address.init) // TODO: SWIFT-349 log error
         self.logicalSessionTimeoutMinutes = isMaster?.logicalSessionTimeoutMinutes
         self.hosts = isMaster?.hosts?.compactMap { host in
@@ -192,7 +192,7 @@ extension ServerDescription: Equatable {
             lhs.tags == rhs.tags &&
             lhs.setName == rhs.setName &&
             lhs.setVersion == rhs.setVersion &&
-            lhs.electionId == rhs.electionId &&
+            lhs.electionID == rhs.electionID &&
             lhs.primary == rhs.primary &&
             lhs.logicalSessionTimeoutMinutes == rhs.logicalSessionTimeoutMinutes
     }

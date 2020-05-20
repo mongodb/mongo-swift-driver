@@ -46,7 +46,7 @@ enum TestOperationResult: Decodable, Equatable, Matchable {
     public init(from decoder: Decoder) throws {
         if let insertOneResult = try? InsertOneResult(from: decoder) {
             self = .bulkWrite(insertOneResult.bulkResultValue)
-        } else if let updateResult = try? UpdateResult(from: decoder), updateResult.upsertedId != nil {
+        } else if let updateResult = try? UpdateResult(from: decoder), updateResult.upsertedID != nil {
             self = .bulkWrite(updateResult.bulkResultValue)
         } else if let bulkWriteResult = try? BulkWriteResult(from: decoder) {
             self = .bulkWrite(bulkWriteResult)
@@ -118,28 +118,28 @@ extension BulkWriteResult: BulkWriteResultConvertible {
 
 extension InsertManyResult: BulkWriteResultConvertible {
     internal var bulkResultValue: BulkWriteResult {
-        BulkWriteResult.new(insertedCount: self.insertedCount, insertedIds: self.insertedIds)
+        BulkWriteResult.new(insertedCount: self.insertedCount, insertedIDs: self.insertedIDs)
     }
 }
 
 extension InsertOneResult: BulkWriteResultConvertible {
     internal var bulkResultValue: BulkWriteResult {
-        BulkWriteResult.new(insertedCount: 1, insertedIds: [0: self.insertedId])
+        BulkWriteResult.new(insertedCount: 1, insertedIDs: [0: self.insertedID])
     }
 }
 
 extension UpdateResult: BulkWriteResultConvertible {
     internal var bulkResultValue: BulkWriteResult {
-        var upsertedIds: [Int: BSON]?
-        if let upsertedId = self.upsertedId {
-            upsertedIds = [0: upsertedId]
+        var upsertedIDs: [Int: BSON]?
+        if let upsertedID = self.upsertedID {
+            upsertedIDs = [0: upsertedID]
         }
 
         return BulkWriteResult.new(
             matchedCount: self.matchedCount,
             modifiedCount: self.modifiedCount,
             upsertedCount: self.upsertedCount,
-            upsertedIds: upsertedIds
+            upsertedIDs: upsertedIDs
         )
     }
 }

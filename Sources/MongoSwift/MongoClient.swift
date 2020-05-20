@@ -186,10 +186,10 @@ public class MongoClient {
     internal var sdamEventHandlers: [SDAMEventHandler]
 
     /// Counter for generating client _ids.
-    internal static var clientIdGenerator = NIOAtomic<Int>.makeAtomic(value: 0)
+    internal static var clientIDGenerator = NIOAtomic<Int>.makeAtomic(value: 0)
 
     /// A unique identifier for this client. Sets _id to the generator's current value and increments the generator.
-    internal let _id = clientIdGenerator.add(1)
+    internal let _id = clientIDGenerator.add(1)
 
     /// Encoder whose options are inherited by databases derived from this client.
     public let encoder: BSONEncoder

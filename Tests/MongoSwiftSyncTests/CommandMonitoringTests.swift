@@ -143,7 +143,7 @@ private struct CMTest: Decodable {
                 min: modifiers?["$min"]?.documentValue,
                 readPreference: self.op.readPreference,
                 returnKey: modifiers?["$returnKey"]?.boolValue,
-                showRecordId: modifiers?["$showDiskLoc"]?.boolValue,
+                showRecordID: modifiers?["$showDiskLoc"]?.boolValue,
                 skip: self.op.args["skip"]?.asInt(),
                 sort: self.op.args["sort"]?.documentValue
             )

@@ -22,9 +22,9 @@ public enum BSON {
     /// A BSON undefined.
     case undefined
 
-    /// A BSON ObjectId.
-    /// - SeeAlso: https://docs.mongodb.com/manual/reference/bson-types/#objectid
-    case objectId(ObjectId)
+    /// A BSON ObjectID.
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/bson-types/#ObjectID
+    case objectID(ObjectID)
 
     /// A BSON boolean.
     case bool(Bool)
@@ -126,9 +126,9 @@ public enum BSON {
         return i
     }
 
-    /// If this `BSON` is an `.objectId`, return it as an `ObjectId`. Otherwise, return nil.
-    public var objectIdValue: ObjectId? {
-        guard case let .objectId(o) = self else {
+    /// If this `BSON` is an `.objectID`, return it as an `ObjectID`. Otherwise, return nil.
+    public var objectIDValue: ObjectID? {
+        guard case let .objectID(o) = self else {
             return nil
         }
         return o
@@ -312,7 +312,7 @@ extension BSON {
         String.self,
         Document.self,
         Binary.self,
-        ObjectId.self,
+        ObjectID.self,
         Bool.self,
         Date.self,
         RegularExpression.self,
@@ -347,7 +347,7 @@ extension BSON {
             return v
         case let .binary(v):
             return v
-        case let .objectId(v):
+        case let .objectID(v):
             return v
         case let .bool(v):
             return v
