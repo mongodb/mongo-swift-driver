@@ -90,7 +90,8 @@ public struct FindOptions: Codable {
     public var max: Document?
 
     /// The maximum amount of time, in milliseconds, for the server to wait on new documents to satisfy a tailable
-    /// cursor query. This only applies when used with `MongoCursorType.tailableAwait`. Otherwise, this option is ignored.
+    /// cursor query. This only applies when used with `MongoCursorType.tailableAwait`. Otherwise, this option is
+    /// ignored.
     public var maxAwaitTimeMS: Int?
 
     /// The maximum amount of time to allow the query to run.
