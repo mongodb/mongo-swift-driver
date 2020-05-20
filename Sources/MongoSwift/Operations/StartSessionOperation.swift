@@ -9,6 +9,11 @@ public struct ClientSessionOptions {
     public var causalConsistency: Bool?
 
     /// The default `TransactionOptions` to use for transactions started on this session.
+    ///
+    /// These may be overridden by options provided directly to `ClientSession.startTransaction`.
+    ///
+    /// If this option is not specified, the options will be inherited from the client that started this session where
+    /// applicable (e.g. write concern).
     public var defaultTransactionOptions: TransactionOptions?
 
     /// Convenience initializer allowing any/all parameters to be omitted.

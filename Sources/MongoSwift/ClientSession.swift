@@ -340,10 +340,18 @@ public final class ClientSession {
     }
 
     /**
-     * Starts a multi-document transaction for all subsequent operations in this session. Any options provided in
-     * `options` override the default transaction options for this session and any options inherited from
-     * `MongoClient`. The transaction must be completed with `commitTransaction` or `abortTransaction`. An in-progress
-     * transaction is automatically aborted when `ClientSession.end()` is called.
+     * Starts a multi-document transaction for all subsequent operations in this session.
+     *
+     * Any options provided in `options` will override the default transaction options for this session and any options
+     * inherited from `MongoClient`.
+     *
+     * Operations executed as part of the transaction will use the options specified on the transaction, and those
+     * options cannot be overridden at a per-operation level. Any options that overlap with the transaction options
+     * which can be specified at a per operation level (e.g. write concern) _will be ignored_ if specified. This
+     * includes options specified at the database or collection level on the object used to execute an operation.
+     *
+     * The transaction must be completed with `commitTransaction` or `abortTransaction`. An in-progress transaction is
+     * automatically aborted when `ClientSession.end()` is called.
      *
      * - Parameters:
      *   - options: The options to use when starting this transaction
