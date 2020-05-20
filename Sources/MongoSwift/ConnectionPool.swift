@@ -76,6 +76,17 @@ internal class ConnectionPool {
 
     /// Initializes the pool using the provided `ConnectionString` and options.
     internal init(from connString: ConnectionString, options: ClientOptions?) throws {
+        // validate option before we bother creating pool, so we don't have to destroy the pool on error. destroying it
+        // would require calling the blocking method `mongoc_client_pool_destroy` from this initializer, which we don't
+        // want to do as it would block the event loop.
+        if let maxPoolSize = options?.maxPoolSize {
+            guard maxPoolSize > 0 && maxPoolSize <= UInt32.max else {
+                throw InvalidArgumentError(
+                    message: "Invalid maxPoolSize \(maxPoolSize): must be between 1 and \(UInt32.max)"
+                )
+            }
+        }
+
         let pool: OpaquePointer = try connString.withMongocURI { uriPtr in
             guard let pool = mongoc_client_pool_new(uriPtr) else {
                 throw InternalError(message: "Failed to initialize libmongoc client pool")
@@ -83,20 +94,16 @@ internal class ConnectionPool {
             return pool
         }
 
-        guard mongoc_client_pool_set_error_api(pool, MONGOC_ERROR_API_VERSION_2) else {
-            throw InternalError(message: "Could not configure error handling on client pool")
-        }
+        self.state = .open(pool: pool)
 
         if let maxPoolSize = options?.maxPoolSize {
-            guard maxPoolSize > 0 && maxPoolSize <= UInt32.max else {
-                throw InvalidArgumentError(
-                    message: "Invalid maxPoolSize \(maxPoolSize): must be between 1 and \(UInt32.max)"
-                )
-            }
             mongoc_client_pool_max_size(pool, UInt32(maxPoolSize))
         }
 
-        self.state = .open(pool: pool)
+        guard mongoc_client_pool_set_error_api(pool, MONGOC_ERROR_API_VERSION_2) else {
+            fatalError("Could not configure error handling on client pool")
+        }
+
         if let options = options {
             self.setTLSOptions(options)
         }
