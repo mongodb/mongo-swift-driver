@@ -146,7 +146,7 @@ extension Document {
      *
      * - Throws:
      *   - `InternalError` if the new value is an `Int` and cannot be written to BSON.
-     *   - `LogicError` if the new value is a `Decimal128` or `ObjectID` and is improperly formatted.
+     *   - `LogicError` if the new value is a `Decimal128` or `BSONObjectID` and is improperly formatted.
      *   - `LogicError` if the new value is an `Array` and it contains a non-`BSONValue` element.
      *   - `InternalError` if the underlying `bson_t` would exceed the maximum size by encoding this
      *     key-value pair.
@@ -246,7 +246,7 @@ extension Document {
             return self
         }
 
-        var idDoc: Document = ["_id": .objectID(ObjectID())]
+        var idDoc: Document = ["_id": .objectID(BSONObjectID())]
         try idDoc.merge(self)
         return idDoc
     }

@@ -273,7 +273,7 @@ final class CodecTests: MongoSwiftTestCase {
         let doc: Document
         let arr: [BSON]
         let binary: BSONBinary
-        let oid: ObjectID
+        let oid: BSONObjectID
         let bool: Bool
         let date: Date
         let code: BSONCode
@@ -297,7 +297,7 @@ final class CodecTests: MongoSwiftTestCase {
                 doc: ["x": 1],
                 arr: [.int32(1), .int32(2)],
                 binary: try BSONBinary(base64: "//8=", subtype: .generic),
-                oid: ObjectID("507f1f77bcf86cd799439011")!,
+                oid: BSONObjectID("507f1f77bcf86cd799439011")!,
                 bool: true,
                 date: Date(timeIntervalSinceReferenceDate: 5000),
                 code: BSONCode(code: "hi"),
@@ -311,7 +311,7 @@ final class CodecTests: MongoSwiftTestCase {
                 regex: BSONRegularExpression(pattern: "^abc", options: "imx"),
                 symbol: BSONSymbol("i am a symbol"),
                 undefined: BSONUndefined(),
-                dbpointer: DBPointer(ref: "some.namespace", id: ObjectID("507f1f77bcf86cd799439011")!),
+                dbpointer: DBPointer(ref: "some.namespace", id: BSONObjectID("507f1f77bcf86cd799439011")!),
                 null: BSONNull()
             )
         }
@@ -398,8 +398,8 @@ final class CodecTests: MongoSwiftTestCase {
         expect(try decoder.decode(Int32.self, from: "42")).to(equal(Int32(42)))
         expect(try decoder.decode(Int32.self, from: "{\"$numberInt\": \"42\"}")).to(equal(Int32(42)))
 
-        let oid = ObjectID("507f1f77bcf86cd799439011")!
-        expect(try decoder.decode(ObjectID.self, from: "{\"$oid\": \"507f1f77bcf86cd799439011\"}")).to(equal(oid))
+        let oid = BSONObjectID("507f1f77bcf86cd799439011")!
+        expect(try decoder.decode(BSONObjectID.self, from: "{\"$oid\": \"507f1f77bcf86cd799439011\"}")).to(equal(oid))
 
         expect(try decoder.decode(String.self, from: "\"somestring\"")).to(equal("somestring"))
 
@@ -598,8 +598,8 @@ final class CodecTests: MongoSwiftTestCase {
             from: wrappedBinary.canonicalExtendedJSON
         ).x).to(equal(binary))
 
-        // ObjectID
-        let oid = ObjectID()
+        // BSONObjectID
+        let oid = BSONObjectID()
         let bsonOid = BSON.objectID(oid)
 
         expect(try decoder.decode(BSON.self, from: "{\"$oid\": \"\(oid.hex)\"}")).to(equal(bsonOid))

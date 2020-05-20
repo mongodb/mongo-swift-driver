@@ -308,7 +308,7 @@ public struct ServerDescriptionChangedEvent: MongoSwiftEvent {
     public let serverAddress: ServerAddress
 
     /// A unique identifier for the topology.
-    public let topologyID: ObjectID
+    public let topologyID: BSONObjectID
 
     /// The previous server description.
     public let previousDescription: ServerDescription
@@ -322,7 +322,7 @@ public struct ServerDescriptionChangedEvent: MongoSwiftEvent {
         withUnsafeMutablePointer(to: &oid) { oidPtr in
             mongoc_apm_server_changed_get_topology_id(mongocEvent.ptr, oidPtr)
         }
-        self.topologyID = ObjectID(bsonOid: oid)
+        self.topologyID = BSONObjectID(bsonOid: oid)
         self.previousDescription =
             ServerDescription(mongoc_apm_server_changed_get_previous_description(mongocEvent.ptr))
         self.newDescription = ServerDescription(mongoc_apm_server_changed_get_new_description(mongocEvent.ptr))
@@ -352,7 +352,7 @@ public struct ServerOpeningEvent: MongoSwiftEvent {
     public let serverAddress: ServerAddress
 
     /// A unique identifier for the topology.
-    public let topologyID: ObjectID
+    public let topologyID: BSONObjectID
 
     fileprivate init(mongocEvent: MongocServerOpeningEvent) {
         self.serverAddress = ServerAddress(mongoc_apm_server_opening_get_host(mongocEvent.ptr))
@@ -360,7 +360,7 @@ public struct ServerOpeningEvent: MongoSwiftEvent {
         withUnsafeMutablePointer(to: &oid) { oidPtr in
             mongoc_apm_server_opening_get_topology_id(mongocEvent.ptr, oidPtr)
         }
-        self.topologyID = ObjectID(bsonOid: oid)
+        self.topologyID = BSONObjectID(bsonOid: oid)
     }
 
     fileprivate func toPublishable() -> SDAMEvent {
@@ -387,7 +387,7 @@ public struct ServerClosedEvent: MongoSwiftEvent {
     public let serverAddress: ServerAddress
 
     /// A unique identifier for the topology.
-    public let topologyID: ObjectID
+    public let topologyID: BSONObjectID
 
     fileprivate init(mongocEvent: MongocServerClosedEvent) {
         self.serverAddress = ServerAddress(mongoc_apm_server_closed_get_host(mongocEvent.ptr))
@@ -395,7 +395,7 @@ public struct ServerClosedEvent: MongoSwiftEvent {
         withUnsafeMutablePointer(to: &oid) { oidPtr in
             mongoc_apm_server_closed_get_topology_id(mongocEvent.ptr, oidPtr)
         }
-        self.topologyID = ObjectID(bsonOid: oid)
+        self.topologyID = BSONObjectID(bsonOid: oid)
     }
 
     fileprivate func toPublishable() -> SDAMEvent {
@@ -419,7 +419,7 @@ public struct TopologyDescriptionChangedEvent: MongoSwiftEvent {
     }
 
     /// A unique identifier for the topology.
-    public let topologyID: ObjectID
+    public let topologyID: BSONObjectID
 
     /// The old topology description.
     public let previousDescription: TopologyDescription
@@ -432,7 +432,7 @@ public struct TopologyDescriptionChangedEvent: MongoSwiftEvent {
         withUnsafeMutablePointer(to: &oid) { oidPtr in
             mongoc_apm_topology_changed_get_topology_id(mongocEvent.ptr, oidPtr)
         }
-        self.topologyID = ObjectID(bsonOid: oid)
+        self.topologyID = BSONObjectID(bsonOid: oid)
         self.previousDescription =
             TopologyDescription(mongoc_apm_topology_changed_get_previous_description(mongocEvent.ptr))
         self.newDescription = TopologyDescription(mongoc_apm_topology_changed_get_new_description(mongocEvent.ptr))
@@ -459,14 +459,14 @@ public struct TopologyOpeningEvent: MongoSwiftEvent {
     }
 
     /// A unique identifier for the topology.
-    public let topologyID: ObjectID
+    public let topologyID: BSONObjectID
 
     fileprivate init(mongocEvent: MongocTopologyOpeningEvent) {
         var oid = bson_oid_t()
         withUnsafeMutablePointer(to: &oid) { oidPtr in
             mongoc_apm_topology_opening_get_topology_id(mongocEvent.ptr, oidPtr)
         }
-        self.topologyID = ObjectID(bsonOid: oid)
+        self.topologyID = BSONObjectID(bsonOid: oid)
     }
 
     fileprivate func toPublishable() -> SDAMEvent {
@@ -490,14 +490,14 @@ public struct TopologyClosedEvent: MongoSwiftEvent {
     }
 
     /// A unique identifier for the topology.
-    public let topologyID: ObjectID
+    public let topologyID: BSONObjectID
 
     fileprivate init(mongocEvent: MongocTopologyClosedEvent) {
         var oid = bson_oid_t()
         withUnsafeMutablePointer(to: &oid) { oidPtr in
             mongoc_apm_topology_closed_get_topology_id(mongocEvent.ptr, oidPtr)
         }
-        self.topologyID = ObjectID(bsonOid: oid)
+        self.topologyID = BSONObjectID(bsonOid: oid)
     }
 
     fileprivate func toPublishable() -> SDAMEvent {

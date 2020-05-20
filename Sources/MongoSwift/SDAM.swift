@@ -55,7 +55,7 @@ private struct IsMasterResponse: Decodable {
     fileprivate let me: String?
     fileprivate let setName: String?
     fileprivate let setVersion: Int?
-    fileprivate let electionID: ObjectID?
+    fileprivate let electionID: BSONObjectID?
     fileprivate let primary: String?
     fileprivate let logicalSessionTimeoutMinutes: Int?
     fileprivate let hosts: [String]?
@@ -131,7 +131,7 @@ public struct ServerDescription {
     public let setVersion: Int?
 
     /// The election ID where this server was elected, if this is a replica set member that believes it is primary.
-    public let electionID: ObjectID?
+    public let electionID: BSONObjectID?
 
     /// This server's opinion of who the primary is.
     public let primary: ServerAddress?

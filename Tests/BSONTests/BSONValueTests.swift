@@ -62,8 +62,8 @@ final class BSONValueTests: MongoSwiftTestCase {
         // MinKey & MaxKey
         expect(BSON.minKey).to(equal(.minKey))
         expect(BSON.maxKey).to(equal(.maxKey))
-        // ObjectID
-        self.checkTrueAndFalse(val: .objectID(ObjectID()), alternate: .objectID(ObjectID()))
+        // BSONObjectID
+        self.checkTrueAndFalse(val: .objectID(BSONObjectID()), alternate: .objectID(BSONObjectID()))
         // CodeWithScope
         self.checkTrueAndFalse(
             val: .codeWithScope(BSONCodeWithScope(code: "console.log('foo');", scope: [:])),
@@ -97,16 +97,16 @@ final class BSONValueTests: MongoSwiftTestCase {
         expect(b0).toNot(equal(b1))
     }
 
-    /// Test object for ObjectIDRoundTrip
+    /// Test object for BSONObjectIDRoundTrip
     private struct TestObject: Codable, Equatable {
-        private let _id: ObjectID
+        private let _id: BSONObjectID
 
-        init(id: ObjectID) {
+        init(id: BSONObjectID) {
             self._id = id
         }
     }
 
-    func testObjectIDRoundTrip() throws {
+    func testBSONObjectIDRoundTrip() throws {
         // alloc new bson_oid_t
         var oid_t = bson_oid_t()
         bson_oid_init(&oid_t, nil)
@@ -121,7 +121,7 @@ final class BSONValueTests: MongoSwiftTestCase {
 
         // initialize a new oid with the oid_t ptr
         // expect the values to be equal
-        let objectId = ObjectID(bsonOid: oid_t)
+        let objectId = BSONObjectID(bsonOid: oid_t)
         expect(objectId.hex).to(equal(oid))
         expect(objectId.timestamp).to(equal(timestamp))
 
@@ -141,14 +141,14 @@ final class BSONValueTests: MongoSwiftTestCase {
 
         // expect that we can pull the correct timestamp if
         // initialized from the original string
-        let objectIdFromString = ObjectID(oid)!
+        let objectIdFromString = BSONObjectID(oid)!
         expect(objectIdFromString).to(equal(objectId))
         expect(objectIdFromString.hex).to(equal(oid))
         expect(objectIdFromString.timestamp).to(equal(timestamp))
     }
 
-    func testObjectIDJSONCodable() throws {
-        let id = ObjectID()
+    func testBSONObjectIDJSONCodable() throws {
+        let id = BSONObjectID()
         let obj = TestObject(id: id)
         let output = try JSONEncoder().encode(obj)
         let outputStr = String(decoding: output, as: UTF8.self)
